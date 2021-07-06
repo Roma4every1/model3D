@@ -13,7 +13,18 @@ code {
   border-color: #1861ac;
 }
 
-td {
-    padding: 5px; /* Поля в ячейках */
-    vertical-align: top; /* Выравнивание по верхнему краю ячеек */
+.col-1-4 {
+    width: 25%;
+    float: left;
+}
+
+.col-3-4 {
+    width: 75%;
+    float: left;
+}
+
+.presentationList {
+    padding: 15px;
+    margin: 0 auto;
+    float: left;
 }

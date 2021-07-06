@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { PresentationList } from './components/PresentationList';
+import { SqlProgramsList } from './components/SqlProgramsList';
 import './custom.css'
 
 export default class App extends Component {
@@ -16,26 +17,38 @@ export default class App extends Component {
 
     renderLayout() {
         return (
-            <table>
-                <tr>
-                    <td align="left" width="25%">
+            <div class="container">
+                <div class="row">
+                    <div class="col-1-4">
+                        <div class="presentationList">
                         <PresentationList
-                            sessionId={this.state.sessionId}
-                            selectionChanged={(event, value) => {
-                            const index = value.indexOf('_');
-                            if (index >= 0) {
-                                const substr = value.slice(index + 1);
-                                this.setState({ imgPath: process.env.PUBLIC_URL + '/images/' + substr + '.PNG' });
-                            }
-                        }
-                        }
-                        />
-                    </td>
-                    <td align="right" width="80%">
+                                sessionId={this.state.sessionId}
+                                selectionChanged={(event, value) => {
+                                    const index = value.indexOf('_');
+                                    if (index >= 0) {
+                                        const substrType = value.slice(index + 1);
+                                        const substrId = value.slice(0, index);
+                                        this.setState({
+                                            imgPath: process.env.PUBLIC_URL + '/images/' + substrType + '.PNG',
+                                            activePresentationId: substrId
+                                        });
+                                    }
+                                }
+                                }
+                            />
+                        </div>
+                    </div>
+                    <div class="col-3-4">
+                        <div>
+                            <SqlProgramsList
+                                sessionId={this.state.sessionId}
+                                presentationId={this.state.activePresentationId}
+                            />
+                        </div>
                         <img src={this.state.imgPath} alt="logo" />
-                    </td>
-                </tr>
-            </table>
+                    </div>
+                </div>
+            </div>
         );
     }
 

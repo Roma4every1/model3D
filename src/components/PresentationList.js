@@ -38,7 +38,7 @@ export class PresentationList extends Component {
     }
 
     async loadPresentationList(sessionId) {
-        const response = await fetch('session/presentationList?sessionId=' + sessionId);
+        const response = await fetch(`session/presentationList?sessionId=${sessionId}`);
         const data = await response.json();
         const replaceddata = data.replaceAll('@', '');
         const parsedjson = JSON.parse(replaceddata);
