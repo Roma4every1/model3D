@@ -1,12 +1,15 @@
 import React, { Component } from 'react';
-import RecursiveTreeView from './RecursiveTreeView';
+import {RecursiveTreeView} from './RecursiveTreeView';
 
 export class PresentationList extends Component {
 
     constructor(props) {
         super(props);
-        this.state = { hasError: false };
-     //   this.state = { presentationsJSON: props.presentationsJSON, loading: props.loading }
+        this.state = { hasError: false, presentationsJSON: [], loading: true};
+    }
+
+    componentDidMount() {
+        this.loadPresentationList();
     }
 
     static getDerivedStateFromError(error) {
@@ -14,23 +17,15 @@ export class PresentationList extends Component {
         return { hasError: true };
     }
 
-    static renderPresentationList(presentationsJSON) {
-        return (
-                <div>
-                { RecursiveTreeView(presentationsJSON)}
-                </div>
-        );
-    }
-
     render() {
         if (this.state.hasError) {
             // Здесь можно рендерить запасной интерфейс
-            return <h1>Что-то пошло не так.</h1>;
+            return <h1>Error occured</h1>;
         }
 
-        let contents = this.props.loading
+        let contents = this.state.loading
             ? <p><em>Loading...</em></p>
-            : PresentationList.renderPresentationList(this.props.presentationsJSON);
+            : <RecursiveTreeView data={this.state.presentationsJSON} onSelectionChanged={this.props.selectionChanged} />
 
         return (
             <div>
@@ -38,5 +33,15 @@ export class PresentationList extends Component {
                 {contents}
             </div>
         );
+    }
+
+    async loadPresentationList() {
+        const response = await fetch('session/presentationList');
+        const data = await response.json();
+        const replaceddata = data.replaceAll('@', '');
+        const parsedjson = JSON.parse(replaceddata);
+        this.setState({
+            presentationsJSON: parsedjson, loading: false
+        });
     }
 }

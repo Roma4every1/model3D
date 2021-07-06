@@ -12,3 +12,8 @@ code {
   background-color: #1b6ec2;
   border-color: #1861ac;
 }
+
+td {
+    padding: 5px; /* Поля в ячейках */
+    vertical-align: top; /* Выравнивание по верхнему краю ячеек */
+}
