@@ -25,9 +25,11 @@ export class SqlProgramsList extends Component {
         const fileName = await response.text();
         const result = await fetch(`session/downloadResource?resourceName=${fileName}&sessionId=${sessionId}`);
         const resultText = await result.text();
+        const fileExactName = fileName.split('\\').pop().split('/').pop();
         FileSaver.saveAs(
-            process.env.PUBLIC_URL + resultText,
-            "resultChart.xls");
+            process.env.PUBLIC_URL + '/' + resultText,
+            fileExactName);
+        await fetch(`session/removeTempFile?resourceName=${resultText}`);
     }
 
     static renderProgramButtons(programNames, sessionId, runReportCommand) {
