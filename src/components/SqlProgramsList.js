@@ -1,4 +1,6 @@
-﻿import React, { Component } from 'react';
+﻿import { Button } from '@material-ui/core';
+import FileSaver from 'file-saver';
+import React, { Component } from 'react';
 
 export class SqlProgramsList extends Component {
 
@@ -18,17 +20,27 @@ export class SqlProgramsList extends Component {
         return { hasError: true };
     }
 
-    static renderProgramButtons(programNames) {
+    async runReport(sessionId) {
+        const response = await fetch(`report?sessionId=${sessionId}`);
+        const fileName = await response.text();
+        const result = await fetch(`session/downloadResource?resourceName=${fileName}&sessionId=${sessionId}`);
+        const resultText = await result.text();
+        FileSaver.saveAs(
+            process.env.PUBLIC_URL + resultText,
+            "resultChart.xls");
+    }
+
+    static renderProgramButtons(programNames, sessionId, runReportCommand) {
         return (
-            <table className='table table-striped' aria-labelledby="tabelLabel">
-                <tbody>
-                    <tr>
-                        {programNames.map(programName =>
-                            <td>{programName}</td>
-                        )}
-                    </tr>
-                </tbody>
-            </table>
+            <div className='table table-striped' aria-labelledby="tabelLabel">
+                {programNames.map(programName =>
+                    <td>
+                        <Button variant="outlined" onClick={() => { runReportCommand(sessionId) }}>
+                            {programName}
+                        </Button>
+                    </td>
+                )}
+            </div>
         );
     }
 
@@ -40,7 +52,7 @@ export class SqlProgramsList extends Component {
 
         let contents = this.state.loading
             ? <p><em>Loading...</em></p>
-            : SqlProgramsList.renderProgramButtons(this.state.buttonNames)
+            : SqlProgramsList.renderProgramButtons(this.state.buttonNames, this.props.sessionId, this.runReport)
 
         return (
             <div>
