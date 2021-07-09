@@ -10,7 +10,7 @@ export class SqlProgramsList extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (this.props.sessionId !== prevProps.sessionId || this.props.presentationId !== prevProps.presentationId) {
+        if ((this.props.sessionId !== prevProps.sessionId || this.props.presentationId !== prevProps.presentationId) && this.props.presentationId) {
             this.loadSqlProgramsList(this.props.sessionId, this.props.presentationId);
         }
     }
@@ -20,8 +20,8 @@ export class SqlProgramsList extends Component {
         return { hasError: true };
     }
 
-    async runReport(sessionId) {
-        const response = await fetch(`report?sessionId=${sessionId}`);
+    async runReport(sessionId, reportGuid) {
+        const response = await fetch(`session/runReport?sessionId=${sessionId}&reportguid=${reportGuid}`);
         const fileName = await response.text();
         const result = await fetch(`session/downloadResource?resourceName=${fileName}&sessionId=${sessionId}`);
         const resultText = await result.text();
@@ -29,7 +29,7 @@ export class SqlProgramsList extends Component {
         FileSaver.saveAs(
             process.env.PUBLIC_URL + '/' + resultText,
             fileExactName);
-        await fetch(`session/removeTempFile?resourceName=${resultText}`);
+        //    fetch(`session/removeTempFile?resourceName=${resultText}`);
     }
 
     static renderProgramButtons(programNames, sessionId, runReportCommand) {
@@ -37,8 +37,8 @@ export class SqlProgramsList extends Component {
             <div className='table table-striped' aria-labelledby="tabelLabel">
                 {programNames.map(programName =>
                     <td>
-                        <Button variant="outlined" onClick={() => { runReportCommand(sessionId) }}>
-                            {programName}
+                        <Button variant="outlined" onClick={() => { runReportCommand(sessionId, programName.id) }}>
+                            {programName.displayName}
                         </Button>
                     </td>
                 )}
