@@ -1,6 +1,8 @@
-﻿import { Button } from '@material-ui/core';
+﻿import { Button, Toolbar } from '@material-ui/core';
 import FileSaver from 'file-saver';
+import List from '@material-ui/core/List';
 import React, { Component } from 'react';
+var utils = require("../utils")
 
 export class SqlProgramsList extends Component {
 
@@ -21,28 +23,26 @@ export class SqlProgramsList extends Component {
     }
 
     async runReport(sessionId, reportGuid) {
-        const response = await fetch(`session/runReport?sessionId=${sessionId}&reportguid=${reportGuid}`);
+        const response = await utils.webFetch(`runReport?sessionId=${sessionId}&reportguid=${reportGuid}`);
         const fileName = await response.text();
-        const result = await fetch(`session/downloadResource?resourceName=${fileName}&sessionId=${sessionId}`);
+        const result = await utils.webFetch(`downloadResource?resourceName=${fileName}&sessionId=${sessionId}`);
         const resultText = await result.text();
         const fileExactName = fileName.split('\\').pop().split('/').pop();
         FileSaver.saveAs(
             process.env.PUBLIC_URL + '/' + resultText,
             fileExactName);
-        //    fetch(`session/removeTempFile?resourceName=${resultText}`);
+        //    utils.webFetch(`removeTempFile?resourceName=${resultText}`);
     }
 
     static renderProgramButtons(programNames, sessionId, runReportCommand) {
         return (
-            <div className='table table-striped' aria-labelledby="tabelLabel">
+            <List>
                 {programNames.map(programName =>
-                    <td>
                         <Button variant="outlined" onClick={() => { runReportCommand(sessionId, programName.id) }}>
                             {programName.displayName}
                         </Button>
-                    </td>
                 )}
-            </div>
+            </List>
         );
     }
 
@@ -64,7 +64,7 @@ export class SqlProgramsList extends Component {
     }
 
     async loadSqlProgramsList(sessionId, presentationId) {
-        const response = await fetch(`session/programsList?sessionId=${sessionId}&presentationId=${presentationId}`);
+        const response = await utils.webFetch(`programsList?sessionId=${sessionId}&presentationId=${presentationId}`);
         const data = await response.json();
         this.setState({ buttonNames: data, loading: false });
     }

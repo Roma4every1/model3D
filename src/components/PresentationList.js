@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import {RecursiveTreeView} from './RecursiveTreeView';
+import { RecursiveTreeView } from './RecursiveTreeView';
+var utils = require("../utils")
 
 export class PresentationList extends Component {
 
@@ -31,15 +32,16 @@ export class PresentationList extends Component {
 
         return (
             <div>
-                <h1 id="tabelLabel" >React WMW</h1>
                 {contents}
             </div>
         );
     }
 
     async loadPresentationList(sessionId) {
-        const response = await fetch(`session/presentationList?sessionId=${sessionId}`);
-        const data = await response.json();
+
+        //const response = await utils.webFetch('startSession?systemName=DEMO_SYSTEM');
+        const response = await utils.webFetch(`presentationList?sessionId=${sessionId}`);
+        const data = await response.text();
         const replaceddata = data.replaceAll('@', '');
         const parsedjson = JSON.parse(replaceddata);
         this.setState({
