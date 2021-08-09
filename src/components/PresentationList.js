@@ -38,8 +38,6 @@ export class PresentationList extends Component {
     }
 
     async loadPresentationList(sessionId) {
-
-        //const response = await utils.webFetch('startSession?systemName=DEMO_SYSTEM');
         const response = await utils.webFetch(`presentationList?sessionId=${sessionId}`);
         const data = await response.text();
         const replaceddata = data.replaceAll('@', '');

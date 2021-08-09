@@ -1,4 +1,4 @@
-﻿import { Button, Toolbar } from '@material-ui/core';
+﻿import { Button } from '@material-ui/core';
 import FileSaver from 'file-saver';
 import List from '@material-ui/core/List';
 import React, { Component } from 'react';
@@ -31,7 +31,6 @@ export class SqlProgramsList extends Component {
         FileSaver.saveAs(
             process.env.PUBLIC_URL + '/' + resultText,
             fileExactName);
-        //    utils.webFetch(`removeTempFile?resourceName=${resultText}`);
     }
 
     static renderProgramButtons(programNames, sessionId, runReportCommand) {

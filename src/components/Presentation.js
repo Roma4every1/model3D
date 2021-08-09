@@ -9,38 +9,13 @@ export class Presentation extends Component {
         this.state = { imgPath: process.env.PUBLIC_URL + '/images/carat.PNG', presType: 'carat' };
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate() {
     //    if (this.props.sessionId !== prevProps.sessionId) {
         this.loadData(this.props.sessionId, this.props.filterValue);
     //    }
     }
 
     render() {
-        const columns = [
-            { field: 'id', headerName: 'ID', width: 90 },
-            {
-                field: 'name',
-                headerName: 'Месторождеиие',
-                width: 150,
-                editable: true,
-            },
-            {
-                field: 'tpp',
-                headerName: 'ТПП',
-                width: 150,
-                editable: true,
-            },
-        ];
-
-        const rows = [
-            { id: 1, name: 'Усинское', tpp: 'Усинскнефтегаз' },
-            { id: 2, name: 'Возейское', tpp: 'Усинскнефтегаз' },
-            { id: 3, name: 'Тэдинское', tpp: 'Севернефтегаз' },
-            { id: 4, name: 'Харьягинское', tpp: 'Севернефтегаз' },
-            { id: 5, name: 'Кыртаельское', tpp: 'Ухтанефтегаз' },
-            { id: 6, name: 'Север-Кожвинское', tpp: 'Ухтанефтегаз' },
-        ];
-
         if (this.props.presType == 'dataSet') {
             return <div style={{ height: 400, width: '100%' }}>
                 <DataGrid
@@ -81,9 +56,6 @@ export class Presentation extends Component {
             }
             return temp;
         });
-        //const columnsJSON = data.Columns.map(column => { column.Name });
-       // rowsJSON = data.Rows.map((row, index) => columnsJSON.map((column, columnIndex) => { column[field]: row.Cells[columnIndex] } ) );
-      //  const rowsJSON = data.Rows.map((row, index) => row.Cells[1] );
         this.setState({
             columnsJSON: columnsJSON, rowsJSON: rowsJSON, loading: false
         });
