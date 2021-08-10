@@ -1,7 +1,7 @@
 ﻿import { Button } from '@material-ui/core';
-import FileSaver from 'file-saver';
 import List from '@material-ui/core/List';
 import React, { Component } from 'react';
+import { ProgramParametersList } from './ProgramParametersList';
 var utils = require("../utils")
 
 export class SqlProgramsList extends Component {
@@ -22,24 +22,13 @@ export class SqlProgramsList extends Component {
         return { hasError: true };
     }
 
-    async runReport(sessionId, reportGuid) {
-        const response = await utils.webFetch(`runReport?sessionId=${sessionId}&reportguid=${reportGuid}`);
-        const fileName = await response.text();
-        const result = await utils.webFetch(`downloadResource?resourceName=${fileName}&sessionId=${sessionId}`);
-        const resultText = await result.text();
-        const fileExactName = fileName.split('\\').pop().split('/').pop();
-        FileSaver.saveAs(
-            process.env.PUBLIC_URL + '/' + resultText,
-            fileExactName);
-    }
-
-    static renderProgramButtons(programNames, sessionId, runReportCommand) {
+    static renderProgramButtons(programNames, sessionId) {
         return (
             <List>
                 {programNames.map(programName =>
-                        <Button variant="outlined" onClick={() => { runReportCommand(sessionId, programName.id) }}>
-                            {programName.displayName}
-                        </Button>
+                    <div>
+                        <ProgramParametersList sessionId={sessionId} programId={programName.id} programDisplayName={programName.displayName} open="true" />
+                    </div>
                 )}
             </List>
         );
@@ -53,7 +42,7 @@ export class SqlProgramsList extends Component {
 
         let contents = this.state.loading
             ? <p><em>Loading...</em></p>
-            : SqlProgramsList.renderProgramButtons(this.state.buttonNames, this.props.sessionId, this.runReport)
+            : SqlProgramsList.renderProgramButtons(this.state.buttonNames, this.props.sessionId)
 
         return (
             <div>
