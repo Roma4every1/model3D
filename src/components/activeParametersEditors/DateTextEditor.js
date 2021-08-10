@@ -1,7 +1,7 @@
 ﻿import React, { Component } from 'react';
 import TextField from '@material-ui/core/TextField';
 
-export class IntegerTextEditor extends Component {
+export class DateTextEditor extends Component {
 
     render() {
         return (
@@ -9,11 +9,11 @@ export class IntegerTextEditor extends Component {
                 <TextField
                     id={this.props.id}
                     variant="outlined"
-                    type="number"
+                    type="date"
                     label={this.props.displayName}
                     onChange={this.props.selectionChanged}
                 />
             </form>
-            );
+        );
     }
 }

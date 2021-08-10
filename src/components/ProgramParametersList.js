@@ -2,6 +2,7 @@
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Dialog from '@material-ui/core/Dialog';
 import Button from '@material-ui/core/Button';
+import { makeStyles } from '@material-ui/core/styles';
 import { ParametersList } from './ParametersList';
 import FileSaver from 'file-saver';
 var utils = require("../utils")
@@ -18,6 +19,12 @@ async function fillReportParameters(sessionId, reportGuid, handleOpen, updatePar
     }
 }
 
+const useStyles = makeStyles({
+    label: {
+        textTransform: 'none',
+    },
+});
+
 async function runReport(sessionId, reportGuid, paramValues) {
     const response = await utils.webFetch(`runReport?sessionId=${sessionId}&reportguid=${reportGuid}&paramValues=${paramValues}`);
     const fileName = await response.text();
@@ -30,9 +37,11 @@ async function runReport(sessionId, reportGuid, paramValues) {
 }
 
 export function ProgramParametersList(props) {
+    const classes = useStyles();
     const { sessionId, programId, programDisplayName } = props;
     const [open, setOpen] = React.useState(false);
     const [parametersJSON, setParametersJSON] = React.useState('');
+    const [editedJSON, setEditedJSON] = React.useState('');
 
     const handleOpen = () => {
         setOpen(true);
@@ -46,18 +55,22 @@ export function ProgramParametersList(props) {
         setParametersJSON(parametersJSON);
     };
 
+    const updateEditedParametersList = (parametersJSON) => {
+        setEditedJSON(parametersJSON);
+    };
+
     return (
         <div>
-            <Button variant="outlined" onClick={() => { fillReportParameters(sessionId, programId, handleOpen, updateParametersList) }}>
+            <Button classes={{ label: classes.label}} variant="outlined" onClick={() => { fillReportParameters(sessionId, programId, handleOpen, updateParametersList) }}>
                 {programDisplayName}
             </Button>
             <Dialog onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>
                 <DialogTitle id="simple-dialog-title">Параметры отчёта</DialogTitle>
-                <ParametersList parametersJSON={parametersJSON} />
-                <Button variant="outlined" onClick={() => { runReport(sessionId, programId, parametersJSON) }}>
+                <ParametersList parametersJSON={parametersJSON} setMainEditedJSON={updateEditedParametersList} />
+                <Button classes={{ label: classes.label }} variant="outlined" onClick={() => { runReport(sessionId, programId, JSON.stringify(editedJSON)) }}>
                     Запустить
                 </Button>
-                <Button variant="outlined" onClick={handleClose}>
+                <Button classes={{ label: classes.label }} variant="outlined" onClick={handleClose}>
                     Отменить
                 </Button>
             </Dialog>

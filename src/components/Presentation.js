@@ -9,14 +9,14 @@ export class Presentation extends Component {
         this.state = { imgPath: process.env.PUBLIC_URL + '/images/carat.PNG', presType: 'carat' };
     }
 
-    componentDidUpdate() {
-    //    if (this.props.sessionId !== prevProps.sessionId) {
-        this.loadData(this.props.sessionId, this.props.filterValue);
-    //    }
+    componentDidUpdate(prevProps) {
+        if (this.props.filterValue !== prevProps.filterValue || this.props.sessionId !== prevProps.sessionId) {
+            this.loadData(this.props.sessionId, this.props.filterValue);
+        }
     }
 
     render() {
-        if (this.props.presType == 'dataSet') {
+        if (this.props.presType === 'dataSet') {
             return <div style={{ height: 400, width: '100%' }}>
                 <DataGrid
                     rows={this.state.rowsJSON}

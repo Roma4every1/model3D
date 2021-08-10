@@ -1,14 +1,29 @@
-﻿import { Button } from '@material-ui/core';
-import List from '@material-ui/core/List';
+﻿import Toolbar from '@material-ui/core/Toolbar';
 import React, { Component } from 'react';
 import { ProgramParametersList } from './ProgramParametersList';
+import { makeStyles } from '@material-ui/core/styles';
 var utils = require("../utils")
+
+const useStyles = makeStyles((theme) => ({
+    gutters: {
+        paddingLeft: theme.spacing(0),
+        paddingRight: theme.spacing(0),
+        [theme.breakpoints.up('sm')]: {
+            paddingLeft: theme.spacing(1),
+            paddingRight: theme.spacing(1),
+        },
+    },
+}));
 
 export class SqlProgramsList extends Component {
 
     constructor(props) {
         super(props);
         this.state = { hasError: false, buttonNames: [], loading: true };
+    }
+
+    componentDidMount() {
+        this.loadSqlProgramsList(this.props.sessionId, this.props.presentationId);
     }
 
     componentDidUpdate(prevProps) {
@@ -24,13 +39,13 @@ export class SqlProgramsList extends Component {
 
     static renderProgramButtons(programNames, sessionId) {
         return (
-            <List>
+            <Toolbar>
                 {programNames.map(programName =>
                     <div>
                         <ProgramParametersList sessionId={sessionId} programId={programName.id} programDisplayName={programName.displayName} open="true" />
                     </div>
                 )}
-            </List>
+            </Toolbar>
         );
     }
 
