@@ -13,7 +13,7 @@ export default class App extends Component {
 
     constructor(props) {
         super(props);
-        this.state = { imgPath: process.env.PUBLIC_URL + '/images/carat.PNG', presType: 'carat', sessionLoading: true };
+        this.state = { sessionLoading: true };
     }
 
     componentDidMount() {
@@ -22,48 +22,40 @@ export default class App extends Component {
     
     renderLayout() {
         return (
-                <Box>
-                    <SimpleTabs
-                        sessionId={this.state.sessionId}
-                        presentationId={this.state.activePresentationId}
-                        presType={this.state.presType}
-                        selectionChanged={(event) => {
-                            this.setState({
-                                filterValue: event.target.value
-                            })
-                        }}
-                    />
-                    <Grid container spacing={1}>
+            <Box>
+                <SimpleTabs
+                    sessionId={this.state.sessionId}
+                    presentationId={this.state.activePresentationId}
+                    presType={this.state.presType}
+                    selectionChanged={(event) => {
+                        this.setState({
+                            filterValue: event.target.value
+                        })
+                    }} />
+                <Grid container spacing={1}>
+                    <Grid container item xs={12} spacing={3}>
                         <Grid item xs={3} spacing={3}>
                             <div class="presentationList">
                                 <PresentationList
-                                    sessionId={this.state.sessionId}
-                                    selectionChanged={(event, value) => {
-                                        const index = value.indexOf('_');
-                                        if (index >= 0) {
-                                            const substrType = value.slice(index + 1);
-                                            const substrId = value.slice(0, index);
-                                            this.setState({
-                                                presType: substrType,
-                                                imgPath: process.env.PUBLIC_URL + '/images/' + substrType + '.PNG',
-                                                activePresentationId: substrId
-                                            });
-                                        }
-                                    }
-                                    }
+                                sessionId={this.state.sessionId}
+                                selectionChanged={(event, value) => {
+                                    this.setState({
+                                        activePresentationId: value
+                                    });
+                                }}
                                 />
                             </div>
                         </Grid>
-                        <Grid item xs={6} spacing={3}>
-                            <Presentation
+                        <Grid item xs={9} spacing={3}>
+                            <Presentation class="presentation"
                                 sessionId={this.state.sessionId}
-                                presType={this.state.presType}
-                                imgPath={this.state.imgPath}
+                                presentationId={this.state.activePresentationId}
                                 filterValue={this.state.filterValue}
-                             />
+                                />
                         </Grid>
                     </Grid>
-                </Box>
+                </Grid>
+            </Box>
         );
     }
 
