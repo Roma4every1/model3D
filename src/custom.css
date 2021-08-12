@@ -49,6 +49,11 @@ code {
     width: 100vw;
     height: 100vh;
 }
+
+.halfheight {
+    height: 50vh;
+}
+
 .blockheader {
     padding: 10px;
     background: #afeeee;

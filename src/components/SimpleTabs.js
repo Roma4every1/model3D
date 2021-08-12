@@ -1,26 +1,23 @@
 ﻿import React from 'react';
 import PropTypes from 'prop-types';
-import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
+import Drawer from '@material-ui/core/Drawer';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
-import Drawer from '@material-ui/core/Drawer';
 import Divider from '@material-ui/core/Divider';
 import Box from '@material-ui/core/Box';
+import TextField from '@material-ui/core/TextField';
 import MenuIcon from '@material-ui/icons/Menu';
 import { Toolbar, IconButton, Button } from '@material-ui/core';
 import { SqlProgramsList } from './SqlProgramsList';
-import TextField from '@material-ui/core/TextField';
 import { GlobalParametersList } from './GlobalParametersList';
-var utils = require("../utils")
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -34,8 +31,8 @@ function TabPanel(props) {
       {...other}
     >
       {value === index && (
-        <Box p={3}>
-          <Typography>{children}</Typography>
+        <Box>
+          {children}
         </Box>
       )}
     </div>
@@ -55,25 +52,10 @@ function a11yProps(index) {
   };
 }
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    //flexGrow: 1,
-    backgroundColor: theme.palette.background.paper,
-    },
-    typography: {
-     //   padding: theme.spacing(2),
-    },
-}));
-
-
 export default function SimpleTabs(props) {
-    const { sessionId, presentationId, presType, selectionChanged } = props;
-    const classes = useStyles();
+    const { sessionId, presentationId, selectionChanged } = props;
     const [value, setValue] = React.useState(0);
     const [drawerState, setState] = React.useState(false);
-    const [anchorEl, setAnchorEl] = React.useState(null);
-    const [editedJSON, setEditedJSON] = React.useState('');
-    const [parametersJSON, setParametersJSON] = React.useState('');
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
@@ -88,7 +70,7 @@ export default function SimpleTabs(props) {
     };
 
     return (
-        <div className={classes.root}>
+        <div>
             <AppBar position="static">
                 <Toolbar>
                     <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleDrawer(!drawerState)}>
@@ -96,18 +78,12 @@ export default function SimpleTabs(props) {
                     </IconButton>
                     <GlobalParametersList sessionId={sessionId} />
                     <Tabs value={value} onChange={handleChange} aria-label="simple tabs example">
-                        <Tab label="Параметры старые" {...a11yProps(0)} />
-                        <Tab label={presType} {...a11yProps(1)} />
-                        <Tab label="Программы" {...a11yProps(2)} />
+                        <Tab label="Тестовые параметры" {...a11yProps(0)} />
+                        <Tab label="Программы" {...a11yProps(1)} />
                     </Tabs>
                 </Toolbar>
             </AppBar>
-            <Drawer anchor='left' open={drawerState} variant='persistent' onClose={toggleDrawer(false)}
-                classes={{
-                    paper: {
-                        width: 240,
-                    },
-                }}>
+            <Drawer anchor='left' open={drawerState} variant='persistent' onClose={toggleDrawer(false)}>
                 <div
                     onClick={toggleDrawer(false)}
                 >
@@ -129,7 +105,7 @@ export default function SimpleTabs(props) {
                 </div>
             </Drawer>
             <TabPanel value={value} index={0}>
-                <Toolbar disableGutters="true">
+                <Toolbar>
                     <form noValidate>
                         <TextField
                             id="date"
@@ -148,7 +124,7 @@ export default function SimpleTabs(props) {
                     <form noValidate autoComplete="off">
                         <TextField id="number" label="Число" variant="outlined" type="number" onChange={selectionChanged} />
                     </form>
-                    <FormControl variant="outlined" className={classes.formControl}>
+                    <FormControl variant="outlined">
                         <InputLabel id="demo-simple-select-outlined-label">Месторождение</InputLabel>
                         <Select
                             labelId="demo-simple-select-outlined-label"
@@ -166,13 +142,7 @@ export default function SimpleTabs(props) {
                     </FormControl>
                 </Toolbar>
             </TabPanel>
-            <TabPanel value={value} index={1}>
-                <Button color="inherit">Login</Button>
-                <Button color="inherit">Test</Button>
-                <Button>ferrf</Button>
-                <Button primary>ferrf</Button>
-            </TabPanel>
-            <TabPanel value={value} index={2} disableGutters="true" padding="0">
+            <TabPanel value={value} index={1} padding="0">
                 <SqlProgramsList
                     sessionId={sessionId}
                     presentationId={presentationId}

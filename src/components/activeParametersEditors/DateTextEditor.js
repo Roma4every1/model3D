@@ -10,6 +10,7 @@ export class DateTextEditor extends Component {
                     id={this.props.id}
                     variant="outlined"
                     type="date"
+                    size="small"
                     label={this.props.displayName}
                     onChange={this.props.selectionChanged}
                 />

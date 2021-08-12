@@ -1,6 +1,5 @@
 ﻿import React, { Component } from 'react';
 import Paper from '@material-ui/core/Paper';
-import AppBar from '@material-ui/core/AppBar';
 import Typography from '@material-ui/core/Typography';
 import { DataGrid } from '@material-ui/data-grid';
 var utils = require("../utils")
@@ -40,14 +39,14 @@ export class Form extends Component {
             </div>
         }
         else {
-            contents = <div class="imgbox">
+            contents = <div className="imgbox">
                 <img src={this.getImagePath(this.props.formData.type)} alt="logo" />
             </div>
         }
 
         return (
             <Paper variant='outlined'>
-                <div class='blockheader'>
+                <div className='blockheader'>
                     <Typography variant="h6">{this.props.formData.displayName}</Typography>
                 </div>
                 {contents}

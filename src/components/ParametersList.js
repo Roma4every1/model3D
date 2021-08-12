@@ -10,8 +10,7 @@ export function ParametersList(props) {
     return (
         <List>
             {parametersJSON.map(parameterJSON =>
-                <div>
-                    <ListItem>
+                    <ListItem key={parameterJSON.id}>
                         <BaseEditor
                             editorType={parameterJSON.editorType}
                             key={parameterJSON.id}
@@ -29,7 +28,6 @@ export function ParametersList(props) {
                             }}
                         />
                     </ListItem>
-                </div>
             )}
         </List>
         )

@@ -3,26 +3,22 @@ import Grid from '@material-ui/core/Grid';
 
 export class FormsContainer extends Component {
 
-    constructor(props) {
-        super(props);
-    }
-
     render() {
-        if (this.props.children.length == 1) {
+        if (this.props.children.length === 1) {
             return (<div>
                 {this.props.children}
             </div>);
         }
 
-        if (this.props.children.length == 2) {
+        if (this.props.children.length === 2) {
             return (<Grid container spacing={1}>
                 <Grid container item xs={12} spacing={1}>
-                    <Grid item xs={6} spacing={1}>
-                        <div>
+                    <Grid item xs={6}>
+                        <div className="halfheight">
                             {this.props.children[0]}
                         </div>
                     </Grid>
-                    <Grid item xs={6} spacing={1}>
+                    <Grid item xs={6}>
                         <div>
                             {this.props.children[1]}
                         </div>
@@ -31,7 +27,7 @@ export class FormsContainer extends Component {
             </Grid>);
         }
 
-        if (this.props.children.length == 3) {
+        if (this.props.children.length === 3) {
             return (<Grid container spacing={1}>
                 <Grid container item xs={12} spacing={1}>
                     <Grid item xs={6} spacing={1}>
@@ -55,7 +51,7 @@ export class FormsContainer extends Component {
             </Grid>);
         }
 
-        if (this.props.children.length == 4) {
+        if (this.props.children.length === 4) {
             return (<Grid container spacing={1}>
                 <Grid container item xs={12} spacing={1}>
                     <Grid item xs={6} spacing={1}>
@@ -84,7 +80,7 @@ export class FormsContainer extends Component {
             </Grid>);
         }
 
-        if (this.props.children.length == 5) {
+        if (this.props.children.length === 5) {
             return (<Grid container spacing={1}>
                 <Grid container item xs={12} spacing={1}>
                     <Grid item xs={6} spacing={1}>

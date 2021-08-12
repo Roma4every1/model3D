@@ -21,6 +21,7 @@ export class Presentation extends Component {
             <FormsContainer>
                 {this.state.formsData.map(formData =>
                     <Form
+                        key={formData.id}
                         sessionId={this.props.sessionId}
                         filterValue={this.props.filterValue}
                         formData={formData}

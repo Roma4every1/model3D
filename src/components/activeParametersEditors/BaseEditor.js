@@ -26,6 +26,5 @@ export class BaseEditor extends Component {
                 <StringTextEditor {... this.props} />
             );
         }
-        return <div/>
     }
 }

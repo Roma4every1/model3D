@@ -10,6 +10,7 @@ export class IntegerTextEditor extends Component {
                     id={this.props.id}
                     variant="outlined"
                     type="number"
+                    size="small"
                     label={this.props.displayName}
                     onChange={this.props.selectionChanged}
                 />

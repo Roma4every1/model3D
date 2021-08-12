@@ -26,7 +26,6 @@ export default class App extends Component {
                 <SimpleTabs
                     sessionId={this.state.sessionId}
                     presentationId={this.state.activePresentationId}
-                    presType={this.state.presType}
                     selectionChanged={(event) => {
                         this.setState({
                             filterValue: event.target.value
@@ -34,8 +33,8 @@ export default class App extends Component {
                     }} />
                 <Grid container spacing={1}>
                     <Grid container item xs={12} spacing={3}>
-                        <Grid item xs={3} spacing={3}>
-                            <div class="presentationList">
+                        <Grid item xs={3}>
+                            <div className="presentationList">
                                 <PresentationList
                                 sessionId={this.state.sessionId}
                                 selectionChanged={(event, value) => {
@@ -46,7 +45,7 @@ export default class App extends Component {
                                 />
                             </div>
                         </Grid>
-                        <Grid item xs={9} spacing={3}>
+                        <Grid item xs={9}>
                             <Presentation class="presentation"
                                 sessionId={this.state.sessionId}
                                 presentationId={this.state.activePresentationId}
