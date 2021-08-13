@@ -11,7 +11,7 @@ export class Presentation extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (this.props.sessionId !== prevProps.sessionId || this.props.presentationId !== prevProps.presentationId) {
+        if ((this.props.sessionId !== prevProps.sessionId || this.props.presentationId !== prevProps.presentationId) && this.props.presentationId) {
             this.loadForms(this.props.sessionId, this.props.presentationId);
         }
     }

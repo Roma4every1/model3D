@@ -12,20 +12,21 @@ export function ParametersList(props) {
             {parametersJSON.map(parameterJSON =>
                     <ListItem key={parameterJSON.id}>
                         <BaseEditor
-                            editorType={parameterJSON.editorType}
-                            key={parameterJSON.id}
-                            id={parameterJSON.id}
-                            displayName={parameterJSON.displayName}
-                            selectionChanged={(event) => {
-                                var changedJSON = editedJSON;
-                                changedJSON.forEach(element => {
-                                    if (element.id === event.target.id) {
-                                        element.value = event.target.value;
-                                    }
-                                });
-                                setEditedJSON(changedJSON);
-                                setMainEditedJSON(changedJSON);
-                            }}
+                        editorType={parameterJSON.editorType}
+                        key={parameterJSON.id}
+                        id={parameterJSON.id}
+                        displayName={parameterJSON.displayName}
+                        value={parameterJSON.value}
+                        selectionChanged={(event) => {
+                            var changedJSON = editedJSON;
+                            changedJSON.forEach(element => {
+                                if (element.id === event.target.id) {
+                                    element.value = event.target.value;
+                                }
+                            });
+                            setEditedJSON(changedJSON);
+                            setMainEditedJSON(changedJSON);
+                        }}
                         />
                     </ListItem>
             )}

@@ -1,11 +1,12 @@
-﻿import Button from '@material-ui/core/Button';
-import Popover from '@material-ui/core/Popover';
+﻿import Popover from '@material-ui/core/Popover';
 import { ParametersList } from './ParametersList';
 import { globalParameters } from './Globals';
 import React, { Component } from 'react';
+import MenuIcon from '@material-ui/icons/Menu';
+import IconButton from '@material-ui/core/IconButton';
 var utils = require("../utils")
 
-export class GlobalParametersList extends Component {
+export class FormParametersList extends Component {
 
     constructor(props) {
         super(props);
@@ -13,14 +14,12 @@ export class GlobalParametersList extends Component {
     }
 
     componentDidMount() {
-        if (this.props.sessionId) {
-            this.loadGlobalProgramsList(this.props.sessionId);
-        }
+        this.loadGlobalProgramsList(this.props.sessionId, this.props.formId);
     }
 
     componentDidUpdate(prevProps) {
-        if (this.props.sessionId !== prevProps.sessionId) {
-            this.loadGlobalProgramsList(this.props.sessionId);
+        if (this.props.sessionId !== prevProps.sessionId || this.props.formId !== prevProps.formId) {
+            this.loadGlobalProgramsList(this.props.sessionId, this.props.formId);
         }
     }
 
@@ -35,16 +34,14 @@ export class GlobalParametersList extends Component {
         };
 
         const updateEditedParametersList = (parametersJSON) => {
-            globalParameters.globalParameters = parametersJSON;
             this.setState({ parametersJSON: parametersJSON });
-           // setEditedJSON(parametersJSON);
         };
 
         return (
             <div>
-                <Button aria-describedby={this.state.id} variant="contained" color="primary" onClick={handleClick}>
-                    Параметры
-                </Button>
+                <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleClick}>
+                    <MenuIcon />
+                </IconButton>
                 <Popover
                     id={this.state.id}
                     open={this.state.open}
@@ -65,10 +62,17 @@ export class GlobalParametersList extends Component {
         );
     }
 
-    async loadGlobalProgramsList(sessionId) {
-        const response = await utils.webFetch(`getGlobalParameters?sessionId=${sessionId}`);
+    async loadGlobalProgramsList(sessionId, formId) {
+        const response = await utils.webFetch(`getAllNeedParametersForForm?sessionId=${sessionId}&clientId=${formId}`);
         const responseJSON = await response.json();
-        globalParameters.globalParameters = responseJSON;
-        this.setState({ parametersJSON: responseJSON });
+        var neededParamsJSON = [];
+        globalParameters.globalParameters.forEach(element => {
+            responseJSON.forEach(responseParam => {
+                if (element.id === responseParam) {
+                    neededParamsJSON.push(element);
+                }
+            });
+        });
+        this.setState({ parametersJSON: neededParamsJSON });
     }
 }

@@ -55,10 +55,8 @@ code {
 }
 
 .blockheader {
-    padding: 10px;
     background: #afeeee;
     width: 100vw;
-    height: 30px;
     align-content: center;
     display: table-cell;
     vertical-align: middle;

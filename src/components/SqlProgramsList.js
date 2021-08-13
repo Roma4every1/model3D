@@ -11,7 +11,9 @@ export class SqlProgramsList extends Component {
     }
 
     componentDidMount() {
-        this.loadSqlProgramsList(this.props.sessionId, this.props.presentationId);
+        if (this.props.presentationId) {
+            this.loadSqlProgramsList(this.props.sessionId, this.props.presentationId);
+        }
     }
 
     componentDidUpdate(prevProps) {

@@ -1,7 +1,9 @@
 ﻿import React, { Component } from 'react';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import Toolbar from '@material-ui/core/Toolbar';
 import { DataGrid } from '@material-ui/data-grid';
+import { FormParametersList } from './FormParametersList';
 var utils = require("../utils")
 
 export class Form extends Component {
@@ -47,7 +49,10 @@ export class Form extends Component {
         return (
             <Paper variant='outlined'>
                 <div className='blockheader'>
-                    <Typography variant="h6">{this.props.formData.displayName}</Typography>
+                    <Toolbar>
+                        <FormParametersList sessionId={this.props.sessionId} formId={this.props.formData.id} />
+                        <Typography variant="h6" float='left'>{this.props.formData.displayName}</Typography>
+                     </Toolbar>
                 </div>
                 {contents}
             </Paper>

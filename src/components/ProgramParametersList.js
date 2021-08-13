@@ -15,22 +15,17 @@ async function fillReportParameters(sessionId, reportGuid, handleOpen, updateLoc
     const allNeededParams = await utils.webFetch(`getAllNeedParametersList?sessionId=${sessionId}&reportguid=${reportGuid}`);
     const parametersJSON = await response.json();
     const allNeededParamsJSON = await allNeededParams.json();
-    if (parametersJSON.length > 0) {
-        var globalParamsToUse = [];
-        allNeededParamsJSON.forEach(element => {
-            globalParameters.globalParameters.forEach(globalParam => {
-                if (globalParam.id === element) {
-                    globalParamsToUse.push(globalParam);
-                }
-            });
+    var globalParamsToUse = [];
+    allNeededParamsJSON.forEach(element => {
+        globalParameters.globalParameters.forEach(globalParam => {
+            if (globalParam.id === element) {
+                globalParamsToUse.push(globalParam);
+            }
         });
-        updateGlobalParametersList(globalParamsToUse);
-        updateLocalParametersList(parametersJSON);
-        handleOpen();
-    }
-    else {
-        await runReport(sessionId, reportGuid, '')
-    }
+    });
+    updateGlobalParametersList(globalParamsToUse);
+    updateLocalParametersList(parametersJSON);
+    handleOpen();
 }
 
 const useStyles = makeStyles({
@@ -67,7 +62,7 @@ export function ProgramParametersList(props) {
     const [open, setOpen] = React.useState(false);
     const [localParametersJSON, setLocalParametersJSON] = React.useState([]);
     const [globalParametersJSON, setGlobalParametersJSON] = React.useState([]);
-    const [editedJSON, setEditedJSON] = React.useState({});
+    const [editedJSON, setEditedJSON] = React.useState([]);
     const [runButtonDisabled, setRunButtonDisabled] = React.useState(true);
 
     const handleOpen = () => {
@@ -88,6 +83,7 @@ export function ProgramParametersList(props) {
 
     const updateEditedParametersListByLocal = (parametersJSON) => {
         var newJSON = [];
+        setLocalParametersJSON(parametersJSON);
         parametersJSON.forEach(element => {
             newJSON.push(element)
         });
@@ -95,19 +91,20 @@ export function ProgramParametersList(props) {
             newJSON.push(element)
         });
         setEditedJSON(newJSON);
-        getCanRunReport(sessionId, programId, JSON.stringify(editedJSON), setRunButtonDisabled);
+        getCanRunReport(sessionId, programId, JSON.stringify(newJSON), setRunButtonDisabled);
     };
 
     const updateEditedParametersListByGlobal = (parametersJSON) => {
         var newJSON = [];
+        setGlobalParametersJSON(parametersJSON);
         localParametersJSON.forEach(element => {
             newJSON.push(element)
         });
         parametersJSON.forEach(element => {
             newJSON.push(element)
         });
-        setEditedJSON(parametersJSON);
-        getCanRunReport(sessionId, programId, JSON.stringify(editedJSON), setRunButtonDisabled);
+        setEditedJSON(newJSON);
+        getCanRunReport(sessionId, programId, JSON.stringify(newJSON), setRunButtonDisabled);
     };
 
     return (

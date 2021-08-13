@@ -15,7 +15,7 @@ import Divider from '@material-ui/core/Divider';
 import Box from '@material-ui/core/Box';
 import TextField from '@material-ui/core/TextField';
 import MenuIcon from '@material-ui/icons/Menu';
-import { Toolbar, IconButton, Button } from '@material-ui/core';
+import { Toolbar, IconButton } from '@material-ui/core';
 import { SqlProgramsList } from './SqlProgramsList';
 import { GlobalParametersList } from './GlobalParametersList';
 
