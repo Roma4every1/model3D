@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PresentationList from './components/PresentationList';
-import { Presentation } from './components/Presentation';
+import Presentation from './components/Presentation';
 import { Box } from '@material-ui/core';
 import SimpleTabs from './components/SimpleTabs';
 import Grid from '@material-ui/core/Grid';

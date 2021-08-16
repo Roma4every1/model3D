@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { RecursiveTreeView } from './RecursiveTreeView';
+import RecursiveTreeView from './RecursiveTreeView';
 import { withTranslation } from 'react-i18next';
 var utils = require("../utils")
 

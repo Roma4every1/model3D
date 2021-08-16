@@ -1,6 +1,6 @@
 ﻿import Toolbar from '@material-ui/core/Toolbar';
 import React, { Component } from 'react';
-import { ProgramParametersList } from './ProgramParametersList';
+import ProgramParametersList from './ProgramParametersList';
 import { withTranslation } from 'react-i18next';
 var utils = require("../utils")
 

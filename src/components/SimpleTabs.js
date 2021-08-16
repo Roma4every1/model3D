@@ -54,7 +54,7 @@ function a11yProps(index) {
 }
 
 export default function SimpleTabs(props) {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const { sessionId, presentationId, selectionChanged } = props;
     const [value, setValue] = React.useState(0);
     const [drawerState, setState] = React.useState(false);

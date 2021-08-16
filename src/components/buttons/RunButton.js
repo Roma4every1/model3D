@@ -13,7 +13,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function RunButton(props) {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const { disabled, runReport } = props;
     const classes = useStyles();
 

@@ -57,9 +57,9 @@ async function getCanRunReport(sessionId, reportGuid, paramValues, functionToSet
     }
 }
 
-export function ProgramParametersList(props) {
+export default function ProgramParametersList(props) {
     const classes = useStyles();
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const { sessionId, programId, programDisplayName } = props;
     const [open, setOpen] = React.useState(false);
     const [localParametersJSON, setLocalParametersJSON] = React.useState([]);
