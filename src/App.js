@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
-import { PresentationList } from './components/PresentationList';
+import PresentationList from './components/PresentationList';
 import { Presentation } from './components/Presentation';
 import { Box } from '@material-ui/core';
 import SimpleTabs from './components/SimpleTabs';
 import Grid from '@material-ui/core/Grid';
 import './custom.css'
+import { withTranslation } from 'react-i18next';
 var utils = require("./utils")
 
-
-export default class App extends Component {
+class App extends Component {
     static displayName = App.name;
 
     constructor(props) {
@@ -60,7 +60,7 @@ export default class App extends Component {
 
     render() {
         let contents = this.state.loading
-            ? <p><em>Loading session...</em></p>
+            ? <p><em>{this.props.t('session.loading')}</em></p>
             : this.renderLayout();
 
         return (
@@ -78,3 +78,5 @@ export default class App extends Component {
         });
     }
 }
+
+export default withTranslation()(App);

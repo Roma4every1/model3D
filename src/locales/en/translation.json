@@ -1,0 +1,23 @@
+{
+  "title": "Welcome to react using react-i18next",
+  "base": {
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "parameters": "Parameters",
+    "programs": "Programs",
+    "run": "Run",
+    "testparams": "Test parameters"
+  },
+  "menucommands": {
+    "about": "About program",
+    "loadsession": "Load session",
+    "log": "Log",
+    "savesession": "Save session"
+  },
+  "report": {
+    "params": "Report parameters"
+  },
+  "session": {
+    "loading": "Loading session..."
+  }
+}

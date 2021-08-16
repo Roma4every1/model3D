@@ -1,5 +1,6 @@
 ﻿import React from 'react';
 import Button from '@material-ui/core/Button';
+import { useTranslation } from 'react-i18next';
 import { makeStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles((theme) => ({
@@ -12,16 +13,17 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function RunButton(props) {
+    const { t, i18n } = useTranslation();
     const { disabled, runReport } = props;
     const classes = useStyles();
 
     var buttonRun = <Button classes={{ label: classes.label }} variant="contained" color="primary" onClick={() => { runReport() }}>
-        Запустить
+        {t('base.run')}
                 </Button>;
 
     if (disabled) {
         buttonRun = <Button classes={{ label: classes.label }} variant="outlined" disabled>
-            Запустить
+            {t('base.run')}
                 </Button>;
     }
     return buttonRun;

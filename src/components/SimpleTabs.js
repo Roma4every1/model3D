@@ -16,8 +16,9 @@ import Box from '@material-ui/core/Box';
 import TextField from '@material-ui/core/TextField';
 import MenuIcon from '@material-ui/icons/Menu';
 import { Toolbar, IconButton } from '@material-ui/core';
-import { SqlProgramsList } from './SqlProgramsList';
-import { GlobalParametersList } from './GlobalParametersList';
+import SqlProgramsList from './SqlProgramsList';
+import GlobalParametersList from './GlobalParametersList';
+import { useTranslation } from 'react-i18next';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -53,6 +54,7 @@ function a11yProps(index) {
 }
 
 export default function SimpleTabs(props) {
+    const { t, i18n } = useTranslation();
     const { sessionId, presentationId, selectionChanged } = props;
     const [value, setValue] = React.useState(0);
     const [drawerState, setState] = React.useState(false);
@@ -78,8 +80,8 @@ export default function SimpleTabs(props) {
                     </IconButton>
                     <GlobalParametersList sessionId={sessionId} />
                     <Tabs value={value} onChange={handleChange} aria-label="simple tabs example">
-                        <Tab label="Тестовые параметры" {...a11yProps(0)} />
-                        <Tab label="Программы" {...a11yProps(1)} />
+                        <Tab label={t('base.testparams')} {...a11yProps(0)} />
+                        <Tab label={t('base.programs')} {...a11yProps(1)} />
                     </Tabs>
                 </Toolbar>
             </AppBar>
@@ -89,17 +91,17 @@ export default function SimpleTabs(props) {
                 >
                     <List onClick={toggleDrawer(false)}>
                         <ListItem button onClick={toggleDrawer(false)}>
-                            <ListItemText primary='Сохранить сессию' />
+                            <ListItemText primary={t('menucommands.savesession')} />
                         </ListItem>
                         <ListItem button>
-                            <ListItemText primary='Загрузить сессию' />
+                            <ListItemText primary={t('menucommands.loadsession')} />
                         </ListItem>
                         <Divider />
                         <ListItem button>
-                            <ListItemText primary='О программе' />
+                            <ListItemText primary={t('menucommands.about')} />
                         </ListItem>
                         <ListItem button>
-                            <ListItemText primary='Лог' />
+                            <ListItemText primary={t('menucommands.log')} />
                         </ListItem>
                     </List>
                 </div>

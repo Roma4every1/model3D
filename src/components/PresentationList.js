@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import { RecursiveTreeView } from './RecursiveTreeView';
+import { withTranslation } from 'react-i18next';
 var utils = require("../utils")
 
-export class PresentationList extends Component {
+class PresentationList extends Component {
 
     constructor(props) {
         super(props);
@@ -27,7 +28,7 @@ export class PresentationList extends Component {
         }
 
         let contents = this.state.loading
-            ? <p><em>Loading...</em></p>
+            ? <p><em>{this.props.t('base.loading')}</em></p>
             : <RecursiveTreeView data={this.state.presentationsJSON} onSelectionChanged={this.props.selectionChanged} />
 
         return (
@@ -47,3 +48,5 @@ export class PresentationList extends Component {
         });
     }
 }
+
+export default withTranslation()(PresentationList);

@@ -8,6 +8,7 @@ import RunButton from './buttons/RunButton';
 import { globalParameters } from './Globals';
 import Divider from '@material-ui/core/Divider';
 import FileSaver from 'file-saver';
+import { useTranslation } from 'react-i18next';
 var utils = require("../utils")
 
 async function fillReportParameters(sessionId, reportGuid, handleOpen, updateLocalParametersList, updateGlobalParametersList) {
@@ -58,6 +59,7 @@ async function getCanRunReport(sessionId, reportGuid, paramValues, functionToSet
 
 export function ProgramParametersList(props) {
     const classes = useStyles();
+    const { t, i18n } = useTranslation();
     const { sessionId, programId, programDisplayName } = props;
     const [open, setOpen] = React.useState(false);
     const [localParametersJSON, setLocalParametersJSON] = React.useState([]);
@@ -114,13 +116,13 @@ export function ProgramParametersList(props) {
                 {programDisplayName}
             </Button>
             <Dialog onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>
-                <DialogTitle id="simple-dialog-title">Параметры отчёта</DialogTitle>
+                <DialogTitle id="simple-dialog-title">{t('report.params')}</DialogTitle>
                 <ParametersList parametersJSON={globalParametersJSON} setMainEditedJSON={updateEditedParametersListByGlobal} />
                 <Divider />
                 <ParametersList parametersJSON={localParametersJSON} setMainEditedJSON={updateEditedParametersListByLocal} />
                 <RunButton disabled={runButtonDisabled} runReport={() => { runReport(sessionId, programId, JSON.stringify(editedJSON)) } }/>
                 <Button classes={{ label: classes.label }} variant="outlined" onClick={handleClose}>
-                    Отменить
+                    {t('base.cancel')}
                 </Button>
             </Dialog>
         </div>

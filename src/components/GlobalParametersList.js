@@ -3,9 +3,10 @@ import Popover from '@material-ui/core/Popover';
 import { ParametersList } from './ParametersList';
 import { globalParameters } from './Globals';
 import React, { Component } from 'react';
+import { withTranslation } from 'react-i18next';
 var utils = require("../utils")
 
-export class GlobalParametersList extends Component {
+class GlobalParametersList extends Component {
 
     constructor(props) {
         super(props);
@@ -25,7 +26,6 @@ export class GlobalParametersList extends Component {
     }
 
     render() {
-
         const handleClick = (event) => {
             this.setState({ anchorEl: event.currentTarget, open: true, id: 'simple-popover' });
         };
@@ -43,7 +43,7 @@ export class GlobalParametersList extends Component {
         return (
             <div>
                 <Button aria-describedby={this.state.id} variant="contained" color="primary" onClick={handleClick}>
-                    Параметры
+                    {this.props.t('base.parameters')}
                 </Button>
                 <Popover
                     id={this.state.id}
@@ -72,3 +72,5 @@ export class GlobalParametersList extends Component {
         this.setState({ parametersJSON: responseJSON });
     }
 }
+
+export default withTranslation()(GlobalParametersList);

@@ -1,9 +1,10 @@
 ﻿import Toolbar from '@material-ui/core/Toolbar';
 import React, { Component } from 'react';
 import { ProgramParametersList } from './ProgramParametersList';
+import { withTranslation } from 'react-i18next';
 var utils = require("../utils")
 
-export class SqlProgramsList extends Component {
+class SqlProgramsList extends Component {
 
     constructor(props) {
         super(props);
@@ -49,7 +50,7 @@ export class SqlProgramsList extends Component {
         }
 
         let contents = this.state.loading
-            ? <p><em>Loading...</em></p>
+            ? <p><em>{this.props.t('base.loading')}</em></p>
             : SqlProgramsList.renderProgramButtons(this.state.buttonNames, this.props.sessionId)
 
         return (
@@ -65,3 +66,5 @@ export class SqlProgramsList extends Component {
         this.setState({ buttonNames: data, loading: false });
     }
 }
+
+export default withTranslation()(SqlProgramsList);

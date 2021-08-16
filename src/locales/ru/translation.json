@@ -1,0 +1,23 @@
+{
+  "title": "Welcome to react using react-i18next",
+  "base": {
+    "cancel": "Отменить",
+    "loading": "Загрузка...",
+    "parameters": "Параметры",
+    "programs": "Программы",
+    "run": "Запустить",
+    "testparams": "Тестовые параметры"
+  },
+  "menucommands": {
+    "about": "О программе",
+    "loadsession": "Загрузить сессию",
+    "log": "Лог",
+    "savesession": "Сохранить сессию"
+  },
+  "report": {
+    "params": "Параметры отчёта"
+  },
+  "session": {
+    "loading": "Загрузка сессии..."
+  }
+}
