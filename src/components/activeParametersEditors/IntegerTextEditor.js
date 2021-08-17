@@ -1,14 +1,11 @@
 ﻿import React from 'react';
-import TextField from '@material-ui/core/TextField';
+import { NumericTextBox } from "@progress/kendo-react-inputs";
 
 export default function IntegerTextEditor(props) {
     return (
         <form noValidate>
-            <TextField
-                id={props.id}
-                variant="outlined"
-                type="number"
-                size="small"
+            <NumericTextBox
+                name={props.id}
                 label={props.displayName}
                 onChange={props.selectionChanged}
             />

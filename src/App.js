@@ -3,6 +3,7 @@ import PresentationList from './components/PresentationList';
 import Presentation from './components/Presentation';
 import { Box } from '@material-ui/core';
 import SimpleTabs from './components/SimpleTabs';
+import '@progress/kendo-theme-default/dist/all.css';
 import Grid from '@material-ui/core/Grid';
 import './custom.css'
 import { withTranslation } from 'react-i18next';

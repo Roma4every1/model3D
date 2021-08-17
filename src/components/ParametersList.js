@@ -20,7 +20,7 @@ export function ParametersList(props) {
                         selectionChanged={(event) => {
                             var changedJSON = editedJSON;
                             changedJSON.forEach(element => {
-                                if (element.id === event.target.id) {
+                                if (element.id === event.target.name) {
                                     element.value = event.target.value;
                                 }
                             });

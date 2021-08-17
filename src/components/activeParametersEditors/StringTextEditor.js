@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import TextField from '@material-ui/core/TextField';
+import { Input } from "@progress/kendo-react-inputs";
 
 export default function StringTextEditor(props) {
     var valueToShow = props.value;
@@ -8,11 +8,12 @@ export default function StringTextEditor(props) {
     }
     return (
         <form noValidate>
-            <TextField
+            <Input
+                style={{
+                    width: "100%",
+                }}
                 value={valueToShow}
-                id={props.id}
-                variant="outlined"
-                size="small"
+                name={props.id}
                 label={props.displayName}
                 onChange={props.selectionChanged}
             />

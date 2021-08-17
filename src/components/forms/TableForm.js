@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import { DataGrid } from '@material-ui/data-grid';
+import { Grid, GridColumn as Column } from "@progress/kendo-react-grid";
 var utils = require("../../utils")
 
 export default function TableForm(props) {
@@ -48,13 +48,20 @@ export default function TableForm(props) {
     }, [sessionId, filterValue]);
 
     return (
-        <div style={{ height: 400, width: '100%' }}>
-            <DataGrid
-                rows={tableData.rowsJSON}
-                columns={tableData.columnsJSON}
-                pageSize={5}
-                disableSelectionOnClick
-            />
+        <div>
+
+            <Grid
+                style={{
+                    height: "400px",
+                }}
+                sortable={true}
+                data={tableData.rowsJSON}
+            >
+                {tableData.columnsJSON.map(column => 
+                    <Column field={column.field} title={column.headerName} width="100px" />
+                    
+                    )}
+            </Grid>
         </div>
     );
 }
