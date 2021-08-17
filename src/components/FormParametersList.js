@@ -1,6 +1,6 @@
 ﻿import Popover from '@material-ui/core/Popover';
 import { ParametersList } from './ParametersList';
-import { globalParameters } from './Globals';
+import { globals } from './Globals';
 import React from 'react';
 import MenuIcon from '@material-ui/icons/Menu';
 import IconButton from '@material-ui/core/IconButton';
@@ -22,7 +22,7 @@ export default function FormParametersList(props) {
             const response = await utils.webFetch(`getAllNeedParametersForForm?sessionId=${sessionId}&clientId=${formId}`);
             const responseJSON = await response.json();
             var neededParamsJSON = [];
-            globalParameters.globalParameters.forEach(element => {
+            globals.globalParameters.forEach(element => {
                 responseJSON.forEach(responseParam => {
                     if (element.id === responseParam) {
                         neededParamsJSON.push(element);

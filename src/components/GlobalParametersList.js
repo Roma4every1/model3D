@@ -1,7 +1,7 @@
 ﻿import Button from '@material-ui/core/Button';
 import Popover from '@material-ui/core/Popover';
 import { ParametersList } from './ParametersList';
-import { globalParameters } from './Globals';
+import { globals } from './Globals';
 import React, { Component } from 'react';
 import { withTranslation } from 'react-i18next';
 var utils = require("../utils")
@@ -35,7 +35,7 @@ class GlobalParametersList extends Component {
         };
 
         const updateEditedParametersList = (parametersJSON) => {
-            globalParameters.globalParameters = parametersJSON;
+            globals.globalParameters = parametersJSON;
             this.setState({ parametersJSON: parametersJSON });
            // setEditedJSON(parametersJSON);
         };
@@ -68,7 +68,7 @@ class GlobalParametersList extends Component {
     async loadGlobalProgramsList(sessionId) {
         const response = await utils.webFetch(`getGlobalParameters?sessionId=${sessionId}`);
         const responseJSON = await response.json();
-        globalParameters.globalParameters = responseJSON;
+        globals.globalParameters = responseJSON;
         this.setState({ parametersJSON: responseJSON });
     }
 }

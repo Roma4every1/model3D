@@ -7,6 +7,7 @@ import '@progress/kendo-theme-default/dist/all.css';
 import Grid from '@material-ui/core/Grid';
 import './custom.css'
 import { withTranslation } from 'react-i18next';
+import { globals } from './components/Globals';
 var utils = require("./utils")
 
 class App extends Component {
@@ -74,6 +75,7 @@ class App extends Component {
     async openSession() {
         const response = await utils.webFetch('startSession?systemName=DEMO_SYSTEM');
         const data = await response.text();
+        globals.sessionId = data;
         this.setState({
             sessionId: data, sessionLoading: false
         });

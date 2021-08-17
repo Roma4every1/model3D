@@ -2,6 +2,7 @@
 import IntegerTextEditor from './IntegerTextEditor';
 import StringTextEditor from './StringTextEditor';
 import DateTextEditor from './DateTextEditor';
+import TableRowComboEditor from './TableRowComboEditor';
 
 export default function BaseEditor(props) {
     if (props.editorType === 'integerTextEditor') {
@@ -17,6 +18,11 @@ export default function BaseEditor(props) {
     else if (props.editorType === 'dateTextEditor') {
         return (
             <DateTextEditor {...props} />
+        );
+    }
+    else if (props.editorType === 'tableRowTreeMultiEditor' || props.editorType === 'tableRowComboEditor') {
+        return (
+            <TableRowComboEditor {...props} />
         );
     }
     else {

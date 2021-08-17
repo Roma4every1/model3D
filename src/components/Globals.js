@@ -1,2 +1,2 @@
-﻿var globalParameters = {};
-export { globalParameters };
+﻿var globals = {};
+export { globals };

@@ -5,7 +5,7 @@ import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 import { ParametersList } from './ParametersList';
 import RunButton from './buttons/RunButton';
-import { globalParameters } from './Globals';
+import { globals } from './Globals';
 import Divider from '@material-ui/core/Divider';
 import FileSaver from 'file-saver';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +18,7 @@ async function fillReportParameters(sessionId, reportGuid, handleOpen, updateLoc
     const allNeededParamsJSON = await allNeededParams.json();
     var globalParamsToUse = [];
     allNeededParamsJSON.forEach(element => {
-        globalParameters.globalParameters.forEach(globalParam => {
+        globals.globalParameters.forEach(globalParam => {
             if (globalParam.id === element) {
                 globalParamsToUse.push(globalParam);
             }

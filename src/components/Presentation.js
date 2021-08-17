@@ -8,15 +8,19 @@ export default function Presentation(props) {
     const [formsData, setFormsData] = React.useState([]);
     React.useEffect(() => {
         if (presentationId) {
-            loadForms(sessionId, presentationId);
+            let ignore = false;
+
+            async function fetchData() {
+                const response = await utils.webFetch(`presentationForms?sessionId=${sessionId}&presentationId=${presentationId}`);
+                const data = await response.json();
+                if (!ignore) {
+                    setFormsData(data);
+                }
+            }
+            fetchData();
+            return () => { ignore = true; }
         }
     }, [sessionId, presentationId]);
-
-    const loadForms = async (sessionId, presentationId) => {
-        const response = await utils.webFetch(`presentationForms?sessionId=${sessionId}&presentationId=${presentationId}`);
-        const data = await response.json();
-        setFormsData(data);
-    }
 
     return (
         <FormsContainer>
