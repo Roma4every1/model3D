@@ -5,7 +5,8 @@ import BaseEditor from './activeParametersEditors/BaseEditor';
 
 export function ParametersList(props) {
     const { parametersJSON, setMainEditedJSON } = props;
-    const [ editedJSON, setEditedJSON] = React.useState(parametersJSON);
+    const [editedJSON, setEditedJSON] = React.useState(parametersJSON);
+    const [updatedParam, setUpdatedParam] = React.useState({});
 
     return (
         <List>
@@ -17,6 +18,7 @@ export function ParametersList(props) {
                         id={parameterJSON.id}
                         displayName={parameterJSON.displayName}
                         value={parameterJSON.value}
+                        updatedParam={updatedParam}
                         selectionChanged={(event) => {
                             var changedJSON = editedJSON;
                             changedJSON.forEach(element => {
@@ -26,6 +28,7 @@ export function ParametersList(props) {
                             });
                             setEditedJSON(changedJSON);
                             setMainEditedJSON(changedJSON);
+                            setUpdatedParam(event.target);
                         }}
                         />
                     </ListItem>
