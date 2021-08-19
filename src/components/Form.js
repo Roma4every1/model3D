@@ -31,7 +31,7 @@ export default function Form(props) {
         <Paper variant='outlined'>
             <div className='blockheader'>
                 <Toolbar>
-                    <FormParametersList sessionId={sessionId} formId={formData.id} />
+                    <FormParametersList sessionId={sessionId} formId={formData.id} {...other} />
                     <Typography variant="h6" float='left'>{formData.displayName}</Typography>
                 </Toolbar>
             </div>

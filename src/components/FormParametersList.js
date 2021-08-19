@@ -7,7 +7,7 @@ import IconButton from '@material-ui/core/IconButton';
 var utils = require("../utils")
 
 export default function FormParametersList(props) {
-    const { sessionId, formId } = props;
+    const { sessionId, formId, ...other } = props;
     const [popoverState, setPopoverState] = React.useState({
         anchorEl: null,
         open: false
@@ -57,7 +57,7 @@ export default function FormParametersList(props) {
                 show={popoverState.open}
                 anchor={popoverState.anchorEl}
             >
-                <ParametersList parametersJSON={parametersJSON} setMainEditedJSON={updateEditedParametersList} />
+                <ParametersList parametersJSON={parametersJSON} setMainEditedJSON={updateEditedParametersList} {...other} />
             </Popup>
         </div>
     );

@@ -6,7 +6,7 @@ import { ParametersList } from './ParametersList';
 import RunButton from './buttons/RunButton';
 import { globals } from './Globals';
 import Divider from '@material-ui/core/Divider';
-import FileSaver from 'file-saver';
+import { saveAs } from '@progress/kendo-file-saver';
 import { useTranslation } from 'react-i18next';
 var utils = require("../utils")
 
@@ -40,7 +40,7 @@ async function runReport(sessionId, reportGuid, paramValues) {
     const result = await utils.webFetch(`downloadResource?resourceName=${fileName}&sessionId=${sessionId}`);
     const resultText = await result.text();
     const fileExactName = fileName.split('\\').pop().split('/').pop();
-    FileSaver.saveAs(
+    saveAs(
         process.env.PUBLIC_URL + '/' + resultText,
         fileExactName);
 }
@@ -92,7 +92,7 @@ export default function ProgramParametersList(props) {
             newJSON.push(element)
         });
         setEditedJSON(newJSON);
-        getCanRunReport(sessionId, programId, JSON.stringify(newJSON), setRunButtonDisabled);
+        getCanRunReport(sessionId, programId, JSON.stringify(newJSON).replaceAll('#', '%23'), setRunButtonDisabled);
     };
 
     const updateEditedParametersListByGlobal = (parametersJSON) => {
@@ -105,7 +105,7 @@ export default function ProgramParametersList(props) {
             newJSON.push(element)
         });
         setEditedJSON(newJSON);
-        getCanRunReport(sessionId, programId, JSON.stringify(newJSON), setRunButtonDisabled);
+        getCanRunReport(sessionId, programId, JSON.stringify(newJSON).replaceAll('#', '%23'), setRunButtonDisabled);
     };
 
     return (
@@ -119,7 +119,7 @@ export default function ProgramParametersList(props) {
                     <ParametersList parametersJSON={globalParametersJSON} setMainEditedJSON={updateEditedParametersListByGlobal} />
                     <Divider />
                     <ParametersList parametersJSON={localParametersJSON} setMainEditedJSON={updateEditedParametersListByLocal} />                 
-                    <RunButton disabled={runButtonDisabled} runReport={() => { runReport(sessionId, programId, JSON.stringify(editedJSON)) }} />
+                    <RunButton disabled={runButtonDisabled} runReport={() => { runReport(sessionId, programId, JSON.stringify(editedJSON).replaceAll('#', '%23')) }} />
                     <Button classes={{ label: classes.label }} variant="outlined" onClick={handleClose}>
                         {t('base.cancel')}
                     </Button>

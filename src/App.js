@@ -15,7 +15,9 @@ class App extends Component {
 
     constructor(props) {
         super(props);
-        this.state = { sessionLoading: true };
+        this.state = {
+            sessionLoading: true, globalParameters: {}
+        };
     }
 
     componentDidMount() {
@@ -28,6 +30,11 @@ class App extends Component {
                 <SimpleTabs
                     sessionId={this.state.sessionId}
                     presentationId={this.state.activePresentationId}
+                    selectionChanged={(target) => {
+                        this.setState({
+                            globalParameters: target
+                        });
+                    }}
                 />
                 <Grid container spacing={1}>
                     <Grid container item xs={12} spacing={3}>
@@ -47,7 +54,12 @@ class App extends Component {
                             <Presentation class="presentation"
                                 sessionId={this.state.sessionId}
                                 presentationId={this.state.activePresentationId}
-                                filterValue={this.state.filterValue}
+                                globalParameters={this.state.globalParameters}
+                                selectionChanged={(target) => {
+                                    this.setState({
+                                        globalParameters: target
+                                    });
+                                }}
                                 />
                         </Grid>
                     </Grid>

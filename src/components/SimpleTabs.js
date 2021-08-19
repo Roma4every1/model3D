@@ -50,7 +50,7 @@ function a11yProps(index) {
 
 export default function SimpleTabs(props) {
     const { t } = useTranslation();
-    const { sessionId, presentationId } = props;
+    const { sessionId, presentationId, ...other } = props;
     const [value, setValue] = React.useState(0);
     const [drawerState, setState] = React.useState(false);
 
@@ -73,7 +73,7 @@ export default function SimpleTabs(props) {
                     <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleDrawer(!drawerState)}>
                         <MenuIcon />
                     </IconButton>
-                    <GlobalParametersList sessionId={sessionId} />
+                    <GlobalParametersList sessionId={sessionId} {...other} />
                     <Tabs value={value} onChange={handleChange} aria-label="simple tabs example">
                         <Tab label={t('base.programs')} {...a11yProps(0)} />
                     </Tabs>

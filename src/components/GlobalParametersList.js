@@ -2,63 +2,60 @@
 import { Popup } from "@progress/kendo-react-popup";
 import { ParametersList } from './ParametersList';
 import { globals } from './Globals';
-import React, { Component } from 'react';
-import { withTranslation } from 'react-i18next';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 var utils = require("../utils")
 
-class GlobalParametersList extends Component {
+export default function GlobalParametersList(props) {
+    const { sessionId, ...other } = props;
+    const [parametersJSON, setParametersJSON] = React.useState([]);
+    const { t } = useTranslation();
+    const [popoverState, setPopoverState] = React.useState({
+        anchorEl: null,
+        open: false
+    });
 
-    constructor(props) {
-        super(props);
-        this.state = { anchorEl: null, open: false, parametersJSON: [] };
-    }
+    React.useEffect(() => {
+        let ignore = false;
 
-    componentDidMount() {
-        if (this.props.sessionId) {
-            this.loadGlobalProgramsList(this.props.sessionId);
+        async function fetchData() {
+            const response = await utils.webFetch(`getGlobalParameters?sessionId=${sessionId}`);
+            const responseJSON = await response.json();
+            globals.globalParameters = responseJSON;
+            if (!ignore) {
+                setParametersJSON(responseJSON);
+            }
         }
-    }
 
-    componentDidUpdate(prevProps) {
-        if (this.props.sessionId !== prevProps.sessionId) {
-            this.loadGlobalProgramsList(this.props.sessionId);
-        }
-    }
+        fetchData();
+        return () => { ignore = true; }
+    }, [sessionId]);
 
-    render() {
-        const handleClick = (event) => {
-            this.setState({ anchorEl: event.currentTarget, open: !this.state.open });
-        };
+    const handleClick = (event) => {
+        setPopoverState({
+            anchorEl: event.currentTarget,
+            open: !popoverState.open,
+        });
+    };
 
-        const updateEditedParametersList = (parametersJSON) => {
-            globals.globalParameters = parametersJSON;
-            this.setState({ parametersJSON: parametersJSON });
-           // setEditedJSON(parametersJSON);
-        };
+    const updateEditedParametersList = (parametersJSON) => {
+        globals.globalParameters = parametersJSON;
+        setParametersJSON(parametersJSON);
+    };
 
-        return (
-            <div>
-                <Button aria-describedby={this.state.id} variant="contained" color="primary" onClick={handleClick}>
-                    {this.props.t('base.parameters')}
-                </Button>
-                <Popup
-                    id={this.state.id}
-                    show={this.state.open}
-                    popupClass={"popup-content"}
-                    anchor={this.state.anchorEl}
-                >
-                    <ParametersList parametersJSON={this.state.parametersJSON} setMainEditedJSON={updateEditedParametersList} />
-                </Popup>
-            </div>
-        );
-    }
-
-    async loadGlobalProgramsList(sessionId) {
-        const response = await utils.webFetch(`getGlobalParameters?sessionId=${sessionId}`);
-        const responseJSON = await response.json();
-        globals.globalParameters = responseJSON;
-        this.setState({ parametersJSON: responseJSON });
-    }
+    return (
+        <div>
+            <Button variant="contained" color="primary" onClick={handleClick}>
+                {t('base.parameters')}
+            </Button>
+            <Popup
+                show={popoverState.open}
+                popupClass={"popup-content"}
+                anchor={popoverState.anchorEl}
+            >
+                <ParametersList parametersJSON={parametersJSON} setMainEditedJSON={updateEditedParametersList} {...other} />
+            </Popup>
+        </div>
+    );
 }
 
-export default withTranslation()(GlobalParametersList);

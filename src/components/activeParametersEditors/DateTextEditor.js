@@ -33,9 +33,14 @@ export default function DateTextEditor(props) {
                     id={props.id}
                     name={props.id}
                     defaultValue={props.value}
-                    defaultShow={true}
                     label={props.displayName}
-                    onChange={props.selectionChanged}
+                    onChange={(event) => {
+                        var newevent = {};
+                        newevent.target = {};
+                        newevent.target.name = event.target.name;
+                        newevent.target.value = event.target.value.toISOString();
+                        props.selectionChanged(newevent)
+                    }}
                 />
             </IntlProvider>
         </LocalizationProvider>

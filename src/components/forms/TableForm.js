@@ -5,11 +5,32 @@ var _ = require("lodash");
 var utils = require("../../utils")
 
 export default function TableForm(props) {
-    const { sessionId, formId } = props;
+    const { sessionId, formId, globalParameters } = props;
+    const [neededParamsValues, setNeededParamsValues] = React.useState([]);
     const [tableData, setTableData] = React.useState({
         rowsJSON: [],
         columnsJSON: []
     });
+
+    React.useEffect(() => {
+        let ignore = false;
+
+        async function fetchNewData() {
+            const param = _.find(neededParamsValues, function (o) { return o.id === globalParameters.name; });
+            if (param) {
+                param.value = globalParameters.value;
+                let jsonValues = await fetchData(neededParamsValues);
+                if (!ignore) {
+                    setTableData({
+                        rowsJSON: jsonValues.rowsJSON,
+                        columnsJSON: jsonValues.columnsJSON
+                    });
+                }
+            }
+        }
+        fetchNewData();
+        return () => { ignore = true; }
+    }, [globalParameters, neededParamsValues]);
 
     React.useEffect(() => {
         let ignore = false;
@@ -25,7 +46,7 @@ export default function TableForm(props) {
                     }
                 });
             });
-
+            setNeededParamsValues(neededParamsJSON);
             let jsonValues = await fetchData(neededParamsJSON);
             if (!ignore) {
                 setTableData({
@@ -39,7 +60,7 @@ export default function TableForm(props) {
     }, [sessionId, formId]);
 
     async function fetchData(neededParamsJSON) {
-        const jsonParamaters = JSON.stringify(neededParamsJSON);
+        const jsonParamaters = JSON.stringify(neededParamsJSON).replaceAll('#', '%23');
         const response = await utils.webFetch(`fill?sessionId=${sessionId}&clientId=${formId}&paramValues=${jsonParamaters}`);
         const data = await response.json();
 
@@ -88,10 +109,9 @@ export default function TableForm(props) {
                 sortable={true}
                 data={tableData.rowsJSON}
             >
-                {tableData.columnsJSON.map(column => 
+                {tableData.columnsJSON.map(column =>
                     <Column field={column.field} title={column.headerName} width="100px" />
-                    
-                    )}
+                )}
             </Grid>
         </div>
     );

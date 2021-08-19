@@ -19,12 +19,7 @@ export function ParametersList(props) {
                     updatedParam={updatedParam}
                     selectionChanged={(event) => {
                         var changedJSON = editedJSON;
-                        var target = {};
-                        target.name = event.target.name
-                        target.value = event.target.value
-                        if (target.value && target.value.id) {
-                            target.value = target.value.id;
-                        }
+                        var target = event.target
                         changedJSON.forEach(element => {
                             if (element.id === target.name) {
                                 element.value = target.value;
@@ -34,7 +29,7 @@ export function ParametersList(props) {
                         setMainEditedJSON(changedJSON);
                         setUpdatedParam(target);
                         if (selectionChanged) {
-                            selectionChanged();
+                            selectionChanged(target);
                         }
                     }}
                 />

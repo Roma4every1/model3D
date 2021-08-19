@@ -7,7 +7,36 @@ var utils = require("../../utils")
 export default function TableRowComboEditor(props) {
     const { id, displayName, value, selectionChanged, updatedParam } = props;
     const [values, setValues] = React.useState([]);
+    const [valueToShow, setValueToShow] = React.useState(undefined);
     const [neededParameterValues, setNeededParameterValues] = React.useState([]);
+
+    function setNewValues(newValues) {
+        if (value) {
+            const startIndex = value.indexOf('LOOKUPCODE');
+            var finishIndex = value.indexOf('|', startIndex);
+            let dateValue;
+            if (finishIndex === -1) {
+                dateValue = value.slice(startIndex);
+            }
+            else {
+                dateValue = value.slice(startIndex, finishIndex);
+            }
+            let calculatedValueToShow = _.find(newValues, function (o) { return o.id === dateValue; });
+            if (calculatedValueToShow) {
+                setValueToShow(calculatedValueToShow);
+                var newevent = {};
+                newevent.target = {};
+                newevent.target.name = id
+                newevent.target.value = calculatedValueToShow.id
+                selectionChanged(newevent)
+            }
+            else {
+                setValueToShow(undefined);
+            }
+        }
+
+        setValues(newValues);
+    }
 
     React.useEffect(() => {
         let ignore = false;
@@ -19,7 +48,7 @@ export default function TableRowComboEditor(props) {
                 neededParamJSON.value = updatedParam.value;
                 let jsonValues = await fetchData(neededParamsJSON);
                 if (!ignore && jsonValues && jsonValues !== '') {
-                    setValues(jsonValues);
+                    setNewValues(jsonValues);
                 }
             }
         }
@@ -44,7 +73,7 @@ export default function TableRowComboEditor(props) {
             if (!ignore) {
                 let jsonValues = await fetchData(neededParamsJSON);
                 if (!ignore && jsonValues && jsonValues !== '') {
-                    setValues(jsonValues);
+                    setNewValues(jsonValues);
                 }
             }
         }
@@ -55,7 +84,7 @@ export default function TableRowComboEditor(props) {
 
     async function fetchData(newNeededParameterValues) {
         setNeededParameterValues(newNeededParameterValues)
-        const jsonParamaters = JSON.stringify(newNeededParameterValues);
+        const jsonParamaters = JSON.stringify(newNeededParameterValues).replaceAll('#', '%23');
         const response = await utils.webFetch(`getChannelDataForParam?sessionId=${globals.sessionId}&paramName=${id}&paramValues=${jsonParamaters}`);
         const responseJSON = await response.json();
         let valuesFromJSON = '';
@@ -72,7 +101,7 @@ export default function TableRowComboEditor(props) {
             });
             valuesFromJSON = responseJSON.data.Rows.map((row) => {
                 let temp = {};
-                temp.id = 'LOOKUPCODE%23' + row.Cells[idIndex] + '%23' + responseJSON.data.Columns[idIndex].NetType;
+                temp.id = 'LOOKUPCODE#' + row.Cells[idIndex] + '#' + responseJSON.data.Columns[idIndex].NetType;
                 temp.name = row.Cells[nameIndex];
                 return temp
             });
@@ -85,9 +114,17 @@ export default function TableRowComboEditor(props) {
             name={id}
             label={displayName}
             data={values}
+            value={valueToShow}
             dataItemKey="id"
             textField="name"
-            onChange={selectionChanged}
+            onChange={(event) => {
+                setValueToShow(event.target.value);
+                var newevent = {};
+                newevent.target = {};
+                newevent.target.name = event.target.name
+                newevent.target.value = event.target.value.id
+                selectionChanged(newevent)
+            }}
             />
     );
 }

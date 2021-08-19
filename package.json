@@ -9,6 +9,7 @@
     "@material-ui/lab": "^4.0.0-alpha.59",
     "@progress/kendo-data-query": "^1.5.5",
     "@progress/kendo-drawing": "^1.11.0",
+    "@progress/kendo-file-saver": "^1.1.0",
     "@progress/kendo-licensing": "^1.2.0",
     "@progress/kendo-react-animation": "^4.8.0",
     "@progress/kendo-react-buttons": "^4.8.0",
