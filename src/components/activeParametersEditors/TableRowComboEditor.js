@@ -1,8 +1,5 @@
-﻿import React from 'react';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
+﻿import * as React from "react";
+import { ComboBox } from "@progress/kendo-react-dropdowns";
 import { globals } from '../Globals';
 var _ = require("lodash");
 var utils = require("../../utils")
@@ -82,14 +79,15 @@ export default function TableRowComboEditor(props) {
         }
         return valuesFromJSON;
     }
+
     return (
-        <FormControl variant="outlined" style={{ width: "100%" }}>
-            <InputLabel id="demo-simple-select-outlined-label">{displayName}</InputLabel>
-            <Select onChange={selectionChanged} name={id} style={{ width: "100%" }}>
-                {values.map((valueJSON) =>
-                    <MenuItem key={valueJSON.id} value={valueJSON.id}>{valueJSON.name}</MenuItem>
-                )}
-            </Select>
-        </FormControl>
+        <ComboBox
+            name={id}
+            label={displayName}
+            data={values}
+            dataItemKey="id"
+            textField="name"
+            onChange={selectionChanged}
+            />
     );
 }

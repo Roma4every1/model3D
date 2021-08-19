@@ -1,18 +1,43 @@
 ﻿import React from 'react';
-import TextField from '@material-ui/core/TextField';
+import { DatePicker } from "@progress/kendo-react-dateinputs";
+import {
+    IntlProvider,
+    load,
+    loadMessages,
+    LocalizationProvider,
+} from "@progress/kendo-react-intl";
+import ruMessages from "./ru.json";
+import likelySubtags from "cldr-core/supplemental/likelySubtags.json";
+import currencyData from "cldr-core/supplemental/currencyData.json";
+import weekData from "cldr-core/supplemental/weekData.json";
+import numbers from "cldr-numbers-full/main/ru/numbers.json";
+import caGregorian from "cldr-dates-full/main/ru/ca-gregorian.json";
+import dateFields from "cldr-dates-full/main/ru/dateFields.json";
+import timeZoneNames from "cldr-dates-full/main/ru/timeZoneNames.json";
+load(
+    likelySubtags,
+    currencyData,
+    weekData,
+    numbers,
+    caGregorian,
+    dateFields,
+    timeZoneNames
+);
+loadMessages(ruMessages, "ru-RU");
 
 export default function DateTextEditor(props) {
     return (
-        <form noValidate>
-            <TextField
-                id={props.id}
-                name={props.id}
-                variant="outlined"
-                type="date"
-                size="small"
-                label={props.displayName}
-                onChange={props.selectionChanged}
-            />
-        </form>
+        <LocalizationProvider language='ru-RU'>
+            <IntlProvider locale='ru'>
+                <DatePicker
+                    id={props.id}
+                    name={props.id}
+                    defaultValue={props.value}
+                    defaultShow={true}
+                    label={props.displayName}
+                    onChange={props.selectionChanged}
+                />
+            </IntlProvider>
+        </LocalizationProvider>
     );
 }

@@ -1,6 +1,5 @@
 ﻿import React from 'react';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Dialog from '@material-ui/core/Dialog';
+import { Dialog } from "@progress/kendo-react-dialogs";
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 import { ParametersList } from './ParametersList';
@@ -115,16 +114,17 @@ export default function ProgramParametersList(props) {
             <Button classes={{ label: classes.label }} variant="outlined" onClick={() => { fillReportParameters(sessionId, programId, handleOpen, updateLocalParametersList, updateGlobalParametersList) }}>
                 {programDisplayName}
             </Button>
-            <Dialog onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>
-                <DialogTitle id="simple-dialog-title">{t('report.params')}</DialogTitle>
-                <ParametersList parametersJSON={globalParametersJSON} setMainEditedJSON={updateEditedParametersListByGlobal} />
-                <Divider />
-                <ParametersList parametersJSON={localParametersJSON} setMainEditedJSON={updateEditedParametersListByLocal} />
-                <RunButton disabled={runButtonDisabled} runReport={() => { runReport(sessionId, programId, JSON.stringify(editedJSON)) } }/>
-                <Button classes={{ label: classes.label }} variant="outlined" onClick={handleClose}>
-                    {t('base.cancel')}
-                </Button>
-            </Dialog>
+            {open && (
+                <Dialog title={t('report.params')} onClose={handleClose} initialHeight={350}>
+                    <ParametersList parametersJSON={globalParametersJSON} setMainEditedJSON={updateEditedParametersListByGlobal} />
+                    <Divider />
+                    <ParametersList parametersJSON={localParametersJSON} setMainEditedJSON={updateEditedParametersListByLocal} />                 
+                    <RunButton disabled={runButtonDisabled} runReport={() => { runReport(sessionId, programId, JSON.stringify(editedJSON)) }} />
+                    <Button classes={{ label: classes.label }} variant="outlined" onClick={handleClose}>
+                        {t('base.cancel')}
+                    </Button>
+                </Dialog>
+            )}
         </div>
     );
 }

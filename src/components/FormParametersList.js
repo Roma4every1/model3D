@@ -1,4 +1,4 @@
-﻿import Popover from '@material-ui/core/Popover';
+﻿import { Popup } from "@progress/kendo-react-popup";
 import { ParametersList } from './ParametersList';
 import { globals } from './Globals';
 import React from 'react';
@@ -10,8 +10,7 @@ export default function FormParametersList(props) {
     const { sessionId, formId } = props;
     const [popoverState, setPopoverState] = React.useState({
         anchorEl: null,
-        open: false,
-        id: undefined
+        open: false
     });
     const [parametersJSON, setParametersJSON] = React.useState([]);
 
@@ -44,16 +43,7 @@ export default function FormParametersList(props) {
     const handleClick = (event) => {
         setPopoverState({
             anchorEl: event.currentTarget,
-            open: true,
-            id: 'simple-popover'
-        });
-    };
-
-    const handleClose = () => {
-        setPopoverState({
-            anchorEl: null,
-            open: false,
-            id: undefined
+            open: !popoverState.open,
         });
     };
 
@@ -62,22 +52,13 @@ export default function FormParametersList(props) {
             <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleClick}>
                 <MenuIcon />
             </IconButton>
-            <Popover
+            <Popup
                 id={popoverState.id}
-                open={popoverState.open}
-                anchorEl={popoverState.anchorEl}
-                onClose={handleClose}
-                anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'center',
-                }}
-                transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'center',
-                }}
+                show={popoverState.open}
+                anchor={popoverState.anchorEl}
             >
                 <ParametersList parametersJSON={parametersJSON} setMainEditedJSON={updateEditedParametersList} />
-            </Popover>
+            </Popup>
         </div>
     );
 }

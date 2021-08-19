@@ -1,5 +1,5 @@
 ﻿import Button from '@material-ui/core/Button';
-import Popover from '@material-ui/core/Popover';
+import { Popup } from "@progress/kendo-react-popup";
 import { ParametersList } from './ParametersList';
 import { globals } from './Globals';
 import React, { Component } from 'react';
@@ -10,7 +10,7 @@ class GlobalParametersList extends Component {
 
     constructor(props) {
         super(props);
-        this.state = { anchorEl: null, open: false, id: undefined, parametersJSON: [] };
+        this.state = { anchorEl: null, open: false, parametersJSON: [] };
     }
 
     componentDidMount() {
@@ -27,11 +27,7 @@ class GlobalParametersList extends Component {
 
     render() {
         const handleClick = (event) => {
-            this.setState({ anchorEl: event.currentTarget, open: true, id: 'simple-popover' });
-        };
-
-        const handleClose = () => {
-            this.setState({ anchorEl: null, open: false, id: undefined });
+            this.setState({ anchorEl: event.currentTarget, open: !this.state.open });
         };
 
         const updateEditedParametersList = (parametersJSON) => {
@@ -45,22 +41,14 @@ class GlobalParametersList extends Component {
                 <Button aria-describedby={this.state.id} variant="contained" color="primary" onClick={handleClick}>
                     {this.props.t('base.parameters')}
                 </Button>
-                <Popover
+                <Popup
                     id={this.state.id}
-                    open={this.state.open}
-                    anchorEl={this.state.anchorEl}
-                    onClose={handleClose}
-                    anchorOrigin={{
-                        vertical: 'bottom',
-                        horizontal: 'center',
-                    }}
-                    transformOrigin={{
-                        vertical: 'top',
-                        horizontal: 'center',
-                    }}
+                    show={this.state.open}
+                    popupClass={"popup-content"}
+                    anchor={this.state.anchorEl}
                 >
                     <ParametersList parametersJSON={this.state.parametersJSON} setMainEditedJSON={updateEditedParametersList} />
-                </Popover>
+                </Popup>
             </div>
         );
     }

@@ -5,8 +5,7 @@
     "loading": "Loading...",
     "parameters": "Parameters",
     "programs": "Programs",
-    "run": "Run",
-    "testparams": "Test parameters"
+    "run": "Run"
   },
   "menucommands": {
     "about": "About program",

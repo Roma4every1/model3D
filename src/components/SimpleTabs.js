@@ -7,13 +7,8 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Drawer from '@material-ui/core/Drawer';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
 import Divider from '@material-ui/core/Divider';
 import Box from '@material-ui/core/Box';
-import TextField from '@material-ui/core/TextField';
 import MenuIcon from '@material-ui/icons/Menu';
 import { Toolbar, IconButton } from '@material-ui/core';
 import SqlProgramsList from './SqlProgramsList';
@@ -55,7 +50,7 @@ function a11yProps(index) {
 
 export default function SimpleTabs(props) {
     const { t } = useTranslation();
-    const { sessionId, presentationId, selectionChanged } = props;
+    const { sessionId, presentationId } = props;
     const [value, setValue] = React.useState(0);
     const [drawerState, setState] = React.useState(false);
 
@@ -80,8 +75,7 @@ export default function SimpleTabs(props) {
                     </IconButton>
                     <GlobalParametersList sessionId={sessionId} />
                     <Tabs value={value} onChange={handleChange} aria-label="simple tabs example">
-                        <Tab label={t('base.testparams')} {...a11yProps(0)} />
-                        <Tab label={t('base.programs')} {...a11yProps(1)} />
+                        <Tab label={t('base.programs')} {...a11yProps(0)} />
                     </Tabs>
                 </Toolbar>
             </AppBar>
@@ -106,45 +100,7 @@ export default function SimpleTabs(props) {
                     </List>
                 </div>
             </Drawer>
-            <TabPanel value={value} index={0}>
-                <Toolbar>
-                    <form noValidate>
-                        <TextField
-                            id="date"
-                            variant="outlined"
-                            label="Дата"
-                            type="date"
-                            defaultValue="2017-05-24"
-                            InputLabelProps={{
-                                shrink: true,
-                            }}
-                        />
-                    </form>
-                    <form noValidate autoComplete="off">
-                        <TextField id="outlined-basic" label="Текст" variant="outlined" />
-                    </form>
-                    <form noValidate autoComplete="off">
-                        <TextField id="number" label="Число" variant="outlined" type="number" onChange={selectionChanged} />
-                    </form>
-                    <FormControl variant="outlined">
-                        <InputLabel id="demo-simple-select-outlined-label">Месторождение</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-outlined-label"
-                            id="demo-simple-select-outlined"
-                            label="Age"
-                            value={10}
-                        >
-                            <MenuItem value="">
-                                <em>Нет значения</em>
-                            </MenuItem>
-                            <MenuItem value={10}>Усинское</MenuItem>
-                            <MenuItem value={20}>Возейское</MenuItem>
-                            <MenuItem value={30}>Тэдинское</MenuItem>
-                        </Select>
-                    </FormControl>
-                </Toolbar>
-            </TabPanel>
-            <TabPanel value={value} index={1} padding="0">
+            <TabPanel value={value} index={0} padding="0">
                 <SqlProgramsList
                     sessionId={sessionId}
                     presentationId={presentationId}

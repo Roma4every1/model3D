@@ -47,6 +47,7 @@ export default function TableForm(props) {
             const temp = {};
             temp.field = column.Name;
             temp.headerName = column.Name;
+            temp.netType = column.NetType;
             const property = _.find(data.properties, function (o) { return o.name === column.Name; });
             if (property) {
                 temp.headerName = property.displayName;
@@ -57,7 +58,17 @@ export default function TableForm(props) {
             const temp = {};
             temp.id = rowIndex;
             for (var i = 0; i < columnsJSON.length; i++) {
-                temp[columnsJSON[i].field] = row.Cells[i];
+                if (columnsJSON[i].netType === 'System.DateTime' && row.Cells[i]) {
+                    const startIndex = row.Cells[i].indexOf('(');
+                    const finishIndex = row.Cells[i].lastIndexOf('+');
+                    const dateValue = row.Cells[i].slice(startIndex + 1, finishIndex);
+                    var d = new Date();
+                    d.setTime(dateValue);
+                    temp[columnsJSON[i].field] = d.toLocaleDateString();
+                }
+                else {
+                    temp[columnsJSON[i].field] = row.Cells[i];
+                }
             }
             return temp;
         });

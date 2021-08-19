@@ -28,11 +28,7 @@ class App extends Component {
                 <SimpleTabs
                     sessionId={this.state.sessionId}
                     presentationId={this.state.activePresentationId}
-                    selectionChanged={(event) => {
-                        this.setState({
-                            filterValue: event.target.value
-                        })
-                    }} />
+                />
                 <Grid container spacing={1}>
                     <Grid container item xs={12} spacing={3}>
                         <Grid item xs={3}>
