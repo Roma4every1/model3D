@@ -17,6 +17,7 @@ export default function Form(props) {
         contents =
             <TableForm
                 sessionId={sessionId}
+                formId={formData.id}
                 {...other}
             />
     }

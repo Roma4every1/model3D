@@ -1,9 +1,11 @@
 ﻿import React from 'react';
 import { Grid, GridColumn as Column } from "@progress/kendo-react-grid";
+import { globals } from '../Globals';
+var _ = require("lodash");
 var utils = require("../../utils")
 
 export default function TableForm(props) {
-    const { sessionId, filterValue } = props;
+    const { sessionId, formId } = props;
     const [tableData, setTableData] = React.useState({
         rowsJSON: [],
         columnsJSON: []
@@ -12,40 +14,58 @@ export default function TableForm(props) {
     React.useEffect(() => {
         let ignore = false;
 
-        async function fetchData() {
-            var response;
-            if (filterValue) {
-                response = await utils.webFetch(`fill?sessionId=${sessionId}&filterValue=${filterValue}`);
-            }
-            else {
-                response = await utils.webFetch(`fill?sessionId=${sessionId}`);
-            }
-            const data = await response.json();
+        async function fetchNeededParamsData() {
+            const response = await utils.webFetch(`getAllNeedParametersForForm?sessionId=${sessionId}&clientId=${formId}`);
+            const responseJSON = await response.json();
+            var neededParamsJSON = [];
+            globals.globalParameters.forEach(element => {
+                responseJSON.forEach(responseParam => {
+                    if (element.id === responseParam) {
+                        neededParamsJSON.push(element);
+                    }
+                });
+            });
 
-            const columnsJSON = data.Columns.map(function (column) {
-                const temp = {};
-                temp.field = column.Name;
-                temp.headerName = column.Name;
-                return temp;
-            });
-            const rowsJSON = data.Rows.map(function (row, rowIndex) {
-                const temp = {};
-                temp.id = rowIndex;
-                for (var i = 0; i < columnsJSON.length; i++) {
-                    temp[columnsJSON[i].field] = row.Cells[i];
-                }
-                return temp;
-            });
+            let jsonValues = await fetchData(neededParamsJSON);
             if (!ignore) {
                 setTableData({
-                    rowsJSON: rowsJSON,
-                    columnsJSON: columnsJSON
+                    rowsJSON: jsonValues.rowsJSON,
+                    columnsJSON: jsonValues.columnsJSON
                 });
             }
         }
-        fetchData();
+        fetchNeededParamsData();
         return () => { ignore = true; }
-    }, [sessionId, filterValue]);
+    }, [sessionId, formId]);
+
+    async function fetchData(neededParamsJSON) {
+        const jsonParamaters = JSON.stringify(neededParamsJSON);
+        const response = await utils.webFetch(`fill?sessionId=${sessionId}&clientId=${formId}&paramValues=${jsonParamaters}`);
+        const data = await response.json();
+
+        const columnsJSON = data.data.Columns.map(function (column) {
+            const temp = {};
+            temp.field = column.Name;
+            temp.headerName = column.Name;
+            const property = _.find(data.properties, function (o) { return o.name === column.Name; });
+            if (property) {
+                temp.headerName = property.displayName;
+            }
+            return temp;
+        });
+        const rowsJSON = data.data.Rows.map(function (row, rowIndex) {
+            const temp = {};
+            temp.id = rowIndex;
+            for (var i = 0; i < columnsJSON.length; i++) {
+                temp[columnsJSON[i].field] = row.Cells[i];
+            }
+            return temp;
+        });
+        const result = {};
+        result.columnsJSON = columnsJSON;
+        result.rowsJSON = rowsJSON;
+        return result;
+    }
 
     return (
         <div>

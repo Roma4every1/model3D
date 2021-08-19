@@ -4,7 +4,7 @@ import ListItem from '@material-ui/core/ListItem';
 import BaseEditor from './activeParametersEditors/BaseEditor';
 
 export function ParametersList(props) {
-    const { parametersJSON, setMainEditedJSON } = props;
+    const { parametersJSON, setMainEditedJSON, selectionChanged } = props;
     const [editedJSON, setEditedJSON] = React.useState(parametersJSON);
     const [updatedParam, setUpdatedParam] = React.useState({});
 
@@ -29,6 +29,9 @@ export function ParametersList(props) {
                             setEditedJSON(changedJSON);
                             setMainEditedJSON(changedJSON);
                             setUpdatedParam(event.target);
+                            if (selectionChanged) {
+                                selectionChanged();
+                            }
                         }}
                         />
                     </ListItem>

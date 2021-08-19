@@ -6,6 +6,7 @@ export default function DateTextEditor(props) {
         <form noValidate>
             <TextField
                 id={props.id}
+                name={props.id}
                 variant="outlined"
                 type="date"
                 size="small"
