@@ -1,11 +1,10 @@
 ﻿import React from 'react';
 import { Dialog } from "@progress/kendo-react-dialogs";
-import Button from '@material-ui/core/Button';
-import { makeStyles } from '@material-ui/core/styles';
+import {
+    Button
+} from "@progress/kendo-react-buttons";
 import { ParametersList } from './ParametersList';
-import RunButton from './buttons/RunButton';
 import { globals } from './Globals';
-import Divider from '@material-ui/core/Divider';
 import { saveAs } from '@progress/kendo-file-saver';
 import { useTranslation } from 'react-i18next';
 var utils = require("../utils")
@@ -28,20 +27,15 @@ async function fillReportParameters(sessionId, reportGuid, handleOpen, updateLoc
     handleOpen();
 }
 
-const useStyles = makeStyles({
-    label: {
-        textTransform: 'none',
-    },
-});
-
 async function runReport(sessionId, reportGuid, paramValues) {
     const response = await utils.webFetch(`runReport?sessionId=${sessionId}&reportguid=${reportGuid}&paramValues=${paramValues}`);
     const fileName = await response.text();
     const result = await utils.webFetch(`downloadResource?resourceName=${fileName}&sessionId=${sessionId}`);
     const resultText = await result.text();
     const fileExactName = fileName.split('\\').pop().split('/').pop();
+    const path = process.env.PUBLIC_URL + '/' + resultText;
     saveAs(
-        process.env.PUBLIC_URL + '/' + resultText,
+        path,
         fileExactName);
 }
 
@@ -57,7 +51,6 @@ async function getCanRunReport(sessionId, reportGuid, paramValues, functionToSet
 }
 
 export default function ProgramParametersList(props) {
-    const classes = useStyles();
     const { t } = useTranslation();
     const { sessionId, programId, programDisplayName } = props;
     const [open, setOpen] = React.useState(false);
@@ -111,16 +104,17 @@ export default function ProgramParametersList(props) {
     return (
 
         <div>
-            <Button classes={{ label: classes.label }} variant="outlined" onClick={() => { fillReportParameters(sessionId, programId, handleOpen, updateLocalParametersList, updateGlobalParametersList) }}>
+            <Button variant="outlined" onClick={() => { fillReportParameters(sessionId, programId, handleOpen, updateLocalParametersList, updateGlobalParametersList) }}>
                 {programDisplayName}
             </Button>
             {open && (
                 <Dialog title={t('report.params')} onClose={handleClose} initialHeight={350}>
                     <ParametersList parametersJSON={globalParametersJSON} setMainEditedJSON={updateEditedParametersListByGlobal} />
-                    <Divider />
                     <ParametersList parametersJSON={localParametersJSON} setMainEditedJSON={updateEditedParametersListByLocal} />                 
-                    <RunButton disabled={runButtonDisabled} runReport={() => { runReport(sessionId, programId, JSON.stringify(editedJSON).replaceAll('#', '%23')) }} />
-                    <Button classes={{ label: classes.label }} variant="outlined" onClick={handleClose}>
+                    <Button primary={!runButtonDisabled} disabled={runButtonDisabled} onClick={() => { handleClose(); runReport(sessionId, programId, JSON.stringify(editedJSON).replaceAll('#', '%23')) }}>
+                        {t('base.run')}
+                    </Button>
+                    <Button onClick={handleClose}>
                         {t('base.cancel')}
                     </Button>
                 </Dialog>

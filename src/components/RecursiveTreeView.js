@@ -1,27 +1,23 @@
 ﻿import React from 'react';
-import Paper from '@material-ui/core/Paper';
-import TreeView from '@material-ui/lab/TreeView';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import TreeItem from '@material-ui/lab/TreeItem';
+import { TreeView } from "@progress/kendo-react-treeview";
 
 export default function RecursiveTreeView(props) {
-    const renderTree = (nodes) => (
-        <TreeItem key={nodes.id} nodeId={nodes.nodeId} label={nodes.displayName}>
-            {Array.isArray(nodes.children) ? nodes.children.map((node) => renderTree(node)) : null}
-        </TreeItem>
-    );
+    const onItemClick = (event) => {
+        props.onSelectionChanged(event, event.item.id);
+    };
+
+    const onExpandChange = (event) => {
+        event.item.expanded = !event.item.expanded;
+    };
 
     return (
-        <Paper variant='outlined'>
-            <TreeView style={{ height: '100%', overflow: "auto" }}
-                onNodeSelect={props.onSelectionChanged}
-                defaultCollapseIcon={<ExpandMoreIcon />}
-                defaultExpanded={['root']}
-                defaultExpandIcon={<ChevronRightIcon />}
-            >
-                {Array.isArray(props.data.children) ? props.data.children.map((node) => renderTree(node)) : null}
-            </TreeView>
-        </Paper>
-    )
+        <TreeView
+            data={props.data.items}
+            expandIcons={true}
+            aria-multiselectable={false}
+            onExpandChange={onExpandChange}
+            onItemClick={onItemClick}
+        >
+        </TreeView>
+    );
 }

@@ -1,52 +1,39 @@
-import React, { Component } from 'react';
+import React from 'react';
 import RecursiveTreeView from './RecursiveTreeView';
-import { withTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 var utils = require("../utils")
 
-class PresentationList extends Component {
+export default function PresentationList(props) {
+    const { t } = useTranslation();
+    const { sessionId, selectionChanged } = props;
+    const [state, setState] = React.useState({
+        presentationsJSON: [],
+        loading: true
+    });
 
-    constructor(props) {
-        super(props);
-        this.state = { hasError: false, presentationsJSON: [], loading: true};
-    }
-
-    componentDidUpdate(prevProps) {
-        if (this.props.sessionId !== prevProps.sessionId) {
-            this.loadPresentationList(this.props.sessionId);
+    React.useEffect(() => {
+        let ignore = false;
+        if (sessionId) {
+            async function fetchData() {
+                const response = await utils.webFetch(`presentationList?sessionId=${sessionId}`);
+                const data = await response.json();
+                if (!ignore) {
+                    setState({
+                        presentationsJSON: data,
+                        loading: false
+                    });
+                }
+            }
+            fetchData();
         }
-    }
+        return () => { ignore = true; }
+    }, [sessionId]);
 
-    static getDerivedStateFromError(error) {
-        // Обновите состояние так, чтобы следующий рендер показал запасной интерфейс.
-        return { hasError: true };
-    }
-
-    render() {
-        if (this.state.hasError) {
-            // Здесь можно рендерить запасной интерфейс
-            return <h1>Error occured</h1>;
-        }
-
-        let contents = this.state.loading
-            ? <p><em>{this.props.t('base.loading')}</em></p>
-            : <RecursiveTreeView data={this.state.presentationsJSON} onSelectionChanged={this.props.selectionChanged} />
-
-        return (
-            <div>
-                {contents}
-            </div>
-        );
-    }
-
-    async loadPresentationList(sessionId) {
-        const response = await utils.webFetch(`presentationList?sessionId=${sessionId}`);
-        const data = await response.text();
-        const replaceddata = data.replaceAll('@', '');
-        const parsedjson = JSON.parse(replaceddata);
-        this.setState({
-            presentationsJSON: parsedjson, loading: false
-        });
-    }
+    return (
+        <div>
+            {state.loading
+                ? <p><em>{t('base.loading')}</em></p>
+                : <RecursiveTreeView data={state.presentationsJSON} onSelectionChanged={selectionChanged} />}
+        </div>
+    );
 }
-
-export default withTranslation()(PresentationList);

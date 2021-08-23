@@ -1,7 +1,7 @@
 ﻿import React from 'react';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import Toolbar from '@material-ui/core/Toolbar';
+import {
+    Toolbar
+} from "@progress/kendo-react-buttons";
 import FormParametersList from './FormParametersList';
 import TableForm from './forms/TableForm';
 
@@ -28,14 +28,14 @@ export default function Form(props) {
     }
 
     return (
-        <Paper variant='outlined'>
+        <div>
             <div className='blockheader'>
                 <Toolbar>
                     <FormParametersList sessionId={sessionId} formId={formData.id} {...other} />
-                    <Typography variant="h6" float='left'>{formData.displayName}</Typography>
+                    <h6>{formData.displayName}</h6>
                 </Toolbar>
             </div>
             {contents}
-        </Paper>
+        </div>
     );
 }

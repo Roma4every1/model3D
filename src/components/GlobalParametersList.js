@@ -1,4 +1,6 @@
-﻿import Button from '@material-ui/core/Button';
+﻿import {
+    Button
+} from "@progress/kendo-react-buttons";
 import { Popup } from "@progress/kendo-react-popup";
 import { ParametersList } from './ParametersList';
 import { globals } from './Globals';
@@ -9,6 +11,7 @@ var utils = require("../utils")
 export default function GlobalParametersList(props) {
     const { sessionId, ...other } = props;
     const [parametersJSON, setParametersJSON] = React.useState([]);
+    const [loading, setLoading] = React.useState(true);
     const { t } = useTranslation();
     const [popoverState, setPopoverState] = React.useState({
         anchorEl: null,
@@ -18,16 +21,19 @@ export default function GlobalParametersList(props) {
     React.useEffect(() => {
         let ignore = false;
 
-        async function fetchData() {
-            const response = await utils.webFetch(`getGlobalParameters?sessionId=${sessionId}`);
-            const responseJSON = await response.json();
-            globals.globalParameters = responseJSON;
-            if (!ignore) {
-                setParametersJSON(responseJSON);
+        if (sessionId) {
+            async function fetchData() {
+                const response = await utils.webFetch(`getGlobalParameters?sessionId=${sessionId}`);
+                const responseJSON = await response.json();
+                globals.globalParameters = responseJSON;
+                if (!ignore) {
+                    setParametersJSON(responseJSON);
+                    setLoading(false);
+                }
             }
-        }
 
-        fetchData();
+            fetchData();
+        }
         return () => { ignore = true; }
     }, [sessionId]);
 
@@ -45,16 +51,9 @@ export default function GlobalParametersList(props) {
 
     return (
         <div>
-            <Button variant="contained" color="primary" onClick={handleClick}>
-                {t('base.parameters')}
-            </Button>
-            <Popup
-                show={popoverState.open}
-                popupClass={"popup-content"}
-                anchor={popoverState.anchorEl}
-            >
-                <ParametersList parametersJSON={parametersJSON} setMainEditedJSON={updateEditedParametersList} {...other} />
-            </Popup>
+            {loading
+                ? <p><em>{t('base.loading')}</em></p>
+                : <ParametersList parametersJSON={parametersJSON} setMainEditedJSON={updateEditedParametersList} {...other} />}            
         </div>
     );
 }

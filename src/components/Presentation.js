@@ -1,6 +1,6 @@
 ﻿import React from 'react';
 import Form from './Form';
-import { FormsContainer } from './FormsContainer';
+import FormsContainer from './FormsContainer';
 var utils = require("../utils")
 
 export default function Presentation(props) {

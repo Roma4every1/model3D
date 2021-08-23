@@ -2,8 +2,6 @@
 import { ParametersList } from './ParametersList';
 import { globals } from './Globals';
 import React from 'react';
-import MenuIcon from '@material-ui/icons/Menu';
-import IconButton from '@material-ui/core/IconButton';
 var utils = require("../utils")
 
 export default function FormParametersList(props) {
@@ -49,9 +47,9 @@ export default function FormParametersList(props) {
 
     return (
         <div>
-            <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleClick}>
-                <MenuIcon />
-            </IconButton>
+            <button className="k-button k-button-clear" onClick={handleClick}>
+                <span className="k-icon k-i-menu" />
+            </button>
             <Popup
                 id={popoverState.id}
                 show={popoverState.open}

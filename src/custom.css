@@ -25,12 +25,9 @@ code {
 
 .presentationList {
     padding-left: 15px;
-    padding-right: 15px;
-    padding-top: 0px;
+    padding-top: 5px;
     margin: 0 auto;
-    float: left;
-    width: 25vw;
-    height: 100vh;
+    height: 100%;
 }
 
 .presentation {
@@ -45,21 +42,36 @@ code {
 .MuiPaper-outlined {
 }
 
-.mainbox {
-    width: 100vw;
-    height: 100vh;
-}
-
 .halfheight {
     height: 50vh;
 }
 
 .blockheader {
-    background: #afeeee;
     width: 100vw;
     align-content: center;
     display: table-cell;
     vertical-align: middle;
+}
+
+.parametereditorbox {
+    margin: 1px;
+    vertical-align: middle;
+    display: table-cell;
+    align-content: center;
+}
+
+.parameterlabel {
+    width: 150px;
+    height: 100%;
+    float: left;
+    font-size: 12px;
+    display: inline-block;
+}
+
+.parametereditor {
+    float: right;
+    display: inline-block;
+    height: 30px;
 }
 
 .k-animation-container {

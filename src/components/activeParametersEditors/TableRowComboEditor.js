@@ -1,4 +1,5 @@
 ﻿import * as React from "react";
+import { Label } from "@progress/kendo-react-labels";
 import { ComboBox } from "@progress/kendo-react-dropdowns";
 import { globals } from '../Globals';
 var _ = require("lodash");
@@ -110,21 +111,23 @@ export default function TableRowComboEditor(props) {
     }
 
     return (
-        <ComboBox
-            name={id}
-            label={displayName}
-            data={values}
-            value={valueToShow}
-            dataItemKey="id"
-            textField="name"
-            onChange={(event) => {
-                setValueToShow(event.target.value);
-                var newevent = {};
-                newevent.target = {};
-                newevent.target.name = event.target.name
-                newevent.target.value = event.target.value.id
-                selectionChanged(newevent)
-            }}
+        <div className='parametereditorbox'>
+            <Label className='parameterlabel' editorId={id}>{displayName}</Label>
+            <ComboBox className='parametereditor'
+                name={id}
+                data={values}
+                value={valueToShow}
+                dataItemKey="id"
+                textField="name"
+                onChange={(event) => {
+                    setValueToShow(event.target.value);
+                    var newevent = {};
+                    newevent.target = {};
+                    newevent.target.name = event.target.name
+                    newevent.target.value = event.target.value.id
+                    selectionChanged(newevent)
+                }}
             />
+        </div>
     );
 }

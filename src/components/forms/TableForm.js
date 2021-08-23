@@ -103,9 +103,6 @@ export default function TableForm(props) {
         <div>
 
             <Grid
-                style={{
-                    height: "400px",
-                }}
                 sortable={true}
                 data={tableData.rowsJSON}
             >

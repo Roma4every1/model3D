@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import { Label } from "@progress/kendo-react-labels";
 import { Input } from "@progress/kendo-react-inputs";
 
 export default function StringTextEditor(props) {
@@ -7,16 +8,13 @@ export default function StringTextEditor(props) {
         valueToShow = ''
     }
     return (
-        <form noValidate>
-            <Input
-                style={{
-                    width: "100%",
-                }}
+        <div className='parametereditorbox'>
+            <Label className='parameterlabel' editorId={props.id}>{props.displayName}</Label>
+            <Input className='parametereditor'
                 value={valueToShow}
                 name={props.id}
-                label={props.displayName}
                 onChange={props.selectionChanged}
             />
-        </form>
+        </div>
     );
 }
