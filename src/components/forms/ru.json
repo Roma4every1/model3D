@@ -1,0 +1,64 @@
+﻿{
+  "datepicker": {
+    "toggleCalendar": "Выбрать календарь"
+  },
+  "calendar": {
+    "today": "Сегодня"
+  },
+  "dateinput": {
+    "increment": "Увеличить",
+    "decrement": "Уменьшить"
+  },
+  "dropdowns": {
+    "nodata": "НЕТ ДАННЫХ.",
+    "clear": "Очистить"
+  },
+  "numerictextbox": {
+    "increment": "Увеличить",
+    "decrement": "Уменьшить"
+  },
+  "grid": {
+    "groupPanelEmpty": "Перетащите заголовок столбца и отпустите его сюда, чтобы сгруппировать по этому критерию",
+    "noRecords": "Нет записей.",
+    "pagerFirstPage": "Первая страница",
+    "pagerPreviousPage": "Предыдущая страница",
+    "pagerNextPage": "Следующая страница",
+    "pagerLastPage": "Последняя страница",
+    "pagerPage": "Страница",
+    "pagerOf": "из",
+    "pagerTotalPages": "{0}",
+    "pagerItems": "элементов",
+    "pagerInfo": "{0} - {1} из {2} элементов",
+    "pagerItemsPerPage": "элементов на страницу",
+    "filterEqOperator": "Равно",
+    "filterNotEqOperator": "Не равно",
+    "filterIsNullOperator": "Не задано",
+    "filterIsNotNullOperator": "Задано",
+    "filterIsEmptyOperator": "Пусто",
+    "filterIsNotEmptyOperator": "Не пусто",
+    "filterStartsWithOperator": "Начинается с",
+    "filterContainsOperator": "Содержит",
+    "filterNotContainsOperator": "Не содержит",
+    "filterEndsWithOperator": "Оканчивается на",
+    "filterGteOperator": "Больше или равно",
+    "filterGtOperator": "Больше",
+    "filterLteOperator": "Меньше или равно",
+    "filterLtOperator": "Меньше",
+    "filterIsTrue": "Да",
+    "filterIsFalse": "Нет",
+    "filterBooleanAll": "(Все)",
+    "filterAfterOrEqualOperator": "После или равно",
+    "filterAfterOperator": "После",
+    "filterBeforeOperator": "Перед",
+    "filterBeforeOrEqualOperator": "Ранее или равно",
+    "filterSubmitButton": "Фильтр",
+    "filterClearButton": "Очистить фильтр",
+    "filterAndLogic": "И",
+    "filterOrLogic": "Или",
+    "filterTitle": "Фильтр",
+    "sortAscending": "По возрастанию",
+    "sortDescending": "По убыванию",
+    "searchPlaceholder": "Искать",
+    "filterCheckAll": "Выбрать всё"
+  }
+}

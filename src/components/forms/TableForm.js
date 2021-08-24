@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import { Grid, GridColumn as Column, GridColumnMenuFilter } from "@progress/kendo-react-grid";
+import { Grid, GridColumn as Column, GridColumnMenuFilter, GridToolbar } from "@progress/kendo-react-grid";
 import { globals } from '../Globals';
 import {
     IntlProvider,
@@ -7,6 +7,8 @@ import {
     LocalizationProvider,
     loadMessages,
 } from "@progress/kendo-react-intl";
+import { ExcelExport } from '@progress/kendo-react-excel-export';
+import { filterBy, orderBy } from "@progress/kendo-data-query";
 import likelySubtags from "cldr-core/supplemental/likelySubtags.json";
 import currencyData from "cldr-core/supplemental/currencyData.json";
 import weekData from "cldr-core/supplemental/weekData.json";
@@ -15,6 +17,7 @@ import currencies from "cldr-numbers-full/main/ru/currencies.json";
 import caGregorian from "cldr-dates-full/main/ru/ca-gregorian.json";
 import dateFields from "cldr-dates-full/main/ru/dateFields.json";
 import timeZoneNames from "cldr-dates-full/main/ru/timeZoneNames.json";
+import FormHeader from '../FormHeader';
 import ruMessages from "./ru.json";
 load(
     likelySubtags,
@@ -31,13 +34,21 @@ var _ = require("lodash");
 var utils = require("../../utils")
 
 export default function TableForm(props) {
-    const { sessionId, formId, globalParameters } = props;
+    const { sessionId, formData, globalParameters, ...other } = props;
     const [neededParamsValues, setNeededParamsValues] = React.useState([]);
     const [tableData, setTableData] = React.useState({
         rowsJSON: [],
         columnsJSON: []
     });
     const [sort, setSort] = React.useState();
+    const [filter, setFilter] = React.useState();
+    const _export = React.useRef(null);
+
+    const excelExport = () => {
+        if (_export.current !== null) {
+            _export.current.save();
+        }
+    };
 
     React.useEffect(() => {
         let ignore = false;
@@ -63,7 +74,7 @@ export default function TableForm(props) {
         let ignore = false;
 
         async function fetchNeededParamsData() {
-            const response = await utils.webFetch(`getAllNeedParametersForForm?sessionId=${sessionId}&clientId=${formId}`);
+            const response = await utils.webFetch(`getAllNeedParametersForForm?sessionId=${sessionId}&clientId=${formData.id}`);
             const responseJSON = await response.json();
             var neededParamsJSON = [];
             globals.globalParameters.forEach(element => {
@@ -76,6 +87,13 @@ export default function TableForm(props) {
             setNeededParamsValues(neededParamsJSON);
             let jsonValues = await fetchData(neededParamsJSON);
             if (!ignore) {
+                setSort([
+                    {
+                        field: jsonValues.columnsJSON[0].field,
+                        dir: "asc",
+                    },
+                ]);
+
                 setTableData({
                     rowsJSON: jsonValues.rowsJSON,
                     columnsJSON: jsonValues.columnsJSON
@@ -84,11 +102,11 @@ export default function TableForm(props) {
         }
         fetchNeededParamsData();
         return () => { ignore = true; }
-    }, [sessionId, formId]);
+    }, [sessionId, formData]);
 
     async function fetchData(neededParamsJSON) {
         const jsonParamaters = JSON.stringify(neededParamsJSON).replaceAll('#', '%23');
-        const response = await utils.webFetch(`fill?sessionId=${sessionId}&clientId=${formId}&paramValues=${jsonParamaters}`);
+        const response = await utils.webFetch(`fill?sessionId=${sessionId}&clientId=${formData.id}&paramValues=${jsonParamaters}`);
         const data = await response.json();
 
         const columnsJSON = data.data.Columns.map(function (column) {
@@ -126,24 +144,39 @@ export default function TableForm(props) {
         return result;
     }
 
+    var dataToShow = tableData.rowsJSON;
+    if (filter) {
+        dataToShow = filterBy(dataToShow, filter);
+    }
+    if (sort) {
+        dataToShow = orderBy(dataToShow, sort);
+    }
+    const otherButtons =
+        <button className="k-button k-button-clear" onClick={excelExport}>
+            <span className="k-icon k-i-xls" />
+        </button>;
+
     return (
         <div>
-
             <LocalizationProvider language="ru-RU">
                 <IntlProvider locale="ru">
-                    <Grid
-                        pageable={true}
-                        sortable={true}
-                        data={tableData.rowsJSON}
-                        sort={sort}
-                        onSortChange={(e) => {
-                            setSort(e.sort);
-                        }}
-                    >
-                        {tableData.columnsJSON.map(column =>
-                            <Column field={column.field} title={column.headerName} width="100px" filter={"numeric"} columnMenu={GridColumnMenuFilter} />
-                        )}
-                    </Grid>
+                    <FormHeader sessionId={sessionId} formData={formData} additionalButtons={otherButtons} {...other} />
+                    <ExcelExport data={dataToShow} ref={_export}>
+                        <Grid
+                            pageable={true}
+                            sortable={true}
+                            data={dataToShow}
+                            sort={sort}
+                            onSortChange={(e) => {
+                                setSort(e.sort);
+                            }}
+                            onFilterChange={(e) => setFilter(e.filter)}
+                        >
+                            {tableData.columnsJSON.map(column =>
+                                <Column field={column.field} title={column.headerName} width="100px" columnMenu={GridColumnMenuFilter} />
+                            )}
+                        </Grid>
+                    </ExcelExport>
                 </IntlProvider>
             </LocalizationProvider>
         </div>

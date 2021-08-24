@@ -1,8 +1,5 @@
 ﻿import React from 'react';
-import {
-    Toolbar
-} from "@progress/kendo-react-buttons";
-import FormParametersList from './FormParametersList';
+import FormHeader from './FormHeader';
 import TableForm from './forms/TableForm';
 
 export default function Form(props) {
@@ -17,25 +14,19 @@ export default function Form(props) {
         contents =
             <TableForm
                 sessionId={sessionId}
-                formId={formData.id}
+                formData={formData}
                 {...other}
             />
     }
     else {
-        contents = <div className="imgbox">
-            <img src={getImagePath(formData.type)} alt="logo" />
+        contents = 
+        <div>
+            <FormHeader sessionId={sessionId} formData={formData} {...other}/>
+            <div className="imgbox">
+                <img src={getImagePath(formData.type)} alt="logo" />
+            </div>
         </div>
     }
 
-    return (
-        <div>
-            <div className='blockheader'>
-                <Toolbar>
-                    <FormParametersList sessionId={sessionId} formId={formData.id} {...other} />
-                    <h6>{formData.displayName}</h6>
-                </Toolbar>
-            </div>
-            {contents}
-        </div>
-    );
+    return (contents);
 }
