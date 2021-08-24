@@ -3,7 +3,6 @@ import SqlProgramsList from './components/SqlProgramsList';
 import GlobalParametersList from './components/GlobalParametersList';
 import PresentationList from './components/PresentationList';
 import Presentation from './components/Presentation';
-import { Box } from '@material-ui/core';
 import {
     AppBar,
     AppBarSection,
@@ -14,7 +13,6 @@ import {
 import SimpleTabs from './components/SimpleTabs';
 import '@progress/kendo-theme-default/dist/all.css';
 import 'flexlayout-react/style/light.css';
-import Grid from '@material-ui/core/Grid';
 import './custom.css'
 import { useTranslation } from 'react-i18next';
 import { globals } from './components/Globals';

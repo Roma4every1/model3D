@@ -2,6 +2,13 @@
 import { Label } from "@progress/kendo-react-labels";
 import { ComboBox } from "@progress/kendo-react-dropdowns";
 import { globals } from '../Globals';
+import {
+    IntlProvider,
+    LocalizationProvider,
+    loadMessages,
+} from "@progress/kendo-react-intl";
+import ruMessages from "./ru.json";
+loadMessages(ruMessages, "ru");
 var _ = require("lodash");
 var utils = require("../../utils")
 
@@ -111,23 +118,27 @@ export default function TableRowComboEditor(props) {
     }
 
     return (
-        <div className='parametereditorbox'>
-            <Label className='parameterlabel' editorId={id}>{displayName}</Label>
-            <ComboBox className='parametereditor'
-                name={id}
-                data={values}
-                value={valueToShow}
-                dataItemKey="id"
-                textField="name"
-                onChange={(event) => {
-                    setValueToShow(event.target.value);
-                    var newevent = {};
-                    newevent.target = {};
-                    newevent.target.name = event.target.name
-                    newevent.target.value = event.target.value.id
-                    selectionChanged(newevent)
-                }}
-            />
-        </div>
+        <LocalizationProvider language='ru-RU'>
+            <IntlProvider locale='ru'>
+                <div className='parametereditorbox'>
+                    <Label className='parameterlabel' editorId={id}>{displayName}</Label>
+                    <ComboBox className='parametereditor'
+                        name={id}
+                        data={values}
+                        value={valueToShow}
+                        dataItemKey="id"
+                        textField="name"
+                        onChange={(event) => {
+                            setValueToShow(event.target.value);
+                            var newevent = {};
+                            newevent.target = {};
+                            newevent.target.name = event.target.name
+                            newevent.target.value = event.target.value.id
+                            selectionChanged(newevent)
+                        }}
+                    />
+                </div>
+            </IntlProvider>
+        </LocalizationProvider>
     );
 }

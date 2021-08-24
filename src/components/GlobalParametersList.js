@@ -1,8 +1,4 @@
-﻿import {
-    Button
-} from "@progress/kendo-react-buttons";
-import { Popup } from "@progress/kendo-react-popup";
-import { ParametersList } from './ParametersList';
+﻿import { ParametersList } from './ParametersList';
 import { globals } from './Globals';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -13,10 +9,6 @@ export default function GlobalParametersList(props) {
     const [parametersJSON, setParametersJSON] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const { t } = useTranslation();
-    const [popoverState, setPopoverState] = React.useState({
-        anchorEl: null,
-        open: false
-    });
 
     React.useEffect(() => {
         let ignore = false;
@@ -36,13 +28,6 @@ export default function GlobalParametersList(props) {
         }
         return () => { ignore = true; }
     }, [sessionId]);
-
-    const handleClick = (event) => {
-        setPopoverState({
-            anchorEl: event.currentTarget,
-            open: !popoverState.open,
-        });
-    };
 
     const updateEditedParametersList = (parametersJSON) => {
         globals.globalParameters = parametersJSON;

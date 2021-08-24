@@ -1,6 +1,32 @@
 ﻿import React from 'react';
-import { Grid, GridColumn as Column } from "@progress/kendo-react-grid";
+import { Grid, GridColumn as Column, GridColumnMenuFilter } from "@progress/kendo-react-grid";
 import { globals } from '../Globals';
+import {
+    IntlProvider,
+    load,
+    LocalizationProvider,
+    loadMessages,
+} from "@progress/kendo-react-intl";
+import likelySubtags from "cldr-core/supplemental/likelySubtags.json";
+import currencyData from "cldr-core/supplemental/currencyData.json";
+import weekData from "cldr-core/supplemental/weekData.json";
+import numbers from "cldr-numbers-full/main/ru/numbers.json";
+import currencies from "cldr-numbers-full/main/ru/currencies.json";
+import caGregorian from "cldr-dates-full/main/ru/ca-gregorian.json";
+import dateFields from "cldr-dates-full/main/ru/dateFields.json";
+import timeZoneNames from "cldr-dates-full/main/ru/timeZoneNames.json";
+import ruMessages from "./ru.json";
+load(
+    likelySubtags,
+    currencyData,
+    weekData,
+    numbers,
+    currencies,
+    caGregorian,
+    dateFields,
+    timeZoneNames
+);
+loadMessages(ruMessages, "ru-RU");
 var _ = require("lodash");
 var utils = require("../../utils")
 
@@ -11,6 +37,7 @@ export default function TableForm(props) {
         rowsJSON: [],
         columnsJSON: []
     });
+    const [sort, setSort] = React.useState();
 
     React.useEffect(() => {
         let ignore = false;
@@ -102,14 +129,23 @@ export default function TableForm(props) {
     return (
         <div>
 
-            <Grid
-                sortable={true}
-                data={tableData.rowsJSON}
-            >
-                {tableData.columnsJSON.map(column =>
-                    <Column field={column.field} title={column.headerName} width="100px" />
-                )}
-            </Grid>
+            <LocalizationProvider language="ru-RU">
+                <IntlProvider locale="ru">
+                    <Grid
+                        pageable={true}
+                        sortable={true}
+                        data={tableData.rowsJSON}
+                        sort={sort}
+                        onSortChange={(e) => {
+                            setSort(e.sort);
+                        }}
+                    >
+                        {tableData.columnsJSON.map(column =>
+                            <Column field={column.field} title={column.headerName} width="100px" filter={"numeric"} columnMenu={GridColumnMenuFilter} />
+                        )}
+                    </Grid>
+                </IntlProvider>
+            </LocalizationProvider>
         </div>
     );
 }

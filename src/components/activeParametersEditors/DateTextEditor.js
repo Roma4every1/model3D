@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import { Label } from "@progress/kendo-react-labels";
 import { DatePicker } from "@progress/kendo-react-dateinputs";
 import {
     IntlProvider,
@@ -26,22 +27,26 @@ load(
 loadMessages(ruMessages, "ru-RU");
 
 export default function DateTextEditor(props) {
+    const date = new Date(props.value);
+
     return (
         <LocalizationProvider language='ru-RU'>
             <IntlProvider locale='ru'>
-                <DatePicker
-                    id={props.id}
-                    name={props.id}
-                    defaultValue={props.value}
-                    label={props.displayName}
-                    onChange={(event) => {
-                        var newevent = {};
-                        newevent.target = {};
-                        newevent.target.name = event.target.name;
-                        newevent.target.value = event.target.value.toISOString();
-                        props.selectionChanged(newevent)
-                    }}
-                />
+                <div className='parametereditorbox'>
+                    <Label className='parameterlabel' editorId={props.id}>{props.displayName}</Label>
+                    <DatePicker className='parametereditor'
+                        id={props.id}
+                        name={props.id}
+                        defaultValue={date}
+                        onChange={(event) => {
+                            var newevent = {};
+                            newevent.target = {};
+                            newevent.target.name = event.target.name;
+                            newevent.target.value = event.target.value.toISOString();
+                            props.selectionChanged(newevent)
+                        }}
+                    />
+                </div>
             </IntlProvider>
         </LocalizationProvider>
     );
