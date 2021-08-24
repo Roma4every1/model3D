@@ -14,7 +14,7 @@ import {
     loadMessages,
 } from "@progress/kendo-react-intl";
 import { ExcelExport } from '@progress/kendo-react-excel-export';
-import { filterBy, orderBy } from "@progress/kendo-data-query";
+import { process } from "@progress/kendo-data-query";
 import likelySubtags from "cldr-core/supplemental/likelySubtags.json";
 import currencyData from "cldr-core/supplemental/currencyData.json";
 import weekData from "cldr-core/supplemental/weekData.json";
@@ -51,8 +51,7 @@ export default function TableForm(props) {
         rowsJSON: [],
         columnsJSON: []
     });
-    const [sort, setSort] = React.useState();
-    const [filter, setFilter] = React.useState();
+    const [dataState, setDataState] = React.useState();
     const [selectedState, setSelectedState] = React.useState({});
     const _export = React.useRef(null);
 
@@ -117,12 +116,16 @@ export default function TableForm(props) {
             setNeededParamsValues(neededParamsJSON);
             let jsonValues = await fetchData(neededParamsJSON);
             if (!ignore) {
-                setSort([
-                    {
-                        field: jsonValues.columnsJSON[0].field,
-                        dir: "asc",
-                    },
-                ]);
+                setDataState({
+                    sort: [
+                        {
+                            field: jsonValues.columnsJSON[0].field,
+                            dir: "asc",
+                        },
+                    ],
+                    take: 10,
+                    skip: 0,
+                });
 
                 setTableData({
                     rowsJSON: jsonValues.rowsJSON,
@@ -178,7 +181,6 @@ export default function TableForm(props) {
     async function deleteSelectedRows() {
         Object.keys(selectedState).forEach(async element => {
             if (selectedState[element]) {
-             //   const jsonRow = JSON.stringify(databaseData.data.Rows[element]).replaceAll('+', '%2B');
                 const response = await utils.webFetch(`removeRows?sessionId=${sessionId}&tableId=${databaseData.tableId}&rows=${element}`);
                 const data = await response.json();
             }
@@ -186,11 +188,13 @@ export default function TableForm(props) {
     };
 
     var dataToShow = tableData.rowsJSON;
-    if (filter) {
-        dataToShow = filterBy(dataToShow, filter);
-    }
-    if (sort) {
-        dataToShow = orderBy(dataToShow, sort);
+    dataToShow = dataToShow.map((item) => ({
+        ...item,
+        [SELECTED_FIELD]: selectedState[idGetter(item)],
+    }));
+
+    if (dataState) {
+        dataToShow = process(dataToShow, dataState);
     }
 
     const otherButtons =
@@ -208,19 +212,15 @@ export default function TableForm(props) {
             <LocalizationProvider language="ru-RU">
                 <IntlProvider locale="ru">
                     <FormHeader sessionId={sessionId} formData={formData} additionalButtons={otherButtons} {...other} />
-                    <ExcelExport data={dataToShow} ref={_export}>
+                    <ExcelExport data={dataToShow.data} ref={_export}>
                         <Grid
                             pageable={true}
                             sortable={true}
-                            data={dataToShow.map((item) => ({
-                                ...item,
-                                [SELECTED_FIELD]: selectedState[idGetter(item)],
-                            }))}
-                            sort={sort}
-                            onSortChange={(e) => {
-                                setSort(e.sort);
+                            data={dataToShow}
+                            {...dataState}
+                            onDataStateChange={(e) => {
+                                setDataState(e.dataState);
                             }}
-                            onFilterChange={(e) => setFilter(e.filter)}
                             dataItemKey={DATA_ITEM_KEY}
                             selectedField={SELECTED_FIELD}
                             selectable={{
