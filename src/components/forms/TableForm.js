@@ -1,5 +1,11 @@
 ﻿import React from 'react';
-import { Grid, GridColumn as Column, GridColumnMenuFilter, GridToolbar } from "@progress/kendo-react-grid";
+import {
+    Grid,
+    GridColumn as Column,
+    GridColumnMenuFilter,
+    getSelectedState,
+    getSelectedStateFromKeyDown
+} from "@progress/kendo-react-grid";
 import { globals } from '../Globals';
 import {
     IntlProvider,
@@ -17,6 +23,7 @@ import currencies from "cldr-numbers-full/main/ru/currencies.json";
 import caGregorian from "cldr-dates-full/main/ru/ca-gregorian.json";
 import dateFields from "cldr-dates-full/main/ru/dateFields.json";
 import timeZoneNames from "cldr-dates-full/main/ru/timeZoneNames.json";
+import { getter } from "@progress/kendo-react-common";
 import FormHeader from '../FormHeader';
 import ruMessages from "./ru.json";
 load(
@@ -31,10 +38,14 @@ load(
 );
 loadMessages(ruMessages, "ru-RU");
 var _ = require("lodash");
-var utils = require("../../utils")
+var utils = require("../../utils");
+const DATA_ITEM_KEY = "js_id";
+const SELECTED_FIELD = "selected";
+const idGetter = getter(DATA_ITEM_KEY);
 
 export default function TableForm(props) {
     const { sessionId, formData, globalParameters, ...other } = props;
+    const [databaseData, setDatabaseData] = React.useState([]);
     const [neededParamsValues, setNeededParamsValues] = React.useState([]);
     const [tableData, setTableData] = React.useState({
         rowsJSON: [],
@@ -42,12 +53,31 @@ export default function TableForm(props) {
     });
     const [sort, setSort] = React.useState();
     const [filter, setFilter] = React.useState();
+    const [selectedState, setSelectedState] = React.useState({});
     const _export = React.useRef(null);
 
     const excelExport = () => {
         if (_export.current !== null) {
             _export.current.save();
         }
+    };
+
+    const onSelectionChange = (event) => {
+        const newSelectedState = getSelectedState({
+            event,
+            selectedState: selectedState,
+            dataItemKey: DATA_ITEM_KEY,
+        });
+        setSelectedState(newSelectedState);
+    };
+
+    const onKeyDown = (event) => {
+        const newSelectedState = getSelectedStateFromKeyDown({
+            event,
+            selectedState: selectedState,
+            dataItemKey: DATA_ITEM_KEY,
+        });
+        setSelectedState(newSelectedState);
     };
 
     React.useEffect(() => {
@@ -108,6 +138,7 @@ export default function TableForm(props) {
         const jsonParamaters = JSON.stringify(neededParamsJSON).replaceAll('#', '%23');
         const response = await utils.webFetch(`fill?sessionId=${sessionId}&clientId=${formData.id}&paramValues=${jsonParamaters}`);
         const data = await response.json();
+        setDatabaseData(data);
 
         const columnsJSON = data.data.Columns.map(function (column) {
             const temp = {};
@@ -122,7 +153,7 @@ export default function TableForm(props) {
         });
         const rowsJSON = data.data.Rows.map(function (row, rowIndex) {
             const temp = {};
-            temp.id = rowIndex;
+            temp.js_id = rowIndex;
             for (var i = 0; i < columnsJSON.length; i++) {
                 if (columnsJSON[i].netType === 'System.DateTime' && row.Cells[i]) {
                     const startIndex = row.Cells[i].indexOf('(');
@@ -144,6 +175,16 @@ export default function TableForm(props) {
         return result;
     }
 
+    async function deleteSelectedRows() {
+        Object.keys(selectedState).forEach(async element => {
+            if (selectedState[element]) {
+             //   const jsonRow = JSON.stringify(databaseData.data.Rows[element]).replaceAll('+', '%2B');
+                const response = await utils.webFetch(`removeRows?sessionId=${sessionId}&tableId=${databaseData.tableId}&rows=${element}`);
+                const data = await response.json();
+            }
+        });
+    };
+
     var dataToShow = tableData.rowsJSON;
     if (filter) {
         dataToShow = filterBy(dataToShow, filter);
@@ -151,10 +192,16 @@ export default function TableForm(props) {
     if (sort) {
         dataToShow = orderBy(dataToShow, sort);
     }
+
     const otherButtons =
-        <button className="k-button k-button-clear" onClick={excelExport}>
-            <span className="k-icon k-i-xls" />
-        </button>;
+        <div>
+            <button className="k-button k-button-clear" onClick={excelExport}>
+                <span className="k-icon k-i-xls" />
+            </button>
+            <button className="k-button k-button-clear" onClick={deleteSelectedRows}>
+                <span className="k-icon k-i-table-row-delete" />
+            </button>
+        </div>;
 
     return (
         <div>
@@ -165,12 +212,22 @@ export default function TableForm(props) {
                         <Grid
                             pageable={true}
                             sortable={true}
-                            data={dataToShow}
+                            data={dataToShow.map((item) => ({
+                                ...item,
+                                [SELECTED_FIELD]: selectedState[idGetter(item)],
+                            }))}
                             sort={sort}
                             onSortChange={(e) => {
                                 setSort(e.sort);
                             }}
                             onFilterChange={(e) => setFilter(e.filter)}
+                            dataItemKey={DATA_ITEM_KEY}
+                            selectedField={SELECTED_FIELD}
+                            selectable={{
+                                enabled: true
+                            }}
+                            onSelectionChange={onSelectionChange}
+                            onKeyDown={onKeyDown}
                         >
                             {tableData.columnsJSON.map(column =>
                                 <Column field={column.field} title={column.headerName} width="100px" columnMenu={GridColumnMenuFilter} />

@@ -132,8 +132,8 @@ export default function TableRowComboEditor(props) {
                             setValueToShow(event.target.value);
                             var newevent = {};
                             newevent.target = {};
-                            newevent.target.name = event.target.name
-                            newevent.target.value = event.target.value.id
+                            newevent.target.name = event.target.name;
+                            newevent.target.value = event.target.value?.id;
                             selectionChanged(newevent)
                         }}
                     />
