@@ -1,4 +1,8 @@
 /* Provide sufficient contrast against white background */
+html {
+    font: 12px sans-serif;
+}
+
 a {
   color: #0366d6;
 }
@@ -23,11 +27,27 @@ code {
     float: left;
 }
 
+.app {
+    font-size: 12px;
+}
+
 .presentationList {
-    padding-left: 15px;
+    padding-left: 10px;
     padding-top: 5px;
     margin: 0 auto;
     height: 100%;
+}
+
+.k-treeview .k-item {
+    margin: 0px;
+}
+
+.k-treeview .k-in {
+    padding: 2px 5px 2px 5px;
+}
+
+.treeview {
+    font-size: 12px;
 }
 
 .presentation {
@@ -39,11 +59,13 @@ code {
     width: 100%;
 }
 
-.MuiPaper-outlined {
-}
-
 .halfheight {
     height: 50vh;
+}
+
+.k-icon {
+    width: 12px;
+    height: 12px;
 }
 
 .blockheader {
@@ -53,6 +75,13 @@ code {
     vertical-align: middle;
 }
 
+.blockheadertoolbar {
+    height: 30px;
+    padding: 0px;
+    padding-inline: 0px;
+    padding-block: 0px;
+}
+ 
 .parametereditorbox {
     margin: 1px;
     vertical-align: middle;
@@ -61,17 +90,38 @@ code {
 }
 
 .parameterlabel {
-    width: 150px;
+    width: 100px;
     height: 100%;
     float: left;
     font-size: 12px;
     display: inline-block;
 }
 
+.actionbutton {
+    margin: 10px 3px 0px 0px;
+}
+
+.k-clear-value, .k-combobox .k-input, .k-datepicker .k-input, .k-numerictextbox .k-input, .k-dropdown-wrap {
+    height: 20px;
+}
+
+.programmbutton {
+    height: 20px;
+}
+
+.k-grid {
+    font-size: 10px;
+    tr.k-alt {
+        min-height: 10px;
+        height: 15px;
+    }
+}
+
 .parametereditor {
     float: right;
     display: inline-block;
-    height: 30px;
+    font-size: 12px;
+    height: 20px;
 }
 
 .k-animation-container {

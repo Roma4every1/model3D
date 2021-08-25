@@ -104,17 +104,17 @@ export default function ProgramParametersList(props) {
     return (
 
         <div>
-            <Button variant="outlined" onClick={() => { fillReportParameters(sessionId, programId, handleOpen, updateLocalParametersList, updateGlobalParametersList) }}>
+            <Button className="programmbutton" variant="outlined" onClick={() => { fillReportParameters(sessionId, programId, handleOpen, updateLocalParametersList, updateGlobalParametersList) }}>
                 {programDisplayName}
             </Button>
             {open && (
                 <Dialog title={t('report.params')} onClose={handleClose} initialHeight={350}>
                     <ParametersList parametersJSON={globalParametersJSON} setMainEditedJSON={updateEditedParametersListByGlobal} />
-                    <ParametersList parametersJSON={localParametersJSON} setMainEditedJSON={updateEditedParametersListByLocal} />                 
-                    <Button primary={!runButtonDisabled} disabled={runButtonDisabled} onClick={() => { handleClose(); runReport(sessionId, programId, JSON.stringify(editedJSON).replaceAll('#', '%23')) }}>
+                    <ParametersList parametersJSON={localParametersJSON} setMainEditedJSON={updateEditedParametersListByLocal} />
+                    <Button className="actionbutton" primary={!runButtonDisabled} disabled={runButtonDisabled} onClick={() => { handleClose(); runReport(sessionId, programId, JSON.stringify(editedJSON).replaceAll('#', '%23')) }}>
                         {t('base.run')}
                     </Button>
-                    <Button onClick={handleClose}>
+                    <Button className="actionbutton" onClick={handleClose}>
                         {t('base.cancel')}
                     </Button>
                 </Dialog>

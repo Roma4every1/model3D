@@ -15,6 +15,7 @@ import {
 } from "@progress/kendo-react-intl";
 import { ExcelExport } from '@progress/kendo-react-excel-export';
 import { process } from "@progress/kendo-data-query";
+import calculateSize from "calculate-size";
 import likelySubtags from "cldr-core/supplemental/likelySubtags.json";
 import currencyData from "cldr-core/supplemental/currencyData.json";
 import weekData from "cldr-core/supplemental/weekData.json";
@@ -40,7 +41,8 @@ loadMessages(ruMessages, "ru-RU");
 var _ = require("lodash");
 var utils = require("../../utils");
 const DATA_ITEM_KEY = "js_id";
-const SELECTED_FIELD = "selected";
+const SELECTED_FIELD = "js_selected";
+const EDIT_FIELD = "js_inEdit";
 const idGetter = getter(DATA_ITEM_KEY);
 
 export default function TableForm(props) {
@@ -52,13 +54,40 @@ export default function TableForm(props) {
         columnsJSON: []
     });
     const [dataState, setDataState] = React.useState();
+    const [editID, setEditID] = React.useState(null);
     const [selectedState, setSelectedState] = React.useState({});
     const _export = React.useRef(null);
+
+    const rowClick = (event) => {
+        setEditID(idGetter(event.dataItem));
+    };
+
+    const closeEdit = (event) => {
+        if (event.target === event.currentTarget) {
+            setEditID(null);
+        }
+    };
+
+    const addRecord = () => {
+        const newRecord = {
+            [DATA_ITEM_KEY]: tableData.rowsJSON.length + 1,
+        };
+        setTableData({ rowsJSON: [...tableData.rowsJSON, newRecord], columnsJSON: tableData.columnsJSON });
+        setEditID(idGetter(newRecord));
+    };
 
     const excelExport = () => {
         if (_export.current !== null) {
             _export.current.save();
         }
+    };
+
+    const onItemChange = (event) => {
+        const editedItemID = idGetter(event.dataItem);
+        const data = tableData.rowsJSON.map(item =>
+            idGetter(item) === editedItemID ? { ...item, [event.field]: event.value } : item
+        );
+        setTableData({ rowsJSON: data, columnsJSON: tableData.columnsJSON });
     };
 
     const onSelectionChange = (event) => {
@@ -191,11 +220,29 @@ export default function TableForm(props) {
     dataToShow = dataToShow.map((item) => ({
         ...item,
         [SELECTED_FIELD]: selectedState[idGetter(item)],
+        [EDIT_FIELD]: idGetter(item) === editID
     }));
 
     if (dataState) {
         dataToShow = process(dataToShow, dataState);
     }
+
+    const calculateWidth = (headerName, field) => {
+        let maxWidth = calculateSize(headerName, {
+            font: "Arial",
+            fontSize: "16px",
+        }).width + 10;
+        tableData.rowsJSON.forEach((item) => {
+            const size = calculateSize(item[field], {
+                font: "Arial",
+                fontSize: "16px",
+            }); // pass the font properties based on the application
+            if (size.width > maxWidth) {
+                maxWidth = size.width;
+            }
+        });
+        return maxWidth + 20;
+    };
 
     const otherButtons =
         <div>
@@ -204,6 +251,9 @@ export default function TableForm(props) {
             </button>
             <button className="k-button k-button-clear" onClick={deleteSelectedRows}>
                 <span className="k-icon k-i-table-row-delete" />
+            </button>
+            <button className="k-button k-button-clear" onClick={addRecord}>
+                <span className="k-icon k-i-table-row-insert-above" />
             </button>
         </div>;
 
@@ -214,6 +264,7 @@ export default function TableForm(props) {
                     <FormHeader sessionId={sessionId} formData={formData} additionalButtons={otherButtons} {...other} />
                     <ExcelExport data={dataToShow.data} ref={_export}>
                         <Grid
+                            resizable={true}
                             pageable={true}
                             sortable={true}
                             data={dataToShow}
@@ -221,7 +272,10 @@ export default function TableForm(props) {
                             onDataStateChange={(e) => {
                                 setDataState(e.dataState);
                             }}
+                            onRowClick={rowClick}
+                            onItemChange={onItemChange}
                             dataItemKey={DATA_ITEM_KEY}
+                            editField={EDIT_FIELD}
                             selectedField={SELECTED_FIELD}
                             selectable={{
                                 enabled: true
@@ -230,7 +284,7 @@ export default function TableForm(props) {
                             onKeyDown={onKeyDown}
                         >
                             {tableData.columnsJSON.map(column =>
-                                <Column field={column.field} title={column.headerName} width="100px" columnMenu={GridColumnMenuFilter} />
+                                <Column field={column.field} title={column.headerName} width={calculateWidth(column.headerName, column.field)} editor="text" columnMenu={GridColumnMenuFilter} />
                             )}
                         </Grid>
                     </ExcelExport>

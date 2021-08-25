@@ -1,6 +1,7 @@
 ﻿import React from 'react';
 import {
-    Toolbar
+    Toolbar,
+    ToolbarItem
 } from "@progress/kendo-react-buttons";
 import FormParametersList from './FormParametersList';
 
@@ -9,10 +10,14 @@ export default function FormHeader(props) {
 
     return (
         <div className='blockheader'>
-            <Toolbar>
-                <FormParametersList sessionId={sessionId} formId={formData.id} {...other} />
-                {additionalButtons}
-                <h6>{formData.displayName}</h6>
+            <Toolbar className='blockheadertoolbar'>
+                <ToolbarItem>
+                    <FormParametersList sessionId={sessionId} formId={formData.id} {...other} />
+                    {additionalButtons}
+                </ToolbarItem>
+                <ToolbarItem>
+                    <h5>{formData.displayName}</h5>
+                </ToolbarItem>
             </Toolbar>
         </div>
     );

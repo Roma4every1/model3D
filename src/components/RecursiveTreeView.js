@@ -22,7 +22,7 @@ export default function RecursiveTreeView(props) {
     };
 
     return (
-        <TreeView
+        <TreeView className="treeview"
             data={props.data.items}
             expandIcons={true}
             aria-multiselectable={false}

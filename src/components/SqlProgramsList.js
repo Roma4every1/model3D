@@ -36,7 +36,7 @@ export default function SqlProgramsList(props) {
         <div>
             {state.loading
                 ? <p><em>{t('base.loading')}</em></p>
-                : <Toolbar>
+                : <Toolbar style={{padding: 1 }}>
                     {state.programNames.map(programName =>
                         <ProgramParametersList
                             key={programName.id}

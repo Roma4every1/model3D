@@ -29,7 +29,7 @@ export default function App() {
     const [drawerState, setDrawerState] = React.useState(false);
     const [panes, setPanes] = React.useState([
         {
-            size: "400px",
+            size: "300px",
             min: "20px",
             collapsible: true,
         },
@@ -108,18 +108,18 @@ export default function App() {
     };
 
     return (
-        <div>
+        <div className="app">
             {state.sessionLoading
                 ? <p><em>{t('session.loading')}</em></p>
                 : <div>
-                    <AppBar style={{ height: 50 }}>
+                    <AppBar style={{ height: 30, padding: 1 }}>
                         <AppBarSection>
                             <button className="k-button k-button-clear" onClick={toggleDrawer(!drawerState)}>
                                 <span className="k-icon k-i-menu" />
                             </button>
                         </AppBarSection>
                     </AppBar>
-                    <div style={{ height: 50 }}>
+                    <div style={{ height: 30 }}>
                         <SqlProgramsList
                             sessionId={state.sessionId}
                             presentationId={activePresentationId}
