@@ -63,9 +63,7 @@ export default function TableForm(props) {
     };
 
     const closeEdit = (event) => {
-        if (event.target === event.currentTarget) {
-            setEditID(null);
-        }
+        setEditID(null);
     };
 
     const addRecord = () => {
@@ -88,6 +86,9 @@ export default function TableForm(props) {
             idGetter(item) === editedItemID ? { ...item, [event.field]: event.value } : item
         );
         setTableData({ rowsJSON: data, columnsJSON: tableData.columnsJSON });
+        //const dataJSON = JSON.stringify(event.dataItem);
+        //const response = await utils.webFetch(`insertRow?sessionId=${sessionId}&tableId=${databaseData.tableId}&rowData=${dataJSON}`);
+        //const data = await response.json();
     };
 
     const onSelectionChange = (event) => {
@@ -193,7 +194,7 @@ export default function TableForm(props) {
                     const dateValue = row.Cells[i].slice(startIndex + 1, finishIndex);
                     var d = new Date();
                     d.setTime(dateValue);
-                    temp[columnsJSON[i].field] = d.toLocaleDateString();
+                    temp[columnsJSON[i].field] = d; //.toLocaleDateString();
                 }
                 else {
                     temp[columnsJSON[i].field] = row.Cells[i];
@@ -208,12 +209,26 @@ export default function TableForm(props) {
     }
 
     async function deleteSelectedRows() {
-        Object.keys(selectedState).forEach(async element => {
+        var elementsToRemove = ',';
+        var tableDataCopy = tableData;
+        Object.keys(selectedState).forEach(element => {
             if (selectedState[element]) {
-                const response = await utils.webFetch(`removeRows?sessionId=${sessionId}&tableId=${databaseData.tableId}&rows=${element}`);
-                const data = await response.json();
+                elementsToRemove = elementsToRemove + element + ',';
+                const itemToDeleteIndex = tableDataCopy.rowsJSON.findIndex(item =>
+                    idGetter(item) == element
+                );
+                tableDataCopy.rowsJSON.splice(itemToDeleteIndex, 1);
             }
         });
+        if (elementsToRemove.length > 1) {
+            setTableData({
+                rowsJSON: tableDataCopy.rowsJSON,
+                columnsJSON: tableDataCopy.columnsJSON
+            });
+            elementsToRemove = elementsToRemove.slice(1, -1);
+            const response = await utils.webFetch(`removeRows?sessionId=${sessionId}&tableId=${databaseData.tableId}&rows=${elementsToRemove}`);
+            const data = await response.json();
+        }
     };
 
     var dataToShow = tableData.rowsJSON;
@@ -244,16 +259,54 @@ export default function TableForm(props) {
         return maxWidth + 20;
     };
 
+    const getEditorType = (column) => {
+        if (column.netType === "System.Int64") {
+            return "numeric"
+        }
+        else if (column.netType === "System.DateTime") {
+            return "date"
+        }
+        else {
+            return "string"
+        }
+    }
+
+    async function applyEdit() {
+        const rowToInsert = tableData.rowsJSON.find(item =>
+            idGetter(item) === editID
+        );
+        if (rowToInsert) {
+            closeEdit();
+            var cells = [];
+            databaseData.data.Columns.forEach(column =>
+                cells.push(rowToInsert[column.Name])
+            );
+            var itemToInsert = { Id: null, Cells: cells };
+            const dataJSON = JSON.stringify([itemToInsert]);
+            const response = await utils.webFetch(`insertRow?sessionId=${sessionId}&tableId=${databaseData.tableId}&rowData=${dataJSON}`);
+            const data = await response.json();
+        }
+    };
+
     const otherButtons =
         <div>
             <button className="k-button k-button-clear" onClick={excelExport}>
                 <span className="k-icon k-i-xls" />
             </button>
             <button className="k-button k-button-clear" onClick={deleteSelectedRows}>
-                <span className="k-icon k-i-table-row-delete" />
+                <span className="k-icon k-i-minus" />
             </button>
             <button className="k-button k-button-clear" onClick={addRecord}>
-                <span className="k-icon k-i-table-row-insert-above" />
+                <span className="k-icon k-i-plus" />
+            </button>
+            <button className="k-button k-button-clear" onClick={applyEdit}>
+                <span className="k-icon k-i-check" />
+            </button>
+            <button className="k-button k-button-clear">
+                <span className="k-icon k-i-cancel" />
+            </button>
+            <button className="k-button k-button-clear">
+                <span className="k-icon k-i-reset" />
             </button>
         </div>;
 
@@ -272,7 +325,8 @@ export default function TableForm(props) {
                             onDataStateChange={(e) => {
                                 setDataState(e.dataState);
                             }}
-                            onRowClick={rowClick}
+                            onRowDoubleClick={rowClick}
+                            onRowClick={closeEdit}
                             onItemChange={onItemChange}
                             dataItemKey={DATA_ITEM_KEY}
                             editField={EDIT_FIELD}
@@ -284,7 +338,7 @@ export default function TableForm(props) {
                             onKeyDown={onKeyDown}
                         >
                             {tableData.columnsJSON.map(column =>
-                                <Column field={column.field} title={column.headerName} width={calculateWidth(column.headerName, column.field)} editor="text" columnMenu={GridColumnMenuFilter} />
+                                <Column field={column.field} title={column.headerName} width={calculateWidth(column.headerName, column.field)} editor={getEditorType(column)} columnMenu={GridColumnMenuFilter} />
                             )}
                         </Grid>
                     </ExcelExport>
