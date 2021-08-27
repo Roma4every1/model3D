@@ -18,5 +18,8 @@
   },
   "session": {
     "loading": "Loading session..."
+  },
+  "version": {
+    "label": "Version"
   }
 }

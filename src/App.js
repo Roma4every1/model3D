@@ -55,8 +55,16 @@ export default function App() {
         if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
             return;
         }
-
-        setDrawerState(open);
+        if (event.itemIndex) {
+            if (event.itemIndex == 3) {
+                let json = require('../package.json');
+                let vStr = json['name'] + '\n' + t('version.label') + ': ' + json['version'];
+                alert(vStr);
+            }
+        }
+        else {
+            setDrawerState(open);
+        }
     };
 
     const items = [
