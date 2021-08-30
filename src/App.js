@@ -1,4 +1,5 @@
 import React from 'react';
+import { Label } from "@progress/kendo-react-labels";
 import SqlProgramsList from './components/SqlProgramsList';
 import GlobalParametersList from './components/GlobalParametersList';
 import PresentationList from './components/PresentationList';
@@ -10,6 +11,10 @@ import {
     DrawerContent,
     Splitter
 } from "@progress/kendo-react-layout";
+import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
+import {
+    Button
+} from "@progress/kendo-react-buttons";
 import SimpleTabs from './components/SimpleTabs';
 import '@progress/kendo-theme-default/dist/all.css';
 import 'flexlayout-react/style/light.css';
@@ -27,6 +32,7 @@ export default function App() {
         sessionId: undefined
     });
     const [drawerState, setDrawerState] = React.useState(false);
+    const [aboutState, setAboutState] = React.useState(false);
     const [panes, setPanes] = React.useState([
         {
             size: "300px",
@@ -43,6 +49,10 @@ export default function App() {
         }
     ]);
 
+    const handleClose = () => {
+        setAboutState(false);
+    };
+
     const onChange = (event) => {
         setPanes(event.newState);
     };
@@ -57,9 +67,7 @@ export default function App() {
         }
         if (event.itemIndex) {
             if (event.itemIndex == 3) {
-                let json = require('../package.json');
-                let vStr = json['name'] + '\n' + t('version.label') + ': ' + json['version'];
-                alert(vStr);
+                setAboutState(true);
             }
         }
         else {
@@ -114,6 +122,7 @@ export default function App() {
     const handleWindowResize = (event) => {
         setNavPanes(event.newState);
     };
+    let json = require('../package.json');
 
     return (
         <div className="app">
@@ -127,12 +136,21 @@ export default function App() {
                             </button>
                         </AppBarSection>
                     </AppBar>
-                    <div style={{ height: 30 }}>
-                        <SqlProgramsList
-                            sessionId={state.sessionId}
-                            presentationId={activePresentationId}
-                        />
-                    </div>
+                    {aboutState && <Dialog title={t('menucommands.about')} onClose={handleClose}>
+                        <p
+                            style={{
+                                margin: "25px",
+                                textAlign: "center",
+                            }}
+                        >
+                            {json['name']}<br />{t('version.label') + ': ' + json['version']}
+                        </p>
+                        <DialogActionsBar>
+                            <Button onClick={handleClose}>
+                                {t('base.ok')}
+                            </Button>
+                        </DialogActionsBar>
+                    </Dialog>}
                     <Drawer
                         expanded={drawerState}
                         position="start"
@@ -144,6 +162,12 @@ export default function App() {
                     >
                         <DrawerContent>
                             <div>
+                                <div style={{ height: 30 }}>
+                                    <SqlProgramsList
+                                        sessionId={state.sessionId}
+                                        presentationId={activePresentationId}
+                                    />
+                                </div>
                                 <Splitter
                                     panes={panes}
                                     orientation={"horizontal"}

@@ -97,11 +97,7 @@ code {
     display: inline-block;
 }
 
-.actionbutton {
-    margin: 10px 3px 0px 0px;
-}
-
-.k-clear-value, .k-combobox .k-input, .k-datepicker .k-input, .k-numerictextbox .k-input, .k-dropdown-wrap {
+.k-clear-value, .k-combobox .k-input, .k-datepicker .k-input, .k-dateinput .k-input, .k-numerictextbox .k-input, .k-dropdown-wrap {
     height: 20px;
 }
 
@@ -111,10 +107,11 @@ code {
 
 .k-grid {
     font-size: 10px;
-    tr.k-alt {
-        min-height: 10px;
-        height: 15px;
-    }
+}
+
+.k-grid tr {
+    min-height: 10px;
+    height: 15px;
 }
 
 .parametereditor {
@@ -122,6 +119,16 @@ code {
     display: inline-block;
     font-size: 12px;
     height: 20px;
+}
+
+.k-dateinput {
+    float: right;
+    display: inline-block;
+    font-size: 12px;
+}
+
+.k-datepicker {
+    flex-direction: column;
 }
 
 .k-animation-container {

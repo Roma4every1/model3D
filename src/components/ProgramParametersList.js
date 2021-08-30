@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import { Dialog } from "@progress/kendo-react-dialogs";
+import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import {
     Button
 } from "@progress/kendo-react-buttons";
@@ -111,12 +111,14 @@ export default function ProgramParametersList(props) {
                 <Dialog title={t('report.params')} onClose={handleClose} initialHeight={350}>
                     <ParametersList parametersJSON={globalParametersJSON} setMainEditedJSON={updateEditedParametersListByGlobal} />
                     <ParametersList parametersJSON={localParametersJSON} setMainEditedJSON={updateEditedParametersListByLocal} />
-                    <Button className="actionbutton" primary={!runButtonDisabled} disabled={runButtonDisabled} onClick={() => { handleClose(); runReport(sessionId, programId, JSON.stringify(editedJSON).replaceAll('#', '%23')) }}>
-                        {t('base.run')}
-                    </Button>
-                    <Button className="actionbutton" onClick={handleClose}>
-                        {t('base.cancel')}
-                    </Button>
+                    <DialogActionsBar>
+                        <Button className="actionbutton" primary={!runButtonDisabled} disabled={runButtonDisabled} onClick={() => { handleClose(); runReport(sessionId, programId, JSON.stringify(editedJSON).replaceAll('#', '%23')) }}>
+                            {t('base.run')}
+                        </Button>
+                        <Button className="actionbutton" onClick={handleClose}>
+                            {t('base.cancel')}
+                        </Button>
+                    </DialogActionsBar>
                 </Dialog>
             )}
         </div>

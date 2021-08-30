@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import { Label } from "@progress/kendo-react-labels";
 import { DateRangePicker } from "@progress/kendo-react-dateinputs";
 import {
     IntlProvider,
@@ -88,35 +89,39 @@ export default function DateIntervalTextEditor(props) {
         end: new Date(2021, 11, 1)
     };
     const startDateInputSettings = {
-        label: props.displayName
+        label: ''
     };
     const endDateInputSettings = {
-        label: ' '
+        label: ''
     };
 
     return (
         <LocalizationProvider language='ru-RU'>
             <IntlProvider locale='ru'>
-                <DateRangePicker
-                    id={props.id}
-                    name={props.id}
-                    min={xmin} 
-                    max={xmax} 
-                    defaultValue={defVal(getVal(props.value), getVal(props.defaultValue), xdefaultValue)}
-                    value={getVal(props.value)}
-                    label={props.displayName}
-                    startDateInputSettings = {startDateInputSettings}
-                    endDateInputSettings = {endDateInputSettings}
-                    onChange={(event) => {
-                        var newevent = {};
-                        newevent.target = {};
-//console.log(event.target);
-//console.log(props);
-                        newevent.target.name = event.target.props.id;//event.target.name;
-                        newevent.target.value = getValStr(event.target.value.start, event.target.value.end);
-                        props.selectionChanged(newevent)
-                    }}
-                />
+                <div>
+                    <Label className='parameterlabel' editorId={props.id}>{props.displayName}</Label>
+                    <div className='parametereditor'>
+                        <DateRangePicker
+                            id={props.id}
+                            name={props.id}
+                            min={xmin}
+                            max={xmax}
+                            defaultValue={defVal(getVal(props.value), getVal(props.defaultValue), xdefaultValue)}
+                            value={getVal(props.value)}
+                            startDateInputSettings={startDateInputSettings}
+                            endDateInputSettings={endDateInputSettings}
+                            onChange={(event) => {
+                                var newevent = {};
+                                newevent.target = {};
+                                //console.log(event.target);
+                                //console.log(props);
+                                newevent.target.name = event.target.props.id;//event.target.name;
+                                newevent.target.value = getValStr(event.target.value.start, event.target.value.end);
+                                props.selectionChanged(newevent)
+                            }}
+                        />
+                    </div>
+                </div>
             </IntlProvider>
         </LocalizationProvider>
     );

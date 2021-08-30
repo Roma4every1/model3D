@@ -3,6 +3,7 @@
   "base": {
     "cancel": "Cancel",
     "loading": "Loading...",
+    "ok": "Ok",
     "parameters": "Parameters",
     "programs": "Programs",
     "run": "Run"
