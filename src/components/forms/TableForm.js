@@ -6,6 +6,9 @@ import {
     getSelectedState,
     getSelectedStateFromKeyDown
 } from "@progress/kendo-react-grid";
+import {
+    Button
+} from "@progress/kendo-react-buttons";
 import { globals } from '../Globals';
 import {
     IntlProvider,
@@ -24,7 +27,9 @@ import currencies from "cldr-numbers-full/main/ru/currencies.json";
 import caGregorian from "cldr-dates-full/main/ru/ca-gregorian.json";
 import dateFields from "cldr-dates-full/main/ru/dateFields.json";
 import timeZoneNames from "cldr-dates-full/main/ru/timeZoneNames.json";
+import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { getter } from "@progress/kendo-react-common";
+import { useTranslation } from 'react-i18next';
 import FormHeader from '../FormHeader';
 import ruMessages from "./ru.json";
 load(
@@ -46,8 +51,11 @@ const EDIT_FIELD = "js_inEdit";
 const idGetter = getter(DATA_ITEM_KEY);
 
 export default function TableForm(props) {
+    const { t } = useTranslation();
     const { sessionId, formData, globalParameters, ...other } = props;
     const [databaseData, setDatabaseData] = React.useState([]);
+    const [rowAdding, setRowAdding] = React.useState(false);
+    const [edited, setEdited] = React.useState(false);
     const [neededParamsValues, setNeededParamsValues] = React.useState([]);
     const [tableData, setTableData] = React.useState({
         rowsJSON: [],
@@ -57,12 +65,24 @@ export default function TableForm(props) {
     const [editID, setEditID] = React.useState(null);
     const [selectedState, setSelectedState] = React.useState({});
     const _export = React.useRef(null);
+    const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+
+    const handleDeleteDialogOpen = () => {
+        setDeleteDialogOpen(true);
+    };
+
+    const handleDeleteDialogClose = () => {
+        setDeleteDialogOpen(false);
+    };
 
     const rowClick = (event) => {
         setEditID(idGetter(event.dataItem));
     };
 
     const closeEdit = (event) => {
+        if (edited) {
+            applyEdit();
+        }
         setEditID(null);
     };
 
@@ -72,6 +92,7 @@ export default function TableForm(props) {
         };
         setTableData({ rowsJSON: [...tableData.rowsJSON, newRecord], columnsJSON: tableData.columnsJSON });
         setEditID(idGetter(newRecord));
+        setRowAdding(true);
     };
 
     const excelExport = () => {
@@ -81,14 +102,12 @@ export default function TableForm(props) {
     };
 
     const onItemChange = (event) => {
+        setEdited(true);
         const editedItemID = idGetter(event.dataItem);
         const data = tableData.rowsJSON.map(item =>
             idGetter(item) === editedItemID ? { ...item, [event.field]: event.value } : item
         );
         setTableData({ rowsJSON: data, columnsJSON: tableData.columnsJSON });
-        //const dataJSON = JSON.stringify(event.dataItem);
-        //const response = await utils.webFetch(`insertRow?sessionId=${sessionId}&tableId=${databaseData.tableId}&rowData=${dataJSON}`);
-        //const data = await response.json();
     };
 
     const onSelectionChange = (event) => {
@@ -146,17 +165,6 @@ export default function TableForm(props) {
             setNeededParamsValues(neededParamsJSON);
             let jsonValues = await fetchData(neededParamsJSON);
             if (!ignore) {
-                setDataState({
-                    sort: [
-                        {
-                            field: jsonValues.columnsJSON[0].field,
-                            dir: "asc",
-                        },
-                    ],
-                    take: 10,
-                    skip: 0,
-                });
-
                 setTableData({
                     rowsJSON: jsonValues.rowsJSON,
                     columnsJSON: jsonValues.columnsJSON
@@ -194,7 +202,7 @@ export default function TableForm(props) {
                     const dateValue = row.Cells[i].slice(startIndex + 1, finishIndex);
                     var d = new Date();
                     d.setTime(dateValue);
-                    temp[columnsJSON[i].field] = d; //.toLocaleDateString();
+                    temp[columnsJSON[i].field] = d;
                 }
                 else {
                     temp[columnsJSON[i].field] = row.Cells[i];
@@ -248,7 +256,11 @@ export default function TableForm(props) {
             fontSize: "16px",
         }).width + 10;
         tableData.rowsJSON.forEach((item) => {
-            const size = calculateSize(item[field], {
+            var value = item[field];
+            if (value instanceof Date) {
+                value = value.toLocaleDateString()
+            }
+            const size = calculateSize(value, {
                 font: "Arial",
                 fontSize: "16px",
             }); // pass the font properties based on the application
@@ -260,14 +272,24 @@ export default function TableForm(props) {
     };
 
     const getEditorType = (column) => {
-        if (column.netType === "System.Int64") {
-            return "numeric"
+        switch (column.netType) {
+            case "System.Int64":
+            case "System.Int32":
+            case "System.Double":
+                return "numeric";
+            case "System.DateTime":
+                return "date";
+            default:
+                return "string";
         }
-        else if (column.netType === "System.DateTime") {
-            return "date"
-        }
-        else {
-            return "string"
+    }
+
+    const getFormat = (column) => {
+        switch (column.netType) {
+            case "System.DateTime":
+                return "{0:d}";
+            default:
+                return null;
         }
     }
 
@@ -276,15 +298,23 @@ export default function TableForm(props) {
             idGetter(item) === editID
         );
         if (rowToInsert) {
-            closeEdit();
+            setEditID(null);
+            setEdited(false);
             var cells = [];
             databaseData.data.Columns.forEach(column =>
                 cells.push(rowToInsert[column.Name])
             );
             var itemToInsert = { Id: null, Cells: cells };
             const dataJSON = JSON.stringify([itemToInsert]);
-            const response = await utils.webFetch(`insertRow?sessionId=${sessionId}&tableId=${databaseData.tableId}&rowData=${dataJSON}`);
-            const data = await response.json();
+            if (rowAdding) {
+                const response = await utils.webFetch(`insertRow?sessionId=${sessionId}&tableId=${databaseData.tableId}&rowData=${dataJSON}`);
+                const data = await response.json();
+                setRowAdding(false);
+            }
+            else {
+                const response = await utils.webFetch(`updateRow?sessionId=${sessionId}&tableId=${databaseData.tableId}&rowsIndices=${editID}&newRowData=${dataJSON}`);
+                const data = await response.json();
+            }
         }
     };
 
@@ -293,13 +323,13 @@ export default function TableForm(props) {
             <button className="k-button k-button-clear" onClick={excelExport}>
                 <span className="k-icon k-i-xls" />
             </button>
-            <button className="k-button k-button-clear" onClick={deleteSelectedRows}>
+            <button className="k-button k-button-clear" onClick={handleDeleteDialogOpen}>
                 <span className="k-icon k-i-minus" />
             </button>
             <button className="k-button k-button-clear" onClick={addRecord}>
                 <span className="k-icon k-i-plus" />
             </button>
-            <button className="k-button k-button-clear" onClick={applyEdit}>
+            <button className="k-button k-button-clear" onClick={applyEdit} disabled={!edited}>
                 <span className="k-icon k-i-check" />
             </button>
             <button className="k-button k-button-clear">
@@ -314,6 +344,26 @@ export default function TableForm(props) {
         <div>
             <LocalizationProvider language="ru-RU">
                 <IntlProvider locale="ru">
+                    {deleteDialogOpen && (
+                        <Dialog title={t('table.deleteRowsHeader')} onClose={handleDeleteDialogClose}>
+                            <p
+                                style={{
+                                    margin: "25px",
+                                    textAlign: "center",
+                                }}
+                            >
+                                {t('table.areYouSureToDeleteRows', { count: _.countBy(Object.keys(selectedState), o => selectedState[o]).true })}
+                            </p>
+                            <DialogActionsBar>
+                                <Button className="actionbutton" primary={true} onClick={() => { handleDeleteDialogClose(); deleteSelectedRows(); }}>
+                                    {t('base.ok')}
+                                </Button>
+                                <Button className="actionbutton" onClick={handleDeleteDialogClose}>
+                                    {t('base.cancel')}
+                                </Button>
+                            </DialogActionsBar>
+                        </Dialog>
+                    )}
                     <FormHeader sessionId={sessionId} formData={formData} additionalButtons={otherButtons} {...other} />
                     <ExcelExport data={dataToShow.data} ref={_export}>
                         <Grid
@@ -338,7 +388,7 @@ export default function TableForm(props) {
                             onKeyDown={onKeyDown}
                         >
                             {tableData.columnsJSON.map(column =>
-                                <Column field={column.field} title={column.headerName} width={calculateWidth(column.headerName, column.field)} editor={getEditorType(column)} columnMenu={GridColumnMenuFilter} />
+                                <Column field={column.field} title={column.headerName} width={calculateWidth(column.headerName, column.field)} editor={getEditorType(column)} format={getFormat(column)} columnMenu={GridColumnMenuFilter} />
                             )}
                         </Grid>
                     </ExcelExport>

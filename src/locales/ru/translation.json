@@ -20,6 +20,10 @@
   "session": {
     "loading": "Загрузка сессии..."
   },
+  "table": {
+    "deleteRowsHeader": "Удаление строк",
+    "areYouSureToDeleteRows": "Вы уверены, что хотите удалить строки (к-во: {{count}})?"
+  },
   "version": {
     "label": "Версия"
   }

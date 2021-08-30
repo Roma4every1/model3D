@@ -20,6 +20,10 @@
   "session": {
     "loading": "Loading session..."
   },
+  "table": {
+    "deleteRowsHeader": "Rows deleting",
+    "areYouSureToDeleteRows": "Are you sure to delete rows (count: {{count}})?"
+  },
   "version": {
     "label": "Version"
   }
