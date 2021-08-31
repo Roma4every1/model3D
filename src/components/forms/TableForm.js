@@ -16,6 +16,7 @@ import {
     LocalizationProvider,
     loadMessages,
 } from "@progress/kendo-react-intl";
+import { DropDownCell } from "./DropDownCell";
 import { ExcelExport } from '@progress/kendo-react-excel-export';
 import { process } from "@progress/kendo-data-query";
 import calculateSize from "calculate-size";
@@ -56,7 +57,10 @@ export default function TableForm(props) {
     const [databaseData, setDatabaseData] = React.useState([]);
     const [rowAdding, setRowAdding] = React.useState(false);
     const [edited, setEdited] = React.useState(false);
-    const [neededParamsValues, setNeededParamsValues] = React.useState([]);
+    const [neededParamsValues, setNeededParamsValues] = React.useState({
+        values: [],
+        loaded: false
+    });
     const [tableData, setTableData] = React.useState({
         rowsJSON: [],
         columnsJSON: []
@@ -105,7 +109,7 @@ export default function TableForm(props) {
         setEdited(true);
         const editedItemID = idGetter(event.dataItem);
         const data = tableData.rowsJSON.map(item =>
-            idGetter(item) === editedItemID ? { ...item, [event.field]: event.value } : item
+            idGetter(item) === editedItemID ? (event.dataItem[event.field + '_jsoriginal'] ? { ...item, [event.field]: event.value, [event.field + '_jsoriginal']: event.dataItem[event.field + '_jsoriginal'] } : { ...item, [event.field]: event.value }) : item
         );
         setTableData({ rowsJSON: data, columnsJSON: tableData.columnsJSON });
     };
@@ -132,10 +136,10 @@ export default function TableForm(props) {
         let ignore = false;
 
         async function fetchNewData() {
-            const param = _.find(neededParamsValues, function (o) { return o.id === globalParameters.name; });
+            const param = _.find(neededParamsValues.values, function (o) { return o.id === globalParameters.name; });
             if (param) {
                 param.value = globalParameters.value;
-                let jsonValues = await fetchData(neededParamsValues);
+                let jsonValues = await fetchData(neededParamsValues.values);
                 if (!ignore) {
                     setTableData({
                         rowsJSON: jsonValues.rowsJSON,
@@ -144,9 +148,11 @@ export default function TableForm(props) {
                 }
             }
         }
-        fetchNewData();
+        if (neededParamsValues.loaded) {
+            fetchNewData();
+        }
         return () => { ignore = true; }
-    }, [globalParameters, neededParamsValues]);
+    }, [globalParameters]);
 
     React.useEffect(() => {
         let ignore = false;
@@ -162,9 +168,15 @@ export default function TableForm(props) {
                     }
                 });
             });
-            setNeededParamsValues(neededParamsJSON);
+            setNeededParamsValues({ values: neededParamsJSON, loaded: true });
             let jsonValues = await fetchData(neededParamsJSON);
             if (!ignore) {
+                setDataState({
+                    sort: [
+                    ],
+                    skip: 0,
+                });
+
                 setTableData({
                     rowsJSON: jsonValues.rowsJSON,
                     columnsJSON: jsonValues.columnsJSON
@@ -176,22 +188,64 @@ export default function TableForm(props) {
     }, [sessionId, formData]);
 
     async function fetchData(neededParamsJSON) {
+        async function fetchLookupData(columnElement) {
+            const response = await utils.webFetch(`getNeededParamForChannel?sessionId=${globals.sessionId}&channelName=${columnElement.lookupChannelName}`);
+            const responseJSON = await response.json();
+            var neededParamsJSON = [];
+            globals.globalParameters.forEach(element => {
+                responseJSON.forEach(responseParam => {
+                    if (element.id === responseParam) {
+                        neededParamsJSON.push(element);
+                    }
+                });
+            });
+            const jsonParamaters = JSON.stringify(neededParamsJSON).replaceAll('#', '%23');
+            const response2 = await utils.webFetch(`getChannelDataByName?sessionId=${globals.sessionId}&channelName=${columnElement.lookupChannelName}&paramValues=${jsonParamaters}`);
+            const response2JSON = await response2.json();
+            let valuesFromJSON = '';
+            if (response2JSON && response2JSON !== '') {
+                let idIndex = 0;
+                let nameIndex = 0;
+                response2JSON.properties.forEach(property => {
+                    if (property.name.toUpperCase() === 'LOOKUPCODE') {
+                        idIndex = _.findIndex(response2JSON.data.Columns, function (o) { return o.Name === property.fromColumn; });
+                    }
+                    else if (property.name.toUpperCase() === 'LOOKUPVALUE') {
+                        nameIndex = _.findIndex(response2JSON.data.Columns, function (o) { return o.Name === property.fromColumn; });
+                    }
+                });
+                valuesFromJSON = response2JSON.data.Rows.map((row) => {
+                    let temp = {};
+                    temp.id = row.Cells[idIndex];
+                    temp.value = row.Cells[nameIndex];
+                    temp.text = row.Cells[nameIndex];
+                    return temp;
+                });
+            }
+            columnElement.lookupData = valuesFromJSON;
+        }
+
         const jsonParamaters = JSON.stringify(neededParamsJSON).replaceAll('#', '%23');
         const response = await utils.webFetch(`fill?sessionId=${sessionId}&clientId=${formData.id}&paramValues=${jsonParamaters}`);
         const data = await response.json();
         setDatabaseData(data);
 
-        const columnsJSON = data.data.Columns.map(function (column) {
+        const columnsJSON = await Promise.all(data.data.Columns.map(async function (column) {
             const temp = {};
             temp.field = column.Name;
             temp.headerName = column.Name;
             temp.netType = column.NetType;
-            const property = _.find(data.properties, function (o) { return o.name === column.Name; });
+            const property = _.find(data.properties, function (o) { return o.fromColumn === column.Name; });
             if (property) {
                 temp.headerName = property.displayName;
+                temp.lookupChannelName = property.lookupChannelName;
+                if (property.lookupChannelName) {
+                    await fetchLookupData(temp);
+                }
             }
             return temp;
-        });
+        }));
+
         const rowsJSON = data.data.Rows.map(function (row, rowIndex) {
             const temp = {};
             temp.js_id = rowIndex;
@@ -205,7 +259,15 @@ export default function TableForm(props) {
                     temp[columnsJSON[i].field] = d;
                 }
                 else {
-                    temp[columnsJSON[i].field] = row.Cells[i];
+                    if (columnsJSON[i].lookupData) {
+                        const prevalue = row.Cells[i];
+                        const textvalue = columnsJSON[i].lookupData.find((c) => c.id === prevalue).text;
+                        temp[columnsJSON[i].field] = textvalue;
+                        temp[columnsJSON[i].field + '_jsoriginal'] = row.Cells[i];
+                    }
+                    else {
+                        temp[columnsJSON[i].field] = row.Cells[i];
+                    }
                 }
             }
             return temp;
@@ -253,7 +315,7 @@ export default function TableForm(props) {
     const calculateWidth = (headerName, field) => {
         let maxWidth = calculateSize(headerName, {
             font: "Arial",
-            fontSize: "16px",
+            fontSize: "14px",
         }).width + 10;
         tableData.rowsJSON.forEach((item) => {
             var value = item[field];
@@ -262,7 +324,7 @@ export default function TableForm(props) {
             }
             const size = calculateSize(value, {
                 font: "Arial",
-                fontSize: "16px",
+                fontSize: "14px",
             }); // pass the font properties based on the application
             if (size.width > maxWidth) {
                 maxWidth = size.width;
@@ -301,9 +363,15 @@ export default function TableForm(props) {
             setEditID(null);
             setEdited(false);
             var cells = [];
-            databaseData.data.Columns.forEach(column =>
-                cells.push(rowToInsert[column.Name])
-            );
+            databaseData.data.Columns.forEach(column => {
+                const datacolumn = tableData.columnsJSON.find((c) => c.field === column.Name)
+                if (datacolumn.lookupData) {
+                    return cells.push(rowToInsert[column.Name + '_jsoriginal'])
+                }
+                else {
+                    return cells.push(rowToInsert[column.Name])
+                }
+            });
             var itemToInsert = { Id: null, Cells: cells };
             const dataJSON = JSON.stringify([itemToInsert]);
             if (rowAdding) {
@@ -368,7 +436,6 @@ export default function TableForm(props) {
                     <ExcelExport data={dataToShow.data} ref={_export}>
                         <Grid
                             resizable={true}
-                            pageable={true}
                             sortable={true}
                             data={dataToShow}
                             {...dataState}
@@ -387,8 +454,29 @@ export default function TableForm(props) {
                             onSelectionChange={onSelectionChange}
                             onKeyDown={onKeyDown}
                         >
-                            {tableData.columnsJSON.map(column =>
-                                <Column field={column.field} title={column.headerName} width={calculateWidth(column.headerName, column.field)} editor={getEditorType(column)} format={getFormat(column)} columnMenu={GridColumnMenuFilter} />
+                            {tableData.columnsJSON.map(column => {
+                                if (column.lookupData) {
+                                    return <Column
+                                        field={column.field}
+                                        title={column.headerName}
+                                        width={calculateWidth(column.headerName, column.field)}
+                                        editor={getEditorType(column)}
+                                        format={getFormat(column)}
+                                        cell={(props) => <DropDownCell {...props} column={column} onRowClick={closeEdit} onSelectionChange={onSelectionChange} />}
+                                        columnMenu={GridColumnMenuFilter}
+                                    />
+                                }
+                                else {
+                                    return <Column
+                                        field={column.field}
+                                        title={column.headerName}
+                                        width={calculateWidth(column.headerName, column.field)}
+                                        editor={getEditorType(column)}
+                                        format={getFormat(column)}
+                                        columnMenu={GridColumnMenuFilter}
+                                    />
+                                }
+                            }
                             )}
                         </Grid>
                     </ExcelExport>

@@ -81,23 +81,41 @@ code {
     padding-inline: 0px;
     padding-block: 0px;
 }
- 
+
 .parametereditorbox {
+    height: 100px;
     margin: 1px;
-    vertical-align: middle;
     display: table-cell;
-    align-content: center;
+    vertical-align: middle;
 }
 
 .parameterlabel {
     width: 100px;
-    height: 100%;
     float: left;
     font-size: 12px;
     display: inline-block;
 }
 
-.k-clear-value, .k-combobox .k-input, .k-datepicker .k-input, .k-dateinput .k-input, .k-numerictextbox .k-input, .k-dropdown-wrap {
+.parametereditor {
+    float: right;
+    display: inline-block;
+    font-size: 12px;
+    height: 20px;
+}
+
+.parametereditorwithoutheight {
+    float: right;
+    display: inline-block;
+    font-size: 12px;
+    vertical-align: middle;
+    max-width: 155px;
+}
+
+.k-clear-value, .k-combobox .k-input, .k-dropdown-wrap {
+    height: 100%;
+}
+
+.k-dropdown, .k-dropdown .k-input, .k-datepicker .k-input, .k-dateinput .k-input, .k-numerictextbox .k-input {
     height: 20px;
 }
 
@@ -106,7 +124,7 @@ code {
 }
 
 .k-grid {
-    font-size: 10px;
+    font-size: 12px;
 }
 
 .k-grid tr {
@@ -114,11 +132,13 @@ code {
     height: 15px;
 }
 
-.parametereditor {
-    float: right;
-    display: inline-block;
-    font-size: 12px;
+.k-grid td {
+    padding: 3px;
+}
+
+.k-grid-header .k-header {
     height: 20px;
+    padding: 5px;
 }
 
 .k-dateinput {

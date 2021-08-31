@@ -98,29 +98,25 @@ export default function DateIntervalTextEditor(props) {
     return (
         <LocalizationProvider language='ru-RU'>
             <IntlProvider locale='ru'>
-                <div>
+                <div className='parametereditorbox'>
                     <Label className='parameterlabel' editorId={props.id}>{props.displayName}</Label>
-                    <div className='parametereditor'>
-                        <DateRangePicker
-                            id={props.id}
-                            name={props.id}
-                            min={xmin}
-                            max={xmax}
-                            defaultValue={defVal(getVal(props.value), getVal(props.defaultValue), xdefaultValue)}
-                            value={getVal(props.value)}
-                            startDateInputSettings={startDateInputSettings}
-                            endDateInputSettings={endDateInputSettings}
-                            onChange={(event) => {
-                                var newevent = {};
-                                newevent.target = {};
-                                //console.log(event.target);
-                                //console.log(props);
-                                newevent.target.name = event.target.props.id;//event.target.name;
-                                newevent.target.value = getValStr(event.target.value.start, event.target.value.end);
-                                props.selectionChanged(newevent)
-                            }}
-                        />
-                    </div>
+                    <DateRangePicker className='parametereditorwithoutheight'
+                        id={props.id}
+                        name={props.id}
+                        min={xmin}
+                        max={xmax}
+                        defaultValue={defVal(getVal(props.value), getVal(props.defaultValue), xdefaultValue)}
+                        value={getVal(props.value)}
+                        startDateInputSettings={startDateInputSettings}
+                        endDateInputSettings={endDateInputSettings}
+                        onChange={(event) => {
+                            var newevent = {};
+                            newevent.target = {};
+                            newevent.target.name = event.target.props.id;
+                            newevent.target.value = getValStr(event.target.value.start, event.target.value.end);
+                            props.selectionChanged(newevent)
+                        }}
+                    />
                 </div>
             </IntlProvider>
         </LocalizationProvider>
