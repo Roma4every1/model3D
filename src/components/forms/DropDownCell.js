@@ -15,21 +15,15 @@ export const DropDownCell = (props) => {
         }
     };
 
-    const { dataItem, column } = props;
+    const { dataItem, lookupData } = props;
     const field = props.field || "";
     const dataValue = dataItem[field] === null ? "" : dataItem[field];
     return (
-        <td>
-            {dataItem.js_inEdit ? (
-                <DropDownList
-                    onChange={handleChange}
-                    value={column.lookupData.find((c) => c.value === dataValue)}
-                    data={column.lookupData}
-                    textField="text"
-                />
-            ) :
-                dataValue
-            }
-        </td>
+        <DropDownList
+            onChange={handleChange}
+            value={lookupData.find((c) => c.value === dataValue)}
+            data={lookupData}
+            textField="text"
+        />
     );
 };

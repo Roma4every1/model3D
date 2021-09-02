@@ -133,7 +133,50 @@ code {
 }
 
 .k-grid td {
-    padding: 3px;
+    padding: 0px;
+    border: green;
+}
+
+.k-grid .myGridCell {
+    padding-top: 0px;
+    margin: 30;
+}
+
+.k-grid .k-state-selected {
+    padding-top: 0px;
+    border: solid red;
+    margin: 1;
+}
+
+.k-grid .k-grid-edit-cell {
+    padding-top: 0px;
+    padding-left: 30px;
+    padding-bottom: 0px;
+    padding-right: 0px;
+    border: solid green;
+    margin-top: 0px;
+    margin-left: 0px;
+    margin-bottom: 30px;
+    margin-right: 30px;
+}
+
+.k-textbox .k-input {
+    padding: 0px;
+    margin: 0px;
+}
+
+.k-numerictextbox, .k-textbox {
+    border: solid green;
+    padding-top: 0px;
+    padding-left: 0px;
+    padding-bottom: 0px;
+    padding-right: 0px;
+    padding: 0px;
+    margin-top: 0px;
+    margin-left: 0px;
+    margin-bottom: 0px;
+    margin-right: 0px;
+    height: 10px;
 }
 
 .k-grid-header .k-header {

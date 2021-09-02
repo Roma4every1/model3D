@@ -16,7 +16,9 @@ import {
     LocalizationProvider,
     loadMessages,
 } from "@progress/kendo-react-intl";
+import { BaseCell } from "./BaseCell";
 import { DropDownCell } from "./DropDownCell";
+import { TextCell } from "./TextCell";
 import { ExcelExport } from '@progress/kendo-react-excel-export';
 import { process } from "@progress/kendo-data-query";
 import calculateSize from "calculate-size";
@@ -261,7 +263,7 @@ export default function TableForm(props) {
                 else {
                     if (columnsJSON[i].lookupData) {
                         const prevalue = row.Cells[i];
-                        const textvalue = columnsJSON[i].lookupData.find((c) => c.id === prevalue).text;
+                        const textvalue = columnsJSON[i].lookupData.find((c) => c.id === prevalue)?.text;
                         temp[columnsJSON[i].field] = textvalue;
                         temp[columnsJSON[i].field + '_jsoriginal'] = row.Cells[i];
                     }
@@ -334,15 +336,27 @@ export default function TableForm(props) {
     };
 
     const getEditorType = (column) => {
+        if (column.lookupData) {
+            return {
+                type: "lookup",
+                value: column.lookupData
+            }
+        }
         switch (column.netType) {
             case "System.Int64":
             case "System.Int32":
             case "System.Double":
-                return "numeric";
+                return {
+                    type: "numeric"
+                };
             case "System.DateTime":
-                return "date";
+                return {
+                    type: "date"
+                };
             default:
-                return "string";
+                return {
+                    type: "string"
+                };
         }
     }
 
@@ -352,6 +366,15 @@ export default function TableForm(props) {
                 return "{0:d}";
             default:
                 return null;
+        }
+    }
+
+    const getCell = (column) => {
+        if (column.lookupData) {
+            return (props) => <DropDownCell {...props} column={column} onRowClick={closeEdit} onSelectionChange={onSelectionChange} />
+        }
+        else {
+            return (props) => <TextCell {...props} column={column} onRowClick={closeEdit} onSelectionChange={onSelectionChange} />
         }
     }
 
@@ -408,6 +431,9 @@ export default function TableForm(props) {
             </button>
         </div>;
 
+   // const MyCustomCell = (props) => <BaseCell {...props} />;
+    const MyCustomCell = () => <BaseCell />;
+
     return (
         <div>
             <LocalizationProvider language="ru-RU">
@@ -455,27 +481,43 @@ export default function TableForm(props) {
                             onKeyDown={onKeyDown}
                         >
                             {tableData.columnsJSON.map(column => {
-                                if (column.lookupData) {
-                                    return <Column
-                                        field={column.field}
-                                        title={column.headerName}
-                                        width={calculateWidth(column.headerName, column.field)}
-                                        editor={getEditorType(column)}
-                                        format={getFormat(column)}
-                                        cell={(props) => <DropDownCell {...props} column={column} onRowClick={closeEdit} onSelectionChange={onSelectionChange} />}
-                                        columnMenu={GridColumnMenuFilter}
-                                    />
-                                }
-                                else {
-                                    return <Column
-                                        field={column.field}
-                                        title={column.headerName}
-                                        width={calculateWidth(column.headerName, column.field)}
-                                        editor={getEditorType(column)}
-                                        format={getFormat(column)}
-                                        columnMenu={GridColumnMenuFilter}
-                                    />
-                                }
+                                return <Column
+                                    field={column.field}
+                                    title={column.headerName}
+                                    width={calculateWidth(column.headerName, column.field)}
+                                    editor={getEditorType(column)}
+                                    format={getFormat(column)}
+                                    //cell={(props) => <BaseCell {...props} editor={getEditorType(column)} column={column} onClick={closeEdit} onDoubleClick={rowClick} />}
+                                    //cell={(props) => <BaseCell {...props} />}
+                                    cell={BaseCell}
+                                    // cell={getCell(column)}
+                                    columnMenu={GridColumnMenuFilter}
+                                />
+
+                                //if (column.lookupData) {
+                                //    return <Column
+                                //        field={column.field}
+                                //        title={column.headerName}
+                                //        width={calculateWidth(column.headerName, column.field)}
+                                //        editor={getEditorType(column)}
+                                //        format={getFormat(column)}
+                                //        cell={(props) => <DropDownCell {...props} column={column} onRowClick={closeEdit} onSelectionChange={onSelectionChange} />}
+                                //        columnMenu={GridColumnMenuFilter}
+                                //    />
+                                //}
+                                //else {
+                                //    return <Column
+                                //        field={column.field}
+                                //        title={column.headerName}
+                                //        width={calculateWidth(column.headerName, column.field)}
+                                //        editor={getEditorType(column)}
+                                //        format={getFormat(column)}
+                                //        className="myGridCell"
+                                //        style={{padding:0}}
+                                //        cell={(props) => <TextCell {...props} column={column} onRowClick={closeEdit} onSelectionChange={onSelectionChange} />}
+                                //        columnMenu={GridColumnMenuFilter}
+                                //    />
+                                //}
                             }
                             )}
                         </Grid>
