@@ -6,34 +6,20 @@ import TableRowComboEditor from './TableRowComboEditor';
 import DateIntervalTextEditor from './DateIntervalTextEditor';
 
 export default function BaseEditor(props) {
-    if (props.editorType === 'integerTextEditor') {
-        return (
-            <IntegerTextEditor {...props} />
-        );
-    }
-    else if (props.editorType === 'stringTextEditor') {
-        return (
-            <StringTextEditor {...props} />
-        );
-    }
-    else if (props.editorType === 'dateTextEditor') {
-        return (
-            <DateTextEditor {...props} />
-        );
-    }
-    else if (props.editorType === 'tableRowTreeMultiEditor' || props.editorType === 'tableRowComboEditor') {
-        return (
-            <TableRowComboEditor {...props} />
-        );
-    }
-    else if (props.editorType === 'dateIntervalTextEditor') {
-        return (
-            <DateIntervalTextEditor {...props} />
-        );
-    }
-    else {
-        return (
-            <StringTextEditor {...props} />
-        );
+    switch (props.editorType) {
+        case 'integerTextEditor':
+            return <IntegerTextEditor {...props} />;
+        case 'stringTextEditor':
+            return <StringTextEditor {...props} />;
+        case 'dateTextEditor':
+        //case 'dateKMNEditor':
+            return <DateTextEditor {...props} />;
+        case 'tableRowTreeMultiEditor':
+        case 'tableRowComboEditor':
+            return <TableRowComboEditor {...props} />;
+        case 'dateIntervalTextEditor':
+            return <DateIntervalTextEditor {...props} />;
+        default:
+            return <StringTextEditor {...props} />;
     }
 }

@@ -3,41 +3,6 @@ html {
     font: 12px sans-serif;
 }
 
-a {
-  color: #0366d6;
-}
-
-code {
-  color: #E01A76;
-}
-
-.btn-primary {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
-}
-
-.col-1-4 {
-    width: 25%;
-    float: left;
-}
-
-.col-3-4 {
-    width: 75%;
-    float: left;
-}
-
-.app {
-    font-size: 12px;
-}
-
-.presentationList {
-    padding-left: 10px;
-    padding-top: 5px;
-    margin: 0 auto;
-    height: 100%;
-}
-
 .k-treeview .k-item {
     margin: 0px;
 }
@@ -130,10 +95,6 @@ code {
 .k-grid tr {
     min-height: 10px;
     height: 15px;
-}
-
-.k-grid td {
-    padding: 3px;
 }
 
 .k-grid-header .k-header {

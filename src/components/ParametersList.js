@@ -7,6 +7,22 @@ export function ParametersList(props) {
     const [editedJSON, setEditedJSON] = React.useState(parametersJSON);
     const [updatedParam, setUpdatedParam] = React.useState({});
 
+    const selectionChangedInner = React.useCallback((event) => {
+        var changedJSON = editedJSON;
+        var target = event.target
+        changedJSON.forEach(element => {
+            if (element.id === target.name) {
+                element.value = target.value;
+            }
+        });
+        setEditedJSON(changedJSON);
+        setMainEditedJSON(changedJSON);
+        setUpdatedParam(target);
+        if (selectionChanged) {
+            selectionChanged(target);
+        }
+    }, [selectionChanged]);
+
     return (
         <StackLayout orientation="vertical">
             {parametersJSON.map(parameterJSON =>
@@ -17,21 +33,7 @@ export function ParametersList(props) {
                     displayName={parameterJSON.displayName}
                     value={parameterJSON.value}
                     updatedParam={updatedParam}
-                    selectionChanged={(event) => {
-                        var changedJSON = editedJSON;
-                        var target = event.target
-                        changedJSON.forEach(element => {
-                            if (element.id === target.name) {
-                                element.value = target.value;
-                            }
-                        });
-                        setEditedJSON(changedJSON);
-                        setMainEditedJSON(changedJSON);
-                        setUpdatedParam(target);
-                        if (selectionChanged) {
-                            selectionChanged(target);
-                        }
-                    }}
+                    selectionChanged={selectionChangedInner}
                 />
             )}
         </StackLayout>

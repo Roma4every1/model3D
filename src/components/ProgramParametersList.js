@@ -104,7 +104,7 @@ export default function ProgramParametersList(props) {
     return (
 
         <div>
-            <Button className="programmbutton" variant="outlined" onClick={() => { fillReportParameters(sessionId, programId, handleOpen, updateLocalParametersList, updateGlobalParametersList) }}>
+            <Button className="programmbutton" onClick={() => { fillReportParameters(sessionId, programId, handleOpen, updateLocalParametersList, updateGlobalParametersList) }}>
                 {programDisplayName}
             </Button>
             {open && (

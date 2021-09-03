@@ -16,82 +16,13 @@ export default function TableRowComboEditor(props) {
     const { id, displayName, value, selectionChanged, updatedParam } = props;
     const [values, setValues] = React.useState([]);
     const [valueToShow, setValueToShow] = React.useState(undefined);
-    const [neededParameterValues, setNeededParameterValues] = React.useState([]);
+    const [neededParameterValues, setNeededParameterValues] = React.useState({
+        values: [],
+        loaded: false
+    });
 
-    function setNewValues(newValues) {
-        if (value) {
-            const startIndex = value.indexOf('LOOKUPCODE');
-            var finishIndex = value.indexOf('|', startIndex);
-            let dateValue;
-            if (finishIndex === -1) {
-                dateValue = value.slice(startIndex);
-            }
-            else {
-                dateValue = value.slice(startIndex, finishIndex);
-            }
-            let calculatedValueToShow = _.find(newValues, function (o) { return o.id === dateValue; });
-            if (calculatedValueToShow) {
-                setValueToShow(calculatedValueToShow);
-                var newevent = {};
-                newevent.target = {};
-                newevent.target.name = id
-                newevent.target.value = calculatedValueToShow.id
-                selectionChanged(newevent)
-            }
-            else {
-                setValueToShow(undefined);
-            }
-        }
-
-        setValues(newValues);
-    }
-
-    React.useEffect(() => {
-        let ignore = false;
-
-        async function fetchNewData() {
-            var neededParamsJSON = neededParameterValues;
-            var neededParamJSON = _.find(neededParamsJSON, function (o) { return o.id === updatedParam.name; });
-            if (neededParamJSON) {
-                neededParamJSON.value = updatedParam.value;
-                let jsonValues = await fetchData(neededParamsJSON);
-                if (!ignore && jsonValues && jsonValues !== '') {
-                    setNewValues(jsonValues);
-                }
-            }
-        }
-        fetchNewData();
-        return () => { ignore = true; }
-    }, [updatedParam]);
-
-    React.useEffect(() => {
-        let ignore = false;
-
-        async function fetchNeededParamsData() {
-            const response = await utils.webFetch(`getNeededParamForParam?sessionId=${globals.sessionId}&paramName=${id}`);
-            const responseJSON = await response.json();
-            var neededParamsJSON = [];
-            globals.globalParameters.forEach(element => {
-                responseJSON.forEach(responseParam => {
-                    if (element.id === responseParam) {
-                        neededParamsJSON.push(element);
-                    }
-                });
-            });
-            if (!ignore) {
-                let jsonValues = await fetchData(neededParamsJSON);
-                if (!ignore && jsonValues && jsonValues !== '') {
-                    setNewValues(jsonValues);
-                }
-            }
-        }
-
-        fetchNeededParamsData();
-        return () => { ignore = true; }
-    }, [id]);
-
-    async function fetchData(newNeededParameterValues) {
-        setNeededParameterValues(newNeededParameterValues)
+    const fetchData = React.useCallback(async (newNeededParameterValues) => {
+        setNeededParameterValues({ values: newNeededParameterValues, loaded: true });
         const jsonParamaters = JSON.stringify(newNeededParameterValues).replaceAll('#', '%23');
         const response = await utils.webFetch(`getChannelDataForParam?sessionId=${globals.sessionId}&paramName=${id}&paramValues=${jsonParamaters}`);
         const responseJSON = await response.json();
@@ -115,7 +46,79 @@ export default function TableRowComboEditor(props) {
             });
         }
         return valuesFromJSON;
-    }
+    }, [id]);
+
+    React.useEffect(() => {
+        if (value) {
+            const startIndex = value.indexOf('LOOKUPCODE');
+            var finishIndex = value.indexOf('|', startIndex);
+            let dateValue;
+            if (finishIndex === -1) {
+                dateValue = value.slice(startIndex);
+            }
+            else {
+                dateValue = value.slice(startIndex, finishIndex);
+            }
+            let calculatedValueToShow = _.find(values, function (o) { return o.id === dateValue; });
+            if (calculatedValueToShow) {
+                setValueToShow(calculatedValueToShow);
+                var newevent = {};
+                newevent.target = {};
+                newevent.target.name = id;
+                newevent.target.value = calculatedValueToShow.id;
+                selectionChanged(newevent);
+            }
+            else {
+                setValueToShow(undefined);
+            }
+        }
+    }, [values, value, id]);
+
+    React.useEffect(() => {
+        let ignore = false;
+
+        async function fetchNewData() {
+            var neededParamsJSON = neededParameterValues.values;
+            var neededParamJSON = _.find(neededParamsJSON, function (o) { return o.id === updatedParam.name; });
+            if (neededParamJSON) {
+                neededParamJSON.value = updatedParam.value;
+                let jsonValues = await fetchData(neededParamsJSON);
+                if (!ignore && jsonValues && jsonValues !== '') {
+                    setValues(jsonValues);
+                }
+            }
+        }
+        if (neededParameterValues.loaded && updatedParam.name) {
+            fetchNewData();
+        }
+        return () => { ignore = true; }
+    }, [updatedParam, id, fetchData]);
+
+    React.useEffect(() => {
+        let ignore = false;
+
+        async function fetchNeededParamsData() {
+            const response = await utils.webFetch(`getNeededParamForParam?sessionId=${globals.sessionId}&paramName=${id}`);
+            const responseJSON = await response.json();
+            var neededParamsJSON = [];
+            globals.globalParameters.forEach(element => {
+                responseJSON.forEach(responseParam => {
+                    if (element.id === responseParam) {
+                        neededParamsJSON.push(element);
+                    }
+                });
+            });
+            if (!ignore) {
+                let jsonValues = await fetchData(neededParamsJSON);
+                if (!ignore && jsonValues && jsonValues !== '') {
+                    setValues(jsonValues);
+                }
+            }
+        }
+
+        fetchNeededParamsData();
+        return () => { ignore = true; }
+    }, [id, fetchData]);
 
     return (
         <LocalizationProvider language='ru-RU'>

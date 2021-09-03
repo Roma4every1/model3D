@@ -17,8 +17,6 @@ import {
     loadMessages,
 } from "@progress/kendo-react-intl";
 import { BaseCell } from "./BaseCell";
-import { DropDownCell } from "./DropDownCell";
-import { TextCell } from "./TextCell";
 import { ExcelExport } from '@progress/kendo-react-excel-export';
 import { process } from "@progress/kendo-data-query";
 import calculateSize from "calculate-size";
@@ -81,11 +79,11 @@ export default function TableForm(props) {
         setDeleteDialogOpen(false);
     };
 
-    const rowClick = (event) => {
+    const rowDoubleClick = (event) => {
         setEditID(idGetter(event.dataItem));
     };
 
-    const closeEdit = (event) => {
+    const rowClick = (event) => {
         if (edited) {
             applyEdit();
         }
@@ -134,62 +132,7 @@ export default function TableForm(props) {
         setSelectedState(newSelectedState);
     };
 
-    React.useEffect(() => {
-        let ignore = false;
-
-        async function fetchNewData() {
-            const param = _.find(neededParamsValues.values, function (o) { return o.id === globalParameters.name; });
-            if (param) {
-                param.value = globalParameters.value;
-                let jsonValues = await fetchData(neededParamsValues.values);
-                if (!ignore) {
-                    setTableData({
-                        rowsJSON: jsonValues.rowsJSON,
-                        columnsJSON: jsonValues.columnsJSON
-                    });
-                }
-            }
-        }
-        if (neededParamsValues.loaded) {
-            fetchNewData();
-        }
-        return () => { ignore = true; }
-    }, [globalParameters]);
-
-    React.useEffect(() => {
-        let ignore = false;
-
-        async function fetchNeededParamsData() {
-            const response = await utils.webFetch(`getAllNeedParametersForForm?sessionId=${sessionId}&clientId=${formData.id}`);
-            const responseJSON = await response.json();
-            var neededParamsJSON = [];
-            globals.globalParameters.forEach(element => {
-                responseJSON.forEach(responseParam => {
-                    if (element.id === responseParam) {
-                        neededParamsJSON.push(element);
-                    }
-                });
-            });
-            setNeededParamsValues({ values: neededParamsJSON, loaded: true });
-            let jsonValues = await fetchData(neededParamsJSON);
-            if (!ignore) {
-                setDataState({
-                    sort: [
-                    ],
-                    skip: 0,
-                });
-
-                setTableData({
-                    rowsJSON: jsonValues.rowsJSON,
-                    columnsJSON: jsonValues.columnsJSON
-                });
-            }
-        }
-        fetchNeededParamsData();
-        return () => { ignore = true; }
-    }, [sessionId, formData]);
-
-    async function fetchData(neededParamsJSON) {
+    const fetchData = React.useCallback(async (neededParamsJSON) => {
         async function fetchLookupData(columnElement) {
             const response = await utils.webFetch(`getNeededParamForChannel?sessionId=${globals.sessionId}&channelName=${columnElement.lookupChannelName}`);
             const responseJSON = await response.json();
@@ -278,7 +221,62 @@ export default function TableForm(props) {
         result.columnsJSON = columnsJSON;
         result.rowsJSON = rowsJSON;
         return result;
-    }
+    }, [sessionId, formData]);
+
+    React.useEffect(() => {
+        let ignore = false;
+
+        async function fetchNewData() {
+            const param = _.find(neededParamsValues.values, function (o) { return o.id === globalParameters.name; });
+            if (param) {
+                param.value = globalParameters.value;
+                let jsonValues = await fetchData(neededParamsValues.values);
+                if (!ignore) {
+                    setTableData({
+                        rowsJSON: jsonValues.rowsJSON,
+                        columnsJSON: jsonValues.columnsJSON
+                    });
+                }
+            }
+        }
+        if (neededParamsValues.loaded) {
+            fetchNewData();
+        }
+        return () => { ignore = true; }
+    }, [globalParameters, neededParamsValues, fetchData]);
+
+    React.useEffect(() => {
+        let ignore = false;
+
+        async function fetchNeededParamsData() {
+            const response = await utils.webFetch(`getAllNeedParametersForForm?sessionId=${sessionId}&clientId=${formData.id}`);
+            const responseJSON = await response.json();
+            var neededParamsJSON = [];
+            globals.globalParameters.forEach(element => {
+                responseJSON.forEach(responseParam => {
+                    if (element.id === responseParam) {
+                        neededParamsJSON.push(element);
+                    }
+                });
+            });
+            setNeededParamsValues({ values: neededParamsJSON, loaded: true });
+            let jsonValues = await fetchData(neededParamsJSON);
+            if (!ignore) {
+                setDataState({
+                    sort: [
+                    ],
+                    skip: 0,
+                });
+
+                setTableData({
+                    rowsJSON: jsonValues.rowsJSON,
+                    columnsJSON: jsonValues.columnsJSON
+                });
+            }
+        }
+        fetchNeededParamsData();
+        return () => { ignore = true; }
+    }, [sessionId, formData, fetchData]);
 
     async function deleteSelectedRows() {
         var elementsToRemove = ',';
@@ -287,7 +285,7 @@ export default function TableForm(props) {
             if (selectedState[element]) {
                 elementsToRemove = elementsToRemove + element + ',';
                 const itemToDeleteIndex = tableDataCopy.rowsJSON.findIndex(item =>
-                    idGetter(item) == element
+                    idGetter(item) === element
                 );
                 tableDataCopy.rowsJSON.splice(itemToDeleteIndex, 1);
             }
@@ -299,7 +297,7 @@ export default function TableForm(props) {
             });
             elementsToRemove = elementsToRemove.slice(1, -1);
             const response = await utils.webFetch(`removeRows?sessionId=${sessionId}&tableId=${databaseData.tableId}&rows=${elementsToRemove}`);
-            const data = await response.json();
+            await response.json();
         }
     };
 
@@ -369,15 +367,6 @@ export default function TableForm(props) {
         }
     }
 
-    const getCell = (column) => {
-        if (column.lookupData) {
-            return (props) => <DropDownCell {...props} column={column} onRowClick={closeEdit} onSelectionChange={onSelectionChange} />
-        }
-        else {
-            return (props) => <TextCell {...props} column={column} onRowClick={closeEdit} onSelectionChange={onSelectionChange} />
-        }
-    }
-
     async function applyEdit() {
         const rowToInsert = tableData.rowsJSON.find(item =>
             idGetter(item) === editID
@@ -399,12 +388,12 @@ export default function TableForm(props) {
             const dataJSON = JSON.stringify([itemToInsert]);
             if (rowAdding) {
                 const response = await utils.webFetch(`insertRow?sessionId=${sessionId}&tableId=${databaseData.tableId}&rowData=${dataJSON}`);
-                const data = await response.json();
+                await response.json();
                 setRowAdding(false);
             }
             else {
                 const response = await utils.webFetch(`updateRow?sessionId=${sessionId}&tableId=${databaseData.tableId}&rowsIndices=${editID}&newRowData=${dataJSON}`);
-                const data = await response.json();
+                await response.json();
             }
         }
     };
@@ -430,9 +419,6 @@ export default function TableForm(props) {
                 <span className="k-icon k-i-reset" />
             </button>
         </div>;
-
-   // const MyCustomCell = (props) => <BaseCell {...props} />;
-    const MyCustomCell = () => <BaseCell />;
 
     return (
         <div>
@@ -468,8 +454,8 @@ export default function TableForm(props) {
                             onDataStateChange={(e) => {
                                 setDataState(e.dataState);
                             }}
-                            onRowDoubleClick={rowClick}
-                            onRowClick={closeEdit}
+                            onRowDoubleClick={rowDoubleClick}
+                            onRowClick={rowClick}
                             onItemChange={onItemChange}
                             dataItemKey={DATA_ITEM_KEY}
                             editField={EDIT_FIELD}
@@ -480,45 +466,16 @@ export default function TableForm(props) {
                             onSelectionChange={onSelectionChange}
                             onKeyDown={onKeyDown}
                         >
-                            {tableData.columnsJSON.map(column => {
-                                return <Column
-                                    field={column.field}
-                                    title={column.headerName}
-                                    width={calculateWidth(column.headerName, column.field)}
-                                    editor={getEditorType(column)}
-                                    format={getFormat(column)}
-                                    //cell={(props) => <BaseCell {...props} editor={getEditorType(column)} column={column} onClick={closeEdit} onDoubleClick={rowClick} />}
-                                    //cell={(props) => <BaseCell {...props} />}
-                                    cell={BaseCell}
-                                    // cell={getCell(column)}
-                                    columnMenu={GridColumnMenuFilter}
-                                />
-
-                                //if (column.lookupData) {
-                                //    return <Column
-                                //        field={column.field}
-                                //        title={column.headerName}
-                                //        width={calculateWidth(column.headerName, column.field)}
-                                //        editor={getEditorType(column)}
-                                //        format={getFormat(column)}
-                                //        cell={(props) => <DropDownCell {...props} column={column} onRowClick={closeEdit} onSelectionChange={onSelectionChange} />}
-                                //        columnMenu={GridColumnMenuFilter}
-                                //    />
-                                //}
-                                //else {
-                                //    return <Column
-                                //        field={column.field}
-                                //        title={column.headerName}
-                                //        width={calculateWidth(column.headerName, column.field)}
-                                //        editor={getEditorType(column)}
-                                //        format={getFormat(column)}
-                                //        className="myGridCell"
-                                //        style={{padding:0}}
-                                //        cell={(props) => <TextCell {...props} column={column} onRowClick={closeEdit} onSelectionChange={onSelectionChange} />}
-                                //        columnMenu={GridColumnMenuFilter}
-                                //    />
-                                //}
-                            }
+                            {tableData.columnsJSON.map(column => <Column
+                                key={column.field}
+                                field={column.field}
+                                title={column.headerName}
+                                width={calculateWidth(column.headerName, column.field)}
+                                editor={getEditorType(column)}
+                                format={getFormat(column)}
+                                cell={BaseCell}
+                                columnMenu={GridColumnMenuFilter}
+                            />
                             )}
                         </Grid>
                     </ExcelExport>

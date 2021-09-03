@@ -1,5 +1,4 @@
 import React from 'react';
-import { Label } from "@progress/kendo-react-labels";
 import SqlProgramsList from './components/SqlProgramsList';
 import GlobalParametersList from './components/GlobalParametersList';
 import PresentationList from './components/PresentationList';
@@ -15,7 +14,6 @@ import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import {
     Button
 } from "@progress/kendo-react-buttons";
-import SimpleTabs from './components/SimpleTabs';
 import '@progress/kendo-theme-default/dist/all.css';
 import 'flexlayout-react/style/light.css';
 import './custom.css'
@@ -66,7 +64,7 @@ export default function App() {
             return;
         }
         if (event.itemIndex) {
-            if (event.itemIndex == 3) {
+            if (event.itemIndex === 3) {
                 setAboutState(true);
             }
         }
