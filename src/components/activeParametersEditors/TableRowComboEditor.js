@@ -16,18 +16,14 @@ export default function TableRowComboEditor(props) {
     const { id, displayName, value, selectionChanged, updatedParam } = props;
     const [values, setValues] = React.useState([]);
     const [valueToShow, setValueToShow] = React.useState(undefined);
-    const [neededParameterValues, setNeededParameterValues] = React.useState({
-        values: [],
-        loaded: false
-    });
+    const [neededParameterValues, updateNeededParameterValues] = React.useReducer(neededParameterValuesReducer, { values: [], changed: false });
 
-    const fetchData = React.useCallback(async (newNeededParameterValues) => {
-        setNeededParameterValues({ values: newNeededParameterValues, loaded: true });
-        const jsonParamaters = JSON.stringify(newNeededParameterValues).replaceAll('#', '%23');
+    const fetchData = React.useCallback(async () => {
+        const jsonParamaters = JSON.stringify(neededParameterValues.values).replaceAll('#', '%23');
         const response = await utils.webFetch(`getChannelDataForParam?sessionId=${globals.sessionId}&paramName=${id}&paramValues=${jsonParamaters}`);
         const responseJSON = await response.json();
         let valuesFromJSON = '';
-        if (responseJSON && responseJSON !== '') {
+        if (responseJSON && responseJSON.properties) {
             let idIndex = 0;
             let nameIndex = 0;
             responseJSON.properties.forEach(property => {
@@ -45,8 +41,10 @@ export default function TableRowComboEditor(props) {
                 return temp
             });
         }
-        return valuesFromJSON;
-    }, [id]);
+        if (valuesFromJSON && valuesFromJSON !== '') {
+            setValues(valuesFromJSON);
+        }
+    }, [id, neededParameterValues]);
 
     React.useEffect(() => {
         if (value) {
@@ -72,27 +70,32 @@ export default function TableRowComboEditor(props) {
                 setValueToShow(undefined);
             }
         }
-    }, [values, value, id]);
+    }, [values, value, id, selectionChanged]);
+
+    function neededParameterValuesReducer(state, action) {
+        if (action.updatedParam) {
+            var neededParamsJSON = state.values;
+            var neededParamJSON = _.find(neededParamsJSON, function (o) { return o.id === action.updatedParam.name; });
+            if (neededParamJSON) {
+                neededParamJSON.value = action.updatedParam.value;
+                return ({ values: neededParamsJSON, changed: true });
+            }
+            return ({ values: state.values, changed: false });
+        }
+        else {
+            return ({ values: action.newValues, changed: true });
+        }
+    }
 
     React.useEffect(() => {
-        let ignore = false;
+        if (neededParameterValues.changed) {
+            fetchData();
+        }
+    }, [neededParameterValues, fetchData]);
 
-        async function fetchNewData() {
-            var neededParamsJSON = neededParameterValues.values;
-            var neededParamJSON = _.find(neededParamsJSON, function (o) { return o.id === updatedParam.name; });
-            if (neededParamJSON) {
-                neededParamJSON.value = updatedParam.value;
-                let jsonValues = await fetchData(neededParamsJSON);
-                if (!ignore && jsonValues && jsonValues !== '') {
-                    setValues(jsonValues);
-                }
-            }
-        }
-        if (neededParameterValues.loaded && updatedParam.name) {
-            fetchNewData();
-        }
-        return () => { ignore = true; }
-    }, [updatedParam, id, fetchData]);
+    React.useEffect(() => {
+        updateNeededParameterValues({ updatedParam: updatedParam });
+    }, [updatedParam]);
 
     React.useEffect(() => {
         let ignore = false;
@@ -109,16 +112,13 @@ export default function TableRowComboEditor(props) {
                 });
             });
             if (!ignore) {
-                let jsonValues = await fetchData(neededParamsJSON);
-                if (!ignore && jsonValues && jsonValues !== '') {
-                    setValues(jsonValues);
-                }
+                updateNeededParameterValues({ newValues: neededParamsJSON });
             }
         }
 
         fetchNeededParamsData();
         return () => { ignore = true; }
-    }, [id, fetchData]);
+    }, [id]);
 
     return (
         <LocalizationProvider language='ru-RU'>

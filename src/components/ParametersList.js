@@ -4,24 +4,27 @@ import BaseEditor from './activeParametersEditors/BaseEditor';
 
 export function ParametersList(props) {
     const { parametersJSON, setMainEditedJSON, selectionChanged } = props;
-    const [editedJSON, setEditedJSON] = React.useState(parametersJSON);
+    const [editedJSON, updateEditedJSON] = React.useReducer(editedJSONReducer, { values: parametersJSON, updatedParam: {} });
     const [updatedParam, setUpdatedParam] = React.useState({});
 
-    const selectionChangedInner = React.useCallback((event) => {
-        var changedJSON = editedJSON;
-        var target = event.target
+    function editedJSONReducer(state, action) {
+        var changedJSON = state.values;
+        var target = action.target
         changedJSON.forEach(element => {
             if (element.id === target.name) {
                 element.value = target.value;
             }
         });
-        setEditedJSON(changedJSON);
-        setMainEditedJSON(changedJSON);
-        setUpdatedParam(target);
+        return { values: changedJSON, updatedParam: target};
+    }
+
+    React.useEffect(() => {
+        setMainEditedJSON(editedJSON.values);
+        setUpdatedParam(editedJSON.updatedParam);
         if (selectionChanged) {
-            selectionChanged(target);
+            selectionChanged(editedJSON.updatedParam);
         }
-    }, [selectionChanged]);
+    }, [editedJSON, setMainEditedJSON, selectionChanged]);
 
     return (
         <StackLayout orientation="vertical">
@@ -33,7 +36,7 @@ export function ParametersList(props) {
                     displayName={parameterJSON.displayName}
                     value={parameterJSON.value}
                     updatedParam={updatedParam}
-                    selectionChanged={selectionChangedInner}
+                    selectionChanged={updateEditedJSON}
                 />
             )}
         </StackLayout>
