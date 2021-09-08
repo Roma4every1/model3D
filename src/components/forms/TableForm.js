@@ -175,52 +175,60 @@ export default function TableForm(props) {
         const data = await response.json();
         setDatabaseData(data);
 
-        const columnsJSON = await Promise.all(data.data.Columns.map(async function (column) {
-            const temp = {};
-            temp.field = column.Name;
-            temp.headerName = column.Name;
-            temp.netType = column.NetType;
-            const property = _.find(data.properties, function (o) { return o.fromColumn === column.Name; });
-            if (property) {
-                temp.headerName = property.displayName;
-                temp.lookupChannelName = property.lookupChannelName;
-                if (property.lookupChannelName) {
-                    await fetchLookupData(temp);
+        if (data.data) {
+            const columnsJSON = await Promise.all(data.data.Columns.map(async function (column) {
+                const temp = {};
+                temp.field = column.Name;
+                temp.headerName = column.Name;
+                temp.netType = column.NetType;
+                const property = _.find(data.properties, function (o) { return o.fromColumn === column.Name; });
+                if (property) {
+                    temp.headerName = property.displayName;
+                    temp.lookupChannelName = property.lookupChannelName;
+                    if (property.lookupChannelName) {
+                        await fetchLookupData(temp);
+                    }
                 }
-            }
-            return temp;
-        }));
+                return temp;
+            }));
 
-        const rowsJSON = data.data.Rows.map(function (row, rowIndex) {
-            const temp = {};
-            temp.js_id = rowIndex;
-            for (var i = 0; i < columnsJSON.length; i++) {
-                if (columnsJSON[i].netType === 'System.DateTime' && row.Cells[i]) {
-                    const startIndex = row.Cells[i].indexOf('(');
-                    const finishIndex = row.Cells[i].lastIndexOf('+');
-                    const dateValue = row.Cells[i].slice(startIndex + 1, finishIndex);
-                    var d = new Date();
-                    d.setTime(dateValue);
-                    temp[columnsJSON[i].field] = d;
-                }
-                else {
-                    if (columnsJSON[i].lookupData) {
-                        const prevalue = row.Cells[i];
-                        const textvalue = columnsJSON[i].lookupData.find((c) => c.id === prevalue)?.text;
-                        temp[columnsJSON[i].field] = textvalue;
-                        temp[columnsJSON[i].field + '_jsoriginal'] = row.Cells[i];
+            const rowsJSON = data.data.Rows.map(function (row, rowIndex) {
+                const temp = {};
+                temp.js_id = rowIndex;
+                for (var i = 0; i < columnsJSON.length; i++) {
+                    if (columnsJSON[i].netType === 'System.DateTime' && row.Cells[i]) {
+                        const startIndex = row.Cells[i].indexOf('(');
+                        const finishIndex = row.Cells[i].lastIndexOf('+');
+                        const dateValue = row.Cells[i].slice(startIndex + 1, finishIndex);
+                        var d = new Date();
+                        d.setTime(dateValue);
+                        temp[columnsJSON[i].field] = d;
                     }
                     else {
-                        temp[columnsJSON[i].field] = row.Cells[i];
+                        if (columnsJSON[i].lookupData) {
+                            const prevalue = row.Cells[i];
+                            const textvalue = columnsJSON[i].lookupData.find((c) => c.id === prevalue)?.text;
+                            temp[columnsJSON[i].field] = textvalue;
+                            temp[columnsJSON[i].field + '_jsoriginal'] = row.Cells[i];
+                        }
+                        else {
+                            temp[columnsJSON[i].field] = row.Cells[i];
+                        }
                     }
                 }
-            }
-            return temp;
-        });
-        const result = {};
-        result.columnsJSON = columnsJSON;
-        result.rowsJSON = rowsJSON;
-        return result;
+                return temp;
+            });
+            const result = {};
+            result.columnsJSON = columnsJSON;
+            result.rowsJSON = rowsJSON;
+            return result;
+        }
+        else {
+            const result = {};
+            result.columnsJSON = [];
+            result.rowsJSON = [];
+            return result;
+        }
     }, [sessionId, formData]);
 
     React.useEffect(() => {
@@ -392,8 +400,14 @@ export default function TableForm(props) {
                 setRowAdding(false);
             }
             else {
-                const response = await utils.webFetch(`updateRow?sessionId=${sessionId}&tableId=${databaseData.tableId}&rowsIndices=${editID}&newRowData=${dataJSON}`);
-                await response.json();
+                var jsonToSend = { sessionId: sessionId, tableId: databaseData.tableId, rowsIndices: editID, newRowData: [itemToInsert] };
+                const jsonToSendString = JSON.stringify(jsonToSend);
+                const response = await utils.webFetch(`updateRow`,
+                    {
+                        method: 'POST',
+                        body: jsonToSendString
+                    });
+                await response.text();
             }
         }
     };
