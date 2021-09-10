@@ -25,12 +25,11 @@ export default function Presentation(props) {
     return (
         <FormsContainer>
             {formsData.map(formData =>
-                <Form
+                (formData.opened) && <Form
                     key={formData.id}
                     sessionId={sessionId}
                     formData={formData}
                     {...other}
-                />
-            )}
+                />)}
         </FormsContainer>);
 }

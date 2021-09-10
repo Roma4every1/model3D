@@ -144,21 +144,28 @@ export default function TableForm(props) {
                     }
                 });
             });
-            const jsonParamaters = JSON.stringify(neededParamsJSON).replaceAll('#', '%23');
-            const response2 = await utils.webFetch(`getChannelDataByName?sessionId=${globals.sessionId}&channelName=${columnElement.lookupChannelName}&paramValues=${jsonParamaters}`);
+            var jsonToSend = { sessionId: globals.sessionId, channelName: columnElement.lookupChannelName, paramValues: neededParamsJSON };
+            const jsonToSendString = JSON.stringify(jsonToSend);
+            const response2 = await utils.webFetch(`getChannelDataByName`,
+                {
+                    method: 'POST',
+                    body: jsonToSendString
+                });
             const response2JSON = await response2.json();
             let valuesFromJSON = '';
-            if (response2JSON && response2JSON !== '') {
+            if (response2JSON && response2JSON.data) {
                 let idIndex = 0;
                 let nameIndex = 0;
-                response2JSON.properties.forEach(property => {
-                    if (property.name.toUpperCase() === 'LOOKUPCODE') {
-                        idIndex = _.findIndex(response2JSON.data.Columns, function (o) { return o.Name === property.fromColumn; });
-                    }
-                    else if (property.name.toUpperCase() === 'LOOKUPVALUE') {
-                        nameIndex = _.findIndex(response2JSON.data.Columns, function (o) { return o.Name === property.fromColumn; });
-                    }
-                });
+                if (response2JSON.properties) {
+                    response2JSON.properties.forEach(property => {
+                        if (property.name.toUpperCase() === 'LOOKUPCODE') {
+                            idIndex = _.findIndex(response2JSON.data.Columns, function (o) { return o.Name === property.fromColumn; });
+                        }
+                        else if (property.name.toUpperCase() === 'LOOKUPVALUE') {
+                            nameIndex = _.findIndex(response2JSON.data.Columns, function (o) { return o.Name === property.fromColumn; });
+                        }
+                    });
+                }
                 valuesFromJSON = response2JSON.data.Rows.map((row) => {
                     let temp = {};
                     temp.id = row.Cells[idIndex];
@@ -169,9 +176,13 @@ export default function TableForm(props) {
             }
             columnElement.lookupData = valuesFromJSON;
         }
-
-        const jsonParamaters = JSON.stringify(neededParamsJSON).replaceAll('#', '%23');
-        const response = await utils.webFetch(`fill?sessionId=${sessionId}&clientId=${formData.id}&paramValues=${jsonParamaters}`);
+        var jsonToSend = { sessionId: sessionId, clientId: formData.id, paramValues: neededParamsJSON };
+        const jsonToSendString = JSON.stringify(jsonToSend);
+        const response = await utils.webFetch(`fill`,
+            {
+                method: 'POST',
+                body: jsonToSendString
+            });
         const data = await response.json();
         setDatabaseData(data);
 
@@ -412,6 +423,14 @@ export default function TableForm(props) {
         }
     };
 
+    async function reload() {
+        let jsonValues = await fetchData(neededParamsValues.values);
+        setTableData({
+            rowsJSON: jsonValues.rowsJSON,
+            columnsJSON: jsonValues.columnsJSON
+        });
+    }
+
     const otherButtons =
         <div>
             <button className="k-button k-button-clear" onClick={excelExport}>
@@ -429,7 +448,7 @@ export default function TableForm(props) {
             <button className="k-button k-button-clear">
                 <span className="k-icon k-i-cancel" />
             </button>
-            <button className="k-button k-button-clear">
+            <button className="k-button k-button-clear" onClick={reload}>
                 <span className="k-icon k-i-reset" />
             </button>
         </div>;

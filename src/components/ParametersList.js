@@ -3,7 +3,7 @@ import { StackLayout } from "@progress/kendo-react-layout";
 import BaseEditor from './activeParametersEditors/BaseEditor';
 
 export function ParametersList(props) {
-    const { parametersJSON, setMainEditedJSON, selectionChanged } = props;
+    const { parametersJSON, setMainEditedJSON, selectionChanged, ...other } = props;
     const [editedJSON, updateEditedJSON] = React.useReducer(editedJSONReducer, { values: parametersJSON, updatedParam: {} });
     const [updatedParam, setUpdatedParam] = React.useState({});
 
@@ -19,12 +19,14 @@ export function ParametersList(props) {
     }
 
     React.useEffect(() => {
-        setMainEditedJSON(editedJSON.values);
+        if (editedJSON.updatedParam) {
+            setMainEditedJSON(editedJSON.values);
+        }
         setUpdatedParam(editedJSON.updatedParam);
         if (selectionChanged) {
             selectionChanged(editedJSON.updatedParam);
         }
-    }, [editedJSON, setMainEditedJSON, selectionChanged]);
+    }, [editedJSON, selectionChanged]);
 
     return (
         <StackLayout orientation="vertical">
@@ -37,6 +39,7 @@ export function ParametersList(props) {
                     value={parameterJSON.value}
                     updatedParam={updatedParam}
                     selectionChanged={updateEditedJSON}
+                    {...other}
                 />
             )}
         </StackLayout>

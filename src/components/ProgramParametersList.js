@@ -28,7 +28,13 @@ async function fillReportParameters(sessionId, reportGuid, handleOpen, updateLoc
 }
 
 async function runReport(sessionId, reportGuid, paramValues) {
-    const response = await utils.webFetch(`runReport?sessionId=${sessionId}&reportguid=${reportGuid}&paramValues=${paramValues}`);
+    var jsonToSend = { sessionId: sessionId, reportId: reportGuid, paramValues: paramValues };
+    const jsonToSendString = JSON.stringify(jsonToSend);
+    const response = await utils.webFetch(`runReport`,
+        {
+            method: 'POST',
+            body: jsonToSendString
+        });
     const fileName = await response.text();
     const result = await utils.webFetch(`downloadResource?resourceName=${fileName}&sessionId=${sessionId}`);
     const resultText = await result.text();
@@ -40,7 +46,13 @@ async function runReport(sessionId, reportGuid, paramValues) {
 }
 
 async function getCanRunReport(sessionId, reportGuid, paramValues, functionToSetRunButtonDisabled) {
-    const response = await utils.webFetch(`canRunReport?sessionId=${sessionId}&reportguid=${reportGuid}&paramValues=${paramValues}`);
+    var jsonToSend = { sessionId: sessionId, reportId: reportGuid, paramValues: paramValues };
+    const jsonToSendString = JSON.stringify(jsonToSend);
+    const response = await utils.webFetch(`canRunReport`,
+        {
+            method: 'POST',
+            body: jsonToSendString
+        });
     const responsetext = await response.text();
     if (responsetext === 'True') {
         functionToSetRunButtonDisabled(false);
@@ -56,7 +68,7 @@ export default function ProgramParametersList(props) {
     const [open, setOpen] = React.useState(false);
     const [localParametersJSON, setLocalParametersJSON] = React.useState([]);
     const [globalParametersJSON, setGlobalParametersJSON] = React.useState([]);
-    const [editedJSON, setEditedJSON] = React.useState([]);
+    const [programEditedJSON, updateEditedJSON] = React.useReducer(editedJSONReducer, []);
     const [runButtonDisabled, setRunButtonDisabled] = React.useState(true);
 
     const handleOpen = () => {
@@ -75,31 +87,48 @@ export default function ProgramParametersList(props) {
         setGlobalParametersJSON(parametersJSON);
     };
 
-    const updateEditedParametersListByLocal = (parametersJSON) => {
+    function editedJSONReducer(state, action) {
         var newJSON = [];
+        if (action.globalParametersJSON) {
+            localParametersJSON.forEach(element => {
+                newJSON.push(element)
+            });
+            action.globalParametersJSON.forEach(element => {
+                newJSON.push(element)
+            });
+        }
+        else if (action.localParametersJSON) {
+            action.localParametersJSON.forEach(element => {
+                newJSON.push(element)
+            });
+            globalParametersJSON.forEach(element => {
+                newJSON.push(element)
+            });
+        }
+        else {
+            return state;
+        }
+        return newJSON;
+    }
+
+    const updateEditedParametersListByLocal = (parametersJSON) => {
         setLocalParametersJSON(parametersJSON);
-        parametersJSON.forEach(element => {
-            newJSON.push(element)
-        });
-        globalParametersJSON.forEach(element => {
-            newJSON.push(element)
-        });
-        setEditedJSON(newJSON);
-        getCanRunReport(sessionId, programId, JSON.stringify(newJSON).replaceAll('#', '%23'), setRunButtonDisabled);
+        updateEditedJSON({ localParametersJSON: parametersJSON });
     };
 
     const updateEditedParametersListByGlobal = (parametersJSON) => {
-        var newJSON = [];
         setGlobalParametersJSON(parametersJSON);
-        localParametersJSON.forEach(element => {
-            newJSON.push(element)
-        });
-        parametersJSON.forEach(element => {
-            newJSON.push(element)
-        });
-        setEditedJSON(newJSON);
-        getCanRunReport(sessionId, programId, JSON.stringify(newJSON).replaceAll('#', '%23'), setRunButtonDisabled);
+        updateEditedJSON({ globalParametersJSON: parametersJSON });
     };
+
+    React.useEffect(() => {
+        getCanRunReport(sessionId, programId, programEditedJSON, setRunButtonDisabled);
+    }, [sessionId, programId, programEditedJSON]);
+
+    const handleRun = () => {
+        handleClose();
+        runReport(sessionId, programId, programEditedJSON);
+    }
 
     return (
 
@@ -110,9 +139,9 @@ export default function ProgramParametersList(props) {
             {open && (
                 <Dialog title={t('report.params')} onClose={handleClose} initialHeight={350}>
                     <ParametersList parametersJSON={globalParametersJSON} setMainEditedJSON={updateEditedParametersListByGlobal} />
-                    <ParametersList parametersJSON={localParametersJSON} setMainEditedJSON={updateEditedParametersListByLocal} />
+                    <ParametersList parametersJSON={localParametersJSON} setMainEditedJSON={updateEditedParametersListByLocal} programId={programId} />
                     <DialogActionsBar>
-                        <Button className="actionbutton" primary={!runButtonDisabled} disabled={runButtonDisabled} onClick={() => { handleClose(); runReport(sessionId, programId, JSON.stringify(editedJSON).replaceAll('#', '%23')) }}>
+                        <Button className="actionbutton" primary={!runButtonDisabled} disabled={runButtonDisabled} onClick={handleRun}>
                             {t('base.run')}
                         </Button>
                         <Button className="actionbutton" onClick={handleClose}>

@@ -27,7 +27,8 @@ load(
 loadMessages(ruMessages, "ru-RU");
 
 export default function DateTextEditor(props) {
-    const date = props.value ? new Date(props.value) : undefined;
+    const str = props.value.replace(' \\d', '');
+    const date = props.value ? new Date(str) : undefined;
 
     return (
         <LocalizationProvider language='ru-RU'>

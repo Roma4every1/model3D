@@ -13,14 +13,19 @@ var _ = require("lodash");
 var utils = require("../../utils")
 
 export default function TableRowComboEditor(props) {
-    const { id, displayName, value, selectionChanged, updatedParam } = props;
+    const { id, displayName, value, selectionChanged, updatedParam , programId} = props;
     const [values, setValues] = React.useState([]);
     const [valueToShow, setValueToShow] = React.useState(undefined);
     const [neededParameterValues, updateNeededParameterValues] = React.useReducer(neededParameterValuesReducer, { values: [], changed: false });
 
     const fetchData = React.useCallback(async () => {
-        const jsonParamaters = JSON.stringify(neededParameterValues.values).replaceAll('#', '%23');
-        const response = await utils.webFetch(`getChannelDataForParam?sessionId=${globals.sessionId}&paramName=${id}&paramValues=${jsonParamaters}`);
+        var jsonToSend = { sessionId: globals.sessionId, paramName: id, reportId: programId, paramValues: neededParameterValues.values };
+        const jsonToSendString = JSON.stringify(jsonToSend);
+        const response = await utils.webFetch(`getChannelDataForParam`,
+            {
+                method: 'POST',
+                body: jsonToSendString
+            });
         const responseJSON = await response.json();
         let valuesFromJSON = '';
         if (responseJSON && responseJSON.properties) {
@@ -36,34 +41,53 @@ export default function TableRowComboEditor(props) {
             });
             valuesFromJSON = responseJSON.data.Rows.map((row) => {
                 let temp = {};
-                temp.id = 'LOOKUPCODE#' + row.Cells[idIndex] + '#' + responseJSON.data.Columns[idIndex].NetType;
+                temp.id = row.Cells[idIndex];
                 temp.name = row.Cells[nameIndex];
+
+                var valuestring = '';
+                valuestring = addParam(row, responseJSON, responseJSON.data.Columns[0].Name, 0);
+                var propName = _.find(responseJSON.properties, function (o) { return o.fromColumn?.toUpperCase() === responseJSON.data.Columns[0].Name.toUpperCase(); });
+                if (propName) {
+                    valuestring += '|' + addParam(row, responseJSON, propName.name.toUpperCase(),  0);
+                }
+                for (var i = 1; i < responseJSON.data.Columns.length; i++) {
+                    valuestring += '|' + addParam(row, responseJSON, responseJSON.data.Columns[i].Name, i);
+                    var propName2 = _.find(responseJSON.properties, function (o) { return o.fromColumn?.toUpperCase() === responseJSON.data.Columns[i].Name.toUpperCase(); });
+                    if (propName2) {
+                        valuestring += '|' + addParam(row, responseJSON, propName2.name.toUpperCase(), i);
+                    }
+                }
+                temp.value = valuestring;
                 return temp
             });
         }
         if (valuesFromJSON && valuesFromJSON !== '') {
             setValues(valuesFromJSON);
         }
-    }, [id, neededParameterValues]);
+    }, [id, neededParameterValues, programId]);
 
     React.useEffect(() => {
         if (value) {
-            const startIndex = value.indexOf('LOOKUPCODE');
-            var finishIndex = value.indexOf('|', startIndex);
+            let stringvalue = String(value);
+            const startIndex = stringvalue.indexOf('LOOKUPCODE#');
+            var finishIndex = stringvalue.indexOf('#', startIndex + 11);
             let dateValue;
-            if (finishIndex === -1) {
-                dateValue = value.slice(startIndex);
+            if (startIndex === -1) {
+                dateValue = stringvalue;
+            }
+            else if (finishIndex === -1) {
+                dateValue = stringvalue.slice(startIndex + 11);
             }
             else {
-                dateValue = value.slice(startIndex, finishIndex);
+                dateValue = stringvalue.slice(startIndex + 11, finishIndex);
             }
-            let calculatedValueToShow = _.find(values, function (o) { return o.id === dateValue; });
+            let calculatedValueToShow = _.find(values, function (o) { return String(o.id) === dateValue; });
             if (calculatedValueToShow) {
                 setValueToShow(calculatedValueToShow);
                 var newevent = {};
                 newevent.target = {};
                 newevent.target.name = id;
-                newevent.target.value = calculatedValueToShow.id;
+                newevent.target.value = calculatedValueToShow.value;
                 selectionChanged(newevent);
             }
             else {
@@ -71,6 +95,17 @@ export default function TableRowComboEditor(props) {
             }
         }
     }, [values, value, id, selectionChanged]);
+
+    function addParam(row, responseJSON, propName, index) {
+        var valuestring = '';
+        if (row.Cells[index]) {
+            valuestring = propName + '#' + row.Cells[index] + '#' + responseJSON.data.Columns[index].NetType;
+        }
+        else {
+            valuestring = propName + '##System.DBNull';
+        }
+        return valuestring;
+    }
 
     function neededParameterValuesReducer(state, action) {
         if (action.updatedParam) {
@@ -101,7 +136,13 @@ export default function TableRowComboEditor(props) {
         let ignore = false;
 
         async function fetchNeededParamsData() {
-            const response = await utils.webFetch(`getNeededParamForParam?sessionId=${globals.sessionId}&paramName=${id}`);
+            var response;
+            if (programId) {
+                response = await utils.webFetch(`getNeededParamForParam?sessionId=${globals.sessionId}&paramName=${id}&reportId=${programId}`);
+            }
+            else {
+                response = await utils.webFetch(`getNeededParamForParam?sessionId=${globals.sessionId}&paramName=${id}`);
+            }
             const responseJSON = await response.json();
             var neededParamsJSON = [];
             globals.globalParameters.forEach(element => {
@@ -118,7 +159,7 @@ export default function TableRowComboEditor(props) {
 
         fetchNeededParamsData();
         return () => { ignore = true; }
-    }, [id]);
+    }, [id, programId]);
 
     return (
         <LocalizationProvider language='ru-RU'>
@@ -136,7 +177,7 @@ export default function TableRowComboEditor(props) {
                             var newevent = {};
                             newevent.target = {};
                             newevent.target.name = event.target.name;
-                            newevent.target.value = event.target.value?.id;
+                            newevent.target.value = event.target.value?.value;
                             selectionChanged(newevent)
                         }}
                     />

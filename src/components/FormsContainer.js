@@ -7,7 +7,9 @@ export default function FormsContainer(props) {
     };
     var panes = [];
     for (var i = 0; i < props.children.length; i++) {
-        panes.push({ resizable: true });
+        if (props.children[i]) {
+            panes.push({ resizable: true });
+        }
     }
     const [workPanes, setPanes] = React.useState(panes);
     if (props.children.length === 0) {

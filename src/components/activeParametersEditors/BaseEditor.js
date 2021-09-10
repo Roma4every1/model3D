@@ -12,7 +12,7 @@ export default function BaseEditor(props) {
         case 'stringTextEditor':
             return <StringTextEditor {...props} />;
         case 'dateTextEditor':
-        //case 'dateKMNEditor':
+        case 'dateKMNEditor':
             return <DateTextEditor {...props} />;
         case 'tableRowTreeMultiEditor':
         case 'tableRowComboEditor':
