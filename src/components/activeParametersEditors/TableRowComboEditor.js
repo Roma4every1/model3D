@@ -98,7 +98,7 @@ export default function TableRowComboEditor(props) {
 
     function addParam(row, responseJSON, propName, index) {
         var valuestring = '';
-        if (row.Cells[index]) {
+        if (row.Cells[index] != null) {
             valuestring = propName + '#' + row.Cells[index] + '#' + responseJSON.data.Columns[index].NetType;
         }
         else {

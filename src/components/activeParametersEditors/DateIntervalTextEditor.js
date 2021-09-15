@@ -34,8 +34,8 @@ export default function DateIntervalTextEditor(props) {
     };
 
     const getValStr = (startdt, enddt) => {
-        if ((startdt !== undefined) && (enddt !== undefined)) {
-            return startdt.toISOString() + ' - ' + enddt.toISOString();
+        if (startdt && enddt && (startdt !== undefined) && (enddt !== undefined)) {
+            return startdt.toLocaleDateString() + ' - ' + enddt.toLocaleDateString();
         }
         else {
             return '';
@@ -45,7 +45,7 @@ export default function DateIntervalTextEditor(props) {
 
     //get date from str
     const get1dtVal = (dstr, posy, leny, posm, lenm, posd, lend, posh, lenh, posmi, lenmi, poss, lens) => {
-        return new Date(dstr.substr(posy,leny), dstr.substr(posm,lenm)-1, dstr.substr(posd,lend), dstr.substr(posh,lenh), dstr.substr(posmi,lenmi), dstr.substr(poss,lens));
+        return new Date(dstr.substr(posy, leny), dstr.substr(posm, lenm) - 1, dstr.substr(posd,lend), dstr.substr(posh,lenh), dstr.substr(posmi,lenmi), dstr.substr(poss,lens));
     };
 
 

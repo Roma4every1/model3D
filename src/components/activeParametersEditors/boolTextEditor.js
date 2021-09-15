@@ -2,7 +2,6 @@
 import { Label } from "@progress/kendo-react-labels";
 import {
     IntlProvider,
-    load,
     loadMessages,
     LocalizationProvider,
 } from "@progress/kendo-react-intl";

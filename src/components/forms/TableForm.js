@@ -304,9 +304,11 @@ export default function TableForm(props) {
             if (selectedState[element]) {
                 elementsToRemove = elementsToRemove + element + ',';
                 const itemToDeleteIndex = tableDataCopy.rowsJSON.findIndex(item =>
-                    idGetter(item) === element
+                    String(idGetter(item)) === String(element)
                 );
-                tableDataCopy.rowsJSON.splice(itemToDeleteIndex, 1);
+                if (itemToDeleteIndex !== -1) {
+                    tableDataCopy.rowsJSON.splice(itemToDeleteIndex, 1);
+                }
             }
         });
         if (elementsToRemove.length > 1) {

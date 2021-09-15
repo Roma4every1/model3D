@@ -27,8 +27,7 @@ load(
 loadMessages(ruMessages, "ru-RU");
 
 export default function DateTextEditor(props) {
-    const str = props.value.replace(' \\d', '');
-    const date = props.value ? new Date(str) : undefined;
+    const date = props.value ? new Date(props.value.replace(' \\d', '')) : undefined;
 
     return (
         <LocalizationProvider language='ru-RU'>
@@ -43,7 +42,7 @@ export default function DateTextEditor(props) {
                             var newevent = {};
                             newevent.target = {};
                             newevent.target.name = event.target.name;
-                            newevent.target.value = event.target.value?.toISOString();
+                            newevent.target.value = event.target.value?.toLocaleDateString();
                             props.selectionChanged(newevent)
                         }}
                     />

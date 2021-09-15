@@ -9,10 +9,11 @@ export function ParametersList(props) {
 
     function editedJSONReducer(state, action) {
         var changedJSON = state.values;
-        var target = action.target
+        var target = action.target;
+        var newValue = action.value ?? target.value
         changedJSON.forEach(element => {
             if (element.id === target.name) {
-                element.value = target.value;
+                element.value = newValue;
             }
         });
         return { values: changedJSON, updatedParam: target};
