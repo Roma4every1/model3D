@@ -4,6 +4,7 @@ import StringTextEditor from './StringTextEditor';
 import DateTextEditor from './DateTextEditor';
 import TableRowComboEditor from './TableRowComboEditor';
 import DateIntervalTextEditor from './DateIntervalTextEditor';
+import BoolTextEditor from './BoolTextEditor';
 
 export default function BaseEditor(props) {
     switch (props.editorType) {
@@ -19,6 +20,8 @@ export default function BaseEditor(props) {
             return <TableRowComboEditor {...props} />;
         case 'dateIntervalTextEditor':
             return <DateIntervalTextEditor {...props} />;
+        case 'boolTextEditor':
+            return <BoolTextEditor {...props} />;
         default:
             return <StringTextEditor {...props} />;
     }

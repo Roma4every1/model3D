@@ -76,6 +76,16 @@ html {
     max-width: 155px;
 }
 
+.parametereditorwithoutheightcb {
+    float: right;
+    display: inline-block;
+    font-size: 12px;
+    vertical-align: middle;
+    max-width: 155px;
+    width: 155px;
+    padding-left: 5px;
+}
+
 .k-clear-value, .k-combobox .k-input, .k-dropdown-wrap {
     height: 100%;
 }
