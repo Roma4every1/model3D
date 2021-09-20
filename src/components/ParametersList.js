@@ -38,6 +38,7 @@ export function ParametersList(props) {
                     id={parameterJSON.id}
                     displayName={parameterJSON.displayName}
                     value={parameterJSON.value}
+                    dependsOn={parameterJSON.dependsOn}
                     updatedParam={updatedParam}
                     selectionChanged={updateEditedJSON}
                     {...other}

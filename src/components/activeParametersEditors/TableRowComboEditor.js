@@ -13,10 +13,22 @@ var _ = require("lodash");
 var utils = require("../../utils")
 
 export default function TableRowComboEditor(props) {
-    const { id, displayName, value, selectionChanged, updatedParam , programId} = props;
+    const { id, displayName, value, selectionChanged, updatedParam , programId, dependsOn} = props;
     const [values, setValues] = React.useState([]);
     const [valueToShow, setValueToShow] = React.useState(undefined);
     const [neededParameterValues, updateNeededParameterValues] = React.useReducer(neededParameterValuesReducer, { values: [], changed: false });
+
+    const setNewValue = React.useCallback(
+        (value, manual) => {
+            var newevent = {};
+            newevent.target = {};
+            newevent.target.name = id;
+            newevent.target.manual = manual;
+            newevent.target.value = value;
+            selectionChanged(newevent);
+        },
+        [id, selectionChanged],
+    );
 
     const fetchData = React.useCallback(async () => {
         var jsonToSend = { sessionId: globals.sessionId, paramName: id, reportId: programId, paramValues: neededParameterValues.values };
@@ -64,6 +76,9 @@ export default function TableRowComboEditor(props) {
         if (valuesFromJSON && valuesFromJSON !== '') {
             setValues(valuesFromJSON);
         }
+        else {
+            setValues([]);
+        }
     }, [id, neededParameterValues, programId]);
 
     React.useEffect(() => {
@@ -84,17 +99,16 @@ export default function TableRowComboEditor(props) {
             let calculatedValueToShow = _.find(values, function (o) { return String(o.id) === dateValue; });
             if (calculatedValueToShow) {
                 setValueToShow(calculatedValueToShow);
-                var newevent = {};
-                newevent.target = {};
-                newevent.target.name = id;
-                newevent.target.value = calculatedValueToShow.value;
-                selectionChanged(newevent);
+                setNewValue(calculatedValueToShow.value, false);
             }
             else {
-                setValueToShow(undefined);
+                setValueToShow('');
             }
         }
-    }, [values, value, id, selectionChanged]);
+        else {
+            setValueToShow('');
+        }
+    }, [values, value, setNewValue]);
 
     function addParam(row, responseJSON, propName, index) {
         var valuestring = '';
@@ -130,7 +144,13 @@ export default function TableRowComboEditor(props) {
 
     React.useEffect(() => {
         updateNeededParameterValues({ updatedParam: updatedParam });
-    }, [updatedParam]);
+        if (updatedParam.manual) {
+            if (dependsOn?.includes(updatedParam.name)) {
+                setValueToShow(undefined);
+                setNewValue(null, true);
+            }
+        }
+    }, [updatedParam, setNewValue, dependsOn]);
 
     React.useEffect(() => {
         let ignore = false;
@@ -167,6 +187,7 @@ export default function TableRowComboEditor(props) {
                 <div className='parametereditorbox'>
                     <Label className='parameterlabel' editorId={id}>{displayName}</Label>
                     <ComboBox className='parametereditor'
+                        suggest={true}
                         name={id}
                         data={values}
                         value={valueToShow}
@@ -174,11 +195,7 @@ export default function TableRowComboEditor(props) {
                         textField="name"
                         onChange={(event) => {
                             setValueToShow(event.target.value);
-                            var newevent = {};
-                            newevent.target = {};
-                            newevent.target.name = event.target.name;
-                            newevent.target.value = event.target.value?.value;
-                            selectionChanged(newevent)
+                            setNewValue(event.target.value?.value, true);
                         }}
                     />
                 </div>
