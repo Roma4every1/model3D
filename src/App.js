@@ -98,7 +98,7 @@ export default function App() {
     React.useEffect(() => {
         let ignore = false;
         async function fetchData() {
-            const response = await utils.webFetch('startSession?systemName=DEMO_SYSTEM');
+            const response = await utils.webFetch('?systemName=PREPARE_SYSTEM&parserConfiguration=maps&user=Common&type=mapInfo&organizationCode=DBMM$1&date=20220101');
             const data = await response.text();
             globals.sessionId = data;
             if (!ignore) {
