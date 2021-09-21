@@ -27,7 +27,7 @@ async function fillReportParameters(sessionId, reportGuid, handleOpen, updateLoc
     handleOpen();
 }
 
-async function runReport(sessionId, reportGuid, paramValues) {
+async function runReport(sessionId, reportGuid, paramValues, tablesModified) {
     var jsonToSend = { sessionId: sessionId, reportId: reportGuid, paramValues: paramValues };
     const jsonToSendString = JSON.stringify(jsonToSend);
     const response = await utils.webFetch(`runReport`,
@@ -35,14 +35,19 @@ async function runReport(sessionId, reportGuid, paramValues) {
             method: 'POST',
             body: jsonToSendString
         });
-    const fileName = await response.text();
-    const result = await utils.webFetch(`downloadResource?resourceName=${fileName}&sessionId=${sessionId}`);
-    const resultText = await result.text();
-    const fileExactName = fileName.split('\\').pop().split('/').pop();
-    const path = process.env.PUBLIC_URL + '/' + resultText;
-    saveAs(
-        path,
-        fileExactName);
+    const resultJson = await response.json();
+    if (resultJson.resultPath) {
+        const result = await utils.webFetch(`downloadResource?resourceName=${resultJson.resultPath}&sessionId=${sessionId}`);
+        const resultText = await result.text();
+        const fileExactName = resultJson.resultPath.split('\\').pop().split('/').pop();
+        const path = process.env.PUBLIC_URL + '/' + resultText;
+        saveAs(
+            path,
+            fileExactName);
+    }
+    if (resultJson.modifiedTables) {
+        tablesModified(resultJson.modifiedTables);
+    }
 }
 
 async function getCanRunReport(sessionId, reportGuid, paramValues, functionToSetRunButtonDisabled) {
@@ -64,7 +69,7 @@ async function getCanRunReport(sessionId, reportGuid, paramValues, functionToSet
 
 export default function ProgramParametersList(props) {
     const { t } = useTranslation();
-    const { sessionId, programId, programDisplayName } = props;
+    const { sessionId, programId, programDisplayName, tablesModified } = props;
     const [open, setOpen] = React.useState(false);
     const [localParametersJSON, setLocalParametersJSON] = React.useState([]);
     const [globalParametersJSON, setGlobalParametersJSON] = React.useState([]);
@@ -127,7 +132,7 @@ export default function ProgramParametersList(props) {
 
     const handleRun = () => {
         handleClose();
-        runReport(sessionId, programId, programEditedJSON);
+        runReport(sessionId, programId, programEditedJSON, tablesModified);
     }
 
     return (

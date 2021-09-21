@@ -53,7 +53,7 @@ const idGetter = getter(DATA_ITEM_KEY);
 
 export default function TableForm(props) {
     const { t } = useTranslation();
-    const { sessionId, formData, globalParameters, ...other } = props;
+    const { sessionId, formData, globalParameters, modifiedTables, ...other } = props;
     const [databaseData, setDatabaseData] = React.useState([]);
     const [rowAdding, setRowAdding] = React.useState(false);
     const [edited, setEdited] = React.useState(false);
@@ -241,6 +241,12 @@ export default function TableForm(props) {
             return result;
         }
     }, [sessionId, formData]);
+
+    React.useEffect(() => {
+        if (modifiedTables?.includes(databaseData.tableId)) {
+            reload();
+        }
+    }, [modifiedTables, databaseData]);
 
     React.useEffect(() => {
         let ignore = false;

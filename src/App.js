@@ -25,6 +25,7 @@ export default function App() {
     const { t } = useTranslation();
     const [activePresentationId, setActivePresentationId] = React.useState();
     const [globalParameters, setGlobalParameters] = React.useState([]);
+    const [modifiedTables, setModifiedTables] = React.useState([]);
     const [state, setState] = React.useState({
         sessionLoading: true,
         sessionId: undefined
@@ -164,6 +165,9 @@ export default function App() {
                                     <SqlProgramsList
                                         sessionId={state.sessionId}
                                         presentationId={activePresentationId}
+                                        tablesModified={(target) => {
+                                            setModifiedTables(target);
+                                        }}
                                     />
                                 </div>
                                 <Splitter
@@ -198,6 +202,7 @@ export default function App() {
                                         selectionChanged={(target) => {
                                             setGlobalParameters(target);
                                         }}
+                                        modifiedTables={modifiedTables}
                                     />
                                 </Splitter>
                             </div>

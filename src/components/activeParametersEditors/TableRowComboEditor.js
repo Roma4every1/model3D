@@ -146,8 +146,10 @@ export default function TableRowComboEditor(props) {
         updateNeededParameterValues({ updatedParam: updatedParam });
         if (updatedParam.manual) {
             if (dependsOn?.includes(updatedParam.name)) {
-                setValueToShow(undefined);
-                setNewValue(null, true);
+                if (value != null) {
+                    setValueToShow(undefined);
+                    setNewValue(null, true);
+                }
             }
         }
     }, [updatedParam, setNewValue, dependsOn]);
