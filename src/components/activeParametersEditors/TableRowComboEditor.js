@@ -13,7 +13,7 @@ var _ = require("lodash");
 var utils = require("../../utils")
 
 export default function TableRowComboEditor(props) {
-    const { id, displayName, value, selectionChanged, updatedParam , programId, dependsOn} = props;
+    const { id, displayName, value, selectionChanged, updatedParam, presentationId, programId, dependsOn} = props;
     const [values, setValues] = React.useState([]);
     const [valueToShow, setValueToShow] = React.useState(undefined);
     const [neededParameterValues, updateNeededParameterValues] = React.useReducer(neededParameterValuesReducer, { values: [], changed: false });
@@ -31,7 +31,7 @@ export default function TableRowComboEditor(props) {
     );
 
     const fetchData = React.useCallback(async () => {
-        var jsonToSend = { sessionId: globals.sessionId, paramName: id, reportId: programId, paramValues: neededParameterValues.values };
+        var jsonToSend = { sessionId: globals.sessionId, paramName: id, reportId: programId, presentationId: presentationId, paramValues: neededParameterValues.values };
         const jsonToSendString = JSON.stringify(jsonToSend);
         const response = await utils.webFetch(`getChannelDataForParam`,
             {
@@ -79,7 +79,7 @@ export default function TableRowComboEditor(props) {
         else {
             setValues([]);
         }
-    }, [id, neededParameterValues, programId]);
+    }, [id, neededParameterValues, programId, presentationId]);
 
     React.useEffect(() => {
         if (value) {
@@ -152,7 +152,7 @@ export default function TableRowComboEditor(props) {
                 }
             }
         }
-    }, [updatedParam, setNewValue, dependsOn]);
+    }, [updatedParam, setNewValue, dependsOn, value]);
 
     React.useEffect(() => {
         let ignore = false;
@@ -161,6 +161,9 @@ export default function TableRowComboEditor(props) {
             var response;
             if (programId) {
                 response = await utils.webFetch(`getNeededParamForParam?sessionId=${globals.sessionId}&paramName=${id}&reportId=${programId}`);
+            }
+            else if (presentationId) {
+                response = await utils.webFetch(`getNeededParamForParam?sessionId=${globals.sessionId}&paramName=${id}&presentationId=${presentationId}`);
             }
             else {
                 response = await utils.webFetch(`getNeededParamForParam?sessionId=${globals.sessionId}&paramName=${id}`);
@@ -181,7 +184,7 @@ export default function TableRowComboEditor(props) {
 
         fetchNeededParamsData();
         return () => { ignore = true; }
-    }, [id, programId]);
+    }, [id, programId, presentationId]);
 
     return (
         <LocalizationProvider language='ru-RU'>

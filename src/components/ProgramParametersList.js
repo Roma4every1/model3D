@@ -7,20 +7,23 @@ import { ParametersList } from './ParametersList';
 import { globals } from './Globals';
 import { saveAs } from '@progress/kendo-file-saver';
 import { useTranslation } from 'react-i18next';
-var utils = require("../utils")
+var utils = require("../utils");
+var _ = require("lodash");
 
-async function fillReportParameters(sessionId, reportGuid, handleOpen, updateLocalParametersList, updateGlobalParametersList) {
+async function fillReportParameters(sessionId, presentationId, reportGuid, handleOpen, updateLocalParametersList, updateGlobalParametersList) {
     const response = await utils.webFetch(`getProgramParameters?sessionId=${sessionId}&reportguid=${reportGuid}`);
     const allNeededParams = await utils.webFetch(`getAllNeedParametersList?sessionId=${sessionId}&reportguid=${reportGuid}`);
     const parametersJSON = await response.json();
     const allNeededParamsJSON = await allNeededParams.json();
     var globalParamsToUse = [];
-    allNeededParamsJSON.forEach(element => {
-        globals.globalParameters.forEach(globalParam => {
-            if (globalParam.id === element) {
-                globalParamsToUse.push(globalParam);
-            }
-        });
+    allNeededParamsJSON.forEach(param => {
+        var element = _.find(globals.globalParameters, function (o) { return o.id === param; });
+        if (!element) {
+            element = _.find(globals.presentationParameters[presentationId], function (o) { return o.id === param; });
+        }
+        if (element) {
+            globalParamsToUse.push(element);
+        }
     });
     updateGlobalParametersList(globalParamsToUse);
     updateLocalParametersList(parametersJSON);
@@ -69,7 +72,7 @@ async function getCanRunReport(sessionId, reportGuid, paramValues, functionToSet
 
 export default function ProgramParametersList(props) {
     const { t } = useTranslation();
-    const { sessionId, programId, programDisplayName, tablesModified } = props;
+    const { sessionId, programId, programDisplayName, tablesModified, presentationId } = props;
     const [open, setOpen] = React.useState(false);
     const [localParametersJSON, setLocalParametersJSON] = React.useState([]);
     const [globalParametersJSON, setGlobalParametersJSON] = React.useState([]);
@@ -138,7 +141,7 @@ export default function ProgramParametersList(props) {
     return (
 
         <div>
-            <Button className="programmbutton" onClick={() => { fillReportParameters(sessionId, programId, handleOpen, updateLocalParametersList, updateGlobalParametersList) }}>
+            <Button className="programmbutton" onClick={() => { fillReportParameters(sessionId, presentationId, programId, handleOpen, updateLocalParametersList, updateGlobalParametersList) }}>
                 {programDisplayName}
             </Button>
             {open && (

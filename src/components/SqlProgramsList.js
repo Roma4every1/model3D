@@ -41,6 +41,7 @@ export default function SqlProgramsList(props) {
                         <ProgramParametersList
                             key={programName.id}
                             sessionId={sessionId}
+                            presentationId={presentationId}
                             programId={programName.id}
                             programDisplayName={programName.displayName}
                             open="true"

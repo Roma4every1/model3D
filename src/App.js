@@ -2,6 +2,7 @@ import React from 'react';
 import SqlProgramsList from './components/SqlProgramsList';
 import GlobalParametersList from './components/GlobalParametersList';
 import PresentationList from './components/PresentationList';
+import PresentationParametersList from './components/PresentationParametersList';
 import Presentation from './components/Presentation';
 import {
     AppBar,
@@ -24,7 +25,7 @@ var utils = require("./utils")
 export default function App() {
     const { t } = useTranslation();
     const [activePresentationId, setActivePresentationId] = React.useState();
-    const [globalParameters, setGlobalParameters] = React.useState([]);
+    const [changedParameter, setChangedParameter] = React.useState([]);
     const [modifiedTables, setModifiedTables] = React.useState([]);
     const [state, setState] = React.useState({
         sessionLoading: true,
@@ -183,7 +184,15 @@ export default function App() {
                                         <div>
                                             <GlobalParametersList sessionId={state.sessionId}
                                                 selectionChanged={(target) => {
-                                                    setGlobalParameters(target);
+                                                    setChangedParameter(target);
+                                                }} />
+                                        </div>
+                                        <div>
+                                            <PresentationParametersList
+                                                sessionId={state.sessionId}
+                                                presentationId={activePresentationId}
+                                                selectionChanged={(target) => {
+                                                    setChangedParameter(target);
                                                 }} />
                                         </div>
                                         <div className="presentationList">
@@ -198,9 +207,9 @@ export default function App() {
                                     <Presentation class="presentation"
                                         sessionId={state.sessionId}
                                         presentationId={activePresentationId}
-                                        globalParameters={globalParameters}
+                                        changedParameter={changedParameter}
                                         selectionChanged={(target) => {
-                                            setGlobalParameters(target);
+                                            setChangedParameter(target);
                                         }}
                                         modifiedTables={modifiedTables}
                                     />

@@ -53,7 +53,7 @@ const idGetter = getter(DATA_ITEM_KEY);
 
 export default function TableForm(props) {
     const { t } = useTranslation();
-    const { sessionId, formData, globalParameters, modifiedTables, ...other } = props;
+    const { sessionId, formData, changedParameter, modifiedTables, presentationId, ...other } = props;
     const [databaseData, setDatabaseData] = React.useState([]);
     const [rowAdding, setRowAdding] = React.useState(false);
     const [edited, setEdited] = React.useState(false);
@@ -132,18 +132,28 @@ export default function TableForm(props) {
         setSelectedState(newSelectedState);
     };
 
+    const getNeededParamsJSON = React.useCallback((responseJSON) => {
+        var neededParamsJSON = [];
+        responseJSON.forEach(param => {
+            var element = _.find(globals.globalParameters, function (o) { return o.id === param; });
+            if (!element) {
+                element = _.find(globals.presentationParameters[presentationId], function (o) { return o.id === param; });
+            }
+            if (element) {
+                neededParamsJSON.push(element);
+            }
+            else {
+                neededParamsJSON.push({ id: param});
+            }
+        });
+        return neededParamsJSON;
+    }, [presentationId]);
+
     const fetchData = React.useCallback(async (neededParamsJSON) => {
         async function fetchLookupData(columnElement) {
             const response = await utils.webFetch(`getNeededParamForChannel?sessionId=${globals.sessionId}&channelName=${columnElement.lookupChannelName}`);
             const responseJSON = await response.json();
-            var neededParamsJSON = [];
-            globals.globalParameters.forEach(element => {
-                responseJSON.forEach(responseParam => {
-                    if (element.id === responseParam) {
-                        neededParamsJSON.push(element);
-                    }
-                });
-            });
+            var neededParamsJSON = getNeededParamsJSON(responseJSON);
             var jsonToSend = { sessionId: globals.sessionId, channelName: columnElement.lookupChannelName, paramValues: neededParamsJSON };
             const jsonToSendString = JSON.stringify(jsonToSend);
             const response2 = await utils.webFetch(`getChannelDataByName`,
@@ -240,21 +250,35 @@ export default function TableForm(props) {
             result.rowsJSON = [];
             return result;
         }
-    }, [sessionId, formData]);
+    }, [sessionId, formData, getNeededParamsJSON]);
+
+    const reload = React.useCallback(async () => {
+        let jsonValues = await fetchData(neededParamsValues.values);
+        setTableData({
+            rowsJSON: jsonValues.rowsJSON,
+            columnsJSON: jsonValues.columnsJSON
+        });
+    }, [fetchData, neededParamsValues]);
 
     React.useEffect(() => {
         if (modifiedTables?.includes(databaseData.tableId)) {
             reload();
         }
-    }, [modifiedTables, databaseData]);
+    }, [modifiedTables, databaseData, reload]);
 
     React.useEffect(() => {
         let ignore = false;
 
         async function fetchNewData() {
-            const param = _.find(neededParamsValues.values, function (o) { return o.id === globalParameters.name; });
+            var param = _.find(neededParamsValues.values, function (o) { return o.id === changedParameter.name; });
             if (param) {
-                param.value = globalParameters.value;
+                if (!param.type) {
+                    var element = _.find(globals.presentationParameters[presentationId], function (o) { return o.id === param.id; });
+                    if (element) {
+                        param = element
+                    }
+                }
+                param.value = changedParameter.value;
                 let jsonValues = await fetchData(neededParamsValues.values);
                 if (!ignore) {
                     setTableData({
@@ -268,7 +292,7 @@ export default function TableForm(props) {
             fetchNewData();
         }
         return () => { ignore = true; }
-    }, [globalParameters, neededParamsValues, fetchData]);
+    }, [changedParameter, presentationId, neededParamsValues, fetchData]);
 
     React.useEffect(() => {
         let ignore = false;
@@ -276,14 +300,7 @@ export default function TableForm(props) {
         async function fetchNeededParamsData() {
             const response = await utils.webFetch(`getAllNeedParametersForForm?sessionId=${sessionId}&clientId=${formData.id}`);
             const responseJSON = await response.json();
-            var neededParamsJSON = [];
-            globals.globalParameters.forEach(element => {
-                responseJSON.forEach(responseParam => {
-                    if (element.id === responseParam) {
-                        neededParamsJSON.push(element);
-                    }
-                });
-            });
+            var neededParamsJSON = getNeededParamsJSON(responseJSON);
             setNeededParamsValues({ values: neededParamsJSON, loaded: true });
             let jsonValues = await fetchData(neededParamsJSON);
             if (!ignore) {
@@ -301,7 +318,7 @@ export default function TableForm(props) {
         }
         fetchNeededParamsData();
         return () => { ignore = true; }
-    }, [sessionId, formData, fetchData]);
+    }, [sessionId, formData, fetchData, getNeededParamsJSON]);
 
     async function deleteSelectedRows() {
         var elementsToRemove = ',';
@@ -430,14 +447,6 @@ export default function TableForm(props) {
             }
         }
     };
-
-    async function reload() {
-        let jsonValues = await fetchData(neededParamsValues.values);
-        setTableData({
-            rowsJSON: jsonValues.rowsJSON,
-            columnsJSON: jsonValues.columnsJSON
-        });
-    }
 
     const otherButtons =
         <div>
