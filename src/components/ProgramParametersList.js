@@ -10,23 +10,22 @@ import { useTranslation } from 'react-i18next';
 var utils = require("../utils");
 var _ = require("lodash");
 
-async function fillReportParameters(sessionId, presentationId, reportGuid, handleOpen, updateLocalParametersList, updateGlobalParametersList) {
+async function fillReportParameters(sessionId, presentationId, reportGuid, handleOpen, updateParametersList) {
     const response = await utils.webFetch(`getProgramParameters?sessionId=${sessionId}&reportguid=${reportGuid}`);
     const allNeededParams = await utils.webFetch(`getAllNeedParametersList?sessionId=${sessionId}&reportguid=${reportGuid}`);
     const parametersJSON = await response.json();
     const allNeededParamsJSON = await allNeededParams.json();
-    var globalParamsToUse = [];
+    var paramsToUse = parametersJSON.map(param => { param.programId = reportGuid; return param; });
     allNeededParamsJSON.forEach(param => {
         var element = _.find(globals.globalParameters, function (o) { return o.id === param; });
         if (!element) {
             element = _.find(globals.presentationParameters[presentationId], function (o) { return o.id === param; });
         }
         if (element) {
-            globalParamsToUse.push(element);
+            paramsToUse.push(element);
         }
     });
-    updateGlobalParametersList(globalParamsToUse);
-    updateLocalParametersList(parametersJSON);
+    updateParametersList(paramsToUse);
     handleOpen();
 }
 
@@ -74,8 +73,7 @@ export default function ProgramParametersList(props) {
     const { t } = useTranslation();
     const { sessionId, programId, programDisplayName, tablesModified, presentationId } = props;
     const [open, setOpen] = React.useState(false);
-    const [localParametersJSON, setLocalParametersJSON] = React.useState([]);
-    const [globalParametersJSON, setGlobalParametersJSON] = React.useState([]);
+    const [parametersJSON, setParametersJSON] = React.useState([]);
     const [programEditedJSON, updateEditedJSON] = React.useReducer(editedJSONReducer, []);
     const [runButtonDisabled, setRunButtonDisabled] = React.useState(true);
 
@@ -87,29 +85,14 @@ export default function ProgramParametersList(props) {
         setOpen(false);
     };
 
-    const updateLocalParametersList = (parametersJSON) => {
-        setLocalParametersJSON(parametersJSON);
-    };
-
-    const updateGlobalParametersList = (parametersJSON) => {
-        setGlobalParametersJSON(parametersJSON);
+    const updateParametersList = (parametersJSON) => {
+        setParametersJSON(parametersJSON);
     };
 
     function editedJSONReducer(state, action) {
         var newJSON = [];
-        if (action.globalParametersJSON) {
-            localParametersJSON.forEach(element => {
-                newJSON.push(element)
-            });
-            action.globalParametersJSON.forEach(element => {
-                newJSON.push(element)
-            });
-        }
-        else if (action.localParametersJSON) {
+        if (action.localParametersJSON) {
             action.localParametersJSON.forEach(element => {
-                newJSON.push(element)
-            });
-            globalParametersJSON.forEach(element => {
                 newJSON.push(element)
             });
         }
@@ -119,14 +102,9 @@ export default function ProgramParametersList(props) {
         return newJSON;
     }
 
-    const updateEditedParametersListByLocal = (parametersJSON) => {
-        setLocalParametersJSON(parametersJSON);
+    const updateEditedParametersList = (parametersJSON) => {
+        setParametersJSON(parametersJSON);
         updateEditedJSON({ localParametersJSON: parametersJSON });
-    };
-
-    const updateEditedParametersListByGlobal = (parametersJSON) => {
-        setGlobalParametersJSON(parametersJSON);
-        updateEditedJSON({ globalParametersJSON: parametersJSON });
     };
 
     React.useEffect(() => {
@@ -141,13 +119,12 @@ export default function ProgramParametersList(props) {
     return (
 
         <div>
-            <Button className="programmbutton" onClick={() => { fillReportParameters(sessionId, presentationId, programId, handleOpen, updateLocalParametersList, updateGlobalParametersList) }}>
+            <Button className="programmbutton" onClick={() => { fillReportParameters(sessionId, presentationId, programId, handleOpen, updateParametersList) }}>
                 {programDisplayName}
             </Button>
             {open && (
                 <Dialog title={t('report.params')} onClose={handleClose} initialHeight={350}>
-                    <ParametersList parametersJSON={globalParametersJSON} setMainEditedJSON={updateEditedParametersListByGlobal} />
-                    <ParametersList parametersJSON={localParametersJSON} setMainEditedJSON={updateEditedParametersListByLocal} programId={programId} />
+                    <ParametersList parametersJSON={parametersJSON} setMainEditedJSON={updateEditedParametersList} />
                     <DialogActionsBar>
                         <Button className="actionbutton" primary={!runButtonDisabled} disabled={runButtonDisabled} onClick={handleRun}>
                             {t('base.run')}

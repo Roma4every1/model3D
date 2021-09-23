@@ -31,6 +31,31 @@ export default function TableRowComboEditor(props) {
     );
 
     const fetchData = React.useCallback(async () => {
+
+        const addParamRow = (properties, column, row, index) => {
+            var result = '';
+            if (index !== 0) {
+                result = '|'
+            }
+            result += addParam(column, row.Cells[index], column.Name.toUpperCase());
+            var propName = _.find(properties, function (o) { return o.fromColumn?.toUpperCase() === column.Name.toUpperCase(); });
+            if (propName) {
+                result += '|' + addParam(column, row.Cells[index], propName.name.toUpperCase());
+            }
+            return result;
+        }
+
+        const addParam = (column, rowValue, propName) => {
+            var valuestring = '';
+            if (rowValue != null) {
+                valuestring = propName + '#' + rowValue + '#' + column.NetType;
+            }
+            else {
+                valuestring = propName + '##System.DBNull';
+            }
+            return valuestring;
+        }
+
         var jsonToSend = { sessionId: globals.sessionId, paramName: id, reportId: programId, presentationId: presentationId, paramValues: neededParameterValues.values };
         const jsonToSendString = JSON.stringify(jsonToSend);
         const response = await utils.webFetch(`getChannelDataForParam`,
@@ -55,20 +80,10 @@ export default function TableRowComboEditor(props) {
                 let temp = {};
                 temp.id = row.Cells[idIndex];
                 temp.name = row.Cells[nameIndex];
-
                 var valuestring = '';
-                valuestring = addParam(row, responseJSON, responseJSON.data.Columns[0].Name, 0);
-                var propName = _.find(responseJSON.properties, function (o) { return o.fromColumn?.toUpperCase() === responseJSON.data.Columns[0].Name.toUpperCase(); });
-                if (propName) {
-                    valuestring += '|' + addParam(row, responseJSON, propName.name.toUpperCase(),  0);
-                }
-                for (var i = 1; i < responseJSON.data.Columns.length; i++) {
-                    valuestring += '|' + addParam(row, responseJSON, responseJSON.data.Columns[i].Name, i);
-                    var propName2 = _.find(responseJSON.properties, function (o) { return o.fromColumn?.toUpperCase() === responseJSON.data.Columns[i].Name.toUpperCase(); });
-                    if (propName2) {
-                        valuestring += '|' + addParam(row, responseJSON, propName2.name.toUpperCase(), i);
-                    }
-                }
+                responseJSON.data.Columns.forEach((column, index) => {
+                    valuestring += addParamRow(responseJSON.properties, column, row, index)
+                });
                 temp.value = valuestring;
                 return temp
             });
@@ -109,17 +124,6 @@ export default function TableRowComboEditor(props) {
             setValueToShow('');
         }
     }, [values, value, setNewValue]);
-
-    function addParam(row, responseJSON, propName, index) {
-        var valuestring = '';
-        if (row.Cells[index] != null) {
-            valuestring = propName + '#' + row.Cells[index] + '#' + responseJSON.data.Columns[index].NetType;
-        }
-        else {
-            valuestring = propName + '##System.DBNull';
-        }
-        return valuestring;
-    }
 
     function neededParameterValuesReducer(state, action) {
         if (action.updatedParam) {
