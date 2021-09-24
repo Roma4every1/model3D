@@ -73,8 +73,7 @@ export default function ProgramParametersList(props) {
     const { t } = useTranslation();
     const { sessionId, programId, programDisplayName, tablesModified, presentationId } = props;
     const [open, setOpen] = React.useState(false);
-    const [parametersJSON, setParametersJSON] = React.useState([]);
-    const [programEditedJSON, updateEditedJSON] = React.useReducer(editedJSONReducer, []);
+    const [parametersJSON, updateParametersJSON] = React.useReducer(parametersJSONReducer, []);
     const [runButtonDisabled, setRunButtonDisabled] = React.useState(true);
 
     const handleOpen = () => {
@@ -86,15 +85,23 @@ export default function ProgramParametersList(props) {
     };
 
     const updateParametersList = (parametersJSON) => {
-        setParametersJSON(parametersJSON);
+        updateParametersJSON({ parametersJSON: parametersJSON });
     };
 
-    function editedJSONReducer(state, action) {
+    function parametersJSONReducer(state, action) {
         var newJSON = [];
-        if (action.localParametersJSON) {
-            action.localParametersJSON.forEach(element => {
-                newJSON.push(element)
+        if (action.updatedParam) {
+            state.forEach(element => {
+                if (element.id === action.updatedParam.id) {
+                    newJSON.push(action.updatedParam)
+                }
+                else {
+                    newJSON.push(element)
+                }
             });
+        }
+        else if (action.parametersJSON) {
+            return action.parametersJSON;
         }
         else {
             return state;
@@ -102,29 +109,27 @@ export default function ProgramParametersList(props) {
         return newJSON;
     }
 
-    const updateEditedParametersList = (parametersJSON) => {
-        setParametersJSON(parametersJSON);
-        updateEditedJSON({ localParametersJSON: parametersJSON });
-    };
-
+    const parameterChanged = React.useCallback((updatedParam) => {
+        updateParametersJSON({ updatedParam: updatedParam });
+    }, [updateParametersJSON]);
+    
     React.useEffect(() => {
-        getCanRunReport(sessionId, programId, programEditedJSON, setRunButtonDisabled);
-    }, [sessionId, programId, programEditedJSON]);
+        getCanRunReport(sessionId, programId, parametersJSON, setRunButtonDisabled);
+    }, [sessionId, programId, parametersJSON]);
 
     const handleRun = () => {
         handleClose();
-        runReport(sessionId, programId, programEditedJSON, tablesModified);
+        runReport(sessionId, programId, parametersJSON, tablesModified);
     }
 
     return (
-
         <div>
             <Button className="programmbutton" onClick={() => { fillReportParameters(sessionId, presentationId, programId, handleOpen, updateParametersList) }}>
                 {programDisplayName}
             </Button>
             {open && (
                 <Dialog title={t('report.params')} onClose={handleClose} initialHeight={350}>
-                    <ParametersList parametersJSON={parametersJSON} setMainEditedJSON={updateEditedParametersList} />
+                    <ParametersList parametersJSON={parametersJSON} selectionChanged={parameterChanged} />
                     <DialogActionsBar>
                         <Button className="actionbutton" primary={!runButtonDisabled} disabled={runButtonDisabled} onClick={handleRun}>
                             {t('base.run')}

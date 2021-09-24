@@ -20,14 +20,14 @@ export function ParametersList(props) {
     }
 
     React.useEffect(() => {
-        if (editedJSON.updatedParam) {
+        if (editedJSON.updatedParam && setMainEditedJSON) {
             setMainEditedJSON(editedJSON.values);
         }
         setUpdatedParam(editedJSON.updatedParam);
         if (selectionChanged) {
             selectionChanged(editedJSON.updatedParam);
         }
-    }, [editedJSON, selectionChanged]);
+    }, [editedJSON, selectionChanged, setMainEditedJSON]);
 
     return (
         <StackLayout orientation="vertical">
