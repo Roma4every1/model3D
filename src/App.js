@@ -1,4 +1,6 @@
 import React from 'react';
+import { createStore } from 'redux'
+import { Provider } from 'react-redux'
 import SqlProgramsList from './components/SqlProgramsList';
 import GlobalParametersList from './components/GlobalParametersList';
 import PresentationList from './components/PresentationList';
@@ -124,7 +126,25 @@ export default function App() {
     };
     let json = require('../package.json');
 
+    function counterReducer(state = { value: 0 }, action) {
+        switch (action.type) {
+            case 'counter/incremented':
+                return { value: state.value + 1 }
+            case 'counter/decremented':
+                return { value: state.value - 1 }
+            default:
+                return state
+        }
+    }
+
+    // Create a Redux store holding the state of your app.
+    // Its API is { subscribe, dispatch, getState }.
+    let store = createStore(counterReducer)
+   // globals.store = store;
+   // store.dispatch(setMyState({ 'count': 10 })); 
+
     return (
+        <Provider store={store}>
         <div className="app">
             {state.sessionLoading
                 ? <p><em>{t('session.loading')}</em></p>
@@ -204,7 +224,7 @@ export default function App() {
                                             />
                                         </div>
                                     </Splitter>
-                                    <Presentation class="presentation"
+                                    <Presentation
                                         sessionId={state.sessionId}
                                         presentationId={activePresentationId}
                                         changedParameter={changedParameter}
@@ -219,6 +239,7 @@ export default function App() {
                     </Drawer>
                 </div>
             }
-        </div>
+            </div>
+            </Provider>
     );
 }

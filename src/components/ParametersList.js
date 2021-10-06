@@ -1,8 +1,11 @@
 ﻿import React from 'react';
 import { StackLayout } from "@progress/kendo-react-layout";
 import BaseEditor from './activeParametersEditors/BaseEditor';
+//import { globals } from './Globals';
+import { useDispatch } from 'react-redux';
 
 export function ParametersList(props) {
+    const dispatch = useDispatch();
     const { parametersJSON, setMainEditedJSON, selectionChanged, ...other } = props;
     const [editedJSON, updateEditedJSON] = React.useReducer(editedJSONReducer, { values: parametersJSON, updatedParam: {} });
     const [updatedParam, setUpdatedParam] = React.useState({});
@@ -16,6 +19,7 @@ export function ParametersList(props) {
                 element.value = newValue;
             }
         });
+        dispatch({ type: 'counter/incremented' })
         return { values: changedJSON, updatedParam: target};
     }
 
