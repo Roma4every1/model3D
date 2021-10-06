@@ -16,7 +16,7 @@ import {
     LocalizationProvider,
     loadMessages,
 } from "@progress/kendo-react-intl";
-import { BaseCell } from "./BaseCell";
+import { BaseCell } from "./DataSet/Cells/BaseCell";
 import { ExcelExport } from '@progress/kendo-react-excel-export';
 import { process } from "@progress/kendo-data-query";
 import calculateSize from "calculate-size";
@@ -51,7 +51,7 @@ const SELECTED_FIELD = "js_selected";
 const EDIT_FIELD = "js_inEdit";
 const idGetter = getter(DATA_ITEM_KEY);
 
-export default function TableForm(props) {
+export default function DataSet(props) {
     const { t } = useTranslation();
     const { sessionId, formData, changedParameter, modifiedTables, presentationId, ...other } = props;
     const [databaseData, setDatabaseData] = React.useState([]);

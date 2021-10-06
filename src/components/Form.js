@@ -1,32 +1,26 @@
-﻿import React from 'react';
-import FormHeader from './FormHeader';
-import TableForm from './forms/TableForm';
+﻿import React, { Suspense } from 'react';
+import { ErrorBoundary } from './ErrorBoundary';
 
 export default function Form(props) {
     const { sessionId, formData, ...other } = props;
 
-    const getImagePath = (formType) => {
-        return process.env.PUBLIC_URL + '/images/' + formType + '.PNG';
+    const capitalizeFirstLetter = (string) => {
+        return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
-    var contents = '';
-    if (formData.type === 'dataSet') {
-        contents =
-            <TableForm
-                sessionId={sessionId}
-                formData={formData}
-                {...other}
-            />
-    }
-    else {
-        contents = 
+    const FormByType = React.lazy(() => import('./forms/' + capitalizeFirstLetter(formData.type)));
+
+    return (
         <div>
-            <FormHeader sessionId={sessionId} formData={formData} {...other}/>
-            <div className="imgbox">
-                <img src={getImagePath(formData.type)} alt="logo" />
-            </div>
+            <ErrorBoundary>
+                <Suspense fallback={<div>Загрузка...</div>}>
+                    <FormByType
+                        sessionId={sessionId}
+                        formData={formData}
+                        {...other}
+                    />
+                </Suspense>
+            </ErrorBoundary>
         </div>
-    }
-
-    return (contents);
+    );
 }
