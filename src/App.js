@@ -137,109 +137,105 @@ export default function App() {
         }
     }
 
-    // Create a Redux store holding the state of your app.
-    // Its API is { subscribe, dispatch, getState }.
     let store = createStore(counterReducer)
-   // globals.store = store;
-   // store.dispatch(setMyState({ 'count': 10 })); 
 
     return (
         <Provider store={store}>
-        <div className="app">
-            {state.sessionLoading
-                ? <p><em>{t('session.loading')}</em></p>
-                : <div>
-                    <AppBar style={{ height: 30, padding: 1 }}>
-                        <AppBarSection>
-                            <button className="k-button k-button-clear" onClick={toggleDrawer(!drawerState)}>
-                                <span className="k-icon k-i-menu" />
-                            </button>
-                        </AppBarSection>
-                    </AppBar>
-                    {aboutState && <Dialog title={t('menucommands.about')} onClose={handleClose}>
-                        <p
-                            style={{
-                                margin: "25px",
-                                textAlign: "center",
-                            }}
+            <div className="app">
+                {state.sessionLoading
+                    ? <p><em>{t('session.loading')}</em></p>
+                    : <div>
+                        <AppBar style={{ height: 30, padding: 1 }}>
+                            <AppBarSection>
+                                <button className="k-button k-button-clear" onClick={toggleDrawer(!drawerState)}>
+                                    <span className="k-icon k-i-menu" />
+                                </button>
+                            </AppBarSection>
+                        </AppBar>
+                        {aboutState && <Dialog title={t('menucommands.about')} onClose={handleClose}>
+                            <p
+                                style={{
+                                    margin: "25px",
+                                    textAlign: "center",
+                                }}
+                            >
+                                {json['name']}<br />{t('version.label') + ': ' + json['version']}
+                            </p>
+                            <DialogActionsBar>
+                                <Button onClick={handleClose}>
+                                    {t('base.ok')}
+                                </Button>
+                            </DialogActionsBar>
+                        </Dialog>}
+                        <Drawer
+                            expanded={drawerState}
+                            position="start"
+                            mode="push"
+                            items={items.map((item, index) => ({
+                                ...item
+                            }))}
+                            onSelect={toggleDrawer(false)}
                         >
-                            {json['name']}<br />{t('version.label') + ': ' + json['version']}
-                        </p>
-                        <DialogActionsBar>
-                            <Button onClick={handleClose}>
-                                {t('base.ok')}
-                            </Button>
-                        </DialogActionsBar>
-                    </Dialog>}
-                    <Drawer
-                        expanded={drawerState}
-                        position="start"
-                        mode="push"
-                        items={items.map((item, index) => ({
-                            ...item
-                        }))}
-                        onSelect={toggleDrawer(false)}
-                    >
-                        <DrawerContent>
-                            <div>
-                                <div style={{ height: 30 }}>
-                                    <SqlProgramsList
-                                        sessionId={state.sessionId}
-                                        presentationId={activePresentationId}
-                                        tablesModified={(target) => {
-                                            setModifiedTables(target);
-                                        }}
-                                    />
-                                </div>
-                                <Splitter
-                                    panes={panes}
-                                    orientation={"horizontal"}
-                                    onChange={onChange}
-                                >
+                            <DrawerContent>
+                                <div>
+                                    <div style={{ height: 30 }}>
+                                        <SqlProgramsList
+                                            sessionId={state.sessionId}
+                                            presentationId={activePresentationId}
+                                            tablesModified={(target) => {
+                                                setModifiedTables(target);
+                                            }}
+                                        />
+                                    </div>
                                     <Splitter
-                                        panes={navPanes}
-                                        orientation={"vertical"}
-                                        onChange={onNavChange}
+                                        panes={panes}
+                                        orientation={"horizontal"}
+                                        onChange={onChange}
                                     >
-                                        <div>
-                                            <GlobalParametersList sessionId={state.sessionId}
-                                                selectionChanged={(target) => {
-                                                    setChangedParameter(target);
-                                                }} />
-                                        </div>
-                                        <div>
-                                            <PresentationParametersList
-                                                sessionId={state.sessionId}
-                                                presentationId={activePresentationId}
-                                                selectionChanged={(target) => {
-                                                    setChangedParameter(target);
-                                                }} />
-                                        </div>
-                                        <div className="presentationList">
-                                            <PresentationList
-                                                sessionId={state.sessionId}
-                                                selectionChanged={(event, value) => {
-                                                    setActivePresentationId(value);
-                                                }}
-                                            />
-                                        </div>
+                                        <Splitter
+                                            panes={navPanes}
+                                            orientation={"vertical"}
+                                            onChange={onNavChange}
+                                        >
+                                            <div>
+                                                <GlobalParametersList sessionId={state.sessionId}
+                                                    selectionChanged={(target) => {
+                                                        setChangedParameter(target);
+                                                    }} />
+                                            </div>
+                                            <div>
+                                                <PresentationParametersList
+                                                    sessionId={state.sessionId}
+                                                    presentationId={activePresentationId}
+                                                    selectionChanged={(target) => {
+                                                        setChangedParameter(target);
+                                                    }} />
+                                            </div>
+                                            <div className="presentationList">
+                                                <PresentationList
+                                                    sessionId={state.sessionId}
+                                                    selectionChanged={(event, value) => {
+                                                        setActivePresentationId(value);
+                                                    }}
+                                                />
+                                            </div>
+                                        </Splitter>
+                                        <Presentation
+                                            sessionId={state.sessionId}
+                                            presentationId={activePresentationId}
+                                            changedParameter={changedParameter}
+                                            selectionChanged={(target) => {
+                                                setChangedParameter(target);
+                                            }}
+                                            modifiedTables={modifiedTables}
+                                        />
                                     </Splitter>
-                                    <Presentation
-                                        sessionId={state.sessionId}
-                                        presentationId={activePresentationId}
-                                        changedParameter={changedParameter}
-                                        selectionChanged={(target) => {
-                                            setChangedParameter(target);
-                                        }}
-                                        modifiedTables={modifiedTables}
-                                    />
-                                </Splitter>
-                            </div>
-                        </DrawerContent>
-                    </Drawer>
-                </div>
-            }
+                                </div>
+                            </DrawerContent>
+                        </Drawer>
+                    </div>
+                }
             </div>
-            </Provider>
+        </Provider>
     );
 }

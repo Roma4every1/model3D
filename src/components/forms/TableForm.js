@@ -1,5 +1,4 @@
 ﻿import React from 'react';
-import { useSelector } from 'react-redux'
 import {
     Grid,
     GridColumn as Column,
@@ -10,6 +9,7 @@ import {
 import {
     Button
 } from "@progress/kendo-react-buttons";
+import { globals } from '../Globals';
 import {
     IntlProvider,
     load,
@@ -31,7 +31,6 @@ import timeZoneNames from "cldr-dates-full/main/ru/timeZoneNames.json";
 import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { getter } from "@progress/kendo-react-common";
 import { useTranslation } from 'react-i18next';
-import { globals } from '../Globals';
 import FormHeader from '../FormHeader';
 import ruMessages from "./ru.json";
 load(
@@ -411,13 +410,6 @@ export default function TableForm(props) {
                 return null;
         }
     }
-
-   // const counter = useSelector((state) => state.value)
-   // alert(counter);
-
-    //globals.store.subscribe(() => {
-    //    alert(globals.store.getState().value)
-    //});
 
     async function applyEdit() {
         const rowToInsert = tableData.rowsJSON.find(item =>
