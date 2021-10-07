@@ -5,7 +5,7 @@ import SqlProgramsList from './components/SqlProgramsList';
 import GlobalParametersList from './components/GlobalParametersList';
 import PresentationList from './components/PresentationList';
 import PresentationParametersList from './components/PresentationParametersList';
-import Presentation from './components/Presentation';
+import Form from './components/Form';
 import {
     AppBar,
     AppBarSection,
@@ -137,6 +137,11 @@ export default function App() {
         }
     }
 
+    var formData = {
+        type: "grid",
+        opened: true
+    }
+
     let store = createStore(counterReducer)
 
     return (
@@ -220,8 +225,10 @@ export default function App() {
                                                 />
                                             </div>
                                         </Splitter>
-                                        <Presentation
+                                        <Form
+                                            key={activePresentationId}
                                             sessionId={state.sessionId}
+                                            formData={formData}
                                             presentationId={activePresentationId}
                                             changedParameter={changedParameter}
                                             selectionChanged={(target) => {

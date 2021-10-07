@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import FlexLayout from "flexlayout-react";
 
-export default function FormsContainer(props) {
+export default function Container(props) {
     var newjson = {
         global: {},
         borders: [],

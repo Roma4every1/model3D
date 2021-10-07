@@ -1,10 +1,10 @@
 ﻿import React from 'react';
-import Form from './Form';
-import FormsContainer from './FormsContainer';
-var utils = require("../utils")
+import Form from '../Form';
+import Container from './Grid/Container';
+var utils = require("../../utils")
 
-export default function Presentation(props) {
-    const { sessionId, presentationId, ...other } = props;
+export default function Grid(props) {
+    const { sessionId, presentationId, formData, ...other } = props;
     const [formsData, setFormsData] = React.useState([]);
     React.useEffect(() => {
         if (presentationId) {
@@ -23,7 +23,7 @@ export default function Presentation(props) {
     }, [sessionId, presentationId]);
 
     return (
-        <FormsContainer>
+        <Container>
             {formsData.map(formData =>
                 (formData.opened) && <Form
                     key={formData.id}
@@ -32,5 +32,5 @@ export default function Presentation(props) {
                     presentationId={presentationId}
                     {...other}
                 />)}
-        </FormsContainer>);
+        </Container>);
 }
