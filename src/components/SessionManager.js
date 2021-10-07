@@ -9,10 +9,15 @@ export default function createSessionManager(systemName, store, callback) {
         const response = await utils.webFetch(`startSession?systemName=${systemName}`);
         const data = await response.text();
         globals.sessionId = data;
-        createParamsManager(data, store);
+        store.dispatch({ type: 'sessionId/set', value: data });
         callback(data);
     }
 
     startSession();
-    createChannelsManager();
+    const paramsManager = createParamsManager(store);
+    const channelsManager = createChannelsManager(store);
+    return {
+        paramsManager: paramsManager,
+        channelsManager: channelsManager
+    }
 }

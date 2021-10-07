@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import { useSelector } from 'react-redux'
 import {
     Grid,
     GridColumn as Column,
@@ -52,9 +53,12 @@ const EDIT_FIELD = "js_inEdit";
 const idGetter = getter(DATA_ITEM_KEY);
 
 export default function DataSet(props) {
+    const channelsManager = useSelector((state) => state.sessionManager.channelsManager);
+
     const { t } = useTranslation();
     const { sessionId, formData, changedParameter, modifiedTables, presentationId, ...other } = props;
     const [databaseData, setDatabaseData] = React.useState([]);
+    const [activeChannelName, setActiveChannelName] = React.useState('');
     const [rowAdding, setRowAdding] = React.useState(false);
     const [edited, setEdited] = React.useState(false);
     const [neededParamsValues, setNeededParamsValues] = React.useState({
@@ -151,17 +155,9 @@ export default function DataSet(props) {
 
     const fetchData = React.useCallback(async (neededParamsJSON) => {
         async function fetchLookupData(columnElement) {
-            const response = await utils.webFetch(`getNeededParamForChannel?sessionId=${globals.sessionId}&channelName=${columnElement.lookupChannelName}`);
-            const responseJSON = await response.json();
+            const responseJSON = await channelsManager.loadChannelParamsList(columnElement.lookupChannelName);
             var neededParamsJSON = getNeededParamsJSON(responseJSON);
-            var jsonToSend = { sessionId: globals.sessionId, channelName: columnElement.lookupChannelName, paramValues: neededParamsJSON };
-            const jsonToSendString = JSON.stringify(jsonToSend);
-            const response2 = await utils.webFetch(`getChannelDataByName`,
-                {
-                    method: 'POST',
-                    body: jsonToSendString
-                });
-            const response2JSON = await response2.json();
+            const response2JSON = await channelsManager.loadChannelData(columnElement.lookupChannelName, neededParamsJSON);
             let valuesFromJSON = '';
             if (response2JSON && response2JSON.data) {
                 let idIndex = 0;
@@ -186,14 +182,8 @@ export default function DataSet(props) {
             }
             columnElement.lookupData = valuesFromJSON;
         }
-        var jsonToSend = { sessionId: sessionId, clientId: formData.id, paramValues: neededParamsJSON };
-        const jsonToSendString = JSON.stringify(jsonToSend);
-        const response = await utils.webFetch(`fill`,
-            {
-                method: 'POST',
-                body: jsonToSendString
-            });
-        const data = await response.json();
+        const data = await channelsManager.loadChannelData(activeChannelName, neededParamsJSON);
+
         setDatabaseData(data);
 
         if (data.data) {
@@ -250,7 +240,7 @@ export default function DataSet(props) {
             result.rowsJSON = [];
             return result;
         }
-    }, [sessionId, formData, getNeededParamsJSON]);
+    }, [sessionId, formData, getNeededParamsJSON, activeChannelName]);
 
     const reload = React.useCallback(async () => {
         let jsonValues = await fetchData(neededParamsValues.values);
@@ -298,9 +288,10 @@ export default function DataSet(props) {
         let ignore = false;
 
         async function fetchNeededParamsData() {
-            const response = await utils.webFetch(`getAllNeedParametersForForm?sessionId=${sessionId}&clientId=${formData.id}`);
-            const responseJSON = await response.json();
-            var neededParamsJSON = getNeededParamsJSON(responseJSON);
+            const channels = await channelsManager.loadFormChannelsList(formData.id);
+            setActiveChannelName(channels[0]);
+            const params = await channelsManager.loadChannelParamsList(channels[0]);
+            var neededParamsJSON = getNeededParamsJSON(params);
             setNeededParamsValues({ values: neededParamsJSON, loaded: true });
             let jsonValues = await fetchData(neededParamsJSON);
             if (!ignore) {

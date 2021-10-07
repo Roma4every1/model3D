@@ -109,14 +109,14 @@ export default function App() {
     };
     let json = require('../package.json');
 
-    function counterReducer(state = { value: 0, globalParams: {} }, action) {
+    function counterReducer(state = { sessionId: '', globalParams: null, sessionManager: null }, action) {
         switch (action.type) {
-            case 'counter/incremented':
-                return { value: state.value + 1 }
-            case 'counter/decremented':
-                return { value: state.value - 1 }
             case 'params/set':
-                return { value: state.value, globalParams: action.value }
+                return { sessionId: state.sessionId, globalParams: action.value, sessionManager: state.sessionManager }
+            case 'sessionId/set':
+                return { sessionId: action.value, globalParams: state.globalParams, sessionManager: state.sessionManager }
+            case 'sessionManager/set':
+                return { sessionId: state.sessionId, globalParams: state.globalParams, sessionManager: action.value }
             default:
                 return state
         }
@@ -131,7 +131,7 @@ export default function App() {
 
     React.useEffect(() => {
         let ignore = false;
-        createSessionManager('DEMO_SYSTEM', store, (data) => {
+        const sessionManager = createSessionManager('DEMO_SYSTEM', store, (data) => {
             if (!ignore) {
                 setState({
                     sessionLoading: false,
@@ -139,6 +139,7 @@ export default function App() {
                 });
             }
         });
+        store.dispatch({ type: 'sessionManager/set', value: sessionManager });
         return () => { ignore = true; }
     }, [store]);
 
