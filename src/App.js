@@ -22,7 +22,7 @@ import 'flexlayout-react/style/light.css';
 import './custom.css'
 import { useTranslation } from 'react-i18next';
 import { globals } from './components/Globals';
-var utils = require("./utils")
+import createSessionManager from './components/SessionManager';
 
 export default function App() {
     const { t } = useTranslation();
@@ -100,23 +100,6 @@ export default function App() {
     ];
 
     React.useEffect(() => {
-        let ignore = false;
-        async function fetchData() {
-            const response = await utils.webFetch('startSession?systemName=DEMO_SYSTEM');
-            const data = await response.text();
-            globals.sessionId = data;
-            if (!ignore) {
-                setState({
-                    sessionLoading: false,
-                    sessionId: data
-                });
-            }
-        }
-        fetchData();
-        return () => { ignore = true; }
-    }, []);
-
-    React.useEffect(() => {
         window.addEventListener('resize', handleWindowResize);
         return () => { window.removeEventListener('resize', handleWindowResize) }
     }, []);
@@ -126,12 +109,14 @@ export default function App() {
     };
     let json = require('../package.json');
 
-    function counterReducer(state = { value: 0 }, action) {
+    function counterReducer(state = { value: 0, globalParams: {} }, action) {
         switch (action.type) {
             case 'counter/incremented':
                 return { value: state.value + 1 }
             case 'counter/decremented':
                 return { value: state.value - 1 }
+            case 'params/set':
+                return { value: state.value, globalParams: action.value }
             default:
                 return state
         }
@@ -142,7 +127,20 @@ export default function App() {
         opened: true
     }
 
-    let store = createStore(counterReducer)
+    const [store, setStore] = React.useState(createStore(counterReducer));
+
+    React.useEffect(() => {
+        let ignore = false;
+        createSessionManager('DEMO_SYSTEM', store, (data) => {
+            if (!ignore) {
+                setState({
+                    sessionLoading: false,
+                    sessionId: data
+                });
+            }
+        });
+        return () => { ignore = true; }
+    }, [store]);
 
     return (
         <Provider store={store}>
