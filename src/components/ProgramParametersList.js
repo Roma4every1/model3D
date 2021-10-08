@@ -5,11 +5,9 @@ import {
     Button
 } from "@progress/kendo-react-buttons";
 import { ParametersList } from './ParametersList';
-import { globals } from './Globals';
 import { saveAs } from '@progress/kendo-file-saver';
 import { useTranslation } from 'react-i18next';
 var utils = require("../utils");
-var _ = require("lodash");
 
 async function runReport(sessionId, reportGuid, paramValues, tablesModified) {
     var jsonToSend = { sessionId: sessionId, reportId: reportGuid, paramValues: paramValues };
@@ -55,26 +53,17 @@ export default function ProgramParametersList(props) {
     const sessionManager = useSelector((state) => state.sessionManager);
 
     const { t } = useTranslation();
-    const { sessionId, programId, programDisplayName, tablesModified, presentationId } = props;
+    const { sessionId, programDisplayName, tablesModified, formId } = props;
     const [open, setOpen] = React.useState(false);
     const [parametersJSON, updateParametersJSON] = React.useReducer(parametersJSONReducer, []);
     const [runButtonDisabled, setRunButtonDisabled] = React.useState(true);
 
-    const fillReportParameters = async (sessionId, presentationId, reportGuid, handleOpen, updateParametersList) => {
-        const parametersJSON = await sessionManager.paramsManager.loadFormParameters(presentationId + ':' + reportGuid);
-        const allNeededParams = await utils.webFetch(`getAllNeedParametersList?sessionId=${sessionId}&reportguid=${reportGuid}`);
+    const fillReportParameters = async (sessionId, formId, handleOpen, updateParametersList) => {
+        await sessionManager.paramsManager.loadFormParameters(formId);
+        const allNeededParams = await utils.webFetch(`getAllNeedParametersList?sessionId=${sessionId}&reportguid=${formId}`);
         const allNeededParamsJSON = await allNeededParams.json();
-        var paramsToUse = parametersJSON.map(param => { param.formId = presentationId + ':' + reportGuid; return param; });
-        allNeededParamsJSON.forEach(param => {
-            var element = _.find(globals.globalParameters, function (o) { return o.id === param; });
-            if (!element) {
-                element = _.find(globals.presentationParameters[presentationId], function (o) { return o.id === param; });
-            }
-            if (element) {
-                paramsToUse.push(element);
-            }
-        });
-        updateParametersList(paramsToUse);
+        const neededParams = await sessionManager.paramsManager.getParameterValues(allNeededParamsJSON, formId);
+        updateParametersList(neededParams);
         handleOpen();
     }
 
@@ -117,17 +106,17 @@ export default function ProgramParametersList(props) {
     }, [updateParametersJSON]);
     
     React.useEffect(() => {
-        getCanRunReport(sessionId, programId, parametersJSON, setRunButtonDisabled);
-    }, [sessionId, programId, parametersJSON]);
+        getCanRunReport(sessionId, formId, parametersJSON, setRunButtonDisabled);
+    }, [sessionId, formId, parametersJSON]);
 
     const handleRun = () => {
         handleClose();
-        runReport(sessionId, programId, parametersJSON, tablesModified);
+        runReport(sessionId, formId, parametersJSON, tablesModified);
     }
 
     return (
         <div>
-            <Button className="programmbutton" onClick={() => { fillReportParameters(sessionId, presentationId, programId, handleOpen, updateParametersList) }}>
+            <Button className="programmbutton" onClick={() => { fillReportParameters(sessionId, formId, handleOpen, updateParametersList) }}>
                 {programDisplayName}
             </Button>
             {open && (

@@ -4,14 +4,14 @@ import Container from './Grid/Container';
 var utils = require("../../utils")
 
 export default function Grid(props) {
-    const { sessionId, presentationId, formData, ...other } = props;
+    const { sessionId, formId, formData, ...other } = props;
     const [formsData, setFormsData] = React.useState([]);
     React.useEffect(() => {
-        if (presentationId) {
+        if (formId) {
             let ignore = false;
 
             async function fetchData() {
-                const response = await utils.webFetch(`presentationForms?sessionId=${sessionId}&presentationId=${presentationId}`);
+                const response = await utils.webFetch(`getChildrenForms?sessionId=${sessionId}&formId=${formId}`);
                 const data = await response.json();
                 if (!ignore) {
                     setFormsData(data);
@@ -20,7 +20,7 @@ export default function Grid(props) {
             fetchData();
             return () => { ignore = true; }
         }
-    }, [sessionId, presentationId]);
+    }, [sessionId, formId]);
 
     return (
         <Container>
@@ -29,7 +29,7 @@ export default function Grid(props) {
                     key={formData.id}
                     sessionId={sessionId}
                     formData={formData}
-                    presentationId={presentationId}
+                    formId={formId}
                     {...other}
                 />)}
         </Container>);

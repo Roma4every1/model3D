@@ -184,7 +184,7 @@ export default function App() {
                                     <div style={{ height: 30 }}>
                                         <SqlProgramsList
                                             sessionId={state.sessionId}
-                                            presentationId={activePresentationId}
+                                            formId={activePresentationId}
                                             tablesModified={(target) => {
                                                 setModifiedTables(target);
                                             }}
@@ -227,7 +227,7 @@ export default function App() {
                                             key={activePresentationId}
                                             sessionId={state.sessionId}
                                             formData={formData}
-                                            presentationId={activePresentationId}
+                                            formId={activePresentationId}
                                             changedParameter={changedParameter}
                                             selectionChanged={(target) => {
                                                 setChangedParameter(target);

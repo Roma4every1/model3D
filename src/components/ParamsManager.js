@@ -1,7 +1,42 @@
 ﻿import { globals } from './Globals';
 var utils = require("../utils");
+var _ = require("lodash");
 
 export default function createParamsManager(store) {
+
+    const getParentFormId = (formId) => {
+        var index1 = formId.lastIndexOf(':');
+        var index2 = formId.lastIndexOf(',');
+        var index = index1;
+        if (index === -1 || index2 > index1) {
+            index = index2;
+        }
+        if (index === -1) {
+            return ''
+        }
+        else {
+            return formId.substring(0, index);
+        }
+    }
+
+    const getParameterValues = (neededParamList, formId) => {
+        var paramsToUse = [];
+        neededParamList.forEach(param => {
+            var element = null;
+            var currentFormId = formId;
+            while (!element && (currentFormId !== '')) {
+                element = _.find(globals.presentationParameters[currentFormId], function (o) { return o.id === param; });
+                currentFormId = getParentFormId(currentFormId);
+            }
+            if (!element) {
+                element = _.find(globals.globalParameters, function (o) { return o.id === param; });
+            }
+            if (element) {
+                paramsToUse.push(element);
+            }
+        });
+        return paramsToUse;
+    }
 
     const loadNeededChannelForParam = async (paramName, formId) => {
         const sessionId = store.getState().sessionId;
@@ -42,6 +77,7 @@ export default function createParamsManager(store) {
 
     return {
         loadNeededChannelForParam: loadNeededChannelForParam,
-        loadFormParameters: loadFormParameters
+        loadFormParameters: loadFormParameters,
+        getParameterValues: getParameterValues
     };
 }

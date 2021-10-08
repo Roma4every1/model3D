@@ -8,7 +8,7 @@ var utils = require("../utils")
 
 export default function SqlProgramsList(props) {
     const { t } = useTranslation();
-    const { sessionId, presentationId, ...other } = props;
+    const { sessionId, formId, ...other } = props;
     const [state, setState] = React.useState({
         programNames: [],
         loading: true
@@ -16,9 +16,9 @@ export default function SqlProgramsList(props) {
 
     React.useEffect(() => {
         let ignore = false;
-        if (presentationId) {
+        if (formId) {
             async function fetchData() {
-                const response = await utils.webFetch(`programsList?sessionId=${sessionId}&presentationId=${presentationId}`);
+                const response = await utils.webFetch(`programsList?sessionId=${sessionId}&formId=${formId}`);
                 const data = await response.json();
                 if (!ignore) {
                     setState({
@@ -30,7 +30,7 @@ export default function SqlProgramsList(props) {
             fetchData();
         }
         return () => { ignore = true; }
-    }, [sessionId, presentationId]);
+    }, [sessionId, formId]);
 
     return (
         <div>
@@ -41,8 +41,7 @@ export default function SqlProgramsList(props) {
                         <ProgramParametersList
                             key={programName.id}
                             sessionId={sessionId}
-                            presentationId={presentationId}
-                            programId={programName.id}
+                            formId={programName.id}
                             programDisplayName={programName.displayName}
                             open="true"
                             {...other}

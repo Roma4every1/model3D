@@ -157,7 +157,7 @@ export default function TableRowComboEditor(props) {
         let ignore = false;
 
         async function fetchNeededParamsData() {
-            const resultExternalChannelName = await sessionManager.paramsManager.loadNeededChannelForParam(id, formId);
+            const resultExternalChannelName = await sessionManager.paramsManager.loadNeededChannelForParam(id, formId ?? '');
             setExternalChannelName(resultExternalChannelName);
             const channelParams = await sessionManager.channelsManager.loadChannelParamsList(resultExternalChannelName);
             var neededParamsJSON = [];

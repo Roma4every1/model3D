@@ -53,10 +53,10 @@ const EDIT_FIELD = "js_inEdit";
 const idGetter = getter(DATA_ITEM_KEY);
 
 export default function DataSet(props) {
-    const channelsManager = useSelector((state) => state.sessionManager.channelsManager);
+    const sessionManager = useSelector((state) => state.sessionManager);
 
     const { t } = useTranslation();
-    const { sessionId, formData, changedParameter, modifiedTables, presentationId, ...other } = props;
+    const { sessionId, formData, changedParameter, modifiedTables, formId, ...other } = props;
     const [databaseData, setDatabaseData] = React.useState([]);
     const [activeChannelName, setActiveChannelName] = React.useState('');
     const [rowAdding, setRowAdding] = React.useState(false);
@@ -136,28 +136,11 @@ export default function DataSet(props) {
         setSelectedState(newSelectedState);
     };
 
-    const getNeededParamsJSON = React.useCallback((responseJSON) => {
-        var neededParamsJSON = [];
-        responseJSON.forEach(param => {
-            var element = _.find(globals.globalParameters, function (o) { return o.id === param; });
-            if (!element) {
-                element = _.find(globals.presentationParameters[presentationId], function (o) { return o.id === param; });
-            }
-            if (element) {
-                neededParamsJSON.push(element);
-            }
-            else {
-                neededParamsJSON.push({ id: param});
-            }
-        });
-        return neededParamsJSON;
-    }, [presentationId]);
-
     const fetchData = React.useCallback(async (neededParamsJSON) => {
         async function fetchLookupData(columnElement) {
-            const responseJSON = await channelsManager.loadChannelParamsList(columnElement.lookupChannelName);
-            var neededParamsJSON = getNeededParamsJSON(responseJSON);
-            const response2JSON = await channelsManager.loadChannelData(columnElement.lookupChannelName, neededParamsJSON);
+            const responseJSON = await sessionManager.channelsManager.loadChannelParamsList(columnElement.lookupChannelName);
+            var neededParamsJSON = sessionManager.paramsManager.getParameterValues(responseJSON, formId);
+            const response2JSON = await sessionManager.channelsManager.loadChannelData(columnElement.lookupChannelName, neededParamsJSON);
             let valuesFromJSON = '';
             if (response2JSON && response2JSON.data) {
                 let idIndex = 0;
@@ -182,7 +165,7 @@ export default function DataSet(props) {
             }
             columnElement.lookupData = valuesFromJSON;
         }
-        const data = await channelsManager.loadChannelData(activeChannelName, neededParamsJSON);
+        const data = await sessionManager.channelsManager.loadChannelData(activeChannelName, neededParamsJSON);
 
         setDatabaseData(data);
 
@@ -240,7 +223,7 @@ export default function DataSet(props) {
             result.rowsJSON = [];
             return result;
         }
-    }, [getNeededParamsJSON, activeChannelName, channelsManager]);
+    }, [formId, activeChannelName, sessionManager]);
 
     const reload = React.useCallback(async () => {
         let jsonValues = await fetchData(neededParamsValues.values);
@@ -263,7 +246,7 @@ export default function DataSet(props) {
             var param = _.find(neededParamsValues.values, function (o) { return o.id === changedParameter.name; });
             if (param) {
                 if (!param.type) {
-                    var element = _.find(globals.presentationParameters[presentationId], function (o) { return o.id === param.id; });
+                    var element = _.find(globals.presentationParameters[formId], function (o) { return o.id === param.id; });
                     if (element) {
                         param = element
                     }
@@ -282,16 +265,16 @@ export default function DataSet(props) {
             fetchNewData();
         }
         return () => { ignore = true; }
-    }, [changedParameter, presentationId, neededParamsValues, fetchData]);
+    }, [changedParameter, formId, neededParamsValues, fetchData]);
 
     React.useEffect(() => {
         let ignore = false;
 
         async function fetchNeededParamsData() {
-            const channels = await channelsManager.loadFormChannelsList(formData.id);
+            const channels = await sessionManager.channelsManager.loadFormChannelsList(formData.id);
             setActiveChannelName(channels[0]);
-            const params = await channelsManager.loadChannelParamsList(channels[0]);
-            var neededParamsJSON = getNeededParamsJSON(params);
+            const params = await sessionManager.channelsManager.loadChannelParamsList(channels[0]);
+            var neededParamsJSON = sessionManager.paramsManager.getParameterValues(params, formId);
             setNeededParamsValues({ values: neededParamsJSON, loaded: true });
             let jsonValues = await fetchData(neededParamsJSON);
             if (!ignore) {
@@ -309,7 +292,7 @@ export default function DataSet(props) {
         }
         fetchNeededParamsData();
         return () => { ignore = true; }
-    }, [sessionId, formData, fetchData, getNeededParamsJSON, channelsManager]);
+    }, [sessionId, formData, fetchData, sessionManager]);
 
     async function deleteSelectedRows() {
         var elementsToRemove = ',';
