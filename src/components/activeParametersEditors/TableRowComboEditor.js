@@ -1,5 +1,5 @@
 ﻿import * as React from "react";
-import { useSelector } from 'react-redux'
+import { useSelector } from 'react-redux';
 import { Label } from "@progress/kendo-react-labels";
 import { ComboBox } from "@progress/kendo-react-dropdowns";
 import { globals } from '../Globals';
@@ -14,7 +14,7 @@ var _ = require("lodash");
 
 export default function TableRowComboEditor(props) {
     const sessionManager = useSelector((state) => state.sessionManager);
-    const { id, displayName, value, selectionChanged, updatedParam, presentationId, programId, dependsOn } = props;
+    const { id, displayName, value, selectionChanged, updatedParam, formId, dependsOn } = props;
     const [externalChannelName, setExternalChannelName] = React.useState('');
     const [values, setValues] = React.useState([]);
     const [valueToShow, setValueToShow] = React.useState(undefined);
@@ -157,14 +157,6 @@ export default function TableRowComboEditor(props) {
         let ignore = false;
 
         async function fetchNeededParamsData() {
-            var formId = '';
-            if (presentationId) {
-                formId += ',' + presentationId;
-            }
-            if (programId) {
-                formId += ':' + programId;
-            }
-
             const resultExternalChannelName = await sessionManager.paramsManager.loadNeededChannelForParam(id, formId);
             setExternalChannelName(resultExternalChannelName);
             const channelParams = await sessionManager.channelsManager.loadChannelParamsList(resultExternalChannelName);
@@ -183,7 +175,7 @@ export default function TableRowComboEditor(props) {
 
         fetchNeededParamsData();
         return () => { ignore = true; }
-    }, [id, programId, presentationId, sessionManager]);
+    }, [id, formId, sessionManager]);
 
     return (
         <LocalizationProvider language='ru-RU'>

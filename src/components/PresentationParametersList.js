@@ -1,10 +1,11 @@
 ﻿import { ParametersList } from './ParametersList';
+import { useSelector } from 'react-redux';
 import { globals } from './Globals';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-var utils = require("../utils")
 
 export default function PresentationParametersList(props) {
+    const sessionManager = useSelector((state) => state.sessionManager);
     const { sessionId, presentationId, ...other } = props;
     const [parametersJSON, setParametersJSON] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
@@ -15,15 +16,9 @@ export default function PresentationParametersList(props) {
 
         if (sessionId && presentationId) {
             async function fetchData() {
-                const response = await utils.webFetch(`getPresentationParameters?sessionId=${sessionId}&presentationId=${presentationId}`);
-                const responseJSON = await response.json();
-                if (!globals.presentationParameters) {
-                    globals.presentationParameters = {}
-                }
-                var jsonToSet = responseJSON.map(param => { var newParam = param; newParam.presentationId = presentationId; return newParam; });
-                globals.presentationParameters[presentationId] = jsonToSet;
+                await sessionManager.paramsManager.loadFormParameters(presentationId);
                 if (!ignore) {
-                    setParametersJSON(jsonToSet);
+                    setParametersJSON(globals.presentationParameters[presentationId]);
                     setLoading(false);
                 }
             }
@@ -31,7 +26,7 @@ export default function PresentationParametersList(props) {
             fetchData();
         }
         return () => { ignore = true; }
-    }, [sessionId, presentationId]);
+    }, [sessionId, presentationId, sessionManager]);
 
     const updateEditedParametersList = (parametersJSON) => {
         if (!globals.presentationParameters) {

@@ -36,7 +36,7 @@ export function ParametersList(props) {
                     editorType={parameterJSON.editorType}
                     key={parameterJSON.id}
                     id={parameterJSON.id}
-                    presentationId={parameterJSON.presentationId}
+                    formId={parameterJSON.formId}
                     displayName={parameterJSON.displayName}
                     value={parameterJSON.value}
                     dependsOn={parameterJSON.dependsOn}
