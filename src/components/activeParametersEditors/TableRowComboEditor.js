@@ -1,4 +1,5 @@
 ﻿import * as React from "react";
+import { useSelector } from 'react-redux'
 import { Label } from "@progress/kendo-react-labels";
 import { ComboBox } from "@progress/kendo-react-dropdowns";
 import { globals } from '../Globals';
@@ -10,10 +11,11 @@ import {
 import ruMessages from "./ru.json";
 loadMessages(ruMessages, "ru");
 var _ = require("lodash");
-var utils = require("../../utils")
 
 export default function TableRowComboEditor(props) {
-    const { id, displayName, value, selectionChanged, updatedParam, presentationId, programId, dependsOn} = props;
+    const sessionManager = useSelector((state) => state.sessionManager);
+    const { id, displayName, value, selectionChanged, updatedParam, presentationId, programId, dependsOn } = props;
+    const [externalChannelName, setExternalChannelName] = React.useState('');
     const [values, setValues] = React.useState([]);
     const [valueToShow, setValueToShow] = React.useState(undefined);
     const [neededParameterValues, updateNeededParameterValues] = React.useReducer(neededParameterValuesReducer, { values: [], changed: false });
@@ -56,14 +58,7 @@ export default function TableRowComboEditor(props) {
             return valuestring;
         }
 
-        var jsonToSend = { sessionId: globals.sessionId, paramName: id, reportId: programId, presentationId: presentationId, paramValues: neededParameterValues.values };
-        const jsonToSendString = JSON.stringify(jsonToSend);
-        const response = await utils.webFetch(`getChannelDataForParam`,
-            {
-                method: 'POST',
-                body: jsonToSendString
-            });
-        const responseJSON = await response.json();
+        const responseJSON = await sessionManager.channelsManager.loadChannelData(externalChannelName, neededParameterValues.values);
         let valuesFromJSON = '';
         if (responseJSON && responseJSON.properties) {
             let idIndex = 0;
@@ -94,7 +89,7 @@ export default function TableRowComboEditor(props) {
         else {
             setValues([]);
         }
-    }, [id, neededParameterValues, programId, presentationId]);
+    }, [neededParameterValues, externalChannelName, sessionManager]);
 
     React.useEffect(() => {
         if (value) {
@@ -162,20 +157,20 @@ export default function TableRowComboEditor(props) {
         let ignore = false;
 
         async function fetchNeededParamsData() {
-            var response;
+            var formId = '';
+            if (presentationId) {
+                formId += ',' + presentationId;
+            }
             if (programId) {
-                response = await utils.webFetch(`getNeededParamForParam?sessionId=${globals.sessionId}&paramName=${id}&reportId=${programId}`);
+                formId += ':' + programId;
             }
-            else if (presentationId) {
-                response = await utils.webFetch(`getNeededParamForParam?sessionId=${globals.sessionId}&paramName=${id}&presentationId=${presentationId}`);
-            }
-            else {
-                response = await utils.webFetch(`getNeededParamForParam?sessionId=${globals.sessionId}&paramName=${id}`);
-            }
-            const responseJSON = await response.json();
+
+            const resultExternalChannelName = await sessionManager.paramsManager.loadNeededChannelForParam(id, formId);
+            setExternalChannelName(resultExternalChannelName);
+            const channelParams = await sessionManager.channelsManager.loadChannelParamsList(resultExternalChannelName);
             var neededParamsJSON = [];
             globals.globalParameters.forEach(element => {
-                responseJSON.forEach(responseParam => {
+                channelParams.forEach(responseParam => {
                     if (element.id === responseParam) {
                         neededParamsJSON.push(element);
                     }
@@ -188,7 +183,7 @@ export default function TableRowComboEditor(props) {
 
         fetchNeededParamsData();
         return () => { ignore = true; }
-    }, [id, programId, presentationId]);
+    }, [id, programId, presentationId, sessionManager]);
 
     return (
         <LocalizationProvider language='ru-RU'>

@@ -240,7 +240,7 @@ export default function DataSet(props) {
             result.rowsJSON = [];
             return result;
         }
-    }, [sessionId, formData, getNeededParamsJSON, activeChannelName]);
+    }, [getNeededParamsJSON, activeChannelName, channelsManager]);
 
     const reload = React.useCallback(async () => {
         let jsonValues = await fetchData(neededParamsValues.values);
@@ -309,7 +309,7 @@ export default function DataSet(props) {
         }
         fetchNeededParamsData();
         return () => { ignore = true; }
-    }, [sessionId, formData, fetchData, getNeededParamsJSON]);
+    }, [sessionId, formData, fetchData, getNeededParamsJSON, channelsManager]);
 
     async function deleteSelectedRows() {
         var elementsToRemove = ',';

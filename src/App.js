@@ -21,7 +21,6 @@ import '@progress/kendo-theme-default/dist/all.css';
 import 'flexlayout-react/style/light.css';
 import './custom.css'
 import { useTranslation } from 'react-i18next';
-import { globals } from './components/Globals';
 import createSessionManager from './components/SessionManager';
 
 export default function App() {

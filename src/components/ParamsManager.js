@@ -6,7 +6,7 @@ export default function createParamsManager(store) {
     const loadNeededChannelForParam = async (paramName, formId) => {
         const sessionId = store.getState().sessionId;
         const response = await utils.webFetch(`getNeededChannelForParam?sessionId=${sessionId}&paramName=${paramName}&formId=${formId}`);
-        const responseJSON = await response.json();
+        const responseJSON = await response.text();
         return responseJSON;
     }
 
