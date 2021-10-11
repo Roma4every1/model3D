@@ -10,7 +10,6 @@ import {
 import {
     Button
 } from "@progress/kendo-react-buttons";
-import { globals } from '../Globals';
 import {
     IntlProvider,
     load,
@@ -54,9 +53,9 @@ const idGetter = getter(DATA_ITEM_KEY);
 
 export default function DataSet(props) {
     const sessionManager = useSelector((state) => state.sessionManager);
-
+    const sessionId = useSelector((state) => state.sessionId);
     const { t } = useTranslation();
-    const { sessionId, formData, changedParameter, modifiedTables, formId, ...other } = props;
+    const { formData, changedParameter, modifiedTables, formId, ...other } = props;
     const [databaseData, setDatabaseData] = React.useState([]);
     const [activeChannelName, setActiveChannelName] = React.useState('');
     const [rowAdding, setRowAdding] = React.useState(false);
@@ -239,33 +238,33 @@ export default function DataSet(props) {
         }
     }, [modifiedTables, databaseData, reload]);
 
-    React.useEffect(() => {
-        let ignore = false;
+    //React.useEffect(() => {
+    //    let ignore = false;
 
-        async function fetchNewData() {
-            var param = _.find(neededParamsValues.values, function (o) { return o.id === changedParameter.name; });
-            if (param) {
-                if (!param.type) {
-                    var element = _.find(globals.presentationParameters[formId], function (o) { return o.id === param.id; });
-                    if (element) {
-                        param = element
-                    }
-                }
-                param.value = changedParameter.value;
-                let jsonValues = await fetchData(neededParamsValues.values);
-                if (!ignore) {
-                    setTableData({
-                        rowsJSON: jsonValues.rowsJSON,
-                        columnsJSON: jsonValues.columnsJSON
-                    });
-                }
-            }
-        }
-        if (neededParamsValues.loaded) {
-            fetchNewData();
-        }
-        return () => { ignore = true; }
-    }, [changedParameter, formId, neededParamsValues, fetchData]);
+    //    async function fetchNewData() {
+    //        var param = _.find(neededParamsValues.values, function (o) { return o.id === changedParameter.name; });
+    //        if (param) {
+    //            if (!param.type) {
+    //                var element = _.find(globals.presentationParameters[formId], function (o) { return o.id === param.id; });
+    //                if (element) {
+    //                    param = element
+    //                }
+    //            }
+    //            param.value = changedParameter.value;
+    //            let jsonValues = await fetchData(neededParamsValues.values);
+    //            if (!ignore) {
+    //                setTableData({
+    //                    rowsJSON: jsonValues.rowsJSON,
+    //                    columnsJSON: jsonValues.columnsJSON
+    //                });
+    //            }
+    //        }
+    //    }
+    //    if (neededParamsValues.loaded) {
+    //        fetchNewData();
+    //    }
+    //    return () => { ignore = true; }
+    //}, [changedParameter, formId, neededParamsValues, fetchData]);
 
     React.useEffect(() => {
         let ignore = false;
@@ -292,7 +291,7 @@ export default function DataSet(props) {
         }
         fetchNeededParamsData();
         return () => { ignore = true; }
-    }, [sessionId, formData, fetchData, sessionManager]);
+    }, [formData, formId, fetchData, sessionManager]);
 
     async function deleteSelectedRows() {
         var elementsToRemove = ',';
@@ -468,7 +467,7 @@ export default function DataSet(props) {
                             </DialogActionsBar>
                         </Dialog>
                     )}
-                    <FormHeader sessionId={sessionId} formData={formData} additionalButtons={otherButtons} {...other} />
+                    <FormHeader formData={formData} additionalButtons={otherButtons} {...other} />
                     <ExcelExport data={dataToShow.data} ref={_export}>
                         <Grid
                             resizable={true}

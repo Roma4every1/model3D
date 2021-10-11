@@ -1,17 +1,12 @@
 import React from 'react';
 import { createStore } from 'redux'
 import { Provider } from 'react-redux'
-import SqlProgramsList from './components/SqlProgramsList';
-import GlobalParametersList from './components/GlobalParametersList';
-import PresentationList from './components/PresentationList';
-import PresentationParametersList from './components/PresentationParametersList';
 import Form from './components/Form';
 import {
     AppBar,
     AppBarSection,
     Drawer,
-    DrawerContent,
-    Splitter
+    DrawerContent
 } from "@progress/kendo-react-layout";
 import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import {
@@ -25,41 +20,15 @@ import createSessionManager from './components/SessionManager';
 
 export default function App() {
     const { t } = useTranslation();
-    const [activePresentationId, setActivePresentationId] = React.useState();
-    const [changedParameter, setChangedParameter] = React.useState([]);
-    const [modifiedTables, setModifiedTables] = React.useState([]);
     const [state, setState] = React.useState({
         sessionLoading: true,
         sessionId: undefined
     });
     const [drawerState, setDrawerState] = React.useState(false);
     const [aboutState, setAboutState] = React.useState(false);
-    const [panes, setPanes] = React.useState([
-        {
-            size: "300px",
-            min: "20px",
-            collapsible: true,
-        },
-        {}
-    ]);
-    const [navPanes, setNavPanes] = React.useState([
-        {
-            size: "300px"
-        },
-        {
-        }
-    ]);
 
     const handleClose = () => {
         setAboutState(false);
-    };
-
-    const onChange = (event) => {
-        setPanes(event.newState);
-    };
-
-    const onNavChange = (event) => {
-        setNavPanes(event.newState);
     };
 
     const toggleDrawer = (open) => (event) => {
@@ -98,14 +67,6 @@ export default function App() {
         },
     ];
 
-    React.useEffect(() => {
-        window.addEventListener('resize', handleWindowResize);
-        return () => { window.removeEventListener('resize', handleWindowResize) }
-    }, []);
-
-    const handleWindowResize = (event) => {
-        setNavPanes(event.newState);
-    };
     let json = require('../package.json');
 
     function counterReducer(state = { sessionId: '', globalParams: null, sessionManager: null }, action) {
@@ -122,7 +83,7 @@ export default function App() {
     }
 
     var formData = {
-        type: "grid",
+        type: "dock",
         opened: true
     }
 
@@ -180,62 +141,10 @@ export default function App() {
                             onSelect={toggleDrawer(false)}
                         >
                             <DrawerContent>
-                                <div>
-                                    <div style={{ height: 30 }}>
-                                        <SqlProgramsList
-                                            sessionId={state.sessionId}
-                                            formId={activePresentationId}
-                                            tablesModified={(target) => {
-                                                setModifiedTables(target);
-                                            }}
-                                        />
-                                    </div>
-                                    <Splitter
-                                        panes={panes}
-                                        orientation={"horizontal"}
-                                        onChange={onChange}
-                                    >
-                                        <Splitter
-                                            panes={navPanes}
-                                            orientation={"vertical"}
-                                            onChange={onNavChange}
-                                        >
-                                            <div>
-                                                <GlobalParametersList sessionId={state.sessionId}
-                                                    selectionChanged={(target) => {
-                                                        setChangedParameter(target);
-                                                    }} />
-                                            </div>
-                                            <div>
-                                                <PresentationParametersList
-                                                    sessionId={state.sessionId}
-                                                    presentationId={activePresentationId}
-                                                    selectionChanged={(target) => {
-                                                        setChangedParameter(target);
-                                                    }} />
-                                            </div>
-                                            <div className="presentationList">
-                                                <PresentationList
-                                                    sessionId={state.sessionId}
-                                                    selectionChanged={(event, value) => {
-                                                        setActivePresentationId(value);
-                                                    }}
-                                                />
-                                            </div>
-                                        </Splitter>
-                                        <Form
-                                            key={activePresentationId}
-                                            sessionId={state.sessionId}
-                                            formData={formData}
-                                            formId={activePresentationId}
-                                            changedParameter={changedParameter}
-                                            selectionChanged={(target) => {
-                                                setChangedParameter(target);
-                                            }}
-                                            modifiedTables={modifiedTables}
-                                        />
-                                    </Splitter>
-                                </div>
+                                <Form
+                                    key="root"
+                                    formData={formData}
+                                />
                             </DrawerContent>
                         </Drawer>
                     </div>

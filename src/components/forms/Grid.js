@@ -1,11 +1,14 @@
 ﻿import React from 'react';
+import { useSelector } from 'react-redux';
 import Form from '../Form';
 import Container from './Grid/Container';
 var utils = require("../../utils")
 
 export default function Grid(props) {
-    const { sessionId, formId, formData, ...other } = props;
+    const sessionId = useSelector((state) => state.sessionId);
+    const { formId, formData, ...other } = props;
     const [formsData, setFormsData] = React.useState([]);
+
     React.useEffect(() => {
         if (formId) {
             let ignore = false;
@@ -27,9 +30,8 @@ export default function Grid(props) {
             {formsData.map(formData =>
                 (formData.opened) && <Form
                     key={formData.id}
-                    sessionId={sessionId}
                     formData={formData}
-                    formId={formId}
+                    formId={formData.id}
                     {...other}
                 />)}
         </Container>);

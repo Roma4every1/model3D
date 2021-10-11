@@ -1,15 +1,21 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import RecursiveTreeView from './RecursiveTreeView';
 import { useTranslation } from 'react-i18next';
 var utils = require("../utils")
 
 export default function PresentationList(props) {
     const { t } = useTranslation();
-    const { sessionId, selectionChanged } = props;
+    const sessionId = useSelector((state) => state.sessionId);
+    const { setActiveChildById } = props;
     const [state, setState] = React.useState({
         presentationsJSON: [],
         loading: true
     });
+
+    const selectionChanged = (value) => {
+        setActiveChildById(',' + value.item.id)
+    };
 
     React.useEffect(() => {
         let ignore = false;

@@ -6,13 +6,13 @@ import {
 import FormParametersList from './FormParametersList';
 
 export default function FormHeader(props) {
-    const { sessionId, formData, additionalButtons, ...other } = props;
+    const { formData, additionalButtons, ...other } = props;
 
     return (
         <div className='blockheader'>
             <Toolbar className='blockheadertoolbar'>
                 <ToolbarItem>
-                    <FormParametersList sessionId={sessionId} formId={formData.id} {...other} />
+                    <FormParametersList formId={formData.id} {...other} />
                     {additionalButtons}
                 </ToolbarItem>
                 <ToolbarItem>

@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function PresentationParametersList(props) {
     const sessionManager = useSelector((state) => state.sessionManager);
-    const { sessionId, presentationId, ...other } = props;
+    const { presentationId, ...other } = props;
     const [parametersJSON, setParametersJSON] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const { t } = useTranslation();
@@ -14,7 +14,7 @@ export default function PresentationParametersList(props) {
     React.useEffect(() => {
         let ignore = false;
 
-        if (sessionId && presentationId) {
+        if (presentationId) {
             async function fetchData() {
                 await sessionManager.paramsManager.loadFormParameters(presentationId);
                 if (!ignore) {
@@ -26,7 +26,7 @@ export default function PresentationParametersList(props) {
             fetchData();
         }
         return () => { ignore = true; }
-    }, [sessionId, presentationId, sessionManager]);
+    }, [presentationId, sessionManager]);
 
     const updateEditedParametersList = (parametersJSON) => {
         if (!globals.presentationParameters) {

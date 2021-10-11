@@ -1,11 +1,13 @@
-﻿import { Popup } from "@progress/kendo-react-popup";
+﻿import React from 'react';
+import { useSelector } from 'react-redux';
+import { Popup } from "@progress/kendo-react-popup";
 import { ParametersList } from './ParametersList';
-import { globals } from './Globals';
-import React from 'react';
 var utils = require("../utils")
 
 export default function FormParametersList(props) {
-    const { sessionId, formId, ...other } = props;
+    const globalParametersJSON = useSelector((state) => state.globalParams);
+    const sessionId = useSelector((state) => state.sessionId);
+    const { formId, ...other } = props;
     const [popoverState, setPopoverState] = React.useState({
         anchorEl: null,
         open: false
@@ -19,7 +21,7 @@ export default function FormParametersList(props) {
             const response = await utils.webFetch(`getAllNeedParametersForForm?sessionId=${sessionId}&clientId=${formId}`);
             const responseJSON = await response.json();
             var neededParamsJSON = [];
-            globals.globalParameters.forEach(element => {
+            globalParametersJSON.forEach(element => {
                 responseJSON.forEach(responseParam => {
                     if (element.id === responseParam) {
                         neededParamsJSON.push(element);
@@ -32,7 +34,7 @@ export default function FormParametersList(props) {
         }
         fetchData();
         return () => { ignore = true; }
-    }, [sessionId, formId]);
+    }, [sessionId, formId, globalParametersJSON]);
 
     const updateEditedParametersList = (newparametersJSON) => {
         setParametersJSON(newparametersJSON);
