@@ -1,5 +1,4 @@
-﻿import { globals } from './Globals';
-var utils = require("../utils");
+﻿var utils = require("../utils");
 var _ = require("lodash");
 
 export default function createParamsManager(store) {
@@ -42,18 +41,23 @@ export default function createParamsManager(store) {
         store.dispatch({ type: 'params/update', formId: formId, id: paramName, value: paramValue, manual: manual });
     }
 
+    var paramChannelNames = [];
+
     const loadNeededChannelForParam = async (paramName, formId) => {
         const sessionId = store.getState().sessionId;
-        const response = await utils.webFetch(`getNeededChannelForParam?sessionId=${sessionId}&paramName=${paramName}&formId=${formId}`);
-        const responseJSON = await response.text();
-        return responseJSON;
+        if (!paramChannelNames[paramName]) {
+            const response = await utils.webFetch(`getNeededChannelForParam?sessionId=${sessionId}&paramName=${paramName}&formId=${formId}`);
+            const channelName = await response.text();
+            paramChannelNames[paramName] = channelName;
+        }
+        await store.getState().sessionManager.channelsManager.loadAllChannelData(paramChannelNames[paramName], formId);
+        return paramChannelNames[paramName];
     }
 
     const loadGlobalParams = async () => {
         const sessionId = store.getState().sessionId;
         const response = await utils.webFetch(`getFormParameters?sessionId=${sessionId}`);
         const responseJSON = await response.json();
-        globals.globalParameters = responseJSON;
         store.dispatch({ type: 'params/set', value: responseJSON });
     }
 
@@ -63,12 +67,6 @@ export default function createParamsManager(store) {
         const responseJSON = await response.json();
         var jsonToSet = responseJSON.map(param => { var newParam = param; newParam.formId = formId; return newParam; });
         store.dispatch({ type: 'paramsForm/set', formId: formId, value: jsonToSet });
-        
-        //if (!globals.formParameters) {
-        //    globals.formParameters = {}
-        //}
-        //globals.formParameters[formId] = jsonToSet;
-        //return responseJSON;
     }
 
     var loaded = false;
@@ -78,8 +76,6 @@ export default function createParamsManager(store) {
             loaded = true;
             loadGlobalParams();
         }
-
-
     });
 
     return {

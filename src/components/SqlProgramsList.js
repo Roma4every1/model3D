@@ -10,7 +10,6 @@ var utils = require("../utils")
 export default function SqlProgramsList(props) {
     const { t } = useTranslation();
     const sessionId = useSelector((state) => state.sessionId);
-  //  const formId = useSelector((state) => state.formId);
     const { formId, ...other } = props;
     const [state, setState] = React.useState({
         programNames: [],

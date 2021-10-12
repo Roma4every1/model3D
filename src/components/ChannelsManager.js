@@ -2,6 +2,19 @@
 
 export default function createChannelsManager(store) {
 
+    var chData = [];
+    var channelsParams = [];
+    var channelsParamsValues = [];
+
+    const getChannelData = (channelName, formId) => {
+        if (chData[channelName]) {
+            return chData[channelName][formId];
+        }
+        else {
+            return null;
+        }
+    }
+
     const loadFormChannelsList = async (formId) => {
         const sessionId = store.getState().sessionId;
         const response = await utils.webFetch(`getChannelsForForm?sessionId=${sessionId}&formId=${formId}`);
@@ -27,21 +40,52 @@ export default function createChannelsManager(store) {
             });
         const responseJSON = await response.json();
         return responseJSON;
-        //globals.globalParameters = responseJSON;
-        //store.dispatch({ type: 'params/set', value: responseJSON });
     }
 
-    const getChannelData = async (channelName, formId) => {
-        const channelParamsList = await loadChannelParamsList(channelName);
-        var neededParamValues = store.getState().sessionManager.paramsManager.getParameterValues(channelParamsList, formId);
-        const channelData = await loadChannelData(channelName, neededParamValues);
-        return channelData;
+    const equalParams = (params1, params2) => {
+        if (params1.length != params2.length) {
+            return false;
+        }
+        for (var i = 0; i < params1.length; i++) {
+            if (params1[i] !== params2[i]) {
+                return false;
+            }
+        }
+        return true;
     }
+
+    const loadAllChannelData = async (channelName, formId) => {
+        const sessionId = store.getState().sessionId;
+        if (!channelsParams[channelName]) {
+            const channelParamsList = await loadChannelParamsList(channelName);
+            channelsParams[channelName] = channelParamsList;
+        }
+        var neededParamValues = store.getState().sessionManager.paramsManager.getParameterValues(channelsParams[channelName], formId);
+        if (!channelsParamsValues[channelName] || !equalParams(channelsParamsValues[channelName], neededParamValues.map(np => np.value))) {
+            channelsParamsValues[channelName] = neededParamValues.map(np => np.value);
+
+            const channelData = await loadChannelData(channelName, neededParamValues);
+            if (!chData[channelName]) {
+                chData[channelName] = [];
+            }
+            chData[channelName][formId] = channelData;
+            store.dispatch({ type: 'sessionId/set', value: sessionId });
+        }
+    }
+
+    store.subscribe(() => {
+        for (var chD in chData) {
+            for (var fD in chData[chD]) {
+                loadAllChannelData(chD, fD);
+            }
+        }
+    });
 
     return {
         loadFormChannelsList: loadFormChannelsList,
         loadChannelParamsList: loadChannelParamsList,
         loadChannelData: loadChannelData,
+        loadAllChannelData: loadAllChannelData,
         getChannelData: getChannelData
     };
 }

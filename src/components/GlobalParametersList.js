@@ -1,24 +1,18 @@
-﻿import { ParametersList } from './ParametersList';
-import { globals } from './Globals';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
+﻿import React from 'react';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { ParametersList } from './ParametersList';
 
-export default function GlobalParametersList(props) {
-    const { ...other } = props;
+export default function GlobalParametersList() {
     const { t } = useTranslation();
 
     const parametersJSON = useSelector((state) => state.globalParams);
-
-    const updateEditedParametersList = (parametersJSON) => {
-       // globals.globalParameters = parametersJSON;
-    };
 
     return (
         <div>
             {!parametersJSON
                 ? <p><em>{t('base.loading')}</em></p>
-                : <ParametersList parametersJSON={parametersJSON} setMainEditedJSON={updateEditedParametersList} {...other} />
+                : <ParametersList parametersJSON={parametersJSON} />
             }
         </div>
     );
