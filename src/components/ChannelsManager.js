@@ -19,6 +19,7 @@ export default function createChannelsManager(store) {
         const sessionId = store.getState().sessionId;
         const response = await utils.webFetch(`getChannelsForForm?sessionId=${sessionId}&formId=${formId}`);
         const responseJSON = await response.json();
+        await Promise.all(responseJSON.map((channel) => loadAllChannelData(channel, formId)));
         return responseJSON;
     }
 
