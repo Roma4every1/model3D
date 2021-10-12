@@ -1,8 +1,8 @@
 ﻿import * as React from "react";
 import { useSelector } from 'react-redux';
+import { createSelector } from 'reselect';
 import { Label } from "@progress/kendo-react-labels";
 import { ComboBox } from "@progress/kendo-react-dropdowns";
-import { globals } from '../Globals';
 import {
     IntlProvider,
     LocalizationProvider,
@@ -12,9 +12,28 @@ import ruMessages from "./ru.json";
 loadMessages(ruMessages, "ru");
 var _ = require("lodash");
 
+const makeSelectValue = () =>
+    createSelector(
+        (state) => state.globalParams,
+        (_, id) => id,
+        (globalParams, id) =>
+            globalParams.find((gp) => gp.id === id).value
+    )
+
 export default function TableRowComboEditor(props) {
     const sessionManager = useSelector((state) => state.sessionManager);
-    const { id, displayName, value, selectionChanged, updatedParam, formId, dependsOn } = props;
+    //const { id, displayName, value, selectionChanged, updatedParam, formId, dependsOn } = props;
+    //var parameterJSON = useSelector((state) => state.globalParams.find((gp) => gp.id === id));
+
+
+    const { id, displayName, selectionChanged, updatedParam, formId, dependsOn } = props;
+    var value = useSelector((state) => state.globalParams.find((gp) => gp.id === id).value);
+    //const selectValue = React.useMemo(makeSelectValue, [])
+    //const value = useSelector((state) =>
+    //    selectValue(state, id)
+    //)
+
+
     const [externalChannelName, setExternalChannelName] = React.useState('');
     const [values, setValues] = React.useState([]);
     const [valueToShow, setValueToShow] = React.useState(undefined);
@@ -25,6 +44,7 @@ export default function TableRowComboEditor(props) {
             var newevent = {};
             newevent.target = {};
             newevent.target.name = id;
+            newevent.target.formId = formId;
             newevent.target.manual = manual;
             newevent.target.value = value;
             selectionChanged(newevent);
@@ -58,30 +78,33 @@ export default function TableRowComboEditor(props) {
             return valuestring;
         }
 
-        const responseJSON = await sessionManager.channelsManager.loadChannelData(externalChannelName, neededParameterValues.values);
         let valuesFromJSON = '';
-        if (responseJSON && responseJSON.properties) {
-            let idIndex = 0;
-            let nameIndex = 0;
-            responseJSON.properties.forEach(property => {
-                if (property.name.toUpperCase() === 'LOOKUPCODE') {
-                    idIndex = _.findIndex(responseJSON.data.Columns, function (o) { return o.Name === property.fromColumn; });
-                }
-                else if (property.name.toUpperCase() === 'LOOKUPVALUE') {
-                    nameIndex = _.findIndex(responseJSON.data.Columns, function (o) { return o.Name === property.fromColumn; });
-                }
-            });
-            valuesFromJSON = responseJSON.data.Rows.map((row) => {
-                let temp = {};
-                temp.id = row.Cells[idIndex];
-                temp.name = row.Cells[nameIndex];
-                var valuestring = '';
-                responseJSON.data.Columns.forEach((column, index) => {
-                    valuestring += addParamRow(responseJSON.properties, column, row, index)
+        if (externalChannelName) {
+            const responseJSON = await sessionManager.channelsManager.loadChannelData(externalChannelName, neededParameterValues.values);
+
+            if (responseJSON && responseJSON.properties) {
+                let idIndex = 0;
+                let nameIndex = 0;
+                responseJSON.properties.forEach(property => {
+                    if (property.name.toUpperCase() === 'LOOKUPCODE') {
+                        idIndex = _.findIndex(responseJSON.data.Columns, function (o) { return o.Name === property.fromColumn; });
+                    }
+                    else if (property.name.toUpperCase() === 'LOOKUPVALUE') {
+                        nameIndex = _.findIndex(responseJSON.data.Columns, function (o) { return o.Name === property.fromColumn; });
+                    }
                 });
-                temp.value = valuestring;
-                return temp
-            });
+                valuesFromJSON = responseJSON.data.Rows.map((row) => {
+                    let temp = {};
+                    temp.id = row.Cells[idIndex];
+                    temp.name = row.Cells[nameIndex];
+                    var valuestring = '';
+                    responseJSON.data.Columns.forEach((column, index) => {
+                        valuestring += addParamRow(responseJSON.properties, column, row, index)
+                    });
+                    temp.value = valuestring;
+                    return temp
+                });
+            }
         }
         if (valuesFromJSON && valuesFromJSON !== '') {
             setValues(valuesFromJSON);
@@ -141,17 +164,17 @@ export default function TableRowComboEditor(props) {
         }
     }, [neededParameterValues, fetchData]);
 
-    React.useEffect(() => {
-        updateNeededParameterValues({ updatedParam: updatedParam });
-        if (updatedParam.manual) {
-            if (dependsOn?.includes(updatedParam.name)) {
-                if (value != null) {
-                    setValueToShow(undefined);
-                    setNewValue(null, true);
-                }
-            }
-        }
-    }, [updatedParam, setNewValue, dependsOn, value]);
+    //React.useEffect(() => {
+    //    updateNeededParameterValues({ updatedParam: updatedParam });
+    //    if (updatedParam.manual) {
+    //        if (dependsOn?.includes(updatedParam.name)) {
+    //            if (value != null) {
+    //                setValueToShow(undefined);
+    //                setNewValue(null, true);
+    //            }
+    //        }
+    //    }
+    //}, [updatedParam, setNewValue, dependsOn, value]);
 
     React.useEffect(() => {
         let ignore = false;
@@ -160,14 +183,7 @@ export default function TableRowComboEditor(props) {
             const resultExternalChannelName = await sessionManager.paramsManager.loadNeededChannelForParam(id, formId ?? '');
             setExternalChannelName(resultExternalChannelName);
             const channelParams = await sessionManager.channelsManager.loadChannelParamsList(resultExternalChannelName);
-            var neededParamsJSON = [];
-            globals.globalParameters.forEach(element => {
-                channelParams.forEach(responseParam => {
-                    if (element.id === responseParam) {
-                        neededParamsJSON.push(element);
-                    }
-                });
-            });
+            var neededParamsJSON = sessionManager.paramsManager.getParameterValues(channelParams, formId ?? '')
             if (!ignore) {
                 updateNeededParameterValues({ newValues: neededParamsJSON });
             }

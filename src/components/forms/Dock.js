@@ -9,7 +9,7 @@ var utils = require("../../utils")
 export default function Dock(props) {
     const { t } = useTranslation();
     const sessionId = useSelector((state) => state.sessionId);
-    const { formData, setActivePresentationId, ...other } = props;
+    const { formData, ...other } = props;
 
     const [modifiedTables, setModifiedTables] = React.useState([]);
     const [state, setState] = React.useState({
@@ -36,9 +36,9 @@ export default function Dock(props) {
                         childsJSON: data,
                         loading: false
                     });
-                    var openedPres = data.find(p => p.opened);
-                    if (openedPres) {
-                        setActiveChild(openedPres)
+                    var openedChild = data.find(p => p.opened);
+                    if (openedChild) {
+                        setActiveChild(openedChild)
                     }
                 }
             }
@@ -68,12 +68,13 @@ export default function Dock(props) {
                             }}
                         />
                     </div>
-                    <Layout form={activeForm}
-                        setActivePresentationId={setActivePresentationId}
-                        activeChild={activeChild}
-                        setActiveChildById={setActiveChildById}
-                        modifiedTables={modifiedTables}>
-                    </Layout>
+                    <div>
+                        <Layout form={activeForm}
+                            activeChild={activeChild}
+                            setActiveChildById={setActiveChildById}
+                            modifiedTables={modifiedTables}>
+                        </Layout>
+                    </div>
                 </div>
             }
         </div>);

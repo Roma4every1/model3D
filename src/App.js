@@ -69,14 +69,53 @@ export default function App() {
 
     let json = require('../package.json');
 
-    function counterReducer(state = { sessionId: '', globalParams: null, sessionManager: null }, action) {
+    function counterReducer(state = { sessionId: '', globalParams: null, formParams: [], sessionManager: null }, action) {
         switch (action.type) {
             case 'params/set':
-                return { sessionId: state.sessionId, globalParams: action.value, sessionManager: state.sessionManager }
+                return { sessionId: state.sessionId, globalParams: action.value, sessionManager: state.sessionManager, formParams: state.formParams  }
             case 'sessionId/set':
-                return { sessionId: action.value, globalParams: state.globalParams, sessionManager: state.sessionManager }
+                return { sessionId: action.value, globalParams: state.globalParams, sessionManager: state.sessionManager, formParams: state.formParams }
             case 'sessionManager/set':
-                return { sessionId: state.sessionId, globalParams: state.globalParams, sessionManager: action.value }
+                return { sessionId: state.sessionId, globalParams: state.globalParams, sessionManager: action.value, formParams: state.formParams }
+            case 'paramsForm/set':
+                {
+                    var newParams = state.formParams;
+                    newParams[action.formId] = action.value;
+                    return { sessionId: state.sessionId, globalParams: state.globalParams, sessionManager: state.sessionManager, formParams: newParams }
+                }
+            case 'paramsForm/update':
+                {
+                    var newParams = state.formParams;
+                    newParams[action.formId][action.id] = action.value;
+                    return { sessionId: state.sessionId, globalParams: state.globalParams, sessionManager: state.sessionManager, formParams: newParams }
+                }
+            case 'params/update':
+                {
+                    const clear = (clearElementId) => {
+                        newParams.forEach(element => {
+                            if (element.dependsOn?.includes(clearElementId)) {
+                                element.value = null;
+                                clear(element.id);
+                            }
+                        });
+                    }
+
+                    if (action.formId) {
+
+                    }
+                    else {
+                        var newParams = state.globalParams;
+                        newParams.forEach(element => {
+                            if (element.id === action.id) {
+                                element.value = action.value;
+                            }
+                        });
+                        if (action.manual) {
+                            clear(action.id);
+                        }
+                    }
+                    return { sessionId: state.sessionId, globalParams: newParams, sessionManager: state.sessionManager, formParams: state.formParams }
+                }
             default:
                 return state
         }
@@ -84,6 +123,7 @@ export default function App() {
 
     var formData = {
         type: "dock",
+        id: "",
         opened: true
     }
 

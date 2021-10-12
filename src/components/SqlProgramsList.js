@@ -2,13 +2,16 @@
     Toolbar
 } from "@progress/kendo-react-buttons";
 import React from 'react';
+import { useSelector } from 'react-redux';
 import ProgramParametersList from './ProgramParametersList';
 import { useTranslation } from 'react-i18next';
 var utils = require("../utils")
 
 export default function SqlProgramsList(props) {
     const { t } = useTranslation();
-    const { sessionId, formId, ...other } = props;
+    const sessionId = useSelector((state) => state.sessionId);
+  //  const formId = useSelector((state) => state.formId);
+    const { formId, ...other } = props;
     const [state, setState] = React.useState({
         programNames: [],
         loading: true

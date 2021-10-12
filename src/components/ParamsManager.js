@@ -25,17 +25,21 @@ export default function createParamsManager(store) {
             var element = null;
             var currentFormId = formId;
             while (!element && (currentFormId !== '')) {
-                element = _.find(globals.presentationParameters[currentFormId], function (o) { return o.id === param; });
+                element = _.find(store.getState().formParams[currentFormId], function (o) { return o.id === param; });
                 currentFormId = getParentFormId(currentFormId);
             }
             if (!element) {
-                element = _.find(globals.globalParameters, function (o) { return o.id === param; });
+                element = _.find(store.getState().globalParams, function (o) { return o.id === param; });
             }
             if (element) {
                 paramsToUse.push(element);
             }
         });
         return paramsToUse;
+    }
+
+    const updateParam = (formId, paramName, paramValue, manual) => {
+        store.dispatch({ type: 'params/update', formId: formId, id: paramName, value: paramValue, manual: manual });
     }
 
     const loadNeededChannelForParam = async (paramName, formId) => {
@@ -57,13 +61,14 @@ export default function createParamsManager(store) {
         const sessionId = store.getState().sessionId;
         const response = await utils.webFetch(`getFormParameters?sessionId=${sessionId}&formId=${formId}`);
         const responseJSON = await response.json();
-
-        if (!globals.presentationParameters) {
-            globals.presentationParameters = {}
-        }
         var jsonToSet = responseJSON.map(param => { var newParam = param; newParam.formId = formId; return newParam; });
-        globals.presentationParameters[formId] = jsonToSet;
-        return responseJSON;
+        store.dispatch({ type: 'paramsForm/set', formId: formId, value: jsonToSet });
+        
+        //if (!globals.formParameters) {
+        //    globals.formParameters = {}
+        //}
+        //globals.formParameters[formId] = jsonToSet;
+        //return responseJSON;
     }
 
     var loaded = false;
@@ -73,11 +78,14 @@ export default function createParamsManager(store) {
             loaded = true;
             loadGlobalParams();
         }
+
+
     });
 
     return {
         loadNeededChannelForParam: loadNeededChannelForParam,
         loadFormParameters: loadFormParameters,
-        getParameterValues: getParameterValues
+        getParameterValues: getParameterValues,
+        updateParam: updateParam
     };
 }

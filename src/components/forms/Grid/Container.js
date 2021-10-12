@@ -37,8 +37,8 @@ export default function Container(props) {
     }
 
     return (
-        <div className="presentation" height="500">
-            <FlexLayout.Layout height="500" model={modelJson} factory={factory} />
+        <div>
+            <FlexLayout.Layout model={modelJson} factory={factory} />
         </div>
     );
 }

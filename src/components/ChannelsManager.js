@@ -31,10 +31,17 @@ export default function createChannelsManager(store) {
         //store.dispatch({ type: 'params/set', value: responseJSON });
     }
 
+    const getChannelData = async (channelName, formId) => {
+        const channelParamsList = await loadChannelParamsList(channelName);
+        var neededParamValues = store.getState().sessionManager.paramsManager.getParameterValues(channelParamsList, formId);
+        const channelData = await loadChannelData(channelName, neededParamValues);
+        return channelData;
+    }
 
     return {
         loadFormChannelsList: loadFormChannelsList,
         loadChannelParamsList: loadChannelParamsList,
-        loadChannelData: loadChannelData
+        loadChannelData: loadChannelData,
+        getChannelData: getChannelData
     };
 }

@@ -6,39 +6,46 @@ import { useTranslation } from 'react-i18next';
 
 export default function PresentationParametersList(props) {
     const sessionManager = useSelector((state) => state.sessionManager);
-    const { presentationId, ...other } = props;
-    const [parametersJSON, setParametersJSON] = React.useState([]);
+    const { formId, ...other } = props;
+  //  const [parametersJSON, setParametersJSON] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const { t } = useTranslation();
 
-    React.useEffect(() => {
-        let ignore = false;
+    const parametersJSON = useSelector((state) => state.formParams[formId]);
 
-        if (presentationId) {
-            async function fetchData() {
-                await sessionManager.paramsManager.loadFormParameters(presentationId);
-                if (!ignore) {
-                    setParametersJSON(globals.presentationParameters[presentationId]);
-                    setLoading(false);
-                }
-            }
+    //React.useEffect(() => {
+    //    let ignore = false;
 
-            fetchData();
-        }
-        return () => { ignore = true; }
-    }, [presentationId, sessionManager]);
+    //    if (formId) {
+    //        async function fetchData() {
+    //            await sessionManager.paramsManager.loadFormParameters(formId);
+
+
+
+    //            if (!ignore) {
+    //                setParametersJSON(globals.formParameters[formId]);
+    //                setLoading(false);
+    //            }
+    //        }
+
+    //        fetchData();
+    //    }
+    //    return () => { ignore = true; }
+    //}, [formId, sessionManager]);
 
     const updateEditedParametersList = (parametersJSON) => {
-        if (!globals.presentationParameters) {
-            globals.presentationParameters = {}
-        }
-        globals.presentationParameters[presentationId] = parametersJSON;
-        setParametersJSON(parametersJSON);
+       // sessionManager.paramsManager.()
+
+        //if (!globals.formParameters) {
+        //    globals.formParameters = {}
+        //}
+        //globals.formParameters[formId] = parametersJSON;
+        //setParametersJSON(parametersJSON);
     };
 
     return (
         <div>
-            {loading
+            {!parametersJSON
                 ? <p><em>{t('base.loading')}</em></p>
                 : <ParametersList parametersJSON={parametersJSON} setMainEditedJSON={updateEditedParametersList} {...other} />}
         </div>

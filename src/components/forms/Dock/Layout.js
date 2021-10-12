@@ -9,7 +9,7 @@ export default function Layout(props) {
     const { form, activeChild, setActiveChildById } = props;
 
     var newjson = {
-        global: {},
+        global: { tabSetEnableTabStrip: false },
         borders: [
             {
                 "type": "border",
@@ -36,13 +36,11 @@ export default function Layout(props) {
             }],
         layout: {
             "type": "row",
-            "weight": 100,
             "children": [
 
                 {
                     "type": "tabset",
                     "enableTabStrip": false,
-                    "weight": 100,
                     "selected": 0,
                     "children": [
                         {
@@ -65,7 +63,7 @@ export default function Layout(props) {
         }
         else if (component === "presparamsplugin") {
             return <PresentationParametersList
-                presentationId={activeChild.id}
+                formId={activeChild.id}
             />
         }
         else if (component === "preslistplugin") {
@@ -77,7 +75,7 @@ export default function Layout(props) {
     }, [activeChild, setActiveChildById, form])
 
     return (
-        <div className="presentation" height="500">
-            <FlexLayout.Layout height="500" model={modelJson} factory={factory} />
+        <div>
+            <FlexLayout.Layout model={modelJson} factory={factory} />
         </div>);
 }

@@ -11,7 +11,7 @@ export default function GlobalParametersList(props) {
     const parametersJSON = useSelector((state) => state.globalParams);
 
     const updateEditedParametersList = (parametersJSON) => {
-        globals.globalParameters = parametersJSON;
+       // globals.globalParameters = parametersJSON;
     };
 
     return (

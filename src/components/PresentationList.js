@@ -9,7 +9,7 @@ export default function PresentationList(props) {
     const sessionId = useSelector((state) => state.sessionId);
     const { setActiveChildById } = props;
     const [state, setState] = React.useState({
-        presentationsJSON: [],
+        formsJSON: [],
         loading: true
     });
 
@@ -25,7 +25,7 @@ export default function PresentationList(props) {
                 const data = await response.json();
                 if (!ignore) {
                     setState({
-                        presentationsJSON: data,
+                        formsJSON: data,
                         loading: false
                     });
                 }
@@ -39,7 +39,7 @@ export default function PresentationList(props) {
         <div>
             {state.loading
                 ? <p><em>{t('base.loading')}</em></p>
-                : <RecursiveTreeView data={state.presentationsJSON} onSelectionChanged={selectionChanged} />}
+                : <RecursiveTreeView data={state.formsJSON} onSelectionChanged={selectionChanged} />}
         </div>
     );
 }

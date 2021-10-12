@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import { useSelector } from 'react-redux'
+import { useSelector } from 'react-redux';
 import {
     Grid,
     GridColumn as Column,
@@ -164,62 +164,66 @@ export default function DataSet(props) {
             }
             columnElement.lookupData = valuesFromJSON;
         }
-        const data = await sessionManager.channelsManager.loadChannelData(activeChannelName, neededParamsJSON);
+        const result = {};
+        result.columnsJSON = [];
+        result.rowsJSON = [];
+        if (activeChannelName) {
+            const data = await sessionManager.channelsManager.loadChannelData(activeChannelName, neededParamsJSON);
 
-        setDatabaseData(data);
+            setDatabaseData(data);
 
-        if (data.data) {
-            const columnsJSON = await Promise.all(data.data.Columns.map(async function (column) {
-                const temp = {};
-                temp.field = column.Name;
-                temp.headerName = column.Name;
-                temp.netType = column.NetType;
-                const property = _.find(data.properties, function (o) { return o.fromColumn === column.Name; });
-                if (property) {
-                    temp.headerName = property.displayName;
-                    temp.lookupChannelName = property.lookupChannelName;
-                    if (property.lookupChannelName) {
-                        await fetchLookupData(temp);
+            if (data.data) {
+                const columnsJSON = await Promise.all(data.data.Columns.map(async function (column) {
+                    const temp = {};
+                    temp.field = column.Name;
+                    temp.headerName = column.Name;
+                    temp.netType = column.NetType;
+                    const property = _.find(data.properties, function (o) { return o.fromColumn === column.Name; });
+                    if (property) {
+                        temp.headerName = property.displayName;
+                        temp.lookupChannelName = property.lookupChannelName;
+                        if (property.lookupChannelName) {
+                            await fetchLookupData(temp);
+                        }
                     }
-                }
-                return temp;
-            }));
+                    return temp;
+                }));
 
-            const rowsJSON = data.data.Rows.map(function (row, rowIndex) {
-                const temp = {};
-                temp.js_id = rowIndex;
-                for (var i = 0; i < columnsJSON.length; i++) {
-                    if (columnsJSON[i].netType === 'System.DateTime' && row.Cells[i]) {
-                        const startIndex = row.Cells[i].indexOf('(');
-                        const finishIndex = row.Cells[i].lastIndexOf('+');
-                        const dateValue = row.Cells[i].slice(startIndex + 1, finishIndex);
-                        var d = new Date();
-                        d.setTime(dateValue);
-                        temp[columnsJSON[i].field] = d;
-                    }
-                    else {
-                        if (columnsJSON[i].lookupData) {
-                            const prevalue = row.Cells[i];
-                            const textvalue = columnsJSON[i].lookupData.find((c) => c.id === prevalue)?.text;
-                            temp[columnsJSON[i].field] = textvalue;
-                            temp[columnsJSON[i].field + '_jsoriginal'] = row.Cells[i];
+                const rowsJSON = data.data.Rows.map(function (row, rowIndex) {
+                    const temp = {};
+                    temp.js_id = rowIndex;
+                    for (var i = 0; i < columnsJSON.length; i++) {
+                        if (columnsJSON[i].netType === 'System.DateTime' && row.Cells[i]) {
+                            const startIndex = row.Cells[i].indexOf('(');
+                            const finishIndex = row.Cells[i].lastIndexOf('+');
+                            const dateValue = row.Cells[i].slice(startIndex + 1, finishIndex);
+                            var d = new Date();
+                            d.setTime(dateValue);
+                            temp[columnsJSON[i].field] = d;
                         }
                         else {
-                            temp[columnsJSON[i].field] = row.Cells[i];
+                            if (columnsJSON[i].lookupData) {
+                                const prevalue = row.Cells[i];
+                                const textvalue = columnsJSON[i].lookupData.find((c) => c.id === prevalue)?.text;
+                                temp[columnsJSON[i].field] = textvalue;
+                                temp[columnsJSON[i].field + '_jsoriginal'] = row.Cells[i];
+                            }
+                            else {
+                                temp[columnsJSON[i].field] = row.Cells[i];
+                            }
                         }
                     }
-                }
-                return temp;
-            });
-            const result = {};
-            result.columnsJSON = columnsJSON;
-            result.rowsJSON = rowsJSON;
-            return result;
+                    return temp;
+                });
+                result.columnsJSON = columnsJSON;
+                result.rowsJSON = rowsJSON;
+                return result;
+            }
+            else {
+                return result;
+            }
         }
         else {
-            const result = {};
-            result.columnsJSON = [];
-            result.rowsJSON = [];
             return result;
         }
     }, [formId, activeChannelName, sessionManager]);
@@ -237,6 +241,10 @@ export default function DataSet(props) {
             reload();
         }
     }, [modifiedTables, databaseData, reload]);
+
+   // useSelector((state) => state.globalParams.find((gp) => gp.id === id).value);
+
+    //var value = useSelector((state) => state.globalParams.find((gp) => gp.id === id).value);
 
     //React.useEffect(() => {
     //    let ignore = false;
@@ -292,6 +300,8 @@ export default function DataSet(props) {
         fetchNeededParamsData();
         return () => { ignore = true; }
     }, [formData, formId, fetchData, sessionManager]);
+
+    //var databaseData = useSelector((state) => state.sessionManager.channelsManager.getChannelData(activeChannelName, formData.id));
 
     async function deleteSelectedRows() {
         var elementsToRemove = ',';
