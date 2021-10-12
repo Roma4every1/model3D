@@ -3,16 +3,16 @@ import {
     Toolbar,
     ToolbarItem
 } from "@progress/kendo-react-buttons";
-import FormParametersList from './FormParametersList';
+import LocalFormParametersList from './LocalFormParametersList';
 
 export default function FormHeader(props) {
-    const { formData, additionalButtons, ...other } = props;
+    const { formData, additionalButtons } = props;
 
     return (
         <div className='blockheader'>
             <Toolbar className='blockheadertoolbar'>
                 <ToolbarItem>
-                    <FormParametersList formId={formData.id} {...other} />
+                    <LocalFormParametersList formId={formData.id} />
                     {additionalButtons}
                 </ToolbarItem>
                 <ToolbarItem>

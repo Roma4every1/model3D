@@ -14,7 +14,7 @@ var _ = require("lodash");
 export default function TableRowComboEditor(props) {
     const sessionManager = useSelector((state) => state.sessionManager);
     const { id, displayName, selectionChanged, formId } = props;
-    const value = useSelector((state) => state.globalParams.find((gp) => gp.id === id).value);
+    const value = useSelector((state) => state.formParams[formId].find((gp) => gp.id === id).value);
 
     const [externalChannelName, setExternalChannelName] = React.useState('');
     var values = [];
@@ -54,7 +54,7 @@ export default function TableRowComboEditor(props) {
             newevent.target.value = value;
             selectionChanged(newevent);
         },
-        [id, selectionChanged],
+        [id, selectionChanged, formId],
     );
 
     React.useEffect(() => {

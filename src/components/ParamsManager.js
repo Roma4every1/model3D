@@ -23,12 +23,12 @@ export default function createParamsManager(store) {
         neededParamList.forEach(param => {
             var element = null;
             var currentFormId = formId;
-            while (!element && (currentFormId !== '')) {
+            while (!element) {
                 element = _.find(store.getState().formParams[currentFormId], function (o) { return o.id === param; });
+                if (currentFormId === '') {
+                    break;
+                }
                 currentFormId = getParentFormId(currentFormId);
-            }
-            if (!element) {
-                element = _.find(store.getState().globalParams, function (o) { return o.id === param; });
             }
             if (element) {
                 paramsToUse.push(element);
@@ -54,29 +54,19 @@ export default function createParamsManager(store) {
         return paramChannelNames[paramName];
     }
 
-    const loadGlobalParams = async () => {
-        const sessionId = store.getState().sessionId;
-        const response = await utils.webFetch(`getFormParameters?sessionId=${sessionId}`);
-        const responseJSON = await response.json();
-        store.dispatch({ type: 'params/set', value: responseJSON });
-    }
-
     const loadFormParameters = async (formId) => {
         const sessionId = store.getState().sessionId;
-        const response = await utils.webFetch(`getFormParameters?sessionId=${sessionId}&formId=${formId}`);
+        var response;
+        if (formId) {
+            response = await utils.webFetch(`getFormParameters?sessionId=${sessionId}&formId=${formId}`);
+        }
+        else {
+            response = await utils.webFetch(`getFormParameters?sessionId=${sessionId}`);
+        }
         const responseJSON = await response.json();
         var jsonToSet = responseJSON.map(param => { var newParam = param; newParam.formId = formId; return newParam; });
-        store.dispatch({ type: 'paramsForm/set', formId: formId, value: jsonToSet });
+        store.dispatch({ type: 'params/set', formId: formId, value: jsonToSet });
     }
-
-    var loaded = false;
-
-    store.subscribe(() => {
-        if (store.getState().sessionId && !loaded) {
-            loaded = true;
-            loadGlobalParams();
-        }
-    });
 
     return {
         loadNeededChannelForParam: loadNeededChannelForParam,

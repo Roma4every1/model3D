@@ -12,9 +12,7 @@ export default function Form(props) {
 
     React.useEffect(() => {
         async function fetchData() {
-            if (formData.id) {
-                await sessionManager.paramsManager.loadFormParameters(formData.id);
-            }
+            await sessionManager.paramsManager.loadFormParameters(formData.id);
         }
         fetchData();
     }, [sessionId, formData, sessionManager]);

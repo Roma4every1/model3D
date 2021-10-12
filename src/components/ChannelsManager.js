@@ -43,7 +43,7 @@ export default function createChannelsManager(store) {
     }
 
     const equalParams = (params1, params2) => {
-        if (params1.length != params2.length) {
+        if (params1.length !== params2.length) {
             return false;
         }
         for (var i = 0; i < params1.length; i++) {

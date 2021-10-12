@@ -2,7 +2,7 @@
 import FormHeader from '../FormHeader';
 
 export default function Screenshot(props) {
-    const { sessionId, formData, ...other } = props;
+    const { formData } = props;
 
     const getImagePath = (formType) => {
         return process.env.PUBLIC_URL + '/images/' + formType + '.PNG';
@@ -10,7 +10,7 @@ export default function Screenshot(props) {
 
     return (
         <div>
-            <FormHeader sessionId={sessionId} formData={formData} {...other} />
+            <FormHeader formData={formData} />
             <div className="imgbox">
                 <img src={getImagePath(formData.type)} alt="logo" />
             </div>

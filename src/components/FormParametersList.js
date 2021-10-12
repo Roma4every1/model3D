@@ -1,64 +1,19 @@
 ﻿import React from 'react';
 import { useSelector } from 'react-redux';
-import { Popup } from "@progress/kendo-react-popup";
+import { useTranslation } from 'react-i18next';
 import { ParametersList } from './ParametersList';
-var utils = require("../utils")
 
 export default function FormParametersList(props) {
-    const globalParametersJSON = useSelector((state) => state.globalParams);
-    const sessionId = useSelector((state) => state.sessionId);
-    const { formId, ...other } = props;
-    const [popoverState, setPopoverState] = React.useState({
-        anchorEl: null,
-        open: false
-    });
-    const [parametersJSON, setParametersJSON] = React.useState([]);
+    const { formId } = props;
+    const { t } = useTranslation();
 
-    React.useEffect(() => {
-        let ignore = false;
-
-        async function fetchData() {
-            const response = await utils.webFetch(`getAllNeedParametersForForm?sessionId=${sessionId}&clientId=${formId}`);
-            const responseJSON = await response.json();
-            var neededParamsJSON = [];
-            globalParametersJSON.forEach(element => {
-                responseJSON.forEach(responseParam => {
-                    if (element.id === responseParam) {
-                        neededParamsJSON.push(element);
-                    }
-                });
-            });
-            if (!ignore) {
-                setParametersJSON(neededParamsJSON);
-            }
-        }
-        fetchData();
-        return () => { ignore = true; }
-    }, [sessionId, formId, globalParametersJSON]);
-
-    const updateEditedParametersList = (newparametersJSON) => {
-        setParametersJSON(newparametersJSON);
-    };
-
-    const handleClick = (event) => {
-        setPopoverState({
-            anchorEl: event.currentTarget,
-            open: !popoverState.open,
-        });
-    };
+    const parametersJSON = useSelector((state) => state.formParams[formId]);
 
     return (
         <div>
-            <button className="k-button k-button-clear" onClick={handleClick}>
-                <span className="k-icon k-i-menu" />
-            </button>
-            <Popup
-                id={popoverState.id}
-                show={popoverState.open}
-                anchor={popoverState.anchorEl}
-            >
-                <ParametersList parametersJSON={parametersJSON} setMainEditedJSON={updateEditedParametersList} {...other} />
-            </Popup>
+            {!parametersJSON
+                ? <p><em>{t('base.loading')}</em></p>
+                : <ParametersList parametersJSON={parametersJSON} />}
         </div>
     );
 }

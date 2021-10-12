@@ -1,7 +1,6 @@
 ﻿import React from 'react';
-import GlobalParametersList from '../../GlobalParametersList';
 import PresentationList from '../../PresentationList';
-import PresentationParametersList from '../../PresentationParametersList';
+import FormParametersList from '../../FormParametersList';
 import FlexLayout from "flexlayout-react";
 
 export default function Layout(props) {
@@ -59,10 +58,10 @@ export default function Layout(props) {
     const factory = React.useCallback((node) => {
         var component = node.getComponent();
         if (component === "paramsplugin") {
-            return <GlobalParametersList />
+            return <FormParametersList formId="" />
         }
         else if (component === "presparamsplugin") {
-            return <PresentationParametersList
+            return <FormParametersList
                 formId={activeChild.id}
             />
         }
