@@ -61,7 +61,7 @@ export default function TableRowComboEditor(props) {
         let ignore = false;
 
         async function getExternalChannelName() {
-            const resultExternalChannelName = await sessionManager.paramsManager.loadNeededChannelForParam(id, formId ?? '');
+            const resultExternalChannelName = await sessionManager.paramsManager.loadNeededChannelForParam(id, formId);
             if (!ignore) {
                 setExternalChannelName(resultExternalChannelName);
             }
@@ -70,23 +70,13 @@ export default function TableRowComboEditor(props) {
         return () => { ignore = true; }
     }, [id, formId, sessionManager]);
 
-    const valuesToSelect = useSelector((state) => state.sessionManager.channelsManager.getChannelData(externalChannelName, formId ?? ''));
+    const valuesToSelect = useSelector((state) => state.sessionManager.channelsManager.getChannelData(externalChannelName));
 
     if (valuesToSelect && valuesToSelect.properties) {
-        let idIndex = 0;
-        let nameIndex = 0;
-        valuesToSelect.properties.forEach(property => {
-            if (property.name.toUpperCase() === 'LOOKUPCODE') {
-                idIndex = _.findIndex(valuesToSelect.data.Columns, function (o) { return o.Name === property.fromColumn; });
-            }
-            else if (property.name.toUpperCase() === 'LOOKUPVALUE') {
-                nameIndex = _.findIndex(valuesToSelect.data.Columns, function (o) { return o.Name === property.fromColumn; });
-            }
-        });
         const valuesFromJSON = valuesToSelect.data.Rows.map((row) => {
             let temp = {};
-            temp.id = row.Cells[idIndex];
-            temp.name = row.Cells[nameIndex];
+            temp.id = row.Cells[valuesToSelect.idIndex];
+            temp.name = row.Cells[valuesToSelect.nameIndex];
             var valuestring = '';
             valuesToSelect.data.Columns.forEach((column, index) => {
                 valuestring += addParamRow(valuesToSelect.properties, column, row, index)

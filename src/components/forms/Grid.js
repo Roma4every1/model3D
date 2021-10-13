@@ -6,15 +6,15 @@ var utils = require("../../utils")
 
 export default function Grid(props) {
     const sessionId = useSelector((state) => state.sessionId);
-    const { formId, formData, ...other } = props;
+    const { formData } = props;
     const [formsData, setFormsData] = React.useState([]);
 
     React.useEffect(() => {
-        if (formId) {
+        if (formData.id) {
             let ignore = false;
 
             async function fetchData() {
-                const response = await utils.webFetch(`getChildrenForms?sessionId=${sessionId}&formId=${formId}`);
+                const response = await utils.webFetch(`getChildrenForms?sessionId=${sessionId}&formId=${formData.id}`);
                 const data = await response.json();
                 if (!ignore) {
                     setFormsData(data);
@@ -23,7 +23,7 @@ export default function Grid(props) {
             fetchData();
             return () => { ignore = true; }
         }
-    }, [sessionId, formId]);
+    }, [sessionId, formData]);
 
     return (
         <Container>
@@ -31,8 +31,6 @@ export default function Grid(props) {
                 (formData.opened) && <Form
                     key={formData.id}
                     formData={formData}
-                    formId={formData.id}
-                    {...other}
                 />)}
         </Container>);
 }

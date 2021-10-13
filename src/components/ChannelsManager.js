@@ -1,14 +1,16 @@
 ﻿var utils = require("../utils");
+var _ = require("lodash");
 
 export default function createChannelsManager(store) {
 
-    var chData = [];
+    var allChannelsData = [];
+    var allChannelsForms = [];
     var channelsParams = [];
     var channelsParamsValues = [];
 
-    const getChannelData = (channelName, formId) => {
-        if (chData[channelName]) {
-            return chData[channelName][formId];
+    const getChannelData = (channelName) => {
+        if (allChannelsData[channelName] && allChannelsData[channelName]) {
+            return allChannelsData[channelName];
         }
         else {
             return null;
@@ -19,7 +21,7 @@ export default function createChannelsManager(store) {
         const sessionId = store.getState().sessionId;
         const response = await utils.webFetch(`getChannelsForForm?sessionId=${sessionId}&formId=${formId}`);
         const responseJSON = await response.json();
-        await Promise.all(responseJSON.map((channel) => loadAllChannelData(channel, formId)));
+        await Promise.all(responseJSON.map((channel) => loadAllChannelData(channel, formId, false)));
         return responseJSON;
     }
 
@@ -55,29 +57,77 @@ export default function createChannelsManager(store) {
         return true;
     }
 
-    const loadAllChannelData = async (channelName, formId) => {
+    const loadAllChannelData = async (channelName, formId, force) => {
+        if (!allChannelsForms[channelName]) {
+            allChannelsForms[channelName] = [];
+        }
+        if (!allChannelsForms[channelName].includes(formId)) {
+            allChannelsForms[channelName].push(formId);
+        }
         const sessionId = store.getState().sessionId;
         if (!channelsParams[channelName]) {
             const channelParamsList = await loadChannelParamsList(channelName);
             channelsParams[channelName] = channelParamsList;
         }
         var neededParamValues = store.getState().sessionManager.paramsManager.getParameterValues(channelsParams[channelName], formId);
-        if (!channelsParamsValues[channelName] || !equalParams(channelsParamsValues[channelName], neededParamValues.map(np => np.value))) {
+        var changed = force || !channelsParamsValues[channelName] || !equalParams(channelsParamsValues[channelName], neededParamValues.map(np => np.value));
+        if (changed) {
             channelsParamsValues[channelName] = neededParamValues.map(np => np.value);
 
             const channelData = await loadChannelData(channelName, neededParamValues);
-            if (!chData[channelName]) {
-                chData[channelName] = [];
+            if (!allChannelsData[channelName]) {
+                allChannelsData[channelName] = [];
             }
-            chData[channelName][formId] = channelData;
+            let idIndex = 0;
+            let nameIndex = 0;
+            if (channelData && channelData.properties) {
+                channelData.properties.forEach(property => {
+                    if (property.name.toUpperCase() === 'LOOKUPCODE') {
+                        idIndex = _.findIndex(channelData.data.Columns, function (o) { return o.Name === property.fromColumn; });
+                    }
+                    else if (property.name.toUpperCase() === 'LOOKUPVALUE') {
+                        nameIndex = _.findIndex(channelData.data.Columns, function (o) { return o.Name === property.fromColumn; });
+                    }
+                });
+            }
+            channelData.idIndex = idIndex;
+            channelData.nameIndex = nameIndex;
+
+            allChannelsData[channelName] = channelData;
+        }
+        if (allChannelsData[channelName] && allChannelsData[channelName].data && allChannelsData[channelName].data.Columns) {
+            await Promise.all(
+                allChannelsData[channelName].data.Columns.map(async (column) => {
+                    const property = _.find(allChannelsData[channelName].properties, function (o) { return o.fromColumn === column.Name; });
+                    if (property && property.lookupChannelName) {
+                        const lookupChanged = await loadAllChannelData(property.lookupChannelName, formId, false);
+                        if (lookupChanged) {
+                            changed = true;
+                        }
+                        const lookupChannelData = allChannelsData[property.lookupChannelName];
+                        if (lookupChannelData && lookupChannelData.data) {
+                            const lookupData = lookupChannelData.data.Rows.map((row) => {
+                                let temp = {};
+                                temp.id = row.Cells[lookupChannelData.idIndex];
+                                temp.value = row.Cells[lookupChannelData.nameIndex];
+                                temp.text = row.Cells[lookupChannelData.nameIndex];
+                                return temp;
+                            });
+                            property.lookupData = lookupData;
+                        }
+                    }
+                }));
+        }
+        if (changed) {
             store.dispatch({ type: 'sessionId/set', value: sessionId });
         }
+        return changed;
     }
 
     store.subscribe(() => {
-        for (var chD in chData) {
-            for (var fD in chData[chD]) {
-                loadAllChannelData(chD, fD);
+        for (var channelName in allChannelsForms) {
+            for (var formId in allChannelsForms[channelName]) {
+                loadAllChannelData(channelName, allChannelsForms[channelName][formId], false);
             }
         }
     });

@@ -1,5 +1,4 @@
 ﻿import React from 'react';
-import { useSelector } from 'react-redux';
 import {
     Grid,
     GridColumn as Column,
@@ -52,7 +51,7 @@ const idGetter = getter(DATA_ITEM_KEY);
 
 export default function DataSetView(props) {
     const { t } = useTranslation();
-    const { inputTableData, formData, apply, deleteRows } = props;
+    const { inputTableData, formData, apply, deleteRows, reload } = props;
     const [rowAdding, setRowAdding] = React.useState(false);
     const [edited, setEdited] = React.useState(false);
     const [tableData, setTableData] = React.useState({
@@ -134,14 +133,6 @@ export default function DataSetView(props) {
         });
         setTableData(inputTableData);
     }, [inputTableData]);
-
-    //const reload = React.useCallback(async () => {
-    //    let jsonValues = await fetchData(neededParamsValues.values);
-    //    setTableData({
-    //        rowsJSON: jsonValues.rowsJSON,
-    //        columnsJSON: jsonValues.columnsJSON
-    //    });
-    //}, [fetchData, neededParamsValues]);
 
     async function deleteSelectedRows() {
         var elementsToRemove = ',';
@@ -265,7 +256,7 @@ export default function DataSetView(props) {
             <button className="k-button k-button-clear">
                 <span className="k-icon k-i-cancel" />
             </button>
-            <button className="k-button k-button-clear">
+            <button className="k-button k-button-clear" onClick={reload}>
                 <span className="k-icon k-i-reset" />
             </button>
         </div>;

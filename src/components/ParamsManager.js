@@ -50,7 +50,7 @@ export default function createParamsManager(store) {
             const channelName = await response.text();
             paramChannelNames[paramName] = channelName;
         }
-        await store.getState().sessionManager.channelsManager.loadAllChannelData(paramChannelNames[paramName], formId);
+        await store.getState().sessionManager.channelsManager.loadAllChannelData(paramChannelNames[paramName], formId, false);
         return paramChannelNames[paramName];
     }
 

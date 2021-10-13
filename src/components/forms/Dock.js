@@ -9,7 +9,7 @@ var utils = require("../../utils")
 export default function Dock(props) {
     const { t } = useTranslation();
     const sessionId = useSelector((state) => state.sessionId);
-    const { formData, ...other } = props;
+    const { formData } = props;
 
     const [modifiedTables, setModifiedTables] = React.useState([]);
     const [state, setState] = React.useState({
@@ -50,8 +50,6 @@ export default function Dock(props) {
     const activeForm = <Form
         key={activeChild.id}
         formData={activeChild}
-        formId={activeChild.id}
-        {...other}
     />;
 
     return (
@@ -69,7 +67,9 @@ export default function Dock(props) {
                         />
                     </div>
                     <div>
-                        <Layout form={activeForm}
+                        <Layout
+                            formId={formData.id}
+                            form={activeForm}
                             activeChild={activeChild}
                             setActiveChildById={setActiveChildById}
                             modifiedTables={modifiedTables}>

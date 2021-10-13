@@ -5,7 +5,7 @@ import FlexLayout from "flexlayout-react";
 
 export default function Layout(props) {
 
-    const { form, activeChild, setActiveChildById } = props;
+    const { formId, form, activeChild, setActiveChildById } = props;
 
     var newjson = {
         global: { tabSetEnableTabStrip: false },
@@ -58,7 +58,7 @@ export default function Layout(props) {
     const factory = React.useCallback((node) => {
         var component = node.getComponent();
         if (component === "paramsplugin") {
-            return <FormParametersList formId="" />
+            return <FormParametersList formId={formId} />
         }
         else if (component === "presparamsplugin") {
             return <FormParametersList
@@ -71,7 +71,7 @@ export default function Layout(props) {
             />
         }
         return form;
-    }, [activeChild, setActiveChildById, form])
+    }, [activeChild, setActiveChildById, form, formId])
 
     return (
         <div>

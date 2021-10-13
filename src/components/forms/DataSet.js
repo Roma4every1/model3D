@@ -7,16 +7,12 @@ var utils = require("../../utils");
 export default function DataSet(props) {
     const sessionManager = useSelector((state) => state.sessionManager);
     const sessionId = useSelector((state) => state.sessionId);
-    const { formData, formId } = props;
+    const { formData } = props;
     const [activeChannelName, setActiveChannelName] = React.useState('');
 
-    //const reload = React.useCallback(async () => {
-    //    let jsonValues = await fetchData(neededParamsValues.values);
-    //    setTableData({
-    //        rowsJSON: jsonValues.rowsJSON,
-    //        columnsJSON: jsonValues.columnsJSON
-    //    });
-    //}, [fetchData, neededParamsValues]);
+    const reload = React.useCallback(async () => {
+        await sessionManager.channelsManager.loadAllChannelData(activeChannelName, formData.id, true);
+    }, [activeChannelName, formData]);
 
     React.useEffect(() => {
         let ignore = false;
@@ -31,42 +27,12 @@ export default function DataSet(props) {
         return () => { ignore = true; }
     }, [formData, sessionManager]);
 
-    const databaseData = useSelector((state) => state.sessionManager.channelsManager.getChannelData(activeChannelName, formId ?? ''));
+    const databaseData = useSelector((state) => state.sessionManager.channelsManager.getChannelData(activeChannelName));
 
     var columnsJSON = [];
     var rowsJSON = [];
     if (databaseData && databaseData.data) {
-        //async function fetchLookupData(columnElement) {
-        //    const responseJSON = await sessionManager.channelsManager.loadChannelParamsList(columnElement.lookupChannelName);
-        //    var neededParamsJSON = sessionManager.paramsManager.getParameterValues(responseJSON, formId);
-        //    const response2JSON = await sessionManager.channelsManager.loadChannelData(columnElement.lookupChannelName, neededParamsJSON);
-        //    let valuesFromJSON = '';
-        //    if (response2JSON && response2JSON.data) {
-        //        let idIndex = 0;
-        //        let nameIndex = 0;
-        //        if (response2JSON.properties) {
-        //            response2JSON.properties.forEach(property => {
-        //                if (property.name.toUpperCase() === 'LOOKUPCODE') {
-        //                    idIndex = _.findIndex(response2JSON.data.Columns, function (o) { return o.Name === property.fromColumn; });
-        //                }
-        //                else if (property.name.toUpperCase() === 'LOOKUPVALUE') {
-        //                    nameIndex = _.findIndex(response2JSON.data.Columns, function (o) { return o.Name === property.fromColumn; });
-        //                }
-        //            });
-        //        }
-        //        valuesFromJSON = response2JSON.data.Rows.map((row) => {
-        //            let temp = {};
-        //            temp.id = row.Cells[idIndex];
-        //            temp.value = row.Cells[nameIndex];
-        //            temp.text = row.Cells[nameIndex];
-        //            return temp;
-        //        });
-        //    }
-        //    columnElement.lookupData = valuesFromJSON;
-        //}
-
-        columnsJSON = //Promise.all(
-            databaseData.data.Columns.map(function (column) {
+        columnsJSON = databaseData.data.Columns.map(function (column) {
             const temp = {};
             temp.field = column.Name;
             temp.headerName = column.Name;
@@ -75,9 +41,7 @@ export default function DataSet(props) {
             if (property) {
                 temp.headerName = property.displayName;
                 temp.lookupChannelName = property.lookupChannelName;
-                //if (property.lookupChannelName) {
-                //    await fetchLookupData(temp);
-                //}
+                temp.lookupData = property.lookupData;
             }
             return temp;
         });
@@ -157,7 +121,7 @@ export default function DataSet(props) {
 
     return (
         <div>
-            <DataSetView inputTableData={tableData} formData={formData} apply={apply} deleteRows={deleteRows} />
+            <DataSetView inputTableData={tableData} formData={formData} apply={apply} deleteRows={deleteRows} reload={reload} />
         </div>
     );
 }
