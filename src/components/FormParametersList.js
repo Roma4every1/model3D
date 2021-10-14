@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { ParametersList } from './ParametersList';
+import ParametersList from './ParametersList';
 
 export default function FormParametersList(props) {
     const { formId } = props;

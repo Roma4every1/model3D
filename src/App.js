@@ -69,17 +69,26 @@ export default function App() {
 
     let json = require('../package.json');
 
-    function counterReducer(state = { sessionId: '', formParams: [], sessionManager: null }, action) {
+    function counterReducer(state = { sessionId: '', formParams: [], sessionManager: null, canRunReport: false }, action) {
         switch (action.type) {
             case 'sessionId/set':
-                return { sessionId: action.value, sessionManager: state.sessionManager, formParams: state.formParams }
+                return { sessionId: action.value, sessionManager: state.sessionManager, formParams: state.formParams, canRunReport: state.canRunReport }
             case 'sessionManager/set':
-                return { sessionId: state.sessionId, sessionManager: action.value, formParams: state.formParams }
+                return { sessionId: state.sessionId, sessionManager: action.value, formParams: state.formParams, canRunReport: state.canRunReport }
             case 'params/set':
                 {
                     var newParams = state.formParams;
+                    if (action.force) {
+                        delete (newParams[action.formId]);
+                    }
                     newParams[action.formId] = action.value;
-                    return { sessionId: state.sessionId, sessionManager: state.sessionManager, formParams: newParams }
+                    return { sessionId: state.sessionId, sessionManager: state.sessionManager, formParams: newParams, canRunReport: state.canRunReport }
+                }
+            case 'params/add':
+                {
+                    var newParams = state.formParams[action.formId];
+                    newParams.push(action.parameter)
+                    return { sessionId: state.sessionId, sessionManager: state.sessionManager, formParams: state.formParams, canRunReport: state.canRunReport }
                 }
             case 'params/update':
                 {
@@ -100,8 +109,10 @@ export default function App() {
                     if (action.manual) {
                         clear(action.id);
                     }
-                    return { sessionId: state.sessionId, sessionManager: state.sessionManager, formParams: state.formParams }
+                    return { sessionId: state.sessionId, sessionManager: state.sessionManager, formParams: state.formParams, canRunReport: state.canRunReport }
                 }
+            case 'canRunReport/set':
+                return { sessionId: state.sessionId, sessionManager: state.sessionManager, formParams: state.formParams, canRunReport: action.value }
             default:
                 return state
         }

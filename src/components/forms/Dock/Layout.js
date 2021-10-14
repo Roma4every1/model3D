@@ -5,11 +5,26 @@ import FlexLayout from "flexlayout-react";
 
 export default function Layout(props) {
 
-    const { formId, form, activeChild, setActiveChildById } = props;
+    const { formId, form, activeChild, setActiveChildById, sqlProgramsList } = props;
 
     var newjson = {
-        global: { tabSetEnableTabStrip: false },
+        global: {
+            tabSetEnableTabStrip: false
+        },
         borders: [
+            {
+                "type": "border",
+                "size": 34,
+                "minSize": 34,
+                "location": "top",
+                "children": [
+                    {
+                        "type": "tab",
+                        "name": "Программы",
+                        "component": "programsplugin",
+                    }
+                ]
+            },
             {
                 "type": "border",
                 "size": 300,
@@ -39,7 +54,6 @@ export default function Layout(props) {
 
                 {
                     "type": "tabset",
-                    "enableTabStrip": false,
                     "selected": 0,
                     "children": [
                         {
@@ -70,8 +84,11 @@ export default function Layout(props) {
                 setActiveChildById={setActiveChildById}
             />
         }
+        else if (component === "programsplugin") {
+            return sqlProgramsList
+        }
         return form;
-    }, [activeChild, setActiveChildById, form, formId])
+    }, [activeChild, sqlProgramsList, setActiveChildById, form, formId])
 
     return (
         <div>

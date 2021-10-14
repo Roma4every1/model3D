@@ -12,7 +12,7 @@ export default function DataSet(props) {
 
     const reload = React.useCallback(async () => {
         await sessionManager.channelsManager.loadAllChannelData(activeChannelName, formData.id, true);
-    }, [activeChannelName, formData]);
+    }, [activeChannelName, formData, sessionManager]);
 
     React.useEffect(() => {
         let ignore = false;
@@ -78,12 +78,6 @@ export default function DataSet(props) {
         rowsJSON: rowsJSON,
         columnsJSON: columnsJSON
     };
-
-    //React.useEffect(() => {
-    //    if (modifiedTables?.includes(databaseData.tableId)) {
-    //        reload();
-    //    }
-    //}, [modifiedTables, databaseData, reload]);
 
     async function deleteRows(elementsToRemove) {
         const response = await utils.webFetch(`removeRows?sessionId=${sessionId}&tableId=${databaseData.tableId}&rows=${elementsToRemove}`);

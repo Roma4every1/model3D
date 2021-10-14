@@ -3,7 +3,7 @@
 } from "@progress/kendo-react-buttons";
 import React from 'react';
 import { useSelector } from 'react-redux';
-import ProgramParametersList from './ProgramParametersList';
+import ProgramButton from './ProgramButton';
 import { useTranslation } from 'react-i18next';
 var utils = require("../utils")
 
@@ -38,14 +38,12 @@ export default function SqlProgramsList(props) {
         <div>
             {state.loading
                 ? <p><em>{t('base.loading')}</em></p>
-                : <Toolbar style={{padding: 1 }}>
+                : <Toolbar style={{ padding: 1 }}>
                     {state.programNames.map(programName =>
-                        <ProgramParametersList
+                        <ProgramButton
                             key={programName.id}
-                            sessionId={sessionId}
                             formId={programName.id}
                             programDisplayName={programName.displayName}
-                            open="true"
                             {...other}
                         />
                     )}

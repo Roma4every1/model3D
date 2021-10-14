@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import { useSelector } from 'react-redux';
 import { Popup } from "@progress/kendo-react-popup";
-import { ParametersList } from './ParametersList';
+import ParametersList from './ParametersList';
 var utils = require("../utils")
 
 export default function LocalFormParametersList(props) {
@@ -20,7 +20,7 @@ export default function LocalFormParametersList(props) {
         async function fetchData() {
             const response = await utils.webFetch(`getAllNeedParametersForForm?sessionId=${sessionId}&clientId=${formId}`);
             const responseJSON = await response.json();
-            const neededParams = await sessionManager.paramsManager.getParameterValues(responseJSON, formId);
+            const neededParams = await sessionManager.paramsManager.getParameterValues(responseJSON, formId, false);
             if (!ignore) {
                 setParametersJSON(neededParams);
             }

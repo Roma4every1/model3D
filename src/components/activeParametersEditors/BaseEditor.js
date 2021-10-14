@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import { useSelector } from 'react-redux';
 import IntegerTextEditor from './IntegerTextEditor';
 import StringTextEditor from './StringTextEditor';
 import DateTextEditor from './DateTextEditor';
@@ -7,22 +8,23 @@ import DateIntervalTextEditor from './DateIntervalTextEditor';
 import BoolTextEditor from './BoolTextEditor';
 
 export default function BaseEditor(props) {
+    const value = useSelector((state) => state.formParams[props.formId].find((gp) => gp.id === props.id).value);
     switch (props.editorType) {
         case 'integerTextEditor':
-            return <IntegerTextEditor {...props} />;
+            return <IntegerTextEditor value={value} {...props} />;
         case 'stringTextEditor':
-            return <StringTextEditor {...props} />;
+            return <StringTextEditor value={value} {...props} />;
         case 'dateTextEditor':
         case 'dateKMNEditor':
-            return <DateTextEditor {...props} />;
+            return <DateTextEditor value={value} {...props} />;
         case 'tableRowTreeMultiEditor':
         case 'tableRowComboEditor':
-            return <TableRowComboEditor {...props} />;
+            return <TableRowComboEditor value={value}  {...props} />;
         case 'dateIntervalTextEditor':
-            return <DateIntervalTextEditor {...props} />;
+            return <DateIntervalTextEditor value={value} {...props} />;
         case 'boolTextEditor':
-            return <BoolTextEditor {...props} />;
+            return <BoolTextEditor value={value} {...props} />;
         default:
-            return <StringTextEditor {...props} />;
+            return <StringTextEditor value={value} {...props} />;
     }
 }

@@ -57,6 +57,16 @@ export default function createChannelsManager(store) {
         return true;
     }
 
+    const updateTables = async (modifiedTables) => {
+        for (var channelName in allChannelsForms) {
+            for (var formId in allChannelsForms[channelName]) {
+                if (modifiedTables?.includes(allChannelsData[channelName].tableId)) {
+                    loadAllChannelData(channelName, allChannelsForms[channelName][formId], true);
+                }
+            }
+        }
+    }
+
     const loadAllChannelData = async (channelName, formId, force) => {
         if (!allChannelsForms[channelName]) {
             allChannelsForms[channelName] = [];
@@ -69,7 +79,7 @@ export default function createChannelsManager(store) {
             const channelParamsList = await loadChannelParamsList(channelName);
             channelsParams[channelName] = channelParamsList;
         }
-        var neededParamValues = store.getState().sessionManager.paramsManager.getParameterValues(channelsParams[channelName], formId);
+        var neededParamValues = store.getState().sessionManager.paramsManager.getParameterValues(channelsParams[channelName], formId, false);
         var changed = force || !channelsParamsValues[channelName] || !equalParams(channelsParamsValues[channelName], neededParamValues.map(np => np.value));
         if (changed) {
             channelsParamsValues[channelName] = neededParamValues.map(np => np.value);
@@ -134,9 +144,8 @@ export default function createChannelsManager(store) {
 
     return {
         loadFormChannelsList: loadFormChannelsList,
-        loadChannelParamsList: loadChannelParamsList,
-        loadChannelData: loadChannelData,
         loadAllChannelData: loadAllChannelData,
-        getChannelData: getChannelData
+        getChannelData: getChannelData,
+        updateTables: updateTables
     };
 }

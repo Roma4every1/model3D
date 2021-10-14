@@ -52,22 +52,22 @@ export default function Dock(props) {
         formData={activeChild}
     />;
 
+    const sqlProgramsList = <SqlProgramsList
+        sessionId={state.sessionId}
+        formId={activeChild.id}
+        tablesModified={(target) => {
+            setModifiedTables(target);
+        }}
+    />;
+
     return (
         <div>
             {state.loading
                 ? <p><em>{t('base.loading')}</em></p>
                 : <div>
-                    <div style={{ height: 30 }}>
-                        <SqlProgramsList
-                            sessionId={state.sessionId}
-                            formId={activeChild.id}
-                            tablesModified={(target) => {
-                                setModifiedTables(target);
-                            }}
-                        />
-                    </div>
                     <div>
                         <Layout
+                            sqlProgramsList={sqlProgramsList}
                             formId={formData.id}
                             form={activeForm}
                             activeChild={activeChild}
