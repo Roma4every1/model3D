@@ -4,7 +4,7 @@ import { ErrorBoundary } from './ErrorBoundary';
 
 export default function Form(props) {
     const sessionManager = useSelector((state) => state.sessionManager);
-    const { sessionId, formData, ...other } = props;
+    const { formData } = props;
 
     const capitalizeFirstLetter = (string) => {
         return string.charAt(0).toUpperCase() + string.slice(1);
@@ -15,7 +15,7 @@ export default function Form(props) {
             await sessionManager.paramsManager.loadFormParameters(formData.id, false);
         }
         fetchData();
-    }, [sessionId, formData, sessionManager]);
+    }, [formData, sessionManager]);
 
     const FormByType = React.lazy(() => import('./forms/' + capitalizeFirstLetter(formData.type)));
 
@@ -23,11 +23,7 @@ export default function Form(props) {
         <div>
             <ErrorBoundary>
                 <Suspense fallback={<div>Загрузка...</div>}>
-                    <FormByType
-                        sessionId={sessionId}
-                        formData={formData}
-                        {...other}
-                    />
+                    <FormByType formData={formData} />
                 </Suspense>
             </ErrorBoundary>
         </div>

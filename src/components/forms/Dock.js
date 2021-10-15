@@ -29,7 +29,7 @@ export default function Dock(props) {
         let ignore = false;
         if (sessionId) {
             async function fetchData() {
-                const response = await utils.webFetch(`getChildrenForms?sessionId=${sessionId}`);
+                const response = await utils.webFetch(`getChildrenForms?sessionId=${sessionId}&formId=${formData.id}`);
                 const data = await response.json();
                 if (!ignore) {
                     setState({

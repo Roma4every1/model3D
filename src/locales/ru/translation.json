@@ -11,6 +11,7 @@
   "menucommands": {
     "about": "О программе",
     "loadsession": "Загрузить сессию",
+    "loadsessionbydefault": "Загрузить сессию по умолчанию",
     "log": "Лог",
     "savesession": "Сохранить сессию"
   },

@@ -122,6 +122,7 @@ export default function createParamsManager(store) {
         loadFormParameters: loadFormParameters,
         getParameterValues: getParameterValues,
         updateParam: updateParam,
-        getCanRunReport: getCanRunReport
+        getCanRunReport: getCanRunReport,
+        formParameters: formParameters
     };
 }

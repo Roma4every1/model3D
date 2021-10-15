@@ -11,6 +11,7 @@
   "menucommands": {
     "about": "About program",
     "loadsession": "Load session",
+    "loadsessionbydefault": "Load session by default",
     "log": "Log",
     "savesession": "Save session"
   },

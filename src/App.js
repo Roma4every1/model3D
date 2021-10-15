@@ -1,191 +1,19 @@
 import React from 'react';
-import { createStore } from 'redux'
-import { Provider } from 'react-redux'
-import Form from './components/Form';
-import {
-    AppBar,
-    AppBarSection,
-    Drawer,
-    DrawerContent
-} from "@progress/kendo-react-layout";
-import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
-import {
-    Button
-} from "@progress/kendo-react-buttons";
+import { Provider } from 'react-redux';
+import store from './store/store';
 import '@progress/kendo-theme-default/dist/all.css';
 import 'flexlayout-react/style/light.css';
 import './custom.css'
-import { useTranslation } from 'react-i18next';
 import createSessionManager from './components/SessionManager';
+import SessionLoader from './components/SessionLoader';
 
 export default function App() {
-    const { t } = useTranslation();
-    const [state, setState] = React.useState({
-        sessionLoading: true,
-        sessionId: undefined
-    });
-    const [drawerState, setDrawerState] = React.useState(false);
-    const [aboutState, setAboutState] = React.useState(false);
-
-    const handleClose = () => {
-        setAboutState(false);
-    };
-
-    const toggleDrawer = (open) => (event) => {
-        if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
-            return;
-        }
-        if (event.itemIndex) {
-            if (event.itemIndex === 3) {
-                setAboutState(true);
-            }
-        }
-        else {
-            setDrawerState(open);
-        }
-    };
-
-    const items = [
-        {
-            text: t('menucommands.savesession'),
-            icon: "k-i-inbox",
-        },
-        {
-            text: t('menucommands.loadsession'),
-            icon: "k-i-calendar",
-        },
-        {
-            separator: true,
-        },
-        {
-            text: t('menucommands.about'),
-            icon: "k-i-hyperlink-email",
-        },
-        {
-            text: t('menucommands.log'),
-            icon: "k-i-star-outline",
-        },
-    ];
-
-    let json = require('../package.json');
-
-    function counterReducer(state = { sessionId: '', formParams: [], sessionManager: null, canRunReport: false }, action) {
-        switch (action.type) {
-            case 'sessionId/set':
-                return { sessionId: action.value, sessionManager: state.sessionManager, formParams: state.formParams, canRunReport: state.canRunReport }
-            case 'sessionManager/set':
-                return { sessionId: state.sessionId, sessionManager: action.value, formParams: state.formParams, canRunReport: state.canRunReport }
-            case 'params/set':
-                {
-                    var newParams = state.formParams;
-                    if (action.force) {
-                        delete (newParams[action.formId]);
-                    }
-                    newParams[action.formId] = action.value;
-                    return { sessionId: state.sessionId, sessionManager: state.sessionManager, formParams: newParams, canRunReport: state.canRunReport }
-                }
-            case 'params/add':
-                {
-                    var newParams = state.formParams[action.formId];
-                    newParams.push(action.parameter)
-                    return { sessionId: state.sessionId, sessionManager: state.sessionManager, formParams: state.formParams, canRunReport: state.canRunReport }
-                }
-            case 'params/update':
-                {
-                    const clear = (clearElementId) => {
-                        newParams.forEach(element => {
-                            if (element.dependsOn?.includes(clearElementId)) {
-                                element.value = null;
-                                clear(element.id);
-                            }
-                        });
-                    }
-                    var newParams = state.formParams[action.formId];
-                    newParams.forEach(element => {
-                        if (element.id === action.id) {
-                            element.value = action.value;
-                        }
-                    });
-                    if (action.manual) {
-                        clear(action.id);
-                    }
-                    return { sessionId: state.sessionId, sessionManager: state.sessionManager, formParams: state.formParams, canRunReport: state.canRunReport }
-                }
-            case 'canRunReport/set':
-                return { sessionId: state.sessionId, sessionManager: state.sessionManager, formParams: state.formParams, canRunReport: action.value }
-            default:
-                return state
-        }
-    }
-
-    var formData = {
-        type: "dock",
-        id: "",
-        opened: true
-    }
-
-    const [store, setStore] = React.useState(createStore(counterReducer));
-
-    React.useEffect(() => {
-        let ignore = false;
-        const sessionManager = createSessionManager('DEMO_SYSTEM', store, (data) => {
-            if (!ignore) {
-                setState({
-                    sessionLoading: false,
-                    sessionId: data
-                });
-            }
-        });
-        store.dispatch({ type: 'sessionManager/set', value: sessionManager });
-        return () => { ignore = true; }
-    }, [store]);
+    createSessionManager('DEMO_SYSTEM', store);
 
     return (
         <Provider store={store}>
             <div className="app">
-                {state.sessionLoading
-                    ? <p><em>{t('session.loading')}</em></p>
-                    : <div>
-                        <AppBar style={{ height: 30, padding: 1 }}>
-                            <AppBarSection>
-                                <button className="k-button k-button-clear" onClick={toggleDrawer(!drawerState)}>
-                                    <span className="k-icon k-i-menu" />
-                                </button>
-                            </AppBarSection>
-                        </AppBar>
-                        {aboutState && <Dialog title={t('menucommands.about')} onClose={handleClose}>
-                            <p
-                                style={{
-                                    margin: "25px",
-                                    textAlign: "center",
-                                }}
-                            >
-                                {json['name']}<br />{t('version.label') + ': ' + json['version']}
-                            </p>
-                            <DialogActionsBar>
-                                <Button onClick={handleClose}>
-                                    {t('base.ok')}
-                                </Button>
-                            </DialogActionsBar>
-                        </Dialog>}
-                        <Drawer
-                            expanded={drawerState}
-                            position="start"
-                            mode="push"
-                            items={items.map((item, index) => ({
-                                ...item
-                            }))}
-                            onSelect={toggleDrawer(false)}
-                        >
-                            <DrawerContent>
-                                <Form
-                                    key="root"
-                                    formData={formData}
-                                />
-                            </DrawerContent>
-                        </Drawer>
-                    </div>
-                }
+                <SessionLoader/>
             </div>
         </Provider>
     );

@@ -7,21 +7,21 @@ var utils = require("../utils")
 export default function PresentationList(props) {
     const { t } = useTranslation();
     const sessionId = useSelector((state) => state.sessionId);
-    const { setActiveChildById } = props;
+    const { formId, setActiveChildById } = props;
     const [state, setState] = React.useState({
         formsJSON: [],
         loading: true
     });
 
     const selectionChanged = (value) => {
-        setActiveChildById(',' + value.item.id)
+        setActiveChildById(value.item.id)
     };
 
     React.useEffect(() => {
         let ignore = false;
         if (sessionId) {
             async function fetchData() {
-                const response = await utils.webFetch(`presentationList?sessionId=${sessionId}`);
+                const response = await utils.webFetch(`presentationList?sessionId=${sessionId}&formId=${formId}`);
                 const data = await response.json();
                 if (!ignore) {
                     setState({

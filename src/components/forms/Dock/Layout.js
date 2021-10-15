@@ -1,13 +1,14 @@
 ﻿import React from 'react';
 import PresentationList from '../../PresentationList';
 import FormParametersList from '../../FormParametersList';
+import Menu from '../../Menu';
 import FlexLayout from "flexlayout-react";
 
 export default function Layout(props) {
 
     const { formId, form, activeChild, setActiveChildById, sqlProgramsList } = props;
 
-    var newjson = {
+    const [layoutSettings] = React.useState({
         global: {
             tabSetEnableTabStrip: false
         },
@@ -18,6 +19,11 @@ export default function Layout(props) {
                 "minSize": 34,
                 "location": "top",
                 "children": [
+                    {
+                        "type": "tab",
+                        "name": "Меню",
+                        "component": "menu",
+                    },
                     {
                         "type": "tab",
                         "name": "Программы",
@@ -65,9 +71,9 @@ export default function Layout(props) {
                     ]
                 }]
         }
-    };
+    });
 
-    const modelJson = FlexLayout.Model.fromJson(newjson);
+    const [flexLayoutModel] = React.useState(FlexLayout.Model.fromJson(layoutSettings));
 
     const factory = React.useCallback((node) => {
         var component = node.getComponent();
@@ -81,17 +87,26 @@ export default function Layout(props) {
         }
         else if (component === "preslistplugin") {
             return <PresentationList
+                formId={formId}
                 setActiveChildById={setActiveChildById}
             />
         }
         else if (component === "programsplugin") {
             return sqlProgramsList
         }
-        return form;
+        else if (component === "menu") {
+            return <Menu />
+        }
+        if (activeChild) {
+            return form;
+        }
+        else {
+            return <div/>
+        }
     }, [activeChild, sqlProgramsList, setActiveChildById, form, formId])
 
     return (
         <div>
-            <FlexLayout.Layout model={modelJson} factory={factory} />
+            <FlexLayout.Layout model={flexLayoutModel} factory={factory} />
         </div>);
 }
