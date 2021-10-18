@@ -1,4 +1,5 @@
-﻿import createChannelsManager from './ChannelsManager';
+﻿import setChildForms from '../store/actionCreators/setChildForms';
+import createChannelsManager from './ChannelsManager';
 import createParamsManager from './ParamsManager';
 var utils = require("../utils");
 
@@ -15,11 +16,18 @@ export default function createSessionManager(systemName, store) {
 
     const saveSession = async () => {
         var paramsArray = [];
-        for (var formParameter in paramsManager.formParameters) {
-            paramsArray.push({ id: formParameter, value: paramsManager.formParameters[formParameter] });
+        const formParams = store.getState().formParams;
+        for (var formParameter in formParams) {
+            paramsArray.push({ id: formParameter, value: formParams[formParameter] });
         }
 
-        var jsonToSend = { sessionId: store.getState().sessionId, activeParams: paramsArray };
+        var childArray = [];
+        const childForms = store.getState().childForms;
+        for (var form in childForms) {
+            childArray.push(childForms[form]);
+        }
+
+        var jsonToSend = { sessionId: store.getState().sessionId, activeParams: paramsArray, children: childArray };
         const jsonToSendString = JSON.stringify(jsonToSend);
         await utils.webFetch(`saveSession`,
             {
@@ -36,6 +44,13 @@ export default function createSessionManager(systemName, store) {
         store.dispatch({ type: 'sessionId/set', value: data });
     }
 
+    const getChildForms = async (formId) => {
+        const sessionId = store.getState().sessionId;
+        const response = await utils.webFetch(`getChildrenForms?sessionId=${sessionId}&formId=${formId}`);
+        const data = await response.json();
+        store.dispatch(setChildForms(formId, data));
+    }
+
     startSession();
 
     const paramsManager = createParamsManager(store);
@@ -49,7 +64,8 @@ export default function createSessionManager(systemName, store) {
             channelsManager: channelsManager,
             saveSession: saveSession,
             loadSessionByDefault: loadSessionByDefault,
-            getSessionLoading: getSessionLoading
+            getSessionLoading: getSessionLoading,
+            getChildForms: getChildForms
         }
     });
 }

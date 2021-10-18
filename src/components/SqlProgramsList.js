@@ -10,7 +10,7 @@ var utils = require("../utils")
 export default function SqlProgramsList(props) {
     const { t } = useTranslation();
     const sessionId = useSelector((state) => state.sessionId);
-    const { formId, ...other } = props;
+    const { formId } = props;
     const [state, setState] = React.useState({
         programNames: [],
         loading: true
@@ -44,7 +44,6 @@ export default function SqlProgramsList(props) {
                             key={programName.id}
                             formId={programName.id}
                             programDisplayName={programName.displayName}
-                            {...other}
                         />
                     )}
                 </Toolbar>

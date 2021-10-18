@@ -1,36 +1,34 @@
 ﻿import React from 'react';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import Form from '../Form';
 import Container from './Grid/Container';
-var utils = require("../../utils")
 
 export default function Grid(props) {
-    const sessionId = useSelector((state) => state.sessionId);
+    const { t } = useTranslation();
+    const sessionManager = useSelector((state) => state.sessionManager);
     const { formData } = props;
-    const [formsData, setFormsData] = React.useState([]);
 
     React.useEffect(() => {
-        if (formData.id) {
-            let ignore = false;
+        sessionManager.getChildForms(formData.id);
+    }, [formData, sessionManager]);
 
-            async function fetchData() {
-                const response = await utils.webFetch(`getChildrenForms?sessionId=${sessionId}&formId=${formData.id}`);
-                const data = await response.json();
-                if (!ignore) {
-                    setFormsData(data);
-                }
-            }
-            fetchData();
-            return () => { ignore = true; }
-        }
-    }, [sessionId, formData]);
+    const formsData = useSelector((state) => state.childForms[formData.id]?.children);
+    const openedData = useSelector((state) => state.childForms[formData.id]?.openedChildren);
+
+    const openedForms = openedData?.map(od => formsData?.find(p => p.id === (formData.id + ',' + od)));
 
     return (
-        <Container>
-            {formsData.map(formData =>
-                (formData.opened) && <Form
-                    key={formData.id}
-                    formData={formData}
-                />)}
-        </Container>);
+        <div>
+            {!openedForms
+                ? <p><em>{t('base.loading')}</em></p>
+                : <Container>
+                    {openedForms.map(formData =>
+                        <Form
+                            key={formData.id}
+                            formData={formData}
+                        />)}
+                </Container>
+            }
+        </div>);
 }

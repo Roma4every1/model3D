@@ -88,7 +88,6 @@ export default function Layout(props) {
         else if (component === "preslistplugin") {
             return <PresentationList
                 formId={formId}
-                setActiveChildById={setActiveChildById}
             />
         }
         else if (component === "programsplugin") {
@@ -103,7 +102,7 @@ export default function Layout(props) {
         else {
             return <div/>
         }
-    }, [activeChild, sqlProgramsList, setActiveChildById, form, formId])
+    }, [activeChild, sqlProgramsList, form, formId])
 
     return (
         <div>

@@ -1,5 +1,7 @@
+import setActiveChildren from '../store/actionCreators/setActiveChildren';
+import setOpenedChildren from '../store/actionCreators/setOpenedChildren';
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import RecursiveTreeView from './RecursiveTreeView';
 import { useTranslation } from 'react-i18next';
 var utils = require("../utils")
@@ -7,14 +9,16 @@ var utils = require("../utils")
 export default function PresentationList(props) {
     const { t } = useTranslation();
     const sessionId = useSelector((state) => state.sessionId);
-    const { formId, setActiveChildById } = props;
+    const dispatch = useDispatch();
+    const { formId } = props;
     const [state, setState] = React.useState({
         formsJSON: [],
         loading: true
     });
 
     const selectionChanged = (value) => {
-        setActiveChildById(value.item.id)
+        dispatch(setActiveChildren(formId, [value.item.id]));
+        dispatch(setOpenedChildren(formId, [value.item.id]));
     };
 
     React.useEffect(() => {
@@ -33,7 +37,7 @@ export default function PresentationList(props) {
             fetchData();
         }
         return () => { ignore = true; }
-    }, [sessionId]);
+    }, [sessionId, formId]);
 
     return (
         <div>

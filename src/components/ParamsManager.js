@@ -58,7 +58,6 @@ export default function createParamsManager(store) {
     }
 
     var paramChannelNames = [];
-    var formParameters = [];
     var reportFormId = null;
 
     const loadNeededChannelForParam = async (paramName, formId) => {
@@ -73,7 +72,7 @@ export default function createParamsManager(store) {
     }
 
     const loadFormParameters = async (formId, force) => {
-        if (force || !formParameters[formId]) {
+        if (force || !store.getState().formParams[formId]) {
             const sessionId = store.getState().sessionId;
             var response;
             if (formId) {
@@ -84,7 +83,6 @@ export default function createParamsManager(store) {
             }
             const responseJSON = await response.json();
             var jsonToSet = responseJSON.map(param => { var newParam = param; newParam.formId = formId; return newParam; });
-            formParameters[formId] = jsonToSet;
             store.dispatch({ type: 'params/set', formId: formId, value: jsonToSet, force: force });
         }
     }
@@ -116,13 +114,11 @@ export default function createParamsManager(store) {
         }
     });
 
-
     return {
         loadNeededChannelForParam: loadNeededChannelForParam,
         loadFormParameters: loadFormParameters,
         getParameterValues: getParameterValues,
         updateParam: updateParam,
-        getCanRunReport: getCanRunReport,
-        formParameters: formParameters
+        getCanRunReport: getCanRunReport
     };
 }
