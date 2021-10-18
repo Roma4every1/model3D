@@ -27,7 +27,13 @@ export default function createSessionManager(systemName, store) {
             childArray.push(childForms[form]);
         }
 
-        var jsonToSend = { sessionId: store.getState().sessionId, activeParams: paramsArray, children: childArray };
+        var layoutArray = [];
+        const layouts = store.getState().layout;
+        for (var layout in layouts) {
+            layoutArray.push({ id: layout, ...layouts[layout]});
+        }
+
+        var jsonToSend = { sessionId: store.getState().sessionId, activeParams: paramsArray, children: childArray, layout: layoutArray };
         const jsonToSendString = JSON.stringify(jsonToSend);
         await utils.webFetch(`saveSession`,
             {

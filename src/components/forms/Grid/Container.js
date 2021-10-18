@@ -1,44 +1,38 @@
 ﻿import React from 'react';
+import { useDispatch } from 'react-redux';
+import setActiveChildren from '../../../store/actionCreators/setActiveChildren';
+import setOpenedChildren from '../../../store/actionCreators/setOpenedChildren';
+import setFormLayout from '../../../store/actionCreators/setFormLayout';
 import FlexLayout from "flexlayout-react";
+var _ = require("lodash");
 
 export default function Container(props) {
-    var newjson = {
-        global: {},
-        borders: [],
-        layout: {
-            "type": "row",
-            "weight": 100,
-            "children": []
-        }
-    };
+    const dispatch = useDispatch();
+    const { modelJson } = props;
 
-    for (var i = 0; i < props.children.length; i++) {
-        if (props.children[i]) {
-            newjson.layout.children.push({
-                "type": "tabset",
-                "weight": 100 / props.children.length,
-                "selected": 0,
-                "children": [
-                    {
-                        "type": "tab",
-                        "name": props.children[i].props.formData.displayName,
-                        "component": i,
-                    }
-                ]
-            });
+    const onModelChange = () => {
+        var json = modelJson.toJson();
+        var opened = _.map(json.layout.children, (item) => item.children[0].id);
+        var active = _.map(_.filter(json.layout.children, (item) => item.active), (item) => item.children[0].id);
+        if (json.layout.children[0].type === "row") {
+            var opened = _.map(json.layout.children[0].children, (item) => item.children[0].id);
+            var active = _.map(_.filter(json.layout.children[0].children, (item) => item.active), (item) => item.children[0].id);
         }
+
+        dispatch(setActiveChildren(props.formId, active));
+        dispatch(setOpenedChildren(props.formId, opened));
+
+        dispatch(setFormLayout(props.formId, json));
     }
-
-    const modelJson = FlexLayout.Model.fromJson(newjson);
 
     const factory = (node) => {
         var component = node.getComponent();
-        return props.children[component];
+        return component;
     }
 
     return (
         <div>
-            <FlexLayout.Layout model={modelJson} factory={factory} />
+            <FlexLayout.Layout model={modelJson} factory={factory} onModelChange={onModelChange} />
         </div>
     );
 }

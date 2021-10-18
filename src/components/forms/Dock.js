@@ -13,7 +13,7 @@ export default function Dock(props) {
     React.useEffect(() => {
         sessionManager.getChildForms(formData.id);
     }, [formData, sessionManager]);
-    const activeChild = useSelector((state) => state.childForms[formData.id]?.children.find(p => p.id === (formData.id + ',' + state.childForms[formData.id].openedChildren[0])));
+    const activeChild = useSelector((state) => state.childForms[formData.id]?.children.find(p => p.id === (state.childForms[formData.id].openedChildren[0])));
 
     const activeForm = <Form
         key={activeChild?.id}

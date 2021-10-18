@@ -6,7 +6,7 @@ import FlexLayout from "flexlayout-react";
 
 export default function Layout(props) {
 
-    const { formId, form, activeChild, setActiveChildById, sqlProgramsList } = props;
+    const { formId, form, activeChild, sqlProgramsList } = props;
 
     const [layoutSettings] = React.useState({
         global: {
