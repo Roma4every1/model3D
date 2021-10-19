@@ -1,5 +1,4 @@
-﻿import setSessionId from "../store/actionCreators/setSessionId";
-import setChannelsData from "../store/actionCreators/setChannelsData";
+﻿import setChannelsData from "../store/actionCreators/setChannelsData";
 var utils = require("../utils");
 var _ = require("lodash");
 
@@ -49,11 +48,21 @@ export default function createChannelsManager(store) {
         return true;
     }
 
+    const setFormInactive = async (inputFormId) => {
+        for (var channelName in allChannelsForms) {
+            for (var formId in allChannelsForms[channelName]) {
+                if (formId === inputFormId) {
+                    allChannelsForms[channelName][formId] = false;
+                }
+            }
+        }
+    }
+
     const updateTables = async (modifiedTables) => {
         for (var channelName in allChannelsForms) {
             for (var formId in allChannelsForms[channelName]) {
-                if (modifiedTables?.includes(store.getState().channelsData[channelName].tableId)) {
-                    loadAllChannelData(channelName, allChannelsForms[channelName][formId], true);
+                if (allChannelsForms[channelName][formId] && modifiedTables?.includes(store.getState().channelsData[channelName].tableId)) {
+                    loadAllChannelData(channelName, formId, true);
                 }
             }
         }
@@ -63,10 +72,7 @@ export default function createChannelsManager(store) {
         if (!allChannelsForms[channelName]) {
             allChannelsForms[channelName] = [];
         }
-        if (!allChannelsForms[channelName].includes(formId)) {
-            allChannelsForms[channelName].push(formId);
-        }
-        const sessionId = store.getState().sessionId;
+        allChannelsForms[channelName][formId] = true;
         if (!channelsParams[channelName]) {
             const channelParamsList = await loadChannelParamsList(channelName);
             channelsParams[channelName] = channelParamsList;
@@ -149,7 +155,9 @@ export default function createChannelsManager(store) {
     store.subscribe(() => {
         for (var channelName in allChannelsForms) {
             for (var formId in allChannelsForms[channelName]) {
-                loadAllChannelData(channelName, allChannelsForms[channelName][formId], false);
+                if (allChannelsForms[channelName][formId]) {
+                    loadAllChannelData(channelName, formId, false);
+                }
             }
         }
     });
@@ -157,6 +165,7 @@ export default function createChannelsManager(store) {
     return {
         loadFormChannelsList,
         loadAllChannelData,
+        setFormInactive,
         updateTables,
         insertRow,
         updateRow,

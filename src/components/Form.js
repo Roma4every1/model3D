@@ -32,6 +32,7 @@ export default function Form(props) {
         fetchChannels();
         return () => {
             ignore = true;
+            sessionManager.channelsManager.setFormInactive(formData.id);
         };
     }, [formData, sessionManager]);
 

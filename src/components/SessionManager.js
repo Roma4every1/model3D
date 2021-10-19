@@ -7,16 +7,31 @@ var utils = require("../utils");
 
 export default function createSessionManager(systemName, store) {
     var sessionLoading = true;
+    let timerId;
+
+    async function iAmAlive() {
+        var response = await utils.webFetch(`iAmAlive?sessionId=${store.getState().sessionId}`);
+        var data = await response.text();
+        if (data === "false") {
+            clearInterval(timerId);
+            alert("Сессия на сервере потеряна. В дальнейшем данные грузится не будут. Пожалуйста, обновите вкладку.");
+        }
+    }
 
     const startSession = async () => {
         sessionLoading = true;
         const response = await utils.webFetch(`startSession?systemName=${systemName}&defaulConfiguration=false`);
         const data = await response.text();
         sessionLoading = false;
+        timerId = setInterval(iAmAlive, 2  * 60 * 1000);
         store.dispatch(setSessionId(data));
+        window.addEventListener("beforeunload", () => {
+            clearInterval(timerId);
+            stopSession();
+        });
     }
 
-    const saveSession = async () => {
+    const getSavedSession = async () => {
         var paramsArray = [];
         const formParams = store.getState().formParams;
         for (var formParameter in formParams) {
@@ -32,19 +47,39 @@ export default function createSessionManager(systemName, store) {
         var layoutArray = [];
         const layouts = store.getState().layout;
         for (var layout in layouts) {
-            layoutArray.push({ id: layout, ...layouts[layout]});
+            layoutArray.push({ id: layout, ...layouts[layout] });
         }
 
         var jsonToSend = { sessionId: store.getState().sessionId, activeParams: paramsArray, children: childArray, layout: layoutArray };
-        const jsonToSendString = JSON.stringify(jsonToSend);
-        await utils.webFetch(`saveSession`,
+        return JSON.stringify(jsonToSend);
+    }
+
+    const saveSession = async () => {
+        var response = await utils.webFetch(`saveSession`,
             {
                 method: 'POST',
-                body: jsonToSendString
+                body: await getSavedSession()
             });
+        var data = await response.text();
+        if (data === "false") {
+            alert("Ошибка при сохранении сессии. Подробности см. в логе сервера.");
+        }
+    }
+
+    const stopSession = async () => {
+        var response = await utils.webFetch(`stopSession`,
+            {
+                method: 'POST',
+                body: await getSavedSession()
+            });
+        var data = await response.text();
+        if (data === "false") {
+            alert("Ошибка при остановке сессии. Подробности см. в логе сервера.");
+        }
     }
 
     const loadSessionByDefault = async () => {
+        stopSession();
         sessionLoading = true;
         const response = await utils.webFetch(`startSession?systemName=${systemName}&defaulConfiguration=true`);
         const data = await response.text();
