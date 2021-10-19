@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import Form from '../Form';
 import FlexLayout from "flexlayout-react";
 import Container from './Grid/Container';
-var utils = require("../../utils")
+var utils = require("../../utils");
 
 export default function Grid(props) {
     const { t } = useTranslation();
@@ -25,9 +25,27 @@ export default function Grid(props) {
             const openedData = form?.openedChildren;
             setOpenedForms(openedData?.map(od => formsData?.find(p => p.id === (od))));
         }
-    }, [form, formData]);
+    }, [form, formData, openedForms]);
 
     const [modelJson, setModelJson] = React.useState(null);
+
+    const pushElement = (jsonToInsert, weight, formToPush) => {
+        jsonToInsert.layout.children.push({
+            "type": "tabset",
+            "weight": weight,
+            "children": [
+                {
+                    "id": formToPush.id,
+                    "type": "tab",
+                    "name": formToPush.displayName,
+                    "component": <Form
+                        key={formToPush.id}
+                        formData={formToPush}
+                    />,
+                }
+            ]
+        });
+    }
 
     React.useEffect(() => {
         let ignore = false;
@@ -50,52 +68,21 @@ export default function Grid(props) {
                     if (data.children) {
                         newjson.global.rootOrientationVertical = data.vertical;
                         if (openedForms) {
-                            for (var i = 0; i < data.children.length; i++) {
-                                var openedForm = openedForms.find(f => f.id === data.children[i].id);
-                                var layoutSettings = data.children[i];
-                                if (layoutSettings) {
-                                    if (openedForm) {
-                                        newjson.layout.children.push({
-                                            "type": "tabset",
-                                            "weight": layoutSettings.size,
-                                            "children": [
-                                                {
-                                                    "id": openedForm.id,
-                                                    "type": "tab",
-                                                    "name": openedForm.displayName,
-                                                    "component": <Form
-                                                        key={openedForm.id}
-                                                        formData={openedForm}
-                                                    />,
-                                                }
-                                            ]
-                                        });
-                                    }
+                            data.children.forEach(layoutSettings => {
+                                var layoutSettingsId = layoutSettings.id;
+                                var openedFormWithLayout = openedForms.find(f => f.id === layoutSettingsId);
+                                if (layoutSettings && openedFormWithLayout) {
+                                    pushElement(newjson, layoutSettings.size, openedFormWithLayout);
                                 }
-                            }
+                            });
                         }
                     }
                     else if (openedForms) {
-                        for (var i = 0; i < openedForms.length; i++) {
-                            var openedForm = openedForms[i];
+                        openedForms.forEach(openedForm => {
                             if (openedForm) {
-                                newjson.layout.children.push({
-                                    "type": "tabset",
-                                    "id": openedForm.id,
-                                    "weight": 100 / openedForms.length,
-                                    "children": [
-                                        {
-                                            "type": "tab",
-                                            "name": openedForm.displayName,
-                                            "component": <Form
-                                                key={openedForm.id}
-                                                formData={openedForm}
-                                            />,
-                                        }
-                                    ]
-                                });
+                                pushElement(newjson, 100 / openedForms.length, openedForm);
                             }
-                        }
+                        });
                     }
                     setModelJson(FlexLayout.Model.fromJson(newjson));
                 }

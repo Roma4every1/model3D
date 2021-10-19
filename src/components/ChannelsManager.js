@@ -1,4 +1,5 @@
-﻿var utils = require("../utils");
+﻿import setSessionId from "../store/actionCreators/setSessionId";
+var utils = require("../utils");
 var _ = require("lodash");
 
 export default function createChannelsManager(store) {
@@ -129,9 +130,36 @@ export default function createChannelsManager(store) {
                 }));
         }
         if (changed) {
-            store.dispatch({ type: 'sessionId/set', value: sessionId });
+            store.dispatch(setSessionId(sessionId));
         }
         return changed;
+    }
+
+    const insertRow = async (tableId, dataJSON) => {
+        const sessionId = store.getState().sessionId;
+        const response = await utils.webFetch(`insertRow?sessionId=${sessionId}&tableId=${tableId}&rowData=${dataJSON}`);
+        const modifiedTables = await response.json();
+        updateTables([tableId, ...modifiedTables.modifiedTables]);
+    }
+
+    const updateRow = async (tableId, editID, newRowData) => {
+        const sessionId = store.getState().sessionId;
+        var jsonToSend = { sessionId: sessionId, tableId: tableId, rowsIndices: editID, newRowData: newRowData };
+        const jsonToSendString = JSON.stringify(jsonToSend);
+        const response = await utils.webFetch(`updateRow`,
+            {
+                method: 'POST',
+                body: jsonToSendString
+            });
+        const modifiedTables = await response.json();
+        updateTables([tableId, ...modifiedTables.modifiedTables]);
+    }
+
+    const deleteRow = async (tableId, elementsToRemove) => {
+        const sessionId = store.getState().sessionId;
+        const response = await utils.webFetch(`removeRows?sessionId=${sessionId}&tableId=${tableId}&rows=${elementsToRemove}`);
+        const modifiedTables = await response.json();
+        updateTables([tableId, ...modifiedTables.modifiedTables]);
     }
 
     store.subscribe(() => {
@@ -146,6 +174,9 @@ export default function createChannelsManager(store) {
         loadFormChannelsList: loadFormChannelsList,
         loadAllChannelData: loadAllChannelData,
         getChannelData: getChannelData,
-        updateTables: updateTables
+        updateTables: updateTables,
+        insertRow: insertRow,
+        updateRow: updateRow,
+        deleteRow: deleteRow
     };
 }

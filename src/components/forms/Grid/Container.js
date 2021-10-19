@@ -15,8 +15,8 @@ export default function Container(props) {
         var opened = _.map(json.layout.children, (item) => item.children[0].id);
         var active = _.map(_.filter(json.layout.children, (item) => item.active), (item) => item.children[0].id);
         if (json.layout.children[0].type === "row") {
-            var opened = _.map(json.layout.children[0].children, (item) => item.children[0].id);
-            var active = _.map(_.filter(json.layout.children[0].children, (item) => item.active), (item) => item.children[0].id);
+            opened = _.map(json.layout.children[0].children, (item) => item.children[0].id);
+            active = _.map(_.filter(json.layout.children[0].children, (item) => item.active), (item) => item.children[0].id);
         }
 
         dispatch(setActiveChildren(props.formId, active));

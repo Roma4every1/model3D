@@ -2,11 +2,9 @@
 import { useSelector } from 'react-redux';
 import DataSetView from "./DataSet/DataSetView";
 var _ = require("lodash");
-var utils = require("../../utils");
 
 export default function DataSet(props) {
     const sessionManager = useSelector((state) => state.sessionManager);
-    const sessionId = useSelector((state) => state.sessionId);
     const { formData } = props;
     const [activeChannelName, setActiveChannelName] = React.useState('');
 
@@ -80,8 +78,7 @@ export default function DataSet(props) {
     };
 
     async function deleteRows(elementsToRemove) {
-        const response = await utils.webFetch(`removeRows?sessionId=${sessionId}&tableId=${databaseData.tableId}&rows=${elementsToRemove}`);
-        await response.json();
+        await sessionManager.channelsManager.deleteRow(databaseData.tableId, elementsToRemove);
     }
 
     async function apply(editedTableData, rowToInsert, editID, rowAdding) {
@@ -98,18 +95,10 @@ export default function DataSet(props) {
         var itemToInsert = { Id: null, Cells: cells };
         const dataJSON = JSON.stringify([itemToInsert]);
         if (rowAdding) {
-            const response = await utils.webFetch(`insertRow?sessionId=${sessionId}&tableId=${databaseData.tableId}&rowData=${dataJSON}`);
-            await response.json();
+            await sessionManager.channelsManager.insertRow(databaseData.tableId, dataJSON);
         }
         else {
-            var jsonToSend = { sessionId: sessionId, tableId: databaseData.tableId, rowsIndices: editID, newRowData: [itemToInsert] };
-            const jsonToSendString = JSON.stringify(jsonToSend);
-            const response = await utils.webFetch(`updateRow`,
-                {
-                    method: 'POST',
-                    body: jsonToSendString
-                });
-            await response.text();
+            await sessionManager.channelsManager.updateRow(databaseData.tableId, editID, [itemToInsert]);
         }
     }
 

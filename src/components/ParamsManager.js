@@ -1,4 +1,8 @@
-﻿var utils = require("../utils");
+﻿import addParam from "../store/actionCreators/addParam";
+import setCanRunReport from "../store/actionCreators/setCanRunReport";
+import setParams from "../store/actionCreators/setParams";
+import updateParam from "../store/actionCreators/updateParam";
+var utils = require("../utils");
 var _ = require("lodash");
 
 export default function createParamsManager(store) {
@@ -42,7 +46,7 @@ export default function createParamsManager(store) {
                         editorType: element.editorType,
                         displayName: element.displayName
                     }
-                    store.dispatch({ type: 'params/add', formId: formId, parameter: newElement });
+                    store.dispatch(addParam(formId, newElement));
                     paramsToUse.push(newElement);
                 }
                 else {
@@ -53,8 +57,8 @@ export default function createParamsManager(store) {
         return paramsToUse;
     }
 
-    const updateParam = (formId, paramName, paramValue, manual) => {
-        store.dispatch({ type: 'params/update', formId: formId, id: paramName, value: paramValue, manual: manual });
+    const updateParamValue = (formId, paramName, paramValue, manual) => {
+        store.dispatch(updateParam(formId, paramName, paramValue, manual));
     }
 
     var paramChannelNames = [];
@@ -83,7 +87,7 @@ export default function createParamsManager(store) {
             }
             const responseJSON = await response.json();
             var jsonToSet = responseJSON.map(param => { var newParam = param; newParam.formId = formId; return newParam; });
-            store.dispatch({ type: 'params/set', formId: formId, value: jsonToSet, force: force });
+            store.dispatch(setParams(formId, jsonToSet));
         }
     }
 
@@ -101,10 +105,10 @@ export default function createParamsManager(store) {
                 });
             const responsetext = await response.text();
             const canRunReport = (responsetext === 'True') ? true : false;
-            store.dispatch({ type: 'canRunReport/set', value: canRunReport });
+            store.dispatch(setCanRunReport(canRunReport));
         }
         else {
-            store.dispatch({ type: 'canRunReport/set', value: false });
+            store.dispatch(setCanRunReport(false));
         }
     }
 
@@ -118,7 +122,7 @@ export default function createParamsManager(store) {
         loadNeededChannelForParam: loadNeededChannelForParam,
         loadFormParameters: loadFormParameters,
         getParameterValues: getParameterValues,
-        updateParam: updateParam,
+        updateParamValue: updateParamValue,
         getCanRunReport: getCanRunReport
     };
 }
