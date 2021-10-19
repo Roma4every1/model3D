@@ -1,6 +1,7 @@
 ﻿import React from 'react';
+import { withTranslation } from 'react-i18next';
 
-export class ErrorBoundary extends React.Component {
+class ErrorBoundary extends React.Component {
     constructor(props) {
         super(props);
         this.state = { hasError: false };
@@ -19,9 +20,11 @@ export class ErrorBoundary extends React.Component {
     render() {
         if (this.state.hasError) {
             // Можно отрендерить запасной UI произвольного вида
-            return <h1>Что-то пошло не так.</h1>;
+            return <h1>{this.props.t('base.parameters')}</h1>;
         }
 
         return this.props.children;
     }
 }
+
+export default withTranslation()(ErrorBoundary);

@@ -50,7 +50,9 @@ export default function Grid(props) {
     React.useEffect(() => {
         let ignore = false;
         var newjson = {
-            global: { rootOrientationVertical: false },
+            global: {
+                rootOrientationVertical: false
+            },
             borders: [],
             layout: {
                 "type": "row",

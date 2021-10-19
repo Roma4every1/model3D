@@ -2,11 +2,20 @@
   "title": "Welcome to react using react-i18next",
   "base": {
     "cancel": "Cancel",
+    "error": "Something went wrong.",
     "loading": "Loading...",
     "ok": "Ok",
     "parameters": "Parameters",
     "programs": "Programs",
     "run": "Run"
+  },
+  "flexlayout": {
+    "close": "Close",
+    "error": "Error rendering component",
+    "hiddenTabs": "Hidden tabs",
+    "maximizeTabset": "Maximize tabset",
+    "move": "Move: ",
+    "restoreTabset": "Restore tabset"
   },
   "menucommands": {
     "about": "About program",

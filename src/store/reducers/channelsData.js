@@ -1,12 +1,12 @@
-﻿import SET from '../actions/layout/set';
+﻿import SET from '../actions/channelsData/set';
 
-function layout(state = [], action) {
+function channelsData(state = [], action) {
     switch (action.type) {
         case SET:
             {
                 return {
                     ...state,
-                    [action.formId]: action.value
+                    [action.channelName]: action.channelData
                 }
             }
 
@@ -14,4 +14,4 @@ function layout(state = [], action) {
     }
 }
 
-export default layout;
+export default channelsData;

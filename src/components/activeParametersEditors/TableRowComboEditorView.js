@@ -52,7 +52,7 @@ export default function TableRowComboEditorView(props) {
         [id, selectionChanged],
     );
 
-    const valuesToSelect = useSelector((state) => state.sessionManager.channelsManager.getChannelData(externalChannelName));
+    const valuesToSelect = useSelector((state) => state.channelsData[externalChannelName]);
 
     if (valuesToSelect && valuesToSelect.properties) {
         const valuesFromJSON = valuesToSelect.data.Rows.map((row) => {

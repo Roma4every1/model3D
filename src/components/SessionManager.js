@@ -67,11 +67,11 @@ export default function createSessionManager(systemName, store) {
     const getSessionLoading = () => sessionLoading;
 
     store.dispatch(setSessionManager({
-        paramsManager: paramsManager,
-        channelsManager: channelsManager,
-        saveSession: saveSession,
-        loadSessionByDefault: loadSessionByDefault,
-        getSessionLoading: getSessionLoading,
-        getChildForms: getChildForms
+        paramsManager,
+        channelsManager,
+        saveSession,
+        loadSessionByDefault,
+        getSessionLoading,
+        getChildForms
     }));
 }

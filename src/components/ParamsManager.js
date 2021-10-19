@@ -78,16 +78,11 @@ export default function createParamsManager(store) {
     const loadFormParameters = async (formId, force) => {
         if (force || !store.getState().formParams[formId]) {
             const sessionId = store.getState().sessionId;
-            var response;
-            if (formId) {
-                response = await utils.webFetch(`getFormParameters?sessionId=${sessionId}&formId=${formId}`);
-            }
-            else {
-                response = await utils.webFetch(`getFormParameters?sessionId=${sessionId}`);
-            }
+            var response = await utils.webFetch(`getFormParameters?sessionId=${sessionId}&formId=${formId}`);
             const responseJSON = await response.json();
             var jsonToSet = responseJSON.map(param => { var newParam = param; newParam.formId = formId; return newParam; });
             store.dispatch(setParams(formId, jsonToSet));
+            return jsonToSet;
         }
     }
 
@@ -119,10 +114,10 @@ export default function createParamsManager(store) {
     });
 
     return {
-        loadNeededChannelForParam: loadNeededChannelForParam,
-        loadFormParameters: loadFormParameters,
-        getParameterValues: getParameterValues,
-        updateParamValue: updateParamValue,
-        getCanRunReport: getCanRunReport
+        loadNeededChannelForParam,
+        loadFormParameters,
+        getParameterValues,
+        updateParamValue,
+        getCanRunReport
     };
 }

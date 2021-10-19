@@ -5,27 +5,14 @@ var _ = require("lodash");
 
 export default function DataSet(props) {
     const sessionManager = useSelector((state) => state.sessionManager);
-    const { formData } = props;
-    const [activeChannelName, setActiveChannelName] = React.useState('');
+    const { formData, channels } = props;
+    const [activeChannelName] = React.useState(channels[0]);
 
     const reload = React.useCallback(async () => {
         await sessionManager.channelsManager.loadAllChannelData(activeChannelName, formData.id, true);
     }, [activeChannelName, formData, sessionManager]);
 
-    React.useEffect(() => {
-        let ignore = false;
-
-        async function getActiveChannelName() {
-            const channels = await sessionManager.channelsManager.loadFormChannelsList(formData.id);
-            if (!ignore) {
-                setActiveChannelName(channels[0]);
-            }
-        }
-        getActiveChannelName();
-        return () => { ignore = true; }
-    }, [formData, sessionManager]);
-
-    const databaseData = useSelector((state) => state.sessionManager.channelsManager.getChannelData(activeChannelName));
+    const databaseData = useSelector((state) => state.channelsData[activeChannelName]);
 
     var columnsJSON = [];
     var rowsJSON = [];

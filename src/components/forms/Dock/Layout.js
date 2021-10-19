@@ -10,7 +10,8 @@ export default function Layout(props) {
 
     const [layoutSettings] = React.useState({
         global: {
-            tabSetEnableTabStrip: false
+            tabSetEnableTabStrip: false,
+            borderEnableDrop: false
         },
         borders: [
             {
@@ -20,11 +21,13 @@ export default function Layout(props) {
                 "location": "top",
                 "children": [
                     {
+                        "enableDrag": false,
                         "type": "tab",
                         "name": "Меню",
                         "component": "menu",
                     },
                     {
+                        "enableDrag": false,
                         "type": "tab",
                         "name": "Программы",
                         "component": "programsplugin",
@@ -33,21 +36,25 @@ export default function Layout(props) {
             },
             {
                 "type": "border",
+                "enableDrop": "false",
                 "size": 300,
                 "minSize": 300,
                 "location": "left",
                 "children": [
                     {
+                        "enableDrag": false,
                         "type": "tab",
                         "name": "Параметры",
                         "component": "paramsplugin",
                     },
                     {
+                        "enableDrag": false,
                         "type": "tab",
                         "name": "Параметры презентации",
                         "component": "presparamsplugin",
                     },
                     {
+                        "enableDrag": false,
                         "type": "tab",
                         "name": "Презентации",
                         "component": "preslistplugin",

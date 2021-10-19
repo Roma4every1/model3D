@@ -1,12 +1,21 @@
 {
-  "title": "Welcome to react using react-i18next",
+  "title": "Добро пожаловать в react с использованием react-i18next",
   "base": {
     "cancel": "Отменить",
+    "error": "Что-то пошло не так.",
     "loading": "Загрузка...",
     "ok": "Ок",
     "parameters": "Параметры",
     "programs": "Программы",
     "run": "Запустить"
+  },
+  "flexlayout": {
+    "close": "Закрыть",
+    "error": "Ошибка при отрисовке компонента",
+    "hiddenTabs": "Скрытые вкладки",
+    "maximizeTabset": "Развернуть окно",
+    "move": "Переместить: ",
+    "restoreTabset": "Восстановить окно"
   },
   "menucommands": {
     "about": "О программе",
