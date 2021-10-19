@@ -9,6 +9,17 @@
     "increment": "Увеличить",
     "decrement": "Уменьшить"
   },
+  "daterangepicker": {
+    "swapStartEnd": "Поменять начало и конец",
+    "start": "Начало",
+    "end": "Конец"
+  },
+  "datetimepicker": {
+    "date": "Дата",
+    "time": "Время",
+    "cancel": "Отмена",
+    "set": "Применить"
+  },
   "dropdowns": {
     "nodata": "НЕТ ДАННЫХ.",
     "clear": "Очистить"
@@ -60,5 +71,13 @@
     "sortDescending": "По убыванию",
     "searchPlaceholder": "Искать",
     "filterCheckAll": "Выбрать всё"
+  },
+  "timepicker": {
+    "set": "Применить",
+    "cancel": "Отмена",
+    "now": "Сейчас",
+    "selectNow": "Выбрать сейчас",
+    "toggleTimeSelector": "Выбрать селектор времени",
+    "toggleClock": "Выбрать часы"
   }
 }

@@ -31,7 +31,7 @@ import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { getter } from "@progress/kendo-react-common";
 import { useTranslation } from 'react-i18next';
 import FormHeader from '../../FormHeader';
-import ruMessages from "../ru.json";
+import ruMessages from "../../locales/kendoUI/ru.json";
 load(
     likelySubtags,
     currencyData,

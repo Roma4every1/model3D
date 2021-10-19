@@ -7,7 +7,7 @@ import {
     loadMessages,
     LocalizationProvider,
 } from "@progress/kendo-react-intl";
-import ruMessages from "./ru.json";
+import ruMessages from "../locales/kendoUI/ru.json";
 import likelySubtags from "cldr-core/supplemental/likelySubtags.json";
 import currencyData from "cldr-core/supplemental/currencyData.json";
 import weekData from "cldr-core/supplemental/weekData.json";

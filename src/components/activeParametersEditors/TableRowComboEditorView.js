@@ -7,7 +7,7 @@ import {
     LocalizationProvider,
     loadMessages,
 } from "@progress/kendo-react-intl";
-import ruMessages from "./ru.json";
+import ruMessages from "../locales/kendoUI/ru.json";
 loadMessages(ruMessages, "ru");
 var _ = require("lodash");
 

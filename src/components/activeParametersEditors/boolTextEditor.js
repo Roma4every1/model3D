@@ -6,7 +6,7 @@ import {
     LocalizationProvider,
 } from "@progress/kendo-react-intl";
 import { Checkbox } from "@progress/kendo-react-inputs";
-import ruMessages from "./ru.json";
+import ruMessages from "../locales/kendoUI/ru.json";
 loadMessages(ruMessages, "ru-RU");
 
 
