@@ -61,7 +61,7 @@ export default function createChannelsManager(store) {
     const updateTables = async (modifiedTables) => {
         for (var channelName in allChannelsForms) {
             for (var formId in allChannelsForms[channelName]) {
-                if (allChannelsForms[channelName][formId] && modifiedTables?.includes(store.getState().channelsData[channelName].tableId)) {
+                if (allChannelsForms[channelName][formId] && store.getState().channelsData[channelName] && modifiedTables?.includes(store.getState().channelsData[channelName].tableId)) {
                     loadAllChannelData(channelName, formId, true);
                 }
             }

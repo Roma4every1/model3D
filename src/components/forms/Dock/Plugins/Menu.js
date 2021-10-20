@@ -29,7 +29,7 @@ export default function Menu() {
         sessionManager.loadSessionByDefault();
     }
 
-    let json = require('../../package.json');
+    let json = require('../../../../../package.json');
 
     return (
         <Toolbar style={{ padding: 1 }}>

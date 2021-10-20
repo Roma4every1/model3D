@@ -1,7 +1,7 @@
 ﻿import React, { Suspense } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import ErrorBoundary from './ErrorBoundary';
+import ErrorBoundary from './Form/ErrorBoundary';
 
 export default function Form(props) {
     const { t } = useTranslation();
@@ -36,7 +36,7 @@ export default function Form(props) {
         };
     }, [formData, sessionManager]);
 
-    const FormByType = React.lazy(() => import('./forms/' + capitalizeFirstLetter(formData.type)));
+    const FormByType = React.lazy(() => import('./' + capitalizeFirstLetter(formData.type)));
 
     return (
         <div>

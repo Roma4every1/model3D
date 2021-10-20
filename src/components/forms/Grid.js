@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import Form from '../Form';
+import Form from './Form';
 import FlexLayout from "flexlayout-react";
 import Container from './Grid/Container';
 var utils = require("../../utils");

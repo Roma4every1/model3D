@@ -4,10 +4,10 @@ import { DialogActionsBar } from "@progress/kendo-react-dialogs";
 import {
     Button
 } from "@progress/kendo-react-buttons";
-import FormParametersList from './FormParametersList';
+import FormParametersList from '../../../../common/FormParametersList';
 import { saveAs } from '@progress/kendo-file-saver';
 import { useTranslation } from 'react-i18next';
-var utils = require("../utils");
+var utils = require("../../../../../utils");
 
 export default function ProgramParametersList(props) {
     const { t } = useTranslation();

@@ -30,7 +30,7 @@ import timeZoneNames from "cldr-dates-full/main/ru/timeZoneNames.json";
 import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { getter } from "@progress/kendo-react-common";
 import { useTranslation } from 'react-i18next';
-import FormHeader from '../../FormHeader';
+import FormHeader from '../Form/FormHeader';
 import ruMessages from "../../locales/kendoUI/ru.json";
 load(
     likelySubtags,
@@ -239,6 +239,14 @@ export default function DataSetView(props) {
         }
     };
 
+    const selectAll = () => {
+        const newSelectedState = {};
+        tableData.rowsJSON.forEach((item) => {
+            newSelectedState[idGetter(item)] = true;
+        });
+        setSelectedState(newSelectedState);
+    };
+
     const otherButtons =
         <div>
             <button className="k-button k-button-clear" onClick={excelExport}>
@@ -258,6 +266,9 @@ export default function DataSetView(props) {
             </button>
             <button className="k-button k-button-clear" onClick={reload}>
                 <span className="k-icon k-i-reset" />
+            </button>
+            <button className="k-button k-button-clear" onClick={selectAll}>
+                <span className="k-icon k-i-select-all" />
             </button>
         </div>;
 

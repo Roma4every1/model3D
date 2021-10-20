@@ -6,7 +6,7 @@ import {
     Button
 } from "@progress/kendo-react-buttons";
 import ProgramParametersList from './ProgramParametersList';
-var utils = require("../utils");
+var utils = require("../../../../../utils");
 
 export default function ProgramButton(props) {
     const sessionManager = useSelector((state) => state.sessionManager);

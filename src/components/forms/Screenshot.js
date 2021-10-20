@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import FormHeader from '../FormHeader';
+import FormHeader from './Form/FormHeader';
 
 export default function Screenshot(props) {
     const { formData } = props;

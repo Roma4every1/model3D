@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import { useSelector } from 'react-redux';
 import { StackLayout } from "@progress/kendo-react-layout";
-import BaseEditor from './activeParametersEditors/BaseEditor';
+import BaseEditor from '../activeParametersEditors/BaseEditor';
 
 export default function ParametersList(props) {
     const paramsManager = useSelector((state) => state.sessionManager.paramsManager);

@@ -5,7 +5,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import ProgramButton from './ProgramButton';
 import { useTranslation } from 'react-i18next';
-var utils = require("../utils")
+var utils = require("../../../../../utils")
 
 export default function SqlProgramsList(props) {
     const { t } = useTranslation();

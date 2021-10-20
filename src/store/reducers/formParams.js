@@ -6,12 +6,17 @@ function formParams(state = [], action) {
     switch (action.type) {
         case SET:
             {
-                if (action.force) {
-                    delete (state[action.formId]);
+                var newState = [...action.value];
+                if (state[action.formId]) {
+                    for (var paramId in newState) {
+                        if (state[action.formId][paramId]) {
+                            newState[paramId] = state[action.formId][paramId]
+                        }
+                    }
                 }
                 return {
                     ...state,
-                    [action.formId]: action.value
+                    [action.formId]: newState
                 }
             }
         case ADD:

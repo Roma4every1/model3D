@@ -1,7 +1,7 @@
 ﻿import React from 'react';
-import PresentationList from '../../PresentationList';
-import FormParametersList from '../../FormParametersList';
-import Menu from '../../Menu';
+import PresentationList from './Plugins/PresentationList';
+import FormParametersList from '../../common/FormParametersList';
+import Menu from './Plugins/Menu';
 import FlexLayout from "flexlayout-react";
 
 export default function Layout(props) {

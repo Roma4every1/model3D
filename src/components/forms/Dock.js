@@ -1,8 +1,8 @@
 ﻿import React from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import Form from '../Form';
-import SqlProgramsList from '../SqlProgramsList';
+import Form from './Form';
+import SqlProgramsList from './Grid/Plugins/SqlPrograms/SqlProgramsList';
 import Layout from './Dock/Layout';
 
 export default function Dock(props) {

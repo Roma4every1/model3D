@@ -1,10 +1,10 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import setActiveChildren from '../store/actionCreators/setActiveChildren';
-import setOpenedChildren from '../store/actionCreators/setOpenedChildren';
+import setActiveChildren from '../../../../store/actionCreators/setActiveChildren';
+import setOpenedChildren from '../../../../store/actionCreators/setOpenedChildren';
 import RecursiveTreeView from './RecursiveTreeView';
 import { useTranslation } from 'react-i18next';
-var utils = require("../utils")
+var utils = require("../../../../utils")
 
 export default function PresentationList(props) {
     const { t } = useTranslation();
