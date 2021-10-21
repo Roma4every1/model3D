@@ -1,0 +1,31 @@
+{
+  "Dock": {
+    "menu": {
+      "type": "top",
+      "component": "Menu",
+      "label": "Меню"
+    },
+    "presentationList": {
+      "type": "left",
+      "component": "PresentationList",
+      "label": "Презентации"
+    },
+    "dockParametersList": {
+      "type": "left",
+      "component": "ParametersList",
+      "label": "Параметры"
+    }
+  },
+  "Grid": {
+    "sqlPrograms": {
+      "type": "top",
+      "component": "SqlPrograms/SqlProgramsList",
+      "label": "Программы"
+    },
+    "gridParametersList": {
+      "type": "left",
+      "component": "ParametersList",
+      "label": "Параметры презентации"
+    }
+  }
+}

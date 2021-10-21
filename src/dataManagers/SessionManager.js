@@ -3,6 +3,7 @@ import setSessionId from '../store/actionCreators/setSessionId';
 import setSessionManager from '../store/actionCreators/setSessionManager';
 import createChannelsManager from './ChannelsManager';
 import createParamsManager from './ParamsManager';
+import createPluginsManager from './PluginsManager';
 var utils = require("../utils");
 
 export default function createSessionManager(systemName, store) {
@@ -98,11 +99,13 @@ export default function createSessionManager(systemName, store) {
 
     const paramsManager = createParamsManager(store);
     const channelsManager = createChannelsManager(store);
+    const pluginsManager = createPluginsManager(store);
 
     const getSessionLoading = () => sessionLoading;
 
     store.dispatch(setSessionManager({
         paramsManager,
+        pluginsManager,
         channelsManager,
         saveSession,
         loadSessionByDefault,
