@@ -29,6 +29,8 @@ export default function Grid(props) {
 
     const [modelJson, setModelJson] = React.useState(null);
 
+    const layout = useSelector((state) => state.layout[formData.id]);
+
     const pushElement = (jsonToInsert, weight, formToPush) => {
         jsonToInsert.layout.children.push({
             "type": "tabset",
@@ -49,50 +51,55 @@ export default function Grid(props) {
 
     React.useEffect(() => {
         let ignore = false;
-        var newjson = {
-            global: {
-                rootOrientationVertical: false
-            },
-            borders: [],
-            layout: {
-                "type": "row",
-                "weight": 100,
-                "children": []
-            }
-        };
-        setModelJson(FlexLayout.Model.fromJson(newjson));
+        if (layout) {
+            setModelJson(FlexLayout.Model.fromJson(layout));
+        }
+        else {
+            var newjson = {
+                global: {
+                    rootOrientationVertical: false
+                },
+                borders: [],
+                layout: {
+                    "type": "row",
+                    "weight": 100,
+                    "children": []
+                }
+            };
+            setModelJson(FlexLayout.Model.fromJson(newjson));
 
-        if (sessionId) {
-            async function fetchData() {
-                const response = await utils.webFetch(`getFormLayout?sessionId=${sessionId}&formId=${formData.id}`);
-                const data = await response.json();
-                if (!ignore) {
-                    if (data.children) {
-                        newjson.global.rootOrientationVertical = data.vertical;
-                        if (openedForms) {
-                            data.children.forEach(layoutSettings => {
-                                var layoutSettingsId = layoutSettings.id;
-                                var openedFormWithLayout = openedForms.find(f => f.id === layoutSettingsId);
-                                if (layoutSettings && openedFormWithLayout) {
-                                    pushElement(newjson, layoutSettings.size, openedFormWithLayout);
+            if (sessionId) {
+                async function fetchData() {
+                    const response = await utils.webFetch(`getFormLayout?sessionId=${sessionId}&formId=${formData.id}`);
+                    const data = await response.json();
+                    if (!ignore) {
+                        if (data.children) {
+                            newjson.global.rootOrientationVertical = data.vertical;
+                            if (openedForms) {
+                                data.children.forEach(layoutSettings => {
+                                    var layoutSettingsId = layoutSettings.id;
+                                    var openedFormWithLayout = openedForms.find(f => f.id === layoutSettingsId);
+                                    if (layoutSettings && openedFormWithLayout) {
+                                        pushElement(newjson, layoutSettings.size, openedFormWithLayout);
+                                    }
+                                });
+                            }
+                        }
+                        else if (openedForms) {
+                            openedForms.forEach(openedForm => {
+                                if (openedForm) {
+                                    pushElement(newjson, 100 / openedForms.length, openedForm);
                                 }
                             });
                         }
+                        setModelJson(FlexLayout.Model.fromJson(newjson));
                     }
-                    else if (openedForms) {
-                        openedForms.forEach(openedForm => {
-                            if (openedForm) {
-                                pushElement(newjson, 100 / openedForms.length, openedForm);
-                            }
-                        });
-                    }
-                    setModelJson(FlexLayout.Model.fromJson(newjson));
                 }
+                fetchData();
             }
-            fetchData();
         }
         return () => { ignore = true; }
-    }, [sessionId, formData, openedForms]);
+    }, [sessionId, formData, openedForms, layout]);
 
     return (
         <div>

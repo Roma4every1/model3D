@@ -59,6 +59,7 @@ export default function Dock(props) {
     const [flexLayoutModel] = React.useState(FlexLayout.Model.fromJson(layoutSettings));
 
     const forms = [];
+    const dockforms = [];
 
     const factory = React.useCallback((node) => {
         var component = node.getComponent();
@@ -81,7 +82,11 @@ export default function Dock(props) {
                 </Suspense>
             </ErrorBoundary>);
         }
-        return <DockForm formId={formData.id} />;
+        if (!dockforms[formData.id]) {
+            let formToShow = <DockForm formId={formData.id} />;
+            dockforms[formData.id] = formToShow;
+        }
+        return dockforms[formData.id];
     }, [formData, t])
 
     return (

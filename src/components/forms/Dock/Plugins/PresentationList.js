@@ -15,11 +15,24 @@ export default function PresentationList(props) {
         formsJSON: [],
         loading: true
     });
+    const activeChild = useSelector((state) => state.childForms[formId].activeChildren[0]);
 
     const selectionChanged = (value) => {
         dispatch(setActiveChildren(formId, [value.item.id]));
         dispatch(setOpenedChildren(formId, [value.item.id]));
     };
+
+    const setActive = React.useCallback((presJSON) => {
+        if (presJSON.id === activeChild) {
+            presJSON.selected = true;
+            return true;
+        }
+        presJSON?.items?.forEach(item => {
+            if (setActive(item)) {
+                presJSON.expanded = true;
+            }
+        });
+    }, [activeChild]);
 
     React.useEffect(() => {
         let ignore = false;
@@ -28,6 +41,7 @@ export default function PresentationList(props) {
                 const response = await utils.webFetch(`presentationList?sessionId=${sessionId}&formId=${formId}`);
                 const data = await response.json();
                 if (!ignore) {
+                    setActive(data);
                     setState({
                         formsJSON: data,
                         loading: false
@@ -37,7 +51,7 @@ export default function PresentationList(props) {
             fetchData();
         }
         return () => { ignore = true; }
-    }, [sessionId, formId]);
+    }, [sessionId, formId, setActive]);
 
     return (
         <div>
