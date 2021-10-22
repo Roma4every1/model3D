@@ -5,11 +5,16 @@ import ErrorBoundary from './Form/ErrorBoundary';
 import FlexLayout from "flexlayout-react";
 import DockForm from './Dock/DockForm';
 import DockPluginForm from './Dock/DockPluginForm';
+import DockPluginStrip from './Dock/DockPluginStrip';
 
 export default function Dock(props) {
     const { t } = useTranslation();
     const sessionManager = useSelector((state) => state.sessionManager);
     const { formData } = props;
+
+    const capitalizeFirstLetter = (string) => {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
 
     React.useEffect(() => {
         sessionManager.getChildForms(formData.id);
@@ -28,6 +33,7 @@ export default function Dock(props) {
                 "size": 34,
                 "minSize": 34,
                 "location": "top",
+                "id": "topBorder",
                 "children": plugins.top
             },
             {
@@ -42,6 +48,7 @@ export default function Dock(props) {
             "type": "row",
             "children": [
                 {
+                    "id": "tabsettttt",
                     "type": "tabset",
                     "selected": 0,
                     "children": [
@@ -57,7 +64,6 @@ export default function Dock(props) {
     });
 
     const [flexLayoutModel] = React.useState(FlexLayout.Model.fromJson(layoutSettings));
-
     const forms = [];
     const dockforms = [];
 
@@ -82,12 +88,54 @@ export default function Dock(props) {
                 </Suspense>
             </ErrorBoundary>);
         }
+        else if (component === "strip") {
+            return <DockPluginStrip formId={formData.id} />;
+        }
         if (!dockforms[formData.id]) {
             let formToShow = <DockForm formId={formData.id} />;
             dockforms[formData.id] = formToShow;
         }
         return dockforms[formData.id];
-    }, [formData, t])
+    }, [formData, t, flexLayoutModel])
+
+   // const [formStripExist, setFormStripExist] = React.useState(false);
+    const activeChildId = useSelector((state) => state.childForms[formData.id]?.openedChildren[0]);
+    const activeSubChild = useSelector((state) => state.childForms[activeChildId]?.children.find(p => p.id === (state.childForms[activeChildId].activeChildren[0])));
+    if (activeSubChild) {
+        var pluginsForTypeExists = plugins.strip.some(el => el.component.form === capitalizeFirstLetter(activeSubChild.type));
+        if (pluginsForTypeExists) {
+        //if (!formStripExist && pluginsForTypeExists) {
+            flexLayoutModel.doAction(FlexLayout.Actions.renameTab("formStrip", t('formNames.' + activeSubChild.type)));
+            //flexLayoutModel.doAction(FlexLayout.Actions.addNode(
+            //    {
+            //        type: "tab",
+            //        component: {bla: "1"},
+            //        name: t('formNames.' + activeSubChild.type),
+            //        id: "formStrip"
+            //    },
+            //    "tabsettttt", FlexLayout.DockLocation.CENTER, 1));
+            //flexLayoutModel.doAction(FlexLayout.Actions.moveNode(
+            //    "tabsettttt", "topBorder", FlexLayout.DockLocation.CENTER, 3))
+           // setFormStripExist(true);
+        }
+        else {//if (formStripExist) {
+            flexLayoutModel.doAction(FlexLayout.Actions.renameTab("formStrip", ""));
+            //  flexLayoutModel.doAction(FlexLayout.Actions.deleteTab("formStrip"));
+        }
+        //else if (formStripExist && pluginsForTypeExists) {
+        //    flexLayoutModel.doAction(FlexLayout.Actions.renameTab("formStrip", t('formNames.' + activeSubChild.type)));
+        //}
+        //else if (formStripExist && !pluginsForTypeExists) {
+        //    flexLayoutModel.doAction(FlexLayout.Actions.renameTab("formStrip", ""));
+        //    // flexLayoutModel.doAction(FlexLayout.Actions.deleteTab("formStrip"));
+        //    setFormStripExist(false);
+        //}
+    }
+    else {//if (formStripExist) {
+        flexLayoutModel.doAction(FlexLayout.Actions.renameTab("formStrip", ""));
+      //  flexLayoutModel.doAction(FlexLayout.Actions.deleteTab("formStrip"));
+      //  setFormStripExist(false);
+    }
 
     return (
         <div>

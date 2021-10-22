@@ -17,12 +17,31 @@
     "move": "Move: ",
     "restoreTabset": "Restore tabset"
   },
+  "formNames": {
+    "carat": "Carat",
+    "chart": "Chart",
+    "dataSet": "Table",
+    "dock": "Application",
+    "files": "File",
+    "filesList": "Files",
+    "grid": "Presentation",
+    "image": "Image",
+    "map": "Map",
+    "modl3D": "3D model",
+    "profile": "Profile",
+    "slide": "Slide",
+    "spreadsheet": "Excel",
+    "spreadsheetUnite": "Excel"
+  },
   "menucommands": {
     "about": "About program",
     "loadsession": "Load session",
     "loadsessionbydefault": "Load session by default",
     "log": "Log",
     "savesession": "Save session"
+  },
+  "pluginNames": {
+    "exportToExcel": "Export to Excel"
   },
   "report": {
     "params": "Report parameters"

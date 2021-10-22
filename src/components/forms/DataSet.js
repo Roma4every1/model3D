@@ -1,11 +1,13 @@
 ﻿import React from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import DataSetView from "./DataSet/DataSetView";
+import setFormRefs from '../../store/actionCreators/setFormRefs';
 var _ = require("lodash");
 
-export default function DataSet(props) {
+function DataSet(props, ref) {
     const sessionManager = useSelector((state) => state.sessionManager);
     const { formData, channels } = props;
+    const dispatch = useDispatch();
     const [activeChannelName] = React.useState(channels[0]);
 
     const reload = React.useCallback(async () => {
@@ -89,9 +91,17 @@ export default function DataSet(props) {
         }
     }
 
+    const _viewRef = React.useRef(null);
+    React.useImperativeHandle(ref, () => ({
+        excelExport: () => {
+            _viewRef.current.excelExport();
+        }
+    }));
+      
     return (
         <div>
-            <DataSetView inputTableData={tableData} formData={formData} apply={apply} deleteRows={deleteRows} reload={reload} />
+            <DataSetView inputTableData={tableData} formData={formData} apply={apply} deleteRows={deleteRows} reload={reload} ref={_viewRef} />
         </div>
     );
 }
+export default DataSet = React.forwardRef(DataSet);

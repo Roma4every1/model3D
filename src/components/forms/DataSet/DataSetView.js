@@ -49,7 +49,7 @@ const SELECTED_FIELD = "js_selected";
 const EDIT_FIELD = "js_inEdit";
 const idGetter = getter(DATA_ITEM_KEY);
 
-export default function DataSetView(props) {
+function DataSetView(props, ref) {
     const { t } = useTranslation();
     const { inputTableData, formData, apply, deleteRows, reload } = props;
     const [rowAdding, setRowAdding] = React.useState(false);
@@ -97,6 +97,10 @@ export default function DataSetView(props) {
             _export.current.save();
         }
     };
+
+    React.useImperativeHandle(ref, () => ({
+        excelExport: excelExport
+    }));
 
     const onItemChange = (event) => {
         setEdited(true);
@@ -336,3 +340,4 @@ export default function DataSetView(props) {
         </div>
     );
 }
+export default DataSetView = React.forwardRef(DataSetView);

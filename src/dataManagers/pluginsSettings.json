@@ -27,5 +27,12 @@
       "component": "ParametersList",
       "label": "Параметры презентации"
     }
+  },
+  "DataSet": {
+    "exportToExcel": {
+      "type": "strip",
+      "component": "ExportToExcel",
+      "label": "Экспорт в Excel"
+    }
   }
 }

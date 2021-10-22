@@ -1,14 +1,17 @@
 ﻿import React, { Suspense } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from './Form/ErrorBoundary';
+import setFormRefs from '../../store/actionCreators/setFormRefs';
 
 export default function Form(props) {
     const { t } = useTranslation();
+    const dispatch = useDispatch();
     const sessionManager = useSelector((state) => state.sessionManager);
     const { formData } = props;
     const [activeChannels, setActiveChannels] = React.useState([]);
     const [activeParams, setActiveParams] = React.useState([]);
+    const _form = React.useRef(null);
 
     const capitalizeFirstLetter = (string) => {
         return string.charAt(0).toUpperCase() + string.slice(1);
@@ -38,11 +41,15 @@ export default function Form(props) {
 
     const FormByType = React.lazy(() => import('./' + capitalizeFirstLetter(formData.type)));
 
+    React.useLayoutEffect(() => {
+        dispatch(setFormRefs(formData.id, _form))
+    }, [formData])
+
     return (
         <div>
             <ErrorBoundary>
                 <Suspense fallback={<p><em>{t('base.loading')}</em></p>}>
-                    <FormByType formData={formData} channels={activeChannels} params={activeParams} />
+                    <FormByType formData={formData} channels={activeChannels} params={activeParams} ref={_form}/>
                 </Suspense>
             </ErrorBoundary>
         </div>

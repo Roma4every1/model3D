@@ -17,12 +17,31 @@
     "move": "Переместить: ",
     "restoreTabset": "Восстановить окно"
   },
+  "formNames": {
+    "carat": "Каротаж",
+    "chart": "График",
+    "dataSet": "Таблица",
+    "dock": "Приложение",
+    "files": "Файл",
+    "filesList": "Файлы",
+    "grid": "Презентация",
+    "image": "Изображение",
+    "map": "Карта",
+    "modl3D": "3D модель",
+    "profile": "Профиль",
+    "slide": "Слайд",
+    "spreadsheet": "Excel",
+    "spreadsheetUnite": "Excel"
+  },
   "menucommands": {
     "about": "О программе",
     "loadsession": "Загрузить сессию",
     "loadsessionbydefault": "Загрузить сессию по умолчанию",
     "log": "Лог",
     "savesession": "Сохранить сессию"
+  },
+  "pluginNames": {
+    "exportToExcel": "Экспорт в Excel"
   },
   "report": {
     "params": "Параметры отчёта"

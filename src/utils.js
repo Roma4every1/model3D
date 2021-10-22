@@ -14,3 +14,7 @@ export async function webFetch(request, params) {
         return await fetch(ReactServerPrePath + request)
     }
 }
+
+export const capitalizeFirstLetter = (string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
