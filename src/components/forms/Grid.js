@@ -23,7 +23,7 @@ export default function Grid(props) {
         if (!openedForms) {
             const formsData = form?.children;
             const openedData = form?.openedChildren;
-            setOpenedForms(openedData?.map(od => formsData?.find(p => p.id === (od))));
+            setOpenedForms(openedData?.map(od => formsData?.find(p => p.id === od)));
         }
     }, [form, formData, openedForms]);
 
@@ -31,21 +31,24 @@ export default function Grid(props) {
 
     const layout = useSelector((state) => state.layout[formData.id]);
 
-    const pushElement = (jsonToInsert, weight, formToPush) => {
+    const pushElement = (jsonToInsert, layout, formsToPush, activeIds) => {
         jsonToInsert.layout.children.push({
             "type": "tabset",
-            "weight": weight,
-            "children": [
-                {
+            "weight": layout.size,
+            "maximized": layout.maximized,
+            "selected": layout.selected,
+            "active": formsToPush.some(formToPush => activeIds.includes(formToPush.id)),
+            "children": formsToPush.map(formToPush => {
+                return {
                     "id": formToPush.id,
                     "type": "tab",
                     "name": formToPush.displayName,
                     "component": <Form
                         key={formToPush.id}
                         formData={formToPush}
-                    />,
+                    />
                 }
-            ]
+            })
         });
     }
 
@@ -77,10 +80,10 @@ export default function Grid(props) {
                             newjson.global.rootOrientationVertical = data.vertical;
                             if (openedForms) {
                                 data.children.forEach(layoutSettings => {
-                                    var layoutSettingsId = layoutSettings.id;
-                                    var openedFormWithLayout = openedForms.find(f => f.id === layoutSettingsId);
+                                    var layoutSettingsIds = layoutSettings.ids;
+                                    var openedFormWithLayout = openedForms.filter(f => layoutSettingsIds.includes(f.id));
                                     if (layoutSettings && openedFormWithLayout) {
-                                        pushElement(newjson, layoutSettings.size, openedFormWithLayout);
+                                        pushElement(newjson, layoutSettings, openedFormWithLayout, form.activeChildren);
                                     }
                                 });
                             }
@@ -88,7 +91,7 @@ export default function Grid(props) {
                         else if (openedForms) {
                             openedForms.forEach(openedForm => {
                                 if (openedForm) {
-                                    pushElement(newjson, 100 / openedForms.length, openedForm);
+                                    pushElement(newjson, 100 / openedForms.length, [openedForm], form.activeChildren);
                                 }
                             });
                         }
@@ -99,7 +102,7 @@ export default function Grid(props) {
             }
         }
         return () => { ignore = true; }
-    }, [sessionId, formData, openedForms, layout]);
+    }, [form, sessionId, formData, openedForms, layout]);
 
     return (
         <div>

@@ -5,7 +5,6 @@ import setActiveChildren from '../../../store/actionCreators/setActiveChildren';
 import setOpenedChildren from '../../../store/actionCreators/setOpenedChildren';
 import setFormLayout from '../../../store/actionCreators/setFormLayout';
 import FlexLayout from "flexlayout-react";
-var _ = require("lodash");
 
 export default function Container(props) {
     const { t } = useTranslation();
@@ -14,16 +13,14 @@ export default function Container(props) {
 
     const onModelChange = () => {
         var json = modelJson.toJson();
-        var opened = _.map(json.layout.children, (item) => item.children[0].id);
-        var active = _.map(_.filter(json.layout.children, (item) => item.active), (item) => item.children[0].id);
-        if (json.layout.children[0].type === "row") {
-            opened = _.map(json.layout.children[0].children, (item) => item.children[0].id);
-            active = _.map(_.filter(json.layout.children[0].children, (item) => item.active), (item) => item.children[0].id);
+        var childrenToAnalize = json.layout.children;
+        if (childrenToAnalize[0].type === "row") {
+            childrenToAnalize = childrenToAnalize[0].children;
         }
-
+        var opened = childrenToAnalize.flatMap(item => item.children.map(ch => ch.id));
+        var active = childrenToAnalize.filter(item => item.active && (item.selected || item.children.length === 1)).map(item => item.children[item.selected ?? 0].id);
         dispatch(setActiveChildren(props.formId, active));
         dispatch(setOpenedChildren(props.formId, opened));
-
         dispatch(setFormLayout(props.formId, json));
     }
 

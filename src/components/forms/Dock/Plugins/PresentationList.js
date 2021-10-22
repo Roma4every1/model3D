@@ -27,11 +27,13 @@ export default function PresentationList(props) {
             presJSON.selected = true;
             return true;
         }
-        presJSON?.items?.forEach(item => {
-            if (setActive(item)) {
-                presJSON.expanded = true;
-            }
-        });
+        if (presJSON.items) {
+            presJSON.items.forEach(item => {
+                if (setActive(item)) {
+                    presJSON.expanded = true;
+                }
+            });
+        }
     }, [activeChild]);
 
     React.useEffect(() => {

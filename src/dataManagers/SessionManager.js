@@ -15,7 +15,7 @@ export default function createSessionManager(systemName, store) {
         var data = await response.text();
         if (data === "false") {
             clearInterval(timerId);
-            alert("Сессия на сервере потеряна. В дальнейшем данные грузится не будут. Пожалуйста, обновите вкладку.");
+            alert("Сессия на сервере потеряна. В дальнейшем данные грузиться не будут. Пожалуйста, обновите вкладку.");
         }
     }
 
