@@ -6,7 +6,7 @@ import FlexLayout from "flexlayout-react";
 import Container from './Grid/Container';
 var utils = require("../../utils");
 
-export default function Grid(props) {
+function Grid(props, ref) {
     const { t } = useTranslation();
     const sessionManager = useSelector((state) => state.sessionManager);
     const sessionId = useSelector((state) => state.sessionId);
@@ -118,3 +118,4 @@ export default function Grid(props) {
             }
         </div>);
 }
+export default Grid = React.forwardRef(Grid);

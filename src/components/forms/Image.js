@@ -1,5 +1,7 @@
-﻿import Screenshot from './Screenshot';
+﻿import React from 'react';
+import Screenshot from './Screenshot';
 
-export default function Image(props) {
+function Image(props, ref) {
     return Screenshot(props);
 }
+export default Image = React.forwardRef(Image);

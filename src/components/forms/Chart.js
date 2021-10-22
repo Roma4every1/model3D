@@ -1,5 +1,7 @@
-﻿import Screenshot from './Screenshot';
+﻿import React from 'react';
+import Screenshot from './Screenshot';
 
-export default function Chart(props) {
+function Chart(props, ref) {
     return Screenshot(props);
 }
+export default Chart = React.forwardRef(Chart);

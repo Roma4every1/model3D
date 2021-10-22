@@ -1,5 +1,7 @@
-﻿import Screenshot from './Screenshot';
+﻿import React from 'react';
+import Screenshot from './Screenshot';
 
-export default function Files(props) {
+function Files(props, ref) {
     return Screenshot(props);
 }
+export default Files = React.forwardRef(Files);

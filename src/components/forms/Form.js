@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from './Form/ErrorBoundary';
 import setFormRefs from '../../store/actionCreators/setFormRefs';
+import { capitalizeFirstLetter } from '../../utils';
 
 export default function Form(props) {
     const { t } = useTranslation();
@@ -12,10 +13,6 @@ export default function Form(props) {
     const [activeChannels, setActiveChannels] = React.useState([]);
     const [activeParams, setActiveParams] = React.useState([]);
     const _form = React.useRef(null);
-
-    const capitalizeFirstLetter = (string) => {
-        return string.charAt(0).toUpperCase() + string.slice(1);
-    }
 
     React.useEffect(() => {
         let ignore = false;
@@ -43,7 +40,7 @@ export default function Form(props) {
 
     React.useLayoutEffect(() => {
         dispatch(setFormRefs(formData.id, _form))
-    }, [formData])
+    }, [formData, dispatch])
 
     return (
         <div>

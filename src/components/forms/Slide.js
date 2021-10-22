@@ -1,5 +1,7 @@
-﻿import Screenshot from './Screenshot';
+﻿import React from 'react';
+import Screenshot from './Screenshot';
 
-export default function Slide(props) {
+function Slide(props, ref) {
     return Screenshot(props);
 }
+export default Slide = React.forwardRef(Slide);

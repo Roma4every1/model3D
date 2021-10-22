@@ -1,5 +1,7 @@
-﻿import Screenshot from './Screenshot';
+﻿import React from 'react';
+import Screenshot from './Screenshot';
 
-export default function Profile(props) {
+function Profile(props, ref) {
     return Screenshot(props);
 }
+export default Profile = React.forwardRef(Profile);

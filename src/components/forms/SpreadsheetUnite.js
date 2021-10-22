@@ -1,5 +1,7 @@
-﻿import Screenshot from './Screenshot';
+﻿import React from 'react';
+import Screenshot from './Screenshot';
 
-export default function SpreadsheetUnite(props) {
+function SpreadsheetUnite(props, ref) {
     return Screenshot(props);
 }
+export default SpreadsheetUnite = React.forwardRef(SpreadsheetUnite);

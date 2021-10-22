@@ -1,6 +1,5 @@
 ﻿import setPlugins from "../store/actionCreators/setPlugins";
 import pluginsSettings from "./pluginsSettings.json";
-import i18n from '../i18n';
 
 export default function createPluginsManager(store) {
 

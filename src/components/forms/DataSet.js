@@ -1,13 +1,11 @@
 ﻿import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import DataSetView from "./DataSet/DataSetView";
-import setFormRefs from '../../store/actionCreators/setFormRefs';
 var _ = require("lodash");
 
 function DataSet(props, ref) {
     const sessionManager = useSelector((state) => state.sessionManager);
     const { formData, channels } = props;
-    const dispatch = useDispatch();
     const [activeChannelName] = React.useState(channels[0]);
 
     const reload = React.useCallback(async () => {

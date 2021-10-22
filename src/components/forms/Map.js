@@ -1,5 +1,7 @@
-﻿import Screenshot from './Screenshot';
+﻿import React from 'react';
+import Screenshot from './Screenshot';
 
-export default function Map(props) {
+function Map(props, ref) {
     return Screenshot(props);
 }
+export default Map = React.forwardRef(Map);

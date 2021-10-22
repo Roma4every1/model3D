@@ -1,5 +1,7 @@
-﻿import Screenshot from './Screenshot';
+﻿import React from 'react';
+import Screenshot from './Screenshot';
 
-export default function Carat(props) {
+function Carat(props, ref) {
     return Screenshot(props);
 }
+export default Carat = React.forwardRef(Carat);

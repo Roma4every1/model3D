@@ -125,11 +125,20 @@ export default function createChannelsManager(store) {
         return changed;
     }
 
+    const updateTablesByResult = (tableId, operationResult) => {
+        if (operationResult.success) {
+            updateTables([tableId, ...operationResult.modifiedTables]);
+        }
+        else {
+            alert("Ошибка сервера при сохранении изменений в таблице. Подробности см. в логе сервера.");
+        }
+    }
+
     const insertRow = async (tableId, dataJSON) => {
         const sessionId = store.getState().sessionId;
         const response = await utils.webFetch(`insertRow?sessionId=${sessionId}&tableId=${tableId}&rowData=${dataJSON}`);
-        const modifiedTables = await response.json();
-        updateTables([tableId, ...modifiedTables.modifiedTables]);
+        const operationResult = await response.json();
+        updateTablesByResult(tableId, operationResult);
     }
 
     const updateRow = async (tableId, editID, newRowData) => {
@@ -141,15 +150,15 @@ export default function createChannelsManager(store) {
                 method: 'POST',
                 body: jsonToSendString
             });
-        const modifiedTables = await response.json();
-        updateTables([tableId, ...modifiedTables.modifiedTables]);
+        const operationResult = await response.json();
+        updateTablesByResult(tableId, operationResult);
     }
 
     const deleteRow = async (tableId, elementsToRemove) => {
         const sessionId = store.getState().sessionId;
         const response = await utils.webFetch(`removeRows?sessionId=${sessionId}&tableId=${tableId}&rows=${elementsToRemove}`);
-        const modifiedTables = await response.json();
-        updateTables([tableId, ...modifiedTables.modifiedTables]);
+        const operationResult = await response.json();
+        updateTablesByResult(tableId, operationResult);
     }
 
     store.subscribe(() => {
