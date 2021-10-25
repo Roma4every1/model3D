@@ -4,4 +4,4 @@ import Screenshot from './Screenshot';
 function Map(props, ref) {
     return Screenshot(props);
 }
-export default Map = React.forwardRef(Map);
+export default Map = React.forwardRef(Map); // eslint-disable-line

@@ -118,4 +118,4 @@ function Grid(props, ref) {
             }
         </div>);
 }
-export default Grid = React.forwardRef(Grid);
+export default Grid = React.forwardRef(Grid); // eslint-disable-line

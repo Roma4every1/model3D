@@ -4,4 +4,4 @@ import Screenshot from './Screenshot';
 function Chart(props, ref) {
     return Screenshot(props);
 }
-export default Chart = React.forwardRef(Chart);
+export default Chart = React.forwardRef(Chart); // eslint-disable-line

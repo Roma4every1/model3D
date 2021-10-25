@@ -97,22 +97,25 @@ function Dock(props, ref) {
 
     const activeChildId = useSelector((state) => state.childForms[formData.id]?.openedChildren[0]);
     const activeSubChild = useSelector((state) => state.childForms[activeChildId]?.children.find(p => p.id === (state.childForms[activeChildId].activeChildren[0])));
-    if (activeSubChild) {
-        var pluginsForTypeExists = plugins.strip.some(el => el.component.form === capitalizeFirstLetter(activeSubChild.type));
-        if (pluginsForTypeExists) {
-            flexLayoutModel.doAction(FlexLayout.Actions.renameTab("formStrip", t('formNames.' + activeSubChild.type)));
+
+    React.useEffect(() => {
+        if (activeSubChild) {
+            var pluginsForTypeExists = plugins.strip.some(el => el.component.form === capitalizeFirstLetter(activeSubChild.type));
+            if (pluginsForTypeExists) {
+                flexLayoutModel.doAction(FlexLayout.Actions.renameTab("formStrip", t('formNames.' + activeSubChild.type)));
+            }
+            else {
+                flexLayoutModel.doAction(FlexLayout.Actions.renameTab("formStrip", ""));
+            }
         }
         else {
             flexLayoutModel.doAction(FlexLayout.Actions.renameTab("formStrip", ""));
         }
-    }
-    else {
-        flexLayoutModel.doAction(FlexLayout.Actions.renameTab("formStrip", ""));
-    }
+    }, [flexLayoutModel, activeSubChild, formData, sessionManager, plugins, t]);
 
     return (
         <div>
             <FlexLayout.Layout model={flexLayoutModel} factory={factory} />
         </div>);
 }
-export default Dock = React.forwardRef(Dock);
+export default Dock = React.forwardRef(Dock); // eslint-disable-line

@@ -4,4 +4,4 @@ import Screenshot from './Screenshot';
 function Carat(props, ref) {
     return Screenshot(props);
 }
-export default Carat = React.forwardRef(Carat);
+export default Carat = React.forwardRef(Carat); // eslint-disable-line

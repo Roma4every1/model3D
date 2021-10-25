@@ -10,13 +10,13 @@ export default function DockPluginStrip(props) {
     const { formId } = props;
     const activeChildId = useSelector((state) => state.childForms[formId].openedChildren[0]);
     const activeSubChild = useSelector((state) => state.childForms[activeChildId]?.children.find(p => p.id === (state.childForms[activeChildId].activeChildren[0])));
-    const pluginsByType = useSelector((state) => state.layout["plugins"].strip.filter(el => el.component.form === capitalizeFirstLetter(activeSubChild.type)));
+    const pluginsByType = useSelector((state) => state.layout["plugins"].strip.filter(el => el.component.form === capitalizeFirstLetter(activeSubChild?.type)));
 
     if (activeSubChild) {
         return <Toolbar style={{ padding: 1 }}>
             {pluginsByType.map(p => {
                 let LoadFormByType = React.lazy(() => import('../' + p.component.form + '/Plugins/' + p.component.path));
-                return (<ErrorBoundary>
+                return (<ErrorBoundary key={p.component.id}>
                     <Suspense fallback={<p><em>{t('base.loading')}</em></p>}>
                         <LoadFormByType formId={activeSubChild.id} />
                     </Suspense>

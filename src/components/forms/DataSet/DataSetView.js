@@ -340,4 +340,4 @@ function DataSetView(props, ref) {
         </div>
     );
 }
-export default DataSetView = React.forwardRef(DataSetView);
+export default DataSetView = React.forwardRef(DataSetView); // eslint-disable-line
