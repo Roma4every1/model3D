@@ -9,7 +9,7 @@ export default function ExportToExcel(props) {
     const formRef = useSelector((state) => state.formRefs[formId]);
 
     const exportToExcel = () => {
-        formRef.current.excelExport();
+        formRef.current.ref.excelExport();
     };
 
     return <Button className="actionbutton" onClick={exportToExcel}>

@@ -52,6 +52,25 @@ function Grid(props, ref) {
         });
     }
 
+    const correctElement = React.useCallback((layout, forms, activeIds) => {
+        if (layout.type === "tabset") {
+            layout.active = layout.children.some(child => activeIds.includes(child.id))
+        }
+        else if (layout.type === "tab") {
+            var form = forms.find(f => f.id === layout.id);
+            if (form) {
+                layout.name = form.displayName;
+                layout.component = <Form
+                    key={form.id}
+                    formData={form}
+                />
+            }
+        }
+        if (layout.children) {
+            layout.children.forEach(child => correctElement(child, forms, activeIds));
+        }
+    }, []);
+
     React.useEffect(() => {
         let ignore = false;
         if (layout) {
@@ -76,17 +95,9 @@ function Grid(props, ref) {
                     const response = await utils.webFetch(`getFormLayout?sessionId=${sessionId}&formId=${formData.id}`);
                     const data = await response.json();
                     if (!ignore) {
-                        if (data.children) {
-                            newjson.global.rootOrientationVertical = data.vertical;
-                            if (openedForms) {
-                                data.children.forEach(layoutSettings => {
-                                    var layoutSettingsIds = layoutSettings.ids;
-                                    var openedFormWithLayout = openedForms.filter(f => layoutSettingsIds.includes(f.id));
-                                    if (layoutSettings && openedFormWithLayout) {
-                                        pushElement(newjson, layoutSettings, openedFormWithLayout, form.activeChildren);
-                                    }
-                                });
-                            }
+                        if (data.layout && data.layout.children && openedForms) {
+                            correctElement(data.layout, openedForms, form.activeChildren);
+                            setModelJson(FlexLayout.Model.fromJson(data));
                         }
                         else if (openedForms) {
                             openedForms.forEach(openedForm => {
@@ -94,15 +105,15 @@ function Grid(props, ref) {
                                     pushElement(newjson, 100 / openedForms.length, [openedForm], form.activeChildren);
                                 }
                             });
+                            setModelJson(FlexLayout.Model.fromJson(newjson));
                         }
-                        setModelJson(FlexLayout.Model.fromJson(newjson));
                     }
                 }
                 fetchData();
             }
         }
         return () => { ignore = true; }
-    }, [form, sessionId, formData, openedForms, layout]);
+    }, [form, sessionId, formData, openedForms, layout, correctElement]);
 
     return (
         <div>

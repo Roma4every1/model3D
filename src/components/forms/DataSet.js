@@ -91,11 +91,9 @@ function DataSet(props, ref) {
 
     const _viewRef = React.useRef(null);
     React.useImperativeHandle(ref, () => ({
-        excelExport: () => {
-            _viewRef.current.excelExport();
-        }
+        ref: _viewRef.current
     }));
-      
+
     return (
         <div>
             <DataSetView inputTableData={tableData} formData={formData} apply={apply} deleteRows={deleteRows} reload={reload} ref={_viewRef} />
