@@ -34,8 +34,10 @@ function formParams(state = [], action) {
                 const clear = (clearElementId) => {
                     newParamsUpdateForm.forEach(element => {
                         if (element.dependsOn?.includes(clearElementId)) {
-                            element.value = null;
-                            clear(element.id);
+                            if (element.value) {
+                                element.value = null;
+                                clear(element.id);
+                            }
                         }
                     });
                 }

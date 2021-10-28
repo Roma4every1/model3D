@@ -45,7 +45,6 @@ function Dock(props, ref) {
             "type": "row",
             "children": [
                 {
-                    "id": "tabsettttt",
                     "type": "tabset",
                     "selected": 0,
                     "children": [
