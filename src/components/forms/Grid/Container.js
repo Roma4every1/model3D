@@ -11,14 +11,30 @@ export default function Container(props) {
     const dispatch = useDispatch();
     const { modelJson } = props;
 
+    const getOpenedChidren = (layout, list) => {
+        if (layout.type === "tabset") {
+            layout.children.forEach(child => list.push(child.id));
+        }
+        if (layout.children) {
+            layout.children.forEach(child => getOpenedChidren(child, list));
+        }
+    }
+
+    const getActiveChidren = (layout, list) => {
+        if (layout.type === "tabset" && layout.active && (layout.selected || layout.children.length === 1)) {
+            list.push(layout.children[layout.selected ?? 0].id);
+        }
+        if (layout.children) {
+            layout.children.forEach(child => getActiveChidren(child, list));
+        }
+    }
+
     const onModelChange = () => {
         var json = modelJson.toJson();
-        var childrenToAnalize = json.layout.children;
-        if (childrenToAnalize[0].type === "row") {
-            childrenToAnalize = childrenToAnalize[0].children;
-        }
-        var opened = childrenToAnalize.flatMap(item => item.children.map(ch => ch.id));
-        var active = childrenToAnalize.filter(item => item.active && (item.selected || item.children.length === 1)).map(item => item.children[item.selected ?? 0].id);
+        var opened = [];
+        var active = [];
+        getOpenedChidren(json.layout, opened);
+        getActiveChidren(json.layout, active);
         dispatch(setActiveChildren(props.formId, active));
         dispatch(setOpenedChildren(props.formId, opened));
         dispatch(setFormLayout(props.formId, json));
