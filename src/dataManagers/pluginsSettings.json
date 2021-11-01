@@ -33,6 +33,11 @@
       "type": "strip",
       "component": "ExportToExcel",
       "label": "Экспорт в Excel"
+    },
+    "selectAllRec": {
+      "type": "strip",
+      "component": "SelectAllRec",
+      "label": "Выделить все"
     }
   }
 }

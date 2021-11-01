@@ -42,7 +42,8 @@
     "savesessiontofile": "Сохранить сессию в файл"
   },
   "pluginNames": {
-    "exportToExcel": "Экспорт в Excel"
+    "exportToExcel": "Экспорт в Excel",
+    "selectAllRec": "Выделить все"
   },
   "report": {
     "params": "Параметры отчёта"

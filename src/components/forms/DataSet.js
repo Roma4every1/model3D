@@ -91,7 +91,12 @@ function DataSet(props, ref) {
 
     const _viewRef = React.useRef(null);
     React.useImperativeHandle(ref, () => ({
-        ref: _viewRef.current
+        excelExport: () => {
+            _viewRef.current.excelExport();
+        },
+        selectAll: () => {
+            _viewRef.current.selectAll();
+        }
     }));
 
     return (

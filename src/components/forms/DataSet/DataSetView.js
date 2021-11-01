@@ -98,10 +98,6 @@ function DataSetView(props, ref) {
         }
     };
 
-    React.useImperativeHandle(ref, () => ({
-        excelExport: excelExport
-    }));
-
     const onItemChange = (event) => {
         setEdited(true);
         const editedItemID = idGetter(event.dataItem);
@@ -251,6 +247,11 @@ function DataSetView(props, ref) {
         setSelectedState(newSelectedState);
     };
 
+    React.useImperativeHandle(ref, () => ({
+        excelExport: excelExport,
+        selectAll: selectAll
+    }));
+
     const otherButtons =
         <div>
             <button className="k-button k-button-clear" onClick={excelExport}>
@@ -270,9 +271,6 @@ function DataSetView(props, ref) {
             </button>
             <button className="k-button k-button-clear" onClick={reload}>
                 <span className="k-icon k-i-reset" />
-            </button>
-            <button className="k-button k-button-clear" onClick={selectAll}>
-                <span className="k-icon k-i-select-all" />
             </button>
         </div>;
 
