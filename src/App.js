@@ -9,6 +9,7 @@ import SessionLoader from './components/SessionLoader';
 
 export default function App() {
     createSessionManager('DEMO_SYSTEM', store);
+ //   createSessionManager('OPR_REG_SYSTEM_CONS', store);
 
     return (
         <Provider store={store}>

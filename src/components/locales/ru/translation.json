@@ -35,10 +35,11 @@
   },
   "menucommands": {
     "about": "О программе",
-    "loadsession": "Загрузить сессию",
     "loadsessionbydefault": "Загрузить сессию по умолчанию",
+    "loadsessionfromfile": "Загрузить сессию из файла",
     "log": "Лог",
-    "savesession": "Сохранить сессию"
+    "savesession": "Сохранить сессию",
+    "savesessiontofile": "Сохранить сессию в файл"
   },
   "pluginNames": {
     "exportToExcel": "Экспорт в Excel"

@@ -67,6 +67,9 @@ export default function createSessionManager(systemName, store) {
         }
     }
 
+    const saveSessionToFile = async () => {
+    }
+
     const stopSession = async () => {
         var response = await utils.webFetch(`stopSession`,
             {
@@ -76,6 +79,23 @@ export default function createSessionManager(systemName, store) {
         var data = await response.text();
         if (data === "false") {
             alert("Ошибка при остановке сессии. Подробности см. в логе сервера.");
+        }
+    }
+
+    const loadSessionFromFile = async (file) => {
+        stopSession();
+        sessionLoading = true;
+        let reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = async function () {
+            const response = await utils.webFetch(`startSessionFromFile`,
+                {
+                    method: 'POST',
+                    body: reader.result
+                });
+            const data = await response.text();
+            sessionLoading = false;
+            store.dispatch(setSessionId(data));
         }
     }
 
@@ -108,7 +128,9 @@ export default function createSessionManager(systemName, store) {
         pluginsManager,
         channelsManager,
         saveSession,
+        saveSessionToFile,
         loadSessionByDefault,
+        loadSessionFromFile,
         getSessionLoading,
         getChildForms
     }));

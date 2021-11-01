@@ -35,10 +35,11 @@
   },
   "menucommands": {
     "about": "About program",
-    "loadsession": "Load session",
     "loadsessionbydefault": "Load session by default",
+    "loadsessionfromfile": "Load session from file",
     "log": "Log",
-    "savesession": "Save session"
+    "savesession": "Save session",
+    "savesessiontofile": "Save session to file"
   },
   "pluginNames": {
     "exportToExcel": "Export to Excel"
