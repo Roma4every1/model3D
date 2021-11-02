@@ -315,7 +315,10 @@ function DataSetView(props, ref) {
                             editField={EDIT_FIELD}
                             selectedField={SELECTED_FIELD}
                             selectable={{
-                                enabled: true
+                                enabled: true,
+                                drag: true,
+                                cell: false,
+                                //mode: 'single'
                             }}
                             onSelectionChange={onSelectionChange}
                             onKeyDown={onKeyDown}
