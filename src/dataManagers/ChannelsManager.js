@@ -83,6 +83,9 @@ export default function createChannelsManager(store) {
             channelsParamsValues[channelName] = neededParamValues.map(np => np.value);
 
             const channelData = await loadChannelData(channelName, neededParamValues);
+            if (channelData && channelData.data && channelData.data.ModifiedTables && channelData.data.ModifiedTables.ModifiedTables) {
+                updateTables(channelData.data.ModifiedTables.ModifiedTables);
+            }
             let idIndex = 0;
             let nameIndex = 0;
             if (channelData && channelData.properties) {
