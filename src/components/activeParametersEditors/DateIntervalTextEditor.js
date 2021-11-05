@@ -57,7 +57,7 @@ export default function DateIntervalTextEditor(props) {
         const startYwmw = 6;
         const startMwmw = 3;
         const startDwmw = 0;
-        if ((str !== undefined) && (str.indexOf(' - ') >= 0)) {
+        if (str && (str.indexOf(' - ') >= 0)) {
             //init for wmw format
             let dtLength = str.indexOf(' - ');
             let secondPos = dtLength + 3;
