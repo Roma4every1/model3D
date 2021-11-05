@@ -5,7 +5,12 @@ export default function Screenshot(props) {
     const { formData } = props;
 
     const getImagePath = (formType) => {
-        return process.env.PUBLIC_URL + '/images/' + formType + '.PNG';
+        if (process.env.PUBLIC_URL) {
+            return process.env.PUBLIC_URL + '/images/' + formType + '.PNG';
+        }
+        else {
+            return '/images/' + formType + '.PNG';
+        }
     }
 
     return (
