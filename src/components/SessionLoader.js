@@ -1,6 +1,7 @@
 ﻿import React from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import WindowHandler from './common/WindowHandler';
 import Form from './forms/Form';
 var utils = require("../utils")
 
@@ -28,16 +29,17 @@ export default function SessionLoader() {
     }, [sessionId]);
 
     return (
-            <div>
+        <div>
+            <WindowHandler />
             {(!formData) || (sessionLoading)
-                    ? <p><em>{t('session.loading')}</em></p>
-                    : <div>
-                        <Form
-                            key="root"
-                            formData={formData}
-                        />
-                    </div>
-                }
-            </div>
+                ? <p><em>{t('session.loading')}</em></p>
+                : <div>
+                    <Form
+                        key="root"
+                        formData={formData}
+                    />
+                </div>
+            }
+        </div>
     );
 }

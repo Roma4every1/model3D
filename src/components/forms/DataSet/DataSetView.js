@@ -15,7 +15,6 @@ import {
     LocalizationProvider,
     loadMessages,
 } from "@progress/kendo-react-intl";
-import { BaseCell } from "./Cells/BaseCell";
 import { ExcelExport } from '@progress/kendo-react-excel-export';
 import { process } from "@progress/kendo-data-query";
 import calculateSize from "calculate-size";
@@ -192,7 +191,7 @@ function DataSetView(props, ref) {
         if (column.lookupData) {
             return {
                 type: "lookup",
-                value: column.lookupData
+                values: column.lookupData
             }
         }
         switch (column.netType) {
@@ -279,6 +278,7 @@ function DataSetView(props, ref) {
         }));
         setTableData({ rowsJSON: newData, columnsJSON: tableData.columnsJSON });
         setEditField(field);
+        setEditID(idGetter(dataItem));
     };
 
     const exitEdit = () => {
@@ -291,6 +291,7 @@ function DataSetView(props, ref) {
         <CellRender
             originalProps={props}
             td={td}
+            editor={getEditorType(tableData.columnsJSON[props.columnIndex])}
             enterEdit={enterEdit}
             editField={editField}
         />
@@ -362,7 +363,6 @@ function DataSetView(props, ref) {
                                     field={column.field}
                                     title={column.headerName}
                                     width={calculateWidth(column.headerName, column.field)}
-                                    editor={getEditorType(column)}
                                     format={getFormat(column)}
                                     columnMenu={GridColumnMenuFilter}
                                 />

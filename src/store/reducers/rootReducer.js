@@ -7,6 +7,7 @@ import formParams from './formParams';
 import layout from './layout';
 import sessionId from './sessionId';
 import sessionManager from './sessionManager';
+import windowData from './windowData';
 
 const rootReducer = combineReducers({
     canRunReport,
@@ -16,7 +17,8 @@ const rootReducer = combineReducers({
     formParams,
     layout,
     sessionId,
-    sessionManager
+    sessionManager,
+    windowData
 });
 
 export default rootReducer;

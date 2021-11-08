@@ -32,7 +32,10 @@ export default function ProgramParametersList(props) {
                 body: jsonToSendString
             });
         const resultJson = await response.json();
-        if (resultJson.resultPath) {
+        if (resultJson.WrongResult) {
+            alert("Ошибка сервера при выполнении программы. Подробности см. в логе сервера.");
+        }
+        if (resultJson.ReportResult) {
             const result = await utils.webFetch(`downloadResource?resourceName=${resultJson.resultPath}&sessionId=${sessionId}`);
             const resultText = await result.text();
             const fileExactName = resultJson.resultPath.split('\\').pop().split('/').pop();

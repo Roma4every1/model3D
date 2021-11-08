@@ -129,8 +129,8 @@ export default function createChannelsManager(store) {
     }
 
     const updateTablesByResult = (tableId, operationResult) => {
-        if (operationResult.success) {
-            updateTables([tableId, ...operationResult.modifiedTables]);
+        if (!operationResult.WrongResult) {
+            updateTables([tableId, ...operationResult?.ModifiedTables?.ModifiedTables]);
         }
         else {
             alert("Ошибка сервера при сохранении изменений в таблице. Подробности см. в логе сервера.");
