@@ -11,6 +11,8 @@
 /dist
 
 # misc
+/.vs
+/.vscode
 .DS_Store
 .env.local
 .env.development.local
