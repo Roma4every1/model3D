@@ -30,6 +30,7 @@ import timeZoneNames from "cldr-dates-full/main/ru/timeZoneNames.json";
 import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { getter } from "@progress/kendo-react-common";
 import { useTranslation } from 'react-i18next';
+import { CellRender, RowRender } from "./renderers";
 import FormHeader from '../Form/FormHeader';
 import ruMessages from "../../locales/kendoUI/ru.json";
 load(
@@ -59,6 +60,7 @@ function DataSetView(props, ref) {
         columnsJSON: []
     });
     const [dataState, setDataState] = React.useState();
+    const [editField, setEditField] = React.useState(undefined);
     const [editID, setEditID] = React.useState(null);
     const [selectedState, setSelectedState] = React.useState({});
     const _export = React.useRef(null);
@@ -70,10 +72,6 @@ function DataSetView(props, ref) {
 
     const handleDeleteDialogClose = () => {
         setDeleteDialogOpen(false);
-    };
-
-    const rowDoubleClick = (event) => {
-        setEditID(idGetter(event.dataItem));
     };
 
     const rowClick = (event) => {
@@ -274,71 +272,108 @@ function DataSetView(props, ref) {
             </button>
         </div>;
 
-    return (
-        <div>
-            <LocalizationProvider language="ru-RU">
-                <IntlProvider locale="ru">
-                    {deleteDialogOpen && (
-                        <Dialog title={t('table.deleteRowsHeader')} onClose={handleDeleteDialogClose}>
-                            <p
-                                style={{
-                                    margin: "25px",
-                                    textAlign: "center",
-                                }}
-                            >
-                                {t('table.areYouSureToDeleteRows', { count: _.countBy(Object.keys(selectedState), o => selectedState[o]).true })}
-                            </p>
-                            <DialogActionsBar>
-                                <Button className="actionbutton" primary={true} onClick={() => { handleDeleteDialogClose(); deleteSelectedRows(); }}>
-                                    {t('base.ok')}
-                                </Button>
-                                <Button className="actionbutton" onClick={handleDeleteDialogClose}>
-                                    {t('base.cancel')}
-                                </Button>
-                            </DialogActionsBar>
-                        </Dialog>
-                    )}
-                    <FormHeader formData={formData} additionalButtons={otherButtons} />
-                    <ExcelExport data={dataToShow.data} ref={_export}>
-                        <Grid
-                            resizable={true}
-                            sortable={true}
-                            data={dataToShow}
-                            {...dataState}
-                            onDataStateChange={(e) => {
-                                setDataState(e.dataState);
-                            }}
-                            onRowDoubleClick={rowDoubleClick}
-                            onRowClick={rowClick}
-                            onItemChange={onItemChange}
-                            dataItemKey={DATA_ITEM_KEY}
-                            editField={EDIT_FIELD}
-                            selectedField={SELECTED_FIELD}
-                            selectable={{
-                                enabled: true,
-                                drag: true,
-                                cell: false,
-                                //mode: 'single'
-                            }}
-                            onSelectionChange={onSelectionChange}
-                            onKeyDown={onKeyDown}
-                        >
-                            {tableData.columnsJSON.map(column => <Column
-                                key={column.field}
-                                field={column.field}
-                                title={column.headerName}
-                                width={calculateWidth(column.headerName, column.field)}
-                                editor={getEditorType(column)}
-                                format={getFormat(column)}
-                                cell={BaseCell}
-                                columnMenu={GridColumnMenuFilter}
-                            />
-                            )}
-                        </Grid>
-                    </ExcelExport>
-                </IntlProvider>
-            </LocalizationProvider>
-        </div>
+    const enterEdit = (dataItem, field) => {
+        const newData = tableData.rowsJSON.map((item) => ({
+            ...item,
+            [EDIT_FIELD]: idGetter(item) === idGetter(dataItem)
+        }));
+        setTableData({ rowsJSON: newData, columnsJSON: tableData.columnsJSON });
+        setEditField(field);
+    };
+
+    const exitEdit = () => {
+        const newData = tableData.rowsJSON.map((item) => ({ ...item, [EDIT_FIELD]: false }));
+        setTableData({ rowsJSON: newData, columnsJSON: tableData.columnsJSON });
+        setEditField(undefined);
+    };
+
+    const customCellRender = (td, props) => (
+        <CellRender
+            originalProps={props}
+            td={td}
+            enterEdit={enterEdit}
+            editField={editField}
+        />
     );
+
+    const customRowRender = (tr, props) => (
+        <RowRender
+            originalProps={props}
+            tr={tr}
+            exitEdit={exitEdit}
+            editField={editField}
+        />
+    );
+
+    if (tableData.columnsJSON.length > 0) {
+        return (
+            <div>
+                <LocalizationProvider language="ru-RU">
+                    <IntlProvider locale="ru">
+                        {deleteDialogOpen && (
+                            <Dialog title={t('table.deleteRowsHeader')} onClose={handleDeleteDialogClose}>
+                                <p
+                                    style={{
+                                        margin: "25px",
+                                        textAlign: "center",
+                                    }}
+                                >
+                                    {t('table.areYouSureToDeleteRows', { count: _.countBy(Object.keys(selectedState), o => selectedState[o]).true })}
+                                </p>
+                                <DialogActionsBar>
+                                    <Button className="actionbutton" primary={true} onClick={() => { handleDeleteDialogClose(); deleteSelectedRows(); }}>
+                                        {t('base.ok')}
+                                    </Button>
+                                    <Button className="actionbutton" onClick={handleDeleteDialogClose}>
+                                        {t('base.cancel')}
+                                    </Button>
+                                </DialogActionsBar>
+                            </Dialog>
+                        )}
+                        <FormHeader formData={formData} additionalButtons={otherButtons} />
+                        <ExcelExport data={dataToShow.data} ref={_export}>
+                            <Grid
+                                resizable={true}
+                                sortable={true}
+                                data={dataToShow}
+                                {...dataState}
+                                navigatable={true}
+                                onDataStateChange={(e) => {
+                                    setDataState(e.dataState);
+                                }}
+                                onRowClick={rowClick}
+                                cellRender={customCellRender}
+                                rowRender={customRowRender}
+                                onItemChange={onItemChange}
+                                dataItemKey={DATA_ITEM_KEY}
+                                editField={EDIT_FIELD}
+                                selectedField={SELECTED_FIELD}
+                                selectable={{
+                                    enabled: true,
+                                    drag: true,
+                                    cell: false,
+                                    mode: 'single'
+                                }}
+                                onSelectionChange={onSelectionChange}
+                                onKeyDown={onKeyDown}
+                            >
+                                {tableData.columnsJSON.map(column => <Column
+                                    key={column.field}
+                                    field={column.field}
+                                    title={column.headerName}
+                                    width={calculateWidth(column.headerName, column.field)}
+                                    editor={getEditorType(column)}
+                                    format={getFormat(column)}
+                                    columnMenu={GridColumnMenuFilter}
+                                />
+                                )}
+                            </Grid>
+                        </ExcelExport>
+                    </IntlProvider>
+                </LocalizationProvider>
+            </div>
+        );
+    }
+    else return <div />
 }
 export default DataSetView = React.forwardRef(DataSetView); // eslint-disable-line

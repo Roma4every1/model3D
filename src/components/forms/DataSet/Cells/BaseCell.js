@@ -5,15 +5,17 @@ import { DropDownCell } from "./DropDownCell";
 import { NumericCell } from "./NumericCell";
 import { TextCell } from "./TextCell";
 import { useInternationalization } from '@progress/kendo-react-intl';
+import { useTableKeyboardNavigation } from '@progress/kendo-react-data-tools';
 
 export var BaseCell = function (props) {
     var intl = useInternationalization();
     var data = props.dataItem[props.field] ?? '';
+    var navigationAttributes = useTableKeyboardNavigation(props.id);
     var element = '';
-    if (props.dataItem.js_inEdit) {
-        switch (props.editor.type) {
+    if (props.dataItem.js_inEdit && props.editField === props.field) {
+        switch (props.type) {
             case 'lookup':
-                element = <DropDownCell {...props} lookupData={props.editor.value} dataValue={data} />;
+                element = <DropDownCell {...props} lookupData={props.values} dataValue={data} />;
                 break;
             case 'numeric':
                 element = <NumericCell {...props} dataValue={data} />;
@@ -40,6 +42,8 @@ export var BaseCell = function (props) {
         style={{ padding: 1, width: '100%' }}
         aria-colindex={props.ariaColumnIndex}
         aria-selected={props.isSelected}
+        onDoubleClick={props.onDoubleClick}
+        {...navigationAttributes}
         role='gridcell'
     >
         {element}
