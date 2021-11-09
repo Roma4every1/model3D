@@ -1,8 +1,9 @@
 import SET from '../actions/windowData/set';
 
-function setWindowData(text, windowType) {
+function setWindowData(header, text, windowType) {
     return {
         type: SET,
+        header: header,
         text: text,
         windowType: windowType
     };

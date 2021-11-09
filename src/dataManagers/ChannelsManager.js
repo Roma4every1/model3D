@@ -1,4 +1,5 @@
 ﻿import setChannelsData from "../store/actionCreators/setChannelsData";
+import i18n from '../i18n';
 var utils = require("../utils");
 var _ = require("lodash");
 
@@ -133,7 +134,7 @@ export default function createChannelsManager(store) {
             updateTables([tableId, ...operationResult?.ModifiedTables?.ModifiedTables]);
         }
         else {
-            alert("Ошибка сервера при сохранении изменений в таблице. Подробности см. в логе сервера.");
+            store.getState().sessionManager.handleWindowData(i18n.t('base.error'), i18n.t('messages.dataSaveError'), 'error');
         }
     }
 

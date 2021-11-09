@@ -1,20 +1,20 @@
 ﻿import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
     Button,
     Toolbar
 } from "@progress/kendo-react-buttons";
-import setWindowData from "../../../../store/actionCreators/setWindowData";
 
 export default function Menu() {
     const { t } = useTranslation();
-    const dispatch = useDispatch();
     const sessionManager = useSelector((state) => state.sessionManager);
 
     const handleVersion = () => {
         let json = require('../../../../../package.json');
-        dispatch(setWindowData(<div>{json['name']}<br />{t('version.label')}: {json['version']}</div>, 'info'));
+        sessionManager.handleWindowData(t('menucommands.about'),
+            <div>{json['name']}<br />{t('version.label')}: {json['version']}</div>,
+            'info');
     }
 
     const saveSession = () => {

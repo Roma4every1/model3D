@@ -4,6 +4,8 @@ import setSessionManager from '../store/actionCreators/setSessionManager';
 import createChannelsManager from './ChannelsManager';
 import createParamsManager from './ParamsManager';
 import createPluginsManager from './PluginsManager';
+import setWindowData from "../store/actionCreators/setWindowData";
+import i18n from '../i18n';
 var utils = require("../utils");
 
 export default function createSessionManager(systemName, store) {
@@ -15,7 +17,7 @@ export default function createSessionManager(systemName, store) {
         var data = await response.text();
         if (data === "false") {
             clearInterval(timerId);
-            alert("Сессия на сервере потеряна. В дальнейшем данные грузиться не будут. Пожалуйста, обновите вкладку.");
+            handleWindowData(i18n.t('base.warning'), i18n.t('messages.sessionLost'), 'warning');
         }
     }
 
@@ -63,7 +65,7 @@ export default function createSessionManager(systemName, store) {
             });
         var data = await response.text();
         if (data === "false") {
-            alert("Ошибка при сохранении сессии. Подробности см. в логе сервера.");
+            handleWindowData(i18n.t('base.warning'), i18n.t('messages.errorOnSessionSave'), 'warning');
         }
     }
 
@@ -78,7 +80,7 @@ export default function createSessionManager(systemName, store) {
             });
         var data = await response.text();
         if (data === "false") {
-            alert("Ошибка при остановке сессии. Подробности см. в логе сервера.");
+            handleWindowData(i18n.t('base.warning'), i18n.t('messages.errorOnSessionStop'), 'warning');
         }
     }
 
@@ -115,6 +117,10 @@ export default function createSessionManager(systemName, store) {
         store.dispatch(setChildForms(formId, data));
     }
 
+    const handleWindowData = (header, text, windowType) => {
+        store.dispatch(setWindowData(header, text, windowType));
+    }
+
     startSession();
 
     const paramsManager = createParamsManager(store);
@@ -132,6 +138,7 @@ export default function createSessionManager(systemName, store) {
         loadSessionByDefault,
         loadSessionFromFile,
         getSessionLoading,
-        getChildForms
+        getChildForms,
+        handleWindowData
     }));
 }

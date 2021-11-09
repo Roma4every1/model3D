@@ -5,6 +5,7 @@ function windowData(state = null, action) {
     switch (action.type) {
         case SET: return {
             opened: true,
+            header: action.header,
             text: action.text,
             type: action.windowType
         };

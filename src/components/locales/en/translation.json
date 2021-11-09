@@ -2,12 +2,15 @@
   "title": "Welcome to react using react-i18next",
   "base": {
     "cancel": "Cancel",
-    "error": "Something went wrong.",
+    "error": "Error",
+    "info": "Information",
     "loading": "Loading...",
     "ok": "Ok",
     "parameters": "Parameters",
     "programs": "Programs",
-    "run": "Run"
+    "run": "Run",
+    "warning": "Warning",
+    "wrong": "Something went wrong."
   },
   "flexlayout": {
     "close": "Close",
@@ -40,6 +43,13 @@
     "log": "Log",
     "savesession": "Save session",
     "savesessiontofile": "Save session to file"
+  },
+  "messages": {
+    "dataSaveError": "Server error on saving changes in table. See details on server log.",
+    "errorOnSessionSave": "Error on session saving. See details on server log.",
+    "errorOnSessionStop": "Error on session stopping. See details on server log.",
+    "programError": "Server error program executing.  See details on server log.",
+    "sessionLost": "Server session is lost. Please, reload the tab."
   },
   "pluginNames": {
     "exportToExcel": "Export to Excel",

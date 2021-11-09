@@ -3,6 +3,10 @@ html {
     font: 12px sans-serif;
 }
 
+.k-icon-32 {
+    font-size: 32px;
+}
+
 .k-treeview .k-item {
     margin: 0px;
 }

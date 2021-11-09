@@ -33,7 +33,7 @@ export default function ProgramParametersList(props) {
             });
         const resultJson = await response.json();
         if (resultJson.WrongResult) {
-            alert("Ошибка сервера при выполнении программы. Подробности см. в логе сервера.");
+            sessionManager.handleWindowData(t('base.error'), t('messages.programError'), 'error');
         }
         if (resultJson.ReportResult) {
             const result = await utils.webFetch(`downloadResource?resourceName=${resultJson.resultPath}&sessionId=${sessionId}`);
