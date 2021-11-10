@@ -44,7 +44,9 @@ export default function ProgramParametersList(props) {
                 path,
                 fileExactName);
         }
-        sessionManager.channelsManager.updateTables(resultJson.modifiedTables);
+        if (resultJson && resultJson.ModifiedTables && resultJson.ModifiedTables.ModifiedTables) {
+            sessionManager.channelsManager.updateTables(resultJson.ModifiedTables.ModifiedTables);
+        }
     }, [sessionId, formId, formParams, sessionManager]);
 
     const handleRun = () => {

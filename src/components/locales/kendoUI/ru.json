@@ -79,5 +79,22 @@
     "selectNow": "Выбрать сейчас",
     "toggleTimeSelector": "Выбрать селектор времени",
     "toggleClock": "Выбрать часы"
+  },
+  "upload": {
+    "cancel": "Отмена",
+    "clearSelectedFiles": "Очистить",
+    "dropFilesHere": "",
+    "headerStatusUploaded": "Готово",
+    "headerStatusUploading": "Загрузка...",
+    "invalidFileExtension": "Недопустимый тип файла.",
+    "invalidFiles": "Некорректный файл(ы). Проверьте требования к загрузке.",
+    "invalidMaxFileSize": "Размер файла слишком большой.",
+    "invalidMinFileSize": "Размер файла слишком малый.",
+    "remove": "Удалить",
+    "retry": "Повторить",
+    "select": "Выбрать файлы...",
+    "uploadSelectedFiles": "Загрузить",
+    "total": "Всего",
+    "files": "файлы"
   }
 }
