@@ -9,6 +9,7 @@ var utils = require("../../../../utils")
 export default function PresentationList(props) {
     const { t } = useTranslation();
     const sessionId = useSelector((state) => state.sessionId);
+    const sessionManager = useSelector((state) => state.sessionManager);
     const dispatch = useDispatch();
     const { formId } = props;
     const [state, setState] = React.useState({
@@ -40,8 +41,7 @@ export default function PresentationList(props) {
         let ignore = false;
         if (sessionId) {
             async function fetchData() {
-                const response = await utils.webFetch(`presentationList?sessionId=${sessionId}&formId=${formId}`);
-                const data = await response.json();
+                const data = await sessionManager.fetchData(`presentationList?sessionId=${sessionId}&formId=${formId}`);
                 if (!ignore) {
                     setActive(data);
                     setState({

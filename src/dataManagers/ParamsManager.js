@@ -67,9 +67,8 @@ export default function createParamsManager(store) {
     const loadNeededChannelForParam = async (paramName, formId) => {
         const sessionId = store.getState().sessionId;
         if (!paramChannelNames[paramName]) {
-            const response = await utils.webFetch(`getNeededChannelForParam?sessionId=${sessionId}&paramName=${paramName}&formId=${formId}`);
-            const channelName = await response.text();
-            paramChannelNames[paramName] = channelName;
+            const data = await store.getState().sessionManager.fetchData(`getNeededChannelForParam?sessionId=${sessionId}&paramName=${paramName}&formId=${formId}`);
+            paramChannelNames[paramName] = data;
         }
         await store.getState().sessionManager.channelsManager.loadAllChannelData(paramChannelNames[paramName], formId, false);
         return paramChannelNames[paramName];
@@ -78,9 +77,8 @@ export default function createParamsManager(store) {
     const loadFormParameters = async (formId, force) => {
         if (force || !store.getState().formParams[formId]) {
             const sessionId = store.getState().sessionId;
-            var response = await utils.webFetch(`getFormParameters?sessionId=${sessionId}&formId=${formId}`);
-            const responseJSON = await response.json();
-            var jsonToSet = responseJSON.map(param => { var newParam = param; newParam.formId = formId; return newParam; });
+            var data = await store.getState().sessionManager.fetchData(`getFormParameters?sessionId=${sessionId}&formId=${formId}`);
+            var jsonToSet = data.map(param => { var newParam = param; newParam.formId = formId; return newParam; });
             store.dispatch(setParams(formId, jsonToSet));
             return jsonToSet;
         }
@@ -93,14 +91,12 @@ export default function createParamsManager(store) {
             const sessionId = store.getState().sessionId;
             var jsonToSend = { sessionId: sessionId, reportId: formId, paramValues: paramValues };
             const jsonToSendString = JSON.stringify(jsonToSend);
-            const response = await utils.webFetch(`canRunReport`,
+            const data = await store.getState().sessionManager.fetchData(`canRunReport`,
                 {
                     method: 'POST',
                     body: jsonToSendString
                 });
-            const responsetext = await response.text();
-            const canRunReport = (responsetext === 'True') ? true : false;
-            store.dispatch(setCanRunReport(canRunReport));
+            store.dispatch(setCanRunReport(data));
         }
         else {
             store.dispatch(setCanRunReport(false));

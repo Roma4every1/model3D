@@ -26,26 +26,24 @@ export default function ProgramParametersList(props) {
     const runReport = React.useCallback(async () => {
         var jsonToSend = { sessionId: sessionId, reportId: formId, paramValues: formParams };
         const jsonToSendString = JSON.stringify(jsonToSend);
-        const response = await utils.webFetch(`runReport`,
+        const data = await sessionManager.fetchData(`runReport`,
             {
                 method: 'POST',
                 body: jsonToSendString
             });
-        const resultJson = await response.json();
-        if (resultJson.WrongResult) {
+        if (data.WrongResult) {
             sessionManager.handleWindowData(t('base.error'), t('messages.programError'), 'error');
         }
-        if (resultJson.ReportResult) {
-            const result = await utils.webFetch(`downloadResource?resourceName=${resultJson.resultPath}&sessionId=${sessionId}`);
-            const resultText = await result.text();
-            const fileExactName = resultJson.resultPath.split('\\').pop().split('/').pop();
+        if (data.ReportResult) {
+            const resultText = await sessionManager.fetchData(`downloadResource?resourceName=${data.ReportResult}&sessionId=${sessionId}`);
+            const fileExactName = data.ReportResult.split('\\').pop().split('/').pop();
             const path = process.env.PUBLIC_URL + '/' + resultText;
             saveAs(
                 path,
                 fileExactName);
         }
-        if (resultJson && resultJson.ModifiedTables && resultJson.ModifiedTables.ModifiedTables) {
-            sessionManager.channelsManager.updateTables(resultJson.ModifiedTables.ModifiedTables);
+        if (data && data.ModifiedTables && data.ModifiedTables.ModifiedTables) {
+            sessionManager.channelsManager.updateTables(data.ModifiedTables.ModifiedTables);
         }
     }, [sessionId, formId, formParams, sessionManager]);
 

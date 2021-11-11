@@ -8,6 +8,7 @@ var utils = require("../utils")
 export default function SessionLoader() {
     const { t } = useTranslation();
     const sessionId = useSelector((state) => state.sessionId);
+    const sessionManager = useSelector((state) => state.sessionManager);
     const sessionLoading = useSelector((state) => state.sessionManager.getSessionLoading());
 
     const [formData, setFormData] = React.useState();
@@ -17,8 +18,7 @@ export default function SessionLoader() {
 
         async function getFormData() {
             if (sessionId) {
-                const serverFormData = await utils.webFetch(`getRootForm?sessionId=${sessionId}`);
-                const data = await serverFormData.json();
+                const data = await sessionManager.fetchData(`getRootForm?sessionId=${sessionId}`);
                 if (!ignore) {
                     setFormData(data);
                 }

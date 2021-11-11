@@ -11,30 +11,27 @@ export default function createChannelsManager(store) {
 
     const loadFormChannelsList = async (formId) => {
         const sessionId = store.getState().sessionId;
-        const response = await utils.webFetch(`getChannelsForForm?sessionId=${sessionId}&formId=${formId}`);
-        const responseJSON = await response.json();
-        await Promise.all(responseJSON.map(async (channel) => await loadAllChannelData(channel, formId, false)));
-        return responseJSON;
+        const data = await store.getState().sessionManager.fetchData(`getChannelsForForm?sessionId=${sessionId}&formId=${formId}`);
+        await Promise.all(data.map(async (channel) => await loadAllChannelData(channel, formId, false)));
+        return data;
     }
 
     const loadChannelParamsList = async (channelName) => {
         const sessionId = store.getState().sessionId;
-        const response = await utils.webFetch(`getNeededParamForChannel?sessionId=${sessionId}&channelName=${channelName}`);
-        const responseJSON = await response.json();
-        return responseJSON;
+        const data = await store.getState().sessionManager.fetchData(`getNeededParamForChannel?sessionId=${sessionId}&channelName=${channelName}`);
+        return data;
     }
 
     const loadChannelData = async (channelName, paramValues) => {
         const sessionId = store.getState().sessionId;
         var jsonToSend = { sessionId: sessionId, channelName: channelName, paramValues: paramValues };
         const jsonToSendString = JSON.stringify(jsonToSend);
-        const response = await utils.webFetch(`getChannelDataByName`,
+        const data = await store.getState().sessionManager.fetchData(`getChannelDataByName`,
             {
                 method: 'POST',
                 body: jsonToSendString
             });
-        const responseJSON = await response.json();
-        return responseJSON;
+        return data;
     }
 
     const equalParams = (params1, params2) => {
@@ -89,7 +86,7 @@ export default function createChannelsManager(store) {
             }
             let idIndex = 0;
             let nameIndex = 0;
-            if (channelData && channelData.properties) {
+            if (channelData && channelData.properties && channelData.data && channelData.data.Columns) {
                 channelData.properties.forEach(property => {
                     if (property.name.toUpperCase() === 'LOOKUPCODE') {
                         idIndex = _.findIndex(channelData.data.Columns, (o) => o.Name === property.fromColumn);
@@ -140,29 +137,26 @@ export default function createChannelsManager(store) {
 
     const insertRow = async (tableId, dataJSON) => {
         const sessionId = store.getState().sessionId;
-        const response = await utils.webFetch(`insertRow?sessionId=${sessionId}&tableId=${tableId}&rowData=${dataJSON}`);
-        const operationResult = await response.json();
-        updateTablesByResult(tableId, operationResult);
+        const data = await store.getState().sessionManager.fetchData(`insertRow?sessionId=${sessionId}&tableId=${tableId}&rowData=${dataJSON}`);
+        updateTablesByResult(tableId, data);
     }
 
     const updateRow = async (tableId, editID, newRowData) => {
         const sessionId = store.getState().sessionId;
         var jsonToSend = { sessionId: sessionId, tableId: tableId, rowsIndices: editID, newRowData: newRowData };
         const jsonToSendString = JSON.stringify(jsonToSend);
-        const response = await utils.webFetch(`updateRow`,
+        const data = await store.getState().sessionManager.fetchData(`updateRow`,
             {
                 method: 'POST',
                 body: jsonToSendString
             });
-        const operationResult = await response.json();
-        updateTablesByResult(tableId, operationResult);
+        updateTablesByResult(tableId, data);
     }
 
     const deleteRow = async (tableId, elementsToRemove) => {
         const sessionId = store.getState().sessionId;
-        const response = await utils.webFetch(`removeRows?sessionId=${sessionId}&tableId=${tableId}&rows=${elementsToRemove}`);
-        const operationResult = await response.json();
-        updateTablesByResult(tableId, operationResult);
+        const data = await store.getState().sessionManager.fetchData(`removeRows?sessionId=${sessionId}&tableId=${tableId}&rows=${elementsToRemove}`);
+        updateTablesByResult(tableId, data);
     }
 
     store.subscribe(() => {

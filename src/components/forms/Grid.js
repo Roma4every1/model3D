@@ -92,8 +92,7 @@ function Grid(props, ref) {
 
             if (sessionId) {
                 async function fetchData() {
-                    const response = await utils.webFetch(`getFormLayout?sessionId=${sessionId}&formId=${formData.id}`);
-                    const data = await response.json();
+                    const data = await sessionManager.fetchData(`getFormLayout?sessionId=${sessionId}&formId=${formData.id}`);
                     if (!ignore) {
                         if (data.layout && data.layout.children && openedForms) {
                             correctElement(data.layout, openedForms, form.activeChildren);

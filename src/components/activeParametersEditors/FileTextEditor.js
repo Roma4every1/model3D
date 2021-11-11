@@ -12,18 +12,18 @@ var utils = require("../../utils");
 
 export default function StringTextEditor(props) {
     const sessionId = useSelector((state) => state.sessionId);
+    const sessionManager = useSelector((state) => state.sessionManager);
 
     const onBeforeUpload = (event) => {
         const file = event.target.files[0];
         let reader = new FileReader();
         reader.readAsArrayBuffer(file);
         reader.onload = async function () {
-            const response = await utils.webFetch(`uploadFile?sessionId=${sessionId}&filename=${file.name}`,
+            const data = await sessionManager.fetchData(`uploadFile?sessionId=${sessionId}&filename=${file.name}`,
                 {
                     method: 'POST',
                     body: reader.result
                 });
-            const data = await response.text();
             var newevent = {};
             newevent.target = {};
             newevent.target.name = props.id;

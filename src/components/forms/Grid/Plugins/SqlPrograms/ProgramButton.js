@@ -25,9 +25,8 @@ export default function ProgramButton(props) {
 
     const fillReportParameters = React.useCallback(async () => {
         await sessionManager.paramsManager.loadFormParameters(formId, true);
-        const allNeededParams = await utils.webFetch(`getAllNeedParametersForForm?sessionId=${sessionId}&formId=${formId}`);
-        const allNeededParamsJSON = await allNeededParams.json();
-        await sessionManager.paramsManager.getParameterValues(allNeededParamsJSON, formId, true);
+        const data = await sessionManager.fetchData(`getAllNeedParametersForForm?sessionId=${sessionId}&formId=${formId}`);
+        await sessionManager.paramsManager.getParameterValues(data, formId, true);
         handleOpen();
     }, [sessionManager, sessionId, formId]);
 

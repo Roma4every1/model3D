@@ -13,9 +13,8 @@ export default function createSessionManager(systemName, store) {
     let timerId;
 
     async function iAmAlive() {
-        var response = await utils.webFetch(`iAmAlive?sessionId=${store.getState().sessionId}`);
-        var data = await response.text();
-        if (data === "false") {
+        var data = await fetchData(`iAmAlive?sessionId=${store.getState().sessionId}`);
+        if (data === false) {
             clearInterval(timerId);
             handleWindowData(i18n.t('base.warning'), i18n.t('messages.sessionLost'), 'warning');
         }
@@ -23,15 +22,16 @@ export default function createSessionManager(systemName, store) {
 
     const startSession = async () => {
         sessionLoading = true;
-        const response = await utils.webFetch(`startSession?systemName=${systemName}&defaulConfiguration=false`);
-        const data = await response.text();
-        sessionLoading = false;
-        timerId = setInterval(iAmAlive, 2  * 60 * 1000);
-        store.dispatch(setSessionId(data));
-        window.addEventListener("beforeunload", () => {
-            clearInterval(timerId);
-            stopSession();
-        });
+        const data = await fetchData(`startSession?systemName=${systemName}&defaulConfiguration=false`);
+        if (data) {
+            sessionLoading = false;
+            timerId = setInterval(iAmAlive, 2 * 60 * 1000);
+            store.dispatch(setSessionId(data));
+            window.addEventListener("beforeunload", () => {
+                clearInterval(timerId);
+                stopSession();
+            });
+        }
     }
 
     const getSavedSession = async () => {
@@ -58,13 +58,12 @@ export default function createSessionManager(systemName, store) {
     }
 
     const saveSession = async () => {
-        var response = await utils.webFetch(`saveSession`,
+        var data = await fetchData(`saveSession`,
             {
                 method: 'POST',
                 body: await getSavedSession()
             });
-        var data = await response.text();
-        if (data === "false") {
+        if (data === false) {
             handleWindowData(i18n.t('base.warning'), i18n.t('messages.errorOnSessionSave'), 'warning');
         }
     }
@@ -73,13 +72,12 @@ export default function createSessionManager(systemName, store) {
     }
 
     const stopSession = async () => {
-        var response = await utils.webFetch(`stopSession`,
+        var data = await fetchData(`stopSession`,
             {
                 method: 'POST',
                 body: await getSavedSession()
             });
-        var data = await response.text();
-        if (data === "false") {
+        if (data === false) {
             handleWindowData(i18n.t('base.warning'), i18n.t('messages.errorOnSessionStop'), 'warning');
         }
     }
@@ -90,12 +88,11 @@ export default function createSessionManager(systemName, store) {
         let reader = new FileReader();
         reader.readAsText(file);
         reader.onload = async function () {
-            const response = await utils.webFetch(`startSessionFromFile`,
+            const data = await fetchData(`startSessionFromFile`,
                 {
                     method: 'POST',
                     body: reader.result
                 });
-            const data = await response.text();
             sessionLoading = false;
             store.dispatch(setSessionId(data));
         }
@@ -104,21 +101,36 @@ export default function createSessionManager(systemName, store) {
     const loadSessionByDefault = async () => {
         stopSession();
         sessionLoading = true;
-        const response = await utils.webFetch(`startSession?systemName=${systemName}&defaulConfiguration=true`);
-        const data = await response.text();
+        const data = await fetchData(`startSession?systemName=${systemName}&defaulConfiguration=true`);
         sessionLoading = false;
         store.dispatch(setSessionId(data));
     }
 
     const getChildForms = async (formId) => {
         const sessionId = store.getState().sessionId;
-        const response = await utils.webFetch(`getChildrenForms?sessionId=${sessionId}&formId=${formId}`);
-        const data = await response.json();
+        const data = await fetchData(`getChildrenForms?sessionId=${sessionId}&formId=${formId}`);
         store.dispatch(setChildForms(formId, data));
     }
 
     const handleWindowData = (header, text, windowType) => {
         store.dispatch(setWindowData(header, text, windowType));
+    }
+
+    const fetchData = async (request, params) => {
+        try {
+            const response = await utils.webFetch(request, params);
+            const data = await response.json();
+            if (data.error) {
+                handleWindowData(i18n.t('base.error'), data.message, 'error');
+                return null;
+            }
+            return data;
+        }
+        catch (e) {
+            handleWindowData(i18n.t('base.error'), e.message, 'error');
+          //  handleWindowData(i18n.t('base.error'), i18n.t('messages.serverDisabled'), 'error');
+            return null;
+        }
     }
 
     startSession();
@@ -139,6 +151,7 @@ export default function createSessionManager(systemName, store) {
         loadSessionFromFile,
         getSessionLoading,
         getChildForms,
-        handleWindowData
+        handleWindowData,
+        fetchData
     }));
 }

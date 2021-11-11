@@ -18,9 +18,8 @@ export default function LocalFormParametersList(props) {
         let ignore = false;
 
         async function fetchData() {
-            const response = await utils.webFetch(`getAllNeedParametersForForm?sessionId=${sessionId}&formId=${formId}`);
-            const responseJSON = await response.json();
-            const neededParams = await sessionManager.paramsManager.getParameterValues(responseJSON, formId, false);
+            const data = await sessionManager.fetchData(`getAllNeedParametersForForm?sessionId=${sessionId}&formId=${formId}`);
+            const neededParams = await sessionManager.paramsManager.getParameterValues(data, formId, false);
             if (!ignore) {
                 setParametersJSON(neededParams);
             }

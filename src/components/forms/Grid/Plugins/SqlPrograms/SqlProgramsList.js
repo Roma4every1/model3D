@@ -10,6 +10,7 @@ var utils = require("../../../../../utils")
 export default function SqlProgramsList(props) {
     const { t } = useTranslation();
     const sessionId = useSelector((state) => state.sessionId);
+    const sessionManager = useSelector((state) => state.sessionManager);
     const { formId } = props;
     const [state, setState] = React.useState({
         programNames: [],
@@ -20,8 +21,7 @@ export default function SqlProgramsList(props) {
         let ignore = false;
         if (formId) {
             async function fetchData() {
-                const response = await utils.webFetch(`programsList?sessionId=${sessionId}&formId=${formId}`);
-                const data = await response.json();
+                const data = await sessionManager.fetchData(`programsList?sessionId=${sessionId}&formId=${formId}`);
                 if (!ignore) {
                     setState({
                         programNames: data,
