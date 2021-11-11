@@ -2,7 +2,6 @@
 import setCanRunReport from "../store/actionCreators/setCanRunReport";
 import setParams from "../store/actionCreators/setParams";
 import updateParam from "../store/actionCreators/updateParam";
-var utils = require("../utils");
 var _ = require("lodash");
 
 export default function createParamsManager(store) {
@@ -85,6 +84,7 @@ export default function createParamsManager(store) {
     }
 
     const getCanRunReport = async (formId) => {
+        const canRunReport = store.getState().canRunReport;
         reportFormId = formId;
         if (formId != null) {
             const paramValues = store.getState().formParams[formId];
@@ -96,9 +96,11 @@ export default function createParamsManager(store) {
                     method: 'POST',
                     body: jsonToSendString
                 });
-            store.dispatch(setCanRunReport(data));
+            if (canRunReport !== data) {
+                store.dispatch(setCanRunReport(data));
+            }
         }
-        else {
+        else if (canRunReport) {
             store.dispatch(setCanRunReport(false));
         }
     }

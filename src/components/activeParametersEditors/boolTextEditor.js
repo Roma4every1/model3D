@@ -1,14 +1,5 @@
 ﻿import React from 'react';
-import { Label } from "@progress/kendo-react-labels";
-import {
-    IntlProvider,
-    loadMessages,
-    LocalizationProvider,
-} from "@progress/kendo-react-intl";
 import { Checkbox } from "@progress/kendo-react-inputs";
-import ruMessages from "../locales/kendoUI/ru.json";
-loadMessages(ruMessages, "ru-RU");
-
 
 export default function BoolTextEditor(props) {
 
@@ -47,25 +38,18 @@ export default function BoolTextEditor(props) {
     };
 
     return (
-        <LocalizationProvider language='ru-RU'>
-            <IntlProvider locale='ru'>
-                <div className='parametereditorbox'>
-                    <Label className='parameterlabel' editorId={props.id}>{props.displayName}</Label>
-                    <Checkbox className='parametereditorwithoutheightcb'
-                        id={props.id}
-                        name={props.id}
-                        defaultChecked={defVal(props.value, props.defaultValue)}
-                        value={getBoolVal(props.value)}
-                        onChange={(event) => {
-                            var newevent = {};
-                            newevent.target = {};
-                            newevent.target.name = event.target.name;
-                            newevent.target.value = getValStr(event.target.value);
-                            props.selectionChanged(newevent)
-                        }}
-                    />
-                </div>
-            </IntlProvider>
-        </LocalizationProvider>
+        <Checkbox className='parametereditorwithoutheightcb'
+            id={props.id}
+            name={props.id}
+            defaultChecked={defVal(props.value, props.defaultValue)}
+            value={getBoolVal(props.value)}
+            onChange={(event) => {
+                var newevent = {};
+                newevent.target = {};
+                newevent.target.name = event.target.name;
+                newevent.target.value = getValStr(event.target.value);
+                props.selectionChanged(newevent)
+            }}
+        />
     );
 }

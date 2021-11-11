@@ -71,6 +71,7 @@ html {
     display: inline-block;
     font-size: 12px;
     height: 20px;
+    width: 100%;
 }
 
 .parametereditorwithoutheight {

@@ -5,7 +5,6 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import ProgramButton from './ProgramButton';
 import { useTranslation } from 'react-i18next';
-var utils = require("../../../../../utils")
 
 export default function SqlProgramsList(props) {
     const { t } = useTranslation();
@@ -32,7 +31,7 @@ export default function SqlProgramsList(props) {
             fetchData();
         }
         return () => { ignore = true; }
-    }, [sessionId, formId]);
+    }, [sessionId, formId, sessionManager]);
 
     return (
         <div>

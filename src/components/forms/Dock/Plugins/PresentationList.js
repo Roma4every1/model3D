@@ -4,7 +4,6 @@ import setActiveChildren from '../../../../store/actionCreators/setActiveChildre
 import setOpenedChildren from '../../../../store/actionCreators/setOpenedChildren';
 import RecursiveTreeView from './RecursiveTreeView';
 import { useTranslation } from 'react-i18next';
-var utils = require("../../../../utils")
 
 export default function PresentationList(props) {
     const { t } = useTranslation();
@@ -53,7 +52,7 @@ export default function PresentationList(props) {
             fetchData();
         }
         return () => { ignore = true; }
-    }, [sessionId, formId, setActive]);
+    }, [sessionId, formId, setActive, sessionManager]);
 
     return (
         <div>

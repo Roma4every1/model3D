@@ -1,17 +1,13 @@
 ﻿import React from 'react';
 import { useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import { Dialog } from "@progress/kendo-react-dialogs";
 import {
     Button
 } from "@progress/kendo-react-buttons";
 import ProgramParametersList from './ProgramParametersList';
-var utils = require("../../../../../utils");
 
 export default function ProgramButton(props) {
     const sessionManager = useSelector((state) => state.sessionManager);
     const sessionId = useSelector((state) => state.sessionId);
-    const { t } = useTranslation();
     const { programDisplayName, formId } = props;
     const [open, setOpen] = React.useState(false);
 
@@ -35,11 +31,7 @@ export default function ProgramButton(props) {
             <Button className="actionbutton" onClick={fillReportParameters}>
                 {programDisplayName}
             </Button>
-            {open && (
-                <Dialog title={t('report.params')} onClose={handleClose} initialHeight={350}>
-                    <ProgramParametersList formId={formId} handleClose={handleClose} />
-                </Dialog>
-            )}
+            {open && (<ProgramParametersList formId={formId} handleClose={handleClose} />)}
         </div>
     );
 }

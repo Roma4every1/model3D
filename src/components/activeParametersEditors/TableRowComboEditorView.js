@@ -1,18 +1,10 @@
 ﻿import * as React from "react";
 import { useSelector } from 'react-redux';
-import { Label } from "@progress/kendo-react-labels";
 import { ComboBox } from "@progress/kendo-react-dropdowns";
-import {
-    IntlProvider,
-    LocalizationProvider,
-    loadMessages,
-} from "@progress/kendo-react-intl";
-import ruMessages from "../locales/kendoUI/ru.json";
-loadMessages(ruMessages, "ru");
 var _ = require("lodash");
 
 export default function TableRowComboEditorView(props) {
-    const { id, displayName, selectionChanged, value, externalChannelName } = props;
+    const { id, selectionChanged, value, externalChannelName } = props;
     var values = [];
     var valueToShow = undefined;
 
@@ -111,24 +103,17 @@ export default function TableRowComboEditorView(props) {
     }
 
     return (
-        <LocalizationProvider language='ru-RU'>
-            <IntlProvider locale='ru'>
-                <div className='parametereditorbox'>
-                    <Label className='parameterlabel' editorId={id}>{displayName}</Label>
-                    <ComboBox className='parametereditor'
-                        suggest={true}
-                        name={id}
-                        data={values}
-                        value={valueToShow}
-                        dataItemKey="id"
-                        textField="name"
-                        onChange={(event) => {
-                            valueToShow = event.target.value;
-                            setNewValue(event.target.value?.value, true);
-                        }}
-                    />
-                </div>
-            </IntlProvider>
-        </LocalizationProvider>
+        <ComboBox className='parametereditor'
+            suggest={true}
+            name={id}
+            data={values}
+            value={valueToShow}
+            dataItemKey="id"
+            textField="name"
+            onChange={(event) => {
+                valueToShow = event.target.value;
+                setNewValue(event.target.value?.value, true);
+            }}
+        />
     );
 }

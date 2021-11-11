@@ -2,7 +2,6 @@
 import { useSelector } from 'react-redux';
 import { Popup } from "@progress/kendo-react-popup";
 import ParametersList from '../../common/ParametersList';
-var utils = require("../../../utils")
 
 export default function LocalFormParametersList(props) {
     const sessionManager = useSelector((state) => state.sessionManager);

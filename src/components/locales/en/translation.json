@@ -12,6 +12,11 @@
     "warning": "Warning",
     "wrong": "Something went wrong."
   },
+  "editors": {
+    "fileNotSelected": "File is not selected",
+    "filesCount": "Selected files count: {{count}}",
+    "filesNotSelected": "Files are not selected"
+  },
   "flexlayout": {
     "close": "Close",
     "error": "Error rendering component",

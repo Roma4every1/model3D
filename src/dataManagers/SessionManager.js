@@ -86,7 +86,6 @@ export default function createSessionManager(systemName, store) {
         stopSession();
         sessionLoading = true;
         let reader = new FileReader();
-        reader.readAsText(file);
         reader.onload = async function () {
             const data = await fetchData(`startSessionFromFile`,
                 {
@@ -96,6 +95,7 @@ export default function createSessionManager(systemName, store) {
             sessionLoading = false;
             store.dispatch(setSessionId(data));
         }
+        reader.readAsText(file);
     }
 
     const loadSessionByDefault = async () => {

@@ -1,13 +1,8 @@
 ﻿import React from 'react';
-import { Label } from "@progress/kendo-react-labels";
 import { DatePicker } from "@progress/kendo-react-dateinputs";
 import {
-    IntlProvider,
     load,
-    loadMessages,
-    LocalizationProvider,
 } from "@progress/kendo-react-intl";
-import ruMessages from "../locales/kendoUI/ru.json";
 import likelySubtags from "cldr-core/supplemental/likelySubtags.json";
 import currencyData from "cldr-core/supplemental/currencyData.json";
 import weekData from "cldr-core/supplemental/weekData.json";
@@ -24,30 +19,22 @@ load(
     dateFields,
     timeZoneNames
 );
-loadMessages(ruMessages, "ru-RU");
 
 export default function DateTextEditor(props) {
     const date = props.value ? new Date(props.value.replace(' \\d', '')) : undefined;
 
     return (
-        <LocalizationProvider language='ru-RU'>
-            <IntlProvider locale='ru'>
-                <div className='parametereditorbox'>
-                    <Label className='parameterlabel' editorId={props.id}>{props.displayName}</Label>
-                    <DatePicker className='parametereditor'
-                        id={props.id}
-                        name={props.id}
-                        defaultValue={date}
-                        onChange={(event) => {
-                            var newevent = {};
-                            newevent.target = {};
-                            newevent.target.name = event.target.name;
-                            newevent.target.value = event.target.value?.toLocaleDateString();
-                            props.selectionChanged(newevent)
-                        }}
-                    />
-                </div>
-            </IntlProvider>
-        </LocalizationProvider>
+        <DatePicker className='parametereditor'
+            id={props.id}
+            name={props.id}
+            defaultValue={date}
+            onChange={(event) => {
+                var newevent = {};
+                newevent.target = {};
+                newevent.target.name = event.target.name;
+                newevent.target.value = event.target.value?.toLocaleDateString();
+                props.selectionChanged(newevent)
+            }}
+        />
     );
 }

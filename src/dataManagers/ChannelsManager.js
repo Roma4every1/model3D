@@ -1,6 +1,5 @@
 ﻿import setChannelsData from "../store/actionCreators/setChannelsData";
 import i18n from '../i18n';
-var utils = require("../utils");
 var _ = require("lodash");
 
 export default function createChannelsManager(store) {

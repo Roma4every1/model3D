@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import Form from './Form';
 import FlexLayout from "flexlayout-react";
 import Container from './Grid/Container';
-var utils = require("../../utils");
 
 function Grid(props, ref) {
     const { t } = useTranslation();
@@ -112,7 +111,7 @@ function Grid(props, ref) {
             }
         }
         return () => { ignore = true; }
-    }, [form, sessionId, formData, openedForms, layout, correctElement]);
+    }, [form, sessionId, formData, openedForms, layout, correctElement, sessionManager]);
 
     return (
         <div>

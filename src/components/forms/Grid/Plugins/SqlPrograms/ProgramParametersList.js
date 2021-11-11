@@ -1,13 +1,15 @@
 ﻿import React from 'react';
 import { useSelector } from 'react-redux';
-import { DialogActionsBar } from "@progress/kendo-react-dialogs";
+import { useTranslation } from 'react-i18next';
+import {
+    Dialog,
+    DialogActionsBar
+} from "@progress/kendo-react-dialogs";
 import {
     Button
 } from "@progress/kendo-react-buttons";
-import FormParametersList from '../../../../common/FormParametersList';
 import { saveAs } from '@progress/kendo-file-saver';
-import { useTranslation } from 'react-i18next';
-var utils = require("../../../../../utils");
+import FormParametersList from '../../../../common/FormParametersList';
 
 export default function ProgramParametersList(props) {
     const { t } = useTranslation();
@@ -45,7 +47,7 @@ export default function ProgramParametersList(props) {
         if (data && data.ModifiedTables && data.ModifiedTables.ModifiedTables) {
             sessionManager.channelsManager.updateTables(data.ModifiedTables.ModifiedTables);
         }
-    }, [sessionId, formId, formParams, sessionManager]);
+    }, [sessionId, formId, formParams, sessionManager, t]);
 
     const handleRun = () => {
         handleClose();
@@ -53,8 +55,8 @@ export default function ProgramParametersList(props) {
     }
 
     return (
-        <div>
-            <FormParametersList formId={formId}/>
+        <Dialog title={t('report.params')} onClose={handleClose} initialHeight={350}>
+            <FormParametersList formId={formId} />
             <DialogActionsBar>
                 <Button className="actionbutton" primary={canRunReport} disabled={!canRunReport} onClick={handleRun}>
                     {t('base.run')}
@@ -63,6 +65,6 @@ export default function ProgramParametersList(props) {
                     {t('base.cancel')}
                 </Button>
             </DialogActionsBar>
-        </div>
+        </Dialog>
     );
 }

@@ -1,7 +1,7 @@
 ﻿import React, { Suspense } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import ErrorBoundary from './Form/ErrorBoundary';
+import ErrorBoundary from '../common/ErrorBoundary';
 import FlexLayout from "flexlayout-react";
 import DockForm from './Dock/DockForm';
 import DockPluginForm from './Dock/DockPluginForm';

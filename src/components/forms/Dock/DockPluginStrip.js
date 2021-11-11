@@ -2,7 +2,7 @@
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Toolbar } from "@progress/kendo-react-buttons";
-import ErrorBoundary from '../Form/ErrorBoundary';
+import ErrorBoundary from '../../common/ErrorBoundary';
 import { capitalizeFirstLetter } from '../../../utils';
 
 export default function DockPluginStrip(props) {

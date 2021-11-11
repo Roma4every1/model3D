@@ -1,36 +1,44 @@
-﻿import React from 'react';
+﻿import React, { Suspense } from 'react';
 import { useSelector } from 'react-redux';
-import BoolTextEditor from './BoolTextEditor';
-import DateTextEditor from './DateTextEditor';
-import DateIntervalTextEditor from './DateIntervalTextEditor';
-import FileTextEditor from './FileTextEditor';
-import IntegerTextEditor from './IntegerTextEditor';
-import StringComboEditor from './StringComboEditor';
-import StringTextEditor from './StringTextEditor';
-import TableRowComboEditor from './TableRowComboEditor';
+import { useTranslation } from 'react-i18next';
+import { GridLayout, GridLayoutItem } from "@progress/kendo-react-layout";
+import { Label } from "@progress/kendo-react-labels";
+import {
+    IntlProvider,
+    LocalizationProvider,
+    loadMessages,
+} from "@progress/kendo-react-intl";
+import ErrorBoundary from '../common/ErrorBoundary';
+import editors from "./editors.json";
+import ruMessages from "../locales/kendoUI/ru.json";
+loadMessages(ruMessages, "ru");
 
 export default function BaseEditor(props) {
+    const { t } = useTranslation();
     const value = useSelector((state) => state.formParams[props.formId].find((gp) => gp.id === props.id).value);
-    switch (props.editorType) {
-        case 'integerTextEditor':
-            return <IntegerTextEditor value={value} {...props} />;
-        case 'stringComboEditor':
-            return <StringComboEditor value={value} {...props} />;
-        case 'stringTextEditor':
-            return <StringTextEditor value={value} {...props} />;
-        case 'dateTextEditor':
-        case 'dateKMNEditor':
-            return <DateTextEditor value={value} {...props} />;
-        case 'tableRowTreeMultiEditor':
-        case 'tableRowComboEditor':
-            return <TableRowComboEditor value={value}  {...props} />;
-        case 'dateIntervalTextEditor':
-            return <DateIntervalTextEditor value={value} {...props} />;
-        case 'boolTextEditor':
-            return <BoolTextEditor value={value} {...props} />;
-        case 'fileTextEditor':
-            return <FileTextEditor value={value} {...props} />;
-        default:
-            return <StringTextEditor value={value} {...props} />;
+    var componentPath = 'StringTextEditor';
+    if (editors[props.editorType]) {
+        componentPath = editors[props.editorType];
     }
+    let MyComponent = React.lazy(() => import('./' + componentPath));
+
+    return (
+        <ErrorBoundary>
+            <Suspense fallback={<p><em>{t('base.loading')}</em></p>}>
+                <LocalizationProvider language='ru-RU'>
+                    <IntlProvider locale='ru'>
+                        <div className="parametereditorbox">
+                            <GridLayout gap={{ rows: 1, cols: 2 }}>
+                                <GridLayoutItem className='parameterlabel' row={1} col={1}>
+                                    <Label editorId={props.id}>{props.displayName}</Label>
+                                </GridLayoutItem>
+                                <GridLayoutItem row={1} col={2}>
+                                    <MyComponent value={value} {...props} />
+                                </GridLayoutItem>
+                            </GridLayout>
+                        </div>
+                    </IntlProvider>
+                </LocalizationProvider>
+            </Suspense>
+        </ErrorBoundary>);
 }

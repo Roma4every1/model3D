@@ -1,13 +1,8 @@
 ﻿import React from 'react';
-import { Label } from "@progress/kendo-react-labels";
 import { DateRangePicker } from "@progress/kendo-react-dateinputs";
 import {
-    IntlProvider,
     load,
-    loadMessages,
-    LocalizationProvider,
 } from "@progress/kendo-react-intl";
-import ruMessages from "../locales/kendoUI/ru.json";
 import likelySubtags from "cldr-core/supplemental/likelySubtags.json";
 import currencyData from "cldr-core/supplemental/currencyData.json";
 import weekData from "cldr-core/supplemental/weekData.json";
@@ -24,7 +19,6 @@ load(
     dateFields,
     timeZoneNames
 );
-loadMessages(ruMessages, "ru-RU");
 
 
 export default function DateIntervalTextEditor(props) {
@@ -96,29 +90,22 @@ export default function DateIntervalTextEditor(props) {
     };
 
     return (
-        <LocalizationProvider language='ru-RU'>
-            <IntlProvider locale='ru'>
-                <div className='parametereditorbox'>
-                    <Label className='parameterlabel' editorId={props.id}>{props.displayName}</Label>
-                    <DateRangePicker className='parametereditorwithoutheight'
-                        id={props.id}
-                        name={props.id}
-                        min={xmin}
-                        max={xmax}
-                        defaultValue={defVal(getVal(props.value), getVal(props.defaultValue), xdefaultValue)}
-                        value={getVal(props.value)}
-                        startDateInputSettings={startDateInputSettings}
-                        endDateInputSettings={endDateInputSettings}
-                        onChange={(event) => {
-                            var newevent = {};
-                            newevent.target = {};
-                            newevent.target.name = event.target.props.id;
-                            newevent.target.value = getValStr(event.target.value.start, event.target.value.end);
-                            props.selectionChanged(newevent)
-                        }}
-                    />
-                </div>
-            </IntlProvider>
-        </LocalizationProvider>
+        <DateRangePicker className='parametereditorwithoutheight'
+            id={props.id}
+            name={props.id}
+            min={xmin}
+            max={xmax}
+            defaultValue={defVal(getVal(props.value), getVal(props.defaultValue), xdefaultValue)}
+            value={getVal(props.value)}
+            startDateInputSettings={startDateInputSettings}
+            endDateInputSettings={endDateInputSettings}
+            onChange={(event) => {
+                var newevent = {};
+                newevent.target = {};
+                newevent.target.name = event.target.props.id;
+                newevent.target.value = getValStr(event.target.value.start, event.target.value.end);
+                props.selectionChanged(newevent)
+            }}
+        />
     );
 }

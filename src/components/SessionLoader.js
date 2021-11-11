@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import WindowHandler from './common/WindowHandler';
 import Form from './forms/Form';
-var utils = require("../utils")
 
 export default function SessionLoader() {
     const { t } = useTranslation();
@@ -26,7 +25,7 @@ export default function SessionLoader() {
         }
         getFormData();
         return () => { ignore = true; }
-    }, [sessionId]);
+    }, [sessionId, sessionManager]);
 
     return (
         <div>

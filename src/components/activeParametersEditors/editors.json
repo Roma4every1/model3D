@@ -1,0 +1,14 @@
+{
+  "boolTextEditor": "BoolTextEditor",
+  "dateIntervalTextEditor": "DateIntervalTextEditor",
+  "dateKMNEditor": "DateTextEditor",
+  "dateTextEditor": "DateTextEditor",
+  "fileTextEditor": "FileTextEditor",
+  "filesTextEditor": "FilesTextEditor",
+  "integerTextEditor": "IntegerTextEditor",
+  "stringComboEditor": "StringComboEditor",
+  "stringTextEditor": "StringTextEditor",
+  "tableRowComboEditor": "TableRowComboEditor",
+  "tableRowComboListEditor": "TableRowComboEditor",
+  "tableRowTreeMultiEditor": "TableRowComboEditor"
+}

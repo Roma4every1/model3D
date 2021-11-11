@@ -1,7 +1,7 @@
 ﻿import React, { Suspense } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import ErrorBoundary from './Form/ErrorBoundary';
+import ErrorBoundary from '../common/ErrorBoundary';
 import setFormRefs from '../../store/actionCreators/setFormRefs';
 import { capitalizeFirstLetter } from '../../utils';
 

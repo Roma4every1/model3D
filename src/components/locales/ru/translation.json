@@ -12,6 +12,11 @@
     "warning": "Предупреждение",
     "wrong": "Что-то пошло не так."
   },
+  "editors": {
+    "fileNotSelected": "Файл не выбран",
+    "filesCount": "Выбрано файлов: {{count}}",
+    "filesNotSelected": "Файлы не выбраны"
+  },
   "flexlayout": {
     "close": "Закрыть",
     "error": "Ошибка при отрисовке компонента",
