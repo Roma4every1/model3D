@@ -11,7 +11,7 @@ import {
 import ErrorBoundary from '../common/ErrorBoundary';
 import editors from "./editors.json";
 import ruMessages from "../locales/kendoUI/ru.json";
-loadMessages(ruMessages, "ru");
+loadMessages(ruMessages, "ru-RU");
 
 export default function BaseEditor(props) {
     const { t } = useTranslation();
