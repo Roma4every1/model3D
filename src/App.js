@@ -6,10 +6,12 @@ import 'flexlayout-react/style/light.css';
 import './custom.css'
 import createSessionManager from './dataManagers/SessionManager';
 import SessionLoader from './components/SessionLoader';
+const WMWSystemName = process.env.WMWSYSTEMNAME;
 
 export default function App() {
-    createSessionManager('DEMO_SYSTEM', store);
+ //   createSessionManager('DEMO_SYSTEM', store);
  //   createSessionManager('OPR_REG_SYSTEM_CONS', store);
+   createSessionManager(WMWSystemName, store);
 
     return (
         <Provider store={store}>

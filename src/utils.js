@@ -1,6 +1,6 @@
-﻿const useWMWServer = true;
+﻿const useWMWServer = process.env.USEWMWSERVER;
 const ReactServerPrePath = 'session/';
-const WMWServerPrePath = 'http://localhost:81/WellManager.ServerSide.Site/WebRequests.svc/';
+const WMWServerPrePath = process.env.WMWSERVERPREPATH;
 
 export async function webFetch(request, params) {
     if (useWMWServer) {

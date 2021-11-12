@@ -29,7 +29,7 @@ import timeZoneNames from "cldr-dates-full/main/ru/timeZoneNames.json";
 import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { getter } from "@progress/kendo-react-common";
 import { useTranslation } from 'react-i18next';
-import { CellRender, RowRender } from "./renderers";
+import { CellRender, RowRender } from "./Renderers";
 import FormHeader from '../Form/FormHeader';
 import ruMessages from "../../locales/kendoUI/ru.json";
 load(
