@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
     Dialog,
@@ -9,10 +9,12 @@ import {
     Button
 } from "@progress/kendo-react-buttons";
 import { saveAs } from '@progress/kendo-file-saver';
+import updateParam from "../../../../../store/actionCreators/updateParam";
 import FormParametersList from '../../../../common/FormParametersList';
 
 export default function ProgramParametersList(props) {
     const { t } = useTranslation();
+    const dispatch = useDispatch();
     const { formId, handleClose } = props;
     const sessionManager = useSelector((state) => state.sessionManager);
     const sessionId = useSelector((state) => state.sessionId);
@@ -34,7 +36,7 @@ export default function ProgramParametersList(props) {
                 body: jsonToSendString
             });
         if (data.WrongResult) {
-            sessionManager.handleWindowData(t('base.error'), t('messages.programError'), 'error');
+            sessionManager.handleWindowError(t('messages.programError'));
         }
         if (data.ReportResult) {
             const resultText = await sessionManager.fetchData(`downloadResource?resourceName=${data.ReportResult}&sessionId=${sessionId}`);
@@ -47,6 +49,13 @@ export default function ProgramParametersList(props) {
         if (data && data.ModifiedTables && data.ModifiedTables.ModifiedTables) {
             sessionManager.channelsManager.updateTables(data.ModifiedTables.ModifiedTables);
         }
+        formParams.map(param => {
+            if (param.editorType === "fileTextEditor" ||
+                param.editorType === "filesTextEditor" )
+                {
+                    dispatch(updateParam(formId, param.id, null, true));
+                }
+        });
     }, [sessionId, formId, formParams, sessionManager, t]);
 
     const handleRun = () => {

@@ -7,12 +7,44 @@ html {
     font-size: 32px;
 }
 
+.k-icon-red {
+    color: red;
+}
+
+.k-icon-blue {
+    color: blue;
+}
+
 .k-treeview .k-item {
     margin: 0px;
 }
 
 .k-treeview .k-in {
     padding: 2px 5px 2px 5px;
+}
+
+.grid-layout-container-true {
+    max-width: 800px;
+}
+
+.grid-layout-container-false {
+    max-width: 400px;
+}
+
+.margin-5 {
+    margin: 5px;
+}
+
+.textAlign-left {
+    text-align: left;
+}
+
+.windowButtonContainer {
+   text-align: center;
+}
+
+.windowButton {
+    width: 200px;
 }
 
 .treeview {

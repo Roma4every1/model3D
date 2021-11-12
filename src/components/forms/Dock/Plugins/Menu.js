@@ -12,9 +12,7 @@ export default function Menu() {
 
     const handleVersion = () => {
         let json = require('../../../../../package.json');
-        sessionManager.handleWindowData(t('menucommands.about'),
-            <div>{json['name']}<br />{t('version.label')}: {json['version']}</div>,
-            'info');
+        sessionManager.handleWindowInfo(<div>{json['name']}<br />{t('version.label')}: {json['version']}</div>, null, t('menucommands.about'));
     }
 
     const saveSession = () => {

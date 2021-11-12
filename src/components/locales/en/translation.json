@@ -54,8 +54,10 @@
     "errorOnSessionSave": "Error on session saving. See details on server log.",
     "errorOnSessionStop": "Error on session stopping. See details on server log.",
     "programError": "Server error program executing.  See details on server log.",
+    "responseReadError": "Error on server response reading.",
     "serverDisabled": "Error: no response from server.",
-    "sessionLost": "Server session is lost. Please, reload the tab."
+    "sessionLost": "Server session is lost. Please, reload the tab.",
+    "systemNotDefined": "Error: system for loading is not defined."
   },
   "pluginNames": {
     "exportToExcel": "Export to Excel",

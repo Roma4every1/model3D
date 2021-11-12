@@ -4,7 +4,9 @@ import setSessionManager from '../store/actionCreators/setSessionManager';
 import createChannelsManager from './ChannelsManager';
 import createParamsManager from './ParamsManager';
 import createPluginsManager from './PluginsManager';
-import setWindowData from "../store/actionCreators/setWindowData";
+import setWindowError from "../store/actionCreators/setWindowError";
+import setWindowInfo from "../store/actionCreators/setWindowInfo";
+import setWindowWarning from "../store/actionCreators/setWindowWarning";
 import i18n from '../i18n';
 var utils = require("../utils");
 
@@ -16,21 +18,26 @@ export default function createSessionManager(systemName, store) {
         var data = await fetchData(`iAmAlive?sessionId=${store.getState().sessionId}`);
         if (data === false) {
             clearInterval(timerId);
-            handleWindowData(i18n.t('base.warning'), i18n.t('messages.sessionLost'), 'warning');
+            handleWindowWarning(i18n.t('messages.sessionLost'));
         }
     }
 
     const startSession = async () => {
         sessionLoading = true;
-        const data = await fetchData(`startSession?systemName=${systemName}&defaulConfiguration=false`);
-        if (data) {
-            sessionLoading = false;
-            timerId = setInterval(iAmAlive, 2 * 60 * 1000);
-            store.dispatch(setSessionId(data));
-            window.addEventListener("beforeunload", () => {
-                clearInterval(timerId);
-                stopSession();
-            });
+        if (!systemName) {
+            handleWindowError(i18n.t('messages.systemNotDefined'));
+        }
+        else {
+            const data = await fetchData(`startSession?systemName=${systemName}&defaulConfiguration=false`);
+            if (data) {
+                sessionLoading = false;
+                timerId = setInterval(iAmAlive, 2 * 60 * 1000);
+                store.dispatch(setSessionId(data));
+                window.addEventListener("beforeunload", () => {
+                    clearInterval(timerId);
+                    stopSession();
+                });
+            }
         }
     }
 
@@ -64,7 +71,7 @@ export default function createSessionManager(systemName, store) {
                 body: await getSavedSession()
             });
         if (data === false) {
-            handleWindowData(i18n.t('base.warning'), i18n.t('messages.errorOnSessionSave'), 'warning');
+            handleWindowWarning(i18n.t('messages.errorOnSessionSave'));
         }
     }
 
@@ -78,7 +85,7 @@ export default function createSessionManager(systemName, store) {
                 body: await getSavedSession()
             });
         if (data === false) {
-            handleWindowData(i18n.t('base.warning'), i18n.t('messages.errorOnSessionStop'), 'warning');
+            handleWindowWarning(i18n.t('messages.errorOnSessionStop'));
         }
     }
 
@@ -112,23 +119,45 @@ export default function createSessionManager(systemName, store) {
         store.dispatch(setChildForms(formId, data));
     }
 
-    const handleWindowData = (header, text, windowType) => {
-        store.dispatch(setWindowData(header, text, windowType));
+    const handleWindowError = (header, text, windowType) => {
+        store.dispatch(setWindowError(header, text, windowType));
+    }
+
+    const handleWindowInfo = (header, text, windowType) => {
+        store.dispatch(setWindowInfo(header, text, windowType));
+    }
+
+    const handleWindowWarning = (header, text, windowType) => {
+        store.dispatch(setWindowWarning(header, text, windowType));
     }
 
     const fetchData = async (request, params) => {
         try {
             const response = await utils.webFetch(request, params);
-            const data = await response.json();
-            if (data.error) {
-                handleWindowData(i18n.t('base.error'), data.message, 'error');
+            try {
+                const data = await response.json();
+                if (data.error) {
+                    if (data.type === "Warning") {
+                        handleWindowWarning(data.message, data.stackTrace);
+                    }
+                    else if (data.type === "Info") {
+                        handleWindowInfo(data.message, data.stackTrace);
+                    }
+                    else {
+                        handleWindowError(data.message, data.stackTrace);
+                    }
+                    return null;
+                }
+                return data;
+            }
+            catch (e) {
+                handleWindowError(i18n.t('messages.responseReadError'), e.message + ": " + request);
                 return null;
             }
-            return data;
         }
         catch (e) {
-            handleWindowData(i18n.t('base.error'), e.message, 'error');
-          //  handleWindowData(i18n.t('base.error'), i18n.t('messages.serverDisabled'), 'error');
+            //  handleWindowError(e.message, e.stack);
+            handleWindowError(i18n.t('messages.serverDisabled'), e.message + ": " + request);
             return null;
         }
     }
@@ -151,7 +180,9 @@ export default function createSessionManager(systemName, store) {
         loadSessionFromFile,
         getSessionLoading,
         getChildForms,
-        handleWindowData,
+        handleWindowError,
+        handleWindowInfo,
+        handleWindowWarning,
         fetchData
     }));
 }

@@ -95,8 +95,10 @@ export default function createChannelsManager(store) {
                     }
                 });
             }
-            channelData.idIndex = idIndex;
-            channelData.nameIndex = nameIndex;
+            if (channelData) {
+                channelData.idIndex = idIndex;
+                channelData.nameIndex = nameIndex;
+            }
             if (channelData && channelData.data && channelData.data.Columns) {
                 await Promise.all(
                     channelData.data.Columns.map(async (column) => {
@@ -126,11 +128,17 @@ export default function createChannelsManager(store) {
     }
 
     const updateTablesByResult = (tableId, operationResult) => {
-        if (!operationResult.WrongResult) {
-            updateTables([tableId, ...operationResult?.ModifiedTables?.ModifiedTables]);
+        if (operationResult) {
+            if (!operationResult.WrongResult) {
+                updateTables([tableId, ...operationResult?.ModifiedTables?.ModifiedTables]);
+            }
+            else {
+                store.getState().sessionManager.handleWindowError(i18n.t('messages.dataSaveError'));
+            }
         }
         else {
-            store.getState().sessionManager.handleWindowData(i18n.t('base.error'), i18n.t('messages.dataSaveError'), 'error');
+            //reject
+            updateTables([tableId]);
         }
     }
 

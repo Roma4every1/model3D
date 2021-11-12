@@ -10,7 +10,7 @@ export default function FilesTextEditor(props) {
         if (!value) {
             return t("editors.filesNotSelected");
         }
-        return t("editors.filesCount", { count: value?.split('|').length });
+        return value?.split('|').map(p => p.split('\\').pop()).join(', ');
     }
     const [valueToShow, setValueToShow] = React.useState(getInitialValue(props.value));
     const sessionId = useSelector((state) => state.sessionId);
