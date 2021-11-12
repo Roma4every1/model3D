@@ -6,7 +6,7 @@ import { Label } from "@progress/kendo-react-labels";
 
 export default function FileTextEditor(props) {
     const { t } = useTranslation();
-    const [valueToShow, setValueToShow] = React.useState(props.value?.split('\\').pop() ?? t("editors.fileNotSelected"));
+    const [valueToShow] = React.useState(props.value?.split('\\').pop() ?? t("editors.fileNotSelected"));
     const sessionId = useSelector((state) => state.sessionId);
     const sessionManager = useSelector((state) => state.sessionManager);
 

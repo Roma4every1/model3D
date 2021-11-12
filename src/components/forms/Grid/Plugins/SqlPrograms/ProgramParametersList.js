@@ -49,14 +49,14 @@ export default function ProgramParametersList(props) {
         if (data && data.ModifiedTables && data.ModifiedTables.ModifiedTables) {
             sessionManager.channelsManager.updateTables(data.ModifiedTables.ModifiedTables);
         }
-        formParams.map(param => {
+        formParams.forEach(param => {
             if (param.editorType === "fileTextEditor" ||
                 param.editorType === "filesTextEditor" )
                 {
                     dispatch(updateParam(formId, param.id, null, true));
                 }
         });
-    }, [sessionId, formId, formParams, sessionManager, t]);
+    }, [sessionId, formId, formParams, sessionManager, t, dispatch]);
 
     const handleRun = () => {
         handleClose();

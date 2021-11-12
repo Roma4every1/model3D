@@ -12,7 +12,7 @@ export default function FilesTextEditor(props) {
         }
         return value?.split('|').map(p => p.split('\\').pop()).join(', ');
     }
-    const [valueToShow, setValueToShow] = React.useState(getInitialValue(props.value));
+    const [valueToShow] = React.useState(getInitialValue(props.value));
     const sessionId = useSelector((state) => state.sessionId);
     const sessionManager = useSelector((state) => state.sessionManager);
 
