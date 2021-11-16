@@ -4,10 +4,12 @@ import setSessionManager from '../store/actionCreators/setSessionManager';
 import createChannelsManager from './ChannelsManager';
 import createParamsManager from './ParamsManager';
 import createPluginsManager from './PluginsManager';
+import setReport from "../store/actionCreators/setReport";
 import setWindowError from "../store/actionCreators/setWindowError";
 import setWindowInfo from "../store/actionCreators/setWindowInfo";
 import setWindowWarning from "../store/actionCreators/setWindowWarning";
 import i18n from '../i18n';
+import { data } from 'jquery';
 var utils = require("../utils");
 
 export default function createSessionManager(systemName, store) {
@@ -131,6 +133,20 @@ export default function createSessionManager(systemName, store) {
         store.dispatch(setWindowWarning(header, text, windowType));
     }
 
+    const getReportStatus = async (operationId) => {
+        const data = await fetchData(`getOperationResult?sessionId=${store.getState().sessionId}&operationId=${operationId}&waitResult=false`);
+        store.dispatch(setReport(operationId, data));
+        return data.Progress === 100;
+    }
+
+    const watchReport = (operationId) => {
+        let timerId = setTimeout(function tick() {
+            if (getReportStatus(operationId) !== true) {
+                timerId = setTimeout(tick, 5);
+            }
+        }, 5);
+    }
+
     const fetchData = async (request, params) => {
         try {
             const response = await utils.webFetch(request, params);
@@ -183,6 +199,7 @@ export default function createSessionManager(systemName, store) {
         handleWindowError,
         handleWindowInfo,
         handleWindowWarning,
+        watchReport,
         fetchData
     }));
 }

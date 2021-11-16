@@ -40,6 +40,14 @@ function Dock(props, ref) {
                 "minSize": 300,
                 "location": "left",
                 "children": plugins.left,
+            },
+            {
+                "type": "border",
+                "enableDrop": "false",
+                "size": 300,
+                "minSize": 300,
+                "location": "right",
+                "children": plugins.right,
             }],
         layout: {
             "type": "row",

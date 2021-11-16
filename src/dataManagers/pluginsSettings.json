@@ -14,6 +14,11 @@
       "type": "left",
       "component": "ParametersList",
       "label": "Параметры"
+    },
+    "downloadFiles": {
+      "type": "right",
+      "component": "DownloadFiles/DownloadFiles",
+      "label": "Отчёты"
     }
   },
   "Grid": {

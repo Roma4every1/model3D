@@ -22,3 +22,12 @@ export const capitalizeFirstLetter = (string) => {
     else
         return null;
 }
+
+export const toDate = (wmwDateString) => {
+    const startIndex = wmwDateString.indexOf('(');
+    const finishIndex = wmwDateString.lastIndexOf('+');
+    const dateValue = wmwDateString.slice(startIndex + 1, finishIndex);
+    var d = new Date();
+    d.setTime(dateValue);
+    return d;
+}

@@ -30,17 +30,21 @@ export default function ProgramParametersList(props) {
     const runReport = React.useCallback(async () => {
         var jsonToSend = { sessionId: sessionId, reportId: formId, paramValues: formParams };
         const jsonToSendString = JSON.stringify(jsonToSend);
-        const data = await sessionManager.fetchData(`runReport`,
+        var data = await sessionManager.fetchData(`runReport`,
             {
                 method: 'POST',
                 body: jsonToSendString
             });
+        if (data.OperationId) {
+            sessionManager.watchReport(data.OperationId, data);
+            data = await sessionManager.fetchData(`getOperationResult?sessionId=${sessionId}&operationId=${data.OperationId}&waitResult=true`);
+        }
         if (data.WrongResult) {
             sessionManager.handleWindowError(t('messages.programError'));
         }
-        if (data.ReportResult) {
-            const resultText = await sessionManager.fetchData(`downloadResource?resourceName=${data.ReportResult}&sessionId=${sessionId}`);
-            const fileExactName = data.ReportResult.split('\\').pop().split('/').pop();
+        if (data.Path) {
+            const resultText = await sessionManager.fetchData(`downloadResource?resourceName=${data.Path}&sessionId=${sessionId}`);
+            const fileExactName = data.Path.split('\\').pop().split('/').pop();
             const path = process.env.PUBLIC_URL + '/' + resultText;
             saveAs(
                 path,
