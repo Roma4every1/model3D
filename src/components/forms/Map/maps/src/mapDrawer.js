@@ -138,7 +138,6 @@ var field = declareType("field", {
 			* UPD: there is sharing memory proposal in ES2017. Maybe it would be a good option when available
 		*/
 		// field._draw( i, options );
-		yield;
 		return;
 	},
 	getFieldValueInPoint: (i, point, options) => {
@@ -984,17 +983,17 @@ var label = declareType("label", {
 			context.fillStyle = "white";
 			context.fillRect(x, y, width, fontsize + 3); // magic
 			context.fillStyle = i.color === "#FFFFFF" ? "black" : i.color; // color inversion because of mm background is not the same as gmmo
-		    context.fillText(i.text, x, y);
+			context.fillText(i.text, x, y);
 		};
 		if (i.angle) {
 			context.save();
 			context.translate(p.x, p.y);
 			context.rotate(-i.angle / 180 * Math.PI);
 			text(0, 0);
-			yield context.restore();
+			context.restore();
 		}
 		else
-			yield text(p.x, p.y);
+			text(p.x, p.y);
 	},
 });
 
@@ -1014,7 +1013,7 @@ declareType("pieslice", {
 		if (!(i.startangle === 0 && Math.abs(i.endangle - 2 * Math.PI) < 1e-6))
 			context.moveTo(p.x, p.y);
 		context.arc(p.x, p.y, r, i.startangle + Math.PI / 2, i.endangle + Math.PI / 2, false);
-		yield context.closePath();
+		context.closePath();
 		var drawOptions = options.provider.drawOptions || {};
 		context.strokeStyle = (drawOptions.piesliceBorderColor || "black"); // i.bordercolor
 		context.lineWidth = (drawOptions.piesliceBorderWidth || 0.2) * 0.001 * options.dotsPerMeter;
@@ -1025,7 +1024,7 @@ declareType("pieslice", {
 		context.globalAlpha = drawOptions.piesliceAlpha || 0.7;
 		context.fill();
 		context.globalAlpha = 1;
-		yield context.stroke();
+		context.stroke();
 	},
 });
 
