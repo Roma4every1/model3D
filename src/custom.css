@@ -95,12 +95,10 @@ html {
     width: 100px;
     float: left;
     font-size: 12px;
-    display: inline-block;
 }
 
 .parametereditor {
     float: right;
-    display: inline-block;
     font-size: 12px;
     height: 20px;
     width: 100%;
@@ -108,7 +106,6 @@ html {
 
 .parametereditorwithoutheight {
     float: right;
-    display: inline-block;
     font-size: 12px;
     vertical-align: middle;
     max-width: 155px;
@@ -116,7 +113,6 @@ html {
 
 .parametereditorwithoutheightcb {
     float: right;
-    display: inline-block;
     font-size: 12px;
     vertical-align: middle;
     max-width: 155px;
@@ -152,7 +148,6 @@ html {
 
 .k-dateinput {
     float: right;
-    display: inline-block;
     font-size: 12px;
 }
 

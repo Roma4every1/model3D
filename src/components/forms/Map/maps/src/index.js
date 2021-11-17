@@ -2,7 +2,6 @@
 
 var logger = require( "./logger" )
 var Maps = require( "./maps" )
-var _ = require( "lodash" )
 var htmlHelper = require( "./htmlHelper" )
 var cache = require( "./cache" )
 var Scroller = require( "./scroller" )

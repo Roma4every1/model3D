@@ -4,10 +4,10 @@ import DownloadFileItem from './DownloadFileItem';
 
 export default function DownloadFiles() {
 
-    const reports = useSelector((state) => state.reports);
+    const reports = useSelector((state) => Object.values(state.reports));
 
     return (
         <div>
-            {Object.values(reports).map(r => <DownloadFileItem operationData={r} />)}
+            {reports.map(r => <DownloadFileItem key={r.Id} operationData={r} />)}
         </div>);
 }

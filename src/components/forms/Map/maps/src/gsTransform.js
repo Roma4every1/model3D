@@ -1,28 +1,28 @@
 // module gsTransform
 
-var _ = require( "lodash" )
-var xml = require( "node-xml-lite" )
-var x = require( "./xmlTransform" )
+var _ = require("lodash");
+var xml = require("node-xml-lite");
+var x = require("./xmlTransform");
 
-var transform = x( {
+var transform = x({
 	MapContainer: {
 		type: "mapcontainer",
-		etag: x.string( "ETag" ),
-		path: x.path( "Path" ),
-		name: x.string( "Name" ),
+		etag: x.string("ETag"),
+		path: x.path("Path"),
+		name: x.string("Name"),
 	},
 	MapInfo: {
-		namedpoints: x.string( "NamedPoints" ),
-		date: x.string( "Date" ),
-		mapname: x.string( "MapName" ),
-		mapcode: x.string( "MapCode" ),
-		plastname: x.string( "PlastName" ),
-		plastcode: x.string( "PlastCode" ),
-		objectname: x.string( "ObjectName" ),
-		objectcode: x.string( "ObjectCode" ),
-		organization: x.string( "Organization" ),
-		etag: x.string( "ETag" ),
-		layers: [ "layer", {
+		namedpoints: x.string("NamedPoints"),
+		date: x.string("Date"),
+		mapname: x.string("MapName"),
+		mapcode: x.string("MapCode"),
+		plastname: x.string("PlastName"),
+		plastcode: x.string("PlastCode"),
+		objectname: x.string("ObjectName"),
+		objectcode: x.string("ObjectCode"),
+		organization: x.string("Organization"),
+		etag: x.string("ETag"),
+		layers: ["layer", {
 			uid: x.string,
 			name: x.string,
 			group: x.string,
@@ -30,14 +30,14 @@ var transform = x( {
 			visible: x.boolean,
 			lowscale: x.number,
 			highscale: x.number,
-			bounds: [ 0, bounds ],
-		} ],
+			bounds: [0, bounds],
+		}],
 	},
-	container: [ {
+	container: [{
 		type: x.element,
 		name: x.string,
 		uid: x.string,
-		elements: [ /./, x( {
+		elements: [/./, x({
 			pieslice: {
 				type: x.element,
 				x: x.number,
@@ -90,119 +90,124 @@ var transform = x( {
 				fillname: x.string,
 				fillcolor: x.string,
 				fillbkcolor: x.string,
-				bounds: [ 0, bounds ],
-				arcs: [ "arc", arcPlain ],
+				bounds: [0, bounds],
+				arcs: ["arc", arcPlain],
 			},
-		} ) ],
-	}, makeSublayers ],
-} )
+		})],
+	}, makeSublayers],
+});
 
-function bounds( xml ) {
-	var x1 = Number( xml.attributes.left )
-	var x2 = Number( xml.attributes.right )
-	var y1 = Number( xml.attributes.top )
-	var y2 = Number( xml.attributes.bottom )
+function bounds(xml) {
+	var x1 = Number(xml.attributes.left)
+	var x2 = Number(xml.attributes.right)
+	var y1 = Number(xml.attributes.top)
+	var y2 = Number(xml.attributes.bottom)
 	return {
 		min: {
-			x: Math.min( x1, x2 ),
-			y: Math.min( y1, y2 ),
+			x: Math.min(x1, x2),
+			y: Math.min(y1, y2),
 		},
 		max: {
-			x: Math.max( x1, x2 ),
-			y: Math.max( y1, y2 ),
+			x: Math.max(x1, x2),
+			y: Math.max(y1, y2),
 		},
 	}
 }
 
-function removeType( rec ) {
+function removeType(rec) {
 	delete rec.type
 	return rec
 }
 
-function makeSublayers( array ) {
+function makeSublayers(array) {
 	return {
 		layers: array
-			.filter( el => el.type == "sublayer" )
-			.map( removeType )
-			.reduce( ( collection, sublayer ) => {
-				collection[ sublayer.uid ] = sublayer
+			.filter(el => el.type === "sublayer")
+			.map(removeType)
+			.reduce((collection, sublayer) => {
+				collection[sublayer.uid] = sublayer
 				return collection
-			}, {} ),
+			}, {}),
 		namedpoints:
-			[].concat( ...array
-				.filter( el => el.type == "namedpoints" )
-				.map( el => el.elements )
+			[].concat(...array
+				.filter(el => el.type === "namedpoints")
+				.map(el => el.elements)
 			)
-			.map( removeType )
+				.map(removeType)
 	}
 }
 
-function arcPlain( xml ) {
-	return { path: arcXY( xml ).reduce(
-		( a, { x, y } ) => ( a.push( x, y ), a ), [] ) }
+function arcPlain(xml) {
+	return {
+		path: arcXY(xml).reduce(
+			(a, { x, y }) => { a.push(x, y); return a; }, [])
+	}
 }
 
-function arcXY( xml ) {
+function arcXY(xml) {
 	var last = null
-	return xml.attributes.path.split( /(?=m|M)/ )
-	.map( x => x.split( /(?=m|M|l|L|z|Z)/ ).map( pt => {
-		switch ( pt[ 0 ] ) {
-			case "z": case "Z":
-				return { x: last.x, y: last.y } // check for null
-			case "M": case "L":
-				last = { x: 0, y: 0 }
-			case "m": case "l":
-				pt = pt.slice( 1 ).split( /\s/ ).map( Number )
-				return last = {
-					x: last.x + pt[ 0 ],
-					y: last.y + pt[ 1 ],
-				}
-			default:
-				throw new Error( "wrong arc format: " + x )
-		}
-	} ) )
-	.filter( ( _, i ) => {
-		if ( i > 0 )
-			throw new Error( "more than one chain in an arc" )
-		return true
-	} )
-	[ 0 ]
+	return xml.attributes.path.split(/(?=m|M)/)
+		.map(x => x.split(/(?=m|M|l|L|z|Z)/).map(pt => {
+			switch (pt[0]) {
+				case "z": case "Z":
+					return { x: last.x, y: last.y } // check for null
+				case "M": case "L":
+					pt = pt.slice(1).split(/\s/).map(Number);
+					return last = {
+						x: pt[0],
+						y: pt[1],
+					};
+				case "m": case "l":
+					pt = pt.slice(1).split(/\s/).map(Number);
+					return last = {
+						x: last.x + pt[0],
+						y: last.y + pt[1],
+					}
+				default:
+					throw new Error("wrong arc format: " + x)
+			}
+		}))
+		.filter((_, i) => {
+			if (i > 0)
+				throw new Error("more than one chain in an arc")
+			return true
+		})
+	[0]
 }
 
-function xmlLite( xml ) {
-	return _.fromPairs( _.toPairs( xml ).map( ( [ name, value ] ) => [
-		name == "attrib" ? "attributes" : name == "childs" ? "children" : name,
-		name == "childs" ? value.map( xmlLite ) : value
-	] ) )
+function xmlLite(xml) {
+	return _.fromPairs(_.toPairs(xml).map(([name, value]) => [
+		name === "attrib" ? "attributes" : name === "childs" ? "children" : name,
+		name === "childs" ? value.map(xmlLite) : value
+	]))
 }
 
-export function readXml( text ) {
-	var parsed = xml.parseString( text );
-	var lite = xmlLite( parsed );
-	return transform( lite );
+export function readXml(text) {
+	var parsed = xml.parseString(text);
+	var lite = xmlLite(parsed);
+	return transform(lite);
 }
 
-export function readTable( text ) {
-	var array = JSON.parse( text )
+export function readTable(text) {
+	var array = JSON.parse(text)
 	var fields
 	var table = []
-	for ( var a of array ) {
-		if ( !fields ) {
+	for (var a of array) {
+		if (!fields) {
 			fields = a
 			continue
 		}
-		if ( a == "lastRow" )
+		if (a === "lastRow")
 			break
 		var r = {}
-		for ( var i = 0; i < fields.length; ++i ) {
-			var s = a[ i ]
-			var n = fields[ i ]
-			if ( n == "PATH" )
-				s = s.replace( /\\/g, "/" ).replace( /\.xml$/, ".json" )
-			r[ n ] = s
+		for (var i = 0; i < fields.length; ++i) {
+			var s = a[i]
+			var n = fields[i]
+			if (n === "PATH")
+				s = s.replace(/\\/g, "/").replace(/\.xml$/, ".json")
+			r[n] = s
 		}
-		table.push( r )
+		table.push(r)
 	}
 	return table
 }
-

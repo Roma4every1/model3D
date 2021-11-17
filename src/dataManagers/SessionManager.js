@@ -9,7 +9,6 @@ import setWindowError from "../store/actionCreators/setWindowError";
 import setWindowInfo from "../store/actionCreators/setWindowInfo";
 import setWindowWarning from "../store/actionCreators/setWindowWarning";
 import i18n from '../i18n';
-import { data } from 'jquery';
 var utils = require("../utils");
 
 export default function createSessionManager(systemName, store) {
@@ -140,9 +139,9 @@ export default function createSessionManager(systemName, store) {
     }
 
     const watchReport = (operationId) => {
-        let timerId = setTimeout(function tick() {
+        setTimeout(function tick() {
             if (getReportStatus(operationId) !== true) {
-                timerId = setTimeout(tick, 5);
+                setTimeout(tick, 5);
             }
         }, 5);
     }

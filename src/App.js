@@ -9,8 +9,8 @@ import SessionLoader from './components/SessionLoader';
 const WMWSystemName = process.env.WMWSYSTEMNAME;
 
 export default function App() {
-   var systemName = 'DEMO_SYSTEM';
- //   var systemName = 'OPR_REG_SYSTEM_CONS';
+//   var systemName = 'DEMO_SYSTEM';
+    var systemName = 'OPR_REG_SYSTEM_CONS';
     createSessionManager(WMWSystemName ?? systemName, store);
 
     return (

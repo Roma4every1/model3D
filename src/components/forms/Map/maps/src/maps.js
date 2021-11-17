@@ -15,11 +15,11 @@ function updateCanvasSize(canvas) {
 	var ret = false;
 	var width = canvas.clientWidth * devicePixelRatio || 0;
 	var height = canvas.clientHeight * devicePixelRatio || 0;
-	if (canvas.width != width) {
+	if (canvas.width !== width) {
 		canvas.width = width;
 		ret = true;
 	}
-	if (canvas.height != height) {
+	if (canvas.height !== height) {
 		canvas.height = height;
 		ret = true;
 	}
@@ -32,14 +32,14 @@ module.exports = function Maps(provider) {
 
 	this.checkIndex = (ret, context) => startThread(function* updateMapThread() {
 		logger.info("checking indexes for all layers map", ret);
-		var mapDataEvents = [];
+		var mapDataEvents = yield [];
 		for (let layer of ret.layers) {
 			mapDataEvents.push(layer.elementsData = startThread(function* () {
 				var elements = [];
 				// load container from index
 				var indexName = null
 				if (ret.indexes) {
-					var indexesForContainer = ret.indexes.find(function (i) { return i.container == layer.container })
+					var indexesForContainer = ret.indexes.find(function (i) { return i.container === layer.container })
 					var indexes = []
 					if (indexesForContainer && context && context.center) {
 						indexesForContainer.data.forEach((idx) => {
@@ -59,17 +59,17 @@ module.exports = function Maps(provider) {
 				}
 
 				try {
-					if (indexName && indexName != layer.index) {
-						logger.warn("index updated from " + layer.index + " to "+ indexName + " for container "+ layer.container + " layer " + layer.uid);
+					if (indexName && indexName !== layer.index) {
+						logger.warn("index updated from " + layer.index + " to " + indexName + " for container " + layer.container + " layer " + layer.uid);
 						layer.index = indexName;
 					}
 					var data = yield provider.getContainer(layer.container, indexName || layer.index);
 					var layerFromContainer = layer.uid.includes(layer.container) ? data.layers[layer.uid.replace(layer.container, '')] : data.layers[layer.uid]
 					elements = layerFromContainer.elements;
-					if (elements.length == 0) {
+					if (elements.length === 0) {
 						// try to find elements amoung of [layername] layer into container
 						var nameFromContainerInBrackets = "[" + layerFromContainer.name + "]";
-						var newLayer = Object.values(data.layers).find(function (l) { return l.name == nameFromContainerInBrackets })
+						var newLayer = Object.values(data.layers).find(function (l) { return l.name === nameFromContainerInBrackets })
 						if (newLayer != null) {
 							elements = newLayer.elements;
 						}
@@ -104,7 +104,7 @@ module.exports = function Maps(provider) {
 		});
 		logger.info("updated map", ret);
 	})
-	
+
 
 	this.loadMap = (map, context) => startThread(function* loadMapThread() {
 		logger.info("loading map", map);
@@ -123,8 +123,8 @@ module.exports = function Maps(provider) {
 			}
 			catch (error) {
 				var message = "error loading named points from "
-				ret.mapErrors.push(message + ret.namedpointsContainer + ", "+ error);
-				logger.error(message,	ret.namedpointsContainer, error);
+				ret.mapErrors.push(message + ret.namedpointsContainer + ", " + error);
+				logger.error(message, ret.namedpointsContainer, error);
 				return [];
 			}
 		}));
@@ -138,9 +138,9 @@ module.exports = function Maps(provider) {
 				try {
 					// load container from index
 					var indexName = null
-					if (ret.indexes){
+					if (ret.indexes) {
 						var indexes = []
-						var indexesForContainer = ret.indexes.find(function(i){return i.container == layer.container})
+						var indexesForContainer = ret.indexes.find(function (i) { return i.container === layer.container })
 						if (indexesForContainer && context && context.center) {
 							indexesForContainer.data.forEach((idx) => {
 								if (idx.maxx >= context.center.x && idx.minx < context.center.x && idx.maxy >= context.center.y && idx.miny < context.center.y) {
@@ -155,30 +155,30 @@ module.exports = function Maps(provider) {
 									indexName = idx.hash
 								}
 							});
-							if (!indexName){
-								logger.warn("Problem with index calcualtionfound index for container "+ layer.container);	
-								if (indexesForContainer.data.length > 0){
+							if (!indexName) {
+								logger.warn("Problem with index calcualtionfound index for container " + layer.container);
+								if (indexesForContainer.data.length > 0) {
 									indexName = indexesForContainer.data[0].hash;
 								}
 							}
 						}
-						
-						if (indexName){
-							logger.info("found index " + indexName + " for container "+ layer.container);
+
+						if (indexName) {
+							logger.info("found index " + indexName + " for container " + layer.container);
 							layer.index = indexName
 						}
 					}
 					var data = yield provider.getContainer(layer.container, indexName);
 					var layerFromContainer = layer.uid.includes(layer.container) ? data.layers[layer.uid.replace(layer.container, '')] : data.layers[layer.uid]
 					elements = layerFromContainer.elements;
-                    if (elements.length == 0){
-                        // try to find elements amoung of [layername] layer into container
-                        var nameFromContainerInBrackets = "[" + layerFromContainer.name + "]";
-						var newLayer = Object.values(data.layers).find(function(l){return l.name == nameFromContainerInBrackets})
-						if (newLayer != null){
-						 	elements = newLayer.elements;
+					if (elements.length === 0) {
+						// try to find elements amoung of [layername] layer into container
+						var nameFromContainerInBrackets = "[" + layerFromContainer.name + "]";
+						var newLayer = Object.values(data.layers).find(function (l) { return l.name === nameFromContainerInBrackets })
+						if (newLayer != null) {
+							elements = newLayer.elements;
 						}
-                    }
+					}
 					for (var i of elements) {
 						var t = drawer.types[i.type];
 						if (t && t.loaded) {
@@ -231,14 +231,14 @@ module.exports = function Maps(provider) {
 		var mapDataEvents = [];
 		for (let layer of ret.layers) {
 			layer.elements = null;
-			if (layer.highscale == 0)
+			if (layer.highscale === 0)
 				layer.highscale = 1000000000;
 
 			mapDataEvents.push(layer.elementsData = startThread(function* () {
-				var elements = [];
+				var elements = yield [];
 				try {
 					var data = container;
-					elements = layer.uid.includes(layer.container) ? data.layers[layer.uid.replace(layer.container, '')].elements: data.layers[layer.uid].elements;
+					elements = layer.uid.includes(layer.container) ? data.layers[layer.uid.replace(layer.container, '')].elements : data.layers[layer.uid].elements;
 					for (var i of elements) {
 						var t = drawer.types[i.type];
 						if (t && t.loaded) {
@@ -464,7 +464,7 @@ module.exports = function Maps(provider) {
 			fieldName = fieldLayer.name;
 			fieldValue = drawer.types["field"].getFieldValueInPoint(fieldLayer.elements[0], point, { coords });
 		}
-		return {fieldName, fieldValue};
+		return { fieldName, fieldValue };
 	};
 
 	this.drawPoint = (canvas, map, scale, centerx, centery, point) => {
@@ -520,7 +520,7 @@ module.exports = function Maps(provider) {
 
 		var canvasFlag = canvas.showMapFlag = {};
 
-		var events = new EventEmitter;
+		var events = new EventEmitter();
 		var canvasEvents = canvas.events;
 
 		var resizer = htmlHelper.onElementSize(canvas, canvas => process.nextTick(() => update(canvas)));
@@ -572,7 +572,7 @@ module.exports = function Maps(provider) {
 				var onCheckExecution = () => {
 					if (!checkCanvas())
 						throw new Error("map drawer is detached");
-					if (drawFlag != canvas.showMapFlag.mapDrawCycle)
+					if (drawFlag !== canvas.showMapFlag.mapDrawCycle)
 						throw new Error("stop");
 					if (++count > (uimode ? 20 : 1000)) {
 						count = 0;
