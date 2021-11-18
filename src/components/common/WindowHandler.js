@@ -28,19 +28,19 @@ export default function WindowHandler() {
         switch (windowData.type) {
             case 'error':
                 typeIcon = "k-i-x-circle";
-                classbutton = "k-icon-red";
+                classbutton = "colored-red";
                 break;
             case 'warning':
                 typeIcon = "k-i-warning";
-                classbutton = "k-icon-red";
+                classbutton = "colored-red";
                 break;
             case 'info':
                 typeIcon = "k-i-info";
-                classbutton = "k-icon-blue";
+                classbutton = "colored-blue";
                 break;
             default:
                 typeIcon = "k-i-x-circle";
-                classbutton = "k-icon-red";
+                classbutton = "colored-red";
                 break;
         }
     }
@@ -57,10 +57,10 @@ export default function WindowHandler() {
                             cols: 2,
                         }}
                     >
-                        <GridLayoutItem row={1} col={1} rowSpan={2}>
-                            <button className={"margin-5 k-button k-button-clear " + classbutton} onClick={handleStackTrace}>
-                                <span className={classIcon} />
-                            </button>
+                        <GridLayoutItem row={1} col={1} rowSpan={2} className="horizontal">
+                            <div className={"margin-5 " + classbutton} onClick={handleStackTrace}>
+                                <span className={"cursor-pointer " + classIcon} onClick={handleStackTrace} />
+                            </div>
                         </GridLayoutItem>
                         <GridLayoutItem row={1} col={2}>
                             <div className="margin-5 textAlign-left">
@@ -68,7 +68,7 @@ export default function WindowHandler() {
                             </div>
                         </GridLayoutItem>
                         {stackTraceVisible && <GridLayoutItem row={2} col={2}>
-                            <div className="textAlign-left">
+                            <div className="margin-5 textAlign-left">
                                 {windowData.stackTrace}
                             </div>
                         </GridLayoutItem>}

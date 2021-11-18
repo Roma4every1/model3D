@@ -8,7 +8,6 @@ import {
 import {
     Button
 } from "@progress/kendo-react-buttons";
-import { saveAs } from '@progress/kendo-file-saver';
 import updateParam from "../../../../../store/actionCreators/updateParam";
 import FormParametersList from '../../../../common/FormParametersList';
 
@@ -39,17 +38,6 @@ export default function ProgramParametersList(props) {
             sessionManager.watchReport(data.OperationId, data);
             data = await sessionManager.fetchData(`getOperationResult?sessionId=${sessionId}&operationId=${data.OperationId}&waitResult=true`);
         }
-        if (data.WrongResult) {
-            sessionManager.handleWindowError(t('messages.programError'));
-        }
-        if (data.Path) {
-            const resultText = await sessionManager.fetchData(`downloadResource?resourceName=${data.Path}&sessionId=${sessionId}`);
-            const fileExactName = data.Path.split('\\').pop().split('/').pop();
-            const path = process.env.PUBLIC_URL + '/' + resultText;
-            saveAs(
-                path,
-                fileExactName);
-        }
         if (data && data.ModifiedTables && data.ModifiedTables.ModifiedTables) {
             sessionManager.channelsManager.updateTables(data.ModifiedTables.ModifiedTables);
         }
@@ -60,7 +48,7 @@ export default function ProgramParametersList(props) {
                     dispatch(updateParam(formId, param.id, null, true));
                 }
         });
-    }, [sessionId, formId, formParams, sessionManager, t, dispatch]);
+    }, [sessionId, formId, formParams, sessionManager, dispatch]);
 
     const handleRun = () => {
         handleClose();

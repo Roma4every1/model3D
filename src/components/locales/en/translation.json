@@ -12,6 +12,12 @@
     "warning": "Warning",
     "wrong": "Something went wrong."
   },
+  "downloadFiles": {
+    "comment": "Comment: {{comment}}",
+    "date": "Date: {{date}}",
+    "error": "Error on report processing: {{error}}",
+    "inOrderAndProgress": "In order: {{order}}, progress: {{progress}}%"
+  },
   "editors": {
     "fileNotSelected": "File is not selected",
     "filesCount": "Selected files count: {{count}}",

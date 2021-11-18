@@ -7,12 +7,28 @@ html {
     font-size: 32px;
 }
 
-.k-icon-red {
+.colored-red {
     color: red;
 }
 
-.k-icon-blue {
+.colored-blue {
     color: blue;
+}
+
+.colored-lightgray {
+    color: lightgray;
+}
+
+.colored-orangered {
+    color: orangered;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.colored-gray {
+    color: gray;
 }
 
 .k-treeview .k-item {
@@ -37,6 +53,12 @@ html {
 
 .textAlign-left {
     text-align: left;
+}
+
+.horizontal {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 5px;
 }
 
 .windowButtonContainer {

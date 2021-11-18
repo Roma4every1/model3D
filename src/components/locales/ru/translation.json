@@ -12,6 +12,12 @@
     "warning": "Предупреждение",
     "wrong": "Что-то пошло не так."
   },
+  "downloadFiles": {
+    "comment": "Комментарий: {{comment}}",
+    "date": "Дата: {{date}}",
+    "error": "Ошибки при получении отчета: {{error}}",
+    "inOrderAndProgress": "В очереди: {{order}}, прогресс: {{progress}}%"
+  },
   "editors": {
     "fileNotSelected": "Файл не выбран",
     "filesCount": "Выбрано файлов: {{count}}",
