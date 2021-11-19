@@ -28,8 +28,8 @@ export default function DownloadFileItem(props) {
             fileExactName);
     }
 
-    return (<div key={operationData.Id}>
-        <div key={operationData.Id + "image"} className="horizontal">
+    return (<div key={operationData.Id} className="horizontalHeader">
+        <div key={operationData.Id + "image"} className="horizontalFixed">
             {needShowResult ? <img src={getImagePath(ext)} alt="logo" /> : <img src={getImagePath(operationData.DisplayType === 4 ? "import" : "default")} alt="logo" />}
         </div>
         <div key={operationData.Id + "body"} className="horizontal">

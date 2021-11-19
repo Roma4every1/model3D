@@ -11,6 +11,7 @@ function windowData(state = null, action) {
             header: action.header ?? i18n.t('base.error'),
             text: action.text,
             stackTrace: action.stackTrace,
+            fileToSaveName: action.fileToSaveName,
             type: "error"
         };
 
@@ -19,6 +20,7 @@ function windowData(state = null, action) {
             header: action.header ?? i18n.t('base.info'),
             text: action.text,
             stackTrace: action.stackTrace,
+            fileToSaveName: action.fileToSaveName,
             type: "info"
         };
 
@@ -27,6 +29,7 @@ function windowData(state = null, action) {
             header: action.header ?? i18n.t('base.warning'),
             text: action.text,
             stackTrace: action.stackTrace,
+            fileToSaveName: action.fileToSaveName,
             type: "warning"
         };
 

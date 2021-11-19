@@ -120,27 +120,43 @@ export default function createSessionManager(systemName, store) {
         store.dispatch(setChildForms(formId, data));
     }
 
-    const handleWindowError = (header, text, windowType) => {
-        store.dispatch(setWindowError(header, text, windowType));
+    const handleWindowError = (text, stackTrace, header, fileToSaveName) => {
+        store.dispatch(setWindowError(text, stackTrace, header, fileToSaveName));
     }
 
-    const handleWindowInfo = (header, text, windowType) => {
-        store.dispatch(setWindowInfo(header, text, windowType));
+    const handleWindowInfo = (text, stackTrace, header, fileToSaveName) => {
+        store.dispatch(setWindowInfo(text, stackTrace, header, fileToSaveName));
     }
 
-    const handleWindowWarning = (header, text, windowType) => {
-        store.dispatch(setWindowWarning(header, text, windowType));
+    const handleWindowWarning = (text, stackTrace, header, fileToSaveName) => {
+        store.dispatch(setWindowWarning(text, stackTrace, header, fileToSaveName));
     }
 
     const getReportStatus = async (operationId) => {
-        const data = await fetchData(`getOperationResult?sessionId=${store.getState().sessionId}&operationId=${operationId}&waitResult=false`);
-        store.dispatch(setReport(operationId, data));
-        return data.Progress === 100;
+        try {
+            const data = await fetchData(`getOperationResult?sessionId=${store.getState().sessionId}&operationId=${operationId}&waitResult=false`);
+            if (data) {
+                store.dispatch(setReport(operationId, data.report));
+                if (data.isReady) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+            else {
+                return true;
+            }
+        }
+        catch {
+            return true;
+        }
     }
 
     const watchReport = (operationId) => {
-        setTimeout(function tick() {
-            if (getReportStatus(operationId) !== true) {
+        setTimeout(async function tick() {
+            var result = await getReportStatus(operationId);
+            if (result !== true) {
                 setTimeout(tick, 5);
             }
         }, 5);

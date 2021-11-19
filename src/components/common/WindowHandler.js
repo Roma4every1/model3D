@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { GridLayout, GridLayoutItem } from "@progress/kendo-react-layout";
 import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { Button } from "@progress/kendo-react-buttons";
+import { saveAs } from '@progress/kendo-file-saver';
 import closeWindow from "../../store/actionCreators/closeWindow";
 
 export default function WindowHandler() {
@@ -17,6 +18,13 @@ export default function WindowHandler() {
 
     const handleClose = () => {
         dispatch(closeWindow());
+    };
+
+    const handleSave = () => {
+        var blob = new Blob([windowData.text], { type: "text/plain;charset=utf-8" });
+        saveAs(
+            blob,
+            windowData.fileToSaveName);
     };
 
     const windowData = useSelector((state) => state.windowData);
@@ -80,6 +88,11 @@ export default function WindowHandler() {
                             {t('base.ok')}
                         </Button>
                     </div>
+                    {windowData.fileToSaveName && <div className="windowButtonContainer">
+                        <Button className="windowButton" onClick={handleSave}>
+                            {t('base.save')}
+                        </Button>
+                    </div>}
                 </DialogActionsBar>
             </Dialog>}
         </div>);

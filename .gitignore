@@ -12,6 +12,7 @@
 
 # misc
 /.vs
+/src/.vs
 /.vscode
 .DS_Store
 .env

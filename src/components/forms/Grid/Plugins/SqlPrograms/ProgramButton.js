@@ -8,7 +8,7 @@ import ProgramParametersList from './ProgramParametersList';
 export default function ProgramButton(props) {
     const sessionManager = useSelector((state) => state.sessionManager);
     const sessionId = useSelector((state) => state.sessionId);
-    const { programDisplayName, formId } = props;
+    const { programDisplayName, formId, presentationId } = props;
     const [open, setOpen] = React.useState(false);
 
     const handleOpen = () => {
@@ -31,7 +31,7 @@ export default function ProgramButton(props) {
             <Button className="actionbutton" onClick={fillReportParameters}>
                 {programDisplayName}
             </Button>
-            {open && (<ProgramParametersList formId={formId} handleClose={handleClose} />)}
+            {open && (<ProgramParametersList formId={formId} presentationId={presentationId} handleClose={handleClose} programDisplayName={programDisplayName} />)}
         </div>
     );
 }

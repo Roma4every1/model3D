@@ -9,13 +9,16 @@
     "parameters": "Parameters",
     "programs": "Programs",
     "run": "Run",
+    "save": "Save",
     "warning": "Warning",
     "wrong": "Something went wrong."
   },
   "downloadFiles": {
+    "clear": "Clear report list",
     "comment": "Comment: {{comment}}",
     "date": "Date: {{date}}",
     "error": "Error on report processing: {{error}}",
+    "filter": "Filter by active presentations",
     "inOrderAndProgress": "In order: {{order}}, progress: {{progress}}%"
   },
   "editors": {
@@ -70,7 +73,8 @@
     "selectAllRec": "Select all records"
   },
   "report": {
-    "params": "Report parameters"
+    "params": "Report parameters",
+    "result": "Program result"
   },
   "session": {
     "loading": "Loading session..."

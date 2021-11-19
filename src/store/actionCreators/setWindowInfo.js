@@ -1,11 +1,12 @@
 import SETINFO from '../actions/windowData/setInfo';
 
-function setWindowInfo(text, stackTrace = null, header = null) {
+function setWindowInfo(text, stackTrace = null, header = null, fileToSaveName = null) {
     return {
         type: SETINFO,
         header: header,
         text: text,
-        stackTrace: stackTrace
+        stackTrace: stackTrace,
+        fileToSaveName: fileToSaveName
     };
 }
 
