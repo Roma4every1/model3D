@@ -5,56 +5,74 @@ var _ = require("lodash");
 
 function DataSet(props, ref) {
     const sessionManager = useSelector((state) => state.sessionManager);
+    const sessionId = useSelector((state) => state.sessionId);
     const { formData, channels } = props;
     const [activeChannelName] = React.useState(channels[0]);
+    const [tableSettings, setTableSettings] = React.useState(null);
 
     const reload = React.useCallback(async () => {
         await sessionManager.channelsManager.loadAllChannelData(activeChannelName, formData.id, true);
     }, [activeChannelName, formData, sessionManager]);
 
+    React.useEffect(() => {
+        let ignore = false;
+        if (sessionId) {
+            async function fetchData() {
+                const data = await sessionManager.fetchData(`getDataSetFormParameters?sessionId=${sessionId}&formId=${formData.id}`);
+                if (!ignore) {
+                    setTableSettings(data);
+                }
+            }
+            fetchData();
+        }
+        return () => { ignore = true; }
+    }, [sessionId, formData]);
+
     const databaseData = useSelector((state) => state.channelsData[activeChannelName]);
 
     var columnsJSON = [];
     var rowsJSON = [];
-    if (databaseData && databaseData.data) {
-        columnsJSON = databaseData.data.Columns.map(function (column) {
+    if (databaseData && databaseData.data && databaseData.properties) {
+        columnsJSON = databaseData.properties.map(function (property) {
+            const column = databaseData.data.Columns.find(o => o.Name === (property.fromColumn ?? property.name));
             const temp = {};
-            temp.field = column.Name;
-            temp.headerName = column.Name;
+            temp.field = property.name;
+            temp.fromColumn = property.fromColumn;
             temp.netType = column.NetType;
-            const property = _.find(databaseData.properties, function (o) { return o.fromColumn === column.Name; });
-            if (property) {
-                temp.headerName = property.displayName;
-                temp.lookupChannelName = property.lookupChannelName;
-                temp.lookupData = property.lookupData;
-            }
+            temp.headerName = property.displayName;
+            temp.lookupChannelName = property.lookupChannelName;
+            temp.lookupData = property.lookupData;
             return temp;
         });
 
         rowsJSON = databaseData.data.Rows.map(function (row, rowIndex) {
             const temp = {};
             temp.js_id = rowIndex;
-            for (var i = 0; i < columnsJSON.length; i++) {
-                if (columnsJSON[i].netType === 'System.DateTime' && row.Cells[i]) {
-                    const startIndex = row.Cells[i].indexOf('(');
-                    const finishIndex = row.Cells[i].lastIndexOf('+');
-                    const dateValue = row.Cells[i].slice(startIndex + 1, finishIndex);
-                    var d = new Date();
-                    d.setTime(dateValue);
-                    temp[columnsJSON[i].field] = d;
-                }
-                else {
-                    if (columnsJSON[i].lookupData) {
-                        const prevalue = row.Cells[i];
-                        const textvalue = columnsJSON[i].lookupData.find((c) => c.id === prevalue)?.text;
-                        temp[columnsJSON[i].field] = textvalue;
-                        temp[columnsJSON[i].field + '_jsoriginal'] = row.Cells[i];
+            columnsJSON.forEach(column => {
+                let i = databaseData.data.Columns.findIndex(o => o.Name === (column.fromColumn ?? column.field));
+                if (i >= 0) {
+                    let rowValue = row.Cells[i];
+                    if (column.netType === 'System.DateTime' && rowValue) {
+                        const startIndex = rowValue.indexOf('(');
+                        const finishIndex = rowValue.lastIndexOf('+');
+                        const dateValue = rowValue.slice(startIndex + 1, finishIndex);
+                        var d = new Date();
+                        d.setTime(dateValue);
+                        temp[column.field] = d;
                     }
                     else {
-                        temp[columnsJSON[i].field] = row.Cells[i];
+                        if (column.lookupData) {
+                            const prevalue = rowValue;
+                            const textvalue = column.lookupData.find((c) => c.id === prevalue)?.text;
+                            temp[column.field] = textvalue;
+                            temp[column.field + '_jsoriginal'] = rowValue;
+                        }
+                        else {
+                            temp[column.field] = rowValue;
+                        }
                     }
                 }
-            }
+            });
             return temp;
         });
     }
@@ -102,7 +120,7 @@ function DataSet(props, ref) {
 
     return (
         <div className="grid-container">
-            <DataSetView inputTableData={tableData} formData={formData} apply={apply} deleteRows={deleteRows} reload={reload} ref={_viewRef} />
+            <DataSetView inputTableData={tableData} tableSettings={tableSettings} formData={formData} apply={apply} deleteRows={deleteRows} reload={reload} ref={_viewRef} />
         </div>
     );
 }

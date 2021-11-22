@@ -51,7 +51,7 @@ const idGetter = getter(DATA_ITEM_KEY);
 
 function DataSetView(props, ref) {
     const { t } = useTranslation();
-    const { inputTableData, formData, apply, deleteRows, reload } = props;
+    const { inputTableData, tableSettings, formData, apply, deleteRows, reload } = props;
     const [rowAdding, setRowAdding] = React.useState(false);
     const [edited, setEdited] = React.useState(false);
     const [tableData, setTableData] = React.useState({
@@ -128,8 +128,36 @@ function DataSetView(props, ref) {
             ],
             skip: 0,
         });
-        setTableData(inputTableData);
-    }, [inputTableData]);
+        var columnNames = [];
+        if (!tableSettings) {
+            setTableData(inputTableData);
+        }
+        else {
+            if (tableSettings?.attachedProperties?.attachOption === "AttachAll") {
+                columnNames = inputTableData.columnsJSON.map(c => c.field).filter(f => !tableSettings?.attachedProperties?.exclude.includes(f));
+            }
+            else {
+                if (tableSettings?.attachedProperties?.exclude) {
+                    columnNames = tableSettings?.attachedProperties?.exclude
+                }
+            }
+            if (tableSettings.columns.columnsSettings) {
+                tableSettings.columns.columnsSettings.sort((a, b) => a.displayIndex - b.displayIndex);
+                columnNames = tableSettings.columns.columnsSettings.map(s => s.channelPropertyName).filter(n => columnNames.includes(n));
+            }
+            var columns = columnNames.map(c => inputTableData.columnsJSON.find(jsc => jsc.field === c));
+            if (tableSettings.columns.frozenColumnCount) {
+                var count = tableSettings.columns.frozenColumnCount;
+                if (count > columns.length) {
+                    count = columns.length;
+                }
+                for (let i = 0; i < count; i++) {
+                    columns[i].locked = true;
+                }
+            }
+            setTableData({ rowsJSON: inputTableData.rowsJSON, columnsJSON: columns });
+        }
+    }, [inputTableData, tableSettings]);
 
     async function deleteSelectedRows() {
         var elementsToRemove = ',';
@@ -167,6 +195,14 @@ function DataSetView(props, ref) {
     }
 
     const calculateWidth = (headerName, field) => {
+        if (tableSettings) {
+            var columnSetting = tableSettings.columns.columnsSettings.find(s => s.channelPropertyName == field);
+            if (columnSetting) {
+                if (columnSetting.width && columnSetting.width !== 1) {
+                    return columnSetting.width;
+                }
+            }
+        }
         let maxWidth = calculateSize(headerName, {
             font: "Arial",
             fontSize: "14px",
@@ -368,6 +404,7 @@ function DataSetView(props, ref) {
                             onKeyDown={onKeyDown}
                         >
                             {tableData.columnsJSON.map(column => <Column
+                                locked={column.locked}
                                 key={column.field}
                                 field={column.field}
                                 title={column.headerName}

@@ -43,7 +43,9 @@ export var BaseCell = function (props) {
                 data.toString();
         }
     }
-    return <td data-grid-col-index={props.columnIndex}
+    return <td
+        className={props.className}
+        data-grid-col-index={props.columnIndex}
         style={{ padding: 1, width: '100%' }}
         aria-colindex={props.ariaColumnIndex}
         aria-selected={props.isSelected}
