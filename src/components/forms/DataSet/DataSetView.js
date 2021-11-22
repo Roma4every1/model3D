@@ -188,6 +188,16 @@ function DataSetView(props, ref) {
     };
 
     const getEditorType = (column) => {
+        if (inputTableData.properties) {
+            const property = _.find(inputTableData.properties, function (o) { return o.name === column.field; });
+            if (property && property.secondLevelChannelName) {
+                return {
+                    type: "secondLevel",
+                    secondLevelFormId: formData.id + column.field,
+                    channelName: property.secondLevelChannelName
+                };
+            }
+        }
         if (column.lookupData) {
             return {
                 type: "lookup",
@@ -308,70 +318,68 @@ function DataSetView(props, ref) {
 
     if (tableData.columnsJSON.length > 0) {
         return (
-            <div>
-                <LocalizationProvider language="ru-RU">
-                    <IntlProvider locale="ru">
-                        {deleteDialogOpen && (
-                            <Dialog title={t('table.deleteRowsHeader')} onClose={handleDeleteDialogClose}>
-                                <p
-                                    style={{
-                                        margin: "25px",
-                                        textAlign: "center",
-                                    }}
-                                >
-                                    {t('table.areYouSureToDeleteRows', { count: _.countBy(Object.keys(selectedState), o => selectedState[o]).true })}
-                                </p>
-                                <DialogActionsBar>
-                                    <Button className="actionbutton" primary={true} onClick={() => { handleDeleteDialogClose(); deleteSelectedRows(); }}>
-                                        {t('base.ok')}
-                                    </Button>
-                                    <Button className="actionbutton" onClick={handleDeleteDialogClose}>
-                                        {t('base.cancel')}
-                                    </Button>
-                                </DialogActionsBar>
-                            </Dialog>
-                        )}
-                        <FormHeader formData={formData} additionalButtons={otherButtons} />
-                        <ExcelExport data={dataToShow.data} ref={_export}>
-                            <Grid
-                                resizable={true}
-                                sortable={true}
-                                data={dataToShow}
-                                {...dataState}
-                                navigatable={true}
-                                onDataStateChange={(e) => {
-                                    setDataState(e.dataState);
+            <LocalizationProvider language="ru-RU">
+                <IntlProvider locale="ru">
+                    {deleteDialogOpen && (
+                        <Dialog title={t('table.deleteRowsHeader')} onClose={handleDeleteDialogClose}>
+                            <p
+                                style={{
+                                    margin: "25px",
+                                    textAlign: "center",
                                 }}
-                                onRowClick={rowClick}
-                                cellRender={customCellRender}
-                                rowRender={customRowRender}
-                                onItemChange={onItemChange}
-                                dataItemKey={DATA_ITEM_KEY}
-                                editField={EDIT_FIELD}
-                                selectedField={SELECTED_FIELD}
-                                selectable={{
-                                    enabled: true,
-                                    drag: true,
-                                    cell: false,
-                                    mode: 'single'
-                                }}
-                                onSelectionChange={onSelectionChange}
-                                onKeyDown={onKeyDown}
                             >
-                                {tableData.columnsJSON.map(column => <Column
-                                    key={column.field}
-                                    field={column.field}
-                                    title={column.headerName}
-                                    width={calculateWidth(column.headerName, column.field)}
-                                    format={getFormat(column)}
-                                    columnMenu={GridColumnMenuFilter}
-                                />
-                                )}
-                            </Grid>
-                        </ExcelExport>
-                    </IntlProvider>
-                </LocalizationProvider>
-            </div>
+                                {t('table.areYouSureToDeleteRows', { count: _.countBy(Object.keys(selectedState), o => selectedState[o]).true })}
+                            </p>
+                            <DialogActionsBar>
+                                <Button className="actionbutton" primary={true} onClick={() => { handleDeleteDialogClose(); deleteSelectedRows(); }}>
+                                    {t('base.ok')}
+                                </Button>
+                                <Button className="actionbutton" onClick={handleDeleteDialogClose}>
+                                    {t('base.cancel')}
+                                </Button>
+                            </DialogActionsBar>
+                        </Dialog>
+                    )}
+                    <FormHeader formData={formData} additionalButtons={otherButtons} />
+                    <ExcelExport data={dataToShow.data} ref={_export}>
+                        <Grid className="grid-content"
+                            resizable={true}
+                            sortable={true}
+                            data={dataToShow}
+                            {...dataState}
+                            navigatable={true}
+                            onDataStateChange={(e) => {
+                                setDataState(e.dataState);
+                            }}
+                            onRowClick={rowClick}
+                            cellRender={customCellRender}
+                            rowRender={customRowRender}
+                            onItemChange={onItemChange}
+                            dataItemKey={DATA_ITEM_KEY}
+                            editField={EDIT_FIELD}
+                            selectedField={SELECTED_FIELD}
+                            selectable={{
+                                enabled: true,
+                                drag: true,
+                                cell: false,
+                                mode: 'single'
+                            }}
+                            onSelectionChange={onSelectionChange}
+                            onKeyDown={onKeyDown}
+                        >
+                            {tableData.columnsJSON.map(column => <Column
+                                key={column.field}
+                                field={column.field}
+                                title={column.headerName}
+                                width={calculateWidth(column.headerName, column.field)}
+                                format={getFormat(column)}
+                                columnMenu={GridColumnMenuFilter}
+                            />
+                            )}
+                        </Grid>
+                    </ExcelExport>
+                </IntlProvider>
+            </LocalizationProvider>
         );
     }
     else return <div />

@@ -61,7 +61,8 @@ function DataSet(props, ref) {
 
     var tableData = {
         rowsJSON: rowsJSON,
-        columnsJSON: columnsJSON
+        columnsJSON: columnsJSON,
+        properties: databaseData?.properties
     };
 
     async function deleteRows(elementsToRemove) {
@@ -100,7 +101,7 @@ function DataSet(props, ref) {
     }));
 
     return (
-        <div>
+        <div className="grid-container">
             <DataSetView inputTableData={tableData} formData={formData} apply={apply} deleteRows={deleteRows} reload={reload} ref={_viewRef} />
         </div>
     );

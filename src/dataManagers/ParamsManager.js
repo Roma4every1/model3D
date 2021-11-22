@@ -2,24 +2,10 @@
 import setCanRunReport from "../store/actionCreators/setCanRunReport";
 import setParams from "../store/actionCreators/setParams";
 import updateParam from "../store/actionCreators/updateParam";
+var utils = require("../utils");
 var _ = require("lodash");
 
 export default function createParamsManager(store) {
-
-    const getParentFormId = (formId) => {
-        var index1 = formId.lastIndexOf(':');
-        var index2 = formId.lastIndexOf(',');
-        var index = index1;
-        if (index === -1 || index2 > index1) {
-            index = index2;
-        }
-        if (index === -1) {
-            return ''
-        }
-        else {
-            return formId.substring(0, index);
-        }
-    }
 
     const getParameterValues = (neededParamList, formId, addToLocal) => {
         var paramsToUse = [];
@@ -31,7 +17,7 @@ export default function createParamsManager(store) {
                 if (currentFormId === '') {
                     break;
                 }
-                currentFormId = getParentFormId(currentFormId);
+                currentFormId = utils.getParentFormId(currentFormId);
             }
             if (element) {
                 if (addToLocal && (element.formId !== formId)) {

@@ -80,8 +80,9 @@
     "loading": "Загрузка сессии..."
   },
   "table": {
+    "areYouSureToDeleteRows": "Вы уверены, что хотите удалить строки (к-во: {{count}})?",
     "deleteRowsHeader": "Удаление строк",
-    "areYouSureToDeleteRows": "Вы уверены, что хотите удалить строки (к-во: {{count}})?"
+    "showDetailInfo": "Показать детальную информацию"
   },
   "version": {
     "label": "Версия"

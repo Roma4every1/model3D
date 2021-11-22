@@ -1,5 +1,6 @@
 ﻿import * as React from 'react';
 import { BooleanCell } from "./BooleanCell";
+import { ButtonCell } from "./ButtonCell";
 import { DateCell } from "./DateCell";
 import { DropDownCell } from "./DropDownCell";
 import { NumericCell } from "./NumericCell";
@@ -12,7 +13,11 @@ export var BaseCell = function (props) {
     var data = props.dataItem[props.field] ?? '';
     var navigationAttributes = useTableKeyboardNavigation(props.id);
     var element = '';
-    if (props.dataItem.js_inEdit && props.editField === props.field) {
+    if (props.type === 'secondLevel')
+    {
+        element = <ButtonCell {...props} secondLevelFormId={props.secondLevelFormId} channelName={props.channelName} />;
+    }
+    else if (props.dataItem.js_inEdit && props.editField === props.field) {
         switch (props.type) {
             case 'lookup':
                 element = <DropDownCell {...props} lookupData={props.values} dataValue={data} />;

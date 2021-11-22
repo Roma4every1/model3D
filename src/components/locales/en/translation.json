@@ -80,8 +80,9 @@
     "loading": "Loading session..."
   },
   "table": {
+    "areYouSureToDeleteRows": "Are you sure to delete rows (count: {{count}})?",
     "deleteRowsHeader": "Rows deleting",
-    "areYouSureToDeleteRows": "Are you sure to delete rows (count: {{count}})?"
+    "showDetailInfo": "Show detail information"
   },
   "version": {
     "label": "Version"

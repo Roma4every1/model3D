@@ -43,7 +43,7 @@ export default function Form(props) {
     }, [formData, dispatch])
 
     return (
-        <div>
+        <div className="form-container">
             <ErrorBoundary>
                 <Suspense fallback={<p><em>{t('base.loading')}</em></p>}>
                     <FormByType formData={formData} channels={activeChannels} params={activeParams} ref={_form} />

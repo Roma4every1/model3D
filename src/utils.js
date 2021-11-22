@@ -23,6 +23,21 @@ export const capitalizeFirstLetter = (string) => {
         return null;
 }
 
+export const getParentFormId = (formId) => {
+    var index1 = formId.lastIndexOf(':');
+    var index2 = formId.lastIndexOf(',');
+    var index = index1;
+    if (index === -1 || index2 > index1) {
+        index = index2;
+    }
+    if (index === -1) {
+        return ''
+    }
+    else {
+        return formId.substring(0, index);
+    }
+}
+
 export const toDate = (wmwDateString) => {
     const startIndex = wmwDateString.indexOf('(');
     const finishIndex = wmwDateString.lastIndexOf('+');
