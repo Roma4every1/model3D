@@ -1,7 +1,6 @@
 ﻿import React from 'react';
 import { useSelector } from 'react-redux';
 import DataSetView from "./DataSet/DataSetView";
-var _ = require("lodash");
 
 function DataSet(props, ref) {
     const sessionManager = useSelector((state) => state.sessionManager);
@@ -90,12 +89,12 @@ function DataSet(props, ref) {
     async function apply(editedTableData, rowToInsert, editID, rowAdding) {
         var cells = [];
         databaseData.data.Columns.forEach(column => {
-            const datacolumn = editedTableData.columnsJSON.find((c) => c.field === column.Name)
+            const datacolumn = editedTableData.columnsJSON.find((c) => c.fromColumn === column.Name)
             if (datacolumn.lookupData) {
-                return cells.push(rowToInsert[column.Name + '_jsoriginal'])
+                return cells.push(rowToInsert[datacolumn.field + '_jsoriginal'])
             }
             else {
-                return cells.push(rowToInsert[column.Name])
+                return cells.push(rowToInsert[datacolumn.field])
             }
         });
         var itemToInsert = { Id: null, Cells: cells };
@@ -120,7 +119,7 @@ function DataSet(props, ref) {
 
     return (
         <div className="grid-container">
-            <DataSetView inputTableData={tableData} tableSettings={tableSettings} formData={formData} apply={apply} deleteRows={deleteRows} reload={reload} ref={_viewRef} />
+            <DataSetView inputTableData={tableData} editable={databaseData?.data?.Editable} tableSettings={tableSettings} formData={formData} apply={apply} deleteRows={deleteRows} reload={reload} ref={_viewRef} />
         </div>
     );
 }

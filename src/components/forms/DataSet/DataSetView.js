@@ -51,7 +51,7 @@ const idGetter = getter(DATA_ITEM_KEY);
 
 function DataSetView(props, ref) {
     const { t } = useTranslation();
-    const { inputTableData, tableSettings, formData, apply, deleteRows, reload } = props;
+    const { inputTableData, tableSettings, formData, apply, deleteRows, reload, editable } = props;
     const [rowAdding, setRowAdding] = React.useState(false);
     const [edited, setEdited] = React.useState(false);
     const [tableData, setTableData] = React.useState({
@@ -73,20 +73,58 @@ function DataSetView(props, ref) {
         setDeleteDialogOpen(false);
     };
 
-    const rowClick = (event) => {
+    React.useEffect(() => {
         if (edited) {
             applyEdit();
         }
         setEditID(null);
+    }, [selectedState]);
+
+    const rowClick = (event) => {
     };
 
-    const addRecord = () => {
-        const newRecord = {
-            [DATA_ITEM_KEY]: tableData.rowsJSON.length + 1,
-        };
-        setTableData({ rowsJSON: [...tableData.rowsJSON, newRecord], columnsJSON: tableData.columnsJSON });
-        setEditID(idGetter(newRecord));
-        setRowAdding(true);
+    const addRecord = (existingRecord, addToEnd) => {
+        var copy = true;
+        var toEnd = false;
+        var index = Math.min(Object.entries(selectedState).filter(e => e[1] === true).map(e => e[0]));
+        if (index === tableData.rowsJSON.length - 1) {
+            toEnd = true;
+        }
+        if (index === Infinity) {
+            copy = false;
+            index = 1;
+        }
+
+        var newRecord;
+        if (existingRecord && copy) {
+            newRecord = {
+                ...tableData.rowsJSON[index],
+                [DATA_ITEM_KEY]: tableData.rowsJSON.length + 1,
+            };
+        }
+        else {
+            newRecord = {
+                [DATA_ITEM_KEY]: tableData.rowsJSON.length + 1,
+            };
+        }
+        if (toEnd && addToEnd) {
+            setTableData({ rowsJSON: [...tableData.rowsJSON, newRecord], columnsJSON: tableData.columnsJSON });
+        }
+        else if (!toEnd) {
+            var startPart = tableData.rowsJSON.slice(0, index);
+            var finishPart = tableData.rowsJSON.slice(index);
+            setTableData({ rowsJSON: [...startPart, newRecord, ...finishPart], columnsJSON: tableData.columnsJSON });
+        }
+        if (!toEnd || !addToEnd) {
+            setEditID(idGetter(newRecord));
+            //let newState = {}
+            //if (addToEnd) {
+            //    index++;
+            //}
+            //newState[tableData.rowsJSON.length + 1] = true;
+            //setSelectedState(newState);
+            setRowAdding(true);
+        }
     };
 
     const excelExport = () => {
@@ -110,7 +148,9 @@ function DataSetView(props, ref) {
             selectedState: selectedState,
             dataItemKey: DATA_ITEM_KEY,
         });
-        setSelectedState(newSelectedState);
+        if (!_.isEqual(newSelectedState, selectedState)) {
+            setSelectedState(newSelectedState);
+        }
     };
 
     const onKeyDown = (event) => {
@@ -120,6 +160,109 @@ function DataSetView(props, ref) {
             dataItemKey: DATA_ITEM_KEY,
         });
         setSelectedState(newSelectedState);
+
+        switch (event.nativeEvent.key) {
+            case 'Insert': {
+                if (editable) {
+                    if (event.nativeEvent.ctrlKey) {
+                        addRecord(true);
+                    }
+                    else {
+                        addRecord();
+                    }
+                }
+                break;
+            }
+            case 'Escape': {
+                exitEdit();
+                break;
+            }
+            case 'Delete': {
+                if (editable && !(editID && editField)) {
+                    handleDeleteDialogOpen();
+                }
+                break;
+            }
+            case 'Enter': {
+                if (edited) {
+                    applyEdit();
+                }
+                else if (editable) {
+                    var index = Math.min(Object.entries(selectedState).filter(e => e[1] === true).map(e => e[0]));
+                    if (index !== Infinity) {
+                        enterEdit(tableData.rowsJSON[index], editField);
+                    }
+                }
+                break;
+            }
+            case 'Home': {
+                if (event.nativeEvent.ctrlKey) {
+                    if (tableData.rowsJSON.length > 0) {
+                        setSelectedState({ 0: true });
+                    }
+                }
+                break;
+            }
+            case 'End': {
+                if (event.nativeEvent.ctrlKey) {
+                    if (tableData.rowsJSON.length > 0) {
+                        let rowIndex = tableData.rowsJSON.length - 1;
+                        let newState = {};
+                        newState[rowIndex] = true;
+                        setSelectedState(newState);
+                    }
+                }
+                break;
+            }
+            case 'PageUp': {
+                if (tableData.rowsJSON.length > 0) {
+                    setSelectedState({ 0: true });
+                }
+                break;
+            }
+            case 'PageDown': {
+                if (tableData.rowsJSON.length > 0) {
+                    let rowIndex = tableData.rowsJSON.length - 1;
+                    let newState = {};
+                    newState[rowIndex] = true;
+                    setSelectedState(newState);
+                }
+                break;
+            }
+            case 'a': {
+                if (event.nativeEvent.ctrlKey) {
+                    selectAll();
+                    event.nativeEvent.preventDefault();
+                }
+                break;
+            }
+            case 'ArrowUp': {
+                //var index = Math.min(Object.entries(selectedState).filter(e => e[1] === true).map(e => e[0]));
+                //if (index !== Infinity && index !== 0) {
+                //    let newState = {}
+                //    newState[index - 1] = true;
+                //    setSelectedState(newState);
+                //}
+                break;
+            }
+            case 'ArrowDown': {
+                //if (editable && !(editID && editField)) {
+                //    var index = Math.min(Object.entries(selectedState).filter(e => e[1] === true).map(e => e[0]));
+                //    if (index === tableData.rowsJSON.length - 1) {
+                //        if (event.nativeEvent.ctrlKey) {
+                //            addRecord(true, true);
+                //        }
+                //        else {
+                //            addRecord(false, true);
+                //        }
+                //    }
+                //}
+                break;
+            }
+            default: {
+                break;
+            }
+        }
     };
 
     React.useEffect(() => {
@@ -196,7 +339,7 @@ function DataSetView(props, ref) {
 
     const calculateWidth = (headerName, field) => {
         if (tableSettings) {
-            var columnSetting = tableSettings.columns.columnsSettings.find(s => s.channelPropertyName == field);
+            var columnSetting = tableSettings.columns.columnsSettings.find(s => s.channelPropertyName === field);
             if (columnSetting) {
                 if (columnSetting.width && columnSetting.width !== 1) {
                     return columnSetting.width;
@@ -300,18 +443,18 @@ function DataSetView(props, ref) {
             <button className="k-button k-button-clear" onClick={excelExport}>
                 <span className="k-icon k-i-xls" />
             </button>
-            <button className="k-button k-button-clear" onClick={handleDeleteDialogOpen}>
+            {editable && <button className="k-button k-button-clear" onClick={handleDeleteDialogOpen}>
                 <span className="k-icon k-i-minus" />
-            </button>
-            <button className="k-button k-button-clear" onClick={addRecord}>
+            </button>}
+            {editable && <button className="k-button k-button-clear" onClick={() => addRecord()}>
                 <span className="k-icon k-i-plus" />
-            </button>
-            <button className="k-button k-button-clear" onClick={applyEdit} disabled={!edited}>
+            </button>}
+            {editable && <button className="k-button k-button-clear" onClick={applyEdit} disabled={!edited}>
                 <span className="k-icon k-i-check" />
-            </button>
-            <button className="k-button k-button-clear">
+            </button>}
+            {editable && <button className="k-button k-button-clear">
                 <span className="k-icon k-i-cancel" />
-            </button>
+            </button>}
             <button className="k-button k-button-clear" onClick={reload}>
                 <span className="k-icon k-i-reset" />
             </button>
@@ -335,19 +478,11 @@ function DataSetView(props, ref) {
 
     const customCellRender = (td, props) => (
         <CellRender
+            editable={editable}
             originalProps={props}
             td={td}
             editor={getEditorType(tableData.columnsJSON[props.columnIndex])}
             enterEdit={enterEdit}
-            editField={editField}
-        />
-    );
-
-    const customRowRender = (tr, props) => (
-        <RowRender
-            originalProps={props}
-            tr={tr}
-            exitEdit={exitEdit}
             editField={editField}
         />
     );
@@ -389,16 +524,15 @@ function DataSetView(props, ref) {
                             }}
                             onRowClick={rowClick}
                             cellRender={customCellRender}
-                            rowRender={customRowRender}
                             onItemChange={onItemChange}
                             dataItemKey={DATA_ITEM_KEY}
-                            editField={EDIT_FIELD}
+                            editField={editable ? EDIT_FIELD : null}
                             selectedField={SELECTED_FIELD}
                             selectable={{
                                 enabled: true,
                                 drag: true,
                                 cell: false,
-                                mode: 'single'
+                                mode: 'multiple'
                             }}
                             onSelectionChange={onSelectionChange}
                             onKeyDown={onKeyDown}
