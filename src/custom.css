@@ -27,6 +27,12 @@ html {
     height: 100%;
 }
 
+.screenshot-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
 .grid-container {
     height: 100%;
     display: flex;

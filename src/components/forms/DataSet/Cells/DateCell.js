@@ -16,7 +16,7 @@ export const DateCell = (props) => {
     return (
         <DatePicker
             onChange={handleChange}
-            defaultValue={props.dataValue}
+            defaultValue={props.dataValue && typeof props.dataValue === 'object' ? props.dataValue : undefined}
         />
     );
 };

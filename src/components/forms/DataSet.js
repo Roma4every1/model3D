@@ -25,9 +25,40 @@ function DataSet(props, ref) {
             fetchData();
         }
         return () => { ignore = true; }
-    }, [sessionId, formData]);
+    }, [sessionId, formData, sessionManager]);
 
     const databaseData = useSelector((state) => state.channelsData[activeChannelName]);
+
+    const rowConverter = (columnsJSON, row, rowIndex) => {
+        const temp = {};
+        temp.js_id = rowIndex;
+        columnsJSON.forEach(column => {
+            let i = databaseData.data.Columns.findIndex(o => o.Name === (column.fromColumn ?? column.field));
+            if (i >= 0) {
+                let rowValue = row.Cells[i];
+                if (column.netType === 'System.DateTime' && rowValue) {
+                    const startIndex = rowValue.indexOf('(');
+                    const finishIndex = rowValue.lastIndexOf('+');
+                    const dateValue = rowValue.slice(startIndex + 1, finishIndex);
+                    var d = new Date();
+                    d.setTime(dateValue);
+                    temp[column.field] = d;
+                }
+                else {
+                    if (column.lookupData) {
+                        const prevalue = rowValue;
+                        const textvalue = column.lookupData.find((c) => c.id === prevalue)?.text;
+                        temp[column.field] = textvalue;
+                        temp[column.field + '_jsoriginal'] = rowValue;
+                    }
+                    else {
+                        temp[column.field] = rowValue;
+                    }
+                }
+            }
+        });
+        return temp;
+    };
 
     var columnsJSON = [];
     var rowsJSON = [];
@@ -44,36 +75,7 @@ function DataSet(props, ref) {
             return temp;
         });
 
-        rowsJSON = databaseData.data.Rows.map(function (row, rowIndex) {
-            const temp = {};
-            temp.js_id = rowIndex;
-            columnsJSON.forEach(column => {
-                let i = databaseData.data.Columns.findIndex(o => o.Name === (column.fromColumn ?? column.field));
-                if (i >= 0) {
-                    let rowValue = row.Cells[i];
-                    if (column.netType === 'System.DateTime' && rowValue) {
-                        const startIndex = rowValue.indexOf('(');
-                        const finishIndex = rowValue.lastIndexOf('+');
-                        const dateValue = rowValue.slice(startIndex + 1, finishIndex);
-                        var d = new Date();
-                        d.setTime(dateValue);
-                        temp[column.field] = d;
-                    }
-                    else {
-                        if (column.lookupData) {
-                            const prevalue = rowValue;
-                            const textvalue = column.lookupData.find((c) => c.id === prevalue)?.text;
-                            temp[column.field] = textvalue;
-                            temp[column.field + '_jsoriginal'] = rowValue;
-                        }
-                        else {
-                            temp[column.field] = rowValue;
-                        }
-                    }
-                }
-            });
-            return temp;
-        });
+        rowsJSON = databaseData.data.Rows.map((row, rowIndex) => rowConverter(columnsJSON, row, rowIndex));
     }
 
     var tableData = {
@@ -107,6 +109,11 @@ function DataSet(props, ref) {
         }
     }
 
+    async function getRow() {
+        const result = await sessionManager.channelsManager.getNewRow(databaseData.tableId);
+        return rowConverter(tableData.columnsJSON, result, tableData.rowsJSON.length);
+    }
+
     const _viewRef = React.useRef(null);
     React.useImperativeHandle(ref, () => ({
         excelExport: () => {
@@ -119,7 +126,16 @@ function DataSet(props, ref) {
 
     return (
         <div className="grid-container">
-            <DataSetView inputTableData={tableData} editable={databaseData?.data?.Editable} tableSettings={tableSettings} formData={formData} apply={apply} deleteRows={deleteRows} reload={reload} ref={_viewRef} />
+            <DataSetView
+                inputTableData={tableData}
+                editable={databaseData?.data?.Editable}
+                tableSettings={tableSettings}
+                formData={formData}
+                apply={apply}
+                deleteRows={deleteRows}
+                getRow={getRow}
+                reload={reload}
+                ref={_viewRef} />
         </div>
     );
 }

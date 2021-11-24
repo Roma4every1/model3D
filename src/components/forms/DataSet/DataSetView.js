@@ -29,7 +29,7 @@ import timeZoneNames from "cldr-dates-full/main/ru/timeZoneNames.json";
 import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { getter } from "@progress/kendo-react-common";
 import { useTranslation } from 'react-i18next';
-import { CellRender, RowRender } from "./Renderers";
+import { CellRender } from "./Renderers";
 import FormHeader from '../Form/FormHeader';
 import ruMessages from "../../locales/kendoUI/ru.json";
 load(
@@ -51,7 +51,7 @@ const idGetter = getter(DATA_ITEM_KEY);
 
 function DataSetView(props, ref) {
     const { t } = useTranslation();
-    const { inputTableData, tableSettings, formData, apply, deleteRows, reload, editable } = props;
+    const { inputTableData, tableSettings, formData, apply, deleteRows, getRow, reload, editable } = props;
     const [rowAdding, setRowAdding] = React.useState(false);
     const [edited, setEdited] = React.useState(false);
     const [tableData, setTableData] = React.useState({
@@ -73,17 +73,7 @@ function DataSetView(props, ref) {
         setDeleteDialogOpen(false);
     };
 
-    React.useEffect(() => {
-        if (edited) {
-            applyEdit();
-        }
-        setEditID(null);
-    }, [selectedState]);
-
-    const rowClick = (event) => {
-    };
-
-    const addRecord = (existingRecord, addToEnd) => {
+    const addRecord = async (existingRecord, addToEnd) => {
         var copy = true;
         var toEnd = false;
         var index = Math.min(Object.entries(selectedState).filter(e => e[1] === true).map(e => e[0]));
@@ -103,9 +93,7 @@ function DataSetView(props, ref) {
             };
         }
         else {
-            newRecord = {
-                [DATA_ITEM_KEY]: tableData.rowsJSON.length + 1,
-            };
+            newRecord = await getRow();
         }
         if (toEnd && addToEnd) {
             setTableData({ rowsJSON: [...tableData.rowsJSON, newRecord], columnsJSON: tableData.columnsJSON });
@@ -115,14 +103,8 @@ function DataSetView(props, ref) {
             var finishPart = tableData.rowsJSON.slice(index);
             setTableData({ rowsJSON: [...startPart, newRecord, ...finishPart], columnsJSON: tableData.columnsJSON });
         }
-        if (!toEnd || !addToEnd) {
+        if (!toEnd || addToEnd) {
             setEditID(idGetter(newRecord));
-            //let newState = {}
-            //if (addToEnd) {
-            //    index++;
-            //}
-            //newState[tableData.rowsJSON.length + 1] = true;
-            //setSelectedState(newState);
             setRowAdding(true);
         }
     };
@@ -150,6 +132,10 @@ function DataSetView(props, ref) {
         });
         if (!_.isEqual(newSelectedState, selectedState)) {
             setSelectedState(newSelectedState);
+            if (edited) {
+                applyEdit();
+            }
+            setEditID(null);
         }
     };
 
@@ -159,7 +145,13 @@ function DataSetView(props, ref) {
             selectedState: selectedState,
             dataItemKey: DATA_ITEM_KEY,
         });
-        setSelectedState(newSelectedState);
+        if (!_.isEqual(newSelectedState, selectedState)) {
+            setSelectedState(newSelectedState);
+            if (edited) {
+                applyEdit();
+            }
+            setEditID(null);
+        }
 
         switch (event.nativeEvent.key) {
             case 'Insert': {
@@ -187,18 +179,14 @@ function DataSetView(props, ref) {
                 if (edited) {
                     applyEdit();
                 }
-                else if (editable) {
-                    var index = Math.min(Object.entries(selectedState).filter(e => e[1] === true).map(e => e[0]));
-                    if (index !== Infinity) {
-                        enterEdit(tableData.rowsJSON[index], editField);
-                    }
-                }
                 break;
             }
             case 'Home': {
                 if (event.nativeEvent.ctrlKey) {
                     if (tableData.rowsJSON.length > 0) {
                         setSelectedState({ 0: true });
+                        applyEdit();
+                        setEditID(null);
                     }
                 }
                 break;
@@ -210,6 +198,8 @@ function DataSetView(props, ref) {
                         let newState = {};
                         newState[rowIndex] = true;
                         setSelectedState(newState);
+                        applyEdit();
+                        setEditID(null);
                     }
                 }
                 break;
@@ -217,6 +207,8 @@ function DataSetView(props, ref) {
             case 'PageUp': {
                 if (tableData.rowsJSON.length > 0) {
                     setSelectedState({ 0: true });
+                    applyEdit();
+                    setEditID(null);
                 }
                 break;
             }
@@ -226,6 +218,8 @@ function DataSetView(props, ref) {
                     let newState = {};
                     newState[rowIndex] = true;
                     setSelectedState(newState);
+                    applyEdit();
+                    setEditID(null);
                 }
                 break;
             }
@@ -237,26 +231,20 @@ function DataSetView(props, ref) {
                 break;
             }
             case 'ArrowUp': {
-                //var index = Math.min(Object.entries(selectedState).filter(e => e[1] === true).map(e => e[0]));
-                //if (index !== Infinity && index !== 0) {
-                //    let newState = {}
-                //    newState[index - 1] = true;
-                //    setSelectedState(newState);
-                //}
                 break;
             }
             case 'ArrowDown': {
-                //if (editable && !(editID && editField)) {
-                //    var index = Math.min(Object.entries(selectedState).filter(e => e[1] === true).map(e => e[0]));
-                //    if (index === tableData.rowsJSON.length - 1) {
-                //        if (event.nativeEvent.ctrlKey) {
-                //            addRecord(true, true);
-                //        }
-                //        else {
-                //            addRecord(false, true);
-                //        }
-                //    }
-                //}
+                if (editable && (!rowAdding) && !(editID && editField)) {
+                    var index = Math.min(Object.entries(selectedState).filter(e => e[1] === true).map(e => e[0]));
+                    if (index === tableData.rowsJSON.length - 1) {
+                        if (event.nativeEvent.ctrlKey) {
+                            addRecord(true, true);
+                        }
+                        else {
+                            addRecord(false, true);
+                        }
+                    }
+                }
                 break;
             }
             default: {
@@ -410,20 +398,22 @@ function DataSetView(props, ref) {
         }
     }
 
-    async function applyEdit() {
-        const rowToInsert = tableData.rowsJSON.find(item =>
-            idGetter(item) === editID
-        );
-        if (rowToInsert) {
-            setEditID(null);
-            setEdited(false);
+    const applyEdit = React.useCallback(async () => {
+        if (edited || rowAdding) {
+            const rowToInsert = tableData.rowsJSON.find(item =>
+                idGetter(item) === editID
+            );
+            if (rowToInsert) {
+                setEditID(null);
+                setEdited(false);
 
-            await apply(tableData, rowToInsert, editID, rowAdding);
-            if (rowAdding) {
-                setRowAdding(false);
+                await apply(tableData, rowToInsert, editID, rowAdding);
+                if (rowAdding) {
+                    setRowAdding(false);
+                }
             }
         }
-    };
+    }, [tableData, edited, editID, rowAdding, apply]);
 
     const selectAll = () => {
         const newSelectedState = {};
@@ -449,10 +439,10 @@ function DataSetView(props, ref) {
             {editable && <button className="k-button k-button-clear" onClick={() => addRecord()}>
                 <span className="k-icon k-i-plus" />
             </button>}
-            {editable && <button className="k-button k-button-clear" onClick={applyEdit} disabled={!edited}>
+            {editable && <button className="k-button k-button-clear" onClick={applyEdit} disabled={!edited && !rowAdding}>
                 <span className="k-icon k-i-check" />
             </button>}
-            {editable && <button className="k-button k-button-clear">
+            {editable && <button className="k-button k-button-clear" onClick={() => { reload(); setEditID(null); }}>
                 <span className="k-icon k-i-cancel" />
             </button>}
             <button className="k-button k-button-clear" onClick={reload}>
@@ -522,7 +512,6 @@ function DataSetView(props, ref) {
                             onDataStateChange={(e) => {
                                 setDataState(e.dataState);
                             }}
-                            onRowClick={rowClick}
                             cellRender={customCellRender}
                             onItemChange={onItemChange}
                             dataItemKey={DATA_ITEM_KEY}

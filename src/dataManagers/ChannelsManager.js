@@ -142,6 +142,12 @@ export default function createChannelsManager(store) {
         }
     }
 
+    const getNewRow = async (tableId) => {
+        const sessionId = store.getState().sessionId;
+        const data = await store.getState().sessionManager.fetchData(`getNewRow?sessionId=${sessionId}&tableId=${tableId}`);
+        return data;
+    }
+
     const insertRow = async (tableId, dataJSON) => {
         const sessionId = store.getState().sessionId;
         const data = await store.getState().sessionManager.fetchData(`insertRow?sessionId=${sessionId}&tableId=${tableId}&rowData=${dataJSON}`);
@@ -183,6 +189,7 @@ export default function createChannelsManager(store) {
         updateTables,
         insertRow,
         updateRow,
-        deleteRow
+        deleteRow,
+        getNewRow
     };
 }

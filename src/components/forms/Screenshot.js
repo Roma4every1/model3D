@@ -14,7 +14,7 @@ export default function Screenshot(props) {
     }
 
     return (
-        <div>
+        <div className="screenshot-container">
             <FormHeader formData={formData} />
             <div className="imgbox">
                 <img src={getImagePath(formData.type)} alt="logo" />

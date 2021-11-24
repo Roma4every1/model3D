@@ -16,7 +16,7 @@ export const NumericCell = (props) => {
     return (
         <NumericTextBox
             onChange={handleChange}
-            value={props.dataValue}
+            value={parseInt(props.dataValue)}
         />
     );
 };
