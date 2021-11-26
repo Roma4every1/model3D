@@ -74,7 +74,7 @@ export default function createChannelsManager(store) {
             const channelParamsList = await loadChannelParamsList(channelName);
             channelsParams[channelName] = channelParamsList;
         }
-        var neededParamValues = store.getState().sessionManager.paramsManager.getParameterValues(channelsParams[channelName], formId, false);
+        var neededParamValues = store.getState().sessionManager.paramsManager.getParameterValues(channelsParams[channelName], formId, false, channelName);
         var changed = force || !channelsParamsValues[channelName] || !equalParams(channelsParamsValues[channelName], neededParamValues.map(np => np.value));
         if (changed) {
             channelsParamsValues[channelName] = neededParamValues.map(np => np.value);

@@ -7,7 +7,7 @@ var _ = require("lodash");
 
 export default function createParamsManager(store) {
 
-    const getParameterValues = (neededParamList, formId, addToLocal) => {
+    const getParameterValues = (neededParamList, formId, addToLocal, channelName) => {
         var paramsToUse = [];
         neededParamList.forEach(param => {
             var element = null;
@@ -18,6 +18,9 @@ export default function createParamsManager(store) {
                     break;
                 }
                 currentFormId = utils.getParentFormId(currentFormId);
+            }
+            if (!element && channelName) {
+                element = _.find(store.getState().formParams[channelName], function (o) { return o.id === param; });
             }
             if (element) {
                 if (addToLocal && (element.formId !== formId)) {

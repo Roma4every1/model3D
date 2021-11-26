@@ -209,7 +209,7 @@ html {
     height: 100%;
 }
 
-.k-textbox, .k-dropdown, .k-dropdown .k-input, .k-datepicker .k-input, .k-dateinput .k-input, .k-numerictextbox .k-input {
+.k-textbox, .k-dropdown .k-input, .k-datepicker .k-input, .k-dateinput .k-input, .k-numerictextbox .k-input {
     height: 20px;
 }
 

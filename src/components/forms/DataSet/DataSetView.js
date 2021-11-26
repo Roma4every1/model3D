@@ -1,12 +1,12 @@
 ﻿import React from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import {
     Grid,
     GridColumn as Column,
-    GridColumnMenuFilter,
     getSelectedState,
     getSelectedStateFromKeyDown
 } from "@progress/kendo-react-grid";
+import { ColumnMenu, ColumnMenuCheckboxFilter } from "./ColumnMenu";
 import {
     Button
 } from "@progress/kendo-react-buttons";
@@ -16,7 +16,6 @@ import {
     LocalizationProvider,
     loadMessages,
 } from "@progress/kendo-react-intl";
-import { process } from "@progress/kendo-data-query";
 import calculateSize from "calculate-size";
 import likelySubtags from "cldr-core/supplemental/likelySubtags.json";
 import currencyData from "cldr-core/supplemental/currencyData.json";
@@ -30,6 +29,7 @@ import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { getter } from "@progress/kendo-react-common";
 import { useTranslation } from 'react-i18next';
 import { CellRender } from "./Renderers";
+import addParam from "../../../store/actionCreators/addParam";
 import FormHeader from '../Form/FormHeader';
 import ruMessages from "../../locales/kendoUI/ru.json";
 load(
@@ -53,6 +53,7 @@ const idGetter = getter(DATA_ITEM_KEY);
 function DataSetView(props, ref) {
     const addRowCount = 500;
     const { t } = useTranslation();
+    const dispatch = useDispatch();
     const sessionManager = useSelector((state) => state.sessionManager);
     const sessionId = useSelector((state) => state.sessionId);
     const { inputTableData, tableSettings, formData, apply, deleteRows, getRow, reload, editable, dataPart, activeChannelName } = props;
@@ -69,10 +70,40 @@ function DataSetView(props, ref) {
     const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
     const [skip, setSkip] = React.useState(0);
 
+    React.useEffect(() => {
+        const maxRowCountElement = {
+            id: "maxRowCount",
+            type: "integer"
+        };
+        const sortOrder = {
+            id: "sortOrder",
+            type: "sortOrder"
+        }
+        dispatch(addParam(activeChannelName, maxRowCountElement));
+        dispatch(addParam(activeChannelName, sortOrder));
+    }, [activeChannelName]);
+
+    React.useEffect(() => {
+        if (dataState) {
+            if (!dataState.sort) {
+                sessionManager.paramsManager.updateParamValue(activeChannelName, "sortOrder", null, true);
+            }
+            var newValue = dataState.sort.map(el => {
+                let field = el.field;
+                if (inputTableData.properties) {
+                    const property = _.find(inputTableData.properties, function (o) { return o.name === el.field; });
+                    field = property.fromColumn ?? property.name;
+                }
+                return `${field} ${el.dir}`;
+            }).join(',');
+            sessionManager.paramsManager.updateParamValue(activeChannelName, "sortOrder", newValue, true);
+        }
+    }, [dataState, activeChannelName, sessionManager]);
+
     const pageChange = (event) => {
         setSkip(event.page.skip);
-        if (dataPart && (dataToShow.data.length < event.page.skip + 50)) {
-            sessionManager.paramsManager.updateParamValue(formData.id, "maxRowCount", dataToShow.data.length + addRowCount, true);
+        if (dataPart && (dataToShow.length < event.page.skip + 50)) {
+            sessionManager.paramsManager.updateParamValue(activeChannelName, "maxRowCount", dataToShow.length + addRowCount, true);
         }
     };
 
@@ -278,11 +309,6 @@ function DataSetView(props, ref) {
     };
 
     React.useEffect(() => {
-        setDataState({
-            sort: [
-            ],
-            skip: 0,
-        });
         var columnNames = [];
         if (!tableSettings || !tableSettings.attachedProperties) {
             setTableData(inputTableData);
@@ -345,10 +371,6 @@ function DataSetView(props, ref) {
         [EDIT_FIELD]: idGetter(item) === editID
     }));
 
-    if (dataState) {
-        dataToShow = process(dataToShow, dataState);
-    }
-
     const calculateWidth = (headerName, field) => {
         if (tableSettings && tableSettings.columns) {
             var columnSetting = tableSettings.columns.columnsSettings.find(s => s.channelPropertyName === field);
@@ -396,9 +418,9 @@ function DataSetView(props, ref) {
             }
         }
         switch (column.netType) {
-            case "System.Int64":
-            case "System.Int32":
             case "System.Double":
+            case "System.Int32":
+            case "System.Int64":
                 return {
                     type: "numeric"
                 };
@@ -419,6 +441,19 @@ function DataSetView(props, ref) {
                 return "{0:d}";
             default:
                 return null;
+        }
+    }
+
+    const getFilterByType = (column) => {
+        switch (column.netType) {
+            case "System.DateTime":
+                return "date";
+            case "System.Double":
+            case "System.Int32":
+            case "System.Int64":
+                return "numeric";
+            default:
+                return "text";
         }
     }
 
@@ -529,7 +564,7 @@ function DataSetView(props, ref) {
                     <Grid className="grid-content"
                         resizable={true}
                         sortable={true}
-                        data={dataToShow ? dataToShow.data.slice(skip, skip + 30) : dataToShow}
+                        data={dataToShow ? dataToShow.slice(skip, skip + 30) : dataToShow}
                         {...dataState}
                         navigatable={true}
                         onDataStateChange={(e) => {
@@ -550,7 +585,7 @@ function DataSetView(props, ref) {
                         onKeyDown={onKeyDown}
                         rowHeight={15}
                         pageSize={30}
-                        total={dataToShow.data.length}
+                        total={dataToShow.length}
                         skip={skip}
                         scrollable={"virtual"}
                         onPageChange={pageChange}
@@ -562,7 +597,8 @@ function DataSetView(props, ref) {
                             title={column.headerName}
                             width={calculateWidth(column.headerName, column.field)}
                             format={getFormat(column)}
-                            columnMenu={GridColumnMenuFilter}
+                            filter={getFilterByType(column)}
+                            columnMenu={ColumnMenu}
                         />
                         )}
                     </Grid>

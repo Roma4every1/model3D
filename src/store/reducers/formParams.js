@@ -8,8 +8,13 @@ function formParams(state = [], action) {
             {
                 var newState = [...action.value];
                 if (state[action.formId]) {
-                    for (var paramId in newState) {
+                    for (let paramId in newState) {
                         if (state[action.formId][paramId]) {
+                            newState[paramId] = state[action.formId][paramId]
+                        }
+                    }
+                    for (let paramId in state[action.formId]) {
+                        if (!newState[paramId]) {
                             newState[paramId] = state[action.formId][paramId]
                         }
                     }
@@ -21,12 +26,22 @@ function formParams(state = [], action) {
             }
         case ADD:
             {
-                return {
-                    ...state,
-                    [action.formId]: [
-                        ...state[action.formId],
-                        action.parameter
+                if (state[action.formId]) {
+                    return {
+                        ...state,
+                        [action.formId]: [
+                            ...state[action.formId],
+                            action.parameter
                         ]
+                    }
+                }
+                else {
+                    return {
+                        ...state,
+                        [action.formId]: [
+                            action.parameter
+                        ]
+                    }
                 }
             }
         case UPDATE:
@@ -43,11 +58,20 @@ function formParams(state = [], action) {
                 }
                 var newParamsUpdate = state;
                 var newParamsUpdateForm = newParamsUpdate[action.formId];
-                newParamsUpdateForm.forEach(element => {
-                    if (element.id === action.id) {
-                        element.value = action.value;
-                    }
-                });
+                var neededParam = newParamsUpdateForm.find(element => element.id === action.id);
+                if (neededParam) {
+                    neededParam.value = action.value;
+                }
+                else {
+                    newParamsUpdate[action.formId] = [
+                        ...newParamsUpdate[action.formId],
+                        {
+                            id: action.id,
+                            value: action.value,
+                            type: "string"
+                        }
+                    ]
+                }
                 if (action.manual) {
                     clear(action.id);
                 }
