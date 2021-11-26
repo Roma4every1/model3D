@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import { useSelector } from 'react-redux';
 import {
     Grid,
     GridColumn as Column,
@@ -15,7 +16,6 @@ import {
     LocalizationProvider,
     loadMessages,
 } from "@progress/kendo-react-intl";
-import { ExcelExport } from '@progress/kendo-react-excel-export';
 import { process } from "@progress/kendo-data-query";
 import calculateSize from "calculate-size";
 import likelySubtags from "cldr-core/supplemental/likelySubtags.json";
@@ -43,6 +43,7 @@ load(
     timeZoneNames
 );
 loadMessages(ruMessages, "ru-RU");
+var utils = require("../../../utils");
 var _ = require("lodash");
 const DATA_ITEM_KEY = "js_id";
 const SELECTED_FIELD = "js_selected";
@@ -50,8 +51,11 @@ const EDIT_FIELD = "js_inEdit";
 const idGetter = getter(DATA_ITEM_KEY);
 
 function DataSetView(props, ref) {
+    const addRowCount = 500;
     const { t } = useTranslation();
-    const { inputTableData, tableSettings, formData, apply, deleteRows, getRow, reload, editable } = props;
+    const sessionManager = useSelector((state) => state.sessionManager);
+    const sessionId = useSelector((state) => state.sessionId);
+    const { inputTableData, tableSettings, formData, apply, deleteRows, getRow, reload, editable, dataPart, activeChannelName } = props;
     const [rowAdding, setRowAdding] = React.useState(false);
     const [edited, setEdited] = React.useState(false);
     const [tableData, setTableData] = React.useState({
@@ -62,8 +66,15 @@ function DataSetView(props, ref) {
     const [editField, setEditField] = React.useState(undefined);
     const [editID, setEditID] = React.useState(null);
     const [selectedState, setSelectedState] = React.useState({});
-    const _export = React.useRef(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+    const [skip, setSkip] = React.useState(0);
+
+    const pageChange = (event) => {
+        setSkip(event.page.skip);
+        if (dataPart && (dataToShow.data.length < event.page.skip + 50)) {
+            sessionManager.paramsManager.updateParamValue(formData.id, "maxRowCount", dataToShow.data.length + addRowCount, true);
+        }
+    };
 
     const handleDeleteDialogOpen = () => {
         setDeleteDialogOpen(true);
@@ -109,10 +120,23 @@ function DataSetView(props, ref) {
         }
     };
 
-    const excelExport = () => {
-        if (_export.current !== null) {
-            _export.current.save();
-        }
+    const excelExport = async () => {
+        const dataD = await sessionManager.fetchData(`getNeededParamForChannel?sessionId=${sessionId}&channelName=${activeChannelName}`);
+        var neededParamValues = sessionManager.paramsManager.getParameterValues(dataD, formData.id, false);
+        var jsonToSend = {
+            sessionId: sessionId,
+            channelName: activeChannelName,
+            paramName: formData.displayName,
+            presentationId: utils.getParentFormId(formData.id),
+            paramValues: neededParamValues
+        };
+        const jsonToSendString = JSON.stringify(jsonToSend);
+        var data = await sessionManager.fetchData(`exportToExcel`,
+            {
+                method: 'POST',
+                body: jsonToSendString
+            });
+        sessionManager.watchReport(data.OperationId, data);
     };
 
     const onItemChange = (event) => {
@@ -260,7 +284,7 @@ function DataSetView(props, ref) {
             skip: 0,
         });
         var columnNames = [];
-        if (!tableSettings) {
+        if (!tableSettings || !tableSettings.attachedProperties) {
             setTableData(inputTableData);
         }
         else {
@@ -326,7 +350,7 @@ function DataSetView(props, ref) {
     }
 
     const calculateWidth = (headerName, field) => {
-        if (tableSettings) {
+        if (tableSettings && tableSettings.columns) {
             var columnSetting = tableSettings.columns.columnsSettings.find(s => s.channelPropertyName === field);
             if (columnSetting) {
                 if (columnSetting.width && columnSetting.width !== 1) {
@@ -502,42 +526,46 @@ function DataSetView(props, ref) {
                         </Dialog>
                     )}
                     <FormHeader formData={formData} additionalButtons={otherButtons} />
-                    <ExcelExport data={dataToShow.data} ref={_export}>
-                        <Grid className="grid-content"
-                            resizable={true}
-                            sortable={true}
-                            data={dataToShow}
-                            {...dataState}
-                            navigatable={true}
-                            onDataStateChange={(e) => {
-                                setDataState(e.dataState);
-                            }}
-                            cellRender={customCellRender}
-                            onItemChange={onItemChange}
-                            dataItemKey={DATA_ITEM_KEY}
-                            editField={editable ? EDIT_FIELD : null}
-                            selectedField={SELECTED_FIELD}
-                            selectable={{
-                                enabled: true,
-                                drag: true,
-                                cell: false,
-                                mode: 'multiple'
-                            }}
-                            onSelectionChange={onSelectionChange}
-                            onKeyDown={onKeyDown}
-                        >
-                            {tableData.columnsJSON.map(column => <Column
-                                locked={column.locked}
-                                key={column.field}
-                                field={column.field}
-                                title={column.headerName}
-                                width={calculateWidth(column.headerName, column.field)}
-                                format={getFormat(column)}
-                                columnMenu={GridColumnMenuFilter}
-                            />
-                            )}
-                        </Grid>
-                    </ExcelExport>
+                    <Grid className="grid-content"
+                        resizable={true}
+                        sortable={true}
+                        data={dataToShow ? dataToShow.data.slice(skip, skip + 30) : dataToShow}
+                        {...dataState}
+                        navigatable={true}
+                        onDataStateChange={(e) => {
+                            setDataState(e.dataState);
+                        }}
+                        cellRender={customCellRender}
+                        onItemChange={onItemChange}
+                        dataItemKey={DATA_ITEM_KEY}
+                        editField={editable ? EDIT_FIELD : null}
+                        selectedField={SELECTED_FIELD}
+                        selectable={{
+                            enabled: true,
+                            drag: true,
+                            cell: false,
+                            mode: 'multiple'
+                        }}
+                        onSelectionChange={onSelectionChange}
+                        onKeyDown={onKeyDown}
+                        rowHeight={15}
+                        pageSize={30}
+                        total={dataToShow.data.length}
+                        skip={skip}
+                        scrollable={"virtual"}
+                        onPageChange={pageChange}
+                    >
+                        {tableData.columnsJSON.map(column => <Column
+                            locked={column.locked}
+                            key={column.field}
+                            field={column.field}
+                            title={column.headerName}
+                            width={calculateWidth(column.headerName, column.field)}
+                            format={getFormat(column)}
+                            columnMenu={GridColumnMenuFilter}
+                        />
+                        )}
+                    </Grid>
                 </IntlProvider>
             </LocalizationProvider>
         );

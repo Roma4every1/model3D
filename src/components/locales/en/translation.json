@@ -82,6 +82,7 @@
   "table": {
     "areYouSureToDeleteRows": "Are you sure to delete rows (count: {{count}})?",
     "deleteRowsHeader": "Rows deleting",
+    "linkedTable": "Linked table",
     "showDetailInfo": "Show detail information"
   },
   "version": {

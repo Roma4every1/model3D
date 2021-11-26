@@ -68,7 +68,7 @@ function DataSet(props, ref) {
             const temp = {};
             temp.field = property.name;
             temp.fromColumn = property.fromColumn;
-            temp.netType = column.NetType;
+            temp.netType = column?.NetType;
             temp.headerName = property.displayName;
             temp.lookupChannelName = property.lookupChannelName;
             temp.lookupData = property.lookupData;
@@ -128,7 +128,9 @@ function DataSet(props, ref) {
         <div className="grid-container">
             <DataSetView
                 inputTableData={tableData}
+                activeChannelName={activeChannelName}
                 editable={databaseData?.data?.Editable}
+                dataPart={databaseData?.data?.DataPart}
                 tableSettings={tableSettings}
                 formData={formData}
                 apply={apply}

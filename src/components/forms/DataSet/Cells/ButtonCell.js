@@ -18,7 +18,14 @@ export const ButtonCell = (props) => {
         setOpened(false);
     };
 
-    const formData = useSelector((state) => state.childForms[utils.getParentFormId(props.secondLevelFormId)]?.children.find(p => p.id === props.secondLevelFormId));
+    var formData = useSelector((state) => state.childForms[utils.getParentFormId(props.secondLevelFormId)]?.children.find(p => p.id === props.secondLevelFormId));
+    if (!formData) {
+        formData = {
+            id: props.secondLevelFormId,
+            type: "dataSet",
+            displayName: t('table.linkedTable')
+        };
+    }
 
     return (
         <div>
