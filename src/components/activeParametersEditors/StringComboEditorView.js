@@ -2,6 +2,7 @@ import * as React from "react";
 import { useSelector } from 'react-redux';
 import { ComboBox } from "@progress/kendo-react-dropdowns";
 var _ = require("lodash");
+var utils = require("../../utils");
 
 export default function StringComboEditorView(props) {
     const { id, selectionChanged, value, externalChannelName } = props;
@@ -24,12 +25,7 @@ export default function StringComboEditorView(props) {
     const addParam = (column, rowValue, propName) => {
         var valuestring = '';
         if (column.NetType === "System.DateTime" && rowValue != null) {
-            const startIndex = rowValue.indexOf('(');
-            const finishIndex = rowValue.lastIndexOf('+');
-            const dateValue = rowValue.slice(startIndex + 1, finishIndex);
-            var d = new Date();
-            d.setTime(dateValue);
-            valuestring = propName + '#' + d.toLocaleString('en-GB') + '#' + column.NetType;
+            valuestring = propName + '#' + utils.dateToString(utils.toDate(rowValue)) + '#' + column.NetType;
         }
         else if (rowValue != null) {
             valuestring = propName + '#' + rowValue + '#' + column.NetType;

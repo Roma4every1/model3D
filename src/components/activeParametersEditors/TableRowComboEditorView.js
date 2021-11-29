@@ -1,8 +1,8 @@
 ﻿import * as React from "react";
 import { useSelector } from 'react-redux';
 import { ComboBox } from "@progress/kendo-react-dropdowns";
-import { toDate } from '../../utils';
 var _ = require("lodash");
+var utils = require("../../utils");
 
 export default function TableRowComboEditorView(props) {
     const { id, selectionChanged, value, externalChannelName } = props;
@@ -25,8 +25,7 @@ export default function TableRowComboEditorView(props) {
     const addParam = (column, rowValue, propName) => {
         var valuestring = '';
         if (column.NetType === "System.DateTime" && rowValue != null) {
-            const d = toDate(rowValue);
-            valuestring = propName + '#' + d.toLocaleString('en-GB') + '#' + column.NetType;
+            valuestring = propName + '#' + utils.dateToString(utils.toDate(rowValue)) + '#' + column.NetType;
         }
         else if (rowValue != null) {
             valuestring = propName + '#' + rowValue + '#' + column.NetType;

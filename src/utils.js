@@ -46,3 +46,28 @@ export const toDate = (wmwDateString) => {
     d.setTime(dateValue);
     return d;
 }
+
+const addToTwo = (value) =>
+{
+    while (value.length < 2) {
+        value = '0' + value;
+    }
+    return value;
+}
+
+export const dateToString = (value) => {
+    if (value instanceof Date) {
+        let month = addToTwo('' + (value.getMonth() + 1));
+        let day = addToTwo('' + value.getDate());
+        let year = '' + value.getFullYear();
+        let hours = addToTwo('' + value.getHours());
+        let minutes = addToTwo('' + value.getMinutes());
+        let seconds = addToTwo('' + value.getSeconds());
+
+        return (month + '/' + day + '/' + year + ' ' +
+            hours + ':' + minutes + ':' + seconds);
+    }
+    else {
+        return value;
+    }
+}

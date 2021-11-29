@@ -197,12 +197,8 @@ html {
 }
 
 .parametereditorwithoutheightcb {
-    float: right;
-    font-size: 12px;
-    vertical-align: middle;
-    max-width: 155px;
-    width: 155px;
-    padding-left: 5px;
+    float: left;
+    padding-right: 170px;
 }
 
 .k-clear-value, .k-combobox .k-input, .k-dropdown-wrap {
@@ -229,6 +225,7 @@ html {
 .k-grid-header .k-header {
     height: 20px;
     padding: 5px;
+    padding-right: 30px;
 }
 
 .k-dateinput {

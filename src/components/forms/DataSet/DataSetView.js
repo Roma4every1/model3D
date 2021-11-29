@@ -71,34 +71,115 @@ function DataSetView(props, ref) {
     const [skip, setSkip] = React.useState(0);
 
     React.useEffect(() => {
-        const maxRowCountElement = {
-            id: "maxRowCount",
-            type: "integer"
-        };
-        const sortOrder = {
-            id: "sortOrder",
-            type: "sortOrder"
+        if (activeChannelName && inputTableData && inputTableData.properties) {
+            inputTableData.properties.forEach(prop => {
+                const conditionElement = {
+                    id: prop.name + "ConditionFilterObject",
+                    type: "condition"
+                };
+                dispatch(addParam(activeChannelName, conditionElement));
+            });
         }
-        dispatch(addParam(activeChannelName, maxRowCountElement));
-        dispatch(addParam(activeChannelName, sortOrder));
-    }, [activeChannelName]);
+    }, [activeChannelName, inputTableData, dispatch]);
+
+    React.useEffect(() => {
+        if (activeChannelName) {
+            const maxRowCountElement = {
+                id: "maxRowCount",
+                type: "integer"
+            };
+            const sortOrder = {
+                id: "sortOrder",
+                type: "sortOrder"
+            }
+            dispatch(addParam(activeChannelName, maxRowCountElement));
+            dispatch(addParam(activeChannelName, sortOrder));
+        }
+    }, [activeChannelName, dispatch]);
 
     React.useEffect(() => {
         if (dataState) {
             if (!dataState.sort) {
                 sessionManager.paramsManager.updateParamValue(activeChannelName, "sortOrder", null, true);
             }
-            var newValue = dataState.sort.map(el => {
-                let field = el.field;
-                if (inputTableData.properties) {
-                    const property = _.find(inputTableData.properties, function (o) { return o.name === el.field; });
-                    field = property.fromColumn ?? property.name;
+            else {
+                var newValue = dataState.sort.map(el => {
+                    let field = el.field;
+                    if (inputTableData.properties) {
+                        const property = _.find(inputTableData.properties, function (o) { return o.name === el.field; });
+                        field = property.fromColumn ?? property.name;
+                    }
+                    return `${field} ${el.dir}`;
+                }).join(',');
+                sessionManager.paramsManager.updateParamValue(activeChannelName, "sortOrder", newValue, true);
+            }
+            if (dataState.filter) {
+                dataState.filter.filters.forEach(flt => {
+                    let filterValue = `<${flt.logic}>`;
+                    let fieldName = flt.filters[0].field;
+                    let col = inputTableData.columnsJSON.find(c => c.field == fieldName);
+                    flt.filters.forEach(filter => {
+                        let operation = "equal"
+                        switch (filter.operator) {
+                            case "eq":
+                                operation = "equal";
+                                break;
+                            case "gt":
+                                operation = "greater";
+                                break;
+                            case "lt":
+                                operation = "less";
+                                break;
+                            case "gte":
+                                operation = "greaterAndEqual";
+                                break;
+                            case "lte":
+                                operation = "lessAndEqual";
+                                break;
+                            case "neq":
+                                operation = "notEqual";
+                                break;
+                            case "isnull":
+                            case "isnullempty":
+                                operation = "isNull";
+                                break;
+                            case "isnotnull":
+                            case "isnotempty":
+                                operation = "isNotNull";
+                                break;
+                            case "contains":
+                                operation = "contains";
+                                break;
+                            case "doesnotcontains":
+                                operation = "notContains";
+                                break;
+                            case "startswith":
+                                operation = "startsWith";
+                                break;
+                            case "endswith":
+                                operation = "endsWith";
+                                break;
+                            default:
+                                operation = "equal";
+                        }
+                        let center = "";
+                        if (!operation.includes("Null")) {
+                            center = `<netType typeName="${col.netType}" value="${utils.dateToString(filter.value)}"/>`
+                        }
+                        filterValue += `<${operation}>${center}</${operation}>`;
+                    });
+                    filterValue += `</${flt.logic}>`;
+                    sessionManager.paramsManager.updateParamValue(activeChannelName, fieldName + "ConditionFilterObject", filterValue, true);
+                });
+            }
+            inputTableData.columnsJSON.forEach(c => {
+                let needClear = (!dataState.filter) || !dataState.filter.filters.some(flt => flt.filters[0].field === c.field);
+                if (needClear) {
+                    sessionManager.paramsManager.updateParamValue(activeChannelName, c.field + "ConditionFilterObject", null, true);
                 }
-                return `${field} ${el.dir}`;
-            }).join(',');
-            sessionManager.paramsManager.updateParamValue(activeChannelName, "sortOrder", newValue, true);
+            });
         }
-    }, [dataState, activeChannelName, sessionManager]);
+    }, [dataState, activeChannelName, sessionManager, inputTableData]);
 
     const pageChange = (event) => {
         setSkip(event.page.skip);
@@ -457,6 +538,13 @@ function DataSetView(props, ref) {
         }
     }
 
+    const getColumnMenuByType = (column, props) => {
+        if (column.lookupData) {
+            return <ColumnMenuCheckboxFilter {...props} data={tableData.rowsJSON} />;
+        }
+        return <ColumnMenu {...props} />;
+    }
+
     const applyEdit = React.useCallback(async () => {
         if (edited || rowAdding) {
             const rowToInsert = tableData.rowsJSON.find(item =>
@@ -536,6 +624,113 @@ function DataSetView(props, ref) {
         />
     );
 
+    const filterOperators = {
+        text: [
+            {
+                text: "grid.filterContainsOperator",
+                operator: "contains",
+            },
+            {
+                text: "grid.filterEqOperator",
+                operator: "eq",
+            },
+            {
+                text: "grid.filterNotEqOperator",
+                operator: "neq",
+            },
+            {
+                text: "grid.filterStartsWithOperator",
+                operator: "startswith",
+            },
+            {
+                text: "grid.filterEndsWithOperator",
+                operator: "endswith",
+            },
+            {
+                text: "grid.filterIsNullOperator",
+                operator: "isnull",
+            },
+            {
+                text: "grid.filterIsNotNullOperator",
+                operator: "isnotnull",
+            }
+        ],
+        numeric: [
+            {
+                text: "grid.filterEqOperator",
+                operator: "eq",
+            },
+            {
+                text: "grid.filterNotEqOperator",
+                operator: "neq",
+            },
+            {
+                text: "grid.filterGtOperator",
+                operator: "gt",
+            },
+            {
+                text: "grid.filterLtOperator",
+                operator: "lt",
+            },
+            {
+                text: "grid.filterGteOperator",
+                operator: "gte",
+            },
+            {
+                text: "grid.filterLteOperator",
+                operator: "lte",
+            },
+            {
+                text: "grid.filterIsNullOperator",
+                operator: "isnull",
+            },
+            {
+                text: "grid.filterIsNotNullOperator",
+                operator: "isnotnull",
+            }
+        ],
+        date: [
+            {
+                text: "grid.filterEqOperator",
+                operator: "eq",
+            },
+            {
+                text: "grid.filterNotEqOperator",
+                operator: "neq",
+            },
+            {
+                text: "grid.filterAfterOperator",
+                operator: "gt",
+            },
+            {
+                text: "grid.filterBeforeOperator",
+                operator: "lt",
+            },
+            {
+                text: "grid.filterAfterOrEqualOperator",
+                operator: "gte",
+            },
+            {
+                text: "grid.filterBeforeOrEqualOperator",
+                operator: "lte",
+            },
+            {
+                text: "grid.filterIsNullOperator",
+                operator: "isnull",
+            },
+            {
+                text: "grid.filterIsNotNullOperator",
+                operator: "isnotnull",
+            }
+        ],
+        boolean: [
+            {
+                text: "grid.filterEqOperator",
+                operator: "eq",
+            },
+        ],
+    };
+
     if (tableData.columnsJSON.length > 0) {
         return (
             <LocalizationProvider language="ru-RU">
@@ -587,6 +782,7 @@ function DataSetView(props, ref) {
                         pageSize={30}
                         total={dataToShow.length}
                         skip={skip}
+                        filterOperators={filterOperators}
                         scrollable={"virtual"}
                         onPageChange={pageChange}
                     >
@@ -598,7 +794,7 @@ function DataSetView(props, ref) {
                             width={calculateWidth(column.headerName, column.field)}
                             format={getFormat(column)}
                             filter={getFilterByType(column)}
-                            columnMenu={ColumnMenu}
+                            columnMenu={(props) => getColumnMenuByType(column, props)}
                         />
                         )}
                     </Grid>

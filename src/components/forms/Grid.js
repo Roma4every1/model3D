@@ -58,7 +58,9 @@ function Grid(props, ref) {
         else if (layout.type === "tab") {
             var form = forms.find(f => f.id === layout.id);
             if (form) {
-                layout.name = form.displayName;
+                if (!layout.name) {
+                    layout.name = form.displayName;
+                }
                 layout.component = <Form
                     key={form.id}
                     formData={form}

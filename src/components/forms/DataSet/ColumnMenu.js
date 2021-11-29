@@ -17,6 +17,7 @@ export const ColumnMenuCheckboxFilter = (props) => {
         <div>
             <GridColumnMenuCheckboxFilter
                 {...props}
+                data={props.data}
                 expanded={true}
             />
         </div>
