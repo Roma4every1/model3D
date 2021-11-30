@@ -81,7 +81,9 @@ function DataSet(props, ref) {
     var tableData = {
         rowsJSON: rowsJSON,
         columnsJSON: columnsJSON,
-        properties: databaseData?.properties
+        databaseData: databaseData,
+        properties: databaseData?.properties,
+        currentRowObjectName: databaseData?.currentRowObjectName
     };
 
     async function deleteRows(elementsToRemove) {

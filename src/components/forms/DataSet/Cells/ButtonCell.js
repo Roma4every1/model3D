@@ -1,7 +1,6 @@
 import * as React from "react";
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button } from "@progress/kendo-react-buttons";
 import { Window } from "@progress/kendo-react-dialogs";
 import Form from "../../Form";
 var utils = require("../../../../utils");
@@ -30,13 +29,10 @@ export const ButtonCell = (props) => {
     return (
         <div>
             {opened && <Window title={formData.displayName} onClose={handleClose} initialHeight={350}>
-                <Form formData={formData} channels={[props.channelName]}/>
+                <Form formData={formData} channels={[props.channelName]} />
             </Window>}
             <div className="buttonCell">
-                <Button className="k-button k-button-clear colored-gray" onClick={openNestedForm}>
-                    {/*                <span className="k-icon k-i-group-section" />*/}
-                    <img src={process.env.PUBLIC_URL + '/images/tableDetails.png'} alt={t('table.showDetailInfo')} title={t('table.showDetailInfo')} />
-                </Button>
+                <span className="k-icon k-i-window font-10" alt={t('table.showDetailInfo')} title={t('table.showDetailInfo')} onClick={openNestedForm} />
             </div>
         </div>
     );

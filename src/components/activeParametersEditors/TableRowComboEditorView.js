@@ -9,33 +9,6 @@ export default function TableRowComboEditorView(props) {
     var values = [];
     var valueToShow = undefined;
 
-    const addParamRow = (properties, column, row, index) => {
-        var result = '';
-        if (index !== 0) {
-            result = '|'
-        }
-        result += addParam(column, row.Cells[index], column.Name.toUpperCase());
-        var propName = _.find(properties, function (o) { return o.fromColumn?.toUpperCase() === column.Name.toUpperCase(); });
-        if (propName) {
-            result += '|' + addParam(column, row.Cells[index], propName.name.toUpperCase());
-        }
-        return result;
-    }
-
-    const addParam = (column, rowValue, propName) => {
-        var valuestring = '';
-        if (column.NetType === "System.DateTime" && rowValue != null) {
-            valuestring = propName + '#' + utils.dateToString(utils.toDate(rowValue)) + '#' + column.NetType;
-        }
-        else if (rowValue != null) {
-            valuestring = propName + '#' + rowValue + '#' + column.NetType;
-        }
-        else {
-            valuestring = propName + '##System.DBNull';
-        }
-        return valuestring;
-    }
-
     const setNewValue = React.useCallback(
         (value, manual) => {
             var newevent = {};
@@ -51,17 +24,7 @@ export default function TableRowComboEditorView(props) {
     const valuesToSelect = useSelector((state) => state.channelsData[externalChannelName]);
 
     if (valuesToSelect && valuesToSelect.properties) {
-        const valuesFromJSON = valuesToSelect.data.Rows.map((row) => {
-            let temp = {};
-            temp.id = row.Cells[valuesToSelect.idIndex];
-            temp.name = row.Cells[valuesToSelect.nameIndex];
-            var valuestring = '';
-            valuesToSelect.data.Columns.forEach((column, index) => {
-                valuestring += addParamRow(valuesToSelect.properties, column, row, index)
-            });
-            temp.value = valuestring;
-            return temp
-        });
+        const valuesFromJSON = valuesToSelect.data.Rows.map((row) => utils.tableRowToString(valuesToSelect, row));
 
         if (valuesFromJSON && valuesFromJSON !== '') {
             values = valuesFromJSON;

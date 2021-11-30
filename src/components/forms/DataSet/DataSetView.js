@@ -117,7 +117,7 @@ function DataSetView(props, ref) {
                 dataState.filter.filters.forEach(flt => {
                     let filterValue = `<${flt.logic}>`;
                     let fieldName = flt.filters[0].field;
-                    let col = inputTableData.columnsJSON.find(c => c.field == fieldName);
+                    let col = inputTableData.columnsJSON.find(c => c.field === fieldName);
                     flt.filters.forEach(filter => {
                         let operation = "equal"
                         switch (filter.operator) {
@@ -392,6 +392,15 @@ function DataSetView(props, ref) {
             }
         }
     };
+
+    React.useEffect(() => {
+        if (inputTableData.currentRowObjectName) {
+            if (Object.entries(selectedState).filter(e => e[1] === true).length === 1) {
+                let row = Object.entries(selectedState).find(e => e[1] === true);
+                sessionManager.paramsManager.updateParamValue(utils.getParentFormId(formData.id), inputTableData.currentRowObjectName, utils.tableRowToString(inputTableData.databaseData, inputTableData.databaseData.data.Rows[row[0]]).value, true);
+            }
+        }
+    }, [selectedState, inputTableData, sessionManager, formData]);
 
     React.useEffect(() => {
         var columnNames = [];
