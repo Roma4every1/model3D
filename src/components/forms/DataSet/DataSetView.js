@@ -163,8 +163,12 @@ function DataSetView(props, ref) {
                                 operation = "equal";
                         }
                         let center = "";
+                        let fieldFilter = filter.value;
+                        if (col.lookupData) {
+                            fieldFilter = col.lookupData.find(ld => ld.value === fieldFilter).id;
+                        }
                         if (!operation.includes("Null")) {
-                            center = `<netType typeName="${col.netType}" value="${utils.dateToString(filter.value)}"/>`
+                            center = `<netType typeName="${col.netType}" value="${utils.dateToString(fieldFilter)}"/>`
                         }
                         filterValue += `<${operation}>${center}</${operation}>`;
                     });
@@ -540,7 +544,13 @@ function DataSetView(props, ref) {
 
     const getColumnMenuByType = (column, props) => {
         if (column.lookupData) {
-            return <ColumnMenuCheckboxFilter {...props} data={tableData.rowsJSON} />;
+            let data = column.lookupData.map(ld => {
+                return {
+                    ...ld,
+                    [column.field]: ld.value
+                }
+            });
+            return <ColumnMenuCheckboxFilter {...props} data={data} />;
         }
         return <ColumnMenu {...props} />;
     }
