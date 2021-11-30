@@ -6,7 +6,9 @@ const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
     mode: 'production',
-    entry: ['babel-polyfill', './src/index.js'],
+    entry: {
+        entry: './src/index.js',
+    },
     node: {
         fs: 'empty'
     },
@@ -23,9 +25,75 @@ module.exports = {
         }),
         new Dotenv({ defaults: true }),
     ],
+    optimization: {
+      splitChunks: {
+        cacheGroups: {
+          react_vendors: {
+            test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+            name: 'react_vendors',
+            chunks: 'all'
+          },
+          telerik_tool: {
+            test: /[\\/]node_modules[\\/](@progress)[\\/]kendo-react-data-tools[\\/]/,
+            name: 'telerik_tool',
+            chunks: 'all',
+            reuseExistingChunk: true
+          },
+          telerik_grid: {
+            test: /[\\/]node_modules[\\/](@progress)[\\/]kendo-react-grid[\\/]/,
+            name: 'telerik_grid',
+            chunks: 'all',
+            reuseExistingChunk: true
+          },
+          telerik_inputs: {
+            test: /[\\/]node_modules[\\/](@progress)[\\/]kendo-react-inputs[\\/]/,
+            name: 'telerik_inputs',
+            chunks: 'all',
+            reuseExistingChunk: true
+          },
+          telerik_dateinputs: {
+            test: /[\\/]node_modules[\\/](@progress)[\\/]kendo-react-dateinputs[\\/]/,
+            name: 'telerik_dateinputs',
+            chunks: 'all',
+            reuseExistingChunk: true
+          },
+          telerik_theme: {
+            test: /[\\/]node_modules[\\/](@progress)[\\/]kendo-react-theme-default[\\/]/,
+            name: 'telerik_theme',
+            chunks: 'all',
+            reuseExistingChunk: true
+          },
+          telerik_dropdowns: {
+            test: /[\\/]node_modules[\\/](@progress)[\\/]kendo-react-dropdowns[\\/]/,
+            name: 'telerik_dropdowns',
+            chunks: 'all',
+            reuseExistingChunk: true
+          },
+          telerik_buttons: {
+            test: /[\\/]node_modules[\\/](@progress)[\\/]kendo-react-buttons[\\/]/,
+            name: 'telerik_buttons',
+            chunks: 'all',
+            reuseExistingChunk: true
+          },
+          flexlayout: {
+            test: /[\\/]node_modules[\\/]flexlayout-react[\\/]/,
+            name: 'flexlayout',
+            chunks: 'all',
+            reuseExistingChunk: true
+          },
+          babel: {
+            test: /[\\/]node_modules[\\/]@babel[\\/]/,
+            name: 'babel',
+            chunks: 'all',
+            reuseExistingChunk: true
+          },
+        }
+      }
+    },
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: 'index.bundle.js'
+        chunkFilename: '[name].chunk.js',
+        filename: '[name].bundle.js'
     },
     module: {
         rules: [
