@@ -61,7 +61,13 @@ export default function createSessionManager(systemName, store) {
             layoutArray.push({ id: layout, ...layouts[layout] });
         }
 
-        var jsonToSend = { sessionId: store.getState().sessionId, activeParams: paramsArray, children: childArray, layout: layoutArray };
+        var settingsArray = [];
+        const settings = store.getState().formSettings;
+        for (var setting in settings) {
+            settingsArray.push({ id: setting, ...settings[setting] });
+        }
+
+        var jsonToSend = { sessionId: store.getState().sessionId, activeParams: paramsArray, children: childArray, layout: layoutArray, settings: settingsArray };
         return JSON.stringify(jsonToSend);
     }
 

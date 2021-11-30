@@ -50,6 +50,7 @@ export var BaseCell = function (props) {
         aria-colindex={props.ariaColumnIndex}
         aria-selected={props.isSelected}
         onDoubleClick={props.onDoubleClick}
+        onClick={props.onClick}
         {...navigationAttributes}
         role='gridcell'
     >

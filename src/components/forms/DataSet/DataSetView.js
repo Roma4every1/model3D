@@ -32,6 +32,7 @@ import { CellRender } from "./Renderers";
 import addParam from "../../../store/actionCreators/addParam";
 import FormHeader from '../Form/FormHeader';
 import ruMessages from "../../locales/kendoUI/ru.json";
+import setFormSettings from "../../../store/actionCreators/setFormSettings";
 load(
     likelySubtags,
     currencyData,
@@ -56,9 +57,10 @@ function DataSetView(props, ref) {
     const dispatch = useDispatch();
     const sessionManager = useSelector((state) => state.sessionManager);
     const sessionId = useSelector((state) => state.sessionId);
-    const { inputTableData, tableSettings, formData, apply, deleteRows, getRow, reload, editable, dataPart, activeChannelName } = props;
+    const { inputTableData, formData, apply, deleteRows, getRow, reload, editable, dataPart, activeChannelName } = props;
     const [rowAdding, setRowAdding] = React.useState(false);
     const [edited, setEdited] = React.useState(false);
+    const [activeCell, setActiveCell] = React.useState(null);
     const [tableData, setTableData] = React.useState({
         rowsJSON: [],
         columnsJSON: []
@@ -69,6 +71,8 @@ function DataSetView(props, ref) {
     const [selectedState, setSelectedState] = React.useState({});
     const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
     const [skip, setSkip] = React.useState(0);
+
+    const tableSettings = useSelector((state) => state.formSettings[formData.id]);
 
     React.useEffect(() => {
         if (activeChannelName && inputTableData && inputTableData.properties) {
@@ -421,14 +425,9 @@ function DataSetView(props, ref) {
                 columnNames = tableSettings.columns.columnsSettings.map(s => s.channelPropertyName).filter(n => columnNames.includes(n));
             }
             var columns = columnNames.map(c => inputTableData.columnsJSON.find(jsc => jsc.field === c));
-            if (tableSettings.columns.frozenColumnCount) {
-                var count = tableSettings.columns.frozenColumnCount;
-                if (count > columns.length) {
-                    count = columns.length;
-                }
-                for (let i = 0; i < count; i++) {
-                    columns[i].locked = true;
-                }
+            var count = tableSettings.columns.frozenColumnCount ?? 0;
+            for (let i = 0; i < columns.length; i++) {
+                    columns[i].locked = i < count;
             }
             setTableData({ rowsJSON: inputTableData.rowsJSON, columnsJSON: columns });
         }
@@ -591,7 +590,8 @@ function DataSetView(props, ref) {
 
     React.useImperativeHandle(ref, () => ({
         excelExport: excelExport,
-        selectAll: selectAll
+        selectAll: selectAll,
+        activeCell: () => { return activeCell; }
     }));
 
     const otherButtons =
@@ -639,9 +639,22 @@ function DataSetView(props, ref) {
             td={td}
             editor={getEditorType(tableData.columnsJSON[props.columnIndex])}
             enterEdit={enterEdit}
+            setActiveCell={setActiveCell}
             editField={editField}
         />
     );
+
+    const onColumnResize = (event) => {
+        if (tableSettings && tableSettings.columns) {
+            event.columns.forEach(c => {
+                var columnSetting = tableSettings.columns.columnsSettings.find(s => s.channelPropertyName === c.field);
+                if (columnSetting) {
+                    columnSetting.width = c.width;
+                }
+            });
+            dispatch(setFormSettings(formData.id, { ...tableSettings }));
+        }
+    };
 
     const filterOperators = {
         text: [
@@ -777,6 +790,7 @@ function DataSetView(props, ref) {
                     <FormHeader formData={formData} additionalButtons={otherButtons} />
                     <Grid className="grid-content"
                         resizable={true}
+                        onColumnResize={onColumnResize}
                         sortable={true}
                         data={dataToShow ? dataToShow.slice(skip, skip + 30) : dataToShow}
                         {...dataState}

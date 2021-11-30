@@ -10,26 +10,41 @@ export default function Form(props) {
     const dispatch = useDispatch();
     const sessionManager = useSelector((state) => state.sessionManager);
     const { formData } = props;
-    const [activeChannels, setActiveChannels] = React.useState([]);
-    const [activeParams, setActiveParams] = React.useState([]);
+    const [formLoadedData, setFormLoadedData] = React.useState(
+        {
+            activeChannels: [],
+            activeParams: [],
+            settings: []
+        });
     const _form = React.useRef(null);
 
     React.useEffect(() => {
         let ignore = false;
         async function fetchParams() {
             const params = await sessionManager.paramsManager.loadFormParameters(formData.id, false);
-            if (!ignore) {
-                setActiveParams(params);
-            }
+            return params;
         }
+
         async function fetchChannels() {
             const channels = await sessionManager.channelsManager.loadFormChannelsList(formData.id);
-            if (!ignore) {
-                setActiveChannels(channels);
-            }
+            return channels;
         }
-        fetchParams();
-        fetchChannels();
+
+        async function fetchSettings() {
+            const settings = await sessionManager.paramsManager.loadFormSettings(formData.id, false);
+            return settings;
+        }
+
+        Promise.all([fetchParams(), fetchChannels(), fetchSettings()]).then(values => {
+            if (!ignore) {
+                setFormLoadedData({
+                    activeChannels: values[1],
+                    activeParams: values[0],
+                    settings: values[2]
+                });
+            }
+        });
+
         return () => {
             ignore = true;
             sessionManager.channelsManager.setFormInactive(formData.id);
@@ -46,7 +61,7 @@ export default function Form(props) {
         <div className="form-container">
             <ErrorBoundary>
                 <Suspense fallback={<p><em>{t('base.loading')}</em></p>}>
-                    <FormByType formData={formData} channels={activeChannels} params={activeParams} ref={_form} />
+                    <FormByType formData={formData} data={formLoadedData} ref={_form} />
                 </Suspense>
             </ErrorBoundary>
         </div>

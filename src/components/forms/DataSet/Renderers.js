@@ -9,6 +9,12 @@ export const CellRender = props => {
     } : {
             onDoubleClick: () => {
                 props.enterEdit(dataItem, cellField);
+            },
+            onClick: () => {
+                props.setActiveCell({
+                    row: dataItem,
+                    column: cellField
+                });
             }
         };
     const clonedProps = {

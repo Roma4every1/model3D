@@ -43,6 +43,11 @@
       "type": "strip",
       "component": "SelectAllRec",
       "label": "Выделить все"
+    },
+    "columnSettings": {
+      "type": "strip",
+      "component": "ColumnSettings",
+      "label": "Настройки колонок"
     }
   }
 }

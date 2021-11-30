@@ -1,5 +1,6 @@
 ﻿import addParam from "../store/actionCreators/addParam";
 import setCanRunReport from "../store/actionCreators/setCanRunReport";
+import setFormSettings from "../store/actionCreators/setFormSettings";
 import setParams from "../store/actionCreators/setParams";
 import updateParam from "../store/actionCreators/updateParam";
 var utils = require("../utils");
@@ -72,6 +73,13 @@ export default function createParamsManager(store) {
         }
     }
 
+    const loadFormSettings = async (formId) => {
+        const sessionId = store.getState().sessionId;
+        var data = await store.getState().sessionManager.fetchData(`getFormSettings?sessionId=${sessionId}&formId=${formId}`);
+        store.dispatch(setFormSettings(formId, data));
+        return data;
+    }
+
     const getCanRunReport = async (formId) => {
         const canRunReport = store.getState().canRunReport;
         reportFormId = formId;
@@ -103,6 +111,7 @@ export default function createParamsManager(store) {
     return {
         loadNeededChannelForParam,
         loadFormParameters,
+        loadFormSettings,
         getParameterValues,
         updateParamValue,
         getCanRunReport

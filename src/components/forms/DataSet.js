@@ -4,28 +4,13 @@ import DataSetView from "./DataSet/DataSetView";
 
 function DataSet(props, ref) {
     const sessionManager = useSelector((state) => state.sessionManager);
-    const sessionId = useSelector((state) => state.sessionId);
-    const { formData, channels } = props;
-    const [activeChannelName] = React.useState(channels[0]);
-    const [tableSettings, setTableSettings] = React.useState(null);
+    const { formData, data } = props;
+    const [activeChannelName] = React.useState(data.activeChannels[0]);
 
     const reload = React.useCallback(async () => {
         await sessionManager.channelsManager.loadAllChannelData(activeChannelName, formData.id, true);
     }, [activeChannelName, formData, sessionManager]);
 
-    React.useEffect(() => {
-        let ignore = false;
-        if (sessionId) {
-            async function fetchData() {
-                const data = await sessionManager.fetchData(`getDataSetFormParameters?sessionId=${sessionId}&formId=${formData.id}`);
-                if (!ignore) {
-                    setTableSettings(data);
-                }
-            }
-            fetchData();
-        }
-        return () => { ignore = true; }
-    }, [sessionId, formData, sessionManager]);
 
     const databaseData = useSelector((state) => state.channelsData[activeChannelName]);
 
@@ -123,6 +108,9 @@ function DataSet(props, ref) {
         },
         selectAll: () => {
             _viewRef.current.selectAll();
+        },
+        activeCell: () => {
+           return _viewRef.current.activeCell();
         }
     }));
 
@@ -133,7 +121,6 @@ function DataSet(props, ref) {
                 activeChannelName={activeChannelName}
                 editable={databaseData?.data?.Editable}
                 dataPart={databaseData?.data?.DataPart}
-                tableSettings={tableSettings}
                 formData={formData}
                 apply={apply}
                 deleteRows={deleteRows}
