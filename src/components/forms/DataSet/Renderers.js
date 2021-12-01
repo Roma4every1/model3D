@@ -8,7 +8,9 @@ export const CellRender = props => {
     const additionalProps = cellField && cellField === inEditField ? {
     } : {
             onDoubleClick: () => {
-                props.enterEdit(dataItem, cellField);
+                if (props.editable) {
+                    props.enterEdit(dataItem, cellField);
+                }
             },
             onClick: () => {
                 props.setActiveCell({

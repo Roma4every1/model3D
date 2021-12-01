@@ -77,13 +77,16 @@ function DataSet(props, ref) {
 
     async function apply(editedTableData, rowToInsert, editID, rowAdding) {
         var cells = [];
-        databaseData.data.Columns.forEach(column => {
-            const datacolumn = editedTableData.columnsJSON.find((c) => c.fromColumn === column.Name)
-            if (datacolumn.lookupData) {
-                return cells.push(rowToInsert[datacolumn.field + '_jsoriginal'])
+        databaseData.data.Columns.forEach((column, index) => {
+            let prop = databaseData.properties.find(property => column.Name === (property.fromColumn ?? property.name));
+            if (prop) {
+                if (prop.lookupData) {
+                    return cells.push(rowToInsert[prop.name + '_jsoriginal'])
+                }
+                return cells.push(rowToInsert[prop.name])
             }
             else {
-                return cells.push(rowToInsert[datacolumn.field])
+                return cells.push(databaseData.data.Rows[rowToInsert['js_id']].Cells[index])
             }
         });
         var itemToInsert = { Id: null, Cells: cells };

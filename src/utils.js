@@ -84,6 +84,10 @@ export const dateToString = (value) => {
 
 export const tableRowToString = (valuesToSelect, row) => {
 
+    if (!row) {
+        return null;
+    }
+
     const addParamRow = (properties, column, row, index) => {
         var result = '';
         if (index !== 0) {
@@ -110,7 +114,6 @@ export const tableRowToString = (valuesToSelect, row) => {
         }
         return valuestring;
     }
-
     let temp = {};
     temp.id = row.Cells[valuesToSelect.idIndex];
     temp.name = row.Cells[valuesToSelect.nameIndex];

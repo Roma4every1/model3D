@@ -28,7 +28,7 @@ import timeZoneNames from "cldr-dates-full/main/ru/timeZoneNames.json";
 import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { getter } from "@progress/kendo-react-common";
 import { useTranslation } from 'react-i18next';
-import { CellRender } from "./Renderers";
+import { CellRender, RowRender } from "./Renderers";
 import addParam from "../../../store/actionCreators/addParam";
 import FormHeader from '../Form/FormHeader';
 import ruMessages from "../../locales/kendoUI/ru.json";
@@ -412,7 +412,7 @@ function DataSetView(props, ref) {
             setTableData(inputTableData);
         }
         else {
-            if (tableSettings?.attachedProperties?.attachOption === "AttachAll") {
+            if (tableSettings?.attachedProperties?.attachOption !== "AttachNothing") {
                 columnNames = inputTableData.columnsJSON.map(c => c.field).filter(f => !tableSettings?.attachedProperties?.exclude.includes(f));
             }
             else {
@@ -763,6 +763,15 @@ function DataSetView(props, ref) {
         ],
     };
 
+    const customRowRender = (tr, props) => (
+        <RowRender
+            originalProps={props}
+            tr={tr}
+            exitEdit={exitEdit}
+            editField={editField}
+        />
+    );
+
     if (tableData.columnsJSON.length > 0) {
         return (
             <LocalizationProvider language="ru-RU">
@@ -799,6 +808,7 @@ function DataSetView(props, ref) {
                             setDataState(e.dataState);
                         }}
                         cellRender={customCellRender}
+                        rowRender={customRowRender}
                         onItemChange={onItemChange}
                         dataItemKey={DATA_ITEM_KEY}
                         editField={editable ? EDIT_FIELD : null}
