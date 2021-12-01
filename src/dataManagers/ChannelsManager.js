@@ -99,11 +99,10 @@ export default function createChannelsManager(store) {
                 channelData.idIndex = idIndex;
                 channelData.nameIndex = nameIndex;
             }
-            if (channelData && channelData.data && channelData.data.Columns) {
+            if (channelData && channelData.properties) {
                 await Promise.all(
-                    channelData.data.Columns.map(async (column) => {
-                        const property = _.find(channelData.properties, function (o) { return o.fromColumn === column.Name; });
-                        if (property && property.lookupChannelName) {
+                    channelData.properties.map(async (property) => {
+                        if (property.lookupChannelName) {
                             const lookupChanged = await loadAllChannelData(property.lookupChannelName, formId, false);
                             if (lookupChanged) {
                                 changed = true;

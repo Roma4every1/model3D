@@ -9,10 +9,10 @@ export default function Form(props) {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const sessionManager = useSelector((state) => state.sessionManager);
-    const { formData } = props;
+    const { formData, data } = props;
     const [formLoadedData, setFormLoadedData] = React.useState(
         {
-            activeChannels: [],
+            activeChannels: data?.activeChannels ?? [],
             activeParams: [],
             settings: []
         });
@@ -35,21 +35,26 @@ export default function Form(props) {
             return settings;
         }
 
-        Promise.all([fetchParams(), fetchChannels(), fetchSettings()]).then(values => {
-            if (!ignore) {
-                setFormLoadedData({
-                    activeChannels: values[1],
-                    activeParams: values[0],
-                    settings: values[2]
-                });
-            }
-        });
+        if (!data || data.needLoad) {
+            Promise.all([fetchParams(), fetchChannels(), fetchSettings()]).then(values => {
+                if (!ignore) {
+                    setFormLoadedData({
+                        activeChannels: values[1],
+                        activeParams: values[0],
+                        settings: values[2]
+                    });
+                }
+            });
+        }
+        else {
+            Promise.all(formLoadedData.activeChannels.map(async ch => await sessionManager.channelsManager.loadAllChannelData(ch, formData.id, false)));
+        }
 
         return () => {
             ignore = true;
             sessionManager.channelsManager.setFormInactive(formData.id);
         };
-    }, [formData, sessionManager]);
+    }, [formData, sessionManager, data]);
 
     const FormByType = React.lazy(() => import('./' + capitalizeFirstLetter(formData.type)));
 

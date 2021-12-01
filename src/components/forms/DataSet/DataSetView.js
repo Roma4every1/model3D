@@ -367,6 +367,9 @@ function DataSetView(props, ref) {
                 }
                 break;
             }
+            case 'Ф':
+            case 'ф':
+            case 'A':
             case 'a': {
                 if (event.nativeEvent.ctrlKey) {
                     selectAll();

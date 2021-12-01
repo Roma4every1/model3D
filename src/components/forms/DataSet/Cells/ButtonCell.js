@@ -29,8 +29,9 @@ export const ButtonCell = (props) => {
     return (
         <div>
             {opened && <Window title={formData.displayName} onClose={handleClose} initialHeight={350}>
-                <Form formData={formData} channels={[props.channelName]} />
+                <Form formData={formData} data={{ activeChannels: [props.channelName] }} />
             </Window>}
+            {props.data}
             <div className="buttonCell">
                 <span className="k-icon k-i-window font-10" alt={t('table.showDetailInfo')} title={t('table.showDetailInfo')} onClick={openNestedForm} />
             </div>

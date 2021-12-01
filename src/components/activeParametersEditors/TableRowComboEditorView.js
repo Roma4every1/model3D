@@ -24,7 +24,7 @@ export default function TableRowComboEditorView(props) {
     const valuesToSelect = useSelector((state) => state.channelsData[externalChannelName]);
 
     if (valuesToSelect && valuesToSelect.properties) {
-        const valuesFromJSON = valuesToSelect.data.Rows.map((row) => utils.tableRowToString(valuesToSelect, row));
+        const valuesFromJSON = valuesToSelect?.data?.Rows?.map((row) => utils.tableRowToString(valuesToSelect, row));
 
         if (valuesFromJSON && valuesFromJSON !== '') {
             values = valuesFromJSON;

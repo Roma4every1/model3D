@@ -11,8 +11,15 @@ export var BaseCell = function (props) {
     var data = props.dataItem[props.field] ?? '';
     var intl = useInternationalization();
     var element = '';
+    var stringData = '';
+    if (data !== undefined && data !== null) {
+        stringData = props.format ?
+            intl.format(props.format, data) :
+            data.toString();
+    }
+
     if (props.type === 'secondLevel') {
-        element = <ButtonCell {...props} secondLevelFormId={props.secondLevelFormId} channelName={props.channelName} />;
+        element = <ButtonCell {...props} data={stringData} secondLevelFormId={props.secondLevelFormId} channelName={props.channelName} />;
     }
     else if (props.dataItem.js_inEdit && props.editField === props.field) {
         switch (props.type) {
@@ -34,11 +41,7 @@ export var BaseCell = function (props) {
         }
     }
     else {
-        if (data !== undefined && data !== null) {
-            element = props.format ?
-                intl.format(props.format, data) :
-                data.toString();
-        }
+        element = stringData;
     }
     return element;
 };
