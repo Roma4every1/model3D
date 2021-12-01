@@ -20,12 +20,15 @@ export const CellRender = props => {
             }
         };
     const clonedProps = {
-        ...props.originalProps,
-        ...props.editor,
-        editField: props.editField,
+        ...props.td.props,
         ...additionalProps
     };
-    return React.createElement(BaseCell, clonedProps, props.td.props.children);
+    const customProps = {
+        ...props.originalProps,
+        ...props.editor,
+        editField: props.editField
+    };
+    return React.cloneElement(props.td, clonedProps, BaseCell(customProps));
 };
 
 export const RowRender = props => {

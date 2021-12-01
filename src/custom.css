@@ -217,9 +217,13 @@ html {
     font-size: 12px;
 }
 
-.k-grid tr {
-    min-height: 10px;
-    height: 15px;
+.k-grid .k-grid-edit-row td:not(.k-hierarchy-cell),
+.k-grid k-grid-edit-row {
+    padding: 1px;
+}
+
+.k-grid td {
+    padding: 1px;
 }
 
 .k-grid-header .k-header {
