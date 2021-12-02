@@ -245,14 +245,15 @@ function DataSetView(props, ref) {
     };
 
     const excelExport = async () => {
-        const dataD = await sessionManager.fetchData(`getNeededParamForChannel?sessionId=${sessionId}&channelName=${activeChannelName}`);
-        var neededParamValues = sessionManager.paramsManager.getParameterValues(dataD, formData.id, false);
+        const dataD = sessionManager.channelsManager.getAllChannelParams(activeChannelName);
+        var neededParamValues = sessionManager.paramsManager.getParameterValues(dataD, formData.id, false, activeChannelName);
         var jsonToSend = {
             sessionId: sessionId,
             channelName: activeChannelName,
             paramName: formData.displayName,
             presentationId: utils.getParentFormId(formData.id),
-            paramValues: neededParamValues
+            paramValues: neededParamValues,
+            settings: tableSettings.columns
         };
         const jsonToSendString = JSON.stringify(jsonToSend);
         var data = await sessionManager.fetchData(`exportToExcel`,

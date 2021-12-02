@@ -21,7 +21,7 @@ export default function Form(props) {
 
     React.useEffect(() => {
         let ignore = false;
-        if (!formLoadedData.loaded) {
+        if (!data || data.needLoad) {
             async function fetchParams() {
                 const params = await sessionManager.paramsManager.loadFormParameters(formData.id, false);
                 return params;
@@ -36,7 +36,7 @@ export default function Form(props) {
                 const settings = await sessionManager.paramsManager.loadFormSettings(formData.id, false);
                 return settings;
             }
-            if (!data || data.needLoad) {
+            if (!formLoadedData.loaded) {
                 Promise.all([fetchParams(), fetchChannels(), fetchSettings()]).then(values => {
                     if (!ignore) {
                         setFormLoadedData({
@@ -48,18 +48,20 @@ export default function Form(props) {
                     }
                 });
             }
-            else {
-                Promise.all(formLoadedData.activeChannels.map(async ch =>
-                    await sessionManager.channelsManager.loadAllChannelData(ch, formData.id, false)
-                )).then(values => {
+        }
+        else {
+            Promise.all(formLoadedData.activeChannels.map(async ch =>
+                await sessionManager.channelsManager.loadAllChannelData(ch, formData.id, false)
+            )).then(values => {
+                if (!formLoadedData.loaded) {
                     setFormLoadedData({
                         loaded: true,
                         activeChannels: data.activeChannels,
                         activeParams: data.activeParams,
                         settings: data.settings
                     });
-                });
-            }
+                }
+            });
         }
 
         return () => {

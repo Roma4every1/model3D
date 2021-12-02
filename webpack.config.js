@@ -7,6 +7,7 @@ const CopyPlugin = require("copy-webpack-plugin");
 module.exports = {
     mode: 'production',
     entry: {
+        'babel-polyfill': 'babel-polyfill',
         entry: './src/index.js',
     },
     node: {
@@ -16,6 +17,7 @@ module.exports = {
         new CopyPlugin({
             patterns: [
                 { from: "./public/images", to: "./images" }
+                { from: "./public/downloadFilesImages", to: "./downloadFilesImages" }
             ]
         }),
         new CleanWebpackPlugin(),

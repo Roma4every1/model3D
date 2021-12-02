@@ -8,6 +8,11 @@ var utils = require("../../../../utils");
 export const ButtonCell = (props) => {
     const { t } = useTranslation();
     const [opened, setOpened] = React.useState(false);
+    const [staticFormData] = React.useState({
+        id: props.secondLevelFormId,
+        type: "dataSet",
+        displayName: t('table.linkedTable')
+    });
 
     const openNestedForm = async () => {
         setOpened(true);
@@ -17,14 +22,7 @@ export const ButtonCell = (props) => {
         setOpened(false);
     };
 
-    var formData = useSelector((state) => state.childForms[utils.getParentFormId(props.secondLevelFormId)]?.children.find(p => p.id === props.secondLevelFormId));
-    if (!formData) {
-        formData = {
-            id: props.secondLevelFormId,
-            type: "dataSet",
-            displayName: t('table.linkedTable')
-        };
-    }
+    var formData = useSelector((state) => (state.childForms[utils.getParentFormId(props.secondLevelFormId)]?.children.find(p => p.id === props.secondLevelFormId)) ?? staticFormData);
 
     return (
         <div>

@@ -55,11 +55,11 @@ export default function createChannelsManager(store) {
         }
     }
 
-    const updateTables = async (modifiedTables) => {
+    const updateTables = async (modifiedTables, baseChannelName) => {
         for (var channelName in allChannelsForms) {
             for (var formId in allChannelsForms[channelName]) {
                 if (allChannelsForms[channelName][formId] && store.getState().channelsData[channelName] && modifiedTables?.includes(store.getState().channelsData[channelName].tableId)) {
-                    loadAllChannelData(channelName, formId, true);
+                    loadAllChannelData(channelName, formId, baseChannelName !== channelName);
                 }
             }
         }
@@ -83,7 +83,7 @@ export default function createChannelsManager(store) {
 
             const channelData = await loadChannelData(channelName, neededParamValues);
             if (channelData && channelData.data && channelData.data.ModifiedTables && channelData.data.ModifiedTables.ModifiedTables) {
-                updateTables(channelData.data.ModifiedTables.ModifiedTables);
+                updateTables(channelData.data.ModifiedTables.ModifiedTables, channelName);
             }
             let idIndex = 0;
             let nameIndex = 0;
@@ -148,6 +148,18 @@ export default function createChannelsManager(store) {
         }
     }
 
+    const getAllChannelParams = (channelName) => {
+        let result = channelsParams[channelName];
+        let data = store.getState().channelsData[channelName];
+        data.properties.forEach((property) => {
+            if (property.lookupChannelName) {
+                result = result.concat(channelsParams[property.lookupChannelName]);
+            }
+        });
+        result = _.uniq(result);
+        return result;
+    }
+
     const getNewRow = async (tableId) => {
         const sessionId = store.getState().sessionId;
         const data = await store.getState().sessionManager.fetchData(`getNewRow?sessionId=${sessionId}&tableId=${tableId}`);
@@ -196,6 +208,7 @@ export default function createChannelsManager(store) {
         insertRow,
         updateRow,
         deleteRow,
-        getNewRow
+        getNewRow,
+        getAllChannelParams
     };
 }

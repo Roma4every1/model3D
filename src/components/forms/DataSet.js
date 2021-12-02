@@ -31,8 +31,8 @@ function DataSet(props, ref) {
                 else {
                     if (column.lookupData) {
                         const prevalue = rowValue;
-                        const textvalue = column.lookupData.find((c) => c.id === prevalue)?.text;
-                        temp[column.field] = textvalue;
+                        const textvalue = column.lookupData.find((c) => c.id === '' + prevalue)?.text;
+                        temp[column.field] = textvalue ?? prevalue;
                         temp[column.field + '_jsoriginal'] = rowValue;
                     }
                     else {
