@@ -66,13 +66,15 @@ export default function createChannelsManager(store) {
     }
 
     const loadAllChannelData = async (channelName, formId, force) => {
+        let channelsExists = true;
         if (!allChannelsForms[channelName]) {
+            channelsExists = false;
             allChannelsForms[channelName] = [];
         }
         allChannelsForms[channelName][formId] = true;
         if (!channelsParams[channelName]) {
             const channelParamsList = await loadChannelParamsList(channelName);
-            channelsParams[channelName] = channelParamsList;
+            channelsParams[channelName] = channelParamsList ?? [];
         }
         var neededParamValues = store.getState().sessionManager.paramsManager.getParameterValues(channelsParams[channelName], formId, false, channelName);
         var changed = force || !channelsParamsValues[channelName] || !equalParams(channelsParamsValues[channelName], neededParamValues.map(np => np.value));
@@ -100,26 +102,31 @@ export default function createChannelsManager(store) {
                 channelData.nameIndex = nameIndex;
             }
             if (channelData && channelData.properties) {
-                await Promise.all(
-                    channelData.properties.map(async (property) => {
-                        if (property.lookupChannelName) {
-                            const lookupChanged = await loadAllChannelData(property.lookupChannelName, formId, false);
-                            if (lookupChanged) {
-                                changed = true;
+                if (!channelsExists) {
+                    await Promise.all(
+                        channelData.properties.map(async (property) => {
+                            if (property.lookupChannelName) {
+                                const lookupChanged = await loadAllChannelData(property.lookupChannelName, formId, false);
+                                if (lookupChanged) {
+                                    changed = true;
+                                }
+                                const lookupChannelData = store.getState().channelsData[property.lookupChannelName];
+                                if (lookupChannelData && lookupChannelData.data) {
+                                    const lookupData = lookupChannelData.data.Rows.map((row) => {
+                                        let temp = {};
+                                        temp.id = row.Cells[lookupChannelData.idIndex];
+                                        temp.value = row.Cells[lookupChannelData.nameIndex];
+                                        temp.text = row.Cells[lookupChannelData.nameIndex];
+                                        return temp;
+                                    });
+                                    property.lookupData = lookupData;
+                                }
                             }
-                            const lookupChannelData = store.getState().channelsData[property.lookupChannelName];
-                            if (lookupChannelData && lookupChannelData.data) {
-                                const lookupData = lookupChannelData.data.Rows.map((row) => {
-                                    let temp = {};
-                                    temp.id = row.Cells[lookupChannelData.idIndex];
-                                    temp.value = row.Cells[lookupChannelData.nameIndex];
-                                    temp.text = row.Cells[lookupChannelData.nameIndex];
-                                    return temp;
-                                });
-                                property.lookupData = lookupData;
-                            }
-                        }
-                    }));
+                        }));
+                }
+                else {
+                    channelData.properties = store.getState().channelsData[channelName].properties;
+                }
                 store.dispatch(setChannelsData(channelName, channelData));
             }
         }

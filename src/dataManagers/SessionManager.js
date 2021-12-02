@@ -168,34 +168,39 @@ export default function createSessionManager(systemName, store) {
         }, 5);
     }
 
+    var fetchBlockedCount = 0;
     const fetchData = async (request, params) => {
-        try {
-            const response = await utils.webFetch(request, params);
+        if (fetchBlockedCount < 10) {
             try {
-                const data = await response.json();
-                if (data.error) {
-                    if (data.type === "Warning") {
-                        handleWindowWarning(data.message, data.stackTrace);
+                const response = await utils.webFetch(request, params);
+                try {
+                    const data = await response.json();
+                    if (data.error) {
+                        if (data.type === "Warning") {
+                            handleWindowWarning(data.message, data.stackTrace);
+                        }
+                        else if (data.type === "Info") {
+                            handleWindowInfo(data.message, data.stackTrace);
+                        }
+                        else {
+                            handleWindowError(data.message, data.stackTrace);
+                        }
+                        return null;
                     }
-                    else if (data.type === "Info") {
-                        handleWindowInfo(data.message, data.stackTrace);
-                    }
-                    else {
-                        handleWindowError(data.message, data.stackTrace);
-                    }
+                    return data;
+                }
+                catch (e) {
+                    handleWindowError(i18n.t('messages.responseReadError'), e.message + ": " + request);
+                    fetchBlockedCount++;
                     return null;
                 }
-                return data;
             }
             catch (e) {
-                handleWindowError(i18n.t('messages.responseReadError'), e.message + ": " + request);
+                //  handleWindowError(e.message, e.stack);
+                handleWindowError(i18n.t('messages.serverDisabled'), e.message + ": " + request);
+                fetchBlockedCount++;
                 return null;
             }
-        }
-        catch (e) {
-            //  handleWindowError(e.message, e.stack);
-            handleWindowError(i18n.t('messages.serverDisabled'), e.message + ": " + request);
-            return null;
         }
     }
 

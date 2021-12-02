@@ -12,6 +12,7 @@ export default function Form(props) {
     const { formData, data } = props;
     const [formLoadedData, setFormLoadedData] = React.useState(
         {
+            loaded: false,
             activeChannels: data?.activeChannels ?? [],
             activeParams: [],
             settings: []
@@ -20,41 +21,54 @@ export default function Form(props) {
 
     React.useEffect(() => {
         let ignore = false;
-        async function fetchParams() {
-            const params = await sessionManager.paramsManager.loadFormParameters(formData.id, false);
-            return params;
-        }
+        if (!formLoadedData.loaded) {
+            async function fetchParams() {
+                const params = await sessionManager.paramsManager.loadFormParameters(formData.id, false);
+                return params;
+            }
 
-        async function fetchChannels() {
-            const channels = await sessionManager.channelsManager.loadFormChannelsList(formData.id);
-            return channels;
-        }
+            async function fetchChannels() {
+                const channels = await sessionManager.channelsManager.loadFormChannelsList(formData.id);
+                return channels;
+            }
 
-        async function fetchSettings() {
-            const settings = await sessionManager.paramsManager.loadFormSettings(formData.id, false);
-            return settings;
-        }
-
-        if (!data || data.needLoad) {
-            Promise.all([fetchParams(), fetchChannels(), fetchSettings()]).then(values => {
-                if (!ignore) {
+            async function fetchSettings() {
+                const settings = await sessionManager.paramsManager.loadFormSettings(formData.id, false);
+                return settings;
+            }
+            if (!data || data.needLoad) {
+                Promise.all([fetchParams(), fetchChannels(), fetchSettings()]).then(values => {
+                    if (!ignore) {
+                        setFormLoadedData({
+                            loaded: true,
+                            activeChannels: values[1],
+                            activeParams: values[0],
+                            settings: values[2]
+                        });
+                    }
+                });
+            }
+            else {
+                Promise.all(formLoadedData.activeChannels.map(async ch =>
+                    await sessionManager.channelsManager.loadAllChannelData(ch, formData.id, false)
+                )).then(values => {
                     setFormLoadedData({
-                        activeChannels: values[1],
-                        activeParams: values[0],
-                        settings: values[2]
+                        loaded: true,
+                        activeChannels: data.activeChannels,
+                        activeParams: data.activeParams,
+                        settings: data.settings
                     });
-                }
-            });
-        }
-        else {
-            Promise.all(formLoadedData.activeChannels.map(async ch => await sessionManager.channelsManager.loadAllChannelData(ch, formData.id, false)));
+                });
+            }
         }
 
         return () => {
             ignore = true;
-            sessionManager.channelsManager.setFormInactive(formData.id);
+            if (formLoadedData.loaded) {
+                sessionManager.channelsManager.setFormInactive(formData.id);
+            }
         };
-    }, [formData, sessionManager, data]);
+    }, [formData, sessionManager, formLoadedData, data]);
 
     const FormByType = React.lazy(() => import('./' + capitalizeFirstLetter(formData.type)));
 
@@ -66,7 +80,10 @@ export default function Form(props) {
         <div className="form-container">
             <ErrorBoundary>
                 <Suspense fallback={<p><em>{t('base.loading')}</em></p>}>
-                    <FormByType formData={formData} data={formLoadedData} ref={_form} />
+                    {formLoadedData.loaded ?
+                        <FormByType formData={formData} data={formLoadedData} ref={_form} /> :
+                        <p><em>{t('base.loading')}</em></p>
+                    }
                 </Suspense>
             </ErrorBoundary>
         </div>

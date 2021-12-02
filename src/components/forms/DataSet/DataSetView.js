@@ -30,6 +30,8 @@ import { getter } from "@progress/kendo-react-common";
 import { useTranslation } from 'react-i18next';
 import { CellRender, RowRender } from "./Renderers";
 import addParam from "../../../store/actionCreators/addParam";
+import addParamSet from "../../../store/actionCreators/addParamSet";
+import updateParamSet from "../../../store/actionCreators/updateParamSet";
 import FormHeader from '../Form/FormHeader';
 import ruMessages from "../../locales/kendoUI/ru.json";
 import setFormSettings from "../../../store/actionCreators/setFormSettings";
@@ -75,36 +77,37 @@ function DataSetView(props, ref) {
     const tableSettings = useSelector((state) => state.formSettings[formData.id]);
 
     React.useEffect(() => {
-        if (activeChannelName && inputTableData && inputTableData.properties) {
+        if (inputTableData.properties) {
+            let neededParamArray = { channelName: activeChannelName, params: [] };
             inputTableData.properties.forEach(prop => {
                 const conditionElement = {
                     id: prop.name + "ConditionFilterObject",
                     type: "condition"
                 };
-                dispatch(addParam(activeChannelName, conditionElement));
+                neededParamArray.params.push(conditionElement);
             });
+            dispatch(addParamSet(neededParamArray));
         }
-    }, [activeChannelName, inputTableData, dispatch]);
+    }, [activeChannelName, inputTableData.properties, dispatch]);
 
     React.useEffect(() => {
-        if (activeChannelName) {
-            const maxRowCountElement = {
-                id: "maxRowCount",
-                type: "integer"
-            };
-            const sortOrder = {
-                id: "sortOrder",
-                type: "sortOrder"
-            }
-            dispatch(addParam(activeChannelName, maxRowCountElement));
-            dispatch(addParam(activeChannelName, sortOrder));
+        const maxRowCountElement = {
+            id: "maxRowCount",
+            type: "integer"
+        };
+        const sortOrder = {
+            id: "sortOrder",
+            type: "sortOrder"
         }
+        dispatch(addParam(activeChannelName, maxRowCountElement));
+        dispatch(addParam(activeChannelName, sortOrder));
     }, [activeChannelName, dispatch]);
 
     React.useEffect(() => {
         if (dataState) {
+            let neededParamArray = [];
             if (!dataState.sort) {
-                sessionManager.paramsManager.updateParamValue(activeChannelName, "sortOrder", null, true);
+                neededParamArray.push({ name: "sortOrder", value: null });
             }
             else {
                 var newValue = dataState.sort.map(el => {
@@ -115,7 +118,7 @@ function DataSetView(props, ref) {
                     }
                     return `${field} ${el.dir}`;
                 }).join(',');
-                sessionManager.paramsManager.updateParamValue(activeChannelName, "sortOrder", newValue, true);
+                neededParamArray.push({ name: "sortOrder", value: newValue });
             }
             if (dataState.filter) {
                 dataState.filter.filters.forEach(flt => {
@@ -177,17 +180,18 @@ function DataSetView(props, ref) {
                         filterValue += `<${operation}>${center}</${operation}>`;
                     });
                     filterValue += `</${flt.logic}>`;
-                    sessionManager.paramsManager.updateParamValue(activeChannelName, fieldName + "ConditionFilterObject", filterValue, true);
+                    neededParamArray.push({ name: fieldName + "ConditionFilterObject", value: filterValue });
                 });
             }
             inputTableData.columnsJSON.forEach(c => {
                 let needClear = (!dataState.filter) || !dataState.filter.filters.some(flt => flt.filters[0].field === c.field);
                 if (needClear) {
-                    sessionManager.paramsManager.updateParamValue(activeChannelName, c.field + "ConditionFilterObject", null, true);
+                    neededParamArray.push({ name: c.field + "ConditionFilterObject", value: null });
                 }
             });
+            dispatch(updateParamSet(activeChannelName, neededParamArray));
         }
-    }, [dataState, activeChannelName, sessionManager, inputTableData]);
+    }, [dataState, activeChannelName, sessionManager, inputTableData, dispatch]);
 
     const pageChange = (event) => {
         setSkip(event.page.skip);
@@ -430,7 +434,7 @@ function DataSetView(props, ref) {
             var columns = columnNames.map(c => inputTableData.columnsJSON.find(jsc => jsc.field === c));
             var count = tableSettings.columns.frozenColumnCount ?? 0;
             for (let i = 0; i < columns.length; i++) {
-                    columns[i].locked = i < count;
+                columns[i].locked = i < count;
             }
             setTableData({ rowsJSON: inputTableData.rowsJSON, columnsJSON: columns });
         }

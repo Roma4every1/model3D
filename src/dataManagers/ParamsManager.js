@@ -23,7 +23,7 @@ export default function createParamsManager(store) {
             if (!element && channelName) {
                 element = _.find(store.getState().formParams[channelName], function (o) { return o.id === param; });
             }
-            if (element) {
+            if (element && element.value !== undefined) {
                 if (addToLocal && (element.formId !== formId)) {
                     var newElement = {
                         id: element.id,

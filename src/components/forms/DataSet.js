@@ -11,7 +11,6 @@ function DataSet(props, ref) {
         await sessionManager.channelsManager.loadAllChannelData(activeChannelName, formData.id, true);
     }, [activeChannelName, formData, sessionManager]);
 
-
     const databaseData = useSelector((state) => state.channelsData[activeChannelName]);
 
     const rowConverter = (columnsJSON, row, rowIndex) => {
@@ -113,7 +112,7 @@ function DataSet(props, ref) {
             _viewRef.current.selectAll();
         },
         activeCell: () => {
-           return _viewRef.current.activeCell();
+            return _viewRef.current.activeCell();
         }
     }));
 

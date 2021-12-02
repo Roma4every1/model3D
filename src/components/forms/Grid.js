@@ -94,7 +94,7 @@ function Grid(props, ref) {
             };
             setModelJson(FlexLayout.Model.fromJson(newjson));
 
-            if (sessionId) {
+            if (form && openedForms) {
                 async function fetchData() {
                     const data = await sessionManager.fetchData(`getFormLayout?sessionId=${sessionId}&formId=${formData.id}`);
                     if (!ignore) {

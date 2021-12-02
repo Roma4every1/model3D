@@ -1,6 +1,8 @@
 ﻿import SET from '../actions/formParams/set';
 import ADD from '../actions/formParams/add';
+import ADDSET from '../actions/formParams/addSet';
 import UPDATE from '../actions/formParams/update';
+import UPDATESET from '../actions/formParams/updateSet';
 
 function formParams(state = [], action) {
     switch (action.type) {
@@ -44,6 +46,26 @@ function formParams(state = [], action) {
                     }
                 }
             }
+        case ADDSET:
+            {
+                if (state[action.set.channelName]) {
+                    return {
+                        ...state,
+                        [action.set.channelName]: [
+                            ...state[action.set.channelName],
+                            ...action.set.params
+                        ]
+                    }
+                }
+                else {
+                    return {
+                        ...state,
+                        [action.set.channelName]: [
+                            ...action.set.params
+                        ]
+                    }
+                }
+            }
         case UPDATE:
             {
                 const clear = (clearElementId) => {
@@ -56,9 +78,9 @@ function formParams(state = [], action) {
                         }
                     });
                 }
-                var newParamsUpdate = state;
-                var newParamsUpdateForm = newParamsUpdate[action.formId];
-                var neededParam = newParamsUpdateForm.find(element => element.id === action.id);
+                let newParamsUpdate = state;
+                let newParamsUpdateForm = newParamsUpdate[action.formId];
+                let neededParam = newParamsUpdateForm.find(element => element.id === action.id);
                 if (neededParam) {
                     neededParam.value = action.value;
                 }
@@ -77,6 +99,32 @@ function formParams(state = [], action) {
                 }
                 return {
                     ...state
+                }
+            }
+        case UPDATESET:
+            {
+                if (state[action.formId]) {
+                    let newParamsUpdateForm = [...state[action.formId]];
+                    action.values.forEach(val => {
+                        var neededParam = newParamsUpdateForm.find(element => element.id === val.name);
+                        if (neededParam) {
+                            neededParam.value = val.value;
+                        }
+                    });
+                    return {
+                        ...state,
+                        [action.formId]: [
+                            ...newParamsUpdateForm
+                        ]
+                    }
+                }
+                else {
+                    return {
+                        ...state,
+                        [action.formId]: [
+                            ...action.values
+                        ]
+                    }
                 }
             }
 
