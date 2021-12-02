@@ -16,7 +16,7 @@ module.exports = {
     plugins: [
         new CopyPlugin({
             patterns: [
-                { from: "./public/images", to: "./images" }
+                { from: "./public/images", to: "./images" },
                 { from: "./public/downloadFilesImages", to: "./downloadFilesImages" }
             ]
         }),

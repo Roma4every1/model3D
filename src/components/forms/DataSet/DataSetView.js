@@ -253,7 +253,7 @@ function DataSetView(props, ref) {
             paramName: formData.displayName,
             presentationId: utils.getParentFormId(formData.id),
             paramValues: neededParamValues,
-            settings: tableSettings.columns
+            settings: tableSettings?.columns
         };
         const jsonToSendString = JSON.stringify(jsonToSend);
         var data = await sessionManager.fetchData(`exportToExcel`,
