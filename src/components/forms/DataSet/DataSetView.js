@@ -7,6 +7,7 @@ import {
     getSelectedStateFromKeyDown
 } from "@progress/kendo-react-grid";
 import { ColumnMenu, ColumnMenuCheckboxFilter } from "./ColumnMenu";
+import { SecondLevelTable } from "./SecondLevelTable";
 import {
     Button
 } from "@progress/kendo-react-buttons";
@@ -75,6 +76,7 @@ function DataSetView(props, ref) {
     const [skip, setSkip] = React.useState(0);
 
     const tableSettings = useSelector((state) => state.formSettings[formData.id]);
+    const [opened, setOpened] = React.useState({});
 
     React.useEffect(() => {
         if (inputTableData.properties) {
@@ -501,6 +503,12 @@ function DataSetView(props, ref) {
         return maxWidth + 20;
     };
 
+    const setOpenedWindows = (arg, paramName) => {
+        let openedCopy = { ...opened };
+        openedCopy[paramName] = arg;
+        setOpened(openedCopy)
+    }
+
     const getEditorType = (column) => {
         if (inputTableData.properties) {
             const property = _.find(inputTableData.properties, function (o) { return o.name === column.field; });
@@ -508,7 +516,8 @@ function DataSetView(props, ref) {
                 return {
                     type: "secondLevel",
                     secondLevelFormId: formData.id + column.field,
-                    channelName: property.secondLevelChannelName
+                    channelName: property.secondLevelChannelName,
+                    setOpened: (arg) => setOpenedWindows(arg, property.name)
                 };
             }
         }
@@ -784,6 +793,16 @@ function DataSetView(props, ref) {
         return (
             <LocalizationProvider language="ru-RU">
                 <IntlProvider locale="ru">
+                    {inputTableData.properties.filter(p => p.secondLevelChannelName).map(p =>
+                    (opened[p.name] && <SecondLevelTable
+                        key={formData.id + p.name}
+                        keyProp={formData.id + p.name}
+                        secondLevelFormId={formData.id + p.name}
+                        channelName={p.secondLevelChannelName}
+                        setOpened={(arg) => setOpenedWindows(arg, p.name)}
+                    />
+                    ))
+                    }
                     {deleteDialogOpen && (
                         <Dialog title={t('table.deleteRowsHeader')} onClose={handleDeleteDialogClose}>
                             <p
