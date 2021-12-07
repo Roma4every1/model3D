@@ -21,7 +21,7 @@ load(
 );
 
 export default function DateTextEditor(props) {
-    const date = props.value ? new Date(props.value.replace(' \\d', '')) : undefined;
+    const date = props.value ? ((props.value instanceof Date) ? props.value : new Date(props.value.replace(' \\d', ''))) : undefined;
 
     return (
         <DatePicker className='parametereditor'
@@ -32,7 +32,7 @@ export default function DateTextEditor(props) {
                 var newevent = {};
                 newevent.target = {};
                 newevent.target.name = event.target.name;
-                newevent.target.value = event.target.value?.toLocaleDateString();
+                newevent.target.value = event.target.value;
                 props.selectionChanged(newevent)
             }}
         />

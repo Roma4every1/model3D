@@ -74,7 +74,7 @@ function DataSet(props, ref) {
         await sessionManager.channelsManager.deleteRow(databaseData.tableId, elementsToRemove);
     }
 
-    async function apply(editedTableData, rowToInsert, editID, rowAdding) {
+    async function apply(rowToInsert, editID, rowAdding) {
         var cells = [];
         databaseData.data.Columns.forEach((column, index) => {
             let prop = databaseData.properties.find(property => column.Name === (property.fromColumn ?? property.name));

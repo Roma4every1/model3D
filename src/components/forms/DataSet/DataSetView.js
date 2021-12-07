@@ -589,7 +589,7 @@ function DataSetView(props, ref) {
                 setEditID(null);
                 setEdited(false);
 
-                await apply(tableData, rowToInsert, editID, rowAdding);
+                await apply(rowToInsert, editID, rowAdding);
                 if (rowAdding) {
                     setRowAdding(false);
                 }
