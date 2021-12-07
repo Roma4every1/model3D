@@ -32,6 +32,7 @@ import { useTranslation } from 'react-i18next';
 import { CellRender, RowRender } from "./Renderers";
 import addParam from "../../../store/actionCreators/addParam";
 import addParamSet from "../../../store/actionCreators/addParamSet";
+import setOpenedWindow from "../../../store/actionCreators/setOpenedWindow";
 import updateParamSet from "../../../store/actionCreators/updateParamSet";
 import FormHeader from '../Form/FormHeader';
 import ruMessages from "../../locales/kendoUI/ru.json";
@@ -71,12 +72,17 @@ function DataSetView(props, ref) {
     const [dataState, setDataState] = React.useState();
     const [editField, setEditField] = React.useState(undefined);
     const [editID, setEditID] = React.useState(null);
-    const [selectedState, setSelectedState] = React.useState({});
+    const [selectedState, setRealSelectedState] = React.useState({});
     const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
     const [skip, setSkip] = React.useState(0);
 
     const tableSettings = useSelector((state) => state.formSettings[formData.id]);
-    const [opened, setOpened] = React.useState({});
+
+    var selectedStateChanged = React.useRef(false);
+    const setSelectedState = (newValue) => {
+        selectedStateChanged.current = true;
+        setRealSelectedState(newValue);
+    }
 
     React.useEffect(() => {
         if (inputTableData.properties) {
@@ -210,10 +216,13 @@ function DataSetView(props, ref) {
         setDeleteDialogOpen(false);
     };
 
-    const addRecord = async (existingRecord, addToEnd) => {
+    const addRecord = async (existingRecord) => {
         var copy = true;
         var toEnd = false;
-        var index = Math.min(Object.entries(selectedState).filter(e => e[1] === true).map(e => e[0]));
+        var index = Infinity;
+        if (Object.entries(selectedState).length > 0) {
+            index = Math.min(Object.entries(selectedState).filter(e => e[1] === true).map(e => e[0]), Infinity);
+        }
         if (index === tableData.rowsJSON.length - 1) {
             toEnd = true;
         }
@@ -232,7 +241,7 @@ function DataSetView(props, ref) {
         else {
             newRecord = await getRow();
         }
-        if (toEnd && addToEnd) {
+        if (toEnd) {
             setTableData({ rowsJSON: [...tableData.rowsJSON, newRecord], columnsJSON: tableData.columnsJSON });
         }
         else if (!toEnd) {
@@ -240,7 +249,7 @@ function DataSetView(props, ref) {
             var finishPart = tableData.rowsJSON.slice(index);
             setTableData({ rowsJSON: [...startPart, newRecord, ...finishPart], columnsJSON: tableData.columnsJSON });
         }
-        if (!toEnd || addToEnd) {
+        if (!toEnd) {
             setEditID(idGetter(newRecord));
             setRowAdding(true);
         }
@@ -392,10 +401,10 @@ function DataSetView(props, ref) {
                     var index = Math.min(Object.entries(selectedState).filter(e => e[1] === true).map(e => e[0]));
                     if (index === tableData.rowsJSON.length - 1) {
                         if (event.nativeEvent.ctrlKey) {
-                            addRecord(true, true);
+                            addRecord(true);
                         }
                         else {
-                            addRecord(false, true);
+                            addRecord(false);
                         }
                     }
                 }
@@ -408,13 +417,18 @@ function DataSetView(props, ref) {
     };
 
     React.useEffect(() => {
-        if (inputTableData.currentRowObjectName) {
+        if (selectedStateChanged.current && inputTableData.currentRowObjectName) {
+            selectedStateChanged.current = false;
             if (Object.entries(selectedState).filter(e => e[1] === true).length === 1) {
                 let row = Object.entries(selectedState).find(e => e[1] === true);
                 sessionManager.paramsManager.updateParamValue(utils.getParentFormId(formData.id), inputTableData.currentRowObjectName, utils.tableRowToString(inputTableData.databaseData, inputTableData.databaseData.data.Rows[row[0]]).value, true);
             }
         }
     }, [selectedState, inputTableData, sessionManager, formData]);
+
+    React.useEffect(() => {
+        setSelectedState({});
+    }, [inputTableData]);
 
     React.useEffect(() => {
         var columnNames = [];
@@ -503,21 +517,21 @@ function DataSetView(props, ref) {
         return maxWidth + 20;
     };
 
-    const setOpenedWindows = (arg, paramName) => {
-        let openedCopy = { ...opened };
-        openedCopy[paramName] = arg;
-        setOpened(openedCopy)
-    }
-
     const getEditorType = (column) => {
         if (inputTableData.properties) {
             const property = _.find(inputTableData.properties, function (o) { return o.name === column.field; });
             if (property && property.secondLevelChannelName) {
                 return {
                     type: "secondLevel",
-                    secondLevelFormId: formData.id + column.field,
-                    channelName: property.secondLevelChannelName,
-                    setOpened: (arg) => setOpenedWindows(arg, property.name)
+                    setOpened: (arg) => dispatch(setOpenedWindow(property.name, arg, <SecondLevelTable
+                        key={formData.id + property.name}
+                        keyProp={formData.id + property.name}
+                        secondLevelFormId={formData.id + property.name}
+                        channelName={property.secondLevelChannelName}
+                        setOpened={(arg) =>
+                            dispatch(setOpenedWindow(property.name, arg, null))
+                        }
+                    />))
                 };
             }
         }
@@ -793,16 +807,6 @@ function DataSetView(props, ref) {
         return (
             <LocalizationProvider language="ru-RU">
                 <IntlProvider locale="ru">
-                    {inputTableData.properties.filter(p => p.secondLevelChannelName).map(p =>
-                    (opened[p.name] && <SecondLevelTable
-                        key={formData.id + p.name}
-                        keyProp={formData.id + p.name}
-                        secondLevelFormId={formData.id + p.name}
-                        channelName={p.secondLevelChannelName}
-                        setOpened={(arg) => setOpenedWindows(arg, p.name)}
-                    />
-                    ))
-                    }
                     {deleteDialogOpen && (
                         <Dialog title={t('table.deleteRowsHeader')} onClose={handleDeleteDialogClose}>
                             <p

@@ -16,31 +16,33 @@ function DataSet(props, ref) {
     const rowConverter = (columnsJSON, row, rowIndex) => {
         const temp = {};
         temp.js_id = rowIndex;
-        columnsJSON.forEach(column => {
-            let i = databaseData.data.Columns.findIndex(o => o.Name === (column.fromColumn ?? column.field));
-            if (i >= 0) {
-                let rowValue = row.Cells[i];
-                if (column.netType === 'System.DateTime' && rowValue) {
-                    const startIndex = rowValue.indexOf('(');
-                    const finishIndex = rowValue.lastIndexOf('+');
-                    const dateValue = rowValue.slice(startIndex + 1, finishIndex);
-                    var d = new Date();
-                    d.setTime(dateValue);
-                    temp[column.field] = d;
-                }
-                else {
-                    if (column.lookupData) {
-                        const prevalue = rowValue;
-                        const textvalue = column.lookupData.find((c) => ('' + c.id) === ('' + prevalue))?.text;
-                        temp[column.field] = textvalue ?? prevalue;
-                        temp[column.field + '_jsoriginal'] = rowValue;
+        if (row) {
+            columnsJSON.forEach(column => {
+                let i = databaseData.data.Columns.findIndex(o => o.Name === (column.fromColumn ?? column.field));
+                if (i >= 0) {
+                    let rowValue = row.Cells[i];
+                    if (column.netType === 'System.DateTime' && rowValue) {
+                        const startIndex = rowValue.indexOf('(');
+                        const finishIndex = rowValue.lastIndexOf('+');
+                        const dateValue = rowValue.slice(startIndex + 1, finishIndex);
+                        var d = new Date();
+                        d.setTime(dateValue);
+                        temp[column.field] = d;
                     }
                     else {
-                        temp[column.field] = rowValue;
+                        if (column.lookupData) {
+                            const prevalue = rowValue;
+                            const textvalue = column.lookupData.find((c) => ('' + c.id) === ('' + prevalue))?.text;
+                            temp[column.field] = textvalue ?? prevalue;
+                            temp[column.field + '_jsoriginal'] = rowValue;
+                        }
+                        else {
+                            temp[column.field] = rowValue;
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
         return temp;
     };
 
@@ -85,7 +87,16 @@ function DataSet(props, ref) {
                 return cells.push(rowToInsert[prop.name])
             }
             else {
-                return cells.push(databaseData.data.Rows[rowToInsert['js_id']].Cells[index])
+                let rowValue = databaseData.data.Rows[rowToInsert['js_id']].Cells[index];
+                if (column.NetType === 'System.DateTime' && rowValue) {
+                    const startIndex = rowValue.indexOf('(');
+                    const finishIndex = rowValue.lastIndexOf('+');
+                    const dateValue = rowValue.slice(startIndex + 1, finishIndex);
+                    var d = new Date();
+                    d.setTime(dateValue);
+                    rowValue = d;
+                }
+                return cells.push(rowValue)
             }
         });
         var itemToInsert = { Id: null, Cells: cells };

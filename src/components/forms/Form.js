@@ -12,12 +12,25 @@ export default function Form(props) {
     const { formData, data } = props;
     const [formLoadedData, setFormLoadedData] = React.useState(
         {
+            formId: formData.id,
             loaded: false,
             activeChannels: data?.activeChannels ?? [],
             activeParams: [],
             settings: []
         });
     const _form = React.useRef(null);
+
+    React.useEffect(() => {
+        if (formLoadedData.formId !== formData.id) {
+            setFormLoadedData({
+                formId: formData.id,
+                loaded: false,
+                activeChannels: formLoadedData.activeChannels,
+                activeParams: formLoadedData.activeParams,
+                settings: formLoadedData.settings
+            });
+        }
+    }, [formData, formLoadedData]);
 
     React.useEffect(() => {
         let ignore = false;
@@ -40,6 +53,7 @@ export default function Form(props) {
                 Promise.all([fetchParams(), fetchChannels(), fetchSettings()]).then(values => {
                     if (!ignore) {
                         setFormLoadedData({
+                            formId: formData.id,
                             loaded: true,
                             activeChannels: values[1],
                             activeParams: values[0],
@@ -55,6 +69,7 @@ export default function Form(props) {
             )).then(values => {
                 if (!formLoadedData.loaded) {
                     setFormLoadedData({
+                        formId: formData.id,
                         loaded: true,
                         activeChannels: data.activeChannels,
                         activeParams: data.activeParams,

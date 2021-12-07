@@ -124,7 +124,7 @@ export default function createChannelsManager(store) {
                             }
                         }));
                 }
-                else {
+                else if (store.getState().channelsData[channelName]) {
                     channelData.properties = store.getState().channelsData[channelName].properties;
                 }
                 store.dispatch(setChannelsData(channelName, channelData));

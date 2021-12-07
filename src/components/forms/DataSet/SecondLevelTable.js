@@ -20,7 +20,7 @@ export const SecondLevelTable = (props) => {
     var formData = useSelector((state) => (state.childForms[utils.getParentFormId(props.secondLevelFormId)]?.children.find(p => p.id === props.secondLevelFormId)) ?? staticFormData);
 
     return (
-        <Window key={props.keyProp} title={formData.displayName} onClose={handleClose} initialHeight={350}>
+        <Window key={props.keyProp} title={formData.displayName} onClose={handleClose}>
             <Form formData={formData} data={{ activeChannels: [props.channelName] }} />
         </Window>
     );

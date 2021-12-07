@@ -33,10 +33,7 @@ export const CellRender = props => {
 
 export const RowRender = props => {
     const trProps = {
-        ...props.tr.props,
-        onBlur: () => {
-            props.exitEdit();
-        }
+        ...props.tr.props
     };
     return React.cloneElement(props.tr, {
         ...trProps

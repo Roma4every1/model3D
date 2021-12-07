@@ -27,7 +27,8 @@ export default function WindowHandler() {
             windowData.fileToSaveName);
     };
 
-    const windowData = useSelector((state) => state.windowData);
+    const windowData = useSelector((state) => state.windowData?.messageWindow);
+    const windows = useSelector((state) => state.windowData?.windows);
 
     var typeIcon = "k-i-x-circle";
     var classbutton = '';
@@ -57,6 +58,7 @@ export default function WindowHandler() {
 
     return (
         <div>
+            {windows ? Object.values(windows).filter(w => w.visible).map(w => w.window) : <div/>}
             {windowData?.opened && <Dialog title={windowData.header} onClose={handleClose}>
                 <div className={"grid-layout-container-" + stackTraceVisible} >
                     <GridLayout
