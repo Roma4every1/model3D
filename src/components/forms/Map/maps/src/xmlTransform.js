@@ -4,7 +4,14 @@ var _ = require("lodash");
 
 module.exports = _.extend(function (transforms) {
 	transforms = _.mapValues(transforms, v => xmlType(v))
-	var transform = xml => transforms[xml.name](xml, void 0, transform)
+	var transform = xml => {
+		if (transforms[xml.name]) {
+		return transforms[xml.name](xml, void 0, transform)
+		}
+		else{
+			
+		}
+	}
 	return transform
 }, {
 	transform: (xml, __, transform) => transform(xml, void 0, transform),

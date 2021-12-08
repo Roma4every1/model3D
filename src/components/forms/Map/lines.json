@@ -1,0 +1,740 @@
+{
+  "BorderStyles": [
+    {
+      "Element": [
+        {
+          "name": {
+            "_value": "Выклинивание"
+          },
+          "guid": {
+            "_value": "{17E4AC50-9F89-11D4-AD26-0080ADB5E66B}"
+          },
+          "baseThickness": {
+            "_value": 3
+          },
+          "Decoration": [
+            {
+              "thickness": {
+                "_value": 3
+              },
+              "initialInterval": {
+                "_value": 0
+              },
+              "interval": {
+                "_value": 17
+              },
+              "offsetX": {
+                "_value": 0
+              },
+              "offsetY": {
+                "_value": 0
+              },
+              "Shape": [
+                {
+                  "Line": [
+                    {
+                      "x1": {
+                        "_value": 0
+                      },
+                      "y1": {
+                        "_value": 0
+                      },
+                      "x2": {
+                        "_value": 5
+                      },
+                      "y2": {
+                        "_value": 0
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": {
+            "_value": "Выклинивание1"
+          },
+          "guid": {
+            "_value": "{CFA92E40-4C94-11D3-A90B-A8163E53382F}"
+          },
+          "Decoration": [
+            {
+              "initialInterval": {
+                "_value": 0
+              },
+              "interval": {
+                "_value": 10
+              },
+              "offsetX": {
+                "_value": 5
+              },
+              "offsetY": {
+                "_value": 0
+              },
+              "Shape": [
+                {
+                  "Line": [
+                    {
+                      "x1": {
+                        "_value": -5
+                      },
+                      "y1": {
+                        "_value": 0
+                      },
+                      "x2": {
+                        "_value": -1
+                      },
+                      "y2": {
+                        "_value": 0
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": {
+            "_value": "Выклинивание2"
+          },
+          "guid": {
+            "_value": "{17E4AC50-9F89-11D4-AD28-0080ADB5E66B}"
+          },
+          "baseThickness": {
+            "_value": 2
+          },
+          "Decoration": [
+            {
+              "initialInterval": {
+                "_value": 11
+              },
+              "interval": {
+                "_value": 33
+              },
+              "offsetX": {
+                "_value": 0
+              },
+              "offsetY": {
+                "_value": 0
+              },
+              "Shape": [
+                {
+                  "Line": [
+                    {
+                      "x1": {
+                        "_value": 0
+                      },
+                      "y1": {
+                        "_value": -3
+                      },
+                      "x2": {
+                        "_value": 6
+                      },
+                      "y2": {
+                        "_value": 0
+                      }
+                    },
+                    {
+                      "x1": {
+                        "_value": 0
+                      },
+                      "y1": {
+                        "_value": 3
+                      },
+                      "x2": {
+                        "_value": 6
+                      },
+                      "y2": {
+                        "_value": 0
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": {
+            "_value": "Выклинивание3"
+          },
+          "guid": {
+            "_value": "{B6BFCAE3-B6E8-4E40-B079-8ACE23F4B938}"
+          },
+          "baseThickness": {
+            "_value": 3
+          },
+          "baseColor": {
+            "_value": "Green"
+          },
+          "Decoration": [
+            {
+              "thickness": {
+                "_value": 3
+              },
+              "initialInterval": {
+                "_value": 0
+              },
+              "interval": {
+                "_value": 17
+              },
+              "offsetX": {
+                "_value": 0
+              },
+              "offsetY": {
+                "_value": 0
+              },
+              "Shape": [
+                {
+                  "Line": [
+                    {
+                      "x1": {
+                        "_value": 0
+                      },
+                      "y1": {
+                        "_value": 0
+                      },
+                      "x2": {
+                        "_value": 5
+                      },
+                      "y2": {
+                        "_value": 0
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": {
+            "_value": "Откосы неукрепленные"
+          },
+          "guid": {
+            "_value": "{CF3B28C0-4C94-11D3-A90B-A8163E53382F}"
+          },
+          "baseThickness": {
+            "_value": 0.5
+          },
+          "Decoration": [
+            {
+              "initialInterval": {
+                "_value": 0
+              },
+              "interval": {
+                "_value": 8
+              },
+              "offsetX": {
+                "_value": 0
+              },
+              "offsetY": {
+                "_value": 0
+              },
+              "Shape": [
+                {
+                  "Line": [
+                    {
+                      "x1": {
+                        "_value": 0
+                      },
+                      "y1": {
+                        "_value": 0
+                      },
+                      "x2": {
+                        "_value": 4
+                      },
+                      "y2": {
+                        "_value": 0
+                      },
+                      "_text": [
+                        null
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "color": {
+                "_value": "Black"
+              },
+              "initialInterval": {
+                "_value": 4
+              },
+              "interval": {
+                "_value": 8
+              },
+              "offsetX": {
+                "_value": 0
+              },
+              "offsetY": {
+                "_value": 0
+              },
+              "Shape": [
+                {
+                  "Line": [
+                    {
+                      "x1": {
+                        "_value": 0
+                      },
+                      "y1": {
+                        "_value": 0
+                      },
+                      "x2": {
+                        "_value": 2
+                      },
+                      "y2": {
+                        "_value": 0
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": {
+            "_value": "Обрыв"
+          },
+          "guid": {
+            "_value": "{D03D6770-4C94-11D3-A90B-A8163E53382F}"
+          },
+          "baseThickness": {
+            "_value": 0.5
+          },
+          "Decoration": [
+            {
+              "thickness": {
+                "_value": 0.5
+              },
+              "initialInterval": {
+                "_value": 0
+              },
+              "interval": {
+                "_value": 4
+              },
+              "offsetX": {
+                "_value": 0
+              },
+              "offsetY": {
+                "_value": 0
+              },
+              "Shape": [
+                {
+                  "Line": [
+                    {
+                      "x1": {
+                        "_value": 0
+                      },
+                      "y1": {
+                        "_value": 0
+                      },
+                      "x2": {
+                        "_value": 4
+                      },
+                      "y2": {
+                        "_value": 0
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": {
+            "_value": "ВНК1_нач"
+          },
+          "guid": {
+            "_value": "{99D45D60-AF4F-11D4-9B0E-00D0B70B2AC1}"
+          },
+          "baseColor": {
+            "_value": "Blue"
+          },
+          "StrokeDashArrays": [
+            {
+              "StrokeDashArray": [
+                {
+                  "data": {
+                    "_value": "20 5 2 5"
+                  },
+                  "onBase": {
+                    "_value": true
+                  },
+                  "_text": [
+                    null
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": {
+            "_value": "ВНК2_нач"
+          },
+          "guid": {
+            "_value": "{994970D0-AF50-11D4-9B0E-00D0B70B2AC1}"
+          },
+          "baseColor": {
+            "_value": "Blue"
+          },
+          "StrokeDashArrays": [
+            {
+              "StrokeDashArray": [
+                {
+                  "data": {
+                    "_value": "20 5 2 5 2 5"
+                  },
+                  "onBase": {
+                    "_value": true
+                  },
+                  "_text": [
+                    null
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": {
+            "_value": "ВНК1_Тек"
+          },
+          "guid": {
+            "_value": "{B8240659-9843-4875-BCB5-A963E18B515B}"
+          },
+          "baseColor": {
+            "_value": "Blue"
+          },
+          "StrokeDashArrays": [
+            {
+              "StrokeDashArray": [
+                {
+                  "data": {
+                    "_value": "20 15"
+                  },
+                  "onBase": {
+                    "_value": true
+                  },
+                  "color": {
+                    "_value": "#000087"
+                  },
+                  "_text": [
+                    null
+                  ]
+                }
+              ]
+            }
+          ],
+          "Decoration": [
+            {
+              "color": {
+                "_value": "#000087"
+              },
+              "initialInterval": {
+                "_value": 27.5
+              },
+              "thickness": {
+                "_value": 0.6
+              },
+              "interval": {
+                "_value": 35
+              },
+              "offsetX": {
+                "_value": 0
+              },
+              "offsetY": {
+                "_value": 0
+              },
+              "Shape": [
+                {
+                  "Line": [
+                    {
+                      "x1": {
+                        "_value": 3.5
+                      },
+                      "y1": {
+                        "_value": 3.5
+                      },
+                      "x2": {
+                        "_value": -3.5
+                      },
+                      "y2": {
+                        "_value": -3.5
+                      }
+                    },
+                    {
+                      "x1": {
+                        "_value": 3.5
+                      },
+                      "y1": {
+                        "_value": -3.5
+                      },
+                      "x2": {
+                        "_value": -3.5
+                      },
+                      "y2": {
+                        "_value": 3.5
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": {
+            "_value": "ВНК2_Тек"
+          },
+          "guid": {
+            "_value": "{004FB6CA-2FD0-43BD-8986-B8D1F982D729}"
+          },
+          "baseColor": {
+            "_value": "Blue"
+          },
+          "StrokeDashArrays": [
+            {
+              "StrokeDashArray": [
+                {
+                  "data": {
+                    "_value": "20 24"
+                  },
+                  "onBase": {
+                    "_value": true
+                  },
+                  "color": {
+                    "_value": "#000087"
+                  },
+                  "_text": [
+                    null
+                  ]
+                }
+              ]
+            }
+          ],
+          "Decoration": [
+            {
+              "color": {
+                "_value": "#000087"
+              },
+              "initialInterval": {
+                "_value": 38
+              },
+              "thickness": {
+                "_value": 0.6
+              },
+              "interval": {
+                "_value": 44
+              },
+              "offsetX": {
+                "_value": 0
+              },
+              "offsetY": {
+                "_value": 0
+              },
+              "Shape": [
+                {
+                  "Line": [
+                    {
+                      "x1": {
+                        "_value": 3.5
+                      },
+                      "y1": {
+                        "_value": 3.5
+                      },
+                      "x2": {
+                        "_value": -3.5
+                      },
+                      "y2": {
+                        "_value": -3.5
+                      }
+                    },
+                    {
+                      "x1": {
+                        "_value": 3.5
+                      },
+                      "y1": {
+                        "_value": -3.5
+                      },
+                      "x2": {
+                        "_value": -3.5
+                      },
+                      "y2": {
+                        "_value": 3.5
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "color": {
+                "_value": "#000087"
+              },
+              "initialInterval": {
+                "_value": 26
+              },
+              "thickness": {
+                "_value": 0.6
+              },
+              "interval": {
+                "_value": 44
+              },
+              "offsetX": {
+                "_value": 0
+              },
+              "offsetY": {
+                "_value": 0
+              },
+              "Shape": [
+                {
+                  "Line": [
+                    {
+                      "x1": {
+                        "_value": 3.5
+                      },
+                      "y1": {
+                        "_value": 3.5
+                      },
+                      "x2": {
+                        "_value": -3.5
+                      },
+                      "y2": {
+                        "_value": -3.5
+                      }
+                    },
+                    {
+                      "x1": {
+                        "_value": 3.5
+                      },
+                      "y1": {
+                        "_value": -3.5
+                      },
+                      "x2": {
+                        "_value": -3.5
+                      },
+                      "y2": {
+                        "_value": 3.5
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": {
+            "_value": "Обочины - дороги грунтовые"
+          },
+          "guid": {
+            "_value": "{CF96D800-4C94-11D3-A90B-A8163E53382F}"
+          },
+          "baseThickness": {
+            "_value": 1
+          },
+          "StrokeDashArrays": [
+            {
+              "StrokeDashArray": [
+                {
+                  "data": {
+                    "_value": "6 4"
+                  },
+                  "color": {
+                    "_value": "Black"
+                  },
+                  "onBase": {
+                    "_value": true
+                  },
+                  "_text": [
+                    null
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": {
+            "_value": "Здания строящиеся, тропы"
+          },
+          "guid": {
+            "_value": "{CF350C00-4C94-11D3-A90B-A8163E53382F}"
+          },
+          "baseThickness": {
+            "_value": 1
+          },
+          "StrokeDashArrays": [
+            {
+              "StrokeDashArray": [
+                {
+                  "data": {
+                    "_value": "9 6"
+                  },
+                  "color": {
+                    "_value": "Black"
+                  },
+                  "onBase": {
+                    "_value": true
+                  },
+                  "_text": [
+                    null
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": {
+            "_value": "Стрелка"
+          },
+          "guid": {
+            "_value": "{C50A131F-8179-42FE-BB1C-9D72D39E5CDA}"
+          },
+          "baseThickness": {
+            "_value": 2
+          },
+          "Decoration": [
+            {
+              "initialInterval": {
+                "_value": 0
+              },
+              "interval": {
+                "_value": -2
+              },
+              "offsetX": {
+                "_value": 0
+              },
+              "offsetY": {
+                "_value": 0
+              },
+              "Shape": [
+                {
+                  "Polyline": [
+                    {
+                      "points": {
+                        "_value": "0,-6 5,-12 0,3 -5,-12 0,-6"
+                      },
+                      "_text": [
+                        null
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

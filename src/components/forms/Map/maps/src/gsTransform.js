@@ -93,6 +93,26 @@ var transform = x({
 				bounds: [0, bounds],
 				arcs: ["arc", arcPlain],
 			},
+			regular2dfield_: {
+				data: x.string,
+				sizex: x.number,
+				sizey: x.number,
+				stepx: x.number,
+				stepy: x.number,
+				x: x.number,
+				y: x.number,
+				elements: [/./, x({
+					palette: {
+						interpolated: x.string,
+						elements: [/./, x({
+							level: {
+								color: x.string,
+								value: x.string,
+							}
+						})],
+					}
+				})],
+			},
 		})],
 	}, makeSublayers],
 });

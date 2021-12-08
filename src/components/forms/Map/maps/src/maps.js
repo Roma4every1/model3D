@@ -28,11 +28,11 @@ function updateCanvasSize(canvas) {
 
 module.exports = function Maps(provider) {
 
-	this.mapInfo = provider.getMapsInfo();
+	//this.mapInfo = provider.getMapsInfo();
 
 	this.checkIndex = (ret, context) => startThread(function* updateMapThread() {
 		logger.info("checking indexes for all layers map", ret);
-		var mapDataEvents = yield [];
+		var mapDataEvents = []//yield [];
 		for (let layer of ret.layers) {
 			mapDataEvents.push(layer.elementsData = startThread(function* () {
 				var elements = [];
@@ -63,18 +63,19 @@ module.exports = function Maps(provider) {
 						logger.warn("index updated from " + layer.index + " to " + indexName + " for container " + layer.container + " layer " + layer.uid);
 						layer.index = indexName;
 					}
-					var data = yield provider.getContainer(layer.container, indexName || layer.index);
-					var layerFromContainer = layer.uid.includes(layer.container) ? data.layers[layer.uid.replace(layer.container, '')] : data.layers[layer.uid]
-					elements = layerFromContainer.elements;
-					if (elements.length === 0) {
-						// try to find elements amoung of [layername] layer into container
-						var nameFromContainerInBrackets = "[" + layerFromContainer.name + "]";
-						var newLayer = Object.values(data.layers).find(function (l) { return l.name === nameFromContainerInBrackets })
-						if (newLayer != null) {
-							elements = newLayer.elements;
-						}
-					}
-					for (var i of elements) {
+					// var data = yield provider.getContainer(layer.container, indexName || layer.index);
+					// var layerFromContainer = layer.uid.includes(layer.container) ? data.layers[layer.uid.replace(layer.container, '')] : data.layers[layer.uid]
+					// elements = layerFromContainer.elements;
+					// if (elements.length === 0) {
+					// 	// try to find elements amoung of [layername] layer into container
+					// 	var nameFromContainerInBrackets = "[" + layerFromContainer.name + "]";
+					// 	var newLayer = Object.values(data.layers).find(function (l) { return l.name === nameFromContainerInBrackets })
+					// 	if (newLayer != null) {
+					// 		elements = newLayer.elements;
+					// 	}
+					// }
+					// for (var i of elements) {
+					for (var i of layer.elements) {
 						var t = drawer.types[i.type];
 						if (t && t.loaded) {
 							var r = t.loaded(i, provider);
@@ -82,7 +83,7 @@ module.exports = function Maps(provider) {
 								mapDataEvents.push(r);
 						}
 					}
-					layer.elements = elements;
+					//layer.elements = elements;
 				} catch (error) {
 					ret.mapErrors.push(error);
 					logger.error("error", error);
