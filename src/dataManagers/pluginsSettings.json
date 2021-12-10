@@ -48,6 +48,11 @@
       "type": "strip",
       "component": "ColumnSettings",
       "label": "Настройки колонок"
+    },
+    "statistics": {
+      "type": "strip",
+      "component": "Statistics",
+      "label": "Статістіка"
     }
   }
 }

@@ -70,7 +70,8 @@
   },
   "pluginNames": {
     "exportToExcel": "Экспорт в Excel",
-    "selectAllRec": "Выделить все"
+    "selectAllRec": "Выделить все",
+    "statistics":  "Статистика"
   },
   "report": {
     "params": "Параметры отчёта",

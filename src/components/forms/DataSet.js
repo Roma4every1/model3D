@@ -6,6 +6,7 @@ function DataSet(props, ref) {
     const sessionManager = useSelector((state) => state.sessionManager);
     const { formData, data } = props;
     const [activeChannelName] = React.useState(data.activeChannels[0]);
+    const rowToAdd = React.useRef(null);
 
     const reload = React.useCallback(async () => {
         await sessionManager.channelsManager.loadAllChannelData(activeChannelName, formData.id, true);
@@ -79,7 +80,7 @@ function DataSet(props, ref) {
     async function apply(rowToInsert, editID, rowAdding) {
         var cells = [];
         databaseData.data.Columns.forEach((column, index) => {
-            let prop = databaseData.properties.find(property => column.Name === (property.fromColumn ?? property.name));
+            let prop = databaseData.properties.find(property => column.Name === (property.fromColumn ?? property.name) && rowToInsert[property.name]);
             if (prop) {
                 if (prop.lookupData) {
                     return cells.push(rowToInsert[prop.name + '_jsoriginal'])
@@ -87,7 +88,7 @@ function DataSet(props, ref) {
                 return cells.push(rowToInsert[prop.name])
             }
             else {
-                let rowValue = databaseData.data.Rows[rowToInsert['js_id']].Cells[index];
+                let rowValue = (rowAdding ? rowToAdd.current : databaseData.data.Rows[rowToInsert['js_id']])?.Cells[index];
                 if (column.NetType === 'System.DateTime' && rowValue) {
                     const startIndex = rowValue.indexOf('(');
                     const finishIndex = rowValue.lastIndexOf('+');
@@ -111,6 +112,7 @@ function DataSet(props, ref) {
 
     async function getRow() {
         const result = await sessionManager.channelsManager.getNewRow(databaseData.tableId);
+        rowToAdd.current = result;
         return rowConverter(tableData.columnsJSON, result, tableData.rowsJSON.length);
     }
 
@@ -124,6 +126,9 @@ function DataSet(props, ref) {
         },
         activeCell: () => {
             return _viewRef.current.activeCell();
+        },
+        tableId: () => {
+            return databaseData.tableId;
         }
     }));
 

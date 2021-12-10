@@ -190,6 +190,12 @@ export default function createChannelsManager(store) {
         updateTablesByResult(tableId, data);
     }
 
+    const getStatistics = async (tableId, columnName) => {
+        const sessionId = store.getState().sessionId;
+        const data = await store.getState().sessionManager.fetchData(`getStatistics?sessionId=${sessionId}&tableId=${tableId}&columnName=${columnName}`);
+        return data;
+    }
+
     store.subscribe(() => {
         for (var channelName in allChannelsForms) {
             for (var formId in allChannelsForms[channelName]) {
@@ -208,6 +214,7 @@ export default function createChannelsManager(store) {
         insertRow,
         updateRow,
         deleteRow,
+        getStatistics,
         getNewRow,
         getAllChannelParams
     };

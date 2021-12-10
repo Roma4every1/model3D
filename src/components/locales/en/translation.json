@@ -70,7 +70,8 @@
   },
   "pluginNames": {
     "exportToExcel": "Export to Excel",
-    "selectAllRec": "Select all records"
+    "selectAllRec": "Select all records",
+    "statistics": "Statistics"
   },
   "report": {
     "params": "Report parameters",

@@ -30,6 +30,7 @@ import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { getter } from "@progress/kendo-react-common";
 import { useTranslation } from 'react-i18next';
 import { CellRender, RowRender } from "./Renderers";
+import filterOperators from "./filterOperators.json";
 import addParam from "../../../store/actionCreators/addParam";
 import addParamSet from "../../../store/actionCreators/addParamSet";
 import setOpenedWindow from "../../../store/actionCreators/setOpenedWindow";
@@ -69,12 +70,14 @@ function DataSetView(props, ref) {
         rowsJSON: [],
         columnsJSON: []
     });
-    const [dataState, setDataState] = React.useState();
+    const [dataState, setDataState] = React.useState({
+        skip: 0,
+        take: 30
+    });
     const [editField, setEditField] = React.useState(undefined);
     const [editID, setEditID] = React.useState(null);
     const [selectedState, setRealSelectedState] = React.useState({});
     const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
-    const [skip, setSkip] = React.useState(0);
 
     const tableSettings = useSelector((state) => state.formSettings[formData.id]);
 
@@ -201,9 +204,9 @@ function DataSetView(props, ref) {
         }
     }, [dataState, activeChannelName, sessionManager, inputTableData, dispatch]);
 
-    const pageChange = (event) => {
-        setSkip(event.page.skip);
-        if (dataPart && (dataToShow.length < event.page.skip + 50)) {
+    const onDataStateChange = (event) => {
+        setDataState(event.dataState);
+        if (dataPart && (dataToShow.length < event.dataState.skip + event.dataState.take * 2)) {
             sessionManager.paramsManager.updateParamValue(activeChannelName, "maxRowCount", dataToShow.length + addRowCount, true);
         }
     };
@@ -249,10 +252,8 @@ function DataSetView(props, ref) {
             var finishPart = tableData.rowsJSON.slice(index);
             setTableData({ rowsJSON: [...startPart, newRecord, ...finishPart], columnsJSON: tableData.columnsJSON });
         }
-        if (!toEnd) {
-            setEditID(idGetter(newRecord));
-            setRowAdding(true);
-        }
+        setEditID(idGetter(newRecord));
+        setRowAdding(true);
     };
 
     const excelExport = async () => {
@@ -344,9 +345,12 @@ function DataSetView(props, ref) {
             case 'Home': {
                 if (event.nativeEvent.ctrlKey) {
                     if (tableData.rowsJSON.length > 0) {
-                        setSelectedState({ 0: true });
-                        applyEdit();
-                        setEditID(null);
+                        setDataState({ ...dataState, skip: 0 });
+                        _ref.current.element.children[1].children[0].scrollTop = 0;
+                         setSelectedState({ 0: true });
+                         applyEdit();
+                         setEditID(null);
+                        event.nativeEvent.preventDefault();
                     }
                 }
                 break;
@@ -355,6 +359,8 @@ function DataSetView(props, ref) {
                 if (event.nativeEvent.ctrlKey) {
                     if (tableData.rowsJSON.length > 0) {
                         let rowIndex = tableData.rowsJSON.length - 1;
+                        //_ref.current.element.children[1].children[0].scrollTop = _ref.current.element.children[1].children[0].scrollHeight;
+                        setDataState({ ...dataState, skip: rowIndex - 20 > 0 ? rowIndex - 20 : 0 });
                         let newState = {};
                         newState[rowIndex] = true;
                         setSelectedState(newState);
@@ -421,7 +427,7 @@ function DataSetView(props, ref) {
             selectedStateChanged.current = false;
             if (Object.entries(selectedState).filter(e => e[1] === true).length === 1) {
                 let row = Object.entries(selectedState).find(e => e[1] === true);
-                sessionManager.paramsManager.updateParamValue(utils.getParentFormId(formData.id), inputTableData.currentRowObjectName, utils.tableRowToString(inputTableData.databaseData, inputTableData.databaseData.data.Rows[row[0]]).value, true);
+                sessionManager.paramsManager.updateParamValue(utils.getParentFormId(formData.id), inputTableData.currentRowObjectName, utils.tableRowToString(inputTableData.databaseData, inputTableData.databaseData.data.Rows[row[0]])?.value, true);
             }
         }
     }, [selectedState, inputTableData, sessionManager, formData]);
@@ -687,113 +693,6 @@ function DataSetView(props, ref) {
         }
     };
 
-    const filterOperators = {
-        text: [
-            {
-                text: "grid.filterContainsOperator",
-                operator: "contains",
-            },
-            {
-                text: "grid.filterEqOperator",
-                operator: "eq",
-            },
-            {
-                text: "grid.filterNotEqOperator",
-                operator: "neq",
-            },
-            {
-                text: "grid.filterStartsWithOperator",
-                operator: "startswith",
-            },
-            {
-                text: "grid.filterEndsWithOperator",
-                operator: "endswith",
-            },
-            {
-                text: "grid.filterIsNullOperator",
-                operator: "isnull",
-            },
-            {
-                text: "grid.filterIsNotNullOperator",
-                operator: "isnotnull",
-            }
-        ],
-        numeric: [
-            {
-                text: "grid.filterEqOperator",
-                operator: "eq",
-            },
-            {
-                text: "grid.filterNotEqOperator",
-                operator: "neq",
-            },
-            {
-                text: "grid.filterGtOperator",
-                operator: "gt",
-            },
-            {
-                text: "grid.filterLtOperator",
-                operator: "lt",
-            },
-            {
-                text: "grid.filterGteOperator",
-                operator: "gte",
-            },
-            {
-                text: "grid.filterLteOperator",
-                operator: "lte",
-            },
-            {
-                text: "grid.filterIsNullOperator",
-                operator: "isnull",
-            },
-            {
-                text: "grid.filterIsNotNullOperator",
-                operator: "isnotnull",
-            }
-        ],
-        date: [
-            {
-                text: "grid.filterEqOperator",
-                operator: "eq",
-            },
-            {
-                text: "grid.filterNotEqOperator",
-                operator: "neq",
-            },
-            {
-                text: "grid.filterAfterOperator",
-                operator: "gt",
-            },
-            {
-                text: "grid.filterBeforeOperator",
-                operator: "lt",
-            },
-            {
-                text: "grid.filterAfterOrEqualOperator",
-                operator: "gte",
-            },
-            {
-                text: "grid.filterBeforeOrEqualOperator",
-                operator: "lte",
-            },
-            {
-                text: "grid.filterIsNullOperator",
-                operator: "isnull",
-            },
-            {
-                text: "grid.filterIsNotNullOperator",
-                operator: "isnotnull",
-            }
-        ],
-        boolean: [
-            {
-                text: "grid.filterEqOperator",
-                operator: "eq",
-            },
-        ],
-    };
-
     const customRowRender = (tr, props) => (
         <RowRender
             originalProps={props}
@@ -802,6 +701,8 @@ function DataSetView(props, ref) {
             editField={editField}
         />
     );
+
+    const _ref = React.useRef();
 
     if (tableData.columnsJSON.length > 0) {
         return (
@@ -828,16 +729,14 @@ function DataSetView(props, ref) {
                         </Dialog>
                     )}
                     <FormHeader formData={formData} additionalButtons={otherButtons} />
-                    <Grid className="grid-content"
+                    <Grid ref={_ref} className="grid-content"
                         resizable={true}
                         onColumnResize={onColumnResize}
                         sortable={true}
-                        data={dataToShow ? dataToShow.slice(skip, skip + 30) : dataToShow}
+                        data={dataToShow ? dataToShow.slice(dataState.skip, dataState.skip + dataState.take) : dataToShow}
                         {...dataState}
                         navigatable={true}
-                        onDataStateChange={(e) => {
-                            setDataState(e.dataState);
-                        }}
+                        onDataStateChange={onDataStateChange}
                         cellRender={customCellRender}
                         rowRender={customRowRender}
                         onItemChange={onItemChange}
@@ -855,10 +754,8 @@ function DataSetView(props, ref) {
                         rowHeight={15}
                         pageSize={30}
                         total={dataToShow.length}
-                        skip={skip}
                         filterOperators={filterOperators}
                         scrollable={"virtual"}
-                        onPageChange={pageChange}
                     >
                         {tableData.columnsJSON.map(column => <Column
                             locked={column.locked}

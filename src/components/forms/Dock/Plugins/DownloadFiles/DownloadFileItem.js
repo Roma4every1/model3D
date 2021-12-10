@@ -22,7 +22,7 @@ export default function DownloadFileItem(props) {
     const downloadFile = async (path) => {
         const resultText = await sessionManager.fetchData(`downloadResource?resourceName=${path}&sessionId=${sessionId}`);
         const fileExactName = path.split('\\').pop().split('/').pop();
-        const downloadPath = process.env.PUBLIC_URL + '/' + resultText;
+        const downloadPath = process.env.PUBLIC_URL + (process.env.RESOURCES_PATH ?? '') + '/' + resultText;
         saveAs(
             downloadPath,
             fileExactName);

@@ -29,7 +29,7 @@ export default function createSessionManager(systemName, store) {
             handleWindowError(i18n.t('messages.systemNotDefined'));
         }
         else {
-            const data = await fetchData(`startSession?systemName=${systemName}&defaulConfiguration=false`);
+            const data = await fetchData(`startSession?systemName=${systemName}&defaultConfiguration=false`);
             if (data) {
                 sessionLoading = false;
                 timerId = setInterval(iAmAlive, 2 * 60 * 1000);
@@ -115,7 +115,7 @@ export default function createSessionManager(systemName, store) {
     const loadSessionByDefault = async () => {
         stopSession();
         sessionLoading = true;
-        const data = await fetchData(`startSession?systemName=${systemName}&defaulConfiguration=true`);
+        const data = await fetchData(`startSession?systemName=${systemName}&defaultConfiguration=true`);
         sessionLoading = false;
         store.dispatch(setSessionId(data));
     }
