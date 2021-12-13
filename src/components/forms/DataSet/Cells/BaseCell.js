@@ -1,6 +1,6 @@
 ﻿import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import { BooleanCell } from "./BooleanCell";
-import { ButtonCell } from "./ButtonCell";
 import { DateCell } from "./DateCell";
 import { DropDownCell } from "./DropDownCell";
 import { NumericCell } from "./NumericCell";
@@ -8,6 +8,7 @@ import { TextCell } from "./TextCell";
 import { useInternationalization } from '@progress/kendo-react-intl';
 
 export var BaseCell = function (props) {
+    const { t } = useTranslation();
     var data = props.dataItem[props.field] ?? '';
     var intl = useInternationalization();
     var element = '';
@@ -18,10 +19,11 @@ export var BaseCell = function (props) {
             data.toString();
     }
 
-    if (props.type === 'secondLevel') {
-        element = <ButtonCell {...props} data={stringData} secondLevelFormId={props.secondLevelFormId} channelName={props.channelName} />;
-    }
-    else if (props.dataItem.js_inEdit && props.editField === props.field) {
+    const openNestedForm = async () => {
+        props.setOpened(true);
+    };
+
+    if (props.dataItem.js_inEdit && props.editField === props.field) {
         switch (props.type) {
             case 'lookup':
                 element = <DropDownCell {...props} lookupData={props.values} dataValue={data} />;
@@ -43,5 +45,11 @@ export var BaseCell = function (props) {
     else {
         element = stringData;
     }
-    return element;
+    return (
+        <div>
+            {element}
+            {((!(props.dataItem.js_inEdit && props.editField === props.field)) && props.setOpened) && <div className="buttonCell">
+                <span className="k-icon k-i-window font-10" alt={t('table.showDetailInfo')} title={t('table.showDetailInfo')} onClick={openNestedForm} />
+            </div>}
+        </div>);
 };

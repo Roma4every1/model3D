@@ -73,7 +73,7 @@ function DataSetView(props, ref) {
     });
     const [dataState, setDataState] = React.useState({
         skip: 0,
-        take: 30
+        take: 100
     });
     const [editField, setEditField] = React.useState(undefined);
     const [editID, setEditID] = React.useState(null);
@@ -309,9 +309,9 @@ function DataSetView(props, ref) {
                     if (tableData.rowsJSON.length > 0) {
                         setDataState({ ...dataState, skip: 0 });
                         _ref.current.element.children[1].children[0].scrollTop = 0;
-                         setSelectedState({ 0: true });
-                         applyEdit();
-                         setEditID(null);
+                        setSelectedState({ 0: true });
+                        applyEdit();
+                        setEditID(null);
                         event.nativeEvent.preventDefault();
                     }
                 }
@@ -486,45 +486,38 @@ function DataSetView(props, ref) {
     };
 
     const getEditorType = (column) => {
+        var result = {};
         if (inputTableData.properties) {
             const property = _.find(inputTableData.properties, function (o) { return o.name === column.field; });
             if (property && property.secondLevelChannelName) {
-                return {
-                    type: "secondLevel",
-                    setOpened: (arg) => dispatch(setOpenedWindow(property.name, arg, <SecondLevelTable
-                        key={formData.id + property.name}
-                        keyProp={formData.id + property.name}
-                        secondLevelFormId={formData.id + property.name}
-                        channelName={property.secondLevelChannelName}
-                        setOpened={(arg) =>
-                            dispatch(setOpenedWindow(property.name, arg, null))
-                        }
-                    />))
-                };
-            }
+                result.setOpened = (arg) => dispatch(setOpenedWindow(property.name, arg, <SecondLevelTable
+                    key={formData.id + property.name}
+                    keyProp={formData.id + property.name}
+                    secondLevelFormId={formData.id + property.name}
+                    channelName={property.secondLevelChannelName}
+                    setOpened={(arg) =>
+                        dispatch(setOpenedWindow(property.name, arg, null))
+                    }
+                />))
+            };
         }
         if (column.lookupData) {
-            return {
-                type: "lookup",
-                values: column.lookupData
-            }
+            result.type = "lookup";
+            result.values = column.lookupData;
         }
         switch (column.netType) {
             case "System.Double":
             case "System.Int32":
             case "System.Int64":
-                return {
-                    type: "numeric"
-                };
+                result.type = "numeric";
+                break;
             case "System.DateTime":
-                return {
-                    type: "date"
-                };
+                result.type = "date";
+                break;
             default:
-                return {
-                    type: "string"
-                };
+                result.type = "string";
         }
+        return result;
     }
 
     const getFormat = (column) => {
@@ -601,13 +594,13 @@ function DataSetView(props, ref) {
             {editable && <button className="k-button k-button-clear" onClick={handleDeleteDialogOpen}>
                 <span className="k-icon k-i-minus" />
             </button>}
-            {editable && <button className="k-button k-button-clear" onClick={() => addRecord()}>
+            {editable && <button className="k-button k-button-clear" onClick={() => addRecord()} disabled={rowAdding}>
                 <span className="k-icon k-i-plus" />
             </button>}
             {editable && <button className="k-button k-button-clear" onClick={applyEdit} disabled={!edited && !rowAdding}>
                 <span className="k-icon k-i-check" />
             </button>}
-            {editable && <button className="k-button k-button-clear" onClick={() => { reload(); setEditID(null); }}>
+            {editable && <button className="k-button k-button-clear" onClick={() => { reload(); setEditID(null); setRowAdding(false); }}>
                 <span className="k-icon k-i-cancel" />
             </button>}
             <button className="k-button k-button-clear" onClick={reload}>
