@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useSelector } from 'react-redux';
-import StringComboEditorView from './TableRowComboEditorView';
+import StringComboEditorView from './StringComboEditorView';
 
 export default function StringComboEditor(props) {
     const sessionManager = useSelector((state) => state.sessionManager);

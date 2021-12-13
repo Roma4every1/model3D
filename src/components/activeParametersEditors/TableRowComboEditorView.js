@@ -50,7 +50,6 @@ export default function TableRowComboEditorView(props) {
             let calculatedValueToShow = _.find(values, function (o) { return String(o.id) === dateValue; });
             if (calculatedValueToShow) {
                 valueToShow = calculatedValueToShow;
-               // setNewValue(calculatedValueToShow.value, false);
             }
             else {
                 valueToShow = '';

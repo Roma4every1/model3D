@@ -2,7 +2,6 @@ import * as React from "react";
 import { useSelector } from 'react-redux';
 import { ComboBox } from "@progress/kendo-react-dropdowns";
 var _ = require("lodash");
-var utils = require("../../utils");
 
 export default function StringComboEditorView(props) {
     const { id, selectionChanged, value, externalChannelName } = props;
@@ -24,7 +23,13 @@ export default function StringComboEditorView(props) {
     const valuesToSelect = useSelector((state) => state.channelsData[externalChannelName]);
 
     if (valuesToSelect && valuesToSelect.properties) {
-        const valuesFromJSON = valuesToSelect.data.Rows.map((row) => utils.tableRowToString(valuesToSelect, row));
+        const valuesFromJSON = valuesToSelect?.data?.Rows.map((row) => {
+            return {
+                id: row.Cells[valuesToSelect.idIndex],
+                name: row.Cells[valuesToSelect.nameIndex],
+                value: row.Cells[valuesToSelect.nameIndex]
+            }
+        });
 
         if (valuesFromJSON && valuesFromJSON !== '') {
             values = valuesFromJSON;
@@ -35,22 +40,9 @@ export default function StringComboEditorView(props) {
 
         if (value) {
             let stringvalue = String(value);
-            const startIndex = stringvalue.indexOf('LOOKUPCODE#');
-            var finishIndex = stringvalue.indexOf('#', startIndex + 11);
-            let dateValue;
-            if (startIndex === -1) {
-                dateValue = stringvalue;
-            }
-            else if (finishIndex === -1) {
-                dateValue = stringvalue.slice(startIndex + 11);
-            }
-            else {
-                dateValue = stringvalue.slice(startIndex + 11, finishIndex);
-            }
-            let calculatedValueToShow = _.find(values, function (o) { return String(o.id) === dateValue; });
+            let calculatedValueToShow = _.find(values, function (o) { return String(o.id) === stringvalue; });
             if (calculatedValueToShow) {
                 valueToShow = calculatedValueToShow;
-                // setNewValue(calculatedValueToShow.value, false);
             }
             else {
                 valueToShow = '';

@@ -31,6 +31,7 @@ import { getter } from "@progress/kendo-react-common";
 import { useTranslation } from 'react-i18next';
 import { CellRender, RowRender } from "./Renderers";
 import filterOperators from "./filterOperators.json";
+import filterOperations from "./filterOperations.json";
 import addParam from "../../../store/actionCreators/addParam";
 import addParamSet from "../../../store/actionCreators/addParamSet";
 import setOpenedWindow from "../../../store/actionCreators/setOpenedWindow";
@@ -138,47 +139,8 @@ function DataSetView(props, ref) {
                     let col = inputTableData.columnsJSON.find(c => c.field === fieldName);
                     flt.filters.forEach(filter => {
                         let operation = "equal"
-                        switch (filter.operator) {
-                            case "eq":
-                                operation = "equal";
-                                break;
-                            case "gt":
-                                operation = "greater";
-                                break;
-                            case "lt":
-                                operation = "less";
-                                break;
-                            case "gte":
-                                operation = "greaterAndEqual";
-                                break;
-                            case "lte":
-                                operation = "lessAndEqual";
-                                break;
-                            case "neq":
-                                operation = "notEqual";
-                                break;
-                            case "isnull":
-                            case "isnullempty":
-                                operation = "isNull";
-                                break;
-                            case "isnotnull":
-                            case "isnotempty":
-                                operation = "isNotNull";
-                                break;
-                            case "contains":
-                                operation = "contains";
-                                break;
-                            case "doesnotcontains":
-                                operation = "notContains";
-                                break;
-                            case "startswith":
-                                operation = "startsWith";
-                                break;
-                            case "endswith":
-                                operation = "endsWith";
-                                break;
-                            default:
-                                operation = "equal";
+                        if (filterOperations[filter.operator]) {
+                            operation = filterOperations[filter.operator];
                         }
                         let center = "";
                         let fieldFilter = filter.value;

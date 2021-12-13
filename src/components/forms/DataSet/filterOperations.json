@@ -1,0 +1,16 @@
+{
+  "eq": "equal",
+  "gt": "greater",
+  "lt": "less",
+  "gte": "greaterAndEqual",
+  "lte": "lessAndEqual",
+  "neq": "notEqual",
+  "isnull": "isNull",
+  "isnullempty": "isNull",
+  "isnotnull": "isNotNull",
+  "isnotempty": "isNotNull",
+  "contains": "contains",
+  "doesnotcontains": "notContains",
+  "startswith": "startsWith",
+  "endswith": "endsWith"
+}

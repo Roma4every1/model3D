@@ -10,7 +10,7 @@ export default function FilesTextEditor(props) {
         if (!value) {
             return t("editors.filesNotSelected");
         }
-        return value?.split('|').map(p => p.split('\\').pop()).join(', ');
+        return decodeURI(value?.split('|').map(p => p.split('\\').pop()).join(', '));
     }
     const [valueToShow] = React.useState(getInitialValue(props.value));
     const sessionId = useSelector((state) => state.sessionId);

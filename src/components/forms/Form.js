@@ -91,7 +91,7 @@ export default function Form(props) {
 
     React.useLayoutEffect(() => {
         dispatch(setFormRefs(formData.id, _form))
-    }, [formData, dispatch])
+    }, [formData, dispatch]);
 
     return (
         <div className="form-container">
