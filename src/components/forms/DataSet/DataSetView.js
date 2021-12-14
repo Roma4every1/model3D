@@ -505,17 +505,19 @@ function DataSetView(props, ref) {
             result.type = "lookup";
             result.values = column.lookupData;
         }
-        switch (column.netType) {
-            case "System.Double":
-            case "System.Int32":
-            case "System.Int64":
-                result.type = "numeric";
-                break;
-            case "System.DateTime":
-                result.type = "date";
-                break;
-            default:
-                result.type = "string";
+        else {
+            switch (column.netType) {
+                case "System.Double":
+                case "System.Int32":
+                case "System.Int64":
+                    result.type = "numeric";
+                    break;
+                case "System.DateTime":
+                    result.type = "date";
+                    break;
+                default:
+                    result.type = "string";
+            }
         }
         return result;
     }

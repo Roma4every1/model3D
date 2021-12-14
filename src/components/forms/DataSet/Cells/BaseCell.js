@@ -45,11 +45,16 @@ export var BaseCell = function (props) {
     else {
         element = stringData;
     }
-    return (
-        <div>
-            {element}
-            {((!(props.dataItem.js_inEdit && props.editField === props.field)) && props.setOpened) && <div className="buttonCell">
-                <span className="k-icon k-i-window font-10" alt={t('table.showDetailInfo')} title={t('table.showDetailInfo')} onClick={openNestedForm} />
-            </div>}
-        </div>);
+    if ((!(props.dataItem.js_inEdit && props.editField === props.field)) && props.setOpened) {
+        return (
+            <div>
+                {element}
+                <div className="buttonCell">
+                    <span className="k-icon k-i-window font-10" alt={t('table.showDetailInfo')} title={t('table.showDetailInfo')} onClick={openNestedForm} />
+                </div>
+            </div>);
+    }
+    else {
+        return element;
+    }
 };

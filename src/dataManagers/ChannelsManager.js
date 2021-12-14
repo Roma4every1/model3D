@@ -115,8 +115,8 @@ export default function createChannelsManager(store) {
                                     const lookupData = lookupChannelData.data.Rows.map((row) => {
                                         let temp = {};
                                         temp.id = row.Cells[lookupChannelData.idIndex];
-                                        temp.value = row.Cells[lookupChannelData.nameIndex];
-                                        temp.text = row.Cells[lookupChannelData.nameIndex];
+                                        temp.value = row.Cells[lookupChannelData.nameIndex] ?? '';
+                                        temp.text = row.Cells[lookupChannelData.nameIndex] ?? '';
                                         return temp;
                                     });
                                     property.lookupData = lookupData;

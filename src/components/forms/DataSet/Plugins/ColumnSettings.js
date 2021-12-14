@@ -44,7 +44,7 @@ export default function ColumnSettings(props) {
             </button>
             <LocalizationProvider language='ru-RU'>
                 <IntlProvider locale='ru'>
-                    <IntegerTextEditor id="frozenColumnEditor" value={tableSettings.columns.frozenColumnCount} selectionChanged={updateFrozenCount} />
+                    <IntegerTextEditor id="frozenColumnEditor" value={tableSettings?.columns?.frozenColumnCount} selectionChanged={updateFrozenCount} />
                 </IntlProvider>
             </LocalizationProvider>
         </div>);
