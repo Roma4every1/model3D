@@ -35,7 +35,7 @@ export default function ProgramParametersList(props) {
                 body: jsonToSendString
             });
 
-        if (data && data.ModifiedTables && data.ModifiedTables.ModifiedTables) {
+        if (data?.ModifiedTables?.ModifiedTables) {
             sessionManager.channelsManager.updateTables(data.ModifiedTables.ModifiedTables);
         }
         if (data.ReportResult) {
@@ -47,26 +47,26 @@ export default function ProgramParametersList(props) {
                 dispatch(updateParam(formId, param.id, null, true));
             }
         });
+        watchOperation(data);
+    }, [sessionId, formId, presentationId, formParams, sessionManager, dispatch, programDisplayName, t]);
+
+    const watchOperation = (data) => {
         if (data.OperationId) {
-            var ids = data.OperationId.split(',');
-            Promise.all(ids.map(id => {
                 const getResult = async () => {
-                    sessionManager.watchReport(id, data);
-                    var reportResult = await sessionManager.fetchData(`getOperationResult?sessionId=${sessionId}&operationId=${id}&waitResult=true`);
-                    if (reportResult && reportResult.ModifiedTables && reportResult.ModifiedTables.ModifiedTables) {
-                        sessionManager.channelsManager.updateTables(reportResult.ModifiedTables.ModifiedTables);
+                    sessionManager.watchReport(data.OperationId, data);
+                    var reportResult = await sessionManager.fetchData(`getOperationResult?sessionId=${sessionId}&operationId=${data.OperationId}&waitResult=true`);
+                    if (reportResult?.report?.ModifiedTables?.ModifiedTables) {
+                        sessionManager.channelsManager.updateTables(reportResult.report.ModifiedTables.ModifiedTables);
                     }
+                    if (reportResult?.reportLog) {
+                        sessionManager.handleWindowInfo(reportResult.reportLog, null, t("report.result"), programDisplayName + ".log");
+                    }
+                    watchOperation(reportResult);
                     return reportResult;
                 }
-                if (id) {
-                    return getResult();
-                }
-                else {
-                    return null;
-                }
-            }));
-        }
-    }, [sessionId, formId, presentationId, formParams, sessionManager, dispatch, programDisplayName, t]);
+                return getResult();
+            }
+    }
 
     const handleRun = () => {
         handleClose();

@@ -12,7 +12,7 @@ export default function DownloadFiles(props) {
     const { formId } = props;
     const [filterByPresentation, setFilterByPresentation] = React.useState(true);
     const activeChild = useSelector((state) => state.childForms[formId].activeChildren[0]);
-    const reports = useSelector((state) => Object.values(state.reports));
+    const reports = useSelector((state) => Object.values(state.reports)).reverse();
     const sessionManager = useSelector((state) => state.sessionManager);
     const sessionId = useSelector((state) => state.sessionId);
 
