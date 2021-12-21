@@ -33,6 +33,7 @@ export default function createParamsManager(store) {
                         dependsOn: element.dependsOn,
                         type: element.type,
                         editorType: element.editorType,
+                        editorDisplayOrder: element.editorDisplayOrder,
                         displayName: element.displayName
                     }
                     store.dispatch(addParam(formId, newElement));

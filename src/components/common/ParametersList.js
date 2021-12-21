@@ -15,7 +15,7 @@ export default function ParametersList(props) {
 
     return (
         <StackLayout orientation="vertical">
-            {parametersJSON.filter(parameterJSON => parameterJSON.editorType).map(parameterJSON =>
+            {parametersJSON.sort((a, b) => a.editorDisplayOrder - b.editorDisplayOrder).filter(parameterJSON => parameterJSON.editorType).map(parameterJSON =>
                 <BaseEditor
                     editorType={parameterJSON.editorType}
                     key={parameterJSON.id}
