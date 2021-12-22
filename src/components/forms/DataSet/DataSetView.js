@@ -221,13 +221,18 @@ function DataSetView(props, ref) {
     const excelExport = async () => {
         const dataD = sessionManager.channelsManager.getAllChannelParams(activeChannelName);
         var neededParamValues = sessionManager.paramsManager.getParameterValues(dataD, formData.id, false, activeChannelName);
+        var settings = tableSettings?.columns;
+        if (settings)
+        {
+            settings = {...settings, columnsSettings: settings.columnsSettings.map(c => { return { ...c, isVisible: tableData.columnsJSON.some(cc => cc.field === c.channelPropertyName) } } ) };
+        }
         var jsonToSend = {
             sessionId: sessionId,
             channelName: activeChannelName,
             paramName: formData.displayName,
             presentationId: utils.getParentFormId(formData.id),
             paramValues: neededParamValues,
-            settings: tableSettings?.columns
+            settings: settings
         };
         const jsonToSendString = JSON.stringify(jsonToSend);
         var data = await sessionManager.fetchData(`exportToExcel`,
@@ -278,7 +283,7 @@ function DataSetView(props, ref) {
 
         switch (event.nativeEvent.key) {
             case 'Insert': {
-                if (editable) {
+                if (editable && !rowAdding) {
                     if (event.nativeEvent.ctrlKey) {
                         addRecord(true);
                     }
@@ -445,7 +450,7 @@ function DataSetView(props, ref) {
                 columnsJSON: tableDataCopy.columnsJSON
             });
             elementsToRemove = elementsToRemove.slice(1, -1);
-            deleteRows(elementsToRemove);
+            await deleteRows(elementsToRemove);
         }
     };
 

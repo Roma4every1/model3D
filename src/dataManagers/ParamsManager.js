@@ -34,6 +34,7 @@ export default function createParamsManager(store) {
                         type: element.type,
                         editorType: element.editorType,
                         editorDisplayOrder: element.editorDisplayOrder,
+                        externalChannelName: element.externalChannelName,
                         displayName: element.displayName
                     }
                     store.dispatch(addParam(formId, newElement));
@@ -81,8 +82,12 @@ export default function createParamsManager(store) {
 
     const loadFormSettings = async (formId) => {
         const sessionId = store.getState().sessionId;
-        var data = await store.getState().sessionManager.fetchData(`getFormSettings?sessionId=${sessionId}&formId=${formId}`);
-        store.dispatch(setFormSettings(formId, data));
+        var data = store.getState().formSettings[formId];
+        if (!data)
+        {
+            data = await store.getState().sessionManager.fetchData(`getFormSettings?sessionId=${sessionId}&formId=${formId}`);
+            store.dispatch(setFormSettings(formId, data));
+        }
         return data;
     }
 

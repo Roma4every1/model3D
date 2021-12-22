@@ -26,6 +26,24 @@ export default function ProgramParametersList(props) {
     const canRunReport = useSelector((state) => state.canRunReport);
     const formParams = useSelector((state) => state.formParams[formId]);
 
+    const watchOperation = React.useCallback((data) => {
+        if (data.OperationId) {
+                const getResult = async () => {
+                    sessionManager.watchReport(data.OperationId, data);
+                    var reportResult = await sessionManager.fetchData(`getOperationResult?sessionId=${sessionId}&operationId=${data.OperationId}&waitResult=true`);
+                    if (reportResult?.report?.ModifiedTables?.ModifiedTables) {
+                        sessionManager.channelsManager.updateTables(reportResult.report.ModifiedTables.ModifiedTables);
+                    }
+                    if (reportResult?.reportLog) {
+                        sessionManager.handleWindowInfo(reportResult.reportLog, null, t("report.result"), programDisplayName + ".log");
+                    }
+                    watchOperation(reportResult);
+                    return reportResult;
+                }
+                return getResult();
+            }
+    }, [programDisplayName, sessionId, sessionManager, t]);
+
     const runReport = React.useCallback(async () => {
         var jsonToSend = { sessionId: sessionId, reportId: formId, presentationId: presentationId, paramValues: formParams };
         const jsonToSendString = JSON.stringify(jsonToSend);
@@ -48,25 +66,7 @@ export default function ProgramParametersList(props) {
             }
         });
         watchOperation(data);
-    }, [sessionId, formId, presentationId, formParams, sessionManager, dispatch, programDisplayName, t]);
-
-    const watchOperation = (data) => {
-        if (data.OperationId) {
-                const getResult = async () => {
-                    sessionManager.watchReport(data.OperationId, data);
-                    var reportResult = await sessionManager.fetchData(`getOperationResult?sessionId=${sessionId}&operationId=${data.OperationId}&waitResult=true`);
-                    if (reportResult?.report?.ModifiedTables?.ModifiedTables) {
-                        sessionManager.channelsManager.updateTables(reportResult.report.ModifiedTables.ModifiedTables);
-                    }
-                    if (reportResult?.reportLog) {
-                        sessionManager.handleWindowInfo(reportResult.reportLog, null, t("report.result"), programDisplayName + ".log");
-                    }
-                    watchOperation(reportResult);
-                    return reportResult;
-                }
-                return getResult();
-            }
-    }
+    }, [watchOperation, sessionId, formId, presentationId, formParams, sessionManager, dispatch, programDisplayName, t]);
 
     const handleRun = () => {
         handleClose();
