@@ -15,7 +15,7 @@ export default function ParametersList(props) {
 
     return (
         <StackLayout orientation="vertical">
-            {parametersJSON.sort((a, b) => a.editorDisplayOrder - b.editorDisplayOrder).filter(parameterJSON => parameterJSON.editorType).map(parameterJSON =>
+            {parametersJSON.filter(parameterJSON => parameterJSON.editorType).sort((a, b) => a.editorDisplayOrder - b.editorDisplayOrder).map(parameterJSON =>
                 <BaseEditor
                     editorType={parameterJSON.editorType}
                     key={parameterJSON.id}
@@ -23,6 +23,7 @@ export default function ParametersList(props) {
                     formId={parameterJSON.formId}
                     formIdToLoad={parameterJSON.formIdToLoad}
                     displayName={parameterJSON.displayName}
+                    externalChannelName={parameterJSON.externalChannelName}
                     selectionChanged={(action) => updateEditedJSON(action, parameterJSON.formId)}
                 />
             )}

@@ -47,22 +47,22 @@ export default function createParamsManager(store) {
         return paramsToUse;
     }
 
+    const setDefaultParamValue = (formId, param) => {
+        if (param.externalChannelName && !param.canBeNull && !param.value) {
+            const externalChannelData = store.getState().channelsData[param.externalChannelName];
+            const externalChannelDataRows = externalChannelData?.data?.Rows;
+            if (externalChannelDataRows && externalChannelDataRows.length > 0) {
+                const newValue = utils.tableRowToString(externalChannelData, externalChannelDataRows[0]);
+                updateParamValue(formId, param.id, newValue.value, true);
+            }
+        }
+    }
+
     const updateParamValue = (formId, paramName, paramValue, manual) => {
         store.dispatch(updateParam(formId, paramName, paramValue, manual));
     }
 
-    var paramChannelNames = [];
     var reportFormId = null;
-
-    const loadNeededChannelForParam = async (paramName, formId) => {
-        const sessionId = store.getState().sessionId;
-        if (!paramChannelNames[paramName]) {
-            const data = await store.getState().sessionManager.fetchData(`getNeededChannelForParam?sessionId=${sessionId}&paramName=${paramName}&formId=${formId}`);
-            paramChannelNames[paramName] = data;
-        }
-        await store.getState().sessionManager.channelsManager.loadAllChannelData(paramChannelNames[paramName], formId, false);
-        return paramChannelNames[paramName];
-    }
 
     const loadFormParameters = async (formId, force) => {
         if (force || !store.getState().formParams[formId]) {
@@ -70,6 +70,11 @@ export default function createParamsManager(store) {
             var data = await store.getState().sessionManager.fetchData(`getFormParameters?sessionId=${sessionId}&formId=${formId}`);
             var jsonToSet = data.map(param => { var newParam = param; newParam.formId = formId; return newParam; });
             store.dispatch(setParams(formId, jsonToSet));
+            data.forEach(async (param) => {
+                if (param.externalChannelName) {
+                    store.getState().sessionManager.channelsManager.loadAllChannelData(param.externalChannelName, formId, false);
+                }
+            });
             return jsonToSet;
         }
     }
@@ -107,10 +112,15 @@ export default function createParamsManager(store) {
         if (reportFormId) {
             getCanRunReport(reportFormId);
         }
+        const formParams = store.getState().formParams;
+        for (var formId in formParams) {
+            for (var param in formParams[formId]) {
+                setDefaultParamValue(formId, formParams[formId][param]);
+            }
+        }
     });
 
     return {
-        loadNeededChannelForParam,
         loadFormParameters,
         loadFormSettings,
         getParameterValues,
