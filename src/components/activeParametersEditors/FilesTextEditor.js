@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button } from "@progress/kendo-react-buttons";
-import { Label } from "@progress/kendo-react-labels";
+import { TextArea } from "@progress/kendo-react-inputs";
 
 export default function FilesTextEditor(props) {
     const { t } = useTranslation();
@@ -45,9 +45,9 @@ export default function FilesTextEditor(props) {
     };
 
     return (
-        <div className='parametereditor'>
+        <div className='parametereditorwithoutheight'>
             <input id={'fileInput' + props.id} type="file" multiple onChange={onBeforeUpload} style={{ display: "none" }} />
-            <Label style={{ float: "left" }}>{valueToShow}</Label>
+            <TextArea className='filestexteditortextarea' rows={2} value={valueToShow} />
             <Button style={{ float: "right" }} onClick={openFiles}>
                 <span className='k-icon k-i-folder-open' />
             </Button>

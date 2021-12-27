@@ -74,6 +74,18 @@ html {
     max-width: 400px;
 }
 
+.windowhandler-text {
+    margin: 5px;
+    max-height: 60vh;
+    white-space: pre-wrap;
+}
+
+.windowhandler-stacktrace {
+    margin: 5px;
+    max-height: 60vh;
+    white-space: pre-wrap;
+}
+
 .margin-5 {
     margin: 5px;
 }
@@ -194,7 +206,13 @@ html {
     float: right;
     font-size: 12px;
     vertical-align: middle;
-    max-width: 155px;
+    max-width: 200px;
+    max-height: 200px;
+}
+
+.filestexteditortextarea {
+    float: left;
+    width: 165px;
 }
 
 .parametereditorwithoutheightcb {

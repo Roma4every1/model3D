@@ -13,7 +13,7 @@ export default function FileTextEditor(props) {
         }
         return decodeURI(value?.split('\\').pop());
     }
-    const [valueToShow] = React.useState(getInitialValue(value));
+    const [valueToShow, setValueToShow] = React.useState(getInitialValue(value));
     const sessionId = useSelector((state) => state.sessionId);
     const sessionManager = useSelector((state) => state.sessionManager);
 
@@ -36,6 +36,7 @@ export default function FileTextEditor(props) {
             newevent.target.value = data;
             props.selectionChanged(newevent);
         }
+        setValueToShow(getInitialValue(file.name));
         reader.readAsArrayBuffer(file);
     };
 

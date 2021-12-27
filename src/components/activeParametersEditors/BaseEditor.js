@@ -1,5 +1,4 @@
 ﻿import React, { Suspense } from 'react';
-import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { GridLayout, GridLayoutItem } from "@progress/kendo-react-layout";
 import { Label } from "@progress/kendo-react-labels";

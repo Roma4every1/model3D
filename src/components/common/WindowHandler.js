@@ -73,12 +73,12 @@ export default function WindowHandler() {
                             </div>
                         </GridLayoutItem>
                         <GridLayoutItem row={1} col={2}>
-                            <div className="margin-5 textAlign-left">
+                            <div className="windowhandler-text">
                                 {windowData.text}
                             </div>
                         </GridLayoutItem>
                         {stackTraceVisible && <GridLayoutItem row={2} col={2}>
-                            <div className="margin-5 textAlign-left">
+                            <div className="windowhandler-stacktrace">
                                 {windowData.stackTrace}
                             </div>
                         </GridLayoutItem>}

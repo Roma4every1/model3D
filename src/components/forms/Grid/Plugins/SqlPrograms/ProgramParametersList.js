@@ -14,7 +14,7 @@ import FormParametersList from '../../../../common/FormParametersList';
 export default function ProgramParametersList(props) {
     const { t } = useTranslation();
     const dispatch = useDispatch();
-    const { formId, presentationId, handleClose, programDisplayName } = props;
+    const { formId, presentationId, handleClose, handleProcessing, programDisplayName } = props;
     const sessionManager = useSelector((state) => state.sessionManager);
     const sessionId = useSelector((state) => state.sessionId);
 
@@ -28,23 +28,27 @@ export default function ProgramParametersList(props) {
 
     const watchOperation = React.useCallback((data) => {
         if (data.OperationId) {
-                const getResult = async () => {
-                    sessionManager.watchReport(data.OperationId, data);
-                    var reportResult = await sessionManager.fetchData(`getOperationResult?sessionId=${sessionId}&operationId=${data.OperationId}&waitResult=true`);
-                    if (reportResult?.report?.ModifiedTables?.ModifiedTables) {
-                        sessionManager.channelsManager.updateTables(reportResult.report.ModifiedTables.ModifiedTables);
-                    }
-                    if (reportResult?.reportLog) {
-                        sessionManager.handleWindowInfo(reportResult.reportLog, null, t("report.result"), programDisplayName + ".log");
-                    }
-                    watchOperation(reportResult);
-                    return reportResult;
+            const getResult = async () => {
+                sessionManager.watchReport(data.OperationId);
+                var reportResult = await sessionManager.fetchData(`getOperationResult?sessionId=${sessionId}&operationId=${data.OperationId}&waitResult=true`);
+                if (reportResult?.report?.ModifiedTables?.ModifiedTables) {
+                    sessionManager.channelsManager.updateTables(reportResult.report.ModifiedTables.ModifiedTables);
                 }
-                return getResult();
+                if (reportResult?.reportLog) {
+                    sessionManager.handleWindowInfo(<div>{reportResult.reportLog}</div>, null, t("report.result"), programDisplayName + ".log");
+                }
+                watchOperation(reportResult);
+                return reportResult;
             }
-    }, [programDisplayName, sessionId, sessionManager, t]);
+            return getResult();
+        }
+        else {
+            handleProcessing(false);
+        }
+    }, [programDisplayName, sessionId, sessionManager, formId, t]);
 
     const runReport = React.useCallback(async () => {
+        handleProcessing(true);
         var jsonToSend = { sessionId: sessionId, reportId: formId, presentationId: presentationId, paramValues: formParams };
         const jsonToSendString = JSON.stringify(jsonToSend);
         var data = await sessionManager.fetchData(`runReport`,
