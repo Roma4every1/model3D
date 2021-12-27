@@ -4,9 +4,10 @@ import { ComboBox } from "@progress/kendo-react-dropdowns";
 var _ = require("lodash");
 
 export default function StringComboEditor(props) {
-    const { id, selectionChanged, value, externalChannelName } = props;
+    const { id, formId, selectionChanged, externalChannelName } = props;
     var values = [];
     var valueToShow = undefined;
+    const value = useSelector((state) => state.formParams[formId].find((gp) => gp.id === id).value);
 
     const setNewValue = React.useCallback(
         (value, manual) => {

@@ -6,13 +6,14 @@ import { Label } from "@progress/kendo-react-labels";
 
 export default function FileTextEditor(props) {
     const { t } = useTranslation();
+    const value = useSelector((state) => state.formParams[props.formId].find((gp) => gp.id === props.id).value);
     const getInitialValue = value => {
         if (!value) {
             return t("editors.filesNotSelected");
         }
         return decodeURI(value?.split('\\').pop());
     }
-    const [valueToShow] = React.useState(getInitialValue(props.value));
+    const [valueToShow] = React.useState(getInitialValue(value));
     const sessionId = useSelector((state) => state.sessionId);
     const sessionManager = useSelector((state) => state.sessionManager);
 

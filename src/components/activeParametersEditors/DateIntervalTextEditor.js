@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import { useSelector } from 'react-redux';
 import { DateRangePicker } from "@progress/kendo-react-dateinputs";
 import {
     load,
@@ -23,12 +24,10 @@ load(
 
 export default function DateIntervalTextEditor(props) {
 
-    const defVal = (v, dfv, xdfv) => {
-        return {v} || {dfv} || {xdfv};
-    };
+    const value = useSelector((state) => state.formParams[props.formId].find((gp) => gp.id === props.id).value);
 
     const getValStr = (startdt, enddt) => {
-        if (startdt && enddt && (startdt !== undefined) && (enddt !== undefined)) {
+        if (startdt && enddt) {
             return startdt.toLocaleDateString() + ' - ' + enddt.toLocaleDateString();
         }
         else {
@@ -36,12 +35,10 @@ export default function DateIntervalTextEditor(props) {
         }
     };
 
-
     //get date from str
     const get1dtVal = (dstr, posy, leny, posm, lenm, posd, lend, posh, lenh, posmi, lenmi, poss, lens) => {
         return new Date(dstr.substr(posy, leny), dstr.substr(posm, lenm) - 1, dstr.substr(posd,lend), dstr.substr(posh,lenh), dstr.substr(posmi,lenmi), dstr.substr(poss,lens));
     };
-
 
     //get date interval from interval str
     const getVal = (str) => {
@@ -76,29 +73,13 @@ export default function DateIntervalTextEditor(props) {
         }
     };
 
-    const xmin = new Date(1970, 0, 1);
-    const xmax = new Date(2040, 0, 1);
-    const xdefaultValue = {
-        start: new Date(2021, 0, 1),
-        end: new Date(2021, 11, 1)
-    };
-    const startDateInputSettings = {
-        label: ''
-    };
-    const endDateInputSettings = {
-        label: ''
-    };
-
     return (
         <DateRangePicker className='parametereditorwithoutheight'
             id={props.id}
             name={props.id}
-            min={xmin}
-            max={xmax}
-            defaultValue={defVal(getVal(props.value), getVal(props.defaultValue), xdefaultValue)}
-            value={getVal(props.value)}
-            startDateInputSettings={startDateInputSettings}
-            endDateInputSettings={endDateInputSettings}
+            value={getVal(value)}
+            startDateInputSettings={{label: ''}}
+            endDateInputSettings={{label: ''}}
             onChange={(event) => {
                 var newevent = {};
                 newevent.target = {};

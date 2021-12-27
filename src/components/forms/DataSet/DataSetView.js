@@ -298,8 +298,11 @@ function DataSetView(props, ref) {
                 break;
             }
             case 'Delete': {
-                if (editable && !(editID && editField)) {
-                    handleDeleteDialogOpen();
+                if (!event?.syntheticEvent?.target?.form?.className?.includes('filter'))
+                {
+                    if (editable && !(editID && editField) && _.countBy(Object.keys(selectedState), o => selectedState[o]).true > 0) {
+                       handleDeleteDialogOpen();
+                    }
                 }
                 break;
             }
@@ -512,6 +515,7 @@ function DataSetView(props, ref) {
         }
         else {
             switch (column.netType) {
+                case "System.Decimal":
                 case "System.Double":
                 case "System.Int32":
                 case "System.Int64":
@@ -540,6 +544,7 @@ function DataSetView(props, ref) {
         switch (column.netType) {
             case "System.DateTime":
                 return "date";
+            case "System.Decimal":
             case "System.Double":
             case "System.Int32":
             case "System.Int64":

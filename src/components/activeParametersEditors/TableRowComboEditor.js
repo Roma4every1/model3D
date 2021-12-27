@@ -5,9 +5,10 @@ var _ = require("lodash");
 var utils = require("../../utils");
 
 export default function TableRowComboEditor(props) {
-    const { id, selectionChanged, value, externalChannelName } = props;
+    const { id, formId, selectionChanged, externalChannelName } = props;
     var values = [];
     var valueToShow = undefined;
+    const value = useSelector((state) => state.formParams[formId].find((gp) => gp.id === id).value);
 
     const setNewValue = React.useCallback(
         (value, manual) => {

@@ -23,6 +23,7 @@ export default function ParametersList(props) {
                     formId={parameterJSON.formId}
                     formIdToLoad={parameterJSON.formIdToLoad}
                     displayName={parameterJSON.displayName}
+                    value={parameterJSON.value}
                     externalChannelName={parameterJSON.externalChannelName}
                     selectionChanged={(action) => updateEditedJSON(action, parameterJSON.formId)}
                 />

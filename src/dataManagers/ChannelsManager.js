@@ -196,11 +196,11 @@ export default function createChannelsManager(store) {
         return data;
     }
 
-    store.subscribe(() => {
+    store.subscribe(async () => {
         for (var channelName in allChannelsForms) {
             for (var formId in allChannelsForms[channelName]) {
                 if (allChannelsForms[channelName][formId]) {
-                    loadAllChannelData(channelName, formId, false);
+                    await loadAllChannelData(channelName, formId, false);
                 }
             }
         }

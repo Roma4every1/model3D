@@ -15,7 +15,6 @@ loadMessages(ruMessages, "ru-RU");
 
 export default function BaseEditor(props) {
     const { t } = useTranslation();
-    const value = useSelector((state) => state.formParams[props.formId].find((gp) => gp.id === props.id).value);
     var componentPath = 'StringTextEditor';
     if (editors[props.editorType]) {
         componentPath = editors[props.editorType];
@@ -33,7 +32,7 @@ export default function BaseEditor(props) {
                                     <Label editorId={props.id}>{props.displayName}</Label>
                                 </GridLayoutItem>
                                 <GridLayoutItem row={1} col={2}>
-                                    <MyComponent value={value} {...props} />
+                                    <MyComponent value={props.value} {...props} />
                                 </GridLayoutItem>
                             </GridLayout>
                         </div>

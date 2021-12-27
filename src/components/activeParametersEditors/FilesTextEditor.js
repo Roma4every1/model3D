@@ -6,13 +6,14 @@ import { Label } from "@progress/kendo-react-labels";
 
 export default function FilesTextEditor(props) {
     const { t } = useTranslation();
+    const value = useSelector((state) => state.formParams[props.formId].find((gp) => gp.id === props.id).value);
     const getInitialValue = value => {
         if (!value) {
             return t("editors.filesNotSelected");
         }
         return decodeURI(value?.split('|').map(p => p.split('\\').pop()).join(', '));
     }
-    const [valueToShow] = React.useState(getInitialValue(props.value));
+    const [valueToShow, setValueToShow] = React.useState(getInitialValue(value));
     const sessionId = useSelector((state) => state.sessionId);
     const sessionManager = useSelector((state) => state.sessionManager);
 
@@ -35,6 +36,7 @@ export default function FilesTextEditor(props) {
                 reader.readAsArrayBuffer(file);
             });
         }));
+        setValueToShow(getInitialValue(fileNames.join('|')));
         var newevent = {};
         newevent.target = {};
         newevent.target.name = props.id;
