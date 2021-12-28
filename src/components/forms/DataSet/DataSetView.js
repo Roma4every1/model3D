@@ -67,6 +67,7 @@ function DataSetView(props, ref) {
     const [rowAdding, setRowAdding] = React.useState(false);
     const [edited, setEdited] = React.useState(false);
     const [activeCell, setActiveCell] = React.useState(null);
+    const [columnGroupingData, setColumnGroupingData] = React.useState([]);
     const [tableData, setTableData] = React.useState({
         rowsJSON: [],
         columnsJSON: []
@@ -671,7 +672,47 @@ function DataSetView(props, ref) {
 
     const _ref = React.useRef();
 
-    if (tableData.columnsJSON.length > 0) {
+    const drawColumn = column => <Column
+        locked={column.locked}
+        key={column.field}
+        field={column.field}
+        title={column.headerName}
+        width={calculateWidth(column.headerName, column.field)}
+        format={getFormat(column)}
+        filter={getFilterByType(column)}
+        columnMenu={(props) => getColumnMenuByType(column, props)}
+    />
+
+    React.useEffect(() => {
+        var groupingData = [];
+        tableData.columnsJSON.forEach(col => {
+            if (!col.treePath || col.treePath.length === 0) {
+                groupingData.push(drawColumn(col));
+            }
+            else {
+                var parent = null;
+                col.treePath.forEach(part => {
+                    var trimPart = part.trim();
+                    var parentArray = parent?.props?.children ?? groupingData;
+                    parent = parentArray.find(p => p?.key === trimPart);
+                    var columnSetting = tableSettings?.columns?.ColumnGroupSettings?.find(setting => setting.columnGroupName === trimPart);                    
+                    if (!parent) {
+                        var children = [];
+                        parent = <Column
+                            key={trimPart}
+                            title={columnSetting?.columnGroupDisplayName ?? trimPart}
+                            children={children}>
+                            </Column>;
+                        parentArray.push(parent);
+                    }
+                });
+                parent.props.children.push(drawColumn(col))
+            }
+        });
+        setColumnGroupingData(groupingData);
+    }, [tableData]);
+
+    if (columnGroupingData.length > 0) {
         return (
             <LocalizationProvider language="ru-RU">
                 <IntlProvider locale="ru">
@@ -724,17 +765,7 @@ function DataSetView(props, ref) {
                         filterOperators={filterOperators}
                         scrollable={"virtual"}
                     >
-                        {tableData.columnsJSON.map(column => <Column
-                            locked={column.locked}
-                            key={column.field}
-                            field={column.field}
-                            title={column.headerName}
-                            width={calculateWidth(column.headerName, column.field)}
-                            format={getFormat(column)}
-                            filter={getFilterByType(column)}
-                            columnMenu={(props) => getColumnMenuByType(column, props)}
-                        />
-                        )}
+                        {columnGroupingData}
                     </Grid>
                 </IntlProvider>
             </LocalizationProvider>

@@ -53,6 +53,7 @@ function DataSet(props, ref) {
         columnsJSON = databaseData.properties.map(function (property) {
             const column = databaseData.data.Columns.find(o => o.Name === (property.fromColumn ?? property.name));
             const temp = {};
+            temp.treePath = property.treePath;
             temp.field = property.name;
             temp.fromColumn = property.fromColumn;
             temp.netType = column?.NetType;
