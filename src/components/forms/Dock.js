@@ -1,15 +1,19 @@
 ﻿import React, { Suspense } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import translator from '../common/LayoutTranslator';
 import ErrorBoundary from '../common/ErrorBoundary';
 import FlexLayout from "flexlayout-react";
 import DockForm from './Dock/DockForm';
 import DockPluginForm from './Dock/DockPluginForm';
 import DockPluginStrip from './Dock/DockPluginStrip';
 import { capitalizeFirstLetter } from '../../utils';
+import setFormLayout from '../../store/actionCreators/setFormLayout';
 
 function Dock(props, ref) {
     const { t } = useTranslation();
+    const dispatch = useDispatch();
+    const sessionId = useSelector((state) => state.sessionId);
     const sessionManager = useSelector((state) => state.sessionManager);
     const { formData } = props;
 
@@ -18,6 +22,24 @@ function Dock(props, ref) {
     }, [formData, sessionManager]);
 
     const plugins = useSelector((state) => state.layout["plugins"]);
+    const formLayout = useSelector((state) => state.layout[formData.id]);
+
+    const [leftBorderSettings] = React.useState({
+        global: {
+            rootOrientationVertical: true
+        },
+        layout: {
+            "type": "row",
+            "children": plugins.left.sort((a, b) => a.order - b.order)
+        }
+    });
+
+    const [leftBorderModel, setLeftBorderModel] = React.useState(FlexLayout.Model.fromJson(leftBorderSettings));
+
+    const onModelChange = React.useCallback(() => {
+        var json = leftBorderModel.toJson();
+        dispatch(setFormLayout(formData.id, json));
+    }, [leftBorderModel, formData, dispatch]);
 
     const [layoutSettings] = React.useState({
         global: {
@@ -39,7 +61,11 @@ function Dock(props, ref) {
                 "size": 300,
                 "minSize": 300,
                 "location": "left",
-                "children": plugins.left,
+                "children": [{
+                    "type": "tab",
+                    "name": t('base.settings'),
+                    "component": "left"
+                }],
             },
             {
                 "type": "border",
@@ -67,10 +93,6 @@ function Dock(props, ref) {
         }
     });
 
-    const [flexLayoutModel] = React.useState(FlexLayout.Model.fromJson(layoutSettings));
-    const forms = React.useRef([]);
-    const dockforms = React.useRef([]);
-
     const factory = React.useCallback((node) => {
         var component = node.getComponent();
         if (component.path) {
@@ -95,12 +117,55 @@ function Dock(props, ref) {
         else if (component === "strip") {
             return <DockPluginStrip formId={formData.id} />;
         }
+        else if (component === "left") {
+            return <div>
+                <FlexLayout.Layout model={leftBorderModel} factory={factory} onModelChange={onModelChange} i18nMapper={translator} />
+            </div>;
+        }
         if (!dockforms.current[formData.id]) {
             let formToShow = <DockForm formId={formData.id} />;
             dockforms.current[formData.id] = formToShow;
         }
         return dockforms.current[formData.id];
-    }, [formData, t])
+    }, [formData, t, leftBorderModel, onModelChange]);
+
+    React.useEffect(() => {
+        let ignore = false;
+        async function fetchData() {
+            const data = await sessionManager.fetchData(`getFormLayout?sessionId=${sessionId}&formId=${formData.id}`);
+            if (!ignore) {
+                if (data.layout && data.layout.children) {
+                    var newChildren = [];
+                    data.layout.children.forEach(ch => {
+                        if (ch.selected !== -1) {
+                            var plugin = plugins.left?.find(pl => (ch.children[0].id === formData.id + ',' + pl.WMWname));
+                            if (plugin) {
+                                ch.children[0].component = plugin.children[0].component;
+                                ch.children[0].name = plugin.children[0].name;
+                                newChildren.push(ch);
+                            }
+                        }
+                    });
+                    if (newChildren.length > 0) {
+                        data.layout.children = newChildren;
+                        setLeftBorderModel(FlexLayout.Model.fromJson(data));
+                        dispatch(setFormLayout(formData.id, data));
+                    }
+                    var leftBorder = layoutSettings.borders.find(b => b.location === 'left');
+                    if (leftBorder) {
+                        leftBorder.selected = data.layout.selected;
+                    }
+                    setFlexLayoutModel(FlexLayout.Model.fromJson(layoutSettings));
+                }
+            }
+        }
+        fetchData();
+        return () => { ignore = true; }
+    }, [sessionId, formData, dispatch, plugins, sessionManager, layoutSettings]);
+
+    const [flexLayoutModel, setFlexLayoutModel] = React.useState(FlexLayout.Model.fromJson(layoutSettings));
+    const forms = React.useRef([]);
+    const dockforms = React.useRef([]);
 
     const activeChildId = useSelector((state) => state.childForms[formData.id]?.openedChildren[0]);
     const activeSubChild = useSelector((state) => state.childForms[activeChildId]?.children.find(p => p.id === (state.childForms[activeChildId].activeChildren[0])));
@@ -120,9 +185,23 @@ function Dock(props, ref) {
         }
     }, [flexLayoutModel, activeSubChild, formData, sessionManager, plugins, t]);
 
+    const onDockModelChange = () => {
+        var json = flexLayoutModel.toJson();
+        var border = json?.borders?.find(b => b.location === 'left');
+        if (border && formLayout?.layout) {
+            if (border.selected === 0) {
+                formLayout.layout.selected = 0;
+            }
+            else {
+                formLayout.layout.selected = -1;
+            }
+        }
+        dispatch(setFormLayout(formData.id, formLayout));
+    }
+
     return (
         <div>
-            <FlexLayout.Layout model={flexLayoutModel} factory={factory} />
+            <FlexLayout.Layout model={flexLayoutModel} factory={factory} onModelChange={onDockModelChange} i18nMapper={translator} />
         </div>);
 }
 export default Dock = React.forwardRef(Dock); // eslint-disable-line

@@ -8,12 +8,19 @@
     "presentationList": {
       "type": "left",
       "component": "PresentationList",
-      "label": "Презентации"
+      "label": "Презентации",
+      "weight": 40,
+      "order": 30,
+      "WMWname": "dockPresentationsManagerSidePanel"
+
     },
     "dockParametersList": {
       "type": "left",
       "component": "ParametersList",
-      "label": "Параметры"
+      "label": "Параметры",
+      "weight": 50,
+      "order": 10,
+      "WMWname": "dockGlobalParameterListSidePanel"
     },
     "downloadFiles": {
       "type": "right",
@@ -30,7 +37,10 @@
     "gridParametersList": {
       "type": "left",
       "component": "ParametersList",
-      "label": "Параметры презентации"
+      "label": "Параметры презентации",
+      "weight": 10,
+      "order": 20,
+      "WMWname": "gridPresentationParameterListSidePanel"
     }
   },
   "DataSet": {

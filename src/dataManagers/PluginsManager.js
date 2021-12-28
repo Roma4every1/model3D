@@ -20,6 +20,25 @@ export default function createPluginsManager(store) {
                     }
                 })
             }
+            else if (pluginsSettings[formName][pluginName].type === "left") {
+                configToSave[pluginsSettings[formName][pluginName].type].push({
+                    "type": "tabset",
+                    "order": pluginsSettings[formName][pluginName].order,
+                    "WMWname": pluginsSettings[formName][pluginName].WMWname,
+                    "selected": 0,
+                    "weight": pluginsSettings[formName][pluginName].weight,
+                    "children": [{
+                        "enableDrag": true,
+                        "type": "tab",
+                        "name": pluginsSettings[formName][pluginName].label,
+                        "component": {
+                            "id": pluginName,
+                            "form": formName,
+                            "path": pluginsSettings[formName][pluginName].component
+                        }
+                    }]
+                })
+            }
             else {
                 configToSave[pluginsSettings[formName][pluginName].type].push({
                     "enableDrag": false,

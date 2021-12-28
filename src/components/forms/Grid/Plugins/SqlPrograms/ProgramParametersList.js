@@ -45,7 +45,7 @@ export default function ProgramParametersList(props) {
         else {
             handleProcessing(false);
         }
-    }, [programDisplayName, sessionId, sessionManager, formId, t]);
+    }, [programDisplayName, sessionId, sessionManager, handleProcessing, t]);
 
     const runReport = React.useCallback(async () => {
         handleProcessing(true);
@@ -70,7 +70,7 @@ export default function ProgramParametersList(props) {
             }
         });
         watchOperation(data);
-    }, [watchOperation, sessionId, formId, presentationId, formParams, sessionManager, dispatch, programDisplayName, t]);
+    }, [watchOperation, sessionId, formId, presentationId, formParams, sessionManager, dispatch, programDisplayName, handleProcessing, t]);
 
     const handleRun = () => {
         handleClose();

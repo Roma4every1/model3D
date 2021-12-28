@@ -1,13 +1,12 @@
 ﻿import React from 'react';
 import { useDispatch } from 'react-redux';
-import { useTranslation } from 'react-i18next';
+import translator from '../../common/LayoutTranslator';
 import setActiveChildren from '../../../store/actionCreators/setActiveChildren';
 import setOpenedChildren from '../../../store/actionCreators/setOpenedChildren';
 import setFormLayout from '../../../store/actionCreators/setFormLayout';
 import FlexLayout from "flexlayout-react";
 
 export default function Container(props) {
-    const { t } = useTranslation();
     const dispatch = useDispatch();
     const { modelJson } = props;
 
@@ -43,35 +42,6 @@ export default function Container(props) {
     const factory = (node) => {
         var component = node.getComponent();
         return component;
-    }
-
-    const translator = (text, parameter) => {
-        if (text === "Move: ") {
-            return t('flexlayout.move') + parameter;
-        }
-        else if (text === "Hidden tabs") {
-            return t('flexlayout.hiddenTabs');
-        }
-        else if (text === "Restore tabset") {
-            return t('flexlayout.restoreTabset');
-        }
-        else if (text === "Maximize tabset") {
-            return t('flexlayout.maximizeTabset');
-        }
-        else if (text === "Close") {
-            return t('flexlayout.close');
-        }
-        else if (text === "ErroRendering component") {
-            return t('flexlayout.error');
-        }
-        else {
-            if (parameter) {
-                return text + parameter;
-            }
-            else {
-                return text;
-            }
-        }
     }
 
     return (

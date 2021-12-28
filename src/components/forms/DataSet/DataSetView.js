@@ -465,35 +465,6 @@ function DataSetView(props, ref) {
         [EDIT_FIELD]: idGetter(item) === editID
     }));
 
-    const calculateWidth = (headerName, field) => {
-        if (tableSettings && tableSettings.columns) {
-            var columnSetting = tableSettings.columns.columnsSettings.find(s => s.channelPropertyName === field);
-            if (columnSetting) {
-                if (columnSetting.width && columnSetting.width !== 1) {
-                    return columnSetting.width;
-                }
-            }
-        }
-        let maxWidth = calculateSize(headerName, {
-            font: "Arial",
-            fontSize: "14px",
-        }).width + 10;
-        tableData.rowsJSON.forEach((item) => {
-            var value = item[field];
-            if (value instanceof Date) {
-                value = value.toLocaleDateString()
-            }
-            const size = calculateSize(value, {
-                font: "Arial",
-                fontSize: "14px",
-            }); // pass the font properties based on the application
-            if (size.width > maxWidth) {
-                maxWidth = size.width;
-            }
-        });
-        return maxWidth + 20;
-    };
-
     const getEditorType = (column) => {
         var result = {};
         if (inputTableData.properties) {
@@ -672,16 +643,47 @@ function DataSetView(props, ref) {
 
     const _ref = React.useRef();
 
-    const drawColumn = column => <Column
-        locked={column.locked}
-        key={column.field}
-        field={column.field}
-        title={column.headerName}
-        width={calculateWidth(column.headerName, column.field)}
-        format={getFormat(column)}
-        filter={getFilterByType(column)}
-        columnMenu={(props) => getColumnMenuByType(column, props)}
-    />
+    const drawColumn = React.useCallback(column => {
+        const calculateWidth = (headerName, field) => {
+            if (tableSettings && tableSettings.columns) {
+                var columnSetting = tableSettings.columns.columnsSettings.find(s => s.channelPropertyName === field);
+                if (columnSetting) {
+                    if (columnSetting.width && columnSetting.width !== 1) {
+                        return columnSetting.width;
+                    }
+                }
+            }
+            let maxWidth = calculateSize(headerName, {
+                font: "Arial",
+                fontSize: "14px",
+            }).width + 10;
+            tableData.rowsJSON.forEach((item) => {
+                var value = item[field];
+                if (value instanceof Date) {
+                    value = value.toLocaleDateString()
+                }
+                const size = calculateSize(value, {
+                    font: "Arial",
+                    fontSize: "14px",
+                }); // pass the font properties based on the application
+                if (size.width > maxWidth) {
+                    maxWidth = size.width;
+                }
+            });
+            return maxWidth + 20;
+        };
+
+        return <Column
+            locked={column.locked}
+            key={column.field}
+            field={column.field}
+            title={column.headerName}
+            width={calculateWidth(column.headerName, column.field)}
+            format={getFormat(column)}
+            filter={getFilterByType(column)}
+            columnMenu={(props) => getColumnMenuByType(column, props)}
+        />
+    }, [tableSettings, tableData]);
 
     React.useEffect(() => {
         var groupingData = [];
@@ -710,7 +712,7 @@ function DataSetView(props, ref) {
             }
         });
         setColumnGroupingData(groupingData);
-    }, [tableData]);
+    }, [tableData, drawColumn, tableSettings]);
 
     if (columnGroupingData.length > 0) {
         return (
