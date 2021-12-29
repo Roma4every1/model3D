@@ -1,14 +1,17 @@
 ﻿import React from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
     Button,
     Toolbar
 } from "@progress/kendo-react-buttons";
+import setFormLayout from '../../../../store/actionCreators/setFormLayout';
 
-export default function Menu() {
+export default function Menu(props) {
     const { t } = useTranslation();
+    const dispatch = useDispatch();
     const sessionManager = useSelector((state) => state.sessionManager);
+    const { formId } = props;
 
     const handleVersion = () => {
         let json = require('../../../../../package.json');
@@ -21,6 +24,25 @@ export default function Menu() {
 
     const loadSessionByDefault = () => {
         sessionManager.loadSessionByDefault();
+    }
+
+    const plugins = useSelector((state) => state.layout["plugins"]);
+    const formLayout = useSelector((state) => state.layout[formId]);
+
+    const handlePresentationParameters = () => {
+        if (formLayout) {
+            var plugin = plugins.left.find(p => p.WMWname === 'gridPresentationParameterListSidePanel');
+            var settings = {
+                global: {
+                    rootOrientationVertical: true
+                },
+                layout: {
+                    "type": "row",
+                    "children": [...formLayout.layout.children, plugin].sort((a, b) => a.order - b.order)
+                }
+            }
+            dispatch(setFormLayout(formId, settings));
+        }
     }
 
     return (
@@ -37,6 +59,9 @@ export default function Menu() {
                 </Button>
                 <Button className="actionbutton">
                     {t('menucommands.log')}
+                </Button>
+                <Button className="actionbutton" onClick={handlePresentationParameters}>
+                    {t('base.presentationParameters')}
                 </Button>
             </Toolbar>
         </div>);
