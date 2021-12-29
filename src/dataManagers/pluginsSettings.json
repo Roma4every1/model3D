@@ -62,7 +62,7 @@
     "statistics": {
       "type": "strip",
       "component": "Statistics",
-      "label": "Статістіка"
+      "label": "Статистика"
     }
   }
 }

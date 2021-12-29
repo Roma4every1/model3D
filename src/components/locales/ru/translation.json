@@ -84,6 +84,7 @@
   },
   "table": {
     "areYouSureToDeleteRows": "Вы уверены, что хотите удалить строки (к-во: {{count}})?",
+    "columnsVisibility": "Видимость",
     "deleteRowsHeader": "Удаление строк",
     "linkedTable": "Привязанная таблица",
     "showDetailInfo": "Показать детальную информацию"

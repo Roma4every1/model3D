@@ -128,6 +128,9 @@ function DataSet(props, ref) {
         activeCell: () => {
             return _viewRef.current.activeCell();
         },
+        properties: () => {
+            return databaseData?.properties;
+        },
         tableId: () => {
             return databaseData.tableId;
         }

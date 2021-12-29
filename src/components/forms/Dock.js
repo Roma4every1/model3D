@@ -34,7 +34,8 @@ function Dock(props, ref) {
         }
     });
 
-    const leftBorderModel = useSelector((state) => FlexLayout.Model.fromJson(state.layout[formData.id] ?? leftBorderSettings));
+    const leftBorderApplySettings = useSelector((state) => state.layout[formData.id] ?? leftBorderSettings);
+    const leftBorderModel = FlexLayout.Model.fromJson(leftBorderApplySettings);
 
     const onModelChange = React.useCallback(() => {
         var json = leftBorderModel.toJson();
@@ -142,7 +143,7 @@ function Dock(props, ref) {
                             if (plugin) {
                                 ch.children[0].component = plugin.children[0].component;
                                 ch.children[0].name = plugin.children[0].name;
-                              //  ch.order = plugin.order;
+                                //  ch.order = plugin.order;
                                 newChildren.push(ch);
                             }
                         }

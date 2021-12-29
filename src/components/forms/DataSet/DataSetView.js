@@ -466,6 +466,10 @@ function DataSetView(props, ref) {
     }));
 
     const getEditorType = (column) => {
+        if (!column)
+        {
+            return "string";
+        }
         var result = {};
         if (inputTableData.properties) {
             const property = _.find(inputTableData.properties, function (o) { return o.name === column.field; });
@@ -613,7 +617,7 @@ function DataSetView(props, ref) {
             editable={editable}
             originalProps={props}
             td={td}
-            editor={getEditorType(tableData.columnsJSON[props.columnIndex])}
+            editor={getEditorType(tableData.columnsJSON.find(col => col.field === props.field))}
             enterEdit={enterEdit}
             setActiveCell={setActiveCell}
             editField={editField}

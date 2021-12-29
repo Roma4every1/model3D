@@ -40,7 +40,7 @@ export default function LocalFormParametersList(props) {
                 <span className="k-icon k-i-menu" />
             </button>
             <Popup
-                id={popoverState.id}
+                id={formId.id}
                 show={popoverState.open}
                 anchor={popoverState.anchorEl}
             >

@@ -263,3 +263,8 @@ html {
 .k-animation-container {
     z-index: 10003
 }
+
+.popuptreeview {
+    font-size: 12px;
+    max-height: 60vh;
+}
