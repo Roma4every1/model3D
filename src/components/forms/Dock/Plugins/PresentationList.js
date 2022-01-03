@@ -15,7 +15,7 @@ export default function PresentationList(props) {
         formsJSON: [],
         loading: true
     });
-    const activeChild = useSelector((state) => state.childForms[formId].activeChildren[0]);
+    const activeChild = useSelector((state) => state.childForms[formId]?.activeChildren[0]);
 
     const selectionChanged = (value) => {
         dispatch(setActiveChildren(formId, [value.item.id]));

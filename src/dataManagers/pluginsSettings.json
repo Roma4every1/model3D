@@ -64,5 +64,17 @@
       "component": "Statistics",
       "label": "Статистика"
     }
+  },
+  "Map": {
+    "mapToFullViewport": {
+      "type": "strip",
+      "component": "MapToFullViewport",
+      "label": "Центрирование карты"
+    },
+    "dimensions": {
+      "type": "strip",
+      "component": "Dimensions",
+      "label": "Центр и масштаб карты"
+    }
   }
 }

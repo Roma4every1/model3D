@@ -12,9 +12,12 @@ function Map(props, ref) {
     const [mapId, setMapId] = React.useState(null);
     const [mapData, setMapData] = React.useState(null);
 
-    const [scale, setScale] = React.useState(100000);
+    const [centerScale, setCenterScale] = React.useState({
+        scale: 100000,
+        centerx: 0,
+        centery: 0
+    });
     const [mousedown, setmousedown] = React.useState(false);
-    const [centerPoint, setCenterPoint] = React.useState({});
     const [tempPoint, setTempPoint] = React.useState({});
 
     var drawer = React.useRef(null);
@@ -224,9 +227,10 @@ function Map(props, ref) {
                     var centerX = (bounds.min.x + bounds.max.x) / 2;
                     var centerY = (bounds.min.y + bounds.max.y) / 2;
 
-                    setCenterPoint({
-                        x: centerX,
-                        y: centerY
+                    setCenterScale({
+                        scale: centerScale.scale,
+                        centerx: centerX,
+                        centery: centerY
                     });
 
                     mapData.mapErrors = [];
@@ -247,12 +251,12 @@ function Map(props, ref) {
         return () => { ignore = true; }
     }, [mapData, formData, sessionId, sessionManager]);
 
-    const updateCanvas = () => {
-        drawer.current.showMap(_viewRef.current, mapData, {
-            scale: scale,
-            centerx: centerPoint.x,
-            centery: centerPoint.y
-        });
+    const updateCanvas = (cs) => {
+        setCenterScale(cs);
+        if (centerScaleChangingHandler.current) {
+            centerScaleChangingHandler.current(cs);
+        }
+        drawer.current.showMap(_viewRef.current, mapData, cs);
     }
 
     const onMouseMove = (event) => {
@@ -274,24 +278,60 @@ function Map(props, ref) {
     }
 
     const moveAt = (pageX, pageY) => {
-        setCenterPoint({
-            x: centerPoint.x + (tempPoint.x - pageX) * scale / 3870,
-            y: centerPoint.y + (tempPoint.y - pageY) * scale / 3870
-        })
+        var newCenterPoint = {
+            scale: centerScale.scale,
+            centerx: centerScale.centerx + (tempPoint.x - pageX) * centerScale.scale / 3870,
+            centery: centerScale.centery + (tempPoint.y - pageY) * centerScale.scale / 3870
+        };
         setTempPoint({
             x: pageX,
             y: pageY
         });
-        updateCanvas();
+        updateCanvas(newCenterPoint);
     }
 
     const wheel = (e) => {
-        setScale(scale + e.deltaY * scale / 2000);
-        updateCanvas();
+        var newScale = centerScale.scale + e.deltaY * centerScale.scale / 2000;
+        var newCenterPoint = {
+            scale: newScale,
+            centerx: centerScale.centerx,
+            centery: centerScale.centery
+        };
+        updateCanvas(newCenterPoint);
     }
 
     const _viewRef = React.useRef(null);
     const _div = React.useRef(null);
+    const centerScaleChangingHandler = React.useRef(null);
+
+    const toFullViewport = () => {
+        _viewRef.current.height = _div.current.clientHeight;
+        _viewRef.current.width = _div.current.clientWidth;
+
+        var bounds = mapData.layers[0].bounds
+        var centerX = (bounds.min.x + bounds.max.x) / 2;
+        var centerY = (bounds.min.y + bounds.max.y) / 2;
+
+        var newCenterPoint = {
+            scale: centerScale.scale,
+            centerx: centerX,
+            centery: centerY
+        };
+        updateCanvas(newCenterPoint);
+    };
+
+    React.useImperativeHandle(ref, () => ({
+        toFullViewport: () => {
+            toFullViewport();
+        },
+        updateCanvas: (cs) => {
+            updateCanvas(cs);
+        },
+        subscribeOnCenterScaleChanging: (changing) => {
+            centerScaleChangingHandler.current = changing;
+            changing(centerScale);
+        }
+    }));
 
     return (
         <div ref={_div} style={{ width: "100%", height: "100%" }}>
