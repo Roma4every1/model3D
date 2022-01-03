@@ -59,6 +59,11 @@
       "component": "ColumnSettings",
       "label": "Настройки колонок"
     },
+    "columnsVisibility": {
+      "type": "strip",
+      "component": "ColumnsVisibility",
+      "label": "Видимость колонок"
+    },
     "statistics": {
       "type": "strip",
       "component": "Statistics",

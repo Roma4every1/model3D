@@ -7,7 +7,7 @@ export default function IntegerTextEditor(props) {
 
     return (
         <NumericTextBox className='parametereditor'
-            value={parseInt(value)}
+            value={parseFloat(value)}
             name={props.id}
             onChange={props.selectionChanged}
         />

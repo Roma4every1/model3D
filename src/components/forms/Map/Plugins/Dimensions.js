@@ -22,7 +22,7 @@ export default function Dimensions(props) {
 
     React.useEffect(() => {
         formRef.current.subscribeOnCenterScaleChanging(setCenterScale);
-    });
+    }, [formRef]);
 
     const xChanged = (event) => {
         var newCenterScale = {

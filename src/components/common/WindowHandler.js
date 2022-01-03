@@ -21,7 +21,7 @@ export default function WindowHandler() {
     };
 
     const handleSave = () => {
-        var blob = new Blob([windowData.text], { type: "text/plain;charset=utf-8" });
+        var blob = new Blob([windowData.text.replaceAll('\n', '\r\n')], { type: "text/plain;charset=utf-8" });
         saveAs(
             blob,
             windowData.fileToSaveName);

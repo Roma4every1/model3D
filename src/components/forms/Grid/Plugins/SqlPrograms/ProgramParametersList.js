@@ -2,14 +2,11 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-    Dialog,
-    DialogActionsBar
+    Dialog
 } from "@progress/kendo-react-dialogs";
-import {
-    Button
-} from "@progress/kendo-react-buttons";
 import updateParam from "../../../../../store/actionCreators/updateParam";
 import FormParametersList from '../../../../common/FormParametersList';
+import ProgramaPrametersButton from './ProgramParametersButton';
 
 export default function ProgramParametersList(props) {
     const { t } = useTranslation();
@@ -23,11 +20,10 @@ export default function ProgramParametersList(props) {
         return () => { sessionManager.paramsManager.getCanRunReport(null); }
     }, [formId, sessionManager]);
 
-    const canRunReport = useSelector((state) => state.canRunReport);
     const formParams = useSelector((state) => state.formParams[formId]);
 
     const watchOperation = React.useCallback((data) => {
-        if (data.OperationId) {
+        if (data?.OperationId) {
             const getResult = async () => {
                 sessionManager.watchReport(data.OperationId);
                 var reportResult = await sessionManager.fetchData(`getOperationResult?sessionId=${sessionId}&operationId=${data.OperationId}&waitResult=true`);
@@ -35,7 +31,7 @@ export default function ProgramParametersList(props) {
                     sessionManager.channelsManager.updateTables(reportResult.report.ModifiedTables.ModifiedTables);
                 }
                 if (reportResult?.reportLog) {
-                    sessionManager.handleWindowInfo(<div>{reportResult.reportLog}</div>, null, t("report.result"), programDisplayName + ".log");
+                    sessionManager.handleWindowInfo(reportResult.reportLog, null, t("report.result"), programDisplayName + ".log");
                 }
                 watchOperation(reportResult);
                 return reportResult;
@@ -60,7 +56,7 @@ export default function ProgramParametersList(props) {
         if (data?.ModifiedTables?.ModifiedTables) {
             sessionManager.channelsManager.updateTables(data.ModifiedTables.ModifiedTables);
         }
-        if (data.ReportResult) {
+        if (data?.ReportResult) {
             sessionManager.handleWindowInfo(data.ReportResult, null, t("report.result"), programDisplayName + ".log");
         }
         formParams.forEach(param => {
@@ -72,22 +68,10 @@ export default function ProgramParametersList(props) {
         watchOperation(data);
     }, [watchOperation, sessionId, formId, presentationId, formParams, sessionManager, dispatch, programDisplayName, handleProcessing, t]);
 
-    const handleRun = () => {
-        handleClose();
-        runReport();
-    }
-
     return (
         <Dialog title={t('report.params')} onClose={handleClose} initialHeight={350}>
             <FormParametersList formId={formId} />
-            <DialogActionsBar>
-                <Button className="actionbutton" primary={canRunReport} disabled={!canRunReport} onClick={handleRun}>
-                    {t('base.run')}
-                </Button>
-                <Button className="actionbutton" onClick={handleClose}>
-                    {t('base.cancel')}
-                </Button>
-            </DialogActionsBar>
+            <ProgramaPrametersButton formId={formId} runReport={runReport} handleClose={handleClose} />
         </Dialog>
     );
 }

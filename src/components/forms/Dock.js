@@ -130,39 +130,39 @@ function Dock(props, ref) {
         return dockforms.current[formData.id];
     }, [formData, t, leftBorderModel, onModelChange]);
 
-    React.useEffect(() => {
-        let ignore = false;
-        async function fetchData() {
-            const data = await sessionManager.fetchData(`getFormLayout?sessionId=${sessionId}&formId=${formData.id}`);
-            if (!ignore) {
-                if (data.layout && data.layout.children) {
-                    var newChildren = [];
-                    data.layout.children.forEach(ch => {
-                        if (ch.selected !== -1) {
-                            var plugin = plugins.left?.find(pl => (ch.children[0].id === formData.id + ',' + pl.WMWname));
-                            if (plugin) {
-                                ch.children[0].component = plugin.children[0].component;
-                                ch.children[0].name = plugin.children[0].name;
-                                //  ch.order = plugin.order;
-                                newChildren.push(ch);
-                            }
-                        }
-                    });
-                    if (newChildren.length > 0) {
-                        data.layout.children = newChildren;
-                        dispatch(setFormLayout(formData.id, data));
-                    }
-                    var leftBorder = layoutSettings.borders.find(b => b.location === 'left');
-                    if (leftBorder) {
-                        leftBorder.selected = data.layout.selected;
-                    }
-                    setFlexLayoutModel(FlexLayout.Model.fromJson(layoutSettings));
-                }
-            }
-        }
-        fetchData();
-        return () => { ignore = true; }
-    }, [sessionId, formData, dispatch, plugins, sessionManager, layoutSettings]);
+    // React.useEffect(() => {
+    //     let ignore = false;
+    //     async function fetchData() {
+    //         const data = await sessionManager.fetchData(`getFormLayout?sessionId=${sessionId}&formId=${formData.id}`);
+    //         if (!ignore) {
+    //             if (data.layout && data.layout.children) {
+    //                 var newChildren = [];
+    //                 data.layout.children.forEach(ch => {
+    //                     if (ch.selected !== -1) {
+    //                         var plugin = plugins.left?.find(pl => (ch.children[0].id === formData.id + ',' + pl.WMWname));
+    //                         if (plugin) {
+    //                             ch.children[0].component = plugin.children[0].component;
+    //                             ch.children[0].name = plugin.children[0].name;
+    //                             //  ch.order = plugin.order;
+    //                             newChildren.push(ch);
+    //                         }
+    //                     }
+    //                 });
+    //                 if (newChildren.length > 0) {
+    //                     data.layout.children = newChildren;
+    //                     dispatch(setFormLayout(formData.id, data));
+    //                 }
+    //                 var leftBorder = layoutSettings.borders.find(b => b.location === 'left');
+    //                 if (leftBorder) {
+    //                     leftBorder.selected = data.layout.selected;
+    //                 }
+    //                 setFlexLayoutModel(FlexLayout.Model.fromJson(layoutSettings));
+    //             }
+    //         }
+    //     }
+    //     fetchData();
+    //     return () => { ignore = true; }
+    // }, [sessionId, formData, dispatch, plugins, sessionManager, layoutSettings]);
 
     const [flexLayoutModel, setFlexLayoutModel] = React.useState(FlexLayout.Model.fromJson(layoutSettings));
     const forms = React.useRef([]);
