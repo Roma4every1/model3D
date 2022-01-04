@@ -1,4 +1,5 @@
 ﻿import setChannelsData from "../store/actionCreators/setChannelsData";
+import setChannelsLoading from "../store/actionCreators/setChannelsLoading";
 import i18n from '../i18n';
 var _ = require("lodash");
 
@@ -79,6 +80,7 @@ export default function createChannelsManager(store) {
         var neededParamValues = store.getState().sessionManager.paramsManager.getParameterValues(channelsParams[channelName], formId, false, channelName);
         var changed = force || !channelsParamsValues[channelName] || !equalParams(channelsParamsValues[channelName], neededParamValues.map(np => np.value));
         if (changed) {
+            store.dispatch(setChannelsLoading(channelName, true));
             channelsParamsValues[channelName] = neededParamValues.map(np => np.value);
 
             const channelData = await loadChannelData(channelName, neededParamValues);
@@ -129,6 +131,7 @@ export default function createChannelsManager(store) {
                 }
                 store.dispatch(setChannelsData(channelName, channelData));
             }
+            store.dispatch(setChannelsLoading(channelName, false));
         }
         return changed;
     }
@@ -200,7 +203,9 @@ export default function createChannelsManager(store) {
         for (var channelName in allChannelsForms) {
             for (var formId in allChannelsForms[channelName]) {
                 if (allChannelsForms[channelName][formId]) {
-                    await loadAllChannelData(channelName, formId, false);
+                    if (!store.getState().channelsLoading[channelName]?.loading) {
+                        await loadAllChannelData(channelName, formId, false);
+                    }
                 }
             }
         }

@@ -1,6 +1,7 @@
 ﻿import { combineReducers } from 'redux'
 import canRunReport from './canRunReport';
 import channelsData from './channelsData';
+import channelsLoading from './channelsLoading';
 import childForms from './childForms';
 import formRefs from './formRefs';
 import formParams from './formParams';
@@ -14,6 +15,7 @@ import windowData from './windowData';
 const rootReducer = combineReducers({
     canRunReport,
     channelsData,
+    channelsLoading,
     childForms,
     formRefs,
     formParams,

@@ -49,12 +49,19 @@ export default function createParamsManager(store) {
     }
 
     const setDefaultParamValue = (formId, param) => {
-        if (param.externalChannelName && !param.canBeNull && !param.value) {
-            const externalChannelData = store.getState().channelsData[param.externalChannelName];
-            const externalChannelDataRows = externalChannelData?.data?.Rows;
-            if (externalChannelDataRows && externalChannelDataRows.length > 0) {
-                const newValue = utils.tableRowToString(externalChannelData, externalChannelDataRows[0]);
-                updateParamValue(formId, param.id, newValue.value, true);
+        const externalChannelLoading = store.getState().channelsLoading[param.externalChannelName]?.loading;
+
+        if (param.externalChannelName && !param.canBeNull) {
+            if (!param.value && !externalChannelLoading) {
+                const externalChannelData = store.getState().channelsData[param.externalChannelName];
+                const externalChannelDataRows = externalChannelData?.data?.Rows;
+                if (externalChannelDataRows && externalChannelDataRows.length > 0) {
+                    const newValue = utils.tableRowToString(externalChannelData, externalChannelDataRows[0]);
+                    updateParamValue(formId, param.id, newValue.value, true);
+                }
+            }
+            else if (param.value && externalChannelLoading) {
+                updateParamValue(formId, param.id, null, true);
             }
         }
     }
