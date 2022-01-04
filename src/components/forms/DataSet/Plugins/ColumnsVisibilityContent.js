@@ -18,22 +18,8 @@ export default function ColumnsVisibilityContent(props) {
         ids: [],
         applyCheckIndeterminate: true,
     });
+    const onChange = React.useRef(false);
 
-    const setChecking = (col, index, indices) => {
-        if (col.items) {
-            col.items.forEach((item, innerIndex) => {
-                setChecking(item, index + '_' + innerIndex, indices);
-            });
-        }
-        else {
-            const checked = (tableSettings?.attachedProperties?.attachOption !== "AttachNothing") ?
-                !tableSettings?.attachedProperties?.exclude.includes(col.id) :
-                tableSettings?.attachedProperties?.exclude.includes(col.id);
-            if (checked) {
-                indices.push(index);
-            }
-        }
-    };
 
     const getColumnForTree = (col, index) => {
         return {
@@ -44,6 +30,10 @@ export default function ColumnsVisibilityContent(props) {
     };
 
     React.useEffect(() => {
+        if (onChange.current) {
+            onChange.current = false;
+            return;
+        }
         var listData = [];
         var groupingData = [];
         if (formProperties) {
@@ -83,14 +73,19 @@ export default function ColumnsVisibilityContent(props) {
         setColumnListData(listData);
         setColumnGroupingData(groupingData);
         var indices = [];
-        groupingData.forEach((item, innerIndex) => {
-            setChecking(item, innerIndex + '', indices);
+        listData.forEach((item) => {
+            let visible = (tableSettings?.attachedProperties?.attachOption !== "AttachNothing") ?
+                !tableSettings?.attachedProperties?.exclude.includes(item.id) :
+                tableSettings?.attachedProperties?.exclude.includes(item.id);
+            if (visible) {
+                indices.push(item.index)
+            }
         });
         setCheck({
             ids: indices,
             applyCheckIndeterminate: true,
         });
-    }, [formProperties, setChecking]);
+    }, [formProperties, tableSettings]);
 
     const onCheckChange = (event) => {
         const settings = {
@@ -107,6 +102,7 @@ export default function ColumnsVisibilityContent(props) {
         else {
             tableSettings.attachedProperties.exclude = columnListData.filter(ti => newCheck.ids.includes(ti.index)).map(ti => ti.id);
         }
+        onChange.current = true;
         dispatch(setFormSettings(formId, { ...tableSettings }));
     };
 
