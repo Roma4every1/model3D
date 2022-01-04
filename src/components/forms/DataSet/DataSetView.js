@@ -223,9 +223,8 @@ function DataSetView(props, ref) {
         const dataD = sessionManager.channelsManager.getAllChannelParams(activeChannelName);
         var neededParamValues = sessionManager.paramsManager.getParameterValues(dataD, formData.id, false, activeChannelName);
         var settings = tableSettings?.columns;
-        if (settings)
-        {
-            settings = {...settings, columnsSettings: settings.columnsSettings.map(c => { return { ...c, isVisible: tableData.columnsJSON.some(cc => cc.field === c.channelPropertyName) } } ) };
+        if (settings) {
+            settings = { ...settings, columnsSettings: settings.columnsSettings.map(c => { return { ...c, isVisible: tableData.columnsJSON.some(cc => cc.field === c.channelPropertyName) } }) };
         }
         var jsonToSend = {
             sessionId: sessionId,
@@ -299,10 +298,9 @@ function DataSetView(props, ref) {
                 break;
             }
             case 'Delete': {
-                if (!event?.syntheticEvent?.target?.form?.className?.includes('filter'))
-                {
+                if (!event?.syntheticEvent?.target?.form?.className?.includes('filter')) {
                     if (editable && !(editID != null && editField) && _.countBy(Object.keys(selectedState), o => selectedState[o]).true > 0) {
-                       handleDeleteDialogOpen();
+                        handleDeleteDialogOpen();
                     }
                 }
                 break;
@@ -466,8 +464,7 @@ function DataSetView(props, ref) {
     }));
 
     const getEditorType = (column) => {
-        if (!column)
-        {
+        if (!column) {
             return "string";
         }
         var result = {};
@@ -625,12 +622,18 @@ function DataSetView(props, ref) {
     );
 
     const onColumnResize = (event) => {
+        const setWidth = c => {
+            var columnSetting = tableSettings.columns.columnsSettings.find(s => s.channelPropertyName === c.field);
+            if (columnSetting) {
+                columnSetting.width = c.width;
+            }
+            c.children?.forEach(cc => {
+                setWidth(cc);
+            });
+        }
         if (tableSettings && tableSettings.columns) {
             event.columns.forEach(c => {
-                var columnSetting = tableSettings.columns.columnsSettings.find(s => s.channelPropertyName === c.field);
-                if (columnSetting) {
-                    columnSetting.width = c.width;
-                }
+                setWidth(c);
             });
             dispatch(setFormSettings(formData.id, { ...tableSettings }));
         }
@@ -701,14 +704,14 @@ function DataSetView(props, ref) {
                     var trimPart = part.trim();
                     var parentArray = parent?.props?.children ?? groupingData;
                     parent = parentArray.find(p => p?.key === trimPart);
-                    var columnSetting = tableSettings?.columns?.ColumnGroupSettings?.find(setting => setting.columnGroupName === trimPart);                    
+                    var columnSetting = tableSettings?.columns?.ColumnGroupSettings?.find(setting => setting.columnGroupName === trimPart);
                     if (!parent) {
                         var children = [];
                         parent = <Column
                             key={trimPart}
                             title={columnSetting?.columnGroupDisplayName ?? trimPart}
                             children={children}>
-                            </Column>;
+                        </Column>;
                         parentArray.push(parent);
                     }
                 });
@@ -716,7 +719,7 @@ function DataSetView(props, ref) {
             }
         });
         setColumnGroupingData(groupingData);
-    }, [tableData, drawColumn, tableSettings]);
+    }, [tableData, drawColumn, tableSettings?.columns?.ColumnGroupSettings]);
 
     if (columnGroupingData.length > 0) {
         return (
