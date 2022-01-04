@@ -16,7 +16,7 @@ export const NumericCell = (props) => {
     return (
         <NumericTextBox
             onChange={handleChange}
-            value={parseFloat(props.dataValue)}
+            value={typeof(props.dataValue) == "string" ? parseFloat(props.dataValue.replaceAll(',', '.')) : props.dataValue}
         />
     );
 };
