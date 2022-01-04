@@ -301,7 +301,7 @@ function DataSetView(props, ref) {
             case 'Delete': {
                 if (!event?.syntheticEvent?.target?.form?.className?.includes('filter'))
                 {
-                    if (editable && !(editID && editField) && _.countBy(Object.keys(selectedState), o => selectedState[o]).true > 0) {
+                    if (editable && !(editID != null && editField) && _.countBy(Object.keys(selectedState), o => selectedState[o]).true > 0) {
                        handleDeleteDialogOpen();
                     }
                 }
