@@ -124,3 +124,21 @@ export const tableRowToString = (valuesToSelect, row) => {
     temp.value = valuestring;
     return temp
 }
+
+export const stringToTableRowId = (rowstring) => {
+
+    let stringvalue = String(rowstring);
+    const startIndex = stringvalue.indexOf('LOOKUPCODE#');
+    var finishIndex = stringvalue.indexOf('#', startIndex + 11);
+    let dataValue;
+    if (startIndex === -1) {
+        dataValue = stringvalue;
+    }
+    else if (finishIndex === -1) {
+        dataValue = stringvalue.slice(startIndex + 11);
+    }
+    else {
+        dataValue = stringvalue.slice(startIndex + 11, finishIndex);
+    }
+    return dataValue;
+}

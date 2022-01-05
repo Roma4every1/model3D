@@ -48,20 +48,34 @@ export default function createParamsManager(store) {
         return paramsToUse;
     }
 
+    var oldParamValues = [];
+
     const setDefaultParamValue = (formId, param) => {
         const externalChannelLoading = store.getState().channelsLoading[param.externalChannelName]?.loading;
-
         if (param.externalChannelName && !param.canBeNull) {
-            if (!param.value && !externalChannelLoading) {
+            if (!externalChannelLoading && oldParamValues[formId + '__' + param.id] !== null) {
+                let oldValue = oldParamValues[formId + '__' + param.id];
+                oldParamValues[formId + '__' + param.id] = null;
                 const externalChannelData = store.getState().channelsData[param.externalChannelName];
                 const externalChannelDataRows = externalChannelData?.data?.Rows;
+
                 if (externalChannelDataRows && externalChannelDataRows.length > 0) {
-                    const newValue = utils.tableRowToString(externalChannelData, externalChannelDataRows[0]);
-                    updateParamValue(formId, param.id, newValue.value, true);
+                    if (param.value) {
+                        const externalChannelDataRowsConverted = externalChannelDataRows.map(row => utils.tableRowToString(externalChannelData, row));
+                        let dataValue = utils.stringToTableRowId(oldValue);
+                        let oldValueInNewRows = _.find(externalChannelDataRowsConverted, row => String(row.id) === dataValue);
+                        if (oldValueInNewRows) {
+                            if (oldValueInNewRows.value !== oldValue) {
+                                updateParamValue(formId, param.id, oldValueInNewRows.value, true);
+                            }
+                            return;
+                        }
+                    }
+                    updateParamValue(formId, param.id, utils.tableRowToString(externalChannelData, externalChannelDataRows[0]).value, true);
                 }
             }
-            else if (param.value && externalChannelLoading) {
-                updateParamValue(formId, param.id, null, true);
+            else if (externalChannelLoading) {
+                oldParamValues[formId + '__' + param.id] = param.value ?? undefined;
             }
         }
     }

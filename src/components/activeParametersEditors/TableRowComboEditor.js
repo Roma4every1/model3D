@@ -35,20 +35,8 @@ export default function TableRowComboEditor(props) {
         }
 
         if (value) {
-            let stringvalue = String(value);
-            const startIndex = stringvalue.indexOf('LOOKUPCODE#');
-            var finishIndex = stringvalue.indexOf('#', startIndex + 11);
-            let dateValue;
-            if (startIndex === -1) {
-                dateValue = stringvalue;
-            }
-            else if (finishIndex === -1) {
-                dateValue = stringvalue.slice(startIndex + 11);
-            }
-            else {
-                dateValue = stringvalue.slice(startIndex + 11, finishIndex);
-            }
-            let calculatedValueToShow = _.find(values, function (o) { return String(o.id) === dateValue; });
+            let dataValue = utils.stringToTableRowId(value);
+            let calculatedValueToShow = _.find(values, o => String(o.id) === dataValue);
             if (calculatedValueToShow) {
                 valueToShow = calculatedValueToShow;
             }
