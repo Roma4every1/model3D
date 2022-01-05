@@ -627,9 +627,11 @@ function DataSetView(props, ref) {
             if (columnSetting) {
                 columnSetting.width = c.width;
             }
-            c.children?.forEach(cc => {
-                setWidth(cc);
-            });
+            if (c.children) {
+                c.children.forEach(cc => {
+                    setWidth(cc);
+                });
+            }
         }
         if (tableSettings && tableSettings.columns) {
             event.columns.forEach(c => {

@@ -80,7 +80,8 @@
     "result": "Program result"
   },
   "session": {
-    "loading": "Loading session..."
+    "loading": "Loading session...",
+    "systemList": "List of possible systems"
   },
   "table": {
     "areYouSureToDeleteRows": "Are you sure to delete rows (count: {{count}})?",
