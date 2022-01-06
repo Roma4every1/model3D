@@ -2,9 +2,6 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-    DialogActionsBar
-} from "@progress/kendo-react-dialogs";
-import {
     Button
 } from "@progress/kendo-react-buttons";
 
@@ -26,13 +23,8 @@ export default function ProgramParametersButton(props) {
     }
 
     return (
-        <DialogActionsBar>
-            <Button className="actionbutton" primary={canRunReport} disabled={!canRunReport} onClick={handleRun}>
-                {t('base.run')}
-            </Button>
-            <Button className="actionbutton" onClick={handleClose}>
-                {t('base.cancel')}
-            </Button>
-        </DialogActionsBar>
+        <Button className="actionbutton" primary={canRunReport} disabled={!canRunReport} onClick={handleRun}>
+            {t('base.run')}
+        </Button>
     );
 }

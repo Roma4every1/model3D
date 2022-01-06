@@ -89,19 +89,37 @@ export default function createChannelsManager(store) {
             }
             let idIndex = 0;
             let nameIndex = 0;
-            if (channelData && channelData.properties && channelData.data && channelData.data.Columns) {
-                channelData.properties.forEach(property => {
-                    if (property.name.toUpperCase() === 'LOOKUPCODE') {
-                        idIndex = _.findIndex(channelData.data.Columns, (o) => o.Name === property.fromColumn);
-                    }
-                    else if (property.name.toUpperCase() === 'LOOKUPVALUE') {
-                        nameIndex = _.findIndex(channelData.data.Columns, (o) => o.Name === property.fromColumn);
-                    }
-                });
+            let parentIndex = 0;
+            let codeColumnName = 'LOOKUPCODE';
+            let valueColumnName = 'LOOKUPVALUE';
+            let parentColumnName = 'LOOKUPPARENTCODE';
+            if (channelData?.properties)
+            {
+                let codePropertyColumnName = channelData.properties.find(p => p.name.toUpperCase() === codeColumnName);
+                let valuePropertyColumnName = channelData.properties.find(p => p.name.toUpperCase() === valueColumnName);
+                let parentPropertyColumnName = channelData.properties.find(p => p.name.toUpperCase() === parentColumnName);
+                if (codePropertyColumnName)
+                {
+                    codeColumnName = codePropertyColumnName.fromColumn.toUpperCase();
+                }
+                if (valuePropertyColumnName)
+                {
+                    valueColumnName = valuePropertyColumnName.fromColumn.toUpperCase();
+                }
+                if (parentPropertyColumnName) {
+                    parentColumnName = parentPropertyColumnName.fromColumn.toUpperCase();
+                }
+            }
+            if (channelData?.data?.Columns)
+            {
+                idIndex = _.findIndex(channelData.data.Columns, (o) => o.Name.toUpperCase() === codeColumnName);
+                nameIndex = _.findIndex(channelData.data.Columns, (o) => o.Name.toUpperCase() === valueColumnName);
+                parentIndex = _.findIndex(channelData.data.Columns, (o) => o.Name.toUpperCase() === parentColumnName);
             }
             if (channelData) {
                 channelData.idIndex = idIndex;
                 channelData.nameIndex = nameIndex;
+                channelData.parentIndex = parentIndex;
             }
             if (channelData && channelData.properties) {
                 if (!channelsExists) {

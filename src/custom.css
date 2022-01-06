@@ -202,6 +202,12 @@ html {
     width: 100%;
 }
 
+.parametereditorwithoutwidth {
+    float: right;
+    font-size: 12px;
+    height: 20px;
+}
+
 .parametereditorwithoutheight {
     float: right;
     font-size: 12px;
@@ -224,7 +230,11 @@ html {
     height: 100%;
 }
 
-.k-textbox, .k-dropdown .k-input, .k-datepicker .k-input, .k-dateinput .k-input, .k-numerictextbox .k-input {
+.dropdownPopup {
+    max-height: 40vh;
+}
+
+.k-textbox, .k-dropdown .k-input, .k-dropdowntree .k-input, .k-datepicker .k-input, .k-dateinput .k-input, .k-numerictextbox .k-input {
     height: 20px;
 }
 

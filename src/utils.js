@@ -125,6 +125,36 @@ export const tableRowToString = (valuesToSelect, row) => {
     return temp
 }
 
+export const tableCellToString = (valuesToSelect, row) => {
+
+    if (!row) {
+        return null;
+    }
+
+    const addParam = (column, rowValue) => {
+        var valuestring = '';
+        if (column.NetType === "System.DateTime" && rowValue != null) {
+            valuestring = dateToString(toDate(rowValue)) + '#' + column.NetType;
+        }
+        else if (rowValue != null) {
+            valuestring = rowValue + '#' + column.NetType;
+        }
+        else {
+            valuestring = '#System.DBNull';
+        }
+        return valuestring;
+    }
+    let temp = {};
+    temp.id = row.Cells[valuesToSelect.idIndex];
+    temp.name = row.Cells[valuesToSelect.nameIndex];
+    if (valuesToSelect.parentIndex >= 0) {
+        temp.parent = row.Cells[valuesToSelect.parentIndex];
+    }
+    var valuestring = addParam(valuesToSelect.data.Columns[valuesToSelect.idIndex], temp.id);
+    temp.value = valuestring;
+    return temp
+}
+
 export const stringToTableRowId = (rowstring) => {
 
     let stringvalue = String(rowstring);

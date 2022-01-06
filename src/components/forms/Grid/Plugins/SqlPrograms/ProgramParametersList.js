@@ -2,11 +2,15 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-    Dialog
+    Dialog,
+    DialogActionsBar
 } from "@progress/kendo-react-dialogs";
+import {
+    Button
+} from "@progress/kendo-react-buttons";
 import updateParam from "../../../../../store/actionCreators/updateParam";
 import FormParametersList from '../../../../common/FormParametersList';
-import ProgramaPrametersButton from './ProgramParametersButton';
+import ProgramParametersButton from './ProgramParametersButton';
 
 export default function ProgramParametersList(props) {
     const { t } = useTranslation();
@@ -71,7 +75,12 @@ export default function ProgramParametersList(props) {
     return (
         <Dialog title={t('report.params')} onClose={handleClose} initialHeight={350}>
             <FormParametersList formId={formId} />
-            <ProgramaPrametersButton formId={formId} runReport={runReport} handleClose={handleClose} />
+            <DialogActionsBar>
+                <ProgramParametersButton formId={formId} runReport={runReport} handleClose={handleClose} />
+                <Button className="actionbutton" onClick={handleClose}>
+                    {t('base.cancel')}
+                </Button>
+            </DialogActionsBar>
         </Dialog>
     );
 }
