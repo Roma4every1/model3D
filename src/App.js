@@ -16,6 +16,7 @@ export default function App() {
         <Router>
             <Routes>
                 <Route path="/" element={<SystemRouter />} />
+                <Route path={process.env.PUBLIC_URL} element={<SystemRouter />} />
                 <Route path="/*" element={<SystemRoot />} />
             </Routes>
         </Router>

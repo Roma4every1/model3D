@@ -64,12 +64,12 @@ export default function TableCellComboEditor(props) {
 
     const valuesToSelect = useSelector((state) => state.channelsData[externalChannelName]);
 
-    const findChildren = (localValues, valuesToSelect) => {
+    const findChildren = React.useCallback((localValues, valuesToSelect) => {
         localValues.forEach(v => {
             v.items = valuesToSelect.filter(row => row.parent === v.id);
             findChildren(v.items, valuesToSelect);
         })
-    };
+    }, []);
 
 
     React.useEffect(() => {
@@ -91,7 +91,7 @@ export default function TableCellComboEditor(props) {
             }
 
             if (value) {
-                let calculatedValueToShow = _.find(localValues, o => String(o.value) === value);
+                let calculatedValueToShow = _.find(valuesFromJSON, o => String(o.value) === value);
                 if (calculatedValueToShow) {
                     setValueToShow(calculatedValueToShow);
                 }
@@ -104,7 +104,7 @@ export default function TableCellComboEditor(props) {
             }
             setValues(localValues);
         }
-    }, [valuesToSelect]);
+    }, [valuesToSelect, findChildren, value]);
 
     const onExpandChange = React.useCallback(
         (event) => setExpanded(expandedState(event.item, dataItemKey, expanded)),

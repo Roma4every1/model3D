@@ -34,7 +34,7 @@ export default function SystemRouter() {
                 <ul>
                     {systemList.map(system =>
                         <li>
-                            <Link to={"/" + system.id}>{system.displayName ? system.displayName + ' (' + system.id + ')' : system.id}</Link>
+                            <Link to={window.location.pathname + system.id}>{system.displayName ? system.displayName + ' (' + system.id + ')' : system.id}</Link>
                         </li>
                     )}
                 </ul>

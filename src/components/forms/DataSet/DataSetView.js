@@ -721,7 +721,7 @@ function DataSetView(props, ref) {
             }
         });
         setColumnGroupingData(groupingData);
-    }, [tableData, drawColumn, tableSettings?.columns?.ColumnGroupSettings]);
+    }, [tableData, drawColumn, tableSettings.columns.ColumnGroupSettings]);
 
     if (columnGroupingData.length > 0) {
         return (
