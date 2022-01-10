@@ -16,7 +16,7 @@ export const BooleanCell = (props) => {
     return (
         <Input
             onChange={handleChange}
-            value={props.dataValue}
+            value={props.dataValue === 'true'}
         />
     );
 };

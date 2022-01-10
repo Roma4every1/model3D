@@ -306,7 +306,13 @@ function DataSetView(props, ref) {
                 break;
             }
             case 'Enter': {
-                if (edited) {
+                if (deleteDialogOpen)
+                {
+                    event.nativeEvent.preventDefault();
+                    handleDeleteDialogClose();
+                    deleteSelectedRows();
+                }
+                else if (edited) {
                     applyEdit();
                 }
                 break;

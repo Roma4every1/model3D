@@ -67,9 +67,7 @@ export default function createChannelsManager(store) {
     }
 
     const loadAllChannelData = async (channelName, formId, force) => {
-        let channelsExists = true;
         if (!allChannelsForms[channelName]) {
-            channelsExists = false;
             allChannelsForms[channelName] = [];
         }
         allChannelsForms[channelName][formId] = true;
@@ -93,25 +91,21 @@ export default function createChannelsManager(store) {
             let codeColumnName = 'LOOKUPCODE';
             let valueColumnName = 'LOOKUPVALUE';
             let parentColumnName = 'LOOKUPPARENTCODE';
-            if (channelData?.properties)
-            {
+            if (channelData?.properties) {
                 let codePropertyColumnName = channelData.properties.find(p => p.name.toUpperCase() === codeColumnName);
                 let valuePropertyColumnName = channelData.properties.find(p => p.name.toUpperCase() === valueColumnName);
                 let parentPropertyColumnName = channelData.properties.find(p => p.name.toUpperCase() === parentColumnName);
-                if (codePropertyColumnName)
-                {
+                if (codePropertyColumnName) {
                     codeColumnName = codePropertyColumnName.fromColumn.toUpperCase();
                 }
-                if (valuePropertyColumnName)
-                {
+                if (valuePropertyColumnName) {
                     valueColumnName = valuePropertyColumnName.fromColumn.toUpperCase();
                 }
                 if (parentPropertyColumnName) {
                     parentColumnName = parentPropertyColumnName.fromColumn.toUpperCase();
                 }
             }
-            if (channelData?.data?.Columns)
-            {
+            if (channelData?.data?.Columns) {
                 idIndex = _.findIndex(channelData.data.Columns, (o) => o.Name.toUpperCase() === codeColumnName);
                 nameIndex = _.findIndex(channelData.data.Columns, (o) => o.Name.toUpperCase() === valueColumnName);
                 parentIndex = _.findIndex(channelData.data.Columns, (o) => o.Name.toUpperCase() === parentColumnName);
@@ -122,31 +116,26 @@ export default function createChannelsManager(store) {
                 channelData.parentIndex = parentIndex;
             }
             if (channelData && channelData.properties) {
-                if (!channelsExists) {
-                    await Promise.all(
-                        channelData.properties.map(async (property) => {
-                            if (property.lookupChannelName) {
-                                const lookupChanged = await loadAllChannelData(property.lookupChannelName, formId, false);
-                                if (lookupChanged) {
-                                    changed = true;
-                                }
-                                const lookupChannelData = store.getState().channelsData[property.lookupChannelName];
-                                if (lookupChannelData && lookupChannelData.data) {
-                                    const lookupData = lookupChannelData.data.Rows.map((row) => {
-                                        let temp = {};
-                                        temp.id = row.Cells[lookupChannelData.idIndex];
-                                        temp.value = row.Cells[lookupChannelData.nameIndex] ?? '';
-                                        temp.text = row.Cells[lookupChannelData.nameIndex] ?? '';
-                                        return temp;
-                                    });
-                                    property.lookupData = lookupData;
-                                }
+                await Promise.all(
+                    channelData.properties.map(async (property) => {
+                        if (property.lookupChannelName) {
+                            const lookupChanged = await loadAllChannelData(property.lookupChannelName, formId, false);
+                            if (lookupChanged) {
+                                changed = true;
                             }
-                        }));
-                }
-                else if (store.getState().channelsData[channelName]) {
-                    channelData.properties = store.getState().channelsData[channelName].properties;
-                }
+                            const lookupChannelData = store.getState().channelsData[property.lookupChannelName];
+                            if (lookupChannelData && lookupChannelData.data) {
+                                const lookupData = lookupChannelData.data.Rows.map((row) => {
+                                    let temp = {};
+                                    temp.id = row.Cells[lookupChannelData.idIndex];
+                                    temp.value = row.Cells[lookupChannelData.nameIndex] ?? '';
+                                    temp.text = row.Cells[lookupChannelData.nameIndex] ?? '';
+                                    return temp;
+                                });
+                                property.lookupData = lookupData;
+                            }
+                        }
+                    }));
                 store.dispatch(setChannelsData(channelName, channelData));
             }
             store.dispatch(setChannelsLoading(channelName, false));
