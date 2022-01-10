@@ -441,8 +441,12 @@ function DataSetView(props, ref) {
     async function deleteSelectedRows() {
         var elementsToRemove = ',';
         var tableDataCopy = tableData;
-        Object.keys(selectedState).forEach(element => {
-            if (selectedState[element]) {
+        var selectedRows = Object.keys(selectedState).filter(element => selectedState[element]);
+        if (selectedRows.length === tableData.rowsJSON.length) {
+            await deleteRows(elementsToRemove, true);
+        }
+        else if (selectedRows.length > 0) {
+            selectedRows.forEach(element => {
                 elementsToRemove = elementsToRemove + element + ',';
                 const itemToDeleteIndex = tableDataCopy.rowsJSON.findIndex(item =>
                     String(idGetter(item)) === String(element)
@@ -450,9 +454,7 @@ function DataSetView(props, ref) {
                 if (itemToDeleteIndex !== -1) {
                     tableDataCopy.rowsJSON.splice(itemToDeleteIndex, 1);
                 }
-            }
-        });
-        if (elementsToRemove.length > 1) {
+            });
             setTableData({
                 rowsJSON: tableDataCopy.rowsJSON,
                 columnsJSON: tableDataCopy.columnsJSON

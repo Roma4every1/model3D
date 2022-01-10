@@ -13,7 +13,7 @@ export default function createParamsManager(store) {
         neededParamList.forEach(param => {
             var element = null;
             var currentFormId = formId;
-            while (!element) {
+            while (!element || (addToLocal && (currentFormId === utils.getParentFormId(formId)))) {
                 element = _.find(store.getState().formParams[currentFormId], function (o) { return o.id === param; });
                 if (currentFormId === '') {
                     break;
@@ -25,19 +25,28 @@ export default function createParamsManager(store) {
             }
             if (element && element.value !== undefined) {
                 if (addToLocal && (element.formId !== formId)) {
-                    var newElement = {
-                        id: element.id,
-                        formIdToLoad: element.formId,
-                        formId: formId,
-                        value: element.value,
-                        dependsOn: element.dependsOn,
-                        type: element.type,
-                        editorType: element.editorType,
-                        editorDisplayOrder: element.editorDisplayOrder,
-                        externalChannelName: element.externalChannelName,
-                        displayName: element.displayName
+                    let localelement = _.find(store.getState().formParams[formId], function (o) { return o.id === param; });
+                    if (localelement)
+                    {
+                        updateParamValue (formId, param, element.value, true);                        
                     }
-                    store.dispatch(addParam(formId, newElement));
+                    else
+                    {
+                        var newElement = {
+                            id: element.id,
+                            canBeNull: element.canBeNull,
+                            formIdToLoad: element.formId,
+                            formId: formId,
+                            value: element.value,
+                            dependsOn: element.dependsOn,
+                            type: element.type,
+                            editorType: element.editorType,
+                            editorDisplayOrder: element.editorDisplayOrder,
+                            externalChannelName: element.externalChannelName,
+                            displayName: element.displayName
+                        }
+                        store.dispatch(addParam(formId, newElement));
+                    }
                     paramsToUse.push(newElement);
                 }
                 else {

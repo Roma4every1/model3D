@@ -74,8 +74,8 @@ function DataSet(props, ref) {
         currentRowObjectName: databaseData?.currentRowObjectName
     };
 
-    async function deleteRows(elementsToRemove) {
-        await sessionManager.channelsManager.deleteRow(databaseData.tableId, elementsToRemove);
+    async function deleteRows(elementsToRemove, removeAll) {
+        await sessionManager.channelsManager.deleteRows(databaseData.tableId, elementsToRemove, removeAll);
     }
 
     async function apply(rowToInsert, editID, rowAdding) {

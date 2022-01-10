@@ -86,8 +86,8 @@ export default function createChannelsManager(store) {
                 updateTables(channelData.data.ModifiedTables.ModifiedTables, channelName);
             }
             let idIndex = 0;
-            let nameIndex = 0;
-            let parentIndex = 0;
+            let nameIndex = -1;
+            let parentIndex = -1;
             let codeColumnName = 'LOOKUPCODE';
             let valueColumnName = 'LOOKUPVALUE';
             let parentColumnName = 'LOOKUPPARENTCODE';
@@ -109,6 +109,9 @@ export default function createChannelsManager(store) {
                 idIndex = _.findIndex(channelData.data.Columns, (o) => o.Name.toUpperCase() === codeColumnName);
                 nameIndex = _.findIndex(channelData.data.Columns, (o) => o.Name.toUpperCase() === valueColumnName);
                 parentIndex = _.findIndex(channelData.data.Columns, (o) => o.Name.toUpperCase() === parentColumnName);
+                if (nameIndex < 0) {
+                    nameIndex = idIndex;
+                }
             }
             if (channelData) {
                 channelData.idIndex = idIndex;
@@ -194,9 +197,9 @@ export default function createChannelsManager(store) {
         updateTablesByResult(tableId, data);
     }
 
-    const deleteRow = async (tableId, elementsToRemove) => {
+    const deleteRows = async (tableId, elementsToRemove, removeAll) => {
         const sessionId = store.getState().sessionId;
-        const data = await store.getState().sessionManager.fetchData(`removeRows?sessionId=${sessionId}&tableId=${tableId}&rows=${elementsToRemove}`);
+        const data = await store.getState().sessionManager.fetchData(`removeRows?sessionId=${sessionId}&tableId=${tableId}&rows=${elementsToRemove}&removeAll=${!!removeAll}`);
         updateTablesByResult(tableId, data);
     }
 
@@ -225,7 +228,7 @@ export default function createChannelsManager(store) {
         updateTables,
         insertRow,
         updateRow,
-        deleteRow,
+        deleteRows,
         getStatistics,
         getNewRow,
         getAllChannelParams

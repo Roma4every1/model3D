@@ -33,7 +33,7 @@ export default function SystemRouter() {
                 <h2>{t('session.systemList')}</h2>
                 <ul>
                     {systemList.map(system =>
-                        <li>
+                        <li key={system.id}>
                             <Link to={window.location.pathname + system.id}>{system.displayName ? system.displayName + ' (' + system.id + ')' : system.id}</Link>
                         </li>
                     )}
