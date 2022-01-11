@@ -9,6 +9,7 @@ export default function TableRowComboEditor(props) {
     var values = [];
     var valueToShow = undefined;
     const value = useSelector((state) => state.formParams[formId].find((gp) => gp.id === id).value);
+    const sessionManager = useSelector((state) => state.sessionManager);
 
     const setNewValue = React.useCallback(
         (value, manual) => {
@@ -48,9 +49,23 @@ export default function TableRowComboEditor(props) {
             valueToShow = '';
         }
     }
+    else if (value) {
+        let dataId = utils.stringToTableCell(value, 'LOOKUPCODE');
+        let dataValue = utils.stringToTableCell(value, 'LOOKUPVALUE');
+        valueToShow = {
+            id: dataId,
+            name: dataValue,
+            value: value
+        };
+    }
+
+    const onOpen = () => {
+        sessionManager.channelsManager.loadAllChannelData(externalChannelName, formId, false);
+    };
 
     return (
         <ComboBox className='parametereditor'
+            onOpen={onOpen}
             suggest={true}
             name={id}
             data={values}

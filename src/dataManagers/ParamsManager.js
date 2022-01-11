@@ -102,7 +102,7 @@ export default function createParamsManager(store) {
             var jsonToSet = data.map(param => { var newParam = param; newParam.formId = formId; return newParam; });
             store.dispatch(setParams(formId, jsonToSet));
             data.forEach(async (param) => {
-                if (param.externalChannelName) {
+                if (param.externalChannelName && !param.canBeNull) {
                     store.getState().sessionManager.channelsManager.loadAllChannelData(param.externalChannelName, formId, false);
                 }
             });

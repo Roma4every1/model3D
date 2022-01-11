@@ -34,13 +34,13 @@ const processTreeData = (data, state, fields) => {
     );
   };
 
-  const expandedState = (item, dataItemKey, expanded) => {
+const expandedState = (item, dataItemKey, expanded) => {
     const nextExpanded = expanded.slice();
     const itemKey = item[dataItemKey];
     const index = expanded.indexOf(itemKey);
     index === -1 ? nextExpanded.push(itemKey) : nextExpanded.splice(index, 1);
     return nextExpanded;
-  };
+};
 
 export default function TableCellComboEditor(props) {
     const { id, formId, selectionChanged, externalChannelName } = props;
@@ -48,6 +48,7 @@ export default function TableCellComboEditor(props) {
     const [expanded, setExpanded] = React.useState([]);
     const [valueToShow, setValueToShow] = React.useState(undefined);
     const value = useSelector((state) => state.formParams[formId].find((gp) => gp.id === id).value);
+    const sessionManager = useSelector((state) => state.sessionManager);
 
     const setNewValue = React.useCallback(
         (value, manual) => {
@@ -62,6 +63,10 @@ export default function TableCellComboEditor(props) {
     );
 
     const valuesToSelect = useSelector((state) => state.channelsData[externalChannelName]);
+
+    React.useEffect(() => {
+        sessionManager.channelsManager.loadAllChannelData(externalChannelName, formId, false);
+    }, []);
 
     const findChildren = React.useCallback((localValues, valuesToSelect) => {
         localValues.forEach(v => {
@@ -108,6 +113,7 @@ export default function TableCellComboEditor(props) {
         (event) => setExpanded(expandedState(event.item, dataItemKey, expanded)),
         [expanded]
     );
+
     const treeData = React.useMemo(
         () =>
             processTreeData(
