@@ -24,52 +24,50 @@ load(
 
 export default function DateIntervalTextEditor(props) {
 
-    const value = useSelector((state) => state.formParams[props.formId].find((gp) => gp.id === props.id).value);
+    const getDefaultValue = (string) => {
+        try {
+            var index = string.indexOf(' - ');
+            if (index > 0) {
+                let startDateString = string.slice(0, index);
+                let finishDateString = string.slice(index + 3);
+                return {
+                    start: new Date(startDateString.replace(' \\d', '')),
+                    end: new Date(finishDateString.replace(' \\d', ''))
+                }
+            }
+            else {
+                return undefined;
+            }
+        }
+        catch {
+            return undefined;
+        }
+    }
 
-    const getValStr = (startdt, enddt) => {
-        if (startdt && enddt) {
-            return startdt.toLocaleDateString() + ' - ' + enddt.toLocaleDateString();
+    const date = getDefaultValue(props.value);
+    const [value, setValue] = React.useState(date);
+
+    const getValStr = (value) => {
+        if (value.start && value.end) {
+            return value.start.toLocaleDateString() + ' - ' + value.end.toLocaleDateString();
         }
         else {
             return '';
         }
     };
 
-    //get date from str
-    const get1dtVal = (dstr, posy, leny, posm, lenm, posd, lend, posh, lenh, posmi, lenmi, poss, lens) => {
-        return new Date(dstr.substr(posy, leny), dstr.substr(posm, lenm) - 1, dstr.substr(posd,lend), dstr.substr(posh,lenh), dstr.substr(posmi,lenmi), dstr.substr(poss,lens));
-    };
+    const changeValue = (localvalue) => {
+        var newevent = {};
+        newevent.target = {};
+        newevent.target.name = props.id;
+        newevent.target.value = getValStr(localvalue ?? value);
+        props.selectionChanged(newevent);
+    }
 
-    //get date interval from interval str
-    const getVal = (str) => {
-        const startYnat = 0;
-        const startMnat = 5;
-        const startDnat = 8;
-        const startYwmw = 6;
-        const startMwmw = 3;
-        const startDwmw = 0;
-        if (str && (str.indexOf(' - ') >= 0)) {
-            //init for wmw format
-            let dtLength = str.indexOf(' - ');
-            let secondPos = dtLength + 3;
-            let startY = startYwmw;
-            let startM = startMwmw;
-            let startD = startDwmw;
-            if (str.indexOf('T') >= 0) {
-            //set for native format
-                startY = startYnat;
-                startM = startMnat;
-                startD = startDnat;
-            }
-            let dt1 = get1dtVal(str.substr(0, dtLength), startY,4, startM,2, startD,2, 11,2, 14,2, 17,2);
-            let dt2 = get1dtVal(str.substr(secondPos, dtLength), startY,4, startM,2, startD,2, 11,2, 14,2, 17,2);
-            return {
-                start: dt1,
-                end: dt2
-            }
-        }
-        else {
-            return;
+    const handleChange = (event) => {
+        setValue(event.value);
+        if (event.syntheticEvent.type === 'click') {
+            changeValue(event.target.value);
         }
     };
 
@@ -77,16 +75,11 @@ export default function DateIntervalTextEditor(props) {
         <DateRangePicker className='parametereditorwithoutheight'
             id={props.id}
             name={props.id}
-            value={getVal(value)}
+            value={value}
             startDateInputSettings={{label: ''}}
             endDateInputSettings={{label: ''}}
-            onChange={(event) => {
-                var newevent = {};
-                newevent.target = {};
-                newevent.target.name = event.target.props.id;
-                newevent.target.value = getValStr(event.target.value.start, event.target.value.end);
-                props.selectionChanged(newevent)
-            }}
+            onChange={handleChange}
+            onBlur={() => changeValue()}
         />
     );
 }
