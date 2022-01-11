@@ -4,10 +4,9 @@ import SessionLoader from './SessionLoader';
 import createSessionManager from '../dataManagers/SessionManager';
 import store from '../store/store';
 
-export default function SystemRoot() {
+export default function SystemRoot(props) {
 
-    var pathString = String(window.location.pathname);
-    const systemName = pathString.slice(pathString.lastIndexOf("/") + 1);
+    const { systemName } = props;
     createSessionManager(systemName, store);
     return (
         <Provider store={store}>
