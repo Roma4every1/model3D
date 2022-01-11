@@ -232,6 +232,7 @@ html {
 
 .dropdownPopup {
     max-height: 40vh;
+    width: 300%;
 }
 
 .k-textbox, .k-dropdown .k-input, .k-dropdowntree .k-input, .k-datepicker .k-input, .k-dateinput .k-input, .k-numerictextbox .k-input {

@@ -155,20 +155,21 @@ export const tableCellToString = (valuesToSelect, row) => {
     return temp
 }
 
-export const stringToTableRowId = (rowstring) => {
+export const stringToTableCell = (rowstring, columnName) => {
 
+    let columnNameLength = columnName.length + 1;
     let stringvalue = String(rowstring);
-    const startIndex = stringvalue.indexOf('LOOKUPCODE#');
-    var finishIndex = stringvalue.indexOf('#', startIndex + 11);
+    const startIndex = stringvalue.indexOf(columnName + '#');
+    var finishIndex = stringvalue.indexOf('#', startIndex + columnNameLength);
     let dataValue;
     if (startIndex === -1) {
         dataValue = stringvalue;
     }
     else if (finishIndex === -1) {
-        dataValue = stringvalue.slice(startIndex + 11);
+        dataValue = stringvalue.slice(startIndex + columnNameLength);
     }
     else {
-        dataValue = stringvalue.slice(startIndex + 11, finishIndex);
+        dataValue = stringvalue.slice(startIndex + columnNameLength, finishIndex);
     }
     return dataValue;
 }

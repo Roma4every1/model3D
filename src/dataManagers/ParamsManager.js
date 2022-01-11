@@ -71,7 +71,7 @@ export default function createParamsManager(store) {
                 if (externalChannelDataRows && externalChannelDataRows.length > 0) {
                     if (param.value) {
                         const externalChannelDataRowsConverted = externalChannelDataRows.map(row => utils.tableRowToString(externalChannelData, row));
-                        let dataValue = utils.stringToTableRowId(oldValue);
+                        let dataValue = utils.stringToTableCell(oldValue, 'LOOKUPCODE');
                         let oldValueInNewRows = _.find(externalChannelDataRowsConverted, row => String(row.id) === dataValue);
                         if (oldValueInNewRows) {
                             if (oldValueInNewRows.value !== oldValue) {

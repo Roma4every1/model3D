@@ -35,8 +35,8 @@ export default function TableRowComboEditor(props) {
         }
 
         if (value) {
-            let dataValue = utils.stringToTableRowId(value);
-            let calculatedValueToShow = _.find(values, o => String(o.id) === dataValue);
+            let dataId = utils.stringToTableCell(value, 'LOOKUPCODE');
+            let calculatedValueToShow = _.find(values, o => String(o.id) === dataId);
             if (calculatedValueToShow) {
                 valueToShow = calculatedValueToShow;
             }

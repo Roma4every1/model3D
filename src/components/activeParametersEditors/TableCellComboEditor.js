@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux';
 import { mapTree, extendDataItem } from "@progress/kendo-react-common";
 import { DropDownTree } from "@progress/kendo-react-dropdowns";
 import { filterBy } from "@progress/kendo-react-data-tools";
-var _ = require("lodash");
 var utils = require("../../utils");
 const selectField = "selected";
 const expandField = "expanded";
@@ -71,7 +70,6 @@ export default function TableCellComboEditor(props) {
         })
     }, []);
 
-
     React.useEffect(() => {
         if (valuesToSelect?.properties) {
             var localValues = [];
@@ -91,7 +89,7 @@ export default function TableCellComboEditor(props) {
             }
 
             if (value) {
-                let calculatedValueToShow = _.find(valuesFromJSON, o => String(o.value) === value);
+                let calculatedValueToShow = valuesFromJSON.find(o => String(o.value) === value);
                 if (calculatedValueToShow) {
                     setValueToShow(calculatedValueToShow);
                 }

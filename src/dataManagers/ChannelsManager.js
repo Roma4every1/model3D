@@ -133,6 +133,9 @@ export default function createChannelsManager(store) {
                                     temp.id = row.Cells[lookupChannelData.idIndex];
                                     temp.value = row.Cells[lookupChannelData.nameIndex] ?? '';
                                     temp.text = row.Cells[lookupChannelData.nameIndex] ?? '';
+                                    if (lookupChannelData.parentIndex >= 0) {
+                                        temp.parent = row.Cells[lookupChannelData.parentIndex] ?? '';
+                                    }
                                     return temp;
                                 });
                                 property.lookupData = lookupData;
