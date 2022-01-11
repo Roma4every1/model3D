@@ -66,7 +66,7 @@ export default function TableCellComboEditor(props) {
 
     React.useEffect(() => {
         sessionManager.channelsManager.loadAllChannelData(externalChannelName, formId, false);
-    }, []);
+    }, [externalChannelName, sessionManager, formId]);
 
     const findChildren = React.useCallback((localValues, valuesToSelect) => {
         localValues.forEach(v => {
