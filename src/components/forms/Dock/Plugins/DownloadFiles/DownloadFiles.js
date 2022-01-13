@@ -38,7 +38,7 @@ export default function DownloadFiles(props) {
                 </div>
                 <div className="reportsDelete">
                     <Button className="k-button k-button-clear" onClick={deleteReports}>
-                        <img src={process.env.PUBLIC_URL + '/images/report_delete.png'} alt={t('downloadFiles.clear')} title={t('downloadFiles.clear')} />
+                        <img src={window.location.pathname + 'images/report_delete.png'} alt={t('downloadFiles.clear')} title={t('downloadFiles.clear')} />
                     </Button>
                 </div>
             </div>
