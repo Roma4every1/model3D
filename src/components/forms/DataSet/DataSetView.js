@@ -82,6 +82,7 @@ function DataSetView(props, ref) {
     const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
 
     const tableSettings = useSelector((state) => state.formSettings[formData.id]);
+    const tableColumnGroupSettings = useSelector((state) => state.formSettings[formData.id]?.columns?.ColumnGroupSettings);
 
     var selectedStateChanged = React.useRef(false);
     const setSelectedState = (newValue) => {
@@ -714,7 +715,7 @@ function DataSetView(props, ref) {
                     var trimPart = part.trim();
                     var parentArray = parent?.props?.children ?? groupingData;
                     parent = parentArray.find(p => p?.key === trimPart);
-                    var columnSetting = tableSettings?.columns?.ColumnGroupSettings?.find(setting => setting.columnGroupName === trimPart);
+                    var columnSetting = tableColumnGroupSettings?.find(setting => setting.columnGroupName === trimPart);
                     if (!parent) {
                         var children = [];
                         parent = <Column
@@ -729,7 +730,7 @@ function DataSetView(props, ref) {
             }
         });
         setColumnGroupingData(groupingData);
-    }, [tableData, drawColumn, tableSettings.columns.ColumnGroupSettings]);
+    }, [tableData, drawColumn, tableColumnGroupSettings]);
 
     if (columnGroupingData.length > 0) {
         return (

@@ -8,6 +8,7 @@ export default function StringComboEditor(props) {
     var values = [];
     var valueToShow = undefined;
     const value = useSelector((state) => state.formParams[formId].find((gp) => gp.id === id).value);
+    const sessionManager = useSelector((state) => state.sessionManager);
 
     const setNewValue = React.useCallback(
         (value, manual) => {
@@ -53,9 +54,21 @@ export default function StringComboEditor(props) {
             valueToShow = '';
         }
     }
+    else if (value) {
+        valueToShow = {
+            id: value,
+            name: value,
+            value: value
+        };
+    }
+
+    const onOpen = () => {
+        sessionManager.channelsManager.loadAllChannelData(externalChannelName, formId, false);
+    };
 
     return (
         <ComboBox className='parametereditor'
+            onOpen={onOpen}
             suggest={true}
             name={id}
             data={values}

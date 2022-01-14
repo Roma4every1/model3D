@@ -23,21 +23,23 @@ export default function FileTextEditor(props) {
 
     const onBeforeUpload = (event) => {
         const file = event.target.files[0];
-        let reader = new FileReader();
-        reader.onload = async function () {
-            const data = await sessionManager.fetchData(`uploadFile?sessionId=${sessionId}&filename=${file.name}`,
-                {
-                    method: 'POST',
-                    body: reader.result
-                });
-            var newevent = {};
-            newevent.target = {};
-            newevent.target.name = props.id;
-            newevent.target.value = data;
-            props.selectionChanged(newevent);
+        if (file) {
+            let reader = new FileReader();
+            reader.onload = async function () {
+                const data = await sessionManager.fetchData(`uploadFile?sessionId=${sessionId}&filename=${file.name}`,
+                    {
+                        method: 'POST',
+                        body: reader.result
+                    });
+                var newevent = {};
+                newevent.target = {};
+                newevent.target.name = props.id;
+                newevent.target.value = data;
+                props.selectionChanged(newevent);
+            }
+            setValueToShow(getInitialValue(file.name));
+            reader.readAsArrayBuffer(file);
         }
-        setValueToShow(getInitialValue(file.name));
-        reader.readAsArrayBuffer(file);
     };
 
     return (
