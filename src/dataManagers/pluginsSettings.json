@@ -68,6 +68,11 @@
       "type": "strip",
       "component": "Statistics",
       "label": "Статистика"
+    },
+    "columnHeaderSetter": {
+      "type": "inner",
+      "component": "ColumnHeaderSetter",
+      "label": "Установщик заголовков колонок"
     }
   },
   "Map": {

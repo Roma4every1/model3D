@@ -11,8 +11,8 @@ export default function createPluginsManager(store) {
             if (!configToSave[pluginsSettings[formName][pluginName].type]) {
                 configToSave[pluginsSettings[formName][pluginName].type] = [];
             }
-            if (pluginsSettings[formName][pluginName].type === "strip") {
-                configToSave.strip.push({
+            if (pluginsSettings[formName][pluginName].type === "strip" || pluginsSettings[formName][pluginName].type === "inner") {
+                configToSave[pluginsSettings[formName][pluginName].type].push({
                     "component": {
                         "id": pluginName,
                         "form": formName,

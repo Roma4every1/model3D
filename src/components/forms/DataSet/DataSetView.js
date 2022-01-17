@@ -307,8 +307,7 @@ function DataSetView(props, ref) {
                 break;
             }
             case 'Enter': {
-                if (deleteDialogOpen)
-                {
+                if (deleteDialogOpen) {
                     event.nativeEvent.preventDefault();
                     handleDeleteDialogClose();
                     deleteSelectedRows();
@@ -662,13 +661,11 @@ function DataSetView(props, ref) {
     const _ref = React.useRef();
 
     const drawColumn = React.useCallback(column => {
-        const calculateWidth = (headerName, field) => {
-            if (tableSettings && tableSettings.columns) {
-                var columnSetting = tableSettings.columns.columnsSettings.find(s => s.channelPropertyName === field);
-                if (columnSetting) {
-                    if (columnSetting.width && columnSetting.width !== 1) {
-                        return columnSetting.width;
-                    }
+
+        const calculateWidth = (headerName, field, columnSetting) => {
+            if (columnSetting) {
+                if (columnSetting.width && columnSetting.width !== 1) {
+                    return columnSetting.width;
                 }
             }
             let maxWidth = calculateSize(headerName, {
@@ -691,12 +688,21 @@ function DataSetView(props, ref) {
             return maxWidth + 20;
         };
 
+        var columnSetting = null;
+        var header = column.headerName;
+        if (tableSettings && tableSettings.columns) {
+            columnSetting = tableSettings.columns.columnsSettings.find(s => s.channelPropertyName === column.field);
+        }
+        if (columnSetting?.displayName) {
+            header = columnSetting.displayName;
+        }
+
         return <Column
             locked={column.locked}
             key={column.field}
             field={column.field}
-            title={column.headerName}
-            width={calculateWidth(column.headerName, column.field)}
+            title={header}
+            width={calculateWidth(header, column.field, columnSetting)}
             format={getFormat(column)}
             filter={getFilterByType(column)}
             columnMenu={(props) => getColumnMenuByType(column, props)}

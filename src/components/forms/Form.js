@@ -93,12 +93,21 @@ export default function Form(props) {
         dispatch(setFormRefs(formData.id, _form))
     }, [formData, dispatch]);
 
+    const allplugins = useSelector((state) => state.layout["plugins"]?.inner);
+    const plugins = allplugins.filter(plugin => plugin?.component?.form === capitalizeFirstLetter(formData.type));
+
     return (
         <div className="form-container">
             <ErrorBoundary>
                 <Suspense fallback={<p><em>{t('base.loading')}</em></p>}>
                     {formLoadedData.loaded ?
-                        <FormByType formData={formData} data={formLoadedData} ref={_form} /> :
+                        <div className="form-container">
+                            <FormByType formData={formData} data={formLoadedData} ref={_form} />
+                            {plugins?.map(pl => {
+                                var PluginByType = React.lazy(() => import('./' + capitalizeFirstLetter(formData.type) + '/Plugins/' + pl.component.path));
+                                return <PluginByType formId={formData.id} />
+                            })}
+                        </div> :
                         <p><em>{t('base.loading')}</em></p>
                     }
                 </Suspense>
