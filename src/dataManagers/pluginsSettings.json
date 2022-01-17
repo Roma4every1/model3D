@@ -26,6 +26,11 @@
       "type": "right",
       "component": "DownloadFiles/DownloadFiles",
       "label": "Отчёты"
+    },
+    "dateChanging": {
+      "type": "inner",
+      "component": "DateChanging",
+      "label": "Установщик интервала дат по году"
     }
   },
   "Grid": {
