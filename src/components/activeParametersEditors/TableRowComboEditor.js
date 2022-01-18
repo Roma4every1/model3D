@@ -9,6 +9,8 @@ export default function TableRowComboEditor(props) {
     var values = [];
     var valueToShow = undefined;
     const value = useSelector((state) => state.formParams[formId].find((gp) => gp.id === id).value);
+    const nullDisplayValue = useSelector((state) => state.formParams[formId].find((gp) => gp.id === id).nullDisplayValue);
+    const showNullValue = useSelector((state) => state.formParams[formId].find((gp) => gp.id === id).showNullValue);
     const sessionManager = useSelector((state) => state.sessionManager);
 
     const setNewValue = React.useCallback(
@@ -34,6 +36,13 @@ export default function TableRowComboEditor(props) {
         else {
             values = [];
         }
+        if (showNullValue) {
+            values.push({
+                id: null,
+                name: nullDisplayValue ?? 'Нет значения',
+                value: null
+            })
+        }
 
         if (value) {
             let dataId = utils.stringToTableCell(value, 'LOOKUPCODE');
@@ -46,7 +55,11 @@ export default function TableRowComboEditor(props) {
             }
         }
         else {
-            valueToShow = '';
+            valueToShow = {
+                id: value,
+                name: nullDisplayValue ?? '',
+                value: value
+            };
         }
     }
     else if (value) {
@@ -55,6 +68,13 @@ export default function TableRowComboEditor(props) {
         valueToShow = {
             id: dataId,
             name: dataValue,
+            value: value
+        };
+    }
+    else if (nullDisplayValue) {
+        valueToShow = {
+            id: value,
+            name: nullDisplayValue,
             value: value
         };
     }

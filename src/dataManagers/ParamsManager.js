@@ -35,6 +35,8 @@ export default function createParamsManager(store) {
                         var newElement = {
                             id: element.id,
                             canBeNull: element.canBeNull,
+                            nullDisplayValue: element.nullDisplayValue,
+                            showNullValue: element.showNullValue,
                             formIdToLoad: element.formId,
                             formId: formId,
                             value: element.value,
@@ -83,6 +85,9 @@ export default function createParamsManager(store) {
                     if (oldValue !== null || !param.value) {
                         updateParamValue(formId, param.id, utils.tableRowToString(externalChannelData, externalChannelDataRows[0]).value, true);
                     }
+                }
+                else if (param.value) {
+                    updateParamValue(formId, param.id, null, true);
                 }
             }
             else if (externalChannelLoading) {
