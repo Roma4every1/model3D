@@ -62,14 +62,14 @@ export default function createParamsManager(store) {
     const setDefaultParamValue = (formId, param) => {
         const externalChannelLoading = store.getState().channelsLoading[param.externalChannelName]?.loading;
         if (param.externalChannelName && !param.canBeNull) {
-            if (!externalChannelLoading && oldParamValues[formId + '__' + param.id] !== null) {
+            if (!externalChannelLoading) {
                 let oldValue = oldParamValues[formId + '__' + param.id];
                 oldParamValues[formId + '__' + param.id] = null;
                 const externalChannelData = store.getState().channelsData[param.externalChannelName];
                 const externalChannelDataRows = externalChannelData?.data?.Rows;
 
                 if (externalChannelDataRows && externalChannelDataRows.length > 0) {
-                    if (param.value) {
+                    if (param.value && (oldValue !== null)) {
                         const externalChannelDataRowsConverted = externalChannelDataRows.map(row => utils.tableRowToString(externalChannelData, row));
                         let dataValue = utils.stringToTableCell(oldValue, 'LOOKUPCODE');
                         let oldValueInNewRows = _.find(externalChannelDataRowsConverted, row => String(row.id) === dataValue);
@@ -80,7 +80,9 @@ export default function createParamsManager(store) {
                             return;
                         }
                     }
-                    updateParamValue(formId, param.id, utils.tableRowToString(externalChannelData, externalChannelDataRows[0]).value, true);
+                    if (oldValue !== null || !param.value) {
+                        updateParamValue(formId, param.id, utils.tableRowToString(externalChannelData, externalChannelDataRows[0]).value, true);
+                    }
                 }
             }
             else if (externalChannelLoading) {

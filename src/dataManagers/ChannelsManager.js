@@ -76,10 +76,10 @@ export default function createChannelsManager(store) {
             channelsParams[channelName] = channelParamsList ?? [];
         }
         var neededParamValues = store.getState().sessionManager.paramsManager.getParameterValues(channelsParams[channelName], formId, false, channelName);
-        var changed = force || !channelsParamsValues[channelName] || !equalParams(channelsParamsValues[channelName], neededParamValues.map(np => np.value));
+        var changed = force || !channelsParamsValues[formId + '_' + channelName] || !equalParams(channelsParamsValues[formId + '_' + channelName], neededParamValues.map(np => np.value));
         if (changed) {
             store.dispatch(setChannelsLoading(channelName, true));
-            channelsParamsValues[channelName] = neededParamValues.map(np => np.value);
+            channelsParamsValues[formId + '_' + channelName] = neededParamValues.map(np => np.value);
 
             const channelData = await loadChannelData(channelName, neededParamValues);
             if (channelData && channelData.data && channelData.data.ModifiedTables && channelData.data.ModifiedTables.ModifiedTables) {
