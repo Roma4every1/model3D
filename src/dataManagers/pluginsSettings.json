@@ -78,6 +78,11 @@
       "type": "inner",
       "component": "ColumnHeaderSetter",
       "label": "Установщик заголовков колонок"
+    },
+    "columnSettingsAnalyzer": {
+      "type": "inner",
+      "component": "ColumnSettingsAnalyzer",
+      "label": "Обработчик настроек колонок"
     }
   },
   "Map": {

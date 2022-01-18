@@ -693,8 +693,8 @@ function DataSetView(props, ref) {
         if (tableSettings && tableSettings.columns) {
             columnSetting = tableSettings.columns.columnsSettings.find(s => s.channelPropertyName === column.field);
         }
-        if (columnSetting?.displayName) {
-            header = columnSetting.displayName;
+        if (columnSetting?.displayName || columnSetting?.calculatedDisplayName) {
+            header = columnSetting?.calculatedDisplayName ?? columnSetting?.displayName;
         }
 
         return <Column
@@ -726,7 +726,7 @@ function DataSetView(props, ref) {
                         var children = [];
                         parent = <Column
                             key={trimPart}
-                            title={columnSetting?.columnGroupDisplayName ?? trimPart}
+                            title={columnSetting?.calculatedDisplayName ?? (columnSetting?.columnGroupDisplayName ?? trimPart)}
                             children={children}>
                         </Column>;
                         parentArray.push(parent);
