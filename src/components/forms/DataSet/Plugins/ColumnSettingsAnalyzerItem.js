@@ -15,14 +15,14 @@ export default function ColumnSettingsAnalyzerItem(props) {
     const tableSettings = useSelector((state) => state.formSettings[formId]);
     let changed = false;
     if (path === 'ColumnGroupSettings') {
-        var channelProperty = tableSettings?.columns?.ColumnGroupSettings.find(cs => cs.columnGroupName === item);
+        let channelProperty = tableSettings?.columns?.ColumnGroupSettings.find(cs => cs.columnGroupName === item);
         if (channelProperty && (channelProperty.calculatedDisplayName !== addedProperty)) {
             changed = true;
             channelProperty.calculatedDisplayName = addedProperty;
         }
     }
     else if (path === 'ColumnsSettings') {
-        var channelProperty = tableSettings?.columns?.columnsSettings.find(cs => cs.channelPropertyName === item);
+        let channelProperty = tableSettings?.columns?.columnsSettings.find(cs => cs.channelPropertyName === item);
         if (channelProperty && (channelProperty.calculatedDisplayName !== addedProperty)) {
             changed = true;
             channelProperty.calculatedDisplayName = addedProperty;
