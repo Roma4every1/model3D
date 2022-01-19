@@ -52,6 +52,9 @@
     "spreadsheet": "Excel",
     "spreadsheetUnite": "Excel"
   },
+  "map": {
+    "sublayers": "Sublayers"
+  },
   "menucommands": {
     "about": "About program",
     "loadsessionbydefault": "Load session by default",

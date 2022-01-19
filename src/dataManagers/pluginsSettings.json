@@ -95,6 +95,11 @@
       "type": "strip",
       "component": "Dimensions",
       "label": "Центр и масштаб карты"
+    },
+    "sublayersTree": {
+      "type": "strip",
+      "component": "SublayersTree",
+      "label": "Дерево подслоёв"
     }
   }
 }

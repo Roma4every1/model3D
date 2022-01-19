@@ -1,30 +1,29 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import {
     TreeView,
     processTreeViewItems,
     handleTreeViewCheckChange,
 } from "@progress/kendo-react-treeview";
-import setFormSettings from "../../../../store/actionCreators/setFormSettings";
 
-export default function ColumnsVisibilityContent(props) {
-    const dispatch = useDispatch();
+export default function SublayersTreeContent(props) {
     const { formId } = props;
-    const formProperties = useSelector((state) => state.formRefs[formId].current?.properties());
-    const tableSettings = useSelector((state) => state.formSettings[formId]);
-    const [columnGroupingData, setColumnGroupingData] = React.useState([]);
-    const [columnListData, setColumnListData] = React.useState([]);
+    const formRef = useSelector((state) => state.formRefs[formId]);
+    const sublayers = useSelector((state) => state.formRefs[formId].current?.sublayers());
+    const [sublayersGroupingData, setSublayersGroupingData] = React.useState([]);
+    const [sublayersListData, setSublayersListData] = React.useState([]);
     const [check, setCheck] = React.useState({
         ids: [],
         applyCheckIndeterminate: true,
     });
     const onChange = React.useRef(false);
 
-    const getColumnForTree = (col, index) => {
+    const getGroupForTree = (sublayer, index) => {
         return {
             index: index,
-            id: col.name,
-            text: col.displayName
+            id: sublayer.uid,
+            text: sublayer.name,
+            visible: typeof sublayer.visible === "string" ? (sublayer.visible !== '0') : sublayer.visible
         }
     };
 
@@ -35,17 +34,17 @@ export default function ColumnsVisibilityContent(props) {
         }
         var listData = [];
         var groupingData = [];
-        if (formProperties) {
-            formProperties.forEach(col => {
-                if (!col.treePath || col.treePath.length === 0) {
+        if (sublayers) {
+            sublayers.forEach(sublayer => {
+                if (!sublayer.group || sublayer.group.length === 0) {
                     let index = groupingData.length + '';
-                    const columnForTree = getColumnForTree(col, index);
-                    groupingData.push(columnForTree);
-                    listData.push(columnForTree);
+                    const groupForTree = getGroupForTree(sublayer, index);
+                    groupingData.push(groupForTree);
+                    listData.push(groupForTree);
                 }
                 else {
                     var parent = null;
-                    col.treePath.forEach(part => {
+                    sublayer.group.split('\\').forEach(part => {
                         var trimPart = part.trim();
                         var parentArray = parent?.items ?? groupingData;
                         let index = parent?.items ? parent.index + '_' + parentArray.length : parentArray.length + '';
@@ -63,20 +62,17 @@ export default function ColumnsVisibilityContent(props) {
                         }
                     });
                     let index = parent.index + '_' + parent.items.length;
-                    const columnForTree = getColumnForTree(col, index);
-                    parent.items.push(columnForTree);
-                    listData.push(columnForTree);
+                    const groupForTree = getGroupForTree(sublayer, index);
+                    parent.items.push(groupForTree);
+                    listData.push(groupForTree);
                 }
             });
         }
-        setColumnListData(listData);
-        setColumnGroupingData(groupingData);
+        setSublayersListData(listData);
+        setSublayersGroupingData(groupingData);
         var indices = [];
         listData.forEach((item) => {
-            let visible = (tableSettings?.attachedProperties?.attachOption !== "AttachNothing") ?
-                !tableSettings?.attachedProperties?.exclude.includes(item.id) :
-                tableSettings?.attachedProperties?.exclude.includes(item.id);
-            if (visible) {
+            if (item.visible) {
                 indices.push(item.index)
             }
         });
@@ -84,7 +80,7 @@ export default function ColumnsVisibilityContent(props) {
             ids: indices,
             applyCheckIndeterminate: true,
         });
-    }, [formProperties, tableSettings]);
+    }, [sublayers]);
 
     const onCheckChange = (event) => {
         const settings = {
@@ -92,22 +88,21 @@ export default function ColumnsVisibilityContent(props) {
             checkChildren: true,
             checkParents: true,
         };
-        const newCheck = handleTreeViewCheckChange(event, check, columnGroupingData, settings);
+        const newCheck = handleTreeViewCheckChange(event, check, sublayersGroupingData, settings);
         setCheck(newCheck);
-
-        if (tableSettings?.attachedProperties?.attachOption !== "AttachNothing") {
-            tableSettings.attachedProperties.exclude = columnListData.filter(ti => !newCheck.ids.includes(ti.index)).map(ti => ti.id);
-        }
-        else {
-            tableSettings.attachedProperties.exclude = columnListData.filter(ti => newCheck.ids.includes(ti.index)).map(ti => ti.id);
-        }
         onChange.current = true;
-        dispatch(setFormSettings(formId, { ...tableSettings }));
+
+        sublayers.forEach(sublayer => {
+            let sublayersListElement = sublayersListData.find(sd => sd.id === sublayer.uid);
+            sublayer.visible = newCheck.ids.includes(sublayersListElement.index);
+            return sublayer.visible;
+        });
+        formRef.current.updateCanvas();
     };
 
     return (
         <TreeView className="popuptreeview"
-            data={processTreeViewItems(columnGroupingData, {
+            data={processTreeViewItems(sublayersGroupingData, {
                 check: check,
             })}
             checkboxes={true}

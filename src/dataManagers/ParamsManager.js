@@ -86,7 +86,7 @@ export default function createParamsManager(store) {
                         updateParamValue(formId, param.id, utils.tableRowToString(externalChannelData, externalChannelDataRows[0]).value, true);
                     }
                 }
-                else if (param.value) {
+                else if (externalChannelData && param.value) {
                     updateParamValue(formId, param.id, null, true);
                 }
             }

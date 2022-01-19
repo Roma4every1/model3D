@@ -52,6 +52,9 @@
     "spreadsheet": "Excel",
     "spreadsheetUnite": "Excel"
   },
+  "map": {
+    "sublayers": "Подслои"
+  },
   "menucommands": {
     "about": "О программе",
     "loadsessionbydefault": "Загрузить сессию по умолчанию",
@@ -73,7 +76,7 @@
   "pluginNames": {
     "exportToExcel": "Экспорт в Excel",
     "selectAllRec": "Выделить все",
-    "statistics":  "Статистика"
+    "statistics": "Статистика"
   },
   "report": {
     "params": "Параметры отчёта",

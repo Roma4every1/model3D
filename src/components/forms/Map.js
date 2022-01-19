@@ -25,7 +25,7 @@ function Map(props, ref) {
     const databaseData = useSelector((state) => state.channelsData[activeChannelName]);
 
     React.useEffect(() => {
-        if (databaseData.data.Rows && databaseData.data.Rows.length > 0) {
+        if (databaseData?.data?.Rows && databaseData.data.Rows.length > 0) {
             const id = databaseData.data.Rows[0].Cells[0];
             setMapId(id);
         }
@@ -202,6 +202,9 @@ function Map(props, ref) {
                 drawer.current = localDrawer;
 
                 await Promise.all(mapData.layers.map(async l => {
+                    if (typeof l.visible === "string") {
+                        l.visible = (l.visible !== '0');
+                    }
                     let data;
                     if (mapData.owner) {
                         data = await sessionManager.fetchData(`getContainer?sessionId=${sessionId}&formId=${formData.id}&containerName=${l.container}&owner=${mapData.owner}`);
@@ -223,7 +226,7 @@ function Map(props, ref) {
                     _viewRef.current.height = _div.current.clientHeight;
                     _viewRef.current.width = _div.current.clientWidth;
 
-                    var bounds = mapData.layers[0].bounds
+                    var bounds = mapData.layers[0].bounds;
                     var centerX = (bounds.min.x + bounds.max.x) / 2;
                     var centerY = (bounds.min.y + bounds.max.y) / 2;
 
@@ -252,11 +255,13 @@ function Map(props, ref) {
     }, [mapData, formData, sessionId, sessionManager]);
 
     const updateCanvas = (cs) => {
-        setCenterScale(cs);
-        if (centerScaleChangingHandler.current) {
-            centerScaleChangingHandler.current(cs);
+        if (cs) {
+            setCenterScale(cs);
+            if (centerScaleChangingHandler.current) {
+                centerScaleChangingHandler.current(cs);
+            }
         }
-        drawer.current.showMap(_viewRef.current, mapData, cs);
+        drawer.current.showMap(_viewRef.current, mapData, cs ?? centerScale);
     }
 
     const onMouseMove = (event) => {
@@ -308,7 +313,7 @@ function Map(props, ref) {
         _viewRef.current.height = _div.current.clientHeight;
         _viewRef.current.width = _div.current.clientWidth;
 
-        var bounds = mapData.layers[0].bounds
+        var bounds = mapData.layers[0].bounds;
         var centerX = (bounds.min.x + bounds.max.x) / 2;
         var centerY = (bounds.min.y + bounds.max.y) / 2;
 
@@ -330,6 +335,9 @@ function Map(props, ref) {
         subscribeOnCenterScaleChanging: (changing) => {
             centerScaleChangingHandler.current = changing;
             changing(centerScale);
+        },
+        sublayers: () => {
+            return mapData?.layers;
         }
     }));
 
