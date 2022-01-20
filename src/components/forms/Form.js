@@ -102,10 +102,10 @@ export default function Form(props) {
                 <Suspense fallback={<p><em>{t('base.loading')}</em></p>}>
                     {formLoadedData.loaded ?
                         <div className="form-container">
-                            <FormByType formData={formData} data={formLoadedData} ref={_form} />
+                            <FormByType key="mainForm" formData={formData} data={formLoadedData} ref={_form} />
                             {plugins?.map(pl => {
                                 var PluginByType = React.lazy(() => import('./' + capitalizeFirstLetter(formData.type) + '/Plugins/' + pl.component.path));
-                                return <PluginByType formId={formData.id} />
+                                return <PluginByType key={pl.component.path} formId={formData.id} />
                             })}
                         </div> :
                         <p><em>{t('base.loading')}</em></p>

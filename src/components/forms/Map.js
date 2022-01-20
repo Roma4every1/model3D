@@ -74,7 +74,6 @@ function Map(props, ref) {
                 if (!mapData.points) {
                     mapData.points = [];
                 }
-                const SERVER_URL = "http://web-dev:8080";
 
                 function getHttpFun(address, encoding) {
                     return new Promise(function (resolve, reject) {
@@ -139,10 +138,17 @@ function Map(props, ref) {
                 }
 
                 function parseHttpBytesToJson(array, headers) {
+                    let parsedString;
                     if (typeof array === "string") {
-                        return JSON.parse(array/*.escapeSpecialChars()*/);
+                        parsedString = JSON.parse(array/*.escapeSpecialChars()*/);
                     }
-                    return JSON.parse(Utf8ArrayToStr(DecompressArray(new Uint8Array(array)))/*.escapeSpecialChars()*/);
+                    else {
+                        parsedString = JSON.parse(Utf8ArrayToStr(DecompressArray(new Uint8Array(array)))/*.escapeSpecialChars()*/);
+                    }
+                    if (typeof parsedString === "string") {
+                        parsedString = transform.readXml(parsedString);
+                    }
+                    return parsedString;
                 }
 
                 function DecompressArray(bytes) {
@@ -200,13 +206,20 @@ function Map(props, ref) {
                     }
                 };
 
-                var path = window.location.pathname;
+                let loadContainerURL;
+                if (mapData.owner) {
+                    loadContainerURL = `getContainer?sessionId=${sessionId}&formId=${formData.id}&owner=${mapData.owner}&containerName=`;
+                }
+                else {
+                    loadContainerURL = `getContainer?sessionId=${sessionId}&formId=${formData.id}&containerName=`;
+                }
+                let loadMapURL = `getMap?sessionId=${sessionId}&formId=${formData.id}&mapId=`;
 
                 var localDrawer = createMapsDrawer({
-                    libs: SERVER_URL + "/ij-srv/libs/",
-                    symbolDef: SERVER_URL + "/ij-srv/libs/symbol.def",
-                    mapRoot: SERVER_URL + "/ij-srv/data/map?id=",
-                    containerRoot: SERVER_URL + "/ij-srv/data/map?container=",
+                    libs: window.location.pathname + "libs/",
+                    symbolDef: window.location.pathname + "libs/symbol.def",
+                    mapRoot: utils.getServerUrl() + loadMapURL,
+                    containerRoot: utils.getServerUrl() + loadContainerURL,
                     imageRoot: "/images/",
                     linesDef: window.location.pathname + "libs/lines.def",
 
@@ -225,6 +238,7 @@ function Map(props, ref) {
                 drawer.current = localDrawer;
 
                 await Promise.all(mapData.layers.map(async l => {
+                    l.bounds = { min: { x: l.bounds.left, y: l.bounds.bottom }, max: { x: l.bounds.right, y: l.bounds.top } };
                     if (typeof l.visible === "string") {
                         l.visible = (l.visible !== '0');
                     }
@@ -240,8 +254,7 @@ function Map(props, ref) {
                         l.elements = loadedmap.layers[l.uid].elements.map(el => {
                             return { ...el, bounds: (el.bounds && el.bounds.length === 1) ? el.bounds[0] : el.bounds }
                         });
-                        l.bounds = { min: { x: l.bounds.left, y: l.bounds.bottom }, max: { x: l.bounds.right, y: l.bounds.top } };
-                        mapData.points = [...mapData.points, l.namedpoints]
+                        // mapData.points = [...mapData.points, l.namedpoints]
                     }
                 }));
 

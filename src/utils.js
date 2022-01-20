@@ -2,17 +2,22 @@
 const ReactServerPrePath = 'session/';
 const WMWServerPrePath = process.env.WMWSERVERPREPATH ?? 'http://localhost:81/WellManager.ServerSide.Site/WebRequests.svc/';
 
-export async function webFetch(request, params) {
+export function getServerUrl() {
     if (useWMWServer) {
-        return await fetch(WMWServerPrePath + request,
-            {
-                credentials: 'include',
-                ...params
-            });
+        return WMWServerPrePath;
     }
     else {
-        return await fetch(ReactServerPrePath + request)
+        return ReactServerPrePath;
     }
+}
+
+export async function webFetch(request, params) {
+    let url = getServerUrl();
+    return await fetch(url + request,
+        {
+            credentials: 'include',
+            ...params
+        });
 }
 
 export const capitalizeFirstLetter = (string) => {
