@@ -14,11 +14,27 @@ function Map(props, ref) {
     const [mapId, setMapId] = React.useState(null);
     const [mapData, setMapData] = React.useState(null);
 
-    const [centerScale, setCenterScale] = React.useState({
+    function centerScaleReducer(state, action) {
+        switch (action.type) {
+            case 'assign':
+                return action.value;
+            case 'assignCenter':
+                return {
+                    scale: state.scale,
+                    centerx: action.value.centerx,
+                    centery: action.value.centery
+                };
+            default:
+                return state
+        }
+    }
+
+    const [centerScale, dispatchCenterScale] = React.useReducer(centerScaleReducer, {
         scale: 100000,
         centerx: 0,
         centery: 0
     });
+
     const [mousedown, setmousedown] = React.useState(false);
     const [tempPoint, setTempPoint] = React.useState({});
 
@@ -34,7 +50,7 @@ function Map(props, ref) {
             const id = databaseData.data.Rows[0].Cells[0];
             setMapId(id);
         }
-    }, [databaseData]);
+    }, [databaseData, formData, sessionManager]);
 
     React.useEffect(() => {
         let ignore = false;
@@ -184,13 +200,15 @@ function Map(props, ref) {
                     }
                 };
 
+                var path = window.location.pathname;
+
                 var localDrawer = createMapsDrawer({
                     libs: SERVER_URL + "/ij-srv/libs/",
                     symbolDef: SERVER_URL + "/ij-srv/libs/symbol.def",
                     mapRoot: SERVER_URL + "/ij-srv/data/map?id=",
                     containerRoot: SERVER_URL + "/ij-srv/data/map?container=",
                     imageRoot: "/images/",
-                    linesDef: SERVER_URL + "/ij-srv/libs/lines.def",
+                    linesDef: window.location.pathname + "libs/lines.def",
 
                     drawOptions: {
                         zoomSleep: 500,
@@ -232,10 +250,12 @@ function Map(props, ref) {
                     var centerX = (bounds.min.x + bounds.max.x) / 2;
                     var centerY = (bounds.min.y + bounds.max.y) / 2;
 
-                    setCenterScale({
-                        scale: centerScale.scale,
-                        centerx: centerX,
-                        centery: centerY
+                    dispatchCenterScale({
+                        type: 'assignCenter',
+                        value: {
+                            centerx: centerX,
+                            centery: centerY
+                        }
                     });
 
                     mapData.mapErrors = [];
@@ -258,7 +278,10 @@ function Map(props, ref) {
 
     const updateCanvas = (cs) => {
         if (cs) {
-            setCenterScale(cs);
+            dispatchCenterScale({
+                type: 'assign',
+                value: cs
+            });
             if (centerScaleChangingHandler.current) {
                 centerScaleChangingHandler.current(cs);
             }
@@ -340,7 +363,6 @@ function Map(props, ref) {
         }
     }));
 
-    const resize = new Resize();
     const [size, setSize] = React.useState({});
 
     const resizeHandler = () => {
@@ -349,11 +371,13 @@ function Map(props, ref) {
     };
 
     React.useEffect(() => {
-        resize.addResizeListener(_div.current, resizeHandler);
+        const resize = new Resize();
+        let currentDiv = _div.current;
+        resize.addResizeListener(currentDiv, resizeHandler);
         resizeHandler();
         return () => {
-            if (_div.current) {
-                resize.removeResizeListener(_div.current, resizeHandler);
+            if (currentDiv) {
+                resize.removeResizeListener(currentDiv, resizeHandler);
             }
         };
     }, []);

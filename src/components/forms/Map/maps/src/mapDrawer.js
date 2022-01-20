@@ -784,7 +784,15 @@ var polyline = declareType("polyline", {
 		var configThicknessCoefficient = options.pixelRatio;
 		var context = options.context;
 
+		var lconfig = [];
+		if (options.provider.linesConfigJson)
+			lconfig = options.provider.linesConfigJson.data.BorderStyles[0].Element;
+
 		var currentLineConfig = [];
+		if (i.borderstyleid)
+		{
+			currentLineConfig = [lconfig.find(e => e.guid._value === i.borderstyleid)];
+		}
 		if (currentLineConfig.length !== 0) {
 			i.style = currentLineConfig[0];
 		}
@@ -839,7 +847,15 @@ var polyline = declareType("polyline", {
 		var context = options.context;
 
 		// Checking if there a config for the current type of line
+		var lconfig = [];
+		if (options.provider.linesConfigJson)
+			lconfig = options.provider.linesConfigJson.data.BorderStyles[0].Element;
+
 		var currentLineConfig = [];
+		if (i.borderstyleid)
+		{
+			currentLineConfig = [lconfig.find(e => e.guid._value === i.borderstyleid)];
+		}
 		if (currentLineConfig.length !== 0) {
 			i.style = currentLineConfig[0];
 		}
