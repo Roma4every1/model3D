@@ -24,6 +24,7 @@
     "inOrderAndProgress": "In order: {{order}}, progress: {{progress}}%"
   },
   "editors": {
+    "activeObjectNullDisplayName": "No value",
     "fileNotSelected": "File is not selected",
     "filesCount": "Selected files count: {{count}}",
     "filesNotSelected": "Files are not selected"

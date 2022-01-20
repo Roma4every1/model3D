@@ -24,6 +24,7 @@
     "inOrderAndProgress": "В очереди: {{order}}, прогресс: {{progress}}%"
   },
   "editors": {
+    "activeObjectNullDisplayName": "Нет значения",
     "fileNotSelected": "Файл не выбран",
     "filesCount": "Выбрано файлов: {{count}}",
     "filesNotSelected": "Файлы не выбраны"

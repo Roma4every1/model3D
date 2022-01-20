@@ -1,15 +1,17 @@
 ﻿import * as React from "react";
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { ComboBox } from "@progress/kendo-react-dropdowns";
 var _ = require("lodash");
 var utils = require("../../utils");
 
 export default function TableRowComboEditor(props) {
+    const { t } = useTranslation();
     const { id, formId, selectionChanged, externalChannelName } = props;
     var values = [];
     var valueToShow = undefined;
     const value = useSelector((state) => state.formParams[formId].find((gp) => gp.id === id).value);
-    const nullDisplayValue = useSelector((state) => state.formParams[formId].find((gp) => gp.id === id).nullDisplayValue);
+    const nullDisplayValue = useSelector((state) => state.formParams[formId].find((gp) => gp.id === id).nullDisplayValue ?? t("editors.activeObjectNullDisplayName"));
     const showNullValue = useSelector((state) => state.formParams[formId].find((gp) => gp.id === id).showNullValue);
     const sessionManager = useSelector((state) => state.sessionManager);
 
@@ -39,7 +41,7 @@ export default function TableRowComboEditor(props) {
         if (showNullValue) {
             values.push({
                 id: null,
-                name: nullDisplayValue ?? 'Нет значения',
+                name: nullDisplayValue,
                 value: null
             })
         }
@@ -54,10 +56,10 @@ export default function TableRowComboEditor(props) {
                 valueToShow = '';
             }
         }
-        else {
+        else if (showNullValue) {
             valueToShow = {
                 id: value,
-                name: nullDisplayValue ?? '',
+                name: nullDisplayValue,
                 value: value
             };
         }
@@ -71,7 +73,7 @@ export default function TableRowComboEditor(props) {
             value: value
         };
     }
-    else if (nullDisplayValue) {
+    else if (showNullValue) {
         valueToShow = {
             id: value,
             name: nullDisplayValue,
@@ -92,6 +94,7 @@ export default function TableRowComboEditor(props) {
             value={valueToShow}
             dataItemKey="id"
             textField="name"
+            placeholder={nullDisplayValue}
             onChange={(event) => {
                 valueToShow = event.target.value;
                 setNewValue(event.target.value?.value, true);
