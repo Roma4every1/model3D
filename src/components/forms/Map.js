@@ -1,7 +1,9 @@
 ﻿import React from 'react';
 import { useSelector } from 'react-redux';
+import { Resize } from 'on-el-resize';
 import createMapsDrawer from './Map/maps/src/index.js';
 import lines from "./Map/lines.json";
+var utils = require("../../utils");
 var transform = require("./Map/maps/src/gsTransform");
 
 function Map(props, ref) {
@@ -26,6 +28,9 @@ function Map(props, ref) {
 
     React.useEffect(() => {
         if (databaseData?.data?.Rows && databaseData.data.Rows.length > 0) {
+            if (databaseData.currentRowObjectName) {
+                sessionManager.paramsManager.updateParamValue(utils.getParentFormId(formData.id), databaseData.currentRowObjectName, utils.tableRowToString(databaseData, databaseData.data.Rows[0])?.value, true);
+            }
             const id = databaseData.data.Rows[0].Cells[0];
             setMapId(id);
         }
@@ -223,9 +228,6 @@ function Map(props, ref) {
                 }));
 
                 if (!ignore) {
-                    _viewRef.current.height = _div.current.clientHeight;
-                    _viewRef.current.width = _div.current.clientWidth;
-
                     var bounds = mapData.layers[0].bounds;
                     var centerX = (bounds.min.x + bounds.max.x) / 2;
                     var centerY = (bounds.min.y + bounds.max.y) / 2;
@@ -310,9 +312,6 @@ function Map(props, ref) {
     const centerScaleChangingHandler = React.useRef(null);
 
     const toFullViewport = () => {
-        _viewRef.current.height = _div.current.clientHeight;
-        _viewRef.current.width = _div.current.clientWidth;
-
         var bounds = mapData.layers[0].bounds;
         var centerX = (bounds.min.x + bounds.max.x) / 2;
         var centerY = (bounds.min.y + bounds.max.y) / 2;
@@ -341,11 +340,29 @@ function Map(props, ref) {
         }
     }));
 
+    const resize = new Resize();
+    const [size, setSize] = React.useState({});
+
+    const resizeHandler = () => {
+        const { clientHeight, clientWidth } = _div.current || {};
+        setSize({ clientHeight, clientWidth });
+    };
+
+    React.useEffect(() => {
+        resize.addResizeListener(_div.current, resizeHandler);
+        resizeHandler();
+        return () => {
+            if (_div.current) {
+                resize.removeResizeListener(_div.current, resizeHandler);
+            }
+        };
+    }, []);
+
     return (
         <div ref={_div} style={{ width: "100%", height: "100%" }}>
             <canvas ref={_viewRef}
-                width="1000"
-                height="1000"
+                width={size.clientWidth}
+                height={size.clientHeight}
                 onWheel={wheel}
                 onMouseDown={mouseDown}
                 onMouseUp={mouseUp}

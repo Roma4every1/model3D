@@ -28,7 +28,7 @@ export default function createParamsManager(store) {
                     let localelement = _.find(store.getState().formParams[formId], function (o) { return o.id === param; });
                     if (localelement)
                     {
-                        updateParamValue (formId, param, element.value, true);                        
+                        updateParamValue(formId, param, element.value, false);
                     }
                     else
                     {
@@ -76,9 +76,7 @@ export default function createParamsManager(store) {
                         let dataValue = utils.stringToTableCell(oldValue, 'LOOKUPCODE');
                         let oldValueInNewRows = _.find(externalChannelDataRowsConverted, row => String(row.id) === dataValue);
                         if (oldValueInNewRows) {
-                            if (oldValueInNewRows.value !== oldValue) {
-                                updateParamValue(formId, param.id, oldValueInNewRows.value, true);
-                            }
+                            updateParamValue(formId, param.id, oldValueInNewRows.value, false);
                             return;
                         }
                     }
