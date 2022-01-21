@@ -28,7 +28,7 @@ function updateCanvasSize(canvas) {
 
 module.exports = function Maps(provider) {
 
-	//this.mapInfo = provider.getMapsInfo();
+	this.mapInfo = provider.getMapsInfo();
 
 	this.checkIndex = (ret, context) => startThread(function* updateMapThread() {
 		logger.info("checking indexes for all layers map", ret);
@@ -82,9 +82,7 @@ module.exports = function Maps(provider) {
 								mapDataEvents.push(r);
 						}
 					}
-					layer.elements = elements.map(el => {
-						return { ...el, bounds: (el.bounds && el.bounds.length === 1) ? el.bounds[0] : el.bounds }
-					});
+					layer.elements = elements;
 				} catch (error) {
 					ret.mapErrors.push(error);
 					logger.error("error", error);
@@ -511,6 +509,8 @@ module.exports = function Maps(provider) {
 
 	this.showMap = (canvas, map, { scale, centerx, centery, idle, plainDrawing, selected } = {}) => {
 
+		var updateOnce = _.once(() => update(canvas));
+
 		var fin = [];
 		function detach() {
 			fin.reverse().forEach(f => f());
@@ -629,7 +629,6 @@ module.exports = function Maps(provider) {
 				if (plainDrawing || map.mapErrors.length > 0)
 					onDataWaiting = _.identity;
 				else {
-					var updateOnce = _.once(() => update(canvas));
 					onDataWaiting = promise => promise.then(updateOnce);
 				}
 

@@ -1,17 +1,15 @@
 ﻿import React from 'react';
 import { useSelector } from 'react-redux';
 import { Resize } from 'on-el-resize';
-import createMapsDrawer from './Map/maps/src/index.js';
-import lines from "./Map/lines.json";
+import { getMapLoader } from './Map/MapLoader.js';
 var utils = require("../../utils");
-var transform = require("./Map/maps/src/gsTransform");
 
 function Map(props, ref) {
     const { formData, data } = props;
     const sessionId = useSelector((state) => state.sessionId);
     const sessionManager = useSelector((state) => state.sessionManager);
     const [activeChannelName] = React.useState(data.activeChannels[0]);
-    const [mapId, setMapId] = React.useState(null);
+    const [mapInfo, setMapInfo] = React.useState(null);
     const [mapData, setMapData] = React.useState(null);
 
     function centerScaleReducer(state, action) {
@@ -47,219 +45,20 @@ function Map(props, ref) {
             if (databaseData.currentRowObjectName) {
                 sessionManager.paramsManager.updateParamValue(utils.getParentFormId(formData.id), databaseData.currentRowObjectName, utils.tableRowToString(databaseData, databaseData.data.Rows[0])?.value, true);
             }
-            const id = databaseData.data.Rows[0].Cells[0];
-            setMapId(id);
+            setMapInfo(databaseData.data.Rows[0]);
         }
     }, [databaseData, formData, sessionManager]);
 
     React.useEffect(() => {
         let ignore = false;
-        if (mapId) {
+        if (mapInfo) {
             async function fetchData() {
-                let data = await sessionManager.fetchData(`getMap?sessionId=${sessionId}&formId=${formData.id}&mapId=${mapId}`);
+                const mapId = mapInfo.Cells[0];
+                const owner = mapInfo.Cells[12];
+                drawer.current = getMapLoader(sessionId, formData.id, owner);
+                let loadedmap = await drawer.current.loadMap(String(mapId), { center: { x: 0, y: 0 }, scale: 10000 });
                 if (!ignore) {
-                    setMapData(data);
-                }
-            }
-            fetchData();
-        }
-        return () => { ignore = true; }
-    }, [mapId, sessionId, formData, sessionManager]);
-
-    React.useEffect(() => {
-        let ignore = false;
-        if (mapData) {
-
-            async function fetchData() {
-                if (!mapData.points) {
-                    mapData.points = [];
-                }
-
-                function getHttpFun(address, encoding) {
-                    return new Promise(function (resolve, reject) {
-                        if (!address) {
-                            return;
-                        }
-                        var xhr = new XMLHttpRequest();
-                        xhr.responseType = "arraybuffer";
-                        xhr.open("GET", address);
-                        xhr.send();
-
-                        xhr.onload = function () {
-                            if (xhr.status === 304 && !(encoding === "binary")) {
-                                return;
-                            }
-                            if (xhr.status === 200) {
-                                if (xhr.response !== null) {
-                                    return done(new Uint8Array(xhr.response), false);
-                                }
-                                fail("NULL");
-                            }
-                            if (xhr.status === 304)
-                                return;
-                            else
-                                fail(xhr.status + " " + xhr.statusText);
-                        };
-                        xhr.ontimeout = function () {
-                            return fail("TIMEOUT: " + address);
-                        };
-                        xhr.onerror = function (e) {
-                            return fail(e || "ERROR");
-                        };
-
-                        function done(value, isCached) {
-                            var headers = xhr.getAllResponseHeaders();
-                            var jsonHeaders = headersToJson(headers);
-                            if (jsonHeaders["Accept-Ranges"] === "bytes") {
-                                value = Utf8ArrayToStr(DecompressArray(value));
-                            }
-
-                            resolve(value);
-                        }
-
-                        function fail(value) {
-                            reject(value);
-                        }
-
-                    });
-                }
-
-                function headersToJson(source) {
-                    var result = source.split("\r\n");
-                    var resultJson = {};
-                    result = result.splice(0, result.length - 1);
-                    for (var i = result.length - 1; i >= 0; i--) {
-                        var delimiter = result[i].indexOf(":");
-                        var key = result[i].substring(0, delimiter);
-                        var value = result[i].substring(delimiter + 2);
-                        resultJson[key] = value;
-                    }
-                    return resultJson;
-                }
-
-                function parseHttpBytesToJson(array, headers) {
-                    let parsedString;
-                    if (typeof array === "string") {
-                        parsedString = JSON.parse(array/*.escapeSpecialChars()*/);
-                    }
-                    else {
-                        parsedString = JSON.parse(Utf8ArrayToStr(DecompressArray(new Uint8Array(array)))/*.escapeSpecialChars()*/);
-                    }
-                    if (typeof parsedString === "string") {
-                        parsedString = transform.readXml(parsedString);
-                    }
-                    return parsedString;
-                }
-
-                function DecompressArray(bytes) {
-                    var plain = bytes
-                    try {
-                        var infalte = bytes;
-                        plain = infalte.decompress();
-                    } catch (e) {
-
-                    }
-                    return plain;
-                }
-
-                function Utf8ArrayToStr(array) {
-                    var out, i, len, c;
-                    var char2, char3;
-
-                    out = "";
-                    len = array.length;
-                    i = 0;
-                    while (i < len) {
-                        c = array[i++];
-                        switch (c >> 4) {
-                            case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:
-                                // 0xxxxxxx
-                                out += String.fromCharCode(c);
-                                break;
-                            case 12: case 13:
-                                // 110x xxxx   10xx xxxx
-                                char2 = array[i++];
-                                out += String.fromCharCode(((c & 0x1F) << 6) | (char2 & 0x3F));
-                                break;
-                            case 14:
-                                // 1110 xxxx  10xx xxxx  10xx xxxx
-                                char2 = array[i++];
-                                char3 = array[i++];
-                                out += String.fromCharCode(((c & 0x0F) << 12) |
-                                    ((char2 & 0x3F) << 6) |
-                                    ((char3 & 0x3F) << 0));
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-
-                    return out;
-                }
-
-                var httpClient = {
-
-                    "getHTTP": getHttpFun,
-
-                    "getJSON": function (url) {
-                        return getHttpFun(url).then(parseHttpBytesToJson);
-                    }
-                };
-
-                let loadContainerURL;
-                if (mapData.owner) {
-                    loadContainerURL = `getContainer?sessionId=${sessionId}&formId=${formData.id}&owner=${mapData.owner}&containerName=`;
-                }
-                else {
-                    loadContainerURL = `getContainer?sessionId=${sessionId}&formId=${formData.id}&containerName=`;
-                }
-                let loadMapURL = `getMap?sessionId=${sessionId}&formId=${formData.id}&mapId=`;
-
-                var localDrawer = createMapsDrawer({
-                    libs: window.location.pathname + "libs/",
-                    symbolDef: window.location.pathname + "libs/symbol.def",
-                    mapRoot: utils.getServerUrl() + loadMapURL,
-                    containerRoot: utils.getServerUrl() + loadContainerURL,
-                    imageRoot: "/images/",
-                    linesDef: window.location.pathname + "libs/lines.def",
-
-                    drawOptions: {
-                        zoomSleep: 500,
-                        selectedSize: 6,
-                        selectedColor: "#000FFF",
-                        selectedWidth: 1,
-                        piesliceBorderColor: "black",
-                        piesliceBorderWidth: 0.2,
-                        piesliceAlpha: 0.7,
-                    },
-
-                    linesConfig: { data: lines }
-                }, httpClient);
-                drawer.current = localDrawer;
-
-                await Promise.all(mapData.layers.map(async l => {
-                    l.bounds = { min: { x: l.bounds.left, y: l.bounds.bottom }, max: { x: l.bounds.right, y: l.bounds.top } };
-                    if (typeof l.visible === "string") {
-                        l.visible = (l.visible !== '0');
-                    }
-                    let data;
-                    if (mapData.owner) {
-                        data = await sessionManager.fetchData(`getContainer?sessionId=${sessionId}&formId=${formData.id}&containerName=${l.container}&owner=${mapData.owner}`);
-                    }
-                    else {
-                        data = await sessionManager.fetchData(`getContainer?sessionId=${sessionId}&formId=${formData.id}&containerName=${l.container}`);
-                    }
-                    var loadedmap = transform.readXml(data);
-                    if (loadedmap) {
-                        l.elements = loadedmap.layers[l.uid].elements.map(el => {
-                            return { ...el, bounds: (el.bounds && el.bounds.length === 1) ? el.bounds[0] : el.bounds }
-                        });
-                        // mapData.points = [...mapData.points, l.namedpoints]
-                    }
-                }));
-
-                if (!ignore) {
-                    var bounds = mapData.layers[0].bounds;
+                    var bounds = loadedmap.layers[0].bounds;
                     var centerX = (bounds.min.x + bounds.max.x) / 2;
                     var centerY = (bounds.min.y + bounds.max.y) / 2;
 
@@ -270,24 +69,23 @@ function Map(props, ref) {
                             centery: centerY
                         }
                     });
+                    setMapData(loadedmap);
 
-                    mapData.mapErrors = [];
-
-                    var mapDataD = drawer.current.showMap(_viewRef.current, mapData, {
+                    var mapDataD = drawer.current.showMap(_viewRef.current, loadedmap, {
                     })
                         .on("update.begin", function (canvas, ret) {
                             var context = {
                                 center: { x: mapDataD.centerx, y: mapDataD.centery },
                                 scale: mapDataD.scale
                             };
-                            drawer.current.checkIndex(mapData, context);
+                            drawer.current.checkIndex(loadedmap, context);
                         })
                 }
             }
             fetchData();
         }
         return () => { ignore = true; }
-    }, [mapData, formData, sessionId, sessionManager]);
+    }, [mapInfo, sessionId, formData, sessionManager]);
 
     const updateCanvas = (cs) => {
         if (cs) {
