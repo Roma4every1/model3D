@@ -10,7 +10,7 @@ export default function BoolTextEditor(props) {
         <Checkbox className='parametereditorwithoutheightcb'
             id={props.id}
             name={props.id}
-            value={value && (value !== 'false')}
+            value={value && (typeof value !== 'string' || value.toLowerCase() !== 'false')}
             onChange={(event) => {
                 var newevent = {};
                 newevent.target = {};
