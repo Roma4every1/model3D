@@ -12,9 +12,16 @@ function Map(props, ref) {
     const [mapInfo, setMapInfo] = React.useState(null);
     const [mapData, setMapData] = React.useState(null);
 
+    const centerScaleChangingHandler = React.useRef(null);
+    const drawer = React.useRef(null);
+    const selectedObject = React.useRef(null);
+
     function centerScaleReducer(state, action) {
         switch (action.type) {
             case 'assign':
+                if (centerScaleChangingHandler.current) {
+                    centerScaleChangingHandler.current(action.value);
+                }
                 return action.value;
             case 'assignCenter':
                 return {
@@ -33,12 +40,64 @@ function Map(props, ref) {
         centery: 0
     });
 
-    const [mousedown, setmousedown] = React.useState(false);
-    const [tempPoint, setTempPoint] = React.useState({});
-
-    var drawer = React.useRef(null);
-
     const databaseData = useSelector((state) => state.channelsData[activeChannelName]);
+
+    const getNearestNamedPoint = (point, scale, map) => {
+        var SELECTION_RADIUS = 0.015;
+        var minRadius;
+        var nearestNp = null;
+        map.points.forEach(p => {
+            var localDist = Math.sqrt(Math.pow(p.x - point.x, 2) + Math.pow(p.y - point.y, 2));
+            if (!minRadius || localDist < minRadius) {
+                minRadius = localDist;
+                if ((minRadius / scale) < SELECTION_RADIUS) {
+                    nearestNp = p;
+                }
+            }
+        });
+        return nearestNp;
+    };
+
+    const draw = React.useCallback((canvas, map, scale, centerx, centery, selected) => {
+
+        var mapDataD = drawer.current.showMap(canvas, map, {
+            scale: scale,
+            centerx: centerx,
+            centery: centery,
+            selected: selected
+        })
+            .on("update.begin", function (canvas, ret) {
+                var context = {
+                    center: { x: mapDataD.centerx, y: mapDataD.centery },
+                    scale: mapDataD.scale,
+                    centerx: mapDataD.centerx,
+                    centery: mapDataD.centery,
+                };
+                drawer.current.checkIndex(map, context);
+                dispatchCenterScale({
+                    type: 'assign',
+                    value: context
+                });
+            })
+            .on("pointPicked", function (point, scale) {
+                var nearestObject = getNearestNamedPoint(point, scale, map);
+                if (nearestObject) {
+                    const newSelectedObject = nearestObject.UWID ? [nearestObject.UWID] : null;
+                    selectedObject.current = newSelectedObject;
+                    draw(canvas, map, mapDataD.scale, mapDataD.centerx, mapDataD.centery, newSelectedObject)
+                    nearestObject.id = nearestObject.UWID;
+                    nearestObject.selected = true;
+                }
+            })
+    }, []);
+
+    const updateCanvas = React.useCallback(cs => {
+        dispatchCenterScale({
+            type: 'assign',
+            value: cs
+        });
+        draw(_viewRef.current, mapData, cs.scale, cs.centerx, cs.centery, selectedObject?.current);
+    }, [draw, mapData]);
 
     React.useEffect(() => {
         if (databaseData?.data?.Rows && databaseData.data.Rows.length > 0) {
@@ -58,6 +117,8 @@ function Map(props, ref) {
                 drawer.current = getMapLoader(sessionId, formData.id, owner);
                 let loadedmap = await drawer.current.loadMap(String(mapId), { center: { x: 0, y: 0 }, scale: 10000 });
                 if (!ignore) {
+                    new drawer.current.Scroller(_viewRef.current);
+
                     var bounds = loadedmap.layers[0].bounds;
                     var centerX = (bounds.min.x + bounds.max.x) / 2;
                     var centerY = (bounds.min.y + bounds.max.y) / 2;
@@ -70,80 +131,16 @@ function Map(props, ref) {
                         }
                     });
                     setMapData(loadedmap);
-
-                    var mapDataD = drawer.current.showMap(_viewRef.current, loadedmap, {
-                    })
-                        .on("update.begin", function (canvas, ret) {
-                            var context = {
-                                center: { x: mapDataD.centerx, y: mapDataD.centery },
-                                scale: mapDataD.scale
-                            };
-                            drawer.current.checkIndex(loadedmap, context);
-                        })
+                    draw(_viewRef.current, loadedmap, 10000, centerX, centerY, null);
                 }
             }
             fetchData();
         }
         return () => { ignore = true; }
-    }, [mapInfo, sessionId, formData, sessionManager]);
-
-    const updateCanvas = (cs) => {
-        if (cs) {
-            dispatchCenterScale({
-                type: 'assign',
-                value: cs
-            });
-            if (centerScaleChangingHandler.current) {
-                centerScaleChangingHandler.current(cs);
-            }
-        }
-        drawer.current.showMap(_viewRef.current, mapData, cs ?? centerScale);
-    }
-
-    const onMouseMove = (event) => {
-        if (mousedown) {
-            moveAt(event.pageX, event.pageY);
-        }
-    }
-
-    const mouseDown = (event) => {
-        setmousedown(true);
-        setTempPoint({
-            x: event.pageX,
-            y: event.pageY
-        });
-    }
-
-    const mouseUp = (event) => {
-        setmousedown(false);
-    }
-
-    const moveAt = (pageX, pageY) => {
-        var newCenterPoint = {
-            scale: centerScale.scale,
-            centerx: centerScale.centerx + (tempPoint.x - pageX) * centerScale.scale / 3870,
-            centery: centerScale.centery + (tempPoint.y - pageY) * centerScale.scale / 3870
-        };
-        setTempPoint({
-            x: pageX,
-            y: pageY
-        });
-        updateCanvas(newCenterPoint);
-    }
-
-    const wheel = (e) => {
-        var newScale = centerScale.scale + e.deltaY * centerScale.scale / 2000;
-        var newCenterPoint = {
-            scale: newScale,
-            centerx: centerScale.centerx,
-            centery: centerScale.centery
-        };
-        updateCanvas(newCenterPoint);
-    }
+    }, [mapInfo, sessionId, formData, sessionManager, draw]);
 
     const _viewRef = React.useRef(null);
     const _div = React.useRef(null);
-    const centerScaleChangingHandler = React.useRef(null);
 
     const toFullViewport = () => {
         var bounds = mapData.layers[0].bounds;
@@ -198,10 +195,6 @@ function Map(props, ref) {
             <canvas ref={_viewRef}
                 width={size.clientWidth}
                 height={size.clientHeight}
-                onWheel={wheel}
-                onMouseDown={mouseDown}
-                onMouseUp={mouseUp}
-                onMouseMove={onMouseMove}
             />
         </div>);
 }
