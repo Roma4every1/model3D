@@ -16,7 +16,17 @@ function pointBounds(p) { return { min: p, max: p }; }
 
 declareType("namedpoint", {
 	bound: pointBounds,
-});
+	
+	draft: function ( i, options ) {
+		var p = options.pointToControl( i );
+		var context = options.context;
+		var drawOptions = options.provider.drawOptions;
+		context.strokeStyle = drawOptions.selectedColor || "#0000FF";
+		context.lineWidth = ( drawOptions.selectedWidth || 0.75 ) * 0.001 * options.dotsPerMeter;
+		var s = ( drawOptions.selectedSize || 5 ) * 0.001 * options.dotsPerMeter;
+		context.strokeRect( p.x - s / 2, p.y - s / 2, s, s );
+	},
+} );
 
 function setElementImage(i, imgData) {
 	i.img = null;
