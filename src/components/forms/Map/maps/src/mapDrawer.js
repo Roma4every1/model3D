@@ -16,7 +16,7 @@ function pointBounds(p) { return { min: p, max: p }; }
 
 declareType("namedpoint", {
 	bound: pointBounds,
-	
+
 	draft: function ( i, options ) {
 		var p = options.pointToControl( i );
 		var context = options.context;
@@ -134,7 +134,7 @@ var field = declareType("field", {
 			}
 		};
 	},
-	draw: function* drawThread(i, options) {
+	draw: function* drawThread(i, options) { // eslint-disable-line
 		/*
 			* _draw method contains all the logic that used to be here.
 			* _draw method invokation is omitted 'cause of performance.
@@ -940,6 +940,10 @@ var polyline = declareType("polyline", {
 				}
 			}
 		}
+		if (i.selected)
+		{
+			context.lineWidth = (i.borderwidth || defaultLineWidth) * 0.01 * options.dotsPerMeter;
+		}
 
 		context.stroke();
 		context.setLineDash([]);
@@ -965,7 +969,7 @@ var label = declareType("label", {
 
 	bound: pointBounds,
 
-	draw: function* drawThread(i, options) {
+	draw: function* drawThread(i, options) { // eslint-disable-line
 
 		var fontsize = i.fontsize * // pt
 			(1 / 72 * 0.0254) * // meters
@@ -1025,7 +1029,7 @@ var label = declareType("label", {
 
 declareType("pieslice", {
 	bound: pointBounds,
-	draw: function* drawThread(i, options) {
+	draw: function* drawThread(i, options) { // eslint-disable-line
 		var context = options.context;
 		var maxRadius = 16;
 		var minRadius = 2;

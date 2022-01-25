@@ -68,10 +68,14 @@ function Scroller(control) {
 	}
 
 	var startMove = (event, points) => startAction(event, {
-		move: (event, points) => updateView({
-			screenPoint: points[0],
-			scaleMul: 1
-		}),
+		move: (event, points) => {
+			if (control.blocked)
+				return
+			updateView({
+				screenPoint: points[0],
+				scaleMul: 1
+			})
+		},
 		stop: event => {
 			if (!action.moved)
 				pointPicked(action.mapMovePoint)
@@ -81,10 +85,14 @@ function Scroller(control) {
 	})
 
 	var startResize = (event, points) => startAction(event, {
-		move: (event, points) => updateView({
-			screenPoint: middlePoint(points[0], points[1]),
-			scaleMul: action.oldDistance / distance(points[0], points[1])
-		}),
+		move: (event, points) => {
+			if (control.blocked)
+				return
+			updateView({
+				screenPoint: middlePoint(points[0], points[1]),
+				scaleMul: action.oldDistance / distance(points[0], points[1])
+			})
+		},
 		oldPoints: [points[0], points[1]],
 		oldDistance: distance(points[0], points[1]),
 		movePoint: middlePoint(points[0], points[1]),
@@ -98,6 +106,8 @@ function Scroller(control) {
 	}
 
 	control.addEventListener("touchstart", event => {
+		if (control.blocked)
+			return
 		if (event.target !== control)
 			return
 		stopAction(event)
@@ -132,6 +142,8 @@ function Scroller(control) {
 	control.addEventListener("touchcancel", stopActionEvent, { passive: true })
 
 	control.addEventListener("mousewheel", event => {
+		if (control.blocked)
+			return
 		if (event.target !== control)
 			return
 		var delta = event.wheelDelta < 0 ? -1 : 1

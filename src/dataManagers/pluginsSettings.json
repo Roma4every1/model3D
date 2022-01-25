@@ -100,6 +100,11 @@
       "type": "strip",
       "component": "SublayersTree",
       "label": "Дерево подслоёв"
+    },
+    "contourEditing": {
+      "type": "strip",
+      "component": "ContourEditing",
+      "label": "Редактирование контуров"
     }
   }
 }

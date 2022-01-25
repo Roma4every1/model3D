@@ -58,13 +58,13 @@ export default function Dimensions(props) {
         <LocalizationProvider language='ru-RU'>
             <IntlProvider locale='ru'>
                 <div>
-                <Label editorId="xDimensionEditor">x:</Label>
-                <IntegerTextEditor id="xDimensionEditor" value={centerScale.centerx} selectionChanged={xChanged} />
-                <Label editorId="yDimensionEditor">y:</Label>
-                <IntegerTextEditor id="yDimensionEditor" value={centerScale.centery} selectionChanged={yChanged} />
-                <Label editorId="scaleDimensionEditor">1/</Label>
+                    <Label editorId="xDimensionEditor">x:</Label>
+                    <IntegerTextEditor id="xDimensionEditor" value={centerScale.centerx} selectionChanged={xChanged} />
+                    <Label editorId="yDimensionEditor">y:</Label>
+                    <IntegerTextEditor id="yDimensionEditor" value={centerScale.centery} selectionChanged={yChanged} />
+                    <Label editorId="scaleDimensionEditor">1/</Label>
                     <IntegerTextEditor id="scaleDimensionEditor" value={centerScale.scale} selectionChanged={scaleChanged} />
-                    </div>
+                </div>
             </IntlProvider>
         </LocalizationProvider>
     );

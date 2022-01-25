@@ -54,7 +54,9 @@
     "spreadsheetUnite": "Excel"
   },
   "map": {
-    "sublayers": "Подслои"
+    "sublayers": "Подслои",
+    "startEditing": "Начать редактирование",
+    "finishEditing": "Завершить редактирование"
   },
   "menucommands": {
     "about": "О программе",

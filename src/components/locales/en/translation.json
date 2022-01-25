@@ -54,7 +54,9 @@
     "spreadsheetUnite": "Excel"
   },
   "map": {
-    "sublayers": "Sublayers"
+    "sublayers": "Sublayers",
+    "startEditing": "Start editing",
+    "finishEditing": "Finish editing"
   },
   "menucommands": {
     "about": "About program",

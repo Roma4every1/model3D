@@ -11,6 +11,7 @@ function Map(props, ref) {
     const [activeChannelName] = React.useState(data.activeChannels[0]);
     const [mapInfo, setMapInfo] = React.useState(null);
     const [mapData, setMapData] = React.useState(null);
+    const [mapDrawnData, setMapDrawnData] = React.useState(null);
 
     const centerScaleChangingHandler = React.useRef(null);
     const drawer = React.useRef(null);
@@ -70,34 +71,45 @@ function Map(props, ref) {
                 var context = {
                     center: { x: mapDataD.centerx, y: mapDataD.centery },
                     scale: mapDataD.scale,
+                };
+                drawer.current.checkIndex(map, context);
+            })
+            .on("update.end", function (map) {
+                var context = {
+                    scale: mapDataD.scale,
                     centerx: mapDataD.centerx,
                     centery: mapDataD.centery,
                 };
-                drawer.current.checkIndex(map, context);
                 dispatchCenterScale({
                     type: 'assign',
                     value: context
                 });
             })
             .on("pointPicked", function (point, scale) {
-                var nearestObject = getNearestNamedPoint(point, scale, map);
-                if (nearestObject) {
-                    const newSelectedObject = nearestObject.UWID ? [nearestObject.UWID] : null;
-                    selectedObject.current = newSelectedObject;
-                    draw(canvas, map, mapDataD.scale, mapDataD.centerx, mapDataD.centery, newSelectedObject)
-                    nearestObject.id = nearestObject.UWID;
-                    nearestObject.selected = true;
+                if (!_viewRef.current.blocked) {
+                    var nearestObject = getNearestNamedPoint(point, scale, map);
+                    if (nearestObject) {
+                        const newSelectedObject = nearestObject.UWID ? [nearestObject.UWID] : null;
+                        selectedObject.current = newSelectedObject;
+                        draw(canvas, map, mapDataD.scale, mapDataD.centerx, mapDataD.centery, newSelectedObject)
+                        nearestObject.id = nearestObject.UWID;
+                        nearestObject.selected = true;
+                    }
                 }
-            })
+            });
+        setMapDrawnData(mapDataD);
     }, []);
 
-    const updateCanvas = React.useCallback(cs => {
+    const updateCanvas = React.useCallback(newcs => {
+        const cs = newcs ?? centerScale;
+        mapData.layers[3].elements[3].selected = true;
+        selectedObject.current = mapData.layers[3].elements[3];
         dispatchCenterScale({
             type: 'assign',
             value: cs
         });
         draw(_viewRef.current, mapData, cs.scale, cs.centerx, cs.centery, selectedObject?.current);
-    }, [draw, mapData]);
+    }, [draw, mapData, centerScale]);
 
     React.useEffect(() => {
         if (databaseData?.data?.Rows && databaseData.data.Rows.length > 0) {
@@ -168,6 +180,15 @@ function Map(props, ref) {
         },
         sublayers: () => {
             return mapData?.layers;
+        },
+        mapDrawnData: () => {
+            return mapDrawnData;
+        },
+        selectedObject: () => {
+            return selectedObject.current;
+        },
+        control: () => {
+            return _viewRef.current;
         }
     }));
 
