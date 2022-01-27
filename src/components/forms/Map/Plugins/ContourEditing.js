@@ -9,6 +9,8 @@ var pixelPerMeter = require("../maps/src/pixelPerMeter");
 export default function ContourEditing(props) {
     const { t } = useTranslation();
     const { formId } = props;
+    const sessionId = useSelector((state) => state.sessionId);
+    const sessionManager = useSelector((state) => state.sessionManager);
     const formRef = useSelector((state) => state.formRefs[formId]);
     const selectedObject = useSelector((state) => state.formRefs[formId].current.selectedObject());
     const control = useSelector((state) => state.formRefs[formId].current.control());
@@ -93,6 +95,23 @@ export default function ContourEditing(props) {
         movedPoint.current = null;
         setOnEditing(false);
         control.blocked = false;
+        formRef.current.mapData().layers[3].modified = true;
+    };
+
+    const save = async (event) => {
+        var jsonToSend = {
+            sessionId: sessionId,
+            formId: formId,
+            mapData: formRef.current.mapData(),
+            owner: formRef.current.mapInfo().Cells[12],
+            mapId: formRef.current.mapInfo().Cells[0]
+        };
+        const jsonToSendString = JSON.stringify(jsonToSend);
+        await sessionManager.fetchData(`saveMap`,
+            {
+                method: 'POST',
+                body: jsonToSendString
+            });
     };
 
     return (
@@ -102,6 +121,9 @@ export default function ContourEditing(props) {
             </Button>
             <Button className="actionbutton" onClick={finishEditing} disabled={!onEditing}>
                 {t('map.finishEditing')}
+            </Button>
+            <Button className="actionbutton" onClick={save}>
+                {t('base.save')}
             </Button>
         </div>
     );

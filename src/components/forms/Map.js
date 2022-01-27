@@ -178,6 +178,12 @@ function Map(props, ref) {
             centerScaleChangingHandler.current = changing;
             changing(centerScale);
         },
+        mapInfo: () => {
+            return mapInfo;
+        },
+        mapData: () => {
+            return mapData;
+        },
         sublayers: () => {
             return mapData?.layers;
         },
