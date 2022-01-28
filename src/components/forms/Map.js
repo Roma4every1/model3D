@@ -3,6 +3,8 @@ import { useSelector } from 'react-redux';
 import { Resize } from 'on-el-resize';
 import { getMapLoader } from './Map/MapLoader.js';
 var utils = require("../../utils");
+var pixelPerMeter = require("./Map/maps/src/pixelPerMeter");
+var geom = require("./Map/maps/src/geom");
 
 function Map(props, ref) {
     const { formData, data } = props;
@@ -17,29 +19,11 @@ function Map(props, ref) {
     const drawer = React.useRef(null);
     const selectedObject = React.useRef(null);
 
-    function centerScaleReducer(state, action) {
-        switch (action.type) {
-            case 'assign':
-                if (centerScaleChangingHandler.current) {
-                    centerScaleChangingHandler.current(action.value);
-                }
-                return action.value;
-            case 'assignCenter':
-                return {
-                    scale: state.scale,
-                    centerx: action.value.centerx,
-                    centery: action.value.centery
-                };
-            default:
-                return state
-        }
-    }
-
-    const [centerScale, dispatchCenterScale] = React.useReducer(centerScaleReducer, {
-        scale: 100000,
-        centerx: 0,
-        centery: 0
-    });
+    const getCenterScale = React.useCallback(() => ({
+        scale: mapDrawnData.scale,
+        centerx: mapDrawnData.centerx,
+        centery: mapDrawnData.centery,
+    }), [mapDrawnData]);
 
     const databaseData = useSelector((state) => state.channelsData[activeChannelName]);
 
@@ -74,17 +58,6 @@ function Map(props, ref) {
                 };
                 drawer.current.checkIndex(map, context);
             })
-            .on("update.end", function (map) {
-                var context = {
-                    scale: mapDataD.scale,
-                    centerx: mapDataD.centerx,
-                    centery: mapDataD.centery,
-                };
-                dispatchCenterScale({
-                    type: 'assign',
-                    value: context
-                });
-            })
             .on("pointPicked", function (point, scale) {
                 if (!_viewRef.current.blocked) {
                     var nearestObject = getNearestNamedPoint(point, scale, map);
@@ -101,15 +74,12 @@ function Map(props, ref) {
     }, []);
 
     const updateCanvas = React.useCallback(newcs => {
-        const cs = newcs ?? centerScale;
+        const cs = newcs ?? getCenterScale();
         mapData.layers[3].elements[3].selected = true;
         selectedObject.current = mapData.layers[3].elements[3];
-        dispatchCenterScale({
-            type: 'assign',
-            value: cs
-        });
+        centerScaleChangingHandler.current(cs);
         draw(_viewRef.current, mapData, cs.scale, cs.centerx, cs.centery, selectedObject?.current);
-    }, [draw, mapData, centerScale]);
+    }, [draw, mapData, getCenterScale]);
 
     React.useEffect(() => {
         if (databaseData?.data?.Rows && databaseData.data.Rows.length > 0) {
@@ -134,14 +104,6 @@ function Map(props, ref) {
                     var bounds = loadedmap.layers[0].bounds;
                     var centerX = (bounds.min.x + bounds.max.x) / 2;
                     var centerY = (bounds.min.y + bounds.max.y) / 2;
-
-                    dispatchCenterScale({
-                        type: 'assignCenter',
-                        value: {
-                            centerx: centerX,
-                            centery: centerY
-                        }
-                    });
                     setMapData(loadedmap);
                     draw(_viewRef.current, loadedmap, 10000, centerX, centerY, null);
                 }
@@ -160,7 +122,7 @@ function Map(props, ref) {
         var centerY = (bounds.min.y + bounds.max.y) / 2;
 
         var newCenterPoint = {
-            scale: centerScale.scale,
+            scale: getCenterScale().scale,
             centerx: centerX,
             centery: centerY
         };
@@ -176,7 +138,7 @@ function Map(props, ref) {
         },
         subscribeOnCenterScaleChanging: (changing) => {
             centerScaleChangingHandler.current = changing;
-            changing(centerScale);
+            changing(getCenterScale());
         },
         mapInfo: () => {
             return mapInfo;
@@ -184,11 +146,16 @@ function Map(props, ref) {
         mapData: () => {
             return mapData;
         },
+        centerScale: () => {
+            return getCenterScale();
+        },
+        coords: () => {
+            var dotsPerMeter = _viewRef.current.width / (_viewRef.current.clientWidth / pixelPerMeter());
+            var centerScale = getCenterScale();
+            return geom.translator(centerScale.scale, { x: centerScale.centerx, y: centerScale.centery }, dotsPerMeter, { x: _viewRef.current.width / 2, y: _viewRef.current.height / 2 });
+        },
         sublayers: () => {
             return mapData?.layers;
-        },
-        mapDrawnData: () => {
-            return mapDrawnData;
         },
         selectedObject: () => {
             return selectedObject.current;

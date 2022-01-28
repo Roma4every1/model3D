@@ -1145,7 +1145,7 @@ export function startPaint(canvas, map, options) {
 					continue;
 
 				L.info("checking if layer is visible within the scale", scale);
-				if (!L.info(coords.scaleVisisble(layer)))
+				if (!L.info(coords.scaleVisible(layer)))
 					continue;
 
 				L.info("checking if layer bounds intersect the drawing area", drawBounds);

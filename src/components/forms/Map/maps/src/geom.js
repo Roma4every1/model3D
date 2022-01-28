@@ -67,9 +67,10 @@ export function translator(mscale, mcenter, cscale, ccenter) {
 		mscale, cscale,
 		pointToControl: translate(mscale, mcenter, cscale, ccenter),
 		pointToMap: translate(cscale, ccenter, mscale, mcenter),
-		scaleVisisble: obj =>
+		scaleVisible: obj =>
 			obj.lowscale == null || obj.highscale == null ||
-			(obj.lowscale <= mscale && mscale <= obj.highscale),
+			(((typeof obj.lowscale === 'string' && obj.lowscale.includes('INF')) || obj.lowscale <= mscale) && 
+                         ((typeof obj.highscale === 'string' && obj.highscale.includes('INF')) || mscale <= obj.highscale)),
 		zoom: (scaleIn, cpoint, mpoint) =>
 			ret.setScale(mscale * scaleIn, cpoint, mpoint),
 		setScale: (scale, cpoint, mpoint) => {

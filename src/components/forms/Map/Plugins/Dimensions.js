@@ -1,71 +1,40 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Label } from "@progress/kendo-react-labels";
-import IntegerTextEditor from "../../../activeParametersEditors/IntegerTextEditor";
-import {
-    IntlProvider,
-    LocalizationProvider,
-    loadMessages,
-} from "@progress/kendo-react-intl";
-import ruMessages from "../../../locales/kendoUI/ru.json";
-loadMessages(ruMessages, "ru-RU");
+import DimensionsView from "./DimensionsView";
 
 export default function Dimensions(props) {
     const { formId } = props;
     const formRef = useSelector((state) => state.formRefs[formId]);
+    const control = useSelector((state) => state.formRefs[formId].current.control());
 
-    const [centerScale, setCenterScale] = React.useState({
-        scale: 100000,
-        centerx: 0,
-        centery: 0
-    })
+    const setCenterScaleRef = React.useRef(null);
 
-    React.useEffect(() => {
-        formRef.current.subscribeOnCenterScaleChanging(setCenterScale);
+    const updateCenterScale = React.useCallback((newCs) => {
+        var context = newCs;
+        if (!newCs) {
+            context = formRef.current.centerScale();
+        }
+        if (setCenterScaleRef.current) {
+            setCenterScaleRef.current(context);
+        }
     }, [formRef]);
 
-    const xChanged = (event) => {
-        var newCenterScale = {
-            scale: centerScale.scale,
-            centerx: event.value,
-            centery: centerScale.centery
-        };
-        setCenterScale(newCenterScale);
-        formRef.current.updateCanvas(newCenterScale);
-    };
+    React.useEffect(() => {
+        formRef.current.subscribeOnCenterScaleChanging(updateCenterScale);
+    }, [formRef, updateCenterScale]);
 
-    const yChanged = (event) => {
-        var newCenterScale = {
-            scale: centerScale.scale,
-            centerx: centerScale.centerx,
-            centery: event.value
-        };
-        setCenterScale(newCenterScale);
-        formRef.current.updateCanvas(newCenterScale);
-    };
+    control.addEventListener("mousemove", event => {
+        updateCenterScale();
+    }, { passive: true });
 
-    const scaleChanged = (event) => {
-        var newCenterScale = {
-            scale: event.value,
-            centerx: centerScale.centerx,
-            centery: centerScale.centery
-        };
-        setCenterScale(newCenterScale);
-        formRef.current.updateCanvas(newCenterScale);
-    };
+    control.addEventListener("mousewheel", event => {
+        updateCenterScale();
+    }, { passive: true });
 
     return (
-        <LocalizationProvider language='ru-RU'>
-            <IntlProvider locale='ru'>
-                <div>
-                    <Label editorId="xDimensionEditor">x:</Label>
-                    <IntegerTextEditor id="xDimensionEditor" value={centerScale.centerx} selectionChanged={xChanged} />
-                    <Label editorId="yDimensionEditor">y:</Label>
-                    <IntegerTextEditor id="yDimensionEditor" value={centerScale.centery} selectionChanged={yChanged} />
-                    <Label editorId="scaleDimensionEditor">1/</Label>
-                    <IntegerTextEditor id="scaleDimensionEditor" value={centerScale.scale} selectionChanged={scaleChanged} />
-                </div>
-            </IntlProvider>
-        </LocalizationProvider>
+        <DimensionsView
+            subscribeOnCenterScaleChanging={(setCs) => { setCenterScaleRef.current = setCs; updateCenterScale(); }}
+            updateCanvas={(newCenterScale) => formRef.current.updateCanvas(newCenterScale)}
+        />
     );
 }

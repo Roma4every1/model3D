@@ -3,8 +3,6 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button } from "@progress/kendo-react-buttons";
 var _ = require("lodash");
-var geom = require("../maps/src/geom");
-var pixelPerMeter = require("../maps/src/pixelPerMeter");
 
 export default function ContourEditing(props) {
     const { t } = useTranslation();
@@ -14,20 +12,8 @@ export default function ContourEditing(props) {
     const formRef = useSelector((state) => state.formRefs[formId]);
     const selectedObject = useSelector((state) => state.formRefs[formId].current.selectedObject());
     const control = useSelector((state) => state.formRefs[formId].current.control());
-    var dotsPerMeter = control.width / (control.clientWidth / pixelPerMeter());
     const [onEditing, setOnEditing] = React.useState(false);
     const movedPoint = React.useRef(null);
-    const centerScale = React.useRef({
-        scale: 100000,
-        centerx: 0,
-        centery: 0
-    });
-
-    React.useEffect(() => {
-        formRef.current.subscribeOnCenterScaleChanging((cs) => {
-            centerScale.current = cs;
-        });
-    }, [formRef]);
 
     const getNearestNamedPoint = (point, scale, polyline) => {
         var SELECTION_RADIUS = 0.015;
@@ -62,11 +48,11 @@ export default function ContourEditing(props) {
     };
 
     control.addEventListener("mousedown", event => {
-        var coords = geom.translator(centerScale.current.scale, { x: centerScale.current.centerx, y: centerScale.current.centery }, dotsPerMeter, { x: control.width / 2, y: control.height / 2 });
-        const point = coords.pointToMap(clientPoint(event));
         if (onEditing && selectedObject) {
+            var coords = formRef.current.coords();
+            const point = coords.pointToMap(clientPoint(event));
             if (selectedObject.type === 'polyline') {
-                var nearestPoint = getNearestNamedPoint(point, centerScale.current.scale, selectedObject);
+                var nearestPoint = getNearestNamedPoint(point, formRef.current.centerScale().scale, selectedObject);
                 movedPoint.current = nearestPoint;
             }
         }
@@ -78,7 +64,7 @@ export default function ContourEditing(props) {
 
     control.addEventListener("mousemove", event => {
         if (movedPoint.current && selectedObject) {
-            var coords = geom.translator(centerScale.current.scale, { x: centerScale.current.centerx, y: centerScale.current.centery }, dotsPerMeter, { x: control.width / 2, y: control.height / 2 });
+            var coords = formRef.current.coords();
             const point = coords.pointToMap(clientPoint(event));
             selectedObject.arcs[0].path[movedPoint.current.index * 2] = point.x;
             selectedObject.arcs[0].path[movedPoint.current.index * 2 + 1] = point.y;
