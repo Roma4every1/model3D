@@ -23,11 +23,11 @@ export default function DateChanging(props) {
         return () => { ignore = true; }
     }, [sessionId, formId, sessionManager]);
 
-    return (
+    return (pluginData?.dateChanging ?
         <DateChangingRule
             yearParameter={pluginData?.dateChanging['@yearParameter']}
             dateIntervalParameter={pluginData?.dateChanging['@dateIntervalParameter']}
             columnNameParameter={pluginData?.dateChanging['@columnNameParameter']}
             formId={formId}
-        />);
+        /> : <div />);
 }

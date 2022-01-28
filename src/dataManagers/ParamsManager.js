@@ -10,7 +10,8 @@ export default function createParamsManager(store) {
 
     const getParameterValues = (neededParamList, formId, addToLocal, channelName) => {
         var paramsToUse = [];
-        neededParamList.forEach(param => {
+        neededParamList.forEach(paramElement => {
+            var param = paramElement.Key ?? paramElement;
             var element = null;
             var currentFormId = formId;
             while (!element || (addToLocal && (currentFormId === utils.getParentFormId(formId)))) {
@@ -42,7 +43,7 @@ export default function createParamsManager(store) {
                             value: element.value,
                             dependsOn: element.dependsOn,
                             type: element.type,
-                            editorType: element.editorType,
+                            editorType: paramElement.Value ? null : element.editorType,
                             editorDisplayOrder: element.editorDisplayOrder,
                             externalChannelName: element.externalChannelName,
                             displayName: element.displayName
