@@ -21,8 +21,8 @@ function Map(props, ref) {
 
     const getCenterScale = React.useCallback(() => ({
         scale: mapDrawnData.scale,
-        centerx: mapDrawnData.centerx,
-        centery: mapDrawnData.centery,
+        centerx: Math.round(mapDrawnData.centerx),
+        centery: Math.round(mapDrawnData.centery),
     }), [mapDrawnData]);
 
     const databaseData = useSelector((state) => state.channelsData[activeChannelName]);
@@ -43,7 +43,7 @@ function Map(props, ref) {
         return nearestNp;
     };
 
-    const draw = React.useCallback((canvas, map, scale, centerx, centery, selected) => {
+    const draw = React.useCallback((canvas, map, scale, centerx, centery, selected, redrawnHandler) => {
 
         var mapDataD = drawer.current.showMap(canvas, map, {
             scale: scale,
@@ -57,6 +57,11 @@ function Map(props, ref) {
                     scale: mapDataD.scale,
                 };
                 drawer.current.checkIndex(map, context);
+            })
+            .on("update.end", function (canvas) {
+                if (redrawnHandler) {
+                    redrawnHandler(canvas);
+                }
             })
             .on("pointPicked", function (point, scale) {
                 if (!_viewRef.current.blocked) {
@@ -73,12 +78,12 @@ function Map(props, ref) {
         setMapDrawnData(mapDataD);
     }, []);
 
-    const updateCanvas = React.useCallback(newcs => {
+    const updateCanvas = React.useCallback((newcs, context, redrawnHandler) => {
         const cs = newcs ?? getCenterScale();
         mapData.layers[3].elements[3].selected = true;
         selectedObject.current = mapData.layers[3].elements[3];
         centerScaleChangingHandler.current(cs);
-        draw(_viewRef.current, mapData, cs.scale, cs.centerx, cs.centery, selectedObject?.current);
+        draw(context ?? _viewRef.current, mapData, cs.scale, cs.centerx, cs.centery, selectedObject?.current, redrawnHandler);
     }, [draw, mapData, getCenterScale]);
 
     React.useEffect(() => {
@@ -101,11 +106,23 @@ function Map(props, ref) {
                 if (!ignore) {
                     new drawer.current.Scroller(_viewRef.current);
 
-                    var bounds = loadedmap.layers[0].bounds;
-                    var centerX = (bounds.min.x + bounds.max.x) / 2;
-                    var centerY = (bounds.min.y + bounds.max.y) / 2;
                     setMapData(loadedmap);
+                    var centerX = 0;
+                    var centerY = 0;
                     draw(_viewRef.current, loadedmap, 10000, centerX, centerY, null);
+                    loadedmap.pointsData.then(points => {
+                        var np = points.find(function (it) { return it.debit }) || points[0];
+                        if (np) {
+                            centerX = np.x;
+                            centerY = np.y;
+                        }
+                        else {
+                            var bounds = loadedmap.layers[0].bounds;
+                            centerX = (bounds.min.x + bounds.max.x) / 2;
+                            centerY = (bounds.min.y + bounds.max.y) / 2;
+                        }
+                        draw(_viewRef.current, loadedmap, np.scale ? np.scale : 10000, centerX, centerY, null);
+                    });
                 }
             }
             fetchData();
@@ -133,8 +150,8 @@ function Map(props, ref) {
         toFullViewport: () => {
             toFullViewport();
         },
-        updateCanvas: (cs) => {
-            updateCanvas(cs);
+        updateCanvas: (cs, context, redrawnHandler) => {
+            updateCanvas(cs, context, redrawnHandler);
         },
         subscribeOnCenterScaleChanging: (changing) => {
             centerScaleChangingHandler.current = changing;
@@ -186,7 +203,8 @@ function Map(props, ref) {
 
     return (
         <div ref={_div} style={{ width: "100%", height: "100%" }}>
-            <canvas ref={_viewRef}
+            <canvas
+                ref={_viewRef}
                 width={size.clientWidth}
                 height={size.clientHeight}
             />

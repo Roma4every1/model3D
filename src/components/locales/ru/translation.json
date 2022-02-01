@@ -54,9 +54,10 @@
     "spreadsheetUnite": "Excel"
   },
   "map": {
+    "exportToPdf": "Экспорт в PDF",
+    "finishEditing": "Завершить редактирование",
     "sublayers": "Подслои",
-    "startEditing": "Начать редактирование",
-    "finishEditing": "Завершить редактирование"
+    "startEditing": "Начать редактирование"
   },
   "menucommands": {
     "about": "О программе",

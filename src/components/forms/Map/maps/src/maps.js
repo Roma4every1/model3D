@@ -524,6 +524,10 @@ module.exports = function Maps(provider) {
 
 		var events = new EventEmitter();
 		var canvasEvents = canvas.events;
+        if (!canvas.events)
+		{
+			update(canvas);
+		}
 
 		var resizer = htmlHelper.onElementSize(canvas, canvas => process.nextTick(() => update(canvas)));
 		fin.push(() => resizer.stop());
@@ -592,6 +596,10 @@ module.exports = function Maps(provider) {
 				updateCanvasSize(canvas);
 				if (!coords) {
 					var dotsPerMeter = canvas.width / (canvas.clientWidth / pixelPerMeter());
+					if (isNaN(dotsPerMeter))
+					{
+					    dotsPerMeter = 3780;
+					}
 
 					if (centerx == null) {
 						var bounds = geom.rects.middleRect(...map.layers.map(layer => layer.bounds));
@@ -632,7 +640,7 @@ module.exports = function Maps(provider) {
 					onDataWaiting = promise => promise.then(updateOnce);
 				}
 
-				var context = canvas.getContext("2d");
+				var context = canvas.getContext ? canvas.getContext("2d") : canvas;
 
 				var clearCanvas = () => {
 					context.fillStyle = "white";

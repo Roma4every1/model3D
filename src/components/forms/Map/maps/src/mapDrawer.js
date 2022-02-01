@@ -74,7 +74,10 @@ declareType("sign", {
 			var w = img.width * i.size * options.pixelRatio;
 			var h = img.height * i.size * options.pixelRatio;
 
-			options.context.drawImage(img, p.x - w / 2, p.y - h / 2, w, h);
+			if (options.context.setLineDash)
+			{
+			    options.context.drawImage(img, p.x - w / 2, p.y - h / 2, w, h);
+			}
 		}
 	},
 });
@@ -822,7 +825,9 @@ var polyline = declareType("polyline", {
 			for (var j = dash.length - 1; j >= 0; j--) {
 				dash[j] = dash[j] * configThicknessCoefficient * baseThicknessCoefficient;
 			}
-			context.setLineDash(dash);
+			if (context.setLineDash) {
+				context.setLineDash(dash);
+			}
 		}
 
 		// заглушка для ВНК да рэалізацыі lines.def
@@ -849,7 +854,9 @@ var polyline = declareType("polyline", {
 		}
 
 		context.stroke();
-		context.setLineDash([]);
+		if (context.setLineDash) {
+			context.setLineDash([]);
+		}
 	},
 
 	draw: function* drawThread(i, options) {
@@ -914,7 +921,9 @@ var polyline = declareType("polyline", {
 			for (let j = dash.length - 1; j >= 0; j--) {
 				dash[j] = dash[j] * configThicknessCoefficient * baseThicknessCoefficient;
 			}
-			context.setLineDash(dash);
+			if (context.setLineDash) {
+				context.setLineDash(dash);
+			}
 		}
 
 		// заглушка для ВНК да рэалізацыі lines.def
@@ -934,7 +943,9 @@ var polyline = declareType("polyline", {
 					for (let j = dashes.length - 1; j >= 0; j--) {
 						dashes[j] = dashes[j] * configThicknessCoefficient;
 					}
-					context.setLineDash(dashes);
+					if (context.setLineDash) {
+						context.setLineDash(dashes);
+					}
 					if (dashObj.color)
 						context.strokeStyle = dashObj.color._value;
 				}
@@ -946,13 +957,17 @@ var polyline = declareType("polyline", {
 		}
 
 		context.stroke();
-		context.setLineDash([]);
+		if (context.setLineDash) {
+			context.setLineDash([]);
+		}
 
 		if (i.style) {
 			var decorationPathNeeded = lodash.once(() => polyline.decorationPath(i, options, i.style));
 			decorationPathNeeded();
 			context.stroke();
-			context.setLineDash([]);
+			if (context.setLineDash) {
+				context.setLineDash([]);
+			}
 		}
 	}
 });
@@ -1112,7 +1127,7 @@ export function startPaint(canvas, map, options) {
 		exactBounds.max.y - exactBounds.min.y
 	));
 
-	var context = canvas.getContext("2d");
+	var context = canvas.getContext ? canvas.getContext("2d") : canvas;
 
 	var drawOptions = {
 		provider: options.provider,

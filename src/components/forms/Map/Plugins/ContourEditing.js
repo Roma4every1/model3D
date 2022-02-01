@@ -66,8 +66,8 @@ export default function ContourEditing(props) {
         if (movedPoint.current && selectedObject) {
             var coords = formRef.current.coords();
             const point = coords.pointToMap(clientPoint(event));
-            selectedObject.arcs[0].path[movedPoint.current.index * 2] = point.x;
-            selectedObject.arcs[0].path[movedPoint.current.index * 2 + 1] = point.y;
+            selectedObject.arcs[0].path[movedPoint.current.index * 2] = Math.round(point.x);
+            selectedObject.arcs[0].path[movedPoint.current.index * 2 + 1] = Math.round(point.y);
             formRef.current.updateCanvas();
         }
     }, { passive: true })

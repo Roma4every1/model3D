@@ -54,9 +54,10 @@
     "spreadsheetUnite": "Excel"
   },
   "map": {
+    "finishEditing": "Finish editing",
+    "exportToPdf": "Export to PDF",
     "sublayers": "Sublayers",
-    "startEditing": "Start editing",
-    "finishEditing": "Finish editing"
+    "startEditing": "Start editing"
   },
   "menucommands": {
     "about": "About program",

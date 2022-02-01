@@ -86,6 +86,11 @@
     }
   },
   "Map": {
+    "pdfExport": {
+      "type": "strip",
+      "component": "ExportToPdf",
+      "label": "Экспорт в PDF"
+    },
     "mapToFullViewport": {
       "type": "strip",
       "component": "MapToFullViewport",
