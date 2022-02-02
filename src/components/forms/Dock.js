@@ -106,7 +106,7 @@ function Dock(props, ref) {
             if (component.form === "Dock") {
                 resultForm = <FormByType formId={formData.id} />;
             }
-            else if (component.form === "Grid") {
+            else if (component.form === "Grid" || component.form === "Map") {
                 resultForm = <DockPluginForm formId={formData.id} FormByType={FormByType} />;
             }
             return (<ErrorBoundary>

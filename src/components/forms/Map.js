@@ -82,7 +82,9 @@ function Map(props, ref) {
         const cs = newcs ?? getCenterScale();
         mapData.layers[3].elements[3].selected = true;
         selectedObject.current = mapData.layers[3].elements[3];
-        centerScaleChangingHandler.current(cs);
+        if (centerScaleChangingHandler?.current) {
+            centerScaleChangingHandler.current(cs);
+        }
         draw(context ?? _viewRef.current, mapData, cs.scale, cs.centerx, cs.centery, selectedObject?.current, redrawnHandler);
     }, [draw, mapData, getCenterScale]);
 

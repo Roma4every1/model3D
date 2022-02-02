@@ -54,8 +54,10 @@
     "spreadsheetUnite": "Excel"
   },
   "map": {
-    "finishEditing": "Finish editing",
     "exportToPdf": "Export to PDF",
+    "finishEditing": "Finish editing",
+    "maxscale": "Maximal scale:",
+    "minscale": "Minimal scale:",
     "sublayers": "Sublayers",
     "startEditing": "Start editing"
   },

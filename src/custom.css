@@ -109,6 +109,24 @@ html {
     float: right;
 }
 
+.mapLayerHeader {
+    height: 25px;
+}
+
+.mapLayerExpand {
+    float: right;
+}
+
+.mapLayerParam {
+    margin: 5px;
+}
+
+.mapLayerParamLabel {
+    width: 160px;
+    float: left;
+    font-size: 12px;
+}
+
 .textAlign-left {
     text-align: left;
 }

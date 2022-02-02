@@ -102,8 +102,8 @@
       "label": "Центр и масштаб карты"
     },
     "sublayersTree": {
-      "type": "strip",
-      "component": "SublayersTree",
+      "type": "right",
+      "component": "SublayersTree/SublayersTree",
       "label": "Дерево подслоёв"
     },
     "contourEditing": {
