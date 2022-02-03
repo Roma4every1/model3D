@@ -1,8 +1,11 @@
 {
   "title": "Добро пожаловать в react с использованием react-i18next",
   "base": {
+    "apply": "Применить",
     "cancel": "Отменить",
     "error": "Ошибка",
+    "infinity": "Бесконечность",
+    "infinitySign": "∞",
     "info": "Информация",
     "loading": "Загрузка...",
     "ok": "Ок",
@@ -56,8 +59,11 @@
   "map": {
     "exportToPdf": "Экспорт в PDF",
     "finishEditing": "Завершить редактирование",
+    "layerVisibilityControl": "Управление видимостью слоя",
     "maxscale": "Максимальный масштаб:",
     "minscale": "Минимальный масштаб:",
+    "revertInitialValues": "Восстановить исходные значения",
+    "showAll": "Показать всё",
     "sublayers": "Подслои",
     "startEditing": "Начать редактирование"
   },

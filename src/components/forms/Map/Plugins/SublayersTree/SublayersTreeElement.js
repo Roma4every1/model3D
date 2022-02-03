@@ -10,6 +10,7 @@ export default function SublayersTreeElement(props) {
     const [expanded, setExpanded] = React.useState(false);
 
     return (<ExpansionPanel
+        className="layerGroupPanel"
         title={item.text}
         tabIndex={0}
         expanded={expanded}

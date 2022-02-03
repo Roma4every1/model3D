@@ -1,12 +1,18 @@
-import React from 'react';
+﻿import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Checkbox } from "@progress/kendo-react-inputs";
+import { Checkbox, Input } from "@progress/kendo-react-inputs";
+import { Button } from "@progress/kendo-react-buttons";
 
 export default function SublayersTreeLayer(props) {
     const { t } = useTranslation();
     const { formRef, subitem } = props;
     const [expanded, setExpanded] = React.useState(false);
     const [checked, setChecked] = React.useState(subitem.sublayer.visible);
+    const [lowScale, setLowScale] = React.useState(subitem.sublayer.lowscale);
+    const [highScale, setHighScale] = React.useState(subitem.sublayer.highscale);
+
+    const _lowScaleRef = React.useRef(null);
+    const _highScaleRef = React.useRef(null);
 
     const setExpandedState = () => {
         setExpanded(!expanded);
@@ -18,12 +24,34 @@ export default function SublayersTreeLayer(props) {
         formRef.current.updateCanvas();
     };
 
+    const applyScales = () => {
+        if (!subitem.sublayer.initialLowscale) {
+            subitem.sublayer.initialLowscale = subitem.sublayer.lowscale;
+            subitem.sublayer.initialHighscale = subitem.sublayer.highscale;
+        }
+        subitem.sublayer.lowscale = lowScale;
+        subitem.sublayer.highscale = highScale;
+        formRef.current.updateCanvas();
+    };
+
+    const revertScales = () => {
+        setLowScale(subitem.sublayer.initialLowscale);
+        setHighScale(subitem.sublayer.initialHighscale);
+        subitem.sublayer.lowscale = subitem.sublayer.initialLowscale;
+        subitem.sublayer.highscale = subitem.sublayer.initialHighscale;
+        formRef.current.updateCanvas();
+    };
+
+    const setInfinity = () => {
+        setHighScale('INF');
+    };
+
     return (
         <div>
             <div className="mapLayerHeader">
                 <Checkbox label={subitem.text} value={checked} onChange={onChecked} />
                 <div className="mapLayerExpand">
-                    <button className="k-button k-button-clear" onClick={setExpandedState}>
+                    <button className="k-button k-button-clear" onClick={setExpandedState} title={t('map.layerVisibilityControl')}>
                         <span className="k-icon k-i-gear" />
                     </button>
                 </div>
@@ -35,16 +63,41 @@ export default function SublayersTreeLayer(props) {
                             {t('map.minscale')}
                         </div>
                         <div>
-                            {subitem.sublayer.lowscale}
+                            <Input className='mapLayerScaleEditor'
+                                ref={_lowScaleRef}
+                                value={lowScale}
+                                name="lowscale"
+                                onChange={(event) => {
+                                    setLowScale(event.value);
+                                }}
+                            />
                         </div>
                     </div>
                     <div className="mapLayerParam">
                         <div className="mapLayerParamLabel">
                             {t('map.maxscale')}
                         </div>
-                        <div>
-                            {subitem.sublayer.highscale}
+                        <div className="mapLayerParamValue">
+                            <Input className='mapLayerScaleEditor'
+                                ref={_highScaleRef}
+                                value={highScale === 'INF' ? t('base.infinity') : highScale}
+                                name="highscale"
+                                onChange={(event) => {
+                                    setHighScale(event.value);
+                                }}
+                            />
+                            <button className='mapLayerInfinityButton' onClick={setInfinity}>
+                                {t('base.infinitySign')}
+                            </button>
                         </div>
+                    </div>
+                    <div className="mapLayerBottom">
+                        <button className="mapLayerButtonRevert" onClick={revertScales} title={t('map.revertInitialValues')}>
+                            <span className="k-icon k-i-reset-sm" />
+                        </button>
+                        <button className="mapLayerButtonApply" onClick={applyScales}>
+                            {t('base.apply')}
+                        </button>
                     </div>
                 </div>
             }

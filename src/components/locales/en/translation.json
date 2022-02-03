@@ -1,8 +1,11 @@
-{
+﻿{
   "title": "Welcome to react using react-i18next",
   "base": {
+    "apply": "Apply",
     "cancel": "Cancel",
     "error": "Error",
+    "infinity": "Infinity",
+    "infinitySign": "∞",
     "info": "Information",
     "loading": "Loading...",
     "ok": "Ok",
@@ -56,8 +59,11 @@
   "map": {
     "exportToPdf": "Export to PDF",
     "finishEditing": "Finish editing",
+    "layerVisibilityControl": "Layer visibility control",
     "maxscale": "Maximal scale:",
     "minscale": "Minimal scale:",
+    "revertInitialValues": "Revert initial values",
+    "showAll": "Show all",
     "sublayers": "Sublayers",
     "startEditing": "Start editing"
   },

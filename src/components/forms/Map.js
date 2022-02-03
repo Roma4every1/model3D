@@ -136,12 +136,19 @@ function Map(props, ref) {
     const _div = React.useRef(null);
 
     const toFullViewport = () => {
-        var bounds = mapData.layers[0].bounds;
-        var centerX = (bounds.min.x + bounds.max.x) / 2;
-        var centerY = (bounds.min.y + bounds.max.y) / 2;
+        var allVisibleBounds = mapData.layers.filter(l => l.visible).map(l => l.bounds);
+        var minx = Math.min(...allVisibleBounds.map(b => b.min.x));
+        var miny = Math.min(...allVisibleBounds.map(b => b.min.y));
+        var maxx = Math.max(...allVisibleBounds.map(b => b.max.x));
+        var maxy = Math.max(...allVisibleBounds.map(b => b.max.y));
+        var centerX = (minx + maxx) / 2;
+        var centerY = (miny + maxy) / 2;
+        var scaleX = 1.2 * (maxx - minx) * pixelPerMeter() / _viewRef.current.clientWidth;
+        var scaleY = 1.2 * (maxy - miny) * pixelPerMeter() / _viewRef.current.clientHeight;
+        var scale = Math.max(scaleX, scaleY);
 
         var newCenterPoint = {
-            scale: getCenterScale().scale,
+            scale: scale,
             centerx: centerX,
             centery: centerY
         };

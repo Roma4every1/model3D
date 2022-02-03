@@ -109,6 +109,23 @@ html {
     float: right;
 }
 
+.layerGroupPanel {
+    font-size: 12px;
+}
+
+.k-expander-header {
+    padding: 5px;
+}
+
+.k-expander-title {
+    text-transform: none;
+    font-weight: 500;
+}
+
+.k-expander-content {
+    padding: 5px;
+}
+
 .mapLayerHeader {
     height: 25px;
 }
@@ -122,9 +139,42 @@ html {
 }
 
 .mapLayerParamLabel {
-    width: 160px;
+    width: 125px;
     float: left;
-    font-size: 12px;
+    font-size: 10px;
+    height: 25px;
+}
+
+.mapLayerParamValue {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.mapLayerButtonRevert {
+    margin: 1px;
+}
+
+.mapLayerButtonApply {
+    margin: 1px;
+    float: right;
+}
+
+.mapLayerScaleEditor {
+    width: 90px;
+    height: 25px;
+    font-size: 10px;
+}
+
+.mapLayerInfinityButton {
+    margin-left: 5px;
+    padding: 0px;
+    width: 20px;
+    height: 20px;
+    float: right;
+}
+
+.mapLayerBottom {
+    margin-bottom: 10px;
 }
 
 .textAlign-left {
