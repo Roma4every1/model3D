@@ -6,7 +6,7 @@ export default function SublayersTree(props) {
     const { formId } = props;
     const activeChildId = useSelector((state) => state.childForms[formId]?.openedChildren[0]);
     const formRef = useSelector((state) => state.formRefs[activeChildId]);
-    const sublayers = useSelector((state) => state.formRefs[activeChildId].current?.sublayers());
+    const sublayers = useSelector((state) => state.formRefs[activeChildId].current?.sublayers ? state.formRefs[activeChildId].current?.sublayers() : null);
     const [sublayersGroupingData, setSublayersGroupingData] = React.useState([]);
     const onChange = React.useRef(false);
 

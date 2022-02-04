@@ -6,6 +6,7 @@ import {
     Toolbar
 } from "@progress/kendo-react-buttons";
 import setFormLayout from '../../../../store/actionCreators/setFormLayout';
+var _ = require("lodash");
 
 export default function Menu(props) {
     const { t } = useTranslation();
@@ -29,19 +30,29 @@ export default function Menu(props) {
     const plugins = useSelector((state) => state.layout["plugins"]);
     const formLayout = useSelector((state) => state.layout[formId]);
 
-    const handlePresentationParameters = () => {
+    const handlePresentationParameters = (plugin) => {
         if (formLayout) {
-            var plugin = plugins.left.find(p => p.WMWname === 'gridPresentationParameterListSidePanel');
-            var settings = {
-                global: {
-                    rootOrientationVertical: true
-                },
-                layout: {
-                    "type": "row",
-                    "children": [...formLayout.layout.children, plugin].sort((a, b) => a.order - b.order)
+            var pluginId = plugin.children[0].component.id;
+            var pluginExists = formLayout.layout.children.some(ch => ch.children.some(tabch => tabch.component.id === pluginId));
+            if (!pluginExists) {
+                if (!plugin.initialWeight) {
+                    plugin.initialWeight = plugin.weight;
                 }
+                var totalWeight = _.sum(formLayout.layout.children.map(ch => ch.weight));
+                var newWeight = plugin.initialWeight / (100 - plugin.initialWeight) * totalWeight;
+                plugin.weight = newWeight;
+
+                var settings = {
+                    global: {
+                        rootOrientationVertical: true
+                    },
+                    layout: {
+                        "type": "row",
+                        "children": [...formLayout.layout.children, plugin].sort((a, b) => a.order - b.order)
+                    }
+                }
+                dispatch(setFormLayout(formId, settings));
             }
-            dispatch(setFormLayout(formId, settings));
         }
     }
 
@@ -60,9 +71,9 @@ export default function Menu(props) {
                 <Button className="actionbutton">
                     {t('menucommands.log')}
                 </Button>
-                <Button className="actionbutton" onClick={handlePresentationParameters}>
-                    {t('base.presentationParameters')}
-                </Button>
+                {plugins.left.map(pl => <Button className="actionbutton" onClick={() => handlePresentationParameters(pl)}>
+                    {pl.children[0].name}
+                </Button>)}
             </Toolbar>
         </div>);
 }

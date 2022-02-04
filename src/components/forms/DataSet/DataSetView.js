@@ -127,7 +127,7 @@ function DataSetView(props, ref) {
                 var newValue = dataState.sort.map(el => {
                     let field = el.field;
                     if (inputTableData.properties) {
-                        const property = _.find(inputTableData.properties, function (o) { return o.name === el.field; });
+                        const property = inputTableData.properties.find(o => o.name === el.field);
                         field = property.fromColumn ?? property.name;
                     }
                     return `${field} ${el.dir}`;
@@ -477,7 +477,7 @@ function DataSetView(props, ref) {
         }
         var result = {};
         if (inputTableData.properties) {
-            const property = _.find(inputTableData.properties, function (o) { return o.name === column.field; });
+            const property = inputTableData.properties.find(o => o.name === column.field);
             if (property && property.secondLevelChannelName) {
                 result.setOpened = (arg) => dispatch(setOpenedWindow(property.name, arg, <SecondLevelTable
                     key={formData.id + property.name}

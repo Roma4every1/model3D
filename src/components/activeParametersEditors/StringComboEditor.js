@@ -1,7 +1,6 @@
 import * as React from "react";
 import { useSelector } from 'react-redux';
 import { ComboBox } from "@progress/kendo-react-dropdowns";
-var _ = require("lodash");
 
 export default function StringComboEditor(props) {
     const { id, formId, selectionChanged, externalChannelName } = props;
@@ -42,7 +41,7 @@ export default function StringComboEditor(props) {
 
         if (value) {
             let stringvalue = String(value);
-            let calculatedValueToShow = _.find(values, function (o) { return String(o.id) === stringvalue; });
+            let calculatedValueToShow = values.find(o => String(o.id) === stringvalue);
             if (calculatedValueToShow) {
                 valueToShow = calculatedValueToShow;
             }

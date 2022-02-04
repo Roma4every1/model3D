@@ -130,39 +130,40 @@ function Dock(props, ref) {
         return dockforms.current[formData.id];
     }, [formData, t, leftBorderModel, onModelChange]);
 
-    // React.useEffect(() => {
-    //     let ignore = false;
-    //     async function fetchData() {
-    //         const data = await sessionManager.fetchData(`getFormLayout?sessionId=${sessionId}&formId=${formData.id}`);
-    //         if (!ignore) {
-    //             if (data.layout && data.layout.children) {
-    //                 var newChildren = [];
-    //                 data.layout.children.forEach(ch => {
-    //                     if (ch.selected !== -1) {
-    //                         var plugin = plugins.left?.find(pl => (ch.children[0].id === formData.id + ',' + pl.WMWname));
-    //                         if (plugin) {
-    //                             ch.children[0].component = plugin.children[0].component;
-    //                             ch.children[0].name = plugin.children[0].name;
-    //                             //  ch.order = plugin.order;
-    //                             newChildren.push(ch);
-    //                         }
-    //                     }
-    //                 });
-    //                 if (newChildren.length > 0) {
-    //                     data.layout.children = newChildren;
-    //                     dispatch(setFormLayout(formData.id, data));
-    //                 }
-    //                 var leftBorder = layoutSettings.borders.find(b => b.location === 'left');
-    //                 if (leftBorder) {
-    //                     leftBorder.selected = data.layout.selected;
-    //                 }
-    //                 setFlexLayoutModel(FlexLayout.Model.fromJson(layoutSettings));
-    //             }
-    //         }
-    //     }
-    //     fetchData();
-    //     return () => { ignore = true; }
-    // }, [sessionId, formData, dispatch, plugins, sessionManager, layoutSettings]);
+    React.useEffect(() => {
+        let ignore = false;
+        async function fetchData() {
+            const data = await sessionManager.fetchData(`getFormLayout?sessionId=${sessionId}&formId=${formData.id}`);
+            if (!ignore) {
+                if (data.layout && data.layout.children) {
+                    var newChildren = [];
+                    data.layout.children.forEach(ch => {
+                        if (ch.selected !== -1) {
+                            ch.children.forEach(tabch => {
+                                var plugin = plugins.left?.find(pl => pl.WMWname.split(',').some(p => tabch.id === formData.id + ',' + p));
+                                if (plugin) {
+                                    tabch.component = plugin.children[0].component;
+                                    tabch.name = plugin.children[0].name;
+                                    //tabch.order = plugin.order;
+                                }
+                            });
+                            newChildren.push(ch);
+                        }
+                    });
+                    if (newChildren.length > 0) {
+                        data.layout.children = newChildren;
+                        dispatch(setFormLayout(formData.id, data));
+                    }
+                    layoutSettings.borders.forEach(border => {
+                        border.selected = data.layout['selected' + border.location];
+                    });
+                    setFlexLayoutModel(FlexLayout.Model.fromJson(layoutSettings));
+                }
+            }
+        }
+        fetchData();
+        return () => { ignore = true; }
+    }, [sessionId, formData, dispatch, plugins, sessionManager, layoutSettings]);
 
     const [flexLayoutModel, setFlexLayoutModel] = React.useState(FlexLayout.Model.fromJson(layoutSettings));
     const forms = React.useRef([]);
@@ -180,22 +181,35 @@ function Dock(props, ref) {
             else {
                 flexLayoutModel.doAction(FlexLayout.Actions.renameTab("formStrip", ""));
             }
+
+            plugins.right.forEach(plugin => {
+                if (capitalizeFirstLetter(activeSubChild.type) === plugin.component.form || "Dock" === plugin.component.form) {
+                    flexLayoutModel.doAction(FlexLayout.Actions.renameTab(plugin.component.id, plugin.name));
+                }
+                else {
+                    flexLayoutModel.doAction(FlexLayout.Actions.renameTab(plugin.component.id, ""));
+                }
+            })
         }
         else {
             flexLayoutModel.doAction(FlexLayout.Actions.renameTab("formStrip", ""));
+            plugins.right.forEach(plugin => {
+                flexLayoutModel.doAction(FlexLayout.Actions.renameTab(plugin.component.id, ""));
+            })
         }
     }, [flexLayoutModel, activeSubChild, formData, sessionManager, plugins, t]);
 
     const onDockModelChange = () => {
         var json = flexLayoutModel.toJson();
-        var border = json?.borders?.find(b => b.location === 'left');
-        if (border && formLayout?.layout) {
-            if (border.selected === 0) {
-                formLayout.layout.selected = 0;
-            }
-            else {
-                formLayout.layout.selected = -1;
-            }
+        if (json && formLayout?.layout) {
+            json.borders.forEach(border => {
+                if (border.selected || border.selected === 0) {
+                    formLayout.layout['selected' + border.location] = border.selected;
+                }
+                else {
+                    formLayout.layout['selected' + border.location] = -1;
+                }
+            });
         }
         dispatch(setFormLayout(formData.id, formLayout));
     }

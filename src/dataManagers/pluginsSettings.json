@@ -20,7 +20,7 @@
       "label": "Параметры",
       "weight": 50,
       "order": 10,
-      "WMWname": "dockGlobalParameterListSidePanel"
+      "WMWname": "dockGlobalParameterListSidePanel,dockTreeSidePanel"
     },
     "downloadFiles": {
       "type": "right",

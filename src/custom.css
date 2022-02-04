@@ -157,6 +157,7 @@ html {
 .mapLayerButtonApply {
     margin: 1px;
     float: right;
+    font-size: 12px;
 }
 
 .mapLayerScaleEditor {

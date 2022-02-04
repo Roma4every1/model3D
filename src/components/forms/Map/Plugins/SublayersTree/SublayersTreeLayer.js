@@ -14,6 +14,13 @@ export default function SublayersTreeLayer(props) {
     const _lowScaleRef = React.useRef(null);
     const _highScaleRef = React.useRef(null);
 
+    React.useEffect(() => {
+        if (!subitem.sublayer.initialLowscale) {
+            subitem.sublayer.initialLowscale = subitem.sublayer.lowscale;
+            subitem.sublayer.initialHighscale = subitem.sublayer.highscale;
+        }
+    }, [subitem]);
+
     const setExpandedState = () => {
         setExpanded(!expanded);
     };
@@ -25,21 +32,19 @@ export default function SublayersTreeLayer(props) {
     };
 
     const applyScales = () => {
-        if (!subitem.sublayer.initialLowscale) {
-            subitem.sublayer.initialLowscale = subitem.sublayer.lowscale;
-            subitem.sublayer.initialHighscale = subitem.sublayer.highscale;
-        }
         subitem.sublayer.lowscale = lowScale;
         subitem.sublayer.highscale = highScale;
         formRef.current.updateCanvas();
     };
 
     const revertScales = () => {
-        setLowScale(subitem.sublayer.initialLowscale);
-        setHighScale(subitem.sublayer.initialHighscale);
-        subitem.sublayer.lowscale = subitem.sublayer.initialLowscale;
-        subitem.sublayer.highscale = subitem.sublayer.initialHighscale;
-        formRef.current.updateCanvas();
+        if (subitem.sublayer.initialLowscale) {
+            setLowScale(subitem.sublayer.initialLowscale);
+            setHighScale(subitem.sublayer.initialHighscale);
+            subitem.sublayer.lowscale = subitem.sublayer.initialLowscale;
+            subitem.sublayer.highscale = subitem.sublayer.initialHighscale;
+            formRef.current.updateCanvas();
+        }
     };
 
     const setInfinity = () => {
@@ -86,18 +91,18 @@ export default function SublayersTreeLayer(props) {
                                     setHighScale(event.value);
                                 }}
                             />
-                            <button className='mapLayerInfinityButton' onClick={setInfinity}>
+                            <Button className='mapLayerInfinityButton' onClick={setInfinity}>
                                 {t('base.infinitySign')}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                     <div className="mapLayerBottom">
-                        <button className="mapLayerButtonRevert" onClick={revertScales} title={t('map.revertInitialValues')}>
+                        <Button className="mapLayerButtonRevert" onClick={revertScales} title={t('map.revertInitialValues')}>
                             <span className="k-icon k-i-reset-sm" />
-                        </button>
-                        <button className="mapLayerButtonApply" onClick={applyScales}>
+                        </Button>
+                        <Button className="mapLayerButtonApply" onClick={applyScales}>
                             {t('base.apply')}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             }

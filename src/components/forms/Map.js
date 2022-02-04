@@ -204,7 +204,7 @@ function Map(props, ref) {
         resize.addResizeListener(currentDiv, resizeHandler);
         resizeHandler();
         return () => {
-            if (currentDiv) {
+            if (_div.current === currentDiv) {   // eslint-disable-line
                 resize.removeResizeListener(currentDiv, resizeHandler);
             }
         };

@@ -21,7 +21,9 @@ export default function Container(props) {
 
     const getActiveChidren = (layout, list) => {
         if (layout.type === "tabset" && layout.active && (layout.selected || layout.children.length === 1)) {
-            list.push(layout.children[layout.selected ?? 0].id);
+            if (layout.children[layout.selected ?? 0]) {
+                list.push(layout.children[layout.selected ?? 0].id);
+            }
         }
         if (layout.children) {
             layout.children.forEach(child => getActiveChidren(child, list));

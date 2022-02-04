@@ -44,6 +44,7 @@ export default function createPluginsManager(store) {
                     "enableDrag": false,
                     "type": "tab",
                     "name": pluginsSettings[formName][pluginName].label,
+                    "id": pluginName,
                     "component": {
                         "id": pluginName,
                         "form": formName,

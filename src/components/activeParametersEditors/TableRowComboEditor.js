@@ -2,7 +2,6 @@
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { ComboBox } from "@progress/kendo-react-dropdowns";
-var _ = require("lodash");
 var utils = require("../../utils");
 
 export default function TableRowComboEditor(props) {
@@ -48,7 +47,7 @@ export default function TableRowComboEditor(props) {
 
         if (value) {
             let dataId = utils.stringToTableCell(value, 'LOOKUPCODE');
-            let calculatedValueToShow = _.find(values, o => String(o.id) === dataId);
+            let calculatedValueToShow = values.find(o => String(o.id) === dataId);
             if (calculatedValueToShow) {
                 valueToShow = calculatedValueToShow;
             }

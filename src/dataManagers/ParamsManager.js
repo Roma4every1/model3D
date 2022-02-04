@@ -15,18 +15,18 @@ export default function createParamsManager(store) {
             var element = null;
             var currentFormId = formId;
             while (!element || (addToLocal && (currentFormId === utils.getParentFormId(formId)))) {
-                element = _.find(store.getState().formParams[currentFormId], function (o) { return o.id === param; });
+                element = store.getState().formParams[currentFormId]?.find(o => o.id === param);
                 if (currentFormId === '') {
                     break;
                 }
                 currentFormId = utils.getParentFormId(currentFormId);
             }
             if (!element && channelName) {
-                element = _.find(store.getState().formParams[channelName], function (o) { return o.id === param; });
+                element = store.getState().formParams[channelName]?.find(o => o.id === param);
             }
             if (element && element.value !== undefined) {
                 if (addToLocal && (element.formId !== formId)) {
-                    let localelement = _.find(store.getState().formParams[formId], function (o) { return o.id === param; });
+                    let localelement = store.getState().formParams[formId]?.find(o => o.id === param);
                     if (localelement)
                     {
                         updateParamValue(formId, param, element.value, false);
