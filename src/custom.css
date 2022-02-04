@@ -331,6 +331,11 @@ html {
     padding-right: 30px;
 }
 
+th.k-header.active .k-grid-filter {
+    color: #fff;
+    background-color: #ff6358;
+}
+
 .k-dateinput {
     float: right;
     font-size: 12px;
@@ -338,6 +343,10 @@ html {
 
 .k-datepicker {
     flex-direction: column;
+}
+
+.k-multicheck-wrap {
+    max-height: 20vh;
 }
 
 .k-animation-container {

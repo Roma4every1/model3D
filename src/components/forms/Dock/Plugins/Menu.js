@@ -71,7 +71,7 @@ export default function Menu(props) {
                 <Button className="actionbutton">
                     {t('menucommands.log')}
                 </Button>
-                {plugins.left.map(pl => <Button className="actionbutton" onClick={() => handlePresentationParameters(pl)}>
+                {plugins.left.map(pl => <Button key={pl.children[0].component.id} className="actionbutton" onClick={() => handlePresentationParameters(pl)}>
                     {pl.children[0].name}
                 </Button>)}
             </Toolbar>

@@ -4,9 +4,10 @@ import {
     Grid,
     GridColumn as Column,
     getSelectedState,
-    getSelectedStateFromKeyDown
+    getSelectedStateFromKeyDown,
+    GridColumnMenuFilter
 } from "@progress/kendo-react-grid";
-import { ColumnMenu, ColumnMenuCheckboxFilter } from "./ColumnMenu";
+import ColumnMenu from "./ColumnMenu";
 import { SecondLevelTable } from "./SecondLevelTable";
 import {
     Button
@@ -148,6 +149,25 @@ function DataSetView(props, ref) {
                         let fieldFilter = filter.value;
                         if (col.lookupData) {
                             fieldFilter = col.lookupData.find(ld => ld.value === fieldFilter).id;
+                        }
+                        else switch (col.netType) {
+                            case "System.DateTime":
+                                if (typeof fieldFilter === 'string') {
+                                    var pattern = /(\d{2})\.(\d{2})\.(\d{4})/;
+                                    fieldFilter = new Date(fieldFilter.replace(pattern, '$3/$2/$1'));
+                                    filter.value = fieldFilter;
+                                }
+                                break;
+                            case "System.Decimal":
+                            case "System.Double":
+                            case "System.Int32":
+                            case "System.Int64":
+                                if (typeof fieldFilter === 'string') {
+                                    fieldFilter = Number(fieldFilter.replace(',', '.'));
+                                }
+                                break;
+                            default:
+                                break;
                         }
                         if (!operation.includes("Null")) {
                             center = `<netType typeName="${col.netType}" value="${utils.dateToString(fieldFilter)}"/>`
@@ -535,19 +555,6 @@ function DataSetView(props, ref) {
         }
     }
 
-    const getColumnMenuByType = (column, props) => {
-        if (column.lookupData) {
-            let data = column.lookupData.map(ld => {
-                return {
-                    ...ld,
-                    [column.field]: ld.value
-                }
-            });
-            return <ColumnMenuCheckboxFilter {...props} data={data} />;
-        }
-        return <ColumnMenu {...props} />;
-    }
-
     const applyEdit = React.useCallback(async () => {
         if (edited || rowAdding) {
             const rowToInsert = tableData.rowsJSON.find(item =>
@@ -698,6 +705,7 @@ function DataSetView(props, ref) {
         }
 
         return <Column
+            headerClassName={GridColumnMenuFilter.active(column.field, dataState.filter) ? "active" : ""}
             locked={column.locked}
             key={column.field}
             field={column.field}
@@ -705,9 +713,14 @@ function DataSetView(props, ref) {
             width={calculateWidth(header, column.field, columnSetting)}
             format={getFormat(column)}
             filter={getFilterByType(column)}
-            columnMenu={(props) => getColumnMenuByType(column, props)}
+            columnMenu={(props) => <ColumnMenu
+                {...props}
+                tableColumn={column}
+                formId={formData.id}
+                activeChannelName={activeChannelName}
+            />}
         />
-    }, [tableSettings, tableData]);
+    }, [tableSettings, tableData, dataState, activeChannelName, formData]);
 
     React.useEffect(() => {
         var groupingData = [];
