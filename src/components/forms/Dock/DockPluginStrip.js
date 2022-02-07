@@ -8,7 +8,7 @@ import { capitalizeFirstLetter } from '../../../utils';
 export default function DockPluginStrip(props) {
     const { t } = useTranslation();
     const { formId } = props;
-    const activeChildId = useSelector((state) => state.childForms[formId].openedChildren[0]);
+    const activeChildId = useSelector((state) => state.childForms[formId]?.openedChildren[0]);
     const activeSubChild = useSelector((state) => state.childForms[activeChildId]?.children.find(p => p.id === (state.childForms[activeChildId].activeChildren[0])));
     const plugins = useSelector((state) => state.layout["plugins"].strip);
     const pluginsByType = plugins.filter(el => el.component.form === capitalizeFirstLetter(activeSubChild?.type));

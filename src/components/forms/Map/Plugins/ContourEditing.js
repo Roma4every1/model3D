@@ -10,8 +10,7 @@ export default function ContourEditing(props) {
     const sessionId = useSelector((state) => state.sessionId);
     const sessionManager = useSelector((state) => state.sessionManager);
     const formRef = useSelector((state) => state.formRefs[formId]);
-    const selectedObject = useSelector((state) => state.formRefs[formId].current.selectedObject());
-    const control = useSelector((state) => state.formRefs[formId].current.control());
+    const control = useSelector((state) => state.formRefs[formId]?.current?.control());
     const [onEditing, setOnEditing] = React.useState(false);
     const movedPoint = React.useRef(null);
 
@@ -47,30 +46,34 @@ export default function ContourEditing(props) {
         return ret;
     };
 
-    control.addEventListener("mousedown", event => {
-        if (onEditing && selectedObject) {
-            var coords = formRef.current.coords();
-            const point = coords.pointToMap(clientPoint(event));
-            if (selectedObject.type === 'polyline') {
-                var nearestPoint = getNearestNamedPoint(point, formRef.current.centerScale().scale, selectedObject);
-                movedPoint.current = nearestPoint;
+    if (control) {
+        control.addEventListener("mousedown", event => {
+            var selectedObject = formRef.current.selectedObject();
+            if (onEditing && selectedObject) {
+                var coords = formRef.current.coords();
+                const point = coords.pointToMap(clientPoint(event));
+                if (selectedObject.type === 'polyline') {
+                    var nearestPoint = getNearestNamedPoint(point, formRef.current.centerScale().scale, selectedObject);
+                    movedPoint.current = nearestPoint;
+                }
             }
-        }
-    }, { passive: true })
+        }, { passive: true })
 
-    control.addEventListener("mouseup", event => {
-        movedPoint.current = null;
-    }, { passive: true })
+        control.addEventListener("mouseup", event => {
+            movedPoint.current = null;
+        }, { passive: true })
 
-    control.addEventListener("mousemove", event => {
-        if (movedPoint.current && selectedObject) {
-            var coords = formRef.current.coords();
-            const point = coords.pointToMap(clientPoint(event));
-            selectedObject.arcs[0].path[movedPoint.current.index * 2] = Math.round(point.x);
-            selectedObject.arcs[0].path[movedPoint.current.index * 2 + 1] = Math.round(point.y);
-            formRef.current.updateCanvas();
-        }
-    }, { passive: true })
+        control.addEventListener("mousemove", event => {
+            var selectedObject = formRef.current.selectedObject();
+            if (movedPoint.current && selectedObject) {
+                var coords = formRef.current.coords();
+                const point = coords.pointToMap(clientPoint(event));
+                selectedObject.arcs[0].path[movedPoint.current.index * 2] = Math.round(point.x);
+                selectedObject.arcs[0].path[movedPoint.current.index * 2 + 1] = Math.round(point.y);
+                formRef.current.updateCanvas();
+            }
+        }, { passive: true })
+    }
 
     const startEditing = (event) => {
         control.blocked = true;

@@ -1,13 +1,15 @@
 ﻿import React from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Resize } from 'on-el-resize';
 import { getMapLoader } from './Map/MapLoader.js';
+import setFormRefs from '../../store/actionCreators/setFormRefs';
 var utils = require("../../utils");
 var pixelPerMeter = require("./Map/maps/src/pixelPerMeter");
 var geom = require("./Map/maps/src/geom");
 
 function Map(props, ref) {
     const { formData, data } = props;
+    const dispatch = useDispatch();
     const sessionId = useSelector((state) => state.sessionId);
     const sessionManager = useSelector((state) => state.sessionManager);
     const [activeChannelName] = React.useState(data.activeChannels[0]);
@@ -20,9 +22,9 @@ function Map(props, ref) {
     const selectedObject = React.useRef(null);
 
     const getCenterScale = React.useCallback(() => ({
-        scale: mapDrawnData.scale,
-        centerx: Math.round(mapDrawnData.centerx),
-        centery: Math.round(mapDrawnData.centery),
+        scale: mapDrawnData?.scale ?? 10000,
+        centerx: Math.round(mapDrawnData?.centerx ?? 0),
+        centery: Math.round(mapDrawnData?.centery ?? 0),
     }), [mapDrawnData]);
 
     const databaseData = useSelector((state) => state.channelsData[activeChannelName]);
@@ -123,6 +125,13 @@ function Map(props, ref) {
                             centerX = (bounds.min.x + bounds.max.x) / 2;
                             centerY = (bounds.min.y + bounds.max.y) / 2;
                         }
+                        if (centerScaleChangingHandler?.current) {
+                            centerScaleChangingHandler.current({
+                                scale: np.scale ? np.scale : 10000,
+                                centerx: centerX,
+                                centery: centerY
+                            });
+                        }
                         draw(_viewRef.current, loadedmap, np.scale ? np.scale : 10000, centerX, centerY, null);
                     });
                 }
@@ -209,6 +218,10 @@ function Map(props, ref) {
             }
         };
     }, []);
+
+    React.useLayoutEffect(() => {
+        dispatch(setFormRefs(formData.id + "_mapView", _viewRef))
+    }, [formData, dispatch]);
 
     return (
         <div ref={_div} style={{ width: "100%", height: "100%" }}>
