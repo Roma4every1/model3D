@@ -37,6 +37,7 @@ var transform = x({
 		type: x.element,
 		name: x.string,
 		uid: x.string,
+		version: x.number,
 		elements: [/./, x({
 			pieslice: {
 				type: x.element,

@@ -66,6 +66,7 @@ module.exports = function Maps(provider) {
 					var data = yield provider.getContainer(layer.container, indexName || layer.index);
 					var layerFromContainer = layer.uid.includes(layer.container) ? data.layers[layer.uid.replace(layer.container, '')] : data.layers[layer.uid]
 					elements = layerFromContainer.elements;
+					layer.version = layerFromContainer.version;
 					if (elements.length === 0) {
 						// try to find elements amoung of [layername] layer into container
 						var nameFromContainerInBrackets = "[" + layerFromContainer.name + "]";
@@ -171,6 +172,7 @@ module.exports = function Maps(provider) {
 					var data = yield provider.getContainer(layer.container, indexName);
 					var layerFromContainer = layer.uid.includes(layer.container) ? data.layers[layer.uid.replace(layer.container, '')] : data.layers[layer.uid]
 					elements = layerFromContainer.elements;
+					layer.version = layerFromContainer.version;
 					if (elements.length === 0) {
 						// try to find elements amoung of [layername] layer into container
 						var nameFromContainerInBrackets = "[" + layerFromContainer.name + "]";
