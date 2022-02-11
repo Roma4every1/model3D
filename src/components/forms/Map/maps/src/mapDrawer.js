@@ -643,10 +643,10 @@ var polyline = declareType("polyline", {
 					x = null;
 				}
 			}
-			if (i.closed && i.arcs.length > 1 && f != null)
+			if (a.closed && i.arcs.length > 1 && f != null)
 				context.lineTo(f.x, f.y);
 		}
-		if (i.closed && i.arcs.length === 1)
+		if (i.arcs.length === 1 && i.arcs[0].closed)
 			context.closePath();
 	},
 
@@ -786,10 +786,10 @@ var polyline = declareType("polyline", {
 					x = null;
 				}
 			}
-			if (i.closed && i.arcs.length > 1 && f != null)
+			if (a.closed && i.arcs.length > 1 && f != null)
 				context.lineTo(f.x, f.y);
 		}
-		if (i.closed && i.arcs.length === 1)
+		if (i.arcs.length === 1 && i.arcs[0].closed)
 			context.closePath();
 	},
 
@@ -1025,10 +1025,13 @@ var label = declareType("label", {
 				default:
 					break;
 			}
-			context.fillStyle = "white";
-			context.fillRect(x, y, width, fontsize + 3); // magic
+			if (!i.transparent)
+			{
+				context.fillStyle = "white";
+				context.fillRect(x, y, width, fontsize + 3); // magic
+			}
 			context.fillStyle = i.color === "#FFFFFF" ? "black" : i.color; // color inversion because of mm background is not the same as gmmo
-			context.fillText(i.text, x, y);
+			context.fillText(i.text, x, y + 1.5);
 		};
 		if (i.angle) {
 			context.save();

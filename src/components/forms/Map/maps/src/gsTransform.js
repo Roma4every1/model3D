@@ -161,7 +161,8 @@ function makeSublayers(array) {
 function arcPlain(xml) {
 	return {
 		path: arcXY(xml).reduce(
-			(a, { x, y }) => { a.push(x, y); return a; }, [])
+			(a, { x, y }) => { a.push(x, y); return a; }, []),
+        closed: xml.attributes.path.endsWith("Z") || xml.attributes.path.endsWith("z")
 	}
 }
 
@@ -171,7 +172,7 @@ function arcXY(xml) {
 		.map(x => x.split(/(?=m|M|l|L|z|Z)/).map(pt => {
 			switch (pt[0]) {
 				case "z": case "Z":
-					return { x: last.x, y: last.y } // check for null
+					return null;
 				case "M": case "L":
 					pt = pt.slice(1).split(/\s/).map(Number);
 					return last = {
@@ -187,7 +188,7 @@ function arcXY(xml) {
 				default:
 					throw new Error("wrong arc format: " + x)
 			}
-		}))
+		}).filter(p => p))
 		.filter((_, i) => {
 			if (i > 0)
 				throw new Error("more than one chain in an arc")
