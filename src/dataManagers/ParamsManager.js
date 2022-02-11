@@ -61,22 +61,57 @@ export default function createParamsManager(store) {
     }
 
     var oldParamValues = [];
+    var paramValuesToSet = [];
+
+    const updateParamSet = (formId, newParamValues) => {
+        const params = store.getState().formParams[formId];
+        newParamValues.forEach(p => {
+            const param = params.find(pp => pp.id === p.id);
+            if (param)
+            {
+                if (param.externalChannelName)
+                {
+                    paramValuesToSet[formId + '__' + param.id] = p.value;
+                    const externalChannelData = store.getState().channelsData[param.externalChannelName];
+                    const externalChannelDataRows = externalChannelData?.data?.Rows;
+                    if (externalChannelDataRows && externalChannelDataRows.length > 0) {
+                        const externalChannelDataRowsConverted = externalChannelDataRows.map(row => utils.tableRowToString(externalChannelData, row));
+                        let oldValueInNewRows = _.find(externalChannelDataRowsConverted, row => String(row.id) === p.value);
+                        if (oldValueInNewRows) {
+                            paramValuesToSet[formId + '__' + param.id] = null;
+                            updateParamValue(formId, param.id, oldValueInNewRows.value, false);
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    updateParamValue(formId, param.id, p.value, true);
+                }
+            }
+        });
+    }
 
     const setDefaultParamValue = (formId, param) => {
         const externalChannelLoading = store.getState().channelsLoading[param.externalChannelName]?.loading;
         if (param.externalChannelName && !param.canBeNull) {
             if (!externalChannelLoading) {
                 let oldValue = oldParamValues[formId + '__' + param.id];
+                let paramValueToSet = paramValuesToSet[formId + '__' + param.id];
                 oldParamValues[formId + '__' + param.id] = null;
                 const externalChannelData = store.getState().channelsData[param.externalChannelName];
                 const externalChannelDataRows = externalChannelData?.data?.Rows;
 
                 if (externalChannelDataRows && externalChannelDataRows.length > 0) {
-                    if (param.value && (oldValue !== null)) {
+                    if (param.value && (oldValue !== null || paramValueToSet)) {
                         const externalChannelDataRowsConverted = externalChannelDataRows.map(row => utils.tableRowToString(externalChannelData, row));
-                        let dataValue = utils.stringToTableCell(oldValue, 'LOOKUPCODE');
+                        let dataValue = oldValue ? utils.stringToTableCell(oldValue, 'LOOKUPCODE') : (paramValueToSet ?? utils.stringToTableCell(param.value, 'LOOKUPCODE'));
                         let oldValueInNewRows = _.find(externalChannelDataRowsConverted, row => String(row.id) === dataValue);
                         if (oldValueInNewRows) {
+                            if (!oldValue && paramValuesToSet[formId + '__' + param.id])
+                            {
+                                paramValuesToSet[formId + '__' + param.id] = null;
+                            }
                             updateParamValue(formId, param.id, oldValueInNewRows.value, false);
                             return;
                         }
@@ -89,7 +124,7 @@ export default function createParamsManager(store) {
                     updateParamValue(formId, param.id, null, true);
                 }
             }
-            else if (externalChannelLoading) {
+            else if (externalChannelLoading && !paramValuesToSet[formId + '__' + param.id]) {
                 oldParamValues[formId + '__' + param.id] = param.value ?? undefined;
             }
         }
@@ -166,6 +201,7 @@ export default function createParamsManager(store) {
         loadFormSettings,
         getParameterValues,
         updateParamValue,
-        getCanRunReport
+        getCanRunReport,
+        updateParamSet
     };
 }

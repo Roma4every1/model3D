@@ -9,9 +9,34 @@ import ProgramParametersList from './ProgramParametersList';
 export default function ProgramButton(props) {
     const sessionManager = useSelector((state) => state.sessionManager);
     const sessionId = useSelector((state) => state.sessionId);
-    const { programDisplayName, formId, presentationId } = props;
+    const { programDisplayName, formId, presentationId, needCheckVisibility, paramsForCheckVisibility } = props;
+    const paramValues = useSelector((state) => state.sessionManager.paramsManager.getParameterValues(paramsForCheckVisibility, formId, false));
     const [reportProcessing, handleProcessing] = React.useState(false);
     const [open, setOpen] = React.useState(false);
+    const [visible, setVisible] = React.useState(false);
+
+    React.useEffect(() => {
+        let ignore = false;
+        if (!needCheckVisibility) {
+            setVisible(true);
+        }
+        else {
+            async function fetchData() {
+                var jsonToSend = { sessionId: sessionId, reportId: formId, paramValues: paramValues };
+                const jsonToSendString = JSON.stringify(jsonToSend);
+                var data = await sessionManager.fetchData(`programVisibility`,
+                    {
+                        method: 'POST',
+                        body: jsonToSendString
+                    });
+                if (!ignore) {
+                    setVisible(data);
+                }
+            }
+            fetchData();
+        }
+        return () => { ignore = true; }
+    }, [sessionManager, sessionId, formId, paramValues, needCheckVisibility]);
 
     const handleOpen = () => {
         setOpen(true);
@@ -30,10 +55,10 @@ export default function ProgramButton(props) {
 
     return (
         <div>
-            <Button className="actionbutton" onClick={fillReportParameters}>
+            {visible && <Button className="actionbutton" onClick={fillReportParameters}>
                 {programDisplayName}
                 {reportProcessing && <Loader size="small" type="infinite-spinner" />}
-            </Button>
+            </Button>}
             {open && (<ProgramParametersList handleProcessing={handleProcessing} formId={formId} presentationId={presentationId} handleClose={handleClose} programDisplayName={programDisplayName} />)}
         </div>
     );

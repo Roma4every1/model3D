@@ -109,7 +109,7 @@ function Map(props, ref) {
                 let loadedmap = await drawer.current.loadMap(String(mapId), { center: { x: 0, y: 0 }, scale: 10000 });
                 if (!ignore) {
                     new drawer.current.Scroller(_viewRef.current);
-
+                    dispatch(setFormRefs(formData.id + "_mapData", loadedmap))
                     setMapData(loadedmap);
                     var centerX = 0;
                     var centerY = 0;
@@ -139,7 +139,7 @@ function Map(props, ref) {
             fetchData();
         }
         return () => { ignore = true; }
-    }, [mapInfo, sessionId, formData, sessionManager, draw]);
+    }, [mapInfo, sessionId, formData, sessionManager, draw, dispatch]);
 
     const _viewRef = React.useRef(null);
     const _div = React.useRef(null);

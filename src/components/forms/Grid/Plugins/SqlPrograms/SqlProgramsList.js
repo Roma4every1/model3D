@@ -44,6 +44,8 @@ export default function SqlProgramsList(props) {
                             formId={programName.id}
                             presentationId={formId}
                             programDisplayName={programName.displayName}
+                            needCheckVisibility={programName.needCheckVisibility}
+                            paramsForCheckVisibility={programName.paramsForCheckVisibility}
                         />
                     )}
                 </Toolbar>

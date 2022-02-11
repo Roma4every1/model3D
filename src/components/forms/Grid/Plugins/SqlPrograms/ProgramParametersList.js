@@ -37,6 +37,15 @@ export default function ProgramParametersList(props) {
                 if (reportResult?.reportLog) {
                     sessionManager.handleWindowInfo(reportResult.reportLog, null, t("report.result"), programDisplayName + ".log");
                 }
+                if (data?.Pages) {
+                    sessionManager.paramsManager.updateParamSet(presentationId, data?.Pages.map(p => {
+                        var keyValue = p.split('|');
+                        return {
+                            id: keyValue[0],
+                            value: keyValue[1]
+                        }
+                    }));
+                }
                 watchOperation(reportResult);
                 return reportResult;
             }
@@ -45,7 +54,7 @@ export default function ProgramParametersList(props) {
         else {
             handleProcessing(false);
         }
-    }, [programDisplayName, sessionId, sessionManager, handleProcessing, t]);
+    }, [programDisplayName, presentationId, sessionId, sessionManager, handleProcessing, t]);
 
     const runReport = React.useCallback(async () => {
         handleProcessing(true);

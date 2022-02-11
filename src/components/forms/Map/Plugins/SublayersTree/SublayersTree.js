@@ -6,7 +6,7 @@ export default function SublayersTree(props) {
     const { formId } = props;
     const activeChildId = useSelector((state) => state.childForms[formId]?.openedChildren[0]);
     const formRef = useSelector((state) => state.formRefs[activeChildId]);
-    const sublayers = useSelector((state) => state.formRefs[activeChildId].current?.sublayers ? state.formRefs[activeChildId].current?.sublayers() : null);
+    const mapData = useSelector((state) => state.formRefs[activeChildId + "_mapData"]);
     const [sublayersGroupingData, setSublayersGroupingData] = React.useState([]);
     const onChange = React.useRef(false);
 
@@ -25,6 +25,7 @@ export default function SublayersTree(props) {
             return;
         }
         var groupingData = [];
+       const sublayers = mapData?.layers;
         if (sublayers) {
             sublayers.forEach(sublayer => {
                 if (!sublayer.group || sublayer.group.length === 0) {
@@ -56,7 +57,7 @@ export default function SublayersTree(props) {
             });
         }
         setSublayersGroupingData(groupingData);
-    }, [sublayers]);
+    }, [mapData]);
 
     return (
         <div className="wrapper">
