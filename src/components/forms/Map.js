@@ -105,7 +105,7 @@ function Map(props, ref) {
             async function fetchData() {
                 const mapId = mapInfo.Cells[0];
                 const owner = mapInfo.Cells[12];
-                drawer.current = getMapLoader(sessionId, formData.id, owner);
+                drawer.current = getMapLoader(sessionId, formData.id, owner, sessionManager);
                 let loadedmap = await drawer.current.loadMap(String(mapId), { center: { x: 0, y: 0 }, scale: 10000 });
                 if (!ignore) {
                     new drawer.current.Scroller(_viewRef.current);
@@ -115,24 +115,26 @@ function Map(props, ref) {
                     var centerY = 0;
                     draw(_viewRef.current, loadedmap, 10000, centerX, centerY, null);
                     loadedmap.pointsData.then(points => {
-                        var np = points.find(function (it) { return it.debit }) || points[0];
-                        if (np) {
-                            centerX = np.x;
-                            centerY = np.y;
+                        if (points) {
+                            var np = points.find(function (it) { return it.debit }) || points[0];
+                            if (np) {
+                                centerX = np.x;
+                                centerY = np.y;
+                            }
+                            else {
+                                var bounds = loadedmap.layers[0].bounds;
+                                centerX = (bounds.min.x + bounds.max.x) / 2;
+                                centerY = (bounds.min.y + bounds.max.y) / 2;
+                            }
+                            if (centerScaleChangingHandler?.current) {
+                                centerScaleChangingHandler.current({
+                                    scale: np.scale ? np.scale : 10000,
+                                    centerx: centerX,
+                                    centery: centerY
+                                });
+                            }
+                            draw(_viewRef.current, loadedmap, np.scale ? np.scale : 10000, centerX, centerY, null);
                         }
-                        else {
-                            var bounds = loadedmap.layers[0].bounds;
-                            centerX = (bounds.min.x + bounds.max.x) / 2;
-                            centerY = (bounds.min.y + bounds.max.y) / 2;
-                        }
-                        if (centerScaleChangingHandler?.current) {
-                            centerScaleChangingHandler.current({
-                                scale: np.scale ? np.scale : 10000,
-                                centerx: centerX,
-                                centery: centerY
-                            });
-                        }
-                        draw(_viewRef.current, loadedmap, np.scale ? np.scale : 10000, centerX, centerY, null);
                     });
                 }
             }

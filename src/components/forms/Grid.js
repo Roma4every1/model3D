@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import Form from './Form';
 import FlexLayout from "flexlayout-react";
 import Container from './Grid/Container';
+import FormDisplayName from './Form/FormDisplayName';
 
 function Grid(props, ref) {
     const { t } = useTranslation();
@@ -59,7 +60,7 @@ function Grid(props, ref) {
             var form = forms.find(f => f.id === layout.id);
             if (form) {
                 if (!layout.title) {
-                    layout.name = form.displayName;
+                    layout.name = <FormDisplayName formData={form} />;
                 }
                 else {
                     layout.name = layout.title;

@@ -178,3 +178,50 @@ export const stringToTableCell = (rowstring, columnName) => {
     }
     return dataValue;
 }
+
+export const getLinkedPropertyValue = (linkedPropertyString, formId, state) => {
+
+    let startFoundIndex = 0;
+    let returnString = '';
+    let startIndex = 0;
+    let finish = '';
+    let resultBroken = false;
+    while (startIndex > -1) {
+        startIndex = linkedPropertyString.indexOf('$(', startFoundIndex);
+        if (startIndex > -1) {
+            let finishIndex = linkedPropertyString.indexOf(')', startIndex);
+            let start = linkedPropertyString.slice(startFoundIndex + 1, startIndex);
+            startFoundIndex = finishIndex;
+            finish = linkedPropertyString.slice(finishIndex + 1);
+            let pathToChange = linkedPropertyString.slice(startIndex + 2, finishIndex);
+            let pointIndex = pathToChange.indexOf('.');
+            let bracketIndex = pathToChange.indexOf('[');
+            let semicolonIndex = pathToChange.indexOf(':');
+            let parameterName = pathToChange.slice(0, pointIndex);
+            let type = pathToChange.slice(pointIndex + 1, bracketIndex);
+            let propertyName = pathToChange.slice(bracketIndex + 1, semicolonIndex > -1 ? semicolonIndex - 1 : -1);
+            let defaultValue = semicolonIndex > -1 ? pathToChange.slice(semicolonIndex + 1) : null;
+            if (bracketIndex < 0) {
+                type = pathToChange.slice(pointIndex + 1);
+                propertyName = null;
+            }
+            var neededParamValues = state.sessionManager.paramsManager.getParameterValues([parameterName], formId, false);
+            let propertyValue = neededParamValues[0]?.value;
+            if (type === 'CellValue' && propertyValue) {
+                propertyValue = stringToTableCell(neededParamValues[0].value, propertyName);
+            }
+            if (propertyValue || defaultValue) {
+                returnString += start + (propertyValue ?? defaultValue);
+            }
+            else {
+                returnString = '';
+                resultBroken = true;
+                break;
+            }
+        }
+    }
+    if (!resultBroken) {
+        returnString += finish;
+    }
+    return returnString;
+}

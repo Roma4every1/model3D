@@ -1,9 +1,10 @@
+import { useSelector } from 'react-redux';
 import createMapsDrawer from './maps/src/index.js';
 import lines from "./lines.json";
 var utils = require("../../../utils");
 var transform = require("./maps/src/gsTransform");
 
-async function getHttpFun(address, encoding) {
+async function getHttpFun(address, encoding, sessionManager) {
     var done = await fetch(address,
         {
             credentials: 'include'
@@ -13,7 +14,7 @@ async function getHttpFun(address, encoding) {
         return new Uint8Array(buffer);
     }
     else if (encoding === "json") {
-        return done.json();
+        return await sessionManager.getJsonDataWithError(done);
     }
     else {
         return done.text();
@@ -34,14 +35,14 @@ function parseStringToJson(parsedString) {
     return parsedString;
 }
 
-export function getMapLoader(sessionId, formId, owner) {
+export function getMapLoader(sessionId, formId, owner, sessionManager) {
 
     var httpClient = {
 
         "getHTTP": getHttpFun,
 
         "getJSON": function (url) {
-            return getHttpFun(url, "json").then(parseStringToJson);
+            return getHttpFun(url, "json", sessionManager).then(parseStringToJson);
         }
     };
 

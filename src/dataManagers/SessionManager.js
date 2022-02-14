@@ -168,26 +168,30 @@ export default function createSessionManager(systemName, store) {
         }, 5);
     }
 
+    const getJsonDataWithError = async (response) => {
+        const data = await response.json();
+        if (data.error) {
+            if (data.type === "Warning") {
+                handleWindowWarning(data.message, data.stackTrace);
+            }
+            else if (data.type === "Info") {
+                handleWindowInfo(data.message, data.stackTrace);
+            }
+            else {
+                handleWindowError(data.message, data.stackTrace);
+            }
+            return null;
+        }
+        return data;
+    }
+
     var fetchBlockedCount = 0;
     const fetchData = async (request, params) => {
         if (fetchBlockedCount < 10) {
             try {
                 const response = await utils.webFetch(request, params);
                 try {
-                    const data = await response.json();
-                    if (data.error) {
-                        if (data.type === "Warning") {
-                            handleWindowWarning(data.message, data.stackTrace);
-                        }
-                        else if (data.type === "Info") {
-                            handleWindowInfo(data.message, data.stackTrace);
-                        }
-                        else {
-                            handleWindowError(data.message, data.stackTrace);
-                        }
-                        return null;
-                    }
-                    return data;
+                    return await getJsonDataWithError(response);
                 }
                 catch (e) {
                     handleWindowError(i18n.t('messages.responseReadError'), e.message + ": " + request);
@@ -226,6 +230,7 @@ export default function createSessionManager(systemName, store) {
         handleWindowInfo,
         handleWindowWarning,
         watchReport,
-        fetchData
+        fetchData,
+        getJsonDataWithError
     }));
 }
