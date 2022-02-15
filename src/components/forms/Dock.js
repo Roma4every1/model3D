@@ -39,6 +39,11 @@ function Dock(props, ref) {
 
     const onModelChange = React.useCallback(() => {
         var json = leftBorderModel.toJson();
+        json.layout = {
+            ...leftBorderApplySettings.layout,
+            "type": json.layout.type,
+            "children": json.layout.children
+        }
         dispatch(setFormLayout(formData.id, json));
     }, [leftBorderModel, formData, dispatch]);
 

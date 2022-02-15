@@ -10,7 +10,7 @@ export default function ProgramButton(props) {
     const sessionManager = useSelector((state) => state.sessionManager);
     const sessionId = useSelector((state) => state.sessionId);
     const { programDisplayName, formId, presentationId, needCheckVisibility, paramsForCheckVisibility } = props;
-    const paramValues = useSelector((state) => state.sessionManager.paramsManager.getParameterValues(paramsForCheckVisibility, formId, false));
+    const paramValues = useSelector((state) => paramsForCheckVisibility ? state.sessionManager.paramsManager.getParameterValues(paramsForCheckVisibility, formId, false) : null);
     const [reportProcessing, handleProcessing] = React.useState(false);
     const [open, setOpen] = React.useState(false);
     const [visible, setVisible] = React.useState(false);

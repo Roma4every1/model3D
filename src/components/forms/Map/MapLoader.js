@@ -1,4 +1,3 @@
-import { useSelector } from 'react-redux';
 import createMapsDrawer from './maps/src/index.js';
 import lines from "./lines.json";
 var utils = require("../../../utils");

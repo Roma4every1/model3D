@@ -33,6 +33,7 @@ export default function Menu(props) {
     const handlePresentationParameters = (plugin) => {
         if (formLayout) {
             var pluginId = plugin.children[0].component.id;
+            plugin.children[0].id = formId + ',' + plugin.WMWname;
             var pluginExists = formLayout.layout.children.some(ch => ch.children.some(tabch => tabch.component.id === pluginId));
             if (!pluginExists) {
                 if (!plugin.initialWeight) {
@@ -47,6 +48,7 @@ export default function Menu(props) {
                         rootOrientationVertical: true
                     },
                     layout: {
+                        ...formLayout.layout,
                         "type": "row",
                         "children": [...formLayout.layout.children, plugin].sort((a, b) => a.order - b.order)
                     }
