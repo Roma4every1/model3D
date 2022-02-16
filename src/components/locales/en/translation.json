@@ -8,6 +8,7 @@
     "infinitySign": "∞",
     "info": "Information",
     "loading": "Loading...",
+    "none": "None",
     "ok": "Ok",
     "parameters": "Parameters",
     "presentationParameters": "Presentation parameters",
@@ -62,8 +63,10 @@
     "layerVisibilityControl": "Layer visibility control",
     "maxscale": "Maximal scale:",
     "minscale": "Minimal scale:",
+    "pick": "Pock",
     "revertInitialValues": "Revert initial values",
     "showAll": "Show all",
+    "sublayer": "Sublayer",
     "sublayers": "Sublayers",
     "startEditing": "Start editing"
   },

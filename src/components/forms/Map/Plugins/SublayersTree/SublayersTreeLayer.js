@@ -1,11 +1,14 @@
 ﻿import React from 'react';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Checkbox, Input } from "@progress/kendo-react-inputs";
 import { Button } from "@progress/kendo-react-buttons";
 
 export default function SublayersTreeLayer(props) {
     const { t } = useTranslation();
-    const { formRef, subitem } = props;
+    const { formRef, subitem, formId } = props;
+    const activeLayer = useSelector((state) => state.formRefs[formId + "_activeLayer"]);
+    const [selected, setSelected] = React.useState(false);
     const [expanded, setExpanded] = React.useState(false);
     const [checked, setChecked] = React.useState(subitem.sublayer.visible);
     const [lowScale, setLowScale] = React.useState(subitem.sublayer.lowscale);
@@ -13,6 +16,10 @@ export default function SublayersTreeLayer(props) {
 
     const _lowScaleRef = React.useRef(null);
     const _highScaleRef = React.useRef(null);
+
+    React.useEffect(() => {
+        setSelected(subitem.sublayer === activeLayer);
+    }, [activeLayer]);
 
     React.useEffect(() => {
         if (!subitem.sublayer.initialLowscale) {
@@ -51,10 +58,23 @@ export default function SublayersTreeLayer(props) {
         setHighScale('INF');
     };
 
+    const setSelectedState = (e) => {
+        if (e.nativeEvent.target.localName === 'div') {
+            if (selected) {
+                formRef.current.setActiveLayer(null);
+            }
+            else {
+                formRef.current.setActiveLayer(subitem.sublayer);
+            }
+            setSelected(!selected);
+        }
+    };
+
     return (
         <div>
-            <div className="mapLayerHeader">
-                <Checkbox label={subitem.text} value={checked} onChange={onChecked} />
+            <div className={"mapLayerHeader" + (selected ? "-selected" : "")} onClick={setSelectedState}>
+                <Checkbox value={checked} onChange={onChecked} />
+                {"  " + subitem.text}
                 <div className="mapLayerExpand">
                     <button className="k-button k-button-clear" onClick={setExpandedState} title={t('map.layerVisibilityControl')}>
                         <span className="k-icon k-i-gear" />

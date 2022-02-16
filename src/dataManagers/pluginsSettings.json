@@ -101,6 +101,11 @@
       "component": "Dimensions",
       "label": "Центр и масштаб карты"
     },
+    "selecting": {
+      "type": "strip",
+      "component": "Selecting",
+      "label": "Выделение элементов карты"
+    },
     "sublayersTree": {
       "type": "right",
       "component": "SublayersTree/SublayersTree",

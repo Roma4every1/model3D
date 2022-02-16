@@ -16,6 +16,7 @@ function Map(props, ref) {
     const [mapInfo, setMapInfo] = React.useState(null);
     const [mapData, setMapData] = React.useState(null);
     const [mapDrawnData, setMapDrawnData] = React.useState(null);
+    const [activeLayer, setActiveLayer] = React.useState(null);
 
     const centerScaleChangingHandler = React.useRef(null);
     const drawer = React.useRef(null);
@@ -199,6 +200,10 @@ function Map(props, ref) {
         },
         control: () => {
             return _viewRef.current;
+        },
+        setActiveLayer: (layer) => {
+            dispatch(setFormRefs(formData.id + "_activeLayer", layer));
+            setActiveLayer(layer);
         }
     }));
 

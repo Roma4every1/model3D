@@ -8,6 +8,7 @@
     "infinitySign": "∞",
     "info": "Информация",
     "loading": "Загрузка...",
+    "none": "Нет",
     "ok": "Ок",
     "parameters": "Параметры",
     "presentationParameters": "Параметры презентации",
@@ -62,8 +63,10 @@
     "layerVisibilityControl": "Управление видимостью слоя",
     "maxscale": "Максимальный масштаб:",
     "minscale": "Минимальный масштаб:",
+    "pick": "Указать",
     "revertInitialValues": "Восстановить исходные значения",
     "showAll": "Показать всё",
+    "sublayer": "Подслой",
     "sublayers": "Подслои",
     "startEditing": "Начать редактирование"
   },

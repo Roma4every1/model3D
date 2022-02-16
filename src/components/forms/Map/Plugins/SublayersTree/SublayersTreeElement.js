@@ -6,7 +6,7 @@ import {
 import SublayersTreeLayer from './SublayersTreeLayer';
 
 export default function SublayersTreeElement(props) {
-    const { formRef, item } = props;
+    const { formRef, item, formId } = props;
     const [expanded, setExpanded] = React.useState(false);
 
     return (<ExpansionPanel
@@ -21,8 +21,8 @@ export default function SublayersTreeElement(props) {
     >
         {expanded && <ExpansionPanelContent>
             {item.items?.map((subitem) => (
-                subitem.items ? <SublayersTreeElement item={subitem} formRef={formRef} /> :
-                    <SublayersTreeLayer subitem={subitem} formRef={formRef} />
+                subitem.items ? <SublayersTreeElement item={subitem} formRef={formRef} formId={formId} /> :
+                    <SublayersTreeLayer subitem={subitem} formRef={formRef} formId={formId} />
             ))}
         </ExpansionPanelContent>}
     </ExpansionPanel>

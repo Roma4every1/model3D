@@ -62,7 +62,7 @@ export default function SublayersTree(props) {
     return (
         <div className="wrapper">
             {sublayersGroupingData.map((item) => (
-                <SublayersTreeElement item={item} formRef={formRef} />
+                <SublayersTreeElement item={item} formRef={formRef} formId={activeChildId} />
             ))}
         </div>);
 }

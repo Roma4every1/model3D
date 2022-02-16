@@ -126,8 +126,37 @@ html {
     padding: 5px;
 }
 
+.mapPickPopupItem {
+    display: inline-block;
+    cursor: pointer;
+}
+
+.mapPickPopupItemCheck {
+    float: left;
+    margin-left: 5px;
+    width: 20px;
+}
+
+.mapPickPopupItemLabel {
+    float: left;
+}
+
+.mapLayerHeader-selected {
+    height: 25px;
+    background: #f8b3ae80;
+    border: 1px solid #f8b3ae;
+    cursor: pointer;
+}
+
 .mapLayerHeader {
     height: 25px;
+    border: 1px solid #ffffff;
+    cursor: pointer;
+}
+
+mapLayerLabel {
+    float: right;
+    margin: 5px;
 }
 
 .mapLayerExpand {
@@ -172,6 +201,18 @@ html {
     width: 20px;
     height: 20px;
     float: right;
+}
+
+.mapPickButton {
+    width: 25px;
+    height: 25px;
+    border-radius: 0;
+}
+
+.mapPickPopupButton {
+    width: 5px;
+    height: 25px;
+    border-radius: 0;
 }
 
 .mapLayerBottom {
