@@ -21,6 +21,9 @@ export default function DimensionsView(props) {
 
     React.useEffect(() => {
         subscribeOnCenterScaleChanging(setCenterScale);
+        return () => {
+            subscribeOnCenterScaleChanging(null);
+        }
     }, [subscribeOnCenterScaleChanging]);
 
     const xChanged = (event) => {

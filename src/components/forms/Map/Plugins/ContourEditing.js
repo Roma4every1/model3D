@@ -11,6 +11,7 @@ export default function ContourEditing(props) {
     const sessionManager = useSelector((state) => state.sessionManager);
     const formRef = useSelector((state) => state.formRefs[formId]);
     const control = useSelector((state) => state.formRefs[formId]?.current?.control());
+    const mapData = useSelector((state) => state.formRefs[formId + "_mapData"]);
     const [onEditing, setOnEditing] = React.useState(false);
     const movedPoint = React.useRef(null);
 
@@ -84,7 +85,10 @@ export default function ContourEditing(props) {
         movedPoint.current = null;
         setOnEditing(false);
         control.blocked = false;
-        formRef.current.mapData().layers[3].modified = true;
+        let modifiedLayer = mapData?.layers?.find(l => l.elements.includes(formRef.current.selectedObject()));
+        if (modifiedLayer) {
+            modifiedLayer.modified = true;
+        }
     };
 
     const save = async (event) => {

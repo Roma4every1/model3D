@@ -22,7 +22,7 @@ Logger.prototype.createLogger = function ( name ) {
 };
 
 Logger.prototype.send = function ( level, name, threadId, data ) {
-	return this.parent.send( level, name, threadId, data );
+	//return this.parent.send( level, name, threadId, data );
 };
 
 const levelValues = {
@@ -48,11 +48,11 @@ var logger = module.exports = new Logger();
 logger.level = "debug";
 
 logger.send = function ( level, name, threadId, data ) {
-	var msg = Array.from( data );
-	if ( threadId )
-		msg.unshift( threadId );
-	if ( name )
-		msg.unshift( name );
-	//cons[ level ]( ...msg )
-	console[level](...msg);
+	//var msg = Array.from( data );
+	//if ( threadId )
+	//	msg.unshift( threadId );
+	//if ( name )
+	//	msg.unshift( name );
+	////cons[ level ]( ...msg )
+	//console[level](...msg);
 };

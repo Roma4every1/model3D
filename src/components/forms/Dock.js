@@ -45,7 +45,7 @@ function Dock(props, ref) {
             "children": json.layout.children
         }
         dispatch(setFormLayout(formData.id, json));
-    }, [leftBorderModel, formData, dispatch]);
+    }, [leftBorderModel, formData, dispatch, leftBorderApplySettings]);
 
     const [layoutSettings] = React.useState({
         global: {

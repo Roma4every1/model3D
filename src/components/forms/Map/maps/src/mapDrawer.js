@@ -3,6 +3,7 @@ var logger = require("./logger");
 var startThread = require("./startThread");
 var geom = require("./geom");
 var lodash = require("lodash");
+var parseColor = require("parse-color");
 
 export var types = {};
 
@@ -882,6 +883,17 @@ var polyline = declareType("polyline", {
 		// ---
 
 		var pathNeeded = lodash.once(() => polyline.path(i, options));
+		context.lineCap = "round";
+		context.lineJoin = "round";
+		if (i.selected) {
+			pathNeeded();
+			context.strokeStyle = "#000000";
+			context.lineWidth = ((i.borderwidth || defaultLineWidth) + 4.5 / 96.0 * 25.4) * 0.001 * options.dotsPerMeter;
+			context.stroke();
+			context.strokeStyle = "#ffffff";
+			context.lineWidth = ((i.borderwidth || defaultLineWidth) + 3 / 96.0 * 25.4) * 0.001 * options.dotsPerMeter;
+			context.stroke();
+		}
 
 		if (i.fillname) {
 			pathNeeded();
@@ -901,7 +913,23 @@ var polyline = declareType("polyline", {
 		}
 		else if (!i.transparent) {
 			pathNeeded();
-			context.fillStyle = i.fillbkcolor;
+			var color = i.fillbkcolor;
+			if (i.selected) {
+				var parsedColor = parseColor(i.fillbkcolor).rgb;
+				var stepvalue = 50;
+				if (parsedColor[0] < 255 - stepvalue)
+				{
+					color = "rgba(" + (parsedColor[0] + stepvalue) + "," + parsedColor[1] + "," + parsedColor[2] + ",1)";
+				}
+				else if ((parsedColor[1] > stepvalue - 1) && (parsedColor[2] > stepvalue - 1))
+				{
+					color = "rgba(" + parsedColor[0] + "," + (parsedColor[1] - stepvalue) + "," + (parsedColor[2] - stepvalue) + ",1)";
+				}
+				else {
+					color = "rgba(255," + Math.max(parsedColor[1] - stepvalue, 0) + "," + Math.max(parsedColor[2] - stepvalue, 0) + ",1)";
+				}
+			}
+			context.fillStyle = color;
 			context.fill();
 		}
 		if (!i.bordercolor || i.bordercolor === "none")
@@ -951,11 +979,6 @@ var polyline = declareType("polyline", {
 				}
 			}
 		}
-		if (i.selected)
-		{
-			context.lineWidth = (i.borderwidth || defaultLineWidth) * 0.01 * options.dotsPerMeter;
-		}
-
 		context.stroke();
 		if (context.setLineDash) {
 			context.setLineDash([]);
@@ -986,7 +1009,7 @@ var label = declareType("label", {
 
 	draw: function* drawThread(i, options) { // eslint-disable-line
 
-		var fontsize = i.fontsize * // pt
+		var fontsize = (i.fontsize + (i.selected ? 2 : 0)) * // pt
 			(1 / 72 * 0.0254) * // meters
 			options.dotsPerMeter; // pixels
 
@@ -1024,6 +1047,11 @@ var label = declareType("label", {
 					break;
 				default:
 					break;
+			}
+			if (i.selected) {
+				context.strokeStyle = "black";
+				context.lineWidth = 3;
+				context.strokeRect(x, y, width, fontsize + 3);
 			}
 			if (!i.transparent)
 			{
@@ -1155,7 +1183,7 @@ export function startPaint(canvas, map, options) {
 
 		L.info("starting draw map cycle", map, drawBounds, scale);
 		try {
-			for (var layer of map.layers) {
+			for (let layer of map.layers) {
 				L.info("processing layer", "(", layer.name, ")", layer);
 
 				L.info("checking if layer is not hidden");
@@ -1170,7 +1198,7 @@ export function startPaint(canvas, map, options) {
 				if (!L.info(geom.rects.intersects(drawBounds, layer.bounds)))
 					continue;
 
-				var c = onCheckExecution();
+				let c = onCheckExecution();
 				c && (yield c);
 
 				var total = 0;
@@ -1181,7 +1209,7 @@ export function startPaint(canvas, map, options) {
 					if (r)
 						yield r;
 				}
-				if (layer.elements) for (let element of layer.elements) {
+				if (layer.elements) for (let element of layer.elements.filter(e => !e.selected)) {
 					if (total === 0)
 						L.info("type of first element in sublayer is", element.type);
 					++total;
@@ -1189,7 +1217,7 @@ export function startPaint(canvas, map, options) {
 					if (!geom.rects.intersects(drawBounds, D.bound(element)))
 						continue;
 
-				    c = onCheckExecution();
+					c = onCheckExecution();
 					c && (yield c);
 
 					++drawn;
@@ -1202,6 +1230,35 @@ export function startPaint(canvas, map, options) {
 					}
 				}
 				L.info("Layer ( ", layer.name, " ). ", drawn, "of total", total, "elements are drawn. ", total - drawn, " are outside of the painted area");
+			}
+			
+			for (let layer of map.layers) {
+				if (!L.info(isLayerVisible(layer, map)))
+					continue;
+				if (!L.info(coords.scaleVisible(layer)))
+					continue;
+				if (!L.info(geom.rects.intersects(drawBounds, layer.bounds)))
+					continue;
+
+				let c = onCheckExecution();
+				c && (yield c);
+
+				if (layer.elements) for (let element of layer.elements.filter(e => e.selected)) {
+					let D = types[element.type];
+					if (!geom.rects.intersects(drawBounds, D.bound(element)))
+						continue;
+
+					c = onCheckExecution();
+					c && (yield c);
+
+					++mapDrawn;
+					if (D.draw && !options.draftDrawing) {
+						yield* D.draw(element, drawOptions);
+					}
+					else if (D.draft) {
+						D.draft(element, drawOptions);
+					}
+				}
 			}
 
 			if (map.type !== "profile" && !map.points) {

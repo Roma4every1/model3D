@@ -21,8 +21,8 @@ export default function SublayersTreeElement(props) {
     >
         {expanded && <ExpansionPanelContent>
             {item.items?.map((subitem) => (
-                subitem.items ? <SublayersTreeElement item={subitem} formRef={formRef} formId={formId} /> :
-                    <SublayersTreeLayer subitem={subitem} formRef={formRef} formId={formId} />
+                subitem.items ? <SublayersTreeElement key={subitem.text} item={subitem} formRef={formRef} formId={formId} /> :
+                    <SublayersTreeLayer key={subitem.text} subitem={subitem} formRef={formRef} formId={formId} />
             ))}
         </ExpansionPanelContent>}
     </ExpansionPanel>

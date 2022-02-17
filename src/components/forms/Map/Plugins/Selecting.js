@@ -3,22 +3,179 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Popup } from "@progress/kendo-react-popup";
 import { Button } from "@progress/kendo-react-buttons";
+var pixelPerMeter = require("../maps/src/pixelPerMeter");
+var _ = require("lodash");
 
 export default function Selecting(props) {
     const { t } = useTranslation();
     const { formId } = props;
+    const formRef = useSelector((state) => state.formRefs[formId]);
+    const activeLayer = useSelector((state) => state.formRefs[formId + "_activeLayer"]);
+    const control = useSelector((state) => state.formRefs[formId]?.current?.control());
     const [pressed, setPressed] = React.useState(false);
     const [mode, setMode] = React.useState("sublayer");
+    const [mouseEvent, setMouseEvent] = React.useState(null);
 
-    const setNoneMode = () => {
-        setMode("none");
+    var SELECTION_RADIUS = 0.005;
+
+    var distanceBetweenPointAndSegment = (segment, point, minDistance) => {
+        let asquared = Math.pow(segment[0][0] - point.x, 2) + Math.pow(segment[0][1] - point.y, 2);
+        if (asquared < minDistance * minDistance) {
+            return true;
+        }
+        let bsquared = Math.pow(segment[1][0] - point.x, 2) + Math.pow(segment[1][1] - point.y, 2);
+        if (bsquared < minDistance * minDistance) {
+            return true;
+        }
+        let csquared = Math.pow(segment[1][0] - segment[0][0], 2) + Math.pow(segment[1][1] - segment[0][1], 2);
+        if (asquared > bsquared + csquared || bsquared > asquared + csquared) {
+            return false;
+        }
+        let c = Math.hypot(segment[1][0] - segment[0][0], segment[1][1] - segment[0][1]);
+        let doublesquare = Math.abs((segment[0][0] - point.x) * (segment[1][1] - point.y) - (segment[1][0] - point.x) * (segment[0][1] - point.y));
+        if (doublesquare / c < minDistance) {
+            return true;
+        }
+        return false;
+    }
+
+    var distance = React.useCallback((element, point, scale) => {
+        if (element.type === "polyline" && element.fillbkcolor) {
+            //  return false;
+            let points = _.chunk(element.arcs[0].path, 2);
+            for (let i = 0; i < points.length - 1; i++) {
+                let segment = [points[i], points[i + 1]];
+                if (distanceBetweenPointAndSegment(segment, point, SELECTION_RADIUS * scale)) {
+                    return true;
+                }
+            }
+        }
+        else if (element.type === "polyline" && !element.fillbkcolor) {
+            let points = _.chunk(element.arcs[0].path, 2);
+            for (let i = 0; i < points.length - 1; i++) {
+                let segment = [points[i], points[i + 1]];
+                if (distanceBetweenPointAndSegment(segment, point, SELECTION_RADIUS * scale)) {
+                    return true;
+                }
+            }
+        }
+        else if (element.type === "label") {
+            var fontsize = (element.fontsize + (element.selected ? 2 : 0)) * // pt
+                (1 / 72 * 0.0254) * // meters
+                scale; // pixels
+            var width = control.getContext("2d").measureText(element.text).width * scale / pixelPerMeter();
+            var x = element.x;
+            var y = element.y;
+
+            x += (element.xoffset || 0) * 0.001 * scale;
+            y -= (element.yoffset || 0) * 0.001 * scale;
+
+            var xleft = x - (width + 2) / 2 * element.halignment;
+            var ybottom = y + (fontsize + 2) * (element.valignment / 2 - 1);
+            var xright = xleft + width;
+            var ytop = ybottom + (fontsize + 3);
+
+            var result = ((xleft <= point.x) && (point.x <= xright) && (ybottom <= point.y) && (point.y <= ytop));
+            return result;
+        }
+        return false;
+    }, [SELECTION_RADIUS, control]);
+
+    var clientPoint = (event, point) => {
+        var ret;
+        if ("offsetX" in event)
+            ret = {
+                x: event.offsetX,
+                y: event.offsetY,
+            }
+        else
+            ret = {
+                x: event.clientX,
+                y: event.clientY,
+            }
+        return ret;
     };
 
-    const setSublayerMode = () => {
-        setMode("sublayer");
-    };
+    var oldPointData = React.useRef(null);
+
+    var mouseDownHandler = React.useCallback((event) => {
+        if (pressed && formRef.current) {
+            var coords = formRef.current.coords();
+            const point = coords.pointToMap(clientPoint(event));
+            let scale = formRef.current.centerScale().scale;
+            if (oldPointData.current && (Math.pow(oldPointData.current.point.x - point.x, 2) + Math.pow(oldPointData.current.point.y - point.y, 2) < SELECTION_RADIUS * scale * SELECTION_RADIUS * scale)) {
+                if (oldPointData.current.nearestElements.length > 0) {
+                    oldPointData.current.activeIndex++;
+                    let selectedObject = formRef.current.selectedObject();
+                    if (selectedObject) {
+                        selectedObject.selected = false;
+                    }
+                    if (oldPointData.current.activeIndex < oldPointData.current.nearestElements.length) {
+                        oldPointData.current.nearestElements[oldPointData.current.activeIndex].selected = true;
+                        formRef.current.setSelectedObject(oldPointData.current.nearestElements[oldPointData.current.activeIndex]);
+                    }
+                    else {
+                        oldPointData.current.activeIndex = -1;
+                        formRef.current.setSelectedObject(null);
+                    }
+                    formRef.current.updateCanvas();
+                }
+            }
+            else {
+                let nearestElements = [];
+                if (activeLayer && (mode === "sublayer")) {
+                    nearestElements = activeLayer.elements.filter(element => distance(element, point, scale));
+                }
+                else {
+                    let mapData = formRef.current.mapData();
+                    mapData.layers.forEach(layer => {
+                        if (layer.visible) {
+                            nearestElements = [...nearestElements, ...layer.elements.filter(element => distance(element, point, formRef.current.centerScale().scale))];
+                        }
+                    })
+                }
+                if (nearestElements.length > 0) {
+                    let activeIndex = 0;
+                    let selectedObject = formRef.current.selectedObject();
+                    if (selectedObject) {
+                        selectedObject.selected = false;
+                    }
+                    nearestElements[activeIndex].selected = true;
+                    formRef.current.setSelectedObject(nearestElements[activeIndex]);
+                    formRef.current.updateCanvas();
+
+                    oldPointData.current = {
+                        point: point,
+                        nearestElements: nearestElements,
+                        activeIndex: 0
+                    }
+                }
+                else {
+                    oldPointData.current = null;
+                }
+            }
+        }
+    }, [mode, pressed, activeLayer, SELECTION_RADIUS, formRef, distance]);
+
+    React.useEffect(() => {
+        if (mouseEvent && pressed) {
+            mouseDownHandler(mouseEvent);
+        }
+    }, [mouseEvent, mouseDownHandler, pressed]);
+
+    React.useEffect(() => {
+        if (control) {
+            control.addEventListener("mousedown", event => {
+                setMouseEvent(event);
+            }, { passive: true })
+        }
+    }, [control]);
 
     const setButtonPressed = () => {
+        if (control) {
+            control.selectingMode = !pressed;
+        }
+        setMouseEvent(null);
         setPressed(!pressed);
     };
 
@@ -47,7 +204,7 @@ export default function Selecting(props) {
                 show={popoverState.open}
                 anchor={popoverState.anchorEl}
             >
-                <div style={{ width: 125 }} >
+                <div className="mapPickPopup">
                     <div onClick={() => setMode("sublayer")} className="mapPickPopupItem" >
                         <div className="mapPickPopupItemCheck" >
                             {mode === "sublayer" ? <span className="k-icon k-i-check" /> : <span className="k-icon" />}

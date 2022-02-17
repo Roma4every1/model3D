@@ -19,7 +19,7 @@ export default function SublayersTreeLayer(props) {
 
     React.useEffect(() => {
         setSelected(subitem.sublayer === activeLayer);
-    }, [activeLayer]);
+    }, [activeLayer, subitem]);
 
     React.useEffect(() => {
         if (!subitem.sublayer.initialLowscale) {

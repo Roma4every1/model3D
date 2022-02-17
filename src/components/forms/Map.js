@@ -16,7 +16,6 @@ function Map(props, ref) {
     const [mapInfo, setMapInfo] = React.useState(null);
     const [mapData, setMapData] = React.useState(null);
     const [mapDrawnData, setMapDrawnData] = React.useState(null);
-    const [activeLayer, setActiveLayer] = React.useState(null);
 
     const centerScaleChangingHandler = React.useRef(null);
     const drawer = React.useRef(null);
@@ -67,7 +66,7 @@ function Map(props, ref) {
                 }
             })
             .on("pointPicked", function (point, scale) {
-                if (!_viewRef.current.blocked) {
+                if (!_viewRef.current.blocked && !_viewRef.current.selectingMode) {
                     var nearestObject = getNearestNamedPoint(point, scale, map);
                     if (nearestObject) {
                         const newSelectedObject = nearestObject.UWID ? [nearestObject.UWID] : null;
@@ -83,8 +82,6 @@ function Map(props, ref) {
 
     const updateCanvas = React.useCallback((newcs, context, redrawnHandler) => {
         const cs = newcs ?? getCenterScale();
-        mapData.layers[3].elements[3].selected = true;
-        selectedObject.current = mapData.layers[3].elements[3];
         if (centerScaleChangingHandler?.current) {
             centerScaleChangingHandler.current(cs);
         }
@@ -198,12 +195,14 @@ function Map(props, ref) {
         selectedObject: () => {
             return selectedObject.current;
         },
+        setSelectedObject: (newSelected) => {
+            selectedObject.current = newSelected;
+        },
         control: () => {
             return _viewRef.current;
         },
         setActiveLayer: (layer) => {
             dispatch(setFormRefs(formData.id + "_activeLayer", layer));
-            setActiveLayer(layer);
         }
     }));
 
