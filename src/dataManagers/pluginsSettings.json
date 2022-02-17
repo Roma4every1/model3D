@@ -1,4 +1,11 @@
 {
+  "Chart": {
+    "seriesSettings": {
+      "type": "inner",
+      "component": "SeriesSettings",
+      "label": "Настройки графика"
+    }
+  },
   "Dock": {
     "menu": {
       "type": "top",
