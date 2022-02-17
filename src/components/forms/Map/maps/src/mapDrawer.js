@@ -586,6 +586,24 @@ var polyline = declareType("polyline", {
 		Clear: [],
 	},
 
+	bkcolor: function (i) {
+		var color = i.fillbkcolor;
+		if (i.selected) {
+			var parsedColor = parseColor(i.fillbkcolor).rgb;
+			var stepvalue = 50;
+			if (parsedColor[0] < 255 - stepvalue) {
+				color = "rgba(" + (parsedColor[0] + stepvalue) + "," + parsedColor[1] + "," + parsedColor[2] + ",1)";
+			}
+			else if ((parsedColor[1] > stepvalue - 1) && (parsedColor[2] > stepvalue - 1)) {
+				color = "rgba(" + parsedColor[0] + "," + (parsedColor[1] - stepvalue) + "," + (parsedColor[2] - stepvalue) + ",1)";
+			}
+			else {
+				color = "rgba(255," + Math.max(parsedColor[1] - stepvalue, 0) + "," + Math.max(parsedColor[2] - stepvalue, 0) + ",1)";
+			}
+		}
+		return color;
+	},
+
 	bound: function (p) {
 		if (p.bounds)
 			return p.bounds;
@@ -617,7 +635,7 @@ var polyline = declareType("polyline", {
 
 	loaded: (i, provider) => allPromises(
 		i.fillname && setElementImage(i, provider.getPatternImage(
-			i.fillname, i.fillcolor, i.transparent ? "none" : i.fillbkcolor)),  //commented 'cause sometimes transparent is set to true for non-transparent elements. (ex. "HALFTONE-64")
+			i.fillname, i.fillcolor, i.transparent ? "none" : polyline.bkcolor(i))),  //commented 'cause sometimes transparent is set to true for non-transparent elements. (ex. "HALFTONE-64")
 		i.borderstyleid && provider.getLinesDefStub && provider.getLinesDefStub() &&
 		(provider.getLinesDefStub().then(stub => i.style = stub && stub[i.borderstyleid]), true)
 	),
@@ -913,23 +931,7 @@ var polyline = declareType("polyline", {
 		}
 		else if (!i.transparent) {
 			pathNeeded();
-			var color = i.fillbkcolor;
-			if (i.selected) {
-				var parsedColor = parseColor(i.fillbkcolor).rgb;
-				var stepvalue = 50;
-				if (parsedColor[0] < 255 - stepvalue)
-				{
-					color = "rgba(" + (parsedColor[0] + stepvalue) + "," + parsedColor[1] + "," + parsedColor[2] + ",1)";
-				}
-				else if ((parsedColor[1] > stepvalue - 1) && (parsedColor[2] > stepvalue - 1))
-				{
-					color = "rgba(" + parsedColor[0] + "," + (parsedColor[1] - stepvalue) + "," + (parsedColor[2] - stepvalue) + ",1)";
-				}
-				else {
-					color = "rgba(255," + Math.max(parsedColor[1] - stepvalue, 0) + "," + Math.max(parsedColor[2] - stepvalue, 0) + ",1)";
-				}
-			}
-			context.fillStyle = color;
+			context.fillStyle = polyline.bkcolor(i);
 			context.fill();
 		}
 		if (!i.bordercolor || i.bordercolor === "none")

@@ -41,17 +41,21 @@ export default function Selecting(props) {
 
     var distance = React.useCallback((element, point, scale) => {
         if (element.type === "polyline" && element.fillbkcolor) {
-            //  return false;
+            let sum = 0;
             let points = _.chunk(element.arcs[0].path, 2);
+            points = [...(points.map(p => [p[0] - point.x, p[1] - point.y])), [points[0][0] - point.x, points[0][1] - point.y]];
             for (let i = 0; i < points.length - 1; i++) {
-                let segment = [points[i], points[i + 1]];
-                if (distanceBetweenPointAndSegment(segment, point, SELECTION_RADIUS * scale)) {
-                    return true;
-                }
+                let tg1 = (points[i][0] * points[i][0] + points[i][1] * points[i][1] - points[i][0] * points[i + 1][0] - points[i][1] * points[i + 1][1]) / (points[i][0] * points[i + 1][1] - points[i][1] * points[i + 1][0]);
+                let tg2 = (points[i + 1][0] * points[i + 1][0] + points[i + 1][1] * points[i + 1][1] - points[i][0] * points[i + 1][0] - points[i][1] * points[i + 1][1]) / (points[i][0] * points[i + 1][1] - points[i][1] * points[i + 1][0]);
+                sum += Math.atan(tg1) + Math.atan(tg2);
             }
+            return (Math.abs(sum) > 0.0000001);
         }
         else if (element.type === "polyline" && !element.fillbkcolor) {
             let points = _.chunk(element.arcs[0].path, 2);
+            if (element.arcs[0].closed) {
+                points = [...points, points[0]];
+            }
             for (let i = 0; i < points.length - 1; i++) {
                 let segment = [points[i], points[i + 1]];
                 if (distanceBetweenPointAndSegment(segment, point, SELECTION_RADIUS * scale)) {
@@ -66,16 +70,14 @@ export default function Selecting(props) {
             var width = control.getContext("2d").measureText(element.text).width * scale / pixelPerMeter();
             var x = element.x;
             var y = element.y;
-
             x += (element.xoffset || 0) * 0.001 * scale;
             y -= (element.yoffset || 0) * 0.001 * scale;
-
-            var xleft = x - (width + 2) / 2 * element.halignment;
-            var ybottom = y + (fontsize + 2) * (element.valignment / 2 - 1);
-            var xright = xleft + width;
-            var ytop = ybottom + (fontsize + 3);
-
-            var result = ((xleft <= point.x) && (point.x <= xright) && (ybottom <= point.y) && (point.y <= ytop));
+            var xx = point.x - x;
+            var yy = point.y - y;
+            var angle = element.angle / 180 * Math.PI;
+            var xtrans = xx * Math.cos(angle) - yy * Math.sin(angle) + (width + 2) / 2 * element.halignment;
+            var ytrans = xx * Math.sin(angle) + yy * Math.cos(angle) - (fontsize + 2) * (element.valignment / 2 - 1);
+            var result = (0 <= xtrans) && (xtrans <= width) && (0 <= ytrans) && (ytrans <= fontsize + 3);
             return result;
         }
         return false;
