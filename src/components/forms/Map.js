@@ -20,6 +20,10 @@ function Map(props, ref) {
     const centerScaleChangingHandler = React.useRef(null);
     const drawer = React.useRef(null);
     const selectedObject = React.useRef(null);
+    const setSelectedObject = React.useCallback((newSelected) => {
+        selectedObject.current = newSelected;
+        dispatch(setFormRefs(formData.id + "_selectedObject", newSelected));
+    }, [dispatch, formData.id]);
 
     const getCenterScale = React.useCallback(() => ({
         scale: mapDrawnData?.scale ?? 10000,
@@ -70,7 +74,7 @@ function Map(props, ref) {
                     var nearestObject = getNearestNamedPoint(point, scale, map);
                     if (nearestObject) {
                         const newSelectedObject = nearestObject.UWID ? [nearestObject.UWID] : null;
-                        selectedObject.current = newSelectedObject;
+                        setSelectedObject(newSelectedObject);
                         draw(canvas, map, mapDataD.scale, mapDataD.centerx, mapDataD.centery, newSelectedObject)
                         nearestObject.id = nearestObject.UWID;
                         nearestObject.selected = true;
@@ -78,7 +82,7 @@ function Map(props, ref) {
                 }
             });
         setMapDrawnData(mapDataD);
-    }, []);
+    }, [setSelectedObject]);
 
     const updateCanvas = React.useCallback((newcs, context, redrawnHandler) => {
         const cs = newcs ?? getCenterScale();
@@ -196,7 +200,7 @@ function Map(props, ref) {
             return selectedObject.current;
         },
         setSelectedObject: (newSelected) => {
-            selectedObject.current = newSelected;
+            setSelectedObject(newSelected);
         },
         control: () => {
             return _viewRef.current;

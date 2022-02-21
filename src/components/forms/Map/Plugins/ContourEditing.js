@@ -1,17 +1,21 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button } from "@progress/kendo-react-buttons";
+import { Window } from "@progress/kendo-react-dialogs";
+import setOpenedWindow from "../../../../store/actionCreators/setOpenedWindow";
 var _ = require("lodash");
 
 export default function ContourEditing(props) {
     const { t } = useTranslation();
+    const dispatch = useDispatch();
     const { formId } = props;
     const sessionId = useSelector((state) => state.sessionId);
     const sessionManager = useSelector((state) => state.sessionManager);
     const formRef = useSelector((state) => state.formRefs[formId]);
     const control = useSelector((state) => state.formRefs[formId]?.current?.control());
     const mapData = useSelector((state) => state.formRefs[formId + "_mapData"]);
+    const selectedObject = useSelector((state) => state.formRefs[formId + "_selectedObject"]);
     const [onEditing, setOnEditing] = React.useState(false);
     const movedPoint = React.useRef(null);
 
@@ -49,7 +53,6 @@ export default function ContourEditing(props) {
 
     if (control) {
         control.addEventListener("mousedown", event => {
-            var selectedObject = formRef.current.selectedObject();
             if (onEditing && selectedObject) {
                 var coords = formRef.current.coords();
                 const point = coords.pointToMap(clientPoint(event));
@@ -65,7 +68,6 @@ export default function ContourEditing(props) {
         }, { passive: true })
 
         control.addEventListener("mousemove", event => {
-            var selectedObject = formRef.current.selectedObject();
             if (movedPoint.current && selectedObject) {
                 var coords = formRef.current.coords();
                 const point = coords.pointToMap(clientPoint(event));
@@ -77,15 +79,50 @@ export default function ContourEditing(props) {
     }
 
     const startEditing = (event) => {
+        const imageSize = 32;
         control.blocked = true;
         setOnEditing(true);
+        let modifiedLayer = mapData?.layers?.find(l => l.elements.includes(selectedObject));
+        dispatch(setOpenedWindow("editWindow", true, <Window
+            className="mapEditWindow"
+            maximizeButton="false"
+            resizable={false}
+            key="editWindow"
+            title={t('map.editing', { sublayerName: modifiedLayer.name })}
+            initialWidth={267}
+            initialHeight={82}
+            setOpened={(arg) =>
+            dispatch(setOpenedWindow("editWindow", arg, null))
+        }>
+            <Button className="mapEditing" togglable={true}>
+                <img width={imageSize} height={imageSize} src={window.location.pathname + 'images/map/vector_add.png'} alt={t('map.addPointToEnd')} title={t('map.addPointToEnd')} />
+            </Button>
+            <Button className="mapEditing" togglable={true}>
+                <img width={imageSize} height={imageSize} src={window.location.pathname + 'images/map/draw_vertex.png'} alt={t('map.addPointBetweenPoints')} title={t('map.addPointBetweenPoints')} />
+            </Button>
+            <Button className="mapEditing" togglable={true}>
+                <img width={imageSize} height={imageSize} src={window.location.pathname + 'images/map/transform_path.png'} alt={t('map.movePoint')} title={t('map.movePoint')} />
+            </Button>
+            <Button className="mapEditing" togglable={true}>
+                <img width={imageSize} height={imageSize} src={window.location.pathname + 'images/map/vector_delete.png'} alt={t('map.deletePoint')} title={t('map.deletePoint')} />
+            </Button>
+            <Button className="mapEditingHorSpace" togglable={true}>
+                <img width={imageSize} height={imageSize} src={window.location.pathname + 'images/map/hand.png'} alt={t('map.moveMap')} title={t('map.moveMap')} />
+            </Button>
+            <Button className="mapEditing" togglable={true}>
+                <img width={imageSize} height={imageSize} src={window.location.pathname + 'images/map/accept.png'} alt={t('base.apply')} title={t('base.apply')} />
+            </Button>
+            <Button className="mapEditing" togglable={true}>
+                <img width={imageSize} height={imageSize} src={window.location.pathname + 'images/map/cancel.png'} alt={t('base.cancel')} title={t('base.cancel')} />
+            </Button>
+        </Window>));
     };
 
     const finishEditing = (event) => {
         movedPoint.current = null;
         setOnEditing(false);
         control.blocked = false;
-        let modifiedLayer = mapData?.layers?.find(l => l.elements.includes(formRef.current.selectedObject()));
+        let modifiedLayer = mapData?.layers?.find(l => l.elements.includes(selectedObject));
         if (modifiedLayer) {
             modifiedLayer.modified = true;
         }
@@ -109,7 +146,7 @@ export default function ContourEditing(props) {
 
     return (
         <div>
-            <Button className="actionbutton" onClick={startEditing}>
+            <Button className="actionbutton" onClick={startEditing} disabled={(!selectedObject) || (selectedObject.type !== 'polyline')}>
                 {t('map.startEditing')}
             </Button>
             <Button className="actionbutton" onClick={finishEditing} disabled={!onEditing}>

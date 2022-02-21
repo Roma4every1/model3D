@@ -58,11 +58,17 @@
     "spreadsheetUnite": "Excel"
   },
   "map": {
+    "addPointBetweenPoints": "Добавление точки между точками",
+    "addPointToEnd": "Добавление точки в конец линии",
+    "deletePoint": "Удаление точки",
+    "editing": "Редактирование (подслой: {{sublayerName}})",
     "exportToPdf": "Экспорт в PDF",
     "finishEditing": "Завершить редактирование",
     "layerVisibilityControl": "Управление видимостью слоя",
     "maxscale": "Максимальный масштаб:",
     "minscale": "Минимальный масштаб:",
+    "moveMap": "Перемещение карты",
+    "movePoint": "Перемещение точки",
     "pick": "Указать",
     "revertInitialValues": "Восстановить исходные значения",
     "showAll": "Показать всё",

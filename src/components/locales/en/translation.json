@@ -58,11 +58,17 @@
     "spreadsheetUnite": "Excel"
   },
   "map": {
+    "addPointBetweenPoints": "Add point between existing points",
+    "addPointToEnd": "Add point to the line end",
+    "deletePoint": "Delete point",
+    "editing": "Editing (sublayer: {{sublayerName}})",
     "exportToPdf": "Export to PDF",
     "finishEditing": "Finish editing",
     "layerVisibilityControl": "Layer visibility control",
     "maxscale": "Maximal scale:",
     "minscale": "Minimal scale:",
+    "moveMap": "Move map",
+    "movePoint": "Move point",
     "pick": "Pock",
     "revertInitialValues": "Revert initial values",
     "showAll": "Show all",

@@ -188,6 +188,10 @@ mapLayerLabel {
     float: right;
 }
 
+.mapLayerBottom {
+    margin-bottom: 10px;
+}
+
 .mapPickButton {
     width: 25px;
     height: 25px;
@@ -219,8 +223,32 @@ mapLayerLabel {
     float: left;
 }
 
-.mapLayerBottom {
-    margin-bottom: 10px;
+.mapEditWindow .k-window-titlebar {
+    padding: 5px;
+}
+
+.mapEditWindow .k-window-title {
+    padding: 5px;
+    margin: 0px;
+    height: 25px;
+    font-size: 16px;
+}
+
+.mapEditWindow .k-window-content {
+    padding: 5px;
+    overflow-y: hidden;
+    overflow-x: hidden;
+}
+
+.mapEditing {
+    width: 36px;
+    height: 36px;
+}
+
+.mapEditingHorSpace {
+    width: 36px;
+    height: 36px;
+    margin-left: 5px;
 }
 
 .textAlign-left {
