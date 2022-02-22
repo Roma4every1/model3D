@@ -3,13 +3,12 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button } from "@progress/kendo-react-buttons";
 import { Window } from "@progress/kendo-react-dialogs";
-import setOpenedWindow from "../../../../store/actionCreators/setOpenedWindow";
+import setOpenedWindow from "../../../../../store/actionCreators/setOpenedWindow";
 
 export default function ContourEditingEditWindow(props) {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const { setOnEditing, formId, modeHandler } = props;
-    const formRef = useSelector((state) => state.formRefs[formId]);
     const control = useSelector((state) => state.formRefs[formId]?.current?.control());
     const mapData = useSelector((state) => state.formRefs[formId + "_mapData"]);
     const selectedObject = useSelector((state) => state.formRefs[formId + "_selectedObject"]);
@@ -24,7 +23,7 @@ export default function ContourEditingEditWindow(props) {
     React.useEffect(() => {
         modeHandler(mode);
         control.blocked = (mode !== "moveMap");
-    }, [mode]);
+    }, [mode, control, modeHandler]);
 
     const closeEditing = (noSave) => {
         movedPoint.current = null;

@@ -70,11 +70,12 @@
     "moveMap": "Перемещение карты",
     "movePoint": "Перемещение точки",
     "pick": "Указать",
+    "properties": "Свойства",
     "revertInitialValues": "Восстановить исходные значения",
     "showAll": "Показать всё",
     "sublayer": "Подслой",
     "sublayers": "Подслои",
-    "startEditing": "Начать редактирование"
+    "startEditing": "Редактировать"
   },
   "menucommands": {
     "about": "О программе",

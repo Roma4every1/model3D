@@ -2,12 +2,14 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button } from "@progress/kendo-react-buttons";
-import setOpenedWindow from "../../../../store/actionCreators/setOpenedWindow";
-import setFormRefs from '../../../../store/actionCreators/setFormRefs';
-import ContourEditingEditWindow from "./ContourEditingEditWindow";
+import setOpenedWindow from "../../../../../store/actionCreators/setOpenedWindow";
+import setFormRefs from '../../../../../store/actionCreators/setFormRefs';
+import EditWindow from "./EditWindow";
+import LabelPropertiesWindow from "./LabelPropertiesWindow";
+import PolylinePropertiesWindow from "./PolylinePropertiesWindow";
 var _ = require("lodash");
 
-export default function ContourEditing(props) {
+export default function Editing(props) {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const { formId } = props;
@@ -30,7 +32,7 @@ export default function ContourEditing(props) {
             formRef.current.updateCanvas();
             dispatch(setFormRefs(formId + "_selectedObjectEditing", onEditing));
         }
-    }, [selectedObject, onEditing, formRef]);
+    }, [selectedObject, onEditing, formRef, dispatch, formId]);
 
     const modeHandler = (newMode) => {
         mode.current = newMode;
@@ -50,7 +52,7 @@ export default function ContourEditing(props) {
         return (doublesquare * doublesquare / csquared);
     }
 
-    const getNearestSegment = (point, polyline) => {
+    const getNearestSegment = React.useCallback((point, polyline) => {
         var nearestNp = 0;
         var points = _.chunk(polyline.arcs[0].path, 2);
         if (polyline.arcs[0].closed) {
@@ -66,7 +68,7 @@ export default function ContourEditing(props) {
             }
         }
         return nearestNp;
-    };
+    }, []);
 
     const getNearestPoint = (point, scale, polyline) => {
         var SELECTION_RADIUS = 0.015;
@@ -128,31 +130,25 @@ export default function ContourEditing(props) {
                 formRef.current.updateCanvas();
             }
         }
-    }, [formRef, selectedObject]);
+    }, [formRef, selectedObject, dispatch, formId, getNearestSegment]);
 
     var mouseMoveHandler = React.useCallback((event) => {
         if (selectedObject && isOnMove.current) {
+            var coords = formRef.current.coords();
+            const point = coords.pointToMap(clientPoint(event));
             if (mode.current === "movePoint" && movedPoint.current) {
-                var coords = formRef.current.coords();
-                const point = coords.pointToMap(clientPoint(event));
                 selectedObject.arcs[0].path[movedPoint.current.index * 2] = Math.round(point.x);
                 selectedObject.arcs[0].path[movedPoint.current.index * 2 + 1] = Math.round(point.y);
-                formRef.current.updateCanvas();
             }
             else if (mode.current === "addPointToEnd") {
-                var coords = formRef.current.coords();
-                const point = coords.pointToMap(clientPoint(event));
                 selectedObject.arcs[0].path[selectedObject.arcs[0].path.length - 2] = Math.round(point.x);
                 selectedObject.arcs[0].path[selectedObject.arcs[0].path.length - 1] = Math.round(point.y);
-                formRef.current.updateCanvas();
             }
             else if (mode.current === "addPointBetween") {
-                var coords = formRef.current.coords();
-                const point = coords.pointToMap(clientPoint(event));
                 selectedObject.arcs[0].path[movedPoint.current * 2 + 2] = Math.round(point.x);
                 selectedObject.arcs[0].path[movedPoint.current * 2 + 3] = Math.round(point.y);
-                formRef.current.updateCanvas();
             }
+            formRef.current.updateCanvas();
         }
     }, [formRef, selectedObject]);
 
@@ -211,7 +207,7 @@ export default function ContourEditing(props) {
         setMouseUpEvent(null);
         setOnEditing(true);
         dispatch(setOpenedWindow("editWindow", true,
-            <ContourEditingEditWindow
+            <EditWindow
                 setOnEditing={setOnEditing}
                 formId={formId}
                 modeHandler={modeHandler}
@@ -234,10 +230,28 @@ export default function ContourEditing(props) {
             });
     };
 
+    const showPropertiesWindow = () => {
+        if (selectedObject?.type === 'polyline') {
+            dispatch(setOpenedWindow("polylinePropertiesWindow", true,
+                <PolylinePropertiesWindow
+                    formId={formId}
+                />));
+        }
+        else if (selectedObject?.type === 'label') {
+            dispatch(setOpenedWindow("labelPropertiesWindow", true,
+                <LabelPropertiesWindow
+                    formId={formId}
+                />));
+        }
+    };
+
     return (
         <div>
             <Button className="actionbutton" onClick={startEditing} disabled={(!selectedObject) || (selectedObject.type !== 'polyline')}>
                 {t('map.startEditing')}
+            </Button>
+            <Button className="actionbutton" onClick={showPropertiesWindow} disabled={(!selectedObject) || (selectedObject.type !== 'polyline' && selectedObject.type !== 'label')}>
+                {t('map.properties')}
             </Button>
             <Button className="actionbutton" onClick={save}>
                 {t('base.save')}

@@ -120,8 +120,8 @@
     },
     "contourEditing": {
       "type": "strip",
-      "component": "ContourEditing",
-      "label": "Редактирование контуров"
+      "component": "Editing/Editing",
+      "label": "Редактирование карты"
     }
   }
 }

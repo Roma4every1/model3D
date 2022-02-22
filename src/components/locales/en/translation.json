@@ -70,11 +70,12 @@
     "moveMap": "Move map",
     "movePoint": "Move point",
     "pick": "Pock",
+    "properties": "Properties",
     "revertInitialValues": "Revert initial values",
     "showAll": "Show all",
     "sublayer": "Sublayer",
     "sublayers": "Sublayers",
-    "startEditing": "Start editing"
+    "startEditing": "Edit"
   },
   "menucommands": {
     "about": "About program",
