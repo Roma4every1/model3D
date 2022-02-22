@@ -640,6 +640,42 @@ var polyline = declareType("polyline", {
 		(provider.getLinesDefStub().then(stub => i.style = stub && stub[i.borderstyleid]), true)
 	),
 
+	points: function (i, options) {
+		var context = options.context;
+		//context.strokeStyle = "#000000";
+
+		let addWidth = 2.5 / 96.0 * 25.4;
+
+		for (var a of i.arcs) {
+			var start = true;
+			var x = null;
+			for (var c of a.path) {
+				if (x == null)
+					x = c;
+				else {
+					context.beginPath();
+					var p = options.pointToControl({ x, y: c });
+					if (start) {
+						context.fillStyle = "#000000";
+						context.arc(p.x, p.y, context.lineWidth / 2 + addWidth * 3, 0, 2 * Math.PI);
+						context.fill();
+						start = false;
+					}
+					else {
+						context.fillStyle = "#808080";
+						context.arc(p.x, p.y, context.lineWidth / 2 + addWidth * 2, 0, 2 * Math.PI);
+						context.fill();
+						context.fillStyle = "#FFFFFF";
+						context.beginPath();
+						context.arc(p.x, p.y, context.lineWidth / 2 + addWidth, 0, 2 * Math.PI);
+						context.fill();
+					}
+					x = null;
+				}
+			}
+		}
+	},
+
 	path: function (i, options) {
 		var context = options.context;
 		context.beginPath();
@@ -888,8 +924,7 @@ var polyline = declareType("polyline", {
 			lconfig = options.provider.linesConfigJson.data.BorderStyles[0].Element;
 
 		var currentLineConfig = [];
-		if (i.borderstyleid)
-		{
+		if (i.borderstyleid) {
 			currentLineConfig = [lconfig.find(e => e.guid._value === i.borderstyleid)];
 		}
 		if (currentLineConfig.length !== 0) {
@@ -903,7 +938,7 @@ var polyline = declareType("polyline", {
 		var pathNeeded = lodash.once(() => polyline.path(i, options));
 		context.lineCap = "round";
 		context.lineJoin = "round";
-		if (i.selected) {
+		if ((!i.edited) && i.selected) {
 			pathNeeded();
 			context.strokeStyle = "#000000";
 			context.lineWidth = ((i.borderwidth || defaultLineWidth) + 4.5 / 96.0 * 25.4) * 0.001 * options.dotsPerMeter;
@@ -934,11 +969,19 @@ var polyline = declareType("polyline", {
 			context.fillStyle = polyline.bkcolor(i);
 			context.fill();
 		}
-		if (!i.bordercolor || i.bordercolor === "none")
+		if (!i.bordercolor || i.bordercolor === "none") {
+			if (i.edited) {
+				polyline.points(i, options);
+			}
 			return;
+		}
 		var borderstyle = polyline.borderStyles[i.borderstyle];
-		if (borderstyle === "Clear")
+		if (borderstyle === "Clear") {
+			if (i.edited) {
+				polyline.points(i, options);
+			}
 			return;
+		}
 		if (!borderstyle)
 			borderstyle = "Solid";
 		pathNeeded();
@@ -993,6 +1036,9 @@ var polyline = declareType("polyline", {
 			if (context.setLineDash) {
 				context.setLineDash([]);
 			}
+		}
+		if (i.edited) {
+			polyline.points(i, options);
 		}
 	}
 });
@@ -1233,7 +1279,7 @@ export function startPaint(canvas, map, options) {
 				}
 				L.info("Layer ( ", layer.name, " ). ", drawn, "of total", total, "elements are drawn. ", total - drawn, " are outside of the painted area");
 			}
-			
+
 			for (let layer of map.layers) {
 				if (!L.info(isLayerVisible(layer, map)))
 					continue;

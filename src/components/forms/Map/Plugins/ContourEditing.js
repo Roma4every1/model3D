@@ -2,8 +2,9 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button } from "@progress/kendo-react-buttons";
-import { Window } from "@progress/kendo-react-dialogs";
 import setOpenedWindow from "../../../../store/actionCreators/setOpenedWindow";
+import setFormRefs from '../../../../store/actionCreators/setFormRefs';
+import ContourEditingEditWindow from "./ContourEditingEditWindow";
 var _ = require("lodash");
 
 export default function ContourEditing(props) {
@@ -14,12 +15,60 @@ export default function ContourEditing(props) {
     const sessionManager = useSelector((state) => state.sessionManager);
     const formRef = useSelector((state) => state.formRefs[formId]);
     const control = useSelector((state) => state.formRefs[formId]?.current?.control());
-    const mapData = useSelector((state) => state.formRefs[formId + "_mapData"]);
     const selectedObject = useSelector((state) => state.formRefs[formId + "_selectedObject"]);
     const [onEditing, setOnEditing] = React.useState(false);
     const movedPoint = React.useRef(null);
+    const isOnMove = React.useRef(false);
+    const mode = React.useRef("movePoint");
+    const [mouseDownEvent, setMouseDownEvent] = React.useState(null);
+    const [mouseMoveEvent, setMouseMoveEvent] = React.useState(null);
+    const [mouseUpEvent, setMouseUpEvent] = React.useState(null);
 
-    const getNearestNamedPoint = (point, scale, polyline) => {
+    React.useEffect(() => {
+        if (selectedObject) {
+            selectedObject.edited = onEditing;
+            formRef.current.updateCanvas();
+            dispatch(setFormRefs(formId + "_selectedObjectEditing", onEditing));
+        }
+    }, [selectedObject, onEditing, formRef]);
+
+    const modeHandler = (newMode) => {
+        mode.current = newMode;
+    }
+
+    var squaredDistanceBetweenPointAndSegment = (segment, point) => {
+        let asquared = Math.pow(segment[0][0] - point.x, 2) + Math.pow(segment[0][1] - point.y, 2);
+        let bsquared = Math.pow(segment[1][0] - point.x, 2) + Math.pow(segment[1][1] - point.y, 2);
+        let csquared = Math.pow(segment[1][0] - segment[0][0], 2) + Math.pow(segment[1][1] - segment[0][1], 2);
+        if (asquared > bsquared + csquared) {
+            return bsquared;
+        }
+        if (bsquared > asquared + csquared) {
+            return asquared;
+        }
+        let doublesquare = Math.abs((segment[0][0] - point.x) * (segment[1][1] - point.y) - (segment[1][0] - point.x) * (segment[0][1] - point.y));
+        return (doublesquare * doublesquare / csquared);
+    }
+
+    const getNearestSegment = (point, polyline) => {
+        var nearestNp = 0;
+        var points = _.chunk(polyline.arcs[0].path, 2);
+        if (polyline.arcs[0].closed) {
+            points = [...points, points[0]];
+        }
+        var minDist = squaredDistanceBetweenPointAndSegment([points[0], points[1]], point);
+        for (let i = 1; i < points.length - 1; i++) {
+            let segment = [points[i], points[i + 1]];
+            let dist = squaredDistanceBetweenPointAndSegment(segment, point);
+            if (dist < minDist) {
+                minDist = dist;
+                nearestNp = i;
+            }
+        }
+        return nearestNp;
+    };
+
+    const getNearestPoint = (point, scale, polyline) => {
         var SELECTION_RADIUS = 0.015;
         var minRadius;
         var nearestNp = null;
@@ -36,7 +85,7 @@ export default function ContourEditing(props) {
         return nearestNp;
     };
 
-    var clientPoint = (event, point) => {
+    var clientPoint = (event) => {
         var ret;
         if ("offsetX" in event)
             ret = {
@@ -51,84 +100,125 @@ export default function ContourEditing(props) {
         return ret;
     };
 
-    if (control) {
-        control.addEventListener("mousedown", event => {
-            if (onEditing && selectedObject) {
-                var coords = formRef.current.coords();
-                const point = coords.pointToMap(clientPoint(event));
-                if (selectedObject.type === 'polyline') {
-                    var nearestPoint = getNearestNamedPoint(point, formRef.current.centerScale().scale, selectedObject);
-                    movedPoint.current = nearestPoint;
+    var mouseDownHandler = React.useCallback((event) => {
+        if (selectedObject) {
+            isOnMove.current = true;
+            let coords = formRef.current.coords();
+            const point = coords.pointToMap(clientPoint(event));
+            if (mode.current === "deletePoint") {
+                let nearestPoint = getNearestPoint(point, formRef.current.centerScale().scale, selectedObject);
+                if (nearestPoint) {
+                    selectedObject.arcs[0].path.splice(nearestPoint.index * 2, 2);
+                    dispatch(setFormRefs(formId + "_selectedObjectLength", selectedObject.arcs[0].path.length));
+                    formRef.current.updateCanvas();
                 }
             }
-        }, { passive: true })
+            else if (mode.current === "movePoint") {
+                let nearestPoint = getNearestPoint(point, formRef.current.centerScale().scale, selectedObject);
+                movedPoint.current = nearestPoint;
+            }
+            else if (mode.current === "addPointToEnd") {
+                selectedObject.arcs[0].path = [...selectedObject.arcs[0].path, point.x, point.y];
+                formRef.current.updateCanvas();
+            }
+            else if (mode.current === "addPointBetween") {
+                let nearestPoint = getNearestSegment(point, selectedObject);
+                selectedObject.arcs[0].path.splice(nearestPoint * 2 + 2, 0, point.x, point.y);
+                movedPoint.current = nearestPoint;
+                formRef.current.updateCanvas();
+            }
+        }
+    }, [formRef, selectedObject]);
 
-        control.addEventListener("mouseup", event => {
-            movedPoint.current = null;
-        }, { passive: true })
-
-        control.addEventListener("mousemove", event => {
-            if (movedPoint.current && selectedObject) {
+    var mouseMoveHandler = React.useCallback((event) => {
+        if (selectedObject && isOnMove.current) {
+            if (mode.current === "movePoint" && movedPoint.current) {
                 var coords = formRef.current.coords();
                 const point = coords.pointToMap(clientPoint(event));
                 selectedObject.arcs[0].path[movedPoint.current.index * 2] = Math.round(point.x);
                 selectedObject.arcs[0].path[movedPoint.current.index * 2 + 1] = Math.round(point.y);
                 formRef.current.updateCanvas();
             }
-        }, { passive: true })
-    }
-
-    const startEditing = (event) => {
-        const imageSize = 32;
-        control.blocked = true;
-        setOnEditing(true);
-        let modifiedLayer = mapData?.layers?.find(l => l.elements.includes(selectedObject));
-        dispatch(setOpenedWindow("editWindow", true, <Window
-            className="mapEditWindow"
-            maximizeButton="false"
-            resizable={false}
-            key="editWindow"
-            title={t('map.editing', { sublayerName: modifiedLayer.name })}
-            initialWidth={267}
-            initialHeight={82}
-            setOpened={(arg) =>
-            dispatch(setOpenedWindow("editWindow", arg, null))
-        }>
-            <Button className="mapEditing" togglable={true}>
-                <img width={imageSize} height={imageSize} src={window.location.pathname + 'images/map/vector_add.png'} alt={t('map.addPointToEnd')} title={t('map.addPointToEnd')} />
-            </Button>
-            <Button className="mapEditing" togglable={true}>
-                <img width={imageSize} height={imageSize} src={window.location.pathname + 'images/map/draw_vertex.png'} alt={t('map.addPointBetweenPoints')} title={t('map.addPointBetweenPoints')} />
-            </Button>
-            <Button className="mapEditing" togglable={true}>
-                <img width={imageSize} height={imageSize} src={window.location.pathname + 'images/map/transform_path.png'} alt={t('map.movePoint')} title={t('map.movePoint')} />
-            </Button>
-            <Button className="mapEditing" togglable={true}>
-                <img width={imageSize} height={imageSize} src={window.location.pathname + 'images/map/vector_delete.png'} alt={t('map.deletePoint')} title={t('map.deletePoint')} />
-            </Button>
-            <Button className="mapEditingHorSpace" togglable={true}>
-                <img width={imageSize} height={imageSize} src={window.location.pathname + 'images/map/hand.png'} alt={t('map.moveMap')} title={t('map.moveMap')} />
-            </Button>
-            <Button className="mapEditing" togglable={true}>
-                <img width={imageSize} height={imageSize} src={window.location.pathname + 'images/map/accept.png'} alt={t('base.apply')} title={t('base.apply')} />
-            </Button>
-            <Button className="mapEditing" togglable={true}>
-                <img width={imageSize} height={imageSize} src={window.location.pathname + 'images/map/cancel.png'} alt={t('base.cancel')} title={t('base.cancel')} />
-            </Button>
-        </Window>));
-    };
-
-    const finishEditing = (event) => {
-        movedPoint.current = null;
-        setOnEditing(false);
-        control.blocked = false;
-        let modifiedLayer = mapData?.layers?.find(l => l.elements.includes(selectedObject));
-        if (modifiedLayer) {
-            modifiedLayer.modified = true;
+            else if (mode.current === "addPointToEnd") {
+                var coords = formRef.current.coords();
+                const point = coords.pointToMap(clientPoint(event));
+                selectedObject.arcs[0].path[selectedObject.arcs[0].path.length - 2] = Math.round(point.x);
+                selectedObject.arcs[0].path[selectedObject.arcs[0].path.length - 1] = Math.round(point.y);
+                formRef.current.updateCanvas();
+            }
+            else if (mode.current === "addPointBetween") {
+                var coords = formRef.current.coords();
+                const point = coords.pointToMap(clientPoint(event));
+                selectedObject.arcs[0].path[movedPoint.current * 2 + 2] = Math.round(point.x);
+                selectedObject.arcs[0].path[movedPoint.current * 2 + 3] = Math.round(point.y);
+                formRef.current.updateCanvas();
+            }
         }
+    }, [formRef, selectedObject]);
+
+    var mouseUpHandler = React.useCallback((event) => {
+        isOnMove.current = false;
+        if (mode.current === "movePoint") {
+            movedPoint.current = null;
+        }
+        else if (mode.current === "addPointToEnd") {
+            var coords = formRef.current.coords();
+            const point = coords.pointToMap(clientPoint(event));
+            selectedObject.arcs[0].path[-2] = Math.round(point.x);
+            selectedObject.arcs[0].path[-1] = Math.round(point.y);
+            formRef.current.updateCanvas();
+        }
+    }, [formRef, selectedObject]);
+
+    React.useEffect(() => {
+        if (mouseDownEvent && onEditing) {
+            mouseDownHandler(mouseDownEvent);
+        }
+    }, [mouseDownEvent, mouseDownHandler, onEditing]);
+
+    React.useEffect(() => {
+        if (mouseMoveEvent && onEditing) {
+            mouseMoveHandler(mouseMoveEvent);
+        }
+    }, [mouseMoveEvent, mouseMoveHandler, onEditing]);
+
+    React.useEffect(() => {
+        if (mouseUpEvent && onEditing) {
+            mouseUpHandler(mouseUpEvent);
+        }
+    }, [mouseUpEvent, mouseUpHandler, onEditing]);
+
+    React.useEffect(() => {
+        if (control) {
+            control.addEventListener("mousedown", event => {
+                setMouseDownEvent(event);
+            }, { passive: true })
+
+            control.addEventListener("mousemove", event => {
+                setMouseMoveEvent(event);
+            }, { passive: true })
+
+            control.addEventListener("mouseup", event => {
+                setMouseUpEvent(event);
+            }, { passive: true })
+        }
+    }, [control]);
+
+    const startEditing = () => {
+        control.blocked = true;
+        setMouseDownEvent(null);
+        setMouseMoveEvent(null);
+        setMouseUpEvent(null);
+        setOnEditing(true);
+        dispatch(setOpenedWindow("editWindow", true,
+            <ContourEditingEditWindow
+                setOnEditing={setOnEditing}
+                formId={formId}
+                modeHandler={modeHandler}
+            />));
     };
 
-    const save = async (event) => {
+    const save = async () => {
         var jsonToSend = {
             sessionId: sessionId,
             formId: formId,
@@ -148,9 +238,6 @@ export default function ContourEditing(props) {
         <div>
             <Button className="actionbutton" onClick={startEditing} disabled={(!selectedObject) || (selectedObject.type !== 'polyline')}>
                 {t('map.startEditing')}
-            </Button>
-            <Button className="actionbutton" onClick={finishEditing} disabled={!onEditing}>
-                {t('map.finishEditing')}
             </Button>
             <Button className="actionbutton" onClick={save}>
                 {t('base.save')}

@@ -11,12 +11,19 @@ export default function Selecting(props) {
     const { formId } = props;
     const formRef = useSelector((state) => state.formRefs[formId]);
     const activeLayer = useSelector((state) => state.formRefs[formId + "_activeLayer"]);
+    const selectedObjectEditingValue = useSelector((state) => state.formRefs[formId + "_selectedObjectEditing"]);
     const control = useSelector((state) => state.formRefs[formId]?.current?.control());
     const [pressed, setPressed] = React.useState(false);
     const [mode, setMode] = React.useState("sublayer");
     const [mouseEvent, setMouseEvent] = React.useState(null);
+    const [selectedObjectEditing, setSelectedObjectEditing] = React.useState(null);
 
     var SELECTION_RADIUS = 0.005;
+
+    React.useEffect(() => {
+        setMouseEvent(null);
+        setSelectedObjectEditing(selectedObjectEditingValue);
+    }, [selectedObjectEditingValue]);
 
     var distanceBetweenPointAndSegment = (segment, point, minDistance) => {
         let asquared = Math.pow(segment[0][0] - point.x, 2) + Math.pow(segment[0][1] - point.y, 2);
@@ -101,7 +108,7 @@ export default function Selecting(props) {
     var oldPointData = React.useRef(null);
 
     var mouseDownHandler = React.useCallback((event) => {
-        if (pressed && formRef.current) {
+        if ((!selectedObjectEditing) && pressed && formRef.current) {
             var coords = formRef.current.coords();
             const point = coords.pointToMap(clientPoint(event));
             let scale = formRef.current.centerScale().scale;
@@ -136,6 +143,7 @@ export default function Selecting(props) {
                         }
                     })
                 }
+                nearestElements.reverse();
                 if (nearestElements.length > 0) {
                     let activeIndex = 0;
                     let selectedObject = formRef.current.selectedObject();
@@ -157,7 +165,7 @@ export default function Selecting(props) {
                 }
             }
         }
-    }, [mode, pressed, activeLayer, SELECTION_RADIUS, formRef, distance]);
+    }, [mode, pressed, activeLayer, SELECTION_RADIUS, formRef, distance, selectedObjectEditing]);
 
     React.useEffect(() => {
         if (mouseEvent && pressed) {

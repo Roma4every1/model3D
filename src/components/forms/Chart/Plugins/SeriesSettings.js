@@ -22,5 +22,5 @@ export default function SeriesSettings(props) {
         return () => { ignore = true; }
     }, [sessionId, formId, sessionManager]);
 
-    return <div />;
+    return <div pluginData={pluginData}/>;
 }
