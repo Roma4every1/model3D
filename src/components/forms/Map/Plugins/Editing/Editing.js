@@ -5,8 +5,7 @@ import { Button } from "@progress/kendo-react-buttons";
 import setOpenedWindow from "../../../../../store/actionCreators/setOpenedWindow";
 import setFormRefs from '../../../../../store/actionCreators/setFormRefs';
 import EditWindow from "./EditWindow";
-import LabelPropertiesWindow from "./LabelPropertiesWindow";
-import PolylinePropertiesWindow from "./PolylinePropertiesWindow";
+import PropertiesWindow from "./PropertiesWindow";
 var _ = require("lodash");
 
 export default function Editing(props) {
@@ -185,19 +184,27 @@ export default function Editing(props) {
     }, [mouseUpEvent, mouseUpHandler, onEditing]);
 
     React.useEffect(() => {
+        var ignore = false;
         if (control) {
             control.addEventListener("mousedown", event => {
-                setMouseDownEvent(event);
+                if (!ignore) {
+                    setMouseDownEvent(event);
+                }
             }, { passive: true })
 
             control.addEventListener("mousemove", event => {
-                setMouseMoveEvent(event);
+                if (!ignore) {
+                    setMouseMoveEvent(event);
+                }
             }, { passive: true })
 
             control.addEventListener("mouseup", event => {
-                setMouseUpEvent(event);
+                if (!ignore) {
+                    setMouseUpEvent(event);
+                }
             }, { passive: true })
         }
+        return () => { ignore = true; }
     }, [control]);
 
     const startEditing = () => {
@@ -208,6 +215,7 @@ export default function Editing(props) {
         setOnEditing(true);
         dispatch(setOpenedWindow("editWindow", true,
             <EditWindow
+                key="mapPolylineEditing"
                 setOnEditing={setOnEditing}
                 formId={formId}
                 modeHandler={modeHandler}
@@ -231,18 +239,11 @@ export default function Editing(props) {
     };
 
     const showPropertiesWindow = () => {
-        if (selectedObject?.type === 'polyline') {
-            dispatch(setOpenedWindow("polylinePropertiesWindow", true,
-                <PolylinePropertiesWindow
-                    formId={formId}
-                />));
-        }
-        else if (selectedObject?.type === 'label') {
-            dispatch(setOpenedWindow("labelPropertiesWindow", true,
-                <LabelPropertiesWindow
-                    formId={formId}
-                />));
-        }
+        dispatch(setOpenedWindow("propertiesWindow", true,
+            <PropertiesWindow
+                key="mapElementProperties"
+                formId={formId}
+            />));
     };
 
     return (

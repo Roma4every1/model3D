@@ -174,11 +174,15 @@ export default function Selecting(props) {
     }, [mouseEvent, mouseDownHandler, pressed]);
 
     React.useEffect(() => {
+        var ignore = false;
         if (control) {
             control.addEventListener("mousedown", event => {
-                setMouseEvent(event);
+                if (!ignore) {
+                    setMouseEvent(event);
+                }
             }, { passive: true })
         }
+        return () => { ignore = true; }
     }, [control]);
 
     const setButtonPressed = () => {

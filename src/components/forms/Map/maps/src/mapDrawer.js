@@ -936,9 +936,9 @@ var polyline = declareType("polyline", {
 		// ---
 
 		var pathNeeded = lodash.once(() => polyline.path(i, options));
-		context.lineCap = "round";
-		context.lineJoin = "round";
 		if ((!i.edited) && i.selected) {
+			context.lineCap = "round";
+			context.lineJoin = "round";
 			pathNeeded();
 			context.strokeStyle = "#000000";
 			context.lineWidth = ((i.borderwidth || defaultLineWidth) + 4.5 / 96.0 * 25.4) * 0.001 * options.dotsPerMeter;
@@ -946,6 +946,8 @@ var polyline = declareType("polyline", {
 			context.strokeStyle = "#ffffff";
 			context.lineWidth = ((i.borderwidth || defaultLineWidth) + 3 / 96.0 * 25.4) * 0.001 * options.dotsPerMeter;
 			context.stroke();
+			context.lineCap = "butt";
+			context.lineJoin = "butt";
 		}
 
 		if (i.fillname) {
@@ -989,7 +991,7 @@ var polyline = declareType("polyline", {
 		context.lineWidth = (i.borderwidth || defaultLineWidth) * 0.001 * options.dotsPerMeter;
 		// if a default style is present, set dash
 		if (i.borderstyle !== undefined && i.borderstyle != null) {
-			var baseThicknessCoefficient = Math.round(i.borderwidth / defaultLineWidth);
+			var baseThicknessCoefficient = Math.round((i.borderwidth || defaultLineWidth) / defaultLineWidth);
 			var dash = polyline.styleShapes[polyline.borderStyles[i.borderstyle]].slice();
 			for (let j = dash.length - 1; j >= 0; j--) {
 				dash[j] = dash[j] * configThicknessCoefficient * baseThicknessCoefficient;
@@ -1004,9 +1006,9 @@ var polyline = declareType("polyline", {
 			if (i.style.baseColor)
 				context.strokeStyle = i.style.baseColor._value;
 			else
-				context.strokeStyle = "black";
+				context.strokeStyle = i.bordercolor;
 			if (i.style.baseThickness)
-				context.lineWidth = configThicknessCoefficient * i.style.baseThickness._value * (i.borderwidth || defaultLineWidth) * 0.001 * options.dotsPerMeter;  // Thickness
+				context.lineWidth = configThicknessCoefficient * i.style.baseThickness._value * defaultLineWidth * 0.001 * options.dotsPerMeter;  // Thickness
 			else
 				context.lineWidth = configThicknessCoefficient * (i.borderwidth || defaultLineWidth) * 0.001 * options.dotsPerMeter;
 			if (i.style.StrokeDashArrays) {

@@ -28,8 +28,6 @@ function updateCanvasSize(canvas) {
 
 module.exports = function Maps(provider) {
 
-	this.mapInfo = provider.getMapsInfo();
-
 	this.checkIndex = (ret, context) => startThread(function* updateMapThread() {
 		logger.info("checking indexes for all layers map", ret);
 		var mapDataEvents = yield [];

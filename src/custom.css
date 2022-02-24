@@ -251,6 +251,222 @@ mapLayerLabel {
     margin-left: 5px;
 }
 
+.propertiesWindow .k-window-titlebar {
+    padding: 5px;
+}
+
+.propertiesWindow .k-window-title {
+    padding: 5px;
+    margin: 0px;
+    height: 25px;
+    font-size: 16px;
+}
+
+.propertiesWindow .k-window-content {
+    padding: 5px;
+    overflow-y: hidden;
+    overflow-x: hidden;
+}
+
+.polylinePropertiesLegendLabel {
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    width: 145px;
+    height: 20px;
+    margin: 2px;
+    font-size: 12px;
+}
+
+.polylinePropertiesLegendCombobox {
+    position: absolute;
+    left: 5px;
+    top: 25px;
+    width: 145px;
+    height: 20px;
+    margin: 2px;
+}
+
+.polylinePropertiesFillColorLabel {
+    position: absolute;
+    left: 5px;
+    top: 45px;
+    width: 70px;
+    height: 40px;
+    margin: 2px;
+    display: inline-block;
+    vertical-align: bottom;
+    font-size: 12px;
+}
+
+.polylinePropertiesFillColorCombobox {
+    position: absolute;
+    left: 5px;
+    top: 85px;
+    width: 70px;
+    height: 20px;
+    margin: 2px;
+}    
+
+.k-colorpicker {
+    margin: 0px;
+    margin-left: 0px;
+    padding: 0px;
+    width: 70px;
+    height: 20px;
+}
+
+    .k-colorpicker .k-color-preview {
+        width: 60px;
+        padding: 0px;
+        margin-left: -2px;
+        margin-right: -4px;
+        margin-bottom: 11px;
+        height: 14px;
+    }
+
+    .k-colorpicker .k-icon k-i-arrow-s {
+        width: 10px;
+    }
+
+.polylinePropertiesBkColorLabel {
+    position: absolute;
+    left: 80px;
+    top: 45px;
+    width: 70px;
+    height: 40px;
+    margin: 2px;
+    font-size: 12px;
+}
+
+.polylinePropertiesBkColorCombobox {
+    position: absolute;
+    left: 80px;
+    top: 85px;
+    width: 70px;
+    height: 20px;
+    margin: 2px;
+    font-size: 12px;
+}
+
+.polylinePropertiesTemplateLabel {
+    position: absolute;
+    left: 5px;
+    top: 105px;
+    width: 145px;
+    height: 20px;
+    margin: 2px;
+    font-size: 12px;
+}
+
+.polylinePropertiesTemplateCombobox {
+    position: absolute;
+    left: 5px;
+    top: 125px;
+    width: 145px;
+    height: 40px;
+    margin: 2px;
+}
+
+.polylinePropertiesStrokeColorLabel {
+    position: absolute;
+    left: 155px;
+    top: 5px;
+    width: 70px;
+    height: 40px;
+    margin: 2px;
+    font-size: 12px;
+}
+
+.polylinePropertiesStrokeColorCombobox {
+    position: absolute;
+    left: 155px;
+    top: 45px;
+    width: 70px;
+    height: 20px;
+    margin: 2px;
+}
+
+.polylinePropertiesStrokeWidthLabel {
+    position: absolute;
+    left: 230px;
+    top: 5px;
+    width: 70px;
+    height: 40px;
+    margin: 2px;
+    font-size: 12px;
+}
+
+.polylinePropertiesStrokeWidthCombobox {
+    position: absolute;
+    left: 230px;
+    top: 45px;
+    width: 70px;
+    height: 20px;
+    margin: 2px;
+    font-size: 12px;
+}
+
+.polylinePropertiesStyleLabel {
+    position: absolute;
+    left: 155px;
+    top: 65px;
+    width: 145px;
+    height: 20px;
+    margin: 2px;
+    font-size: 12px;
+}
+
+.polylinePropertiesStyleCombobox {
+    position: absolute;
+    left: 155px;
+    top: 85px;
+    width: 145px;
+    height: 20px;
+    margin: 2px;
+    font-size: 12px;
+}
+
+.polylinePropertiesTransparencyCheckbox {
+    position: absolute;
+    left: 5px;
+    top: 168px;
+    width: 145px;
+    height: 20px;
+    margin: 2px;
+    font-size: 12px;
+}
+
+.polylinePropertiesClosedCheckbox {
+    position: absolute;
+    left: 155px;
+    top: 108px;
+    width: 145px;
+    height: 20px;
+    margin: 2px;
+    font-size: 12px;
+}
+
+.polylinePropertiesApplyButton {
+    position: absolute;
+    left: 90px;
+    top: 190px;
+    width: 100px;
+    height: 25px;
+    margin: 5px;
+    font-size: 12px;
+}
+
+.polylinePropertiesCancelButton {
+    position: absolute;
+    left: 195px;
+    top: 190px;
+    width: 100px;
+    height: 25px;
+    margin: 5px;
+    font-size: 12px;
+}
+
 .textAlign-left {
     text-align: left;
 }
@@ -280,7 +496,7 @@ mapLayerLabel {
 }
 
 .windowButtonContainer {
-   text-align: center;
+    text-align: center;
 }
 
 .windowButton {
@@ -389,14 +605,14 @@ mapLayerLabel {
     font-size: 12px;
 }
 
-.k-grid .k-grid-edit-row td:not(.k-hierarchy-cell),
-.k-grid k-grid-edit-row {
-    padding: 1px;
-}
+    .k-grid .k-grid-edit-row td:not(.k-hierarchy-cell),
+    .k-grid k-grid-edit-row {
+        padding: 1px;
+    }
 
-.k-grid td {
-    padding: 1px;
-}
+    .k-grid td {
+        padding: 1px;
+    }
 
 .k-grid-header .k-header {
     height: 20px;

@@ -5,7 +5,7 @@ import { Button } from "@progress/kendo-react-buttons";
 import { Window } from "@progress/kendo-react-dialogs";
 import setOpenedWindow from "../../../../../store/actionCreators/setOpenedWindow";
 
-export default function ContourEditingEditWindow(props) {
+export default function EditWindow(props) {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const { setOnEditing, formId, modeHandler } = props;
@@ -51,7 +51,7 @@ export default function ContourEditingEditWindow(props) {
     return (
         <Window
             className="mapEditWindow"
-            maximizeButton="false"
+            maximizeButton={false}
             resizable={false}
             key="editWindow"
             title={t('map.editing', { sublayerName: modifiedLayer?.name })}

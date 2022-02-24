@@ -1,6 +1,15 @@
 import React from 'react';
-import { Window } from "@progress/kendo-react-dialogs";
+import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 export default function LabelPropertiesWindow(props) {
-    return <Window />
+    const { t } = useTranslation();
+    const { formId, close, setWindowSize } = props;
+    const selectedObject = useSelector((state) => state.formRefs[formId + "_selectedObject"]);
+
+    React.useEffect(() => {
+        setWindowSize({ width: 210, height: 210 });
+    }, [setWindowSize]);
+
+    return <div />
 }
