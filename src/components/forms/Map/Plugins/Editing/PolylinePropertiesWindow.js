@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button } from "@progress/kendo-react-buttons";
 import { Label } from "@progress/kendo-react-labels";
@@ -10,6 +10,7 @@ import { NumericTextBox } from "@progress/kendo-react-inputs";
 import FillNameTemplate from "./FillNameTemplate";
 import StyleTemplate from "./StyleTemplate";
 import lines from "../../lines.json";
+import setFormRefs from '../../../../../store/actionCreators/setFormRefs';
 var parseColor = require("parse-color");
 var pngMono = require("../../maps/src/pngMono");
 var htmlHelper = require("../../maps/src/htmlHelper");
@@ -17,6 +18,7 @@ var parseSMB = require("../../maps/src/parseSMB");
 
 export default function PolylinePropertiesWindow(props) {
     const { t } = useTranslation();
+    const dispatch = useDispatch();
     const { formId, close, setWindowSize } = props;
     const sessionId = useSelector((state) => state.sessionId);
     const sessionManager = useSelector((state) => state.sessionManager);
@@ -259,6 +261,7 @@ export default function PolylinePropertiesWindow(props) {
             let modifiedLayer = mapData?.layers?.find(l => l.elements.includes(selectedObject));
             if (modifiedLayer) {
                 modifiedLayer.modified = true;
+                dispatch(setFormRefs(formId + "_modified", true));
             }
             formRef.current.updateCanvas();
         }

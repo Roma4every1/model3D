@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from "@progress/kendo-react-buttons";
 import { Window } from "@progress/kendo-react-dialogs";
 import setOpenedWindow from "../../../../../store/actionCreators/setOpenedWindow";
+import setFormRefs from '../../../../../store/actionCreators/setFormRefs';
 
 export default function EditWindow(props) {
     const { t } = useTranslation();
@@ -45,6 +46,7 @@ export default function EditWindow(props) {
         let modifiedLayer = mapData?.layers?.find(l => l.elements.includes(selectedObject));
         if (modifiedLayer) {
             modifiedLayer.modified = true;
+            dispatch(setFormRefs(formId + "_modified", true));
         }
     };
 

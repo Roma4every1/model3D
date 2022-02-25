@@ -8,6 +8,7 @@
     "infinitySign": "∞",
     "info": "Информация",
     "loading": "Загрузка...",
+    "no": "Нет",
     "none": "Нет",
     "ok": "Ок",
     "parameters": "Параметры",
@@ -17,7 +18,8 @@
     "save": "Сохранить",
     "settings": "Настройки",
     "warning": "Предупреждение",
-    "wrong": "Что-то пошло не так."
+    "wrong": "Что-то пошло не так.",
+    "yes": "Да"
   },
   "downloadFiles": {
     "clear": "Очистить список отчётов",
@@ -60,8 +62,11 @@
   "map": {
     "addPointBetweenPoints": "Добавление точки между точками",
     "addPointToEnd": "Добавление точки в конец линии",
+    "areYouSureToDelete": "Вы действительно хотите удалить выбранный элемент?",
     "bkColor": "Цвет заполнения",
     "closed": "Замкнутость",
+    "delete": "Удалить",
+    "deleteElement": "Удаление элемента (подслой: {{sublayerName}})",
     "deletePoint": "Удаление точки",
     "editing": "Редактирование (подслой: {{sublayerName}})",
     "exportToPdf": "Экспорт в PDF",

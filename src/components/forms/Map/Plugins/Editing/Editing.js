@@ -2,6 +2,7 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button } from "@progress/kendo-react-buttons";
+import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import setOpenedWindow from "../../../../../store/actionCreators/setOpenedWindow";
 import setFormRefs from '../../../../../store/actionCreators/setFormRefs';
 import EditWindow from "./EditWindow";
@@ -16,7 +17,10 @@ export default function Editing(props) {
     const sessionManager = useSelector((state) => state.sessionManager);
     const formRef = useSelector((state) => state.formRefs[formId]);
     const control = useSelector((state) => state.formRefs[formId]?.current?.control());
+    const mapData = useSelector((state) => state.formRefs[formId + "_mapData"]);
+    const changed = useSelector((state) => state.formRefs[formId + "_modified"]);
     const selectedObject = useSelector((state) => state.formRefs[formId + "_selectedObject"]);
+    const modifiedLayer = mapData?.layers?.find(l => l.elements?.includes(selectedObject));
     const [onEditing, setOnEditing] = React.useState(false);
     const movedPoint = React.useRef(null);
     const isOnMove = React.useRef(false);
@@ -238,6 +242,39 @@ export default function Editing(props) {
             });
     };
 
+    const handleCloseDeleteWindow = () => {
+        dispatch(setOpenedWindow("deleteMapElementWindow", false, null));
+    };
+
+    const handleDelete = () => {
+        let index = modifiedLayer.elements.indexOf(selectedObject);
+        modifiedLayer.elements.splice(index, 1);
+        modifiedLayer.modified = true;
+        dispatch(setFormRefs(formId + "_modified", true));
+        handleCloseDeleteWindow();
+        formRef.current.setSelectedObject(null);
+        formRef.current.updateCanvas();
+    };
+
+    const showDeleteWindow = () => {
+        dispatch(setOpenedWindow("deleteMapElementWindow", true,
+            <Dialog key="deleteMapElementWindow" title={t('map.deleteElement', { sublayerName: modifiedLayer?.name })} onClose={handleCloseDeleteWindow}>
+                {t('map.areYouSureToDelete') }
+                <DialogActionsBar>
+                    <div className="windowButtonContainer">
+                        <Button className="windowButton" onClick={handleDelete}>
+                            {t('base.yes')}
+                        </Button>
+                    </div>
+                    <div className="windowButtonContainer">
+                        <Button className="windowButton" onClick={handleCloseDeleteWindow}>
+                            {t('base.no')}
+                        </Button>
+                    </div>
+                </DialogActionsBar>
+            </Dialog>));
+    };
+
     const showPropertiesWindow = () => {
         dispatch(setOpenedWindow("propertiesWindow", true,
             <PropertiesWindow
@@ -251,10 +288,13 @@ export default function Editing(props) {
             <Button className="actionbutton" onClick={startEditing} disabled={(!selectedObject) || (selectedObject.type !== 'polyline')}>
                 {t('map.startEditing')}
             </Button>
+            <Button className="actionbutton" onClick={showDeleteWindow} disabled={!selectedObject}>
+                {t('map.delete')}
+            </Button>
             <Button className="actionbutton" onClick={showPropertiesWindow} disabled={(!selectedObject) || (selectedObject.type !== 'polyline' && selectedObject.type !== 'label')}>
                 {t('map.properties')}
             </Button>
-            <Button className="actionbutton" onClick={save}>
+            <Button className="actionbutton" onClick={save} disabled={!changed}>
                 {t('base.save')}
             </Button>
         </div>

@@ -2,11 +2,13 @@ import React from 'react';
 
 export default function FillNameTemplate(props) {
     const { fillName, fillColor, bkColor, transparent, getPattern } = props;
+    const width = 110;
+    const height = 40;
 
     React.useLayoutEffect(() => {
         let ignore = false;
         let context = _viewRef.current.getContext("2d");
-        context.clearRect(0, 0, 120, 50);
+        context.clearRect(0, 0, width, height);
         async function fetchData() {
             if (fillName) {
                 context.beginPath();
@@ -21,7 +23,7 @@ export default function FillNameTemplate(props) {
                     } else {
                         context.fillStyle = context.createPattern(image, "repeat");
                     }
-                    context.rect(0, 0, 110, 40);
+                    context.rect(0, 0, width, height);
                     context.fill();
                 }
             }
@@ -35,7 +37,7 @@ export default function FillNameTemplate(props) {
     return (
         <canvas
             ref={_viewRef}
-            width={110}
-            height={40}
+            width={width}
+            height={height}
         />);
 }

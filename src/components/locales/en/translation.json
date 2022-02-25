@@ -8,6 +8,7 @@
     "infinitySign": "∞",
     "info": "Information",
     "loading": "Loading...",
+    "no": "No",
     "none": "None",
     "ok": "Ok",
     "parameters": "Parameters",
@@ -17,7 +18,8 @@
     "save": "Save",
     "settings": "Settings",
     "warning": "Warning",
-    "wrong": "Something went wrong."
+    "wrong": "Something went wrong.",
+    "yes": "Yes"
   },
   "downloadFiles": {
     "clear": "Clear report list",
@@ -60,8 +62,11 @@
   "map": {
     "addPointBetweenPoints": "Add point between existing points",
     "addPointToEnd": "Add point to the line end",
+    "areYouSureToDelete": "Do you really want to delete selected element?",
     "bkColor": "Background color",
     "closed": "Closed",
+    "delete": "Delete",
+    "deleteElement": "Delete element (sublayer: {{sublayerName}})",
     "deletePoint": "Delete point",
     "editing": "Editing (sublayer: {{sublayerName}})",
     "exportToPdf": "Export to PDF",
