@@ -9,7 +9,7 @@ import setFormRefs from '../../../../../store/actionCreators/setFormRefs';
 export default function EditWindow(props) {
     const { t } = useTranslation();
     const dispatch = useDispatch();
-    const { setOnEditing, formId, modeHandler } = props;
+    const { setOnEditing, formId, modeHandler, initialMode, onClosed } = props;
     const control = useSelector((state) => state.formRefs[formId]?.current?.control());
     const mapData = useSelector((state) => state.formRefs[formId + "_mapData"]);
     const selectedObject = useSelector((state) => state.formRefs[formId + "_selectedObject"]);
@@ -17,9 +17,8 @@ export default function EditWindow(props) {
     const modifiedLayer = mapData?.layers?.find(l => l.elements.includes(selectedObject));
     const [oldObjectPath, setOldObjectPath] = React.useState([...selectedObject.arcs[0].path]);
     const imageSize = 32;
-    const movedPoint = React.useRef(null);
-    const [mode, setMode] = React.useState("movePoint");
-    const canApply = selectedObjectLength ? selectedObjectLength > 2 : true;
+    const [mode, setMode] = React.useState(initialMode ?? "movePoint");
+    const canApply = selectedObjectLength ? selectedObjectLength > 2 : selectedObjectLength !== 0;
 
     React.useEffect(() => {
         modeHandler(mode);
@@ -27,13 +26,15 @@ export default function EditWindow(props) {
     }, [mode, control, modeHandler]);
 
     const closeEditing = (noSave) => {
-        movedPoint.current = null;
         control.blocked = false;
         if (!noSave) {
             selectedObject.arcs[0].path = oldObjectPath;
         }
         setOnEditing(false);
         dispatch(setOpenedWindow("editWindow", false, null));
+        if (onClosed) {
+            onClosed(noSave);
+        }
     };
 
     const cancelEditing = () => {

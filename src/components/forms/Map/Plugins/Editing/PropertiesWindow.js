@@ -9,24 +9,27 @@ import LabelPropertiesWindow from "./LabelPropertiesWindow";
 export default function PropertiesWindow(props) {
     const { t } = useTranslation();
     const dispatch = useDispatch();
-    const { formId } = props;
+    const { formId, initialReadyForApply, onClosed } = props;
     const mapData = useSelector((state) => state.formRefs[formId + "_mapData"]);
     const selectedObject = useSelector((state) => state.formRefs[formId + "_selectedObject"]);
     const modifiedLayer = mapData?.layers?.find(l => l.elements.includes(selectedObject));
     const [windowSize, setWindowSize] = React.useState({ width: 300, height: 300 });
 
-    const close = () => {
+    const close = (applied) => {
         dispatch(setOpenedWindow("propertiesWindow", false, null));
+        if (onClosed) {
+            onClosed(applied);
+        }
     };
 
     const getWindowContentByType = (type) => {
 
         switch (type) {
             case 'polyline':
-                return <PolylinePropertiesWindow formId={formId} close={close} setWindowSize={setWindowSize} />;
+                return <PolylinePropertiesWindow formId={formId} close={close} setWindowSize={setWindowSize} initialReadyForApply={initialReadyForApply} />;
 
             case 'label':
-                return <LabelPropertiesWindow formId={formId} close={close} setWindowSize={setWindowSize} />;
+                return <LabelPropertiesWindow formId={formId} close={close} setWindowSize={setWindowSize} initialReadyForApply={initialReadyForApply} />;
 
             default:
                 return <div />;

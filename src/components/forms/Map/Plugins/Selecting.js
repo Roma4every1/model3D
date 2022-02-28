@@ -11,19 +11,12 @@ export default function Selecting(props) {
     const { formId } = props;
     const formRef = useSelector((state) => state.formRefs[formId]);
     const activeLayer = useSelector((state) => state.formRefs[formId + "_activeLayer"]);
-    const selectedObjectEditingValue = useSelector((state) => state.formRefs[formId + "_selectedObjectEditing"]);
+    const selectedObjectEditing = useSelector((state) => state.formRefs[formId + "_selectedObjectEditing"]);
     const control = useSelector((state) => state.formRefs[formId]?.current?.control());
     const [pressed, setPressed] = React.useState(false);
     const [mode, setMode] = React.useState("sublayer");
-    const [mouseEvent, setMouseEvent] = React.useState(null);
-    const [selectedObjectEditing, setSelectedObjectEditing] = React.useState(null);
 
     var SELECTION_RADIUS = 0.005;
-
-    React.useEffect(() => {
-        setMouseEvent(null);
-        setSelectedObjectEditing(selectedObjectEditingValue);
-    }, [selectedObjectEditingValue]);
 
     var distanceBetweenPointAndSegment = (segment, point, minDistance) => {
         let asquared = Math.pow(segment[0][0] - point.x, 2) + Math.pow(segment[0][1] - point.y, 2);
@@ -107,7 +100,7 @@ export default function Selecting(props) {
 
     var oldPointData = React.useRef(null);
 
-    var mouseDownHandler = React.useCallback((event) => {
+    var mouseDown = React.useCallback((event) => {
         if ((!selectedObjectEditing) && pressed && formRef.current) {
             var coords = formRef.current.coords();
             const point = coords.pointToMap(clientPoint(event));
@@ -168,28 +161,20 @@ export default function Selecting(props) {
     }, [mode, pressed, activeLayer, SELECTION_RADIUS, formRef, distance, selectedObjectEditing]);
 
     React.useEffect(() => {
-        if (mouseEvent && pressed) {
-            mouseDownHandler(mouseEvent);
-        }
-    }, [mouseEvent, mouseDownHandler, pressed]);
-
-    React.useEffect(() => {
-        var ignore = false;
         if (control) {
-            control.addEventListener("mousedown", event => {
-                if (!ignore) {
-                    setMouseEvent(event);
-                }
-            }, { passive: true })
+            control.addEventListener("mousedown", mouseDown, { passive: true });
         }
-        return () => { ignore = true; }
-    }, [control]);
+        return () => {
+            if (control) {
+                control.removeEventListener("mousedown", mouseDown, { passive: true });
+            }
+        }
+    }, [control, mouseDown]);
 
     const setButtonPressed = () => {
         if (control) {
             control.selectingMode = !pressed;
         }
-        setMouseEvent(null);
         setPressed(!pressed);
     };
 

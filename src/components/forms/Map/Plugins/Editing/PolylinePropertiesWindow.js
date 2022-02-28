@@ -19,7 +19,7 @@ var parseSMB = require("../../maps/src/parseSMB");
 export default function PolylinePropertiesWindow(props) {
     const { t } = useTranslation();
     const dispatch = useDispatch();
-    const { formId, close, setWindowSize } = props;
+    const { formId, close, setWindowSize, initialReadyForApply } = props;
     const sessionId = useSelector((state) => state.sessionId);
     const sessionManager = useSelector((state) => state.sessionManager);
     const formRef = useSelector((state) => state.formRefs[formId]);
@@ -41,7 +41,7 @@ export default function PolylinePropertiesWindow(props) {
     const [legendsData, setLegendsData] = React.useState([]);
     const [borderColorDisabled, setBorderColorDisabled] = React.useState(false);
     const [borderWidthDisabled, setBorderWidthDisabled] = React.useState(false);
-    const [readyForApply, setReadyForApply] = React.useState(false);
+    const [readyForApply, setReadyForApply] = React.useState(initialReadyForApply);
 
     const getPattern = async (name, color, bkcolor) => {
         var [, libName, index] = name.match(/^(.+)-(\d+)$/);
@@ -65,7 +65,7 @@ export default function PolylinePropertiesWindow(props) {
     }
 
     React.useEffect(() => {
-        setReadyForApply(false);
+        setReadyForApply(initialReadyForApply);
         if (selectedObject) {
             setClosed(selectedObject?.arcs[0].closed);
             setTransparent(selectedObject?.transparent);
@@ -77,7 +77,7 @@ export default function PolylinePropertiesWindow(props) {
             setBorderStyleId(selectedObject?.borderstyleid);
             setBorderStyle(selectedObject?.borderstyle);
         }
-    }, [selectedObject]);
+    }, [selectedObject, initialReadyForApply]);
 
     React.useEffect(() => {
         setWindowSize({ width: 310, height: 260 });
@@ -265,7 +265,7 @@ export default function PolylinePropertiesWindow(props) {
             }
             formRef.current.updateCanvas();
         }
-        close();
+        close(true);
     };
 
     const cancel = () => {

@@ -12,6 +12,7 @@ function Map(props, ref) {
     const dispatch = useDispatch();
     const sessionId = useSelector((state) => state.sessionId);
     const sessionManager = useSelector((state) => state.sessionManager);
+    const cursor = useSelector((state) => state.formRefs[formData.id + "_cursor"]);
     const [activeChannelName] = React.useState(data.activeChannels[0]);
     const [mapInfo, setMapInfo] = React.useState(null);
     const [mapData, setMapData] = React.useState(null);
@@ -235,7 +236,7 @@ function Map(props, ref) {
 
     return (
         <div ref={_div} style={{ width: "100%", height: "100%" }}>
-            <canvas
+            <canvas style={{ cursor: cursor ?? "point" }}
                 ref={_viewRef}
                 width={size.clientWidth}
                 height={size.clientHeight}

@@ -65,6 +65,7 @@
     "areYouSureToDelete": "Do you really want to delete selected element?",
     "bkColor": "Background color",
     "closed": "Closed",
+    "create": "Create",
     "delete": "Delete",
     "deleteElement": "Delete element (sublayer: {{sublayerName}})",
     "deletePoint": "Delete point",

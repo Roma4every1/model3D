@@ -17,17 +17,17 @@ export default function Editing(props) {
     const sessionManager = useSelector((state) => state.sessionManager);
     const formRef = useSelector((state) => state.formRefs[formId]);
     const control = useSelector((state) => state.formRefs[formId]?.current?.control());
+    const activeLayer = useSelector((state) => state.formRefs[formId + "_activeLayer"]);
     const mapData = useSelector((state) => state.formRefs[formId + "_mapData"]);
     const changed = useSelector((state) => state.formRefs[formId + "_modified"]);
     const selectedObject = useSelector((state) => state.formRefs[formId + "_selectedObject"]);
     const modifiedLayer = mapData?.layers?.find(l => l.elements?.includes(selectedObject));
     const [onEditing, setOnEditing] = React.useState(false);
+    const [legendsData, setLegendsData] = React.useState(null);
     const movedPoint = React.useRef(null);
     const isOnMove = React.useRef(false);
     const mode = React.useRef("movePoint");
-    const [mouseDownEvent, setMouseDownEvent] = React.useState(null);
-    const [mouseMoveEvent, setMouseMoveEvent] = React.useState(null);
-    const [mouseUpEvent, setMouseUpEvent] = React.useState(null);
+    const [labelCreating, setLabelCreating] = React.useState(false);
 
     React.useEffect(() => {
         if (selectedObject) {
@@ -105,8 +105,23 @@ export default function Editing(props) {
         return ret;
     };
 
-    var mouseDownHandler = React.useCallback((event) => {
-        if (selectedObject) {
+    const showPropertiesWindow = React.useCallback((initialReadyForApply) => {
+        dispatch(setOpenedWindow("propertiesWindow", true,
+            <PropertiesWindow
+                initialReadyForApply={initialReadyForApply}
+                key="mapElementProperties"
+                formId={formId}
+                onClosed={(applied) => {
+                    if (!applied && initialReadyForApply) {
+                        activeLayer.elements.splice(activeLayer.elements.length - 1, 1);
+                        formRef.current.updateCanvas();
+                    }
+                }}
+            />));
+    }, [activeLayer, dispatch, formId, formRef]);
+
+    const mouseDown = React.useCallback((event) => {
+        if (selectedObject?.type === "polyline") {
             isOnMove.current = true;
             let coords = formRef.current.coords();
             const point = coords.pointToMap(clientPoint(event));
@@ -124,6 +139,7 @@ export default function Editing(props) {
             }
             else if (mode.current === "addPointToEnd") {
                 selectedObject.arcs[0].path = [...selectedObject.arcs[0].path, point.x, point.y];
+                dispatch(setFormRefs(formId + "_selectedObjectLength", selectedObject.arcs[0].path.length));
                 formRef.current.updateCanvas();
             }
             else if (mode.current === "addPointBetween") {
@@ -133,89 +149,78 @@ export default function Editing(props) {
                 formRef.current.updateCanvas();
             }
         }
-    }, [formRef, selectedObject, dispatch, formId, getNearestSegment]);
 
-    var mouseMoveHandler = React.useCallback((event) => {
-        if (selectedObject && isOnMove.current) {
-            var coords = formRef.current.coords();
-            const point = coords.pointToMap(clientPoint(event));
-            if (mode.current === "movePoint" && movedPoint.current) {
-                selectedObject.arcs[0].path[movedPoint.current.index * 2] = Math.round(point.x);
-                selectedObject.arcs[0].path[movedPoint.current.index * 2 + 1] = Math.round(point.y);
+    }, [onEditing, formRef, selectedObject, dispatch, formId, getNearestSegment]);
+
+    const mouseUp = React.useCallback((event) => {
+        if (onEditing) {
+            isOnMove.current = false;
+            if (mode.current === "movePoint") {
+                movedPoint.current = null;
             }
             else if (mode.current === "addPointToEnd") {
-                selectedObject.arcs[0].path[selectedObject.arcs[0].path.length - 2] = Math.round(point.x);
-                selectedObject.arcs[0].path[selectedObject.arcs[0].path.length - 1] = Math.round(point.y);
+                var coords = formRef.current.coords();
+                const point = coords.pointToMap(clientPoint(event));
+                selectedObject.arcs[0].path[-2] = Math.round(point.x);
+                selectedObject.arcs[0].path[-1] = Math.round(point.y);
+                formRef.current.updateCanvas();
             }
-            else if (mode.current === "addPointBetween") {
-                selectedObject.arcs[0].path[movedPoint.current * 2 + 2] = Math.round(point.x);
-                selectedObject.arcs[0].path[movedPoint.current * 2 + 3] = Math.round(point.y);
+            if (labelCreating) {
+                dispatch(setFormRefs(formId + "_cursor", "auto"));
+                let coords = formRef.current.coords();
+                const point = coords.pointToMap(clientPoint(event));
+                let newElement = { ...activeLayer.elements[0] };
+                newElement.text = "text";
+                newElement.x = point.x;
+                newElement.y = point.y;
+                activeLayer.elements.push(newElement);
+                formRef.current.setSelectedObject(newElement);
+                showPropertiesWindow(true);
+                setLabelCreating(false);
+                setOnEditing(false);
             }
-            formRef.current.updateCanvas();
         }
-    }, [formRef, selectedObject]);
+    }, [onEditing, formRef, selectedObject, dispatch, formId, labelCreating, activeLayer, showPropertiesWindow]);
 
-    var mouseUpHandler = React.useCallback((event) => {
-        isOnMove.current = false;
-        if (mode.current === "movePoint") {
-            movedPoint.current = null;
+    const mouseMove = React.useCallback((event) => {
+        if (onEditing) {
+            if (selectedObject?.type === "polyline" && isOnMove.current) {
+                var coords = formRef.current.coords();
+                const point = coords.pointToMap(clientPoint(event));
+                if (mode.current === "movePoint" && movedPoint.current) {
+                    selectedObject.arcs[0].path[movedPoint.current.index * 2] = Math.round(point.x);
+                    selectedObject.arcs[0].path[movedPoint.current.index * 2 + 1] = Math.round(point.y);
+                }
+                else if (mode.current === "addPointToEnd") {
+                    selectedObject.arcs[0].path[selectedObject.arcs[0].path.length - 2] = Math.round(point.x);
+                    selectedObject.arcs[0].path[selectedObject.arcs[0].path.length - 1] = Math.round(point.y);
+                }
+                else if (mode.current === "addPointBetween") {
+                    selectedObject.arcs[0].path[movedPoint.current * 2 + 2] = Math.round(point.x);
+                    selectedObject.arcs[0].path[movedPoint.current * 2 + 3] = Math.round(point.y);
+                }
+                formRef.current.updateCanvas();
+            }
         }
-        else if (mode.current === "addPointToEnd") {
-            var coords = formRef.current.coords();
-            const point = coords.pointToMap(clientPoint(event));
-            selectedObject.arcs[0].path[-2] = Math.round(point.x);
-            selectedObject.arcs[0].path[-1] = Math.round(point.y);
-            formRef.current.updateCanvas();
-        }
-    }, [formRef, selectedObject]);
-
+    }, [onEditing, selectedObject, formRef]);
+        
     React.useEffect(() => {
-        if (mouseDownEvent && onEditing) {
-            mouseDownHandler(mouseDownEvent);
-        }
-    }, [mouseDownEvent, mouseDownHandler, onEditing]);
-
-    React.useEffect(() => {
-        if (mouseMoveEvent && onEditing) {
-            mouseMoveHandler(mouseMoveEvent);
-        }
-    }, [mouseMoveEvent, mouseMoveHandler, onEditing]);
-
-    React.useEffect(() => {
-        if (mouseUpEvent && onEditing) {
-            mouseUpHandler(mouseUpEvent);
-        }
-    }, [mouseUpEvent, mouseUpHandler, onEditing]);
-
-    React.useEffect(() => {
-        var ignore = false;
         if (control) {
-            control.addEventListener("mousedown", event => {
-                if (!ignore) {
-                    setMouseDownEvent(event);
-                }
-            }, { passive: true })
-
-            control.addEventListener("mousemove", event => {
-                if (!ignore) {
-                    setMouseMoveEvent(event);
-                }
-            }, { passive: true })
-
-            control.addEventListener("mouseup", event => {
-                if (!ignore) {
-                    setMouseUpEvent(event);
-                }
-            }, { passive: true })
+            control.addEventListener("mousedown", mouseDown, { passive: true });
+            control.addEventListener("mousemove", mouseMove, { passive: true });
+            control.addEventListener("mouseup", mouseUp, { passive: true });
         }
-        return () => { ignore = true; }
-    }, [control]);
+        return () => {
+            if (control) {
+                control.removeEventListener("mousedown", mouseDown, { passive: true });
+                control.removeEventListener("mousemove", mouseMove, { passive: true });
+                control.removeEventListener("mouseup", mouseUp, { passive: true });
+            }
+        }
+    }, [control, mouseDown, mouseMove, mouseUp]);
 
     const startEditing = () => {
         control.blocked = true;
-        setMouseDownEvent(null);
-        setMouseMoveEvent(null);
-        setMouseUpEvent(null);
         setOnEditing(true);
         dispatch(setOpenedWindow("editWindow", true,
             <EditWindow
@@ -275,18 +280,90 @@ export default function Editing(props) {
             </Dialog>));
     };
 
-    const showPropertiesWindow = () => {
-        dispatch(setOpenedWindow("propertiesWindow", true,
-            <PropertiesWindow
-                key="mapElementProperties"
-                formId={formId}
-            />));
+    const create = () => {
+        let ignore = false;
+        async function fetchData() {
+            const data = await sessionManager.fetchData(`mapLegends?sessionId=${sessionId}`);
+            if (!ignore) {
+                setLegendsData(data);
+            }
+        }
+        if (!legendsData) {
+            fetchData();
+        }
+        else {
+            createByLegends();
+        }
+        return () => { ignore = true; }
     };
+
+    const createByLegends = React.useCallback(() => {
+
+        var sublayerSettings = legendsData.sublayers.find(d => d.name === activeLayer?.name)
+        if (sublayerSettings) {
+
+        }
+        else {
+            if (activeLayer.elements.length > 0) {
+                switch (activeLayer.elements[0].type) {
+                    case 'label':
+                        if (selectedObject) {
+                            selectedObject.selected = false;
+                            formRef.current.updateCanvas();
+                        }
+                        formRef.current.setSelectedObject(null);
+                        setOnEditing(true);
+                        dispatch(setFormRefs(formId + "_cursor", "crosshair"));
+                        setLabelCreating(true);
+                        break;
+                    case 'polyline':
+                        let newElement = { ...activeLayer.elements[0] };
+                        newElement.arcs = [{ closed: activeLayer.elements[0].arcs[0].closed, path: [] }];
+                        newElement.bounds = null;
+                        activeLayer.elements.push(newElement);
+                        dispatch(setFormRefs(formId + "_selectedObjectLength", 0));
+                        formRef.current.setSelectedObject(newElement);
+                        setOnEditing(true);
+                        dispatch(setOpenedWindow("editWindow", true,
+                            <EditWindow
+                                initialMode="addPointToEnd"
+                                key="mapPolylineEditing"
+                                setOnEditing={setOnEditing}
+                                formId={formId}
+                                modeHandler={modeHandler}
+                                onClosed={(applied) => {
+                                    if (applied) {
+                                        showPropertiesWindow(true);
+                                    }
+                                    else {
+                                        activeLayer.elements.splice(activeLayer.elements.length - 1, 1);
+                                    }
+                                }}
+                            />));
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else {
+
+            }
+        }
+    }, [activeLayer, dispatch, formRef, formId, legendsData, showPropertiesWindow]);
+
+    React.useEffect(() => {
+        if (legendsData) {
+            createByLegends();
+        }
+    }, [legendsData, createByLegends]);
 
     return (
         <div>
             <Button className="actionbutton" onClick={startEditing} disabled={(!selectedObject) || (selectedObject.type !== 'polyline')}>
                 {t('map.startEditing')}
+            </Button>
+            <Button className="actionbutton" onClick={create} disabled={(!(activeLayer?.visible)) || (activeLayer.elements.length > 0 && activeLayer.elements[0].type !== 'label' && activeLayer.elements[0].type !== 'polyline')}>
+                {t('map.create')}
             </Button>
             <Button className="actionbutton" onClick={showDeleteWindow} disabled={!selectedObject}>
                 {t('map.delete')}
