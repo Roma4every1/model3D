@@ -42,6 +42,15 @@ export default function EditWindow(props) {
     };
 
     const acceptEditing = () => {
+        var points = _.chunk(selectedObject.arcs[0].path, 2);
+        let maxX = _.max(points.map(p => p[0]));
+        let minX = _.min(points.map(p => p[0]));
+        let maxY = _.max(points.map(p => p[1]));
+        let minY = _.min(points.map(p => p[1]));
+        selectedObject.bounds = {
+            min: { x: minX, y: minY },
+            max: { x: maxX, y: maxY },
+        }
         closeEditing(true);
         setOldObjectPath([...selectedObject.arcs[0].path]);
         let modifiedLayer = mapData?.layers?.find(l => l.elements.includes(selectedObject));

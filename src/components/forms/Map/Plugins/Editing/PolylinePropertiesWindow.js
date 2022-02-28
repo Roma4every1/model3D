@@ -35,7 +35,7 @@ export default function PolylinePropertiesWindow(props) {
     const [borderWidth, setBorderWidth] = React.useState(selectedObject?.borderwidth);
     const [borderStyleId, setBorderStyleId] = React.useState(selectedObject?.borderstyleid);
     const [borderStyle, setBorderStyle] = React.useState(selectedObject?.borderstyle);
-    const [legend, setLegend] = React.useState(null);
+    const [legend, setLegend] = React.useState(selectedObject?.legend);
     const [stylesData, setStylesData] = React.useState([]);
     const [templatesData, setTemplatesData] = React.useState([]);
     const [legendsData, setLegendsData] = React.useState([]);

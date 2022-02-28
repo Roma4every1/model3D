@@ -475,6 +475,20 @@ mapLayerLabel {
     float: right;
 }
 
+.attrTableBlock {
+    margin: 5px;
+}
+
+.attrTableLabel {
+    width: 45%;
+    height: 20px;
+}
+
+.attrTableEditor {
+    width: 45%;
+    height: 20px;
+}
+
 .horizontalHeader {
     white-space: nowrap;
 }

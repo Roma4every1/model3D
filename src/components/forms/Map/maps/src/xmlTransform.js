@@ -89,9 +89,11 @@ function xmlType(descr, attribute) {
 		descr = _.toPairs(descr).map(([name, fun]) => [
 			name, xmlType(fun, name)])
 		return (xml, __, transform) => _.fromPairs(
-			descr
+			[...(descr
 				.map(([name, fun]) => [name, fun(xml, name, transform)])
-				.filter(([, value]) => value !== void 0)
+				.filter(([, value]) => value !== void 0)),
+				['attrTable', _.fromPairs(_.toPairs(xml.attributes).filter(a => !descr.some(d => d[0] === a[0])))]
+			]
 		)
 	}
 }

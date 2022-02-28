@@ -63,6 +63,8 @@
     "addPointBetweenPoints": "Add point between existing points",
     "addPointToEnd": "Add point to the line end",
     "areYouSureToDelete": "Do you really want to delete selected element?",
+    "attrTable": "Attributive table",
+    "attrTableEditing": "Attributive element (sublayer: {{sublayerName}})",
     "bkColor": "Background color",
     "closed": "Closed",
     "create": "Create",

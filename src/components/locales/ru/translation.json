@@ -63,6 +63,8 @@
     "addPointBetweenPoints": "Добавление точки между точками",
     "addPointToEnd": "Добавление точки в конец линии",
     "areYouSureToDelete": "Вы действительно хотите удалить выбранный элемент?",
+    "attrTable": "Атрибутивная таблица",
+    "attrTableEditing": "Атрибутивная таблица (подслой: {{sublayerName}})",
     "bkColor": "Цвет заполнения",
     "closed": "Замкнутость",
     "create": "Создать",

@@ -7,7 +7,9 @@ import setOpenedWindow from "../../../../../store/actionCreators/setOpenedWindow
 import setFormRefs from '../../../../../store/actionCreators/setFormRefs';
 import EditWindow from "./EditWindow";
 import PropertiesWindow from "./PropertiesWindow";
+import AttrTableWindow from "./AttrTableWindow";
 var _ = require("lodash");
+var parseColor = require("parse-color");
 
 export default function Editing(props) {
     const { t } = useTranslation();
@@ -33,8 +35,8 @@ export default function Editing(props) {
         if (selectedObject) {
             selectedObject.edited = onEditing;
             formRef.current.updateCanvas();
-            dispatch(setFormRefs(formId + "_selectedObjectEditing", onEditing));
         }
+        dispatch(setFormRefs(formId + "_selectedObjectEditing", onEditing));
     }, [selectedObject, onEditing, formRef, dispatch, formId]);
 
     const modeHandler = (newMode) => {
@@ -114,6 +116,7 @@ export default function Editing(props) {
                 onClosed={(applied) => {
                     if (!applied && initialReadyForApply) {
                         activeLayer.elements.splice(activeLayer.elements.length - 1, 1);
+                        formRef.current.setSelectedObject(null);
                         formRef.current.updateCanvas();
                     }
                 }}
@@ -121,35 +124,36 @@ export default function Editing(props) {
     }, [activeLayer, dispatch, formId, formRef]);
 
     const mouseDown = React.useCallback((event) => {
-        if (selectedObject?.type === "polyline") {
-            isOnMove.current = true;
-            let coords = formRef.current.coords();
-            const point = coords.pointToMap(clientPoint(event));
-            if (mode.current === "deletePoint") {
-                let nearestPoint = getNearestPoint(point, formRef.current.centerScale().scale, selectedObject);
-                if (nearestPoint) {
-                    selectedObject.arcs[0].path.splice(nearestPoint.index * 2, 2);
+        if (onEditing) {
+            if (selectedObject?.type === "polyline") {
+                isOnMove.current = true;
+                let coords = formRef.current.coords();
+                const point = coords.pointToMap(clientPoint(event));
+                if (mode.current === "deletePoint") {
+                    let nearestPoint = getNearestPoint(point, formRef.current.centerScale().scale, selectedObject);
+                    if (nearestPoint) {
+                        selectedObject.arcs[0].path.splice(nearestPoint.index * 2, 2);
+                        dispatch(setFormRefs(formId + "_selectedObjectLength", selectedObject.arcs[0].path.length));
+                        formRef.current.updateCanvas();
+                    }
+                }
+                else if (mode.current === "movePoint") {
+                    let nearestPoint = getNearestPoint(point, formRef.current.centerScale().scale, selectedObject);
+                    movedPoint.current = nearestPoint;
+                }
+                else if (mode.current === "addPointToEnd") {
+                    selectedObject.arcs[0].path = [...selectedObject.arcs[0].path, point.x, point.y];
                     dispatch(setFormRefs(formId + "_selectedObjectLength", selectedObject.arcs[0].path.length));
                     formRef.current.updateCanvas();
                 }
-            }
-            else if (mode.current === "movePoint") {
-                let nearestPoint = getNearestPoint(point, formRef.current.centerScale().scale, selectedObject);
-                movedPoint.current = nearestPoint;
-            }
-            else if (mode.current === "addPointToEnd") {
-                selectedObject.arcs[0].path = [...selectedObject.arcs[0].path, point.x, point.y];
-                dispatch(setFormRefs(formId + "_selectedObjectLength", selectedObject.arcs[0].path.length));
-                formRef.current.updateCanvas();
-            }
-            else if (mode.current === "addPointBetween") {
-                let nearestPoint = getNearestSegment(point, selectedObject);
-                selectedObject.arcs[0].path.splice(nearestPoint * 2 + 2, 0, point.x, point.y);
-                movedPoint.current = nearestPoint;
-                formRef.current.updateCanvas();
+                else if (mode.current === "addPointBetween") {
+                    let nearestPoint = getNearestSegment(point, selectedObject);
+                    selectedObject.arcs[0].path.splice(nearestPoint * 2 + 2, 0, point.x, point.y);
+                    movedPoint.current = nearestPoint;
+                    formRef.current.updateCanvas();
+                }
             }
         }
-
     }, [onEditing, formRef, selectedObject, dispatch, formId, getNearestSegment]);
 
     const mouseUp = React.useCallback((event) => {
@@ -203,7 +207,7 @@ export default function Editing(props) {
             }
         }
     }, [onEditing, selectedObject, formRef]);
-        
+
     React.useEffect(() => {
         if (control) {
             control.addEventListener("mousedown", mouseDown, { passive: true });
@@ -264,7 +268,7 @@ export default function Editing(props) {
     const showDeleteWindow = () => {
         dispatch(setOpenedWindow("deleteMapElementWindow", true,
             <Dialog key="deleteMapElementWindow" title={t('map.deleteElement', { sublayerName: modifiedLayer?.name })} onClose={handleCloseDeleteWindow}>
-                {t('map.areYouSureToDelete') }
+                {t('map.areYouSureToDelete')}
                 <DialogActionsBar>
                     <div className="windowButtonContainer">
                         <Button className="windowButton" onClick={handleDelete}>
@@ -286,6 +290,7 @@ export default function Editing(props) {
             const data = await sessionManager.fetchData(`mapLegends?sessionId=${sessionId}`);
             if (!ignore) {
                 setLegendsData(data);
+                createByLegends();
             }
         }
         if (!legendsData) {
@@ -297,11 +302,99 @@ export default function Editing(props) {
         return () => { ignore = true; }
     };
 
+    const startNewPolyline = (newElement) => {
+        activeLayer.elements.push(newElement);
+        dispatch(setFormRefs(formId + "_selectedObjectLength", 0));
+        formRef.current.setSelectedObject(newElement);
+        setOnEditing(true);
+        dispatch(setOpenedWindow("editWindow", true,
+            <EditWindow
+                initialMode="addPointToEnd"
+                key="mapPolylineEditing"
+                setOnEditing={setOnEditing}
+                formId={formId}
+                modeHandler={modeHandler}
+                onClosed={(applied) => {
+                    if (applied) {
+                        showPropertiesWindow(true);
+                    }
+                    else {
+                        activeLayer.elements.splice(activeLayer.elements.length - 1, 1);
+                        formRef.current.setSelectedObject(null);
+                        formRef.current.updateCanvas();
+                    }
+                }}
+            />));
+    }
+
     const createByLegends = React.useCallback(() => {
 
-        var sublayerSettings = legendsData.sublayers.find(d => d.name === activeLayer?.name)
+        var sublayerSettings = legendsData?.sublayers?.find(d => d.name === activeLayer?.name);
         if (sublayerSettings) {
+            let legendToSet = sublayerSettings.legends.find(l => l.default);
+            if (!legendToSet && sublayerSettings.legends.length > 0) {
+                legendToSet = sublayerSettings.legends[0];
+            }
+            if (legendToSet) {
+                switch (sublayerSettings.type) {
+                    case 'LabelModel':
+                        break;
+                    case 'PolylineModel':
+                        let newElement = {};
+                        newElement.attrTable = {};
+                        legendToSet.attrTable.forEach(p => {
+                            newElement.attrTable[p.name] = p.value;
+                        });
+                        newElement.type = "polyline";
+                        newElement.arcs = [{ closed: false, path: [] }];
+                        newElement.bounds = null;
+                        newElement.borderstyle = 0;
+                        newElement.fillbkcolor = '#FFFFFF';
+                        newElement.fillcolor = '#000000';
+                        newElement.bordercolor = '#000000';
+                        newElement.borderwidth = 1;
+                        newElement.transparent = true;
+                        newElement.legend = legendToSet;
 
+                        legendToSet.properties.forEach(p => {
+                            switch (p.name) {
+                                case "BorderStyle":
+                                    newElement.borderstyle = Number(p.value.replace(',', '.'));
+                                    break;
+                                case "BorderStyleId":
+                                    newElement.borderstyleid = p.value;
+                                    break;
+                                case "Closed":
+                                    newElement.arcs[0].closed = (p.value === "True");
+                                    break;
+                                case "FillBkColor":
+                                    newElement.fillbkcolor = parseColor('#' + (p.value.slice(-6)));
+                                    break;
+                                case "FillColor":
+                                    newElement.fillcolor = parseColor('#' + (p.value.slice(-6)));
+                                    break;
+                                case "FillName":
+                                    newElement.fillname = p.value;
+                                    break;
+                                case "StrokeColor":
+                                    newElement.bordercolor = parseColor('#' + (p.value.slice(-6)));
+                                    break;
+                                case "StrokeThickness":
+                                    newElement.borderwidth = Number(p.value.replace(',', '.'));
+                                    break;
+                                case "Transparency":
+                                    newElement.transparent = (p.value !== "Nontransparent");
+                                    break;
+                                default:
+                                    break;
+                            }
+                        });
+                        startNewPolyline(newElement);
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
         else {
             if (activeLayer.elements.length > 0) {
@@ -320,26 +413,7 @@ export default function Editing(props) {
                         let newElement = { ...activeLayer.elements[0] };
                         newElement.arcs = [{ closed: activeLayer.elements[0].arcs[0].closed, path: [] }];
                         newElement.bounds = null;
-                        activeLayer.elements.push(newElement);
-                        dispatch(setFormRefs(formId + "_selectedObjectLength", 0));
-                        formRef.current.setSelectedObject(newElement);
-                        setOnEditing(true);
-                        dispatch(setOpenedWindow("editWindow", true,
-                            <EditWindow
-                                initialMode="addPointToEnd"
-                                key="mapPolylineEditing"
-                                setOnEditing={setOnEditing}
-                                formId={formId}
-                                modeHandler={modeHandler}
-                                onClosed={(applied) => {
-                                    if (applied) {
-                                        showPropertiesWindow(true);
-                                    }
-                                    else {
-                                        activeLayer.elements.splice(activeLayer.elements.length - 1, 1);
-                                    }
-                                }}
-                            />));
+                        startNewPolyline(newElement);
                         break;
                     default:
                         break;
@@ -349,13 +423,12 @@ export default function Editing(props) {
 
             }
         }
-    }, [activeLayer, dispatch, formRef, formId, legendsData, showPropertiesWindow]);
+    }, [activeLayer, dispatch, formRef, formId, legendsData, showPropertiesWindow, selectedObject]);
 
-    React.useEffect(() => {
-        if (legendsData) {
-            createByLegends();
-        }
-    }, [legendsData, createByLegends]);
+    const showAttrTableWindow = () => {
+        dispatch(setOpenedWindow("attrTableWindow", true,
+            <AttrTableWindow formId={formId} />));
+    };
 
     return (
         <div>
@@ -370,6 +443,9 @@ export default function Editing(props) {
             </Button>
             <Button className="actionbutton" onClick={showPropertiesWindow} disabled={(!selectedObject) || (selectedObject.type !== 'polyline' && selectedObject.type !== 'label')}>
                 {t('map.properties')}
+            </Button>
+            <Button className="actionbutton" onClick={showAttrTableWindow} disabled={!selectedObject}>
+                {t('map.attrTable')}
             </Button>
             <Button className="actionbutton" onClick={save} disabled={!changed}>
                 {t('base.save')}
