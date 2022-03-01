@@ -93,7 +93,7 @@ export default function Form(props) {
         dispatch(setFormRefs(formData.id, _form))
     }, [formData, dispatch]);
 
-    const allplugins = useSelector((state) => state.layout["plugins"]?.inner);
+    const allplugins = useSelector((state) => state.plugins.inner);
     const plugins = allplugins.filter(plugin => plugin?.component?.form === capitalizeFirstLetter(formData.type));
 
     return (

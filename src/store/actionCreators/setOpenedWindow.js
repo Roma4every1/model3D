@@ -1,11 +1,12 @@
 import SETOPENEDWINDOW from '../actions/windowData/setOpenedWindow';
 
-function setOpenedWindow(windowName, windowVisible, window) {
+function setOpenedWindow(windowName, windowVisible, window, position) {
     return {
         type: SETOPENEDWINDOW,
         windowName: windowName,
         windowVisible: windowVisible,
-        window: window
+        window: window,
+        position: position
     };
 }
 

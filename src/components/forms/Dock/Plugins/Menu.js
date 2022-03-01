@@ -27,7 +27,7 @@ export default function Menu(props) {
         sessionManager.loadSessionByDefault();
     }
 
-    const plugins = useSelector((state) => state.layout["plugins"]);
+    const plugins = useSelector((state) => state.plugins);
     const formLayout = useSelector((state) => state.layout[formId]);
 
     const handlePresentationParameters = (plugin) => {

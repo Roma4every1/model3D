@@ -12,9 +12,7 @@ import StyleTemplate from "./StyleTemplate";
 import lines from "../../lines.json";
 import setFormRefs from '../../../../../store/actionCreators/setFormRefs';
 var parseColor = require("parse-color");
-var pngMono = require("../../maps/src/pngMono");
-var htmlHelper = require("../../maps/src/htmlHelper");
-var parseSMB = require("../../maps/src/parseSMB");
+var mapDrawerTypes = require("../../maps/src/mapDrawer");
 
 export default function PolylinePropertiesWindow(props) {
     const { t } = useTranslation();
@@ -42,27 +40,6 @@ export default function PolylinePropertiesWindow(props) {
     const [borderColorDisabled, setBorderColorDisabled] = React.useState(false);
     const [borderWidthDisabled, setBorderWidthDisabled] = React.useState(false);
     const [readyForApply, setReadyForApply] = React.useState(initialReadyForApply);
-
-    const getPattern = async (name, color, bkcolor) => {
-        var [, libName, index] = name.match(/^(.+)-(\d+)$/);
-        if (libName.toLowerCase() === "halftone") {
-            var c = parseColor(color).rgb;
-            var b = (bkcolor === "none") ? parseColor("#FFFFFF").rgb : parseColor(bkcolor).rgb;
-            var t = index / 64;
-            return `rgba(${b.map((bi, i) =>
-                Math.round(bi + (c[i] - bi) * t))
-                }, 1)`;
-        }
-        var done = await fetch(window.location.pathname + "libs/" + libName.toLowerCase() + ".smb",
-            {
-                credentials: 'include'
-            });
-        let buffer = await done.arrayBuffer();
-        var lib = parseSMB(new Uint8Array(buffer));
-        var png = pngMono(lib[index], color, bkcolor);
-        var image = await htmlHelper.loadImageData(png, "image/png");
-        return image;
-    }
 
     React.useEffect(() => {
         setReadyForApply(initialReadyForApply);
@@ -217,7 +194,7 @@ export default function PolylinePropertiesWindow(props) {
         const children = [
             <div key={1}>
                 <FillNameTemplate
-                    getPattern={getPattern}
+                    getPattern={mapDrawerTypes.types["polyline"].getPattern}
                     fillName={value}
                     fillColor={fillColor}
                     bkColor={bkColor}
@@ -231,7 +208,7 @@ export default function PolylinePropertiesWindow(props) {
     const templatesRender = (li, itemProps) => {
         const itemChildren = (
             <FillNameTemplate
-                getPattern={getPattern}
+                getPattern={mapDrawerTypes.types["polyline"].getPattern}
                 fillName={itemProps?.dataItem}
                 fillColor={fillColor}
                 bkColor={bkColor}
@@ -255,7 +232,7 @@ export default function PolylinePropertiesWindow(props) {
             selectedObject.borderstyleid = borderStyleId;
 
             if (fillName) {
-                selectedObject.img = await getPattern(fillName, fillColor, transparent ? "none" : bkColor);
+                selectedObject.img = await mapDrawerTypes.types["polyline"].getPattern(fillName, fillColor, transparent ? "none" : mapDrawerTypes.types["polyline"].bkcolor(selectedObject));                
             }
 
             let modifiedLayer = mapData?.layers?.find(l => l.elements.includes(selectedObject));

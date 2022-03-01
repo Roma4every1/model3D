@@ -13,14 +13,20 @@ export default function AttrTableWindow(props) {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const { formId } = props;
+    const windows = useSelector((state) => state.windowData?.windows);
     const mapData = useSelector((state) => state.formRefs[formId + "_mapData"]);
     const selectedObject = useSelector((state) => state.formRefs[formId + "_selectedObject"]);
     const modifiedLayer = mapData?.layers?.find(l => l.elements.includes(selectedObject));
     const [readyForApply, setReadyForApply] = React.useState(false);
     const [attrTable, setAttrTable] = React.useState({ ...selectedObject.attrTable });
+    const _windowRef = React.useRef(null);
 
     const close = () => {
-        dispatch(setOpenedWindow("attrTableWindow", false, null));
+        let position;
+        if (_windowRef.current) {
+            position = { top: _windowRef.current.top, left: _windowRef.current.left }
+        }
+        dispatch(setOpenedWindow("attrTableWindow", false, null, position));
     };
 
     const apply = () => {
@@ -36,8 +42,11 @@ export default function AttrTableWindow(props) {
 
     return (
         <Window
+            ref={_windowRef}
             title={t('map.attrTableEditing', { sublayerName: modifiedLayer?.name })}
             onClose={() => close()}
+            initialLeft={windows?.attrTableWindow?.position?.left}
+            initialTop={windows?.attrTableWindow?.position?.top}
             width={300}
             height={300}
         >

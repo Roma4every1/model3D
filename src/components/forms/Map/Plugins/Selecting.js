@@ -1,19 +1,22 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Popup } from "@progress/kendo-react-popup";
 import { Button } from "@progress/kendo-react-buttons";
 var pixelPerMeter = require("../maps/src/pixelPerMeter");
+var mapDrawerTypes = require("../maps/src/mapDrawer");
 var _ = require("lodash");
 
 export default function Selecting(props) {
     const { t } = useTranslation();
+    const dispatch = useDispatch();
     const { formId } = props;
     const formRef = useSelector((state) => state.formRefs[formId]);
     const activeLayer = useSelector((state) => state.formRefs[formId + "_activeLayer"]);
+    const selectedObject = useSelector((state) => state.formRefs[formId + "_selectedObject"]);
     const selectedObjectEditing = useSelector((state) => state.formRefs[formId + "_selectedObjectEditing"]);
     const control = useSelector((state) => state.formRefs[formId]?.current?.control());
-    const [pressed, setPressed] = React.useState(false);
+    const [pressed, setPressed] = React.useState(control?.selectingMode);
     const [mode, setMode] = React.useState("sublayer");
 
     var SELECTION_RADIUS = 0.005;
@@ -108,19 +111,29 @@ export default function Selecting(props) {
             if (oldPointData.current && (Math.pow(oldPointData.current.point.x - point.x, 2) + Math.pow(oldPointData.current.point.y - point.y, 2) < SELECTION_RADIUS * scale * SELECTION_RADIUS * scale)) {
                 if (oldPointData.current.nearestElements.length > 0) {
                     oldPointData.current.activeIndex++;
-                    let selectedObject = formRef.current.selectedObject();
-                    if (selectedObject) {
-                        selectedObject.selected = false;
+                    const setActive = async () => {
+                        let selectedObject = formRef.current.selectedObject();
+                        if (selectedObject) {
+                            selectedObject.selected = false;
+                            if (selectedObject.fillname && !selectedObject.transparent) {
+                                selectedObject.img = await mapDrawerTypes.types["polyline"].getPattern(selectedObject.fillname, selectedObject.fillcolor, mapDrawerTypes.types["polyline"].bkcolor(selectedObject));
+                            }
+                        }
+                        if (oldPointData.current.activeIndex < oldPointData.current.nearestElements.length) {
+                            let newSelectedObject = oldPointData.current.nearestElements[oldPointData.current.activeIndex];
+                            newSelectedObject.selected = true;
+                            if (newSelectedObject.fillname && !newSelectedObject.transparent) {
+                                newSelectedObject.img = await mapDrawerTypes.types["polyline"].getPattern(newSelectedObject.fillname, newSelectedObject.fillcolor, mapDrawerTypes.types["polyline"].bkcolor(newSelectedObject));
+                            }
+                            formRef.current.setSelectedObject(newSelectedObject);
+                        }
+                        else {
+                            oldPointData.current.activeIndex = -1;
+                            formRef.current.setSelectedObject(null);
+                        }
+                        formRef.current.updateCanvas();
                     }
-                    if (oldPointData.current.activeIndex < oldPointData.current.nearestElements.length) {
-                        oldPointData.current.nearestElements[oldPointData.current.activeIndex].selected = true;
-                        formRef.current.setSelectedObject(oldPointData.current.nearestElements[oldPointData.current.activeIndex]);
-                    }
-                    else {
-                        oldPointData.current.activeIndex = -1;
-                        formRef.current.setSelectedObject(null);
-                    }
-                    formRef.current.updateCanvas();
+                    setActive();
                 }
             }
             else {
@@ -138,20 +151,30 @@ export default function Selecting(props) {
                 }
                 nearestElements.reverse();
                 if (nearestElements.length > 0) {
-                    let activeIndex = 0;
-                    let selectedObject = formRef.current.selectedObject();
-                    if (selectedObject) {
-                        selectedObject.selected = false;
-                    }
-                    nearestElements[activeIndex].selected = true;
-                    formRef.current.setSelectedObject(nearestElements[activeIndex]);
-                    formRef.current.updateCanvas();
+                    const setActive = async () => {
+                        let activeIndex = 0;
+                        let selectedObject = formRef.current.selectedObject();
+                        if (selectedObject) {
+                            selectedObject.selected = false;
+                            if (selectedObject.fillname && !selectedObject.transparent) {
+                                selectedObject.img = await mapDrawerTypes.types["polyline"].getPattern(selectedObject.fillname, selectedObject.fillcolor, mapDrawerTypes.types["polyline"].bkcolor(selectedObject));
+                            }
+                        }
+                        let newSelectedObject = nearestElements[activeIndex];
+                        newSelectedObject.selected = true;
+                        if (newSelectedObject.fillname && !newSelectedObject.transparent) {
+                            newSelectedObject.img = await mapDrawerTypes.types["polyline"].getPattern(newSelectedObject.fillname, newSelectedObject.fillcolor, mapDrawerTypes.types["polyline"].bkcolor(newSelectedObject));
+                        }
+                        formRef.current.setSelectedObject(newSelectedObject);
+                        formRef.current.updateCanvas();
 
-                    oldPointData.current = {
-                        point: point,
-                        nearestElements: nearestElements,
-                        activeIndex: 0
+                        oldPointData.current = {
+                            point: point,
+                            nearestElements: nearestElements,
+                            activeIndex: 0
+                        }
                     }
+                    setActive();
                 }
                 else {
                     oldPointData.current = null;
@@ -175,6 +198,13 @@ export default function Selecting(props) {
         if (control) {
             control.selectingMode = !pressed;
         }
+        if (pressed) {
+            if (selectedObject) {
+                selectedObject.selected = false;
+                formRef.current.setSelectedObject(null);
+                formRef.current.updateCanvas();
+            }
+        }
         setPressed(!pressed);
     };
 
@@ -192,7 +222,7 @@ export default function Selecting(props) {
 
     return (
         <div>
-            <Button togglable={true} className='mapPickButton' onClick={setButtonPressed} title={t('map.pick')}>
+            <Button togglable={true} selected={pressed} className='mapPickButton' onClick={setButtonPressed} title={t('map.pick')}>
                 <span className="k-icon k-i-button" />
             </Button>
             <Button className="mapPickPopupButton" onClick={showColumnListClick}>

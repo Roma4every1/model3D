@@ -7,6 +7,7 @@ import formRefs from './formRefs';
 import formParams from './formParams';
 import formSettings from './formSettings';
 import layout from './layout';
+import plugins from './plugins';
 import reports from './reports';
 import sessionId from './sessionId';
 import sessionManager from './sessionManager';
@@ -21,6 +22,7 @@ const rootReducer = combineReducers({
     formParams,
     formSettings,
     layout,
+    plugins,
     reports,
     sessionId,
     sessionManager,

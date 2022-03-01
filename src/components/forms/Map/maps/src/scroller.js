@@ -142,8 +142,6 @@ function Scroller(control) {
 	control.addEventListener("touchcancel", stopActionEvent, { passive: true })
 
 	control.addEventListener("mousewheel", event => {
-		if (control.blocked)
-			return
 		if (event.target !== control)
 			return
 		var delta = event.wheelDelta < 0 ? -1 : 1

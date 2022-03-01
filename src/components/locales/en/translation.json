@@ -75,6 +75,7 @@
     "deleteElement": "Delete element (sublayer: {{sublayerName}})",
     "deletePoint": "Delete point",
     "editing": "Editing (sublayer: {{sublayerName}})",
+    "elementNotSelected": "Element is not selected",
     "exportToPdf": "Export to PDF",
     "fillColor": "Fill color",
     "finishEditing": "Finish editing",

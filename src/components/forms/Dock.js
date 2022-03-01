@@ -21,7 +21,7 @@ function Dock(props, ref) {
         sessionManager.getChildForms(formData.id);
     }, [formData, sessionManager]);
 
-    const plugins = useSelector((state) => state.layout["plugins"]);
+    const plugins = useSelector((state) => state.plugins);
     const formLayout = useSelector((state) => state.layout[formData.id]);
 
     const [leftBorderSettings] = React.useState({

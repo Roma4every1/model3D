@@ -4,6 +4,9 @@ var startThread = require("./startThread");
 var geom = require("./geom");
 var lodash = require("lodash");
 var parseColor = require("parse-color");
+var parseSMB = require("./parseSMB");
+var htmlHelper = require("./htmlHelper");
+var pngMono = require("./pngMono");
 
 export var types = {};
 
@@ -586,6 +589,27 @@ var polyline = declareType("polyline", {
 		Clear: [],
 	},
 
+	getPattern: async (name, color, bkcolor) => {
+		var [, libName, index] = name.match(/^(.+)-(\d+)$/);
+		if (libName.toLowerCase() === "halftone") {
+			var c = parseColor(color).rgb;
+			var b = (bkcolor === "none") ? parseColor("#FFFFFF").rgb : parseColor(bkcolor).rgb;
+			var t = index / 64;
+			return `rgba(${b.map((bi, i) =>
+				Math.round(bi + (c[i] - bi) * t))
+				}, 1)`;
+		}
+		var done = await fetch(window.location.pathname + "libs/" + libName.toLowerCase() + ".smb",
+			{
+				credentials: 'include'
+			});
+		let buffer = await done.arrayBuffer();
+		var lib = parseSMB(new Uint8Array(buffer));
+		var png = pngMono(lib[index], color, bkcolor);
+		var image = await htmlHelper.loadImageData(png, "image/png");
+		return image;
+	},
+
 	bkcolor: function (i) {
 		var color = i.fillbkcolor;
 		if (i.selected) {
@@ -841,11 +865,17 @@ var polyline = declareType("polyline", {
 					x = null;
 				}
 			}
-			if (a.closed && i.arcs.length > 1 && f != null)
-				context.lineTo(f.x, f.y);
+			if (a.closed && i.arcs.length > 1 && f != null) {
+				let s = options.pointToControl({ x: a.path[0], y: a.path[1] });
+				overhead = fillSegmentWithDecoration(context, lineConfig, s, f, overhead, i, options);
+			}
 		}
-		if (i.arcs.length === 1 && i.arcs[0].closed)
+		if (i.arcs.length === 1 && i.arcs[0].closed) {
+			let s = options.pointToControl({ x: i.arcs[0].path[0], y: i.arcs[0].path[1] });
+			let fi = options.pointToControl({ x: i.arcs[0].path[i.arcs[0].path.length - 2], y: i.arcs[0].path[i.arcs[0].path.length - 1] });
+			overhead = fillSegmentWithDecoration(context, lineConfig, s, fi, overhead, i, options);
 			context.closePath();
+		}
 	},
 
 	draft: function (i, options) {

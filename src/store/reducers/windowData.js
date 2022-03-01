@@ -12,7 +12,8 @@ function windowData(state = null, action) {
             newState.windows = { ...newState.windows };
             newState.windows[action.windowName] = {
                 visible: action.windowVisible,
-                window: action.window
+                window: action.window,
+                position: action.position ?? newState.windows[action.windowName]?.position
             };
             return newState;
 

@@ -13,6 +13,7 @@ export default function EditWindow(props) {
     const { setOnEditing, formId, modeHandler, initialMode, onClosed } = props;
     const control = useSelector((state) => state.formRefs[formId]?.current?.control());
     const mapData = useSelector((state) => state.formRefs[formId + "_mapData"]);
+    const windows = useSelector((state) => state.windowData?.windows);
     const selectedObject = useSelector((state) => state.formRefs[formId + "_selectedObject"]);
     const selectedObjectLength = useSelector((state) => state.formRefs[formId + "_selectedObjectLength"]);
     const modifiedLayer = mapData?.layers?.find(l => l.elements.includes(selectedObject));
@@ -20,6 +21,7 @@ export default function EditWindow(props) {
     const imageSize = 32;
     const [mode, setMode] = React.useState(initialMode ?? "movePoint");
     const canApply = selectedObjectLength ? selectedObjectLength > 2 : selectedObjectLength !== 0;
+    const _windowRef = React.useRef(null);
 
     React.useEffect(() => {
         modeHandler(mode);
@@ -32,7 +34,11 @@ export default function EditWindow(props) {
             selectedObject.arcs[0].path = oldObjectPath;
         }
         setOnEditing(false);
-        dispatch(setOpenedWindow("editWindow", false, null));
+        let position;
+        if (_windowRef.current) {
+            position = { top: _windowRef.current.top, left: _windowRef.current.left }
+        }
+        dispatch(setOpenedWindow("editWindow", false, null, position));
         if (onClosed) {
             onClosed(noSave);
         }
@@ -63,12 +69,15 @@ export default function EditWindow(props) {
 
     return (
         <Window
+            ref={_windowRef}
             className="mapEditWindow"
             maximizeButton={false}
             resizable={false}
             key="editWindow"
             title={t('map.editing', { sublayerName: modifiedLayer?.name })}
             onClose={() => closeEditing()}
+            initialLeft={windows?.editWindow?.position?.left}
+            initialTop={windows?.editWindow?.position?.top}
             initialWidth={267}
             initialHeight={82}
         >

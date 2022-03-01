@@ -75,6 +75,7 @@
     "deleteElement": "Удаление элемента (подслой: {{sublayerName}})",
     "deletePoint": "Удаление точки",
     "editing": "Редактирование (подслой: {{sublayerName}})",
+    "elementNotSelected": "Элемент не выбран",
     "exportToPdf": "Экспорт в PDF",
     "fillColor": "Цвет рисунка",
     "finishEditing": "Завершить редактирование",
