@@ -5,6 +5,7 @@ import { Button } from "@progress/kendo-react-buttons";
 import { Window } from "@progress/kendo-react-dialogs";
 import setOpenedWindow from "../../../../../store/actionCreators/setOpenedWindow";
 import setFormRefs from '../../../../../store/actionCreators/setFormRefs';
+var _ = require("lodash");
 
 export default function EditWindow(props) {
     const { t } = useTranslation();

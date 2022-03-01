@@ -8,6 +8,7 @@ import setFormRefs from '../../../../../store/actionCreators/setFormRefs';
 import EditWindow from "./EditWindow";
 import PropertiesWindow from "./PropertiesWindow";
 import AttrTableWindow from "./AttrTableWindow";
+import CreateElementWindow from "./CreateElementWindow";
 var _ = require("lodash");
 var parseColor = require("parse-color");
 
@@ -156,10 +157,54 @@ export default function Editing(props) {
         }
     }, [onEditing, formRef, selectedObject, dispatch, formId, getNearestSegment]);
 
+    const createNewLabel = React.useCallback(() => {
+        let newElement = null;
+        var sublayerSettings = legendsData?.sublayers?.find(d => d.name === activeLayer?.name);
+        if (sublayerSettings) {
+            let legendToSet = sublayerSettings.legends.find(l => l.default);
+            if (!legendToSet && sublayerSettings.legends.length > 0) {
+                legendToSet = sublayerSettings.legends[0];
+            }
+            if (legendToSet && sublayerSettings.type === "LabelModel") {
+
+            }
+        }
+        if (!newElement) {
+            if (activeLayer?.elements?.length > 0) {
+                newElement = { ...activeLayer.elements[0] };
+            }
+            else {
+                newElement = {};
+                newElement.type = 'label';
+                newElement.fontsize = 12;
+                newElement.fontname = 'Arial';
+                newElement.halignment = 1;
+                newElement.valignment = 1;
+                newElement.color = '#000000';
+                newElement.angle = 0;
+            }
+        }
+        newElement.text = "text";
+        return newElement;
+    }, [activeLayer, legendsData]);
+
     const mouseUp = React.useCallback((event) => {
         if (onEditing) {
             isOnMove.current = false;
-            if (mode.current === "movePoint") {
+            if (labelCreating) {
+                dispatch(setFormRefs(formId + "_cursor", "auto"));
+                let coords = formRef.current.coords();
+                const point = coords.pointToMap(clientPoint(event));
+                let newElement = createNewLabel();
+                newElement.x = point.x;
+                newElement.y = point.y;
+                activeLayer.elements.push(newElement);
+                formRef.current.setSelectedObject(newElement);
+                showPropertiesWindow(true);
+                setLabelCreating(false);
+                setOnEditing(false);
+            }
+            else if (mode.current === "movePoint") {
                 movedPoint.current = null;
             }
             else if (mode.current === "addPointToEnd") {
@@ -169,22 +214,8 @@ export default function Editing(props) {
                 selectedObject.arcs[0].path[-1] = Math.round(point.y);
                 formRef.current.updateCanvas();
             }
-            if (labelCreating) {
-                dispatch(setFormRefs(formId + "_cursor", "auto"));
-                let coords = formRef.current.coords();
-                const point = coords.pointToMap(clientPoint(event));
-                let newElement = { ...activeLayer.elements[0] };
-                newElement.text = "text";
-                newElement.x = point.x;
-                newElement.y = point.y;
-                activeLayer.elements.push(newElement);
-                formRef.current.setSelectedObject(newElement);
-                showPropertiesWindow(true);
-                setLabelCreating(false);
-                setOnEditing(false);
-            }
         }
-    }, [onEditing, formRef, selectedObject, dispatch, formId, labelCreating, activeLayer, showPropertiesWindow]);
+    }, [onEditing, formRef, selectedObject, dispatch, formId, labelCreating, activeLayer, showPropertiesWindow, createNewLabel]);
 
     const mouseMove = React.useCallback((event) => {
         if (onEditing) {
@@ -302,7 +333,33 @@ export default function Editing(props) {
         return () => { ignore = true; }
     };
 
-    const startNewPolyline = (newElement) => {
+    const startNewLabel = React.useCallback(() => {
+        if (selectedObject) {
+            selectedObject.selected = false;
+            formRef.current.updateCanvas();
+        }
+        formRef.current.setSelectedObject(null);
+        setOnEditing(true);
+        dispatch(setFormRefs(formId + "_cursor", "crosshair"));
+        setLabelCreating(true);
+    }, [dispatch, formRef, formId, selectedObject]);
+
+    const getDefaultPolyline = () => {
+        let newElement = {};
+        newElement.attrTable = {};
+        newElement.type = "polyline";
+        newElement.arcs = [{ closed: false, path: [] }];
+        newElement.bounds = null;
+        newElement.borderstyle = 0;
+        newElement.fillbkcolor = '#FFFFFF';
+        newElement.fillcolor = '#000000';
+        newElement.bordercolor = '#000000';
+        newElement.borderwidth = 0.25;
+        newElement.transparent = true;
+        return newElement;
+    }
+
+    const startNewPolyline = React.useCallback((newElement) => {
         activeLayer.elements.push(newElement);
         dispatch(setFormRefs(formId + "_selectedObjectLength", 0));
         formRef.current.setSelectedObject(newElement);
@@ -325,7 +382,21 @@ export default function Editing(props) {
                     }
                 }}
             />));
-    }
+    }, [dispatch, formRef, formId, activeLayer, showPropertiesWindow]);
+
+    const setResult = React.useCallback((res) => {
+        switch (res) {
+            case 'label':
+                startNewLabel();
+                break;
+            case 'polyline':
+                let newElement = getDefaultPolyline();
+                startNewPolyline(newElement);
+                break;
+            default:
+                break;
+        }
+    }, [startNewLabel, startNewPolyline]);
 
     const createByLegends = React.useCallback(() => {
 
@@ -340,20 +411,10 @@ export default function Editing(props) {
                     case 'LabelModel':
                         break;
                     case 'PolylineModel':
-                        let newElement = {};
-                        newElement.attrTable = {};
+                        let newElement = getDefaultPolyline();
                         legendToSet.attrTable.forEach(p => {
-                            newElement.attrTable[p.name] = p.value;
+                            newElement.attrTable[p.name] = p.value
                         });
-                        newElement.type = "polyline";
-                        newElement.arcs = [{ closed: false, path: [] }];
-                        newElement.bounds = null;
-                        newElement.borderstyle = 0;
-                        newElement.fillbkcolor = '#FFFFFF';
-                        newElement.fillcolor = '#000000';
-                        newElement.bordercolor = '#000000';
-                        newElement.borderwidth = 1;
-                        newElement.transparent = true;
                         newElement.legend = legendToSet;
 
                         legendToSet.properties.forEach(p => {
@@ -400,14 +461,7 @@ export default function Editing(props) {
             if (activeLayer.elements.length > 0) {
                 switch (activeLayer.elements[0].type) {
                     case 'label':
-                        if (selectedObject) {
-                            selectedObject.selected = false;
-                            formRef.current.updateCanvas();
-                        }
-                        formRef.current.setSelectedObject(null);
-                        setOnEditing(true);
-                        dispatch(setFormRefs(formId + "_cursor", "crosshair"));
-                        setLabelCreating(true);
+                        startNewLabel();
                         break;
                     case 'polyline':
                         let newElement = { ...activeLayer.elements[0] };
@@ -420,14 +474,19 @@ export default function Editing(props) {
                 }
             }
             else {
-
+                dispatch(setOpenedWindow("createElementWindow", true,
+                    <CreateElementWindow
+                        key="createElementWindow"
+                        modifiedLayerName={activeLayer?.name}
+                        setResult={setResult}
+                    />));
             }
         }
-    }, [activeLayer, dispatch, formRef, formId, legendsData, showPropertiesWindow, selectedObject]);
+    }, [activeLayer, dispatch, legendsData, setResult, startNewLabel, startNewPolyline]);
 
     const showAttrTableWindow = () => {
         dispatch(setOpenedWindow("attrTableWindow", true,
-            <AttrTableWindow formId={formId} />));
+            <AttrTableWindow key="attrTableWindow" formId={formId} />));
     };
 
     return (
@@ -441,7 +500,7 @@ export default function Editing(props) {
             <Button className="actionbutton" onClick={showDeleteWindow} disabled={!selectedObject}>
                 {t('map.delete')}
             </Button>
-            <Button className="actionbutton" onClick={showPropertiesWindow} disabled={(!selectedObject) || (selectedObject.type !== 'polyline' && selectedObject.type !== 'label')}>
+            <Button className="actionbutton" onClick={() => showPropertiesWindow()} disabled={(!selectedObject) || (selectedObject.type !== 'polyline' && selectedObject.type !== 'label')}>
                 {t('map.properties')}
             </Button>
             <Button className="actionbutton" onClick={showAttrTableWindow} disabled={!selectedObject}>
