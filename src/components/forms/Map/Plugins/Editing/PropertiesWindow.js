@@ -20,7 +20,7 @@ export default function PropertiesWindow(props) {
     const windows = useSelector((state) => state.windowData?.windows);
     const mapData = useSelector((state) => state.formRefs[formId + "_mapData"]);
     const selectedObject = useSelector((state) => state.formRefs[formId + "_selectedObject"]);
-    const modifiedLayer = mapData?.layers?.find(l => l.elements.includes(selectedObject));
+    const modifiedLayer = mapData?.layers?.find(l => l.elements?.includes(selectedObject));
     const [windowSize, setWindowSize] = React.useState({ width: 300, height: 300 });
     const _windowRef = React.useRef(null);
 

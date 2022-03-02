@@ -58,11 +58,11 @@ html {
     color: gray;
 }
 
-.k-treeview .k-item {
+.k-treeview-item {
     margin: 0px;
 }
 
-.k-treeview .k-in {
+.k-treeview-md .k-treeview-leaf {
     padding: 2px 5px 2px 5px;
 }
 
@@ -271,7 +271,7 @@ mapLayerLabel {
 .polylinePropertiesLegendLabel {
     position: absolute;
     left: 5px;
-    top: 5px;
+    top: 10px;
     width: 145px;
     height: 20px;
     margin: 2px;
@@ -281,7 +281,7 @@ mapLayerLabel {
 .polylinePropertiesLegendCombobox {
     position: absolute;
     left: 5px;
-    top: 25px;
+    top: 27px;
     width: 145px;
     height: 20px;
     margin: 2px;
@@ -290,7 +290,7 @@ mapLayerLabel {
 .polylinePropertiesFillColorLabel {
     position: absolute;
     left: 5px;
-    top: 45px;
+    top: 52px;
     width: 70px;
     height: 40px;
     margin: 2px;
@@ -332,7 +332,7 @@ mapLayerLabel {
 .polylinePropertiesBkColorLabel {
     position: absolute;
     left: 80px;
-    top: 45px;
+    top: 52px;
     width: 70px;
     height: 40px;
     margin: 2px;
@@ -352,7 +352,7 @@ mapLayerLabel {
 .polylinePropertiesTemplateLabel {
     position: absolute;
     left: 5px;
-    top: 105px;
+    top: 110px;
     width: 145px;
     height: 20px;
     margin: 2px;
@@ -370,8 +370,8 @@ mapLayerLabel {
 
 .polylinePropertiesStrokeColorLabel {
     position: absolute;
-    left: 155px;
-    top: 5px;
+    left: 160px;
+    top: 10px;
     width: 70px;
     height: 40px;
     margin: 2px;
@@ -380,8 +380,8 @@ mapLayerLabel {
 
 .polylinePropertiesStrokeColorCombobox {
     position: absolute;
-    left: 155px;
-    top: 45px;
+    left: 160px;
+    top: 43px;
     width: 70px;
     height: 20px;
     margin: 2px;
@@ -389,8 +389,8 @@ mapLayerLabel {
 
 .polylinePropertiesStrokeWidthLabel {
     position: absolute;
-    left: 230px;
-    top: 5px;
+    left: 235px;
+    top: 10px;
     width: 70px;
     height: 40px;
     margin: 2px;
@@ -399,8 +399,8 @@ mapLayerLabel {
 
 .polylinePropertiesStrokeWidthCombobox {
     position: absolute;
-    left: 230px;
-    top: 45px;
+    left: 235px;
+    top: 43px;
     width: 70px;
     height: 20px;
     margin: 2px;
@@ -409,8 +409,8 @@ mapLayerLabel {
 
 .polylinePropertiesStyleLabel {
     position: absolute;
-    left: 155px;
-    top: 65px;
+    left: 160px;
+    top: 73px;
     width: 145px;
     height: 20px;
     margin: 2px;
@@ -419,8 +419,8 @@ mapLayerLabel {
 
 .polylinePropertiesStyleCombobox {
     position: absolute;
-    left: 155px;
-    top: 85px;
+    left: 160px;
+    top: 90px;
     width: 145px;
     height: 20px;
     margin: 2px;
@@ -439,8 +439,8 @@ mapLayerLabel {
 
 .polylinePropertiesClosedCheckbox {
     position: absolute;
-    left: 155px;
-    top: 108px;
+    left: 160px;
+    top: 114px;
     width: 145px;
     height: 20px;
     margin: 2px;
@@ -449,7 +449,7 @@ mapLayerLabel {
 
 .polylinePropertiesApplyButton {
     position: absolute;
-    left: 90px;
+    left: 95px;
     top: 190px;
     width: 100px;
     height: 25px;
@@ -459,7 +459,7 @@ mapLayerLabel {
 
 .polylinePropertiesCancelButton {
     position: absolute;
-    left: 195px;
+    left: 200px;
     top: 190px;
     width: 100px;
     height: 25px;
@@ -607,7 +607,7 @@ mapLayerLabel {
     width: 300%;
 }
 
-.k-textbox, .k-dropdown .k-input, .k-dropdowntree .k-input, .k-datepicker .k-input, .k-dateinput .k-input, .k-numerictextbox .k-input {
+.k-textbox, .k-dropdown .k-input, .k-dropdowntree .k-input, .k-datepicker, .k-dateinput, .k-numerictextbox .k-input {
     height: 20px;
 }
 
@@ -645,7 +645,7 @@ th.k-header.active .k-grid-filter {
 }
 
 .k-datepicker {
-    flex-direction: column;
+    font-size: 12px;
 }
 
 .k-multicheck-wrap {

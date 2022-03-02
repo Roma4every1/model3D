@@ -16,8 +16,8 @@ export default function EditWindow(props) {
     const windows = useSelector((state) => state.windowData?.windows);
     const selectedObject = useSelector((state) => state.formRefs[formId + "_selectedObject"]);
     const selectedObjectLength = useSelector((state) => state.formRefs[formId + "_selectedObjectLength"]);
-    const modifiedLayer = mapData?.layers?.find(l => l.elements.includes(selectedObject));
-    const [oldObjectPath, setOldObjectPath] = React.useState([...selectedObject.arcs[0].path]);
+    const modifiedLayer = mapData?.layers?.find(l => l.elements?.includes(selectedObject));
+    const [oldObjectPath, setOldObjectPath] = React.useState([...selectedObject?.arcs[0].path]);
     const imageSize = 32;
     const [mode, setMode] = React.useState(initialMode ?? "movePoint");
     const canApply = selectedObjectLength ? selectedObjectLength > 2 : selectedObjectLength !== 0;
@@ -60,7 +60,7 @@ export default function EditWindow(props) {
         }
         closeEditing(true);
         setOldObjectPath([...selectedObject.arcs[0].path]);
-        let modifiedLayer = mapData?.layers?.find(l => l.elements.includes(selectedObject));
+        let modifiedLayer = mapData?.layers?.find(l => l.elements?.includes(selectedObject));
         if (modifiedLayer) {
             modifiedLayer.modified = true;
             dispatch(setFormRefs(formId + "_modified", true));

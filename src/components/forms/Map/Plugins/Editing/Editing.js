@@ -10,7 +10,6 @@ import PropertiesWindow from "./PropertiesWindow";
 import AttrTableWindow from "./AttrTableWindow";
 import CreateElementWindow from "./CreateElementWindow";
 var _ = require("lodash");
-var parseColor = require("parse-color");
 
 export default function Editing(props) {
     const { t } = useTranslation();
@@ -31,6 +30,27 @@ export default function Editing(props) {
     const isOnMove = React.useRef(false);
     const mode = React.useRef("movePoint");
     const [labelCreating, setLabelCreating] = React.useState(false);
+
+    const clearForm = React.useCallback(() => {
+        if (formRef.current) {
+            formRef.current.setSelectedObject(null);
+        }
+        dispatch(setFormRefs(formId + "_cursor", "auto"));
+        dispatch(setFormRefs(formId + "_selectedObjectLength", 0));
+        dispatch(setOpenedWindow("editWindow", false, null));
+        dispatch(setOpenedWindow("propertiesWindow", false, null));
+        dispatch(setOpenedWindow("createElementWindow", false, null));
+        dispatch(setOpenedWindow("attrTableWindow", false, null));
+        dispatch(setOpenedWindow("deleteMapElementWindow", false, null));
+        dispatch(setFormRefs(formId + "_modified", false));
+        dispatch(setFormRefs(formId + "_selectedObjectEditing", false));
+    }, [formId, formRef, dispatch]);
+
+    React.useEffect(() => {
+        if (!mapData) {
+            clearForm();
+        }
+    }, [mapData, clearForm]);
 
     React.useEffect(() => {
         if (selectedObject) {
@@ -316,21 +336,17 @@ export default function Editing(props) {
     };
 
     const create = () => {
-        let ignore = false;
         async function fetchData() {
             const data = await sessionManager.fetchData(`mapLegends?sessionId=${sessionId}`);
-            if (!ignore) {
-                setLegendsData(data);
-                createByLegends();
-            }
+            setLegendsData(data);
+            createByLegends(data);
         }
         if (!legendsData) {
             fetchData();
         }
         else {
-            createByLegends();
+            createByLegends(legendsData);
         }
-        return () => { ignore = true; }
     };
 
     const startNewLabel = React.useCallback(() => {
@@ -398,9 +414,9 @@ export default function Editing(props) {
         }
     }, [startNewLabel, startNewPolyline]);
 
-    const createByLegends = React.useCallback(() => {
+    const createByLegends = React.useCallback((legends) => {
 
-        var sublayerSettings = legendsData?.sublayers?.find(d => d.name === activeLayer?.name);
+        var sublayerSettings = legends?.sublayers?.find(d => d.name === activeLayer?.name);
         if (sublayerSettings) {
             let legendToSet = sublayerSettings.legends.find(l => l.default);
             if (!legendToSet && sublayerSettings.legends.length > 0) {
@@ -429,16 +445,16 @@ export default function Editing(props) {
                                     newElement.arcs[0].closed = (p.value === "True");
                                     break;
                                 case "FillBkColor":
-                                    newElement.fillbkcolor = parseColor('#' + (p.value.slice(-6)));
+                                    newElement.fillbkcolor = '#' + (p.value.slice(-6));
                                     break;
                                 case "FillColor":
-                                    newElement.fillcolor = parseColor('#' + (p.value.slice(-6)));
+                                    newElement.fillcolor = '#' + (p.value.slice(-6));
                                     break;
                                 case "FillName":
                                     newElement.fillname = p.value;
                                     break;
                                 case "StrokeColor":
-                                    newElement.bordercolor = parseColor('#' + (p.value.slice(-6)));
+                                    newElement.bordercolor = '#' + (p.value.slice(-6));
                                     break;
                                 case "StrokeThickness":
                                     newElement.borderwidth = Number(p.value.replace(',', '.'));
@@ -482,7 +498,7 @@ export default function Editing(props) {
                     />));
             }
         }
-    }, [activeLayer, dispatch, legendsData, setResult, startNewLabel, startNewPolyline]);
+    }, [activeLayer, dispatch, setResult, startNewLabel, startNewPolyline]);
 
     const showAttrTableWindow = () => {
         dispatch(setOpenedWindow("attrTableWindow", true,

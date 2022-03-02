@@ -23,7 +23,7 @@ export default function PolylinePropertiesWindow(props) {
     const formRef = useSelector((state) => state.formRefs[formId]);
     const mapData = useSelector((state) => state.formRefs[formId + "_mapData"]);
     const selectedObject = useSelector((state) => state.formRefs[formId + "_selectedObject"]);
-    const modifiedLayer = mapData?.layers?.find(l => l.elements.includes(selectedObject));
+    const modifiedLayer = mapData?.layers?.find(l => l.elements?.includes(selectedObject));
     const [closed, setClosed] = React.useState(selectedObject?.arcs[0].closed);
     const [transparent, setTransparent] = React.useState(selectedObject?.transparent);
     const [borderColor, setBorderColor] = React.useState(selectedObject?.bordercolor);
@@ -40,6 +40,65 @@ export default function PolylinePropertiesWindow(props) {
     const [borderColorDisabled, setBorderColorDisabled] = React.useState(false);
     const [borderWidthDisabled, setBorderWidthDisabled] = React.useState(false);
     const [readyForApply, setReadyForApply] = React.useState(initialReadyForApply);
+    const paletteSettings = {
+        palette: [
+            "#ff8080",
+            "#ffff80",
+            "#80ff80",
+            "#00ff80",
+            "#80ffff",
+            "#0080ff",
+            "#ff80c0",
+            "#ff80ff",
+
+            "#ff0000",
+            "#ffff00",
+            "#80ff00",
+            "#00ff40",
+            "#00ffff",
+            "#0080c0",
+            "#8080c0",
+            "#ff00ff",
+
+            "#804040",
+            "#ff8040",
+            "#00ff00",
+            "#008080",
+            "#004080",
+            "#8080ff",
+            "#800040",
+            "#ff0080",
+
+            "#800000",
+            "#ff8000",
+            "#008000",
+            "#008040",
+            "#0000ff",
+            "#0000a0",
+            "#800080",
+            "#8000ff",
+
+            "#400000",
+            "#804000",
+            "#004000",
+            "#004040",
+            "#000080",
+            "#000040",
+            "#400040",
+            "#400080",
+
+            "#000000",
+            "#808000",
+            "#808040",
+            "#808080",
+            "#408080",
+            "#c0c0c0",
+            "#400040",
+            "#ffffff",
+        ],
+        columns: 8,
+        tileSize: { width: 32, height: 16 },
+    };
 
     React.useEffect(() => {
         setReadyForApply(initialReadyForApply);
@@ -57,7 +116,7 @@ export default function PolylinePropertiesWindow(props) {
     }, [selectedObject, initialReadyForApply]);
 
     React.useEffect(() => {
-        setWindowSize({ width: 310, height: 260 });
+        setWindowSize({ width: 315, height: 260 });
     }, [setWindowSize]);
 
     React.useEffect(() => {
@@ -279,7 +338,8 @@ export default function PolylinePropertiesWindow(props) {
                 className="polylinePropertiesFillColorCombobox"
             >
                 <ColorPicker
-                    view="gradient"
+                    view="combo"
+                    paletteSettings={paletteSettings}
                     name="fillColor"
                     value={fillColor}
                     onChange={(event) => {
@@ -299,7 +359,8 @@ export default function PolylinePropertiesWindow(props) {
                 className="polylinePropertiesBkColorCombobox"
             >
                 <ColorPicker
-                    view="gradient"
+                    view="combo"
+                    paletteSettings={paletteSettings}
                     name="bkColor"
                     value={bkColor}
                     onChange={(event) => {
@@ -338,7 +399,8 @@ export default function PolylinePropertiesWindow(props) {
             >
                 <ColorPicker
                     disabled={borderColorDisabled}
-                    view="gradient"
+                    view="combo"
+                    paletteSettings={paletteSettings}
                     name="strokeColor"
                     value={borderColor}
                     onChange={(event) => {

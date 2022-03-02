@@ -112,7 +112,8 @@ function Map(props, ref) {
                 let loadedmap = await drawer.current.loadMap(String(mapId), { center: { x: 0, y: 0 }, scale: 10000 });
                 if (!ignore) {
                     new drawer.current.Scroller(_viewRef.current);
-                    dispatch(setFormRefs(formData.id + "_mapData", loadedmap))
+                    dispatch(setFormRefs(formData.id + "_mapData", null));
+                    dispatch(setFormRefs(formData.id + "_mapData", loadedmap));
                     setMapData(loadedmap);
                     var centerX = 0;
                     var centerY = 0;

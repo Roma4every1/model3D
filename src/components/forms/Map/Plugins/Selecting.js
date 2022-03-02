@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Popup } from "@progress/kendo-react-popup";
 import { Button } from "@progress/kendo-react-buttons";
 var pixelPerMeter = require("../maps/src/pixelPerMeter");
@@ -9,15 +9,24 @@ var _ = require("lodash");
 
 export default function Selecting(props) {
     const { t } = useTranslation();
-    const dispatch = useDispatch();
     const { formId } = props;
     const formRef = useSelector((state) => state.formRefs[formId]);
+    const mapData = useSelector((state) => state.formRefs[formId + "_mapData"]);
     const activeLayer = useSelector((state) => state.formRefs[formId + "_activeLayer"]);
     const selectedObject = useSelector((state) => state.formRefs[formId + "_selectedObject"]);
     const selectedObjectEditing = useSelector((state) => state.formRefs[formId + "_selectedObjectEditing"]);
     const control = useSelector((state) => state.formRefs[formId]?.current?.control());
     const [pressed, setPressed] = React.useState(control?.selectingMode);
     const [mode, setMode] = React.useState("sublayer");
+
+    React.useEffect(() => {
+        if (!mapData) {
+            if (control) {
+                control.selectingMode = false;
+            }
+            setPressed(false);
+        }
+    }, [mapData]);
 
     var SELECTION_RADIUS = 0.005;
 
