@@ -32,7 +32,7 @@ export default function Editing(props) {
     const [labelCreating, setLabelCreating] = React.useState(false);
 
     const clearForm = React.useCallback(() => {
-        if (formRef.current) {
+        if (formRef?.current) {
             formRef.current.setSelectedObject(null);
         }
         dispatch(setFormRefs(formId + "_cursor", "auto"));

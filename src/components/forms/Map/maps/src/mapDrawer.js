@@ -744,12 +744,12 @@ var polyline = declareType("polyline", {
 
 				if (decoration.thickness) {
 					ctx.lineWidth = scale * decoration.thickness._value *
-						(i.borderwidth || defaultLineWidth) *
+						(i.style?.baseThickness ?? (i.borderwidth || defaultLineWidth)) *
 						0.001 *
 						options.dotsPerMeter;  // Thickness
 				}
 				else {
-					ctx.lineWidth = scale * (i.borderwidth || defaultLineWidth) * 0.001 * options.dotsPerMeter;
+					ctx.lineWidth = scale * (i.style?.baseThickness ?? (i.borderwidth || defaultLineWidth)) * 0.001 * options.dotsPerMeter;
 				}
 				if (decoration.color)
 					ctx.strokeStyle = decoration.color._value;
@@ -760,12 +760,13 @@ var polyline = declareType("polyline", {
 				var shape = decoration.Shape[0];
 				var lines = shape.Line;
 
+				var l =  0;
 				var interval = decoration.interval._value * scale;
 				if (!overhead[k] || overhead[k] === 0) {
-					i = decoration.initialInterval._value * scale;
+					l = decoration.initialInterval._value * scale;
 				}
 				else {
-					i = overhead[k];
+					l = overhead[k];
 				}
 
 				// calculate the angle of the main line
@@ -777,10 +778,10 @@ var polyline = declareType("polyline", {
 				var lineLength = Math.sqrt(dx * dx + dy * dy);
 				// ---
 
-				while (i < lineLength && interval > 0) {
+				while (l < lineLength && interval > 0) {
 					// calculate the start point for decoration
 					// (overlay i over the line, get last point)
-					dx = i;
+					dx = l;
 					dy = 0;
 					var _dx = dx * Math.cos(mainAngle) - dy * Math.sin(mainAngle);
 					var _dy = dx * Math.sin(mainAngle) + dy * Math.cos(mainAngle);
@@ -818,7 +819,7 @@ var polyline = declareType("polyline", {
 					}
 					// ---
 
-					i += interval;
+					l += interval;
 				}
 				// If we have a line length of 10 and decoration interval of 3,
 				// then the overhead will be 10 - 3*4 = 2. The next decoration
@@ -826,11 +827,11 @@ var polyline = declareType("polyline", {
 				// If no decorations were drawn, but the overhead exists, then
 				// it will be gradually lowered to draw at least one decoration
 				// at successive small sections.
-				if (overhead[k] === i) {
+				if (overhead[k] === l) {
 					overhead[k] -= lineLength;
 				}
 				else {
-					overhead[k] = i - lineLength;
+					overhead[k] = l - lineLength;
 				}
 			}
 

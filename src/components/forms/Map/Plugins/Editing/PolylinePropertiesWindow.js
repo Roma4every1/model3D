@@ -167,7 +167,7 @@ export default function PolylinePropertiesWindow(props) {
     };
 
     React.useEffect(() => {
-        var data = stylesData.find(sd => sd?.guid?._value === borderStyleId);
+        var data = stylesData.find(sd => sd?.key === borderStyleId)?.style;
         setBorderWidthDisabled(data?.baseThickness);
         let newBorderColorDisabled = false;
         if (data?.baseColor?._value) {

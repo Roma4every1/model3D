@@ -53,7 +53,7 @@ export default function StyleTemplate(props) {
 
             var options = {
                 pixelRatio: configThicknessCoefficient,
-                dotsPerMeter: pixelPerMeter,
+                dotsPerMeter: pixelPerMeter(),
                 context: context,
                 pointToControl: (p) => p
             };
@@ -64,7 +64,8 @@ export default function StyleTemplate(props) {
                         closed: false
                     }
                 ],
-                borderwidth: borderWidth
+                borderwidth: borderWidth,
+                style: style
             }
             var decorationPathNeeded = lodash.once(() => mapDrawerTypes.types["polyline"].decorationPath(i, options, style));
             decorationPathNeeded();

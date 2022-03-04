@@ -26,7 +26,7 @@ export default function Selecting(props) {
             }
             setPressed(false);
         }
-    }, [mapData]);
+    }, [mapData, control]);
 
     var SELECTION_RADIUS = 0.005;
 
