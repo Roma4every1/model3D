@@ -16,6 +16,7 @@ function Dock(props, ref) {
     const sessionId = useSelector((state) => state.sessionId);
     const sessionManager = useSelector((state) => state.sessionManager);
     const { formData } = props;
+    const barSize = 30;
 
     React.useEffect(() => {
         sessionManager.getChildForms(formData.id);
@@ -50,11 +51,13 @@ function Dock(props, ref) {
     const [layoutSettings] = React.useState({
         global: {
             tabSetEnableTabStrip: false,
-            borderEnableDrop: false
+            borderEnableDrop: false,
+            tabEnableClose: false
         },
         borders: [
             {
                 "type": "border",
+                "barSize": barSize,
                 "size": 34,
                 "minSize": 34,
                 "location": "top",
@@ -63,6 +66,7 @@ function Dock(props, ref) {
             },
             {
                 "type": "border",
+                "barSize": barSize,
                 "enableDrop": "false",
                 "size": 300,
                 "minSize": 300,
@@ -75,6 +79,7 @@ function Dock(props, ref) {
             },
             {
                 "type": "border",
+                "barSize": barSize,
                 "enableDrop": "false",
                 "size": 300,
                 "minSize": 300,

@@ -104,6 +104,7 @@ export default function PolylinePropertiesWindow(props) {
         setReadyForApply(initialReadyForApply);
         if (selectedObject) {
             setClosed(selectedObject?.arcs[0].closed);
+            setLegend(selectedObject?.legend);
             setTransparent(selectedObject?.transparent);
             setBorderColor(selectedObject?.bordercolor);
             setFillColor(selectedObject?.fillcolor ?? "#000000");
@@ -128,6 +129,7 @@ export default function PolylinePropertiesWindow(props) {
                         setBorderStyle(Number(p.value.replace(',', '.')));
                         break;
                     case "BorderStyleId":
+                        setBorderStyle(null);
                         setBorderStyleId(p.value);
                         break;
                     case "Closed":
@@ -289,6 +291,7 @@ export default function PolylinePropertiesWindow(props) {
             selectedObject.imgdata = null;
             selectedObject.borderstyle = borderStyle;
             selectedObject.borderstyleid = borderStyleId;
+            selectedObject.legend = legend;
 
             if (fillName) {
                 selectedObject.img = await mapDrawerTypes.types["polyline"].getPattern(fillName, fillColor, transparent ? "none" : mapDrawerTypes.types["polyline"].bkcolor(selectedObject));                

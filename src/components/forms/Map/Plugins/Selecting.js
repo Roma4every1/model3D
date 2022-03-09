@@ -1,14 +1,16 @@
 import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 import { Popup } from "@progress/kendo-react-popup";
 import { Button } from "@progress/kendo-react-buttons";
+import setFormRefs from '../../../../store/actionCreators/setFormRefs';
 var pixelPerMeter = require("../maps/src/pixelPerMeter");
 var mapDrawerTypes = require("../maps/src/mapDrawer");
 var _ = require("lodash");
 
 export default function Selecting(props) {
     const { t } = useTranslation();
+    const dispatch = useDispatch();
     const { formId } = props;
     const formRef = useSelector((state) => state.formRefs[formId]);
     const mapData = useSelector((state) => state.formRefs[formId + "_mapData"]);
@@ -134,6 +136,10 @@ export default function Selecting(props) {
                             if (newSelectedObject.fillname && !newSelectedObject.transparent) {
                                 newSelectedObject.img = await mapDrawerTypes.types["polyline"].getPattern(newSelectedObject.fillname, newSelectedObject.fillcolor, mapDrawerTypes.types["polyline"].bkcolor(newSelectedObject));
                             }
+                            if (newSelectedObject.type === 'polyline')
+                            {
+                                dispatch(setFormRefs(formId + "_selectedObjectLength", newSelectedObject.arcs[0].path.length));
+                            }
                             formRef.current.setSelectedObject(newSelectedObject);
                         }
                         else {
@@ -174,6 +180,10 @@ export default function Selecting(props) {
                         if (newSelectedObject.fillname && !newSelectedObject.transparent) {
                             newSelectedObject.img = await mapDrawerTypes.types["polyline"].getPattern(newSelectedObject.fillname, newSelectedObject.fillcolor, mapDrawerTypes.types["polyline"].bkcolor(newSelectedObject));
                         }
+                        if (newSelectedObject.type === 'polyline')
+                        {
+                            dispatch(setFormRefs(formId + "_selectedObjectLength", newSelectedObject.arcs[0].path.length));
+                        }
                         formRef.current.setSelectedObject(newSelectedObject);
                         formRef.current.updateCanvas();
 
@@ -190,7 +200,7 @@ export default function Selecting(props) {
                 }
             }
         }
-    }, [mode, pressed, activeLayer, SELECTION_RADIUS, formRef, distance, selectedObjectEditing]);
+    }, [mode, pressed, activeLayer, SELECTION_RADIUS, formRef, distance, selectedObjectEditing, dispatch, formId]);
 
     React.useEffect(() => {
         if (control) {

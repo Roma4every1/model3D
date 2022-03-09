@@ -86,6 +86,7 @@
     "minscale": "Minimal scale:",
     "moveMap": "Move map",
     "movePoint": "Move point",
+    "notFound": "The map for the defined parameters is not found",
     "pick": "Pick",
     "polyline": "Polyline",
     "properties": "Properties",
@@ -97,7 +98,7 @@
     "style": "Style",
     "sublayer": "Sublayer",
     "sublayers": "Sublayers",
-    "startEditing": "Edit",
+    "startEditing": "Edit contour",
     "template": "Template",
     "transparency": "Transparency"
   },

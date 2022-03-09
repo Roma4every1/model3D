@@ -1,5 +1,6 @@
 ﻿import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Resize } from 'on-el-resize';
 import { getMapLoader } from './Map/MapLoader.js';
 import setFormRefs from '../../store/actionCreators/setFormRefs';
@@ -9,6 +10,7 @@ var geom = require("./Map/maps/src/geom");
 
 function Map(props, ref) {
     const { formData, data } = props;
+    const { t } = useTranslation();
     const dispatch = useDispatch();
     const sessionId = useSelector((state) => state.sessionId);
     const sessionManager = useSelector((state) => state.sessionManager);
@@ -51,37 +53,38 @@ function Map(props, ref) {
     };
 
     const draw = React.useCallback((canvas, map, scale, centerx, centery, selected, redrawnHandler) => {
-
-        var mapDataD = drawer.current.showMap(canvas, map, {
-            scale: scale,
-            centerx: centerx,
-            centery: centery,
-            selected: selected
-        })
-            .on("update.begin", function (canvas, ret) {
-                var context = {
-                    center: { x: mapDataD.centerx, y: mapDataD.centery },
-                    scale: mapDataD.scale,
-                };
-                drawer.current.checkIndex(map, context);
+        if (drawer.current) {
+            var mapDataD = drawer.current.showMap(canvas, map, {
+                scale: scale,
+                centerx: centerx,
+                centery: centery,
+                selected: selected
             })
-            .on("update.end", function (canvas) {
-                if (redrawnHandler) {
-                    redrawnHandler(canvas);
-                }
-            })
-            .on("pointPicked", function (point, scale) {
-                if (!_viewRef.current.blocked && !_viewRef.current.selectingMode) {
-                    var nearestObject = getNearestNamedPoint(point, scale, map);
-                    if (nearestObject) {
-                        const newSelectedObject = nearestObject.UWID ? [nearestObject.UWID] : null;
-                        setSelectedObject(newSelectedObject);
-                        draw(canvas, map, mapDataD.scale, mapDataD.centerx, mapDataD.centery, newSelectedObject)
-                        nearestObject.id = nearestObject.UWID;
-                        nearestObject.selected = true;
+                .on("update.begin", function (canvas, ret) {
+                    var context = {
+                        center: { x: mapDataD.centerx, y: mapDataD.centery },
+                        scale: mapDataD.scale,
+                    };
+                    drawer.current.checkIndex(map, context);
+                })
+                .on("update.end", function (canvas) {
+                    if (redrawnHandler) {
+                        redrawnHandler(canvas);
                     }
-                }
-            });
+                })
+                .on("pointPicked", function (point, scale) {
+                    if (!_viewRef.current.blocked && !_viewRef.current.selectingMode) {
+                        var nearestObject = getNearestNamedPoint(point, scale, map);
+                        if (nearestObject) {
+                            const newSelectedObject = nearestObject.UWID ? [nearestObject.UWID] : null;
+                            setSelectedObject(newSelectedObject);
+                            draw(canvas, map, mapDataD.scale, mapDataD.centerx, mapDataD.centery, newSelectedObject)
+                            nearestObject.id = nearestObject.UWID;
+                            nearestObject.selected = true;
+                        }
+                    }
+                });
+        }
         setMapDrawnData(mapDataD);
     }, [setSelectedObject]);
 
@@ -99,6 +102,9 @@ function Map(props, ref) {
                 sessionManager.paramsManager.updateParamValue(utils.getParentFormId(formData.id), databaseData.currentRowObjectName, utils.tableRowToString(databaseData, databaseData.data.Rows[0])?.value, true);
             }
             setMapInfo(databaseData.data.Rows[0]);
+        }
+        else {
+            setMapInfo(null);
         }
     }, [databaseData, formData, sessionManager]);
 
@@ -151,23 +157,25 @@ function Map(props, ref) {
     const _div = React.useRef(null);
 
     const toFullViewport = () => {
-        var allVisibleBounds = mapData.layers.filter(l => l.visible).map(l => l.bounds);
-        var minx = Math.min(...allVisibleBounds.map(b => b.min.x));
-        var miny = Math.min(...allVisibleBounds.map(b => b.min.y));
-        var maxx = Math.max(...allVisibleBounds.map(b => b.max.x));
-        var maxy = Math.max(...allVisibleBounds.map(b => b.max.y));
-        var centerX = (minx + maxx) / 2;
-        var centerY = (miny + maxy) / 2;
-        var scaleX = 1.2 * (maxx - minx) * pixelPerMeter() / _viewRef.current.clientWidth;
-        var scaleY = 1.2 * (maxy - miny) * pixelPerMeter() / _viewRef.current.clientHeight;
-        var scale = Math.max(scaleX, scaleY);
+        if (mapData) {
+            var allVisibleBounds = mapData.layers.filter(l => l.visible).map(l => l.bounds);
+            var minx = Math.min(...allVisibleBounds.map(b => b.min.x));
+            var miny = Math.min(...allVisibleBounds.map(b => b.min.y));
+            var maxx = Math.max(...allVisibleBounds.map(b => b.max.x));
+            var maxy = Math.max(...allVisibleBounds.map(b => b.max.y));
+            var centerX = (minx + maxx) / 2;
+            var centerY = (miny + maxy) / 2;
+            var scaleX = 1.2 * (maxx - minx) * pixelPerMeter() / _viewRef.current.clientWidth;
+            var scaleY = 1.2 * (maxy - miny) * pixelPerMeter() / _viewRef.current.clientHeight;
+            var scale = Math.max(scaleX, scaleY);
 
-        var newCenterPoint = {
-            scale: scale,
-            centerx: centerX,
-            centery: centerY
-        };
-        updateCanvas(newCenterPoint);
+            var newCenterPoint = {
+                scale: scale,
+                centerx: centerX,
+                centery: centerY
+            };
+            updateCanvas(newCenterPoint);
+        }
     };
 
     React.useImperativeHandle(ref, () => ({
@@ -237,11 +245,11 @@ function Map(props, ref) {
 
     return (
         <div ref={_div} style={{ width: "100%", height: "100%" }}>
-            <canvas style={{ cursor: cursor ?? "point" }}
+            {mapInfo ? <canvas style={{ cursor: cursor ?? "point" }}
                 ref={_viewRef}
                 width={size.clientWidth}
                 height={size.clientHeight}
-            />
+            /> : <div>{t("map.notFound")}</div>}
         </div>);
 }
 export default Map = React.forwardRef(Map); // eslint-disable-line

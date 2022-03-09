@@ -439,6 +439,7 @@ export default function Editing(props) {
                                     newElement.borderstyle = Number(p.value.replace(',', '.'));
                                     break;
                                 case "BorderStyleId":
+                                    newElement.borderstyle = null;
                                     newElement.borderstyleid = p.value;
                                     break;
                                 case "Closed":
