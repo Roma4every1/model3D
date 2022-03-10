@@ -62,7 +62,7 @@ function Dock(props, ref) {
                 "minSize": 34,
                 "location": "top",
                 "id": "topBorder",
-                "children": plugins.top
+                "children": plugins.top.filter(ch => ch.id !== "formStrip")
             },
             {
                 "type": "border",
@@ -167,7 +167,7 @@ function Dock(props, ref) {
                     layoutSettings.borders.forEach(border => {
                         border.selected = data.layout['selected' + border.location];
                     });
-                    setFlexLayoutModel(FlexLayout.Model.fromJson(layoutSettings));
+                    dispatchFlexLayoutModel({ type: 'reset', value: FlexLayout.Model.fromJson(layoutSettings) });
                 }
             }
         }
@@ -175,7 +175,45 @@ function Dock(props, ref) {
         return () => { ignore = true; }
     }, [sessionId, formData, dispatch, plugins, sessionManager, layoutSettings]);
 
-    const [flexLayoutModel, setFlexLayoutModel] = React.useState(FlexLayout.Model.fromJson(layoutSettings));
+    function flexLayoutModelReducer(state, action) {
+        switch (action.type) {
+            case 'reset':
+                return action.value;
+            case 'rebuild':
+                var activeSubChildType = action.activeSubChildType;
+                var settings = state.toJson();
+                if (settings) {
+                    var rightBorder = settings.borders.find(b => b.location === "right");
+                    if (rightBorder) {
+                        rightBorder.children = plugins.right.filter(p => p.component.form === "Dock" || p.component.form === capitalizeFirstLetter(activeSubChildType));
+                        if (rightBorder.selected && rightBorder.selected >= rightBorder.children.length) {
+                            rightBorder.selected = -1;
+                        }
+                    }
+                    var topBorder = settings.borders.find(b => b.location === "top");
+                    if (topBorder) {
+                        var newStrip = plugins.top.find(ch => ch.id === "formStrip");
+                        topBorder.children = topBorder.children.filter(ch => ch.id !== "formStrip");
+                        if (activeSubChildType) {
+                            var pluginsForTypeExists = plugins.strip.some(el => el.component.form === capitalizeFirstLetter(activeSubChildType));
+                            if (pluginsForTypeExists) {
+                                newStrip.name = t('formNames.' + activeSubChildType);
+                                topBorder.children.push(newStrip);
+                            }
+                        }
+                        if (topBorder.selected && topBorder.selected >= topBorder.children.length) {
+                            topBorder.selected = -1;
+                        }
+                    }
+                    return FlexLayout.Model.fromJson(settings);
+                }
+                return state;
+            default:
+                throw new Error();
+        }
+    }
+
+    const [flexLayoutModel, dispatchFlexLayoutModel] = React.useReducer(flexLayoutModelReducer, FlexLayout.Model.fromJson(layoutSettings));
     const forms = React.useRef([]);
     const dockforms = React.useRef([]);
 
@@ -183,31 +221,8 @@ function Dock(props, ref) {
     const activeSubChild = useSelector((state) => state.childForms[activeChildId]?.children.find(p => p.id === (state.childForms[activeChildId].activeChildren[0])));
 
     React.useEffect(() => {
-        if (activeSubChild) {
-            var pluginsForTypeExists = plugins.strip.some(el => el.component.form === capitalizeFirstLetter(activeSubChild.type));
-            if (pluginsForTypeExists) {
-                flexLayoutModel.doAction(FlexLayout.Actions.renameTab("formStrip", t('formNames.' + activeSubChild.type)));
-            }
-            else {
-                flexLayoutModel.doAction(FlexLayout.Actions.renameTab("formStrip", ""));
-            }
-
-            plugins.right.forEach(plugin => {
-                if (capitalizeFirstLetter(activeSubChild.type) === plugin.component.form || "Dock" === plugin.component.form) {
-                    flexLayoutModel.doAction(FlexLayout.Actions.renameTab(plugin.component.id, plugin.name));
-                }
-                else {
-                    flexLayoutModel.doAction(FlexLayout.Actions.renameTab(plugin.component.id, ""));
-                }
-            })
-        }
-        else {
-            flexLayoutModel.doAction(FlexLayout.Actions.renameTab("formStrip", ""));
-            plugins.right.forEach(plugin => {
-                flexLayoutModel.doAction(FlexLayout.Actions.renameTab(plugin.component.id, ""));
-            })
-        }
-    }, [flexLayoutModel, activeSubChild, formData, sessionManager, plugins, t]);
+        dispatchFlexLayoutModel({ type: 'rebuild', activeSubChildType: activeSubChild?.type });
+    }, [activeSubChild]);
 
     const onDockModelChange = () => {
         var json = flexLayoutModel.toJson();
