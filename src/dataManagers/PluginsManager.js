@@ -59,7 +59,7 @@ export default function createPluginsManager(store) {
         "enableDrag": false,
         "type": "tab",
         "id": "formStrip",
-        "name": "test",
+        "name": "",
         "component": "strip"
     })
 

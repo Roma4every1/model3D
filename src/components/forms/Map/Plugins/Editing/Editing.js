@@ -55,7 +55,9 @@ export default function Editing(props) {
     React.useEffect(() => {
         if (selectedObject) {
             selectedObject.edited = onEditing;
-            formRef.current.updateCanvas();
+            if (formRef.current) {
+                formRef.current.updateCanvas();
+            }
         }
         dispatch(setFormRefs(formId + "_selectedObjectEditing", onEditing));
     }, [selectedObject, onEditing, formRef, dispatch, formId]);

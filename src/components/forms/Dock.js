@@ -62,7 +62,7 @@ function Dock(props, ref) {
                 "minSize": 34,
                 "location": "top",
                 "id": "topBorder",
-                "children": plugins.top.filter(ch => ch.id !== "formStrip")
+                "children": plugins.top
             },
             {
                 "type": "border",
@@ -166,6 +166,9 @@ function Dock(props, ref) {
                     }
                     layoutSettings.borders.forEach(border => {
                         border.selected = data.layout['selected' + border.location];
+                        if (data.layout['size' + border.location]) {
+                            border.size = data.layout['size' + border.location];
+                        }
                     });
                     dispatchFlexLayoutModel({ type: 'reset', value: FlexLayout.Model.fromJson(layoutSettings) });
                 }
@@ -234,6 +237,7 @@ function Dock(props, ref) {
                 else {
                     formLayout.layout['selected' + border.location] = -1;
                 }
+                formLayout.layout['size' + border.location] = border.size;
             });
         }
         dispatch(setFormLayout(formData.id, formLayout));
