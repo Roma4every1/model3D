@@ -140,6 +140,19 @@ function Dock(props, ref) {
         return dockforms.current[formData.id];
     }, [formData, t, leftBorderModel, onModelChange]);
 
+    const correctElement = React.useCallback((layout, plugins, formData) => {
+        if (layout.type === "tab") {
+            var plugin = plugins.left?.find(pl => pl.WMWname.split(',').some(p => layout.id === formData.id + ',' + p));
+            if (plugin) {
+                layout.component = plugin.children[0].component;
+                layout.name = plugin.children[0].name;
+            }
+        }
+        if (layout.children) {
+            layout.children.forEach(child => correctElement(child, plugins, formData));
+        }
+    }, []);
+
     React.useEffect(() => {
         let ignore = false;
         async function fetchData() {
@@ -149,14 +162,7 @@ function Dock(props, ref) {
                     var newChildren = [];
                     data.layout.children.forEach(ch => {
                         if (ch.selected !== -1) {
-                            ch.children.forEach(tabch => {
-                                var plugin = plugins.left?.find(pl => pl.WMWname.split(',').some(p => tabch.id === formData.id + ',' + p));
-                                if (plugin) {
-                                    tabch.component = plugin.children[0].component;
-                                    tabch.name = plugin.children[0].name;
-                                    //tabch.order = plugin.order;
-                                }
-                            });
+                            correctElement(ch, plugins, formData);
                             newChildren.push(ch);
                         }
                     });
@@ -176,7 +182,7 @@ function Dock(props, ref) {
         }
         fetchData();
         return () => { ignore = true; }
-    }, [sessionId, formData, dispatch, plugins, sessionManager, layoutSettings]);
+    }, [correctElement, sessionId, formData, dispatch, plugins, sessionManager, layoutSettings]);
 
     function flexLayoutModelReducer(state, action) {
         switch (action.type) {
