@@ -54,7 +54,7 @@ export default function Selecting(props) {
     }
 
     var distance = React.useCallback((element, point, scale) => {
-        if (element.type === "polyline" && element.fillbkcolor) {
+        if (element.type === "polyline" && (element.fillbkcolor && !element.transparent)) {
             let sum = 0;
             let points = _.chunk(element.arcs[0].path, 2);
             points = [...(points.map(p => [p[0] - point.x, p[1] - point.y])), [points[0][0] - point.x, points[0][1] - point.y]];
@@ -65,7 +65,7 @@ export default function Selecting(props) {
             }
             return (Math.abs(sum) > 0.0000001);
         }
-        else if (element.type === "polyline" && !element.fillbkcolor) {
+        else if (element.type === "polyline" && !(element.fillbkcolor && !element.transparent)) {
             let points = _.chunk(element.arcs[0].path, 2);
             if (element.arcs[0].closed) {
                 points = [...points, points[0]];

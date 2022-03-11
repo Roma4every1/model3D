@@ -126,10 +126,11 @@ export default function PolylinePropertiesWindow(props) {
             legend.properties.forEach(p => {
                 switch (p.name) {
                     case "BorderStyle":
+                        setBorderStyleId(undefined);
                         setBorderStyle(Number(p.value.replace(',', '.')));
                         break;
                     case "BorderStyleId":
-                        setBorderStyle(null);
+                        setBorderStyle(undefined);
                         setBorderStyleId(p.value);
                         break;
                     case "Closed":
@@ -185,7 +186,7 @@ export default function PolylinePropertiesWindow(props) {
 
     React.useEffect(() => {
         let borderidstyles = lines.BorderStyles[0].Element.map(e => ({ style: e, key: e?.guid?._value }));
-        let borderstyles = [...Array(6).keys()].map(e => ({ borderStyle: e, key: e }));
+        let borderstyles = [...Array(6).keys()].reverse().map(e => ({ borderStyle: e, key: e }));
         setStylesData([...borderstyles, ...borderidstyles]);
 
         let gridtemplates = [...Array(30).keys()].map(n => "grids-" + n);
@@ -291,6 +292,7 @@ export default function PolylinePropertiesWindow(props) {
             selectedObject.imgdata = null;
             selectedObject.borderstyle = borderStyle;
             selectedObject.borderstyleid = borderStyleId;
+            selectedObject.style = null;
             selectedObject.legend = legend;
 
             if (fillName) {

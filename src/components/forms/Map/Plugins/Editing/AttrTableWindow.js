@@ -18,8 +18,12 @@ export default function AttrTableWindow(props) {
     const selectedObject = useSelector((state) => state.formRefs[formId + "_selectedObject"]);
     const modifiedLayer = mapData?.layers?.find(l => l.elements?.includes(selectedObject));
     const [readyForApply, setReadyForApply] = React.useState(false);
-    const [attrTable, setAttrTable] = React.useState({ ...selectedObject.attrTable });
+    const [attrTable, setAttrTable] = React.useState(null);
     const _windowRef = React.useRef(null);
+
+    React.useEffect(() => {
+        setAttrTable({ ...selectedObject?.attrTable })
+    }, [selectedObject]);
 
     const close = () => {
         let position;

@@ -76,6 +76,9 @@ export default function StyleTemplate(props) {
         }
 
         else if (borderStyle || borderStyle === 0) {
+            if (borderStyles[borderStyle] === "Clear") {
+                return;
+            }
             var baseThicknessCoefficient = Math.round((borderWidth || defaultLineWidth) / defaultLineWidth);
             var dash = styleShapes[borderStyles[borderStyle]].slice();
             for (let j = dash.length - 1; j >= 0; j--) {

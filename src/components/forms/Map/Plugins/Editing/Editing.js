@@ -93,6 +93,17 @@ export default function Editing(props) {
                 nearestNp = i;
             }
         }
+        if (!polyline.arcs[0].closed) {
+            var d1 = Math.pow(points[0][0] - point.x, 2) + Math.pow(points[0][1] - point.y, 2);
+            var d2 = Math.pow(points[points.length - 1][0] - point.x, 2) + Math.pow(points[points.length - 1][1] - point.y, 2);
+            if (d1 <= minDist) {
+                nearestNp = -1;
+            }
+            if (d2 <= minDist && d2 < d1) {
+                nearestNp = points.length - 1;
+            }
+        }
+
         return nearestNp;
     }, []);
 

@@ -63,6 +63,7 @@ var transform = x({
 				fontname: x.string,
 				fontsize: x.number,
 				transparent: x.boolean,
+				bold: x.boolean,
 			},
 			sign: {
 				type: x.element,
