@@ -1,11 +1,16 @@
 ﻿import React from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Checkbox, Input } from "@progress/kendo-react-inputs";
 import { Button } from "@progress/kendo-react-buttons";
+import { Popup } from "@progress/kendo-react-popup";
+import { Menu, MenuItem } from "@progress/kendo-react-layout";
+import SublayerStatisticsWindow from "./SublayerStatisticsWindow";
+import setOpenedWindow from "../../../../../store/actionCreators/setOpenedWindow";
 
 export default function SublayersTreeLayer(props) {
     const { t } = useTranslation();
+    const dispatch = useDispatch();
     const { formRef, subitem, formId } = props;
     const activeLayer = useSelector((state) => state.formRefs[formId + "_activeLayer"]);
     const [selected, setSelected] = React.useState(false);
@@ -13,6 +18,9 @@ export default function SublayersTreeLayer(props) {
     const [checked, setChecked] = React.useState(subitem.sublayer.visible);
     const [lowScale, setLowScale] = React.useState(subitem.sublayer.lowscale);
     const [highScale, setHighScale] = React.useState(subitem.sublayer.highscale);
+    const [menuOpen, setMenuOpen] = React.useState(false);
+    const [offset, setOffset] = React.useState({ left: 0, top: 0 });
+    const menuWrapperRef = React.useRef(null);
 
     const _lowScaleRef = React.useRef(null);
     const _highScaleRef = React.useRef(null);
@@ -77,9 +85,35 @@ export default function SublayersTreeLayer(props) {
         }
     };
 
+    const handleOnMenuSelect = (e) => {
+        switch (e.item.text) {
+            case t('base.statistics'):
+                dispatch(setOpenedWindow("sublayerStatisticsWindow", true,
+                    <SublayerStatisticsWindow
+                        key="sublayerStatisticsWindow"
+                        sublayer={subitem.sublayer}
+                        header={subitem.text}
+                    />));
+                break;
+            default:
+        }
+        setMenuOpen(false);
+    }
+
+    const onPopupOpen = () => {
+        menuWrapperRef.current.querySelector("[tabindex]").focus();
+    };
+
     return (
         <div>
-            <div className={"mapLayerHeader" + (selected ? "-selected" : "")} onClick={setSelectedState}>
+            <div className={"mapLayerHeader" + (selected ? "-selected" : "")}
+                onClick={setSelectedState}
+                onContextMenu={(e) => {
+                    setOffset({ left: e.clientX, top: e.clientY });
+                    setMenuOpen(true);
+                    e.preventDefault();
+                }}
+            >
                 <Checkbox value={checked} onChange={onChecked} />
                 {"  " + subitem.text}
                 <div className="mapLayerExpand">
@@ -87,6 +121,21 @@ export default function SublayersTreeLayer(props) {
                         <span className="k-icon k-i-gear" />
                     </button>
                 </div>
+                <Popup
+                    offset={offset}
+                    show={menuOpen}
+                    onOpen={onPopupOpen}
+                    popupClass={'popup-content'}
+                >
+                    <div
+                        onBlur={() => setMenuOpen(false)}
+                        ref={(el) => (menuWrapperRef.current = el)}
+                    >
+                        <Menu vertical={true} style={{ display: 'inline-block' }} onSelect={handleOnMenuSelect}>
+                            <MenuItem key="statistics" text={t('base.statistics')} />
+                        </Menu>
+                    </div>
+                </Popup>
             </div>
             {expanded &&
                 <div>

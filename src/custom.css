@@ -467,6 +467,13 @@ mapLayerLabel {
     font-size: 12px;
 }
 
+.sublayerStatisticsItem {
+    margin-left: 24px;
+    margin-top: 2px;
+    margin-right: 8px;
+    margin-bottom: 6px;
+}
+
 .textAlign-left {
     text-align: left;
 }
@@ -650,10 +657,6 @@ th.k-header.active .k-grid-filter {
 
 .k-multicheck-wrap {
     max-height: 20vh;
-}
-
-.k-animation-container {
-    z-index: 10003
 }
 
 .popuptreeview {
