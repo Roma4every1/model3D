@@ -158,8 +158,9 @@ export default function Selecting(props) {
                 }
                 else {
                     let mapData = formRef.current.mapData();
+                    let currentScale = formRef.current.centerScale().scale;
                     mapData.layers.forEach(layer => {
-                        if (layer.visible) {
+                        if (layer.visible && layer.lowscale <= currentScale && ((typeof layer.highscale === 'string' && layer.highscale.includes('INF')) || currentScale < layer.highscale )) {
                             nearestElements = [...nearestElements, ...layer.elements.filter(element => distance(element, point, formRef.current.centerScale().scale))];
                         }
                     })
@@ -202,16 +203,22 @@ export default function Selecting(props) {
         }
     }, [mode, pressed, activeLayer, SELECTION_RADIUS, formRef, distance, selectedObjectEditing, dispatch, formId]);
 
+    var mouseWheel = React.useCallback((event) => {
+        oldPointData.current = null;
+    }, []);
+
     React.useEffect(() => {
         if (control) {
             control.addEventListener("mousedown", mouseDown, { passive: true });
+            control.addEventListener("mousewheel", mouseWheel, { passive: true });
         }
         return () => {
             if (control) {
+                control.removeEventListener("mousewheel", mouseWheel, { passive: true });
                 control.removeEventListener("mousedown", mouseDown, { passive: true });
             }
         }
-    }, [control, mouseDown]);
+    }, [control, mouseDown, mouseWheel]);
 
     const setButtonPressed = () => {
         if (control) {

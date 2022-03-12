@@ -35,6 +35,10 @@ export default function SublayersTreeLayer(props) {
     const onChecked = () => {
         subitem.sublayer.visible = !checked;
         setChecked(!checked);
+        if (!subitem.sublayer.visible && selected) {
+            formRef.current.setActiveLayer(null);
+            setSelected(false);
+        }
         formRef.current.updateCanvas();
     };
 
@@ -65,6 +69,9 @@ export default function SublayersTreeLayer(props) {
             }
             else {
                 formRef.current.setActiveLayer(subitem.sublayer);
+                if (!checked) {
+                    onChecked();
+                }
             }
             setSelected(!selected);
         }

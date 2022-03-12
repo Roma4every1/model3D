@@ -17,7 +17,7 @@ export default function EditWindow(props) {
     const selectedObject = useSelector((state) => state.formRefs[formId + "_selectedObject"]);
     const selectedObjectLength = useSelector((state) => state.formRefs[formId + "_selectedObjectLength"]);
     const modifiedLayer = mapData?.layers?.find(l => l.elements?.includes(selectedObject));
-    const [oldObjectPath, setOldObjectPath] = React.useState([...selectedObject?.arcs[0].path]);
+    const [oldObjectPath, setOldObjectPath] = React.useState(selectedObject ? [...selectedObject.arcs[0].path] : null);
     const imageSize = 32;
     const [mode, setMode] = React.useState(initialMode ?? "movePoint");
     const canApply = selectedObjectLength ? selectedObjectLength > 2 : selectedObjectLength !== 0;
@@ -30,7 +30,7 @@ export default function EditWindow(props) {
 
     const closeEditing = (noSave) => {
         control.blocked = false;
-        if (!noSave) {
+        if (!noSave && selectedObject) {
             selectedObject.arcs[0].path = oldObjectPath;
         }
         setOnEditing(false);

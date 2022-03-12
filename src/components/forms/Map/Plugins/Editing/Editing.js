@@ -389,6 +389,10 @@ export default function Editing(props) {
     }
 
     const startNewPolyline = React.useCallback((newElement) => {
+        if (selectedObject) {
+            selectedObject.selected = false;
+            formRef.current.updateCanvas();
+        }
         activeLayer.elements.push(newElement);
         dispatch(setFormRefs(formId + "_selectedObjectLength", 0));
         formRef.current.setSelectedObject(newElement);
@@ -411,7 +415,7 @@ export default function Editing(props) {
                     }
                 }}
             />));
-    }, [dispatch, formRef, formId, activeLayer, showPropertiesWindow]);
+    }, [dispatch, formRef, formId, activeLayer, showPropertiesWindow, selectedObject]);
 
     const setResult = React.useCallback((res) => {
         switch (res) {
