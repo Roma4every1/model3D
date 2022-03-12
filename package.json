@@ -1,6 +1,6 @@
 {
   "name": "reactwmw",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "private": true,
   "dependencies": {
     "@progress/kendo-data-query": "^1.5.5",
