@@ -16,8 +16,9 @@ export default function EditWindow(props) {
     const windows = useSelector((state) => state.windowData?.windows);
     const selectedObject = useSelector((state) => state.formRefs[formId + "_selectedObject"]);
     const selectedObjectLength = useSelector((state) => state.formRefs[formId + "_selectedObjectLength"]);
+    const [selectedObjectArc, setSelectedObjectArc] = React.useState(null);
     const modifiedLayer = mapData?.layers?.find(l => l.elements?.includes(selectedObject));
-    const [oldObjectPath, setOldObjectPath] = React.useState(selectedObject ? [...selectedObject.arcs[0].path] : null);
+    const [oldObjectPath, setOldObjectPath] = React.useState(null);
     const imageSize = 32;
     const [mode, setMode] = React.useState(initialMode ?? "movePoint");
     const canApply = selectedObjectLength ? selectedObjectLength > 2 : selectedObjectLength !== 0;
@@ -28,7 +29,7 @@ export default function EditWindow(props) {
         control.blocked = (mode !== "moveMap");
     }, [mode, control, modeHandler]);
 
-    const closeEditing = (noSave) => {
+    const closeEditing = React.useCallback((noSave) => {
         control.blocked = false;
         if (!noSave && selectedObject) {
             selectedObject.arcs[0].path = oldObjectPath;
@@ -42,7 +43,21 @@ export default function EditWindow(props) {
         if (onClosed) {
             onClosed(noSave);
         }
-    };
+    }, [control, dispatch, oldObjectPath, onClosed, selectedObject, setOnEditing]);
+
+    React.useEffect(() => {
+        if (selectedObject) {
+            setSelectedObjectArc(selectedObject.arcs[0]);
+            if (!oldObjectPath) {
+                setOldObjectPath([...selectedObject.arcs[0].path]);
+            }
+        }
+        if (!selectedObject) {
+            selectedObjectArc.path = [...oldObjectPath];
+            setOldObjectPath(null);
+            closeEditing();
+        }
+    }, [closeEditing, oldObjectPath, selectedObject, selectedObjectArc]);
 
     const cancelEditing = () => {
         closeEditing();

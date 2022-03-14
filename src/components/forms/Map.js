@@ -110,6 +110,7 @@ function Map(props, ref) {
 
     React.useEffect(() => {
         let ignore = false;
+        dispatch(setFormRefs(formData.id + "_activeLayer", null));
         if (mapInfo) {
             async function fetchData() {
                 const mapId = mapInfo.Cells[0];
@@ -118,8 +119,10 @@ function Map(props, ref) {
                 let loadedmap = await drawer.current.loadMap(String(mapId), { center: { x: 0, y: 0 }, scale: 10000 });
                 if (!ignore) {
                     new drawer.current.Scroller(_viewRef.current);
+                    _viewRef.current.blocked = false;
                     dispatch(setFormRefs(formData.id + "_mapData", null));
                     dispatch(setFormRefs(formData.id + "_mapData", loadedmap));
+                    dispatch(setFormRefs(formData.id + "_selectedObjectEditing", false));
                     setMapData(loadedmap);
                     var centerX = 0;
                     var centerY = 0;

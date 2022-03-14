@@ -226,6 +226,7 @@ export default function Selecting(props) {
         }
         if (pressed) {
             if (selectedObject) {
+                selectedObject.edited = false;
                 selectedObject.selected = false;
                 formRef.current.setSelectedObject(null);
                 formRef.current.updateCanvas();
@@ -238,6 +239,14 @@ export default function Selecting(props) {
         anchorEl: null,
         open: false
     });
+
+    const setPopoverMode = (mode) => {
+        setMode(mode);
+        setPopoverState({
+            anchorEl: popoverState.anchorEl,
+            open: false,
+        });
+    };
 
     const showColumnListClick = (event) => {
         setPopoverState({
@@ -260,7 +269,7 @@ export default function Selecting(props) {
                 anchor={popoverState.anchorEl}
             >
                 <div className="mapPickPopup">
-                    <div onClick={() => setMode("sublayer")} className="mapPickPopupItem" >
+                    <div onClick={() => setPopoverMode("sublayer")} className="mapPickPopupItem" >
                         <div className="mapPickPopupItemCheck" >
                             {mode === "sublayer" ? <span className="k-icon k-i-check" /> : <span className="k-icon" />}
                         </div>
@@ -268,7 +277,7 @@ export default function Selecting(props) {
                             {t('map.sublayer')}
                         </div>
                     </div>
-                    <div onClick={() => setMode("none")} className="mapPickPopupItem" >
+                    <div onClick={() => setPopoverMode("none")} className="mapPickPopupItem" >
                         <div className="mapPickPopupItemCheck" >
                             {mode === "none" ? <span className="k-icon k-i-check" /> : <span className="k-icon" />}
                         </div>
