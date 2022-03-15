@@ -93,8 +93,9 @@ function Map(props, ref) {
         if (centerScaleChangingHandler?.current) {
             centerScaleChangingHandler.current(cs);
         }
+        mapDrawnData.emit("detach");
         draw(context ?? _viewRef.current, mapData, cs.scale, cs.centerx, cs.centery, selectedObject?.current, redrawnHandler);
-    }, [draw, mapData, getCenterScale]);
+    }, [draw, mapData, getCenterScale, mapDrawnData]);
 
     React.useEffect(() => {
         if (databaseData?.data?.Rows && databaseData.data.Rows.length > 0) {
