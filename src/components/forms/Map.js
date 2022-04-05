@@ -1,7 +1,6 @@
 ﻿import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Resize } from 'on-el-resize';
 import { getMapLoader } from './Map/MapLoader.js';
 import setFormRefs from '../../store/actionCreators/setFormRefs';
 var utils = require("../../utils");
@@ -224,35 +223,14 @@ function Map(props, ref) {
         }
     }));
 
-    const [size, setSize] = React.useState({});
-
-    const resizeHandler = () => {
-        const { clientHeight, clientWidth } = _div.current || {};
-        setSize({ clientHeight, clientWidth });
-    };
-
-    React.useEffect(() => {
-        const resize = new Resize();
-        let currentDiv = _div.current;
-        resize.addResizeListener(currentDiv, resizeHandler);
-        resizeHandler();
-        return () => {
-            if (_div.current === currentDiv) {   // eslint-disable-line
-                resize.removeResizeListener(currentDiv, resizeHandler);
-            }
-        };
-    }, []);
-
     React.useLayoutEffect(() => {
         dispatch(setFormRefs(formData.id + "_mapView", _viewRef))
     }, [formData, dispatch]);
 
     return (
-        <div ref={_div} style={{ width: "100%", height: "100%" }}>
-            {mapInfo ? <canvas style={{ cursor: cursor ?? "point" }}
+        <div ref={_div} style={{ width: "100%", height: "100%", "overflow-y": "hidden", "overflow-x": "hidden" }}>
+            {mapInfo ? <canvas style={{ cursor: cursor ?? "point", width: "100%", height: "100%", "overflow-y": "hidden", "overflow-x": "hidden" }}
                 ref={_viewRef}
-                width={size.clientWidth}
-                height={size.clientHeight}
             /> : <div>{t("map.notFound")}</div>}
         </div>);
 }
