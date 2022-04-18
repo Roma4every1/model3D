@@ -1,6 +1,6 @@
 ﻿const useWMWServer = process.env.USEWMWSERVER ?? true;
 const ReactServerPrePath = 'session/';
-const WMWServerPrePath = process.env.WMWSERVERPREPATH ?? 'http://localhost:81/WellManager.ServerSide.Site/WebRequests.svc/';
+const WMWServerPrePath = process.env.WMWSERVERPREPATH ?? 'http://kmn-wmw:8080/ID2x/WebRequests.svc/';
 
 export function getServerUrl() {
     if (useWMWServer) {

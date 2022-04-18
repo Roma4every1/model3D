@@ -11,6 +11,7 @@
 /dist
 
 # misc
+/.idea
 /.vs
 /src/.vs
 /.vscode

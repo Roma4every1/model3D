@@ -1,6 +1,6 @@
 {
   "name": "reactwmw",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "private": true,
   "dependencies": {
     "@progress/kendo-data-query": "^1.5.5",
@@ -48,6 +48,7 @@
     "react-router-dom": "^6.2.1",
     "react-scripts": "^3.4.4",
     "reactstrap": "^8.4.1",
+    "recharts": "^2.1.9",
     "rimraf": "^2.6.2",
     "svg2pdf.js": "^2.2.0"
   },
@@ -74,8 +75,8 @@
     "extends": "react-app"
   },
   "scripts": {
-    "start": "rimraf ./build && react-scripts start",
-    "build": "webpack",
+    "start": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
+    "build": "set NODE_OPTIONS=--openssl-legacy-provider && webpack",
     "test": "cross-env CI=true react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "lint": "eslint ./src/"
