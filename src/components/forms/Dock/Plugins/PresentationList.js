@@ -3,10 +3,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import setActiveChildren from '../../../../store/actionCreators/setActiveChildren';
 import setOpenedChildren from '../../../../store/actionCreators/setOpenedChildren';
 import RecursiveTreeView from './RecursiveTreeView';
-import { useTranslation } from 'react-i18next';
+import { Loader } from "@progress/kendo-react-indicators";
 
 export default function PresentationList(props) {
-    const { t } = useTranslation();
     const sessionId = useSelector((state) => state.sessionId);
     const sessionManager = useSelector((state) => state.sessionManager);
     const dispatch = useDispatch();
@@ -57,7 +56,7 @@ export default function PresentationList(props) {
     return (
         <div>
             {state.loading
-                ? <p><em>{t('base.loading')}</em></p>
+                ? <Loader size="small" type="infinite-spinner" />
                 : <RecursiveTreeView data={state.formsJSON} onSelectionChanged={selectionChanged} />}
         </div>
     );

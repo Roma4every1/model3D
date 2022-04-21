@@ -9,6 +9,7 @@ import DockPluginForm from './Dock/DockPluginForm';
 import DockPluginStrip from './Dock/DockPluginStrip';
 import { capitalizeFirstLetter } from '../../utils';
 import setFormLayout from '../../store/actionCreators/setFormLayout';
+import { Loader } from "@progress/kendo-react-indicators";
 
 function Dock(props, ref) {
     const { t } = useTranslation();
@@ -120,7 +121,7 @@ function Dock(props, ref) {
                 resultForm = <DockPluginForm formId={formData.id} FormByType={FormByType} />;
             }
             return (<ErrorBoundary>
-                <Suspense fallback={<p><em>{t('base.loading')}</em></p>}>
+                <Suspense fallback=<Loader size="small" type="infinite-spinner" />>
                     {resultForm}
                 </Suspense>
             </ErrorBoundary>);
