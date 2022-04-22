@@ -1,0 +1,24 @@
+{"modelId":"323","displayName":"blablabla",
+"shiftX":346567.000,
+"shiftY":791038.500,
+"viewScale":0.001,
+"vertScale":10.000,
+"camera":
+{"directionX":3401.17651,"directionY":3073.90918,"directionZ":-1717.65186,"locationHAngle":4.3541,"locationVAngle":0.7854,"locationDistance":600.0}
+,
+
+"bounds":
+{"xMin":2900.0,"xMax":8200.0,"yMin":2500.0,"yMax":4000.0,"zMin":-1755.73,"zMax":-1703.24}
+,
+
+"wells":
+[{"source":"Model","items":[{"id":"3230035700","name":"357"},{"id":"3230129500","name":"1295"},{"id":"3230130800","name":"1308"},{"id":"3230164300","name":"1643"},{"id":"3230180200","name":"1802"},{"id":"3230034600","name":"346"},{"id":"3230035800","name":"358"},{"id":"3230037500","name":"375"},{"id":"3230059800","name":"598"}]}]
+,
+
+"params":
+[{"id":"poro","displayName":"РџРѕСЂРёСЃС‚РѕСЃС‚СЊ","min":"0.182","max":"0.243"},{"id":"permx","displayName":"РџСЂРѕРЅРёС†Р°РµРјРѕСЃС‚СЊ РїРѕ РѕСЃРё X","min":"0.717","max":"417.532"}]
+,
+
+"plasts":
+[{"id":"6551121","displayName":"AV1/2","layerCount":26}]
+}
