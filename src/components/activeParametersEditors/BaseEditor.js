@@ -1,7 +1,7 @@
 ﻿import React, { Suspense } from 'react';
-import { useTranslation } from 'react-i18next';
 import { GridLayout, GridLayoutItem } from "@progress/kendo-react-layout";
 import { Label } from "@progress/kendo-react-labels";
+import { Loader } from "@progress/kendo-react-indicators";
 import {
     IntlProvider,
     LocalizationProvider,
@@ -13,7 +13,6 @@ import ruMessages from "../locales/kendoUI/ru.json";
 loadMessages(ruMessages, "ru-RU");
 
 export default function BaseEditor(props) {
-    const { t } = useTranslation();
     var componentPath = 'StringTextEditor';
     if (editors[props.editorType]) {
         componentPath = editors[props.editorType];
@@ -22,7 +21,7 @@ export default function BaseEditor(props) {
 
     return (
         <ErrorBoundary>
-            <Suspense fallback={<p><em>{t('base.loading')}</em></p>}>
+            <Suspense fallback=<Loader size="small" type="infinite-spinner" />>
                 <LocalizationProvider language='ru-RU'>
                     <IntlProvider locale='ru'>
                         <div className="parametereditorbox">

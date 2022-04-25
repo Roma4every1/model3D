@@ -1,13 +1,12 @@
 ﻿import {
     Toolbar
 } from "@progress/kendo-react-buttons";
+import { Loader } from "@progress/kendo-react-indicators";
 import React from 'react';
 import { useSelector } from 'react-redux';
 import ProgramButton from './ProgramButton';
-import { useTranslation } from 'react-i18next';
 
 export default function SqlProgramsList(props) {
-    const { t } = useTranslation();
     const sessionId = useSelector((state) => state.sessionId);
     const sessionManager = useSelector((state) => state.sessionManager);
     const { formId } = props;
@@ -36,7 +35,7 @@ export default function SqlProgramsList(props) {
     return (
         <div>
             {state.loading
-                ? <p><em>{t('base.loading')}</em></p>
+                ? <Loader size="small" type="infinite-spinner" /> 
                 : <Toolbar style={{ padding: 1 }}>
                     {state.programNames.map(programName =>
                         <ProgramButton

@@ -81,7 +81,11 @@ function DataSet(props, ref) {
     async function apply(rowToInsert, editID, rowAdding) {
         var cells = [];
         databaseData.data.Columns.forEach((column, index) => {
-            let prop = databaseData.properties.find(property => column.Name === (property.fromColumn ?? property.name) && rowToInsert[property.name]);
+            let prop = databaseData.properties.find(property => column.Name === (property.fromColumn ?? property.name) && (rowToInsert[property.name] !== null));
+            if (!rowAdding)
+            {
+                prop = databaseData.properties.find(property => column.Name === (property.fromColumn ?? property.name) && (databaseData.data.Rows[editID].Cells[cells.length] !== (property.lookupData ? rowToInsert[property.name + '_jsoriginal'] : rowToInsert[property.name])));
+            }
             if (!prop) {
                 prop = databaseData.properties.find(property => column.Name === (property.fromColumn ?? property.name) && rowToInsert.hasOwnProperty(property.name));
             }

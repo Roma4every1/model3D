@@ -1,13 +1,12 @@
 ﻿import React from 'react';
 import { useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
 import Form from './Form';
 import FlexLayout from "flexlayout-react";
 import Container from './Grid/Container';
+import { Loader } from "@progress/kendo-react-indicators";
 import FormDisplayName from './Form/FormDisplayName';
 
-function Grid(props, ref) {
-    const { t } = useTranslation();
+function Grid(props, ref) {    
     const sessionManager = useSelector((state) => state.sessionManager);
     const sessionId = useSelector((state) => state.sessionId);
     const { formData } = props;
@@ -122,7 +121,7 @@ function Grid(props, ref) {
     return (
         <div>
             {!openedForms
-                ? <p><em>{t('base.loading')}</em></p>
+                ? <Loader size="small" type="infinite-spinner" />
                 : <Container formId={formData.id} modelJson={modelJson}>
                     {openedForms.map(formData =>
                         <Form

@@ -1,12 +1,11 @@
 ﻿import React, { Suspense } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '../common/ErrorBoundary';
 import setFormRefs from '../../store/actionCreators/setFormRefs';
+import { Loader } from "@progress/kendo-react-indicators";
 import { capitalizeFirstLetter } from '../../utils';
 
 export default function Form(props) {
-    const { t } = useTranslation();
     const dispatch = useDispatch();
     const sessionManager = useSelector((state) => state.sessionManager);
     const { formData, data } = props;
@@ -99,7 +98,7 @@ export default function Form(props) {
     return (
         <div className="form-container">
             <ErrorBoundary>
-                <Suspense fallback={<p><em>{t('base.loading')}</em></p>}>
+                <Suspense fallback=<Loader size="small" type="infinite-spinner" />>
                     {formLoadedData.loaded ?
                         <div className="form-container">
                             <FormByType key="mainForm" formData={formData} data={formLoadedData} ref={_form} />
@@ -108,7 +107,7 @@ export default function Form(props) {
                                 return <PluginByType key={pl.component.path} formId={formData.id} />
                             })}
                         </div> :
-                        <p><em>{t('base.loading')}</em></p>
+                        <Loader size="small" type="infinite-spinner" />
                     }
                 </Suspense>
             </ErrorBoundary>

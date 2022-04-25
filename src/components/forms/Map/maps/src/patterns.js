@@ -22,7 +22,7 @@ module.exports = provider => {
 			var [, libName, index] = name.match(/^(.+)-(\d+)$/)
 			if (libName.toLowerCase() === "halftone") {
 				var c = parseColor(color).rgb
-				var b = (bkcolor === "none") ? parseColor("#FFFFFF").rgb : parseColor(bkcolor).rgb;
+				var b = (bkcolor === "none" || bkcolor === "background") ? parseColor("#FFFFFF").rgb : parseColor(bkcolor).rgb;
 				var t = index / 64
 				return `rgba(${b.map((bi, i) =>
 					Math.round(bi + (c[i] - bi) * t))
