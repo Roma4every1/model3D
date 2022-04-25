@@ -1,51 +1,109 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import setFormSettings from "../../../../store/actionCreators/setFormSettings";
-import IntegerTextEditor from "../../../activeParametersEditors/IntegerTextEditor";
-import {
-    IntlProvider,
-    LocalizationProvider,
-    loadMessages,
-} from "@progress/kendo-react-intl";
+import {loadMessages} from "@progress/kendo-react-intl";
 import ruMessages from "../../../locales/kendoUI/ru.json";
+
 loadMessages(ruMessages, "ru-RU");
+
+
+/** Меняет индексы колонок, чтобы выбранная ушла на 1 шаг влево. */
+const toLeft = (colSettings, cell, index, count) => {
+    if (!(index > count && index < colSettings.length)) return;
+    colSettings[index].displayIndex--;
+    colSettings[index - 1].displayIndex++;
+}
+
+/** Меняет индексы колонок, чтобы выбранная ушла на 1 шаг вправо. */
+const toRight = (colSettings, cell, index, count) => {
+    if (!(index >= count && index < colSettings.length)) return;
+    colSettings[index].displayIndex++;
+    colSettings[index + 1].displayIndex--;
+}
+
+/** Меняет индексы колонок, чтобы выбранная ушла в начало, а другие сместились. */
+const toStart = (colSettings, cell, index, count) => {
+    if (!(index > count && index < colSettings.length)) return;
+    colSettings[index].displayIndex = count;
+    for(let i = count; i < index; i++) {
+        colSettings[i].displayIndex++;
+    }
+}
+
+/** Меняет индексы колонок, чтобы выбранная ушла в конец, а другие сместились. */
+const toEnd = (colSettings, cell, index, count) => {
+    if (!(index >= count && index < colSettings.length)) return;
+    colSettings[index].displayIndex = colSettings.length - 1;
+    for(let i = index + 1; i < colSettings.length; i++) {
+        colSettings[i].displayIndex--;
+    }
+}
+
 
 export default function ColumnSettings(props) {
     const dispatch = useDispatch();
     const { formId } = props;
     const formRef = useSelector((state) => state.formRefs[formId]);
-
     const tableSettings = useSelector((state) => state.formSettings[formId]);
 
-    const updateFrozenCount = (event) => {
-        tableSettings.columns.frozenColumnCount = event.value;
+    const setFrozenCount = () => {
+        tableSettings.columns.frozenColumnCount = 1 + tableSettings.columns.columnsSettings.findIndex((c) => {
+            return c.channelPropertyName === formRef.current.activeCell().column;
+        });
         dispatch(setFormSettings(formId, { ...tableSettings }));
-    };
+    }
 
-    const moveColumnToLeft = () => {
-        var cell = formRef.current.activeCell();
+    const moveColumnTo = (where) => {
+        const cell = formRef.current.activeCell();
+        const colSettings = tableSettings.columns.columnsSettings;
+        if (!colSettings || !cell) return;
 
-        if (tableSettings.columns.columnsSettings) {
-            tableSettings.columns.columnsSettings.sort((a, b) => a.displayIndex - b.displayIndex);
-            tableSettings.columns.columnsSettings.forEach((c, i) => c.displayIndex = i);
-            let index = tableSettings.columns.columnsSettings.findIndex(c => c.channelPropertyName === cell.column);
-            if (index > 0 && index < tableSettings.columns.columnsSettings.length) {
-                tableSettings.columns.columnsSettings[index].displayIndex--;
-                tableSettings.columns.columnsSettings[index - 1].displayIndex++;
-            }
+        const index = colSettings.findIndex(c => c.channelPropertyName === cell.column);
+        const count = tableSettings.columns.frozenColumnCount;
+
+        colSettings.forEach((c, i) => c.displayIndex = i);
+        switch (where) {
+            case 'start': { toStart(colSettings, cell, index, count); break }
+            case 'left': { toLeft(colSettings, cell, index, count); break }
+            case 'right': { toRight(colSettings, cell, index, count); break }
+            case 'end': { toEnd(colSettings, cell, index, count); break }
+            default: {}
         }
         dispatch(setFormSettings(formId, { ...tableSettings }));
     };
 
     return (
         <div>
-            <button className="k-button k-button-clear" onClick={moveColumnToLeft}>
+            <button
+              className="k-button k-button-clear" title="В начало"
+              onClick={() => moveColumnTo('start')}
+            >
+                <span className="k-icon k-i-arrow-double-60-left" />
+            </button>
+            <button
+              className="k-button k-button-clear" title="Влево"
+              onClick={() => moveColumnTo('left')}
+            >
                 <span className="k-icon k-i-arrow-60-left" />
             </button>
-            <LocalizationProvider language='ru-RU'>
-                <IntlProvider locale='ru'>
-                    <IntegerTextEditor id="frozenColumnEditor" value={tableSettings?.columns?.frozenColumnCount} selectionChanged={updateFrozenCount} />
-                </IntlProvider>
-            </LocalizationProvider>
-        </div>);
+            <button
+              className="k-button k-button-clear" title="Вправо"
+              onClick={() => moveColumnTo('right')}
+            >
+                <span className="k-icon k-i-arrow-60-right" />
+            </button>
+            <button
+              className="k-button k-button-clear" title="В конец"
+              onClick={() => moveColumnTo('end')}
+            >
+                <span className="k-icon k-i-arrow-double-60-right" />
+            </button>
+            <button
+              className="k-button k-button-clear" title="Закрепить столбцы до выбранного"
+              onClick={() => setFrozenCount()}
+            >
+                <span className="k-icon k-i-pin" />
+            </button>
+        </div>
+    );
 }
