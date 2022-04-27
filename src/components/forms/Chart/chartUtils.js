@@ -45,7 +45,7 @@ const getChartItemPrototype = (dataKey, settings, displayName) => {
 export const getChartPrototype = (seriesSettings, properties, columns, rows) => {
   if (!(seriesSettings && properties && columns && rows)) return [null, null, null, null];
 
-  let axesData = seriesSettings['AxisSettings']['AxisSettings'];
+  let axesData = seriesSettings['AxisSettings']['AxisSettings'] || [];
   const settings = seriesSettings['SeriesSettings']['SeriesSettings'];
 
   if (!(axesData instanceof Array)) axesData = [axesData];
@@ -69,7 +69,8 @@ export const getChartPrototype = (seriesSettings, properties, columns, rows) => 
     const dataKey = columns[dataIndex].Name;
     const columnSeriesSettings = settings.find((item) => item['@ChannelPropertyName'] === dataKey) || {};
 
-    diagramsData.push(getChartItemPrototype(dataKey, columnSeriesSettings, property.displayName));
+    if (columnSeriesSettings['@AxisId'])
+      diagramsData.push(getChartItemPrototype(dataKey, columnSeriesSettings, property.displayName));
 
     if (columns[dataIndex]['NetType'] === 'System.Decimal') {
       for (let j = 0; j < rows.length; j++) {
