@@ -9,9 +9,10 @@ export default function DateIntervalTextEditor(props) {
             if (index > 0) {
                 let startDateString = string.slice(0, index);
                 let finishDateString = string.slice(index + 3);
+                var pattern = /(\d{2})\.(\d{2})\.(\d{4})/;
                 return {
-                    start: new Date(startDateString.replace(' \\d', '')),
-                    end: new Date(finishDateString.replace(' \\d', ''))
+                    start: new Date(startDateString.replace(' \\d', '').replace(pattern, '$3/$2/$1')),
+                    end: new Date(finishDateString.replace(' \\d', '').replace(pattern, '$3/$2/$1'))
                 }
             }
             else {

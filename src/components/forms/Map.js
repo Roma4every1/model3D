@@ -228,8 +228,8 @@ function Map(props, ref) {
     }, [formData, dispatch]);
 
     return (
-        <div ref={_div} style={{ width: "100%", height: "100%", "overflow-y": "hidden", "overflow-x": "hidden" }}>
-            {mapInfo ? <canvas style={{ cursor: cursor ?? "point", width: "100%", height: "100%", "overflow-y": "hidden", "overflow-x": "hidden" }}
+        <div ref={_div} style={{ width: "100%", height: "100%", "overflowY": "hidden", "overflowX": "hidden" }}>
+            {mapInfo ? <canvas style={{ cursor: cursor ?? "point", width: "100%", height: "100%", "overflowY": "hidden", "overflowX": "hidden" }}
                 ref={_viewRef}
             /> : <div>{t("map.notFound")}</div>}
         </div>);

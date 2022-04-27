@@ -6,7 +6,6 @@ export default function SeriesSettings(props) {
     const { formId } = props;
     const sessionId = useSelector((state) => state.sessionId);
     const sessionManager = useSelector((state) => state.sessionManager);
-    const [pluginData, setPluginData] = React.useState(null);
 
     const dispatch = useDispatch();
 
@@ -17,13 +16,12 @@ export default function SeriesSettings(props) {
                 const data = await sessionManager.fetchData(`pluginData?sessionId=${sessionId}&formId=${formId}&pluginName=chartSeriesSettings`);
                 if (!ignore && data) {
                     dispatch(setSeriesSettings(formId, data.chartSeriesSettings));
-                    setPluginData(data);
                 }
             }
             fetchData();
         }
         return () => { ignore = true; }
-    }, [sessionId, formId, sessionManager]);
+    }, [sessionId, formId, sessionManager, dispatch]);
 
     return <div/>;
 }

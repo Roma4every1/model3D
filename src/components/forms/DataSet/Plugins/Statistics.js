@@ -11,10 +11,12 @@ export default function Statistics(props) {
 
     const getStat = async () => {
         var cell = formRef.current.activeCell();
-        var tableId = formRef.current.tableId();
-        var data = await sessionManager.channelsManager.getStatistics(tableId, cell.column);
-        var result = data.Values.map(x => x.Key + ': ' + x.Value);
-        sessionManager.handleWindowInfo(<div>{result.map(v => <div>{v}</div>)}</div>, null, t('pluginNames.statistics'));
+        if (cell) {
+            var tableId = formRef.current.tableId();
+            var data = await sessionManager.channelsManager.getStatistics(tableId, cell.column);
+            var result = data.Values.map(x => x.Key + ': ' + x.Value);
+            sessionManager.handleWindowInfo(<div>{result.map(v => <div>{v}</div>)}</div>, null, t('pluginNames.statistics'));
+        }
     };
 
     return (
