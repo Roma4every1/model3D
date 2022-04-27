@@ -1,28 +1,16 @@
 ﻿import React from 'react';
-import {
-  ResponsiveContainer,
-  ComposedChart,
-  YAxis,
-  XAxis,
-  Line,
-  Area,
-  Bar,
-  CartesianGrid,
-  Legend,
-  Tooltip,
-  LabelList
-} from 'recharts';
 import {useSelector} from "react-redux";
-
 import {getChartPrototype} from "./Chart/chartUtils";
+import {
+  ResponsiveContainer, ComposedChart, YAxis, XAxis,
+  Line, Area, Bar,
+  CartesianGrid, Legend, Tooltip, LabelList
+} from 'recharts';
 
 
 function Chart(props, ref) {
   const [seriesSettings, properties, columns, rows] = useSelector((state) => {
     try {
-      console.log('props:', props);
-      console.log('state:', state);
-
       const data = state.channelsData[props.data.activeChannels[0]];
       return [
         state.formSettings[props.data.formId].seriesSettings,
@@ -37,7 +25,6 @@ function Chart(props, ref) {
 
   const [diagramsData, chartData, axesData, xAxisID] = getChartPrototype(seriesSettings, properties, columns, rows);
 
-  console.log(diagramsData)
   if (!diagramsData || !chartData)
     return (
       <ResponsiveContainer>
@@ -53,12 +40,12 @@ function Chart(props, ref) {
     <ResponsiveContainer>
       <ComposedChart margin={0} data={chartData} style={{overflow: 'hidden'}}>
         <Tooltip />
-        <Legend verticalAlign="top" align="center" height={25} />
+        <Legend verticalAlign="top" align="center" />
         <CartesianGrid strokeDasharray="4 4" />
         <XAxis dataKey={xAxisID} />
 
         {axesData.map((axis) => {
-          const {id, domain, orientation, isReversed, stroke, value, angle, position} = axis;
+          const {id, domain, orientation, isReversed, stroke, value, angle, position, tickCount} = axis;
           return (
             <YAxis
               label={{ value, angle, position, offset: 10 }}
@@ -69,38 +56,42 @@ function Chart(props, ref) {
               orientation={orientation}
               reversed={isReversed}
               stroke={stroke}
+              tickCount={tickCount}
             />
           );
         })}
 
         {diagramsData.map((prototype) => {
-          let component = Line, children = null;
-          const {type, dataKey, yAxisID, name, color, labels, dot} = prototype;
+          let component = Line, child = null;
+          const {type, dataKey, yAxisId, name, stroke, labels, dot} = prototype;
 
-          if (labels === true) children = <LabelList dataKey={dataKey} position="top" />;
+          if (labels) child = (
+            <LabelList
+              dataKey={dataKey} position="top"
+              style={{filter: `drop-shadow(0 0 4px ${stroke})`}}
+            />
+          );
+
           const props = {
+            yAxisId, dataKey, name, dot, stroke,
             key: dataKey,
-            yAxisId: yAxisID,
-            dataKey: dataKey,
-            name: name,
             type: 'linear',
-            stroke: color,
             strokeWidth: 2,
             fill: 'none',
-            dot: dot,
+            isAnimationActive: false,
           };
 
           switch (type) {
             case 'gist': {
               component = Bar;
               props.stroke = 'none';
-              props.fill = color;
+              props.fill = stroke;
               break;
             }
             case 'gistStack': {
               component = Bar;
               props.stroke = 'none';
-              props.fill = color;
+              props.fill = stroke;
               break;
             }
             case 'area': {
@@ -129,11 +120,9 @@ function Chart(props, ref) {
               props.type = 'step';
               break;
             }
-            default: {
-
-            }
+            default: {}
           }
-          return React.createElement(component, props, children);
+          return React.createElement(component, props, child);
         })}
       </ComposedChart>
     </ResponsiveContainer>
