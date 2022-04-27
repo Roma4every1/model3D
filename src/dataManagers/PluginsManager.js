@@ -27,6 +27,7 @@ export default function createPluginsManager(store) {
                     "WMWname": pluginsSettings[formName][pluginName].WMWname,
                     "selected": 0,
                     "weight": pluginsSettings[formName][pluginName].weight,
+                    "condition": pluginsSettings[formName][pluginName].condition,
                     "children": [{
                         "enableDrag": true,
                         "type": "tab",

@@ -52,6 +52,7 @@
       "label": "Параметры презентации",
       "weight": 10,
       "order": 20,
+      "condition": "presentationParamsNotEmpty",
       "WMWname": "gridPresentationParameterListSidePanel"
     }
   },

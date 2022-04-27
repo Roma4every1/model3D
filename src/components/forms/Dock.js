@@ -10,6 +10,7 @@ import DockPluginStrip from './Dock/DockPluginStrip';
 import { capitalizeFirstLetter } from '../../utils';
 import setFormLayout from '../../store/actionCreators/setFormLayout';
 import { Loader } from "@progress/kendo-react-indicators";
+var _ = require("lodash");
 
 function Dock(props, ref) {
     const { t } = useTranslation();
@@ -36,7 +37,68 @@ function Dock(props, ref) {
         }
     });
 
-    const leftBorderApplySettings = useSelector((state) => state.layout[formData.id] ?? leftBorderSettings);
+    const activeChildId = useSelector((state) => state.childForms[formData.id]?.openedChildren[0]);
+    const activeSubChild = useSelector((state) => state.childForms[activeChildId]?.children.find(p => p.id === (state.childForms[activeChildId].activeChildren[0])));
+    const parametersJSON = useSelector((state) => state.formParams[activeChildId]);
+
+    var correctLeftBorderSettings = React.useCallback((leftSettings) => {
+            plugins.left.forEach(plugin => {
+                if (plugin.condition === "presentationParamsNotEmpty") {
+                    if (parametersJSON) {
+                    if (parametersJSON.filter(parameterJSON => parameterJSON.editorType).length === 0) {
+                        var tabToDelete = leftSettings.layout.children.findIndex(ch => ch.children.some(tabch => tabch?.component?.id === plugin.children[0].component.id))
+                        if (tabToDelete >= 0) {
+                            leftSettings.layout.children.splice(tabToDelete, 1);
+                        }
+                    }
+                    else {
+                        if (!leftSettings.layout.children.some(ch => ch.children.some(tabch => tabch?.component?.id === plugin.children[0].component.id))) {
+                            if (!plugin.initialWeight) {
+                                plugin.initialWeight = plugin.weight;
+                            }
+                            var totalWeight = _.sum(leftSettings.layout.children.map(ch => ch.weight));
+                            var newWeight = plugin.initialWeight / (100 - plugin.initialWeight) * totalWeight;
+                            plugin.weight = newWeight;
+                            plugin.children[0].id = formData.id + ',' + plugin.WMWname;
+
+                            leftSettings.layout.children.forEach(leftPlugin => {
+                                if (!leftPlugin.order) {
+                                    let pluginFromLeft = plugins.left.find(p => leftPlugin.children.some(ch => ch?.component?.id === p.children[0].component.id));                                    
+                                    leftPlugin.order = pluginFromLeft?.order;
+                                }
+                            })
+
+                            leftSettings.layout.children = [...leftSettings.layout.children, plugin].sort((a, b) => a.order - b.order)
+                        }
+                    }
+                }
+            }
+        });
+        return leftSettings;
+    }, [parametersJSON, formData, plugins]);
+
+    function leftLayoutModelReducer(state, action) {
+        switch (action.type) {
+            case 'reset':
+                return action.value;
+            case 'correct':
+                return correctLeftBorderSettings(state);
+            default: 
+                return state;
+        }
+    }
+
+    var preLeftBorderApplySettings = useSelector((state) => state.layout[formData.id] ?? leftBorderSettings);
+    const [leftBorderApplySettings, dispatchLeftBorderApplySettings] = React.useReducer(leftLayoutModelReducer, leftBorderSettings);
+
+    React.useEffect(() => {
+       dispatchLeftBorderApplySettings({ type: 'reset', value: preLeftBorderApplySettings });
+    }, [preLeftBorderApplySettings])
+
+    React.useEffect(() => {
+        dispatchLeftBorderApplySettings({ type: 'correct' });
+    }, [parametersJSON])
+
     const leftBorderModel = FlexLayout.Model.fromJson(leftBorderApplySettings);
 
     const onModelChange = React.useCallback(() => {
@@ -107,7 +169,7 @@ function Dock(props, ref) {
 
     const factory = React.useCallback((node) => {
         var component = node.getComponent();
-        if (component.path) {
+        if (component?.path) {
             if (!forms.current[component.id]) {
                 let LoadFormByType = React.lazy(() => import('./' + component.form + '/Plugins/' + component.path));
                 forms.current[component.id] = LoadFormByType;
@@ -121,7 +183,7 @@ function Dock(props, ref) {
                 resultForm = <DockPluginForm formId={formData.id} FormByType={FormByType} />;
             }
             return (<ErrorBoundary>
-                <Suspense fallback=<Loader size="small" type="infinite-spinner" />>
+                <Suspense fallback={<Loader size="small" type="infinite-spinner" />}>
                     {resultForm}
                 </Suspense>
             </ErrorBoundary>);
@@ -139,7 +201,7 @@ function Dock(props, ref) {
             dockforms.current[formData.id] = formToShow;
         }
         return dockforms.current[formData.id];
-    }, [formData, t, leftBorderModel, onModelChange]);
+    }, [formData, leftBorderModel, onModelChange]);
 
     const correctElement = React.useCallback((layout, plugins, formData) => {
         if (layout.type === "tab") {
@@ -226,9 +288,6 @@ function Dock(props, ref) {
     const [flexLayoutModel, dispatchFlexLayoutModel] = React.useReducer(flexLayoutModelReducer, FlexLayout.Model.fromJson(layoutSettings));
     const forms = React.useRef([]);
     const dockforms = React.useRef([]);
-
-    const activeChildId = useSelector((state) => state.childForms[formData.id]?.openedChildren[0]);
-    const activeSubChild = useSelector((state) => state.childForms[activeChildId]?.children.find(p => p.id === (state.childForms[activeChildId].activeChildren[0])));
 
     React.useEffect(() => {
         dispatchFlexLayoutModel({ type: 'rebuild', activeSubChildType: activeSubChild?.type });
