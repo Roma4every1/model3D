@@ -45,8 +45,11 @@ const getChartItemPrototype = (dataKey, settings, displayName) => {
 export const getChartPrototype = (seriesSettings, properties, columns, rows) => {
   if (!(seriesSettings && properties && columns && rows)) return [null, null, null, null];
 
-  const axesData = seriesSettings['AxisSettings']['AxisSettings'].map(getAxisPrototype);
+  let axesData = seriesSettings['AxisSettings']['AxisSettings'];
   const settings = seriesSettings['SeriesSettings']['SeriesSettings'];
+
+  if (!(axesData instanceof Array)) axesData = [axesData];
+  axesData = axesData.map(getAxisPrototype);
 
   const chartData = Array.from({length: rows.length}, () => {return {}});
   const diagramsData = [];
