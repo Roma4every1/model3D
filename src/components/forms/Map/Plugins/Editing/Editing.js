@@ -1,14 +1,15 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import { Button } from "@progress/kendo-react-buttons";
-import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
+import {useDispatch, useSelector} from 'react-redux';
+import {useTranslation} from 'react-i18next';
+import {Button} from "@progress/kendo-react-buttons";
+import {Dialog, DialogActionsBar} from "@progress/kendo-react-dialogs";
 import setOpenedWindow from "../../../../../store/actionCreators/setOpenedWindow";
 import setFormRefs from '../../../../../store/actionCreators/setFormRefs';
 import EditWindow from "./EditWindow";
 import PropertiesWindow from "./PropertiesWindow";
 import AttrTableWindow from "./AttrTableWindow";
 import CreateElementWindow from "./CreateElementWindow";
+
 var _ = require("lodash");
 
 export default function Editing(props) {
@@ -66,27 +67,27 @@ export default function Editing(props) {
         mode.current = newMode;
     }
 
-    var squaredDistanceBetweenPointAndSegment = (segment, point) => {
-        let asquared = Math.pow(segment[0][0] - point.x, 2) + Math.pow(segment[0][1] - point.y, 2);
-        let bsquared = Math.pow(segment[1][0] - point.x, 2) + Math.pow(segment[1][1] - point.y, 2);
-        let csquared = Math.pow(segment[1][0] - segment[0][0], 2) + Math.pow(segment[1][1] - segment[0][1], 2);
-        if (asquared > bsquared + csquared) {
-            return bsquared;
+    const squaredDistanceBetweenPointAndSegment = (segment, point) => {
+        let aSquared = Math.pow(segment[0][0] - point.x, 2) + Math.pow(segment[0][1] - point.y, 2);
+        let bSquared = Math.pow(segment[1][0] - point.x, 2) + Math.pow(segment[1][1] - point.y, 2);
+        let cSquared = Math.pow(segment[1][0] - segment[0][0], 2) + Math.pow(segment[1][1] - segment[0][1], 2);
+        if (aSquared > bSquared + cSquared) {
+            return bSquared;
         }
-        if (bsquared > asquared + csquared) {
-            return asquared;
+        if (bSquared > aSquared + cSquared) {
+            return aSquared;
         }
         let doublesquare = Math.abs((segment[0][0] - point.x) * (segment[1][1] - point.y) - (segment[1][0] - point.x) * (segment[0][1] - point.y));
-        return (doublesquare * doublesquare / csquared);
-    }
+        return (doublesquare * doublesquare / cSquared);
+    };
 
     const getNearestSegment = React.useCallback((point, polyline) => {
-        var nearestNp = 0;
-        var points = _.chunk(polyline.arcs[0].path, 2);
+        let nearestNp = 0;
+        let points = _.chunk(polyline.arcs[0].path, 2);
         if (polyline.arcs[0].closed) {
             points = [...points, points[0]];
         }
-        var minDist = squaredDistanceBetweenPointAndSegment([points[0], points[1]], point);
+        let minDist = squaredDistanceBetweenPointAndSegment([points[0], points[1]], point);
         for (let i = 1; i < points.length - 1; i++) {
             let segment = [points[i], points[i + 1]];
             let dist = squaredDistanceBetweenPointAndSegment(segment, point);
@@ -96,8 +97,8 @@ export default function Editing(props) {
             }
         }
         if (!polyline.arcs[0].closed) {
-            var d1 = Math.pow(points[0][0] - point.x, 2) + Math.pow(points[0][1] - point.y, 2);
-            var d2 = Math.pow(points[points.length - 1][0] - point.x, 2) + Math.pow(points[points.length - 1][1] - point.y, 2);
+            const d1 = Math.pow(points[0][0] - point.x, 2) + Math.pow(points[0][1] - point.y, 2);
+            const d2 = Math.pow(points[points.length - 1][0] - point.x, 2) + Math.pow(points[points.length - 1][1] - point.y, 2);
             if (d1 <= minDist) {
                 nearestNp = -1;
             }
@@ -110,10 +111,10 @@ export default function Editing(props) {
     }, []);
 
     const getNearestPoint = (point, scale, polyline) => {
-        var SELECTION_RADIUS = 0.015;
-        var minRadius;
-        var nearestNp = null;
-        var points = _.chunk(polyline.arcs[0].path, 2);
+        const SELECTION_RADIUS = 0.015;
+        let minRadius;
+        let nearestNp = null;
+        const points = _.chunk(polyline.arcs[0].path, 2);
         points.forEach((p, i) => {
             var localDist = Math.sqrt(Math.pow(p[0] - point.x, 2) + Math.pow(p[1] - point.y, 2));
             if (!minRadius || localDist < minRadius) {
@@ -126,7 +127,7 @@ export default function Editing(props) {
         return nearestNp;
     };
 
-    var clientPoint = (event) => {
+    const clientPoint = (event) => {
         var ret;
         if ("offsetX" in event)
             ret = {
@@ -172,8 +173,7 @@ export default function Editing(props) {
                     }
                 }
                 else if (mode.current === "movePoint") {
-                    let nearestPoint = getNearestPoint(point, formRef.current.centerScale().scale, selectedObject);
-                    movedPoint.current = nearestPoint;
+                    movedPoint.current = getNearestPoint(point, formRef.current.centerScale().scale, selectedObject);
                 }
                 else if (mode.current === "addPointToEnd") {
                     selectedObject.arcs[0].path = [...selectedObject.arcs[0].path, point.x, point.y];
@@ -192,7 +192,7 @@ export default function Editing(props) {
 
     const createNewLabel = React.useCallback(() => {
         let newElement = null;
-        var sublayerSettings = legendsData?.sublayers?.find(d => d.name === activeLayer?.name);
+        const sublayerSettings = legendsData?.sublayers?.find(d => d.name === activeLayer?.name);
         if (sublayerSettings) {
             let legendToSet = sublayerSettings.legends.find(l => l.default);
             if (!legendToSet && sublayerSettings.legends.length > 0) {
@@ -202,20 +202,17 @@ export default function Editing(props) {
 
             }
         }
-        if (!newElement) {
-            if (activeLayer?.elements?.length > 0) {
-                newElement = { ...activeLayer.elements[0] };
-            }
-            else {
-                newElement = {};
-                newElement.type = 'label';
-                newElement.fontsize = 12;
-                newElement.fontname = 'Arial';
-                newElement.halignment = 1;
-                newElement.valignment = 1;
-                newElement.color = '#000000';
-                newElement.angle = 0;
-            }
+        if (activeLayer?.elements?.length > 0) {
+            newElement = {...activeLayer.elements[0]};
+        } else {
+            newElement = {};
+            newElement.type = 'label';
+            newElement.fontsize = 12;
+            newElement.fontname = 'Arial';
+            newElement.halignment = 1;
+            newElement.valignment = 1;
+            newElement.color = '#000000';
+            newElement.angle = 0;
         }
         newElement.text = "text";
         return newElement;
@@ -241,7 +238,7 @@ export default function Editing(props) {
                 movedPoint.current = null;
             }
             else if (mode.current === "addPointToEnd") {
-                var coords = formRef.current.coords();
+                const coords = formRef.current.coords();
                 const point = coords.pointToMap(clientPoint(event));
                 selectedObject.arcs[0].path[-2] = Math.round(point.x);
                 selectedObject.arcs[0].path[-1] = Math.round(point.y);
@@ -253,7 +250,7 @@ export default function Editing(props) {
     const mouseMove = React.useCallback((event) => {
         if (onEditing) {
             if (selectedObject?.type === "polyline" && isOnMove.current) {
-                var coords = formRef.current.coords();
+                const coords = formRef.current.coords();
                 const point = coords.pointToMap(clientPoint(event));
                 if (mode.current === "movePoint" && movedPoint.current) {
                     selectedObject.arcs[0].path[movedPoint.current.index * 2] = Math.round(point.x);
@@ -300,7 +297,7 @@ export default function Editing(props) {
     };
 
     const save = async () => {
-        var jsonToSend = {
+        const jsonToSend = {
             sessionId: sessionId,
             formId: formId,
             mapData: formRef.current.mapData(),
@@ -433,7 +430,7 @@ export default function Editing(props) {
 
     const createByLegends = React.useCallback((legends) => {
 
-        var sublayerSettings = legends?.sublayers?.find(d => d.name === activeLayer?.name);
+        const sublayerSettings = legends?.sublayers?.find(d => d.name === activeLayer?.name);
         if (sublayerSettings) {
             let legendToSet = sublayerSettings.legends.find(l => l.default);
             if (!legendToSet && sublayerSettings.legends.length > 0) {

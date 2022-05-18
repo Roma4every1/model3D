@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect} from 'react';
 import Web3dm from './libs/web3dm.js'
 
 function View3D(props, ref)
@@ -8,7 +8,7 @@ function View3D(props, ref)
   const controls = React.useRef(null);
   const [perfsChecked, setPerfsChecked] = React.useState(false);
   const [litosChecked, setLitosChecked] = React.useState(false);
-  const [pickChecked, setPickChecked] = React.useState(false);
+  let [pickChecked, setPickChecked] = React.useState(false);
    // State to store uploaded file
   const [file, setFile] = React.useState("");
    // Select parameters

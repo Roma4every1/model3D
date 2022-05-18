@@ -3368,4 +3368,4 @@ import COLORSCALE from './colorscale.js';
 
 })(window); 
 
-export default Web3dm;
+export default window.Web3dm;

@@ -1,16 +1,16 @@
 // module mapDrawer
-var logger = require("./logger");
-var startThread = require("./startThread");
-var geom = require("./geom");
-var lodash = require("lodash");
-var parseColor = require("parse-color");
-var parseSMB = require("./parseSMB");
-var htmlHelper = require("./htmlHelper");
-var pngMono = require("./pngMono");
+const logger = require("./logger");
+const startThread = require("./startThread");
+const geom = require("./geom");
+const lodash = require("lodash");
+const parseColor = require("parse-color");
+const parseSMB = require("./parseSMB");
+const htmlHelper = require("./htmlHelper");
+const pngMono = require("./pngMono");
 
 export var types = {};
 
-var declareType = (name, data) => {
+const declareType = (name, data) => {
 	data.name = name;
 	types[name] = data;
 	return data;
@@ -47,9 +47,9 @@ function* getElementImage(i, options) {
 	}
 }
 
-var defaultLineWidth = 0.23;
-var draftLineWidth = 0.1;
-var signSize = 2;
+const defaultLineWidth = 0.23;
+const draftLineWidth = 0.1;
+const signSize = 2;
 
 declareType("sign", {
 	bound: pointBounds,

@@ -25,13 +25,13 @@ function Chart(props, ref) {
 
   const [diagramsData, chartData, axesData, xAxisID] = getChartPrototype(seriesSettings, properties, columns, rows);
 
-  if (!diagramsData || !chartData)
+  if (!diagramsData || !chartData || rows.length === 0)
     return (
       <ResponsiveContainer>
-        <ComposedChart margin={0} data={[]}>
+        <ComposedChart margin={{right: 10, top: 10}} data={[]}>
           <XAxis/>
           <YAxis/>
-          <CartesianGrid strokeDasharray="4 4" />
+          <Legend verticalAlign="top" align="center" payload={[{ value: 'Нет данных.'}]} />
         </ComposedChart>
       </ResponsiveContainer>
     );

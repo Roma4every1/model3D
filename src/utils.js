@@ -1,6 +1,9 @@
 ﻿const useWMWServer = process.env.USEWMWSERVER ?? true;
 const ReactServerPrePath = 'session/';
-const WMWServerPrePath = process.env.WMWSERVERPREPATH ?? 'http://kmn-wmw:8080/ID2x/WebRequests.svc/';
+const WMWServerPrePath = 'http://gs-wp51:81/WellManager.ServerSide.Site/WebRequests.svc/' //process.env.WMWSERVERPREPATH ?? '';
+
+// с демо системой: http://gs-wp51:81/WellManager.ServerSide.Site/WebRequests.svc/
+// калинингдаркие:  http://kmn-wmw:8080/ID2x/WebRequests.svc
 
 export function getServerUrl() {
     if (useWMWServer) {
@@ -29,7 +32,7 @@ export const capitalizeFirstLetter = (string) => {
 }
 
 export const getRootFormId = (formId) => {
-    var index = formId.indexOf(',');
+    const index = formId.indexOf(',');
     if (index === -1) {
         return formId
     }
@@ -39,9 +42,9 @@ export const getRootFormId = (formId) => {
 }
 
 export const getParentFormId = (formId) => {
-    var index1 = formId.lastIndexOf(':');
-    var index2 = formId.lastIndexOf(',');
-    var index = index1;
+    const index1 = formId.lastIndexOf(':');
+    const index2 = formId.lastIndexOf(',');
+    let index = index1;
     if (index === -1 || index2 > index1) {
         index = index2;
     }
@@ -107,26 +110,26 @@ export const tableRowToString = (valuesToSelect, row) => {
     }
 
     const addParam = (column, rowValue, propName) => {
-        var valuestring = '';
+        let valueString;
         if (column.NetType === "System.DateTime" && rowValue != null) {
-            valuestring = propName + '#' + dateToString(toDate(rowValue)) + '#' + column.NetType;
+            valueString = propName + '#' + dateToString(toDate(rowValue)) + '#' + column.NetType;
         }
         else if (rowValue != null) {
-            valuestring = propName + '#' + rowValue + '#' + column.NetType;
+            valueString = propName + '#' + rowValue + '#' + column.NetType;
         }
         else {
-            valuestring = propName + '##System.DBNull';
+            valueString = propName + '##System.DBNull';
         }
-        return valuestring;
+        return valueString;
     }
     let temp = {};
     temp.id = row.Cells[valuesToSelect.idIndex];
     temp.name = row.Cells[valuesToSelect.nameIndex];
-    var valuestring = '';
+    let valueString = '';
     valuesToSelect.data.Columns.forEach((column, index) => {
-        valuestring += addParamRow(valuesToSelect.properties, column, row, index)
+        valueString += addParamRow(valuesToSelect.properties, column, row, index)
     });
-    temp.value = valuestring;
+    temp.value = valueString;
     return temp
 }
 
@@ -137,17 +140,17 @@ export const tableCellToString = (valuesToSelect, row) => {
     }
 
     const addParam = (column, rowValue) => {
-        var valuestring = '';
-        if (column.NetType === "System.DateTime" && rowValue != null) {
-            valuestring = dateToString(toDate(rowValue)) + '#' + column.NetType;
+        let valueString;
+        if (column['NetType'] === "System.DateTime" && rowValue != null) {
+            valueString = dateToString(toDate(rowValue)) + '#' + column['NetType'];
         }
         else if (rowValue != null) {
-            valuestring = rowValue + '#' + column.NetType;
+            valueString = rowValue + '#' + column['NetType'];
         }
         else {
-            valuestring = '#System.DBNull';
+            valueString = '#System.DBNull';
         }
-        return valuestring;
+        return valueString;
     }
     let temp = {};
     temp.id = row.Cells[valuesToSelect.idIndex];
@@ -155,37 +158,33 @@ export const tableCellToString = (valuesToSelect, row) => {
     if (valuesToSelect.parentIndex >= 0) {
         temp.parent = row.Cells[valuesToSelect.parentIndex];
     }
-    var valuestring = addParam(valuesToSelect.data.Columns[valuesToSelect.idIndex], temp.id);
-    temp.value = valuestring;
+    temp.value = addParam(valuesToSelect.data.Columns[valuesToSelect.idIndex], temp.id);
     return temp
 }
 
-export const stringToTableCell = (rowstring, columnName) => {
+export const stringToTableCell = (rowString, columnName) => {
+    const columnNameLength = columnName.length + 1;
+    const stringValue = String(rowString);
+    const startIndex = stringValue.indexOf(columnName + '#');
+    const finishIndex = stringValue.indexOf('#', startIndex + columnNameLength);
 
-    let columnNameLength = columnName.length + 1;
-    let stringvalue = String(rowstring);
-    const startIndex = stringvalue.indexOf(columnName + '#');
-    var finishIndex = stringvalue.indexOf('#', startIndex + columnNameLength);
     let dataValue;
     if (startIndex === -1) {
-        dataValue = stringvalue;
+        dataValue = stringValue;
     }
     else if (finishIndex === -1) {
-        dataValue = stringvalue.slice(startIndex + columnNameLength);
+        dataValue = stringValue.slice(startIndex + columnNameLength);
     }
     else {
-        dataValue = stringvalue.slice(startIndex + columnNameLength, finishIndex);
+        dataValue = stringValue.slice(startIndex + columnNameLength, finishIndex);
     }
     return dataValue;
 }
 
 export const getLinkedPropertyValue = (linkedPropertyString, formId, state) => {
-
-    let startFoundIndex = 0;
-    let returnString = '';
-    let startIndex = 0;
-    let finish = '';
+    let startFoundIndex = 0, startIndex = 0, finish = '', returnString = '';
     let resultBroken = false;
+
     while (startIndex > -1) {
         startIndex = linkedPropertyString.indexOf('$(', startFoundIndex);
         if (startIndex > -1) {
@@ -205,7 +204,7 @@ export const getLinkedPropertyValue = (linkedPropertyString, formId, state) => {
                 type = pathToChange.slice(pointIndex + 1);
                 propertyName = null;
             }
-            var neededParamValues = state.sessionManager.paramsManager.getParameterValues([parameterName], formId, false);
+            const neededParamValues = state.sessionManager.paramsManager.getParameterValues([parameterName], formId, false);
             let propertyValue = neededParamValues[0]?.value;
             if (type === 'CellValue' && propertyValue) {
                 propertyValue = stringToTableCell(neededParamValues[0].value, propertyName);

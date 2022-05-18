@@ -32,12 +32,12 @@ export var rects = {
 			return sum(array) / array.length
 		}
 		function norm(array) {
-			var m = sum(array)
+			const m = sum(array);
 			return array.map(a => a / m)
 		}
 		function middleCoord(coords) {
-			var m = middle(coords)
-			var w = norm(coords.map(c => 1 / (1 + (c - m) * (c - m))))
+			const m = middle(coords);
+			const w = norm(coords.map(c => 1 / (1 + (c - m) * (c - m))));
 			return sum(coords.map((c, i) => c * w[i]))
 		}
 		return {
@@ -53,16 +53,21 @@ export var rects = {
 	},
 }
 
-var translate = (scale1, p1, scale2, p2) => {
-	var sc = 1 / scale1 * scale2
+const translate = (scale1, p1, scale2, p2) => {
+	const sc = 1 / scale1 * scale2;
 	return p => ({
 		x: p2.x + (p.x - p1.x) * sc,
 		y: p2.y + (p.y - p1.y) * sc,
 	})
 }
 
+export const distance = (x1, x2, y1, y2) => {
+	// sqrt( (x1 - x2)^2 + (y1 - y2)^2 )
+	return Math.sqrt(x1 * x1 + x2 * x2 + y1 * y1 + y2 * y2 - 2 * (x1 * x2 + y1 * y2));
+}
+
 export function translator(mscale, mcenter, cscale, ccenter) {
-	var ret
+	let ret;
 	return ret = {
 		mscale, cscale,
 		pointToControl: translate(mscale, mcenter, cscale, ccenter),

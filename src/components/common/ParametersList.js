@@ -8,8 +8,8 @@ export default function ParametersList(props) {
     const { parametersJSON } = props;
 
     const updateEditedJSON = (action, formId) => {
-        var target = action.target;
-        var newValue = action.value ?? target.value;
+        const target = action.target;
+        const newValue = action.value ?? target.value;
         paramsManager.updateParamValue(formId, target.name, newValue, target.manual ?? true);
     };
 

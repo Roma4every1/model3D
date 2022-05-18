@@ -2,26 +2,24 @@
 import { GridLayout, GridLayoutItem } from "@progress/kendo-react-layout";
 import { Label } from "@progress/kendo-react-labels";
 import { Loader } from "@progress/kendo-react-indicators";
-import {
-    IntlProvider,
-    LocalizationProvider,
-    loadMessages,
-} from "@progress/kendo-react-intl";
+import { IntlProvider, LocalizationProvider, loadMessages } from "@progress/kendo-react-intl";
 import ErrorBoundary from '../common/ErrorBoundary';
 import editors from "./editors.json";
 import ruMessages from "../locales/kendoUI/ru.json";
+
 loadMessages(ruMessages, "ru-RU");
 
+
 export default function BaseEditor(props) {
-    var componentPath = 'StringTextEditor';
-    if (editors[props.editorType]) {
-        componentPath = editors[props.editorType];
-    }
-    let MyComponent = React.lazy(() => import('./' + componentPath));
+    let componentPath = 'StringTextEditor';
+    if (editors[props.editorType]) componentPath = editors[props.editorType];
+
+    const MyComponent = React.lazy(() => import('./' + componentPath));
+    const loader = <Loader size="small" type="infinite-spinner" />;
 
     return (
         <ErrorBoundary>
-            <Suspense fallback=<Loader size="small" type="infinite-spinner" />>
+            <Suspense fallback={loader}>
                 <LocalizationProvider language='ru-RU'>
                     <IntlProvider locale='ru'>
                         <div className="parametereditorbox">
@@ -37,5 +35,6 @@ export default function BaseEditor(props) {
                     </IntlProvider>
                 </LocalizationProvider>
             </Suspense>
-        </ErrorBoundary>);
+        </ErrorBoundary>
+    );
 }

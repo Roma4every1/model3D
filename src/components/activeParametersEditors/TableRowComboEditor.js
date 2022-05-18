@@ -2,26 +2,26 @@
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { ComboBox } from "@progress/kendo-react-dropdowns";
-var utils = require("../../utils");
+import { stringToTableCell, tableRowToString } from "../../utils";
+
 
 export default function TableRowComboEditor(props) {
     const { t } = useTranslation();
     const { id, formId, selectionChanged, externalChannelName } = props;
-    var values = [];
-    var valueToShow = undefined;
+    let values = [];
+    let valueToShow = undefined;
     const value = useSelector((state) => state.formParams[formId].find((gp) => gp.id === id).value);
     const nullDisplayValue = useSelector((state) => state.formParams[formId].find((gp) => gp.id === id).nullDisplayValue ?? t("editors.activeObjectNullDisplayName"));
     const showNullValue = useSelector((state) => state.formParams[formId].find((gp) => gp.id === id).showNullValue);
     const sessionManager = useSelector((state) => state.sessionManager);
 
-    const setNewValue = React.useCallback(
-        (value, manual) => {
-            var newevent = {};
-            newevent.target = {};
-            newevent.target.name = id;
-            newevent.target.manual = manual;
-            newevent.target.value = value;
-            selectionChanged(newevent);
+    const setNewValue = React.useCallback((value, manual) => {
+            const newEvent = {};
+            newEvent.target = {};
+            newEvent.target.name = id;
+            newEvent.target.manual = manual;
+            newEvent.target.value = value;
+            selectionChanged(newEvent);
         },
         [id, selectionChanged],
     );
@@ -29,46 +29,27 @@ export default function TableRowComboEditor(props) {
     const valuesToSelect = useSelector((state) => state.channelsData[externalChannelName]);
 
     if (valuesToSelect && valuesToSelect.properties) {
-        const valuesFromJSON = valuesToSelect?.data?.Rows?.map((row) => utils.tableRowToString(valuesToSelect, row));
+        const valuesFromJSON = valuesToSelect?.data?.Rows?.map((row) => tableRowToString(valuesToSelect, row));
 
-        if (valuesFromJSON && valuesFromJSON !== '') {
-            values = valuesFromJSON;
-        }
-        else {
-            values = [];
-        }
+        values = (valuesFromJSON && valuesFromJSON !== '') ? valuesFromJSON : [];
+
         if (showNullValue) {
-            values.push({
-                id: null,
-                name: nullDisplayValue,
-                value: null
-            })
+            values.push({id: null, name: nullDisplayValue, value: null})
         }
 
         if (value) {
-            let dataId = utils.stringToTableCell(value, 'LOOKUPCODE');
-            let calculatedValueToShow = values.find(o => String(o.id) === dataId);
-            if (calculatedValueToShow) {
-                valueToShow = calculatedValueToShow;
-            }
-            else {
-                valueToShow = '';
-            }
+            const dataId = stringToTableCell(value, 'LOOKUPCODE');
+            const calculatedValueToShow = values.find(o => String(o.id) === dataId);
+            valueToShow = calculatedValueToShow ? calculatedValueToShow : '';
         }
         else if (showNullValue) {
-            valueToShow = {
-                id: value,
-                name: nullDisplayValue,
-                value: value
-            };
+            valueToShow = {id: value, name: nullDisplayValue, value: value};
         }
     }
     else if (value) {
-        let dataId = utils.stringToTableCell(value, 'LOOKUPCODE');
-        let dataValue = utils.stringToTableCell(value, 'LOOKUPVALUE');
         valueToShow = {
-            id: dataId,
-            name: dataValue,
+            id: stringToTableCell(value, 'LOOKUPCODE'),
+            name: stringToTableCell(value, 'LOOKUPVALUE'),
             value: value
         };
     }

@@ -1,20 +1,21 @@
 ﻿// module maps
 
-var _ = require("lodash");
-var  logger = require("./logger");
-var startThread = require("./startThread");
-var drawer = require("./mapDrawer");
-var geom = require("./geom");
-var htmlHelper = require("./htmlHelper");
-var pixelPerMeter = require("./pixelPerMeter");
-var EventEmitter = require("events");
+const _ = require("lodash");
+const logger = require("./logger");
+const startThread = require("./startThread");
+const drawer = require("./mapDrawer");
+const geom = require("./geom");
+const htmlHelper = require("./htmlHelper");
+const pixelPerMeter = require("./pixelPerMeter");
+const EventEmitter = require("events");
 
-var devicePixelRatio = window.devicePixelRatio || 1;
+const devicePixelRatio = window.devicePixelRatio || 1;
 
 function updateCanvasSize(canvas) {
-	var ret = false;
-	var width = canvas.clientWidth * devicePixelRatio || 0;
-	var height = canvas.clientHeight * devicePixelRatio || 0;
+	let ret = false;
+	const width = canvas.clientWidth * devicePixelRatio || 0;
+	const height = canvas.clientHeight * devicePixelRatio || 0;
+
 	if (canvas.width !== width) {
 		canvas.width = width;
 		ret = true;
@@ -89,7 +90,7 @@ module.exports = function Maps(provider) {
 				return elements;
 			}
 			))
-		};
+		}
 
 		ret.mapData = startThread(function* () {
 			while (mapDataEvents.length)

@@ -1,9 +1,10 @@
-﻿import React, { Suspense } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+﻿import React, {Suspense} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
 import ErrorBoundary from '../common/ErrorBoundary';
 import setFormRefs from '../../store/actionCreators/setFormRefs';
-import { Loader } from "@progress/kendo-react-indicators";
-import { capitalizeFirstLetter } from '../../utils';
+import {Loader} from "@progress/kendo-react-indicators";
+import {capitalizeFirstLetter} from '../../utils';
+
 
 export default function Form(props) {
     const dispatch = useDispatch();
@@ -35,18 +36,15 @@ export default function Form(props) {
         let ignore = false;
         if (!data || data.needLoad) {
             async function fetchParams() {
-                const params = await sessionManager.paramsManager.loadFormParameters(formData.id, false);
-                return params;
+                return await sessionManager.paramsManager.loadFormParameters(formData.id, false);
             }
 
             async function fetchChannels() {
-                const channels = await sessionManager.channelsManager.loadFormChannelsList(formData.id);
-                return channels;
+                return await sessionManager.channelsManager.loadFormChannelsList(formData.id);
             }
 
             async function fetchSettings() {
-                const settings = await sessionManager.paramsManager.loadFormSettings(formData.id, false);
-                return settings;
+                return await sessionManager.paramsManager.loadFormSettings(formData.id, false);
             }
             if (!formLoadedData.loaded) {
                 Promise.all([fetchParams(), fetchChannels(), fetchSettings()]).then(values => {
@@ -92,24 +90,23 @@ export default function Form(props) {
         dispatch(setFormRefs(formData.id, _form))
     }, [formData, dispatch]);
 
-    const allplugins = useSelector((state) => state.plugins.inner);
-    const plugins = allplugins.filter(plugin => plugin?.component?.form === capitalizeFirstLetter(formData.type));
+    const allPlugins = useSelector((state) => state.plugins.inner);
+    const plugins = allPlugins.filter(plugin => plugin?.component?.form === capitalizeFirstLetter(formData.type));
+
+    const loader = <Loader size="small" type="infinite-spinner"/>;
+    const suspenseContent = !formLoadedData.loaded ? loader :
+      <div className="form-container">
+          <FormByType key="mainForm" formData={formData} data={formLoadedData} ref={_form} />
+          {plugins?.map(pl => {
+              const PluginByType = React.lazy(() => import('./' + capitalizeFirstLetter(formData.type) + '/Plugins/' + pl.component.path));
+              return <PluginByType key={pl.component.path} formId={formData.id} />
+          })}
+      </div>
 
     return (
         <div className="form-container">
             <ErrorBoundary>
-                <Suspense fallback=<Loader size="small" type="infinite-spinner" />>
-                    {formLoadedData.loaded ?
-                        <div className="form-container">
-                            <FormByType key="mainForm" formData={formData} data={formLoadedData} ref={_form} />
-                            {plugins?.map(pl => {
-                                var PluginByType = React.lazy(() => import('./' + capitalizeFirstLetter(formData.type) + '/Plugins/' + pl.component.path));
-                                return <PluginByType key={pl.component.path} formId={formData.id} />
-                            })}
-                        </div> :
-                        <Loader size="small" type="infinite-spinner" />
-                    }
-                </Suspense>
+                <Suspense fallback={loader}>{suspenseContent}</Suspense>
             </ErrorBoundary>
         </div>
     );
