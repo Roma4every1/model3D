@@ -3,12 +3,12 @@ import {toDate} from "../../../utils";
 
 /** Округляет в низ до ближайшего числа, удобного для восприятия на оси графика.
  * @example
- * 4   => 0
+ * 4     => 0
  * 33.3  => 25
- * 543 => 500
+ * 543   => 500
  * @see getYAxisDomain
  * */
-const getMin = (n) => {
+const getMin = (n: number): number => {
   n = Math.floor(n);
   if (n < 10) return 0;
   let e = Math.pow(10, n.toString().length - 1);
@@ -21,12 +21,12 @@ const getMin = (n) => {
 
 /** Округляет в вверх до ближайшего числа, удобного для восприятия на оси графика.
  * @example
- * 4   => 5
+ * 4     => 5
  * 33.3  => 50
- * 543 => 1000
+ * 543   => 1000
  * @see getYAxisDomain
  * */
-const getMax = (n) => {
+const getMax = (n: number): number => {
   n = Math.ceil(n);
   let e = Math.pow(10, n.toString().length - 1);
   n = n / e;
@@ -65,7 +65,7 @@ const ruMonth = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'и
  * @example
  * "/Date(1391202000000+0300)/" => "янв 2014"
  * */
-export const toMonYear = (date) => {
+export const toMonYear = (date): string => {
   date = toDate(date);
   return ruMonth[date.getMonth()] + ' ' + date.getFullYear();
 }
@@ -74,7 +74,7 @@ export const toMonYear = (date) => {
  * @example
  * "/Date(1391202000000+0300)/" => "2014"
  * */
-export const toYear = (date) => {
+export const toYear = (date: string) => {
   return toDate(date).getFullYear();
 }
 
@@ -82,6 +82,6 @@ export const toYear = (date) => {
  * @example
  * {"A": "255", "R": "70", "G": "70", "B": "70"} => "rgba(70,70,70,255)"
  * */
-export const toColor = (colorParams) => {
+export const toColor = (colorParams: {R: string, G: string, B: string, A: string}): string => {
   return `rgba(${colorParams.R},${colorParams.G},${colorParams.B},${colorParams.A})`;
 }

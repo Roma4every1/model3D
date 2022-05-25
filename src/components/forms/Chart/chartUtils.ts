@@ -20,7 +20,8 @@ export const getAxisPrototype = (axis) => {
 
 /** Строит объект, по которому отрендерится линия/область/гистограмма из _Recharts_. */
 const getChartItemPrototype = (dataKey, settings, displayName) => {
-  let dot = false, color;
+  let dot: boolean | object = false;
+  let color: string = undefined;
 
   if (settings.hasOwnProperty('GeneralColor')) color = toColor(settings['GeneralColor']);
   if (settings['@ShowPoint'] === 'true') dot = {stroke: 'none', fill: color};

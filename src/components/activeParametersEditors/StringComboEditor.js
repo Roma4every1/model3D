@@ -2,10 +2,10 @@ import * as React from "react";
 import { useSelector } from 'react-redux';
 import { ComboBox } from "@progress/kendo-react-dropdowns";
 
+
 export default function StringComboEditor(props) {
     const { id, formId, selectionChanged, externalChannelName } = props;
-    var values = [];
-    var valueToShow = undefined;
+    let values = [], valueToShow = undefined;
     const value = useSelector((state) => state.formParams[formId].find((gp) => gp.id === id).value);
     const sessionManager = useSelector((state) => state.sessionManager);
 

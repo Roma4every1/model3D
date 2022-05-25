@@ -10,7 +10,9 @@ import DockPluginStrip from './Dock/DockPluginStrip';
 import { capitalizeFirstLetter } from '../../utils';
 import setFormLayout from '../../store/actionCreators/setFormLayout';
 import { Loader } from "@progress/kendo-react-indicators";
-var _ = require("lodash");
+
+const _ = require("lodash");
+
 
 function Dock(props, ref) {
     const { t } = useTranslation();
@@ -41,29 +43,27 @@ function Dock(props, ref) {
     const activeSubChild = useSelector((state) => state.childForms[activeChildId]?.children.find(p => p.id === (state.childForms[activeChildId].activeChildren[0])));
     const parametersJSON = useSelector((state) => state.formParams[activeChildId]);
 
-    var correctLeftBorderSettings = React.useCallback((leftSettings) => {
-            plugins.left.forEach(plugin => {
-                if (plugin.condition === "presentationParamsNotEmpty") {
-                    if (parametersJSON) {
+    const correctLeftBorderSettings = React.useCallback((leftSettings) => {
+        plugins.left.forEach(plugin => {
+            if (plugin.condition === "presentationParamsNotEmpty") {
+                if (parametersJSON) {
                     if (parametersJSON.filter(parameterJSON => parameterJSON.editorType).length === 0) {
-                        var tabToDelete = leftSettings.layout.children.findIndex(ch => ch.children.some(tabch => tabch?.component?.id === plugin.children[0].component.id))
+                        const tabToDelete = leftSettings.layout.children.findIndex(ch => ch.children.some(tabch => tabch?.component?.id === plugin.children[0].component.id));
                         if (tabToDelete >= 0) {
                             leftSettings.layout.children.splice(tabToDelete, 1);
                         }
-                    }
-                    else {
+                    } else {
                         if (!leftSettings.layout.children.some(ch => ch.children.some(tabch => tabch?.component?.id === plugin.children[0].component.id))) {
                             if (!plugin.initialWeight) {
                                 plugin.initialWeight = plugin.weight;
                             }
-                            var totalWeight = _.sum(leftSettings.layout.children.map(ch => ch.weight));
-                            var newWeight = plugin.initialWeight / (100 - plugin.initialWeight) * totalWeight;
-                            plugin.weight = newWeight;
+                            const totalWeight = _.sum(leftSettings.layout.children.map(ch => ch.weight));
+                            plugin.weight = plugin.initialWeight / (100 - plugin.initialWeight) * totalWeight;
                             plugin.children[0].id = formData.id + ',' + plugin.WMWname;
 
                             leftSettings.layout.children.forEach(leftPlugin => {
                                 if (!leftPlugin.order) {
-                                    let pluginFromLeft = plugins.left.find(p => leftPlugin.children.some(ch => ch?.component?.id === p.children[0].component.id));                                    
+                                    let pluginFromLeft = plugins.left.find(p => leftPlugin.children.some(ch => ch?.component?.id === p.children[0].component.id));
                                     leftPlugin.order = pluginFromLeft?.order;
                                 }
                             })
@@ -88,7 +88,7 @@ function Dock(props, ref) {
         }
     }
 
-    var preLeftBorderApplySettings = useSelector((state) => state.layout[formData.id] ?? leftBorderSettings);
+    const preLeftBorderApplySettings = useSelector((state) => state.layout[formData.id] ?? leftBorderSettings);
     const [leftBorderApplySettings, dispatchLeftBorderApplySettings] = React.useReducer(leftLayoutModelReducer, leftBorderSettings);
 
     React.useEffect(() => {
@@ -102,7 +102,7 @@ function Dock(props, ref) {
     const leftBorderModel = FlexLayout.Model.fromJson(leftBorderApplySettings);
 
     const onModelChange = React.useCallback(() => {
-        var json = leftBorderModel.toJson();
+        const json = leftBorderModel.toJson();
         json.layout = {
             ...leftBorderApplySettings.layout,
             "type": json.layout.type,
@@ -168,25 +168,26 @@ function Dock(props, ref) {
     });
 
     const factory = React.useCallback((node) => {
-        var component = node.getComponent();
+        const component = node.getComponent();
         if (component?.path) {
             if (!forms.current[component.id]) {
-                let LoadFormByType = React.lazy(() => import('./' + component.form + '/Plugins/' + component.path));
-                forms.current[component.id] = LoadFormByType;
+                forms.current[component.id] = React.lazy(() => import('./' + component.form + '/Plugins/' + component.path));
             }
             const FormByType = forms.current[component.id];
-            var resultForm = <FormByType />
+            let resultForm = <FormByType/>;
             if (component.form === "Dock") {
                 resultForm = <FormByType formId={formData.id} />;
             }
             else if (component.form === "Grid" || component.form === "Map") {
                 resultForm = <DockPluginForm formId={formData.id} FormByType={FormByType} />;
             }
-            return (<ErrorBoundary>
+            return (
+              <ErrorBoundary>
                 <Suspense fallback={<Loader size="small" type="infinite-spinner" />}>
                     {resultForm}
                 </Suspense>
-            </ErrorBoundary>);
+              </ErrorBoundary>
+            );
         }
         else if (component === "strip") {
             return <DockPluginStrip formId={formData.id} />;
@@ -196,16 +197,15 @@ function Dock(props, ref) {
                 <FlexLayout.Layout model={leftBorderModel} factory={factory} onModelChange={onModelChange} i18nMapper={translator} />
             </div>;
         }
-        if (!dockforms.current[formData.id]) {
-            let formToShow = <DockForm formId={formData.id} />;
-            dockforms.current[formData.id] = formToShow;
+        if (!dockForms.current[formData.id]) {
+            dockForms.current[formData.id] = <DockForm formId={formData.id} />;
         }
-        return dockforms.current[formData.id];
+        return dockForms.current[formData.id];
     }, [formData, leftBorderModel, onModelChange]);
 
     const correctElement = React.useCallback((layout, plugins, formData) => {
         if (layout.type === "tab") {
-            var plugin = plugins.left?.find(pl => pl.WMWname.split(',').some(p => layout.id === formData.id + ',' + p));
+            const plugin = plugins.left?.find(pl => pl.WMWname.split(',').some(p => layout.id === formData.id + ',' + p));
             if (plugin) {
                 layout.component = plugin.children[0].component;
                 layout.name = plugin.children[0].name;
@@ -252,22 +252,22 @@ function Dock(props, ref) {
             case 'reset':
                 return action.value;
             case 'rebuild':
-                var activeSubChildType = action.activeSubChildType;
-                var settings = state.toJson();
+                const activeSubChildType = action.activeSubChildType;
+                const settings = state.toJson();
                 if (settings) {
-                    var rightBorder = settings.borders.find(b => b.location === "right");
+                    const rightBorder = settings.borders.find(b => b.location === "right");
                     if (rightBorder) {
                         rightBorder.children = plugins.right.filter(p => p.component.form === "Dock" || p.component.form === capitalizeFirstLetter(activeSubChildType));
                         if (rightBorder.selected && rightBorder.selected >= rightBorder.children.length) {
                             rightBorder.selected = -1;
                         }
                     }
-                    var topBorder = settings.borders.find(b => b.location === "top");
+                    const topBorder = settings.borders.find(b => b.location === "top");
                     if (topBorder) {
-                        var newStrip = plugins.top.find(ch => ch.id === "formStrip");
+                        const newStrip = plugins.top.find(ch => ch.id === "formStrip");
                         topBorder.children = topBorder.children.filter(ch => ch.id !== "formStrip");
                         if (activeSubChildType) {
-                            var pluginsForTypeExists = plugins.strip.some(el => el.component.form === capitalizeFirstLetter(activeSubChildType));
+                            const pluginsForTypeExists = plugins.strip.some(el => el.component.form === capitalizeFirstLetter(activeSubChildType));
                             if (pluginsForTypeExists) {
                                 newStrip.name = t('formNames.' + activeSubChildType);
                                 topBorder.children.push(newStrip);
@@ -287,14 +287,14 @@ function Dock(props, ref) {
 
     const [flexLayoutModel, dispatchFlexLayoutModel] = React.useReducer(flexLayoutModelReducer, FlexLayout.Model.fromJson(layoutSettings));
     const forms = React.useRef([]);
-    const dockforms = React.useRef([]);
+    const dockForms = React.useRef([]);
 
     React.useEffect(() => {
         dispatchFlexLayoutModel({ type: 'rebuild', activeSubChildType: activeSubChild?.type });
     }, [activeSubChild]);
 
     const onDockModelChange = () => {
-        var json = flexLayoutModel.toJson();
+        const json = flexLayoutModel.toJson();
         if (json && formLayout?.layout) {
             json.borders.forEach(border => {
                 if (border.selected || border.selected === 0) {
@@ -311,7 +311,14 @@ function Dock(props, ref) {
 
     return (
         <div>
-            <FlexLayout.Layout model={flexLayoutModel} factory={factory} onModelChange={onDockModelChange} i18nMapper={translator} />
-        </div>);
+            <FlexLayout.Layout
+              model={flexLayoutModel}
+              factory={factory}
+              onModelChange={onDockModelChange}
+              i18nMapper={translator}
+            />
+        </div>
+    );
 }
+
 export default Dock = React.forwardRef(Dock); // eslint-disable-line

@@ -1,22 +1,25 @@
-﻿import setChildForms from '../store/actionCreators/setChildForms';
-import setSessionId from '../store/actionCreators/setSessionId';
-import setSessionManager from '../store/actionCreators/setSessionManager';
+﻿import i18n from '../i18n';
+import {webFetch} from "../utils";
+
 import createChannelsManager from './ChannelsManager';
 import createParamsManager from './ParamsManager';
 import createPluginsManager from './PluginsManager';
+
+import setChildForms from '../store/actionCreators/setChildForms';
+import setSessionId from '../store/actionCreators/setSessionId';
+import setSessionManager from '../store/actionCreators/setSessionManager';
 import setReport from "../store/actionCreators/setReport";
 import setWindowError from "../store/actionCreators/setWindowError";
 import setWindowInfo from "../store/actionCreators/setWindowInfo";
 import setWindowWarning from "../store/actionCreators/setWindowWarning";
-import i18n from '../i18n';
-var utils = require("../utils");
+
 
 export default function createSessionManager(systemName, store) {
-    var sessionLoading = true;
+    let sessionLoading = true;
     let timerId;
 
     async function iAmAlive() {
-        var data = await fetchData(`iAmAlive?sessionId=${store.getState().sessionId}`);
+        const data = await fetchData(`iAmAlive?sessionId=${store.getState().sessionId}`);
         if (data === false) {
             clearInterval(timerId);
             handleWindowWarning(i18n.t('messages.sessionLost'));
@@ -43,40 +46,46 @@ export default function createSessionManager(systemName, store) {
     }
 
     const getSavedSession = async () => {
-        var paramsArray = [];
+        const paramsArray = [];
         const formParams = store.getState().formParams;
-        for (var formParameter in formParams) {
+        for (let formParameter in formParams) {
             paramsArray.push({ id: formParameter, value: formParams[formParameter] });
         }
 
-        var childArray = [];
+        const childArray = [];
         const childForms = store.getState().childForms;
-        for (var form in childForms) {
+        for (let form in childForms) {
             childArray.push(childForms[form]);
         }
 
-        var layoutArray = [];
+        const layoutArray = [];
         const layouts = store.getState().layout;
-        for (var layout in layouts) {
+        for (let layout in layouts) {
             layoutArray.push({ id: layout, ...layouts[layout] });
         }
 
-        var settingsArray = [];
+        const settingsArray = [];
         const settings = store.getState().formSettings;
-        for (var setting in settings) {
+        for (let setting in settings) {
             settingsArray.push({ id: setting, ...settings[setting] });
         }
 
-        var jsonToSend = { sessionId: store.getState().sessionId, activeParams: paramsArray, children: childArray, layout: layoutArray, settings: settingsArray };
+        const jsonToSend = {
+            sessionId: store.getState().sessionId,
+            activeParams: paramsArray,
+            children: childArray,
+            layout: layoutArray,
+            settings: settingsArray
+        };
         return JSON.stringify(jsonToSend);
     }
 
     const saveSession = async () => {
-        var data = await fetchData(`saveSession`,
-            {
-                method: 'POST',
-                body: await getSavedSession()
-            });
+        const data = await fetchData(`saveSession`,
+          {
+              method: 'POST',
+              body: await getSavedSession()
+          });
         if (data === false) {
             handleWindowWarning(i18n.t('messages.errorOnSessionSave'));
         }
@@ -86,18 +95,18 @@ export default function createSessionManager(systemName, store) {
     }
 
     const stopSession = async () => {
-        var data = await fetchData(`stopSession`,
-            {
-                method: 'POST',
-                body: await getSavedSession()
-            });
+        const data = await fetchData(`stopSession`,
+          {
+              method: 'POST',
+              body: await getSavedSession()
+          });
         if (data === false) {
             handleWindowWarning(i18n.t('messages.errorOnSessionStop'));
         }
     }
 
     const loadSessionFromFile = async (file) => {
-        stopSession();
+        await stopSession();
         sessionLoading = true;
         let reader = new FileReader();
         reader.onload = async function () {
@@ -113,7 +122,7 @@ export default function createSessionManager(systemName, store) {
     }
 
     const loadSessionByDefault = async () => {
-        stopSession();
+        await stopSession();
         sessionLoading = true;
         const data = await fetchData(`startSession?systemName=${systemName}&defaultConfiguration=true`);
         sessionLoading = false;
@@ -143,12 +152,7 @@ export default function createSessionManager(systemName, store) {
             const data = await fetchData(`getOperationResult?sessionId=${store.getState().sessionId}&operationId=${operationId}&waitResult=false`);
             if (data) {
                 store.dispatch(setReport(operationId, data.report));
-                if (data.isReady) {
-                    return true;
-                }
-                else {
-                    return false;
-                }
+                return data.isReady;
             }
             else {
                 return true;
@@ -161,7 +165,7 @@ export default function createSessionManager(systemName, store) {
 
     const watchReport = (operationId) => {
         setTimeout(async function tick() {
-            var result = await getReportStatus(operationId);
+            const result = await getReportStatus(operationId);
             if (result !== true) {
                 setTimeout(tick, 5);
             }
@@ -185,11 +189,11 @@ export default function createSessionManager(systemName, store) {
         return data;
     }
 
-    var fetchBlockedCount = 0;
+    let fetchBlockedCount = 0;
     const fetchData = async (request, params) => {
         if (fetchBlockedCount < 10) {
             try {
-                const response = await utils.webFetch(request, params);
+                const response = await webFetch(request, params);
                 try {
                     return await getJsonDataWithError(response);
                 }
@@ -208,7 +212,7 @@ export default function createSessionManager(systemName, store) {
         }
     }
 
-    startSession();
+    startSession().then();
 
     const paramsManager = createParamsManager(store);
     const channelsManager = createChannelsManager(store);

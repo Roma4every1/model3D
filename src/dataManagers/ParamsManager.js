@@ -134,26 +134,22 @@ export default function createParamsManager(store) {
         if (force || !store.getState().formParams[formId]) {
             const sessionId = store.getState().sessionId;
             const data = await store.getState().sessionManager.fetchData(`getFormParameters?sessionId=${sessionId}&formId=${formId}`);
-            const jsonToSet = data.map(param => {
-                const newParam = param;
-                newParam.formId = formId;
-                return newParam;
-            });
-            store.dispatch(setParams(formId, jsonToSet));
+
+            data.forEach((param) => {param.formId = formId});
+            store.dispatch(setParams(formId, data));
             data.forEach(async (param) => {
                 if (param.externalChannelName && !param.canBeNull) {
                     await store.getState().sessionManager.channelsManager.loadAllChannelData(param.externalChannelName, formId, false);
                 }
             });
-            return jsonToSet;
+            return data;
         }
     }
 
     const loadFormSettings = async (formId) => {
-        const sessionId = store.getState().sessionId;
         let data = store.getState().formSettings[formId];
-        if (!data)
-        {
+        if (!data) {
+            const sessionId = store.getState().sessionId;
             data = await store.getState().sessionManager.fetchData(`getFormSettings?sessionId=${sessionId}&formId=${formId}`);
             store.dispatch(setFormSettings(formId, data));
         }

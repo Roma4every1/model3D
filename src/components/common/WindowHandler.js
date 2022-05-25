@@ -7,54 +7,46 @@ import { Button } from "@progress/kendo-react-buttons";
 import { saveAs } from '@progress/kendo-file-saver';
 import closeWindow from "../../store/actionCreators/closeWindow";
 
+
 export default function WindowHandler() {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const [stackTraceVisible, setStackTraceVisible] = React.useState(false);
 
-    const handleStackTrace = () => {
-        setStackTraceVisible(!stackTraceVisible);
-    };
-
-    const handleClose = () => {
-        dispatch(closeWindow());
-    };
+    const handleStackTrace = () => {setStackTraceVisible(!stackTraceVisible)};
+    const handleClose = () => {dispatch(closeWindow())};
 
     const handleSave = () => {
-        var blob = new Blob([windowData.text.replaceAll('\n', '\r\n')], { type: "text/plain;charset=utf-8" });
-        saveAs(
-            blob,
-            windowData.fileToSaveName);
+        const blob = new Blob([windowData.text.replaceAll('\n', '\r\n')], {type: "text/plain;charset=utf-8"});
+        saveAs(blob, windowData.fileToSaveName);
     };
 
     const windowData = useSelector((state) => state.windowData?.messageWindow);
     const windows = useSelector((state) => state.windowData?.windows);
 
-    var typeIcon = "k-i-x-circle";
-    var classbutton = '';
+    let typeIcon = 'k-i-x-circle', buttonClass = '';
+    const classIcon = `k-icon ${typeIcon} k-icon-32`;
 
     if (windowData?.opened) {
         switch (windowData.type) {
             case 'error':
                 typeIcon = "k-i-x-circle";
-                classbutton = "colored-red";
+                buttonClass = "colored-red";
                 break;
             case 'warning':
                 typeIcon = "k-i-warning";
-                classbutton = "colored-red";
+                buttonClass = "colored-red";
                 break;
             case 'info':
                 typeIcon = "k-i-info";
-                classbutton = "colored-blue";
+                buttonClass = "colored-blue";
                 break;
             default:
                 typeIcon = "k-i-x-circle";
-                classbutton = "colored-red";
+                buttonClass = "colored-red";
                 break;
         }
     }
-
-    var classIcon = `k-icon ${typeIcon} k-icon-32`;
 
     return (
         <div>
@@ -68,7 +60,7 @@ export default function WindowHandler() {
                         }}
                     >
                         <GridLayoutItem row={1} col={1} rowSpan={2} className="horizontal">
-                            <div className={"margin-5 " + classbutton} onClick={handleStackTrace}>
+                            <div className={"margin-5 " + buttonClass} onClick={handleStackTrace}>
                                 <span className={"cursor-pointer " + classIcon} onClick={handleStackTrace} />
                             </div>
                         </GridLayoutItem>
@@ -97,5 +89,6 @@ export default function WindowHandler() {
                     </div>}
                 </DialogActionsBar>
             </Dialog>}
-        </div>);
+        </div>
+    );
 }

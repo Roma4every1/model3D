@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Link } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 import SystemRoot from './SystemRoot';
-var utils = require("../utils");
+import { webFetch } from "../utils";
+
 
 export default function SystemRouter() {
     const { t } = useTranslation();
@@ -16,7 +17,7 @@ export default function SystemRouter() {
         let ignore = false;
 
         async function getSystemList() {
-            const response = await utils.webFetch(`systemList`);
+            const response = await webFetch('systemList');
             const data = await response.json();
             if (!ignore) {
                 setSystemList(data.map(systemData => {
@@ -36,7 +37,7 @@ export default function SystemRouter() {
     }, [searchParams]);
 
     return (
-        <div>
+        <>
             {systemName ?
                 <SystemRoot systemName={systemName} />
                 :
@@ -51,6 +52,6 @@ export default function SystemRouter() {
                     </ul>
                 </nav>
             }
-        </div>
+        </>
     );
 }

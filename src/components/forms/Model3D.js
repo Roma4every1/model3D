@@ -1,10 +1,10 @@
 ﻿import React from 'react';
-import View3D from "./Model3d/View3D";
+//import View3D from "./Model3d/View3D";
 
 function Model3D(props, ref) {
     return (
       <div>
-        <View3D/>
+        {/*<View3D/>*/}
       </div>
     );
 }

@@ -1,31 +1,23 @@
-import 'bootstrap/dist/css/bootstrap.css';
-import React from 'react';
-import ReactDOM from 'react-dom';
-import App from './App';
-import registerServiceWorker from './registerServiceWorker';
-import './i18n';
+import React from "react";
+import ReactDOM from "react-dom";
 
-function component() {
-  const element = document.createElement('div');
+import "./i18n";
+import "bootstrap/dist/css/bootstrap.css";
+import App from "./App";
+import registerServiceWorker from "./registerServiceWorker";
 
-  if (!Object.fromEntries) {
-    Object.fromEntries = (entries) => {
-      var result = {};
-      entries.forEach((entry) => {
-        var [key, value] = entry;
-        result[key] = value;
-      });
-      return result;
-    }
+
+if (!Object.fromEntries) {
+  Object.fromEntries = (entries) => {
+    const result = {};
+    entries.forEach((entry) => {
+      const [key, value] = entry;
+      result[key] = value;
+    });
+    return result;
   }
-
-  ReactDOM.render(
-    <App />,
-  element);
-
-  return element;
 }
 
-document.body.appendChild(component());
-registerServiceWorker();
+ReactDOM.render(<App />, document.getElementById('root'));
 
+registerServiceWorker();

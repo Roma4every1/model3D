@@ -59,7 +59,7 @@ html {
 }
 
 .k-treeview-item {
-    margin: 0px;
+    margin: 0;
 }
 
 .k-treeview-md .k-treeview-leaf {
@@ -182,7 +182,7 @@ mapLayerLabel {
 
 .mapLayerInfinityButton {
     margin-left: 5px;
-    padding: 0px;
+    padding: 0;
     width: 20px;
     height: 20px;
     float: right;
@@ -229,7 +229,7 @@ mapLayerLabel {
 
 .mapEditWindow .k-window-title {
     padding: 5px;
-    margin: 0px;
+    margin: 0;
     height: 25px;
     font-size: 16px;
 }
@@ -257,7 +257,7 @@ mapLayerLabel {
 
 .propertiesWindow .k-window-title {
     padding: 5px;
-    margin: 0px;
+    margin: 0;
     height: 25px;
     font-size: 16px;
 }
@@ -309,16 +309,15 @@ mapLayerLabel {
 }    
 
 .k-colorpicker {
-    margin: 0px;
-    margin-left: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
     width: 70px;
     height: 20px;
 }
 
     .k-colorpicker .k-color-preview {
         width: 60px;
-        padding: 0px;
+        padding: 0;
         margin-left: -2px;
         margin-right: -4px;
         margin-bottom: 11px;
@@ -468,10 +467,7 @@ mapLayerLabel {
 }
 
 .sublayerStatisticsItem {
-    margin-left: 24px;
-    margin-top: 2px;
-    margin-right: 8px;
-    margin-bottom: 6px;
+    margin: 2px 8px 6px 24px;
 }
 
 .textAlign-left {
@@ -556,9 +552,9 @@ mapLayerLabel {
 
 .blockheadertoolbar {
     height: 30px;
-    padding: 0px;
-    padding-inline: 0px;
-    padding-block: 0px;
+    padding: 0;
+    padding-inline: 0;
+    padding-block: 0;
 }
 
 .parametereditorbox {
@@ -637,8 +633,7 @@ mapLayerLabel {
 
 .k-grid-header .k-header {
     height: 20px;
-    padding: 5px;
-    padding-right: 30px;
+    padding: 5px 30px 5px 5px;
 }
 
 th.k-header.active .k-grid-filter {

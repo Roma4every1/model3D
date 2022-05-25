@@ -11,9 +11,7 @@ loadMessages(ruMessages, "ru-RU");
 
 
 export default function BaseEditor(props) {
-    let componentPath = 'StringTextEditor';
-    if (editors[props.editorType]) componentPath = editors[props.editorType];
-
+    const componentPath = editors[props.editorType] || 'StringTextEditor';
     const MyComponent = React.lazy(() => import('./' + componentPath));
     const loader = <Loader size="small" type="infinite-spinner" />;
 
