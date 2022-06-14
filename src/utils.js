@@ -1,6 +1,6 @@
 ﻿const useWMWServer = process.env.USEWMWSERVER ?? true;
 const ReactServerPrePath = 'session/';
-const WMWServerPrePath = 'http://gs-wp51:81/WellManager.ServerSide.Site/WebRequests.svc/' //process.env.WMWSERVERPREPATH ?? '';
+const WMWServerPrePath = 'http://localhost:81/ID11_IRA/webRequests.svc/' //process.env.WMWSERVERPREPATH ?? '';
 
 // с демо системой: http://gs-wp51:81/WellManager.ServerSide.Site/WebRequests.svc/
 // калинингдаркие:  http://kmn-wmw:8080/ID2x/WebRequests.svc

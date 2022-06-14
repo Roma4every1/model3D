@@ -11,6 +11,7 @@ import {
 import updateParam from "../../../../../store/actionCreators/updateParam";
 import FormParametersList from '../../../../common/FormParametersList';
 import ProgramParametersButton from './ProgramParametersButton';
+import closeWindowNotification from "../../../../../store/actionCreators/closeWindowNotification";
 
 export default function ProgramParametersList(props) {
     const { t } = useTranslation();
@@ -53,11 +54,13 @@ export default function ProgramParametersList(props) {
         }
         else {
             handleProcessing(false);
+            dispatch(closeWindowNotification())
         }
-    }, [programDisplayName, presentationId, sessionId, sessionManager, handleProcessing, t]);
+    }, [programDisplayName, presentationId, sessionId, sessionManager, handleProcessing, t, dispatch]);
 
     const runReport = React.useCallback(async () => {
         handleProcessing(true);
+        sessionManager.handleNotification(t('report.inProgress', {programName: programDisplayName}))
         var jsonToSend = { sessionId: sessionId, reportId: formId, presentationId: presentationId, paramValues: formParams };
         const jsonToSendString = JSON.stringify(jsonToSend);
         var data = await sessionManager.fetchData(`runReport`,

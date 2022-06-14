@@ -6,6 +6,7 @@ import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { Button } from "@progress/kendo-react-buttons";
 import { saveAs } from '@progress/kendo-file-saver';
 import closeWindow from "../../store/actionCreators/closeWindow";
+import { Notification, NotificationGroup } from "@progress/kendo-react-notification";
 
 export default function WindowHandler() {
     const { t } = useTranslation();
@@ -29,6 +30,7 @@ export default function WindowHandler() {
 
     const windowData = useSelector((state) => state.windowData?.messageWindow);
     const windows = useSelector((state) => state.windowData?.windows);
+    const WindowNotification = useSelector((state) => state.windowData?.Notification);
 
     var typeIcon = "k-i-x-circle";
     var classbutton = '';
@@ -97,5 +99,10 @@ export default function WindowHandler() {
                     </div>}
                 </DialogActionsBar>
             </Dialog>}
+            {WindowNotification?.opened && <NotificationGroup style = {{width: 250, right: 0, bottom: 0, zIndex: 30, position: 'fixed'}}>
+              <Notification type = {{style: 'info', icon: true}}>
+                  <span>{WindowNotification.text}</span>
+              </Notification>
+            </NotificationGroup>}
         </div>);
 }
