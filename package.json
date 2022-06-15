@@ -19,6 +19,7 @@
     "@progress/kendo-react-intl": "^5.0.1",
     "@progress/kendo-react-layout": "^5.0.1",
     "@progress/kendo-react-listbox": "^5.0.1",
+    "@progress/kendo-react-notification": "^5.3.0",
     "@progress/kendo-react-progressbars": "^5.0.1",
     "@progress/kendo-react-treeview": "^5.0.1",
     "@progress/kendo-theme-default": "^5.2.0",
@@ -82,8 +83,8 @@
     "extends": "react-app"
   },
   "scripts": {
-    "start": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
-    "build": "set NODE_OPTIONS=--openssl-legacy-provider && webpack",
+    "start": "react-scripts start",
+    "build": "webpack",
     "test": "cross-env CI=true react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "lint": "eslint ./src/"

@@ -136,7 +136,8 @@
   },
   "report": {
     "params": "Report parameters",
-    "result": "Program result"
+    "result": "Program result",
+    "inProgress": "{{programName}} in order. See results on report panel."
   },
   "session": {
     "loading": "Loading session...",

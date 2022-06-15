@@ -3,6 +3,8 @@ import SETINFO from '../actions/windowData/setInfo';
 import SETOPENEDWINDOW from '../actions/windowData/setOpenedWindow';
 import SETWARNING from '../actions/windowData/setWarning';
 import CLOSE from '../actions/windowData/close';
+import SETNOTIFICATION from '../actions/windowData/setNotification';
+import CLOSENOTIFICATION from '../actions/windowData/closeNotification';
 import i18n from '../../i18n';
 
 function windowData(state = null, action) {
@@ -55,6 +57,20 @@ function windowData(state = null, action) {
                 opened: false
             }
             return newState;
+
+        case SETNOTIFICATION:
+            newState.Notification = {
+                opened: true,
+                text: action.text                
+            }
+            return newState;
+    
+        case CLOSENOTIFICATION:
+            newState.Notification = {
+                opened: false
+            }
+            return newState;            
+        
 
         default: return state;
     }
