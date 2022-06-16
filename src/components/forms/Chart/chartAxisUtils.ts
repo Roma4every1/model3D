@@ -65,8 +65,9 @@ const ruMonth = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'и
  * @example
  * "/Date(1391202000000+0300)/" => "янв 2014"
  * */
-export const toMonYear = (date): string => {
-  date = toDate(date);
+export const toMonYear = (wmwDate: string): string => {
+  if (!wmwDate) return;
+  let date = toDate(wmwDate);
   return ruMonth[date.getMonth()] + ' ' + date.getFullYear();
 }
 
@@ -74,8 +75,9 @@ export const toMonYear = (date): string => {
  * @example
  * "/Date(1391202000000+0300)/" => "2014"
  * */
-export const toYear = (date: string) => {
-  return toDate(date).getFullYear();
+export const toYear = (wmwDate: string): string => {
+  if (!wmwDate) return;
+  return toDate(wmwDate).getFullYear().toString();
 }
 
 /** Конвертирует объект, задающий цвет в CSS-свойство цвета.

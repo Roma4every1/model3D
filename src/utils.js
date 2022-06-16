@@ -8,7 +8,7 @@
  * "http://kmn-wmw:8080/ID2x/WebRequests.svc/" // Калининградские системы
  * "http://wmw-usi/wmw/WebRequests.svc/" // Коми
  * */
-const defaultURL = 'http://kmn-wmw:8080/ID2x/WebRequests.svc';
+const defaultURL = 'http://kmn-wmw:8080/ID2x/WebRequests.svc/';
 
 let useServer = process.env.USE_WMW_SERVER ?? true;
 let serverURL = process.env.WMW_SERVER_URL ?? defaultURL;
@@ -18,7 +18,7 @@ const getServerURL = () => {
   return useServer ? serverURL : 'session/';
 }
 /** Ссылка, которая будет использоваться при взаимодействии с сервером. */
-const URL = getServerURL();
+export const URL = getServerURL();
 
 /* --- Вспомогательные функции --- */
 
@@ -153,19 +153,17 @@ export const tableCellToString = (valuesToSelect, row) => {
   return temp;
 }
 
+/* (rowString: any, columnName: string): string */
 export const stringToTableCell = (rowString, columnName) => {
-  const columnNameLength = columnName.length + 1;
-  const stringValue = String(rowString);
-  const startIndex = stringValue.indexOf(columnName + '#');
-  const finishIndex = stringValue.indexOf('#', startIndex + columnNameLength);
+  rowString = rowString.toString();
+  const startIndex = rowString.indexOf(columnName + '#');
+  const endIndex = rowString.indexOf('#', startIndex + columnName.length + 1);
 
   let dataValue;
   if (startIndex === -1) {
-    dataValue = stringValue;
-  } else if (finishIndex === -1) {
-    dataValue = stringValue.slice(startIndex + columnNameLength);
+    dataValue = rowString;
   } else {
-    dataValue = stringValue.slice(startIndex + columnNameLength, finishIndex);
+    dataValue = rowString.slice(startIndex + columnName.length + 1, endIndex === -1 ? undefined : endIndex);
   }
   return dataValue;
 }

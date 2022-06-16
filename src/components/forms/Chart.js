@@ -1,4 +1,4 @@
-﻿import React from 'react';
+﻿import React from "react";
 import {useSelector} from "react-redux";
 import {getChartPrototype} from "./Chart/chartUtils";
 import {
@@ -38,7 +38,7 @@ function Chart(props, ref) {
 
   return (
     <ResponsiveContainer>
-      <ComposedChart margin={0} data={chartData} style={{overflow: 'hidden'}}>
+      <ComposedChart margin={{top: 0, left: 0, bottom: 0, right: 0}} data={chartData} style={{overflow: 'hidden'}}>
         <Tooltip />
         <Legend verticalAlign="top" align="center" />
         <CartesianGrid strokeDasharray="4 4" />
@@ -62,8 +62,10 @@ function Chart(props, ref) {
         })}
 
         {diagramsData.map((prototype) => {
-          let component = Line, child = null;
           const {type, dataKey, yAxisId, name, stroke, labels, dot} = prototype;
+          /* typeof Bar | typeof Line | typeof Area */
+          let component = Line;
+          let child = null;
 
           if (labels) child = (
             <LabelList

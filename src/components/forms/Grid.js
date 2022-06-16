@@ -1,135 +1,114 @@
-﻿import React from 'react';
-import { useSelector } from 'react-redux';
-import Form from './Form';
+﻿import React from "react";
 import FlexLayout from "flexlayout-react";
-import Container from './Grid/Container';
 import { Loader } from "@progress/kendo-react-indicators";
-import FormDisplayName from './Form/FormDisplayName';
+import { useSelector } from "react-redux";
 
-function Grid(props, ref) {    
-    const sessionManager = useSelector((state) => state.sessionManager);
-    const sessionId = useSelector((state) => state.sessionId);
-    const { formData } = props;
-    const [openedForms, setOpenedForms] = React.useState(null);
+import Form from "./Form";
+import Container from "./Grid/Container";
+import FormDisplayName from "./Form/FormDisplayName";
 
-    React.useEffect(() => {
-        sessionManager.getChildForms(formData.id);
-    }, [formData, sessionManager]);
 
-    const form = useSelector((state) => state.childForms[formData.id]);
+const pushElement = (jsonToInsert, layout, formsToPush, activeIds) => {
+  jsonToInsert.layout.children.push({
+    type: 'tabset',
+    weight: layout.size,
+    maximized: layout.maximized,
+    selected: layout.selected,
+    active: formsToPush.some(form => activeIds.includes(form.id)),
+    children: formsToPush.map(form => {
+      return {
+        id: form.id,
+        type: 'tab',
+        name: form.displayName,
+        component: <Form key={form.id} formData={form}/>
+      }
+    })
+  });
+}
 
-    React.useEffect(() => {
-        if (!openedForms) {
-            const formsData = form?.children;
-            const openedData = form?.openedChildren;
-            setOpenedForms(openedData?.map(od => formsData?.find(p => p.id === od)));
+function Grid(props, ref) {
+  const { formData } = props;
+
+  const sessionManager = useSelector((state) => state.sessionManager);
+  const sessionID = useSelector((state) => state.sessionId);
+  const form = useSelector((state) => state.childForms[formData.id]);
+  const layout = useSelector((state) => state.layout[formData.id]);
+
+  const [openedForms, setOpenedForms] = React.useState(null);
+  const [modelJson, setModelJson] = React.useState(null);
+
+  React.useEffect(() => {
+    sessionManager.getChildForms(formData.id).then();
+  }, [formData, sessionManager]);
+
+  React.useEffect(() => {
+    if (!openedForms) {
+      const formsData = form?.children;
+      const openedData = form?.openedChildren;
+      setOpenedForms(openedData?.map(od => formsData?.find(p => p.id === od)));
+    }
+  }, [form, formData, openedForms]);
+
+  const correctElement = React.useCallback((layout, forms, activeIds) => {
+    if (layout.type === 'tabset') {
+      layout.active = layout.children.some(child => activeIds.includes(child.id))
+    } else if (layout.type === 'tab') {
+      const form = forms.find(f => f.id === layout.id);
+      if (form) {
+        if (!layout.title) {
+          layout.name = <FormDisplayName formData={form} />;
+        } else {
+          layout.name = layout.title;
         }
-    }, [form, formData, openedForms]);
-
-    const [modelJson, setModelJson] = React.useState(null);
-
-    const layout = useSelector((state) => state.layout[formData.id]);
-
-    const pushElement = (jsonToInsert, layout, formsToPush, activeIds) => {
-        jsonToInsert.layout.children.push({
-            "type": "tabset",
-            "weight": layout.size,
-            "maximized": layout.maximized,
-            "selected": layout.selected,
-            "active": formsToPush.some(formToPush => activeIds.includes(formToPush.id)),
-            "children": formsToPush.map(formToPush => {
-                return {
-                    "id": formToPush.id,
-                    "type": "tab",
-                    "name": formToPush.displayName,
-                    "component": <Form
-                        key={formToPush.id}
-                        formData={formToPush}
-                    />
-                }
-            })
-        });
+        layout.component = <Form key={form.id} formData={form}/>
+      }
     }
 
-    const correctElement = React.useCallback((layout, forms, activeIds) => {
-        if (layout.type === "tabset") {
-            layout.active = layout.children.some(child => activeIds.includes(child.id))
-        }
-        else if (layout.type === "tab") {
-            var form = forms.find(f => f.id === layout.id);
-            if (form) {
-                if (!layout.title) {
-                    layout.name = <FormDisplayName formData={form} />;
-                }
-                else {
-                    layout.name = layout.title;
-                }
-                layout.component = <Form
-                    key={form.id}
-                    formData={form}
-                />
-            }
-        }
-        if (layout.children) {
-            layout.children.forEach(child => correctElement(child, forms, activeIds));
-        }
-    }, []);
+    if (layout.children) {
+      layout.children.forEach(child => correctElement(child, forms, activeIds));
+    }
+  }, []);
 
-    React.useEffect(() => {
-        let ignore = false;
-        if (layout) {
-            setModelJson(FlexLayout.Model.fromJson(layout));
-        }
-        else {
-            var newjson = {
-                global: {
-                    rootOrientationVertical: false
-                },
-                borders: [],
-                layout: {
-                    "type": "row",
-                    "weight": 100,
-                    "children": []
-                }
-            };
-            setModelJson(FlexLayout.Model.fromJson(newjson));
+  React.useEffect(() => {
+    let ignore = false;
+    if (layout) {
+      setModelJson(FlexLayout.Model.fromJson(layout));
+    } else {
+      const newJSON = {
+        global: {rootOrientationVertical: false},
+        borders: [],
+        layout: {type: 'row', weight: 100, children: []},
+      };
+      setModelJson(FlexLayout.Model.fromJson(newJSON));
 
-            if (form && openedForms) {
-                async function fetchData() {
-                    const data = await sessionManager.fetchData(`getFormLayout?sessionId=${sessionId}&formId=${formData.id}`);
-                    if (!ignore) {
-                        if (data.layout && data.layout.children && openedForms) {
-                            correctElement(data.layout, openedForms, form.activeChildren);
-                            setModelJson(FlexLayout.Model.fromJson(data));
-                        }
-                        else if (openedForms) {
-                            openedForms.forEach(openedForm => {
-                                if (openedForm) {
-                                    pushElement(newjson, 100 / openedForms.length, [openedForm], form.activeChildren);
-                                }
-                            });
-                            setModelJson(FlexLayout.Model.fromJson(newjson));
-                        }
-                    }
-                }
-                fetchData();
-            }
-        }
-        return () => { ignore = true; }
-    }, [form, sessionId, formData, openedForms, layout, correctElement, sessionManager]);
+      if (form && openedForms && !ignore) {
+        const fetchData = async () => {
+          const data = await sessionManager.fetchData(`getFormLayout?sessionId=${sessionID}&formId=${formData.id}`);
 
-    return (
-        <div>
-            {!openedForms
-                ? <Loader size="small" type="infinite-spinner" />
-                : <Container formId={formData.id} modelJson={modelJson}>
-                    {openedForms.map(formData =>
-                        <Form
-                            key={formData.id}
-                            formData={formData}
-                        />)}
-                </Container>
-            }
-        </div>);
+          if (data.layout && data.layout.children && openedForms) {
+            correctElement(data.layout, openedForms, form.activeChildren);
+            setModelJson(FlexLayout.Model.fromJson(data));
+          } else if (openedForms) {
+            openedForms.forEach(openedForm => {
+              if (openedForm) {
+                pushElement(newJSON, 100 / openedForms.length, [openedForm], form.activeChildren);
+              }
+            });
+            setModelJson(FlexLayout.Model.fromJson(newJSON));
+          }
+        }
+        fetchData().then()
+      }
+    }
+    return () => { ignore = true; }
+  }, [form, sessionID, formData, openedForms, layout, correctElement, sessionManager]);
+
+  if (!openedForms) return <Loader size="small" type="infinite-spinner" />;
+  return (
+    <Container formId={formData.id} modelJson={modelJson}>
+      {openedForms.map(formData => <Form key={formData.id} formData={formData}/>)}
+    </Container>
+  );
 }
+
 export default Grid = React.forwardRef(Grid); // eslint-disable-line

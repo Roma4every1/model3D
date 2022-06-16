@@ -1,8 +1,9 @@
 ﻿import * as React from "react";
-import { useSelector } from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import { useTranslation } from "react-i18next";
 import { ComboBox } from "@progress/kendo-react-dropdowns";
 import { stringToTableCell, tableRowToString } from "../../utils";
+import setParamState from "../../store/actionCreators/setParamState";
 
 
 /*
@@ -34,14 +35,18 @@ KendoReact ComboBox props {
 
 export default function TableRowComboEditor(props) {
   const { t } = useTranslation();
+  const dispatch = useDispatch();
   const { id, formId, selectionChanged, externalChannelName } = props;
   let values = [], valueToShow = undefined;
 
   const sessionManager = useSelector((state) => {
-    // console.log('props', props);
-    // console.log('state', state);
+    // if (props.displayName === 'Месторождение') {
+    //   //console.log('props', props);
+    //   console.log('state', state);
+    // }
     return state.sessionManager;
   });
+
   const formParameter = useSelector((state) => state.formParams[formId].find((gp) => gp.id === id));
   const valuesToSelect = useSelector((state) => state.channelsData[externalChannelName]);
 
@@ -52,7 +57,7 @@ export default function TableRowComboEditor(props) {
   if (valuesToSelect && valuesToSelect.properties) {
     const valuesFromJSON = valuesToSelect?.data?.Rows?.map((row) => tableRowToString(valuesToSelect, row));
 
-    values = (valuesFromJSON && valuesFromJSON !== '') ? valuesFromJSON : [];
+    values = (valuesFromJSON) ? valuesFromJSON : [];
 
     if (showNullValue) {
       values.push({id: null, name: nullDisplayValue, value: null})
@@ -77,6 +82,10 @@ export default function TableRowComboEditor(props) {
 
   const [readyValueToShow, setReadyValueToShow] = React.useState(valueToShow);
 
+  React.useEffect(() => {
+    dispatch(setParamState(formId, id, {value: readyValueToShow, setValue: setReadyValueToShow}));
+  }, [readyValueToShow, setReadyValueToShow, formId, id, dispatch]);
+
   const setNewValue = React.useCallback((value, manual) => {
     selectionChanged({target: {name: id, manual, value}});
   }, [id, selectionChanged]);
@@ -90,8 +99,6 @@ export default function TableRowComboEditor(props) {
   const onOpen = () => {
     sessionManager.channelsManager.loadAllChannelData(externalChannelName, formId, false).then();
   };
-
-  if (id === 'wellCurrent') console.log('values', values);
 
   return (
     <ComboBox

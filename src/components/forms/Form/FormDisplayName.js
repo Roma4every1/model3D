@@ -1,9 +1,12 @@
-import { useSelector } from 'react-redux';
-var utils = require("../../../utils");
+import {useSelector} from "react-redux";
+import {getLinkedPropertyValue} from "../../../utils";
+
 
 export default function FormDisplayName(props) {
-    const { formData } = props;
-    const displayName = useSelector((state) => formData.displayNameString ? utils.getLinkedPropertyValue(formData.displayNameString, formData.id, state) : formData.displayName);
-
-    return (displayName);
+  const { formData } = props;
+  return useSelector((state) => {
+    return formData.displayNameString
+      ? getLinkedPropertyValue(formData.displayNameString, formData.id, state)
+      : formData.displayName
+  });
 }

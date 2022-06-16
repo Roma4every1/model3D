@@ -12,6 +12,7 @@ import setReport from "../store/actionCreators/setReport";
 import setWindowError from "../store/actionCreators/setWindowError";
 import setWindowInfo from "../store/actionCreators/setWindowInfo";
 import setWindowWarning from "../store/actionCreators/setWindowWarning";
+import setWindowNotification from "../store/actionCreators/setWindowNotification";
 
 
 export default function createSessionManager(systemName, store) {
@@ -147,6 +148,10 @@ export default function createSessionManager(systemName, store) {
         store.dispatch(setWindowWarning(text, stackTrace, header, fileToSaveName));
     }
 
+    const handleNotification = (text) => {
+        store.dispatch(setWindowNotification(text));
+    }
+
     const getReportStatus = async (operationId) => {
         try {
             const data = await fetchData(`getOperationResult?sessionId=${store.getState().sessionId}&operationId=${operationId}&waitResult=false`);
@@ -233,6 +238,7 @@ export default function createSessionManager(systemName, store) {
         handleWindowError,
         handleWindowInfo,
         handleWindowWarning,
+        handleNotification,
         watchReport,
         fetchData,
         getJsonDataWithError

@@ -2,7 +2,7 @@
 import {useDispatch, useSelector} from "react-redux";
 import ErrorBoundary from "../common/ErrorBoundary";
 import setFormRefs from "../../store/actionCreators/setFormRefs";
-import {Loader} from "@progress/kendo-react-indicators";
+import {Skeleton} from "@progress/kendo-react-indicators";
 import {capitalizeFirstLetter} from '../../utils';
 
 
@@ -17,9 +17,12 @@ formData {
 
 
 export default function Form(props) {
-  const dispatch = useDispatch();
-  const sessionManager = useSelector((state) => state.sessionManager);
   const { formData, data } = props;
+
+  const sessionManager = useSelector((state) => state.sessionManager);
+  const dispatch = useDispatch();
+
+  const _form = React.useRef(null);
   const [formLoadedData, setFormLoadedData] = React.useState({
     formId: formData.id,
     loaded: false,
@@ -27,7 +30,6 @@ export default function Form(props) {
     activeParams: [],
     settings: []
   });
-  const _form = React.useRef(null);
 
   React.useEffect(() => {
     if (formLoadedData.formId !== formData.id) {
@@ -101,8 +103,8 @@ export default function Form(props) {
   const allPlugins = useSelector((state) => state.plugins.inner);
   const plugins = allPlugins.filter(plugin => plugin?.component?.form === capitalizeFirstLetter(formData.type));
 
-  const loader = <Loader size="small" type="infinite-spinner"/>;
-  const suspenseContent = !formLoadedData.loaded ? loader :
+  const skeleton = <Skeleton shape="rectangle" animation={{type: 'wave'}}/>;
+  const suspenseContent = !formLoadedData.loaded ? skeleton :
     <div className="form-container">
       <FormByType key="mainForm" formData={formData} data={formLoadedData} ref={_form} />
         {plugins?.map(pl => {
@@ -113,7 +115,7 @@ export default function Form(props) {
 
   return (
     <ErrorBoundary>
-      <Suspense fallback={loader}>{suspenseContent}</Suspense>
+      <Suspense fallback={skeleton}>{suspenseContent}</Suspense>
     </ErrorBoundary>
   );
 }
