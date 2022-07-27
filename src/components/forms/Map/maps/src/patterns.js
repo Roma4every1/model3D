@@ -1,39 +1,34 @@
-// module patterns
+import {extend} from "lodash";
+import {loadImageData} from "./htmlHelper";
+import startThread from "./startThread";
+import cache from "./cache";
+import parseSMB from "./parseSMB";
+import pngMono from "./pngMono";
+import parseColor from "parse-color";
 
-var startThread = require("./startThread");
-var htmlHelper = require("./htmlHelper");
-var cache = require("./cache");
-var _ = require("lodash");
-var parseSMB = require("./parseSMB");
-var pngMono = require("./pngMono");
-var parseColor = require("parse-color");
 
-module.exports = provider => {
-	var ret = _.extend({}, provider)
+export default function patterns(provider) {
+	const ret = extend({}, provider);
 
-	ret.getPatternLib = cache(libName =>
-		provider.getPatternLib(libName).then(parseSMB)
-	)
+	ret.getPatternLib = cache(libName => provider.getPatternLib(libName).then(parseSMB));
+	ret.getPatternImage = cache((name, color, backColor) => {
+		if (name.match(/\./)) return provider.getPatternImage(name);
 
-	ret.getPatternImage = cache((name, color, bkcolor) => {
-		if (name.match(/\./))
-			return provider.getPatternImage(name)
 		return startThread(function* () {
-			var [, libName, index] = name.match(/^(.+)-(\d+)$/)
-			if (libName.toLowerCase() === "halftone") {
-				var c = parseColor(color).rgb
-				var b = (bkcolor === "none" || bkcolor === "background") ? parseColor("#FFFFFF").rgb : parseColor(bkcolor).rgb;
-				var t = index / 64
-				return `rgba(${b.map((bi, i) =>
-					Math.round(bi + (c[i] - bi) * t))
-					}, 1)`
-			}
-			var lib = yield ret.getPatternLib(libName)
-			var png = pngMono(lib[index], color, bkcolor)
-			var image = yield htmlHelper.loadImageData(png, "image/png")
-			return image
-		})
-	})
+			const [, libName, index] = name.match(/^(.+)-(\d+)$/);
 
-	return ret
+			if (libName.toLowerCase() === 'halftone') {
+				const c = parseColor(color).rgb;
+				const b = (backColor === 'none' || backColor === 'background') ? [255, 255, 255] : parseColor(backColor).rgb;
+				const t = index / 64;
+				return `rgba(${b.map((bi, i) => Math.round(bi + (c[i] - bi) * t))}, 1)`;
+			}
+
+			const lib = yield ret.getPatternLib(libName);
+			const png = pngMono(lib[index], color, backColor);
+			return yield loadImageData(png, 'image/png');
+		});
+	});
+
+	return ret;
 }

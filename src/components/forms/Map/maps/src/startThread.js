@@ -1,45 +1,33 @@
-// module startThread
+import logger from "./logger"
 
-var logger = require( "./logger" )
 
-module.exports = startThread
-
-function startThread( proc ) {
-	return new Promise( function ( resolve, reject ) {
-		var i
+export default function startThread(proc) {
+	return new Promise(function (resolve, reject) {
+		let i;
 		try {
-			i = proc()
+			i = proc();
+		} catch (err) {
+			logger.debug('thread', err);
+			return reject(err);
 		}
-		catch ( e ) {
-			logger.debug( "thread", e )
-			return reject( e )
-		}
-		next()
-		function step( imethod, result ) {
-			var v
+		next();
+
+		function step(iMethod, result) {
+			let v;
 			try {
-				v = imethod.call( i, result )
+				v = iMethod.call(i, result);
+			} catch (err) {
+				logger.debug('thread', err);
+				return reject(err);
 			}
-			catch ( e ) {
-				logger.debug( "thread", e )
-				return reject( e )
-			}
-			if ( v.done ){
-				return resolve( v.value )
-			}
-			if (v.value && v.value.then){
-				v.value.then( next, fail )
-			}
+
+			if (v.done) return resolve(v.value);
+			if (v.value && v.value.then) v.value.then(next, fail);
 		}
-		function next( result ) {
-			return step( i.next, result )
-		}
-		function fail( result ) {
-			return step( i.throw, result )
-		}
-	} )
+
+		function next(result) {return step(i.next, result)}
+		function fail(result) {return step(i.throw, result)}
+	});
 }
 
-startThread.sleep = milliseconds => new Promise( resolve =>
-	setTimeout( resolve, milliseconds )
-)
+export const sleep = (milliseconds) => new Promise( resolve => setTimeout(resolve, milliseconds));

@@ -1,11 +1,12 @@
 ﻿import React from "react";
-import {useSelector} from "react-redux";
-import {getChartPrototype} from "./Chart/chartUtils";
+import { useSelector } from "react-redux";
+import { getChartPrototype } from "./Chart/chartUtils";
+import { compareArrays } from "../../utils";
 import {
   ResponsiveContainer, ComposedChart, YAxis, XAxis,
   Line, Area, Bar,
   CartesianGrid, Legend, Tooltip, LabelList
-} from 'recharts';
+} from "recharts";
 
 
 function Chart(props, ref) {
@@ -16,12 +17,12 @@ function Chart(props, ref) {
         state.formSettings[props.data.formId].seriesSettings,
         data.properties,
         data.data.Columns,
-        data.data.Rows.map((row) => row.Cells),
+        data.data['Rows'].map((row) => row.Cells),
       ];
     } catch {
       return [null, null, null, null];
     }
-  });
+  }, compareArrays);
 
   const [diagramsData, chartData, axesData, xAxisID] = getChartPrototype(seriesSettings, properties, columns, rows);
 
@@ -31,7 +32,7 @@ function Chart(props, ref) {
         <ComposedChart margin={{right: 10, top: 10}} data={[]}>
           <XAxis/>
           <YAxis/>
-          <Legend verticalAlign="top" align="center" payload={[{ value: 'Нет данных.'}]} />
+          <Legend verticalAlign={'top'} align={'center'} payload={[{ value: 'Нет данных.'}]} />
         </ComposedChart>
       </ResponsiveContainer>
     );
@@ -40,8 +41,8 @@ function Chart(props, ref) {
     <ResponsiveContainer>
       <ComposedChart margin={{top: 0, left: 0, bottom: 0, right: 0}} data={chartData} style={{overflow: 'hidden'}}>
         <Tooltip />
-        <Legend verticalAlign="top" align="center" />
-        <CartesianGrid strokeDasharray="4 4" />
+        <Legend verticalAlign={'top'} align={'center'} />
+        <CartesianGrid strokeDasharray={'4 4'} />
         <XAxis dataKey={xAxisID} />
 
         {axesData.map((axis) => {
@@ -69,7 +70,7 @@ function Chart(props, ref) {
 
           if (labels) child = (
             <LabelList
-              dataKey={dataKey} position="top"
+              dataKey={dataKey} position={'top'}
               style={{filter: `drop-shadow(0 0 4px ${stroke})`}}
             />
           );

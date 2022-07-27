@@ -1,31 +1,38 @@
 import { combineReducers } from "redux";
 
-import { canRunReport } from "./reducers/canRunReport";
-import { channelsData } from "./reducers/channelsData";
-import { channelsLoading } from "./reducers/channelsLoading";
-import { childForms } from "./reducers/childForms";
-import { formRefs } from "./reducers/formRefs";
-import { formParams } from "./reducers/formParams";
-import { formSettings } from "./reducers/formSettings";
-import { formStates } from "./reducers/formStates";
-import { layout } from "./reducers/layout";
-import { plugins } from "./reducers/plugins";
-import { reports } from "./reducers/reports";
-import { sessionId } from "./reducers/sessionId";
-import { sessionManager } from "./reducers/sessionManager";
-import { windowData } from "./reducers/windowData";
+import { appStateReducer } from "./reducers/appState";
+import { canRunReportReducer } from "./reducers/canRunReport";
+import { channelsDataReducer } from "./reducers/channelsData";
+import { channelsLoadingReducer } from "./reducers/channelsLoading";
+import { childFormsReducer } from "./reducers/childForms";
+import { formRefsReducer } from "./reducers/formRefs";
+import { formParamsReducer } from "./reducers/formParams";
+import { formSettingsReducer } from "./reducers/formSettings";
+//import { formStatesReducer } from "./reducers/formStates";
+import { layoutReducer } from "./reducers/layout";
+import { pluginsReducer } from "./reducers/plugins";
+import { reportsReducer } from "./reducers/reports";
+import { sessionIdReducer } from "./reducers/sessionId";
+import { sessionManagerReducer } from "./reducers/sessionManager";
+import { windowDataReducer } from "./reducers/windowData";
 
 
 const rootReducer = combineReducers({
-    canRunReport,
-    channelsData, channelsLoading,
-    childForms,
-    formParams, formRefs, formSettings, formStates,
-    layout,
-    plugins,
-    reports,
-    sessionId, sessionManager,
-    windowData
+    appState: appStateReducer,
+    canRunReport: canRunReportReducer,
+    channelsData: channelsDataReducer,
+    channelsLoading: channelsLoadingReducer,
+    childForms: childFormsReducer,
+    formParams: formParamsReducer,
+    formRefs: formRefsReducer,
+    formSettings: formSettingsReducer,
+    //formStates: formStatesReducer,
+    layout: layoutReducer,
+    plugins: pluginsReducer,
+    reports: reportsReducer,
+    sessionId: sessionIdReducer,
+    sessionManager: sessionManagerReducer,
+    windowData: windowDataReducer
 });
 
 export default rootReducer;

@@ -1,5 +1,5 @@
 import React from 'react';
-var pixelPerMeter = require("../../maps/src/pixelPerMeter");
+var pixelPerMeter = require("../../maps/src/pixelPerMeter").default;
 var mapDrawerTypes = require("../../maps/src/mapDrawer");
 var lodash = require("lodash");
 

@@ -1,10 +1,12 @@
-﻿import React, {Suspense} from "react";
-import {useDispatch, useSelector} from "react-redux";
+﻿import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Skeleton } from "@progress/kendo-react-indicators";
 import ErrorBoundary from "../common/ErrorBoundary";
-import setFormRefs from "../../store/actionCreators/setFormRefs";
-import {Skeleton} from "@progress/kendo-react-indicators";
-import {capitalizeFirstLetter} from '../../utils';
 
+import { capitalizeFirstLetter } from "../../utils";
+import { formDict } from "../dicts/forms";
+import { pluginsDict } from "../dicts/plugins";
+import setFormRefs from "../../store/actionCreators/setFormRefs";
 
 /*
 formData {
@@ -16,14 +18,12 @@ formData {
 */
 
 
-export default function Form(props) {
-  const { formData, data } = props;
-
+export default function Form({formData, data}) {
   const sessionManager = useSelector((state) => state.sessionManager);
   const dispatch = useDispatch();
 
-  const _form = React.useRef(null);
-  const [formLoadedData, setFormLoadedData] = React.useState({
+  const _form = useRef(null);
+  const [formLoadedData, setFormLoadedData] = useState({
     formId: formData.id,
     loaded: false,
     activeChannels: data?.activeChannels ?? [],
@@ -31,7 +31,7 @@ export default function Form(props) {
     settings: []
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (formLoadedData.formId !== formData.id) {
       setFormLoadedData({
         formId: formData.id,
@@ -43,7 +43,7 @@ export default function Form(props) {
     }
   }, [formData, formLoadedData]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let ignore = false;
     if (!data || data.needLoad) {
 
@@ -92,30 +92,31 @@ export default function Form(props) {
         sessionManager.channelsManager.setFormInactive(formData.id);
       }
     };
-  }, [formData, sessionManager, formLoadedData, data]);
+  }, [formData, formLoadedData, data, sessionManager]);
 
-  const FormByType = React.lazy(() => import('./' + capitalizeFirstLetter(formData.type)));
+  const FormByType = formDict[formData.type];
 
-  React.useLayoutEffect(() => {
+  useLayoutEffect(() => {
     dispatch(setFormRefs(formData.id, _form))
   }, [formData, dispatch]);
 
   const allPlugins = useSelector((state) => state.plugins.inner);
   const plugins = allPlugins.filter(plugin => plugin?.component?.form === capitalizeFirstLetter(formData.type));
 
-  const skeleton = <Skeleton shape="rectangle" animation={{type: 'wave'}}/>;
-  const suspenseContent = !formLoadedData.loaded ? skeleton :
-    <div className="form-container">
-      <FormByType key="mainForm" formData={formData} data={formLoadedData} ref={_form} />
-        {plugins?.map(pl => {
-          const PluginByType = React.lazy(() => import('./' + capitalizeFirstLetter(formData.type) + '/Plugins/' + pl.component.path));
-          return <PluginByType key={pl.component.path} formId={formData.id} />
-        })}
-    </div>
+  const pluginsByType = plugins?.map(pl => {
+    const PluginByType = pluginsDict[formData.type.toLowerCase()][pl.component.path];
+    return <PluginByType key={pl.component.path} formId={formData.id} />
+  });
 
   return (
     <ErrorBoundary>
-      <Suspense fallback={skeleton}>{suspenseContent}</Suspense>
+      {!formLoadedData.loaded
+        ? <Skeleton shape={'rectangle'} animation={{type: 'wave'}}/>
+        : <div className={'form-container'}>
+            <FormByType key={'mainForm'} formData={formData} data={formLoadedData} ref={_form} />
+            {pluginsByType}
+          </div>
+      }
     </ErrorBoundary>
   );
 }

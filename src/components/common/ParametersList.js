@@ -1,7 +1,7 @@
 ﻿import React from "react";
 import { useSelector } from "react-redux";
 import { StackLayout } from "@progress/kendo-react-layout";
-import BaseEditor from "../activeParametersEditors/BaseEditor";
+import BaseEditor from "../editors/BaseEditor";
 
 
 /** Функция сортировки параметров. */

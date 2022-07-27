@@ -22,16 +22,17 @@ export type FormStatesAction = ActionSet | ActionSetParamValue;
 
 const initFormStatesState: FormStates = {};
 
-export const formStates = (state: FormStates = initFormStatesState, action: FormStatesAction): FormStates => {
+export const formStatesReducer = (state: FormStates = initFormStatesState, action: FormStatesAction): FormStates => {
   switch (action.type) {
 
     case FormStatesActions.SET: {
-      return {...state, [action.payload.formID]: action.payload.state};
+      const {formID, state: formState} = action.payload
+      return {...state, [formID]: formState};
     }
 
     case FormStatesActions.SET_PARAM_VALUE: {
-      const {formID, paramID} = action.payload;
-      return {...state, [formID]: {...state[formID], [paramID]: action.payload.state}};
+      const {formID, paramID, state: formState} = action.payload;
+      return {...state, [formID]: {...state[formID], [paramID]: formState}};
     }
 
     default: return state;

@@ -1,291 +1,255 @@
-import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useTranslation } from 'react-i18next';
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { Popup } from "@progress/kendo-react-popup";
 import { Button } from "@progress/kendo-react-buttons";
-import setFormRefs from '../../../../store/actionCreators/setFormRefs';
-var pixelPerMeter = require("../maps/src/pixelPerMeter");
-var mapDrawerTypes = require("../maps/src/mapDrawer");
-var _ = require("lodash");
 
-export default function Selecting(props) {
-    const { t } = useTranslation();
-    const dispatch = useDispatch();
-    const { formId } = props;
-    const formRef = useSelector((state) => state.formRefs[formId]);
-    const mapData = useSelector((state) => state.formRefs[formId + "_mapData"]);
-    const activeLayer = useSelector((state) => state.formRefs[formId + "_activeLayer"]);
-    const selectedObject = useSelector((state) => state.formRefs[formId + "_selectedObject"]);
-    const selectedObjectEditing = useSelector((state) => state.formRefs[formId + "_selectedObjectEditing"]);
-    const control = useSelector((state) => state.formRefs[formId]?.current?.control());
-    const [pressed, setPressed] = React.useState(control?.selectingMode);
-    const [mode, setMode] = React.useState("sublayer");
+import { chunk } from "lodash";
+import setFormRefs from "../../../../store/actionCreators/setFormRefs";
+import pixelPerMeter from "../maps/src/pixelPerMeter";
 
-    React.useEffect(() => {
-        if (!mapData) {
-            if (control) {
-                control.selectingMode = false;
-            }
-            setPressed(false);
-        }
-    }, [mapData, control]);
+const mapDrawerTypes = require("../maps/src/mapDrawer");
 
-    var SELECTION_RADIUS = 0.005;
 
-    var distanceBetweenPointAndSegment = (segment, point, minDistance) => {
-        let asquared = Math.pow(segment[0][0] - point.x, 2) + Math.pow(segment[0][1] - point.y, 2);
-        if (asquared < minDistance * minDistance) {
-            return true;
-        }
-        let bsquared = Math.pow(segment[1][0] - point.x, 2) + Math.pow(segment[1][1] - point.y, 2);
-        if (bsquared < minDistance * minDistance) {
-            return true;
-        }
-        let csquared = Math.pow(segment[1][0] - segment[0][0], 2) + Math.pow(segment[1][1] - segment[0][1], 2);
-        if (asquared > bsquared + csquared || bsquared > asquared + csquared) {
-            return false;
-        }
-        let c = Math.hypot(segment[1][0] - segment[0][0], segment[1][1] - segment[0][1]);
-        let doublesquare = Math.abs((segment[0][0] - point.x) * (segment[1][1] - point.y) - (segment[1][0] - point.x) * (segment[0][1] - point.y));
-        if (doublesquare / c < minDistance) {
-            return true;
-        }
-        return false;
+const clientPoint = (event, point) => {
+  return 'offsetX' in event
+    ? {x: event.offsetX, y: event.offsetY}
+    : {x: event.clientX, y: event.clientY};
+};
+
+const distanceBetweenPointAndSegment = (segment, point, minDistance) => {
+  const aSquared = Math.pow(segment[0][0] - point.x, 2) + Math.pow(segment[0][1] - point.y, 2);
+  if (aSquared < minDistance * minDistance) return true;
+
+  const bSquared = Math.pow(segment[1][0] - point.x, 2) + Math.pow(segment[1][1] - point.y, 2);
+  if (bSquared < minDistance * minDistance) return true;
+
+  const cSquared = Math.pow(segment[1][0] - segment[0][0], 2) + Math.pow(segment[1][1] - segment[0][1], 2);
+  if (aSquared > bSquared + cSquared || bSquared > aSquared + cSquared) return false;
+
+  const c = Math.hypot(segment[1][0] - segment[0][0], segment[1][1] - segment[0][1]);
+  const doubleSquare = Math.abs((segment[0][0] - point.x) * (segment[1][1] - point.y) - (segment[1][0] - point.x) * (segment[0][1] - point.y));
+  return doubleSquare / c < minDistance;
+};
+
+
+export default function Selecting({formId}) {
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
+
+  const formRef = useSelector((state) => state.formRefs[formId]);
+  const mapData = useSelector((state) => state.formRefs[formId + '_mapData']);
+  const activeLayer = useSelector((state) => state.formRefs[formId + '_activeLayer']);
+  const selectedObject = useSelector((state) => state.formRefs[formId + '_selectedObject']);
+  const selectedObjectEditing = useSelector((state) => state.formRefs[formId + '_selectedObjectEditing']);
+  const control = useSelector((state) => state.formRefs[formId]?.current?.control());
+
+  const [pressed, setPressed] = useState(control?.selectingMode);
+  const [mode, setMode] = useState('sublayer');
+
+  useEffect(() => {
+    if (!mapData) {
+      if (control) control.selectingMode = false;
+      setPressed(false);
     }
+  }, [mapData, control]);
 
-    var distance = React.useCallback((element, point, scale) => {
-        if (element.type === "polyline" && (element.fillbkcolor && !element.transparent)) {
-            let sum = 0;
-            let points = _.chunk(element.arcs[0].path, 2);
-            points = [...(points.map(p => [p[0] - point.x, p[1] - point.y])), [points[0][0] - point.x, points[0][1] - point.y]];
-            for (let i = 0; i < points.length - 1; i++) {
-                let tg1 = (points[i][0] * points[i][0] + points[i][1] * points[i][1] - points[i][0] * points[i + 1][0] - points[i][1] * points[i + 1][1]) / (points[i][0] * points[i + 1][1] - points[i][1] * points[i + 1][0]);
-                let tg2 = (points[i + 1][0] * points[i + 1][0] + points[i + 1][1] * points[i + 1][1] - points[i][0] * points[i + 1][0] - points[i][1] * points[i + 1][1]) / (points[i][0] * points[i + 1][1] - points[i][1] * points[i + 1][0]);
-                sum += Math.atan(tg1) + Math.atan(tg2);
-            }
-            return (Math.abs(sum) > 0.0000001);
+  const SELECTION_RADIUS = 0.005;
+
+  const distance = useCallback((element, point, scale) => {
+    if (element.type === 'polyline' && (element.fillbkcolor && !element.transparent)) {
+      let sum = 0;
+      let points = chunk(element.arcs[0].path, 2);
+      points = [...(points.map(p => [p[0] - point.x, p[1] - point.y])), [points[0][0] - point.x, points[0][1] - point.y]];
+
+      for (let i = 0; i < points.length - 1; i++) {
+        let tg1 = (points[i][0] * points[i][0] + points[i][1] * points[i][1] - points[i][0] * points[i + 1][0] - points[i][1] * points[i + 1][1]) / (points[i][0] * points[i + 1][1] - points[i][1] * points[i + 1][0]);
+        let tg2 = (points[i + 1][0] * points[i + 1][0] + points[i + 1][1] * points[i + 1][1] - points[i][0] * points[i + 1][0] - points[i][1] * points[i + 1][1]) / (points[i][0] * points[i + 1][1] - points[i][1] * points[i + 1][0]);
+        sum += Math.atan(tg1) + Math.atan(tg2);
+      }
+      return (Math.abs(sum) > 0.0000001);
+    } else if (element.type === 'polyline' && !(element.fillbkcolor && !element.transparent)) {
+      let points = chunk(element.arcs[0].path, 2);
+      if (element.arcs[0].closed) {
+        points = [...points, points[0]];
+      }
+
+      for (let i = 0; i < points.length - 1; i++) {
+        let segment = [points[i], points[i + 1]];
+        if (distanceBetweenPointAndSegment(segment, point, SELECTION_RADIUS * scale)) {
+          return true;
         }
-        else if (element.type === "polyline" && !(element.fillbkcolor && !element.transparent)) {
-            let points = _.chunk(element.arcs[0].path, 2);
-            if (element.arcs[0].closed) {
-                points = [...points, points[0]];
-            }
-            for (let i = 0; i < points.length - 1; i++) {
-                let segment = [points[i], points[i + 1]];
-                if (distanceBetweenPointAndSegment(segment, point, SELECTION_RADIUS * scale)) {
-                    return true;
-                }
-            }
-        }
-        else if (element.type === "label") {
-            var fontsize = (element.fontsize + (element.selected ? 2 : 0)) * // pt
-                (1 / 72 * 0.0254) * // meters
-                scale; // pixels
-            var width = control.getContext("2d").measureText(element.text).width * scale / pixelPerMeter();
-            var x = element.x;
-            var y = element.y;
-            x += (element.xoffset || 0) * 0.001 * scale;
-            y -= (element.yoffset || 0) * 0.001 * scale;
-            var xx = point.x - x;
-            var yy = point.y - y;
-            var angle = element.angle / 180 * Math.PI;
-            var xtrans = xx * Math.cos(angle) - yy * Math.sin(angle) + (width + 2) / 2 * element.halignment;
-            var ytrans = xx * Math.sin(angle) + yy * Math.cos(angle) - (fontsize + 2) * (element.valignment / 2 - 1);
-            var result = (0 <= xtrans) && (xtrans <= width) && (0 <= ytrans) && (ytrans <= fontsize + 3);
-            return result;
-        }
-        return false;
-    }, [SELECTION_RADIUS, control]);
+      }
+    } else if (element.type === 'label') {
+      const fontsize = (element.fontsize + (element.selected ? 2 : 0)) * // pt
+        (1 / 72 * 0.0254) * // meters
+              scale; // pixels
+        const width = control.getContext('2d').measureText(element.text).width * scale / pixelPerMeter();
 
-    var clientPoint = (event, point) => {
-        var ret;
-        if ("offsetX" in event)
-            ret = {
-                x: event.offsetX,
-                y: event.offsetY,
-            }
-        else
-            ret = {
-                x: event.clientX,
-                y: event.clientY,
-            }
-        return ret;
-    };
+        let x = element.x;
+        let y = element.y;
+        x += (element.xoffset || 0) * 0.001 * scale;
+        y -= (element.yoffset || 0) * 0.001 * scale;
 
-    var oldPointData = React.useRef(null);
+        const xx = point.x - x;
+        const yy = point.y - y;
+        const angle = element.angle / 180 * Math.PI;
 
-    var mouseDown = React.useCallback((event) => {
-        if ((!selectedObjectEditing) && pressed && formRef.current) {
-            var coords = formRef.current.coords();
-            const point = coords.pointToMap(clientPoint(event));
-            let scale = formRef.current.centerScale().scale;
-            if (oldPointData.current && (Math.pow(oldPointData.current.point.x - point.x, 2) + Math.pow(oldPointData.current.point.y - point.y, 2) < SELECTION_RADIUS * scale * SELECTION_RADIUS * scale)) {
-                if (oldPointData.current.nearestElements.length > 0) {
-                    oldPointData.current.activeIndex++;
-                    const setActive = async () => {
-                        let selectedObject = formRef.current.selectedObject();
-                        if (selectedObject) {
-                            selectedObject.selected = false;
-                            if (selectedObject.fillname && !selectedObject.transparent) {
-                                selectedObject.img = await mapDrawerTypes.types["polyline"].getPattern(selectedObject.fillname, selectedObject.fillcolor, mapDrawerTypes.types["polyline"].bkcolor(selectedObject));
-                            }
-                        }
-                        if (oldPointData.current.activeIndex < oldPointData.current.nearestElements.length) {
-                            let newSelectedObject = oldPointData.current.nearestElements[oldPointData.current.activeIndex];
-                            newSelectedObject.selected = true;
-                            if (newSelectedObject.fillname && !newSelectedObject.transparent) {
-                                newSelectedObject.img = await mapDrawerTypes.types["polyline"].getPattern(newSelectedObject.fillname, newSelectedObject.fillcolor, mapDrawerTypes.types["polyline"].bkcolor(newSelectedObject));
-                            }
-                            if (newSelectedObject.type === 'polyline')
-                            {
-                                dispatch(setFormRefs(formId + "_selectedObjectLength", newSelectedObject.arcs[0].path.length));
-                            }
-                            formRef.current.setSelectedObject(newSelectedObject);
-                        }
-                        else {
-                            oldPointData.current.activeIndex = -1;
-                            formRef.current.setSelectedObject(null);
-                        }
-                        formRef.current.updateCanvas();
-                    }
-                    setActive();
-                }
-            }
-            else {
-                let nearestElements = [];
-                if (activeLayer && (mode === "sublayer")) {
-                    nearestElements = activeLayer.elements.filter(element => distance(element, point, scale));
-                }
-                else {
-                    let mapData = formRef.current.mapData();
-                    let currentScale = formRef.current.centerScale().scale;
-                    mapData.layers.forEach(layer => {
-                        if (layer.visible && layer.lowscale <= currentScale && ((typeof layer.highscale === 'string' && layer.highscale.includes('INF')) || currentScale < layer.highscale )) {
-                            nearestElements = [...nearestElements, ...layer.elements.filter(element => distance(element, point, formRef.current.centerScale().scale))];
-                        }
-                    })
-                }
-                nearestElements.reverse();
-                if (nearestElements.length > 0) {
-                    const setActive = async () => {
-                        let activeIndex = 0;
-                        let selectedObject = formRef.current.selectedObject();
-                        if (selectedObject) {
-                            selectedObject.selected = false;
-                            if (selectedObject.fillname && !selectedObject.transparent) {
-                                selectedObject.img = await mapDrawerTypes.types["polyline"].getPattern(selectedObject.fillname, selectedObject.fillcolor, mapDrawerTypes.types["polyline"].bkcolor(selectedObject));
-                            }
-                        }
-                        let newSelectedObject = nearestElements[activeIndex];
-                        newSelectedObject.selected = true;
-                        if (newSelectedObject.fillname && !newSelectedObject.transparent) {
-                            newSelectedObject.img = await mapDrawerTypes.types["polyline"].getPattern(newSelectedObject.fillname, newSelectedObject.fillcolor, mapDrawerTypes.types["polyline"].bkcolor(newSelectedObject));
-                        }
-                        if (newSelectedObject.type === 'polyline')
-                        {
-                            dispatch(setFormRefs(formId + "_selectedObjectLength", newSelectedObject.arcs[0].path.length));
-                        }
-                        formRef.current.setSelectedObject(newSelectedObject);
-                        formRef.current.updateCanvas();
+        const xTrans = xx * Math.cos(angle) - yy * Math.sin(angle) + (width + 2) / 2 * element.halignment;
+        const yTrans = xx * Math.sin(angle) + yy * Math.cos(angle) - (fontsize + 2) * (element.valignment / 2 - 1);
+        return (0 <= xTrans) && (xTrans <= width) && (0 <= yTrans) && (yTrans <= fontsize + 3);
+    }
+    return false;
+  }, [SELECTION_RADIUS, control]);
 
-                        oldPointData.current = {
-                            point: point,
-                            nearestElements: nearestElements,
-                            activeIndex: 0
-                        }
-                    }
-                    setActive();
-                }
-                else {
-                    oldPointData.current = null;
-                }
-            }
-        }
-    }, [mode, pressed, activeLayer, SELECTION_RADIUS, formRef, distance, selectedObjectEditing, dispatch, formId]);
+  const oldPointData = useRef(null);
 
-    var mouseWheel = React.useCallback((event) => {
-        oldPointData.current = null;
-    }, []);
+  const mouseDown = useCallback((event) => {
+    if ((!selectedObjectEditing) && pressed && formRef.current) {
+      const coords = formRef.current.coords();
+      const point = coords.pointToMap(clientPoint(event));
+      let scale = formRef.current.centerScale().scale;
 
-    React.useEffect(() => {
-        if (control) {
-            control.addEventListener("mousedown", mouseDown, { passive: true });
-            control.addEventListener("mousewheel", mouseWheel, { passive: true });
-        }
-        return () => {
-            if (control) {
-                control.removeEventListener("mousewheel", mouseWheel, { passive: true });
-                control.removeEventListener("mousedown", mouseDown, { passive: true });
-            }
-        }
-    }, [control, mouseDown, mouseWheel]);
-
-    const setButtonPressed = () => {
-        if (control) {
-            control.selectingMode = !pressed;
-        }
-        if (pressed) {
+      if (oldPointData.current && (Math.pow(oldPointData.current.point.x - point.x, 2) + Math.pow(oldPointData.current.point.y - point.y, 2) < SELECTION_RADIUS * scale * SELECTION_RADIUS * scale)) {
+        if (oldPointData.current.nearestElements.length > 0) {
+          oldPointData.current.activeIndex++;
+          const setActive = async () => {
+            let selectedObject = formRef.current.selectedObject();
             if (selectedObject) {
-                selectedObject.edited = false;
-                selectedObject.selected = false;
-                formRef.current.setSelectedObject(null);
-                formRef.current.updateCanvas();
+              selectedObject.selected = false;
+              if (selectedObject.fillname && !selectedObject.transparent) {
+                selectedObject.img = await mapDrawerTypes.types["polyline"].getPattern(selectedObject.fillname, selectedObject.fillcolor, mapDrawerTypes.types["polyline"].bkcolor(selectedObject));
+              }
             }
+            if (oldPointData.current.activeIndex < oldPointData.current.nearestElements.length) {
+              let newSelectedObject = oldPointData.current.nearestElements[oldPointData.current.activeIndex];
+              newSelectedObject.selected = true;
+              if (newSelectedObject.fillname && !newSelectedObject.transparent) {
+                newSelectedObject.img = await mapDrawerTypes.types["polyline"].getPattern(newSelectedObject.fillname, newSelectedObject.fillcolor, mapDrawerTypes.types["polyline"].bkcolor(newSelectedObject));
+              }
+              if (newSelectedObject.type === 'polyline') {
+                dispatch(setFormRefs(formId + "_selectedObjectLength", newSelectedObject.arcs[0].path.length));
+              }
+              formRef.current.setSelectedObject(newSelectedObject);
+            } else {
+              oldPointData.current.activeIndex = -1;
+              formRef.current.setSelectedObject(null);
+            }
+            formRef.current.updateCanvas();
+          }
+          setActive();
         }
-        setPressed(!pressed);
-    };
+      } else {
+        let nearestElements = [];
+        if (activeLayer && (mode === "sublayer")) {
+          nearestElements = activeLayer.elements.filter(element => distance(element, point, scale));
+        } else {
+          let mapData = formRef.current.mapData();
+          let currentScale = formRef.current.centerScale().scale;
+          mapData.layers.forEach(layer => {
+            if (layer.visible && layer.lowscale <= currentScale && ((typeof layer.highscale === 'string' && layer.highscale.includes('INF')) || currentScale < layer.highscale)) {
+              nearestElements = [...nearestElements, ...layer.elements.filter(element => distance(element, point, formRef.current.centerScale().scale))];
+            }
+          })
+        }
+        nearestElements.reverse();
+        if (nearestElements.length > 0) {
+          const setActive = async () => {
+            let activeIndex = 0;
+            let selectedObject = formRef.current.selectedObject();
 
-    const [popoverState, setPopoverState] = React.useState({
-        anchorEl: null,
-        open: false
-    });
+            if (selectedObject) {
+              selectedObject.selected = false;
+              if (selectedObject.fillname && !selectedObject.transparent) {
+                selectedObject.img = await mapDrawerTypes.types["polyline"].getPattern(selectedObject.fillname, selectedObject.fillcolor, mapDrawerTypes.types["polyline"].bkcolor(selectedObject));
+              }
+            }
+            let newSelectedObject = nearestElements[activeIndex];
+            newSelectedObject.selected = true;
+            if (newSelectedObject.fillname && !newSelectedObject.transparent) {
+              newSelectedObject.img = await mapDrawerTypes.types["polyline"].getPattern(newSelectedObject.fillname, newSelectedObject.fillcolor, mapDrawerTypes.types["polyline"].bkcolor(newSelectedObject));
+            }
+            if (newSelectedObject.type === 'polyline') {
+              dispatch(setFormRefs(formId + "_selectedObjectLength", newSelectedObject.arcs[0].path.length));
+            }
+            formRef.current.setSelectedObject(newSelectedObject);
+            formRef.current.updateCanvas();
 
-    const setPopoverMode = (mode) => {
-        setMode(mode);
-        setPopoverState({
-            anchorEl: popoverState.anchorEl,
-            open: false,
-        });
-    };
+            oldPointData.current = {point, nearestElements: nearestElements, activeIndex: 0};
+          }
+          setActive();
+        } else {
+          oldPointData.current = null;
+        }
+      }
+    }
+  }, [mode, pressed, activeLayer, SELECTION_RADIUS, formRef, distance, selectedObjectEditing, dispatch, formId]);
 
-    const showColumnListClick = (event) => {
-        setPopoverState({
-            anchorEl: event.currentTarget,
-            open: !popoverState.open,
-        });
-    };
+  const mouseWheel = useCallback((event) => {
+    oldPointData.current = null;
+  }, []);
 
-    return (
-        <div>
-            <Button togglable={true} selected={pressed} className='mapPickButton' onClick={setButtonPressed} title={t('map.pick')}>
-                <span className="k-icon k-i-button" />
-            </Button>
-            <Button className="mapPickPopupButton" onClick={showColumnListClick}>
-                <span className="k-icon k-i-arrow-60-down" />
-            </Button>
-            <Popup className="popup"
-                id={formId}
-                show={popoverState.open}
-                anchor={popoverState.anchorEl}
-            >
-                <div className="mapPickPopup">
-                    <div onClick={() => setPopoverMode("sublayer")} className="mapPickPopupItem" >
-                        <div className="mapPickPopupItemCheck" >
-                            {mode === "sublayer" ? <span className="k-icon k-i-check" /> : <span className="k-icon" />}
-                        </div>
-                        <div className="mapPickPopupItemLabel">
-                            {t('map.sublayer')}
-                        </div>
-                    </div>
-                    <div onClick={() => setPopoverMode("none")} className="mapPickPopupItem" >
-                        <div className="mapPickPopupItemCheck" >
-                            {mode === "none" ? <span className="k-icon k-i-check" /> : <span className="k-icon" />}
-                        </div>
-                        <div className="mapPickPopupItemLabel">
-                            {t('base.none')}
-                        </div>
-                    </div>
-                </div>
-            </Popup>
-        </div >);
+  useEffect(() => {
+    if (control) {
+      control.addEventListener('mousedown', mouseDown, { passive: true });
+      control.addEventListener('mousewheel', mouseWheel, { passive: true });
+    }
+    return () => {
+      if (control) {
+        control.removeEventListener('mousewheel', mouseWheel, { passive: true });
+        control.removeEventListener('mousedown', mouseDown, { passive: true });
+      }
+    }
+  }, [control, mouseDown, mouseWheel]);
+
+  const setButtonPressed = () => {
+    if (control) control.selectingMode = !pressed;
+    if (pressed && selectedObject) {
+      selectedObject.edited = false;
+      selectedObject.selected = false;
+      formRef.current.setSelectedObject(null);
+      formRef.current.updateCanvas();
+    }
+    setPressed(!pressed);
+  };
+
+  const [popoverState, setPopoverState] = useState({anchorEl: null, open: false});
+  const setPopoverMode = (mode) => {
+    setMode(mode);
+    setPopoverState({anchorEl: popoverState.anchorEl, open: false});
+  };
+  const showColumnListClick = (event) => {
+    setPopoverState({anchorEl: event.currentTarget, open: !popoverState.open});
+  };
+
+  return (
+    <div>
+      <Button togglable={true} selected={pressed} className="mapPickButton" onClick={setButtonPressed} title={t('map.pick')}>
+        <span className="k-icon k-i-button" />
+      </Button>
+      <Button className="mapPickPopupButton" onClick={showColumnListClick}>
+        <span className="k-icon k-i-arrow-60-down" />
+      </Button>
+      <Popup className="popup" id={formId} show={popoverState.open} anchor={popoverState.anchorEl}>
+        <div className="mapPickPopup">
+          <div onClick={() => setPopoverMode('sublayer')} className="mapPickPopupItem" >
+            <div className="mapPickPopupItemCheck" >
+              {mode === 'sublayer' ? <span className="k-icon k-i-check" /> : <span className="k-icon" />}
+            </div>
+            <div className="mapPickPopupItemLabel">
+              {t('map.sublayer')}
+            </div>
+          </div>
+          <div onClick={() => setPopoverMode('none')} className="mapPickPopupItem" >
+            <div className="mapPickPopupItemCheck" >
+              {mode === 'none' ? <span className="k-icon k-i-check" /> : <span className="k-icon" />}
+            </div>
+            <div className="mapPickPopupItemLabel">
+              {t('base.none')}
+            </div>
+          </div>
+        </div>
+      </Popup>
+    </div >
+  );
 }

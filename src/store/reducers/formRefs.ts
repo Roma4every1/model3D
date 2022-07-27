@@ -18,7 +18,7 @@ export type FormRefsAction = ActionSet;
 
 const initFormRefs: FormRefs = {};
 
-export const formRefs = (state: FormRefs = initFormRefs, action: FormRefsAction): FormRefs => {
+export const formRefsReducer = (state: FormRefs = initFormRefs, action: FormRefsAction): FormRefs => {
   switch (action.type) {
 
     case FormRefsActions.SET: {

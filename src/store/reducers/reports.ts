@@ -23,7 +23,7 @@ export type ReportsAction = ActionSet | ActionClear;
 
 const initReports = [];
 
-export const reports = (state = initReports, action: ReportsAction) => {
+export const reportsReducer = (state = initReports, action: ReportsAction) => {
   switch (action.type) {
 
     case ReportsActions.SET: {

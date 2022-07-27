@@ -1,4 +1,4 @@
-﻿import i18n from '../i18n';
+﻿import i18n from "../i18n";
 import { findIndex, uniq } from "lodash";
 import { equalParams } from "../utils";
 
@@ -29,7 +29,7 @@ export default function createChannelsManager(store) {
   /* channelName: string, paramValues: Param[]*/
   const loadChannelData = async (channelName, paramValues) => {
     const sessionId = store.getState().sessionId;
-    return await store.getState().sessionManager.fetchData(`getChannelDataByName`, {
+    return await store.getState().sessionManager.fetchData('getChannelDataByName', {
       method: 'POST',
       body: JSON.stringify({sessionId, channelName, paramValues})
     });
@@ -169,33 +169,31 @@ export default function createChannelsManager(store) {
     return result;
   }
 
-  const getNewRow = async (tableId) => {
+  const getNewRow = async (tableID) => {
     const sessionId = store.getState().sessionId;
-    return await store.getState().sessionManager.fetchData(`getNewRow?sessionId=${sessionId}&tableId=${tableId}`);
+    return await store.getState().sessionManager.fetchData(`getNewRow?sessionId=${sessionId}&tableId=${tableID}`);
   }
 
-  const insertRow = async (tableId, dataJSON) => {
+  const insertRow = async (tableID, dataJSON) => {
     const sessionId = store.getState().sessionId;
-    const data = await store.getState().sessionManager.fetchData(`insertRow?sessionId=${sessionId}&tableId=${tableId}&rowData=${dataJSON}`);
-    updateTablesByResult(tableId, data);
+    const data = await store.getState().sessionManager.fetchData(`insertRow?sessionId=${sessionId}&tableId=${tableID}&rowData=${dataJSON}`);
+    updateTablesByResult(tableID, data);
   }
 
-  const updateRow = async (tableId, editID, newRowData) => {
-    const sessionId = store.getState().sessionId;
-    const jsonToSend = {sessionId: sessionId, tableId: tableId, rowsIndices: editID, newRowData: newRowData};
-    const jsonToSendString = JSON.stringify(jsonToSend);
-    const data = await store.getState().sessionManager.fetchData(`updateRow`,
+  const updateRow = async (tableID, editID, newRowData) => {
+    const sessionID = store.getState().sessionId;
+    const data = await store.getState().sessionManager.fetchData('updateRow',
       {
         method: 'POST',
-        body: jsonToSendString
+        body: JSON.stringify({sessionId: sessionID, tableId: tableID, rowsIndices: editID, newRowData}),
       });
-    updateTablesByResult(tableId, data);
+    updateTablesByResult(tableID, data);
   }
 
-  const deleteRows = async (tableId, elementsToRemove, removeAll) => {
+  const deleteRows = async (tableID, elementsToRemove, removeAll) => {
     const sessionId = store.getState().sessionId;
-    const data = await store.getState().sessionManager.fetchData(`removeRows?sessionId=${sessionId}&tableId=${tableId}&rows=${elementsToRemove}&removeAll=${!!removeAll}`);
-    updateTablesByResult(tableId, data);
+    const data = await store.getState().sessionManager.fetchData(`removeRows?sessionId=${sessionId}&tableId=${tableID}&rows=${elementsToRemove}&removeAll=${!!removeAll}`);
+    updateTablesByResult(tableID, data);
   }
 
   const getStatistics = async (tableId, columnName) => {
@@ -203,6 +201,7 @@ export default function createChannelsManager(store) {
     return await store.getState().sessionManager.fetchData(`getStatistics?sessionId=${sessionId}&tableId=${tableId}&columnName=${columnName}`);
   }
 
+  // будет вызываться каждый раз при отправке действия (и когда состояние могло измениться)
   store.subscribe(async () => {
     for (let channelName in allChannelsForms) {
       for (let formId in allChannelsForms[channelName]) {

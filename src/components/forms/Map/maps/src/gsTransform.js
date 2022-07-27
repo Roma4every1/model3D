@@ -1,115 +1,114 @@
-// module gsTransform
+import {xml2js} from "xml-js";
+import {toPairs, fromPairs} from "lodash";
+import xmlTransform from "./xmlTransform";
 
-var _ = require("lodash");
-var xml = require("node-xml-lite");
-var x = require("./xmlTransform");
 
-var transform = x({
+const transform = xmlTransform({
 	MapContainer: {
-		type: "mapcontainer",
-		etag: x.string("ETag"),
-		path: x.path("Path"),
-		name: x.string("Name"),
+		type: 'mapcontainer',
+		etag: xmlTransform.string('ETag'),
+		path: xmlTransform.path('Path'),
+		name: xmlTransform.string('Name'),
 	},
 	MapInfo: {
-		namedpoints: x.string("NamedPoints"),
-		date: x.string("Date"),
-		mapname: x.string("MapName"),
-		mapcode: x.string("MapCode"),
-		plastname: x.string("PlastName"),
-		plastcode: x.string("PlastCode"),
-		objectname: x.string("ObjectName"),
-		objectcode: x.string("ObjectCode"),
-		organization: x.string("Organization"),
-		etag: x.string("ETag"),
-		layers: ["layer", {
-			uid: x.string,
-			name: x.string,
-			group: x.string,
-			container: x.string,
-			visible: x.boolean,
-			lowscale: x.number,
-			highscale: x.number,
+		namedpoints: xmlTransform.string('NamedPoints'),
+		date: xmlTransform.string('Date'),
+		mapname: xmlTransform.string('MapName'),
+		mapcode: xmlTransform.string('MapCode'),
+		plastname: xmlTransform.string('PlastName'),
+		plastcode: xmlTransform.string('PlastCode'),
+		objectname: xmlTransform.string('ObjectName'),
+		objectcode: xmlTransform.string('ObjectCode'),
+		organization: xmlTransform.string('Organization'),
+		etag: xmlTransform.string('ETag'),
+		layers: ['layer', {
+			uid: xmlTransform.string,
+			name: xmlTransform.string,
+			group: xmlTransform.string,
+			container: xmlTransform.string,
+			visible: xmlTransform.boolean,
+			lowscale: xmlTransform.number,
+			highscale: xmlTransform.number,
 			bounds: [0, bounds],
 		}],
 	},
 	container: [{
-		type: x.element,
-		name: x.string,
-		uid: x.string,
-		version: x.number,
-		elements: [/./, x({
+		type: xmlTransform.element,
+		name: xmlTransform.string,
+		uid: xmlTransform.string,
+		version: xmlTransform.number,
+		elements: [/./, xmlTransform({
 			pieslice: {
-				type: x.element,
-				x: x.number,
-				y: x.number,
-				color: x.string,
-				bordercolor: x.string,
-				radius: x.number,
-				startangle: x.number,
-				endangle: x.number,
+				type: xmlTransform.element,
+				x: xmlTransform.number,
+				y: xmlTransform.number,
+				color: xmlTransform.string,
+				bordercolor: xmlTransform.string,
+				radius: xmlTransform.number,
+				startangle: xmlTransform.number,
+				endangle: xmlTransform.number,
 			},
 			label: {
-				type: x.element,
-				x: x.number,
-				y: x.number,
-				xoffset: x.number,
-				yoffset: x.number,
-				angle: x.number,
-				text: x.string,
-				color: x.string,
-				valignment: x.number,
-				halignment: x.number,
-				fontname: x.string,
-				fontsize: x.number,
-				transparent: x.boolean,
-				bold: x.boolean,
+				type: xmlTransform.element,
+				x: xmlTransform.number,
+				y: xmlTransform.number,
+				xoffset: xmlTransform.number,
+				yoffset: xmlTransform.number,
+				angle: xmlTransform.number,
+				text: xmlTransform.string,
+				color: xmlTransform.string,
+				valignment: xmlTransform.number,
+				halignment: xmlTransform.number,
+				fontname: xmlTransform.string,
+				fontsize: xmlTransform.number,
+				transparent: xmlTransform.boolean,
+				bold: xmlTransform.boolean,
 			},
 			sign: {
-				type: x.element,
-				x: x.number,
-				y: x.number,
-				fontname: x.string,
-				symbolcode: x.number,
-				size: x.number,
-				color: x.string,
-				UWID: x.string,
+				type: xmlTransform.element,
+				x: xmlTransform.number,
+				y: xmlTransform.number,
+				fontname: xmlTransform.string,
+				symbolcode: xmlTransform.number,
+				size: xmlTransform.number,
+				color: xmlTransform.string,
+				UWID: xmlTransform.string,
 			},
 			namedpoint: {
-				type: x.element,
-				x: x.number,
-				y: x.number,
-				name: x.string,
-				UWID: x.string,
+				type: xmlTransform.element,
+				x: xmlTransform.number,
+				y: xmlTransform.number,
+				name: xmlTransform.string,
+				UWID: xmlTransform.string,
 			},
 			polyline: {
-				type: x.element,
-				bordercolor: x.string,
-				borderwidth: x.number,
-				borderstyle: x.number,
-				borderstyleid: x.string,
-				transparent: x.boolean,
-				fillname: x.string,
-				fillcolor: x.string,
-				fillbkcolor: x.string,
+				type: xmlTransform.element,
+				bordercolor: xmlTransform.string,
+				borderwidth: xmlTransform.number,
+				borderstyle: xmlTransform.number,
+				borderstyleid: xmlTransform.string,
+				transparent: xmlTransform.boolean,
+				fillname: xmlTransform.string,
+				fillcolor: xmlTransform.string,
+				fillbkcolor: xmlTransform.string,
 				bounds: [0, bounds],
-				arcs: ["arc", arcPlain],
+				arcs: ['arc', arcPlain],
 			},
 			regular2dfield_: {
-				data: x.string,
-				sizex: x.number,
-				sizey: x.number,
-				stepx: x.number,
-				stepy: x.number,
-				x: x.number,
-				y: x.number,
-				elements: [/./, x({
+				data: xmlTransform.string,
+				sizex: xmlTransform.number,
+				sizey: xmlTransform.number,
+				stepx: xmlTransform.number,
+				stepy: xmlTransform.number,
+				x: xmlTransform.number,
+				y: xmlTransform.number,
+				elements: [/./, xmlTransform({
 					palette: {
-						interpolated: x.string,
-						elements: [/./, x({
+						interpolated: xmlTransform.string,
+						elements: [/./, xmlTransform({
 							level: {
-								color: x.string,
-								value: x.string,
+								color: xmlTransform.string,
+								value: xmlTransform.string,
 							}
 						})],
 					}
@@ -120,31 +119,26 @@ var transform = x({
 });
 
 function bounds(xml) {
-	var x1 = Number(xml.attributes.left)
-	var x2 = Number(xml.attributes.right)
-	var y1 = Number(xml.attributes.top)
-	var y2 = Number(xml.attributes.bottom)
+	const x1 = Number(xml.attributes.left);
+	const x2 = Number(xml.attributes.right);
+	const y1 = Number(xml.attributes.top);
+	const y2 = Number(xml.attributes.bottom);
+
 	return {
-		min: {
-			x: Math.min(x1, x2),
-			y: Math.min(y1, y2),
-		},
-		max: {
-			x: Math.max(x1, x2),
-			y: Math.max(y1, y2),
-		},
+		min: {x: Math.min(x1, x2), y: Math.min(y1, y2)},
+		max: {x: Math.max(x1, x2), y: Math.max(y1, y2)},
 	}
 }
 
 function removeType(rec) {
-	delete rec.type
-	return rec
+	delete rec.type;
+	return rec;
 }
 
 function makeSublayers(array) {
 	return {
 		layers: array
-			.filter(el => el.type === "sublayer")
+			.filter(el => el.type === 'sublayer')
 			.map(removeType)
 			.reduce((collection, sublayer) => {
 				collection[sublayer.uid] = sublayer
@@ -152,82 +146,83 @@ function makeSublayers(array) {
 			}, {}),
 		namedpoints:
 			[].concat(...array
-				.filter(el => el.type === "namedpoints")
+				.filter(el => el.type === 'namedpoints')
 				.map(el => el.elements)
-			)
-				.map(removeType)
-	}
+			).map(removeType),
+	};
 }
 
 function arcPlain(xml) {
 	return {
 		path: arcXY(xml).reduce(
 			(a, { x, y }) => { a.push(x, y); return a; }, []),
-        closed: xml.attributes.path.endsWith("Z") || xml.attributes.path.endsWith("z")
+        closed: xml.attributes.path.endsWith('Z') || xml.attributes.path.endsWith('z')
 	}
 }
 
 function arcXY(xml) {
-	var last = null
+	let last = null;
+
 	return xml.attributes.path.split(/(?=m|M)/)
 		.map(x => x.split(/(?=m|M|l|L|z|Z)/).map(pt => {
 			switch (pt[0]) {
-				case "z": case "Z":
+				case 'z': case 'Z':
 					return null;
-				case "M": case "L":
+				case 'M': case 'L':
 					pt = pt.slice(1).split(/\s/).map(Number);
 					return last = {
 						x: pt[0],
 						y: pt[1],
 					};
-				case "m": case "l":
+				case 'm': case 'l':
 					pt = pt.slice(1).split(/\s/).map(Number);
 					return last = {
 						x: last.x + pt[0],
 						y: last.y + pt[1],
 					}
 				default:
-					throw new Error("wrong arc format: " + x)
+					throw new Error('wrong arc format: ' + x)
 			}
 		}).filter(p => p))
 		.filter((_, i) => {
-			if (i > 0)
-				throw new Error("more than one chain in an arc")
-			return true
-		})
-	[0]
+			if (i > 0) throw new Error('more than one chain in an arc');
+			return true;
+		})[0];
 }
 
 function xmlLite(xml) {
-	return _.fromPairs(_.toPairs(xml).map(([name, value]) => [
-		name === "attrib" ? "attributes" : name === "childs" ? "children" : name,
-		name === "childs" ? value.map(xmlLite) : value
-	]))
+	return fromPairs(toPairs(xml).map(([name, value]) => [
+		name === 'attrib'
+			? 'attributes'
+			: name === 'elements' // было 'childs'
+				? 'children'
+				: name,
+		name === 'elements' ? value.map(xmlLite) : value
+	]));
 }
 
 export function readXml(text) {
-	var parsed = xml.parseString(text);
-	var lite = xmlLite(parsed);
-	return transform(lite);
+	//return transform(xmlLite(xml.parseString(text))); // использовалось node-xml-lite
+	const converted = xml2js(text, {compact: false}).elements[0]
+	return transform(xmlLite(converted));
 }
 
 export function readTable(text) {
-	var array = JSON.parse(text)
-	var fields
-	var table = []
-	for (var a of array) {
+	const array = JSON.parse(text);
+	let fields;
+	const table = [];
+	for (let a of array) {
 		if (!fields) {
-			fields = a
-			continue
+			fields = a;
+			continue;
 		}
-		if (a === "lastRow")
-			break
+		if (a === 'lastRow') break;
 		var r = {}
 		for (var i = 0; i < fields.length; ++i) {
 			var s = a[i]
 			var n = fields[i]
-			if (n === "PATH")
-				s = s.replace(/\\/g, "/").replace(/\.xml$/, ".json")
+			if (n === 'PATH')
+				s = s.replace(/\\/g, "/").replace(/\.xml$/, '.json')
 			r[n] = s
 		}
 		table.push(r)

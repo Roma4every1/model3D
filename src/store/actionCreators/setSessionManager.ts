@@ -1,4 +1,4 @@
-﻿import {SessionManagerActions, ActionSet} from "../reducers/sessionManager";
+import {SessionManagerActions, ActionSet} from "../reducers/sessionManager";
 
 
 const setSessionManager = (value): ActionSet => {

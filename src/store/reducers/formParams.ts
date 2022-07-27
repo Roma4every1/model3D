@@ -43,7 +43,7 @@ export type FormParamsAction = ActionSet | ActionAdd | ActionAddSet | ActionUpda
 
 const initFormParams: FormParams = {};
 
-export const formParams = (state: FormParams = initFormParams, action: FormParamsAction): FormParams => {
+export const formParamsReducer = (state: FormParams = initFormParams, action: FormParamsAction): FormParams => {
   switch (action.type) {
 
     case FormParamsActions.SET: {

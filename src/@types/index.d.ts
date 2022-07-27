@@ -44,3 +44,7 @@ type ParameterOrder = number;
  * @see FormParameter
  * */
 type ParameterDepends = ParameterID[];
+
+/** Тип формы. */
+type FormType = 'carat' | 'chart' | 'dataSet' | 'dock' | 'files' | 'filesList' | 'grid' | 'image' | 'map' |
+  'model3D' | 'profile' | 'screenshot' | 'slide' | 'spreadsheet' | 'spreadsheetUnite' | 'transferForm';

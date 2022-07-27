@@ -1,7 +1,80 @@
-/* Provide sufficient contrast against white background */
+/* --- general --- */
+
 html {
     font: 12px sans-serif;
 }
+
+#root {
+    min-width: 100vw;
+    min-height: 100vh;
+}
+
+/* --- `SystemList` component --- */
+
+#program-name {
+    font-size: 1.9rem;
+    font-weight: bold;
+    text-align: center;
+
+    margin: 0 1rem;
+    padding-bottom: 4px;
+    border-bottom: 1px solid black;
+}
+#system-list {
+    padding: 1em;
+}
+#system-list .not-loaded {
+    font-size: 1.1rem;
+}
+#system-list h2 {
+    padding: 0.1em 0.75em;
+}
+#system-list li {
+    font-size: 1.1rem;
+}
+
+/* --- `SessionLoading` component --- */
+
+.loading-status {
+    width: 100%;
+    height: 70%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.loading-status-text {
+    margin-top: 1rem;
+    font-size: 1.2rem;
+    font-style: italic;
+}
+
+/* --- `UnknownRoute` component ---- */
+
+#unknown-route {
+    padding: 2rem;
+    font-size: 1.15rem;
+}
+#unknown-route li {
+    margin: 0.5rem;
+}
+#unknown-route a:hover {
+    text-decoration: none;
+}
+#unknown-route a:hover span {
+    text-decoration: underline;
+}
+#unknown-route code {
+    background: #f1f1f1;
+    border: 1px solid #e1e1e1;
+    white-space: pre;
+    border-radius: 4px;
+    padding: 0.2rem 0.5rem;
+    margin: 0 0.2rem;
+}
+
+/* --- others --- */
 
 .font-10 {
     font-size: 10px;
@@ -139,7 +212,7 @@ html {
     cursor: pointer;
 }
 
-mapLayerLabel {
+.mapLayerLabel {
     float: right;
     margin: 5px;
 }
@@ -315,18 +388,18 @@ mapLayerLabel {
     height: 20px;
 }
 
-    .k-colorpicker .k-color-preview {
-        width: 60px;
-        padding: 0;
-        margin-left: -2px;
-        margin-right: -4px;
-        margin-bottom: 11px;
-        height: 14px;
-    }
+.k-colorpicker .k-color-preview {
+    width: 60px;
+    padding: 0;
+    margin-left: -2px;
+    margin-right: -4px;
+    margin-bottom: 11px;
+    height: 14px;
+}
 
-    .k-colorpicker .k-icon k-i-arrow-s {
-        width: 10px;
-    }
+.k-colorpicker .k-icon .k-i-arrow-s {
+    width: 10px;
+}
 
 .polylinePropertiesBkColorLabel {
     position: absolute;
@@ -622,14 +695,14 @@ mapLayerLabel {
     font-size: 12px;
 }
 
-    .k-grid .k-grid-edit-row td:not(.k-hierarchy-cell),
-    .k-grid k-grid-edit-row {
-        padding: 1px;
-    }
+.k-grid .k-grid-edit-row td:not(.k-hierarchy-cell),
+.k-grid .k-grid-edit-row {
+    padding: 1px;
+}
 
-    .k-grid td {
-        padding: 1px;
-    }
+.k-grid td {
+    padding: 1px;
+}
 
 .k-grid-header .k-header {
     height: 20px;

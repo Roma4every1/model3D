@@ -1,38 +1,35 @@
-// module symbols
+import {extend} from "lodash";
+import {loadImageData} from "./htmlHelper";
+import {toUnicode} from "./cp1251";
+import startThread from "./startThread";
+import symbol2svg from "./symbol2svg";
+import def2json from "./def2json";
+import cache from "./cache";
+import logger from "./logger";
 
-var startThread = require( "./startThread" )
-var htmlHelper = require( "./htmlHelper" )
-var cache = require( "./cache" )
-var _ = require( "lodash" )
-var symbol2svg = require( "./symbol2svg" )
-var cp1251 = require( "./cp1251" )
-var def2json = require( "./def2json" )
-var logger = require( "./logger" )
 
-module.exports = provider => {
-	var ret = _.extend( {}, provider )
+export default function symbols(provider) {
+	const ret = extend({}, provider);
 
-	ret.getSymbolsLib = cache( () => provider.getSymbolsLib().then(
-		text => symbol2svg( def2json( cp1251.toUnicode( text ) ) )
-	) )
+	ret.getSymbolsLib = cache(() => provider.getSymbolsLib().then(
+		text => symbol2svg(def2json(toUnicode(text)))
+	));
+	ret.getSignImage = cache((name, index, color) => {
+		if (name.match(/\.(png|gif|jpg|jpeg|svg)$/)) return provider.getSignImage(name);
 
-	ret.getSignImage = cache( ( name, index, color ) => {
-		if ( name.match( /\.(png|gif|jpg|jpeg|svg)$/ ) )
-			return provider.getSignImage( name )
-		return startThread( function* () {
-			var lib = yield ret.getSymbolsLib()
-			var template = lib[ `${ name.toUpperCase() } (${ index })` ]
-			if ( !template ){
-                var L = logger.createLogger( "DRAW WELL" )
-                L.error("well sign is missed "+ name.toUpperCase() +" "+ index)
-                template = lib['PNT.CHR (0)']
-            }
-				
-			var svg = template( color )
-			var image = yield htmlHelper.loadImageData( svg, "image/svg+xml" ) 
-			return image
-		} )
-	} )
+		return startThread(function* () {
+			const lib = yield ret.getSymbolsLib();
+			let template = lib[`${name.toUpperCase()} (${index})`];
 
-	return ret
+			if (!template) {
+				logger.error('well sign is missed ' + name.toUpperCase() + ' ' + index)
+				template = lib['PNT.CHR (0)']
+			}
+
+			const svg = template(color);
+			return yield loadImageData(svg, 'image/svg+xml')
+		});
+	});
+
+	return ret;
 }

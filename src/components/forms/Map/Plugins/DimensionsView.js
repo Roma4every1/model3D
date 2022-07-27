@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Label } from "@progress/kendo-react-labels";
-import IntegerTextEditor from "../../../activeParametersEditors/IntegerTextEditor";
+import IntegerTextEditor from "../../../editors/IntegerTextEditor";
 import {
     IntlProvider,
     LocalizationProvider,

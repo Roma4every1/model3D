@@ -1,58 +1,61 @@
-// module logger
+let count = 0;
+const levelValues = {
+	all: -Infinity,
+	trace: 0, debug: 1, info: 2, warn: 3, error: 4, fatal: 5,
+	silent: Infinity,
+};
 
-var count = 0;
-
-function Logger( name, parent ) {
+/**
+ * logger levels: 'trace', 'debug', 'info', 'warn', 'error', 'fatal'
+ * */
+function Logger(name, parent) {
 	this.name = name;
 	this.parent = parent;
 	this.threadId = count && `<${ count }>`;
 	++count;
 
-	levels.forEach( ( levelName, levelValue ) => {
-		this[ levelName ] = function ( data ) {
-			if ( levelValue >= levelValues[ logger.level ] )
-				this.send( levelName, this.name, this.threadId, arguments );
-			return data;
-		}.bind( this ); // keep in mind using "arguments"
-	} );
+	this.trace = function (data) {
+		if (0 >= levelValues[logger.level]) this.send('trace', this.name, this.threadId, arguments);
+		return data;
+	}.bind(this); // keep in mind using "arguments"
+
+	this.debug = function (data) {
+		if (1 >= levelValues[logger.level]) this.send('debug', this.name, this.threadId, arguments);
+		return data;
+	}.bind(this);
+
+	this.info = function (data) {
+		if (2 >= levelValues[logger.level]) this.send('info', this.name, this.threadId, arguments);
+		return data;
+	}.bind(this);
+
+	this.warn = function (data) {
+		if (3 >= levelValues[logger.level]) this.send('warn', this.name, this.threadId, arguments);
+		return data;
+	}.bind(this);
+
+	this.error = function (data) {
+		if (4 >= levelValues[logger.level]) this.send('error', this.name, this.threadId, arguments);
+		return data;
+	}.bind(this);
+
+	this.warn = function (data) {
+		if (5 >= levelValues[logger.level]) this.send('fatal', this.name, this.threadId, arguments);
+		return data;
+	}.bind(this);
 }
 
-Logger.prototype.createLogger = function ( name ) {
-	return new Logger( name || this.name, this );
-};
-
 Logger.prototype.send = function ( level, name, threadId, data ) {
-	//return this.parent.send( level, name, threadId, data );
+	return this.parent.send(level, name, threadId, data);
 };
 
-const levelValues = {
-	all: -Infinity,
-	silent: Infinity,
+const logger = new Logger();
+logger.level = 'silent';
+logger.send = function (level, name, threadId, data) {
+	const msg = Array.from(data);
+	if (threadId) msg.unshift(threadId);
+	if (name) msg.unshift(name);
+	console[level](...msg);
 };
 
-var levels = [
-	"trace",
-	"debug",
-	"info",
-	"warn",
-	"error",
-	"fatal"
-];
-
-levels.forEach( ( levelName, levelValue ) => {
-	levelValues[ levelName ] = levelValue;
-} );
-
-var logger = module.exports = new Logger();
-
-logger.level = "debug";
-
-logger.send = function ( level, name, threadId, data ) {
-	//var msg = Array.from( data );
-	//if ( threadId )
-	//	msg.unshift( threadId );
-	//if ( name )
-	//	msg.unshift( name );
-	////cons[ level ]( ...msg )
-	//console[level](...msg);
-};
+export default logger;

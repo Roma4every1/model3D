@@ -1,54 +1,68 @@
-﻿import {
-    Toolbar
-} from "@progress/kendo-react-buttons";
-import { Loader } from "@progress/kendo-react-indicators";
-import React from 'react';
-import { useSelector } from 'react-redux';
-import ProgramButton from './ProgramButton';
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { Toolbar } from "@progress/kendo-react-buttons";
+import { Skeleton } from "@progress/kendo-react-indicators";
+import ProgramButton from "./ProgramButton";
 
-export default function SqlProgramsList(props) {
-    const sessionId = useSelector((state) => state.sessionId);
-    const sessionManager = useSelector((state) => state.sessionManager);
-    const { formId } = props;
-    const [state, setState] = React.useState({
-        programNames: [],
-        loading: true
-    });
 
-    React.useEffect(() => {
-        let ignore = false;
-        if (formId) {
-            async function fetchData() {
-                const data = await sessionManager.fetchData(`programsList?sessionId=${sessionId}&formId=${formId}`);
-                if (!ignore) {
-                    setState({
-                        programNames: data,
-                        loading: false
-                    });
-                }
-            }
-            fetchData();
+const ProgramNameButton = ({formID, program}) => {
+  const {id, displayName, needCheckVisibility, paramsForCheckVisibility} = program;
+  return (
+    <ProgramButton
+      formID={id} presentationId={formID} programDisplayName={displayName}
+      needCheckVisibility={needCheckVisibility} paramsForCheckVisibility={paramsForCheckVisibility}
+    />
+  );
+}
+
+const CustomSkeleton = ({width}) => {
+  return (
+    <Skeleton
+      shape={'rectangle'} animation={{type: 'wave'}}
+      style={{width: width + 'px', height: '24px', borderRadius: '4px', margin: '0 2px'}}
+    />
+  );
+}
+
+const ProgramsListLoading = () => {
+  return (
+    <div style={{display: 'flex', alignItems: 'center', padding: '2px'}}>
+      <CustomSkeleton width={100}/>
+      <CustomSkeleton width={130}/>
+      <CustomSkeleton width={90}/>
+    </div>
+  );
+}
+
+export default function SqlProgramsList({formId: formID}) {
+  const sessionID = useSelector((state) => state.sessionId);
+  const sessionManager = useSelector((state) => state.sessionManager);
+
+  const [state, setState] = useState({data: null, loaded: false, success: undefined});
+
+  useEffect(() => {
+    let ignore = false;
+    if (formID) {
+      async function fetchData() {
+        const data = await sessionManager.fetchData(`programsList?sessionId=${sessionID}&formId=${formID}`);
+        if (!ignore) {
+          data
+            ? setState({loaded: true, data: data, success: true})
+            : setState({loaded: true, data: null, success: false});
         }
-        return () => { ignore = true; }
-    }, [sessionId, formId, sessionManager]);
+      }
+      fetchData();
+    }
+    return () => { ignore = true; }
+  }, [sessionID, formID, sessionManager]);
 
-    return (
-        <div>
-            {state.loading
-                ? <Loader size="small" type="infinite-spinner" /> 
-                : <Toolbar style={{ padding: 1 }}>
-                    {state.programNames.map(programName =>
-                        <ProgramButton
-                            key={programName.id}
-                            formId={programName.id}
-                            presentationId={formId}
-                            programDisplayName={programName.displayName}
-                            needCheckVisibility={programName.needCheckVisibility}
-                            paramsForCheckVisibility={programName.paramsForCheckVisibility}
-                        />
-                    )}
-                </Toolbar>
-            }
-        </div>
-    );
+  if (!state.loaded) return <ProgramsListLoading/>;
+  if (state.success === false || !formID) return <div>Не удалось загрузить список программ.</div>;
+  if (state.data.length === 0) return <div>Программы отсутствуют.</div>
+
+  return (
+    <Toolbar style={{ padding: 1 }}>
+      {state.data.map(program => <ProgramNameButton key={program.id} formID={formID} program={program}/>)}
+    </Toolbar>
+  );
 }

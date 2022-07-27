@@ -1,11 +1,11 @@
 window.Drawer = module.exports;
 
 var httpClient = require("./httpClient");
-var startThread = require("./startThread");
+var startThread = require("./startThread").default;
 var drawer = require("./mapDrawer");
 var geom = require("./geom");
 var htmlHelper = require("./htmlHelper");
-var pixelPerMeter = require("./pixelPerMeter");
+var pixelPerMeter = require("./pixelPerMeter").default;
 var logger = require("./logger");
 
 var devicePixelRatio = window.devicePixelRatio || 1

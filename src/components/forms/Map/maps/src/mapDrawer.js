@@ -1,12 +1,23 @@
-// module mapDrawer
-const logger = require("./logger");
-const startThread = require("./startThread");
+import dro32Lib from "../../../../../static/libs/dro32_.smb";
+import gridsLib from "../../../../../static/libs/grids.smb";
+import litLib from "../../../../../static/libs/lit.smb";
+import regionalLib from "../../../../../static/libs/regional.smb";
+
+const libsDict = {
+	'dro32_': dro32Lib,
+	'grids': gridsLib,
+	'lit': litLib,
+	'regional': regionalLib,
+};
+
+const logger = require("./logger").default;
+const startThread = require("./startThread").default;
 const geom = require("./geom");
-const lodash = require("lodash");
+const _ = require("lodash");
 const parseColor = require("parse-color");
 const parseSMB = require("./parseSMB");
 const htmlHelper = require("./htmlHelper");
-const pngMono = require("./pngMono");
+const pngMono = require("./pngMono").default;
 
 export var types = {};
 
@@ -70,17 +81,13 @@ declareType("sign", {
 
 	draw: function* drawThread(i, options) {
 		var img = i.img || ((yield* getElementImage(i, options)), i.img);
-		if (!img) {
-			return;
-		}
-		else {
+		if (img) {
 			var p = options.pointToControl(i);
 			var w = img.width * i.size * options.pixelRatio;
 			var h = img.height * i.size * options.pixelRatio;
 
-			if (options.context.setLineDash)
-			{
-			    options.context.drawImage(img, p.x - w / 2, p.y - h / 2, w, h);
+			if (options.context.setLineDash) {
+			  options.context.drawImage(img, p.x - w / 2, p.y - h / 2, w, h);
 			}
 		}
 	},
@@ -127,7 +134,7 @@ var field = declareType("field", {
 	},
 	loaded: (i, provider) => {
 		// initialization
-		i.sourceRenderDataMatrix = lodash.chunk(field._parseSourceRenderData(i.data), i.sizex).reverse(); //reverse 'cause the source array isn't oriented right
+		i.sourceRenderDataMatrix = _.chunk(field._parseSourceRenderData(i.data), i.sizex).reverse(); //reverse 'cause the source array isn't oriented right
 		i.deltasPalette = field._getDeltasPalette(field._getRgbPaletteFromHex(i.palette[0].level));
 		i.calculationTimer = {
 			isActive: false,
@@ -410,7 +417,7 @@ var field = declareType("field", {
 	},
 	_getRgbPaletteFromHex: (hexPalette) => {
 		return hexPalette.map((item) => {
-			let hexColorsArr = lodash.chunk(item.color.slice(1).split(""), 2)
+			let hexColorsArr = _.chunk(item.color.slice(1).split(""), 2)
 				.map((i) => i.join(""));
 			return {
 				hexColor: item.color,
@@ -557,7 +564,7 @@ var field = declareType("field", {
 					}
 					i.lastUsedRenderDataMatrix = newRenderDataMatrix;
 					let currentRenderArr = field._getRenderArrayFromData(
-						lodash.flatten(
+						_.flatten(
 							newRenderDataMatrix
 						),
 						newSizex,
@@ -599,15 +606,11 @@ var polyline = declareType("polyline", {
 				Math.round(bi + (c[i] - bi) * t))
 				}, 1)`;
 		}
-		var done = await fetch(window.location.pathname + "libs/" + libName.toLowerCase() + ".smb",
-			{
-				credentials: 'include'
-			});
+		const done = await fetch(libsDict[libName.toLowerCase()], {credentials: 'include'});
 		let buffer = await done.arrayBuffer();
 		var lib = parseSMB(new Uint8Array(buffer));
 		var png = pngMono(lib[index], color, bkcolor);
-		var image = await htmlHelper.loadImageData(png, "image/png");
-		return image;
+		return await htmlHelper.loadImageData(png, "image/png");
 	},
 
 	bkcolor: function (i) {
@@ -966,7 +969,7 @@ var polyline = declareType("polyline", {
 		}
 		// ---
 
-		var pathNeeded = lodash.once(() => polyline.path(i, options));
+		var pathNeeded = _.once(() => polyline.path(i, options));
 		if ((!i.edited) && i.selected) {
 			context.lineCap = "round";
 			context.lineJoin = "round";
@@ -1063,7 +1066,7 @@ var polyline = declareType("polyline", {
 		}
 
 		if (i.style) {
-			var decorationPathNeeded = lodash.once(() => polyline.decorationPath(i, options, i.style));
+			var decorationPathNeeded = _.once(() => polyline.decorationPath(i, options, i.style));
 			decorationPathNeeded();
 			context.stroke();
 			if (context.setLineDash) {
@@ -1256,7 +1259,7 @@ export function startPaint(canvas, map, options) {
 	};
 
 	return startThread(function* paintThread() {
-		var L = logger.createLogger("DRAW");
+		var L = logger;
 		var done = false;
 		var mapDrawn = 0;
 

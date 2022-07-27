@@ -18,7 +18,7 @@ export type LayoutAction = ActionSet;
 
 const initLayout: FormsLayout = {};
 
-export const layout = (state: FormsLayout = initLayout, action: LayoutAction): FormsLayout => {
+export const layoutReducer = (state: FormsLayout = initLayout, action: LayoutAction): FormsLayout => {
   switch (action.type) {
 
     case LayoutActions.SET: {

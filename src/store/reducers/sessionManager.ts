@@ -17,7 +17,7 @@ export type SessionManagerAction = ActionSet;
 
 const initSessionManager = null;
 
-export const sessionManager = (state = initSessionManager, action: SessionManagerAction) => {
+export const sessionManagerReducer = (state = initSessionManager, action: SessionManagerAction) => {
   switch (action.type) {
 
     case SessionManagerActions.SET: {

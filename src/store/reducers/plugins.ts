@@ -17,7 +17,7 @@ export type PluginsAction = ActionSet;
 
 const initPlugins = [];
 
-export const plugins = (state = initPlugins, action: PluginsAction) => {
+export const pluginsReducer = (state = initPlugins, action: PluginsAction) => {
   switch (action.type) {
 
     case PluginsActions.SET_PLUGINS: {

@@ -1,7 +1,7 @@
-﻿import React from "react";
-import FlexLayout from "flexlayout-react";
-import { Loader } from "@progress/kendo-react-indicators";
+﻿import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
+import { Loader } from "@progress/kendo-react-indicators";
+import FlexLayout from "flexlayout-react";
 
 import Form from "./Form";
 import Container from "./Grid/Container";
@@ -17,31 +17,27 @@ const pushElement = (jsonToInsert, layout, formsToPush, activeIds) => {
     active: formsToPush.some(form => activeIds.includes(form.id)),
     children: formsToPush.map(form => {
       return {
-        id: form.id,
-        type: 'tab',
-        name: form.displayName,
+        id: form.id, type: 'tab', name: form.displayName,
         component: <Form key={form.id} formData={form}/>
       }
     })
   });
 }
 
-function Grid(props, ref) {
-  const { formData } = props;
-
+function Grid({formData}, ref) {
   const sessionManager = useSelector((state) => state.sessionManager);
   const sessionID = useSelector((state) => state.sessionId);
   const form = useSelector((state) => state.childForms[formData.id]);
   const layout = useSelector((state) => state.layout[formData.id]);
 
-  const [openedForms, setOpenedForms] = React.useState(null);
-  const [modelJson, setModelJson] = React.useState(null);
+  const [openedForms, setOpenedForms] = useState(null);
+  const [modelJson, setModelJson] = useState(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     sessionManager.getChildForms(formData.id).then();
   }, [formData, sessionManager]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!openedForms) {
       const formsData = form?.children;
       const openedData = form?.openedChildren;
@@ -49,7 +45,7 @@ function Grid(props, ref) {
     }
   }, [form, formData, openedForms]);
 
-  const correctElement = React.useCallback((layout, forms, activeIds) => {
+  const correctElement = useCallback((layout, forms, activeIds) => {
     if (layout.type === 'tabset') {
       layout.active = layout.children.some(child => activeIds.includes(child.id))
     } else if (layout.type === 'tab') {
@@ -69,7 +65,7 @@ function Grid(props, ref) {
     }
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let ignore = false;
     if (layout) {
       setModelJson(FlexLayout.Model.fromJson(layout));
@@ -97,13 +93,13 @@ function Grid(props, ref) {
             setModelJson(FlexLayout.Model.fromJson(newJSON));
           }
         }
-        fetchData().then()
+        fetchData()
       }
     }
     return () => { ignore = true; }
   }, [form, sessionID, formData, openedForms, layout, correctElement, sessionManager]);
 
-  if (!openedForms) return <Loader size="small" type="infinite-spinner" />;
+  if (!openedForms) return <Loader size={'small'} type={'infinite-spinner'} />;
   return (
     <Container formId={formData.id} modelJson={modelJson}>
       {openedForms.map(formData => <Form key={formData.id} formData={formData}/>)}

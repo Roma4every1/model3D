@@ -1,80 +1,78 @@
-﻿import React from "react";
+﻿import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, useImperativeHandle } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { getMapLoader } from "./Map/MapLoader.js";
-import {getParentFormId, tableRowToString} from "../../utils";
+import { getParentFormId, tableRowToString } from "../../utils";
+import { translator, distance } from "./Map/maps/src/geom";
+import pixelPerMeter from "./Map/maps/src/pixelPerMeter";
 import setFormRefs from "../../store/actionCreators/setFormRefs";
 
-const pixelPerMeter = require("./Map/maps/src/pixelPerMeter");
-const geom = require("./Map/maps/src/geom");
 
+// Система подготовки (PREPARE_SYSTEM)
+// Баяндыское -> D3fm -> 28 -> Карта изобар
 
-// http://gs-wp51:81/ReactWMW/?systemName=PREPARE_SYSTEM - исходное поведение
-// Баяндыское -> D3fm -> 28 -> Карта изобар -> 31.12.2019
+const getNearestNamedPoint = (point, scale, map) => {
+  const SELECTION_RADIUS = 0.015;
+  let minRadius, nearestNP = null;
 
-function Map(props, ref) {
-  const { formData, data } = props;
+  map.points.forEach((p) => {
+    const localDist = distance(p.x, p.y, point.x, point.y);
+
+    if (!minRadius || localDist < minRadius) {
+      minRadius = localDist;
+      if ((minRadius / scale) < SELECTION_RADIUS) nearestNP = p;
+    }
+  });
+
+  return nearestNP;
+};
+
+function Map({formData, data}, ref) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const [mapInfo, setMapInfo] = React.useState(null);
-  const [mapData, setMapData] = React.useState(null);
-  const [mapDrawnData, setMapDrawnData] = React.useState(null);
+  const [mapInfo, setMapInfo] = useState(null);
+  const [mapData, setMapData] = useState(null);
+  const [mapDrawnData, setMapDrawnData] = useState(null);
 
-  const sessionId = useSelector((state) => state.sessionId);
-  const sessionManager = useSelector((state) => state.sessionManager);
-  const cursor = useSelector((state) => state.formRefs[formData.id + "_cursor"]);
+  const { root, webServicesURL } = useSelector(state => state.appState.config.data);
+  const sessionID = useSelector(state => state.sessionId);
+  const sessionManager = useSelector(state => state.sessionManager);
+  const cursor = useSelector(state => state.formRefs[formData.id + '_cursor']);
   const databaseData = useSelector((state) => state.channelsData[data.activeChannels[0]]);
 
-  const centerScaleChangingHandler = React.useRef(null);
-  const drawer = React.useRef(null);
-  const selectedObject = React.useRef(null);
+  const selectedObject = useRef(null);
+  const centerScaleChangingHandler = useRef(null);
 
-  const setSelectedObject = React.useCallback((newSelected) => {
+  /** "Рисовальщик" - объект будет сохраняться в течение всего срока службы компонента. */
+  const drawer = useRef(null);
+
+  const setSelectedObject = useCallback((newSelected) => {
     selectedObject.current = newSelected;
-    dispatch(setFormRefs(formData.id + "_selectedObject", newSelected));
-    }, [dispatch, formData.id]);
+    dispatch(setFormRefs(formData.id + '_selectedObject', newSelected));
+  }, [dispatch, formData.id]);
 
-  const getCenterScale = React.useCallback(() => ({
+  const getCenterScale = useCallback(() => ({
     scale: mapDrawnData?.scale ?? 10000,
     centerx: Math.round(mapDrawnData?.centerx ?? 0),
     centery: Math.round(mapDrawnData?.centery ?? 0),
   }), [mapDrawnData]);
 
-  const getNearestNamedPoint = (point, scale, map) => {
-    const SELECTION_RADIUS = 0.015;
-    let minRadius, nearestNp = null;
-
-    map.points.forEach((p) => {
-      const localDist = geom.distance(p.x, p.y, point.x, point.y);
-
-      if (!minRadius || localDist < minRadius) {
-        minRadius = localDist;
-        if ((minRadius / scale) < SELECTION_RADIUS) nearestNp = p;
-      }
-    });
-
-    return nearestNp;
-  };
-
-  const draw = React.useCallback((canvas, map, scale, centerX, centerY, selected, redrawnHandler) => {
+  const draw = useCallback((canvas, map, scale, centerX, centerY, selected, redrawnHandler) => {
     const mapDataD = drawer.current.showMap(canvas, map, {
-      scale: scale,
-      centerx: centerX,
-      centery: centerY,
-      selected: selected
+      scale, selected, centerx: centerX, centery: centerY,
     })
-      .on("update.begin", function (canvas, ret) {
+      .on('update.begin', (canvas, ret) => {
         const context = {
           center: {x: mapDataD.centerx, y: mapDataD.centery},
           scale: mapDataD.scale,
         };
         drawer.current.checkIndex(map, context);
       })
-      .on("update.end", function (canvas) {
+      .on('update.end', (canvas) => {
         if (redrawnHandler) redrawnHandler(canvas);
       })
-      .on("pointPicked", function (point, scale) {
+      .on('pointPicked', (point, scale) => {
         if (!_viewRef.current.blocked && !_viewRef.current.selectingMode) {
           const nearestObject = getNearestNamedPoint(point, scale, map);
           if (nearestObject) {
@@ -90,18 +88,24 @@ function Map(props, ref) {
     setMapDrawnData(mapDataD);
   }, [setSelectedObject]);
 
-  const updateCanvas = React.useCallback((newcs, context, redrawnHandler) => {
-    const cs = newcs ?? getCenterScale();
+  const updateCanvas = useCallback((newCS, context, redrawnHandler) => {
+    const cs = newCS ?? getCenterScale();
     if (centerScaleChangingHandler?.current) centerScaleChangingHandler.current(cs);
 
-    mapDrawnData.emit("detach");
+    mapDrawnData.emit('detach');
     draw(context ?? _viewRef.current, mapData, cs.scale, cs.centerx, cs.centery, selectedObject?.current, redrawnHandler);
   }, [draw, mapData, getCenterScale, mapDrawnData]);
 
-  React.useEffect(() => {
+  /* setMapInfo: если нет данных, то пишется, что карта не найдена */
+  useEffect(() => {
     if (databaseData?.data?.Rows && databaseData.data.Rows.length > 0) {
       if (databaseData.currentRowObjectName) {
-        sessionManager.paramsManager.updateParamValue(getParentFormId(formData.id), databaseData.currentRowObjectName, tableRowToString(databaseData, databaseData.data.Rows[0])?.value, true);
+        sessionManager.paramsManager.updateParamValue(
+          getParentFormId(formData.id),
+          databaseData.currentRowObjectName,
+          tableRowToString(databaseData, databaseData.data.Rows[0])?.value,
+          true
+        );
       }
       setMapInfo(databaseData.data.Rows[0]);
     } else {
@@ -109,23 +113,25 @@ function Map(props, ref) {
     }
   }, [databaseData, formData, sessionManager]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let ignore = false;
-    dispatch(setFormRefs(formData.id + "_activeLayer", null));
+    dispatch(setFormRefs(formData.id + '_activeLayer', null));
     if (mapInfo) {
       async function fetchData() {
         const mapId = mapInfo.Cells[0];
         const owner = mapInfo.Cells[12];
-        drawer.current = getMapLoader(sessionId, formData.id, owner, sessionManager);
+        drawer.current = getMapLoader(sessionID, formData.id, owner, sessionManager, webServicesURL, root);
         let loadedMap = await drawer.current.loadMap(String(mapId), { center: { x: 0, y: 0 }, scale: 10000 });
 
         if (!ignore) {
           new drawer.current.Scroller(_viewRef.current);
           _viewRef.current.blocked = false;
-          dispatch(setFormRefs(formData.id + "_mapData", null));
-          dispatch(setFormRefs(formData.id + "_mapData", loadedMap));
-          dispatch(setFormRefs(formData.id + "_selectedObjectEditing", false));
+
+          dispatch(setFormRefs(formData.id + '_mapData', null));
+          dispatch(setFormRefs(formData.id + '_mapData', loadedMap));
+          dispatch(setFormRefs(formData.id + '_selectedObjectEditing', false));
           setMapData(loadedMap);
+
           let centerX = 0, centerY = 0;
           draw(_viewRef.current, loadedMap, 10000, centerX, centerY, null);
           loadedMap.pointsData.then(points => {
@@ -156,13 +162,13 @@ function Map(props, ref) {
           });
         }
       }
-      fetchData().then();
+      fetchData();
     }
     return () => { ignore = true; }
-  }, [mapInfo, sessionId, formData, sessionManager, draw, dispatch]);
+  }, [mapInfo, sessionID, formData, sessionManager, draw, dispatch, webServicesURL]);
 
-  const _viewRef = React.useRef(null);
-  const _div = React.useRef(null);
+  const _viewRef = useRef(null);
+  const _div = useRef(null);
 
   const toFullViewport = () => {
     if (!mapData) return;
@@ -184,7 +190,7 @@ function Map(props, ref) {
     updateCanvas({scale, centerx: centerX, centery: centerY});
   };
 
-  React.useImperativeHandle(ref, () => ({
+  useImperativeHandle(ref, () => ({
     toFullViewport: () => {toFullViewport()},
 
     updateCanvas: (cs, context, redrawnHandler) => {
@@ -205,7 +211,7 @@ function Map(props, ref) {
     coords: () => {
       const dotsPerMeter = _viewRef.current.width / (_viewRef.current.clientWidth / pixelPerMeter());
       const centerScale = getCenterScale();
-      return geom.translator(
+      return translator(
         centerScale.scale,
         { x: centerScale.centerx, y: centerScale.centery },
         dotsPerMeter,
@@ -222,20 +228,20 @@ function Map(props, ref) {
     control: () => {return _viewRef.current},
 
     setActiveLayer: (layer) => {
-        dispatch(setFormRefs(formData.id + "_activeLayer", layer));
+        dispatch(setFormRefs(formData.id + '_activeLayer', layer));
     }
   }));
 
-  React.useLayoutEffect(() => {
-    dispatch(setFormRefs(formData.id + "_mapView", _viewRef))
+  useLayoutEffect(() => {
+    dispatch(setFormRefs(formData.id + '_mapView', _viewRef))
   }, [formData, dispatch]);
 
-  const divStyle = { width: "100%", height: "100%", "overflowY": "hidden", "overflowX": "hidden" };
-  const canvasStyle = { cursor: cursor ?? "point", width: "100%", height: "100%", "overflowY": "hidden", "overflowX": "hidden" };
+  const divStyle = { width: '100%', height: '100%', overflowX: 'hidden', overflowY: 'hidden' };
+  const canvasStyle = { cursor: cursor ?? 'point', width: '100%', height: '100%', overflowX: 'hidden', overflowY: 'hidden' };
 
   return (
     <div ref={_div} style={divStyle}>
-      {mapInfo ? <canvas style={canvasStyle} ref={_viewRef}/> : <div>{t("map.notFound")}</div>}
+      {mapInfo ? <canvas style={canvasStyle} ref={_viewRef}/> : <div>{t('map.notFound')}</div>}
     </div>
   );
 }

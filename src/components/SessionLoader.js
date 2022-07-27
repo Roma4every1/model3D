@@ -1,38 +1,38 @@
-﻿import React from 'react';
-import { useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import WindowHandler from './common/WindowHandler';
+﻿import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+
 import Form from './forms/Form';
+import LoadingStatus from "./common/LoadingStatus";
+import WindowHandler from "./common/WindowHandler";
 
 
 export default function SessionLoader() {
-  const { t } = useTranslation();
-  const sessionId = useSelector((state) => state.sessionId);
+  const sessionID = useSelector((state) => state.sessionId);
   const sessionManager = useSelector((state) => state.sessionManager);
 
-  const [formData, setFormData] = React.useState();
+  const [formData, setFormData] = useState();
 
-  React.useEffect(() => {
+  useEffect(() => {
     let ignore = false;
 
     async function getFormData() {
-      if (sessionId && !ignore) {
-        const data = await sessionManager.fetchData(`getRootForm?sessionId=${sessionId}`);
+      if (sessionID && !ignore) {
+        const data = await sessionManager.fetchData(`getRootForm?sessionId=${sessionID}`);
         setFormData(data);
       }
     }
     getFormData();
 
     return () => { ignore = true; }
-  }, [sessionId, sessionManager]);
+  }, [sessionID, sessionManager]);
 
   return (
     <>
       <WindowHandler />
-        {(!formData) || (sessionManager.getSessionLoading())
-          ? <p><em>{t('session.loading')}</em></p>
-          : <Form key="root" formData={formData}/>
-        }
+      {(!formData || sessionManager.getSessionLoading())
+        ? <LoadingStatus loadingType={'session'}/>
+        : <Form key="root" formData={formData}/>
+      }
     </>
   );
 }

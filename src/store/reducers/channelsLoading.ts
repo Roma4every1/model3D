@@ -18,7 +18,7 @@ export type ChannelsLoadingAction = ActionSet;
 
 const initChannelsLoading: ChannelsLoading = {};
 
-export const channelsLoading = (state: ChannelsLoading = initChannelsLoading, action: ChannelsLoadingAction): ChannelsLoading => {
+export const channelsLoadingReducer = (state: ChannelsLoading = initChannelsLoading, action: ChannelsLoadingAction): ChannelsLoading => {
   switch (action.type) {
 
     case ChannelsLoadingActions.SET: {

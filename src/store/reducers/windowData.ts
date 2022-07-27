@@ -60,18 +60,18 @@ export type WindowDataAction = ActionSetInfo | ActionSetWarning | ActionSetError
 
 const initWindowData = null;
 
-export const windowData = (state = initWindowData, action: WindowDataAction) => {
+export const windowDataReducer = (state = initWindowData, action: WindowDataAction) => {
   let newState = {...state };
   switch (action.type) {
 
     case WindowDataActions.SET_INFO: {
       newState.messageWindow = {
         opened: true,
-        header: action.header ?? i18n.t('base.info'),
+        header: action.header || i18n.t('base.info'),
         text: action.text,
         stackTrace: action.stackTrace,
         fileToSaveName: action.fileToSaveName,
-        type: "info"
+        type: 'info'
       }
       return newState;
     }
@@ -79,11 +79,11 @@ export const windowData = (state = initWindowData, action: WindowDataAction) => 
     case WindowDataActions.SET_WARNING: {
       newState.messageWindow = {
         opened: true,
-        header: action.header ?? i18n.t('base.warning'),
+        header: action.header || i18n.t('base.warning'),
         text: action.text,
         stackTrace: action.stackTrace,
         fileToSaveName: action.fileToSaveName,
-        type: "warning"
+        type: 'warning'
       }
       return newState;
     }
@@ -91,11 +91,11 @@ export const windowData = (state = initWindowData, action: WindowDataAction) => 
     case WindowDataActions.SET_ERROR: {
       newState.messageWindow = {
         opened: true,
-        header: action.header ?? i18n.t('base.error'),
+        header: action.header || i18n.t('base.error'),
         text: action.text,
         stackTrace: action.stackTrace,
         fileToSaveName: action.fileToSaveName,
-        type: "error"
+        type: 'error'
       }
       return newState;
     }

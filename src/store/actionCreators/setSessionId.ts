@@ -1,4 +1,4 @@
-﻿import {SessionIDActions, ActionSet} from "../reducers/sessionId";
+import {SessionIDActions, ActionSet} from "../reducers/sessionId";
 
 
 const setSessionId = (value: SessionID): ActionSet => {

@@ -128,35 +128,35 @@ export default function createParamsManager(store) {
     // Обновление состояния приложения (redux state).
     store.dispatch(updateParam(formID, paramID, value, manual));
 
-    const formState = store.getState().formStates[formID];
-    if (!formState) return;
-
-    // Если действие инициировал пользователь, то необходимо очистить зависящие параметры.
-    if (manual) {
-      const formParams = store.getState().formParams[formID];
-      if (formParams) clearDepends(formParams, formState, paramID);
-    } else {
-      const paramState = formState[paramID];
-      if (paramState) paramState.setValue(value)
-    }
+    // const formState = store.getState().formStates[formID];
+    // if (!formState) return;
+    //
+    // // Если действие инициировал пользователь, то необходимо очистить зависящие параметры.
+    // if (manual) {
+    //   const formParams = store.getState().formParams[formID];
+    //   if (formParams) clearDepends(formParams, formState, paramID);
+    // } else {
+    //   const paramState = formState[paramID];
+    //   if (paramState) paramState.value = value;
+    // }
   }
 
-  /** Очищает все значения других параметров из списка зависимостей данного.
-   * @see updateParamValue
-   * */
-  const clearDepends = (formParams, formState, paramID) => {
-    formParams.forEach(param => {
-      if (param.dependsOn?.includes(paramID) && param.value) {
-        const paramState = formState[param.id];
-
-        if (paramState) {
-          // Обновление состояние редактора (React компонента).
-          paramState.setValue(null);
-          clearDepends(formParams, formState, param.id);
-        }
-      }
-    });
-  }
+  // /** Очищает все значения других параметров из списка зависимостей данного.
+  //  * @see updateParamValue
+  //  * */
+  // const clearDepends = (formParams, formState, paramID) => {
+  //   formParams.forEach(param => {
+  //     if (param.dependsOn?.includes(paramID) && param.value) {
+  //       const paramState = formState[param.id];
+  //
+  //       if (paramState) {
+  //         // Обновление состояние редактора (React компонента).
+  //         paramState.value = null;
+  //         clearDepends(formParams, formState, param.id);
+  //       }
+  //     }
+  //   });
+  // }
 
   let reportFormId = null;
 
@@ -206,7 +206,7 @@ export default function createParamsManager(store) {
     }
   }
 
-  /* будет вызываться каждый раз при отправке действия (и когда состояние могло измениться) */
+  // будет вызываться каждый раз при отправке действия (и когда состояние могло измениться)
   store.subscribe(() => {
     if (reportFormId) {
       getCanRunReport(reportFormId).then();

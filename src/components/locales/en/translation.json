@@ -141,7 +141,20 @@
   },
   "session": {
     "loading": "Loading session...",
-    "systemList": "List of possible systems"
+    "loadingError": "Failed to load session.",
+    "unknownPath": "Path \"{{unresolvedPath}}\" notFound. Possible options:"
+  },
+  "clientConfig": {
+    "loading": "Loading configuration...",
+    "loadingError": "Failed to load configuration."
+  },
+  "systems": {
+    "loading": "Loading system list...",
+    "loadingError": "Failed to load list of systems.",
+    "system": "system",
+    "list":  "List of available systems",
+    "backToSystemList": "Back to system list.",
+    "notFound": "System \"{{systemName}}\" is not in the list of available systems."
   },
   "table": {
     "areYouSureToDeleteRows": "Are you sure to delete rows (count: {{count}})?",

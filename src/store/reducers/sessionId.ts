@@ -17,7 +17,7 @@ export type SessionIDAction = ActionSet;
 
 const initSessionID: SessionID = '';
 
-export const sessionId = (state: SessionID = initSessionID, action: SessionIDAction): SessionID => {
+export const sessionIdReducer = (state: SessionID = initSessionID, action: SessionIDAction): SessionID => {
   switch (action.type) {
 
     case SessionIDActions.SET: {

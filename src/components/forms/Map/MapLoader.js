@@ -1,8 +1,9 @@
 import lines from "./lines.json";
 import createMapsDrawer from "./maps/src/index.js";
-import { URL } from "../../../utils"
+import { readXml } from "./maps/src/gsTransform";
 
-const transform = require("./maps/src/gsTransform");
+import symbolDef from "../../../static/libs/symbol.def";
+
 
 async function getHttpFun(address, encoding, sessionManager) {
   const done = await fetch(address, {credentials: 'include'});
@@ -17,37 +18,36 @@ async function getHttpFun(address, encoding, sessionManager) {
   }
 }
 
-function parseStringToJson(parsedString) {
+const parseStringToJson = (parsedString) => {
   if (typeof parsedString !== 'string') return parsedString;
+  parsedString = readXml(parsedString);
 
-  parsedString = transform.readXml(parsedString);
-
-  Object.values(parsedString.layers).forEach(l => {
-    l.elements = l.elements.map(el => {
+  Object.values(parsedString.layers).forEach(layer => {
+    layer.elements = layer.elements.map(el => {
       return { ...el, bounds: (el.bounds && el.bounds.length === 1) ? el.bounds[0] : el.bounds }
     });
   });
   return parsedString;
 }
 
-export function getMapLoader(sessionId, formId, owner, sessionManager) {
+export function getMapLoader(sessionID, formID, owner, sessionManager, webServicesURL, root) {
   const httpClient = {
     getHTTP: getHttpFun,
     getJSON: (url) => getHttpFun(url, 'json', sessionManager).then(parseStringToJson),
   };
 
-  let loadMapURL = `getMap?sessionId=${sessionId}&formId=${formId}&mapId=`;
-  let loadContainerURL = owner
-    ? `getContainer?sessionId=${sessionId}&formId=${formId}&owner=${owner}&containerName=`
-    : `getContainer?sessionId=${sessionId}&formId=${formId}&containerName=`;
+  const loadMapURL = `getMap?sessionId=${sessionID}&formId=${formID}&mapId=`;
+  const loadContainerURL = owner
+    ? `getContainer?sessionId=${sessionID}&formId=${formID}&owner=${owner}&containerName=`
+    : `getContainer?sessionId=${sessionID}&formId=${formID}&containerName=`;
 
   return createMapsDrawer({
-    libs: window.location.pathname + 'libs/',
-    symbolDef: window.location.pathname + 'libs/symbol.def',
-    mapRoot: URL + loadMapURL,
-    containerRoot: URL + loadContainerURL,
-    imageRoot: '/images/',
-    linesDef: window.location.pathname + 'libs/lines.def',
+    libs: root + 'libs/',
+    symbolDef: symbolDef,
+    linesDef: root + 'libs/lines.def',
+    imageRoot: root + 'images/',
+    mapRoot: webServicesURL + loadMapURL,
+    containerRoot: webServicesURL + loadContainerURL,
     drawOptions: {
       zoomSleep: 500,
       selectedSize: 6,

@@ -66,27 +66,27 @@ export const distance = (x1, x2, y1, y2) => {
 	return Math.sqrt(x1 * x1 + x2 * x2 + y1 * y1 + y2 * y2 - 2 * (x1 * x2 + y1 * y2));
 }
 
-export function translator(mscale, mcenter, cscale, ccenter) {
+export function translator(mScale, mCenter, cScale, cCenter) {
 	let ret;
 	return ret = {
-		mscale, cscale,
-		pointToControl: translate(mscale, mcenter, cscale, ccenter),
-		pointToMap: translate(cscale, ccenter, mscale, mcenter),
+		mscale: mScale, cscale: cScale,
+		pointToControl: translate(mScale, mCenter, cScale, cCenter),
+		pointToMap: translate(cScale, cCenter, mScale, mCenter),
 		scaleVisible: obj =>
 			obj.lowscale == null || obj.highscale == null ||
-			(((typeof obj.lowscale === 'string' && obj.lowscale.includes('INF')) || obj.lowscale <= mscale) && 
-                         ((typeof obj.highscale === 'string' && obj.highscale.includes('INF')) || mscale <= obj.highscale)),
+			(((typeof obj.lowscale === 'string' && obj.lowscale.includes('INF')) || obj.lowscale <= mScale) &&
+                         ((typeof obj.highscale === 'string' && obj.highscale.includes('INF')) || mScale <= obj.highscale)),
 		zoom: (scaleIn, cpoint, mpoint) =>
-			ret.setScale(mscale * scaleIn, cpoint, mpoint),
+			ret.setScale(mScale * scaleIn, cpoint, mpoint),
 		setScale: (scale, cpoint, mpoint) => {
 			if (cpoint == null) {
-				cpoint = ccenter
-				mpoint = mcenter
+				cpoint = cCenter
+				mpoint = mCenter
 			}
 			else if (mpoint == null)
 				mpoint = ret.pointToMap(cpoint)
-			return translator(scale, mpoint, cscale, cpoint)
+			return translator(scale, mpoint, cScale, cpoint)
 		},
-		changeResolution: mul => mul === 1 ? ret : translator(mscale, ret.pointToMap({ x: 0, y: 0 }), cscale * mul, { x: 0, y: 0 }),
+		changeResolution: mul => mul === 1 ? ret : translator(mScale, ret.pointToMap({ x: 0, y: 0 }), cScale * mul, { x: 0, y: 0 }),
 	}
 }

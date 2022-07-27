@@ -1,29 +1,27 @@
-﻿/* --- Определние ссылки для API --- */
+﻿/* --- Вспомогательные функции --- */
 
-/**
- * URL для взаимодействия с сервером, если не определена переменая окружения для API
- * (`process.env.WMW_SERVER_URL`). Обычно заканчивается на `".../WebRequests.svc/"`
- * @example
- * "http://gs-wp51:81/WellManager.ServerSide.Site/WebRequests.svc/" // С демо системой
- * "http://kmn-wmw:8080/ID2x/WebRequests.svc/" // Калининградские системы
- * "http://wmw-usi/wmw/WebRequests.svc/" // Коми
+/** Преобразование информации о системе в удобный формат.
+ * Используется в компоненте `SystemList`.
  * */
-const defaultURL = 'http://kmn-wmw:8080/ID2x/WebRequests.svc/';
-
-let useServer = process.env.USE_WMW_SERVER ?? true;
-let serverURL = process.env.WMW_SERVER_URL ?? defaultURL;
-
-const getServerURL = () => {
-  if (!serverURL.endsWith('/')) serverURL += '/';
-  return useServer ? serverURL : 'session/';
+export const mapSystem = (rawSystem) => {
+  const attributes = rawSystem['Attributes'].map(attr => [attr.Key, attr.Value]);
+  const system = Object.fromEntries(attributes);
+  system.id = rawSystem.Name;
+  return system;
 }
-/** Ссылка, которая будет использоваться при взаимодействии с сервером. */
-export const URL = getServerURL();
 
-/* --- Вспомогательные функции --- */
-
-export async function webFetch(request, params) {
-  return await fetch(URL + request, {credentials: 'include', ...params});
+/** Сравнивает два массива на равенство.
+ *
+ * **Не проводит глубокое сравнение.**
+ * На первом уровне вложенности сравнивает примитивные значениея или ссылки.
+ * @example
+ * const obj = {}
+ * compareArrays([1, 2], [1, 2]) // true
+ * compareArrays([obj], [obj])   // true
+ * compareArrays([obj], [{}])    // false
+ * */
+export const compareArrays = (a1, a2) => {
+  return a1.length === a2.length && a1.every((v, i) => v === a2[i]);
 }
 
 export const capitalizeFirstLetter = (string) => {
@@ -153,7 +151,7 @@ export const tableCellToString = (valuesToSelect, row) => {
   return temp;
 }
 
-/* (rowString: any, columnName: string): string */
+/* (rowString: string, columnName: string): string */
 export const stringToTableCell = (rowString, columnName) => {
   rowString = rowString.toString();
   const startIndex = rowString.indexOf(columnName + '#');

@@ -1,13 +1,13 @@
-﻿// module maps
+﻿import {once, identity} from "lodash";
+import logger from "./logger";
+import startThread, {sleep} from "./startThread";
+import {types, startPaint as _startPaint} from "./mapDrawer";
+import {translator, rects} from "./geom";
+import {onElementSize} from "./htmlHelper";
+import pixelPerMeter from "./pixelPerMeter";
+import EventEmitter from "events";
+import nextTick from 'async/nextTick';
 
-const _ = require("lodash");
-const logger = require("./logger");
-const startThread = require("./startThread");
-const drawer = require("./mapDrawer");
-const geom = require("./geom");
-const htmlHelper = require("./htmlHelper");
-const pixelPerMeter = require("./pixelPerMeter");
-const EventEmitter = require("events");
 
 const devicePixelRatio = window.devicePixelRatio || 1;
 
@@ -27,28 +27,29 @@ function updateCanvasSize(canvas) {
 	return ret;
 }
 
-module.exports = function Maps(provider) {
-
+export default function Maps(provider) {
 	this.checkIndex = (ret, context) => startThread(function* updateMapThread() {
-		logger.info("checking indexes for all layers map", ret);
-		var mapDataEvents = yield [];
+		logger.info('checking indexes for all layers map', ret);
+		const mapDataEvents = yield [];
 		for (let layer of ret.layers) {
 			mapDataEvents.push(layer.elementsData = startThread(function* () {
-				var elements = [];
+				let elements = [];
 				// load container from index
-				var indexName = null
+				let indexName = null;
 				if (ret.indexes) {
-					var indexesForContainer = ret.indexes.find(function (i) { return i.container === layer.container })
-					var indexes = []
+					const indexesForContainer = ret.indexes.find(function (i) {
+						return i.container === layer.container
+					});
+					const indexes = [];
 					if (indexesForContainer && context && context.center) {
 						indexesForContainer.data.forEach((idx) => {
 							if (idx.maxx >= context.center.x && idx.minx < context.center.x && idx.maxy >= context.center.y && idx.miny < context.center.y) {
 								indexes.push(idx)
 							}
 						});
-						var scaleDif = 0;
+						let scaleDif = 0;
 						indexes.forEach((idx) => {
-							var diff = idx.scale - context.scale + 1
+							const diff = idx.scale - context.scale + 1;
 							if (scaleDif <= 0 || (diff < scaleDif && diff > 0)) {
 								scaleDif = diff
 								indexName = idx.hash
@@ -59,27 +60,32 @@ module.exports = function Maps(provider) {
 
 				try {
 					if (indexName && indexName !== layer.index) {
-						logger.warn("index updated from " + layer.index + " to " + indexName + " for container " + layer.container + " layer " + layer.uid);
+						logger.warn(`index updated from ${layer.index} to ${indexName} for container ${layer.container} layer ${layer.uid}`);
 						layer.index = indexName;
 					}
-					var data = yield provider.getContainer(layer.container, indexName || layer.index);
-					var layerFromContainer = layer.uid.includes(layer.container) ? data.layers[layer.uid.replace(layer.container, '')] : data.layers[layer.uid]
+
+					const data = yield provider.getContainer(layer.container, indexName || layer.index);
+					const layerFromContainer = layer.uid.includes(layer.container)
+						? data.layers[layer.uid.replace(layer.container, '')]
+						: data.layers[layer.uid];
+
 					elements = layerFromContainer.elements;
 					layer.version = layerFromContainer.version;
+
 					if (elements.length === 0) {
-						// try to find elements amoung of [layername] layer into container
-						var nameFromContainerInBrackets = "[" + layerFromContainer.name + "]";
-						var newLayer = Object.values(data.layers).find(function (l) { return l.name === nameFromContainerInBrackets })
-						if (newLayer != null) {
-							elements = newLayer.elements;
-						}
+						// try to find elements among of [layername] layer into container
+						const nameFromContainerInBrackets = '[' + layerFromContainer.name + ']';
+						const newLayer = Object.values(data.layers).find(function (l) {
+							return l.name === nameFromContainerInBrackets
+						});
+						if (newLayer != null) elements = newLayer.elements;
 					}
+
 					for (var i of elements) {
-						var t = drawer.types[i.type];
+						var t = types[i.type];
 						if (t && t.loaded) {
 							var r = t.loaded(i, provider);
-							if (r)
-								mapDataEvents.push(r);
+							if (r) mapDataEvents.push(r);
 						}
 					}
 					layer.elements = elements;
@@ -88,137 +94,140 @@ module.exports = function Maps(provider) {
 					logger.error("error", error);
 				}
 				return elements;
-			}
-			))
+			}))
 		}
 
 		ret.mapData = startThread(function* () {
 			while (mapDataEvents.length)
 				try {
 					yield mapDataEvents.pop();
-				}
-				catch (error) {
+				} catch (error) {
 					ret.mapErrors.push(error);
-					logger.error("error", error);
+					logger.error('error', error);
 				}
 		});
-		logger.info("updated map", ret);
+		logger.info('updated map', ret);
 	})
 
 
 	this.loadMap = (map, context) => startThread(function* loadMapThread() {
-		logger.info("loading map", map);
-		if (typeof map != "string")
-			map = map.ID;
+		logger.info('loading map', map);
+		if (typeof map != 'string') map = map.ID;
 
-		var ret = yield provider.getMap(map);
+		const mapDataEvents = [];
+		const ret = yield provider.getMap(map);
 		ret.mapErrors = [];
-
-		var mapDataEvents = [];
 
 		mapDataEvents.push(ret.pointsData = startThread(function* () {
 			try {
-				var data = yield provider.getContainer(ret.namedpoints);
+				const data = yield provider.getContainer(ret.namedpoints);
 				return ret.points = data.namedpoints;
-			}
-			catch (error) {
-				var message = "error loading named points from "
-				ret.mapErrors.push(message + ret.namedpointsContainer + ", " + error);
+			} catch (error) {
+				const message = 'error loading named points from ';
+				ret.mapErrors.push(message + ret.namedpointsContainer + ', ' + error);
 				logger.error(message, ret.namedpointsContainer, error);
 				return [];
 			}
 		}));
 
 		for (let layer of ret.layers) {
-
 			layer.elements = null;
 
 			mapDataEvents.push(layer.elementsData = startThread(function* () {
-				var elements = [];
+				let elements = [];
 				try {
 					// load container from index
-					var indexName = null
+					let indexName = null;
 					if (ret.indexes) {
-						var indexes = []
-						var indexesForContainer = ret.indexes.find(function (i) { return i.container === layer.container })
+						const indexes = [];
+						const indexesForContainer = ret.indexes.find((i) => i.container === layer.container);
+
 						if (indexesForContainer && context && context.center) {
 							indexesForContainer.data.forEach((idx) => {
-								if (idx.maxx >= context.center.x && idx.minx < context.center.x && idx.maxy >= context.center.y && idx.miny < context.center.y) {
-									indexes.push(idx)
-								}
+								if (
+									idx.maxx >= context.center.x &&
+									idx.minx < context.center.x &&
+									idx.maxy >= context.center.y &&
+									idx.miny < context.center.y
+								) indexes.push(idx)
 							});
-							var scaleDif = 0;
+
+							let scaleDif = 0;
 							indexes.forEach((idx) => {
-								var diff = idx.scale - context.scale + 1
+								const diff = idx.scale - context.scale + 1;
 								if (scaleDif <= 0 || (diff < scaleDif && diff > 0)) {
 									scaleDif = diff
 									indexName = idx.hash
 								}
 							});
+
 							if (!indexName) {
-								logger.warn("Problem with index calcualtionfound index for container " + layer.container);
-								if (indexesForContainer.data.length > 0) {
-									indexName = indexesForContainer.data[0].hash;
-								}
+								logger.warn('froblem with index calculation found index for container ' + layer.container);
+								if (indexesForContainer.data.length > 0) indexName = indexesForContainer.data[0].hash;
 							}
 						}
 
 						if (indexName) {
-							logger.info("found index " + indexName + " for container " + layer.container);
-							layer.index = indexName
+							logger.info(`found index ${indexName} for container ${layer.container}`);
+							layer.index = indexName;
 						}
 					}
-					var data = yield provider.getContainer(layer.container, indexName);
-					var layerFromContainer = layer.uid.includes(layer.container) ? data.layers[layer.uid.replace(layer.container, '')] : data.layers[layer.uid]
+
+					const data = yield provider.getContainer(layer.container, indexName);
+					const layerFromContainer = layer.uid.includes(layer.container)
+						? data.layers[layer.uid.replace(layer.container, '')]
+						: data.layers[layer.uid];
+
 					elements = layerFromContainer.elements;
 					layer.version = layerFromContainer.version;
+
 					if (elements.length === 0) {
-						// try to find elements amoung of [layername] layer into container
-						var nameFromContainerInBrackets = "[" + layerFromContainer.name + "]";
-						var newLayer = Object.values(data.layers).find(function (l) { return l.name === nameFromContainerInBrackets })
+						// try to find elements among of [layername] layer into container
+						const nameFromContainerInBrackets = "[" + layerFromContainer.name + "]";
+						const newLayer = Object.values(data.layers).find(function (l) {
+							return l.name === nameFromContainerInBrackets
+						});
 						if (newLayer != null) {
 							elements = newLayer.elements;
 						}
 					}
-					for (var i of elements) {
-						var t = drawer.types[i.type];
+
+					for (let i of elements) {
+						const t = types[i.type];
 						if (t && t.loaded) {
-							var r = t.loaded(i, provider);
-							if (r)
-								mapDataEvents.push(r);
+							const r = t.loaded(i, provider);
+							if (r) mapDataEvents.push(r);
 						}
 					}
-				}
-				finally {
+				} finally {
 					layer.elements = elements;
 				}
 				return elements;
 			}));
 		}
 
-		// DO NOT USE 'Promise.all( mapDataEvents )' because mapDataEvents is being changed during waiting!!
+		// DO NOT USE 'Promise.all( mapDataEvents )' because mapDataEvents is being changed during waiting!
 		ret.mapData = startThread(function* () {
 			while (mapDataEvents.length)
 				try {
 					yield mapDataEvents.pop();
-				}
-				catch (error) {
+				} catch (error) {
 					ret.mapErrors.push(error);
-					logger.error("error", error, "loading map", map);
+					logger.error('error', error, 'loading map', map);
 				}
 		});
 
-		logger.info("loaded map", map, ret);
+		logger.info('loaded map', map, ret);
 		return ret;
 	});
 
 	this.loadProfile = () => startThread(function* loadMapThread() {
-		var ret = yield provider.getProfile("profile");
-		var container = JSON.parse(ret.profileInnerContainer);
+		let ret = yield provider.getProfile("profile");
+		const container = JSON.parse(ret.profileInnerContainer);
 		ret = ret.mi;
 		ret.pointsData = [];
 		ret.mapErrors = [];
-		ret.date = "2014-09-01";             //check whether we do really need all this stuff
+		ret.date = "2014-09-01"; //check whether we do really need all this stuff
 		ret.etag = "2766A0B8";
 		ret.mapcode = "LIT";
 		ret.mapname = "Карта разработки";
@@ -229,41 +238,36 @@ module.exports = function Maps(provider) {
 		ret.plastname = "Верхний";
 		ret.type = "profile"; //allows not to wait for wells data (available for maps only)
 
-		var mapDataEvents = [];
+		const mapDataEvents = [];
 		for (let layer of ret.layers) {
 			layer.elements = null;
-			if (layer.highscale === 0)
-				layer.highscale = 1000000000;
+			if (layer.highscale === 0) layer.highscale = 1000000000;
 
 			mapDataEvents.push(layer.elementsData = startThread(function* () {
-				var elements = yield [];
+				let elements = yield [];
 				try {
-					var data = container;
+					const data = container;
 					elements = layer.uid.includes(layer.container) ? data.layers[layer.uid.replace(layer.container, '')].elements : data.layers[layer.uid].elements;
-					for (var i of elements) {
-						var t = drawer.types[i.type];
+					for (let i of elements) {
+						const t = types[i.type];
 						if (t && t.loaded) {
-							var r = t.loaded(i, provider);
-							if (r)
-								mapDataEvents.push(r);
+							const r = t.loaded(i, provider);
+							if (r) mapDataEvents.push(r);
 						}
 					}
-				}
-				finally {
+				} finally {
 					layer.elements = elements;
 				}
 				return elements;
 			}));
-
 		}
 
-		// DO NOT USE 'Promise.all( mapDataEvents )' because mapDataEvents is being changed during waiting!!
+		// DO NOT USE 'Promise.all( mapDataEvents )' because mapDataEvents is being changed during waiting!
 		ret.mapData = startThread(function* () {
 			while (mapDataEvents.length)
 				try {
 					yield mapDataEvents.pop();
-				}
-				catch (error) {
+				} catch (error) {
 					ret.mapErrors.push(error);
 					logger.error("error", error, "loading profile");
 				}
@@ -283,7 +287,7 @@ module.exports = function Maps(provider) {
 		}
 		var context = canvas.getContext("2d");
 		var dotsPerMeter = canvas.width / (canvas.clientWidth / pixelPerMeter());
-		var coords = geom.translator(scale, { x: centerx, y: centery }, dotsPerMeter, { x: canvas.width / 2, y: canvas.height / 2 });
+		var coords = translator(scale, {x: centerx, y: centery}, dotsPerMeter, {x: canvas.width / 2, y: canvas.height / 2});
 		var translatedTrack = [];
 		context.lineWidth = 0.75 * 0.001 * dotsPerMeter;
 
@@ -303,7 +307,7 @@ module.exports = function Maps(provider) {
 	this.drawContour = (canvas, map, scale, centerx, centery, contour, closeContour) => {
 		let ctx = canvas.getContext("2d");
 		let dotsPerMeter = canvas.width / (canvas.clientWidth / pixelPerMeter());
-		let coords = geom.translator(scale, { x: centerx, y: centery }, dotsPerMeter, { x: canvas.width / 2, y: canvas.height / 2 });
+		let coords = translator(scale, {x: centerx, y: centery}, dotsPerMeter, {x: canvas.width / 2, y: canvas.height / 2});
 		let contourLength = contour.length;
 
 		ctx.strokeStyle = "#FF0000";
@@ -317,8 +321,7 @@ module.exports = function Maps(provider) {
 			if (i === contourLength - 1) {
 				if (closeContour) {
 					ctx.lineTo(startPoint.x, startPoint.y);
-				}
-				else {
+				} else {
 					ctx.save();
 					ctx.strokeStyle = "#FF0000";
 					ctx.lineWidth = 4;
@@ -335,14 +338,14 @@ module.exports = function Maps(provider) {
 	this.getStocksWithinContour = (canvas, map, scale, centerx, centery, contour, contourOptions) => {
 
 		let dotsPerMeter = canvas.width / (canvas.clientWidth / pixelPerMeter());
-		let coords = geom.translator(scale, { x: centerx, y: centery }, dotsPerMeter, { x: canvas.width / 2, y: canvas.height / 2 });
+		let coords = translator(scale, {x: centerx, y: centery}, dotsPerMeter, {x: canvas.width / 2, y: canvas.height / 2});
 
 		//we have to draw contour to make sure that we are using required contour while using ctx.isPointInPath()
 		// this.drawContour(canvas, map, scale, centerx, centery, contour, true);
 		let fieldStocks;
 		let fieldLayer = map.layers.find(l => l.elements.some(e => e.type === "field"));
 		if (fieldLayer) {
-			fieldStocks = drawer.types["field"].getStocksWithinContour(
+			fieldStocks = types["field"].getStocksWithinContour(
 				fieldLayer.elements[0],
 				{
 					canvas,
@@ -360,8 +363,8 @@ module.exports = function Maps(provider) {
 	this.getStocksWithinDrenageArea = (canvas, map, scale, centerx, centery, drenageArea) => {
 		let context = canvas.getContext("2d");
 		let dotsPerMeter = canvas.width / (canvas.clientWidth / pixelPerMeter());
-		let areaDrawer = drawer.types[drenageArea.type];
-		let coords = geom.translator(scale, { x: centerx, y: centery }, dotsPerMeter, { x: canvas.width / 2, y: canvas.height / 2 });
+		let areaDrawer = types[drenageArea.type];
+		let coords = translator(scale, {x: centerx, y: centery}, dotsPerMeter, {x: canvas.width / 2, y: canvas.height / 2});
 
 		// draw invisible contour to calculate stocks
 		context.save();
@@ -376,7 +379,7 @@ module.exports = function Maps(provider) {
 		let fieldLayer = map.layers.find(l => l.elements.some(e => e.type === "field"));
 		let fieldStocks = 0;
 		if (fieldLayer) {
-			fieldStocks = drawer.types["field"].getStocksWithinContour(fieldLayer.elements[0], { canvas, coords });
+			fieldStocks = types["field"].getStocksWithinContour(fieldLayer.elements[0], {canvas, coords});
 		}
 		return fieldStocks;
 	};
@@ -392,8 +395,7 @@ module.exports = function Maps(provider) {
 			return drenageAreaLayer.elements.find((element) => {
 				return element.uwid === wellId;
 			});
-		}
-		else {
+		} else {
 			return null;
 		}
 	};
@@ -401,7 +403,7 @@ module.exports = function Maps(provider) {
 	this.getDrenageAreaByPoint = (canvas, map, scale, centerx, centery, point, targetLayerOptions) => {
 		let ctx = canvas.getContext("2d");
 		let dotsPerMeter = canvas.width / (canvas.clientWidth / pixelPerMeter());
-		let coords = geom.translator(scale, { x: centerx, y: centery }, dotsPerMeter, { x: canvas.width / 2, y: canvas.height / 2 });
+		let coords = translator(scale, {x: centerx, y: centery}, dotsPerMeter, {x: canvas.width / 2, y: canvas.height / 2});
 		let translatedPoint = coords.pointToControl(point);
 
 		let drenageAreaLayers = map.layers.filter(l => l.name.toLowerCase().includes(targetLayerOptions.partOfLayerName));
@@ -423,7 +425,7 @@ module.exports = function Maps(provider) {
 		let targetArea = null;
 		targetAreas.forEach((area) => {
 			//draw invisible line along each found zone contour to check whether target point
-			let polylineType = drawer.types[area.type];
+			let polylineType = types[area.type];
 			ctx.save();
 			ctx.strokeStyle = area.bordercolor;
 			ctx.lineWidth = 0;
@@ -442,7 +444,7 @@ module.exports = function Maps(provider) {
 			ctx.save();
 			ctx.strokeStyle = targetLayerOptions.selection.bordercolor;
 			ctx.lineWidth = targetLayerOptions.selection.linewidth;
-			let polylineType = drawer.types[targetArea.type];
+			let polylineType = types[targetArea.type];
 			polylineType.path(targetArea, {
 				context: ctx,
 				pointToControl: coords.pointToControl
@@ -456,22 +458,22 @@ module.exports = function Maps(provider) {
 
 	this.getFieldValueInPoint = (canvas, map, scale, centerx, centery, point) => {
 		let dotsPerMeter = canvas.width / (canvas.clientWidth / pixelPerMeter());
-		let coords = geom.translator(scale, { x: centerx, y: centery }, dotsPerMeter, { x: canvas.width / 2, y: canvas.height / 2 });
+		let coords = translator(scale, {x: centerx, y: centery}, dotsPerMeter, {x: canvas.width / 2, y: canvas.height / 2});
 
 		let fieldValue = null;
 		let fieldName;
 		let fieldLayer = map.layers.find(l => l.elements.some(e => e.type === "field"));
 		if (fieldLayer) {
 			fieldName = fieldLayer.name;
-			fieldValue = drawer.types["field"].getFieldValueInPoint(fieldLayer.elements[0], point, { coords });
+			fieldValue = types["field"].getFieldValueInPoint(fieldLayer.elements[0], point, {coords});
 		}
-		return { fieldName, fieldValue };
+		return {fieldName, fieldValue};
 	};
 
 	this.drawPoint = (canvas, map, scale, centerx, centery, point) => {
 		let ctx = canvas.getContext("2d");
 		let dotsPerMeter = canvas.width / (canvas.clientWidth / pixelPerMeter());
-		let coords = geom.translator(scale, { x: centerx, y: centery }, dotsPerMeter, { x: canvas.width / 2, y: canvas.height / 2 });
+		let coords = translator(scale, {x: centerx, y: centery}, dotsPerMeter, {x: canvas.width / 2, y: canvas.height / 2});
 
 		//draw circle in selected point
 		let translatedPoint = coords.pointToControl(point);
@@ -493,8 +495,8 @@ module.exports = function Maps(provider) {
 		}
 		let context = canvas.getContext("2d");
 		let dotsPerMeter = canvas.width / (canvas.clientWidth / pixelPerMeter());
-		let areaDrawer = drawer.types[drenageArea.type];
-		let coords = geom.translator(scale, { x: centerx, y: centery }, dotsPerMeter, { x: canvas.width / 2, y: canvas.height / 2 });
+		let areaDrawer = types[drenageArea.type];
+		let coords = translator(scale, {x: centerx, y: centery}, dotsPerMeter, {x: canvas.width / 2, y: canvas.height / 2});
 
 		context.save();
 		for (let key in styles) {
@@ -508,11 +510,12 @@ module.exports = function Maps(provider) {
 		context.restore();
 	};
 
-	this.showMap = (canvas, map, { scale, centerx, centery, idle, plainDrawing, selected } = {}) => {
+	this.showMap = (canvas, map, {scale, centerx, centery, idle, plainDrawing, selected} = {}) => {
 
-		var updateOnce = _.once(() => update(canvas));
+		var updateOnce = once(() => update(canvas));
 
 		var fin = [];
+
 		function detach() {
 			fin.reverse().forEach(f => f());
 			fin.length = 0;
@@ -525,12 +528,12 @@ module.exports = function Maps(provider) {
 
 		var events = new EventEmitter();
 		var canvasEvents = canvas.events;
-        if (!canvas.events)
-		{
+		if (!canvas.events) {
 			update(canvas);
 		}
 
-		var resizer = htmlHelper.onElementSize(canvas, canvas => process.nextTick(() => update(canvas)));
+		//var resizer = onElementSize(canvas, canvas => process.nextTick(() => update(canvas)));
+		var resizer = onElementSize(canvas, canvas => nextTick(() => update(canvas)));
 		fin.push(() => resizer.stop());
 
 		events.on("update", () => update(canvas));
@@ -597,20 +600,18 @@ module.exports = function Maps(provider) {
 				updateCanvasSize(canvas);
 				if (!coords) {
 					var dotsPerMeter = canvas.width / (canvas.clientWidth / pixelPerMeter());
-					if (isNaN(dotsPerMeter))
-					{
-					    dotsPerMeter = 3780;
+					if (isNaN(dotsPerMeter)) {
+						dotsPerMeter = 3780;
 					}
 
 					if (centerx == null) {
-						var bounds = geom.rects.middleRect(...map.layers.map(layer => layer.bounds));
+						var bounds = rects.middleRect(...map.layers.map(layer => layer.bounds));
 						if (!bounds) {
 							if (!scale)
 								scale = 5000;
 							centerx = 0;
 							centery = 0;
-						}
-						else {
+						} else {
 							if (!scale) {
 								scale = 1.05 * Math.max(
 									(bounds.max.x - bounds.min.x) / (canvas.width / dotsPerMeter),
@@ -622,13 +623,16 @@ module.exports = function Maps(provider) {
 						}
 					}
 
-					coords = geom.translator(scale, { x: centerx, y: centery }, dotsPerMeter, { x: canvas.width / 2, y: canvas.height / 2 });
+					coords = translator(scale, {x: centerx, y: centery}, dotsPerMeter, {
+						x: canvas.width / 2,
+						y: canvas.height / 2
+					});
 				}
 
 				var C = coords;
 
 				events.scale = C.mscale;
-				var p = C.pointToMap({ x: canvas.width / 2, y: canvas.height / 2 });
+				var p = C.pointToMap({x: canvas.width / 2, y: canvas.height / 2});
 				events.centerx = p.x;
 				events.centery = p.y;
 
@@ -636,7 +640,7 @@ module.exports = function Maps(provider) {
 
 				var onDataWaiting = null;
 				if (plainDrawing || map.mapErrors.length > 0)
-					onDataWaiting = _.identity;
+					onDataWaiting = identity;
 				else {
 					onDataWaiting = promise => promise.then(updateOnce);
 				}
@@ -648,7 +652,7 @@ module.exports = function Maps(provider) {
 					context.fillRect(0, 0, canvas.width, canvas.height, "white");
 				};
 
-				var startPaint = draftDrawing => drawer.startPaint(canvas, map, {
+				var startPaint = draftDrawing => _startPaint(canvas, map, {
 					provider,
 					selected,
 					coords: C,
@@ -662,7 +666,7 @@ module.exports = function Maps(provider) {
 				if (uimode) {
 					clearCanvas();
 					yield startPaint(true);
-					yield startThread.sleep(provider.drawOptions.zoomSleep || 0);
+					yield sleep(provider.drawOptions.zoomSleep || 0);
 				}
 				clearCanvas();
 				yield startPaint(false);
@@ -678,5 +682,5 @@ module.exports = function Maps(provider) {
 		}
 	};
 
-	this.updateFieldPalette = drawer.types["field"].updatePalette;
+	this.updateFieldPalette = types["field"].updatePalette;
 };

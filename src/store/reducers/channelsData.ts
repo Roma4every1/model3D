@@ -18,7 +18,7 @@ export type ChannelsDataAction = ActionSet;
 
 const initChannelsData: ChannelsData = {};
 
-export const channelsData = (state: ChannelsData = initChannelsData, action: ChannelsDataAction): ChannelsData => {
+export const channelsDataReducer = (state: ChannelsData = initChannelsData, action: ChannelsDataAction): ChannelsData => {
   switch (action.type) {
 
     case ChannelsDataActions.SET: {

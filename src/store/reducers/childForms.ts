@@ -30,7 +30,7 @@ export type ChildFormsAction = ActionSet | ActionSetOpened | ActionSetActive;
 
 const initChildForms: ChildForms = {};
 
-export const childForms = (state: ChildForms = initChildForms, action: ChildFormsAction): ChildForms => {
+export const childFormsReducer = (state: ChildForms = initChildForms, action: ChildFormsAction): ChildForms => {
   switch (action.type) {
 
     case ChildFormsActions.SET: {

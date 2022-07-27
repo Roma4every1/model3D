@@ -17,7 +17,7 @@ export type CanRunReportAction = ActionSet;
 
 const initCanRunReport = false;
 
-export const canRunReport = (state: CanRunReport = initCanRunReport, action: CanRunReportAction): CanRunReport => {
+export const canRunReportReducer = (state: CanRunReport = initCanRunReport, action: CanRunReportAction): CanRunReport => {
   switch (action.type) {
 
     case CanRunReportActions.SET: {

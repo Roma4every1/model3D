@@ -1,3 +1,39 @@
+/* --- state.appState --- */
+
+/** Состояние, необходимое для компонента `SystemRouter`. */
+type AppState = {
+  config: LoadingState<ClientConfiguration>,
+  systemList: LoadingState<SystemList>,
+  sessionID: LoadingState<SessionID>,
+  systemID: SystemID,
+}
+
+/** Состояние загрузки. */
+type LoadingState<Type> = {
+  loaded: boolean,
+  success: boolean | undefined,
+  data: Type
+};
+
+/** Клиентская конфигурация WMR. */
+type ClientConfiguration = {webServicesURL: string};
+
+/** Список информационных систем. */
+type SystemList = WMWSystem[];
+
+/** Информационная система WellManager. */
+interface WMWSystem {
+  id: string,
+  displayName: string,
+  displayNameShort?: string,
+  description?: string,
+  color?: string,
+}
+
+/** ID текущей системы. */
+type SystemID = string;
+
+
 /* --- state.canRunReport --- */
 
 /** Можно ли отправить репорт. */
@@ -57,7 +93,6 @@ type FormState = {[key: ParameterID]: ParamState};
  * */
 interface ParamState<Type> {
   value: Type,
-  setValue: (value: Type) => void,
 }
 
 
