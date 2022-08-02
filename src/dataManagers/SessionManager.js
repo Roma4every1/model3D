@@ -1,5 +1,5 @@
 ﻿import i18n from '../i18n';
-import { webFetch } from "../initialization";
+import { webFetch } from "../api/initialization";
 
 import createChannelsManager from "./ChannelsManager";
 import createParamsManager from "./ParamsManager";

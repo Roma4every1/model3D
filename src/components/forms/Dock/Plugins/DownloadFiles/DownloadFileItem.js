@@ -2,7 +2,7 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { saveAs } from "@progress/kendo-file-saver";
-import { webFetch } from "../../../../../initialization";
+import { webFetch } from "../../../../../api/initialization";
 import { toDate } from "../../../../../utils";
 import { filesDict } from "../../../../dicts/images";
 

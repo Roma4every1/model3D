@@ -1,10 +1,11 @@
-import React from "react";
-import { chunk } from "lodash";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { Button } from "@progress/kendo-react-buttons";
 import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 
+import { chunk } from "lodash";
+import { clientPoint } from "../../map-utils";
 import EditWindow from "./EditWindow";
 import PropertiesWindow from "./PropertiesWindow";
 import AttrTableWindow from "./AttrTableWindow";
@@ -25,12 +26,8 @@ const squaredDistanceBetweenPointAndSegment = (segment, point) => {
   return (doubleSquare * doubleSquare / cSquared);
 };
 
-const clientPoint = (event) => {
-  return 'offsetX' in event
-    ? {x: event.offsetX, y: event.offsetY}
-    : {x: event.clientX, y: event.clientY};
-};
 
+/** Идёт после `Selecting`, список кнопок. */
 export default function Editing({formId}) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -47,16 +44,15 @@ export default function Editing({formId}) {
 
   const modifiedLayer = mapData?.layers?.find(l => l.elements?.includes(selectedObject));
 
-  const [onEditing, setOnEditing] = React.useState(false);
-  const [legendsData, setLegendsData] = React.useState(null);
-  const [labelCreating, setLabelCreating] = React.useState(false);
+  const [onEditing, setOnEditing] = useState(false);
+  const [legendsData, setLegendsData] = useState(null);
+  const [labelCreating, setLabelCreating] = useState(false);
 
-  const movedPoint = React.useRef(null);
-  const isOnMove = React.useRef(false);
-  const mode = React.useRef("movePoint");
+  const movedPoint = useRef(null);
+  const isOnMove = useRef(false);
+  const mode = useRef('movePoint');
 
-
-  const clearForm = React.useCallback(() => {
+  const clearForm = useCallback(() => {
     if (formRef?.current) {
       formRef.current.setSelectedObject(null);
     }
@@ -72,11 +68,11 @@ export default function Editing({formId}) {
     dispatch(setFormRefs(formId + '_selectedObjectEditing', false));
   }, [formId, formRef, dispatch]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!mapData) clearForm();
   }, [mapData, clearForm]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedObject) {
       selectedObject.edited = onEditing;
       if (formRef.current) formRef.current.updateCanvas();
@@ -86,7 +82,7 @@ export default function Editing({formId}) {
 
   const modeHandler = (newMode) => {mode.current = newMode};
 
-  const getNearestSegment = React.useCallback((point, polyline) => {
+  const getNearestSegment = useCallback((point, polyline) => {
     let nearestNp = 0;
     let points = chunk(polyline.arcs[0].path, 2);
     if (polyline.arcs[0].closed) {
@@ -132,11 +128,11 @@ export default function Editing({formId}) {
     return nearestNp;
   };
 
-  const showPropertiesWindow = React.useCallback((initialReadyForApply) => {
-    dispatch(setOpenedWindow("propertiesWindow", true,
+  const showPropertiesWindow = useCallback((initialReadyForApply) => {
+    dispatch(setOpenedWindow('propertiesWindow', true,
       <PropertiesWindow
         initialReadyForApply={initialReadyForApply}
-        key="mapElementProperties"
+        key={'mapElementProperties'}
         formId={formId}
         onClosed={(applied) => {
           if (!applied && initialReadyForApply) {
@@ -148,7 +144,7 @@ export default function Editing({formId}) {
       />));
   }, [activeLayer, dispatch, formId, formRef]);
 
-  const mouseDown = React.useCallback((event) => {
+  const mouseDown = useCallback((event) => {
     if (onEditing) {
       if (selectedObject?.type === 'polyline') {
         isOnMove.current = true;
@@ -178,7 +174,7 @@ export default function Editing({formId}) {
     }
   }, [onEditing, formRef, selectedObject, dispatch, formId, getNearestSegment]);
 
-  const createNewLabel = React.useCallback(() => {
+  const createNewLabel = useCallback(() => {
     let newElement;
     // const sublayerSettings = legendsData?.sublayers?.find(d => d.name === activeLayer?.name);
     //
@@ -207,7 +203,7 @@ export default function Editing({formId}) {
     return newElement;
   }, [activeLayer]); //, legendsData]);
 
-  const mouseUp = React.useCallback((event) => {
+  const mouseUp = useCallback((event) => {
     if (onEditing) {
       isOnMove.current = false;
       if (labelCreating) {
@@ -240,7 +236,7 @@ export default function Editing({formId}) {
     }
   }, [onEditing, formRef, selectedObject, dispatch, formId, labelCreating, activeLayer, showPropertiesWindow, createNewLabel]);
 
-  const mouseMove = React.useCallback((event) => {
+  const mouseMove = useCallback((event) => {
     if (onEditing) {
       if (selectedObject?.type === 'polyline' && isOnMove.current) {
         const coords = formRef.current.coords();
@@ -261,7 +257,8 @@ export default function Editing({formId}) {
     }
   }, [onEditing, selectedObject, formRef]);
 
-  React.useEffect(() => {
+  // ставим слушатели на <canvas>
+  useEffect(() => {
     if (control) {
       control.addEventListener('mousedown', mouseDown, { passive: true });
       control.addEventListener('mousemove', mouseMove, { passive: true });
@@ -319,16 +316,20 @@ export default function Editing({formId}) {
 
   const showDeleteWindow = () => {
     dispatch(setOpenedWindow('deleteMapElementWindow', true,
-      <Dialog key="deleteMapElementWindow" title={t('map.deleteElement', { sublayerName: modifiedLayer?.name })} onClose={handleCloseDeleteWindow}>
+      <Dialog
+        key={'deleteMapElementWindow'}
+        title={t('map.deleteElement', { sublayerName: modifiedLayer?.name })}
+        onClose={handleCloseDeleteWindow}
+      >
         {t('map.areYouSureToDelete')}
         <DialogActionsBar>
-          <div className="windowButtonContainer">
-            <Button className="windowButton" onClick={handleDelete}>
+          <div className={'windowButtonContainer'}>
+            <Button className={'windowButton'} onClick={handleDelete}>
               {t('base.yes')}
             </Button>
           </div>
-          <div className="windowButtonContainer">
-            <Button className="windowButton" onClick={handleCloseDeleteWindow}>
+          <div className={'windowButtonContainer'}>
+            <Button className={'windowButton'} onClick={handleCloseDeleteWindow}>
               {t('base.no')}
             </Button>
           </div>
@@ -345,7 +346,7 @@ export default function Editing({formId}) {
     !legendsData ? fetchData() : createByLegends(legendsData);
   };
 
-  const startNewLabel = React.useCallback(() => {
+  const startNewLabel = useCallback(() => {
     if (selectedObject) {
       selectedObject.selected = false;
       formRef.current.updateCanvas();
@@ -371,7 +372,7 @@ export default function Editing({formId}) {
     }
   }
 
-  const startNewPolyline = React.useCallback((newElement) => {
+  const startNewPolyline = useCallback((newElement) => {
     if (selectedObject) {
       selectedObject.selected = false;
       formRef.current.updateCanvas();
@@ -382,8 +383,8 @@ export default function Editing({formId}) {
     setOnEditing(true);
     dispatch(setOpenedWindow('editWindow', true,
       <EditWindow
-        initialMode="addPointToEnd"
-        key="mapPolylineEditing"
+        initialMode={'addPointToEnd'}
+        key={'mapPolylineEditing'}
         setOnEditing={setOnEditing}
         formId={formId}
         modeHandler={modeHandler}
@@ -399,7 +400,7 @@ export default function Editing({formId}) {
       />));
   }, [dispatch, formRef, formId, activeLayer, showPropertiesWindow, selectedObject]);
 
-  const setResult = React.useCallback((res) => {
+  const setResult = useCallback((res) => {
     switch (res) {
       case 'label': {
         startNewLabel();
@@ -414,116 +415,109 @@ export default function Editing({formId}) {
     }
   }, [startNewLabel, startNewPolyline]);
 
-  const createByLegends = React.useCallback((legends) => {
-
-        const sublayerSettings = legends?.sublayers?.find(d => d.name === activeLayer?.name);
-        if (sublayerSettings) {
-            let legendToSet = sublayerSettings.legends.find(l => l.default);
-            if (!legendToSet && sublayerSettings.legends.length > 0) {
-                legendToSet = sublayerSettings.legends[0];
-            }
-            if (legendToSet) {
-                switch (sublayerSettings.type) {
-                    case 'LabelModel':
-                        break;
-                    case 'PolylineModel':
-                        let newElement = getDefaultPolyline();
-                        legendToSet.attrTable.forEach(p => {
-                            newElement.attrTable[p.name] = p.value
-                        });
-                        newElement.legend = legendToSet;
-
-                        legendToSet.properties.forEach(p => {
-                            switch (p.name) {
-                                case "BorderStyle":
-                                    newElement.borderstyle = Number(p.value.replace(',', '.'));
-                                    break;
-                                case "BorderStyleId":
-                                    newElement.borderstyle = null;
-                                    newElement.borderstyleid = p.value;
-                                    break;
-                                case "Closed":
-                                    newElement.arcs[0].closed = (p.value === "True");
-                                    break;
-                                case "FillBkColor":
-                                    newElement.fillbkcolor = '#' + (p.value.slice(-6));
-                                    break;
-                                case "FillColor":
-                                    newElement.fillcolor = '#' + (p.value.slice(-6));
-                                    break;
-                                case "FillName":
-                                    newElement.fillname = p.value;
-                                    break;
-                                case "StrokeColor":
-                                    newElement.bordercolor = '#' + (p.value.slice(-6));
-                                    break;
-                                case "StrokeThickness":
-                                    newElement.borderwidth = Number(p.value.replace(',', '.'));
-                                    break;
-                                case "Transparency":
-                                    newElement.transparent = (p.value !== "Nontransparent");
-                                    break;
-                                default:
-                                    break;
-                            }
-                        });
-                        startNewPolyline(newElement);
-                        break;
-                    default:
-                        break;
-                }
-            }
+  const createByLegends = useCallback((legends) => {
+    const sublayerSettings = legends?.sublayers?.find(d => d.name === activeLayer?.name);
+    if (sublayerSettings) {
+      let legendToSet = sublayerSettings.legends.find(l => l.default);
+      if (!legendToSet && sublayerSettings.legends.length > 0) {
+        legendToSet = sublayerSettings.legends[0];
+      }
+      if (legendToSet) {
+        switch (sublayerSettings.type) {
+          case 'LabelModel':
+            break;
+          case 'PolylineModel':
+            let newElement = getDefaultPolyline();
+            legendToSet.attrTable.forEach(p => {
+              newElement.attrTable[p.name] = p.value
+            });
+            newElement.legend = legendToSet;
+            legendToSet.properties.forEach(p => {
+              switch (p.name) {
+                case 'BorderStyle':
+                  newElement.borderstyle = Number(p.value.replace(',', '.'));
+                  break;
+                case 'BorderStyleId':
+                  newElement.borderstyle = null;
+                  newElement.borderstyleid = p.value;
+                  break;
+                case 'Closed':
+                  newElement.arcs[0].closed = (p.value === 'True');
+                  break;
+                case 'FillBkColor':
+                  newElement.fillbkcolor = '#' + (p.value.slice(-6));
+                  break;
+                case 'FillColor':
+                  newElement.fillcolor = '#' + (p.value.slice(-6));
+                  break;
+                case 'FillName':
+                  newElement.fillname = p.value;
+                  break;
+                case 'StrokeColor':
+                  newElement.bordercolor = '#' + (p.value.slice(-6));
+                  break;
+                case 'StrokeThickness':
+                  newElement.borderwidth = Number(p.value.replace(',', '.'));
+                  break;
+                case 'Transparency':
+                  newElement.transparent = (p.value !== 'Nontransparent');
+                  break;
+                default: break;
+              }
+            });
+            startNewPolyline(newElement);
+            break;
+          default: break;
         }
-        else {
-            if (activeLayer.elements.length > 0) {
-                switch (activeLayer.elements[0].type) {
-                    case 'label':
-                        startNewLabel();
-                        break;
-                    case 'polyline':
-                        let newElement = { ...activeLayer.elements[0] };
-                        newElement.arcs = [{ closed: activeLayer.elements[0].arcs[0].closed, path: [] }];
-                        newElement.bounds = null;
-                        startNewPolyline(newElement);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            else {
-                dispatch(setOpenedWindow('createElementWindow', true,
-                    <CreateElementWindow
-                        key="createElementWindow"
-                        modifiedLayerName={activeLayer?.name}
-                        setResult={setResult}
-                    />));
-            }
+      }
+    } else {
+      if (activeLayer.elements.length > 0) {
+        switch (activeLayer.elements[0].type) {
+          case 'label':
+            startNewLabel();
+            break;
+          case 'polyline':
+            let newElement = { ...activeLayer.elements[0] };
+            newElement.arcs = [{ closed: activeLayer.elements[0].arcs[0].closed, path: [] }];
+            newElement.bounds = null;
+            startNewPolyline(newElement);
+            break;
+          default: break;
         }
-    }, [activeLayer, dispatch, setResult, startNewLabel, startNewPolyline]);
+      } else {
+        dispatch(setOpenedWindow('createElementWindow', true,
+          <CreateElementWindow
+            key={'createElementWindow'}
+            modifiedLayerName={activeLayer?.name}
+            setResult={setResult}
+          />));
+      }
+    }
+  }, [activeLayer, dispatch, setResult, startNewLabel, startNewPolyline]);
 
   const showAttrTableWindow = () => {
     dispatch(setOpenedWindow('attrTableWindow', true,
-            <AttrTableWindow key="attrTableWindow" formId={formId} />));
+      <AttrTableWindow key="attrTableWindow" formId={formId} />));
   };
 
   return (
     <div>
-      <Button className="actionbutton" onClick={startEditing} disabled={(!selectedObject) || (selectedObject.type !== 'polyline')}>
+      <Button className={'actionbutton'} onClick={startEditing} disabled={(!selectedObject) || (selectedObject.type !== 'polyline')}>
         {t('map.startEditing')}
       </Button>
-      <Button className="actionbutton" onClick={create} disabled={(!(activeLayer?.visible)) || (activeLayer.elements.length > 0 && activeLayer.elements[0].type !== 'label' && activeLayer.elements[0].type !== 'polyline')}>
+      <Button className={'actionbutton'} onClick={create} disabled={(!(activeLayer?.visible)) || (activeLayer.elements.length > 0 && activeLayer.elements[0].type !== 'label' && activeLayer.elements[0].type !== 'polyline')}>
         {t('map.create')}
       </Button>
-      <Button className="actionbutton" onClick={showDeleteWindow} disabled={!selectedObject}>
+      <Button className={'actionbutton'} onClick={showDeleteWindow} disabled={!selectedObject}>
         {t('map.delete')}
       </Button>
-      <Button className="actionbutton" onClick={() => showPropertiesWindow()} disabled={(!selectedObject) || (selectedObject.type !== 'polyline' && selectedObject.type !== 'label')}>
+      <Button className={'actionbutton'} onClick={() => showPropertiesWindow()} disabled={(!selectedObject) || (selectedObject.type !== 'polyline' && selectedObject.type !== 'label')}>
         {t('map.properties')}
       </Button>
-      <Button className="actionbutton" onClick={showAttrTableWindow} disabled={!selectedObject}>
+      <Button className={'actionbutton'} onClick={showAttrTableWindow} disabled={!selectedObject}>
         {t('map.attrTable')}
       </Button>
-      <Button className="actionbutton" onClick={save} disabled={!changed}>
+      <Button className={'actionbutton'} onClick={save} disabled={!changed}>
         {t('base.save')}
       </Button>
     </div>

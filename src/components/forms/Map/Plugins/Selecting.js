@@ -5,17 +5,12 @@ import { Popup } from "@progress/kendo-react-popup";
 import { Button } from "@progress/kendo-react-buttons";
 
 import { chunk } from "lodash";
+import { clientPoint } from "../map-utils";
 import setFormRefs from "../../../../store/actionCreators/setFormRefs";
 import pixelPerMeter from "../maps/src/pixelPerMeter";
 
 const mapDrawerTypes = require("../maps/src/mapDrawer");
 
-
-const clientPoint = (event, point) => {
-  return 'offsetX' in event
-    ? {x: event.offsetX, y: event.offsetY}
-    : {x: event.clientX, y: event.clientY};
-};
 
 const distanceBetweenPointAndSegment = (segment, point, minDistance) => {
   const aSquared = Math.pow(segment[0][0] - point.x, 2) + Math.pow(segment[0][1] - point.y, 2);
@@ -33,6 +28,7 @@ const distanceBetweenPointAndSegment = (segment, point, minDistance) => {
 };
 
 
+/** Идёт после координат и масшатаба. */
 export default function Selecting({formId}) {
   const { t } = useTranslation();
   const dispatch = useDispatch();

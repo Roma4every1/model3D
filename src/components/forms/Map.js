@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, useImperativeHandle } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { getMapLoader } from "./Map/MapLoader.js";
+import { getMapsDrawer } from "./Map/MapLoader.js";
 import { getParentFormId, tableRowToString } from "../../utils";
 import { translator, distance } from "./Map/maps/src/geom";
 import pixelPerMeter from "./Map/maps/src/pixelPerMeter";
@@ -11,6 +11,20 @@ import setFormRefs from "../../store/actionCreators/setFormRefs";
 // Система подготовки (PREPARE_SYSTEM)
 // Баяндыское -> D3fm -> 28 -> Карта изобар
 
+/*
+ * point: {x: number, y: number},
+ * scale: number,
+ * map: {
+ *   date, eTag, layers,
+ *   mapCode, mapData, mapError, mapName,
+ *   namedPoints, objectCode, objectName,
+ *   organization, owner,
+ *   plastCode, plastName,
+ *   pointsData, points
+ * }
+ *
+ * map.points: Array<{x, y, name, UWID, attrTable}>
+ * */
 const getNearestNamedPoint = (point, scale, map) => {
   const SELECTION_RADIUS = 0.015;
   let minRadius, nearestNP = null;
@@ -43,8 +57,6 @@ function Map({formData, data}, ref) {
 
   const selectedObject = useRef(null);
   const centerScaleChangingHandler = useRef(null);
-
-  /** "Рисовальщик" - объект будет сохраняться в течение всего срока службы компонента. */
   const drawer = useRef(null);
 
   const setSelectedObject = useCallback((newSelected) => {
@@ -62,7 +74,7 @@ function Map({formData, data}, ref) {
     const mapDataD = drawer.current.showMap(canvas, map, {
       scale, selected, centerx: centerX, centery: centerY,
     })
-      .on('update.begin', (canvas, ret) => {
+      .on('update.begin', () => {
         const context = {
           center: {x: mapDataD.centerx, y: mapDataD.centery},
           scale: mapDataD.scale,
@@ -120,7 +132,7 @@ function Map({formData, data}, ref) {
       async function fetchData() {
         const mapId = mapInfo.Cells[0];
         const owner = mapInfo.Cells[12];
-        drawer.current = getMapLoader(sessionID, formData.id, owner, sessionManager, webServicesURL, root);
+        drawer.current = getMapsDrawer(sessionID, formData.id, owner, sessionManager, webServicesURL, root);
         let loadedMap = await drawer.current.loadMap(String(mapId), { center: { x: 0, y: 0 }, scale: 10000 });
 
         if (!ignore) {
@@ -165,7 +177,7 @@ function Map({formData, data}, ref) {
       fetchData();
     }
     return () => { ignore = true; }
-  }, [mapInfo, sessionID, formData, sessionManager, draw, dispatch, webServicesURL]);
+  }, [mapInfo, sessionID, formData, sessionManager, draw, dispatch, webServicesURL, root]);
 
   const _viewRef = useRef(null);
   const _div = useRef(null);
@@ -191,45 +203,36 @@ function Map({formData, data}, ref) {
   };
 
   useImperativeHandle(ref, () => ({
+    mapInfo: () => mapInfo,
+    mapData: () => mapData,
+    centerScale: () => getCenterScale(),
     toFullViewport: () => {toFullViewport()},
 
-    updateCanvas: (cs, context, redrawnHandler) => {
-        updateCanvas(cs, context, redrawnHandler);
-    },
+    sublayers: () => mapData?.layers,
+    selectedObject: () => selectedObject.current,
+    control: () => _viewRef.current,
+
+    setSelectedObject: (newSelected) => {setSelectedObject(newSelected)},
+    setActiveLayer: (layer) => {dispatch(setFormRefs(formData.id + '_activeLayer', layer))},
+    updateCanvas: (cs, context, redrawnHandler) => {updateCanvas(cs, context, redrawnHandler)},
 
     subscribeOnCenterScaleChanging: (changing) => {
       centerScaleChangingHandler.current = changing;
       changing(getCenterScale());
     },
 
-    mapInfo: () => {return mapInfo},
-
-    mapData: () => {return mapData},
-
-    centerScale: () => {return getCenterScale()},
-
     coords: () => {
-      const dotsPerMeter = _viewRef.current.width / (_viewRef.current.clientWidth / pixelPerMeter());
+      //const dotsPerMeter = _viewRef.current.width / (_viewRef.current.clientWidth / pixelPerMeter());
+      const dotsPerMeter = pixelPerMeter();
       const centerScale = getCenterScale();
       return translator(
         centerScale.scale,
         { x: centerScale.centerx, y: centerScale.centery },
         dotsPerMeter,
-        { x: _viewRef.current.width / 2, y: _viewRef.current.height / 2 }
+        // { x: _viewRef.current.width / 2, y: _viewRef.current.height / 2 }
+        { x: _viewRef.current.clientWidth / 2, y: _viewRef.current.clientHeight / 2 }
       );
     },
-
-    sublayers: () => {return mapData?.layers},
-
-    selectedObject: () => {return selectedObject.current},
-
-    setSelectedObject: (newSelected) => {setSelectedObject(newSelected)},
-
-    control: () => {return _viewRef.current},
-
-    setActiveLayer: (layer) => {
-        dispatch(setFormRefs(formData.id + '_activeLayer', layer));
-    }
   }));
 
   useLayoutEffect(() => {

@@ -56,11 +56,10 @@ const getValueToShow = (valuesToSelect, formParameter) => {
     }
   } else if (value) {
     // сюда попадем если данные канала ещё не загружены
-    valueToShow = {
-      id: stringToTableCell(value, 'LOOKUPCODE'),
-      name: stringToTableCell(value, 'LOOKUPVALUE'),
-      value: value
-    };
+    let lookupCode = stringToTableCell(value, 'LOOKUPCODE')
+    let lookupValue = stringToTableCell(value, 'LOOKUPVALUE');
+    if (lookupValue === value) lookupValue = lookupCode;
+    valueToShow = {id: lookupCode, name: lookupValue, value: value};
   } else if (showNullValue) {
     valueToShow = {id: value, name: nullDisplayValue, value: value};
   }

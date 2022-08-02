@@ -1,5 +1,5 @@
-import {extend} from "lodash";
-import {loadImageData} from "./htmlHelper";
+import { extend } from "lodash";
+import { loadImageData } from "./htmlHelper";
 import startThread from "./startThread";
 import cache from "./cache";
 import parseSMB from "./parseSMB";

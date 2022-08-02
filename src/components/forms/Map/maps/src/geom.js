@@ -55,15 +55,18 @@ export var rects = {
 
 const translate = (scale1, p1, scale2, p2) => {
 	const sc = 1 / scale1 * scale2;
-	return p => ({
-		x: p2.x + (p.x - p1.x) * sc,
-		y: p2.y + (p.y - p1.y) * sc,
-	})
+	return (point) => ({
+		x: p2.x + (point.x - p1.x) * sc,
+		y: p2.y + (point.y - p1.y) * sc,
+	});
 }
 
+/** Евклидово расстояние между двумя точками по их координатам.
+ *
+ * `√ (x1 - x2)^2 + (y1 - y2)^2`
+ * */
 export const distance = (x1, x2, y1, y2) => {
-	// sqrt( (x1 - x2)^2 + (y1 - y2)^2 )
-	return Math.sqrt(x1 * x1 + x2 * x2 + y1 * y1 + y2 * y2 - 2 * (x1 * x2 + y1 * y2));
+	return Math.sqrt((x1 * x1 + x2 * x2) + (y1 * y1 + y2 * y2) - 2 * (x1 * x2 + y1 * y2));
 }
 
 export function translator(mScale, mCenter, cScale, cCenter) {
@@ -76,16 +79,15 @@ export function translator(mScale, mCenter, cScale, cCenter) {
 			obj.lowscale == null || obj.highscale == null ||
 			(((typeof obj.lowscale === 'string' && obj.lowscale.includes('INF')) || obj.lowscale <= mScale) &&
                          ((typeof obj.highscale === 'string' && obj.highscale.includes('INF')) || mScale <= obj.highscale)),
-		zoom: (scaleIn, cpoint, mpoint) =>
-			ret.setScale(mScale * scaleIn, cpoint, mpoint),
-		setScale: (scale, cpoint, mpoint) => {
-			if (cpoint == null) {
-				cpoint = cCenter
-				mpoint = mCenter
+		zoom: (scaleIn, cPoint, mPoint) => ret.setScale(mScale * scaleIn, cPoint, mPoint),
+		setScale: (scale, cPoint, mPoint) => {
+			if (cPoint == null) {
+				cPoint = cCenter
+				mPoint = mCenter
 			}
-			else if (mpoint == null)
-				mpoint = ret.pointToMap(cpoint)
-			return translator(scale, mpoint, cScale, cpoint)
+			else if (mPoint == null)
+				mPoint = ret.pointToMap(cPoint)
+			return translator(scale, mPoint, cScale, cPoint)
 		},
 		changeResolution: mul => mul === 1 ? ret : translator(mScale, ret.pointToMap({ x: 0, y: 0 }), cScale * mul, { x: 0, y: 0 }),
 	}

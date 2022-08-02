@@ -1,9 +1,9 @@
 import { Dispatch } from "redux";
 import { AppStateAction } from "./reducers/appState";
 
+import { API } from "../api/api";
 import { mapSystem } from "../utils";
-import { setWebServicesURL, applyRootLocation } from "../initialization";
-import { getClientConfig, getSystemList } from "../api/init";
+import { setWebServicesURL, applyRootLocation } from "../api/initialization";
 import {
   fetchConfigSuccess, fetchConfigError,
   fetchSystemListSuccess, fetchSystemListError,
@@ -14,7 +14,7 @@ import {
 export const fetchConfig = () => {
   return async (dispatch: Dispatch<AppStateAction>) => {
     try {
-      const config = await getClientConfig();
+      const config = await API.getClientConfig();
       setWebServicesURL(config);
       applyRootLocation(config);
       dispatch(fetchConfigSuccess(config));
@@ -28,7 +28,7 @@ export const fetchConfig = () => {
 export const fetchSystems = () => {
   return async (dispatch: Dispatch<AppStateAction>) => {
     try {
-      const systemList = await getSystemList();
+      const systemList = await API.getSystemList();
       dispatch(fetchSystemListSuccess(systemList.map(mapSystem)));
     } catch (error) {
       console.warn(error);

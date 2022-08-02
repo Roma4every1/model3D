@@ -30,7 +30,7 @@ const parseStringToJson = (parsedString) => {
   return parsedString;
 }
 
-export function getMapLoader(sessionID, formID, owner, sessionManager, webServicesURL, root) {
+export function getMapsDrawer(sessionID, formID, owner, sessionManager, webServicesURL, root) {
   const httpClient = {
     getHTTP: getHttpFun,
     getJSON: (url) => getHttpFun(url, 'json', sessionManager).then(parseStringToJson),
@@ -44,7 +44,7 @@ export function getMapLoader(sessionID, formID, owner, sessionManager, webServic
   return createMapsDrawer({
     libs: root + 'libs/',
     symbolDef: symbolDef,
-    linesDef: root + 'libs/lines.def',
+    //linesDef: root + 'libs/lines.def',
     imageRoot: root + 'images/',
     mapRoot: webServicesURL + loadMapURL,
     containerRoot: webServicesURL + loadContainerURL,
