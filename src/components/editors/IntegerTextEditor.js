@@ -7,7 +7,8 @@ import { NumericTextBox } from "@progress/kendo-react-inputs";
  *
  * [Стили форматирования](https://github.com/telerik/kendo-intl/blob/master/docs/num-formatting/index.md)
  * */
-export default function IntegerTextEditor({id, formId, selectionChanged, value: propsValue}) {
+export default function IntegerTextEditor(props) {
+  const {selectionChanged, value: propsValue, id, formId} = props;
   let value = useSelector((state) => {
       return formId
         ? state.formParams[formId].find((gp) => gp.id === id).value

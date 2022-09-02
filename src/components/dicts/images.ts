@@ -28,11 +28,25 @@ import transferFormIcon from "../../static/images/forms/transferForm.png";
 
 import acceptIcon from "../../static/images/map/accept.png";
 import cancelIcon from "../../static/images/map/cancel.png";
-import drawVertexIcon from "../../static/images/map/draw_vertex.png";
+import addBetween from "../../static/images/map/add-between.png";
 import handIcon from "../../static/images/map/hand.png";
-import transformPathIcon from "../../static/images/map/transform_path.png";
-import vectorAddIcon from "../../static/images/map/vector_add.png";
-import vectorDeleteIcon from "../../static/images/map/vector_delete.png";
+import movePoint from "../../static/images/map/move-point.png";
+import addEnd from "../../static/images/map/add-end.png";
+import deletePoint from "../../static/images/map/delete-point.png";
+import moveIcon from "../../static/images/map/move.png";
+import rotateIcon from "../../static/images/map/rotate.png";
+
+import xIcon from "../../static/images/map/x.png";
+import yIcon from "../../static/images/map/y.png";
+import scaleIcon from "../../static/images/map/scale.png";
+
+import createPolylineIcon from "../../static/images/map/create-polyline.png";
+import createPolygonIcon from "../../static/images/map/create-polygon.png";
+import createLabelIcon from "../../static/images/map/create-label.png";
+import createSignIcon from "../../static/images/map/create-sign.png";
+
+import selectingIcon from "../../static/images/map/selecting-mode.png";
+import creatingIcon from "../../static/images/map/creating-mode.png";
 
 
 /** Используется в компоненте `DownloadFileItem` (иконки файлов по расширениям). */
@@ -64,13 +78,38 @@ export const formIconsDict: {[key: string]: string} = {
   'transferForm': transferFormIcon,
 };
 
-/** Используется в компоненте `EditWindow` (редактирование карт). */
+/** ### Общие иконки для карт.
+ *
+ * Используется в компонентах `EditElement` и `MapEditPanel` (редактирование карт). */
 export const mapIconsDict: {[key: string]: string} = {
+  'x': xIcon,
+  'y': yIcon,
+  'scale': scaleIcon,
   'accept': acceptIcon,
   'cancel': cancelIcon,
-  'drawVertex': drawVertexIcon,
-  'hand': handIcon,
-  'transformPath': transformPathIcon,
-  'vectorAdd': vectorAddIcon,
-  'vectorDelete': vectorDeleteIcon,
+};
+
+/** Иконки режимов редактирования. */
+export const mapEditIconsDict: {[key: number]: string} = {
+  10:  handIcon,   // MapModes.MOVE_MAP
+  11:  moveIcon,   // MapModes.MOVE
+  12:  rotateIcon, // MapModes.ROTATE
+  21: movePoint,   // MapModes.MOVE_POINT
+  22: addEnd,      // MapModes.ADD_END
+  23: addBetween,  // MapModes.ADD_BETWEEN
+  24: deletePoint, // MapModes.DELETE_POINT
+};
+
+/** Иконки создания новых элементов карты. */
+export const mapCreatingIcons: {[key: string]: string} = {
+  'polyline': createPolylineIcon,
+  'polygon': createPolygonIcon,
+  'label': createLabelIcon,
+  'sign': createSignIcon,
+};
+
+/** Иконки некоторых режимов редактирования карты. */
+export const mapModesIcons: {[key: string]: string} = {
+  'selecting': selectingIcon,
+  'creating': creatingIcon,
 };

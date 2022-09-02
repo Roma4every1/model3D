@@ -1,14 +1,11 @@
-﻿import React from 'react';
-import { useSelector } from 'react-redux';
+﻿import React from "react";
+import { useSelector } from "react-redux";
 
-export default function DockPluginForm(props) {
-    const { formId, FormByType } = props;
-    const activeChild = useSelector((state) => state.childForms[formId]?.children.find(p => p.id === (state.childForms[formId].openedChildren[0])));
 
-    if (activeChild && activeChild.id) {
-        return <FormByType formId={activeChild.id} />
-    }
-    else {
-        return <div />
-    }
+export default function DockPluginForm({formId, FormByType}) {
+  const activeChild = useSelector((state) => {
+    const childForm = state.childForms[formId];
+    return childForm?.children.find(x => x.id === (childForm.openedChildren[0]));
+  });
+  return activeChild && activeChild.id ? <FormByType formId={activeChild.id} /> : null;
 }

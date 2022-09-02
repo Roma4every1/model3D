@@ -3,28 +3,29 @@ import {translator} from "./geom";
 
 const wheelStep = 1.5;
 const minMouseMove = 2;
-const slice = [].slice;
+//const slice = [].slice;
 
-const compareTouches = (a, b) => a.identifier < b.identifier ? -1 : a.identifier > b.identifier ? 1 : 0;
-const touchIdentifier = a => a.identifier;
+// const compareTouches = (a, b) => a.identifier < b.identifier ? -1 : a.identifier > b.identifier ? 1 : 0;
+// const touchIdentifier = a => a.identifier;
 
-const touches = t => {
-	const ret = slice.call(t).sort(compareTouches);
-	ret.keyString = ret.map(touchIdentifier).join(" ")
-	return ret
+// const touches = t => {
+// 	const ret = slice.call(t).sort(compareTouches);
+// 	ret.keyString = ret.map(touchIdentifier).join(" ")
+// 	return ret
+// };
+const clientPoint = (event) => {
+	return {x: event.offsetX, y: event.offsetY};
 };
-const clientPoint = (event, point) => {
-	return 'offsetX' in event ? {x: event.offsetX, y: event.offsetY} : {x: event.clientX, y: event.clientY};
-};
-const distance = (p1, p2) => {
-	const dx = p1.x - p2.x;
-	const dy = p1.y - p2.y;
-	return Math.sqrt(dx * dx + dy * dy)
-};
-const middlePoint = (p1, p2) => ({
-	x: (p1.x + p2.x) * 0.5,
-	y: (p1.y + p2.y) * 0.5
-});
+// const distance = (p1, p2) => {
+// 	const dx = p1.x - p2.x;
+// 	const dy = p1.y - p2.y;
+// 	return Math.sqrt(dx * dx + dy * dy)
+// };
+// const middlePoint = (p1, p2) => ({
+// 	x: (p1.x + p2.x) * 0.5,
+// 	y: (p1.y + p2.y) * 0.5
+// });
+const listenerOptions = {passive: true};
 
 function Scroller(control) {
 	this.control = control;
@@ -83,24 +84,24 @@ function Scroller(control) {
 			if (control.blocked) return;
 			updateView({screenPoint: points[0], scaleMul: 1});
 		},
-		stop: event => {
+		stop: () => {
 			if (!action.moved) pointPicked(action.mapMovePoint);
 		},
 		oldPoints: [points[0]],
 		movePoint: points[0],
 	});
-	const startResize = (event, points) => startAction(event, {
-		move: (event, points) => {
-			if (control.blocked) return;
-			updateView({
-				screenPoint: middlePoint(points[0], points[1]),
-				scaleMul: action.oldDistance / distance(points[0], points[1])
-			})
-		},
-		oldPoints: [points[0], points[1]],
-		oldDistance: distance(points[0], points[1]),
-		movePoint: middlePoint(points[0], points[1]),
-	});
+	// const startResize = (event, points) => startAction(event, {
+	// 	move: (event, points) => {
+	// 		if (control.blocked) return;
+	// 		updateView({
+	// 			screenPoint: middlePoint(points[0], points[1]),
+	// 			scaleMul: action.oldDistance / distance(points[0], points[1])
+	// 		})
+	// 	},
+	// 	oldPoints: [points[0], points[1]],
+	// 	oldDistance: distance(points[0], points[1]),
+	// 	movePoint: middlePoint(points[0], points[1]),
+	// });
 	const stopActionEvent = event => {
 		if (action) {
 			// event.preventDefault();
@@ -108,41 +109,41 @@ function Scroller(control) {
 		}
 	};
 
-	control.addEventListener('touchstart', event => {
-		if (control.blocked) return;
-		if (event.target !== control) return;
+	// control.addEventListener('touchstart', event => {
+	// 	if (control.blocked) return;
+	// 	if (event.target !== control) return;
+	//
+	// 	stopAction(event)
+	// 	let actionFactory = null;
+	//
+	// 	if (event.touches.length === 1) actionFactory = startMove;
+	// 	if (event.touches.length >= 2) actionFactory = startResize;
+	// 	if (actionFactory) {
+	// 		//event.preventDefault();
+	// 		const t = touches(event.touches);
+	// 		actionFactory(event, t.map(clientPoint.bind(null, event)));
+	// 		action.keyString = t.keyString;
+	// 	}
+	// }, listenerOptions)
 
-		stopAction(event)
-		let actionFactory = null;
-
-		if (event.touches.length === 1) actionFactory = startMove;
-		if (event.touches.length >= 2) actionFactory = startResize;
-		if (actionFactory) {
-			//event.preventDefault();
-			const t = touches(event.touches);
-			actionFactory(event, t.map(clientPoint.bind(null, event)));
-			action.keyString = t.keyString;
-		}
-	}, { passive: true })
-
-	control.addEventListener('touchmove', event => {
-		if (event.target !== control) return;
-		if (!action) return;
-
-		const t = touches(event.touches);
-		if (action.keyString !== t.keyString) {
-			stopAction(event);
-		} else {
-			// event.preventDefault();
-			callAction(event, t.map(clientPoint.bind(null, event)));
-		}
-	}, { passive: true });
-
-	control.addEventListener('touchend', stopActionEvent, { passive: true });
-	control.addEventListener('touchcancel', stopActionEvent, { passive: true });
+	// control.addEventListener('touchmove', event => {
+	// 	if (event.target !== control) return;
+	// 	if (!action) return;
+	//
+	// 	const t = touches(event.touches);
+	// 	if (action.keyString !== t.keyString) {
+	// 		stopAction(event);
+	// 	} else {
+	// 		// event.preventDefault();
+	// 		callAction(event, t.map(clientPoint.bind(null, event)));
+	// 	}
+	// }, listenerOptions);
+	//
+	// control.addEventListener('touchend', stopActionEvent, listenerOptions);
+	// control.addEventListener('touchcancel', stopActionEvent, listenerOptions);
 
 	control.addEventListener('wheel', event => {
-		if (event.target !== control) return;
+		if (event.target !== control || control.blocked) return;
 
 		const delta = event.wheelDelta < 0 ? -1 : 1;
 		const moving = !!action;
@@ -159,7 +160,7 @@ function Scroller(control) {
 			startMove(event, [clientPoint(event)]);
 			action.moved = true;
 		}
-	}, { passive: true });
+	}, listenerOptions);
 
 	control.addEventListener('mousedown', event => {
 		stopAction(event)
@@ -167,22 +168,17 @@ function Scroller(control) {
 		if (event.target !== control) return;
 		// event.preventDefault();
 		startMove(event, [clientPoint(event)]);
-	}, { passive: true });
+	}, listenerOptions);
 
-	control.addEventListener('mouseup', stopActionEvent, { passive: true });
+	control.addEventListener('mouseup', stopActionEvent, listenerOptions);
 
 	control.addEventListener('mousemove', event => {
-		if (!action)
-			return
-		if (event.which !== 1) {
-			stopAction(event)
-			return
-		}
-		if (event.target !== control)
-			return
+		if (!action) return;
+		if (event.which !== 1) return stopAction(event);
+		if (event.target !== control) return;
 		// event.preventDefault()
-		callAction(event, [clientPoint(event)])
-	}, { passive: true })
+		callAction(event, [clientPoint(event)]);
+	}, listenerOptions);
 }
 
 export default Scroller;

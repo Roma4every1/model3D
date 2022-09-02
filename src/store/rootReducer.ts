@@ -8,9 +8,8 @@ import { childFormsReducer } from "./reducers/childForms";
 import { formRefsReducer } from "./reducers/formRefs";
 import { formParamsReducer } from "./reducers/formParams";
 import { formSettingsReducer } from "./reducers/formSettings";
-//import { formStatesReducer } from "./reducers/formStates";
 import { layoutReducer } from "./reducers/layout";
-import { pluginsReducer } from "./reducers/plugins";
+import { mapsReducer } from "./reducers/maps";
 import { reportsReducer } from "./reducers/reports";
 import { sessionIdReducer } from "./reducers/sessionId";
 import { sessionManagerReducer } from "./reducers/sessionManager";
@@ -26,9 +25,8 @@ const rootReducer = combineReducers({
     formParams: formParamsReducer,
     formRefs: formRefsReducer,
     formSettings: formSettingsReducer,
-    //formStates: formStatesReducer,
     layout: layoutReducer,
-    plugins: pluginsReducer,
+    maps: mapsReducer,
     reports: reportsReducer,
     sessionId: sessionIdReducer,
     sessionManager: sessionManagerReducer,

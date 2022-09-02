@@ -1,3 +1,12 @@
+import * as _ from "lodash";
+import * as geom from "./geom";
+import * as parseColor from "parse-color";
+import { loadImageData } from "./htmlHelper";
+import startThread from "./startThread";
+import parseSMB from "./parseSMB";
+import pngMono from "./pngMono";
+import logger from "./logger";
+
 import dro32Lib from "../../../../../static/libs/dro32_.smb";
 import gridsLib from "../../../../../static/libs/grids.smb";
 import litLib from "../../../../../static/libs/lit.smb";
@@ -10,16 +19,35 @@ const libsDict = {
 	'regional': regionalLib,
 };
 
-const logger = require("./logger").default;
-const startThread = require("./startThread").default;
-const geom = require("./geom");
-const _ = require("lodash");
-const parseColor = require("parse-color");
-const parseSMB = require("./parseSMB");
-const htmlHelper = require("./htmlHelper");
-const pngMono = require("./pngMono").default;
+const pointBounds = (point) => {return {min: point, max: point}};
+const namedPointDraft = (i, options) => {
+	const p = options.pointToControl(i);
+	const context = options.context;
+	const drawOptions = options.provider.drawOptions;
+	context.strokeStyle = drawOptions.selectedColor || "#0000FF";
+	context.lineWidth = ( drawOptions.selectedWidth || 0.75 ) * 0.001 * options.dotsPerMeter;
+	const s = (drawOptions.selectedSize || 5) * 0.001 * options.dotsPerMeter;
+	context.strokeRect( p.x - s / 2, p.y - s / 2, s, s );
+}
 
-export var types = {};
+const namedPointType = {
+	name: 'namedpoint',
+	bound: pointBounds,
+	draft: namedPointDraft,
+}
+
+/** ## Типы отрисовщика:
+ * + `'namedpoint'`
+ * + `'sign'`
+ * + `'field'`
+ * + `'polyline'`
+ * + `'label'`
+ * + `'pieslice'`
+ * @see MapTypes
+ * */
+export const types = {
+	namedpoint: namedPointType,
+};
 
 const declareType = (name, data) => {
 	data.name = name;
@@ -27,21 +55,19 @@ const declareType = (name, data) => {
 	return data;
 };
 
-function pointBounds(p) { return { min: p, max: p }; }
+function allPromises(...args) {
+	args = args.filter(Boolean);
+	return args.length < 2 ? args[0] : Promise.all(args);
+}
 
-declareType("namedpoint", {
-	bound: pointBounds,
-
-	draft: function ( i, options ) {
-		var p = options.pointToControl( i );
-		var context = options.context;
-		var drawOptions = options.provider.drawOptions;
-		context.strokeStyle = drawOptions.selectedColor || "#0000FF";
-		context.lineWidth = ( drawOptions.selectedWidth || 0.75 ) * 0.001 * options.dotsPerMeter;
-		var s = ( drawOptions.selectedSize || 5 ) * 0.001 * options.dotsPerMeter;
-		context.strokeRect( p.x - s / 2, p.y - s / 2, s, s );
-	},
-} );
+function checkBoundX(bounds, x) {
+	if (bounds.max.x === undefined || x > bounds.max.x) bounds.max.x = x;
+	if (bounds.min.x === undefined || x < bounds.min.x) bounds.min.x = x;
+}
+function checkBoundY(bounds, y) {
+	if (bounds.max.y === undefined || y > bounds.max.y) bounds.max.y = y;
+	if (bounds.min.y === undefined || y < bounds.min.y) bounds.min.y = y;
+}
 
 function setElementImage(i, imgData) {
 	i.img = null;
@@ -52,9 +78,8 @@ function setElementImage(i, imgData) {
 
 function* getElementImage(i, options) {
 	if (!i.img) {
-		var r = options.onDataWaiting(i.imgData);
-		if (r)
-			yield r;
+		const r = options.onDataWaiting(i.imgData);
+		if (r) yield r;
 	}
 }
 
@@ -62,57 +87,41 @@ const defaultLineWidth = 0.23;
 const draftLineWidth = 0.1;
 const signSize = 2;
 
-declareType("sign", {
+declareType('sign', {
 	bound: pointBounds,
 
 	defaultImage: null,
 
-	loaded: (i, provider) => setElementImage(i,
-		provider.getSignImage(i.fontname, i.symbolcode, i.color)),
+	loaded: (i, provider) => {
+		setElementImage(i, provider.getSignImage(i.fontname, i.symbolcode, i.color))
+	},
 
-	draft_: function (i, options) {
-		var p = options.pointToControl(i);
-		var context = options.context;
+	draft_: (i, options) => {
+		const p = options.pointToControl(i);
+		const context = options.context;
 		context.strokeStyle = i.color;
 		context.lineWidth = draftLineWidth * 0.001 * options.dotsPerMeter;
-		var s = signSize * 0.001 * options.dotsPerMeter;
+		const s = signSize * 0.001 * options.dotsPerMeter;
 		context.strokeRect(p.x - s / 2, p.y - s / 2, s, s);
 	},
 
 	draw: function* drawThread(i, options) {
-		var img = i.img || ((yield* getElementImage(i, options)), i.img);
-		if (img) {
-			var p = options.pointToControl(i);
-			var w = img.width * i.size * options.pixelRatio;
-			var h = img.height * i.size * options.pixelRatio;
+		const img = i.img || ((yield* getElementImage(i, options)), i.img);
+		if (!img || !options.context.setLineDash) return;
 
-			if (options.context.setLineDash) {
-			  options.context.drawImage(img, p.x - w / 2, p.y - h / 2, w, h);
-			}
+		const point = options.pointToControl(i);
+		let width = img.width * i.size * options.pixelRatio;
+		let height = img.height * i.size * options.pixelRatio;
+
+		if (i.selected) {
+			width *= 2;
+			height *= 2;
 		}
+		options.context.drawImage(img, point.x - width / 2, point.y - height / 2, width, height);
 	},
 });
 
-function allPromises(...args) {
-	args = args.filter(Boolean);
-	return args.length < 2 ? args[0] : Promise.all(args);
-}
-
-function checkBoundX(bounds, coord) {
-	if (bounds.max.x === undefined || coord > bounds.max.x)
-		bounds.max.x = coord;
-	if (bounds.min.x === undefined || coord < bounds.min.x)
-		bounds.min.x = coord;
-}
-
-function checkBoundY(bounds, coord) {
-	if (bounds.max.y === undefined || coord > bounds.max.y)
-		bounds.max.y = coord;
-	if (bounds.min.y === undefined || coord < bounds.min.y)
-		bounds.min.y = coord;
-}
-
-var field = declareType("field", {
+var field = declareType('field', {
 	sourceRenderDataMatrix: null,
 	deltasPalette: null,
 	lastUsedScale: undefined,
@@ -122,17 +131,11 @@ var field = declareType("field", {
 
 	bound: (p) => {
 		return {
-			min: {
-				x: p.x,
-				y: p.y - p.sizey * p.stepy //kav : p.x & p.y is a left-bottom(!) point. that's why we substract
-			},
-			max: {
-				x: p.x + p.sizex * p.stepx,
-				y: p.y
-			}
+			min: {x: p.x, y: p.y - p.sizey * p.stepy},
+			max: {x: p.x + p.sizex * p.stepx, y: p.y},
 		};
 	},
-	loaded: (i, provider) => {
+	loaded: (i) => {
 		// initialization
 		i.sourceRenderDataMatrix = _.chunk(field._parseSourceRenderData(i.data), i.sizex).reverse(); //reverse 'cause the source array isn't oriented right
 		i.deltasPalette = field._getDeltasPalette(field._getRgbPaletteFromHex(i.palette[0].level));
@@ -162,7 +165,7 @@ var field = declareType("field", {
 			* UPD: there is sharing memory proposal in ES2017. Maybe it would be a good option when available
 		*/
 		// field._draw( i, options );
-		return;
+		// return;
 	},
 	getFieldValueInPoint: (i, point, options) => {
 		let bounds = field.bound(i);
@@ -170,21 +173,14 @@ var field = declareType("field", {
 		if (point.x >= bounds.min.x && point.x <= bounds.max.x &&
 			point.y >= bounds.min.y && point.y <= bounds.max.y) {
 			let coords = options.coords;
-			let xStart = i.x;
-			let yStart = i.y - i.stepy * i.sizey;
-			let xStep = i.stepx;
-			let yStep = i.stepy;
+			let xStart = i.x, yStart = i.y - i.stepy * i.sizey;
+			let xStep = i.stepx, yStep = i.stepy;
 			let rowLength = i.sourceRenderDataMatrix[0].length;
 			let columnLength = i.sourceRenderDataMatrix.length;
 			let translatedSourcePoints = [];
 			let fromRenderDataToPoint = (value, xIndex, yIndex, xStart, yStart, xStep, yStep) => {
-				return {
-					x: xStart + (xStep * xIndex),
-					y: yStart + (yStep * yIndex),
-					value
-				};
+				return {x: xStart + (xStep * xIndex), y: yStart + (yStep * yIndex), value};
 			};
-
 
 			//translate sourceRenderDataMatrix to coords
 			for (let yIndex = 0; yIndex < columnLength; yIndex++) {
@@ -193,12 +189,9 @@ var field = declareType("field", {
 				for (let xIndex = 0; xIndex < rowLength; xIndex++) {
 					let translatedSourcePoint = fromRenderDataToPoint(
 						i.sourceRenderDataMatrix[yIndex][xIndex],
-						xIndex,
-						yIndex,
-						xStart,
-						yStart,
-						xStep,
-						yStep
+						xIndex, yIndex,
+						xStart, yStart,
+						xStep, yStep
 					);
 					translatedRow.push(translatedSourcePoint);
 					// if (ctx.isPointInPath(Math.round(point.x), Math.round(point.y))){
@@ -208,14 +201,8 @@ var field = declareType("field", {
 			}
 
 			let indexesOfClosest = {
-				row: {
-					next: Number.POSITIVE_INFINITY,
-					prev: Number.POSITIVE_INFINITY
-				},
-				col: {
-					next: Number.POSITIVE_INFINITY,
-					prev: Number.POSITIVE_INFINITY
-				}
+				row: {next: Number.POSITIVE_INFINITY, prev: Number.POSITIVE_INFINITY},
+				col: {next: Number.POSITIVE_INFINITY, prev: Number.POSITIVE_INFINITY}
 			};
 
 			let minDistY = Number.POSITIVE_INFINITY;
@@ -260,7 +247,6 @@ var field = declareType("field", {
 			sw.screenCoords = coords.pointToControl(sw);
 			se.screenCoords = coords.pointToControl(se);
 
-
 			let ewBorderSize = Math.floor(ne.screenCoords.x) - (~~(nw.screenCoords.x));
 			let nsBorderSize = Math.floor(ne.screenCoords.y) - (~~(se.screenCoords.y));
 
@@ -270,19 +256,12 @@ var field = declareType("field", {
 			let interpolatedUpperBorder = field._interpolateArray([nw.value, ne.value], ewBorderSize);
 			let interpolatedBottomBorder = field._interpolateArray([sw.value, se.value], ewBorderSize);
 
-			let target = field._interpolateArray(
-				[
-					interpolatedBottomBorder[ewPointBorderIndex],
-					interpolatedUpperBorder[ewPointBorderIndex]
-				],
+			return field._interpolateArray(
+				[interpolatedBottomBorder[ewPointBorderIndex], interpolatedUpperBorder[ewPointBorderIndex]],
 				nsBorderSize
 			)[nsPointBorderIndex];
-			return target;
 		}
-		else {
-			return 0;
-		}
-
+		else {return 0}
 	},
 	getStocksWithinContour: (i, options) => {
 		let ctx = options.canvas.getContext("2d");
@@ -303,11 +282,7 @@ var field = declareType("field", {
 		}
 
 		let fromRenderDataToPoint = (value, xIndex, yIndex, xStart, yStart, xStep, yStep) => {
-			return {
-				x: xStart + (xStep * xIndex),
-				y: yStart + (yStep * yIndex),
-				value
-			};
+			return {x: xStart + (xStep * xIndex), y: yStart + (yStep * yIndex), value};
 		};
 
 		let xStart = i.x;
@@ -324,12 +299,9 @@ var field = declareType("field", {
 				let point = coords.pointToControl(
 					fromRenderDataToPoint(
 						i.sourceRenderDataMatrix[yIndex][xIndex],
-						xIndex,
-						yIndex,
-						xStart,
-						yStart,
-						xStep,
-						yStep
+						xIndex, yIndex,
+						xStart, yStart,
+						xStep, yStep
 					)
 				);
 				pointsArr.push(point);
@@ -339,9 +311,7 @@ var field = declareType("field", {
 			}
 		}
 		let summaryStocks = pointsInsideContour.reduce((acc, item) => {
-			if (!item) {
-				return acc;
-			}
+			if (!item) return acc;
 			return (acc += item);
 		}, 0);
 
@@ -361,14 +331,7 @@ var field = declareType("field", {
 		//filtering
 		return sourceRenderDataMatrix.reduce((acc, row, rowIndex) => {
 			if (rowIndex >= yIntersectStartIndex && rowIndex <= yIntersectEndIndex) {
-				return acc.concat(
-					row.filter((i, colIndex) => {
-						if (colIndex >= xIntersectStartIndex && colIndex <= xIntersectEndIndex) {
-							return true;
-						}
-						return false;
-					})
-				);
+				return acc.concat(row.filter((i, colIndex) => colIndex >= xIntersectStartIndex && colIndex <= xIntersectEndIndex));
 			}
 			return acc;
 		}, []);
@@ -398,8 +361,7 @@ var field = declareType("field", {
 		// parse string "n*50 123.123 132.323 ..." to an array (n*50 is equal to repeating null 50 times)
 		let data = stringData.split(" ");
 		let ret = [];
-		let lgth = data.length;
-		for (let i = 0; i < lgth; i++) {
+		for (let i = 0; i < data.length; i++) {
 			let val = data[i];
 			let starIndex = val.indexOf("*");
 			if (starIndex === -1) {
@@ -417,8 +379,7 @@ var field = declareType("field", {
 	},
 	_getRgbPaletteFromHex: (hexPalette) => {
 		return hexPalette.map((item) => {
-			let hexColorsArr = _.chunk(item.color.slice(1).split(""), 2)
-				.map((i) => i.join(""));
+			let hexColorsArr = _.chunk(item.color.slice(1).split(''), 2).map((i) => i.join(""));
 			return {
 				hexColor: item.color,
 				value: item.value,
@@ -433,7 +394,7 @@ var field = declareType("field", {
 			.sort((a, b) => (a.value - b.value))
 			.reduce((acc, item, index, arr) => {
 				if (index !== arr.length - 1) {
-					var ret = {
+					return acc.concat({
 						min: item.value,
 						max: arr[index + 1].value,
 						delta: arr[index + 1].value - item.value,
@@ -443,8 +404,7 @@ var field = declareType("field", {
 						redDelta: arr[index + 1].red - item.red,
 						greenDelta: arr[index + 1].green - item.green,
 						blueDelta: arr[index + 1].blue - item.blue
-					};
-					return acc.concat(ret);
+					});
 				}
 				return acc;
 			}, []);
@@ -504,20 +464,13 @@ var field = declareType("field", {
 			return;
 		}
 		let context = options.context;
-		let firstRenderPoint = options.pointToControl({
-			x: i.x,
-			y: i.y - i.sizey * i.stepy
-		});
-		let secondRenderPoint = options.pointToControl({
-			x: i.x + i.sizex * i.stepx,
-			y: i.y
-		});
+		let firstRenderPoint = options.pointToControl({x: i.x, y: i.y - i.sizey * i.stepy});
+		let secondRenderPoint = options.pointToControl({x: i.x + i.sizex * i.stepx, y: i.y});
 		let newSizex = ~~Math.abs(firstRenderPoint.x - secondRenderPoint.x);
 		let newSizey = ~~Math.abs(firstRenderPoint.y - secondRenderPoint.y);
 
 		let doUseSavedRenderData;
 		if (options.scale === i.lastUsedScale) {
-
 			doUseSavedRenderData = true;
 		} else {
 			//recalculate matrix and cancel previous calculations
@@ -564,11 +517,8 @@ var field = declareType("field", {
 					}
 					i.lastUsedRenderDataMatrix = newRenderDataMatrix;
 					let currentRenderArr = field._getRenderArrayFromData(
-						_.flatten(
-							newRenderDataMatrix
-						),
-						newSizex,
-						newSizey,
+						_.flatten(newRenderDataMatrix),
+						newSizex, newSizey,
 						i.deltasPalette
 					);
 					let imgData = context.createImageData(newSizex, newSizey);
@@ -584,8 +534,8 @@ var field = declareType("field", {
 	}
 });
 
-var polyline = declareType("polyline", {
-	borderStyles: ["Solid", "Dash", "Dot", "DashDot", "DashDotDot", "Clear"],
+var polyline = declareType('polyline', {
+	borderStyles: ['Solid', 'Dash', 'Dot', 'DashDot', 'DashDotDot', 'Clear'],
 
 	styleShapes: {
 		Solid: [],
@@ -596,21 +546,19 @@ var polyline = declareType("polyline", {
 		Clear: [],
 	},
 
-	getPattern: async (name, color, bkcolor) => {
-		var [, libName, index] = name.match(/^(.+)-(\d+)$/);
-		if (libName.toLowerCase() === "halftone") {
-			var c = parseColor(color).rgb;
-			var b = (bkcolor === "none") ? parseColor("#FFFFFF").rgb : parseColor(bkcolor).rgb;
-			var t = index / 64;
-			return `rgba(${b.map((bi, i) =>
-				Math.round(bi + (c[i] - bi) * t))
-				}, 1)`;
+	getPattern: async (name, color, backColor) => {
+		const [, libName, index] = name.match(/^(.+)-(\d+)$/);
+		if (libName.toLowerCase() === 'halftone') {
+			const c = parseColor(color).rgb;
+			const b = (backColor === 'none') ? parseColor("#FFFFFF").rgb : parseColor(backColor).rgb;
+			const t = index / 64;
+			return `rgba(${b.map((bi, i) => Math.round(bi + (c[i] - bi) * t))}, 1)`;
 		}
 		const done = await fetch(libsDict[libName.toLowerCase()], {credentials: 'include'});
-		let buffer = await done.arrayBuffer();
-		var lib = parseSMB(new Uint8Array(buffer));
-		var png = pngMono(lib[index], color, bkcolor);
-		return await htmlHelper.loadImageData(png, "image/png");
+		const buffer = await done.arrayBuffer();
+		const lib = parseSMB(new Uint8Array(buffer));
+		const png = pngMono(lib[index], color, backColor);
+		return await loadImageData(png, 'image/png');
 	},
 
 	bkcolor: function (i) {
@@ -636,27 +584,15 @@ var polyline = declareType("polyline", {
 			return p.bounds;
 		if (!p.arcs)
 			return undefined;
-		var bounds = {
-			"max": {
-				"x": undefined,
-				"y": undefined
-			},
-			"min": {
-				"x": undefined,
-				"y": undefined
-			}
+		const bounds = {
+			max: {x: undefined, y: undefined},
+			min: {x: undefined, y: undefined},
 		};
 		p.arcs.forEach(function (arcItem) {
 			arcItem.path.forEach(function (coord, ind) {
-				if (ind % 2 === 0) {
-					checkBoundX(bounds, coord);
-				}
-				else {
-					checkBoundY(bounds, coord);
-				}
+				ind % 2 === 0 ? checkBoundX(bounds, coord) : checkBoundY(bounds, coord);
 			});
 		});
-
 		return bounds;
 	},
 
@@ -891,21 +827,15 @@ var polyline = declareType("polyline", {
 			lconfig = options.provider.linesConfigJson.data.BorderStyles[0].Element;
 
 		var currentLineConfig = [];
-		if (i.borderstyleid)
-		{
+		if (i.borderstyleid) {
 			currentLineConfig = [lconfig.find(e => e.guid._value === i.borderstyleid)];
 		}
 		if (currentLineConfig.length !== 0) {
 			i.style = currentLineConfig[0];
 		}
-		else {
-			// some action here
-		}
-		// ---
 
 		polyline.path(i, options);
-		var color = i.bordercolor || i.fillcolor || i.fillbkcolor || "#000000";
-		context.strokeStyle = color;
+		context.strokeStyle = i.bordercolor || i.fillcolor || i.fillbkcolor || "#000000";
 		context.lineWidth = (i.borderwidth || defaultLineWidth) * 0.001 * options.dotsPerMeter;
 		// if a default style is present, set dash
 		if (i.borderstyle !== undefined && i.borderstyle != null) {
@@ -921,31 +851,25 @@ var polyline = declareType("polyline", {
 
 		// заглушка для ВНК да рэалізацыі lines.def
 		if (i.style) {
-			if (i.style.baseColor)
-				context.strokeStyle = i.style.baseColor._value;
-			else
-				context.strokeStyle = "black";
+			context.strokeStyle = i.style.baseColor ? i.style.baseColor._value : 'black';
 			if (i.style.baseThickness)
-				context.lineWidth = i.style.baseThickness._value * (i.borderwidth || defaultLineWidth) * 0.001 * options.dotsPerMeter;  // Thickness
+				context.lineWidth = i.style.baseThickness._value * (i.borderwidth || defaultLineWidth) * 0.001 * options.dotsPerMeter;
 			else
 				context.lineWidth = (i.borderwidth || defaultLineWidth) * 0.001 * options.dotsPerMeter;
 			// Enable this of you want to live^W draw dashed lives in draft
-			/*if (i.style.StrokeDashArrays) {
-				var dashObj = i.style.StrokeDashArrays[0].StrokeDashArray[0];
-				if (dashObj.onBase._value) {
-					var dashes = dashObj.data._value.split(' ');
-					context.setLineDash(dashes);
-					if (dashObj.color)
-						context.strokeStyle = dashObj.color._value;
-				}
-			}
-			*/
+			// if (i.style.StrokeDashArrays) {
+			// 	var dashObj = i.style.StrokeDashArrays[0].StrokeDashArray[0];
+			// 	if (dashObj.onBase._value) {
+			// 		var dashes = dashObj.data._value.split(' ');
+			// 		context.setLineDash(dashes);
+			// 		if (dashObj.color)
+			// 			context.strokeStyle = dashObj.color._value;
+			// 	}
+			// }
 		}
 
 		context.stroke();
-		if (context.setLineDash) {
-			context.setLineDash([]);
-		}
+		if (context.setLineDash) {context.setLineDash([])}
 	},
 
 	draw: function* drawThread(i, options) {
@@ -964,10 +888,6 @@ var polyline = declareType("polyline", {
 		if (currentLineConfig.length !== 0) {
 			i.style = currentLineConfig[0];
 		}
-		else {
-			// some action here
-		}
-		// ---
 
 		var pathNeeded = _.once(() => polyline.path(i, options));
 		if ((!i.edited) && i.selected) {
@@ -999,16 +919,13 @@ var polyline = declareType("polyline", {
 				}
 				context.fill();
 			}
-		}
-		else if (!i.transparent) {
+		} else if (!i.transparent) {
 			pathNeeded();
 			context.fillStyle = polyline.bkcolor(i);
 			context.fill();
 		}
 		if (!i.bordercolor || i.bordercolor === "none") {
-			if (i.edited) {
-				polyline.points(i, options);
-			}
+			if (i.edited) polyline.points(i, options);
 			return;
 		}
 		var borderstyle = polyline.borderStyles[i.borderstyle];
@@ -1018,8 +935,7 @@ var polyline = declareType("polyline", {
 			}
 			return;
 		}
-		if (!borderstyle)
-			borderstyle = "Solid";
+		if (!borderstyle) borderstyle = "Solid";
 		pathNeeded();
 		context.strokeStyle = i.bordercolor;
 		context.lineWidth = (i.borderwidth || defaultLineWidth) * 0.001 * options.dotsPerMeter;
@@ -1030,17 +946,12 @@ var polyline = declareType("polyline", {
 			for (let j = dash.length - 1; j >= 0; j--) {
 				dash[j] = dash[j] * configThicknessCoefficient * baseThicknessCoefficient;
 			}
-			if (context.setLineDash) {
-				context.setLineDash(dash);
-			}
+			if (context.setLineDash) context.setLineDash(dash);
 		}
 
 		// заглушка для ВНК да рэалізацыі lines.def
 		if (i.style) {
-			if (i.style.baseColor)
-				context.strokeStyle = i.style.baseColor._value;
-			else
-				context.strokeStyle = i.bordercolor;
+			context.strokeStyle = i.style.baseColor ? i.style.baseColor._value : i.bordercolor;
 			if (i.style.baseThickness)
 				context.lineWidth = configThicknessCoefficient * i.style.baseThickness._value * defaultLineWidth * 0.001 * options.dotsPerMeter;  // Thickness
 			else
@@ -1061,30 +972,22 @@ var polyline = declareType("polyline", {
 			}
 		}
 		context.stroke();
-		if (context.setLineDash) {
-			context.setLineDash([]);
-		}
+		if (context.setLineDash) context.setLineDash([]);
 
 		if (i.style) {
 			var decorationPathNeeded = _.once(() => polyline.decorationPath(i, options, i.style));
 			decorationPathNeeded();
 			context.stroke();
-			if (context.setLineDash) {
-				context.setLineDash([]);
-			}
+			if (context.setLineDash) context.setLineDash([]);
 		}
-		if (i.edited) {
-			polyline.points(i, options);
-		}
+		if (i.edited) polyline.points(i, options);
 	}
 });
 
 var label = declareType("label", {
-
 	alHorLeft: 0,
 	alHorCenter: 1,
 	alHorRight: 2,
-
 	alVerBottom: 0,
 	alVerCenter: 1,
 	alVerTop: 2,
@@ -1092,22 +995,19 @@ var label = declareType("label", {
 	bound: pointBounds,
 
 	draw: function* drawThread(i, options) { // eslint-disable-line
-
-		var fontsize = (i.fontsize + (i.selected ? 2 : 0)) * // pt
-			(1 / 72 * 0.0254) * // meters
-			options.dotsPerMeter; // pixels
-
+		// pt -> meters -> pixels
+		const fontsize = (i.fontsize + (i.selected ? 2 : 0)) * (1 / 72 * 0.0254) * options.dotsPerMeter;
 		if (fontsize < 2) return;
 
-		var context = options.context;
-		context.font = fontsize + "px " + i.fontname;
+		const context = options.context;
+		context.font = fontsize + 'px ' + i.fontname;
 
-		var p = options.pointToControl(i);
+		const p = options.pointToControl(i);
 		p.x += (i.xoffset || 0) * 0.001 * options.dotsPerMeter;
 		p.y -= (i.yoffset || 0) * 0.001 * options.dotsPerMeter;
 
-		context.textAlign = "left";
-		context.textBaseline = "top";
+		context.textAlign = 'left';
+		context.textBaseline = 'top';
 
 		var text = (x, y) => {
 			var width = context.measureText(i.text).width;
@@ -1119,9 +1019,9 @@ var label = declareType("label", {
 				case label.alHorCenter:
 					x -= width / 2 + 1; // magic
 					break;
-				default:
-					break;
+				default: break;
 			}
+
 			switch (i.valignment) {
 				case label.alVerBottom:
 					y -= fontsize + 2; // magic
@@ -1129,16 +1029,15 @@ var label = declareType("label", {
 				case label.alVerCenter:
 					y -= fontsize / 2 + 1; // magic
 					break;
-				default:
-					break;
+				default: break;
 			}
+
 			if (i.selected) {
 				context.strokeStyle = "black";
 				context.lineWidth = 3;
 				context.strokeRect(x, y, width, fontsize + 3);
 			}
-			if (!i.transparent)
-			{
+			if (!i.transparent) {
 				context.fillStyle = "white";
 				context.fillRect(x, y, width, fontsize + 3); // magic
 			}
@@ -1151,9 +1050,9 @@ var label = declareType("label", {
 			context.rotate(-i.angle / 180 * Math.PI);
 			text(0, 0);
 			context.restore();
-		}
-		else
+		} else {
 			text(p.x, p.y);
+		}
 	},
 });
 
@@ -1170,8 +1069,7 @@ declareType("pieslice", {
 		if (i.radius < minRadius) i.radius = minRadius;
 		var r = i.radius * 0.001 * options.dotsPerMeter * customIncreaseCoefficient;
 		context.beginPath();
-		if (!(i.startangle === 0 && Math.abs(i.endangle - 2 * Math.PI) < 1e-6))
-			context.moveTo(p.x, p.y);
+		if (!(i.startangle === 0 && Math.abs(i.endangle - 2 * Math.PI) < 1e-6)) context.moveTo(p.x, p.y);
 		context.arc(p.x, p.y, r, i.startangle + Math.PI / 2, i.endangle + Math.PI / 2, false);
 		context.closePath();
 		var drawOptions = options.provider.drawOptions || {};
@@ -1188,43 +1086,15 @@ declareType("pieslice", {
 	},
 });
 
-function Value(value, whenNull) {
-	if (value == null)
-		return whenNull();
-	else
-		return value;
-}
-
-function isLayerVisible(layer, map) {
-	return layer.visible;
-}
-
-function nullGetter() {
-	return null;
-}
-
-function getNullGetter() {
-	return nullGetter;
-}
+const Value = (value, whenNull) => value == null ? whenNull() : value;
+const nullGetter = () => null;
+const getNullGetter = () => nullGetter;
+const isLayerVisible = (layer) => layer.visible;
 
 export function startPaint(canvas, map, options) {
 	// to stop painting set the options.check callback and
 	// throw an exception inside it.
 	// options.check may return a Promise ( or Thenable ) to pause drawing
-
-	/*
-
-	obligatory:
-
-	options.scale
-	options.dotsPerMeter
-
-	optianal:
-
-	options.onIdle
-	*/
-
-	var start = Date.now();
 
 	var pixelRatio = options.pixelRatio || 1;
 	var coords = options.coords;
@@ -1243,7 +1113,6 @@ export function startPaint(canvas, map, options) {
 	));
 
 	var context = canvas.getContext ? canvas.getContext("2d") : canvas;
-
 	var drawOptions = {
 		provider: options.provider,
 		selected: options.selected,
@@ -1259,28 +1128,18 @@ export function startPaint(canvas, map, options) {
 	};
 
 	return startThread(function* paintThread() {
-		var L = logger;
 		var done = false;
 		var mapDrawn = 0;
 
 		// REMOVE IN RELEASE
 
-		L.info("starting draw map cycle", map, drawBounds, scale);
+		logger.info('starting draw map cycle');
 		try {
 			for (let layer of map.layers) {
-				L.info("processing layer", "(", layer.name, ")", layer);
-
-				L.info("checking if layer is not hidden");
-				if (!L.info(isLayerVisible(layer, map)))
-					continue;
-
-				L.info("checking if layer is visible within the scale", scale);
-				if (!L.info(coords.scaleVisible(layer)))
-					continue;
-
-				L.info("checking if layer bounds intersect the drawing area", drawBounds);
-				if (!L.info(geom.rects.intersects(drawBounds, layer.bounds)))
-					continue;
+				logger.info(`processing layer "${layer.name}"`, layer);
+				if (!isLayerVisible(layer, map)) continue;
+				if (!coords.scaleVisible(layer)) continue;
+				if (!geom.rects.intersects(drawBounds, layer.bounds)) continue;
 
 				let c = onCheckExecution();
 				c && (yield c);
@@ -1290,16 +1149,16 @@ export function startPaint(canvas, map, options) {
 
 				if (!layer.elements) {
 					let r = onDataWaiting(layer.elementsData);
-					if (r)
-						yield r;
+					if (r) yield r;
 				}
-				if (layer.elements) for (let element of layer.elements.filter(e => !e.selected)) {
-					if (total === 0)
-						L.info("type of first element in sublayer is", element.type);
+
+				if (!layer.elements || layer.elements.length === 0) continue;
+
+				for (let element of layer.elements.filter(e => !e.selected)) {
+					if (total === 0) logger.info('type of first element in sublayer is', element.type);
 					++total;
 					let D = types[element.type];
-					if (!geom.rects.intersects(drawBounds, D.bound(element)))
-						continue;
+					if (!geom.rects.intersects(drawBounds, D.bound(element))) continue;
 
 					c = onCheckExecution();
 					c && (yield c);
@@ -1313,24 +1172,22 @@ export function startPaint(canvas, map, options) {
 						D.draft(element, drawOptions);
 					}
 				}
-				L.info("Layer ( ", layer.name, " ). ", drawn, "of total", total, "elements are drawn. ", total - drawn, " are outside of the painted area");
+				logger.info(`Layer (${layer.name}).`, drawn, "of total", total, "elements are drawn. ", total - drawn, " are outside of the painted area");
 			}
 
 			for (let layer of map.layers) {
-				if (!L.info(isLayerVisible(layer, map)))
-					continue;
-				if (!L.info(coords.scaleVisible(layer)))
-					continue;
-				if (!L.info(geom.rects.intersects(drawBounds, layer.bounds)))
-					continue;
-
+				if (!isLayerVisible(layer, map)) continue;
+				if (!coords.scaleVisible(layer)) continue;
+				if (!geom.rects.intersects(drawBounds, layer.bounds)) continue;
 				let c = onCheckExecution();
 				c && (yield c);
 
-				if (layer.elements) for (let element of layer.elements.filter(e => e.selected)) {
+				if (!layer.elements || layer.elements.length === 0) continue;
+
+				for (let element of layer.elements.filter(e => e.selected)) {
+					logger.info('draw selected element:', element);
 					let D = types[element.type];
-					if (!geom.rects.intersects(drawBounds, D.bound(element)))
-						continue;
+					if (!geom.rects.intersects(drawBounds, D.bound(element))) continue;
 
 					c = onCheckExecution();
 					c && (yield c);
@@ -1338,23 +1195,20 @@ export function startPaint(canvas, map, options) {
 					++mapDrawn;
 					if (D.draw && !options.draftDrawing) {
 						yield* D.draw(element, drawOptions);
-					}
-					else if (D.draft) {
+					} else if (D.draft) {
 						D.draft(element, drawOptions);
 					}
 				}
 			}
 
-			if (map.type !== "profile" && !map.points) {
+			if (map.type !== 'profile' && !map.points) {
 				let r = onDataWaiting(map.pointsData);
-				if (r)
-					yield r;
+				if (r) yield r;
 			}
 			if (map.points && drawOptions.selected && drawOptions.selected.indexOf) {
-				let D = types["namedpoint"];
+				let D = types['namedpoint'];
 				if (D) for (let element of map.points) {
-					if (!geom.rects.intersects(drawBounds, D.bound(element)))
-						continue;
+					if (!geom.rects.intersects(drawBounds, D.bound(element))) continue;
 					if (drawOptions.selected.indexOf(element.name) >= 0 ||
 						drawOptions.selected.indexOf(element.uwid || element.UWID) >= 0
 					) {
@@ -1366,14 +1220,16 @@ export function startPaint(canvas, map, options) {
 				}
 			}
 
+			map.x = options.events.centerx;
+			map.y = options.events.centery;
+			map.scale = options.events.scale;
+
 			done = true;
 		} finally {
-			if (done)
-				L.info("draw map cycle is finished successfully");
-			else
-				L.info("UPS. draw map cycle has been interrupted by smth");
-			L.info(mapDrawn, "elements are drawn.");
-			L.info((Date.now() - start) / 1000);
+			done
+				? logger.info('draw map cycle is finished successfully')
+				: logger.info('UPS. draw map cycle has been interrupted by smth');
+			logger.info(mapDrawn + ' elements are drawn.');
 		}
 	});
 }

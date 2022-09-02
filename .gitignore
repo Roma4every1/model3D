@@ -1,5 +1,3 @@
-# See https://help.github.com/ignore-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
 
@@ -15,7 +13,7 @@
 /.vs
 /src/.vs
 /.vscode
-package-lock.json
+/package-lock.json
 .DS_Store
 .env
 .env.local

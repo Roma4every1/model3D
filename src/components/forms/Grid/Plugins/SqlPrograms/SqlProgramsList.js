@@ -44,12 +44,11 @@ export default function SqlProgramsList({formId: formID}) {
     let ignore = false;
     if (formID) {
       async function fetchData() {
+        if (ignore) return;
         const data = await sessionManager.fetchData(`programsList?sessionId=${sessionID}&formId=${formID}`);
-        if (!ignore) {
-          data
-            ? setState({loaded: true, data: data, success: true})
-            : setState({loaded: true, data: null, success: false});
-        }
+        data
+          ? setState({loaded: true, data: data, success: true})
+          : setState({loaded: true, data: null, success: false});
       }
       fetchData();
     }

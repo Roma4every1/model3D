@@ -1,9 +1,11 @@
 import { Dispatch } from "redux";
 import { AppStateAction } from "./reducers/appState";
+import {MapsAction} from "./reducers/maps";
 
 import { API } from "../api/api";
 import { mapSystem } from "../utils";
 import { setWebServicesURL, applyRootLocation } from "../api/initialization";
+import { startMapLoad, loadMapSuccess, loadMapError } from "./actionCreators/maps.actions";
 import {
   fetchConfigSuccess, fetchConfigError,
   fetchSystemListSuccess, fetchSystemListError,
@@ -47,6 +49,21 @@ export const startSession = (startSessionFn) => {
     } catch (error) {
       console.warn(error);
       dispatch(startSessionError());
+    }
+  }
+}
+
+export const fetchMapData = (formID: FormID, mapID: MapID, loadMapFn, callback) => {
+  return async (dispatch: Dispatch<MapsAction>) => {
+    dispatch(startMapLoad(formID));
+    const defaultMapContext = {center: {x: 0, y: 0}, scale: 10000};
+    try {
+      const loadedMap = await loadMapFn(mapID, defaultMapContext);
+      callback(loadedMap);
+      dispatch(loadMapSuccess(formID, loadedMap));
+    } catch (error) {
+      console.warn(error);
+      dispatch(loadMapError(formID))
     }
   }
 }

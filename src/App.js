@@ -6,11 +6,11 @@ import { fetchConfig, fetchSystems } from "./store/thunks";
 import SystemList from "./components/SystemList";
 import SystemRoot from "./components/SystemRoot";
 import UnknownRoute from "./components/common/UnknownRoute";
+import LoadingStatus from "./components/common/LoadingStatus";
 
 import "@progress/kendo-theme-default/dist/all.css";
 import "flexlayout-react/style/light.css";
-import "./custom.css";
-import LoadingStatus from "./components/common/LoadingStatus";
+import "./styles/custom.css";
 
 
 /** Корень приложения. */

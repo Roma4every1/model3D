@@ -11,6 +11,7 @@ import nextTick from 'async/nextTick';
 
 const devicePixelRatio = window.devicePixelRatio || 1;
 
+
 function updateCanvasSize(canvas) {
 	let ret = false;
 	const width = canvas.clientWidth * devicePixelRatio || 0;
@@ -511,51 +512,45 @@ export default function Maps(provider) {
 	};
 
 	this.showMap = (canvas, map, {scale, centerx, centery, idle, plainDrawing, selected} = {}) => {
-
 		var updateOnce = once(() => update(canvas));
-
-		var fin = [];
-
-		function detach() {
-			fin.reverse().forEach(f => f());
-			fin.length = 0;
-		}
 
 		var coords;
 		var uimode;
-
 		var canvasFlag = canvas.showMapFlag = {};
-
 		var events = new EventEmitter();
 		var canvasEvents = canvas.events;
-		if (!canvas.events) {
-			update(canvas);
+		if (!canvas.events) update(canvas);
+
+		var fin = [];
+		function detach() {
+			fin.reverse().forEach(f => f());
+			fin.length = 0;
 		}
 
 		//var resizer = onElementSize(canvas, canvas => process.nextTick(() => update(canvas)));
 		var resizer = onElementSize(canvas, canvas => nextTick(() => update(canvas)));
 		fin.push(() => resizer.stop());
 
-		events.on("update", () => update(canvas));
-		events.on("detach", detach);
+		events.on('update', () => update(canvas));
+		events.on('detach', detach);
 
-		function on(events, event, fun) {
-			var handler = function () {
-				return checkCanvas() && fun.apply(this, arguments);
+		function on(events, event, action) {
+			const handler = function () {
+				return checkCanvas() && action.apply(this, arguments);
 			};
 			events.on(event, handler);
 			fin.push(() => events.removeListener(event, handler));
 		}
 
-		if (canvasEvents) {
-			on(canvasEvents, "changed", data => {
+		if (canvasEvents && canvasEvents.listenerCount('changed') < 5) {
+			on(canvasEvents, 'changed', (data) => {
 				coords = data.coords.changeResolution(devicePixelRatio);
 				update(data.control);
 			});
-			on(canvasEvents, "pointPicked", data =>
-				events.emit("pointPicked", data.point, events.scale));
-			on(canvasEvents, "uimode", data =>
-				uimode = data.uimode);
+			on(canvasEvents, 'pointPicked', (data) => {
+				events.emit('pointPicked', data.point, events.scale)
+			});
+			on(canvasEvents, 'uimode', (data) => {uimode = data.uimode});
 		}
 
 		events.scale = scale;
@@ -565,31 +560,25 @@ export default function Maps(provider) {
 		return events;
 
 		function checkCanvas() {
-			if (canvasFlag === canvas.showMapFlag)
-				return true;
-			else {
-				detach();
-				return false;
-			}
+			if (canvasFlag === canvas.showMapFlag) return true;
+			detach();
+			return false;
 		}
 
 		function update(canvas) {
 			startThread(function* () {
-				if (!checkCanvas())
-					return;
+				if (!checkCanvas()) return;
 				var drawFlag = canvas.showMapFlag.mapDrawCycle = {};
 				var count = 0;
 				var onCheckExecution = () => {
-					if (!checkCanvas())
-						throw new Error("map drawer is detached");
-					if (drawFlag !== canvas.showMapFlag.mapDrawCycle)
-						throw new Error("stop");
+					if (!checkCanvas()) throw new Error('map drawer is detached');
+					if (drawFlag !== canvas.showMapFlag.mapDrawCycle) throw new Error('stop');
+
 					if (++count > (uimode ? 20 : 1000)) {
 						count = 0;
 						var ret = new Promise(resolve => setTimeout(resolve, 0));
 						var i = idle && idle();
-						if (i)
-							ret = Promise.all([ret, i]);
+						if (i) ret = Promise.all([ret, i]);
 						return ret;
 					}
 				};
@@ -600,15 +589,12 @@ export default function Maps(provider) {
 				updateCanvasSize(canvas);
 				if (!coords) {
 					var dotsPerMeter = canvas.width / (canvas.clientWidth / pixelPerMeter());
-					if (isNaN(dotsPerMeter)) {
-						dotsPerMeter = 3780;
-					}
+					if (isNaN(dotsPerMeter)) dotsPerMeter = 3780;
 
 					if (centerx == null) {
 						var bounds = rects.middleRect(...map.layers.map(layer => layer.bounds));
 						if (!bounds) {
-							if (!scale)
-								scale = 5000;
+							if (!scale) scale = 5000;
 							centerx = 0;
 							centery = 0;
 						} else {
@@ -636,20 +622,17 @@ export default function Maps(provider) {
 				events.centerx = p.x;
 				events.centery = p.y;
 
-				canvasEvents && canvasEvents.emit("init", C.changeResolution(1 / devicePixelRatio));
+				canvasEvents && canvasEvents.emit('init', C.changeResolution(1 / devicePixelRatio));
 
-				var onDataWaiting = null;
-				if (plainDrawing || map.mapErrors.length > 0)
-					onDataWaiting = identity;
-				else {
-					onDataWaiting = promise => promise.then(updateOnce);
-				}
+				var onDataWaiting = (plainDrawing || map.mapErrors.length > 0)
+					? identity
+					: (promise) => promise.then(updateOnce);
 
-				var context = canvas.getContext ? canvas.getContext("2d") : canvas;
+				var context = canvas.getContext ? canvas.getContext('2d') : canvas;
 
 				var clearCanvas = () => {
-					context.fillStyle = "white";
-					context.fillRect(0, 0, canvas.width, canvas.height, "white");
+					context.fillStyle = 'white';
+					context.fillRect(0, 0, canvas.width, canvas.height, 'white');
 				};
 
 				var startPaint = draftDrawing => _startPaint(canvas, map, {
@@ -671,16 +654,11 @@ export default function Maps(provider) {
 				clearCanvas();
 				yield startPaint(false);
 
-				events.emit("update.end", canvas);
+				events.emit('update.end', canvas);
 
-			}).catch(e => {
-				if (e.message !== "stop")
-					logger.error(e);
-				else
-					logger.debug(e);
-			});
+			}).catch(e => {e.message !== 'stop' ? logger.error(e) : logger.debug(e)});
 		}
 	};
 
-	this.updateFieldPalette = types["field"].updatePalette;
+	this.updateFieldPalette = types['field'].updatePalette;
 };

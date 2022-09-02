@@ -1,7 +1,7 @@
 {
   "Chart": {
     "seriesSettings": {
-      "type": "inner",
+      "type": "strip",
       "component": "SeriesSettings",
       "label": "Настройки графика"
     }
@@ -94,35 +94,15 @@
     }
   },
   "Map": {
-    "pdfExport": {
+    "editing": {
       "type": "strip",
-      "component": "ExportToPdf",
-      "label": "Экспорт в PDF"
-    },
-    "mapToFullViewport": {
-      "type": "strip",
-      "component": "MapToFullViewport",
-      "label": "Центрирование карты"
-    },
-    "dimensions": {
-      "type": "strip",
-      "component": "Dimensions",
-      "label": "Центр и масштаб карты"
-    },
-    "selecting": {
-      "type": "strip",
-      "component": "Selecting",
-      "label": "Выделение элементов карты"
+      "component": "MapEditPanel",
+      "label": "Редактирование карты"
     },
     "sublayersTree": {
       "type": "right",
       "component": "SublayersTree/SublayersTree",
       "label": "Дерево подслоёв"
-    },
-    "contourEditing": {
-      "type": "strip",
-      "component": "Editing/Editing",
-      "label": "Редактирование карты"
     }
   }
 }

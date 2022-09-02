@@ -101,7 +101,7 @@ function Grid({formData}, ref) {
 
   if (!openedForms) return <Loader size={'small'} type={'infinite-spinner'} />;
   return (
-    <Container formId={formData.id} modelJson={modelJson}>
+    <Container formID={formData.id} modelJson={modelJson}>
       {openedForms.map(formData => <Form key={formData.id} formData={formData}/>)}
     </Container>
   );

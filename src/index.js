@@ -9,7 +9,8 @@ import App from "./App";
 import "./i18n";
 import "bootstrap/dist/css/bootstrap.css";
 
-import { load } from "@progress/kendo-react-intl";
+import { load, loadMessages } from "@progress/kendo-react-intl";
+import ruMessages from "./components/locales/kendoUI/ru.json";
 import likelySubtags from "cldr-core/supplemental/likelySubtags.json";
 import currencyData from "cldr-core/supplemental/currencyData.json";
 import weekData from "cldr-core/supplemental/weekData.json";
@@ -30,15 +31,8 @@ if (!Object.fromEntries) {
   }
 }
 
-load(
-  likelySubtags,
-  currencyData,
-  weekData,
-  numbers,
-  caGregorian,
-  dateFields,
-  timeZoneNames
-);
+loadMessages(ruMessages, 'ru-RU');
+load(likelySubtags, currencyData, weekData, numbers, caGregorian, dateFields, timeZoneNames);
 
 createSessionManager(store);
 registerServiceWorker();

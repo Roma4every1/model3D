@@ -9,7 +9,7 @@ export default function FormHeader(props) {
     <div className="blockheader">
       <Toolbar className="blockheadertoolbar">
         <ToolbarItem>
-          {/*<LocalFormParametersList formId={formData.id} />*/}
+          {/*<LocalFormParametersList formID={formData.id} />*/}
           {additionalButtons}
         </ToolbarItem>
         <ToolbarItem>

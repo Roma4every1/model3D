@@ -22,9 +22,10 @@ export default function Form({formData, data}) {
   const sessionManager = useSelector((state) => state.sessionManager);
   const dispatch = useDispatch();
 
+  const {id: formID, type: formType} = formData;
   const _form = useRef(null);
   const [formLoadedData, setFormLoadedData] = useState({
-    formId: formData.id,
+    formId: formID,
     loaded: false,
     activeChannels: data?.activeChannels ?? [],
     activeParams: [],
@@ -32,36 +33,36 @@ export default function Form({formData, data}) {
   });
 
   useEffect(() => {
-    if (formLoadedData.formId !== formData.id) {
+    if (formLoadedData.formId !== formID) {
       setFormLoadedData({
-        formId: formData.id,
+        formId: formID,
         loaded: false,
         activeChannels: formLoadedData.activeChannels,
         activeParams: formLoadedData.activeParams,
         settings: formLoadedData.settings
       });
     }
-  }, [formData, formLoadedData]);
+  }, [formID, formLoadedData]);
 
   useEffect(() => {
     let ignore = false;
     if (!data || data.needLoad) {
 
       async function fetchParams() {
-        return await sessionManager.paramsManager.loadFormParameters(formData.id, false);
+        return await sessionManager.paramsManager.loadFormParameters(formID, false);
       }
       async function fetchChannels() {
-        return await sessionManager.channelsManager.loadFormChannelsList(formData.id);
+        return await sessionManager.channelsManager.loadFormChannelsList(formID);
       }
       async function fetchSettings() {
-        return await sessionManager.paramsManager.loadFormSettings(formData.id);
+        return await sessionManager.paramsManager.loadFormSettings(formID);
       }
 
       if (!formLoadedData.loaded) {
         Promise.all([fetchParams(), fetchChannels(), fetchSettings()]).then(values => {
           if (!ignore) {
             setFormLoadedData({
-              formId: formData.id,
+              formId: formID,
               loaded: true,
               activeChannels: values[1],
               activeParams: values[0],
@@ -72,11 +73,11 @@ export default function Form({formData, data}) {
       }
     } else {
       Promise.all(formLoadedData.activeChannels.map(async ch =>
-        await sessionManager.channelsManager.loadAllChannelData(ch, formData.id, false)
-      )).then(values => {
+        await sessionManager.channelsManager.loadAllChannelData(ch, formID, false)
+      )).then(() => {
         if (!formLoadedData.loaded) {
             setFormLoadedData({
-              formId: formData.id,
+              formId: formID,
               loaded: true,
               activeChannels: data.activeChannels,
               activeParams: data.activeParams,
@@ -89,31 +90,34 @@ export default function Form({formData, data}) {
     return () => {
       ignore = true;
       if (formLoadedData.loaded) {
-        sessionManager.channelsManager.setFormInactive(formData.id);
+        sessionManager.channelsManager.setFormInactive(formID);
       }
     };
-  }, [formData, formLoadedData, data, sessionManager]);
+  }, [formID, formLoadedData, data, sessionManager]);
 
-  const FormByType = formDict[formData.type];
+  const FormByType = formDict[formType];
 
   useLayoutEffect(() => {
-    dispatch(setFormRefs(formData.id, _form))
-  }, [formData, dispatch]);
+    dispatch(setFormRefs(formID, _form));
+  }, [formID, dispatch]);
 
-  const allPlugins = useSelector((state) => state.plugins.inner);
-  const plugins = allPlugins.filter(plugin => plugin?.component?.form === capitalizeFirstLetter(formData.type));
+  const allPlugins = useSelector((state) => state.layout.plugins.inner);
+  const plugins = allPlugins.filter(plugin => plugin?.component?.form === capitalizeFirstLetter(formType));
 
   const pluginsByType = plugins?.map(pl => {
-    const PluginByType = pluginsDict[formData.type.toLowerCase()][pl.component.path];
-    return <PluginByType key={pl.component.path} formId={formData.id} />
+    const PluginByType = pluginsDict[formType.toLowerCase()][pl.component.path];
+    return <PluginByType key={pl.component.path} formId={formID} />
   });
 
   return (
     <ErrorBoundary>
       {!formLoadedData.loaded
         ? <Skeleton shape={'rectangle'} animation={{type: 'wave'}}/>
-        : <div className={'form-container'}>
-            <FormByType key={'mainForm'} formData={formData} data={formLoadedData} ref={_form} />
+        : <div className={`form-container ${formType}-form`}>
+            {formType === 'map'
+              ? <FormByType key={'mainForm'} formData={formData} data={formLoadedData} />
+              : <FormByType key={'mainForm'} formData={formData} data={formLoadedData} ref={_form} />
+            }
             {pluginsByType}
           </div>
       }

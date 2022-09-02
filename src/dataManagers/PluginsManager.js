@@ -1,68 +1,49 @@
-﻿import setPlugins from "../store/actionCreators/setPlugins";
-import pluginsSettings from "./pluginsSettings.json";
+﻿import pluginsSettings from "./pluginsSettings.json";
+import { setPlugins } from "../store/actionCreators/layout.actions";
+
 
 export default function createPluginsManager(store) {
+  const configToSave = {top: [], strip: []};
 
-    const configToSave = { top: [] };
-    configToSave.strip = [];
+  for (const formName in pluginsSettings) {
+    const formPlugins = pluginsSettings[formName];
 
-    for (var formName in pluginsSettings) {
-        for (var pluginName in pluginsSettings[formName]) {
-            if (!configToSave[pluginsSettings[formName][pluginName].type]) {
-                configToSave[pluginsSettings[formName][pluginName].type] = [];
-            }
-            if (pluginsSettings[formName][pluginName].type === "strip" || pluginsSettings[formName][pluginName].type === "inner") {
-                configToSave[pluginsSettings[formName][pluginName].type].push({
-                    "component": {
-                        "id": pluginName,
-                        "form": formName,
-                        "path": pluginsSettings[formName][pluginName].component
-                    }
-                })
-            }
-            else if (pluginsSettings[formName][pluginName].type === "left") {
-                configToSave[pluginsSettings[formName][pluginName].type].push({
-                    "type": "tabset",
-                    "order": pluginsSettings[formName][pluginName].order,
-                    "WMWname": pluginsSettings[formName][pluginName].WMWname,
-                    "selected": 0,
-                    "weight": pluginsSettings[formName][pluginName].weight,
-                    "condition": pluginsSettings[formName][pluginName].condition,
-                    "children": [{
-                        "enableDrag": true,
-                        "type": "tab",
-                        "name": pluginsSettings[formName][pluginName].label,
-                        "component": {
-                            "id": pluginName,
-                            "form": formName,
-                            "path": pluginsSettings[formName][pluginName].component
-                        }
-                    }]
-                })
-            }
-            else {
-                configToSave[pluginsSettings[formName][pluginName].type].push({
-                    "enableDrag": false,
-                    "type": "tab",
-                    "name": pluginsSettings[formName][pluginName].label,
-                    "id": pluginName,
-                    "component": {
-                        "id": pluginName,
-                        "form": formName,
-                        "path": pluginsSettings[formName][pluginName].component
-                    }
-                })
-            }
-        }
+    for (const pluginName in formPlugins) {
+      const plugin = formPlugins[pluginName];
+
+      if (!configToSave[formPlugins[pluginName].type]) {
+        configToSave[formPlugins[pluginName].type] = [];
+      }
+
+      const component = {id: pluginName, form: formName, path: plugin.component};
+
+      if (plugin.type === 'strip' || plugin.type === 'inner') {
+        configToSave[plugin.type].push({component});
+      } else if (plugin.type === 'left') {
+        configToSave[plugin.type].push({
+          type: 'tabset',
+          order: plugin.order,
+          WMWname: plugin.WMWname,
+          selected: 0,
+          weight: plugin.weight,
+          condition: plugin.condition,
+          children: [{enableDrag: true, type: 'tab', name: plugin.label, component}]
+        });
+      } else {
+        configToSave[plugin.type].push({
+          enableDrag: false,
+          type: 'tab',
+          name: plugin.label,
+          id: pluginName,
+          component,
+        });
+      }
     }
+  }
 
-    configToSave.top.push({
-        "enableDrag": false,
-        "type": "tab",
-        "id": "formStrip",
-        "name": "",
-        "component": "strip"
-    })
+  // Для некоторых форм сверху предусмотрена панель управления (таблица, карта, график).
+  const additive = {enableDrag: false, type: 'tab', id: 'formStrip', name: '', component: 'strip'};
+  configToSave.top.push(additive);
 
-    store.dispatch(setPlugins(configToSave));
+  store.dispatch(setPlugins(configToSave));
 }

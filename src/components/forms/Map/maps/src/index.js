@@ -1,4 +1,4 @@
-import * as htmlHelper from "./htmlHelper";
+import { loadImage } from "./htmlHelper";
 import symbols from "./symbols";
 import patterns from "./patterns";
 import cache from "./cache";
@@ -8,8 +8,8 @@ import logger from "./logger";
 
 
 function createMapsDrawer(paths, httpClient) {
-	const getImage = cache(imageName => htmlHelper.loadImage(paths.imageRoot + imageName));
-	const provider = {
+	const getImage = cache(imageName => loadImage(paths.imageRoot + imageName));
+	let provider = {
 		//getLinesDefStub: () => linesDefStub,
 		getSymbolsLib: cache(() => httpClient.getHTTP(paths.symbolDef, 'binary')),
 		getPatternLib: cache(libName => httpClient.getHTTP(paths.libs + libName.toLowerCase() + '.smb', 'binary')),
@@ -27,12 +27,14 @@ function createMapsDrawer(paths, httpClient) {
 		getProfile: () => httpClient.getJSON('profileUrl')
 	};
 
-	const ret = new Maps([symbols, patterns].reduce((x, f) => f(x), provider));
+	provider = [symbols, patterns].reduce((x, f) => f(x), provider);
+	const ret = new Maps(provider);
 	ret.Scroller = Scroller;
+	ret.getSignImage = provider.getSignImage
 	return ret;
 }
 
-if (typeof window !== 'undefined') window.createMapsDrawer = createMapsDrawer;
+if (window) window.createMapsDrawer = createMapsDrawer;
 createMapsDrawer.logger = logger;
 
 export default createMapsDrawer;

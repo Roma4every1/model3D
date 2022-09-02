@@ -6,12 +6,14 @@ import { pluginsDict } from "../../dicts/plugins";
 import ErrorBoundary from "../../common/ErrorBoundary";
 
 
+const stripPluginsSelector = (state) => state.layout.plugins.strip;
+
 export default function DockPluginStrip({formId}) {
   const activeChildId = useSelector((state) => state.childForms[formId]?.openedChildren[0]);
   const activeSubChild = useSelector((state) => state.childForms[activeChildId]?.children.find(p => p.id === (state.childForms[activeChildId].activeChildren[0])));
-  const plugins = useSelector((state) => state.plugins.strip);
+  const stripPlugins = useSelector(stripPluginsSelector);
 
-  const pluginsByType = plugins.filter(el => el.component.form === capitalizeFirstLetter(activeSubChild?.type));
+  const pluginsByType = stripPlugins.filter(el => el.component.form === capitalizeFirstLetter(activeSubChild?.type));
   if (activeSubChild) {
     return (
       <Toolbar style={{ padding: 1 }}>
@@ -25,5 +27,5 @@ export default function DockPluginStrip({formId}) {
         })}
       </Toolbar>
     );
-  } else return <div />
+  } else return null;
 }

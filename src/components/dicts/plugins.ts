@@ -33,35 +33,13 @@ import RecursiveTreeView from "../forms/Dock/Plugins/RecursiveTreeView";
 
 /* Grid plugins */
 
-import ProgramButton from "../forms/Grid/Plugins/SqlPrograms/ProgramButton";
-import ProgramParametersButton from "../forms/Grid/Plugins/SqlPrograms/ProgramParametersButton";
-import ProgramParametersList from "../forms/Grid/Plugins/SqlPrograms/ProgramParametersList";
 import SqlProgramsList from "../forms/Grid/Plugins/SqlPrograms/SqlProgramsList";
-
 import GridParametersList from "../forms/Grid/Plugins/ParametersList";
 
 /* Map plugins */
 
-import AttrTableWindow from "../forms/Map/Plugins/Editing/AttrTableWindow";
-import CreateElementWindow from "../forms/Map/Plugins/Editing/CreateElementWindow";
-import Editing from "../forms/Map/Plugins/Editing/Editing";
-import EditWindow from "../forms/Map/Plugins/Editing/EditWindow";
-import FillNameTemplate from "../forms/Map/Plugins/Editing/FillNameTemplate";
-import LabelPropertiesWindow from "../forms/Map/Plugins/Editing/LabelPropertiesWindow";
-import PolylinePropertiesWindow from "../forms/Map/Plugins/Editing/PolylinePropertiesWindow";
-import PropertiesWindow from "../forms/Map/Plugins/Editing/PropertiesWindow";
-import StyleTemplate from "../forms/Map/Plugins/Editing/StyleTemplate";
-
-import SublayerStatisticsWindow from "../forms/Map/Plugins/SublayersTree/SublayerStatisticsWindow";
+import MapEditPanel from "../forms/Map/Plugins/MapEditPanel";
 import SublayersTree from "../forms/Map/Plugins/SublayersTree/SublayersTree";
-import SublayersTreeElement from "../forms/Map/Plugins/SublayersTree/SublayersTreeElement";
-import SublayersTreeLayer from "../forms/Map/Plugins/SublayersTree/SublayersTreeLayer";
-
-import Dimensions from "../forms/Map/Plugins/Dimensions";
-import DimensionsView from "../forms/Map/Plugins/DimensionsView";
-import ExportToPdf from "../forms/Map/Plugins/ExportToPdf";
-import MapToFullViewport from "../forms/Map/Plugins/MapToFullViewport";
-import Selecting from "../forms/Map/Plugins/Selecting";
 
 /* --- --- --- */
 
@@ -101,30 +79,11 @@ export const pluginsDict: {[key: string]: {[key: string]: FunctionComponent}} = 
     RecursiveTreeView,
   },
   grid: {
-    'SqlPrograms/ProgramButton': ProgramButton,
-    'SqlPrograms/ProgramParametersButton': ProgramParametersButton,
-    'SqlPrograms/ProgramParametersList': ProgramParametersList,
     'SqlPrograms/SqlProgramsList': SqlProgramsList,
     'ParametersList': GridParametersList,
   },
   map: {
-    'Editing/AttrTableWindow': AttrTableWindow,
-    'Editing/CreateElementWindow': CreateElementWindow,
-    'Editing/Editing': Editing,
-    'Editing/EditWindow': EditWindow,
-    'Editing/FillNameTemplate': FillNameTemplate,
-    'Editing/LabelPropertiesWindow': LabelPropertiesWindow,
-    'Editing/PolylinePropertiesWindow': PolylinePropertiesWindow,
-    'Editing/PropertiesWindow': PropertiesWindow,
-    'Editing/StyleTemplate': StyleTemplate,
-    'SublayersTree/SublayerStatisticsWindow': SublayerStatisticsWindow,
     'SublayersTree/SublayersTree': SublayersTree,
-    'SublayersTree/SublayersTreeElement': SublayersTreeElement,
-    'SublayersTree/SublayersTreeLayer': SublayersTreeLayer,
-    Dimensions,
-    DimensionsView,
-    ExportToPdf,
-    MapToFullViewport,
-    Selecting,
+    'MapEditPanel': MapEditPanel,
   },
 }

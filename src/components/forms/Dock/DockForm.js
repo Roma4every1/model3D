@@ -1,15 +1,12 @@
-﻿import React from 'react';
-import { useSelector } from 'react-redux';
-import Form from '../Form';
+﻿import React from "react";
+import { useSelector } from "react-redux";
+import Form from "../Form";
 
-export default function DockForm(props) {
-    const { formId } = props;
-    const activeChild = useSelector((state) => state.childForms[formId]?.children.find(p => p.id === (state.childForms[formId].openedChildren[0])));
 
-    const form = activeChild ? <Form
-        key={activeChild.id}
-        formData={activeChild}
-    /> : <div />;
-
-    return form;
+export default function DockForm({formId}) {
+  const activeChild = useSelector((state) => {
+    const childForm = state.childForms[formId];
+    return childForm?.children.find(x => x.id === (childForm.openedChildren[0]));
+  });
+  return activeChild ? <Form key={activeChild.id} formData={activeChild}/> : null;
 }

@@ -10,7 +10,7 @@ props {
   displayName: string,
   editorType: string,
   externalChannelName: string,
-  formId: string,
+  formID: string,
   formIdToLoad: any,
   id: string,
   selectionChanged: function,

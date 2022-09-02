@@ -1,18 +1,18 @@
 import React from "react";
-import {useDispatch, useSelector} from "react-redux";
-import {Button} from "@progress/kendo-react-buttons";
-import {sum} from "lodash";
-import setFormLayout from "../../../../store/actionCreators/setFormLayout";
+import { useDispatch, useSelector } from "react-redux";
+import { Button, ButtonGroup } from "@progress/kendo-react-buttons";
+import { sum } from "lodash";
+import { setFormLayout } from "../../../../store/actionCreators/layout.actions";
+import { compareArrays } from "../../../../utils";
 
 
-export default function PanelButtons(props) {
-  const { formId } = props;
+export default function PanelButtons({formId}) {
   const dispatch = useDispatch();
 
   const [plugins, formLayout, parameters] = useSelector((state) => {
     const activeChild = state.childForms[formId]?.children.find(p => p.id === (state.childForms[formId].openedChildren[0]));
-    return [state.plugins, state.layout[formId], activeChild ? state.formParams[activeChild.id] : null];
-  });
+    return [state.layout.plugins, state.layout[formId], activeChild ? state.formParams[activeChild.id] : null];
+  }, compareArrays);
 
   const isDisabled = (plugin) => {
     return plugin.condition === 'presentationParamsNotEmpty'
@@ -45,7 +45,7 @@ export default function PanelButtons(props) {
   }
 
   return (
-    <>
+    <ButtonGroup>
       {plugins.left.map(plugin =>
         <Button
           className="actionbutton"
@@ -56,6 +56,6 @@ export default function PanelButtons(props) {
           {plugin.children[0].name}
         </Button>
       )}
-    </>
+    </ButtonGroup>
   );
 }

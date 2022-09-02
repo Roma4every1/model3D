@@ -1,7 +1,7 @@
 ﻿import React from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { Button, Toolbar } from "@progress/kendo-react-buttons";
+import { Toolbar, Button, ButtonGroup } from "@progress/kendo-react-buttons";
 import PanelButtons from "./PanelButtons";
 import packageJSON from "../../../../../package.json";
 
@@ -49,22 +49,26 @@ export default function Menu(props) {
   };
 
   return (
-    <Toolbar style={{ padding: 1 }}>
-      <Button className={'actionbutton'} onClick={saveSession}>
-        {t('menucommands.savesession')}
-      </Button>
-      <Button className={'actionbutton'} onClick={loadSessionByDefault}>
-        {t('menucommands.loadsessionbydefault')}
-      </Button>
-      <Button className={'actionbutton'} onClick={handleVersion}>
-        {t('version.label')}
-      </Button>
-      <Button className={'actionbutton'} onClick={handleConfig}>
-        Конфигурация
-      </Button>
-      <Button className={'actionbutton'}>
-        {t('menucommands.log')}
-      </Button>
+    <Toolbar style={{padding: '4px'}}>
+      <ButtonGroup>
+        <Button className={'actionbutton'} onClick={saveSession}>
+          {t('menucommands.savesession')}
+        </Button>
+        <Button className={'actionbutton'} onClick={loadSessionByDefault}>
+          {t('menucommands.loadsessionbydefault')}
+        </Button>
+      </ButtonGroup>
+      <ButtonGroup>
+        <Button className={'actionbutton'} onClick={handleVersion}>
+          {t('version.label')}
+        </Button>
+        <Button className={'actionbutton'} onClick={handleConfig}>
+          Конфигурация
+        </Button>
+        <Button className={'actionbutton'}>
+          {t('menucommands.log')}
+        </Button>
+      </ButtonGroup>
       <PanelButtons formId={props.formId} />
     </Toolbar>
   );

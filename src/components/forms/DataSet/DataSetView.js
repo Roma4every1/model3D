@@ -508,7 +508,7 @@ function DataSetView(props, ref) {
                         dispatch(setOpenedWindow(property.name, arg, null))
                     }
                 />))
-            };
+            }
         }
         if (column.lookupData) {
             result.type = "lookup";

@@ -11,8 +11,8 @@
 
 // helper functions for that ctx
 function write(buffer, offs) {
-	for (var i = 2; i < arguments.length; i++) {
-		for (var j = 0; j < arguments[i].length; j++) {
+	for (let i = 2; i < arguments.length; i++) {
+		for (let j = 0; j < arguments[i].length; j++) {
 			buffer[offs++] = arguments[i].charAt(j);
 		}
 	}
@@ -59,10 +59,10 @@ module.exports = function (width, height, depth) {
 	this.palette = {};
 	this.pindex = 0;
 
-	var _crc32 = [];
+	const _crc32 = [];
 
 	// initialize buffer with zero bytes
-	for (var i = 0; i < this.buffer_size; i++) {
+	for (let i = 0; i < this.buffer_size; i++) {
 		this.buffer[i] = "\x00";
 	}
 
@@ -74,14 +74,14 @@ module.exports = function (width, height, depth) {
 	write(this.buffer, this.iend_offs, byte4(this.iend_size - 12), 'IEND');
 
 	// initialize deflate header
-	var header = ((8 + (7 << 4)) << 8) | (3 << 6);
+	let header = ((8 + (7 << 4)) << 8) | (3 << 6);
 	header += 31 - (header % 31);
 
 	write(this.buffer, this.idat_offs + 8, byte2(header));
 
 	// initialize deflate block headers
 	for (let i = 0; (i << 16) - 1 < this.pix_size; i++) {
-		var size, bits;
+		let size, bits;
 		if (i + 0xffff < this.pix_size) {
 			size = 0xffff;
 			bits = "\x00";
@@ -94,8 +94,8 @@ module.exports = function (width, height, depth) {
 
 	/* Create crc32 lookup table */
 	for (let i = 0; i < 256; i++) {
-		var c = i;
-		for (var j = 0; j < 8; j++) {
+		let c = i;
+		for (let j = 0; j < 8; j++) {
 			if (c & 1) {
 				c = -306674912 ^ ((c >> 1) & 0x7fffffff);
 			} else {
@@ -107,21 +107,20 @@ module.exports = function (width, height, depth) {
 
 	// compute the index into a png for a given pixel
 	this.index = function (x, y) {
-		var i = y * (this.width + 1) + x + 1;
-		var j = this.idat_offs + 8 + 2 + 5 * Math.floor((i / 0xffff) + 1) + i;
-		return j;
+		const i = y * (this.width + 1) + x + 1;
+		return this.idat_offs + 8 + 2 + 5 * Math.floor((i / 0xffff) + 1) + i;
 	}
 
 	// convert a color and build up the palette
 	this.color = function (red, green, blue, alpha) {
 
 		alpha = alpha >= 0 ? alpha : 255;
-		var color = (((((alpha << 8) | red) << 8) | green) << 8) | blue;
+		const color = (((((alpha << 8) | red) << 8) | green) << 8) | blue;
 
 		if (typeof this.palette[color] == "undefined") {
 			if (this.pindex === this.depth) return "\x00";
 
-			var ndx = this.plte_offs + 8 + 3 * this.pindex;
+			const ndx = this.plte_offs + 8 + 3 * this.pindex;
 
 			this.buffer[ndx + 0] = String.fromCharCode(red);
 			this.buffer[ndx + 1] = String.fromCharCode(green);
@@ -135,14 +134,13 @@ module.exports = function (width, height, depth) {
 
 	// output a PNG string, Base64 encoded
 	this.getBase64 = function () {
+		const ch = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+		const s = this.getDump();
+		const l = s.length;
 
-		var s = this.getDump();
-
-		var ch = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-		var c1, c2, c3, e1, e2, e3, e4;
-		var l = s.length;
-		var i = 0;
-		var r = "";
+		let c1, c2, c3, e1, e2, e3, e4;
+		let i = 0;
+		let r = "";
 
 		do {
 			c1 = s.charCodeAt(i);
@@ -161,14 +159,14 @@ module.exports = function (width, height, depth) {
 	this.getDump = function () {
 
 		// compute adler32 of output pixels + row filter bytes
-		var BASE = 65521; /* largest prime smaller than 65536 */
-		var NMAX = 5552;  /* NMAX is the largest n such that 255n(n+1)/2 + (n+1)(BASE-1) <= 2^32-1 */
-		var s1 = 1;
-		var s2 = 0;
-		var n = NMAX;
+		const BASE = 65521; /* largest prime smaller than 65536 */
+		const NMAX = 5552;  /* NMAX is the largest n such that 255n(n+1)/2 + (n+1)(BASE-1) <= 2^32-1 */
+		let s1 = 1;
+		let s2 = 0;
+		let n = NMAX;
 
-		for (var y = 0; y < this.height; y++) {
-			for (var x = -1; x < this.width; x++) {
+		for (let y = 0; y < this.height; y++) {
+			for (let x = -1; x < this.width; x++) {
 				s1 += this.buffer[this.index(x, y)].charCodeAt(0);
 				s2 += s1;
 				if ((n -= 1) === 0) {
@@ -184,8 +182,8 @@ module.exports = function (width, height, depth) {
 
 		// compute crc32 of the PNG chunks
 		function crc32(png, offs, size) {
-			var crc = -1;
-			for (var i = 4; i < size - 4; i += 1) {
+			let crc = -1;
+			for (let i = 4; i < size - 4; i += 1) {
 				crc = _crc32[(crc ^ png[offs + i].charCodeAt(0)) & 0xff] ^ ((crc >> 8) & 0x00ffffff);
 			}
 			write(png, offs + size - 4, byte4(crc ^ -1));

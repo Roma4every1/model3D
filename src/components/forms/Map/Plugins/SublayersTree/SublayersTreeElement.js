@@ -1,30 +1,28 @@
-import React from 'react';
-import {
-    ExpansionPanel,
-    ExpansionPanelContent,
-} from "@progress/kendo-react-layout";
-import SublayersTreeLayer from './SublayersTreeLayer';
+import React, { useState } from "react";
+import { ExpansionPanel, ExpansionPanelContent } from "@progress/kendo-react-layout";
+import SublayersTreeLayer from "./SublayersTreeLayer";
 
-export default function SublayersTreeElement(props) {
-    const { formRef, item, formId } = props;
-    const [expanded, setExpanded] = React.useState(false);
+export default function SublayersTreeElement({item, formId}) {
+  const [expanded, setExpanded] = useState(false);
 
-    return (<ExpansionPanel
-        className="layerGroupPanel"
-        title={item.text}
-        tabIndex={0}
-        expanded={expanded}
-        key={item.id}
-        onAction={(event) => {
-            setExpanded(!expanded);
-        }}
+  return (
+    <ExpansionPanel
+      className={'layerGroupPanel'}
+      title={item.text}
+      tabIndex={0}
+      expanded={expanded}
+      key={item.id}
+      onAction={() => {setExpanded(!expanded)}}
     >
-        {expanded && <ExpansionPanelContent>
-            {item.items?.map((subitem) => (
-                subitem.items ? <SublayersTreeElement key={subitem.text} item={subitem} formRef={formRef} formId={formId} /> :
-                    <SublayersTreeLayer key={subitem.text} subitem={subitem} formRef={formRef} formId={formId} />
-            ))}
-        </ExpansionPanelContent>}
+      {expanded &&
+        <ExpansionPanelContent>
+          {item.items?.map((subItem) => (
+            subItem.items
+              ? <SublayersTreeElement key={subItem.text} item={subItem} formId={formId} />
+              : <SublayersTreeLayer key={subItem.text} subitem={subItem} formId={formId} />
+          ))}
+        </ExpansionPanelContent>
+      }
     </ExpansionPanel>
-    );
+  );
 }
