@@ -13,6 +13,7 @@ import setWindowError from "../store/actionCreators/setWindowError";
 import setWindowInfo from "../store/actionCreators/setWindowInfo";
 import setWindowWarning from "../store/actionCreators/setWindowWarning";
 import setWindowNotification from "../store/actionCreators/setWindowNotification";
+import { setSessionID } from "../store/actionCreators/appState";
 
 
 export default function createSessionManager(store) {
@@ -47,6 +48,7 @@ export default function createSessionManager(store) {
         });
         // старое и новое хранилище, потом старое уберётся
         store.dispatch(setSessionId(data));
+        store.dispatch(setSessionID(data));
         return data;
       }
     }
@@ -124,6 +126,7 @@ export default function createSessionManager(store) {
       );
       sessionLoading = false;
       store.dispatch(setSessionId(data));
+      store.dispatch(setSessionID(data));
     }
     reader.readAsText(file);
   }
@@ -135,6 +138,7 @@ export default function createSessionManager(store) {
     const data = await fetchData(`startSession?systemName=${_systemName}&defaultConfiguration=true`);
     sessionLoading = false;
     store.dispatch(setSessionId(data));
+    store.dispatch(setSessionID(data));
   }
 
   const getChildForms = async (formId) => {

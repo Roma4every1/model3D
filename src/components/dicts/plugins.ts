@@ -29,7 +29,6 @@ import Menu from "../forms/Dock/Plugins/Menu";
 import PanelButtons from "../forms/Dock/Plugins/PanelButtons";
 import DockParametersList from "../forms/Dock/Plugins/ParametersList";
 import PresentationList from "../forms/Dock/Plugins/PresentationList";
-import RecursiveTreeView from "../forms/Dock/Plugins/RecursiveTreeView";
 
 /* Grid plugins */
 
@@ -76,7 +75,6 @@ export const pluginsDict: {[key: string]: {[key: string]: FunctionComponent}} = 
     PanelButtons,
     'ParametersList': DockParametersList,
     PresentationList,
-    RecursiveTreeView,
   },
   grid: {
     'SqlPrograms/SqlProgramsList': SqlProgramsList,

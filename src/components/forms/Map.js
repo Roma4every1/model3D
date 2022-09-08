@@ -5,7 +5,7 @@ import { Loader } from "@progress/kendo-react-indicators";
 import { getMapsDrawer } from "./Map/map-loader.js";
 import { compareArrays, getParentFormId, tableRowToString } from "../../utils";
 import { getFullViewport } from "./Map/map-utils";
-import { createMapState, setMapField, setMapOwner } from "../../store/actionCreators/maps.actions";
+import { createMapState, setMapField } from "../../store/actionCreators/maps.actions";
 import { fetchMapData } from "../../store/thunks";
 
 
@@ -22,28 +22,31 @@ export default function Map({formData: {id: formID}, data}) {
 
   const [{root, webServicesURL}, sessionID, sessionManager] = useSelector(mapToAppState, compareArrays);
   const activeChannel = useSelector(state => state.channelsData[data.activeChannels[0]]);
+  //const ownersChannel = useSelector(state => state.channelsData['LocalMapsOwners']);
+  //const formParams = useSelector(state => state.formParams[getParentFormId(formID)]);
   /** @type MapState */
   const mapState = useSelector(state => state.maps[formID]);
 
-  const mapData = mapState?.mapData;
-  const canvas = mapState?.canvas;
-  const selectedElement = mapState?.element;
-  const utils = mapState?.utils;
-
+  const canvasRef = useRef(null);
   const mapDrawnData = useRef(null);
   const [isMapExist, setIsMapExist] = useState(false);
 
-  // добавление состояния в хранилище состояний карт
-  useEffect(() => {
-    if (!mapState) dispatch(createMapState(formID));
-  }, [mapState, dispatch, formID]);
+  const canvas = mapState?.canvas;
+  const mapData = mapState?.mapData;
+  const selectedElement = mapState?.element;
+  const utils = mapState?.utils;
 
   const getDrawer = useCallback((owner) => {
     return getMapsDrawer(sessionID, formID, owner, sessionManager, webServicesURL, root);
   }, [formID, sessionManager, sessionID, webServicesURL, root]);
 
+  // добавление состояния в хранилище состояний карт
+  useEffect(() => {
+    if (!mapState) dispatch(createMapState(formID, getDrawer('Common')));
+  }, [mapState, getDrawer, dispatch, formID]);
+
   const draw = useCallback((canvas, map, scale, x, y, selected) => {
-    if (!mapState || !mapState.drawer) return;
+    if (!mapState?.drawer || !canvas) return;
     if (mapDrawnData.current) mapDrawnData.current.emit('detach');
     const data = {centerx: x, centery: y, scale, selected};
     const drawnData = mapState.drawer.showMap(canvas, map, data)
@@ -55,11 +58,26 @@ export default function Map({formData: {id: formID}, data}) {
         mapState.drawer.checkIndex(map, context);
       });
     mapDrawnData.current = drawnData;
-  }, [mapState]);
+  }, [mapState?.drawer]);
 
   // проверка параметров формы
   useEffect(() => {
     if (!mapState) return;
+
+    // if (ownersChannel?.data?.Rows && formParams?.length > 0) {
+    //   const rows = ownersChannel.data.Rows;
+    //   const user = formParams.find(param => param.id === 'currentUser')?.value;
+    //
+    //   if (user && rows.length === 1) {
+    //     const newRow = {Cells: [user, 'Пользовательская', 'Пользовательская'], ID: null};
+    //     rows.push(newRow);
+    //   }
+    //   if (user && rows.length === 2) {
+    //     if (rows[1].Cells[1] === 'Пользовательская' && rows[1].Cells[0] !== user)
+    //       rows[1].Cells[0] = user;
+    //   }
+    // }
+
     if (!(activeChannel?.data?.Rows && activeChannel.data.Rows.length > 0))
       return setIsMapExist(false);
 
@@ -79,23 +97,14 @@ export default function Map({formData: {id: formID}, data}) {
       );
     }
     if (changeOwner) {
-      dispatch(setMapOwner(formID, owner, getDrawer(owner)));
+      dispatch(setMapField(formID, 'owner', owner));
+      mapState.drawer.changeOwner(owner);
     }
-    if (changeMapID && mapState.drawer && canvas) {
+    if (changeMapID) {
       dispatch(setMapField(formID, 'mapID', mapID));
-
-      const callback = (loadedMap) => {
-        new mapState.drawer.Scroller(canvas);
-        canvas.blocked = false;
-
-        loadedMap.pointsData.then(() => {
-          const view = getFullViewport(loadedMap.layers, canvas);
-          draw(canvas, loadedMap, view.scale, view.centerx, view.centery, null);
-        });
-      }
-      dispatch(fetchMapData(formID, mapID, mapState.drawer.loadMap, callback));
+      dispatch(fetchMapData(formID, mapID, mapState.drawer.loadMap));
     }
-  }, [formID, mapState, dispatch, activeChannel, getDrawer, sessionManager, canvas, draw]);
+  }, [formID, mapState, dispatch, activeChannel, getDrawer, sessionManager, draw]);
 
   const updateCanvas = useCallback((newCS, context) => {
     if (!mapData) return;
@@ -107,10 +116,8 @@ export default function Map({formData: {id: formID}, data}) {
       x = mapData.x; y = mapData.y;
       scale = mapData.scale;
     }
-    draw(context ?? canvas, mapData, scale, x, y, selectedElement);
-  }, [draw, mapData, selectedElement, canvas]);
-
-  const canvasRef = useRef(null);
+    draw(context || canvasRef.current, mapData, scale, x, y, selectedElement);
+  }, [draw, mapData, selectedElement]);
 
   // переопределение функции updateCanvas
   useEffect(() => {
@@ -119,25 +126,37 @@ export default function Map({formData: {id: formID}, data}) {
 
   // закрепление ссылки на холст
   useLayoutEffect(() => {
-    if (!mapState) return;
-    if (!mapState.canvas && canvasRef.current !== canvas) {
+    if (canvasRef.current && canvasRef.current !== canvas && mapState?.drawer) {
       dispatch(setMapField(formID, 'canvas', canvasRef.current));
+      new mapState.drawer.Scroller(canvasRef.current);
+      updateCanvas(getFullViewport(mapData.layers, canvasRef.current), canvasRef.current);
     }
-  }, [mapState, canvas, dispatch, formID]);
+  });
 
-  const loader = <Loader type={'infinite-spinner'} size={'large'}/>;
-  if (!mapState) return <div className={'map-container loading'}>{loader}</div>;
-
-  const isLoading = isMapExist && mapState.isLoadSuccessfully === undefined;
-  const isFailed = isMapExist && mapState.isLoadSuccessfully === false;
-  const display = (mapState.isLoadSuccessfully && isMapExist) ? undefined : 'none'
+  if (!mapState) return <MapLoading/>;
+  if (!isMapExist) return <MapNotFound t={t}/>;
+  if (mapState.isLoadSuccessfully === undefined) return <MapLoading/>;
+  if (mapState.isLoadSuccessfully === false) return <MapLoadError t={t}/>;
 
   return (
-    <div className={`map-container ${isLoading ? 'loading' : ''}`}>
-      {!isMapExist && <div className={'map-not-found'}>{t('map.not-found')}</div>}
-      {isLoading && loader}
-      {isFailed && <div>Не удалось загрузить карту.</div>}
-      <canvas style={{cursor: mapState.cursor, display}} ref={canvasRef}/>
+    <div className={'map-container'}>
+      <canvas style={{cursor: mapState.cursor}} ref={canvasRef}/>
     </div>
   );
+}
+
+function MapLoading() {
+  return (
+    <div className={'map-container loading'}>
+      <Loader type={'infinite-spinner'} size={'large'}/>
+    </div>
+  );
+}
+
+function MapNotFound({t}) {
+  return <div className={'map-not-found'}>{t('map.not-found')}</div>;
+}
+
+function MapLoadError({t}) {
+  return <div className={'map-not-found'}>{t('map.not-loaded')}</div>;
 }

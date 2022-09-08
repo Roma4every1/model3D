@@ -79,23 +79,6 @@ type FormRefs = {[key: FormID]: any};
 type FormSettings = {[key: FormID]: any};
 
 
-/* --- state.formStates --- */
-
-/** Состояния форм. */
-type FormStates = {[key: FormID]: FormState};
-
-type FormState = {[key: ParameterID]: ParamState};
-
-/** Состояние параметра:
- * + value — текущее значение параметра
- * + setValue — функция изменения параметров формы (из хука useState)
- * @see FormState
- * */
-interface ParamState<Type> {
-  value: Type,
-}
-
-
 /* --- state.layout --- */
 
 /** Разметка. */
@@ -168,6 +151,36 @@ interface MapSelectingState {
   activeIndex: number,
   lastPoint: ClientPoint,
 }
+
+
+/* --- state.presentations --- */
+
+type PresentationsState = FetchState<PresentationItem> & {sessionID: SessionID, formID: FormID};
+
+interface PresentationItem {
+  id: string | null,
+  nodeId: string | null,
+  text: string | null,
+  items: PresentationItem[] | null,
+  selected?: boolean,
+  expanded?: boolean,
+}
+
+
+/* --- state.programs --- */
+
+type ProgramsState = FormDict<FetchState<ProgramListData>>;
+
+type ProgramListData = ProgramListItem[];
+
+interface ProgramListItem {
+  id: string,
+  displayName: string,
+  needCheckVisibility: boolean,
+  paramsForCheckVisibility: string[],
+  visible: boolean,
+}
+
 
 /* --- state.reports --- */
 

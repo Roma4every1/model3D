@@ -80,11 +80,11 @@ export default function MapEditPanel({formId: formID}: MapEditPanelProps) {
       });
   }, [owner, mapData, mapID, sessionManager, sessionID, formID, dispatch, t]);
 
-  if (!mapState) return <MapEditPanelSkeleton/>;
+  if (!mapState || mapState.isLoadSuccessfully === undefined) return <MapEditPanelSkeleton/>;
 
   return (
     <div className={'map-edit-panel'} style={{display: 'grid'}}>
-      <Dimensions canvas={mapState.canvas} mapData={mapData} utils={mapState.utils} t={t}/>
+      <Dimensions mapState={mapState} formID={formID} t={t}/>
       <Actions mapState={mapState} saveMap={saveMap} t={t}/>
       <Selecting mapState={mapState} formID={formID} t={t}/>
       <Editing mapState={mapState} formID={formID}/>

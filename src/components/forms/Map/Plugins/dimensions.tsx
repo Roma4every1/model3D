@@ -1,59 +1,60 @@
 import { NumericTextBoxChangeEvent } from "@progress/kendo-react-inputs";
 import { TFunction } from "react-i18next";
 import { useState, useEffect, useCallback } from "react";
+import { useDispatch } from "react-redux";
 import { MapPanelHeader } from "./map-panel-header";
 import IntegerTextEditor from "../../../editors/IntegerTextEditor";
 
 import { mapIconsDict } from "../../../dicts/images";
-import { getPointToMap, listenerOptions } from "../map-utils";
+import { setOnDrawEnd } from "../../../../store/actionCreators/maps.actions";
+import {getPointToMap} from "../map-utils";
 
 
 interface DimensionsProps {
-  canvas: MapCanvas,
-  mapData: MapData,
-  utils: MapUtils,
+  mapState: MapState,
+  formID: FormID,
   t: TFunction,
 }
 
-export const Dimensions = ({canvas, mapData, utils, t}: DimensionsProps) => {
+export const Dimensions = ({mapState, formID, t}: DimensionsProps) => {
+  const dispatch = useDispatch();
+  const { mapData, utils } = mapState
+
   const [x, setX] = useState(null);
   const [y, setY] = useState(null);
   const [scale, setScale] = useState(null);
 
-  const updateCS = useCallback(() => {
-    setX(mapData.x); setY(mapData.y); setScale(mapData.scale);
-    utils.pointToMap = getPointToMap(canvas, mapData.x, mapData.y, mapData.scale);
-  }, [canvas, mapData, utils]);
+  const setDimensions = useCallback((x: number, y: number, scale: number) => {
+    setX(x); setY(y); setScale(scale);
+  }, [setX, setY, setScale]);
+
+  const onDrawEnd = useCallback((canvas, x, y, scale) => {
+    setDimensions(x, y, scale);
+    utils.pointToMap = getPointToMap(canvas, x, y, scale);
+  }, [setDimensions, utils]);
 
   useEffect(() => {
-    if (canvas) {
-      canvas.addEventListener('mousemove', updateCS, listenerOptions);
-      canvas.addEventListener('wheel', updateCS, listenerOptions);
-    }
-    return () => {
-      if (canvas) {
-        canvas.removeEventListener('mousemove', updateCS);
-        canvas.removeEventListener('wheel', updateCS);
-      }
-    };
-  }, [updateCS, canvas]);
+    dispatch(setOnDrawEnd(formID, onDrawEnd));
+  }, [onDrawEnd, dispatch, formID]);
 
   const updateCanvas = useCallback((x, y, scale) => {
     if (utils) utils.updateCanvas({centerX: x, centerY: y, scale});
   }, [utils]);
 
-  const xChanged = (event: NumericTextBoxChangeEvent) => {
-    setX(event.value);
+  const xChanged = useCallback((event: NumericTextBoxChangeEvent) => {
     updateCanvas(event.value, mapData.y, mapData.scale);
-  };
-  const yChanged = (event: NumericTextBoxChangeEvent) => {
-    setY(event.value);
+    setX(event.value);
+  }, [updateCanvas, mapData]);
+
+  const yChanged = useCallback((event: NumericTextBoxChangeEvent) => {
     updateCanvas(mapData.x, event.value, mapData.scale);
-  };
-  const scaleChanged = (event: NumericTextBoxChangeEvent) => {
-    setScale(event.value);
+    setY(event.value);
+  }, [updateCanvas, mapData]);
+
+  const scaleChanged = useCallback((event: NumericTextBoxChangeEvent) => {
     updateCanvas(mapData.x, mapData.y, event.value);
-  };
+    setScale(event.value);
+  }, [updateCanvas, mapData]);
 
   return (
     <section className={'map-dimensions'}>

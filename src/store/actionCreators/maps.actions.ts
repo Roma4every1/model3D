@@ -1,10 +1,10 @@
-import {MapModes} from "../../components/forms/Map/enums";
-import {MapsAction, MapsActions} from "../reducers/maps";
+import { MapModes } from "../../components/forms/Map/enums";
+import { MapsAction, MapsActions } from "../reducers/maps";
 
 
 /** Добавляет в хранилище состояний карт новую карту. */
-export const createMapState = (formID: FormID): MapsAction => {
-  return {type: MapsActions.ADD, formID};
+export const createMapState = (formID: FormID, drawer: MapsDrawer): MapsAction => {
+  return {type: MapsActions.ADD, formID, drawer};
 }
 
 /** Начало загрузки карты. */
@@ -22,13 +22,12 @@ export const loadMapError = (formID: FormID): MapsAction => {
   return {type: MapsActions.LOAD_ERROR, formID: formID};
 }
 
-export const setMapField = (formID: FormID, field: 'mapID' | 'canvas' | 'utils' | 'isModified' | 'legends', payload: any): MapsAction => {
-  return {type: MapsActions.SET_FIELD, formID, field, payload};
+export const setOnDrawEnd = (formID: FormID, setter: any): MapsAction => {
+  return {type: MapsActions.SET_DRAW_END, formID, payload: setter};
 }
 
-/** Установить владельца карты. */
-export const setMapOwner = (formID: FormID, owner: MapOwner, drawer: MapsDrawer): MapsAction => {
-  return {type: MapsActions.SET_OWNER, formID, payload: owner, drawer};
+export const setMapField = (formID: FormID, field: keyof MapState, payload: any): MapsAction => {
+  return {type: MapsActions.SET_FIELD, formID, field, payload};
 }
 
 /** Установить выделенный элемент. */

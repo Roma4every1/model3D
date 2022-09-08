@@ -20,11 +20,7 @@ const initLeftBorderSize = 280;
 const initRightBorderSize = 300;
 
 const topTabs = ['menu', 'sqlPrograms', 'formStrip'];
-const topTabsHeight = {
-  'menu': 40,
-  'sqlPrograms': 40,
-  'formStrip': 92,
-};
+const topTabsHeight = {'menu': 40, 'sqlPrograms': 40, 'formStrip': 92};
 
 const correctElement = (layout, plugins, formData) => {
   if (layout.type === 'tab') {
@@ -205,8 +201,8 @@ function Dock({formData}, ref) {
   useEffect(() => {
     let ignore = false;
     async function fetchData() {
+      const data = await sessionManager.fetchData(`getFormLayout?sessionId=${sessionID}&formId=${formData.id}`);
       if (!ignore) {
-        const data = await sessionManager.fetchData(`getFormLayout?sessionId=${sessionID}&formId=${formData.id}`);
         if (data.layout && data.layout.children) {
           const newChildren = [];
           data.layout.children.forEach(ch => {
@@ -245,7 +241,7 @@ function Dock({formData}, ref) {
         if (!settings) return state;
         const topBorder = settings.borders.find(b => b.location === 'top');
         let newTopBorderSize = topTabsHeight[action.payload] || initTopBorderSize;
-        if (topBorder.children.find(child => child.id === 'formStrip').name !== 'Карта') {
+        if (!(topBorder.children.find(child => child.id === 'formStrip')?.name === 'Карта')) {
           newTopBorderSize = topTabsHeight['menu'];
         }
         topBorder.size = newTopBorderSize;

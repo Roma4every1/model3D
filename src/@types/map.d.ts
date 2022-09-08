@@ -19,6 +19,7 @@ type MapData = {
   x: number,
   y: number,
   scale: number,
+  onDrawEnd: (canvas: MapCanvas, x: number, y: number, scale: number) => void,
 };
 
 interface MapLayer {
@@ -160,6 +161,7 @@ interface MapsDrawer {
   showMap(canvas: HTMLCanvasElement, map, data: ShowMapData = {}): any
 
   getSignImage(fontName: string, symbolCode: number, color: string): Promise<HTMLImageElement>
+  changeOwner(owner: MapOwner): void
 
   updateFieldPalette,
   Scroller: any,

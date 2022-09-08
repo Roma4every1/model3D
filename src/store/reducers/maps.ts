@@ -9,8 +9,8 @@ export enum MapsActions {
   LOAD_SUCCESS = 'maps/loadOk',
   LOAD_ERROR = 'maps/loadErr',
   START_LOAD = 'maps/start_load',
-  SET_OWNER = 'maps/setOwner',
   SET_MODE = 'maps/setMode',
+  SET_DRAW_END = 'maps/setEnd',
   SET_FIELD = 'maps/setField',
   CLEAR_SELECT = 'maps/clear',
   START_EDITING = 'maps/startEdit',
@@ -30,10 +30,11 @@ interface MapAction {
 
 interface ActionAdd extends MapAction {
   type: MapsActions.ADD,
+  drawer: MapsDrawer,
 }
 interface ActionLoadSuccess extends MapAction {
   type: MapsActions.LOAD_SUCCESS,
-  mapData: any,
+  mapData: MapData,
 }
 interface ActionLoadError extends MapAction {
   type: MapsActions.LOAD_ERROR,
@@ -41,18 +42,17 @@ interface ActionLoadError extends MapAction {
 interface ActionStartLoad extends MapAction {
   type: MapsActions.START_LOAD,
 }
-interface ActionSetOwner extends MapAction {
-  type: MapsActions.SET_OWNER,
-  payload: MapOwner,
-  drawer: MapsDrawer,
-}
 interface ActionSetMode extends MapAction {
   type: MapsActions.SET_MODE,
   payload: MapModes,
 }
+interface ActionSetDimensions extends MapAction {
+  type: MapsActions.SET_DRAW_END,
+  payload: (canvas: MapCanvas, x: number, y: number, scale: number) => void,
+}
 interface ActionSetField extends MapAction {
   type: MapsActions.SET_FIELD,
-  field: 'mapID' | 'canvas' | 'element' | 'isElementEditing' | 'activeLayer' | 'utils' | 'isModified' | 'legends';
+  field: keyof MapState;
   payload: any,
 }
 interface ActionClearSelect extends MapAction {
@@ -80,7 +80,7 @@ interface ActionCancelCreating extends MapAction {
 }
 
 export type MapsAction = ActionAdd | ActionStartLoad | ActionLoadSuccess | ActionLoadError |
-  ActionSetOwner | ActionSetMode | ActionSetField | ActionClearSelect |
+  ActionSetMode | ActionSetDimensions | ActionSetField | ActionClearSelect |
   ActionStartEditing | ActionAcceptEditing | ActionCancelEditing |
   ActionStartCreating | ActionCreateElement | ActionCancelCreating;
 
@@ -132,10 +132,9 @@ const initMaps: MapsState = {};
 
 export const mapsReducer = (state: MapsState = initMaps, action: MapsAction): MapsState => {
   switch (action.type) {
+
     case MapsActions.ADD: {
-      const mapState = state[action.formID]
-      if (!mapState) return {...state, [action.formID]: initMapState};
-      return {...state, [action.formID]: {...mapState, selecting: getDefaultSelecting()}};
+      return {...state, [action.formID]: {...initMapState, drawer: action.drawer}};
     }
 
     case MapsActions.START_LOAD: {
@@ -145,16 +144,12 @@ export const mapsReducer = (state: MapsState = initMaps, action: MapsAction): Ma
 
     case MapsActions.LOAD_SUCCESS: {
       const { formID, mapData } = action;
+      if (!mapData.onDrawEnd) mapData.onDrawEnd = () => {};
       return {...state, [formID]: {...state[formID], mapData, isLoadSuccessfully: true}};
     }
 
     case MapsActions.LOAD_ERROR: {
       return {...state, [action.formID]: {...state[action.formID], isLoadSuccessfully: false}};
-    }
-
-    case MapsActions.SET_OWNER: {
-      const { formID, drawer, payload } = action;
-      return {...state, [formID]: {...state[formID], owner: payload, drawer }};
     }
 
     case MapsActions.SET_MODE: {
@@ -172,6 +167,12 @@ export const mapsReducer = (state: MapsState = initMaps, action: MapsAction): Ma
         newMapState.utils.updateCanvas();
       }
       return {...state, [formID]: newMapState};
+    }
+
+    case MapsActions.SET_DRAW_END: {
+      const { formID, payload } = action;
+      state[formID].mapData.onDrawEnd = payload;
+      return {...state, [formID]: {...state[formID]}}
     }
 
     case MapsActions.SET_FIELD: {

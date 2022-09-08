@@ -7,7 +7,7 @@ import Scroller from "./scroller";
 import logger from "./logger";
 
 
-function createMapsDrawer(paths, httpClient) {
+function createMapsDrawer(paths, httpClient, getContainerRoot) {
 	const getImage = cache(imageName => loadImage(paths.imageRoot + imageName));
 	let provider = {
 		//getLinesDefStub: () => linesDefStub,
@@ -30,7 +30,13 @@ function createMapsDrawer(paths, httpClient) {
 	provider = [symbols, patterns].reduce((x, f) => f(x), provider);
 	const ret = new Maps(provider);
 	ret.Scroller = Scroller;
-	ret.getSignImage = provider.getSignImage
+	ret.getSignImage = provider.getSignImage;
+	ret.changeOwner = (owner) => {
+		provider.getContainer = cache((containerName, indexName) =>
+		indexName
+			? httpClient.getJSON(getContainerRoot(owner) + containerName + '&index=' + indexName)
+			: httpClient.getJSON(getContainerRoot(owner) + containerName)
+	)};
 	return ret;
 }
 

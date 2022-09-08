@@ -1223,6 +1223,7 @@ export function startPaint(canvas, map, options) {
 			map.x = options.events.centerx;
 			map.y = options.events.centery;
 			map.scale = options.events.scale;
+			map.onDrawEnd(canvas, map.x, map.y, map.scale);
 
 			done = true;
 		} finally {

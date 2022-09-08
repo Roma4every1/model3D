@@ -5,7 +5,7 @@ import { TFunction, useTranslation } from "react-i18next";
 import { MapModes } from "../../enums";
 import { clientPoint, listenerOptions } from "../../map-utils";
 import { createDefaultElement, createDefaultSign } from "./editing-utils";
-import { createMapElement, setEditMode } from "../../../../../store/actionCreators/maps.actions";
+import { createMapElement, setEditMode, startMapEditing } from "../../../../../store/actionCreators/maps.actions";
 import { mapCreatingIcons, mapIconsDict } from "../../../../dicts/images";
 
 
@@ -90,6 +90,7 @@ export const CreateElement = ({mapState, formID}: CreateElementProps) => {
       ? createDefaultSign(points[0], defaultSignImage, signProto)
       : createDefaultElement(type, points, legends, activeLayer?.name);
     dispatch(createMapElement(formID, defaultElement));
+    dispatch(startMapEditing(formID));
   }, [defaultSignImage, signProto, legends, activeLayer, dispatch, formID]);
 
   const mapCreatingTypes = useCallback((type: CreatingElementType) => {

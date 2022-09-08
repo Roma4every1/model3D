@@ -18,6 +18,16 @@ async function getHttpFun(address, encoding, sessionManager) {
   }
 }
 
+const drawOptions = {
+  zoomSleep: 500,
+  selectedSize: 6,
+  selectedColor: '#000FFF',
+  selectedWidth: 1,
+  piesliceBorderColor: 'black',
+  piesliceBorderWidth: 0.2,
+  piesliceAlpha: 0.7,
+};
+
 const parseStringToJson = (parsedString) => {
   if (typeof parsedString !== 'string') return parsedString;
   parsedString = readXml(parsedString);
@@ -37,26 +47,22 @@ export function getMapsDrawer(sessionID, formID, owner, sessionManager, webServi
   };
 
   const loadMapURL = `getMap?sessionId=${sessionID}&formId=${formID}&mapId=`;
-  const loadContainerURL = owner
-    ? `getContainer?sessionId=${sessionID}&formId=${formID}&owner=${owner}&containerName=`
-    : `getContainer?sessionId=${sessionID}&formId=${formID}&containerName=`;
 
-  return createMapsDrawer({
+  const getContainerRoot = (owner) => {
+    const loadContainerURL = owner
+      ? `getContainer?sessionId=${sessionID}&formId=${formID}&owner=${owner}&containerName=`
+      : `getContainer?sessionId=${sessionID}&formId=${formID}&containerName=`;
+    return webServicesURL + loadContainerURL;
+  };
+
+  const paths = {
+    symbolDef, drawOptions,
     libs: root + 'libs/',
-    symbolDef: symbolDef,
-    //linesDef: root + 'libs/lines.def',
     imageRoot: root + 'images/',
     mapRoot: webServicesURL + loadMapURL,
-    containerRoot: webServicesURL + loadContainerURL,
-    drawOptions: {
-      zoomSleep: 500,
-      selectedSize: 6,
-      selectedColor: '#000FFF',
-      selectedWidth: 1,
-      piesliceBorderColor: 'black',
-      piesliceBorderWidth: 0.2,
-      piesliceAlpha: 0.7,
-    },
+    containerRoot: getContainerRoot(owner),
     linesConfig: { data: lines },
-  }, httpClient);
+  };
+
+  return createMapsDrawer(paths, httpClient, getContainerRoot);
 }
