@@ -5,7 +5,7 @@ import { Loader } from "@progress/kendo-react-indicators";
 import { getMapsDrawer } from "./Map/map-loader.js";
 import { compareArrays, getParentFormId, tableRowToString } from "../../utils";
 import { getFullViewport } from "./Map/map-utils";
-import { createMapState, setMapField } from "../../store/actionCreators/maps.actions";
+import { actions } from "../../store";
 import { fetchMapData } from "../../store/thunks";
 
 
@@ -42,7 +42,7 @@ export default function Map({formData: {id: formID}, data}) {
 
   // добавление состояния в хранилище состояний карт
   useEffect(() => {
-    if (!mapState) dispatch(createMapState(formID, getDrawer('Common')));
+    if (!mapState) dispatch(actions.createMapState(formID, getDrawer('Common')));
   }, [mapState, getDrawer, dispatch, formID]);
 
   const draw = useCallback((canvas, map, scale, x, y, selected) => {
@@ -97,11 +97,11 @@ export default function Map({formData: {id: formID}, data}) {
       );
     }
     if (changeOwner) {
-      dispatch(setMapField(formID, 'owner', owner));
+      dispatch(actions.setMapField(formID, 'owner', owner));
       mapState.drawer.changeOwner(owner);
     }
     if (changeMapID) {
-      dispatch(setMapField(formID, 'mapID', mapID));
+      dispatch(actions.setMapField(formID, 'mapID', mapID));
       dispatch(fetchMapData(formID, mapID, mapState.drawer.loadMap));
     }
   }, [formID, mapState, dispatch, activeChannel, getDrawer, sessionManager, draw]);
@@ -127,7 +127,7 @@ export default function Map({formData: {id: formID}, data}) {
   // закрепление ссылки на холст
   useLayoutEffect(() => {
     if (canvasRef.current && canvasRef.current !== canvas && mapState?.drawer) {
-      dispatch(setMapField(formID, 'canvas', canvasRef.current));
+      dispatch(actions.setMapField(formID, 'canvas', canvasRef.current));
       new mapState.drawer.Scroller(canvasRef.current);
       updateCanvas(getFullViewport(mapData.layers, canvasRef.current), canvasRef.current);
     }

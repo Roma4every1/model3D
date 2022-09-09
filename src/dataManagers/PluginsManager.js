@@ -1,5 +1,5 @@
 ﻿import pluginsSettings from "./pluginsSettings.json";
-import { setPlugins } from "../store/actionCreators/layout.actions";
+import { actions } from "../store";
 
 
 export default function createPluginsManager(store) {
@@ -45,5 +45,5 @@ export default function createPluginsManager(store) {
   const additive = {enableDrag: false, type: 'tab', id: 'formStrip', name: '', component: 'strip'};
   configToSave.top.push(additive);
 
-  store.dispatch(setPlugins(configToSave));
+  store.dispatch(actions.setPlugins(configToSave));
 }

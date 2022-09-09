@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Window, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { Button } from "@progress/kendo-react-buttons";
 import { Label } from "@progress/kendo-react-labels";
-import setOpenedWindow from "../../../../../store/actionCreators/setOpenedWindow";
+import { actions } from "../../../../../store";
 
 
 export default function SublayerStatisticsWindow({sublayer, header}) {
@@ -15,7 +15,7 @@ export default function SublayerStatisticsWindow({sublayer, header}) {
   const [statistics, setStatistics] = useState([]);
 
   const close = () => {
-    dispatch(setOpenedWindow('sublayerStatisticsWindow', false, null));
+    dispatch(actions.setOpenedWindow('sublayerStatisticsWindow', false, null));
   };
 
   const translateType = useCallback((type) => {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import setFormSettings from "../../../../store/actionCreators/setFormSettings";
+import { actions } from "../../../../store";
+
 var utils = require("../../../../utils");
 
 export default function ColumnSettingsAnalyzerItem(props) {
@@ -29,7 +30,7 @@ export default function ColumnSettingsAnalyzerItem(props) {
         }
     }
     if (changed) {
-        dispatch(setFormSettings(formId, { ...tableSettings }));
+        dispatch(actions.setFormSettings(formId, { ...tableSettings }));
     }
 
     return (

@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Checkbox } from "@progress/kendo-react-inputs";
 import { Button } from "@progress/kendo-react-buttons";
 import DownloadFileItem from "./DownloadFileItem";
-import clearReports from "../../../../../store/actionCreators/clearReports";
+import { actions } from "../../../../../store";
 
 import reportDeleteIcon from "../../../../../static/images/report_delete.png";
 
@@ -23,7 +23,7 @@ export default function DownloadFiles({formId: formID}) {
   const deleteReports = async () => {
     const presentationId = filterByPresentation ? activeChild : null;
     await sessionManager.fetchData(`clearReports?sessionId=${sessionId}&presentationId=${presentationId}`);
-    dispatch(clearReports(presentationId));
+    dispatch(actions.clearReports(presentationId));
   };
 
   return (

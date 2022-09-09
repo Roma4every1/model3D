@@ -1,3 +1,23 @@
+/** Well Manager State. */
+interface WState {
+  appState: AppState,
+  canRunReport: CanRunReport,
+  channelsData: ChannelsData,
+  channelsLoading: ChannelsLoading,
+  childForms: ChildForms,
+  formParams: FormParams,
+  formRefs: FormRefs,
+  formSettings: FormSettings,
+  layout: FormsLayout,
+  maps: MapsState,
+  presentations: PresentationsState,
+  programs: ProgramsState,
+  reports: any,
+  sessionId: SessionID,
+  sessionManager: any,
+  windowData: any,
+}
+
 /* --- state.appState --- */
 
 /** Состояние, необходимое для компонента `SystemRouter`. */

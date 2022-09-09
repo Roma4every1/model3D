@@ -5,8 +5,8 @@ import { TFunction, useTranslation } from "react-i18next";
 import { MapModes } from "../../enums";
 import { clientPoint, listenerOptions } from "../../map-utils";
 import { createDefaultElement, createDefaultSign } from "./editing-utils";
-import { createMapElement, setEditMode, startMapEditing } from "../../../../../store/actionCreators/maps.actions";
 import { mapCreatingIcons, mapIconsDict } from "../../../../dicts/images";
+import { actions } from "../../../../../store";
 
 
 interface CreateElementProps {
@@ -89,8 +89,8 @@ export const CreateElement = ({mapState, formID}: CreateElementProps) => {
     const defaultElement = type === 'sign'
       ? createDefaultSign(points[0], defaultSignImage, signProto)
       : createDefaultElement(type, points, legends, activeLayer?.name);
-    dispatch(createMapElement(formID, defaultElement));
-    dispatch(startMapEditing(formID));
+    dispatch(actions.createMapElement(formID, defaultElement));
+    dispatch(actions.startMapEditing(formID));
   }, [defaultSignImage, signProto, legends, activeLayer, dispatch, formID]);
 
   const mapCreatingTypes = useCallback((type: CreatingElementType) => {
@@ -98,7 +98,7 @@ export const CreateElement = ({mapState, formID}: CreateElementProps) => {
       setSelectedType(type);
 
       if (mapState.mode !== MapModes.AWAIT_POINT) {
-        dispatch(setEditMode(formID, MapModes.AWAIT_POINT));
+        dispatch(actions.setEditMode(formID, MapModes.AWAIT_POINT));
       }
     }
     return <CreateItem key={type} ownType={type} selected={selectedType === type} action={action} t={t}/>

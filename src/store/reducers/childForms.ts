@@ -8,17 +8,17 @@ export enum ChildFormsActions {
 
 /* --- actions interfaces --- */
 
-export interface ActionSet {
+interface ActionSet {
   type: ChildFormsActions.SET,
   formId: FormID,
   value: any,
 }
-export interface ActionSetOpened {
+interface ActionSetOpened {
   type: ChildFormsActions.SET_OPENED,
   formId: FormID,
   values: any,
 }
-export interface ActionSetActive {
+interface ActionSetActive {
   type: ChildFormsActions.SET_ACTIVE,
   formId: FormID,
   values: any,

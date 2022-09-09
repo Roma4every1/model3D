@@ -3,10 +3,9 @@ import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { Button } from "@progress/kendo-react-buttons";
-import updateParam from "../../../../../store/actionCreators/updateParam";
 import FormParametersList from "../../../../common/FormParametersList";
 import ProgramParametersButton from "./ProgramParametersButton";
-import closeWindowNotification from "../../../../../store/actionCreators/closeWindowNotification";
+import { actions } from "../../../../../store";
 
 
 export default function ProgramParametersList(props) {
@@ -50,7 +49,7 @@ export default function ProgramParametersList(props) {
       return getResult();
     } else {
       handleProcessing(false);
-      dispatch(closeWindowNotification())
+      dispatch(actions.closeWindowNotification())
     }
   }, [programDisplayName, presentationId, sessionId, sessionManager, handleProcessing, t, dispatch]);
 
@@ -72,7 +71,7 @@ export default function ProgramParametersList(props) {
     }
     formParams.forEach(param => {
       if (param.editorType === 'fileTextEditor' || param.editorType === 'filesTextEditor') {
-          dispatch(updateParam(formId, param.id, null, true));
+          dispatch(actions.updateParam(formId, param.id, null, true));
       }
     });
     watchOperation(data);

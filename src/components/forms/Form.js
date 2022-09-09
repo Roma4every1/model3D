@@ -6,7 +6,7 @@ import ErrorBoundary from "../common/ErrorBoundary";
 import { capitalizeFirstLetter } from "../../utils";
 import { formDict } from "../dicts/forms";
 import { pluginsDict } from "../dicts/plugins";
-import setFormRefs from "../../store/actionCreators/setFormRefs";
+import { actions } from "../../store";
 
 /*
 formData {
@@ -98,7 +98,7 @@ export default function Form({formData, data}) {
   const FormByType = formDict[formType];
 
   useLayoutEffect(() => {
-    dispatch(setFormRefs(formID, _form));
+    dispatch(actions.setFormRefs(formID, _form));
   }, [formID, dispatch]);
 
   const allPlugins = useSelector((state) => state.layout.plugins.inner);

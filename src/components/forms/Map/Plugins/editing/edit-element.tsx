@@ -1,9 +1,9 @@
-import {useDispatch} from "react-redux";
-import {TFunction, useTranslation} from "react-i18next";
+import { useDispatch } from "react-redux";
+import { TFunction, useTranslation } from "react-i18next";
 
-import {MapModes, MapModes as Modes} from "../../enums";
-import {mapEditIconsDict} from "../../../../dicts/images";
-import {setEditMode, startMapEditing} from "../../../../../store/actionCreators/maps.actions";
+import { MapModes, MapModes as Modes } from "../../enums";
+import { mapEditIconsDict } from "../../../../dicts/images";
+import { actions } from "../../../../../store";
 
 
 interface EditElementProps {
@@ -52,11 +52,11 @@ export const EditElement = ({type, mode, formID}: EditElementProps) => {
 
   const buttons = (elementsModes[type] || []).map((ownMode) => {
     const action = () => {
-      if (mode < MapModes.MOVE_MAP) dispatch(startMapEditing(formID));
+      if (mode < MapModes.MOVE_MAP) dispatch(actions.startMapEditing(formID));
 
       mode === ownMode
-        ? dispatch(setEditMode(formID, Modes.NONE))
-        : dispatch(setEditMode(formID, ownMode));
+        ? dispatch(actions.setEditMode(formID, Modes.NONE))
+        : dispatch(actions.setEditMode(formID, ownMode));
     }
     return <EditItem key={ownMode} ownMode={ownMode} selected={ownMode === mode} t={t} action={action}/>;
   });

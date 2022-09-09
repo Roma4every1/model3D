@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { sum } from "lodash";
 import { capitalizeFirstLetter } from "../../utils";
-import { setFormLayout } from "../../store/actionCreators/layout.actions";
+import { actions } from "../../store";
 import { pluginsDict } from "../dicts/plugins";
 
 import translator from "../common/LayoutTranslator";
@@ -122,7 +122,7 @@ function Dock({formData}, ref) {
         type: json.layout.type,
         children: json.layout.children
     }
-    dispatch(setFormLayout(formData.id, json));
+    dispatch(actions.setFormLayout(formData.id, json));
   }, [leftBorderModel, formData, dispatch, leftBorderApplySettings]);
 
   const layoutSettings = useMemo(() => {
@@ -213,7 +213,7 @@ function Dock({formData}, ref) {
           });
           if (newChildren.length > 0) {
             data.layout.children = newChildren;
-            dispatch(setFormLayout(formData.id, data));
+            dispatch(actions.setFormLayout(formData.id, data));
           }
           layoutSettings.borders.forEach(border => {
             border.selected = data.layout['selected' + border.location];
@@ -316,7 +316,7 @@ function Dock({formData}, ref) {
         formLayout.layout['size' + border.location] = border.size;
       });
     }
-    dispatch(setFormLayout(formData.id, formLayout));
+    dispatch(actions.setFormLayout(formData.id, formLayout));
   },[flexLayoutModel, formLayout, dispatch, formData.id])
 
   const onAction = useCallback((action) => {

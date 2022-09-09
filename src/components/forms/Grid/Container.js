@@ -2,10 +2,7 @@
 import FlexLayout from "flexlayout-react";
 import { useDispatch } from "react-redux";
 import translator from "../../common/LayoutTranslator";
-
-import { setFormLayout } from "../../../store/actionCreators/layout.actions";
-import setActiveChildren from "../../../store/actionCreators/setActiveChildren";
-import setOpenedChildren from "../../../store/actionCreators/setOpenedChildren";
+import { actions } from "../../../store";
 
 
 const getOpenedChildren = (layout, list) => {
@@ -31,9 +28,9 @@ export default function Container({formID, modelJson}) {
     getOpenedChildren(json.layout, opened);
     getActiveChildren(json.layout, active);
 
-    dispatch(setActiveChildren(formID, active));
-    dispatch(setOpenedChildren(formID, opened));
-    dispatch(setFormLayout(formID, json));
+    dispatch(actions.setActiveChildren(formID, active));
+    dispatch(actions.setOpenedChildren(formID, opened));
+    dispatch(actions.setFormLayout(formID, json));
   }
 
   return (

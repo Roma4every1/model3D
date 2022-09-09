@@ -3,9 +3,7 @@ import { useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Button } from "@progress/kendo-react-buttons";
 import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
-
-import { clearMapSelect } from "../../../../../store/actionCreators/maps.actions";
-import setOpenedWindow from "../../../../../store/actionCreators/setOpenedWindow";
+import { actions } from "../../../../../store";
 
 
 interface DeleteElementWindowProps {
@@ -21,7 +19,7 @@ export const DeleteElementWindow = ({mapState, formID}: DeleteElementWindowProps
   const modifiedLayer = mapState.mapData?.layers?.find(l => l.elements?.includes(selectedElement));
 
   const closeDeleteWindow = useCallback(() => {
-    dispatch(setOpenedWindow('mapDeleteWindow', false, null));
+    dispatch(actions.setOpenedWindow('mapDeleteWindow', false, null));
   }, [dispatch]);
 
   const handleDelete = useCallback(() => {
@@ -32,7 +30,7 @@ export const DeleteElementWindow = ({mapState, formID}: DeleteElementWindowProps
     modifiedLayer.modified = true;
     mapState.isModified = true;
 
-    dispatch(clearMapSelect(formID));
+    dispatch(actions.clearMapSelect(formID));
     mapState.utils.updateCanvas();
     closeDeleteWindow();
   }, [mapState, selectedElement, modifiedLayer, closeDeleteWindow, dispatch, formID]);

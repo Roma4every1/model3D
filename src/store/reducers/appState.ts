@@ -7,7 +7,6 @@ export enum AppStateActions {
 
   FETCH_SYSTEM_LIST_SUCCESS = 'app/fetchSystemsSuccess',
   FETCH_SYSTEM_LIST_ERROR = 'app/fetchSystemsError',
-  SET_SYSTEM_LIST = 'app/setSystemList',
 
   START_SESSION_SUCCESS = 'app/startSessionSuccess',
   START_SESSION_ERROR = 'app/startSessionError',
@@ -18,52 +17,44 @@ export enum AppStateActions {
 
 /* --- actions interfaces --- */
 
-export interface ActionFetchConfigSuccess {
+interface ActionFetchConfigSuccess {
   type: AppStateActions.FETCH_CONFIG_SUCCESS,
   payload: ClientConfiguration,
 }
-export interface ActionFetchConfigError {
+interface ActionFetchConfigError {
   type: AppStateActions.FETCH_CONFIG_ERROR,
 }
-export interface ActionSetConfig {
+interface ActionSetConfig {
   type: AppStateActions.SET_CONFIG,
   payload: ClientConfiguration,
 }
-
-export interface ActionFetchSystemListSuccess {
+interface ActionFetchSystemListSuccess {
   type: AppStateActions.FETCH_SYSTEM_LIST_SUCCESS,
   payload: SystemList,
 }
-export interface ActionFetchSystemListError {
+interface ActionFetchSystemListError {
   type: AppStateActions.FETCH_SYSTEM_LIST_ERROR,
 }
-export interface ActionSetSystemList {
-  type: AppStateActions.SET_SYSTEM_LIST,
-  payload: SystemList,
-}
-
-export interface ActionStartSessionSuccess {
+interface ActionStartSessionSuccess {
   type: AppStateActions.START_SESSION_SUCCESS,
   payload: SessionID,
 }
-export interface ActionStartSessionError {
+interface ActionStartSessionError {
   type: AppStateActions.START_SESSION_ERROR,
 }
-export interface ActionSetSessionID {
+interface ActionSetSessionID {
   type: AppStateActions.SET_SESSION_ID,
   payload: SessionID,
 }
-
-export interface ActionSetSystemName {
+interface ActionSetSystemName {
   type: AppStateActions.SET_SYSTEM_ID,
   payload: SystemID,
 }
 
 export type AppStateAction =
   ActionFetchConfigSuccess | ActionFetchConfigError | ActionSetConfig |
-  ActionFetchSystemListSuccess | ActionFetchSystemListError | ActionSetSystemList |
-  ActionStartSessionSuccess | ActionStartSessionError | ActionSetSessionID |
-  ActionSetSystemName;
+  ActionFetchSystemListSuccess | ActionFetchSystemListError | ActionSetSystemName |
+  ActionStartSessionSuccess | ActionStartSessionError | ActionSetSessionID;
 
 /* --- reducer --- */
 
@@ -95,10 +86,6 @@ export const appStateReducer = (state: AppState = initAppState, action: AppState
 
     case AppStateActions.FETCH_SYSTEM_LIST_ERROR: {
       return {...state, systemList: {loaded: true, success: false, data: null}};
-    }
-
-    case AppStateActions.SET_SYSTEM_LIST: {
-      return {...state, systemList: {...state.systemList, data: action.payload}};
     }
 
     case AppStateActions.START_SESSION_SUCCESS: {

@@ -1,4 +1,3 @@
-import { RootState } from "../../../../../store/rootReducer";
 import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -8,18 +7,17 @@ import { Window } from "@progress/kendo-react-dialogs";
 import { Input } from "@progress/kendo-react-inputs";
 
 import { toPairs } from "lodash";
-import { setMapField } from "../../../../../store/actionCreators/maps.actions";
-import setOpenedWindow from "../../../../../store/actionCreators/setOpenedWindow";
+import { actions } from "../../../../../store";
 
 
-const windowsSelector = (state: RootState) => state.windowData.windows;
+const windowsSelector = (state: WState) => state.windowData.windows;
 
 export const AttrTableWindow = ({formID}: {formID: FormID}) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
   const windows = useSelector(windowsSelector);
-  const mapState = useSelector((state: RootState) => state.maps[formID]);
+  const mapState = useSelector((state: WState) => state.maps[formID]);
   const selectedObject = mapState.element;
   const modifiedLayer = mapState.mapData?.layers?.find(l => l.elements?.includes(selectedObject));
 
@@ -35,13 +33,13 @@ export const AttrTableWindow = ({formID}: {formID: FormID}) => {
   const close = () => {
     let position;
     if (windowRef.current) position = {top: windowRef.current.top, left: windowRef.current.left};
-    dispatch(setOpenedWindow('mapAttrTableWindow', false, null, position));
+    dispatch(actions.setOpenedWindow('mapAttrTableWindow', false, null, position));
   };
 
   const apply = () => {
     modifiedLayer.modified = true;
     selectedObject.attrTable = attrTable;
-    dispatch(setMapField(formID, 'isModified', true));
+    dispatch(actions.setMapField(formID, 'isModified', true));
     close();
   };
 

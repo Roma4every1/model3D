@@ -2,8 +2,8 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, ButtonGroup } from "@progress/kendo-react-buttons";
 import { sum } from "lodash";
-import { setFormLayout } from "../../../../store/actionCreators/layout.actions";
 import { compareArrays } from "../../../../utils";
+import { actions } from "../../../../store";
 
 
 export default function PanelButtons({formId}) {
@@ -32,7 +32,7 @@ export default function PanelButtons({formId}) {
         const totalWeight = sum(formLayout.layout.children.map(child => child.weight));
         plugin.weight = plugin.initialWeight / (100 - plugin.initialWeight) * totalWeight;
 
-        dispatch(setFormLayout(formId, {
+        dispatch(actions.setFormLayout(formId, {
           global: {rootOrientationVertical: true},
           layout: {
             ...formLayout.layout,

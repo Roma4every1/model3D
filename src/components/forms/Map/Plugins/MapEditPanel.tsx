@@ -1,4 +1,3 @@
-import { RootState } from "../../../../store/rootReducer";
 import { useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
@@ -9,9 +8,7 @@ import { Actions } from "./actions";
 import { Selecting } from "./selecting/selecting";
 import { Editing } from "./editing/editing";
 
-import { setMapField } from "../../../../store/actionCreators/maps.actions";
-import setWindowNotification from "../../../../store/actionCreators/setWindowNotification";
-import closeWindowNotification from "../../../../store/actionCreators/closeWindowNotification";
+import { actions } from "../../../../store";
 
 import "../../../../styles/map-edit-panel.scss";
 
@@ -46,10 +43,10 @@ export default function MapEditPanel({formId: formID}: MapEditPanelProps) {
   const dispatch = useDispatch();
   const { t } = useTranslation();
 
-  const sessionManager = useSelector((state: RootState) => state.sessionManager);
-  const sessionID = useSelector((state: RootState) => state.appState.sessionID.data);
+  const sessionManager = useSelector((state: WState) => state.sessionManager);
+  const sessionID = useSelector((state: WState) => state.appState.sessionID.data);
 
-  const mapState = useSelector((state: RootState) => state.maps[formID]);
+  const mapState = useSelector((state: WState) => state.maps[formID]);
   const legendsLoaded = mapState?.legends?.loaded;
   const owner = mapState?.owner;
   const mapID = mapState?.mapID;
@@ -62,21 +59,21 @@ export default function MapEditPanel({formId: formID}: MapEditPanelProps) {
       .fetchData(`mapLegends?sessionId=${sessionID}`)
       .then((data) => {
         const newLegendsState: LoadingState<any> = {loaded: true, success: true, data};
-        dispatch(setMapField(formID, 'legends', newLegendsState))
+        dispatch(actions.setMapField(formID, 'legends', newLegendsState))
       });
   }, [legendsLoaded, sessionManager, sessionID, dispatch, formID]);
 
   const saveMap = useCallback(() => {
     if (!mapData || !owner || !mapID) return;
-    dispatch(setMapField(formID, 'isModified', false));
-    dispatch(setWindowNotification(t('map.notices.save-start')));
+    dispatch(actions.setMapField(formID, 'isModified', false));
+    dispatch(actions.setWindowNotification(t('map.notices.save-start')));
 
     const body = JSON.stringify({sessionId: sessionID, formId: formID, mapId: mapID, mapData, owner});
     sessionManager
       .fetchData('saveMap', {method: 'POST', body})
       .then(() => {
-        dispatch(setWindowNotification(t('map.notices.save-end')));
-        setTimeout(() => {dispatch(closeWindowNotification())}, 2000);
+        dispatch(actions.setWindowNotification(t('map.notices.save-end')));
+        setTimeout(() => {dispatch(actions.closeWindowNotification())}, 2000);
       });
   }, [owner, mapData, mapID, sessionManager, sessionID, formID, dispatch, t]);
 

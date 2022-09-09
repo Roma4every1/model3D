@@ -6,7 +6,7 @@ export enum FormRefsActions {
 
 /* --- actions interfaces --- */
 
-export interface ActionSet {
+interface ActionSet {
   type: FormRefsActions.SET,
   formID: FormID,
   value: any,

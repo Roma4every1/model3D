@@ -6,7 +6,7 @@ export enum CanRunReportActions {
 
 /* --- actions interfaces --- */
 
-export interface ActionSet {
+interface ActionSet {
   type: CanRunReportActions.SET,
   value: CanRunReport,
 }

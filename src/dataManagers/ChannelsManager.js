@@ -1,9 +1,7 @@
 ﻿import i18n from "../i18n";
 import { findIndex, uniq } from "lodash";
 import { equalParams } from "../utils";
-
-import setChannelsData from "../store/actionCreators/setChannelsData";
-import setChannelsLoading from "../store/actionCreators/setChannelsLoading";
+import { actions } from "../store";
 
 
 export default function createChannelsManager(store) {
@@ -70,7 +68,7 @@ export default function createChannelsManager(store) {
     let changed = !channelsParamsValues[formId + '_' + channelName] || !isEqualParams || force;
 
     if (changed) {
-      store.dispatch(setChannelsLoading(channelName, true));
+      store.dispatch(actions.setChannelsLoading(channelName, true));
       channelsParamsValues[formId + '_' + channelName] = neededParamValues.map(np => np.value);
 
       const channelData = await loadChannelData(channelName, neededParamValues);
@@ -137,9 +135,9 @@ export default function createChannelsManager(store) {
               }
             }
           }));
-        store.dispatch(setChannelsData(channelName, channelData));
+        store.dispatch(actions.setChannelsData(channelName, channelData));
       }
-      store.dispatch(setChannelsLoading(channelName, false));
+      store.dispatch(actions.setChannelsLoading(channelName, false));
     }
     return changed;
   }

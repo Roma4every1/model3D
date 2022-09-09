@@ -7,7 +7,7 @@ import { MapModes } from "../../enums";
 import { MapPanelHeader } from "../map-panel-header";
 import { clientPoint, listenerOptions } from "../../map-utils";
 import { checkDistance, checkDistancePoints, getNearestElements, selectElement, unselectElement } from "./selecting-utils";
-import { clearMapSelect, setSelectedElement, setEditMode, cancelMapEditing } from "../../../../../store/actionCreators/maps.actions";
+import { actions } from "../../../../../store";
 
 
 interface SelectingProps {
@@ -54,10 +54,10 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
         if (selectState.activeIndex < selectState.nearestElements.length) {
           let newElement = selectState.nearestElements[selectState.activeIndex];
           await selectElement(newElement);
-          dispatch(setSelectedElement(formID, newElement));
+          dispatch(actions.setSelectedElement(formID, newElement));
         } else {
           selectState.activeIndex = -1;
-          dispatch(clearMapSelect(formID));
+          dispatch(actions.clearMapSelect(formID));
         }
       }
       setActive().then(() => utils.updateCanvas());
@@ -81,7 +81,7 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
         selectState.activeIndex = 0;
         selectState.nearestElements = nearestElements;
         selectState.lastPoint = point;
-        dispatch(setSelectedElement(formID, newElement));
+        dispatch(actions.setSelectedElement(formID, newElement));
       }
       setActive().then(() => utils.updateCanvas());
     }
@@ -109,11 +109,11 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
 
   const toggleSelecting = useCallback(() => {
     if (isInSelectingMode && selectedElement) {
-      dispatch(clearMapSelect(formID, false));
+      dispatch(actions.clearMapSelect(formID, false));
       unselectElement(selectedElement).then(() => utils.updateCanvas());
     }
-    if (!isInSelectingMode && mapState.isElementEditing) dispatch(cancelMapEditing(formID));
-    dispatch(setEditMode(formID, isInSelectingMode ? MapModes.NONE : MapModes.SELECTING));
+    if (!isInSelectingMode && mapState.isElementEditing) dispatch(actions.cancelMapEditing(formID));
+    dispatch(actions.setEditMode(formID, isInSelectingMode ? MapModes.NONE : MapModes.SELECTING));
   }, [dispatch, formID, selectedElement, utils, isInSelectingMode, mapState.isElementEditing]);
 
   const isSelectAllClick = () => {

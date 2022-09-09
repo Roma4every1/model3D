@@ -1,6 +1,6 @@
 import { MapModes } from "../../enums";
 import { getAngleDelta } from "./editing-utils";
-import {getNearestPointIndex, getNearestSegment} from "../../map-utils";
+import { getNearestPointIndex, getNearestSegment } from "../../map-utils";
 
 
 export interface MouseDownEditAction {

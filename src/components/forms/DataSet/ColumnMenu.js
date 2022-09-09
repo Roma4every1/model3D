@@ -1,9 +1,7 @@
 import * as React from "react";
 import { useSelector } from 'react-redux';
-import {
-    GridColumnMenuFilter,
-    GridColumnMenuCheckboxFilter,
-} from "@progress/kendo-react-grid";
+import { GridColumnMenuFilter, GridColumnMenuCheckboxFilter } from "@progress/kendo-react-grid";
+
 
 export default function ColumnMenu(props) {
     const { tableColumn, formId, activeChannelName } = props;

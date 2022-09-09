@@ -1,72 +1,60 @@
-import { Dispatch } from "redux";
-import { AppStateAction } from "./reducers/appState";
-import { MapsAction } from "./reducers/maps";
-import { PresentationsAction } from "./reducers/presentations";
-import { ProgramsAction } from "./reducers/programs";
-
+import { WDispatch } from "./index";
 import { API } from "../api/api";
 import { mapSystem } from "../utils";
 import { setWebServicesURL, applyRootLocation } from "../api/initialization";
-import { startMapLoad, loadMapSuccess, loadMapError } from "./actionCreators/maps.actions";
-import { fetchPresentationsStart, fetchPresentationsEnd } from "./actionCreators/presentations.actions";
-import { fetchProgramsStart, fetchProgramsEndSuccess, fetchProgramsEndError } from "./actionCreators/programs.actions";
-import {
-  fetchConfigSuccess, fetchConfigError,
-  fetchSystemListSuccess, fetchSystemListError,
-  startSessionSuccess, startSessionError,
-} from "./actionCreators/appState";
+import { actions } from "./index";
 
 
 export const fetchConfig = () => {
-  return async (dispatch: Dispatch<AppStateAction>) => {
+  return async (dispatch: WDispatch) => {
     try {
       const config = await API.getClientConfig();
       setWebServicesURL(config);
       applyRootLocation(config);
-      dispatch(fetchConfigSuccess(config));
+      dispatch(actions.fetchConfigSuccess(config));
     } catch (error) {
       console.warn(error);
-      dispatch(fetchConfigError());
+      dispatch(actions.fetchConfigError());
     }
   }
 }
 
 export const fetchSystems = () => {
-  return async (dispatch: Dispatch<AppStateAction>) => {
+  return async (dispatch: WDispatch) => {
     try {
       const systemList = await API.getSystemList();
-      dispatch(fetchSystemListSuccess(systemList.map(mapSystem)));
+      dispatch(actions.fetchSystemListSuccess(systemList.map(mapSystem)));
     } catch (error) {
       console.warn(error);
-      dispatch(fetchSystemListError());
+      dispatch(actions.fetchSystemListError());
     }
   }
 }
 
 export const startSession = (startSessionFn) => {
-  return async (dispatch: Dispatch<AppStateAction>) => {
+  return async (dispatch: WDispatch) => {
     try {
       const sessionID = await startSessionFn();
       sessionID
-        ? dispatch(startSessionSuccess(sessionID))
-        : dispatch(startSessionError());
+        ? dispatch(actions.startSessionSuccess(sessionID))
+        : dispatch(actions.startSessionError());
     } catch (error) {
       console.warn(error);
-      dispatch(startSessionError());
+      dispatch(actions.startSessionError());
     }
   }
 }
 
 export const fetchMapData = (formID: FormID, mapID: MapID, loadMapFn) => {
-  return async (dispatch: Dispatch<MapsAction>) => {
-    dispatch(startMapLoad(formID));
+  return async (dispatch: WDispatch) => {
+    dispatch(actions.startMapLoad(formID));
     const defaultMapContext = {center: {x: 0, y: 0}, scale: 10000};
     try {
       const loadedMap = await loadMapFn(mapID, defaultMapContext);
-      dispatch(loadMapSuccess(formID, loadedMap));
+      dispatch(actions.loadMapSuccess(formID, loadedMap));
     } catch (error) {
       console.warn(error);
-      dispatch(loadMapError(formID))
+      dispatch(actions.loadMapError(formID))
     }
   }
 }
@@ -83,24 +71,24 @@ export const fetchPresentations = (sessionManager, sessionID: SessionID, formID:
       });
     }
   };
-  return async (dispatch: Dispatch<PresentationsAction>) => {
+  return async (dispatch: WDispatch) => {
     try {
-      dispatch(fetchPresentationsStart());
+      dispatch(actions.fetchPresentationsStart());
       const path = `presentationList?sessionId=${sessionID}&formId=${formID}`;
       const data = await sessionManager.fetchData(path);
       setActive(data);
-      dispatch(fetchPresentationsEnd(data));
+      dispatch(actions.fetchPresentationsEnd(data));
     } catch (error) {
       console.warn(error);
-      dispatch(fetchPresentationsEnd(error.message));
+      dispatch(actions.fetchPresentationsEnd(error.message));
     }
   }
 }
 
 export const fetchFormPrograms = (formID: FormID, sessionManager, sessionID: SessionID) => {
-  return async (dispatch: Dispatch<ProgramsAction>) => {
+  return async (dispatch: WDispatch) => {
     try {
-      dispatch(fetchProgramsStart(formID));
+      dispatch(actions.fetchProgramsStart(formID));
 
       const programListPath = `programsList?sessionId=${sessionID}&formId=${formID}`;
       const data: ProgramListData = await sessionManager.fetchData(programListPath);
@@ -121,10 +109,10 @@ export const fetchFormPrograms = (formID: FormID, sessionManager, sessionID: Ses
           program.visible = false;
         }
       }
-      dispatch(fetchProgramsEndSuccess(formID, data));
+      dispatch(actions.fetchProgramsEndSuccess(formID, data));
     } catch (error) {
       console.warn(error);
-      dispatch(fetchProgramsEndError(formID, error.message));
+      dispatch(actions.fetchProgramsEndError(formID, error.message));
     }
   }
 }

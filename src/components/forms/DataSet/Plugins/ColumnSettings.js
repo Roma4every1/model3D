@@ -1,6 +1,6 @@
 import React from 'react';
 import {useDispatch, useSelector} from 'react-redux';
-import setFormSettings from "../../../../store/actionCreators/setFormSettings";
+import { actions } from "../../../../store";
 import {loadMessages} from "@progress/kendo-react-intl";
 import ruMessages from "../../../locales/kendoUI/ru.json";
 
@@ -50,7 +50,7 @@ export default function ColumnSettings(props) {
         tableSettings.columns.frozenColumnCount = 1 + tableSettings.columns.columnsSettings.findIndex((c) => {
             return c.channelPropertyName === formRef.current.activeCell().column;
         });
-        dispatch(setFormSettings(formId, { ...tableSettings }));
+        dispatch(actions.setFormSettings(formId, { ...tableSettings }));
     }
 
     const moveColumnTo = (where) => {
@@ -69,7 +69,7 @@ export default function ColumnSettings(props) {
             case 'end': { toEnd(colSettings, cell, index, count); break }
             default: {}
         }
-        dispatch(setFormSettings(formId, { ...tableSettings }));
+        dispatch(actions.setFormSettings(formId, { ...tableSettings }));
     };
 
     return (

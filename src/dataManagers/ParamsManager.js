@@ -1,11 +1,6 @@
-﻿import {find} from "lodash";
-import {getParentFormId, tableRowToString, stringToTableCell} from "../utils";
-
-import addParam from "../store/actionCreators/addParam";
-import setCanRunReport from "../store/actionCreators/setCanRunReport";
-import setFormSettings from "../store/actionCreators/setFormSettings";
-import setParams from "../store/actionCreators/setParams";
-import updateParam from "../store/actionCreators/updateParam";
+﻿import { find } from "lodash";
+import { getParentFormId, tableRowToString, stringToTableCell } from "../utils";
+import { actions } from "../store";
 
 
 export default function createParamsManager(store) {
@@ -47,7 +42,7 @@ export default function createParamsManager(store) {
               externalChannelName: element.externalChannelName,
               displayName: element.displayName
             }
-            store.dispatch(addParam(formId, newElement));
+            store.dispatch(actions.addParam(formId, newElement));
           }
           paramsToUse.push(newElement);
         } else {
@@ -125,38 +120,8 @@ export default function createParamsManager(store) {
   }
 
   const updateParamValue = (formID, paramID, value, manual) => {
-    // Обновление состояния приложения (redux state).
-    store.dispatch(updateParam(formID, paramID, value, manual));
-
-    // const formState = store.getState().formStates[formID];
-    // if (!formState) return;
-    //
-    // // Если действие инициировал пользователь, то необходимо очистить зависящие параметры.
-    // if (manual) {
-    //   const formParams = store.getState().formParams[formID];
-    //   if (formParams) clearDepends(formParams, formState, paramID);
-    // } else {
-    //   const paramState = formState[paramID];
-    //   if (paramState) paramState.value = value;
-    // }
+    store.dispatch(actions.updateParam(formID, paramID, value, manual));
   }
-
-  // /** Очищает все значения других параметров из списка зависимостей данного.
-  //  * @see updateParamValue
-  //  * */
-  // const clearDepends = (formParams, formState, paramID) => {
-  //   formParams.forEach(param => {
-  //     if (param.dependsOn?.includes(paramID) && param.value) {
-  //       const paramState = formState[param.id];
-  //
-  //       if (paramState) {
-  //         // Обновление состояние редактора (React компонента).
-  //         paramState.value = null;
-  //         clearDepends(formParams, formState, param.id);
-  //       }
-  //     }
-  //   });
-  // }
 
   let reportFormId = null;
 
@@ -166,7 +131,7 @@ export default function createParamsManager(store) {
       const data = await store.getState().sessionManager.fetchData(`getFormParameters?sessionId=${sessionId}&formId=${formId}`);
 
       data.forEach((param) => {param.formId = formId});
-      store.dispatch(setParams(formId, data));
+      store.dispatch(actions.setParams(formId, data));
       data.forEach(async (param) => {
         if (param.externalChannelName && !param.canBeNull) {
           await store.getState().sessionManager.channelsManager.loadAllChannelData(param.externalChannelName, formId, false);
@@ -181,7 +146,7 @@ export default function createParamsManager(store) {
     if (!data) {
       const sessionId = store.getState().sessionId;
       data = await store.getState().sessionManager.fetchData(`getFormSettings?sessionId=${sessionId}&formId=${formId}`);
-      store.dispatch(setFormSettings(formId, data));
+      store.dispatch(actions.setFormSettings(formId, data));
     }
     return data;
   }
@@ -199,10 +164,10 @@ export default function createParamsManager(store) {
         body: jsonToSendString
       });
       if (canRunReport !== data) {
-        store.dispatch(setCanRunReport(data));
+        store.dispatch(actions.setCanRunReport(data));
       }
     } else if (canRunReport) {
-      store.dispatch(setCanRunReport(false));
+      store.dispatch(actions.setCanRunReport(false));
     }
   }
 

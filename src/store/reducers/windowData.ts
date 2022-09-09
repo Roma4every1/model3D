@@ -14,42 +14,42 @@ export enum WindowDataActions {
 
 /* --- actions interfaces --- */
 
-export interface ActionSetInfo {
+interface ActionSetInfo {
   type: WindowDataActions.SET_INFO,
   header: any,
   text: any,
   stackTrace: any,
   fileToSaveName: any,
 }
-export interface ActionSetWarning {
+interface ActionSetWarning {
   type: WindowDataActions.SET_WARNING,
   header: any,
   text: any,
   stackTrace: any,
   fileToSaveName: any,
 }
-export interface ActionSetError {
+interface ActionSetError {
   type: WindowDataActions.SET_ERROR,
   header: any,
   text: any,
   stackTrace: any,
   fileToSaveName: any,
 }
-export interface ActionSetOpenedWindow {
+interface ActionSetOpenedWindow {
   type: WindowDataActions.SET_OPENED_WINDOW,
   windowName: any,
   windowVisible: any,
   window: any,
   position: any,
 }
-export interface ActionClose {
+interface ActionClose {
   type: WindowDataActions.CLOSE,
 }
-export interface ActionSetNotification {
+interface ActionSetNotification {
   type: WindowDataActions.SET_NOTIFICATION,
   text: any,
 }
-export interface ActionCloseNotification {
+interface ActionCloseNotification {
   type: WindowDataActions.CLOSE_NOTIFICATION,
 }
 

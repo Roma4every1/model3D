@@ -5,8 +5,8 @@ import { GridLayout, GridLayoutItem } from "@progress/kendo-react-layout";
 import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { Button } from "@progress/kendo-react-buttons";
 import { saveAs } from '@progress/kendo-file-saver';
-import closeWindow from "../../store/actionCreators/closeWindow";
 import { Notification, NotificationGroup } from "@progress/kendo-react-notification";
+import { actions } from "../../store";
 
 
 export default function WindowHandler() {
@@ -19,7 +19,7 @@ export default function WindowHandler() {
     };
 
     const handleClose = () => {
-        dispatch(closeWindow());
+        dispatch(actions.closeWindow());
     };
 
     const handleSave = () => {

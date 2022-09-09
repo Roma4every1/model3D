@@ -2,8 +2,8 @@ import React, { useEffect, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { setSystemName } from "../store/actionCreators/appState";
 import { startSession } from "../store/thunks";
+import { actions } from "../store";
 
 import LoadingStatus from "./common/LoadingStatus";
 import SessionLoader from "./SessionLoader";
@@ -50,7 +50,7 @@ const SystemRoot = ({root}) => {
 
   useEffect(() => {
     if (systemID !== appState.systemID) {
-      dispatch(setSystemName(systemID));
+      dispatch(actions.setSystemName(systemID));
     }
     if (readyToStartSession) {
       dispatch(startSession(sessionManager.startSession));

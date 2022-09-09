@@ -1,23 +1,10 @@
 ﻿import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import {
-    Grid,
-    GridColumn as Column,
-    getSelectedState,
-    getSelectedStateFromKeyDown,
-    GridColumnMenuFilter
-} from "@progress/kendo-react-grid";
+import {Grid, GridColumn as Column, getSelectedState, getSelectedStateFromKeyDown, GridColumnMenuFilter} from "@progress/kendo-react-grid";
 import ColumnMenu from "./ColumnMenu";
 import { SecondLevelTable } from "./SecondLevelTable";
-import {
-    Button
-} from "@progress/kendo-react-buttons";
-import {
-    IntlProvider,
-    load,
-    LocalizationProvider,
-    loadMessages,
-} from "@progress/kendo-react-intl";
+import { Button } from "@progress/kendo-react-buttons";
+import { IntlProvider, load, LocalizationProvider, loadMessages } from "@progress/kendo-react-intl";
 import calculateSize from "calculate-size";
 import likelySubtags from "cldr-core/supplemental/likelySubtags.json";
 import currencyData from "cldr-core/supplemental/currencyData.json";
@@ -33,24 +20,14 @@ import { useTranslation } from 'react-i18next';
 import { CellRender, RowRender } from "./Renderers";
 import filterOperators from "./filterOperators.json";
 import filterOperations from "./filterOperations.json";
-import addParam from "../../../store/actionCreators/addParam";
-import addParamSet from "../../../store/actionCreators/addParamSet";
-import setOpenedWindow from "../../../store/actionCreators/setOpenedWindow";
-import updateParamSet from "../../../store/actionCreators/updateParamSet";
 import FormHeader from '../Form/FormHeader';
 import ruMessages from "../../locales/kendoUI/ru.json";
-import setFormSettings from "../../../store/actionCreators/setFormSettings";
-load(
-    likelySubtags,
-    currencyData,
-    weekData,
-    numbers,
-    currencies,
-    caGregorian,
-    dateFields,
-    timeZoneNames
-);
+import { actions } from "../../../store";
+
+
+load(likelySubtags, currencyData, weekData, numbers, currencies, caGregorian, dateFields, timeZoneNames);
 loadMessages(ruMessages, "ru-RU");
+
 var utils = require("../../../utils");
 var _ = require("lodash");
 const DATA_ITEM_KEY = "js_id";
@@ -101,7 +78,7 @@ function DataSetView(props, ref) {
                 };
                 neededParamArray.params.push(conditionElement);
             });
-            dispatch(addParamSet(neededParamArray));
+            dispatch(actions.addParamSet(neededParamArray));
         }
     }, [activeChannelName, inputTableData.properties, dispatch]);
 
@@ -114,8 +91,8 @@ function DataSetView(props, ref) {
             id: "sortOrder",
             type: "sortOrder"
         }
-        dispatch(addParam(activeChannelName, maxRowCountElement));
-        dispatch(addParam(activeChannelName, sortOrder));
+        dispatch(actions.addParam(activeChannelName, maxRowCountElement));
+        dispatch(actions.addParam(activeChannelName, sortOrder));
     }, [activeChannelName, dispatch]);
 
     React.useEffect(() => {
@@ -184,7 +161,7 @@ function DataSetView(props, ref) {
                     neededParamArray.push({ name: c.field + "ConditionFilterObject", value: null });
                 }
             });
-            dispatch(updateParamSet(activeChannelName, neededParamArray));
+            dispatch(actions.updateParamSet(activeChannelName, neededParamArray));
         }
     }, [dataState, activeChannelName, sessionManager, inputTableData, dispatch]);
 
@@ -482,7 +459,7 @@ function DataSetView(props, ref) {
             elementsToRemove = elementsToRemove.slice(1, -1);
             await deleteRows(elementsToRemove);
         }
-    };
+    }
 
     var dataToShow = tableData.rowsJSON;
     dataToShow = dataToShow.map((item) => ({
@@ -499,13 +476,13 @@ function DataSetView(props, ref) {
         if (inputTableData.properties) {
             const property = inputTableData.properties.find(o => o.name === column.field);
             if (property && property.secondLevelChannelName) {
-                result.setOpened = (arg) => dispatch(setOpenedWindow(property.name, arg, <SecondLevelTable
+                result.setOpened = (arg) => dispatch(actions.setOpenedWindow(property.name, arg, <SecondLevelTable
                     key={formData.id + property.name}
                     keyProp={formData.id + property.name}
                     secondLevelFormId={formData.id + property.name}
                     channelName={property.secondLevelChannelName}
                     setOpened={(arg) =>
-                        dispatch(setOpenedWindow(property.name, arg, null))
+                        dispatch(actions.setOpenedWindow(property.name, arg, null))
                     }
                 />))
             }
@@ -652,7 +629,7 @@ function DataSetView(props, ref) {
             event.columns.forEach(c => {
                 setWidth(c);
             });
-            dispatch(setFormSettings(formData.id, { ...tableSettings }));
+            dispatch(actions.setFormSettings(formData.id, { ...tableSettings }));
         }
     };
 

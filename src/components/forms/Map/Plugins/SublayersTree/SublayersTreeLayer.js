@@ -6,8 +6,7 @@ import { Button } from "@progress/kendo-react-buttons";
 import { Popup } from "@progress/kendo-react-popup";
 import { Menu, MenuItem } from "@progress/kendo-react-layout";
 import SublayerStatisticsWindow from "./SublayerStatisticsWindow";
-import { setActiveLayer } from "../../../../../store/actionCreators/maps.actions";
-import setOpenedWindow from "../../../../../store/actionCreators/setOpenedWindow";
+import { actions } from "../../../../../store";
 
 
 export default function SublayersTreeLayer({subitem, formId}) {
@@ -49,7 +48,7 @@ export default function SublayersTreeLayer({subitem, formId}) {
     subitem.sublayer.visible = !checked;
     setChecked(!checked);
     if (!subitem.sublayer.visible && selected) {
-      dispatch(setActiveLayer(formId, null));
+      dispatch(actions.setActiveLayer(formId, null));
       setSelected(false);
     }
     updateCanvas();
@@ -74,9 +73,9 @@ export default function SublayersTreeLayer({subitem, formId}) {
   const setSelectedState = (e) => {
     if (e.nativeEvent.target.localName !== 'div') return;
     if (selected) {
-      dispatch(setActiveLayer(formId, null));
+      dispatch(actions.setActiveLayer(formId, null));
     } else {
-      dispatch(setActiveLayer(formId, subitem.sublayer));
+      dispatch(actions.setActiveLayer(formId, subitem.sublayer));
       if (!checked) onChecked();
     }
     setSelected(!selected);
@@ -85,7 +84,7 @@ export default function SublayersTreeLayer({subitem, formId}) {
   const handleOnMenuSelect = (e) => {
     switch (e.item.text) {
       case t('base.statistics'):
-        dispatch(setOpenedWindow('sublayerStatisticsWindow', true,
+        dispatch(actions.setOpenedWindow('sublayerStatisticsWindow', true,
           <SublayerStatisticsWindow
             key={'sublayerStatisticsWindow'}
             sublayer={subitem.sublayer}

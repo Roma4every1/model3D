@@ -5,9 +5,9 @@ import { useDispatch } from "react-redux";
 import { MapPanelHeader } from "./map-panel-header";
 import IntegerTextEditor from "../../../editors/IntegerTextEditor";
 
+import { actions } from "../../../../store";
 import { mapIconsDict } from "../../../dicts/images";
-import { setOnDrawEnd } from "../../../../store/actionCreators/maps.actions";
-import {getPointToMap} from "../map-utils";
+import { getPointToMap } from "../map-utils";
 
 
 interface DimensionsProps {
@@ -34,7 +34,7 @@ export const Dimensions = ({mapState, formID, t}: DimensionsProps) => {
   }, [setDimensions, utils]);
 
   useEffect(() => {
-    dispatch(setOnDrawEnd(formID, onDrawEnd));
+    dispatch(actions.setOnDrawEnd(formID, onDrawEnd));
   }, [onDrawEnd, dispatch, formID]);
 
   const updateCanvas = useCallback((x, y, scale) => {

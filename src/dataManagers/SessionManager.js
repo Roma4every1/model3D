@@ -1,19 +1,10 @@
 ﻿import i18n from '../i18n';
 import { webFetch } from "../api/initialization";
+import { actions } from "../store";
 
 import createChannelsManager from "./ChannelsManager";
 import createParamsManager from "./ParamsManager";
 import createPluginsManager from "./PluginsManager";
-
-import setChildForms from "../store/actionCreators/setChildForms";
-import setSessionId from "../store/actionCreators/setSessionId";
-import setSessionManager from "../store/actionCreators/setSessionManager";
-import setReport from "../store/actionCreators/setReport";
-import setWindowError from "../store/actionCreators/setWindowError";
-import setWindowInfo from "../store/actionCreators/setWindowInfo";
-import setWindowWarning from "../store/actionCreators/setWindowWarning";
-import setWindowNotification from "../store/actionCreators/setWindowNotification";
-import { setSessionID } from "../store/actionCreators/appState";
 
 
 export default function createSessionManager(store) {
@@ -47,8 +38,8 @@ export default function createSessionManager(store) {
           stopSession();
         });
         // старое и новое хранилище, потом старое уберётся
-        store.dispatch(setSessionId(data));
-        store.dispatch(setSessionID(data));
+        store.dispatch(actions.setSessionId(data));
+        store.dispatch(actions.setSessionID(data));
         return data;
       }
     }
@@ -125,8 +116,8 @@ export default function createSessionManager(store) {
         {method: 'POST', body: reader.result}
       );
       sessionLoading = false;
-      store.dispatch(setSessionId(data));
-      store.dispatch(setSessionID(data));
+      store.dispatch(actions.setSessionId(data));
+      store.dispatch(actions.setSessionID(data));
     }
     reader.readAsText(file);
   }
@@ -137,37 +128,37 @@ export default function createSessionManager(store) {
     const _systemName = store.getState().appState.systemID;
     const data = await fetchData(`startSession?systemName=${_systemName}&defaultConfiguration=true`);
     sessionLoading = false;
-    store.dispatch(setSessionId(data));
-    store.dispatch(setSessionID(data));
+    store.dispatch(actions.setSessionId(data));
+    store.dispatch(actions.setSessionID(data));
   }
 
   const getChildForms = async (formId) => {
     const sessionId = store.getState().sessionId;
     const data = await fetchData(`getChildrenForms?sessionId=${sessionId}&formId=${formId}`);
-    store.dispatch(setChildForms(formId, data));
+    store.dispatch(actions.setChildForms(formId, data));
   }
 
   const handleWindowError = (text, stackTrace, header, fileToSaveName) => {
-    store.dispatch(setWindowError(text, stackTrace, header, fileToSaveName));
+    store.dispatch(actions.setWindowError(text, stackTrace, header, fileToSaveName));
   }
 
   const handleWindowInfo = (text, stackTrace, header, fileToSaveName) => {
-    store.dispatch(setWindowInfo(text, stackTrace, header, fileToSaveName));
+    store.dispatch(actions.setWindowInfo(text, stackTrace, header, fileToSaveName));
   }
 
   const handleWindowWarning = (text, stackTrace, header, fileToSaveName) => {
-    store.dispatch(setWindowWarning(text, stackTrace, header, fileToSaveName));
+    store.dispatch(actions.setWindowWarning(text, stackTrace, header, fileToSaveName));
   }
 
   const handleNotification = (text) => {
-    store.dispatch(setWindowNotification(text));
+    store.dispatch(actions.setWindowNotification(text));
   }
 
   const getReportStatus = async (operationId) => {
     try {
       const data = await fetchData(`getOperationResult?sessionId=${store.getState().sessionId}&operationId=${operationId}&waitResult=false`);
       if (data) {
-        store.dispatch(setReport(operationId, data.report));
+        store.dispatch(actions.setReport(operationId, data.report));
         return data.isReady;
       } else {
         return true;
@@ -228,7 +219,7 @@ export default function createSessionManager(store) {
   const channelsManager = createChannelsManager(store);
   const pluginsManager = createPluginsManager(store);
 
-  store.dispatch(setSessionManager({
+  store.dispatch(actions.setSessionManager({
     paramsManager,
     pluginsManager,
     channelsManager,

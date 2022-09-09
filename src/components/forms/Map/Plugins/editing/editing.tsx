@@ -1,26 +1,19 @@
-import {useCallback, useEffect, useMemo, useRef} from "react";
-import {useTranslation} from "react-i18next";
-import {useDispatch} from "react-redux";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { useDispatch } from "react-redux";
 
-import {MapPanelHeader} from "../map-panel-header";
-import {EditElement} from "./edit-element";
-import {CreateElement} from "./create-element";
-import {DeleteElementWindow} from "./delete-element";
-import {PropertiesWindow} from "../properties-window/properties";
-import {AttrTableWindow} from "./attr-table";
+import { MapPanelHeader } from "../map-panel-header";
+import { EditElement } from "./edit-element";
+import { CreateElement } from "./create-element";
+import { DeleteElementWindow } from "./delete-element";
+import { PropertiesWindow } from "../properties-window/properties";
+import { AttrTableWindow } from "./attr-table";
 
-import {MapModes} from "../../enums";
-import {getHeaderText} from "./editing-utils";
-import {applyMouseDownActionToPolyline, applyMouseMoveActionToElement, applyRotateToLabel} from "./edit-element-utils";
-import {clientPoint, getNearestPointIndex, listenerOptions} from "../../map-utils";
-import {
-  acceptMapEditing,
-  cancelCreatingElement,
-  cancelMapEditing,
-  setEditMode,
-  startCreatingElement
-} from "../../../../../store/actionCreators/maps.actions";
-import setOpenedWindow from "../../../../../store/actionCreators/setOpenedWindow";
+import { MapModes } from "../../enums";
+import { getHeaderText } from "./editing-utils";
+import { applyMouseDownActionToPolyline, applyMouseMoveActionToElement, applyRotateToLabel } from "./edit-element-utils";
+import { clientPoint, getNearestPointIndex, listenerOptions } from "../../map-utils";
+import { actions } from "../../../../../store";
 
 
 interface EditingProps {
@@ -101,37 +94,37 @@ export const Editing = ({mapState, formID}: EditingProps) => {
 
   const toggleCreating = useCallback(() => {
     isCreating
-      ? dispatch(cancelCreatingElement(formID))
-      : dispatch(startCreatingElement(formID));
+      ? dispatch(actions.cancelCreatingElement(formID))
+      : dispatch(actions.startCreatingElement(formID));
   }, [isCreating, dispatch, formID]);
 
   const acceptEditing = useCallback(() => {
     if (!selectedElement) return;
-    dispatch(acceptMapEditing(formID));
+    dispatch(actions.acceptMapEditing(formID));
   }, [selectedElement, dispatch, formID]);
 
   const cancelEditing = useCallback(() => {
     if (!selectedElement) return;
-    dispatch(cancelMapEditing(formID));
+    dispatch(actions.cancelMapEditing(formID));
   }, [selectedElement, dispatch, formID]);
 
   const showDeleteWindow = useCallback(() => {
     const name = 'mapDeleteWindow';
     const window = <DeleteElementWindow key={name} mapState={mapState} formID={formID}/>;
-    dispatch(setOpenedWindow(name, true, window));
+    dispatch(actions.setOpenedWindow(name, true, window));
   }, [mapState, dispatch, formID]);
 
   const showPropertiesWindow = useCallback(() => {
     const name = 'mapPropertiesWindow';
     const window = <PropertiesWindow key={name} mapState={mapState} formID={formID}/>;
-    if (mapState.mode < MapModes.MOVE_MAP) dispatch(setEditMode(formID, MapModes.MOVE_MAP));
-    dispatch(setOpenedWindow(name, true, window));
+    if (mapState.mode < MapModes.MOVE_MAP) dispatch(actions.setEditMode(formID, MapModes.MOVE_MAP));
+    dispatch(actions.setOpenedWindow(name, true, window));
   }, [mapState, dispatch, formID]);
 
   const showAttrTableWindow = useCallback(() => {
     const name = 'mapAttrTableWindow';
     const window = <AttrTableWindow key={name} formID={formID} />;
-    dispatch(setOpenedWindow(name, true, window));
+    dispatch(actions.setOpenedWindow(name, true, window));
   }, [dispatch, formID]);
 
   const headerText = useMemo(() => {

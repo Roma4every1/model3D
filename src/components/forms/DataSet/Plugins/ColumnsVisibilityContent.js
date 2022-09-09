@@ -1,11 +1,7 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import {
-    TreeView,
-    processTreeViewItems,
-    handleTreeViewCheckChange,
-} from "@progress/kendo-react-treeview";
-import setFormSettings from "../../../../store/actionCreators/setFormSettings";
+import { TreeView, processTreeViewItems, handleTreeViewCheckChange } from "@progress/kendo-react-treeview";
+import { actions } from "../../../../store";
 
 export default function ColumnsVisibilityContent(props) {
     const dispatch = useDispatch();
@@ -102,7 +98,7 @@ export default function ColumnsVisibilityContent(props) {
             tableSettings.attachedProperties.exclude = columnListData.filter(ti => newCheck.ids.includes(ti.index)).map(ti => ti.id);
         }
         onChange.current = true;
-        dispatch(setFormSettings(formId, { ...tableSettings }));
+        dispatch(actions.setFormSettings(formId, { ...tableSettings }));
     };
 
     return (

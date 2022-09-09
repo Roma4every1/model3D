@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import setSeriesSettings from "../../../../store/actionCreators/setSeriesSettings";
+import { actions } from "../../../../store";
 
 
 export default function SeriesSettings({formId: formID}) {
@@ -13,7 +13,7 @@ export default function SeriesSettings({formId: formID}) {
     if (sessionID) {
       async function fetchData() {
         const data = await sessionManager.fetchData(`pluginData?sessionId=${sessionID}&formId=${formID}&pluginName=chartSeriesSettings`);
-        if (!ignore && data) dispatch(setSeriesSettings(formID, data.chartSeriesSettings))
+        if (!ignore && data) dispatch(actions.setSeriesSettings(formID, data.chartSeriesSettings))
       }
       fetchData().then();
     }

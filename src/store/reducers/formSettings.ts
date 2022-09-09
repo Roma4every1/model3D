@@ -7,12 +7,12 @@ export enum FormSettingsActions {
 
 /* --- actions interfaces --- */
 
-export interface ActionSet {
+interface ActionSet {
   type: FormSettingsActions.SET,
   formId: FormID,
   value: any,
 }
-export interface ActionSetSeriesSetting {
+interface ActionSetSeriesSetting {
   type: FormSettingsActions.SET_SERIES_SETTINGS,
   payload: {formID: FormID, data: any},
 }

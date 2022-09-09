@@ -1,10 +1,9 @@
-import { RootState } from "../../../../../store/rootReducer";
 import { useEffect, useMemo, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Toolbar } from "@progress/kendo-react-buttons";
 import { Skeleton } from "@progress/kendo-react-indicators";
 import ProgramButton from "./ProgramButton";
-import { addFormPrograms } from "../../../../../store/actionCreators/programs.actions";
+import { actions } from "../../../../../store";
 import { fetchFormPrograms } from "../../../../../store/thunks";
 
 
@@ -27,18 +26,18 @@ const ProgramsListLoading = () => {
   );
 }
 
-const sessionIDSelector = (state: RootState) => state.sessionId;
-const sessionManagerSelector = (state: RootState) => state.sessionManager;
+const sessionIDSelector = (state: WState) => state.sessionId;
+const sessionManagerSelector = (state: WState) => state.sessionManager;
 
 export default function SqlProgramsList({formId: formID}: {formId: FormID}) {
   const dispatch = useDispatch();
   const sessionID = useSelector(sessionIDSelector);
   const sessionManager = useSelector(sessionManagerSelector);
-  const programList = useSelector((state: RootState) => state.programs[formID]);
+  const programList = useSelector((state: WState) => state.programs[formID]);
 
   // добавить хранилище для формы
   useEffect(() => {
-    if (!programList) dispatch(addFormPrograms(formID))
+    if (!programList) dispatch(actions.addFormPrograms(formID))
   }, [programList, dispatch, formID]);
 
   // загрузить данные о программах и проверить их на видимость

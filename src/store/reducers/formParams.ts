@@ -10,28 +10,28 @@ export enum FormParamsActions {
 
 /* --- actions interfaces --- */
 
-export interface ActionSet {
+interface ActionSet {
   type: FormParamsActions.SET,
   formId: FormID,
   value: any,
 }
-export interface ActionAdd {
+interface ActionAdd {
   type: FormParamsActions.ADD,
   formId: FormID,
   parameter: any,
 }
-export interface ActionAddSet {
+interface ActionAddSet {
   type: FormParamsActions.ADD_SET,
   set: any,
 }
-export interface ActionUpdate {
+interface ActionUpdate {
   type: FormParamsActions.UPDATE,
   formId: FormID,
   id: any,
   value: any,
   manual: boolean,
 }
-export interface ActionUpdateSet {
+interface ActionUpdateSet {
   type: FormParamsActions.UPDATE_SET,
   formId: FormID,
   values: any,

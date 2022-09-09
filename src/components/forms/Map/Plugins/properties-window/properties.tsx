@@ -1,4 +1,3 @@
-import { RootState} from "../../../../../store/rootReducer";
 import { IntlProvider, LocalizationProvider} from "@progress/kendo-react-intl";
 import { useCallback, useMemo, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,14 +7,8 @@ import { Window } from "@progress/kendo-react-dialogs";
 import { MapModes } from "../../enums";
 import { PolylineProperties } from "./polyline-properties";
 import { LabelProperties } from "./label-properties";
-import { setEditMode, setMapField } from "../../../../../store/actionCreators/maps.actions";
-import setOpenedWindow from "../../../../../store/actionCreators/setOpenedWindow";
-import {
-  createLabelInit,
-  createPolylineInit,
-  rollbackLabel,
-  rollbackPolyline
-} from "./properties-utils";
+import { actions } from "../../../../../store";
+import { createLabelInit, createPolylineInit, rollbackLabel, rollbackPolyline } from "./properties-utils";
 
 
 interface PropertiesWindowProps {
@@ -24,7 +17,7 @@ interface PropertiesWindowProps {
 }
 
 
-const windowsSelector = (state: RootState) => state.windowData?.windows;
+const windowsSelector = (state: WState) => state.windowData?.windows;
 
 export const PropertiesWindow = ({formID, mapState}: PropertiesWindowProps) => {
   const { t } = useTranslation();
@@ -39,7 +32,7 @@ export const PropertiesWindow = ({formID, mapState}: PropertiesWindowProps) => {
   const close = useCallback(() => {
     let position;
     if (windowRef.current) position = {top: windowRef.current.top, left: windowRef.current.left};
-    dispatch(setOpenedWindow(windowName, false, null, position));
+    dispatch(actions.setOpenedWindow(windowName, false, null, position));
   }, [dispatch]);
 
   const update = useCallback(() => {
@@ -49,8 +42,8 @@ export const PropertiesWindow = ({formID, mapState}: PropertiesWindowProps) => {
   const apply = () => {
     const modifiedLayer = mapState.mapData.layers.find(l => l.elements?.includes(element));
     modifiedLayer.modified = true;
-    dispatch(setMapField(formID, 'isModified', true));
-    dispatch(setEditMode(formID, MapModes.SELECTING))
+    dispatch(actions.setMapField(formID, 'isModified', true));
+    dispatch(actions.setEditMode(formID, MapModes.SELECTING))
     update();
     close();
   }

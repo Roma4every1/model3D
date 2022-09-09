@@ -1,7 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom";
+
+import thunk from "redux-thunk";
 import { Provider } from "react-redux";
-import store from "./store/store";
+import { createStore , applyMiddleware } from "redux";
+import { rootReducer } from "./store";
+
 import createSessionManager from "./dataManagers/SessionManager";
 import registerServiceWorker from "./registerServiceWorker";
 import App from "./App";
@@ -31,10 +35,12 @@ if (!Object.fromEntries) {
   }
 }
 
+const store = createStore(rootReducer, applyMiddleware(thunk));
+createSessionManager(store);
+
 loadMessages(ruMessages, 'ru-RU');
 load(likelySubtags, currencyData, weekData, numbers, caGregorian, dateFields, timeZoneNames);
 
-createSessionManager(store);
 registerServiceWorker();
 
 ReactDOM.render(

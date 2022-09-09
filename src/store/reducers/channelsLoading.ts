@@ -6,7 +6,7 @@ export enum ChannelsLoadingActions {
 
 /* --- actions interfaces --- */
 
-export interface ActionSet {
+interface ActionSet {
   type: ChannelsLoadingActions.SET,
   channelName: ChannelName,
   loading: IsChannelLoading,

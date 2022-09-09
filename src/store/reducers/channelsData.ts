@@ -6,7 +6,7 @@ export enum ChannelsDataActions {
 
 /* --- actions interfaces --- */
 
-export interface ActionSet {
+interface ActionSet {
   type: ChannelsDataActions.SET,
   channelName: ChannelName,
   channelData: any,
