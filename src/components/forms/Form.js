@@ -6,20 +6,11 @@ import ErrorBoundary from "../common/ErrorBoundary";
 import { capitalizeFirstLetter } from "../../utils";
 import { formDict } from "../dicts/forms";
 import { pluginsDict } from "../dicts/plugins";
-import { actions } from "../../store";
-
-/*
-formData {
-  displayName: string,
-  displayNameString: string,
-  id: string,
-  type: string,
-}
-*/
+import { actions, selectors } from "../../store";
 
 
 export default function Form({formData, data}) {
-  const sessionManager = useSelector((state) => state.sessionManager);
+  const sessionManager = useSelector(selectors.sessionManager);
   const dispatch = useDispatch();
 
   const {id: formID, type: formType} = formData;
@@ -101,26 +92,23 @@ export default function Form({formData, data}) {
     dispatch(actions.setFormRefs(formID, _form));
   }, [formID, dispatch]);
 
-  const allPlugins = useSelector((state) => state.layout.plugins.inner);
-  const plugins = allPlugins.filter(plugin => plugin?.component?.form === capitalizeFirstLetter(formType));
+  const innerPlugins = useSelector(selectors.innerPlugins);
+  const plugins = innerPlugins.filter(plugin => plugin?.component?.form === capitalizeFirstLetter(formType));
 
   const pluginsByType = plugins?.map(pl => {
     const PluginByType = pluginsDict[formType.toLowerCase()][pl.component.path];
     return <PluginByType key={pl.component.path} formId={formID} />
   });
 
+  if (!formLoadedData.loaded) return <Skeleton shape={'rectangle'} animation={{type: 'wave'}}/>;
+  const formRef = formType !== 'map' ? _form : undefined;
+
   return (
     <ErrorBoundary>
-      {!formLoadedData.loaded
-        ? <Skeleton shape={'rectangle'} animation={{type: 'wave'}}/>
-        : <div className={`form-container ${formType}-form`}>
-            {formType === 'map'
-              ? <FormByType key={'mainForm'} formData={formData} data={formLoadedData} />
-              : <FormByType key={'mainForm'} formData={formData} data={formLoadedData} ref={_form} />
-            }
-            {pluginsByType}
-          </div>
-      }
+      <div className={'form-container form-' + formType}>
+        <FormByType key={'mainForm'} formData={formData} data={formLoadedData} ref={formRef} />
+        {pluginsByType}
+      </div>
     </ErrorBoundary>
   );
 }

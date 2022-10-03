@@ -213,8 +213,6 @@ export default function createSessionManager(store) {
     }
   }
 
-  //startSession();
-
   const paramsManager = createParamsManager(store);
   const channelsManager = createChannelsManager(store);
   const pluginsManager = createPluginsManager(store);

@@ -1,31 +1,29 @@
-import { IntlProvider, LocalizationProvider} from "@progress/kendo-react-intl";
-import { useCallback, useMemo, useRef } from "react";
+import { IntlProvider, LocalizationProvider } from "@progress/kendo-react-intl";
+import { useEffect, useCallback, useMemo, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Window } from "@progress/kendo-react-dialogs";
 
 import { MapModes } from "../../enums";
-import { PolylineProperties } from "./polyline-properties";
-import { LabelProperties } from "./label-properties";
-import { actions } from "../../../../../store";
+import { PolylineProperties } from "./polyline/polyline-properties";
+import { LabelProperties } from "./label/label-properties";
+import { actions, selectors } from "../../../../../store";
 import { createLabelInit, createPolylineInit, rollbackLabel, rollbackPolyline } from "./properties-utils";
 
 
-interface PropertiesWindowProps {
-  formID: FormID,
-  mapState: MapState,
-}
+const windowSizeDict: Record<'polyline' | 'label', [number, number]> = {
+  polyline: [320, 260],
+  label: [350, 205],
+};
 
-
-const windowsSelector = (state: WState) => state.windowData?.windows;
-
-export const PropertiesWindow = ({formID, mapState}: PropertiesWindowProps) => {
+export const PropertiesWindow = ({formID}: {formID: FormID}) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
   const windowName = 'mapPropertiesWindow';
-  const windows = useSelector(windowsSelector);
-  const { element, utils, legends } = mapState;
+  const windows = useSelector(selectors.windows);
+  const mapState: MapState = useSelector(selectors.mapState.bind(formID))
+  const { element, utils, legends, mode } = mapState;
 
   const windowRef = useRef(null);
 
@@ -58,10 +56,11 @@ export const PropertiesWindow = ({formID, mapState}: PropertiesWindowProps) => {
       rollbackPolyline(element, init).then(update).then(close);
     }
     if (element.type === 'label') {
+      if (mode === MapModes.MOVE_MAP && element.edited) element.edited = false;
       rollbackLabel(element, init);
       update(); close();
     }
-  }, [element, init, update, close]);
+  }, [element, mode, init, update, close]);
 
   const ElementProperties = () => {
     if (element.type === 'polyline')
@@ -81,7 +80,15 @@ export const PropertiesWindow = ({formID, mapState}: PropertiesWindowProps) => {
     return <div>{t('map.selecting.no-selected')}</div>;
   }
 
+  const initElement = useRef(element);
+
+  useEffect(() => {
+    if (element !== initElement.current) cancel();
+    if (element.type === 'label' && !element.edited) { element.edited = true; update(); }
+  }, [element, initElement, update, cancel]);
+
   const title = t('map.properties-edit', {elementType: t('map.' + element.type)});
+  const [width, height] = windowSizeDict[element.type];
 
   return (
     <LocalizationProvider language={'ru-RU'}>
@@ -89,10 +96,10 @@ export const PropertiesWindow = ({formID, mapState}: PropertiesWindowProps) => {
         <Window
           ref={windowRef} className={'propertiesWindow'}
           resizable={false} title={title}
-          width={320} height={260}
+          width={width} height={height}
           initialLeft={windows[windowName]?.position?.left}
           initialTop={windows[windowName]?.position?.top}
-          onClose={cancel}
+          style={{zIndex: 99}} onClose={cancel}
         >
           <ElementProperties/>
         </Window>

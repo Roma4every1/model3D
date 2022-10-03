@@ -8,9 +8,11 @@ import { actions } from "./index";
 export const fetchConfig = () => {
   return async (dispatch: WDispatch) => {
     try {
-      const config = await API.getClientConfig();
+      const config = await API.getClientConfig() as ClientConfiguration;
       setWebServicesURL(config);
       applyRootLocation(config);
+      API.setBase(config.webServicesURL);
+      API.maps.root = config.root;
       dispatch(actions.fetchConfigSuccess(config));
     } catch (error) {
       console.warn(error);
@@ -21,13 +23,9 @@ export const fetchConfig = () => {
 
 export const fetchSystems = () => {
   return async (dispatch: WDispatch) => {
-    try {
-      const systemList = await API.getSystemList();
-      dispatch(actions.fetchSystemListSuccess(systemList.map(mapSystem)));
-    } catch (error) {
-      console.warn(error);
-      dispatch(actions.fetchSystemListError());
-    }
+    const systemList = await API.getSystemList();
+    if (typeof systemList === 'string') return dispatch(actions.fetchSystemListError());
+    dispatch(actions.fetchSystemListSuccess(systemList.map(mapSystem) as SystemList));
   }
 }
 
@@ -48,9 +46,8 @@ export const startSession = (startSessionFn) => {
 export const fetchMapData = (formID: FormID, mapID: MapID, loadMapFn) => {
   return async (dispatch: WDispatch) => {
     dispatch(actions.startMapLoad(formID));
-    const defaultMapContext = {center: {x: 0, y: 0}, scale: 10000};
     try {
-      const loadedMap = await loadMapFn(mapID, defaultMapContext);
+      const loadedMap = await loadMapFn(mapID);
       dispatch(actions.loadMapSuccess(formID, loadedMap));
     } catch (error) {
       console.warn(error);

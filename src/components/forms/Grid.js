@@ -1,7 +1,8 @@
 ﻿import React, { useState, useEffect, useCallback } from "react";
-import { useSelector } from "react-redux";
-import { Loader } from "@progress/kendo-react-indicators";
 import FlexLayout from "flexlayout-react";
+import { useSelector, useDispatch } from "react-redux";
+import { Loader } from "@progress/kendo-react-indicators";
+import { selectors, actions } from "../../store";
 
 import Form from "./Form";
 import Container from "./Grid/Container";
@@ -23,12 +24,23 @@ const pushElement = (jsonToInsert, layout, formsToPush, activeIds) => {
     })
   });
 }
+/** Является ли форма мультикартой (т.е. содержит несколько карт). */
+const isMultiMap = (children) => {
+  return children && children.filter(child => child.type === 'map').length > 1;
+};
+/** Возвращает список форм-карт мультикарты. */
+const getMultiMapChildrenID = (children) => {
+  return children.filter(child => child.type === 'map').map(child => child.id);
+};
 
 function Grid({formData}, ref) {
-  const sessionManager = useSelector((state) => state.sessionManager);
-  const sessionID = useSelector((state) => state.sessionId);
-  const form = useSelector((state) => state.childForms[formData.id]);
-  const layout = useSelector((state) => state.layout[formData.id]);
+  const dispatch = useDispatch();
+
+  const sessionID = useSelector(selectors.sessionID);
+  const sessionManager = useSelector(selectors.sessionManager);
+  /** @type FormChildrenState */
+  const formChildrenState = useSelector(selectors.formChildrenState.bind(formData.id));
+  const layout = useSelector(selectors.layout.bind(formData.id));
 
   const [openedForms, setOpenedForms] = useState(null);
   const [modelJson, setModelJson] = useState(null);
@@ -39,11 +51,20 @@ function Grid({formData}, ref) {
 
   useEffect(() => {
     if (!openedForms) {
-      const formsData = form?.children;
-      const openedData = form?.openedChildren;
-      setOpenedForms(openedData?.map(od => formsData?.find(p => p.id === od)));
+      const formsData = formChildrenState?.children;
+      setOpenedForms(formChildrenState?.openedChildren?.map(
+        formID => formsData?.find(p => p.id === formID)
+      ));
     }
-  }, [form, formData, openedForms]);
+  }, [formChildrenState, formData, openedForms]);
+
+  // проверка на то, что форма является мультикартой
+  useEffect(() => {
+    if (isMultiMap(formChildrenState?.children)) {
+      const childMapsID = getMultiMapChildrenID(formChildrenState.children);
+      dispatch(actions.addMultiMap(formData.id, childMapsID));
+    }
+  }, [formData.id, formChildrenState, dispatch]);
 
   const correctElement = useCallback((layout, forms, activeIds) => {
     if (layout.type === 'tabset') {
@@ -77,17 +98,17 @@ function Grid({formData}, ref) {
       };
       setModelJson(FlexLayout.Model.fromJson(newJSON));
 
-      if (form && openedForms && !ignore) {
+      if (formChildrenState && openedForms && !ignore) {
         const fetchData = async () => {
           const data = await sessionManager.fetchData(`getFormLayout?sessionId=${sessionID}&formId=${formData.id}`);
 
           if (data.layout && data.layout.children && openedForms) {
-            correctElement(data.layout, openedForms, form.activeChildren);
+            correctElement(data.layout, openedForms, formChildrenState.activeChildren);
             setModelJson(FlexLayout.Model.fromJson(data));
           } else if (openedForms) {
             openedForms.forEach(openedForm => {
               if (openedForm) {
-                pushElement(newJSON, 100 / openedForms.length, [openedForm], form.activeChildren);
+                pushElement(newJSON, 100 / openedForms.length, [openedForm], formChildrenState.activeChildren);
               }
             });
             setModelJson(FlexLayout.Model.fromJson(newJSON));
@@ -97,12 +118,12 @@ function Grid({formData}, ref) {
       }
     }
     return () => { ignore = true; }
-  }, [form, sessionID, formData, openedForms, layout, correctElement, sessionManager]);
+  }, [formChildrenState, sessionID, formData, openedForms, layout, correctElement, sessionManager]);
 
   if (!openedForms) return <Loader size={'small'} type={'infinite-spinner'} />;
   return (
     <Container formID={formData.id} modelJson={modelJson}>
-      {openedForms.map(formData => <Form key={formData.id} formData={formData}/>)}
+      {openedForms.map(openFormData => <Form key={openFormData.id} formData={openFormData}/>)}
     </Container>
   );
 }

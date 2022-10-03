@@ -1,6 +1,6 @@
 import { MapModes } from "../../enums";
-import { getAngleDelta } from "./editing-utils";
-import { getNearestPointIndex, getNearestSegment } from "../../map-utils";
+import { getAngle } from "./editing-utils";
+import { getNearestPointIndex, getNearestSegment, PIXEL_PER_METER } from "../../map-utils";
 
 
 export interface MouseDownEditAction {
@@ -13,7 +13,6 @@ export interface MouseMoveEditAction {
   mode: MapModes,
   point: ClientPoint,
   pIndex?: number,
-  initPoint?: ClientPoint,
 }
 
 /* --- Mouse Down Event --- */
@@ -26,13 +25,15 @@ export const applyMouseDownActionToPolyline = (element: MapPolyline, action: Mou
       return;
     }
     case MapModes.ADD_BETWEEN: {
+      if (element.arcs[0].path.length < 3) return;
       const index = getNearestSegment(action.point, element);
       element.arcs[0].path.splice(index * 2 + 2, 0, action.point.x, action.point.y);
       return;
     }
     case MapModes.DELETE_POINT: {
+      if (element.arcs[0].path.length < 3) return;
       const nearestIndex = getNearestPointIndex(action.point, action.scale, element);
-      if (nearestIndex) element.arcs[0].path.splice(nearestIndex * 2, 2);
+      if (typeof nearestIndex === 'number') element.arcs[0].path.splice(nearestIndex * 2, 2);
     }
   }
 }
@@ -40,7 +41,7 @@ export const applyMouseDownActionToPolyline = (element: MapPolyline, action: Mou
 /* --- Mouse Move Event --- */
 
 const applyMouseMoveActionToPolyline = (element: MapPolyline, action: MouseMoveEditAction): void => {
-  if (action.mode === MapModes.MOVE_POINT && action.pIndex) {
+  if (action.mode === MapModes.MOVE_POINT && typeof action.pIndex === 'number') {
     const firstArcPath = element.arcs[0].path;
     firstArcPath[action.pIndex * 2] = action.point.x;
     firstArcPath[action.pIndex * 2 + 1] = action.point.y;
@@ -51,8 +52,11 @@ const applyMouseMoveActionToLabel = (element: MapLabel, action: MouseMoveEditAct
     element.x = action.point.x;
     element.y = action.point.y;
   } else if (action.mode === MapModes.ROTATE) {
-    const centerPoint: ClientPoint = {x: element.x, y: element.y};
-    element.angle += getAngleDelta(centerPoint, action.initPoint, action.point);
+    const centerPoint: ClientPoint = {
+      x: element.x + (element.xoffset || 0) * 0.001 * PIXEL_PER_METER,
+      y: element.y - (element.yoffset || 0) * 0.001 * PIXEL_PER_METER
+    };
+    element.angle = getAngle(centerPoint, action.point);
   }
 }
 const applyMouseMoveActionToSign = (element: MapSign, action: MouseMoveEditAction): void => {

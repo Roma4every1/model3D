@@ -4,10 +4,10 @@ import { useDispatch } from "react-redux";
 import { Checkbox } from "@progress/kendo-react-inputs";
 
 import { MapModes } from "../../enums";
-import { MapPanelHeader } from "../map-panel-header";
 import { clientPoint, listenerOptions } from "../../map-utils";
 import { checkDistance, checkDistancePoints, getNearestElements, selectElement, unselectElement } from "./selecting-utils";
 import { actions } from "../../../../../store";
+import { mapModesIcons } from "../../../../dicts/images";
 
 
 interface SelectingProps {
@@ -141,38 +141,41 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
     setIsOnlyActiveLayer(!isOnlyActiveLayer);
   }
 
-  const headerButtonProto = {
-    action: toggleSelecting,
-    selected: isInSelectingMode,
-    title: t('map.selecting.button-hint'),
-    icon: 'selecting',
-  };
-
   return (
     <section className={'map-selecting'}>
-      <MapPanelHeader text={t('map.selecting.header')} button={headerButtonProto}/>
+      <div className={'map-panel-header'}>{t('map.selecting.header')}</div>
       <div className={'map-panel-main'}>
-        <Checkbox
-          label={t('map.selecting.all')} title={t('map.selecting.all-hint')}
-          checked={isSelectAll} onClick={isSelectAllClick}
-        />
-        <Checkbox
-          label={t('map.selecting.contours')} title={t('map.selecting.contours-hint')}
-          checked={isSelectContours} onClick={isSelectContoursClick}
-        />
-        <Checkbox
-          label={t('map.selecting.layer')} title={t('map.selecting.layer-hint')}
-          checked={isOnlyActiveLayer} onClick={isOnlyActiveLayerClick}
-        />
-        <Checkbox
-          label={t('map.selecting.sign')} title={t('map.selecting.sign-hint')}
-          checked={isSelectSign} onClick={isSelectWellsClick}
-        />
-        <div/>
-        <Checkbox
-          label={t('map.selecting.label')} title={t('map.selecting.label-hint')}
-          checked={isSelectLabels} onClick={isSelectLabelsClick}
-        />
+        <div>
+          <button
+            className={'map-panel-button' + (isInSelectingMode ? ' active' : '')}
+            onClick={toggleSelecting} title={t('map.selecting.button-hint')}
+          >
+            <img src={mapModesIcons['selecting']} alt={'selecting'}/>
+          </button>
+        </div>
+        <div>
+          <Checkbox
+            label={t('map.selecting.all')} title={t('map.selecting.all-hint')}
+            checked={isSelectAll} onClick={isSelectAllClick}
+          />
+          <Checkbox
+            label={t('map.selecting.contours')} title={t('map.selecting.contours-hint')}
+            checked={isSelectContours} onClick={isSelectContoursClick}
+          />
+          <Checkbox
+            label={t('map.selecting.layer')} title={t('map.selecting.layer-hint')}
+            checked={isOnlyActiveLayer} onClick={isOnlyActiveLayerClick}
+          />
+          <Checkbox
+            label={t('map.selecting.sign')} title={t('map.selecting.sign-hint')}
+            checked={isSelectSign} onClick={isSelectWellsClick}
+          />
+          <div/>
+          <Checkbox
+            label={t('map.selecting.label')} title={t('map.selecting.label-hint')}
+            checked={isSelectLabels} onClick={isSelectLabelsClick}
+          />
+        </div>
       </div>
     </section>
   );

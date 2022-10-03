@@ -1,3 +1,5 @@
+/* --- Skeleton --- */
+
 .map-panel-skeleton {
   margin: 2px;
 
@@ -6,19 +8,22 @@
     border-radius: 2px;
   }
 
-  :first-child { height: 20px; }
-  :last-child { height: 60px; }
+  :first-child { height: 18px; }
+  :last-child { height: 58px; }
 }
 
+/* --- Panel & Header --- */
+
 .map-edit-panel {
+  padding-bottom: 2px;
   min-width: 100%;
-  grid-template-columns: 14% 14% 24% 48%;
+  grid-template-columns: 330px 90px 275px calc(100% - 785px) 90px;
   grid-gap: 0;
 
   > section {
     margin-right: 4px;
     padding-right: 4px;
-    border-right: 1px solid black;
+    border-right: 1px solid darkgray;
 
     &:last-child {
       margin-right: 0;
@@ -28,10 +33,10 @@
   }
 
   img {
-    height: 16px;
     width: 16px;
+    height: 16px;
     display: inline-block;
-    vertical-align: text-bottom;
+    vertical-align: baseline;
   }
 
   span.k-input {
@@ -39,78 +44,23 @@
   }
 }
 
-.map-dimensions {
-  min-width: 160px;
-
-  > div > div {
-    margin: 1px 0;
-  }
-}
-
 .map-panel-header {
+  padding-top: 2px;
+  margin-bottom: 2px;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: bold;
   background-color: var(--color-6);
   border-radius: 1px;
+  height: 20px;
+}
+
+.map-panel-button {
+  margin: 0;
+  padding: 4px;
+  width: 24px;
   height: 24px;
-  display: flex;
-  align-items: center;
 
-  span {
-    font-size: 1.1rem;
-    font-weight: bold;
-    padding: 2px;
-  }
-
-  button {
-    border: none;
-    padding: 0;
-    width: 20px;
-    height: 20px;
-    border-radius: 2px;
-    margin: 2px;
-    transition: 0.2s;
-
-    &.active {
-      filter: drop-shadow(0px 0px 2px #ff6358);
-      background-color: #f8b3ae;
-    }
-    &:disabled {
-      filter: grayscale(1);
-    }
-  }
-}
-
-.map-selecting {
-  .map-panel-main {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .map-panel-main > span {
-    margin-left: 4px;
-    font-size: 1.05rem;
-    cursor: default;
-  }
-}
-
-.map-editing > .map-panel-main {
-  display: flex;
-  min-height: 100%;
-
-  .common-buttons {
-    border-right: 1px dotted black;
-    padding-right: 2px;
-    margin-right: 2px;
-
-    > div {
-      display: flex;
-    }
-  }
-}
-
-.map-actions .map-panel-main button,
-.map-editing .map-panel-main button {
-  margin: 2px;
-  padding: 6px;
   border: none;
   border-radius: 2px;
   transition: 0.2s;
@@ -118,31 +68,113 @@
   &:hover {
     background-color: var(--color-6);
   }
-
-  &.selected,
-  &:active {
+  &.selected, &:active, &.active {
     background-color: #f8b3ae;
   }
+  :disabled {
+    filter: grayscale(1);
+  }
 }
 
-.map-edit-element button,
-.map-create-element button {
-  width: 2em;
-  height: 2em;
-  padding: 0;
-}
+/* --- Dimensions Section --- */
 
-.map-create-element {
+.map-dimensions .map-panel-main {
   display: flex;
-  align-items: flex-start;
-  grid-gap: 4px;
-  height: 100%;
+  flex-wrap: nowrap;
+  grid-gap: 2px;
+  justify-content: flex-start;
+  align-items: center;
 
-  > div {
-    height: 100%;
+  > :first-child { min-width: 160px; }
+}
+
+.map-actions {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.map-action {
+  margin: 0;
+  padding: 4px;
+  border: none;
+  border-radius: 2px;
+  background: transparent;
+  font-size: 1.05rem;
+  transition: 0.2s;
+
+  img {
+    width: 24px;
+    height: 24px;
+  }
+  :first-child {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  :last-child {
+    text-align: center;
+    line-height: 1.1;
   }
 
-  button[disabled] {
+  &:hover {
+    background-color: var(--color-6);
+  }
+  &.selected, &:active {
+    background-color: #f8b3ae;
+  }
+  &:disabled {
+    background-color: transparent;
     filter: grayscale(1);
+  }
+}
+
+/* --- Selecting Section --- */
+
+.map-selecting .map-panel-main {
+  display: flex;
+
+  > :first-child {
+    border-right: 1px dotted black;
+    padding-right: 2px;
+    margin-right: 2px;
+  }
+
+  > :last-child {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+
+    > span {
+      font-size: 1.05rem;
+      margin: 0 2px;
+    }
+  }
+}
+
+/* --- Editing Section  --- */
+
+.map-editing > .map-panel-main {
+  display: flex;
+
+  .common-buttons {
+    height: 54px;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-gap: 1px;
+
+    border-right: 1px dotted black;
+    padding-right: 4px;
+    margin-right: 4px;
+
+    button {
+      border: none;
+      transition: 0.2s;
+    }
+  }
+
+  :last-child {
+    display: flex;
+    grid-gap: 2px;
   }
 }

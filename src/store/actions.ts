@@ -1,19 +1,19 @@
-import { AppStateAction, AppStateActions } from "./reducers/appState";
-import { CanRunReportAction, CanRunReportActions } from "./reducers/canRunReport";
-import { ChannelsDataAction, ChannelsDataActions } from "./reducers/channelsData";
-import { ChannelsLoadingAction, ChannelsLoadingActions } from "./reducers/channelsLoading";
-import { ChildFormsAction, ChildFormsActions } from "./reducers/childForms";
-import { FormRefsAction, FormRefsActions } from "./reducers/formRefs";
-import { FormParamsAction, FormParamsActions } from "./reducers/formParams";
-import { FormSettingsAction, FormSettingsActions } from "./reducers/formSettings";
-import { LayoutAction, LayoutActions } from "./reducers/layout";
-import { MapsAction, MapsActions } from "./reducers/maps";
-import { PresentationsAction, PresentationsActions } from "./reducers/presentations";
-import { ProgramsAction, ProgramsActions } from "./reducers/programs";
-import { ReportsAction, ReportsActions } from "./reducers/reports";
-import { SessionIDAction, SessionIDActions } from "./reducers/sessionId";
-import { SessionManagerAction, SessionManagerActions } from "./reducers/sessionManager";
-import { WindowDataAction, WindowDataActions } from "./reducers/windowData";
+import {AppStateAction, AppStateActions} from "./reducers/appState";
+import {CanRunReportAction, CanRunReportActions} from "./reducers/canRunReport";
+import {ChannelsDataAction, ChannelsDataActions} from "./reducers/channelsData";
+import {ChannelsLoadingAction, ChannelsLoadingActions} from "./reducers/channelsLoading";
+import {ChildFormsAction, ChildFormsActions} from "./reducers/childForms";
+import {FormRefsAction, FormRefsActions} from "./reducers/formRefs";
+import {FormParamsAction, FormParamsActions} from "./reducers/formParams";
+import {FormSettingsAction, FormSettingsActions} from "./reducers/formSettings";
+import {LayoutAction, LayoutActions} from "./reducers/layout";
+import {MapsAction, MapsActions} from "./reducers/maps";
+import {PresentationsAction, PresentationsActions} from "./reducers/presentations";
+import {ProgramsAction, ProgramsActions} from "./reducers/programs";
+import {ReportsAction, ReportsActions} from "./reducers/reports";
+import {SessionIDAction, SessionIDActions} from "./reducers/sessionId";
+import {SessionManagerAction, SessionManagerActions} from "./reducers/sessionManager";
+import {WindowDataAction, WindowDataActions} from "./reducers/windowData";
 
 
 export class WellManagerActionsCreator {
@@ -76,14 +76,17 @@ export class WellManagerActionsCreator {
 
   /* --- Child Forms Actions --- */
 
-  public setChildForms(formId: FormID, value: any): ChildFormsAction {
-    return {type: ChildFormsActions.SET, formId, value};
+  /** Устанавливает состояние дочерних форм. */
+  public setChildForms(formID: FormID, payload: FormChildrenState): ChildFormsAction {
+    return {type: ChildFormsActions.SET, formID, payload};
   }
-  public setOpenedChildren(formId: FormID, values: any): ChildFormsAction {
-    return {type: ChildFormsActions.SET_OPENED, formId, values};
+  /** Устанавливает список открытых дочерних форм. */
+  public setOpenedChildren(formID: FormID, payload: OpenedChildrenList): ChildFormsAction {
+    return {type: ChildFormsActions.SET_OPENED, formID, payload};
   }
-  public setActiveChildren(formId: FormID, values: any): ChildFormsAction {
-    return {type: ChildFormsActions.SET_ACTIVE, formId, values};
+  /** Устанавливает список активных дочерних форм. */
+  public setActiveChildren(formID: FormID, payload: ActiveChildrenList): ChildFormsAction {
+    return {type: ChildFormsActions.SET_ACTIVE, formID, payload};
   }
 
   /* --- Form Refs Actions --- */
@@ -132,6 +135,15 @@ export class WellManagerActionsCreator {
   // }
 
   /* --- Maps Actions --- */
+
+  /** Добавляет в хранилище новую мультикарту. */
+  public addMultiMap(formID: FormID, forms: FormID[]): MapsAction {
+    return {type: MapsActions.ADD_MULTI_MAP, formID, payload: forms};
+  }
+  /** Устанавливает значение параметра синхронизации. */
+  public setMultiMapSync(formID: FormID, sync: boolean): MapsAction {
+    return {type: MapsActions.SET_SYNC, formID, payload: sync};
+  }
 
   /** Добавляет в хранилище состояний карт новую карту. */
   public createMapState(formID: FormID, drawer: MapsDrawer): MapsAction {

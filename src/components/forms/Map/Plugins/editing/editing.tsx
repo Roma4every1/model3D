@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 
-import { MapPanelHeader } from "../map-panel-header";
 import { EditElement } from "./edit-element";
 import { CreateElement } from "./create-element";
 import { DeleteElementWindow } from "./delete-element";
@@ -31,14 +30,11 @@ export const Editing = ({mapState, formID}: EditingProps) => {
   const selectedElement = mapState.element;
 
   const isOnMove = useRef(false);
-  const initPoint = useRef<ClientPoint>(null);
   const pIndex = useRef<number>(null);
 
   const mouseDown = useCallback((event: MouseEvent) => {
     if (!isElementEditing) return;
     const point = utils.pointToMap(clientPoint(event));
-
-    initPoint.current = point;
     isOnMove.current = mouseMoveNeedModes.includes(mode);
 
     if (selectedElement.type !== 'polyline') return;
@@ -54,7 +50,7 @@ export const Editing = ({mapState, formID}: EditingProps) => {
   const mouseMove = useCallback((event: MouseEvent) => {
     if (!isOnMove.current) return;
     const point = utils.pointToMap(clientPoint(event));
-    const action = {mode, point, pIndex: pIndex.current, initPoint: initPoint.current};
+    const action = {mode, point, pIndex: pIndex.current};
 
     applyMouseMoveActionToElement(selectedElement, action);
     utils.updateCanvas();
@@ -62,7 +58,6 @@ export const Editing = ({mapState, formID}: EditingProps) => {
 
   const mouseUp = useCallback(() => {
     isOnMove.current = false;
-    initPoint.current = null;
     pIndex.current = null;
   }, []);
 
@@ -116,7 +111,7 @@ export const Editing = ({mapState, formID}: EditingProps) => {
 
   const showPropertiesWindow = useCallback(() => {
     const name = 'mapPropertiesWindow';
-    const window = <PropertiesWindow key={name} mapState={mapState} formID={formID}/>;
+    const window = <PropertiesWindow key={name} formID={formID}/>;
     if (mapState.mode < MapModes.MOVE_MAP) dispatch(actions.setEditMode(formID, MapModes.MOVE_MAP));
     dispatch(actions.setOpenedWindow(name, true, window));
   }, [mapState, dispatch, formID]);
@@ -136,53 +131,47 @@ export const Editing = ({mapState, formID}: EditingProps) => {
   const disabledAccept = oldData.x === null && oldData.arc === null;
   const disabledAttrTable = !selectedElement?.attrTable || Object.keys(selectedElement?.attrTable).length === 0;
 
-  const headerButtonProto = {
-    selected: isCreating,
-    disabled: disabledCreate,
-    action: toggleCreating,
-    title: t('map.creating.button-hint'),
-    icon: 'creating',
-  };
-
   return (
     <section className={'map-editing'}>
-      <MapPanelHeader text={headerText} button={headerButtonProto}/>
+      <div className={'map-panel-header'}>{headerText}</div>
       <div className={'map-panel-main'}>
         <div className={'common-buttons'}>
-          <div>
-            <button
-              className={'k-button'} title={t('map.editing.accept')}
-              disabled={disabledAccept} onClick={acceptEditing}
-            >
-              <span className={'k-icon k-i-check-outline'} />
-            </button>
-            <button
-              className={'k-button'} title={t('map.editing.cancel')}
-              disabled={disabledAccept} onClick={cancelEditing}
-            >
-              <span className={'k-icon k-i-close-outline'} />
-            </button>
-            <button
-              className={'k-button'} title={t('map.editing.delete')}
-              disabled={!selectedElement} onClick={showDeleteWindow}
-            >
-              <span className={'k-icon k-i-delete'} />
-            </button>
-          </div>
-          <div>
-            <button
-              className={'k-button'} title={t('map.editing.properties')}
-              disabled={disabledProperties} onClick={() => showPropertiesWindow()}
-            >
-              <span className={'k-icon k-i-saturation'} />
-            </button>
-            <button
-              className={'k-button'} title={t('map.attr-table')}
-              disabled={disabledAttrTable} onClick={showAttrTableWindow}
-            >
-              <span className={'k-icon k-i-table'} />
-            </button>
-          </div>
+          <button
+            className={'map-panel-button k-button'} title={t('map.editing.accept')}
+            disabled={disabledAccept} onClick={acceptEditing}
+          >
+            <span className={'k-icon k-i-check-outline'} />
+          </button>
+          <button
+            className={'k-button map-panel-button'} title={t('map.editing.cancel')}
+            disabled={disabledAccept} onClick={cancelEditing}
+          >
+            <span className={'k-icon k-i-close-outline'} />
+          </button>
+          <button
+            className={'k-button map-panel-button' + (isCreating ? ' active' : '')} title={t('map.creating.button-hint')}
+            disabled={disabledCreate} onClick={toggleCreating}
+          >
+            <span className={'k-icon k-i-add'} />
+          </button>
+          <button
+            className={'k-button map-panel-button'} title={t('map.editing.properties')}
+            disabled={disabledProperties} onClick={() => showPropertiesWindow()}
+          >
+            <span className={'k-icon k-i-saturation'} />
+          </button>
+          <button
+            className={'k-button map-panel-button'} title={t('map.attr-table')}
+            disabled={disabledAttrTable} onClick={showAttrTableWindow}
+          >
+            <span className={'k-icon k-i-table'} />
+          </button>
+          <button
+            className={'k-button map-panel-button'} title={t('map.editing.delete')}
+            disabled={!selectedElement} onClick={showDeleteWindow}
+          >
+            <span className={'k-icon k-i-delete'} />
+          </button>
         </div>
         {isCreating
           ? <CreateElement mapState={mapState} formID={formID}/>

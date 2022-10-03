@@ -1,39 +1,39 @@
-/* --- general --- */
+/* --- General --- */
 
 html {
-    font: 12px sans-serif;
+  font: 12px sans-serif;
 }
 
 #root {
-    min-width: 100vw;
-    min-height: 100vh;
+  min-width: 100vw;
+  min-height: 100vh;
 }
 
-/* --- `SystemList` component --- */
+/* --- SystemList Component --- */
 
 #program-name {
-    font-size: 1.9rem;
-    font-weight: bold;
-    text-align: center;
+  font-size: 1.9rem;
+  font-weight: bold;
+  text-align: center;
 
-    margin: 0 1rem;
-    padding-bottom: 4px;
-    border-bottom: 1px solid black;
+  margin: 0 1rem;
+  padding-bottom: 4px;
+  border-bottom: 1px solid black;
 }
 #system-list {
-    padding: 1em;
+  padding: 1em;
 }
 #system-list .not-loaded {
-    font-size: 1.1rem;
+  font-size: 1.1rem;
 }
 #system-list h2 {
-    padding: 0.1em 0.75em;
+  padding: 0.1em 0.75em;
 }
 #system-list li {
-    font-size: 1.1rem;
+  font-size: 1.1rem;
 }
 
-/* --- `SessionLoading` component --- */
+/* --- SessionLoading Component --- */
 
 .loading-status {
     width: 100%;
@@ -50,31 +50,31 @@ html {
     font-style: italic;
 }
 
-/* --- `UnknownRoute` component ---- */
+/* --- UnknownRoute Component ---- */
 
 #unknown-route {
-    padding: 2rem;
-    font-size: 1.15rem;
+  padding: 2rem;
+  font-size: 1.15rem;
 }
 #unknown-route li {
-    margin: 0.5rem;
+  margin: 0.5rem;
 }
 #unknown-route a:hover {
-    text-decoration: none;
+  text-decoration: none;
 }
 #unknown-route a:hover span {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 #unknown-route code {
-    background: #f1f1f1;
-    border: 1px solid #e1e1e1;
-    white-space: pre;
-    border-radius: 4px;
-    padding: 0.2rem 0.5rem;
-    margin: 0 0.2rem;
+  background: #f1f1f1;
+  border: 1px solid #e1e1e1;
+  white-space: pre;
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+  margin: 0 0.2rem;
 }
 
-/* --- others --- */
+/* --- Others --- */
 
 .font-10 {
     font-size: 10px;
@@ -182,12 +182,8 @@ html {
     float: right;
 }
 
-.layerGroupPanel {
-    font-size: 12px;
-}
-
 .k-expander-header {
-    padding: 5px;
+    padding: 4px;
 }
 
 .k-expander-title {
@@ -196,7 +192,7 @@ html {
 }
 
 .k-expander-content {
-    padding: 5px;
+    padding: 4px;
 }
 
 .map-container {
@@ -220,70 +216,8 @@ html {
     padding: 2rem;
 }
 
-.mapLayerHeader-selected {
-    height: 25px;
-    background: #f8b3ae80;
-    border: 1px solid #f8b3ae;
-    cursor: pointer;
-}
-
-.mapLayerHeader {
-    height: 25px;
-    border: 1px solid #ffffff;
-    cursor: pointer;
-}
-
-.mapLayerLabel {
-    float: right;
-    margin: 5px;
-}
-
-.mapLayerExpand {
-    float: right;
-}
-
-.mapLayerParam {
-    margin: 5px;
-}
-
-.mapLayerParamLabel {
-    width: 125px;
-    float: left;
-    font-size: 10px;
-    height: 25px;
-}
-
-.mapLayerParamValue {
-    display: table-cell;
-    vertical-align: middle;
-}
-
-.mapLayerButtonRevert {
-    margin: 1px;
-}
-
-.mapLayerButtonApply {
-    margin: 1px;
-    float: right;
+.layerGroupPanel {
     font-size: 12px;
-}
-
-.mapLayerScaleEditor {
-    width: 90px;
-    height: 25px;
-    font-size: 10px;
-}
-
-.mapLayerInfinityButton {
-    margin-left: 5px;
-    padding: 0;
-    width: 20px;
-    height: 20px;
-    float: right;
-}
-
-.mapLayerBottom {
-    margin-bottom: 10px;
 }
 
 .mapEditWindow .k-window-titlebar {
@@ -527,10 +461,6 @@ html {
     height: 25px;
     margin: 5px;
     font-size: 12px;
-}
-
-.sublayerStatisticsItem {
-    margin: 2px 8px 6px 24px;
 }
 
 .textAlign-left {

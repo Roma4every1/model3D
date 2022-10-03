@@ -2,6 +2,7 @@
 
 /** Преобразование информации о системе в удобный формат.
  * Используется в компоненте `SystemList`.
+ * @return WMWSystem
  * */
 export const mapSystem = (rawSystem) => {
   const attributes = rawSystem['Attributes'].map(attr => [attr.Key, attr.Value]);

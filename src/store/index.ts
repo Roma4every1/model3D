@@ -57,3 +57,46 @@ export const rootReducer = combineReducers({
   sessionManager: sessionManagerReducer,
   windowData: windowDataReducer
 });
+
+/** Все селекторы. */
+export const selectors = {
+  config: (state: WState) => state.appState.config.data,
+  sessionID: (state: WState) => state.sessionId,
+  sessionManager: (state: WState) => state.sessionManager,
+  plugins: (state: WState) => state.layout.plugins,
+  innerPlugins: (state: WState) => state.layout.plugins.inner,
+  stripPlugins: (state: WState) => state.layout.plugins.strip,
+  layout: layoutSelector,
+  channel: channelSelector,
+  formParams: formParamsSelector,
+  formChildrenState: formChildrenStateSelector,
+  activeChild: activeChildSelector,
+  mapsState: (state: WState) => state.maps,
+  multiMapState: multiMapStateSelector,
+  mapState: mapStateSelector,
+  windows: (state: WState) => state.windowData?.windows
+}
+
+function layoutSelector(this: FormID, state: WState) {
+  return state.layout[this];
+}
+function channelSelector(this: ChannelName, state: WState) {
+  return state.channelsData[this];
+}
+function formParamsSelector(this: FormID, state: WState) {
+  return state.formParams[this];
+}
+function formChildrenStateSelector(this: FormID, state: WState) {
+  return state.childForms[this];
+}
+function activeChildSelector(this: FormID, state: WState) {
+  const formChildrenState = state.childForms[this];
+  const activeChildID = formChildrenState?.activeChildren[0];
+  return formChildrenState?.children.find(child => child.id === activeChildID);
+}
+function multiMapStateSelector(this: FormID, state: WState): MultiMapState {
+  return state.maps.multi[this];
+}
+function mapStateSelector(this: FormID, state: WState): MapState {
+  return state.maps.single[this];
+}

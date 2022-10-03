@@ -40,7 +40,7 @@ const elementsModes: {[key: string]: Modes[]} = {
 const EditItem = ({ownMode, selected, t, action}: EditItemProps) => {
   const src = mapEditIconsDict[ownMode], alt = translationDict[ownMode];
   return (
-    <button className={selected ? 'selected' : undefined} onClick={action}>
+    <button className={'map-panel-button' + (selected ? ' selected' : '')} onClick={action}>
       <img src={src} alt={alt} title={t(alt)}/>
     </button>
   );
@@ -60,5 +60,5 @@ export const EditElement = ({type, mode, formID}: EditElementProps) => {
     }
     return <EditItem key={ownMode} ownMode={ownMode} selected={ownMode === mode} t={t} action={action}/>;
   });
-  return <div className={'map-edit-element'}>{buttons}</div>;
+  return <div>{buttons}</div>;
 }

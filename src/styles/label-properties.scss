@@ -1,0 +1,58 @@
+.label-properties {
+  fieldset {
+    display: grid;
+    grid-gap: 8px;
+    margin-bottom: 7px;
+  }
+
+  .params-pair {
+    display: flex;
+    grid-gap: 2px;
+    flex-direction: column;
+    justify-content: center;
+
+    div {
+      display: flex;
+      grid-gap: 4px;
+    }
+  }
+
+  input, button, .k-numerictextbox {
+    font-size: 12px;
+    height: 22px;
+  }
+}
+
+.switch-alignment {
+  margin: 2px;
+  border-radius: 2px;
+  background-color: #eee;
+
+  text {
+    font-size: 24px;
+    text-anchor: middle;
+    alignment-baseline: middle;
+  }
+
+  .align-rects rect {
+    fill: #333;
+    stroke: none;
+  }
+
+  .rects-joiner, line {
+    fill: none;
+    stroke: #888;
+    stroke-width: 1px;
+    stroke-dasharray: 4px 4px;
+  }
+
+  .align-setters rect {
+    stroke: none;
+    fill: #f8b3ae;
+    opacity: 0.01;
+    transition: 0.2s;
+
+    &.selected { opacity: 0.6; }
+    &:hover { fill: #ff6358; opacity: 0.7; }
+  }
+}

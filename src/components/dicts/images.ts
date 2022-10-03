@@ -39,6 +39,10 @@ import rotateIcon from "../../static/images/map/rotate.png";
 import xIcon from "../../static/images/map/x.png";
 import yIcon from "../../static/images/map/y.png";
 import scaleIcon from "../../static/images/map/scale.png";
+import selectAllIcon from "../../static/images/map/select-all.png";
+import synchronizeIcon from "../../static/images/map/synchronize.png";
+import pdfIcon from "../../static/images/map/pdf.png";
+import saveMapIcon from "../../static/images/map/save-map.png";
 
 import createPolylineIcon from "../../static/images/map/create-polyline.png";
 import createPolygonIcon from "../../static/images/map/create-polygon.png";
@@ -81,10 +85,14 @@ export const formIconsDict: {[key: string]: string} = {
 /** ### Общие иконки для карт.
  *
  * Используется в компонентах `EditElement` и `MapEditPanel` (редактирование карт). */
-export const mapIconsDict: {[key: string]: string} = {
+export const mapIconsDict: Record<string, string> = {
   'x': xIcon,
   'y': yIcon,
   'scale': scaleIcon,
+  'select-all': selectAllIcon,
+  'synchronize': synchronizeIcon,
+  'pdf': pdfIcon,
+  'save': saveMapIcon,
   'accept': acceptIcon,
   'cancel': cancelIcon,
 };

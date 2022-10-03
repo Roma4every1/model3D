@@ -1,10 +1,52 @@
-type MapData = {
+/* --- Загрузка карты --- */
+
+interface MapDataRaw {
+  // ответ сервера:
+  date: string,
+  eTag: string,
+  layers: MapLayerRaw[],
+  mapCode: string,
+  mapName: string,
+  namedpoints: string,
+  objectCode: string,
+  objectName: string,
+  organization: string,
+  owner: string | null,
+  plastCode: string,
+  plastName: string,
+  indexes?: any[],
+
+  // добавляемые поля после обратоки:
+  mapErrors: any[],
+  points: any,
+}
+
+interface MapLayerRaw {
+  bounds: Bounds,
+  container: string,
+  group: string,
+  highscale: string | number,
+  lowscale: string | number,
+  name: string,
+  uid: string,
+  visible: boolean,
+}
+
+
+interface ParsedContainer {
+  layers: Record<string, any>;
+  namedpoints: MapPoint[],
+}
+
+/* --- --- */
+
+interface MapData {
   date: string,
   eTag: string,
   layers: MapLayer[],
   mapCode: string,
   mapData: any,
-  mapError: any[],
+  mapErrors: any[],
   mapName: string,
   namedPoints: string,
   objectCode: string,
@@ -20,22 +62,38 @@ type MapData = {
   y: number,
   scale: number,
   onDrawEnd: (canvas: MapCanvas, x: number, y: number, scale: number) => void,
-};
+}
 
+interface LayerTreeItem {
+  id: string,
+  text: string,
+  sublayer: MapLayer,
+  visible: boolean,
+  items?: LayerTreeItem[],
+}
+
+/** Слой карты. */
 interface MapLayer {
   bounds: Bounds,
   container: string,
   elements: MapElement[],
   elementsData: Promise<MapElement[]>,
   group: string,
-  highscale: string,
-  lowscale: string,
+  highscale: LayerHighScale,
+  lowscale: LayerLowScale,
   name: string,
   uid: string,
+  index?: any,
   version: any,
   visible?: boolean,
   modified?: boolean
 }
+
+/** Максимальный масштаб карты, при котором данный слой будет отрисовываться. */
+type LayerHighScale = number | 'INF';
+
+/** Минимальный масштаб карты, при котором данный слой будет отрисовываться. */
+type LayerLowScale = number | 'INF';
 
 /** Границы объекта (слоя, элемента) карты.
  * + `max: {x: number, y: number}`
@@ -73,16 +131,29 @@ type PointAttrTable = {
 
 type ClientPoint = {x: number, y: number};
 
+/** Масштаб карты. */
 type MapScale = number;
+/** Идентификатор карты — числовая строка. */
 type MapID = string;
+
+/** Владелец карты.
+ * @example
+ * "Common", "706\\vin"
+ * */
 type MapOwner = string;
 
 type MapDimensions = {x: number, y: number, scale: number};
 
-/** Один из возможных типов создаваемого элемента. */
-type CreatingElementType = 'polyline' | 'polygon' | 'label' | 'sign';
 
+/* --- Map Elements Types --- */
+
+/** Элемент карты. */
 type MapElement = MapPolyline | MapLabel | MapSign;
+
+/** Тип элемента карты. */
+type MapElementType = 'polyline' | 'label' | 'sign';
+
+/* -- Polyline -- */
 
 interface MapPolyline extends MapElementProto {
   type: 'polyline',
@@ -99,180 +170,22 @@ interface MapPolyline extends MapElementProto {
   style?: PolylineBorderStyle,
 }
 
-interface PolylineArc {
-  path: number[],
-  closed: boolean,
-}
-
-interface MapLabel extends MapElementProto {
-  type: 'label',
-  text?: string,
-  fontname: string,
-  fontsize: number,
-  color: string,
-  halignment: number,
-  valignment: number,
-  x: number,
-  y: number,
-  xoffset: number,
-  yoffset: number,
-  angle: number,
-}
-
-interface MapSign extends MapElementProto {
-  type: 'sign',
-  color: string,
-  fontname: string,
-  symbolcode: number,
-  img: any,
-  size: number,
-  x: number,
-  y: number,
-}
-
-interface MapElementProto {
-  bounds?: Bounds,
-  attrTable?: any,
-  transparent?: boolean,
-  edited?: boolean,
-  selected?: boolean,
-}
-
-interface SignImageProto {
-  fontName: string,
-  symbolCode: number,
-  color: string,
-}
-
-/** Отрисовщик карты. */
-interface MapsDrawer {
-  checkIndex(ret, context): any;
-  loadMap(map, context): any
-  loadProfile(): any
-  drawTrack(canvas, scale, centerx, centery, track): any
-  drawContour(canvas, map, scale, centerx, centery, contour, closeContour): any
-  getStocksWithinContour(canvas, map, scale, centerx, centery, contour, contourOptions): any
-  getStocksWithinDrenageArea(canvas, map, scale, centerx, centery, drenageArea): any
-  getDrenageAreaByWellId(wellId, map, targetLayerOptions): any
-  getDrenageAreaByPoint(canvas, map, scale, centerx, centery, point, targetLayerOptions): any
-  getFieldValueInPoint(canvas, map, scale, centerx, centery, point): any
-  drawPoint(canvas, map, scale, centerx, centery, point): any
-  highlightDrenageArea(canvas, map, scale, centerx, centery, drenageArea, styles): any
-  showMap(canvas: HTMLCanvasElement, map, data: ShowMapData = {}): any
-
-  getSignImage(fontName: string, symbolCode: number, color: string): Promise<HTMLImageElement>
-  changeOwner(owner: MapOwner): void
-
-  updateFieldPalette,
-  Scroller: any,
-}
-
-interface ShowMapData {
-  scale: MapScale,
-  centerx: number,
-  centery: number,
-  idle?: any,
-  plainDrawing?: any,
-  selected?: any,
-}
-
-/** ## Типы отрисовщика:
- * + `namedpoint`: {@link NamedPointType}
- * + `sign`: {@link SignType}
- * + `field`: {@link FieldType}
- * + `polyline`: {@link PolylineType}
- * + `label`: {@link LabelType}
- * + `pieslice`: {@link PieSliceType}
+/** ### Дуга линии.
+ * + `path`: {@link PolylineArcPath} — путь
+ * + `closed`: {@link IsArcClosed} — замкнутость
+ * @example
+ * { path: [12, 15, 42, 48, 11, 10], closed: false }
  * */
-interface MapTypes {
-  namedpoint: NamedPointType,
-  sign: SignType,
-  field: FieldType,
-  polyline: PolylineType,
-  label: LabelType,
-  pieslice: PieSliceType,
+interface PolylineArc {
+  path: PolylineArcPath,
+  closed: IsArcClosed,
 }
 
-interface NamedPointType {
-  name: 'namedpoint';
+/** Путь дуги линии. Набор пар координат точек: `[x1, y1, x2, y2, ...]`. */
+type PolylineArcPath = number[];
 
-  bound(point: ClientPoint): Bounds
-  draft(i, options): void
-}
-
-interface SignType {
-  name: 'sign';
-
-  bound(point: ClientPoint): Bounds
-  loaded(i: MapSign, provider): void
-  draft_(i: MapSign, options): void
-  draw(i: MapSign, options): any
-}
-
-interface FieldType {
-  name: 'field';
-  sourceRenderDataMatrix: any;
-  deltasPalette: any;
-  lastUsedScale: any;
-  lastUsedRenderDataMatrix: any;
-  lastUsedImageData: any;
-  calculationTimer: any;
-
-  bound(p: any): Bounds
-  loaded(i): void
-  draw(i, options): Generator
-  getFieldValueInPoint (i, point, options): any
-  getStocksWithinContour(i, options): any
-  updatePalette(i, newPalette): void
-
-  _getVisiblePartOfField(sourceRenderDataMatrix, fieldBounds, drawBounds): any
-  _getIntersectionStartPercent(fieldBounds, drawBounds, dimension): any
-  _getIntersectionEndPercent(fieldBounds, drawBounds, dimension): any
-  _parseSourceRenderData(stringData): any
-  _getRgbPaletteFromHex(hexPalette): object
-  _getDeltasPalette(palette): any
-  _interpolateArray(data, fitCount): any
-  _linearInterpolate(before: number, after: number, atPoint: number): number
-  _getPaletteDeltaForValue(value, deltasPalette): any
-  _getRenderArrayFromData(renderData, sizex, sizey, deltasPalette): any[]
-  _draw(i, options): void
-}
-
-interface PolylineType {
-  name: 'polyline';
-  borderStyles: string[];
-  styleShapes: {[key: string]: number[]};
-
-  getPattern(name: string, color: string, backColor: string): Promise<any>
-  bkcolor(i: MapPolyline): string
-  bound(p: any): Bounds
-  loaded(i: MapPolyline, provider): any
-  points(i: MapPolyline, options): void
-  path(i: MapPolyline, options): void
-  decorationPath(i: Partial<MapPolyline>, options, lineConfig): void
-  draft(i: MapPolyline, options): void
-  draw(i: MapPolyline, options): any
-}
-
-interface LabelType {
-  name: 'label';
-  alHorLeft: number;
-  alHorCenter: number;
-  alHorRight: number;
-  alVerBottom: number;
-  alVerCenter: number;
-  alVerTop: number;
-
-  bound(point: ClientPoint): Bounds
-  draw(i: MapLabel, options): Generator
-}
-
-interface PieSliceType {
-  name: 'pieslice';
-
-  bound(point: ClientPoint): Bounds
-  draw(i, options): Generator
-}
+/** Является ли дуга линии замкнутой. */
+type IsArcClosed = boolean;
 
 interface PolylineBorderStyle {
   guid: {_value: string},
@@ -308,3 +221,111 @@ interface ShapeLine {
   y1: {_value: number},
   y2: {_value: number},
 }
+
+/* -- Label -- */
+
+/** ## Подпись.
+ * + `x, y` — координаты
+ * + `xoffset`: {@link MapLabelOffset} — смещение по x
+ * + `yoffset`: {@link MapLabelOffset} — смещение по x
+ * + `halignment`: {@link MapLabelAlignment} — выравнивание по горизонтали
+ * + `valignment`: {@link MapLabelAlignment} — выранивание по вертикали
+ * + `text` — текст подписи
+ * + `color` — цвет текста
+ * + `fontname` — название шрифта
+ * + `fontsize` — размер шрифта
+ * + `angle`: {@link MapLabelAngle} — угол поворота подписи
+ * @example
+ * { type: "label", text: "222", color: "black", angle: 0, ... }
+ * @see MapElement
+ * @see MapElementProto
+ * */
+interface MapLabel extends MapElementProto {
+  type: 'label',
+  x: number,
+  y: number,
+  xoffset: MapLabelOffset,
+  yoffset: MapLabelOffset,
+  halignment: MapLabelAlignment,
+  valignment: MapLabelAlignment,
+  text: string,
+  color: string,
+  fontname: string,
+  fontsize: number,
+  angle: MapLabelAngle,
+}
+
+/** ### Выравнивание подписи.
+ * + `0` — горизонталь: `left`, вертикаль: `bottom`
+ * + `1` — горизонталь: `center`, вертикаль: `center`
+ * + `2` — горизонталь: `right`, вертикаль: `top`
+ * @example
+ * { ..., hAlignment: 1, vAlignment: 1 }
+ * */
+type MapLabelAlignment = 0 | 1 | 2;
+
+/** Смещение подписи относительно "якоря". */
+type MapLabelOffset = number;
+
+/** Угол поворота подписи в _градусах_.
+ * Нулевой угол соответствует подписи без наклона.
+ * @example
+ * 180 // перевернутая подпись
+ * */
+type MapLabelAngle = number;
+
+/* -- Sign -- */
+
+/** ## Точечный объект.
+ * + `x, y` — координаты
+ * + `size` — размер
+ * + `color` — цвет заполнения
+ * + `fontname` — название шрифта
+ * + `symbolcode` — ID паттерна
+ * + `img`: {@link HTMLImageElement} — паттерн
+ * @see MapElement
+ * @see MapElementProto
+ * */
+interface MapSign extends MapElementProto {
+  type: 'sign',
+  x: number,
+  y: number,
+  size: number,
+  color: string,
+  fontname: string,
+  symbolcode: number,
+  img: HTMLImageElement,
+}
+
+interface SignImageProto {
+  fontName: string,
+  symbolCode: number,
+  color: string,
+}
+
+/* -- Map Element Prototype -- */
+
+/** Собрание полей, которые может содержать любой элемент карты.
+ * + `bounds?`: {@link Bounds} — границы
+ * + `attrTable?` — "аттрибутивная таблица"
+ * + `transparent?`: {@link IsMapElementTransparent}
+ * + `selected?`: {@link IsMapElementSelected}
+ * + `edited?`: {@link IsMapElementEdited}
+ * @see MapElement
+ * */
+interface MapElementProto {
+  bounds?: Bounds,
+  attrTable?: any,
+  transparent?: IsMapElementTransparent,
+  selected?: IsMapElementSelected,
+  edited?: IsMapElementEdited,
+}
+
+/** Является ли элемент или его часть прозрачной. */
+type IsMapElementTransparent = boolean;
+
+/** Является ли элемент карты редактируемым; влияет на отрисовку. */
+type IsMapElementSelected = boolean;
+
+/** Является ли элемент карты редактируемым; влияет на отрисовку. */
+type IsMapElementEdited = boolean;

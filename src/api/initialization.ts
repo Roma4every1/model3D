@@ -31,7 +31,7 @@ export const applyRootLocation = (config: ClientConfiguration): void => {
     location = location.slice(0, location.indexOf('systems/'))
   }
   if (!location.endsWith('/')) location += '/';
-  config['root'] = location;
+  config.root = location;
 }
 
 /** Универсальная функция для запросов к серверу. */

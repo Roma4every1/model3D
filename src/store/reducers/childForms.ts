@@ -1,54 +1,50 @@
 ﻿/* --- actions types --- */
 
 export enum ChildFormsActions {
-    SET = 'childForms/set',
-    SET_OPENED = 'childForms/setOpened',
-    SET_ACTIVE = 'childForms/setActive',
+  SET = 'childForms/set',
+  SET_OPENED = 'childForms/setOpened',
+  SET_ACTIVE = 'childForms/setActive',
 }
 
 /* --- actions interfaces --- */
 
 interface ActionSet {
   type: ChildFormsActions.SET,
-  formId: FormID,
-  value: any,
+  formID: FormID,
+  payload: FormChildrenState,
 }
 interface ActionSetOpened {
   type: ChildFormsActions.SET_OPENED,
-  formId: FormID,
-  values: any,
+  formID: FormID,
+  payload: OpenedChildrenList,
 }
 interface ActionSetActive {
   type: ChildFormsActions.SET_ACTIVE,
-  formId: FormID,
-  values: any,
+  formID: FormID,
+  payload: ActiveChildrenList,
 }
 
 export type ChildFormsAction = ActionSet | ActionSetOpened | ActionSetActive;
 
 /* --- reducer --- */
 
-const initChildForms: ChildForms = {};
+const init: ChildForms = {};
 
-export const childFormsReducer = (state: ChildForms = initChildForms, action: ChildFormsAction): ChildForms => {
+export const childFormsReducer = (state: ChildForms = init, action: ChildFormsAction): ChildForms => {
   switch (action.type) {
 
     case ChildFormsActions.SET: {
-      return {...state, [action.formId]: action.value};
+      return {...state, [action.formID]: action.payload};
     }
 
     case ChildFormsActions.SET_OPENED: {
-      return {
-        ...state,
-        [action.formId]: {...state[action.formId], openedChildren: action.values},
-      };
+      state[action.formID] = {...state[action.formID], openedChildren: action.payload};
+      return {...state};
     }
 
     case ChildFormsActions.SET_ACTIVE: {
-      return {
-        ...state,
-        [action.formId]: {...state[action.formId], activeChildren: action.values},
-      };
+      state[action.formID] = {...state[action.formID], activeChildren: action.payload};
+      return {...state};
     }
 
     default: return state;

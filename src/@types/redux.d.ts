@@ -36,7 +36,7 @@ type LoadingState<Type> = {
 };
 
 /** Клиентская конфигурация WMR. */
-type ClientConfiguration = {webServicesURL: string};
+type ClientConfiguration = {webServicesURL: string, root?: string};
 
 /** Список информационных систем. */
 type SystemList = WMWSystem[];
@@ -78,25 +78,49 @@ type IsChannelLoading = boolean;
 /* --- state.childForms --- */
 
 /** Дочерние формы. */
-type ChildForms = {[key: FormID]: any};
+type ChildForms = FormDict<FormChildrenState>;
 
+/** ### Состояние дочерних форм.
+ * + `id`: {@link FormID} — ID родителя
+ * + `children`: {@link FormChildren} — данные дочерних форм
+ * + `openedChildren`: {@link OpenedChildrenList} — открытые формы
+ * + `activeChildren`: {@link ActiveChildrenList} — активные формы
+ * @example
+ * {
+ *   id: "1234", children: [{...}, {...}, {...}],
+ *   openedChildren: ["1234,5678"], activeChildren: ["1234,5678"],
+ * }
+ * */
+interface FormChildrenState {
+  id: FormID,
+  children: FormChildren,
+  openedChildren: OpenedChildrenList,
+  activeChildren: ActiveChildrenList,
+}
+
+/** Список данных о дочерних формах. */
+type FormChildren = FormDataWMR[];
+/** Список открытых дочерних форм. */
+type OpenedChildrenList = FormID[];
+/** Список активных дочерних форм. */
+type ActiveChildrenList = FormID[];
 
 /* --- state.formParams --- */
 
 /** Параметры форм. */
-type FormParams = {[key: FormID]: any};
+type FormParams = FormDict<FormParameter[]>;
 
 
 /* --- state.formRefs --- */
 
 /** Ссылки на формы. */
-type FormRefs = {[key: FormID]: any};
+type FormRefs = FormDict;
 
 
 /* --- state.formSettings --- */
 
 /** Настройки форм. */
-type FormSettings = {[key: FormID]: any};
+type FormSettings = FormDict;
 
 
 /* --- state.layout --- */
@@ -118,7 +142,16 @@ type FormsLayout = {
 /* --- state.maps --- */
 
 /** Хранилище состояний карт. */
-type MapsState = {[key: FormID]: MapState};
+type MapsState = { multi: FormDict<MultiMapState>, single: FormDict<MapState> };
+
+/** ## Состояние мультикарты.
+ * + `sync: boolean` — синхронизация СК
+ * + `children`: {@link FormID}[] — карты
+ * */
+interface MultiMapState {
+  sync: boolean,
+  children: FormID[],
+}
 
 /** ## Состояние карты.
  * + `mapData`: {@link MapData} — данные для отрисовки
@@ -149,10 +182,12 @@ interface MapState {
   oldData: {x: number | null, y: number | null, arc: PolylineArc | null, ange: number | null}
   isModified: boolean,
   cursor: string,
+  childOf: FormID,
+  scroller: { setList(list: MapCanvas[]) } | null,
   utils: MapUtils,
 }
 
-type MapCanvas = HTMLCanvasElement & {selectingMode: boolean, blocked: boolean};
+type MapCanvas = HTMLCanvasElement & {selectingMode: boolean, blocked: boolean, events: any};
 
 interface MapUtils {
   updateCanvas(cs?: {centerX: number, centerY: number, scale: MapScale}, context?: any): void,

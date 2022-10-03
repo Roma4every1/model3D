@@ -77,11 +77,8 @@
     "labels": "Подписи",
     "legend": "Легенда",
     "lines": "Линии",
-    "maxscale": "Максимальный масштаб:",
-    "minscale": "Минимальный масштаб:",
     "not-found": "Карта для указанных параметров не найдена",
     "not-loaded": "Не удалось загрузить карту",
-    "objectsOnSublayer": "Объекты на подслое:",
     "other": "Другие",
     "pick": "Указать",
     "points": "Точки",
@@ -95,23 +92,28 @@
     "style": "Стиль",
     "sublayer": "Подслой",
     "sublayers": "Подслои",
-    "sublayerStatistics": "{{type}}: {{count}}",
     "template": "Шаблон",
     "transparency": "Прозрачность",
+    "layer-stat-header": "Объекты на подслое:",
+
+    "layers-tree": {
+      "min-scale": "Мин. масштаб:",
+      "max-scale": "Макс. масштаб:"
+    },
 
     "dimensions": {
-      "header": "Положение:",
+      "header": "Навигация",
       "x": "Центр по X",
       "y": "Центр по Y",
       "scale": "Масштаб"
     },
     "actions": {
-      "header": "Действия:",
+      "header": "Экспорт",
       "show-all": "Показать всё",
-      "export": "Экспорт в PDF"
+      "export": "Экспорт карты в PDF"
     },
     "selecting": {
-      "header": "Выделение:",
+      "header": "Активный объект",
       "button-hint": "Активен ли режим выделения",
       "all": "Всё",
       "all-hint": "Выделять все типы элементов",

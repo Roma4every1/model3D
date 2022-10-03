@@ -1,5 +1,5 @@
 import { chunk } from "lodash";
-import { types } from "../../maps/src/mapDrawer";
+import { types } from "../../drawer/mapDrawer";
 import { PIXEL_PER_METER } from "../../map-utils";
 
 

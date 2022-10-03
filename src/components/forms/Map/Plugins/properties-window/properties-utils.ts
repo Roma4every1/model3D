@@ -7,6 +7,13 @@ import { ColorPickerPaletteSettings } from "@progress/kendo-react-inputs";
 export interface InitLabelState {
   text: string,
   color: string,
+  fontSize: number,
+  hAlignment: MapLabelAlignment,
+  vAlignment: MapLabelAlignment,
+  xOffset: number,
+  yOffset: number,
+  angle: number,
+  transparent: boolean,
 }
 
 export interface InitPolylineState {
@@ -40,13 +47,25 @@ export const templatesData: string[] = ['', ...gridTemplates, ...litTemplates, .
 
 /** Создание начального состояния подписи. */
 export const createLabelInit = (label: MapLabel): InitLabelState => {
-  return {text: label.text, color: label.color};
+  return {
+    text: label.text, color: label.color, fontSize: label.fontsize,
+    xOffset: label.xoffset, yOffset: label.yoffset,
+    hAlignment: label.halignment, vAlignment: label.valignment,
+    angle: label.angle, transparent: label.transparent,
+  };
 };
 
 /** Откат изменённой подписи в начальное состояние. */
 export const rollbackLabel = (label: MapLabel, init: InitLabelState): void => {
   label.text = init.text;
   label.color = init.color;
+  label.fontsize = init.fontSize;
+  label.xoffset = init.xOffset;
+  label.yoffset = init.yOffset;
+  label.halignment = init.hAlignment;
+  label.valignment = init.vAlignment;
+  label.angle = init.angle;
+  label.transparent = init.transparent;
 };
 
 /* --- Polyline Properties --- */

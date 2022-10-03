@@ -1,34 +1,31 @@
-﻿import React, { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
-import { useSelector, useDispatch } from "react-redux";
+﻿import React, { useCallback, useEffect, useLayoutEffect, useRef, useState} from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Loader } from "@progress/kendo-react-indicators";
-import { getMapsDrawer } from "./Map/map-loader.js";
-import { compareArrays, getParentFormId, tableRowToString } from "../../utils";
-import { getFullViewport } from "./Map/map-utils";
-import { actions } from "../../store";
+import { Scroller } from "./Map/drawer/scroller";
+import { createMapsDrawer } from "./Map/drawer";
+import { getParentFormId, tableRowToString } from "../../utils";
+import { getFullViewport, getMultiMapChildrenCanvases } from "./Map/map-utils";
 import { fetchMapData } from "../../store/thunks";
+import { actions, selectors } from "../../store";
 
-
-const mapToAppState = (state) => {
-  //console.log(state)
-  return [state.appState.config.data, state.appState.sessionID.data, state.sessionManager];
-};
-
-// Система подготовки (PREPARE_SYSTEM): Баяндыское -> D3fm -> 28 -> Карта изобар
 
 export default function Map({formData: {id: formID}, data}) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const parentForm = getParentFormId(formID);
 
-  const [{root, webServicesURL}, sessionID, sessionManager] = useSelector(mapToAppState, compareArrays);
-  const activeChannel = useSelector(state => state.channelsData[data.activeChannels[0]]);
-  //const ownersChannel = useSelector(state => state.channelsData['LocalMapsOwners']);
-  //const formParams = useSelector(state => state.formParams[getParentFormId(formID)]);
+  const sessionID = useSelector(selectors.sessionID);
+  const sessionManager = useSelector(selectors.sessionManager);
+
+  const activeChannel = useSelector(selectors.channel.bind(data.activeChannels[0]));
+  const mapsState = useSelector(selectors.mapsState);
   /** @type MapState */
-  const mapState = useSelector(state => state.maps[formID]);
+  const mapState = useSelector(selectors.mapState.bind(formID));
 
   const canvasRef = useRef(null);
   const mapDrawnData = useRef(null);
+  const scroller = useRef(null);
   const [isMapExist, setIsMapExist] = useState(false);
 
   const canvas = mapState?.canvas;
@@ -37,8 +34,14 @@ export default function Map({formData: {id: formID}, data}) {
   const utils = mapState?.utils;
 
   const getDrawer = useCallback((owner) => {
-    return getMapsDrawer(sessionID, formID, owner, sessionManager, webServicesURL, root);
-  }, [formID, sessionManager, sessionID, webServicesURL, root]);
+    return createMapsDrawer(sessionManager, sessionID, formID, owner);
+  }, [formID, sessionManager, sessionID]);
+
+  // обновление списка связанных карт
+  useEffect(() => {
+    const canvases = getMultiMapChildrenCanvases(mapsState.multi, mapsState.single, formID);
+    if (scroller.current) scroller.current.setList(canvases);
+  }, [mapsState, mapState, formID]);
 
   // добавление состояния в хранилище состояний карт
   useEffect(() => {
@@ -49,41 +52,18 @@ export default function Map({formData: {id: formID}, data}) {
     if (!mapState?.drawer || !canvas) return;
     if (mapDrawnData.current) mapDrawnData.current.emit('detach');
     const data = {centerx: x, centery: y, scale, selected};
-    const drawnData = mapState.drawer.showMap(canvas, map, data)
-      .on('update.begin', () => {
-        const context = {
-          center: {x: drawnData.centerx, y: drawnData.centery},
-          scale: drawnData.scale,
-        };
-        mapState.drawer.checkIndex(map, context);
-      });
-    mapDrawnData.current = drawnData;
+    mapDrawnData.current = mapState.drawer.showMap(canvas, map, data);
   }, [mapState?.drawer]);
 
   // проверка параметров формы
   useEffect(() => {
     if (!mapState) return;
-
-    // if (ownersChannel?.data?.Rows && formParams?.length > 0) {
-    //   const rows = ownersChannel.data.Rows;
-    //   const user = formParams.find(param => param.id === 'currentUser')?.value;
-    //
-    //   if (user && rows.length === 1) {
-    //     const newRow = {Cells: [user, 'Пользовательская', 'Пользовательская'], ID: null};
-    //     rows.push(newRow);
-    //   }
-    //   if (user && rows.length === 2) {
-    //     if (rows[1].Cells[1] === 'Пользовательская' && rows[1].Cells[0] !== user)
-    //       rows[1].Cells[0] = user;
-    //   }
-    // }
-
-    if (!(activeChannel?.data?.Rows && activeChannel.data.Rows.length > 0))
+    if (!(activeChannel?.data?.Rows && activeChannel.data['Rows'].length > 0))
       return setIsMapExist(false);
 
     setIsMapExist(true);
 
-    const mapInfo = activeChannel.data.Rows[0];
+    const mapInfo = activeChannel.data['Rows'][0];
     const owner = mapInfo.Cells[12];
     const mapID = String(mapInfo.Cells[0]);
 
@@ -92,7 +72,7 @@ export default function Map({formData: {id: formID}, data}) {
 
     if (changeOwner || changeMapID || activeChannel.currentRowObjectName) {
       sessionManager.paramsManager.updateParamValue(
-        getParentFormId(formID), activeChannel.currentRowObjectName,
+        parentForm, activeChannel.currentRowObjectName,
         tableRowToString(activeChannel, mapInfo)?.value, true
       );
     }
@@ -104,7 +84,7 @@ export default function Map({formData: {id: formID}, data}) {
       dispatch(actions.setMapField(formID, 'mapID', mapID));
       dispatch(fetchMapData(formID, mapID, mapState.drawer.loadMap));
     }
-  }, [formID, mapState, dispatch, activeChannel, getDrawer, sessionManager, draw]);
+  }, [mapState, activeChannel, getDrawer, sessionManager, draw, sessionID, formID, parentForm, dispatch]);
 
   const updateCanvas = useCallback((newCS, context) => {
     if (!mapData) return;
@@ -126,9 +106,14 @@ export default function Map({formData: {id: formID}, data}) {
 
   // закрепление ссылки на холст
   useLayoutEffect(() => {
-    if (canvasRef.current && canvasRef.current !== canvas && mapState?.drawer) {
+    if (canvasRef.current && canvasRef.current !== canvas) {
       dispatch(actions.setMapField(formID, 'canvas', canvasRef.current));
-      new mapState.drawer.Scroller(canvasRef.current);
+
+      scroller.current
+        ? scroller.current.setCanvas(canvasRef.current)
+        : scroller.current = new Scroller(canvasRef.current);
+      if (!mapState.scroller) dispatch(actions.setMapField(formID, 'scroller', scroller.current));
+
       updateCanvas(getFullViewport(mapData.layers, canvasRef.current), canvasRef.current);
     }
   });

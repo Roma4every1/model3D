@@ -18,6 +18,11 @@ declare module '*.smb' {
   export default content;
 }
 
+declare module '*.def' {
+  const content: string;
+  export default content;
+}
+
 declare module '*.json' {
   const content: string;
   export default content;

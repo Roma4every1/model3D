@@ -1,17 +1,35 @@
+/** Словарь типа `{ [formID]: data }`. */
+type FormDict<Type = any> = {[key: FormID]: Type};
+
+/** Данные формы.
+ * + `id`: {@link FormID} — идентификатор
+ * + `type`: {@link FormType} — тип
+ * + `displayName: string` — заголовок
+ * + `displayNameString: string` — паттерн заголовка
+ * @example
+ * { id: "...", type: "map", displayName: "Карта" }
+ * */
+interface FormDataWMR {
+  id: FormID,
+  type: FormType,
+  displayName: string,
+  displayNameString?: string,
+}
+
 /** Параметр формы. */
 interface FormParameter {
   id: ParameterID,
   type: ParameterType,
   value: any,
-  formId: FormID,
-  editorType: ParameterEditorType,
-  editorDisplayOrder: ParameterOrder,
-  externalChannelName: ChannelName,
-  displayName: string,
-  dependsOn: ParameterDepends,
-  canBeNull: boolean,
-  showNullValue: boolean,
-  nullDisplayValue: any,
+  formId?: FormID,
+  editorType?: ParameterEditorType,
+  editorDisplayOrder?: ParameterOrder,
+  externalChannelName?: ChannelName,
+  displayName?: string,
+  dependsOn?: ParameterDepends,
+  canBeNull?: boolean,
+  showNullValue?: boolean,
+  nullDisplayValue?: any,
 }
 
 /** Идентификатор формы. */
@@ -48,8 +66,6 @@ type ParameterDepends = ParameterID[];
 /** Тип формы. */
 type FormType = 'carat' | 'chart' | 'dataSet' | 'dock' | 'files' | 'filesList' | 'grid' | 'image' | 'map' |
   'model3D' | 'profile' | 'screenshot' | 'slide' | 'spreadsheet' | 'spreadsheetUnite' | 'transferForm';
-
-type FormDict<Type> = {[key: FormID]: Type};
 
 /* --- Fetch State --- */
 
@@ -99,3 +115,44 @@ type IsLoading = boolean;
  * @see FetchState
  * */
 type IsLoadedSuccessfully = boolean | undefined;
+
+/* --- Custom Request --- */
+
+/** ## Well Manager API Request.
+ *
+ * Кастомный объект запроса.
+ * + `method?`: {@link ReqMethod} — метод запроса
+ * + `path`: {@link ReqPath} — относительный путь
+ * + `query?`: {@link ReqQuery} — параметры
+ * + `body?`: {@link ReqBody} — тело запроса
+ * + `mapper?`: {@link ReqMapper} — тип обработчика
+ * */
+interface WRequest {
+  method?: ReqMethod,
+  path: ReqPath,
+  query?: ReqQuery,
+  body?: ReqBody,
+  mapper?: ReqMapper
+}
+
+/** Метод HTTP запроса. */
+type ReqMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+
+/** Относительный путь HTTP запроса. */
+type ReqPath = string;
+
+/** Параметры поиска HTTP запроса.
+ * @example
+ * { sessionID: "...", formID: "..." }
+ * */
+type ReqQuery = {[key: string]: string};
+
+/** Тело HTTP запроса. */
+type ReqBody = string;
+
+/** Тип преобразователя ответа.
+ * @example
+ * "json" — .then(res => res.json())
+ * "text" — .then(res => res.text())
+ * */
+type ReqMapper = 'json' | 'text';

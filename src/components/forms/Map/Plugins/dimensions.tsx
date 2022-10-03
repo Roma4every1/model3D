@@ -2,23 +2,26 @@ import { NumericTextBoxChangeEvent } from "@progress/kendo-react-inputs";
 import { TFunction } from "react-i18next";
 import { useState, useEffect, useCallback } from "react";
 import { useDispatch } from "react-redux";
-import { MapPanelHeader } from "./map-panel-header";
 import IntegerTextEditor from "../../../editors/IntegerTextEditor";
 
 import { actions } from "../../../../store";
 import { mapIconsDict } from "../../../dicts/images";
-import { getPointToMap } from "../map-utils";
+import { getParentFormId } from "../../../../utils";
+import { getFullViewport, getPointToMap } from "../map-utils";
 
 
 interface DimensionsProps {
   mapState: MapState,
+  sync: boolean | undefined,
   formID: FormID,
   t: TFunction,
 }
 
-export const Dimensions = ({mapState, formID, t}: DimensionsProps) => {
+
+export const Dimensions = ({mapState, sync, formID, t}: DimensionsProps) => {
   const dispatch = useDispatch();
-  const { mapData, utils } = mapState
+  const { mapData, utils, canvas } = mapState;
+  const layers = mapData?.layers;
 
   const [x, setX] = useState(null);
   const [y, setY] = useState(null);
@@ -36,6 +39,18 @@ export const Dimensions = ({mapState, formID, t}: DimensionsProps) => {
   useEffect(() => {
     dispatch(actions.setOnDrawEnd(formID, onDrawEnd));
   }, [onDrawEnd, dispatch, formID]);
+
+  /** Центрировать карту. */
+  const toFullViewPort = useCallback(() => {
+    if (!canvas || !layers) return;
+    canvas.events.emit('sync', getFullViewport(layers, canvas));
+  }, [canvas, layers]);
+
+  /** Включить или отключить синхронизацию систем координат карт. */
+  const toggleSync = useCallback(() => {
+    dispatch(actions.setMultiMapSync(getParentFormId(formID), !sync));
+    canvas.events.emit('sync', {centerX: mapData.x, centerY: mapData.y, scale: mapData.scale});
+  }, [sync, canvas, mapData, dispatch, formID]);
 
   const updateCanvas = useCallback((x, y, scale) => {
     if (utils) utils.updateCanvas({centerX: x, centerY: y, scale});
@@ -58,19 +73,31 @@ export const Dimensions = ({mapState, formID, t}: DimensionsProps) => {
 
   return (
     <section className={'map-dimensions'}>
-      <MapPanelHeader text={t('map.dimensions.header')}/>
+      <div className={'map-panel-header'}>{t('map.dimensions.header')}</div>
       <div className={'map-panel-main'}>
-        <div>
-          <span title={t('map.dimensions.x')}><img src={mapIconsDict['x']} alt={'x'}/> x:</span>
-          <IntegerTextEditor id={'xDimensionEditor'} value={x} selectionChanged={xChanged} />
+        <div className={'map-dimensions-viewer'}>
+          <div>
+            <span title={t('map.dimensions.x')}><img src={mapIconsDict['x']} alt={'x'}/> x:</span>
+            <IntegerTextEditor id={'xDimensionEditor'} value={x} selectionChanged={xChanged} />
+          </div>
+          <div>
+            <span title={t('map.dimensions.y')}><img src={mapIconsDict['y']} alt={'y'}/> y:</span>
+            <IntegerTextEditor id={'yDimensionEditor'} value={y} selectionChanged={yChanged} />
+          </div>
+          <div>
+            <span title={t('map.dimensions.scale')}><img src={mapIconsDict['scale']} alt={'scale'}/> 1/</span>
+            <IntegerTextEditor id={'scaleDimensionEditor'} value={scale} selectionChanged={scaleChanged} />
+          </div>
         </div>
-        <div>
-          <span title={t('map.dimensions.y')}><img src={mapIconsDict['y']} alt={'y'}/> y:</span>
-          <IntegerTextEditor id={'yDimensionEditor'} value={y} selectionChanged={yChanged} />
-        </div>
-        <div>
-          <span title={t('map.dimensions.scale')}><img src={mapIconsDict['scale']} alt={'scale'}/> 1/</span>
-          <IntegerTextEditor id={'scaleDimensionEditor'} value={scale} selectionChanged={scaleChanged} />
+        <div className={'map-actions'}>
+          <button className={'map-action'} onClick={toFullViewPort} disabled={canvas?.blocked === true}>
+            <div><img src={mapIconsDict['select-all']} alt={'select-all'}/></div>
+            <div>{t('map.actions.show-all')}</div>
+          </button>
+          <button className={'map-action' + (sync ? ' selected' : '')} onClick={toggleSync} disabled={sync === undefined}>
+            <div><img src={mapIconsDict['synchronize']} alt={'synchronize'}/></div>
+            <div>{'Синхронизация карт по центру'}</div>
+          </button>
         </div>
       </div>
     </section>

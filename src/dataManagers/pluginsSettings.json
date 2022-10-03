@@ -1,11 +1,4 @@
 {
-  "Chart": {
-    "seriesSettings": {
-      "type": "strip",
-      "component": "SeriesSettings",
-      "label": "Настройки графика"
-    }
-  },
   "Dock": {
     "menu": {
       "type": "top",
@@ -31,7 +24,7 @@
     },
     "downloadFiles": {
       "type": "right",
-      "component": "DownloadFiles/DownloadFiles",
+      "component": "DownloadFiles",
       "label": "Отчёты"
     },
     "dateChanging": {
@@ -67,6 +60,11 @@
       "component": "SelectAllRec",
       "label": "Выделить все"
     },
+    "statistics": {
+      "type": "strip",
+      "component": "Statistics",
+      "label": "Статистика"
+    },
     "columnSettings": {
       "type": "strip",
       "component": "ColumnSettings",
@@ -76,11 +74,6 @@
       "type": "strip",
       "component": "ColumnsVisibility",
       "label": "Видимость колонок"
-    },
-    "statistics": {
-      "type": "strip",
-      "component": "Statistics",
-      "label": "Статистика"
     },
     "columnHeaderSetter": {
       "type": "inner",
@@ -101,8 +94,15 @@
     },
     "sublayersTree": {
       "type": "right",
-      "component": "SublayersTree/SublayersTree",
-      "label": "Дерево подслоёв"
+      "component": "LayersTree",
+      "label": "Слои карты"
+    }
+  },
+  "Chart": {
+    "seriesSettings": {
+      "type": "strip",
+      "component": "SeriesSettings",
+      "label": "Настройки графика"
     }
   }
 }

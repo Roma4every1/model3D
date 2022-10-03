@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { sum } from "lodash";
 import { capitalizeFirstLetter } from "../../utils";
-import { actions } from "../../store";
+import { actions, selectors } from "../../store";
 import { pluginsDict } from "../dicts/plugins";
 
 import translator from "../common/LayoutTranslator";
@@ -20,7 +20,7 @@ const initLeftBorderSize = 280;
 const initRightBorderSize = 300;
 
 const topTabs = ['menu', 'sqlPrograms', 'formStrip'];
-const topTabsHeight = {'menu': 40, 'sqlPrograms': 40, 'formStrip': 92};
+const topTabsHeight = {'menu': 40, 'sqlPrograms': 40, 'formStrip': 90};
 
 const correctElement = (layout, plugins, formData) => {
   if (layout.type === 'tab') {
@@ -36,22 +36,19 @@ const correctElement = (layout, plugins, formData) => {
   }
 };
 
-const pluginsSelector = (state) => state.layout.plugins;
-const sessionIDSelector = (state) => state.sessionId;
-const sessionManagerSelector = (state) => state.sessionManager;
 
 function Dock({formData}, ref) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const plugins = useSelector(pluginsSelector);
-  const sessionID = useSelector(sessionIDSelector);
-  const sessionManager = useSelector(sessionManagerSelector);
+  const plugins = useSelector(selectors.plugins);
+  const sessionID = useSelector(selectors.sessionID);
+  const sessionManager = useSelector(selectors.sessionManager);
 
-  const formLayout = useSelector((state) => state.layout[formData.id]);
-  const activeChildId = useSelector((state) => state.childForms[formData.id]?.openedChildren[0]);
+  const formLayout = useSelector(selectors.layout.bind(formData.id));
+  const activeChildId = useSelector((state) => state.childForms[formData.id]?.activeChildren[0]);
   const activeSubChild = useSelector((state) => state.childForms[activeChildId]?.children.find(p => p.id === (state.childForms[activeChildId].activeChildren[0])));
-  const parametersJSON = useSelector((state) => state.formParams[activeChildId]);
+  const formParams = useSelector(selectors.formParams.bind(activeChildId));
 
   useEffect(() => {
     sessionManager.getChildForms(formData.id);
@@ -65,8 +62,8 @@ function Dock({formData}, ref) {
   const correctLeftBorderSettings = useCallback((leftSettings) => {
     plugins.left.forEach(plugin => {
       if (plugin.condition === 'presentationParamsNotEmpty') {
-        if (parametersJSON) {
-          if (parametersJSON.filter(parameterJSON => parameterJSON.editorType).length === 0) {
+        if (formParams) {
+          if (formParams.filter(parameterJSON => parameterJSON.editorType).length === 0) {
             const tabToDelete = leftSettings.layout.children.findIndex(ch => ch.children.some(tabch => tabch?.component?.id === plugin.children[0].component.id));
             if (tabToDelete >= 0) {
               leftSettings.layout.children.splice(tabToDelete, 1);
@@ -92,7 +89,7 @@ function Dock({formData}, ref) {
       }
     });
     return leftSettings;
-  }, [parametersJSON, formData, plugins]);
+  }, [formParams, formData, plugins]);
 
   const leftLayoutModelReducer = useCallback((state, action) => {
     switch (action.type) {
@@ -111,7 +108,7 @@ function Dock({formData}, ref) {
 
   useEffect(() => {
     dispatchLeftBorderApplySettings({type: 'correct'});
-  }, [parametersJSON])
+  }, [formParams])
 
   const leftBorderModel = FlexLayout.Model.fromJson(leftBorderApplySettings);
 

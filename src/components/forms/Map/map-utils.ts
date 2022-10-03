@@ -1,4 +1,5 @@
 import { chunk, min, max } from "lodash";
+import { getParentFormId } from "../../../utils";
 
 
 /** Настройки для метода `addEventListener`. */
@@ -6,6 +7,23 @@ export const listenerOptions = {passive: true};
 
 /** Количество пикселей в метре. В браузере `1cm = 96px / 2.54`. */
 export const PIXEL_PER_METER: number = 100 * 96 / 2.54;
+
+/** Возвращает список холстов привязанных карт в рамках одной мультикарты. */
+export const getMultiMapChildrenCanvases = (multi: FormDict<MultiMapState>, single: FormDict<MapState>, formID: FormID) => {
+  const childrenUtils: MapCanvas[] = [];
+  const parentFormID: FormID = getParentFormId(formID);
+
+  const multiMapState = multi[parentFormID];
+  if (!multiMapState || !multiMapState.sync || multiMapState.children.length < 1)
+    return childrenUtils;
+
+  for (const childFormID of multiMapState.children) {
+    if (childFormID === formID) continue;
+    const mapState = single[childFormID];
+    if (mapState?.canvas?.events) childrenUtils.push(mapState.canvas);
+  }
+  return childrenUtils;
+}
 
 /** Возвращает точку с координатами клика мыши. */
 export const clientPoint = (event: MouseEvent): ClientPoint => {
