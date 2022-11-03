@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { mapTree, extendDataItem } from "@progress/kendo-react-common";
 import { DropDownTree } from "@progress/kendo-react-dropdowns";
 import { filterBy } from "@progress/kendo-react-data-tools";
-var utils = require("../../utils");
+var utils = require("../../utils/utils");
 const selectField = "selected";
 const expandField = "expanded";
 const dataItemKey = "id";

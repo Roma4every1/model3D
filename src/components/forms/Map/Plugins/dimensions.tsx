@@ -6,7 +6,7 @@ import IntegerTextEditor from "../../../editors/IntegerTextEditor";
 
 import { actions } from "../../../../store";
 import { mapIconsDict } from "../../../dicts/images";
-import { getParentFormId } from "../../../../utils";
+import { getParentFormId } from "../../../../utils/utils";
 import { getFullViewport, getPointToMap } from "../map-utils";
 
 
@@ -37,8 +37,8 @@ export const Dimensions = ({mapState, sync, formID, t}: DimensionsProps) => {
   }, [setDimensions, utils]);
 
   useEffect(() => {
-    dispatch(actions.setOnDrawEnd(formID, onDrawEnd));
-  }, [onDrawEnd, dispatch, formID]);
+    if (mapData) dispatch(actions.setOnDrawEnd(formID, onDrawEnd));
+  }, [mapData, onDrawEnd, dispatch, formID]);
 
   /** Центрировать карту. */
   const toFullViewPort = useCallback(() => {
@@ -73,7 +73,7 @@ export const Dimensions = ({mapState, sync, formID, t}: DimensionsProps) => {
 
   return (
     <section className={'map-dimensions'}>
-      <div className={'map-panel-header'}>{t('map.dimensions.header')}</div>
+      <div className={'menu-header'}>{t('map.dimensions.header')}</div>
       <div className={'map-panel-main'}>
         <div className={'map-dimensions-viewer'}>
           <div>

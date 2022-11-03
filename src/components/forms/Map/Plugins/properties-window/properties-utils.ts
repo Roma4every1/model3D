@@ -1,7 +1,7 @@
 import lines from "../../lines.json";
 import parseColor from "parse-color";
 import { polylineType } from "../selecting/selecting-utils";
-import { ColorPickerPaletteSettings } from "@progress/kendo-react-inputs";
+import { ColorPickerPaletteSettings, ColorPickerGradientSettings } from "@progress/kendo-react-inputs";
 
 
 export interface InitLabelState {
@@ -147,6 +147,8 @@ export const applyLegend = (polyline: MapPolyline, legend: any): void => {
     }
   });
 }
+
+export const gradientSettings: ColorPickerGradientSettings = {opacity: false};
 
 export const paletteSettings: ColorPickerPaletteSettings = {
   columns: 8,

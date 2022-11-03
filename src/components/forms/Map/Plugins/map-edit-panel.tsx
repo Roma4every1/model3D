@@ -8,7 +8,7 @@ import { Export } from "./export";
 import { Selecting } from "./selecting/selecting";
 import { Editing } from "./editing/editing";
 import { SaveMap } from "./save-map";
-import { getParentFormId } from "../../../../utils";
+import { getParentFormId } from "../../../../utils/utils";
 import { actions, selectors } from "../../../../store";
 
 import "../../../../styles/map-edit-panel.scss";
@@ -63,10 +63,10 @@ export default function MapEditPanel({formId: formID}: {formId: FormID}) {
     mapState?.utils.updateCanvas();
   }, [mapState?.utils, formID]);
 
-  if (!mapState || mapState.isLoadSuccessfully === undefined) return <MapEditPanelSkeleton/>;
+  if (!mapState) return <MapEditPanelSkeleton/>;
 
   return (
-    <div className={'map-edit-panel'} style={{display: 'grid'}}>
+    <div className={'map-edit-panel menu'} style={{display: 'grid'}}>
       <Dimensions mapState={mapState} sync={sync} formID={formID} t={t}/>
       <Export mapState={mapState} t={t}/>
       <Selecting mapState={mapState} formID={formID} t={t}/>

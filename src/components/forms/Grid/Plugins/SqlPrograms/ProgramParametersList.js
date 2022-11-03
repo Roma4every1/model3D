@@ -5,7 +5,7 @@ import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { Button } from "@progress/kendo-react-buttons";
 import FormParametersList from "../../../../common/FormParametersList";
 import ProgramParametersButton from "./ProgramParametersButton";
-import { actions } from "../../../../../store";
+import { actions, selectors } from "../../../../../store";
 
 
 export default function ProgramParametersList(props) {
@@ -13,9 +13,10 @@ export default function ProgramParametersList(props) {
   const dispatch = useDispatch();
   const { formId, presentationId, handleClose, handleProcessing, programDisplayName } = props;
 
-  const sessionManager = useSelector((state) => state.sessionManager);
-  const sessionId = useSelector((state) => state.sessionId);
-  const formParams = useSelector((state) => state.formParams[formId]);
+  const sessionManager = useSelector(selectors.sessionManager);
+  const sessionId = useSelector(selectors.sessionID);
+  /** @type FormParameter[] */
+  const formParams = useSelector(selectors.formParams.bind(formId));
 
   useEffect(() => {
     sessionManager.paramsManager.getCanRunReport(formId);
@@ -26,14 +27,15 @@ export default function ProgramParametersList(props) {
     if (data?.OperationId) {
       const getResult = async () => {
         sessionManager.watchReport(data.OperationId);
-        var reportResult = await sessionManager.fetchData(`getOperationResult?sessionId=${sessionId}&operationId=${data.OperationId}&waitResult=true`);
+        const path = `getOperationResult?sessionId=${sessionId}&operationId=${data.OperationId}&waitResult=true`;
+        const reportResult = await sessionManager.fetchData(path);
 
         if (reportResult?.report?.ModifiedTables?.ModifiedTables) {
           sessionManager.channelsManager.updateTables(reportResult.report.ModifiedTables.ModifiedTables);
         }
 
         if (reportResult?.reportLog) {
-          sessionManager.handleWindowInfo(reportResult.reportLog, null, t("report.result"), programDisplayName + ".log");
+          sessionManager.handleWindowInfo(reportResult.reportLog, null, t('report.result'), programDisplayName + ".log");
         }
 
         if (data?.Pages) {
@@ -56,11 +58,10 @@ export default function ProgramParametersList(props) {
   const runReport = useCallback(async () => {
     handleProcessing(true);
     sessionManager.handleNotification(t('report.inProgress', {programName: programDisplayName}))
-    var jsonToSend = { sessionId: sessionId, reportId: formId, presentationId: presentationId, paramValues: formParams };
-    const jsonToSendString = JSON.stringify(jsonToSend);
-    var data = await sessionManager.fetchData(
+    const jsonToSend = {sessionId, reportId: formId, presentationId, paramValues: formParams};
+    const data = await sessionManager.fetchData(
       'runReport',
-      {method: 'POST', body: jsonToSendString}
+      {method: 'POST', body: JSON.stringify(jsonToSend)}
     );
 
     if (data?.ModifiedTables?.ModifiedTables) {

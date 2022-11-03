@@ -1,3 +1,5 @@
+// noinspection LanguageDetectionInspection
+
 /** Словарь типа `{ [formID]: data }`. */
 type FormDict<Type = any> = {[key: FormID]: Type};
 
@@ -116,43 +118,53 @@ type IsLoading = boolean;
  * */
 type IsLoadedSuccessfully = boolean | undefined;
 
-/* --- Custom Request --- */
+/* --- Session Manager --- */
 
-/** ## Well Manager API Request.
- *
- * Кастомный объект запроса.
- * + `method?`: {@link ReqMethod} — метод запроса
- * + `path`: {@link ReqPath} — относительный путь
- * + `query?`: {@link ReqQuery} — параметры
- * + `body?`: {@link ReqBody} — тело запроса
- * + `mapper?`: {@link ReqMapper} — тип обработчика
- * */
-interface WRequest {
-  method?: ReqMethod,
-  path: ReqPath,
-  query?: ReqQuery,
-  body?: ReqBody,
-  mapper?: ReqMapper
+/** Менеджер сессии. */
+interface SessionManager {
+  paramsManager: ParamsManager,
+  channelsManager: ChannelsManager,
+
+  startSession(): Promise<any | null | undefined>
+  stopSession(): Promise<void>
+  saveSession(): Promise<void>
+  saveSessionToFile(): void
+  loadSessionByDefault(): Promise<void>
+  loadSessionFromFile(file: any): Promise<void>
+  getSessionLoading(): boolean
+
+  watchReport(operationID: any): void
+  getChildForms(formID: FormID): Promise<void>
+
+  handleWindowError(text: any, stackTrace?: any, header?: any, fileToSaveName?: string): void
+  handleWindowInfo(text: any, stackTrace?: any, header?: any, fileToSaveName?: string): void
+  handleWindowWarning(text: any, stackTrace?: any, header?: any, fileToSaveName?: string): void
+  handleNotification(text: any): void
+
+  fetchData(request: any, params?: any): Promise<any | null | undefined>
+  getJsonDataWithError(response: any): Promise<any | null>
 }
 
-/** Метод HTTP запроса. */
-type ReqMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+interface ParamsManager {
+  loadFormParameters(formID: FormID, force: boolean): Promise<any>
+  loadFormSettings(formID: FormID): Promise<any>
 
-/** Относительный путь HTTP запроса. */
-type ReqPath = string;
+  getCanRunReport(formID: FormID): Promise<void>
+  getParameterValues(neededParamList: any, formID: FormID, addToLocal: any, channelName: ChannelName): any
+  updateParamValue(formID: FormID, paramID: ParameterID, value: any, manual: boolean): void
+  updateParamSet(formID: FormID, newParamValues: any): void
+}
 
-/** Параметры поиска HTTP запроса.
- * @example
- * { sessionID: "...", formID: "..." }
- * */
-type ReqQuery = {[key: string]: string};
+interface ChannelsManager {
+  getAllChannelParams(channelName: ChannelName): any[]
+  loadFormChannelsList(channelName: ChannelName): Promise<any>
+  loadAllChannelData(channelName: ChannelName, formID: FormID, force?: boolean): Promise<any>
+  setFormInactive(formID: FormID): Promise<void>
+  updateTables(modifiedTables: any, baseChannelName: ChannelName): Promise<void>
 
-/** Тело HTTP запроса. */
-type ReqBody = string;
-
-/** Тип преобразователя ответа.
- * @example
- * "json" — .then(res => res.json())
- * "text" — .then(res => res.text())
- * */
-type ReqMapper = 'json' | 'text';
+  getNewRow(tableID: any): Promise<any>
+  getStatistics(tableID: any, columnName: string): Promise<any>
+  insertRow(tableID: any, dataJSON: any): Promise<void>
+  updateRow(tableID: any, editID: any, newRowData: any): Promise<void>
+  deleteRows(tableID: any, elementsToRemove: any, removeAll: any): Promise<void>
+}

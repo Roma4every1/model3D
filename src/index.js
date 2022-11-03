@@ -8,13 +8,13 @@ import { rootReducer } from "./store";
 
 import createSessionManager from "./dataManagers/SessionManager";
 import registerServiceWorker from "./registerServiceWorker";
-import App from "./App";
+import App from "./components/App";
 
-import "./i18n";
+import "./locales/i18n";
 import "bootstrap/dist/css/bootstrap.css";
 
 import { load, loadMessages } from "@progress/kendo-react-intl";
-import ruMessages from "./components/locales/kendoUI/ru.json";
+import ruMessages from "./locales/ru/kendo-ui.json";
 import likelySubtags from "cldr-core/supplemental/likelySubtags.json";
 import currencyData from "cldr-core/supplemental/currencyData.json";
 import weekData from "cldr-core/supplemental/weekData.json";
@@ -35,17 +35,13 @@ if (!Object.fromEntries) {
   }
 }
 
-const store = createStore(rootReducer, applyMiddleware(thunk));
-createSessionManager(store);
-
 loadMessages(ruMessages, 'ru-RU');
 load(likelySubtags, currencyData, weekData, numbers, caGregorian, dateFields, timeZoneNames);
 
-registerServiceWorker();
+try { registerServiceWorker(); } catch {}
 
-ReactDOM.render(
-  <Provider store={store}>
-    <App />
-  </Provider>,
-  document.getElementById('root')
-);
+const store = createStore(rootReducer, applyMiddleware(thunk));
+createSessionManager(store);
+
+const root = document.getElementById('root');
+ReactDOM.render(<Provider store={store}><App /></Provider>, root);

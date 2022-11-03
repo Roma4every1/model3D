@@ -18,8 +18,8 @@ const drawOptions = {
 };
 
 
-export function createMapsDrawer(sessionManager, sessionID: SessionID, formID: FormID, owner: MapOwner) {
-	const getImage = cache(imageName => loadImage(API.maps.root + 'images/' + imageName));
+export function createMapsDrawer(sessionManager: SessionManager, sessionID: SessionID, formID: FormID, owner: MapOwner) {
+	const getImage = cache((imageName) => loadImage(API.requester.root + 'images/' + imageName));
 
 	let provider = {
 		drawOptions,

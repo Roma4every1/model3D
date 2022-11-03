@@ -6,7 +6,9 @@ import {ChildFormsAction, ChildFormsActions} from "./reducers/childForms";
 import {FormRefsAction, FormRefsActions} from "./reducers/formRefs";
 import {FormParamsAction, FormParamsActions} from "./reducers/formParams";
 import {FormSettingsAction, FormSettingsActions} from "./reducers/formSettings";
+import {FormLayoutAction, FormLayoutActions} from "./reducers/formLayout";
 import {LayoutAction, LayoutActions} from "./reducers/layout";
+import {ChartsAction, ChartsActions} from "./reducers/charts";
 import {MapsAction, MapsActions} from "./reducers/maps";
 import {PresentationsAction, PresentationsActions} from "./reducers/presentations";
 import {ProgramsAction, ProgramsActions} from "./reducers/programs";
@@ -19,33 +21,29 @@ import {WindowDataAction, WindowDataActions} from "./reducers/windowData";
 export class WellManagerActionsCreator {
   /* --- App State Actions --- */
 
-  /** Успешная загрузка клиентской конфигурации. */
-  public fetchConfigSuccess(config: ClientConfiguration): AppStateAction {
-    return {type: AppStateActions.FETCH_CONFIG_SUCCESS, payload: config};
+  /** Начало загрузки клиентской конфигурации. */
+  public fetchConfigStart(): AppStateAction {
+    return {type: AppStateActions.FETCH_CONFIG_START};
   }
-  /** Ошибка при загрузке клиентской конфигурации. */
-  public fetchConfigError(): AppStateAction {
-    return {type: AppStateActions.FETCH_CONFIG_ERROR};
+  /** Конец загрузки клиентской конфигурации. */
+  public fetchConfigEnd(payload: Res<ClientConfiguration>): AppStateAction {
+    return {type: AppStateActions.FETCH_CONFIG_END, payload};
   }
-  /** Установить новую клиентскую конфигурацию. */
-  public setConfig(config: ClientConfiguration): AppStateAction {
-    return {type: AppStateActions.SET_CONFIG, payload: config};
+  /** Начало загрузки списка систем. */
+  public fetchSystemListStart(): AppStateAction {
+    return {type: AppStateActions.FETCH_SYSTEM_LIST_START};
   }
-  /** Успешная загрузка систем. */
-  public fetchSystemListSuccess(systems: SystemList): AppStateAction {
-    return {type: AppStateActions.FETCH_SYSTEM_LIST_SUCCESS, payload: systems};
+  /** Конец загрузки списка систем. */
+  public fetchSystemListEnd(payload: Res<SystemList>): AppStateAction {
+    return {type: AppStateActions.FETCH_SYSTEM_LIST_END, payload};
   }
-  /** Ошибка при загрузке систем. */
-  public fetchSystemListError(): AppStateAction {
-    return {type: AppStateActions.FETCH_SYSTEM_LIST_ERROR};
+  /** Начало загрузки новой сессии. */
+  public fetchSessionStart(): AppStateAction {
+    return {type: AppStateActions.FETCH_SESSION_START};
   }
-  /** Успешный старт сессии. */
-  public startSessionSuccess(sessionID: SessionID): AppStateAction {
-    return {type: AppStateActions.START_SESSION_SUCCESS, payload: sessionID};
-  }
-  /** Ошибка при старте сессии. */
-  public startSessionError(): AppStateAction {
-    return {type: AppStateActions.START_SESSION_ERROR};
+  /** Конец загрузки новой сессии. */
+  public fetchSessionEnd(payload: Res<SessionID>): AppStateAction {
+    return {type: AppStateActions.FETCH_SESSION_END, payload};
   }
   /** Установить новый ID сессии. */
   public setSessionID(sessionID: SessionID): AppStateAction {
@@ -54,6 +52,10 @@ export class WellManagerActionsCreator {
   /** Установить новую систему. */
   public setSystemName(systemName: SystemID): AppStateAction {
     return {type: AppStateActions.SET_SYSTEM_ID, payload: systemName};
+  }
+  /** Очистить хранилище сесиии. */
+  public clearSession(): AppStateAction {
+    return {type: AppStateActions.CLEAR_SESSION_ID};
   }
 
   /* --- Can Run Report Actions --- */
@@ -118,21 +120,33 @@ export class WellManagerActionsCreator {
   public setFormSettings(formId, value): FormSettingsAction {
     return {type: FormSettingsActions.SET, formId, value};
   }
-  public setSeriesSettings(formID, seriesSettings): FormSettingsAction {
-    return {type: FormSettingsActions.SET_SERIES_SETTINGS, payload: {formID, data: seriesSettings}};
+
+  /* --- Form Layout Actions --- */
+
+  public setFormLayout(formID: FormID, layout: any): FormLayoutAction {
+    return {type: FormLayoutActions.SET, formID, payload: layout};
   }
 
   /* --- Layout Actions --- */
 
-  public setFormLayout(formID: FormID, layout): LayoutAction {
-    return {type: LayoutActions.SET, formID, payload: layout};
-  }
-  public setPlugins(plugins: any): LayoutAction {
+  public setPlugins(plugins: PluginsConfig): LayoutAction {
     return {type: LayoutActions.SET_PLUGINS, payload: plugins};
   }
-  // public setTopBorderSize(size: number): LayoutAction {
-  //   return {type: LayoutActions.SET_TOP_SIZE, payload: size};
-  // }
+  public setLeftLayout(layout: string[]): LayoutAction {
+    return {type: LayoutActions.SET_LEFT_LAYOUT, payload: layout};
+  }
+
+  /* --- Charts Actions --- */
+
+  public createChartState(formID: FormID): ChartsAction {
+    return {type: ChartsActions.ADD, formID};
+  }
+  public setChartTooltipVisible(formID: FormID, visible: boolean): ChartsAction {
+    return {type: ChartsActions.SET_TOOLTIP_VISIBLE, formID, payload: visible};
+  }
+  public setSeriesSettings(formID, seriesSettings): ChartsAction {
+    return {type: ChartsActions.SET_SERIES_SETTINGS, formID, payload: seriesSettings};
+  }
 
   /* --- Maps Actions --- */
 
@@ -281,8 +295,8 @@ export class WellManagerActionsCreator {
   public setWindowError(text, stackTrace = null, header = null, fileToSaveName = null): WindowDataAction {
     return {type: WindowDataActions.SET_ERROR, header, text, stackTrace, fileToSaveName};
   }
-  public setOpenedWindow(windowName: string, windowVisible: boolean, window, position = undefined): WindowDataAction {
-    return {type: WindowDataActions.SET_OPENED_WINDOW, windowName, windowVisible, window, position};
+  public setOpenedWindow(name: string, windowVisible: boolean, window, position = undefined): WindowDataAction {
+    return {type: WindowDataActions.SET_OPENED_WINDOW, windowName: name, windowVisible, window, position};
   }
   public closeWindow(): WindowDataAction {
     return {type: WindowDataActions.CLOSE};

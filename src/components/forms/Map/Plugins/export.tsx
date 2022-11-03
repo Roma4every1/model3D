@@ -35,7 +35,7 @@ export const Export = ({mapState, t}: ActionsProps) => {
 
   return (
     <section className={'map-export'}>
-      <div className={'map-panel-header'}>{t('map.actions.header')}</div>
+      <div className={'menu-header'}>{t('map.actions.header')}</div>
       <div className={'map-panel-main map-actions'}>
         <button className={'map-action'} onClick={exportToPDF}>
           <div><img src={mapIconsDict['pdf']} alt={'pdf'}/></div>

@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
-import { Button } from "@progress/kendo-react-buttons";
 import { Loader } from "@progress/kendo-react-indicators";
 import ProgramParametersList from "./ProgramParametersList";
+import { menuIconsDict } from "../../../../dicts/images";
 
 
 interface ProgramButtonProps {
@@ -16,26 +16,25 @@ export default function ProgramButton({formID, program, sessionManager, sessionI
   const [reportProcessing, handleProcessing] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const handleOpen = () => {setOpen(true)};
-  const handleClose = () => {setOpen(false)};
-
   const fillReportParameters = useCallback(async () => {
     await sessionManager.paramsManager.loadFormParameters(formID, true);
     const data = await sessionManager.fetchData(`getAllNeedParametersForForm?sessionId=${sessionID}&formId=${formID}`);
     await sessionManager.paramsManager.getParameterValues(data, formID, true);
-    handleOpen();
+    setOpen(true)
   }, [sessionManager, sessionID, formID]);
 
   return (
     <>
-      <Button className={'actionbutton'} onClick={fillReportParameters}>
-        {program.displayName}
-        {reportProcessing && <Loader size={'small'} type={'infinite-spinner'} />}
-      </Button>
+      <div onClick={fillReportParameters}>
+        {reportProcessing
+          ? <Loader size={'medium'} type={'pulsing'} />
+          : <img src={menuIconsDict['run']} alt={'run'}/>}
+        <div>{program.displayName}</div>
+      </div>
       {open && <ProgramParametersList
         handleProcessing={handleProcessing}
         formId={formID} presentationId={formID}
-        handleClose={handleClose} programDisplayName={program.displayName}
+        handleClose={() => {setOpen(false)}} programDisplayName={program.displayName}
       />}
     </>
   );

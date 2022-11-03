@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect, useCallback } from "react";
-import FlexLayout from "flexlayout-react";
 import { useSelector, useDispatch } from "react-redux";
+import { Model } from "flexlayout-react";
 import { Loader } from "@progress/kendo-react-indicators";
 import { selectors, actions } from "../../store";
 
@@ -40,7 +40,7 @@ function Grid({formData}, ref) {
   const sessionManager = useSelector(selectors.sessionManager);
   /** @type FormChildrenState */
   const formChildrenState = useSelector(selectors.formChildrenState.bind(formData.id));
-  const layout = useSelector(selectors.layout.bind(formData.id));
+  const layout = useSelector(selectors.formLayout.bind(formData.id));
 
   const [openedForms, setOpenedForms] = useState(null);
   const [modelJson, setModelJson] = useState(null);
@@ -89,14 +89,14 @@ function Grid({formData}, ref) {
   useEffect(() => {
     let ignore = false;
     if (layout) {
-      setModelJson(FlexLayout.Model.fromJson(layout));
+      setModelJson(Model.fromJson(layout));
     } else {
       const newJSON = {
         global: {rootOrientationVertical: false},
         borders: [],
         layout: {type: 'row', weight: 100, children: []},
       };
-      setModelJson(FlexLayout.Model.fromJson(newJSON));
+      setModelJson(Model.fromJson(newJSON));
 
       if (formChildrenState && openedForms && !ignore) {
         const fetchData = async () => {
@@ -104,14 +104,14 @@ function Grid({formData}, ref) {
 
           if (data.layout && data.layout.children && openedForms) {
             correctElement(data.layout, openedForms, formChildrenState.activeChildren);
-            setModelJson(FlexLayout.Model.fromJson(data));
+            setModelJson(Model.fromJson(data));
           } else if (openedForms) {
             openedForms.forEach(openedForm => {
               if (openedForm) {
                 pushElement(newJSON, 100 / openedForms.length, [openedForm], formChildrenState.activeChildren);
               }
             });
-            setModelJson(FlexLayout.Model.fromJson(newJSON));
+            setModelJson(Model.fromJson(newJSON));
           }
         }
         fetchData()

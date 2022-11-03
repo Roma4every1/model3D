@@ -21,14 +21,14 @@ import { CellRender, RowRender } from "./Renderers";
 import filterOperators from "./filterOperators.json";
 import filterOperations from "./filterOperations.json";
 import FormHeader from '../Form/FormHeader';
-import ruMessages from "../../locales/kendoUI/ru.json";
+import ruMessages from "../../../locales/ru/kendo-ui.json";
 import { actions } from "../../../store";
 
 
 load(likelySubtags, currencyData, weekData, numbers, currencies, caGregorian, dateFields, timeZoneNames);
 loadMessages(ruMessages, "ru-RU");
 
-var utils = require("../../../utils");
+var utils = require("../../../utils/utils");
 var _ = require("lodash");
 const DATA_ITEM_KEY = "js_id";
 const SELECTED_FIELD = "js_selected";

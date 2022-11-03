@@ -1,39 +1,16 @@
 import { useEffect, useMemo, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Toolbar } from "@progress/kendo-react-buttons";
 import { Skeleton } from "@progress/kendo-react-indicators";
 import ProgramButton from "./ProgramButton";
-import { actions } from "../../../../../store";
+import { actions, selectors } from "../../../../../store";
 import { fetchFormPrograms } from "../../../../../store/thunks";
 
 
-const CustomSkeleton = ({width}: {width: number}) => {
-  return (
-    <Skeleton
-      shape={'rectangle'} animation={{type: 'wave'}}
-      style={{width: width + 'px', height: '24px', borderRadius: '4px', margin: '0 2px'}}
-    />
-  );
-}
-
-const ProgramsListLoading = () => {
-  return (
-    <Toolbar style={{padding: '4px'}}>
-      <CustomSkeleton width={100}/>
-      <CustomSkeleton width={130}/>
-      <CustomSkeleton width={90}/>
-    </Toolbar>
-  );
-}
-
-const sessionIDSelector = (state: WState) => state.sessionId;
-const sessionManagerSelector = (state: WState) => state.sessionManager;
-
 export default function SqlProgramsList({formId: formID}: {formId: FormID}) {
   const dispatch = useDispatch();
-  const sessionID = useSelector(sessionIDSelector);
-  const sessionManager = useSelector(sessionManagerSelector);
-  const programList = useSelector((state: WState) => state.programs[formID]);
+  const sessionID = useSelector(selectors.sessionID);
+  const sessionManager = useSelector(selectors.sessionManager);
+  const programList: FetchState<ProgramListData> = useSelector(selectors.formPrograms.bind(formID));
 
   // добавить хранилище для формы
   useEffect(() => {
@@ -63,13 +40,34 @@ export default function SqlProgramsList({formId: formID}: {formId: FormID}) {
   const notReady = !programList || programList.loading || programList.success === undefined;
 
   if (notReady) return <ProgramsListLoading/>;
-  if (programList.success === false) return <div>Не удалось загрузить список программ.</div>;
-  if (programList.data.length === 0) return <div>Программы отсутствуют.</div>;
-  if (visiblePrograms.length === 0) return <div>Нет видимых програм.</div>
+  if (programList.success === false) return <EmptyList text={'Не удалось загрузить список программ.'}/>;
+  if (visiblePrograms.length === 0) return <EmptyList text={'Программы отсутствуют.'}/>;
 
+  return <div className={'program-list'}>{visiblePrograms.map(mapProgramList)}</div>;
+}
+
+const EmptyList = ({text}: {text: string}) => {
+  return <div className={'program-list-empty'}><span>{text}</span></div>
+}
+
+const ProgramsListLoading = () => {
   return (
-    <Toolbar style={{padding: '4px'}}>
-      {visiblePrograms.map(mapProgramList)}
-    </Toolbar>
+    <div className={'program-list'}>
+      <ProgramButtonSkeleton/>
+      <ProgramButtonSkeleton/>
+      <ProgramButtonSkeleton/>
+    </div>
+  );
+}
+const ProgramButtonSkeleton = () => {
+  return (
+    <div>
+      <Skeleton shape={'rectangle'} animation={{type: 'wave'}}/>
+      <div>
+        <Skeleton shape={'text'} animation={{type: 'wave'}} style={{width: '100px', height: '18px'}}/>
+        <Skeleton shape={'text'} animation={{type: 'wave'}} style={{width: '70px', height: '18px'}}/>
+        <Skeleton shape={'text'} animation={{type: 'wave'}} style={{width: '130px', height: '18px'}}/>
+      </div>
+    </div>
   );
 }

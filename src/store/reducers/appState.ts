@@ -1,47 +1,46 @@
-/* --- actions types --- */
+/* --- Actions Types --- */
 
 export enum AppStateActions {
-  FETCH_CONFIG_SUCCESS = 'app/fetchConfigSuccess',
-  FETCH_CONFIG_ERROR = 'app/fetchConfigError',
-  SET_CONFIG = 'app/setClientConfig',
+  FETCH_CONFIG_START = 'app/configStart',
+  FETCH_CONFIG_END = 'app/configEnd',
 
-  FETCH_SYSTEM_LIST_SUCCESS = 'app/fetchSystemsSuccess',
-  FETCH_SYSTEM_LIST_ERROR = 'app/fetchSystemsError',
+  FETCH_SYSTEM_LIST_START = 'app/systemsStart',
+  FETCH_SYSTEM_LIST_END = 'app/systemsEnd',
 
-  START_SESSION_SUCCESS = 'app/startSessionSuccess',
-  START_SESSION_ERROR = 'app/startSessionError',
+  FETCH_SESSION_START = 'app/sessionStart',
+  FETCH_SESSION_END = 'app/sessionEnd',
+
   SET_SESSION_ID = 'app/setSessionID',
-
   SET_SYSTEM_ID = 'app/setSystemName',
+  CLEAR_SESSION_ID = 'app/clearSession',
 }
 
-/* --- actions interfaces --- */
+/* --- Actions Interfaces --- */
 
-interface ActionFetchConfigSuccess {
-  type: AppStateActions.FETCH_CONFIG_SUCCESS,
-  payload: ClientConfiguration,
+interface ActionFetchConfigStart {
+  type: AppStateActions.FETCH_CONFIG_START,
 }
-interface ActionFetchConfigError {
-  type: AppStateActions.FETCH_CONFIG_ERROR,
+interface ActionFetchConfigEnd {
+  type: AppStateActions.FETCH_CONFIG_END,
+  payload: Res<ClientConfiguration>,
 }
-interface ActionSetConfig {
-  type: AppStateActions.SET_CONFIG,
-  payload: ClientConfiguration,
+
+interface ActionFetchSystemListStart {
+  type: AppStateActions.FETCH_SYSTEM_LIST_START,
 }
-interface ActionFetchSystemListSuccess {
-  type: AppStateActions.FETCH_SYSTEM_LIST_SUCCESS,
-  payload: SystemList,
+interface ActionFetchSystemListEnd {
+  type: AppStateActions.FETCH_SYSTEM_LIST_END,
+  payload: Res<SystemList>
 }
-interface ActionFetchSystemListError {
-  type: AppStateActions.FETCH_SYSTEM_LIST_ERROR,
+
+interface ActionFetchSessionStart {
+  type: AppStateActions.FETCH_SESSION_START,
 }
-interface ActionStartSessionSuccess {
-  type: AppStateActions.START_SESSION_SUCCESS,
-  payload: SessionID,
+interface ActionFetchSessionEnd {
+  type: AppStateActions.FETCH_SESSION_END,
+  payload: Res<SessionID>,
 }
-interface ActionStartSessionError {
-  type: AppStateActions.START_SESSION_ERROR,
-}
+
 interface ActionSetSessionID {
   type: AppStateActions.SET_SESSION_ID,
   payload: SessionID,
@@ -50,58 +49,70 @@ interface ActionSetSystemName {
   type: AppStateActions.SET_SYSTEM_ID,
   payload: SystemID,
 }
+interface ActionClearSessionID {
+  type: AppStateActions.CLEAR_SESSION_ID,
+}
 
-export type AppStateAction =
-  ActionFetchConfigSuccess | ActionFetchConfigError | ActionSetConfig |
-  ActionFetchSystemListSuccess | ActionFetchSystemListError | ActionSetSystemName |
-  ActionStartSessionSuccess | ActionStartSessionError | ActionSetSessionID;
+export type AppStateAction = ActionSetSystemName | ActionSetSessionID |
+  ActionFetchConfigStart | ActionFetchConfigEnd |
+  ActionFetchSystemListStart | ActionFetchSystemListEnd |
+  ActionFetchSessionStart | ActionFetchSessionEnd | ActionClearSessionID;
 
-/* --- reducer --- */
+/* --- Reducer --- */
 
-const initAppState: AppState = {
-  config: {loaded: false, success: undefined, data: null},
-  systemList: {loaded: false, success: undefined, data: null},
-  sessionID: {loaded: false, success: undefined, data: null},
+const init: AppState = {
+  config: {loading: false, success: undefined, data: null},
+  systemList: {loading: false, success: undefined, data: null},
+  sessionID: {loading: false, success: undefined, data: null},
   systemID: null,
 };
 
-export const appStateReducer = (state: AppState = initAppState, action: AppStateAction): AppState => {
+export const appStateReducer = (state: AppState = init, action: AppStateAction): AppState => {
   switch (action.type) {
 
-    case AppStateActions.FETCH_CONFIG_SUCCESS: {
-      return {...state, config: {loaded: true, success: true, data: action.payload}};
+    case AppStateActions.FETCH_CONFIG_START: {
+      return {...state, config: {loading: true, success: undefined, data: null}};
     }
 
-    case AppStateActions.FETCH_CONFIG_ERROR: {
-      return {...state, config: {loaded: true, success: false, data: null}};
+    case AppStateActions.FETCH_CONFIG_END: {
+      const { ok, data } = action.payload;
+      return ok
+        ? {...state, config: {loading: false, success: true, data}}
+        : {...state, config: {loading: false, success: false, data: data as string}};
     }
 
-    case AppStateActions.SET_CONFIG: {
-      return {...state, config: {...state.config, data: action.payload}};
+    case AppStateActions.FETCH_SYSTEM_LIST_START: {
+      return {...state, systemList: {loading: true, success: undefined, data: null}};
     }
 
-    case AppStateActions.FETCH_SYSTEM_LIST_SUCCESS: {
-      return {...state, systemList: {loaded: true, success: true, data: action.payload}};
+    case AppStateActions.FETCH_SYSTEM_LIST_END: {
+      const { ok, data } = action.payload;
+      return ok
+        ? {...state, systemList: {loading: false, success: true, data}}
+        : {...state, systemList: {loading: false, success: false, data: data as string}};
     }
 
-    case AppStateActions.FETCH_SYSTEM_LIST_ERROR: {
-      return {...state, systemList: {loaded: true, success: false, data: null}};
+    case AppStateActions.FETCH_SESSION_START: {
+      return {...state, sessionID: {loading: true, success: undefined, data: null}};
     }
 
-    case AppStateActions.START_SESSION_SUCCESS: {
-      return {...state, sessionID: {loaded: true, success: true, data: action.payload}};
-    }
-
-    case AppStateActions.START_SESSION_ERROR: {
-      return {...state, sessionID: {loaded: true, success: false, data: null}};
+    case AppStateActions.FETCH_SESSION_END: {
+      const { ok, data } = action.payload;
+      return ok
+        ? {...state, sessionID: {loading: false, success: true, data}}
+        : {...state, sessionID: {loading: false, success: false, data: data as string}};
     }
 
     case AppStateActions.SET_SESSION_ID: {
-      return {...state, sessionID: {...state.sessionID, data: action.payload}};
+      return {...state, sessionID: {loading: false, success: true, data: action.payload}};
     }
 
     case AppStateActions.SET_SYSTEM_ID: {
       return {...state, systemID: action.payload};
+    }
+
+    case AppStateActions.CLEAR_SESSION_ID: {
+      return {...state, sessionID: {loading: false, success: undefined, data: null}};
     }
 
     default: return state;

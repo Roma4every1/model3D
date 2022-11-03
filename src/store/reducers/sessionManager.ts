@@ -8,16 +8,16 @@ export enum SessionManagerActions {
 
 export interface ActionSet {
   type: SessionManagerActions.SET,
-  value: any,
+  value: SessionManager,
 }
 
 export type SessionManagerAction = ActionSet;
 
 /* --- reducer --- */
 
-const initSessionManager = null;
+const init = null;
 
-export const sessionManagerReducer = (state = initSessionManager, action: SessionManagerAction) => {
+export const sessionManagerReducer = (state: SessionManager = init, action: SessionManagerAction): SessionManager => {
   switch (action.type) {
 
     case SessionManagerActions.SET: {

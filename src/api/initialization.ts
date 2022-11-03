@@ -1,37 +1,36 @@
-/** Проверка клиентской конфигурации на корректность. */
-const isConfigCorrect = (config: unknown): boolean => {
-  return typeof config === 'object' && typeof config['webServicesURL'] === 'string';
-}
-
 /** Ссылка на службу веб запросов WMW. */
-let webServicesURL = null;
+let webServicesURL = '';
 
 /** По конфигу устанавливает значение для ссылки на службу запросов. */
-export const setWebServicesURL = (config: unknown): void => {
-  if (isConfigCorrect(config)) {
-    let configWebServicesURL = config['webServicesURL'];
-    if (!configWebServicesURL.endsWith('/')) configWebServicesURL += '/';
-    webServicesURL = configWebServicesURL;
-  } else {
+export function applyConfig(res: Res<unknown>): WResponse<ClientConfiguration> {
+  const data = res.data;
+  const config: ClientConfiguration = {webServicesURL: '', root: ''};
+
+  if (data instanceof Object) {
+    const configURL = data['webServicesURL'];
+    if (typeof configURL === 'string') { config.webServicesURL = configURL; webServicesURL = configURL; }
+    const root = data['root'];
+    if (typeof root === 'string') config.root = root;
+  }
+
+  if (config.webServicesURL === '') {
     let pathName = window.location.pathname.slice(1);
     if (pathName.includes('/')) {
       pathName = pathName.slice(0, pathName.indexOf('/'));
     }
     webServicesURL = window.location.origin + '/' + pathName + '/WebRequests.svc/';
     console.warn('use default URL for web requests: ' + webServicesURL);
-    console.warn('invalid config:\n', config);
+    console.warn('invalid config:\n', data);
   }
-};
-
-/** Если в конфиге отсутствует ссылка на статические файлы, добавляет её.  */
-export const applyRootLocation = (config: ClientConfiguration): void => {
-  if (config.hasOwnProperty('staticURL')) return;
-  let location = window.location.pathname;
-  if (location.includes('/systems/')) {
-    location = location.slice(0, location.indexOf('systems/'))
+  if (config.root === '') {
+    let location = window.location.pathname;
+    if (location.includes('/systems/')) {
+      location = location.slice(0, location.indexOf('systems/'))
+    }
+    if (!location.endsWith('/')) location += '/';
+    config.root = location;
   }
-  if (!location.endsWith('/')) location += '/';
-  config.root = location;
+  return {ok: true, data: config};
 }
 
 /** Универсальная функция для запросов к серверу. */

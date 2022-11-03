@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-var utils = require("../../../../utils");
+var utils = require("../../../../utils/utils");
 
 export default function ColumnHeaderLabelSetter(props) {
     const { parameter, property, column, formId } = props;

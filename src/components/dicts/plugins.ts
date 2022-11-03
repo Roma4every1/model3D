@@ -3,15 +3,12 @@ import { FunctionComponent } from "react";
 /* --- Dock Plugins --- */
 
 import Menu from "../forms/Dock/Plugins/Menu";
-import PresentationList from "../forms/Dock/Plugins/PresentationList";
-import DockParametersList from "../forms/Dock/Plugins/ParametersList";
 import DownloadFiles from "../forms/Dock/Plugins/DownloadFiles/DownloadFiles";
 import DateChanging from "../forms/Dock/Plugins/DateChanging";
 
 /* --- Grid Plugins --- */
 
 import SqlProgramsList from "../forms/Grid/Plugins/SqlPrograms/SqlProgramsList";
-import GridParametersList from "../forms/Grid/Plugins/ParametersList";
 
 /* --- DataSet Plugins --- */
 
@@ -30,7 +27,7 @@ import MapLayersTree from "../forms/Map/Plugins/layers-tree/layers-tree";
 
 /* --- Chart Plugins --- */
 
-import SeriesSettings from "../forms/Chart/Plugins/SeriesSettings";
+import SeriesSettings from "../forms/Chart/Plugins/chart-edit-panel";
 
 /* --- --- --- */
 
@@ -44,14 +41,11 @@ type ComponentsDict = Record<string, FunctionComponent>;
 export const pluginsDict: Record<PluginFormType, ComponentsDict> = {
   dock: {
     'Menu': Menu,
-    'PresentationList': PresentationList,
-    'ParametersList': DockParametersList,
     'DownloadFiles': DownloadFiles,
     'DateChanging': DateChanging,
   },
   grid: {
     'SqlPrograms/SqlProgramsList': SqlProgramsList,
-    'ParametersList': GridParametersList,
   },
   dataset: {
     'ExportToExcel': ExportToExcel,

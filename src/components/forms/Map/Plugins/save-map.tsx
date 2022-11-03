@@ -3,6 +3,8 @@ import { useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { mapIconsDict } from "../../../dicts/images";
 import { actions, selectors } from "../../../../store";
+import { converter } from "../../../../utils/maps-api.utils";
+import { callBackWithNotices } from "../../../../utils/notifications";
 
 
 interface ActionsProps {
@@ -26,17 +28,15 @@ export const SaveMap = ({mapState, formID, t}: ActionsProps) => {
 
     const mapDataToSave = {...mapData, x: undefined, y: undefined, scale: undefined, onDrawEnd: undefined};
     const body = {sessionId: sessionID, formId: formID, mapId: mapID, mapData: mapDataToSave, owner};
-    sessionManager
-      .fetchData('saveMap', {method: 'POST', body: JSON.stringify(body)})
-      .then(() => {
-        dispatch(actions.setWindowNotification(t('map.notices.save-end')));
-        setTimeout(() => {dispatch(actions.closeWindowNotification())}, 2000);
-      });
+    const fetchInit = {method: 'POST', body: converter.encode(JSON.stringify(body))};
+
+    const promise = sessionManager.fetchData('saveMap', fetchInit);
+    callBackWithNotices(promise, dispatch, t('map.notices.save-end'));
   }, [owner, mapData, mapID, sessionManager, sessionID, formID, dispatch, t]);
 
   return (
     <section className={'map-save'}>
-      <div className={'map-panel-header'}>{'Хранение'}</div>
+      <div className={'menu-header'}>{'Хранение'}</div>
       <div className={'map-panel-main map-actions'}>
         <button className={'map-action'} onClick={saveMap} disabled={!isModified}>
           <div><img src={mapIconsDict['save']} alt={'save'}/></div>

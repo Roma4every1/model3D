@@ -1,65 +1,47 @@
-﻿import React from 'react';
+﻿import React, { useState, useCallback } from "react";
 import { DateRangePicker } from "@progress/kendo-react-dateinputs";
 
-export default function DateIntervalTextEditor(props) {
 
-    const getDefaultValue = (string) => {
-        try {
-            var index = string.indexOf(' - ');
-            if (index > 0) {
-                let startDateString = string.slice(0, index);
-                let finishDateString = string.slice(index + 3);
-                var pattern = /(\d{2})\.(\d{2})\.(\d{4})/;
-                return {
-                    start: new Date(startDateString.replace(' \\d', '').replace(pattern, '$3/$2/$1')),
-                    end: new Date(finishDateString.replace(' \\d', '').replace(pattern, '$3/$2/$1'))
-                }
-            }
-            else {
-                return undefined;
-            }
-        }
-        catch {
-            return undefined;
-        }
+const pattern = /(\d{2})\.(\d{2})\.(\d{4})/;
+
+const getDefaultValue = (string) => {
+  try {
+    const index = string.indexOf(' - ');
+    if (index <= 0) return;
+    const startDateString = string.slice(0, index);
+    const finishDateString = string.slice(index + 3);
+    return {
+      start: new Date(startDateString.replace(' \\d', '').replace(pattern, '$3/$2/$1')),
+      end: new Date(finishDateString.replace(' \\d', '').replace(pattern, '$3/$2/$1'))
     }
+  } catch {}
+}
 
-    const date = getDefaultValue(props.value);
-    const [value, setValue] = React.useState(date);
+const valueToString = (value) => {
+  if (!value.start || !value.end) return '';
+  return value.start.toLocaleDateString() + ' - ' + value.end.toLocaleDateString();
+};
 
-    const getValStr = (value) => {
-        if (value.start && value.end) {
-            return value.start.toLocaleDateString() + ' - ' + value.end.toLocaleDateString();
-        }
-        else {
-            return '';
-        }
-    };
 
-    const changeValue = (localvalue) => {
-        var newevent = {};
-        newevent.target = {};
-        newevent.target.name = props.id;
-        newevent.target.value = getValStr(localvalue ?? value);
-        props.selectionChanged(newevent);
-    }
+export default function DateIntervalTextEditor({ id, value: rawValue, selectionChanged }) {
+  const [value, setValue] = useState(getDefaultValue(rawValue));
 
-    const handleChange = (event) => {
-        setValue(event.value);
-        if (event.syntheticEvent.type === 'click') {
-            changeValue(event.target.value);
-        }
-    };
+  const changeValue = useCallback((localValue) => {
+    selectionChanged({target: {name: id, value: valueToString(localValue ?? value)}});
+  }, [value, id, selectionChanged]);
 
-    return (
-        <DateRangePicker className='parametereditorwithoutheight'
-            id={props.id}
-            name={props.id}
-            value={value}
-            startDateInputSettings={{label: ''}}
-            endDateInputSettings={{label: ''}}
-            onChange={handleChange}
-            onBlur={() => changeValue()}
-        />
-    );
+  const handleChange = useCallback((event) => {
+    if (event.syntheticEvent.type === 'click') changeValue(event.target.value);
+    setValue(event.value);
+  }, [changeValue]);
+
+  return (
+    <DateRangePicker
+      className={'date-interval-text-editor'}
+      id={id} name={id} value={value}
+      startDateInputSettings={{label: ''}}
+      endDateInputSettings={{label: ''}}
+      onChange={handleChange} onBlur={() => changeValue()}
+    />
+  );
 }

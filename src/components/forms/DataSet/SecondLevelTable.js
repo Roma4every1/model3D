@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Window } from "@progress/kendo-react-dialogs";
 import Form from "../Form";
-var utils = require("../../../utils");
+var utils = require("../../../utils/utils");
 
 export const SecondLevelTable = (props) => {
     const { t } = useTranslation();

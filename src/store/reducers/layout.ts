@@ -1,49 +1,42 @@
-﻿/* --- actions types --- */
+import { LeftPanelItems } from "../../utils/layout.utils";
+
+
+/* --- Actions Types --- */
 
 export enum LayoutActions {
-  SET = 'layout/set',
   SET_PLUGINS = 'layout/plugins',
-  SET_TOP_SIZE = 'layout/top',
+  SET_LEFT_LAYOUT = 'layout/left'
 }
 
-/* --- actions interfaces --- */
+/* --- Actions Interfaces --- */
 
-interface ActionSet {
-  type: LayoutActions.SET,
-  formID: FormID,
-  payload: any,
-}
 interface ActionSetPlugins {
   type: LayoutActions.SET_PLUGINS,
-  payload: any,
+  payload: PluginsConfig,
 }
-interface ActionSetTopBorder {
-  type: LayoutActions.SET_TOP_SIZE,
-  payload: number,
+interface ActionSetLeftLayout {
+  type: LayoutActions.SET_LEFT_LAYOUT,
+  payload: string[],
 }
 
-export type LayoutAction = ActionSet | ActionSetPlugins | ActionSetTopBorder;
+export type LayoutAction = ActionSetPlugins | ActionSetLeftLayout;
 
-/* --- reducer --- */
+/* --- Reducer --- */
 
-const initLayout: FormsLayout = {
-  plugins: null,
-  topSize: 40,
+const init: CommonLayout = {
+  plugins: {top: [], strip: [], right: [], inner: []},
+  left: [LeftPanelItems.GLOBAL, LeftPanelItems.FORM, LeftPanelItems.LIST],
 };
 
-export const layoutReducer = (state: FormsLayout = initLayout, action: LayoutAction): FormsLayout => {
+export const layoutReducer = (state: CommonLayout = init, action: LayoutAction): CommonLayout => {
   switch (action.type) {
-
-    case LayoutActions.SET: {
-      return {...state, [action.formID]: action.payload};
-    }
 
     case LayoutActions.SET_PLUGINS: {
       return {...state, plugins: action.payload};
     }
 
-    case LayoutActions.SET_TOP_SIZE: {
-      return {...state, topSize: action.payload};
+    case LayoutActions.SET_LEFT_LAYOUT: {
+      return {...state, left: action.payload};
     }
 
     default: return state;

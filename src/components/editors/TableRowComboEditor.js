@@ -1,7 +1,7 @@
 ﻿import React, { useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { ComboBox } from "@progress/kendo-react-dropdowns";
-import { stringToTableCell, tableRowToString } from "../../utils";
+import { stringToTableCell, tableRowToString } from "../../utils/utils";
 import i18n from "i18next";
 
 

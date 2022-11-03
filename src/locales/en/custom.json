@@ -1,0 +1,170 @@
+﻿{
+  "title": "Welcome to react using react-i18next",
+  "base": {
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "continue": "Continue",
+    "error": "Error",
+    "infinity": "Infinity",
+    "infinitySign": "∞",
+    "info": "Information",
+    "loading": "Loading...",
+    "no": "No",
+    "none": "None",
+    "ok": "Ok",
+    "parameters": "Parameters",
+    "presentationParameters": "Presentation parameters",
+    "programs": "Programs",
+    "run": "Run",
+    "save": "Save",
+    "settings": "Settings",
+    "statistics": "Statistics",
+    "warning": "Warning",
+    "wrong": "Something went wrong.",
+    "yes": "Yes"
+  },
+  "downloadFiles": {
+    "clear": "Clear report list",
+    "comment": "Comment: {{comment}}",
+    "date": "Date: {{date}}",
+    "error": "Error on report processing: {{error}}",
+    "filter": "Filter by active presentations",
+    "inOrderAndProgress": "In order: {{order}}, progress: {{progress}}%"
+  },
+  "editors": {
+    "activeObjectNullDisplayName": "No value",
+    "fileNotSelected": "File is not selected",
+    "filesCount": "Selected files count: {{count}}",
+    "filesNotSelected": "Files are not selected"
+  },
+  "flexlayout": {
+    "close": "Close",
+    "error": "Error rendering component",
+    "hiddenTabs": "Hidden tabs",
+    "maximizeTabset": "Maximize tabset",
+    "move": "Move: ",
+    "restoreTabset": "Restore tabset"
+  },
+  "formNames": {
+    "carat": "Carat",
+    "chart": "Chart",
+    "dataSet": "Table",
+    "dock": "Application",
+    "files": "File",
+    "filesList": "Files",
+    "grid": "Presentation",
+    "image": "Image",
+    "map": "Map",
+    "modl3D": "3D model",
+    "profile": "Profile",
+    "slide": "Slide",
+    "spreadsheet": "Excel",
+    "spreadsheetUnite": "Excel"
+  },
+  "map": {
+    "allTypes": "All types",
+    "addPointBetweenPoints": "Add point between existing points",
+    "addPointToEnd": "Add point to the line end",
+    "areYouSureToDelete": "Do you really want to delete selected element?",
+    "attrTable": "Attributive table",
+    "attrTableEditing": "Attributive element (sublayer: {{sublayerName}})",
+    "bkColor": "Background color",
+    "chooseType": "Choose the type for the created element",
+    "closed": "Closed",
+    "create": "Create",
+    "createElement": "Create element (sublayer: {{sublayerName}})",
+    "delete": "Delete",
+    "deleteElement": "Delete element (sublayer: {{sublayerName}})",
+    "deletePoint": "Delete point",
+    "editing": "Editing (sublayer: {{sublayerName}})",
+    "elementNotSelected": "Element is not selected",
+    "exportToPdf": "Export to PDF",
+    "fields2D": "Fields 2D",
+    "fillColor": "Fill color",
+    "finishEditing": "Finish editing",
+    "label": "Label",
+    "labels": "Labels",
+    "layerVisibilityControl": "Layer visibility control",
+    "legend": "Legend",
+    "lines": "Lines",
+    "maxscale": "Maximal scale:",
+    "minscale": "Minimal scale:",
+    "moveMap": "Move map",
+    "movePoint": "Move point",
+    "notFound": "The map for the defined parameters is not found",
+    "objectsOnSublayer": "Object on sublayer:",
+    "other": "Other",
+    "pick": "Pick",
+    "points": "Points",
+    "polyline": "Polyline",
+    "properties": "Properties",
+    "propertiesEditing": "Properties editing (sublayer: {{sublayerName}})",
+    "revertInitialValues": "Revert initial values",
+    "sectors": "Sectors",
+    "showAll": "Show all",
+    "strokeColor": "Stroke color",
+    "strokeWidth": "Stroke width",
+    "style": "Style",
+    "sublayer": "Sublayer",
+    "sublayers": "Sublayers",
+    "sublayerStatistics": "{{type}}: {{count}}",
+    "startEditing": "Edit contour",
+    "template": "Template",
+    "transparency": "Transparency"
+  },
+  "menucommands": {
+    "about": "About program",
+    "loadsessionbydefault": "Load session by default",
+    "loadsessionfromfile": "Load session from file",
+    "log": "Log",
+    "savesession": "Save session",
+    "savesessiontofile": "Save session to file"
+  },
+  "messages": {
+    "dataSaveError": "Server error on saving changes in table. See details on server log.",
+    "errorOnSessionSave": "Error on session saving. See details on server log.",
+    "errorOnSessionStop": "Error on session stopping. See details on server log.",
+    "programError": "Server error program executing.  See details on server log.",
+    "responseReadError": "Error on server response reading.",
+    "serverDisabled": "Error: no response from server.",
+    "sessionLost": "Server session is lost. Please, reload the tab.",
+    "systemNotDefined": "Error: system for loading is not defined."
+  },
+  "pluginNames": {
+    "exportToExcel": "Export to Excel",
+    "selectAllRec": "Select all records",
+    "statistics": "Statistics"
+  },
+  "report": {
+    "params": "Report parameters",
+    "result": "Program result",
+    "inProgress": "{{programName}} in order. See results on report panel."
+  },
+  "session": {
+    "loading": "Loading session...",
+    "loadingError": "Failed to load session.",
+    "unknownPath": "Path \"{{unresolvedPath}}\" notFound. Possible options:"
+  },
+  "clientConfig": {
+    "loading": "Loading configuration...",
+    "loadingError": "Failed to load configuration."
+  },
+  "systems": {
+    "loading": "Loading system list...",
+    "loadingError": "Failed to load list of systems.",
+    "system": "system",
+    "list":  "List of available systems",
+    "backToSystemList": "Back to system list.",
+    "notFound": "System \"{{systemName}}\" is not in the list of available systems."
+  },
+  "table": {
+    "areYouSureToDeleteRows": "Are you sure to delete rows (count: {{count}})?",
+    "columnsVisibility": "Visibility",
+    "deleteRowsHeader": "Rows deleting",
+    "linkedTable": "Linked table",
+    "showDetailInfo": "Show detail information"
+  },
+  "version": {
+    "label": "Version"
+  }
+}

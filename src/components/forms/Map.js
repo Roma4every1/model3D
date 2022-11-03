@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Loader } from "@progress/kendo-react-indicators";
 import { Scroller } from "./Map/drawer/scroller";
 import { createMapsDrawer } from "./Map/drawer";
-import { getParentFormId, tableRowToString } from "../../utils";
+import { getParentFormId, tableRowToString } from "../../utils/utils";
 import { getFullViewport, getMultiMapChildrenCanvases } from "./Map/map-utils";
 import { fetchMapData } from "../../store/thunks";
 import { actions, selectors } from "../../store";
@@ -80,9 +80,9 @@ export default function Map({formData: {id: formID}, data}) {
       dispatch(actions.setMapField(formID, 'owner', owner));
       mapState.drawer.changeOwner(owner);
     }
-    if (changeMapID) {
+    if (changeMapID || mapState.isLoadSuccessfully === false) {
       dispatch(actions.setMapField(formID, 'mapID', mapID));
-      dispatch(fetchMapData(formID, mapID, mapState.drawer.loadMap));
+      dispatch(fetchMapData(mapState.drawer.provider, sessionID, formID, mapID, owner));
     }
   }, [mapState, activeChannel, getDrawer, sessionManager, draw, sessionID, formID, parentForm, dispatch]);
 
@@ -106,7 +106,7 @@ export default function Map({formData: {id: formID}, data}) {
 
   // закрепление ссылки на холст
   useLayoutEffect(() => {
-    if (canvasRef.current && canvasRef.current !== canvas) {
+    if (canvasRef.current && canvasRef.current !== canvas && mapData) {
       dispatch(actions.setMapField(formID, 'canvas', canvasRef.current));
 
       scroller.current

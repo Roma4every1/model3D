@@ -143,7 +143,7 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
 
   return (
     <section className={'map-selecting'}>
-      <div className={'map-panel-header'}>{t('map.selecting.header')}</div>
+      <div className={'menu-header'}>{t('map.selecting.header')}</div>
       <div className={'map-panel-main'}>
         <div>
           <button

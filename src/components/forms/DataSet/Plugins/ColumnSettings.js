@@ -2,7 +2,7 @@ import React from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import { actions } from "../../../../store";
 import {loadMessages} from "@progress/kendo-react-intl";
-import ruMessages from "../../../locales/kendoUI/ru.json";
+import ruMessages from "../../../../locales/ru/kendo-ui.json";
 
 loadMessages(ruMessages, "ru-RU");
 

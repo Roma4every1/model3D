@@ -1,57 +1,48 @@
 import { WDispatch } from "./index";
 import { API } from "../api/api";
-import { mapSystem } from "../utils";
-import { setWebServicesURL, applyRootLocation } from "../api/initialization";
+import { mapSystem } from "../utils/utils";
+import { applyConfig } from "../api/initialization";
 import { actions } from "./index";
 
 
 export const fetchConfig = () => {
   return async (dispatch: WDispatch) => {
-    try {
-      const config = await API.getClientConfig() as ClientConfiguration;
-      setWebServicesURL(config);
-      applyRootLocation(config);
-      API.setBase(config.webServicesURL);
-      API.maps.root = config.root;
-      dispatch(actions.fetchConfigSuccess(config));
-    } catch (error) {
-      console.warn(error);
-      dispatch(actions.fetchConfigError());
-    }
+    dispatch(actions.fetchConfigStart());
+    const res = await API.getClientConfig();
+    const config = applyConfig(res);
+    API.setBase(config.data.webServicesURL);
+    API.setRoot(config.data.root);
+    dispatch(actions.fetchConfigEnd(config));
   }
 }
 
 export const fetchSystems = () => {
   return async (dispatch: WDispatch) => {
-    const systemList = await API.getSystemList();
-    if (typeof systemList === 'string') return dispatch(actions.fetchSystemListError());
-    dispatch(actions.fetchSystemListSuccess(systemList.map(mapSystem) as SystemList));
+    dispatch(actions.fetchSystemListStart());
+    const response = await API.getSystemList();
+    if (response.ok) response.data = response.data.map(mapSystem);
+    dispatch(actions.fetchSystemListEnd(response));
   }
 }
 
-export const startSession = (startSessionFn) => {
+export const startSession = (startSessionFn, isDefault: boolean) => {
   return async (dispatch: WDispatch) => {
-    try {
-      const sessionID = await startSessionFn();
-      sessionID
-        ? dispatch(actions.startSessionSuccess(sessionID))
-        : dispatch(actions.startSessionError());
-    } catch (error) {
-      console.warn(error);
-      dispatch(actions.startSessionError());
-    }
+    dispatch(actions.fetchSessionStart());
+    const res: Res<SessionID> = await startSessionFn(isDefault);
+    dispatch(actions.fetchSessionEnd(res));
   }
 }
 
-export const fetchMapData = (formID: FormID, mapID: MapID, loadMapFn) => {
+export const fetchMapData = (provider: any, sessionID: SessionID, formID: FormID, mapID: MapID, owner: MapOwner) => {
   return async (dispatch: WDispatch) => {
     dispatch(actions.startMapLoad(formID));
-    try {
-      const loadedMap = await loadMapFn(mapID);
+    const loadedMap = await API.maps.loadMap(provider, sessionID, formID, mapID, owner);
+    if (typeof loadedMap === 'string') {
+      console.warn(loadedMap);
+      dispatch(actions.loadMapError(formID));
+    } else {
+      if (loadedMap.mapErrors.length) loadedMap.mapErrors.forEach(err => console.warn(err));
       dispatch(actions.loadMapSuccess(formID, loadedMap));
-    } catch (error) {
-      console.warn(error);
-      dispatch(actions.loadMapError(formID))
     }
   }
 }

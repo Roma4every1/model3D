@@ -8,13 +8,15 @@ interface WState {
   formParams: FormParams,
   formRefs: FormRefs,
   formSettings: FormSettings,
-  layout: FormsLayout,
+  formLayout: FormsLayout,
+  layout: CommonLayout,
+  charts: ChartsState,
   maps: MapsState,
   presentations: PresentationsState,
   programs: ProgramsState,
   reports: any,
   sessionId: SessionID,
-  sessionManager: any,
+  sessionManager: SessionManager,
   windowData: any,
 }
 
@@ -22,9 +24,9 @@ interface WState {
 
 /** Состояние, необходимое для компонента `SystemRouter`. */
 type AppState = {
-  config: LoadingState<ClientConfiguration>,
-  systemList: LoadingState<SystemList>,
-  sessionID: LoadingState<SessionID>,
+  config: FetchState<ClientConfiguration>,
+  systemList: FetchState<SystemList>,
+  sessionID: FetchState<SessionID>,
   systemID: SystemID,
 }
 
@@ -123,20 +125,61 @@ type FormRefs = FormDict;
 type FormSettings = FormDict;
 
 
+/* --- state.formLayout --- */
+
+/** Разметка форм. */
+type FormsLayout = Record<FormID, FormLayout>;
+
+interface FormLayout {
+  global: any,
+  borders?: any[],
+  layout: any,
+}
+
+
 /* --- state.layout --- */
 
-/** Разметка. */
-type FormsLayout = {
-  plugins: {
-    inner: object[],
-    left: object[],
-    right: object[],
-    strip: object[],
-    top: object[],
-  },
-  topSize: number,
-  [key: FormID]: any
+/** Разметка общих элементов. */
+type CommonLayout = {
+  plugins: PluginsConfig,
+  left: string[],
 };
+
+/** Плагины форм.
+ * + `inner` — внутри формы
+ * + `right` — в правой панели
+ * + `strip` — сверху в полоске для формы
+ * + `top` — сверху в верхней панели (Меню, Программы и formStrip)
+ * */
+interface PluginsConfig {
+  inner: FormPlugin[],
+  right: FormPlugin[],
+  strip: FormPlugin[],
+  top: FormPlugin[],
+}
+
+interface FormPlugin {
+  component?: FormPluginComponent,
+  enableDrag?: boolean,
+  id?: string,
+  type?: string,
+  name?: string,
+  selected?: any,
+  weight?: number,
+  children?: any[],
+}
+
+type FormPluginComponent = 'strip' | 'left' | {id: string, form: string, path: string};
+
+
+/* --- state.charts --- */
+
+type ChartsState = Record<FormID, ChartState>;
+
+interface ChartState {
+  tooltip: boolean,
+  seriesSettings: any,
+}
 
 
 /* --- state.maps --- */
@@ -246,12 +289,6 @@ interface ProgramListItem {
 
 /** Идентификатор сессии. */
 type SessionID = string;
-
-
-/* --- state.sessionManager --- */
-
-//TODO: типизация
-
 
 /* --- state.windowData --- */
 

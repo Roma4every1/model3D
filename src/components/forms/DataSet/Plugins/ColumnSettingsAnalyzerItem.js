@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { actions } from "../../../../store";
 
-var utils = require("../../../../utils");
+var utils = require("../../../../utils/utils");
 
 export default function ColumnSettingsAnalyzerItem(props) {
     const { item, parameterName, path, propertyName, type, formId, start, finish } = props;

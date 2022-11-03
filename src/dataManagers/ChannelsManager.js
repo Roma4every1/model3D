@@ -1,27 +1,29 @@
-﻿import i18n from "../i18n";
+﻿import i18n from "../locales/i18n";
 import { findIndex, uniq } from "lodash";
-import { equalParams } from "../utils";
+import { equalParams } from "../utils/utils";
 import { actions } from "../store";
 
 
 export default function createChannelsManager(store) {
   /* `{[key: string]: ???}` */
-  const allChannelsForms = [];
+  const allChannelsForms = {};
   /* `{[key: string]: string[]}` */
-  const channelsParams = [];
+  const channelsParams = {};
   /* `{[key: string]: string[]}` */
-  const channelsParamsValues = [];
+  const channelsParamsValues = {};
 
   const loadFormChannelsList = async (formId) => {
     const sessionId = store.getState().sessionId;
-    const data = await store.getState().sessionManager.fetchData(`getChannelsForForm?sessionId=${sessionId}&formId=${formId}`);
+    const data = await store.getState().sessionManager
+      .fetchData(`getChannelsForForm?sessionId=${sessionId}&formId=${formId}`);
     await Promise.all(data.map(async (channel) => await loadAllChannelData(channel, formId, false)));
     return data;
   }
 
   const loadChannelParamsList = async (channelName) => {
     const sessionId = store.getState().sessionId;
-    return await store.getState().sessionManager.fetchData(`getNeededParamForChannel?sessionId=${sessionId}&channelName=${channelName}`);
+    return await store.getState().sessionManager
+      .fetchData(`getNeededParamForChannel?sessionId=${sessionId}&channelName=${channelName}`);
   }
 
   /* channelName: string, paramValues: Param[]*/

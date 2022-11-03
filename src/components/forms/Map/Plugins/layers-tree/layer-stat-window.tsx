@@ -65,10 +65,9 @@ export const LayerStatisticsWindow = ({header, layer}: LayerStatWindowProps) => 
       className={'propertiesWindow'} title={header} resizable={false}
       width={300} height={103 + stat.length * 32} onClose={onClose}
     >
-      <div>
-        <span>{t('map.layer-stat-header')}</span>
-        <ul>{stat.map(mapStat)}</ul>
-      </div>
+      {stat.length
+        ? <div><span>{t('map.layer-stat-header')}</span><ul>{stat.map(mapStat)}</ul></div>
+        : <div>{'Слой не содержит объектов.'}</div>}
       <DialogActionsBar>
         <Button className={'actionbutton'} onClick={onClose}>{t('base.ok')}</Button>
       </DialogActionsBar>

@@ -3,7 +3,7 @@ import { InputChangeEvent, ColorPickerChangeEvent, NumericTextBoxChangeEvent, Ch
 import { useState, useCallback } from "react";
 import { ColorPicker, NumericTextBox, Checkbox, Input } from "@progress/kendo-react-inputs";
 import { Button } from "@progress/kendo-react-buttons";
-import { InitLabelState, paletteSettings } from "../properties-utils";
+import { InitLabelState, paletteSettings, gradientSettings } from "../properties-utils";
 import { AlignSwitcher } from "./align-switcher";
 import "../../../../../../styles/label-properties.scss";
 
@@ -102,8 +102,8 @@ export const LabelProperties = ({element: label, init, apply, update, cancel, t}
         <div>
           <span>Цвет:</span>
           <ColorPicker
-            view={'combo'} paletteSettings={paletteSettings}
-            value={color} onChange={onColorChange}
+            view={'gradient'} value={color} onChange={onColorChange}
+            paletteSettings={paletteSettings} gradientSettings={gradientSettings}
           />
         </div>
         <div>

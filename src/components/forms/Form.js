@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Skeleton } from "@progress/kendo-react-indicators";
 import ErrorBoundary from "../common/ErrorBoundary";
 
-import { capitalizeFirstLetter } from "../../utils";
+import { capitalizeFirstLetter } from "../../utils/utils";
 import { formDict } from "../dicts/forms";
 import { pluginsDict } from "../dicts/plugins";
 import { actions, selectors } from "../../store";
@@ -101,7 +101,7 @@ export default function Form({formData, data}) {
   });
 
   if (!formLoadedData.loaded) return <Skeleton shape={'rectangle'} animation={{type: 'wave'}}/>;
-  const formRef = formType !== 'map' ? _form : undefined;
+  const formRef = formType !== 'map' && formType !== 'dock' && formType !== 'chart' ? _form : undefined;
 
   return (
     <ErrorBoundary>

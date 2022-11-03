@@ -5,14 +5,8 @@ import { loadImageData } from "./htmlHelper";
 import startThread from "./startThread";
 import parseSMB from "./parseSMB";
 import pngMono from "./pngMono";
+import { API } from "../../../../api/api";
 
-import dro32Lib from "../../../../static/libs/dro32_.smb";
-import gridsLib from "../../../../static/libs/grids.smb";
-import litLib from "../../../../static/libs/lit.smb";
-import regionalLib from "../../../../static/libs/regional.smb";
-
-
-const libsDict = {'dro32_': dro32Lib, 'grids': gridsLib, 'lit': litLib, 'regional': regionalLib};
 
 const twoPi = 2 * Math.PI;
 const pointBounds = (point) => {return {min: point, max: point}};
@@ -550,9 +544,7 @@ var polyline = declareType('polyline', {
 			const t = index / 64;
 			return `rgba(${b.map((bi, i) => Math.round(bi + (c[i] - bi) * t))}, 1)`;
 		}
-		const done = await fetch(libsDict[libName.toLowerCase()], {credentials: 'include'});
-		const buffer = await done.arrayBuffer();
-		const lib = parseSMB(new Uint8Array(buffer));
+		const lib = parseSMB(await API.maps.getPatternLib(libName));
 		const png = pngMono(lib[index], color, backColor);
 		return await loadImageData(png, 'image/png');
 	},

@@ -1,5 +1,5 @@
 import { chunk, min, max } from "lodash";
-import { getParentFormId } from "../../../utils";
+import { getParentFormId } from "../../../utils/utils";
 
 
 /** Настройки для метода `addEventListener`. */

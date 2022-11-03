@@ -2,7 +2,6 @@
 
 export enum FormSettingsActions {
   SET = 'formSettings/set',
-  SET_SERIES_SETTINGS = 'formSettings/setSeriesSettings',
 }
 
 /* --- actions interfaces --- */
@@ -12,12 +11,8 @@ interface ActionSet {
   formId: FormID,
   value: any,
 }
-interface ActionSetSeriesSetting {
-  type: FormSettingsActions.SET_SERIES_SETTINGS,
-  payload: {formID: FormID, data: any},
-}
 
-export type FormSettingsAction = ActionSet | ActionSetSeriesSetting;
+export type FormSettingsAction = ActionSet;
 
 /* --- reducer --- */
 
@@ -28,13 +23,6 @@ export const formSettingsReducer = (state: FormSettings = initFormSettings, acti
 
     case FormSettingsActions.SET: {
       return {...state, [action.formId]: action.value};
-    }
-
-    case FormSettingsActions.SET_SERIES_SETTINGS: {
-      return {
-          ...state,
-          [action.payload.formID]: {...state[action.payload.formID], seriesSettings: action.payload.data}
-      };
     }
 
     default: return state;

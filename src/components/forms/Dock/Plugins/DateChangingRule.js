@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import {stringToTableCell} from "../../../../utils";
+import {stringToTableCell} from "../../../../utils/utils";
 
 
 export default function DateChangingRule(props) {

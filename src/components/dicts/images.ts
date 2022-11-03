@@ -1,4 +1,4 @@
-/* download-files */
+/* --- Download Files --- */
 
 import csvIcon from "../../static/images/download-files/csv.png";
 import docIcon from "../../static/images/download-files/doc.png";
@@ -11,7 +11,7 @@ import zipIcon from "../../static/images/download-files/zip.png";
 import importIcon from "../../static/images/download-files/import.png";
 import defaultIcon from "../../static/images/download-files/default.png";
 
-/* forms */
+/* --- Forms --- */
 
 import caratIcon from "../../static/images/forms/carat.png";
 import filesIcon from "../../static/images/forms/files.png";
@@ -24,7 +24,24 @@ import spreadsheetIcon from "../../static/images/forms/spreadsheet.png";
 import spreadsheetUniteIcon from "../../static/images/forms/spreadsheetUnite.png";
 import transferFormIcon from "../../static/images/forms/transferForm.png";
 
-/* map */
+/* --- Menu --- */
+
+import backToSystemsIcon from "../../static/images/menu/back-to-systems.png";
+import aboutProgramIcon from "../../static/images/menu/about-program.png";
+import saveSessionIcon from "../../static/images/menu/save-session.png";
+import defaultSessionIcon from "../../static/images/menu/default-session.png";
+
+import globalParametersIcon from "../../static/images/menu/global-parameters.png";
+import presentationParametersIcon from "../../static/images/menu/presentation-parameters.png";
+import presentationsListIcon from "../../static/images/menu/presentations-list.png";
+
+import runProgramIcon from "../../static/images/menu/run-program.png";
+
+/* --- Chart --- */
+
+import chartTooltipIcon from "../../static/images/chart/tooltip.png";
+
+/* --- Map --- */
 
 import acceptIcon from "../../static/images/map/accept.png";
 import cancelIcon from "../../static/images/map/cancel.png";
@@ -52,9 +69,10 @@ import createSignIcon from "../../static/images/map/create-sign.png";
 import selectingIcon from "../../static/images/map/selecting-mode.png";
 import creatingIcon from "../../static/images/map/creating-mode.png";
 
+/* --- --- --- */
 
 /** Используется в компоненте `DownloadFileItem` (иконки файлов по расширениям). */
-export const filesDict: {[key: string]: string} = {
+export const filesDict: Record<string, string> = {
   'csv': csvIcon,
   'doc': docIcon,
   'docx': docxIcon,
@@ -69,7 +87,7 @@ export const filesDict: {[key: string]: string} = {
 };
 
 /** Используется в компоненте `Screenshot` (заглушки нереализованных форм). */
-export const formIconsDict: {[key: string]: string} = {
+export const formIconsDict: Record<string, string> = {
   'carat': caratIcon,
   'files': filesIcon,
   'filesList': filesListIcon,
@@ -81,6 +99,25 @@ export const formIconsDict: {[key: string]: string} = {
   'spreadsheetUnite': spreadsheetUniteIcon,
   'transferForm': transferFormIcon,
 };
+
+/** Иконки для меню (компонент `Menu`). */
+export const menuIconsDict: Record<string, string> = {
+  'back': backToSystemsIcon,
+  'about': aboutProgramIcon,
+  'save': saveSessionIcon,
+  'load': defaultSessionIcon,
+
+  'g': globalParametersIcon,       // LeftPanelItems.GLOBAL
+  'f': presentationParametersIcon, // LeftPanelItems.FORM
+  'l': presentationsListIcon,      // LeftPanelItems.LIST
+
+  'run': runProgramIcon,
+};
+
+/** Иконки для панели графика. */
+export const chartIconsDict: Record<string, string> = {
+  'tooltip': chartTooltipIcon,
+}
 
 /** ### Общие иконки для карт.
  *
@@ -99,9 +136,9 @@ export const mapIconsDict: Record<string, string> = {
 
 /** Иконки режимов редактирования. */
 export const mapEditIconsDict: {[key: number]: string} = {
-  10:  handIcon,   // MapModes.MOVE_MAP
-  11:  moveIcon,   // MapModes.MOVE
-  12:  rotateIcon, // MapModes.ROTATE
+  10: handIcon,    // MapModes.MOVE_MAP
+  11: moveIcon,    // MapModes.MOVE
+  12: rotateIcon,  // MapModes.ROTATE
   21: movePoint,   // MapModes.MOVE_POINT
   22: addEnd,      // MapModes.ADD_END
   23: addBetween,  // MapModes.ADD_BETWEEN

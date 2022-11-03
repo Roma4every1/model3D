@@ -133,7 +133,7 @@ export const Editing = ({mapState, formID}: EditingProps) => {
 
   return (
     <section className={'map-editing'}>
-      <div className={'map-panel-header'}>{headerText}</div>
+      <div className={'menu-header'}>{headerText}</div>
       <div className={'map-panel-main'}>
         <div className={'common-buttons'}>
           <button

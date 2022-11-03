@@ -1,9 +1,9 @@
 import { MapModes } from "../../components/forms/Map/enums";
 import { chunk } from "lodash";
-import { getParentFormId } from "../../utils";
+import { getParentFormId } from "../../utils/utils";
 import { getBoundsByPoints, getMultiMapChildrenCanvases } from "../../components/forms/Map/map-utils";
 
-/* --- actions types --- */
+/* --- Actions Types --- */
 
 export enum MapsActions {
   ADD_MULTI_MAP = 'maps/add_multi',
@@ -24,7 +24,7 @@ export enum MapsActions {
   CANCEL_CREATING = 'maps/cancelCreate'
 }
 
-/* --- actions interfaces --- */
+/* --- Actions Interfaces --- */
 
 interface MapAction {
   type: MapsActions,
@@ -97,7 +97,7 @@ export type MapsAction = ActionAddMulti | ActionSetSync | ActionAdd |
   ActionStartEditing | ActionAcceptEditing | ActionCancelEditing |
   ActionStartCreating | ActionCreateElement | ActionCancelCreating;
 
-/* --- utils --- */
+/* --- Utils --- */
 
 const getDefaultSelecting = (): MapSelectingState => {
   return {nearestElements: [], activeIndex: 0, lastPoint: null}
@@ -146,9 +146,9 @@ const initMapState: MapState = {
   utils: { updateCanvas: () => {}, pointToMap: (point) => point },
 };
 
-const initMaps: MapsState = {multi: {}, single: {}};
+/* --- Reducer --- */
 
-/* --- reducer --- */
+const initMaps: MapsState = {multi: {}, single: {}};
 
 export const mapsReducer = (state: MapsState = initMaps, action: MapsAction): MapsState => {
   switch (action.type) {
@@ -322,6 +322,7 @@ export const mapsReducer = (state: MapsState = initMaps, action: MapsAction): Ma
           element.x = oldData.x;
           element.y = oldData.y;
         }
+        element.selected = false;
         element.edited = false;
       }
       clearOldData(newMapState);

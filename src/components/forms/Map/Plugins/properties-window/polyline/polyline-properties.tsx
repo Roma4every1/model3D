@@ -9,7 +9,7 @@ import { NumericTextBox } from "@progress/kendo-react-inputs";
 import { FillNameTemplate } from "./fill-name-template";
 import { StyleTemplate } from "./style-template";
 import { applyLegend, InitPolylineState } from "../properties-utils";
-import { stylesData, templatesData, paletteSettings, updateImg } from "../properties-utils";
+import { stylesData, templatesData, paletteSettings, gradientSettings, updateImg } from "../properties-utils";
 import parseColor from "parse-color";
 
 
@@ -215,9 +215,9 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
       </Label>
       <div className="polylinePropertiesFillColorCombobox">
         <ColorPicker
-          view="combo"
+          view={'gradient'} value={fillColor}
           paletteSettings={paletteSettings}
-          value={fillColor}
+          gradientSettings={gradientSettings}
           onChange={onFillColorChange}
         />
       </div>
@@ -226,9 +226,9 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
       </Label>
       <div className="polylinePropertiesBkColorCombobox">
         <ColorPicker
-          view="combo"
+          view={'gradient'} value={fillBackColor}
           paletteSettings={paletteSettings}
-          value={fillBackColor}
+          gradientSettings={gradientSettings}
           onChange={onFillBackColorChange}
         />
       </div>
@@ -250,10 +250,10 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
       </Label>
       <div className="polylinePropertiesStrokeColorCombobox">
         <ColorPicker
+          view={'gradient'} value={borderColor}
           disabled={borderColorDisabled}
-          view="combo"
           paletteSettings={paletteSettings}
-          value={borderColor}
+          gradientSettings={gradientSettings}
           onChange={onBorderColorChange}
         />
       </div>

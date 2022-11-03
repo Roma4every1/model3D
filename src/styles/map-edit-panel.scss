@@ -15,22 +15,7 @@
 /* --- Panel & Header --- */
 
 .map-edit-panel {
-  padding-bottom: 2px;
-  min-width: 100%;
   grid-template-columns: 330px 90px 275px calc(100% - 785px) 90px;
-  grid-gap: 0;
-
-  > section {
-    margin-right: 4px;
-    padding-right: 4px;
-    border-right: 1px solid darkgray;
-
-    &:last-child {
-      margin-right: 0;
-      padding-right: 0;
-      border-right: none;
-    }
-  }
 
   img {
     width: 16px;
@@ -38,21 +23,6 @@
     display: inline-block;
     vertical-align: baseline;
   }
-
-  span.k-input {
-    border-radius: 0;
-  }
-}
-
-.map-panel-header {
-  padding-top: 2px;
-  margin-bottom: 2px;
-  text-align: center;
-  font-size: 1rem;
-  font-weight: bold;
-  background-color: var(--color-6);
-  border-radius: 1px;
-  height: 20px;
 }
 
 .map-panel-button {
@@ -94,22 +64,23 @@
 }
 
 .map-action {
-  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  margin: 0 1px;
   padding: 4px;
   border: none;
   border-radius: 2px;
   background: transparent;
   font-size: 1.05rem;
   transition: 0.2s;
+  min-height: 60px;
+  max-width: 100px;
 
   img {
     width: 24px;
     height: 24px;
-  }
-  :first-child {
-    display: flex;
-    justify-content: center;
-    align-items: center;
   }
   :last-child {
     text-align: center;
@@ -120,7 +91,7 @@
     background-color: var(--color-6);
   }
   &.selected, &:active {
-    background-color: #f8b3ae;
+    background-color: #fccbc7;
   }
   &:disabled {
     background-color: transparent;

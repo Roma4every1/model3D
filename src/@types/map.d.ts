@@ -30,6 +30,8 @@ interface MapLayerRaw {
   name: string,
   uid: string,
   visible: boolean,
+  index?: any,
+  version?: any,
 }
 
 
@@ -227,7 +229,7 @@ interface ShapeLine {
 /** ## Подпись.
  * + `x, y` — координаты
  * + `xoffset`: {@link MapLabelOffset} — смещение по x
- * + `yoffset`: {@link MapLabelOffset} — смещение по x
+ * + `yoffset`: {@link MapLabelOffset} — смещение по y
  * + `halignment`: {@link MapLabelAlignment} — выравнивание по горизонтали
  * + `valignment`: {@link MapLabelAlignment} — выранивание по вертикали
  * + `text` — текст подписи

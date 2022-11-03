@@ -1,5 +1,5 @@
 import {useSelector} from "react-redux";
-import {getLinkedPropertyValue} from "../../../utils";
+import {getLinkedPropertyValue} from "../../../utils/utils";
 
 
 export default function FormDisplayName(props) {
