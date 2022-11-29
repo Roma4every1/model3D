@@ -39,7 +39,7 @@ export const equalParams = (p1, p2) => {
   return true;
 }
 
-export const getRootFormId = (formId) => {
+export const getRootFormID = (formId) => {
   const index = formId.indexOf(',');
   return (index === -1) ? formId : formId.substring(0, index);
 }

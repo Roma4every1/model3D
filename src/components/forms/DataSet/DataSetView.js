@@ -1,32 +1,20 @@
-﻿import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import {Grid, GridColumn as Column, getSelectedState, getSelectedStateFromKeyDown, GridColumnMenuFilter} from "@progress/kendo-react-grid";
+﻿import React from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { Grid, GridColumn as Column, getSelectedState, getSelectedStateFromKeyDown, GridColumnMenuFilter } from "@progress/kendo-react-grid";
 import ColumnMenu from "./ColumnMenu";
 import { SecondLevelTable } from "./SecondLevelTable";
 import { Button } from "@progress/kendo-react-buttons";
-import { IntlProvider, load, LocalizationProvider, loadMessages } from "@progress/kendo-react-intl";
+import { IntlProvider, LocalizationProvider } from "@progress/kendo-react-intl";
 import calculateSize from "calculate-size";
-import likelySubtags from "cldr-core/supplemental/likelySubtags.json";
-import currencyData from "cldr-core/supplemental/currencyData.json";
-import weekData from "cldr-core/supplemental/weekData.json";
-import numbers from "cldr-numbers-full/main/ru/numbers.json";
-import currencies from "cldr-numbers-full/main/ru/currencies.json";
-import caGregorian from "cldr-dates-full/main/ru/ca-gregorian.json";
-import dateFields from "cldr-dates-full/main/ru/dateFields.json";
-import timeZoneNames from "cldr-dates-full/main/ru/timeZoneNames.json";
 import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { getter } from "@progress/kendo-react-common";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 import { CellRender, RowRender } from "./Renderers";
 import filterOperators from "./filterOperators.json";
 import filterOperations from "./filterOperations.json";
-import FormHeader from '../Form/FormHeader';
-import ruMessages from "../../../locales/ru/kendo-ui.json";
-import { actions } from "../../../store";
+import FormHeader from "../Form/FormHeader";
+import { actions, selectors } from "../../../store";
 
-
-load(likelySubtags, currencyData, weekData, numbers, currencies, caGregorian, dateFields, timeZoneNames);
-loadMessages(ruMessages, "ru-RU");
 
 var utils = require("../../../utils/utils");
 var _ = require("lodash");
@@ -34,14 +22,16 @@ const DATA_ITEM_KEY = "js_id";
 const SELECTED_FIELD = "js_selected";
 const EDIT_FIELD = "js_inEdit";
 const idGetter = getter(DATA_ITEM_KEY);
+const addRowCount = 500;
+
 
 function DataSetView(props, ref) {
-    const addRowCount = 500;
     const { t } = useTranslation();
     const dispatch = useDispatch();
-    const sessionManager = useSelector((state) => state.sessionManager);
-    const sessionId = useSelector((state) => state.sessionId);
+    const sessionManager = useSelector(selectors.sessionManager);
+    const sessionId = useSelector(selectors.sessionID);
     const { inputTableData, formData, apply, deleteRows, getRow, reload, editable, dataPart, activeChannelName } = props;
+
     const [rowAdding, setRowAdding] = React.useState(false);
     const [edited, setEdited] = React.useState(false);
     const [activeCell, setActiveCell] = React.useState(null);
@@ -775,11 +765,10 @@ function DataSetView(props, ref) {
                         }}
                         onSelectionChange={onSelectionChange}
                         onKeyDown={onKeyDown}
-                        rowHeight={15}
-                        pageSize={30}
+                        rowHeight={15} pageSize={30}
                         total={dataToShow.length}
                         filterOperators={filterOperators}
-                        scrollable={"virtual"}
+                        scrollable={'virtual'}
                     >
                         {columnGroupingData}
                     </Grid>

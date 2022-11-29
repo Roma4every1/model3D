@@ -1,4 +1,6 @@
-import {getYAxisDomain, toColor, toMonYear, toYear} from "./chart-axis-utils";
+import { createElement } from "react";
+import { LabelList, Area, Bar, Line} from "recharts";
+import { getYAxisDomain, toColor, toMonYear, toYear } from "./chart-axis-utils";
 
 
 /** Строит объект, по которому отрендерится ось из _Recharts_. */
@@ -36,15 +38,14 @@ const getChartItemPrototype = (dataKey, settings, displayName) => {
   };
 }
 
-/**
- * Строит прототип графика, который далее будет рендерится _Recharts_.
+/** Строит прототип графика, который далее будет рендерится библиотекой _Recharts_.
  * @param seriesSettings - `state.formSetting.seriesSettings`
  * @param properties - `state.channelsData[channel].properties`
  * @param columns - `state.channelsData[channel].data.Columns`
  * @param rows - `state.channelsData[channel].data.Rows`
  * */
-export const getChartPrototype = (seriesSettings, properties, columns, rows) => {
-  if (!(seriesSettings && properties && columns && rows)) return [null, null, null, null];
+export const getChartPrototype = (seriesSettings, properties: any[], columns: any[], rows: any[]) => {
+  if (!(seriesSettings && properties && columns && rows)) return [null, null, null, null, toMonYear];
 
   let axesData = seriesSettings['AxisSettings']['AxisSettings'] || [];
   const settings = seriesSettings['SeriesSettings']['SeriesSettings'];
@@ -52,14 +53,15 @@ export const getChartPrototype = (seriesSettings, properties, columns, rows) => 
   if (!(axesData instanceof Array)) axesData = [axesData];
   axesData = axesData.map(getAxisPrototype);
 
-  const chartData = Array.from({length: rows.length}, () => {return {}});
+  const chartData = Array.from({length: rows.length}, () => ({}));
   const diagramsData = [];
 
   const xIndex = columns.findIndex(column => column['NetType'] === 'System.DateTime');
-  const xID = columns[xIndex].Name;
+  const xID: string = columns[xIndex].Name;
+  const dateFn = seriesSettings['DateStep'] === 'Month' ? toMonYear : toYear;
 
   for (let j = 0; j < rows.length; j++)
-    chartData[j][xID] = (seriesSettings['DateStep'] === 'Month' ? toMonYear : toYear)(rows[j][xIndex]);
+    chartData[j][xID] = dateFn(rows[j][xIndex]);
 
   for (let property of properties) {
     if (property.fromColumn === xID) continue;
@@ -84,5 +86,36 @@ export const getChartPrototype = (seriesSettings, properties, columns, rows) => 
     }
   }
 
-  return [diagramsData, chartData, axesData, xID];
+  return [diagramsData, chartData, axesData, xID, dateFn];
+}
+
+export function mapDiagramsData(prototype) {
+  const {type, dataKey, yAxisId, name, stroke, labels, dot} = prototype;
+  let component: typeof Bar | typeof Line | typeof Area = Line;
+  let child = null;
+
+  if (labels) child = (
+    <LabelList
+      dataKey={dataKey} position={'top'}
+      style={{filter: `drop-shadow(0 0 4px ${stroke})`}}
+    />
+  );
+
+  const props = {
+    key: dataKey, yAxisId, dataKey, name, dot, stroke,
+    type: 'linear', strokeWidth: 2, fill: 'none', isAnimationActive: false,
+  };
+
+  switch (type) {
+    case 'gist': { component = Bar; props.stroke = 'none'; props.fill = stroke; break; }
+    case 'gistStack': { component = Bar; props.stroke = 'none'; props.fill = stroke; break; }
+    case 'area': { component = Area; break; }
+    case 'areaSpline': { component = Area; props.type = 'monotone'; break; }
+    case 'areaDiscr': { component = Area; props.type = 'step'; break; }
+    case 'point': { props.stroke = 'none'; break; }
+    case 'graphSpline': { props.type = 'monotone'; break; }
+    case 'graphDiscr': { props.type = 'step'; break; }
+    default: {}
+  }
+  return createElement(component as any, props, child);
 }

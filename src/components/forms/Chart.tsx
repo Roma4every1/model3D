@@ -1,15 +1,17 @@
-﻿import { createElement, useEffect, useMemo } from "react";
+﻿import { useEffect, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { ResponsiveContainer, ComposedChart } from "recharts";
-import { YAxis, XAxis, Line, Area, Bar, CartesianGrid, Legend, Tooltip, LabelList } from "recharts";
+import { ResponsiveContainer, ComposedChart, CartesianGrid, Legend, Tooltip, YAxis, XAxis } from "recharts";
 import { actions, selectors } from "../../store";
-import { getChartPrototype } from "./Chart/chart-utils";
+import { getChartPrototype, mapDiagramsData } from "./Chart/chart-utils";
+import { mapAxesData } from "./Chart/chart-axis-utils";
+import { ChartMark, chartMarksSelector, mapChartMarks } from "./Chart/chart-marks";
 import { compareArrays } from "../../utils/utils";
+import "../../styles/chart.scss";
 
 
-function chartDataSelector(this: any, state: WState) {
+function chartDataSelector(this: ChannelName, state: WState) {
   try {
-    const { data, properties } = state.channelsData[this.activeChannels[0]];
+    const { data, properties } = state.channelsData[this];
     return [data.Columns, data['Rows'].map((row) => row.Cells), properties];
   } catch {
     return [null, null, null];
@@ -21,7 +23,7 @@ export default function Chart({data}) {
   const formID = data.formId;
 
   const chartState: ChartState = useSelector(selectors.chartState.bind(formID));
-  const [columns, rows, properties] = useSelector(chartDataSelector.bind(data), compareArrays);
+  const [columns, rows, properties] = useSelector(chartDataSelector.bind(data.activeChannels[0]), compareArrays);
 
   const sessionID = useSelector(selectors.sessionID);
   const sessionManager = useSelector(selectors.sessionManager);
@@ -41,21 +43,17 @@ export default function Chart({data}) {
       });
     }
     return () => { ignore = true; }
-  }, [sessionID, formID, sessionManager, dispatch]);
+  }, [formID, sessionID, sessionManager, dispatch]);
 
-  const [diagramsData, chartData, axesData, xAxisID] = useMemo(() => {
+  const [diagramsData, chartData, axesData, xAxisID, dateFn] = useMemo(() => {
     return getChartPrototype(chartState?.seriesSettings, properties, columns, rows);
   }, [properties, columns, rows, chartState?.seriesSettings]);
 
-  if (!diagramsData || !chartData || rows.length === 0) return (
-    <ResponsiveContainer>
-      <ComposedChart margin={{right: 10, top: 10}} data={[]}>
-        <XAxis/>
-        <YAxis/>
-        <Legend verticalAlign={'top'} align={'center'} payload={[{value: 'Нет данных.'}]} />
-      </ComposedChart>
-    </ResponsiveContainer>
-  );
+  const chartMarks: ChartMark[] = useSelector(chartMarksSelector.bind({
+    channelName: data.activeChannels[1], dateFn,
+  }));
+
+  if (!diagramsData || !chartData || rows.length === 0) return <EmptyChart/>;
 
   return (
     <ResponsiveContainer>
@@ -65,47 +63,21 @@ export default function Chart({data}) {
         <CartesianGrid strokeDasharray={'4 4'} />
         <XAxis dataKey={xAxisID} />
 
-        {axesData.map((axis) => {
-          const {id, domain, orientation, isReversed, stroke, value, angle, position, tickCount} = axis;
-          return (
-            <YAxis
-              key={id} yAxisId={id} label={{ value, angle, position, offset: 10 }}
-              domain={domain} width={45} orientation={orientation}
-              reversed={isReversed} stroke={stroke} tickCount={tickCount}
-            />
-          );
-        })}
+        {axesData.map(mapAxesData)}
+        {diagramsData.map(mapDiagramsData)}
+        {chartMarks.map(mapChartMarks)}
+      </ComposedChart>
+    </ResponsiveContainer>
+  );
+}
 
-        {diagramsData.map((prototype) => {
-          const {type, dataKey, yAxisId, name, stroke, labels, dot} = prototype;
-          let component: typeof Bar | typeof Line | typeof Area = Line;
-          let child = null;
-
-          if (labels) child = (
-            <LabelList
-              dataKey={dataKey} position={'top'}
-              style={{filter: `drop-shadow(0 0 4px ${stroke})`}}
-            />
-          );
-
-          const props = {
-            key: dataKey, yAxisId, dataKey, name, dot, stroke,
-            type: 'linear', strokeWidth: 2, fill: 'none', isAnimationActive: false,
-          };
-
-          switch (type) {
-            case 'gist': { component = Bar; props.stroke = 'none'; props.fill = stroke; break; }
-            case 'gistStack': { component = Bar; props.stroke = 'none'; props.fill = stroke; break; }
-            case 'area': { component = Area; break; }
-            case 'areaSpline': { component = Area; props.type = 'monotone'; break; }
-            case 'areaDiscr': { component = Area; props.type = 'step'; break; }
-            case 'point': { props.stroke = 'none'; break; }
-            case 'graphSpline': { props.type = 'monotone'; break; }
-            case 'graphDiscr': { props.type = 'step'; break; }
-            default: {}
-          }
-          return createElement(component as any, props, child);
-        })}
+const EmptyChart = () => {
+  return (
+    <ResponsiveContainer>
+      <ComposedChart margin={{right: 10, top: 10}} data={[]}>
+        <XAxis/>
+        <YAxis/>
+        <Legend verticalAlign={'top'} align={'center'} payload={[{value: 'Нет данных.'}]} />
       </ComposedChart>
     </ResponsiveContainer>
   );

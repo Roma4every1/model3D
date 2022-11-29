@@ -1,3 +1,6 @@
+import { getRootFormID, stringToTableCell } from "../utils/utils";
+
+
 /** Селекторы. */
 export const selectors = {
   /** Общее состояние приложения. */
@@ -20,6 +23,8 @@ export const selectors = {
   channel: channelSelector,
   /** Разметка конкретной формы; `this - formID`. */
   formLayout: formLayoutSelector,
+  /** Настройки формы; `this - formID`. */
+  formSettings: formSettingsSelector,
   /** Параметры конкретной формы; `this - formID`. */
   formParams: formParamsSelector,
   /** Список доступных программ для формы. */
@@ -35,20 +40,25 @@ export const selectors = {
   mapsState: (state: WState) => state.maps,
   multiMapState: multiMapStateSelector,
   mapState: mapStateSelector,
-  windows: (state: WState) => state.windowData?.windows
+  windows: (state: WState) => state.windowData?.windows,
+
+  currentWellID: currentWellIDSelector,
 }
 
 function formLayoutSelector(this: FormID, state: WState): FormLayout {
   return state.formLayout[this];
 }
-function formParamsSelector(this: FormID, state: WState) {
+function formSettingsSelector(this: FormID, state: WState) {
+  return state.formSettings[this];
+}
+function formParamsSelector(this: FormID, state: WState): FormParameter[] {
   return state.formParams[this];
 }
-function formProgramsSelector(this: FormID, state: WState) {
+function formProgramsSelector(this: FormID, state: WState): FetchState<ProgramListData> {
   return state.programs[this];
 }
 
-function formChildrenStateSelector(this: FormID, state: WState) {
+function formChildrenStateSelector(this: FormID, state: WState): FormChildrenState {
   return state.childForms[this];
 }
 function activeChildIDSelector(this: FormID, state: WState): FormID {
@@ -73,4 +83,10 @@ function multiMapStateSelector(this: FormID, state: WState): MultiMapState {
 }
 function mapStateSelector(this: FormID, state: WState): MapState {
   return state.maps.single[this];
+}
+
+function currentWellIDSelector(this: FormID, state: WState): string | null {
+  const rootFormParams = state.formParams[getRootFormID(this)];
+  const currentWellParam = rootFormParams.find((param) => param.id === 'currentWell');
+  return currentWellParam ? stringToTableCell(currentWellParam.value, 'LOOKUPVALUE') : null;
 }

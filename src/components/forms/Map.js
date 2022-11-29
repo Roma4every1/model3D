@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useLayoutEffect, useRef, useState} from "react";
+﻿import React, { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Loader } from "@progress/kendo-react-indicators";
@@ -19,6 +19,9 @@ export default function Map({formData: {id: formID}, data}) {
   const sessionManager = useSelector(selectors.sessionManager);
 
   const activeChannel = useSelector(selectors.channel.bind(data.activeChannels[0]));
+  /** @type string */
+  const currentWellID = useSelector(selectors.currentWellID.bind(formID));
+
   const mapsState = useSelector(selectors.mapsState);
   /** @type MapState */
   const mapState = useSelector(selectors.mapState.bind(formID));
@@ -36,6 +39,15 @@ export default function Map({formData: {id: formID}, data}) {
   const getDrawer = useCallback((owner) => {
     return createMapsDrawer(sessionManager, sessionID, formID, owner);
   }, [formID, sessionManager, sessionID]);
+
+  const wellsMaxScale = useMemo(() => {
+    const layers = mapData?.layers;
+    if (!layers) return 50_000;
+    for (const { elements, highscale } of layers) {
+      if (elements.length && elements[0].type === 'sign') return highscale;
+    }
+    return 50_000;
+  }, [mapData?.layers]);
 
   // обновление списка связанных карт
   useEffect(() => {
@@ -104,6 +116,21 @@ export default function Map({formData: {id: formID}, data}) {
     if (utils) return utils.updateCanvas = updateCanvas;
   }, [utils, updateCanvas]);
 
+  const getWellCS = useCallback((wellID, maxScale) => {
+    const point = mapData?.points.find(p => p.name === wellID);
+    if (point && scroller.current) {
+      const scale = mapData.scale < maxScale ? mapData.scale : maxScale;
+      return {centerX: point.x, centerY: point.y, scale};
+    }
+    return null;
+  }, [mapData]);
+
+  // подстраивание карты под выбранную скважину
+  useEffect(() => {
+    const cs = getWellCS(currentWellID, wellsMaxScale);
+    if (cs) updateCanvas(cs, canvasRef.current);
+  }, [currentWellID, wellsMaxScale, getWellCS, updateCanvas]);
+
   // закрепление ссылки на холст
   useLayoutEffect(() => {
     if (canvasRef.current && canvasRef.current !== canvas && mapData) {
@@ -114,7 +141,8 @@ export default function Map({formData: {id: formID}, data}) {
         : scroller.current = new Scroller(canvasRef.current);
       if (!mapState.scroller) dispatch(actions.setMapField(formID, 'scroller', scroller.current));
 
-      updateCanvas(getFullViewport(mapData.layers, canvasRef.current), canvasRef.current);
+      const cs = getWellCS(currentWellID, wellsMaxScale) || getFullViewport(mapData.layers, canvasRef.current);
+      updateCanvas(cs, canvasRef.current);
     }
   });
 

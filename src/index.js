@@ -19,6 +19,7 @@ import likelySubtags from "cldr-core/supplemental/likelySubtags.json";
 import currencyData from "cldr-core/supplemental/currencyData.json";
 import weekData from "cldr-core/supplemental/weekData.json";
 import numbers from "cldr-numbers-full/main/ru/numbers.json";
+import currencies from "cldr-numbers-full/main/ru/currencies.json";
 import caGregorian from "cldr-dates-full/main/ru/ca-gregorian.json";
 import dateFields from "cldr-dates-full/main/ru/dateFields.json";
 import timeZoneNames from "cldr-dates-full/main/ru/timeZoneNames.json";
@@ -36,7 +37,7 @@ if (!Object.fromEntries) {
 }
 
 loadMessages(ruMessages, 'ru-RU');
-load(likelySubtags, currencyData, weekData, numbers, caGregorian, dateFields, timeZoneNames);
+load(likelySubtags, currencyData, weekData, numbers, currencies, caGregorian, dateFields, timeZoneNames);
 
 try { registerServiceWorker(); } catch {}
 

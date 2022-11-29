@@ -1,0 +1,15 @@
+.recharts-reference-line {
+  line {
+    stroke: #123;
+    stroke-width: 2px;
+    stroke-dasharray: 4px 5px;
+  }
+  text {
+    text-anchor: middle;
+    cursor: pointer;
+  }
+  rect {
+    fill: white;
+    stroke: black;
+  }
+}

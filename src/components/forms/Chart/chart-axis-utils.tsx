@@ -1,4 +1,5 @@
 import { toDate } from "../../../utils/utils";
+import { YAxis } from "recharts";
 
 
 /** Округляет в низ до ближайшего числа, удобного для восприятия на оси графика.
@@ -86,4 +87,15 @@ export const toYear = (wmwDate: string): string => {
  * */
 export const toColor = (colorParams: {R: string, G: string, B: string, A: string}): string => {
   return `rgba(${colorParams.R},${colorParams.G},${colorParams.B},${colorParams.A})`;
+}
+
+export function mapAxesData(axis) {
+  const {id, domain, orientation, isReversed, stroke, value, angle, position, tickCount} = axis;
+  return (
+    <YAxis
+      key={id} yAxisId={id} label={{ value, angle, position, offset: 10 }}
+      domain={domain} width={45} orientation={orientation}
+      reversed={isReversed} stroke={stroke} tickCount={tickCount}
+    />
+  );
 }

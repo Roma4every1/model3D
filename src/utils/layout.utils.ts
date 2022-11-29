@@ -17,6 +17,7 @@ const TAB_STRIP_HEIGHT = 28;   // px
 /** Ширина элемента с названием параметра. */
 const PARAM_LABEL_WIDTH = 110; // px
 
+// TODO: order, height
 
 /** Возвращает разметку для левой панели (с параметрами).
  * @param proto прототип разметки
@@ -80,19 +81,30 @@ function getParamsListHeight(params: FormParameter[]): number {
   let height = TAB_STRIP_HEIGHT;
   for (const param of params) {
     if (!param.editorType) continue;
-    if (param.editorType === 'dateIntervalTextEditor') { height += 45; continue; }
-    if (textWidth(param.displayName) > PARAM_LABEL_WIDTH) { height += 35; continue; }
-    height += 25;
+
+    const editorH = param.editorType === 'dateIntervalTextEditor' ? 40 : 20;
+    const textH = 12 * 1.2 * getLinesCount(param.displayName);
+    height += Math.max(textH, editorH) + 5;
   }
-  return height;
+  return height + 2;
 }
 
 /* --- Common Layout Utils --- */
+
+function getLinesCount(text: string) {
+  const wordsWidth = text.split(' ').map(textWidth);
+  let lines = 1, sum = 0;
+  for (const width of wordsWidth) {
+    if (sum + width < PARAM_LABEL_WIDTH) { sum += width; continue; }
+    lines += 1; sum = width;
+  }
+  return lines;
+}
 
 const canvas = document.createElement('canvas');
 const ctx = canvas.getContext('2d');
 ctx.font = 'normal 12px "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Segoe UI Symbol"';
 
 export function textWidth(text: string): number {
-  return Math.ceil(ctx.measureText(text).width) + 1;
+  return Math.ceil(ctx.measureText(text).width);
 }
