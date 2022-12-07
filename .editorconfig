@@ -1,4 +1,5 @@
 # Соглашения об оформлении исходного кода.
+# Все исходники должны быть в кодировке UTF-8 без метки порядка байтов.
 # Данный файл содержит инструкции для IDE, подробнее: https://editorconfig.org
 
 root = true
@@ -17,16 +18,17 @@ max_line_length = 100
 # убирать пробелы перед переводом на новую строку
 trim_trailing_whitespace = true
 
-# Настрокйи для JetBrains IDE:
+# --- Настройки для JetBrains IDE ---
 
-ij_any_space_after_colon = true            # const object = {field: value}
-ij_any_space_after_comma = true            # const array = [1, 2, 3];
-ij_any_space_before_if_parentheses = true  # if (condition) { ... }
-ij_any_catch_on_new_line = true            # try { ... } \n catch { ... }
-ij_any_finally_on_new_line = true          # try { ... } \n finally { ... }
-ij_javascript_use_public_modifier = true   # public methodName() { ... }
+# try { ... } \n catch { ... }
+ij_any_catch_on_new_line = true
+# try { ... } \n finally { ... }
+ij_any_finally_on_new_line = true
+# public methodName() { ... }
+ij_typescript_use_public_modifier = true
 
-ij_css_hex_color_lower_case = true         # color: #123abc, not #123ABC
-ij_css_hex_color_long_format = true        # color: #ffffff, not #fff
-ij_scss_hex_color_lower_case = true        # color: #123abc, not #123ABC
-ij_scss_hex_color_long_format = true       # color: #ffffff, not #fff
+# color: #123abc, not #123ABC & #ffffff, not #fff
+ij_css_hex_color_lower_case = true
+ij_css_hex_color_long_format = true
+ij_scss_hex_color_lower_case = true
+ij_scss_hex_color_long_format = true

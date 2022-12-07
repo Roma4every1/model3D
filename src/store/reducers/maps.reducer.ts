@@ -1,7 +1,7 @@
-import { MapModes } from "../../components/forms/Map/enums";
+import { MapModes } from "../../components/forms/map/enums";
 import { chunk } from "lodash";
 import { getParentFormId } from "../../utils/utils";
-import { getBoundsByPoints, getMultiMapChildrenCanvases } from "../../components/forms/Map/map-utils";
+import { getBoundsByPoints, getMultiMapChildrenCanvases } from "../../components/forms/map/map-utils";
 
 /* --- Actions Types --- */
 

@@ -1,6 +1,6 @@
 import { inflate, deflate } from "pako";
-import { readXml } from "../components/forms/Map/drawer/gsTransform";
-import { types } from "../components/forms/Map/drawer/mapDrawer";
+import { readXml } from "../components/forms/map/drawer/gs-transform";
+import { types } from "../components/forms/map/drawer/map-drawer";
 
 
 /* --- Map Data --- */
