@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef} from "react";
+import React, { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Loader } from "@progress/kendo-react-indicators";

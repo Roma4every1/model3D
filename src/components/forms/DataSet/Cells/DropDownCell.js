@@ -1,4 +1,4 @@
-﻿import * as React from "react";
+import * as React from "react";
 import { mapTree, extendDataItem } from "@progress/kendo-react-common";
 import { DropDownTree } from "@progress/kendo-react-dropdowns";
 import { filterBy } from "@progress/kendo-react-data-tools";

@@ -1,4 +1,4 @@
-﻿import * as React from 'react';
+import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { BooleanCell } from "./BooleanCell";
 import { DateCell } from "./DateCell";

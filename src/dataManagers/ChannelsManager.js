@@ -1,4 +1,4 @@
-﻿import i18n from "../locales/i18n";
+import i18n from "../locales/i18n";
 import { findIndex, uniq } from "lodash";
 import { equalParams } from "../utils/utils";
 import { actions } from "../store";

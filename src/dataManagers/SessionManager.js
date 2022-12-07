@@ -1,4 +1,4 @@
-﻿import i18n from '../locales/i18n';
+import i18n from '../locales/i18n';
 import { webFetch } from "../api/initialization";
 import { actions } from "../store";
 import { API } from "../api/api";

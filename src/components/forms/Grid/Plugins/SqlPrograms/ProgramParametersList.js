@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";

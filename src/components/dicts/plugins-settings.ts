@@ -1,4 +1,4 @@
-type FormTypeWithPlugin = 'Dock' | 'Grid' | 'DataSet' | 'Map' | 'Chart';
+type FormTypeWithPlugin = 'Dock' | 'Grid' | 'DataSet' | 'Map' | 'Chart' | 'Carat';
 export type FormPluginsSettings = Record<string, FormPluginSettings>;
 
 export interface FormPluginSettings {
@@ -74,7 +74,7 @@ export const pluginsSettings: Record<FormTypeWithPlugin, FormPluginsSettings> = 
     editing: {
       type: 'strip',
       component: 'MapEditPanel',
-      label: 'Редактирование карты',
+      label: 'Настройки карты',
     },
     sublayersTree: {
       type: 'right',
@@ -83,10 +83,17 @@ export const pluginsSettings: Record<FormTypeWithPlugin, FormPluginsSettings> = 
     },
   },
   Chart: {
-    seriesSettings: {
+    editing: {
       type: 'strip',
-      component: 'SeriesSettings',
+      component: 'ChartEditPanel',
       label: 'Настройки графика',
     },
+  },
+  Carat: {
+    editing: {
+      type: 'strip',
+      component: 'CaratEditPanel',
+      label: 'Настройки каротажа',
+    }
   },
 };

@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Grid, GridColumn as Column, getSelectedState, getSelectedStateFromKeyDown, GridColumnMenuFilter } from "@progress/kendo-react-grid";
 import ColumnMenu from "./ColumnMenu";

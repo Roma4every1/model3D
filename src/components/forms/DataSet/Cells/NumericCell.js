@@ -1,4 +1,4 @@
-﻿import * as React from "react";
+import * as React from "react";
 import { NumericTextBox } from "@progress/kendo-react-inputs";
 
 export const NumericCell = (props) => {

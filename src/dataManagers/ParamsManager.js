@@ -1,4 +1,4 @@
-﻿import { find } from "lodash";
+import { find } from "lodash";
 import { getParentFormId, tableRowToString, stringToTableCell } from "../utils/utils";
 import { actions } from "../store";
 

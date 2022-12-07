@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import FormHeader from "./Form/FormHeader";
 import { formIconsDict } from "../dicts/images";
 

@@ -1,4 +1,4 @@
-﻿import EventEmitter from "events";
+import EventEmitter from "events";
 import nextTick from "async/nextTick";
 import { once, identity } from "lodash";
 import startThread, { sleep } from "./startThread";
@@ -11,10 +11,10 @@ import { PIXEL_PER_METER } from "../map-utils";
 const devicePixelRatio = window.devicePixelRatio || 1;
 
 
-function updateCanvasSize(canvas) {
+export function updateCanvasSize(canvas) {
 	let ret = false;
-	const width = canvas.clientWidth * devicePixelRatio || 0;
-	const height = canvas.clientHeight * devicePixelRatio || 0;
+	const width = canvas.clientWidth * devicePixelRatio;
+	const height = canvas.clientHeight * devicePixelRatio;
 
 	if (canvas.width !== width) {
 		canvas.width = width;

@@ -2,6 +2,7 @@
 interface WState {
   appState: AppState,
   canRunReport: CanRunReport,
+  carats: CaratsState,
   channelsData: ChannelsData,
   channelsLoading: ChannelsLoading,
   childForms: ChildForms,
@@ -61,6 +62,19 @@ type SystemID = string;
 /** Можно ли отправить репорт. */
 type CanRunReport = boolean;
 
+
+/* --- state.carats --- */
+
+type CaratsState = FormDict<CaratState>;
+
+/** Состояние каротажа.
+ * + `columns` — колонки
+ * + `canvas` — элемент холста
+ * */
+interface CaratState {
+  columns: any[],
+  canvas: HTMLCanvasElement,
+}
 
 /* --- state.channelsData --- */
 

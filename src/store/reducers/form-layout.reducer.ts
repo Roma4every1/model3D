@@ -1,4 +1,4 @@
-﻿/* --- Actions Types --- */
+/* --- Actions Types --- */
 
 export enum FormLayoutActions {
   SET = 'formLayout/set',

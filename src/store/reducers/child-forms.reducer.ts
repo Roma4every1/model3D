@@ -1,4 +1,4 @@
-﻿/* --- actions types --- */
+/* --- actions types --- */
 
 export enum ChildFormsActions {
   SET = 'childForms/set',

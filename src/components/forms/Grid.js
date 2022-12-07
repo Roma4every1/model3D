@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Model } from "flexlayout-react";
 import { Loader } from "@progress/kendo-react-indicators";

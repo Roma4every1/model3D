@@ -27,12 +27,16 @@ import MapLayersTree from "../forms/Map/Plugins/layers-tree/layers-tree";
 
 /* --- Chart Plugins --- */
 
-import SeriesSettings from "../forms/Chart/Plugins/chart-edit-panel";
+import ChartEditPanel from "../forms/Chart/Plugins/chart-edit-panel";
+
+/* --- Carat Plugins ---- */
+
+import CaratEditPanel from "../forms/Carat/carat-edit-panel";
 
 /* --- --- --- */
 
 /** Типы форм, для которых есть плагины. */
-type PluginFormType = 'dock' | 'grid' | 'dataset' | 'map' | 'chart';
+type PluginFormType = 'dock' | 'grid' | 'dataset' | 'map' | 'chart' | 'carat';
 /** Словарь react-компонентов. */
 type ComponentsDict = Record<string, FunctionComponent>;
 
@@ -61,6 +65,9 @@ export const pluginsDict: Record<PluginFormType, ComponentsDict> = {
     'MapEditPanel': MapEditPanel,
   },
   chart: {
-    'SeriesSettings': SeriesSettings
+    'ChartEditPanel': ChartEditPanel,
   },
+  carat: {
+    'CaratEditPanel': CaratEditPanel,
+  }
 };

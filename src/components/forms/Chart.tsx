@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { ResponsiveContainer, ComposedChart, CartesianGrid, Legend, Tooltip, YAxis, XAxis } from "recharts";
 import { actions, selectors } from "../../store";

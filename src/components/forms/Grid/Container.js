@@ -1,4 +1,4 @@
-﻿import React, { useCallback } from "react";
+import React, { useCallback } from "react";
 import FlexLayout from "flexlayout-react";
 import { useDispatch } from "react-redux";
 import translator from "../../../locales/layout";

@@ -36,6 +36,7 @@ export const selectors = {
   /** ID активного потомка формы; `this - formID`. */
   activeChildID: activeChildIDSelector,
 
+  caratState: caratStateSelector,
   chartState: chartStateSelector,
   mapsState: (state: WState) => state.maps,
   multiMapState: multiMapStateSelector,
@@ -74,6 +75,9 @@ function channelSelector(this: ChannelName, state: WState) {
   return state.channelsData[this];
 }
 
+function caratStateSelector(this: FormID, state: WState): any {
+  return state.carats[this];
+}
 function chartStateSelector(this: FormID, state: WState): ChartState {
   return state.charts[this];
 }

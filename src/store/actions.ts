@@ -1,21 +1,22 @@
-import {AppStateAction, AppStateActions} from "./reducers/appState";
-import {CanRunReportAction, CanRunReportActions} from "./reducers/canRunReport";
-import {ChannelsDataAction, ChannelsDataActions} from "./reducers/channelsData";
-import {ChannelsLoadingAction, ChannelsLoadingActions} from "./reducers/channelsLoading";
-import {ChildFormsAction, ChildFormsActions} from "./reducers/childForms";
-import {FormRefsAction, FormRefsActions} from "./reducers/formRefs";
-import {FormParamsAction, FormParamsActions} from "./reducers/formParams";
-import {FormSettingsAction, FormSettingsActions} from "./reducers/formSettings";
-import {FormLayoutAction, FormLayoutActions} from "./reducers/formLayout";
-import {LayoutAction, LayoutActions} from "./reducers/layout";
-import {ChartsAction, ChartsActions} from "./reducers/charts";
-import {MapsAction, MapsActions} from "./reducers/maps";
-import {PresentationsAction, PresentationsActions} from "./reducers/presentations";
-import {ProgramsAction, ProgramsActions} from "./reducers/programs";
-import {ReportsAction, ReportsActions} from "./reducers/reports";
-import {SessionIDAction, SessionIDActions} from "./reducers/sessionId";
-import {SessionManagerAction, SessionManagerActions} from "./reducers/sessionManager";
-import {WindowDataAction, WindowDataActions} from "./reducers/windowData";
+import {AppStateAction,AppStateActions} from "./reducers/app-state.reducer";
+import {CanRunReportAction,CanRunReportActions} from "./reducers/can-run-report.reducer";
+import {ChannelsDataAction,ChannelsDataActions} from "./reducers/channels-data.reducer";
+import {ChannelsLoadingAction,ChannelsLoadingActions} from "./reducers/channels-loading.reducer";
+import {ChildFormsAction,ChildFormsActions} from "./reducers/child-forms.reducer";
+import {FormRefsAction,FormRefsActions} from "./reducers/form-refs.reducer";
+import {FormParamsAction,FormParamsActions} from "./reducers/form-params.reducer";
+import {FormSettingsAction,FormSettingsActions} from "./reducers/form-settings.reducer";
+import {FormLayoutAction,FormLayoutActions} from "./reducers/form-layout.reducer";
+import {LayoutAction,LayoutActions} from "./reducers/layout.reducer";
+import {ChartsAction,ChartsActions} from "./reducers/charts.reducer";
+import {MapsAction,MapsActions} from "./reducers/maps.reducer";
+import {PresentationsAction,PresentationsActions} from "./reducers/presentations.reducer";
+import {ProgramsAction,ProgramsActions} from "./reducers/programs.reducer";
+import {ReportsAction,ReportsActions} from "./reducers/reports.reducer";
+import {SessionIDAction,SessionIDActions} from "./reducers/session-id.reducer";
+import {SessionManagerAction,SessionManagerActions} from "./reducers/session-manager.reducer";
+import {WindowDataAction,WindowDataActions} from "./reducers/window-data.reducer";
+import {CaratsAction,CaratsActions} from "./reducers/carats.reducer";
 
 
 export class WellManagerActionsCreator {
@@ -62,6 +63,17 @@ export class WellManagerActionsCreator {
 
   public setCanRunReport(value: CanRunReport): CanRunReportAction {
     return {type: CanRunReportActions.SET, value};
+  }
+
+  /* --- Carats Actions --- */
+
+  /** Добавляет в хранилище состояний каротажа новую каротажную форму. */
+  public createCaratState(formID: FormID): CaratsAction {
+    return {type: CaratsActions.ADD, formID};
+  }
+  /** Установить элемент холста. */
+  public setCaratCanvas(formID: FormID, canvas: HTMLCanvasElement): CaratsAction {
+    return {type: CaratsActions.SET, formID, payload: canvas};
   }
 
   /* --- Channels Data Actions --- */
@@ -138,12 +150,15 @@ export class WellManagerActionsCreator {
 
   /* --- Charts Actions --- */
 
+  /** Добавляет в хранилище состояний графиков новый график. */
   public createChartState(formID: FormID): ChartsAction {
     return {type: ChartsActions.ADD, formID};
   }
+  /** Устанавливает видимость подсказки для графика. */
   public setChartTooltipVisible(formID: FormID, visible: boolean): ChartsAction {
     return {type: ChartsActions.SET_TOOLTIP_VISIBLE, formID, payload: visible};
   }
+  /** Устанавливает настройки SeriesSettings для графика. */
   public setSeriesSettings(formID, seriesSettings): ChartsAction {
     return {type: ChartsActions.SET_SERIES_SETTINGS, formID, payload: seriesSettings};
   }

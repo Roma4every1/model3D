@@ -1,4 +1,4 @@
-﻿/* --- actions types --- */
+/* --- actions types --- */
 
 export enum SessionManagerActions {
   SET = 'sessionManager/set',

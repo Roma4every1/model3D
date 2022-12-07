@@ -1,4 +1,4 @@
-﻿import { Store } from "redux";
+import { Store } from "redux";
 import { FormPluginsSettings, FormPluginSettings } from "../components/dicts/plugins-settings";
 import { actions } from "../store";
 import { pluginsSettings } from "../components/dicts/plugins-settings";

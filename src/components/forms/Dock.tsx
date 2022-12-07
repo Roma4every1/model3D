@@ -1,4 +1,4 @@
-﻿import { ReactNode, FunctionComponent } from "react";
+import { ReactNode, FunctionComponent } from "react";
 import { useEffect, useMemo, useCallback, useRef, useReducer } from "react";
 import { IJsonModel, Model, Layout, TabNode } from "flexlayout-react";
 import { IJsonRowNode } from "flexlayout-react/declarations/model/IJsonModel";

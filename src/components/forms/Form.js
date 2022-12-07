@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Skeleton } from "@progress/kendo-react-indicators";
 import ErrorBoundary from "../common/ErrorBoundary";
@@ -8,6 +8,8 @@ import { formDict } from "../dicts/forms";
 import { pluginsDict } from "../dicts/plugins";
 import { actions, selectors } from "../../store";
 
+
+const formsWithoutRefs = ['dock', 'chart', 'map', 'carat'];
 
 export default function Form({formData, data}) {
   const sessionManager = useSelector(selectors.sessionManager);
@@ -101,7 +103,7 @@ export default function Form({formData, data}) {
   });
 
   if (!formLoadedData.loaded) return <Skeleton shape={'rectangle'} animation={{type: 'wave'}}/>;
-  const formRef = formType !== 'map' && formType !== 'dock' && formType !== 'chart' ? _form : undefined;
+  const formRef = formsWithoutRefs.includes(formType) ? undefined : _form;
 
   return (
     <ErrorBoundary>
