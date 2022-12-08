@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import Form from "../form";
+import Form from "../form/form";
 import { selectors } from "../../../store";
 
 

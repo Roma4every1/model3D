@@ -28,6 +28,7 @@ type AppState = {
   config: FetchState<ClientConfiguration>,
   systemList: FetchState<SystemList>,
   sessionID: FetchState<SessionID>,
+  rootFormID: FormID,
   systemID: SystemID,
 }
 
@@ -155,35 +156,18 @@ interface FormLayout {
 
 /** Разметка общих элементов. */
 type CommonLayout = {
-  plugins: PluginsConfig,
+  top: string[],
   left: string[],
+  dock: DockLayout,
 };
 
-/** Плагины форм.
- * + `inner` — внутри формы
- * + `right` — в правой панели
- * + `strip` — сверху в полоске для формы
- * + `top` — сверху в верхней панели (Меню, Программы и formStrip)
- * */
-interface PluginsConfig {
-  inner: FormPlugin[],
-  right: FormPlugin[],
-  strip: FormPlugin[],
-  top: FormPlugin[],
+/** Разметка контейнера. */
+interface DockLayout {
+  selectedTopTab: number,
+  selectedRightTab: number,
+  leftPanelWidth: number,
+  rightPanelWidth: number,
 }
-
-interface FormPlugin {
-  component?: FormPluginComponent,
-  enableDrag?: boolean,
-  id?: string,
-  type?: string,
-  name?: string,
-  selected?: any,
-  weight?: number,
-  children?: any[],
-}
-
-type FormPluginComponent = 'strip' | 'left' | {id: string, form: string, path: string};
 
 
 /* --- state.charts --- */

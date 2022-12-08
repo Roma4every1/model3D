@@ -3,15 +3,15 @@ import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 import { Skeleton } from "@progress/kendo-react-indicators";
 
-import { Dimensions } from "./dimensions";
-import { Export } from "./export";
-import { Selecting } from "./selecting/selecting";
-import { Editing } from "./editing/editing";
-import { SaveMap } from "./save-map";
-import { getParentFormId } from "../../../../utils/utils";
-import { actions, selectors } from "../../../../store";
+import { Dimensions } from "../forms/map/plugins/dimensions";
+import { Export } from "../forms/map/plugins/export";
+import { Selecting } from "../forms/map/plugins/selecting/selecting";
+import { Editing } from "../forms/map/plugins/editing/editing";
+import { SaveMap } from "../forms/map/plugins/save-map";
+import { getParentFormId } from "../../utils/utils";
+import { actions, selectors } from "../../store";
 
-import "../../../../styles/map-edit-panel.scss";
+import "../../styles/map-edit-panel.scss";
 
 
 const EditPanelItemSkeleton = ({width}: {width: string}) => {
@@ -34,7 +34,7 @@ const MapEditPanelSkeleton = () => {
 }
 
 /** Панель редактирования карты. */
-export default function MapEditPanel({formId: formID}: {formId: FormID}) {
+export default function MapEditPanel({formID}: {formID: FormID}) {
   const dispatch = useDispatch();
   const { t } = useTranslation();
 

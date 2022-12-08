@@ -1,7 +1,5 @@
-import React from 'react';
 import Screenshot from './screenshot';
 
-function FilesList(props, ref) {
+export default function FilesList(props) {
     return Screenshot(props);
 }
-export default FilesList = React.forwardRef(FilesList); // eslint-disable-line

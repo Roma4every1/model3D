@@ -5,11 +5,12 @@ import PresentationList from "./plugins/presentation-list";
 import FormParametersList from "../../common/form-parameters-list";
 import translator from "../../../locales/layout";
 import { selectors } from "../../../store";
-import { LeftPanelItems, getLeftPanelLayout } from "../../../utils/layout.utils";
+import { LeftPanelItems, getLeftPanelLayout } from "../../../layout/left-tabs";
 
 
 /** Левая боковая панель (обычно содержит параметры и список презентаций). */
-export const LeftPanel = ({rootFormID}: {rootFormID: FormID}) => {
+export const LeftPanel = () => {
+  const rootFormID = useSelector(selectors.rootFormID);
   const leftLayoutProto = useSelector(selectors.leftLayout) as LeftPanelItems[];
   const activeChildId: FormID = useSelector(selectors.activeChildID.bind(rootFormID));
 

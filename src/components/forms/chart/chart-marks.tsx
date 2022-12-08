@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ReferenceLine } from "recharts";
-import { textWidth } from "../../../utils/layout.utils";
+import { textWidth } from "../../../layout/left-tabs";
 
 
 /** Пометка на графике. */
@@ -11,7 +11,7 @@ export type ChartMark = [string, string | undefined];
 export function chartMarksSelector(this: {channelName: ChannelName, dateFn: any}, state: WState): ChartMark[] {
   const { channelName, dateFn } = this;
   const channel = state.channelsData[channelName];
-  const channelRows: any[] = channel?.data.Rows;
+  const channelRows: any[] = channel?.data?.Rows;
   if (!channelRows || !channelRows.length) return [];
 
   const descRows: any[] = channel.properties.find(p => p.lookupData)?.lookupData;

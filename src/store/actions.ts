@@ -1,22 +1,22 @@
-import {AppStateAction,AppStateActions} from "./reducers/app-state.reducer";
-import {CanRunReportAction,CanRunReportActions} from "./reducers/can-run-report.reducer";
-import {ChannelsDataAction,ChannelsDataActions} from "./reducers/channels-data.reducer";
-import {ChannelsLoadingAction,ChannelsLoadingActions} from "./reducers/channels-loading.reducer";
-import {ChildFormsAction,ChildFormsActions} from "./reducers/child-forms.reducer";
-import {FormRefsAction,FormRefsActions} from "./reducers/form-refs.reducer";
-import {FormParamsAction,FormParamsActions} from "./reducers/form-params.reducer";
-import {FormSettingsAction,FormSettingsActions} from "./reducers/form-settings.reducer";
-import {FormLayoutAction,FormLayoutActions} from "./reducers/form-layout.reducer";
-import {LayoutAction,LayoutActions} from "./reducers/layout.reducer";
-import {ChartsAction,ChartsActions} from "./reducers/charts.reducer";
-import {MapsAction,MapsActions} from "./reducers/maps.reducer";
-import {PresentationsAction,PresentationsActions} from "./reducers/presentations.reducer";
-import {ProgramsAction,ProgramsActions} from "./reducers/programs.reducer";
-import {ReportsAction,ReportsActions} from "./reducers/reports.reducer";
-import {SessionIDAction,SessionIDActions} from "./reducers/session-id.reducer";
-import {SessionManagerAction,SessionManagerActions} from "./reducers/session-manager.reducer";
-import {WindowDataAction,WindowDataActions} from "./reducers/window-data.reducer";
-import {CaratsAction,CaratsActions} from "./reducers/carats.reducer";
+import { AppStateAction, AppStateActions } from "./reducers/app-state.reducer";
+import { CanRunReportAction, CanRunReportActions } from "./reducers/can-run-report.reducer";
+import { ChannelsDataAction, ChannelsDataActions } from "./reducers/channels-data.reducer";
+import { ChannelsLoadingAction, ChannelsLoadingActions } from "./reducers/channels-loading.reducer";
+import { ChildFormsAction, ChildFormsActions } from "./reducers/child-forms.reducer";
+import { FormRefsAction, FormRefsActions } from "./reducers/form-refs.reducer";
+import { FormParamsAction, FormParamsActions } from "./reducers/form-params.reducer";
+import { FormSettingsAction, FormSettingsActions } from "./reducers/form-settings.reducer";
+import { FormLayoutAction, FormLayoutActions } from "./reducers/form-layout.reducer";
+import { LayoutAction, LayoutActions } from "./reducers/layout.reducer";
+import { ChartsAction, ChartsActions } from "./reducers/charts.reducer";
+import { MapsAction, MapsActions } from "./reducers/maps.reducer";
+import { PresentationsAction, PresentationsActions } from "./reducers/presentations.reducer";
+import { ProgramsAction, ProgramsActions } from "./reducers/programs.reducer";
+import { ReportsAction, ReportsActions } from "./reducers/reports.reducer";
+import { SessionIDAction, SessionIDActions } from "./reducers/session-id.reducer";
+import { SessionManagerAction, SessionManagerActions } from "./reducers/session-manager.reducer";
+import { WindowDataAction, WindowDataActions } from "./reducers/window-data.reducer";
+import { CaratsAction, CaratsActions } from "./reducers/carats.reducer";
 
 
 export class WellManagerActionsCreator {
@@ -50,13 +50,17 @@ export class WellManagerActionsCreator {
   public setSessionID(sessionID: SessionID): AppStateAction {
     return {type: AppStateActions.SET_SESSION_ID, payload: sessionID};
   }
+  /** Очистить хранилище сесиии. */
+  public clearSession(): AppStateAction {
+    return {type: AppStateActions.CLEAR_SESSION_ID};
+  }
   /** Установить новую систему. */
   public setSystemName(systemName: SystemID): AppStateAction {
     return {type: AppStateActions.SET_SYSTEM_ID, payload: systemName};
   }
-  /** Очистить хранилище сесиии. */
-  public clearSession(): AppStateAction {
-    return {type: AppStateActions.CLEAR_SESSION_ID};
+  /** Установить ID корневой формы. */
+  public setRootFormID(id: FormID): AppStateAction {
+    return {type: AppStateActions.SET_ROOT_FORM_ID, payload: id};
   }
 
   /* --- Can Run Report Actions --- */
@@ -141,9 +145,12 @@ export class WellManagerActionsCreator {
 
   /* --- Layout Actions --- */
 
-  public setPlugins(plugins: PluginsConfig): LayoutAction {
-    return {type: LayoutActions.SET_PLUGINS, payload: plugins};
-  }
+  // public setDockLayout(layout: DockLayout): LayoutAction {
+  //   return {type: LayoutActions.SET_DOCK_LAYOUT, payload: layout};
+  // }
+  // public setTopLayout(layout: string[]): LayoutAction {
+  //   return {type: LayoutActions.SET_TOP_LAYOUT, payload: layout};
+  // }
   public setLeftLayout(layout: string[]): LayoutAction {
     return {type: LayoutActions.SET_LEFT_LAYOUT, payload: layout};
   }

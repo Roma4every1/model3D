@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Skeleton } from "@progress/kendo-react-indicators";
-import ProgramButton from "./program-button";
-import { actions, selectors } from "../../../../../store";
-import { fetchFormPrograms } from "../../../../../store/thunks";
+import ProgramButton from "../forms/grid/plugins/sql-programs/program-button";
+import { actions, selectors } from "../../store";
+import { fetchFormPrograms } from "../../store/thunks";
 
 
-export default function SqlProgramsList({formId: formID}: {formId: FormID}) {
+export default function SqlProgramsList({formID}: {formID: FormID}) {
   const dispatch = useDispatch();
   const sessionID = useSelector(selectors.sessionID);
   const sessionManager = useSelector(selectors.sessionManager);

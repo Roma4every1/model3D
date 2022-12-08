@@ -1,7 +1,5 @@
-import React from 'react';
 import Screenshot from './screenshot';
 
-function Image(props, ref) {
+export default function Image(props) {
     return Screenshot(props);
 }
-export default Image = React.forwardRef(Image); // eslint-disable-line

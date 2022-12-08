@@ -1,10 +1,10 @@
 import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { actions, selectors } from "../../../store";
-import { chartIconsDict } from "../../../dicts/images";
+import { actions, selectors } from "../../store";
+import { chartIconsDict } from "../../dicts/images";
 
 
-export default function ChartEditPanel({formId: formID}) {
+export default function ChartEditPanel({formID}) {
   const dispatch = useDispatch();
   const chartState: ChartState = useSelector(selectors.chartState.bind(formID));
 

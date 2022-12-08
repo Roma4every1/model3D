@@ -1,14 +1,14 @@
 import { FunctionComponent } from "react";
 
-import Carat from "../components/forms/carat";
-import Chart from "../components/forms/chart";
-import DataSet from "../components/forms/dataset";
-import Dock from "../components/forms/dock";
+import Carat from "../components/forms/carat/carat";
+import Chart from "../components/forms/chart/chart";
+import DataSet from "../components/forms/dataset/dataset";
+import Dock from "../components/forms/dock/dock";
 import Files from "../components/forms/files";
 import FilesList from "../components/forms/files-list";
-import Grid from "../components/forms/grid";
+import Grid from "../components/forms/grid/grid";
 import Image from "../components/forms/image"
-import Map from "../components/forms/map"
+import Map from "../components/forms/map/map"
 import Model3D from "../components/forms/model3d";
 import Profile from "../components/forms/profile";
 import Screenshot from "../components/forms/screenshot";
@@ -19,7 +19,7 @@ import TransferForm from "../components/forms/transfer-form";
 
 
 /** Словарь для выбора формы по типу; используется в компоненте `Form`. */
-export const formDict: {[key: string]: FunctionComponent} = {
+export const formDict: {[key: string]: FunctionComponent<any>} = {
   carat: Carat,
   chart: Chart,
   dataSet: DataSet,
@@ -36,4 +36,4 @@ export const formDict: {[key: string]: FunctionComponent} = {
   spreadsheet: Spreadsheet,
   spreadsheetUnite: SpreadsheetUnite,
   transferForm: TransferForm,
-}
+};

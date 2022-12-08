@@ -2,9 +2,9 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { saveAs } from "@progress/kendo-file-saver";
-import { webFetch } from "../../../../../api/initialization";
-import { toDate } from "../../../../../utils/utils";
-import { filesDict } from "../../../../../dicts/images";
+import { webFetch } from "../../../../api/initialization";
+import { toDate } from "../../../../utils/utils";
+import { filesDict } from "../../../../dicts/images";
 
 
 const extensions = [

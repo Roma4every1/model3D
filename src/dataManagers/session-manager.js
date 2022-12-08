@@ -5,7 +5,6 @@ import { API } from "../api/api";
 
 import createChannelsManager from "./channels-manager";
 import createParamsManager from "./params-manager";
-import createPluginsManager from "./plugins-manager";
 
 
 export default function createSessionManager(store) {
@@ -202,7 +201,6 @@ export default function createSessionManager(store) {
 
   const paramsManager = createParamsManager(store);
   const channelsManager = createChannelsManager(store);
-  createPluginsManager(store);
 
   store.dispatch(actions.setSessionManager({
     paramsManager,

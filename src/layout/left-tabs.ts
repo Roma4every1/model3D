@@ -17,8 +17,6 @@ const TAB_STRIP_HEIGHT = 28;   // px
 /** Ширина элемента с названием параметра. */
 const PARAM_LABEL_WIDTH = 110; // px
 
-// TODO: order, height
-
 /** Возвращает разметку для левой панели (с параметрами).
  * @param proto прототип разметки
  * @param globalParams глобальные параметров

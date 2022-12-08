@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { selectors, actions } from "../../store";
-import { drawCarat } from "./carat/drawer";
+import { selectors, actions } from "../../../store";
+import { drawCarat } from "./drawer";
 
 
 // function caratSelector(this: ChannelName[], state: WState) {

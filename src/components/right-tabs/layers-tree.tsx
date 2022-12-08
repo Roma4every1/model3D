@@ -1,8 +1,8 @@
 import { useMemo, useCallback } from "react";
 import { useSelector } from "react-redux";
-import { LayersTreeElement } from "./layers-tree-element";
-import { selectors } from "../../../../../store";
-import "../../../../../styles/layers-tree.scss";
+import { LayersTreeElement } from "../forms/map/plugins/layers-tree/layers-tree-element";
+import { selectors } from "../../store";
+import "../../styles/layers-tree.scss";
 
 
 const getGroupForTree = (sublayer: MapLayer): LayerTreeItem => {
@@ -34,7 +34,7 @@ const getLayersTree = (sublayers: MapLayer[]): LayerTreeItem[] => {
   return tree;
 }
 
-export default function MapLayersTree({formId: formID}: {formId: FormID}) {
+export default function MapLayersTree({formID}: {formID: FormID}) {
   const formChildrenState: FormChildrenState = useSelector(selectors.formChildrenState.bind(formID));
   const activeChildID = formChildrenState?.activeChildren[0];
 

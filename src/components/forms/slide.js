@@ -1,7 +1,6 @@
-import React from 'react';
-import Screenshot from './screenshot';
+import Screenshot from "./screenshot";
 
-function Slide(props, ref) {
-    return Screenshot(props);
+
+export default function Slide(props) {
+  return Screenshot(props);
 }
-export default Slide = React.forwardRef(Slide); // eslint-disable-line

@@ -1,4 +1,4 @@
-import { getRootFormID, stringToTableCell } from "../utils/utils";
+import { stringToTableCell } from "../utils/utils";
 
 
 /** Селекторы. */
@@ -9,14 +9,10 @@ export const selectors = {
   config: (state: WState) => state.appState.config.data as ClientConfiguration,
   /** ID сессии. */
   sessionID: (state: WState) => state.sessionId,
+  /** ID корневой формы. */
+  rootFormID: (state: WState) => state.appState.rootFormID,
   /** Менеджер сессии. */
   sessionManager: (state: WState) => state.sessionManager,
-  /** Конфиг плагинов. */
-  plugins: (state: WState) => state.layout.plugins,
-  /** Плагины внутри формы. */
-  innerPlugins: (state: WState) => state.layout.plugins.inner,
-  /** Плагины в верхней панели. */
-  stripPlugins: (state: WState) => state.layout.plugins.strip,
   /** Прототип разметки левой панели. */
   leftLayout: (state: WState) => state.layout.left,
   /** Данные канала; `this - channelName`. */
@@ -36,14 +32,25 @@ export const selectors = {
   /** ID активного потомка формы; `this - formID`. */
   activeChildID: activeChildIDSelector,
 
+  /** Хранилище состояния каротажной формы. */
   caratState: caratStateSelector,
+  /** Хранилище состояния графика. */
   chartState: chartStateSelector,
+  /** Хранилище состояния карты. */
+  mapState: mapStateSelector,
+
   mapsState: (state: WState) => state.maps,
   multiMapState: multiMapStateSelector,
-  mapState: mapStateSelector,
   windows: (state: WState) => state.windowData?.windows,
-
+  /** ID текущей скважины. */
   currentWellID: currentWellIDSelector,
+
+  /** ID текущей презентации. */
+  displayedPresentationID: displayedPresentationIDSelector,
+  /** {@link FormChildrenState} текущей презентации. */
+  displayedPresentationState: displayedPresentationStateSelector,
+  /** Список типов всех отображаемых форм (без повторений). */
+  displayedFormTypes: displayedFormTypesSelector,
 }
 
 function formLayoutSelector(this: FormID, state: WState): FormLayout {
@@ -89,8 +96,21 @@ function mapStateSelector(this: FormID, state: WState): MapState {
   return state.maps.single[this];
 }
 
-function currentWellIDSelector(this: FormID, state: WState): string | null {
-  const rootFormParams = state.formParams[getRootFormID(this)];
+function currentWellIDSelector(state: WState): string | null {
+  const rootFormParams = state.formParams[state.appState.rootFormID];
   const currentWellParam = rootFormParams.find((param) => param.id === 'currentWell');
   return currentWellParam ? stringToTableCell(currentWellParam.value, 'LOOKUPVALUE') : null;
+}
+function displayedPresentationIDSelector(state: WState): FormID {
+  return state.childForms[state.appState.rootFormID]?.activeChildren[0]
+}
+function displayedPresentationStateSelector(state: WState) {
+  const presentationID = state.childForms[state.appState.rootFormID]?.activeChildren[0];
+  return state.childForms[presentationID];
+}
+
+function displayedFormTypesSelector(state: WState): FormType[] {
+  const activePresentationID = state.childForms[state.appState.rootFormID]?.activeChildren[0];
+  const formTypes = state.childForms[activePresentationID]?.children.map(x => x.type);
+  return [...new Set(formTypes)];
 }

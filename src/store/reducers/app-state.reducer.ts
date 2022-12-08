@@ -11,8 +11,10 @@ export enum AppStateActions {
   FETCH_SESSION_END = 'app/sessionEnd',
 
   SET_SESSION_ID = 'app/setSessionID',
-  SET_SYSTEM_ID = 'app/setSystemName',
   CLEAR_SESSION_ID = 'app/clearSession',
+
+  SET_SYSTEM_ID = 'app/setSystemName',
+  SET_ROOT_FORM_ID = 'app/setRoot',
 }
 
 /* --- Actions Interfaces --- */
@@ -45,16 +47,20 @@ interface ActionSetSessionID {
   type: AppStateActions.SET_SESSION_ID,
   payload: SessionID,
 }
+interface ActionClearSessionID {
+  type: AppStateActions.CLEAR_SESSION_ID,
+}
 interface ActionSetSystemName {
   type: AppStateActions.SET_SYSTEM_ID,
   payload: SystemID,
 }
-interface ActionClearSessionID {
-  type: AppStateActions.CLEAR_SESSION_ID,
+interface ActionSetRootFormID {
+  type: AppStateActions.SET_ROOT_FORM_ID,
+  payload: FormID,
 }
 
 export type AppStateAction = ActionSetSystemName | ActionSetSessionID |
-  ActionFetchConfigStart | ActionFetchConfigEnd |
+  ActionFetchConfigStart | ActionFetchConfigEnd | ActionSetRootFormID |
   ActionFetchSystemListStart | ActionFetchSystemListEnd |
   ActionFetchSessionStart | ActionFetchSessionEnd | ActionClearSessionID;
 
@@ -64,6 +70,7 @@ const init: AppState = {
   config: {loading: false, success: undefined, data: null},
   systemList: {loading: false, success: undefined, data: null},
   sessionID: {loading: false, success: undefined, data: null},
+  rootFormID: null,
   systemID: null,
 };
 
@@ -107,12 +114,16 @@ export const appStateReducer = (state: AppState = init, action: AppStateAction):
       return {...state, sessionID: {loading: false, success: true, data: action.payload}};
     }
 
+    case AppStateActions.CLEAR_SESSION_ID: {
+      return {...state, sessionID: {loading: false, success: undefined, data: null}};
+    }
+
     case AppStateActions.SET_SYSTEM_ID: {
       return {...state, systemID: action.payload};
     }
 
-    case AppStateActions.CLEAR_SESSION_ID: {
-      return {...state, sessionID: {loading: false, success: undefined, data: null}};
+    case AppStateActions.SET_ROOT_FORM_ID: {
+      return {...state, rootFormID: action.payload};
     }
 
     default: return state;
