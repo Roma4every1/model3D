@@ -5,7 +5,7 @@ import { Button } from "@progress/kendo-react-buttons";
 import ColumnsVisibilityContent from "./columns-visibility-content";
 
 
-export default function ColumnSettings({formId}: {formId: FormID}) {
+export function ColumnsVisibility({formID}: PropsFormID) {
   const { t } = useTranslation();
   const [popoverState, setPopoverState] = useState({anchorEl: null, open: false});
 
@@ -18,8 +18,8 @@ export default function ColumnSettings({formId}: {formId: FormID}) {
       <Button className={'actionbutton'} onClick={showColumnListClick}>
         {t('table.columnsVisibility')}
       </Button>
-      <Popup className={'popup'} id={formId} show={popoverState.open} anchor={popoverState.anchorEl}>
-        <ColumnsVisibilityContent formId={formId} />
+      <Popup className={'popup'} id={formID} show={popoverState.open} anchor={popoverState.anchorEl}>
+        <ColumnsVisibilityContent formId={formID} />
       </Popup>
     </div>
   );

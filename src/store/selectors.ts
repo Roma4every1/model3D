@@ -45,10 +45,10 @@ export const selectors = {
   /** ID текущей скважины. */
   currentWellID: currentWellIDSelector,
 
+  /** {@link FormChildrenState} текущей презентации. */
+  displayedPresentation: displayedPresentationSelector,
   /** ID текущей презентации. */
   displayedPresentationID: displayedPresentationIDSelector,
-  /** {@link FormChildrenState} текущей презентации. */
-  displayedPresentationState: displayedPresentationStateSelector,
   /** Список типов всех отображаемых форм (без повторений). */
   displayedFormTypes: displayedFormTypesSelector,
 }
@@ -104,13 +104,19 @@ function currentWellIDSelector(state: WState): string | null {
 function displayedPresentationIDSelector(state: WState): FormID {
   return state.childForms[state.appState.rootFormID]?.activeChildren[0]
 }
-function displayedPresentationStateSelector(state: WState) {
+function displayedPresentationSelector(state: WState) {
   const presentationID = state.childForms[state.appState.rootFormID]?.activeChildren[0];
   return state.childForms[presentationID];
 }
 
 function displayedFormTypesSelector(state: WState): FormType[] {
   const activePresentationID = state.childForms[state.appState.rootFormID]?.activeChildren[0];
-  const formTypes = state.childForms[activePresentationID]?.children.map(x => x.type);
+  const presentation = state.childForms[activePresentationID];
+  if (!presentation) return [];
+
+  const formTypes = presentation.children
+    .filter(child => presentation.openedChildren.includes(child.id))
+    .map(child => child.type);
+
   return [...new Set(formTypes)];
 }

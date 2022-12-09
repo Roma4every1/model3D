@@ -3,17 +3,17 @@ import { useSelector } from "react-redux";
 import { selectors } from "../../store";
 import { Toolbar } from "@progress/kendo-react-buttons";
 import ErrorBoundary from "../common/error-boundary";
-import Menu from "./menu";
-import SqlProgramsList from "./sql-programs-list";
-import DataSetEditPanel from "./dataset-edit-panel";
-import ChartEditPanel from "./chart-edit-panel";
-import MapEditPanel from "./map-edit-panel";
-import TracksEditPanel from "./tracks-edit-panel";
-import CaratEditPanel from "./carat-edit-panel";
+
+import { SqlProgramsList } from "./sql-programs-list";
+import { DataSetEditPanel } from "./dataset-edit-panel";
+import { ChartEditPanel } from "./chart-edit-panel";
+import { MapEditPanel } from "./map-edit-panel";
+import { TracksEditPanel } from "./tracks-edit-panel";
+import { CaratEditPanel } from "./carat-edit-panel";
 
 
 /** Словарь всех компонентов верхней панели. */
-export const topPanelsDict: Record<string, [FunctionComponent<{formID: FormID}>, FormType]> = {
+export const topPanelsDict: Record<string, [FunctionComponent<PropsFormID>, FormType]> = {
   'top-dataset': [DataSetEditPanel, 'dataSet'],
   'top-chart': [ChartEditPanel, 'chart'],
   'top-map': [MapEditPanel, 'map'],
@@ -22,18 +22,16 @@ export const topPanelsDict: Record<string, [FunctionComponent<{formID: FormID}>,
 };
 
 export function TopTab({id}: {id: string}) {
-  const state = useSelector(selectors.displayedPresentationState);
-  const activeChildID = state.activeChildren[0];
-
-  if (id === 'top-menu') return <Menu/>;
+  const presentation = useSelector(selectors.displayedPresentation);
+  const activeChildID = presentation.activeChildren[0];
   if (id === 'top-programs') return <SqlProgramsList formID={activeChildID}/>;
 
-  const activeFormType = state.children.find(child => child.id === activeChildID).type;
+  const activeFormType = presentation.children.find(child => child.id === activeChildID).type;
   const [TopTabComponent, formType] = topPanelsDict[id];
 
   const formID = activeFormType === formType
     ? activeChildID
-    : state.children.find(child => child.type === formType).id;
+    : presentation.children.find(child => child.type === formType).id;
 
   return (
     <ErrorBoundary>

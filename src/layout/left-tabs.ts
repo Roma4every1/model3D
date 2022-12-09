@@ -1,5 +1,5 @@
 import { IJsonModel } from "flexlayout-react";
-import { IJsonTabSetNode } from "flexlayout-react/declarations/model/IJsonModel";
+import { IGlobalAttributes, IJsonTabNode, IJsonTabSetNode } from "flexlayout-react/declarations/model/IJsonModel";
 
 
 /** Перечисление для элементов боковой панели. */
@@ -17,12 +17,39 @@ const TAB_STRIP_HEIGHT = 28;   // px
 /** Ширина элемента с названием параметра. */
 const PARAM_LABEL_WIDTH = 110; // px
 
+
+const globalAttributes: IGlobalAttributes = {
+  rootOrientationVertical: true,
+  tabSetTabStripHeight: TAB_STRIP_HEIGHT,
+  borderEnableDrop: false,
+  splitterSize: 6,
+  tabEnableRename: false,
+  tabEnableClose: false,
+  tabEnableDrag: false,
+};
+
+/** Вкладка с глобальными параметрами. */
+const globalParamsTab: [IJsonTabNode] = [
+  {type: 'tab', name: 'Глобальные параметры', component: LeftPanelItems.GLOBAL},
+];
+/** Вкладка с параметрами презентации. */
+const presentationParamsTab: [IJsonTabNode] = [
+  {type: 'tab', name: 'Параметры презентации', component: LeftPanelItems.FORM},
+];
+/** Вкладка со списком презентаций: `<PresentationList/>`. */
+const presentationListTab: [IJsonTabNode] = [
+  {type: 'tab', name: 'Презентации', component: LeftPanelItems.LIST},
+];
+
 /** Возвращает разметку для левой панели (с параметрами).
  * @param proto прототип разметки
  * @param globalParams глобальные параметров
  * @param formParams параметры текущей презентации
  * */
-export function getLeftPanelLayout(proto: LeftPanelItems[], globalParams: FormParameter[], formParams: FormParameter[]): IJsonModel {
+export function getLeftPanelLayout(
+  proto: LeftPanelItems[],
+  globalParams: FormParameter[], formParams: FormParameter[],
+): IJsonModel {
   const globalParamsNumber = globalParams?.filter(p => p.editorType).length;
   const isShowGlobal = proto.includes(LeftPanelItems.GLOBAL) && globalParamsNumber > 0;
 
@@ -34,7 +61,7 @@ export function getLeftPanelLayout(proto: LeftPanelItems[], globalParams: FormPa
   if (proto.includes(LeftPanelItems.LIST)) {
     children.unshift({
       type: 'tabset', minHeight: 50,
-      children: [{type: 'tab', name: 'Презентации', component: LeftPanelItems.LIST, enableDrag: true}],
+      children: presentationListTab,
     });
   }
 
@@ -42,36 +69,19 @@ export function getLeftPanelLayout(proto: LeftPanelItems[], globalParams: FormPa
     const height = getParamsListHeight(formParams);
     children.unshift({
       type: 'tabset', height, minHeight: height / 2,
-      children: [{
-        type: 'tab', name: 'Параметры презентации',
-        component: LeftPanelItems.FORM, enableDrag: true,
-      }],
+      children: presentationParamsTab,
     });
   }
 
   if (isShowGlobal) {
     const height = getParamsListHeight(globalParams);
     children.unshift({
-      type: 'tabset',
-      height, minHeight: height / 2,
-      children: [{
-        type: 'tab', name: 'Глобальные параметры',
-        component: LeftPanelItems.GLOBAL, enableDrag: true,
-      }],
+      type: 'tabset', height, minHeight: height / 2,
+      children: globalParamsTab,
     });
   }
 
-  return {
-    global: {
-      rootOrientationVertical: true,
-      borderEnableDrop: false,
-      tabEnableRename: false,
-      tabSetTabStripHeight: TAB_STRIP_HEIGHT,
-      tabEnableClose: false,
-      splitterSize: 6,
-    },
-    layout: {type: 'row', children}
-  };
+  return {global: globalAttributes, layout: {type: 'row', children}};
 }
 
 /** Вычисляет высоту компонента вкладки `ParametersList` по набору параметров. */
@@ -89,7 +99,8 @@ function getParamsListHeight(params: FormParameter[]): number {
 
 /* --- Common Layout Utils --- */
 
-function getLinesCount(text: string) {
+/** Количество строк, требуемых для отрисовки текста. */
+function getLinesCount(text: string): number {
   const wordsWidth = text.split(' ').map(textWidth);
   let lines = 1, sum = 0;
   for (const width of wordsWidth) {
@@ -103,6 +114,7 @@ const canvas = document.createElement('canvas');
 const ctx = canvas.getContext('2d');
 ctx.font = 'normal 12px "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Segoe UI Symbol"';
 
+/** Ширина текста в пикселях. */
 export function textWidth(text: string): number {
   return Math.ceil(ctx.measureText(text).width);
 }

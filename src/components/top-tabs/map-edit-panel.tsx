@@ -34,7 +34,7 @@ const MapEditPanelSkeleton = () => {
 }
 
 /** Панель редактирования карты. */
-export default function MapEditPanel({formID}: {formID: FormID}) {
+export function MapEditPanel({formID}: PropsFormID) {
   const dispatch = useDispatch();
   const { t } = useTranslation();
 

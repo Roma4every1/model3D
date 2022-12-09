@@ -1,3 +1,5 @@
+import { caratSettings, caratColumns } from "../../components/forms/carat/data";
+
 /* --- Actions Types --- */
 
 export enum CaratsActions {
@@ -22,7 +24,8 @@ export type CaratsAction = ActionAdd | ActionSet;
 /* --- Reducer --- */
 
 const defaultCaratState: CaratState = {
-  columns: [],
+  settings: caratSettings,
+  columns: caratColumns,
   canvas: null,
 };
 

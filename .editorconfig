@@ -21,10 +21,6 @@ trim_trailing_whitespace = true
 
 # --- Настройки для JetBrains IDE ---
 
-# try { ... } \n catch { ... }
-ij_any_catch_on_new_line = true
-# try { ... } \n finally { ... }
-ij_any_finally_on_new_line = true
 # public methodName() { ... }
 ij_typescript_use_public_modifier = true
 

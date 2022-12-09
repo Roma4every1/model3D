@@ -148,9 +148,6 @@ export class WellManagerActionsCreator {
   // public setDockLayout(layout: DockLayout): LayoutAction {
   //   return {type: LayoutActions.SET_DOCK_LAYOUT, payload: layout};
   // }
-  // public setTopLayout(layout: string[]): LayoutAction {
-  //   return {type: LayoutActions.SET_TOP_LAYOUT, payload: layout};
-  // }
   public setLeftLayout(layout: string[]): LayoutAction {
     return {type: LayoutActions.SET_LEFT_LAYOUT, payload: layout};
   }
@@ -253,8 +250,8 @@ export class WellManagerActionsCreator {
     return {type: PresentationsActions.FETCH_START};
   }
   /** Конец запроса списка презентаций. */
-  public fetchPresentationsEnd(data: PresentationItem | string): PresentationsAction {
-    return {type: PresentationsActions.FETCH_END, data};
+  public fetchPresentationsEnd(data: PresentationItem | string, activeID = ''): PresentationsAction {
+    return {type: PresentationsActions.FETCH_END, payload: {data, activeID}};
   }
   /** Обновление презентаций при смене ID сессии и корневой формы. */
   public changePresentations(sessionID: SessionID, formID: FormID) {

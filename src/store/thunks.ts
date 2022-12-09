@@ -47,25 +47,16 @@ export const fetchMapData = (provider: any, sessionID: SessionID, formID: FormID
   }
 }
 
-export const fetchPresentations = (sessionManager, sessionID: SessionID, formID: FormID, activeChild) => {
-  const setActive = (data: PresentationItem) => {
-    if (data.id === activeChild) {
-      data.selected = true;
-      return true;
-    }
-    if (data.items) {
-      data.items.forEach(item => {
-        if (setActive(item)) data.expanded = true;
-      });
-    }
-  };
+export const fetchPresentations = (
+  sessionManager: SessionManager, sessionID: SessionID,
+  formID: FormID, activeChildID: FormID
+) => {
   return async (dispatch: WDispatch) => {
     try {
       dispatch(actions.fetchPresentationsStart());
       const path = `presentationList?sessionId=${sessionID}&formId=${formID}`;
       const data = await sessionManager.fetchData(path);
-      setActive(data);
-      dispatch(actions.fetchPresentationsEnd(data));
+      dispatch(actions.fetchPresentationsEnd(data, activeChildID));
     } catch (error) {
       console.warn(error);
       dispatch(actions.fetchPresentationsEnd(error.message));

@@ -42,17 +42,17 @@ const toEnd = (colSettings, cell, index: number, count: number) => {
 const dict = {'start': toStart, 'left': toLeft, 'right': toRight, 'end': toEnd};
 
 
-export default function ColumnSettings({formId}) {
+export function ColumnSettings({formID}: PropsFormID) {
   const dispatch = useDispatch();
-  const formRef = useSelector((state: WState) => state.formRefs[formId]);
-  const tableSettings: any = useSelector(selectors.formSettings.bind(formId));
+  const formRef = useSelector((state: WState) => state.formRefs[formID]);
+  const tableSettings: any = useSelector(selectors.formSettings.bind(formID));
 
   const setFrozenCount = useCallback(() => {
     tableSettings.columns.frozenColumnCount = 1 + tableSettings.columns.columnsSettings.findIndex((c) => {
       return c.channelPropertyName === formRef.current.activeCell().column;
     });
-    dispatch(actions.setFormSettings(formId, {...tableSettings}));
-  }, [tableSettings, formRef, formId, dispatch]);
+    dispatch(actions.setFormSettings(formID, {...tableSettings}));
+  }, [tableSettings, formRef, formID, dispatch]);
 
   const moveColumnTo = useCallback((where: ColumnMoveType) => {
     const cell = formRef.current.activeCell();
@@ -65,8 +65,8 @@ export default function ColumnSettings({formId}) {
     colSettings.forEach((c, i) => c.displayIndex = i);
     dict[where](colSettings, cell, index, count);
 
-    dispatch(actions.setFormSettings(formId, {...tableSettings}));
-  }, [tableSettings, formRef, formId, dispatch]);
+    dispatch(actions.setFormSettings(formID, {...tableSettings}));
+  }, [tableSettings, formRef, formID, dispatch]);
 
   return (
     <div>

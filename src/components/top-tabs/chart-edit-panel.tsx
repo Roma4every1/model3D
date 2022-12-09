@@ -4,7 +4,7 @@ import { actions, selectors } from "../../store";
 import { chartIconsDict } from "../../dicts/images";
 
 
-export default function ChartEditPanel({formID}) {
+export function ChartEditPanel({formID}: PropsFormID) {
   const dispatch = useDispatch();
   const chartState: ChartState = useSelector(selectors.chartState.bind(formID));
 

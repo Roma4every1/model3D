@@ -1,19 +1,26 @@
-import { MenuListItem, MenuSection } from "../common/menu-ui";
-import IntegerTextEditor from "../editors/integer-text.editor";
+//import { useSelector } from "react-redux";
+import { MenuSection } from "../common/menu-ui";
+//import { selectors } from "../../store";
 
 
 /** Панель редактирования каротажа. */
-export default function CaratEditPanel() {
+export function CaratEditPanel({formID}: PropsFormID) {
+  // const caratState: CaratState = useSelector(selectors.caratState.bind(formID));
+  // console.log(caratState);
+
   return (
     <div className={'menu'}>
-      <MenuSection header={'Масштаб'}>
-        <MenuListItem text={'Увеличить'} icon={'zoom-in'}/>
-        <MenuListItem text={'Уменьшить'} icon={'zoom-out'}/>
-        <div>
-          <span className={'k-icon k-i-pan'}/>
-          <span>1 / </span>
-          <IntegerTextEditor/>
-        </div>
+      <MenuSection header={'Шкала'}>
+        <div>Показать сетку</div>
+        <div>Делений: n</div>
+      </MenuSection>
+      <MenuSection header={'Типы кривых'}>
+        <div>Select Box</div>
+      </MenuSection>
+      <MenuSection header={'Настройки типа'}>
+        <div>Цвет</div>
+        <div>Минимум</div>
+        <div>Максимум</div>
       </MenuSection>
     </div>
   );

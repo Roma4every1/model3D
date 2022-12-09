@@ -14,7 +14,7 @@ interface ActionFetchStart {
 }
 interface ActionFetchEnd {
   type: PresentationsActions.FETCH_END,
-  data: PresentationItem | string,
+  payload: {data: PresentationItem | string, activeID: FormID},
 }
 interface ActionChange {
   type: PresentationsActions.CHANGE,
@@ -35,6 +35,16 @@ const clearSelect = (items: PresentationItem[]) => {
     item.items ? clearSelect(item.items) : item.selected = false;
   });
 }
+const setActive = (items: PresentationItem[], activeID: FormID) => {
+  for (const item of items) {
+    if (item.items) {
+      if (setActive(item.items, activeID)) { item.expanded = true; return; }
+    } else if (item.id === activeID) {
+      item.selected = true;
+      return true;
+    }
+  }
+};
 
 const init: PresentationsState = {
   loading: false, success: undefined, data: null,
@@ -49,10 +59,11 @@ export const presentationsReducer = (state: PresentationsState = init, action: P
     }
 
     case PresentationsActions.FETCH_END: {
-      const data = action.data;
+      const { data, activeID } = action.payload;
       if (typeof data === 'string') {
         return {...state, loading: false, success: false, data};
       } else {
+        setActive(data.items, activeID);
         return {...state, loading: false, success: true, data};
       }
     }

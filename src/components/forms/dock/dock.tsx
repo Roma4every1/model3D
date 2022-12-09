@@ -1,18 +1,22 @@
 import { useEffect, useMemo, useCallback } from "react";
 import { IJsonModel, Model, Layout, TabNode } from "flexlayout-react";
 import { useSelector } from "react-redux";
-import { compareArrays } from "../../../utils/utils";
-import { selectors } from "../../../store";
-import { getDockLayout } from "../../../layout/dock-layout";
+import { MainMenu } from "../../top-tabs/main-menu";
 import { LeftPanel } from "./left-panel";
 import { TopTab } from "../../top-tabs/top-tab";
 import { RightTab } from "../../right-tabs/right-tab";
-import DockForm from "./dock-form";
+import { compareArrays } from "../../../utils/utils";
+import { selectors } from "../../../store";
+import { getDockLayout } from "../../../layout/dock-layout";
+import Form from "../form/form";
 import DateChanging from "./plugins/date-changing";
 import translator from "../../../locales/layout";
 
 
-const dockLayoutSelector = (state: WState) => state.layout.dock;
+const dockLayoutSelector = (state: WState) => {
+  // console.log(state);
+  return state.layout.dock;
+}
 
 export default function Dock({formData: {id: formID}}) {
   const sessionManager = useSelector(selectors.sessionManager);
@@ -29,14 +33,16 @@ export default function Dock({formData: {id: formID}}) {
 
   const factory = useCallback((node: TabNode) => {
     const id = node.getId();
+    if (id === 'top-menu') return <MainMenu/>;
     if (id.startsWith('top')) return <TopTab id={id}/>;
     if (id.startsWith('right')) return <RightTab id={id}/>
     if (node.getComponent() === 'left') return <LeftPanel/>;
-    return <DockForm formId={formID} />;
+    return <DockForm formID={formID}/>;
   }, [formID]);
 
   const onModelChange = useCallback((model: Model) => {
     const [topBorder, rightBorder] = model.getBorderSet().getBorders();
+    dockLayout.topPanelHeight = topBorder.getSize();
     dockLayout.leftPanelWidth = model.getNodeById('left').getRect().width;
     dockLayout.rightPanelWidth = rightBorder.getSize();
     dockLayout.selectedTopTab = topBorder.getSelected();
@@ -54,4 +60,9 @@ export default function Dock({formData: {id: formID}}) {
       <DateChanging formID={formID}/>
     </>
   );
+}
+
+function DockForm({formID}: PropsFormID) {
+  const activeChild = useSelector(selectors.activeChild.bind(formID));
+  return activeChild ? <Form data={null} formData={activeChild}/> : null;
 }

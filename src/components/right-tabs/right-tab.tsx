@@ -6,7 +6,7 @@ import MapLayersTree from "./layers-tree";
 
 
 export function RightTab({id}: {id: string}) {
-  const state = useSelector(selectors.displayedPresentationState);
+  const state = useSelector(selectors.displayedPresentation);
   const activeChildID = state.activeChildren[0];
 
   if (id === 'right-dock') // 'id' is 'right-dock or 'right-map'

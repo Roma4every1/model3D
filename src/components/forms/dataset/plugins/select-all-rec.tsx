@@ -3,12 +3,12 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@progress/kendo-react-buttons";
 
 
-export default function SelectAllRec({formId}) {
+export function SelectAllRec({formID}: PropsFormID) {
   const { t } = useTranslation();
-  const formRef = useSelector((state: WState) => state.formRefs[formId]);
+  const formRef = useSelector((state: WState) => state.formRefs[formID]);
 
   return (
-    <Button className="actionbutton" onClick={() => { formRef.current.selectAll(); }}>
+    <Button className={'actionbutton'} onClick={() => { formRef.current.selectAll(); }}>
       {t('pluginNames.selectAllRec')}
     </Button>
   );

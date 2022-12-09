@@ -4,9 +4,9 @@ import { Button } from "@progress/kendo-react-buttons";
 import { selectors } from "../../../../store";
 
 
-export default function Statistics({formId}) {
+export function Statistics({formID}: PropsFormID) {
   const { t } = useTranslation();
-  const formRef = useSelector((state: WState) => state.formRefs[formId]);
+  const formRef = useSelector((state: WState) => state.formRefs[formID]);
   const sessionManager = useSelector(selectors.sessionManager);
 
   const getStat = async () => {

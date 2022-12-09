@@ -199,7 +199,7 @@ export const mapsReducer = (state: MapsState = initMaps, action: MapsAction): Ma
     }
 
     case MapsActions.LOAD_ERROR: {
-      state.single[action.formID] = {...state.single[action.formID], isLoadSuccessfully: true};
+      state.single[action.formID] = {...state.single[action.formID], isLoadSuccessfully: false};
       return {...state};
     }
 

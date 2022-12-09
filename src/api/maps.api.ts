@@ -60,7 +60,7 @@ export class MapsAPI {
     const data = await this.getMapContainer(mapData.namedpoints, sessionID, formID, owner);
     if (typeof data === 'string') {
       if (needReload) {
-        mapData.mapErrors.push('try to reload named points from ' + mapData.namedpoints);
+        // mapData.mapErrors.push('try to reload named points from ' + mapData.namedpoints);
         setTimeout(() => {
           this.setNamedPoints(mapData, sessionID, formID, owner, false);
         }, 500);
@@ -83,12 +83,12 @@ export class MapsAPI {
       const data = await this.getMapContainer(layer.container, sessionID, formID, owner, indexName);
       if (typeof data === 'string') {
         if (needReload) {
-          mapData.mapErrors.push(`try to reload container ${layer.container}`);
+          // mapData.mapErrors.push(`try to reload container ${layer.container}`);
           setTimeout(() => {
             this.setLayerElements(mapData, layer, provider, indexName, sessionID, formID, owner, false);
           }, 500);
         } else {
-          mapData.mapErrors.push(`error loading container ${layer.container}:\n${data}`);
+          mapData.mapErrors.push(`error loading container ${layer.container}: ${data}`);
           // @ts-ignore
           layer.elements = [];
         }
@@ -129,6 +129,11 @@ export class MapsAPI {
       handleLayerScales(layer);
       const indexName = checkLayerIndex(mapData, layer);
       await this.setLayerElements(mapData, layer, provider, indexName, sessionId, formId, owner);
+
+      if (mapData.mapErrors.length > 3) {
+        const errors = mapData.mapErrors.join('\n');
+        return 'More than 3 errors while load map:\n' + errors;
+      }
     }
     return mapData as any as MapData;
   }

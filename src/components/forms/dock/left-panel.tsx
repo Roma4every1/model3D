@@ -29,7 +29,7 @@ export const LeftPanel = () => {
     const component = node.getComponent();
     if (component === LeftPanelItems.GLOBAL) return <FormParametersList formId={rootFormID}/>;
     if (component === LeftPanelItems.FORM) return <FormParametersList formId={activeChildId}/>;
-    return <PresentationList formId={rootFormID}/>;
+    return <PresentationList/>;
   }, [activeChildId, rootFormID]);
 
   return (

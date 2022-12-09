@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
-import ColumnHeaderLabelSetter from "./column-header-label-setter";
 import { selectors } from "../../../../store";
+import ColumnHeaderLabelSetter from "./column-header-label-setter";
 
 
-export default function ColumnHeaderSetter({formId}) {
+export function ColumnHeaderSetter({formID}: PropsFormID) {
   const sessionId = useSelector(selectors.sessionID);
   const sessionManager = useSelector(selectors.sessionManager);
 
@@ -14,24 +14,24 @@ export default function ColumnHeaderSetter({formId}) {
     let ignore = false;
     if (sessionId) {
       async function fetchData() {
-        const path = `pluginData?sessionId=${sessionId}&formId=${formId}&pluginName=tableColumnHeaderSetter`;
+        const path = `pluginData?sessionId=${sessionId}&formId=${formID}&pluginName=tableColumnHeaderSetter`;
         const data = await sessionManager.fetchData(path);
         if (!ignore && data) setPluginData(data);
       }
       fetchData();
     }
     return () => { ignore = true; }
-  }, [formId, sessionId, sessionManager]);
+  }, [formID, sessionId, sessionManager]);
 
   const mapLabels = useCallback((label) => {
     return (
       <ColumnHeaderLabelSetter
-        formId={formId} column={label['@columnName']}
+        formId={formID} column={label['@columnName']}
         parameter={label['@switchingParameterName']}
         property={label['@ChannelPropertyName']}
       />
     );
-  }, [formId])
+  }, [formID])
 
   return <div>{pluginData?.tableColumnHeaderSetter?.specialLabel?.map(mapLabels)}</div>;
 }

@@ -4,15 +4,15 @@ import ColumnSettingsAnalyzerItem from "./column-settings-analyzer-item";
 import { selectors } from "../../../../store";
 
 
-export default function ColumnSettingsAnalyzer({formId}) {
-  const sessionId = useSelector(selectors.sessionID);
+export function ColumnSettingsAnalyzer({formID}) {
+  const sessionID = useSelector(selectors.sessionID);
   const sessionManager = useSelector(selectors.sessionManager);
 
   const [pluginData, setPluginData] = useState(null);
 
   useEffect(() => {
     let ignore = false;
-    if (sessionId) {
+    if (sessionID) {
       const addSubstitution = (substitutes, value, path, item) => {
         if (value?.includes('$(')) {
           let startIndex = value.indexOf('$(');
@@ -30,12 +30,12 @@ export default function ColumnSettingsAnalyzer({formId}) {
             type = pathToChange.slice(pointIndex + 1);
             propertyName = null;
           }
-          substitutes.push({type, parameterName, propertyName, path, item, formId, start, finish});
+          substitutes.push({type, parameterName, propertyName, path, item, formID, start, finish});
         }
       };
 
       async function fetchData() {
-        const data = await sessionManager.fetchData(`pluginData?sessionId=${sessionId}&formId=${formId}&pluginName=tableColumnsSettings`);
+        const data = await sessionManager.fetchData(`pluginData?sessionId=${sessionID}&formId=${formID}&pluginName=tableColumnsSettings`);
         if (!ignore && data) {
           let substitutes = [];
           if (data?.tableColumnsSettings?.ColumnGroupSettings?.ColumnGroupSettings) {
@@ -54,7 +54,7 @@ export default function ColumnSettingsAnalyzer({formId}) {
       fetchData();
     }
     return () => { ignore = true; }
-  }, [formId, sessionId, sessionManager]);
+  }, [formID, sessionID, sessionManager]);
 
   return (
     <div>

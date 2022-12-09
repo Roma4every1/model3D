@@ -73,7 +73,8 @@ type CaratsState = FormDict<CaratState>;
  * + `canvas` — элемент холста
  * */
 interface CaratState {
-  columns: any[],
+  settings: CaratSettings,
+  columns: CaratColumn[],
   canvas: HTMLCanvasElement,
 }
 
@@ -156,16 +157,21 @@ interface FormLayout {
 
 /** Разметка общих элементов. */
 type CommonLayout = {
-  top: string[],
   left: string[],
   dock: DockLayout,
 };
 
 /** Разметка контейнера. */
 interface DockLayout {
+  /** Номер активной верхней вкладки. */
   selectedTopTab: number,
+  /** Нормер активной вкладки справа */
   selectedRightTab: number,
+  /** Высота тела верхней панели. */
+  topPanelHeight: number,
+  /** Ширина левой вкладки с параметрами. */
   leftPanelWidth: number,
+  /** Ширина панели с права. */
   rightPanelWidth: number,
 }
 

@@ -27,7 +27,7 @@ interface MenuListItemProps {
 
 
 /** Меню в верхней панели. */
-export default function Menu() {
+export function MainMenu() {
   const dispatch = useDispatch();
   const { t } = useTranslation();
 

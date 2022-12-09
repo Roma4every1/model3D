@@ -7,7 +7,9 @@ import { getRightPanelTabs } from "./right-tabs";
 const globalAttributes: IGlobalAttributes = {
   tabSetEnableTabStrip: false,
   borderEnableDrop: false,
+  tabEnableRename: false,
   tabEnableClose: false,
+  tabEnableDrag: false,
   splitterSize: 6,
 };
 const formTabset: IJsonTabSetNode = {
@@ -27,11 +29,11 @@ export function getDockLayout(displayedFormTypes: FormType[], dockLayout: DockLa
     borders: [
       {
         type: 'border', location: 'top',
-        barSize: 30, size: 90, minSize: 80, selected: selectedTop,
+        barSize: 30, size: dockLayout.topPanelHeight, minSize: 80, selected: selectedTop,
         children: topTabs,
       },
       {
-        type: 'border', location: 'right', enableDrop: false,
+        type: 'border', location: 'right',
         barSize: 30, size: dockLayout.rightPanelWidth, minSize: 150, selected: selectedRight,
         children: rightTabs,
       },

@@ -6,7 +6,7 @@ import { actions, selectors } from "../../store";
 import { fetchFormPrograms } from "../../store/thunks";
 
 
-export default function SqlProgramsList({formID}: {formID: FormID}) {
+export function SqlProgramsList({formID}: PropsFormID) {
   const dispatch = useDispatch();
   const sessionID = useSelector(selectors.sessionID);
   const sessionManager = useSelector(selectors.sessionManager);

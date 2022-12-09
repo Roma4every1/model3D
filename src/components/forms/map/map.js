@@ -91,7 +91,7 @@ export default function Map({formData: {id: formID}, data}) {
       dispatch(actions.setMapField(formID, 'owner', owner));
       mapState.drawer.changeOwner(owner);
     }
-    if (changeMapID || mapState.isLoadSuccessfully === false) {
+    if (changeMapID) {
       dispatch(actions.setMapField(formID, 'mapID', mapID));
       dispatch(fetchMapData(mapState.drawer.provider, sessionID, formID, mapID, owner));
     }

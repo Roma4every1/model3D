@@ -1,5 +1,7 @@
 // noinspection LanguageDetectionInspection
 
+type PropsFormID = {formID: FormID};
+
 /** Словарь типа `{ [formID]: data }`. */
 type FormDict<Type = any> = {[key: FormID]: Type};
 
