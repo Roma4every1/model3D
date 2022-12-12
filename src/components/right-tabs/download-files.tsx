@@ -11,15 +11,16 @@ import reportDeleteIcon from "../../static/images/report_delete.png";
 const reportsSelector = (state: WState) => Object.values<any>(state.reports).reverse();
 const mapReports = (report: any) => <DownloadFileItem key={report.Id} operationData={report} />;
 
-export default function DownloadFiles({formID}) {
+export function DownloadFiles() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [filterByPresentation, setFilterByPresentation] = useState(true);
 
+  const rootFormID = useSelector(selectors.rootFormID);
   const sessionID = useSelector(selectors.sessionID);
   const sessionManager = useSelector(selectors.sessionManager);
   const reports = useSelector(reportsSelector);
-  const activeChildID: FormID = useSelector(selectors.activeChildID.bind(formID));
+  const activeChildID: FormID = useSelector(selectors.activeChildID.bind(rootFormID));
 
   const deleteReports = async () => {
     const presentationID = filterByPresentation ? activeChildID : null;

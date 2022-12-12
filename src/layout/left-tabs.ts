@@ -2,16 +2,6 @@ import { IJsonModel } from "flexlayout-react";
 import { IGlobalAttributes, IJsonTabNode, IJsonTabSetNode } from "flexlayout-react/declarations/model/IJsonModel";
 
 
-/** Перечисление для элементов боковой панели. */
-export enum LeftPanelItems {
-  /** Глобальные параметры (параметры корневой формы). */
-  GLOBAL = 'g',
-  /** Параметры текущей презентации. */
-  FORM = 'f',
-  /** Список презентаций. */
-  LIST = 'l',
-}
-
 /** Высота заголовка в элементе TabSet. */
 const TAB_STRIP_HEIGHT = 28;   // px
 /** Ширина элемента с названием параметра. */
@@ -30,15 +20,15 @@ const globalAttributes: IGlobalAttributes = {
 
 /** Вкладка с глобальными параметрами. */
 const globalParamsTab: [IJsonTabNode] = [
-  {type: 'tab', name: 'Глобальные параметры', component: LeftPanelItems.GLOBAL},
+  {type: 'tab', name: 'Глобальные параметры', component: 'global'},
 ];
 /** Вкладка с параметрами презентации. */
 const presentationParamsTab: [IJsonTabNode] = [
-  {type: 'tab', name: 'Параметры презентации', component: LeftPanelItems.FORM},
+  {type: 'tab', name: 'Параметры презентации', component: 'form'},
 ];
 /** Вкладка со списком презентаций: `<PresentationList/>`. */
 const presentationListTab: [IJsonTabNode] = [
-  {type: 'tab', name: 'Презентации', component: LeftPanelItems.LIST},
+  {type: 'tab', name: 'Презентации', component: 'tree'},
 ];
 
 /** Возвращает разметку для левой панели (с параметрами).
@@ -47,37 +37,41 @@ const presentationListTab: [IJsonTabNode] = [
  * @param formParams параметры текущей презентации
  * */
 export function getLeftPanelLayout(
-  proto: LeftPanelItems[],
+  proto: LeftPanelLayout,
   globalParams: FormParameter[], formParams: FormParameter[],
 ): IJsonModel {
-  const globalParamsNumber = globalParams?.filter(p => p.editorType).length;
-  const isShowGlobal = proto.includes(LeftPanelItems.GLOBAL) && globalParamsNumber > 0;
-
-  const formParamsNumber = formParams?.filter(p => p.editorType).length;
-  const isShowForm = proto.includes(LeftPanelItems.FORM) && formParamsNumber > 0;
-
   const children: IJsonTabSetNode[] = [];
+  const { globalParamsHeight, formParamsHeight, treeHeight } = proto;
 
-  if (proto.includes(LeftPanelItems.LIST)) {
-    children.unshift({
-      type: 'tabset', minHeight: 50,
-      children: presentationListTab,
+  const globalParamsNumber = globalParams?.filter(p => p.editorType).length;
+  const formParamsNumber = formParams?.filter(p => p.editorType).length;
+
+  if (globalParamsHeight > 0 && globalParamsNumber > 0) {
+    const height = globalParamsHeight === 1
+      ? getParamsListHeight(globalParams)
+      : globalParamsHeight;
+
+    children.push({
+      type: 'tabset', id: 'globalParamsHeight', height, minHeight: height / 2,
+      children: globalParamsTab,
     });
   }
 
-  if (isShowForm) {
-    const height = getParamsListHeight(formParams);
-    children.unshift({
-      type: 'tabset', height, minHeight: height / 2,
+  if (formParamsHeight > 0 && formParamsNumber > 0) {
+    const height = formParamsHeight === 1
+      ? getParamsListHeight(formParams)
+      : formParamsHeight;
+
+    children.push({
+      type: 'tabset', id: 'formParamsHeight', height, minHeight: height / 2,
       children: presentationParamsTab,
     });
   }
 
-  if (isShowGlobal) {
-    const height = getParamsListHeight(globalParams);
-    children.unshift({
-      type: 'tabset', height, minHeight: height / 2,
-      children: globalParamsTab,
+  if (treeHeight > 0) {
+    children.push({
+      type: 'tabset', id: 'treeHeight', minHeight: 50,
+      children: presentationListTab,
     });
   }
 

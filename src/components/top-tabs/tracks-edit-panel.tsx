@@ -15,7 +15,7 @@ export function TracksEditPanel({formID}: PropsFormID) {
         <div>
           <span className={'k-icon k-i-pan'}/>
           <span>1 / </span>
-          <IntegerTextEditor value={caratState.settings.metersInMeter}/>
+          <IntegerTextEditor value={caratState?.settings.metersInMeter}/>
         </div>
       </MenuSection>
       <MenuSection header={'Управление колонками'} style={{flexDirection: 'row'}}>
@@ -23,7 +23,7 @@ export function TracksEditPanel({formID}: PropsFormID) {
           <div>Вправо</div>
           <div>Влево</div>
         </div>
-        <TextGrid labels={caratState.columns.map(c => c.columnSettings.label)}/>
+        <TextGrid labels={caratState?.columns.map(c => c.columnSettings.label) || []}/>
       </MenuSection>
       <MenuSection header={'Настройки активной колонки'}>
         <div>Имя</div>

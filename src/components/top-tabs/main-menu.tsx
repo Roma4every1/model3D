@@ -8,7 +8,6 @@ import { Toolbar } from "@progress/kendo-react-buttons";
 import { MenuSection } from "../common/menu-ui";
 
 import { actions, selectors } from "../../store";
-import { LeftPanelItems } from "../../layout/left-tabs";
 import { menuIconsDict } from "../../dicts/images";
 import { callBackWithNotices } from "../../utils/notifications";
 import PACKAGE from "../../../package.json";
@@ -32,12 +31,12 @@ export function MainMenu() {
   const { t } = useTranslation();
 
   const config = useSelector(selectors.config);
-  const leftLayoutProto = useSelector(selectors.leftLayout);
+  const leftLayout = useSelector(selectors.leftLayout);
   const sessionManager = useSelector(selectors.sessionManager);
 
-  const [showGlobal, setShowGlobal] = useState(leftLayoutProto.includes(LeftPanelItems.GLOBAL));
-  const [showForm, setShowForm] = useState(leftLayoutProto.includes(LeftPanelItems.FORM));
-  const [showList, setShowList] = useState(leftLayoutProto.includes(LeftPanelItems.LIST));
+  const [showGlobal, setShowGlobal] = useState(leftLayout.globalParamsHeight > 0);
+  const [showForm, setShowForm] = useState(leftLayout.formParamsHeight > 0);
+  const [showTree, setShowTree] = useState(leftLayout.treeHeight > 0);
 
   const saveSession = useCallback(() => {
     callBackWithNotices(sessionManager.saveSession(), dispatch, 'Сессия сохранена')
@@ -48,27 +47,18 @@ export function MainMenu() {
   }, [sessionManager]);
 
   const togglePanelGlobal = () => {
-    const newLeftLayoutProto = showGlobal
-      ? leftLayoutProto.filter(i => i !== LeftPanelItems.GLOBAL)
-      : [...leftLayoutProto, LeftPanelItems.GLOBAL];
-    dispatch(actions.setLeftLayout(newLeftLayoutProto));
+    dispatch(actions.setLeftTabHeight('globalParamsHeight', showGlobal ? -1 : 1));
     setShowGlobal(!showGlobal);
   };
 
   const togglePanelForm = () => {
-    const newLeftLayoutProto = showForm
-      ? leftLayoutProto.filter(i => i !== LeftPanelItems.FORM)
-      : [...leftLayoutProto, LeftPanelItems.FORM];
-    dispatch(actions.setLeftLayout(newLeftLayoutProto));
+    dispatch(actions.setLeftTabHeight('formParamsHeight', showForm ? -1 : 1));
     setShowForm(!showForm);
   };
 
   const togglePanelList = () => {
-    const newLeftLayoutProto = showList
-      ? leftLayoutProto.filter(i => i !== LeftPanelItems.LIST)
-      : [...leftLayoutProto, LeftPanelItems.LIST];
-    dispatch(actions.setLeftLayout(newLeftLayoutProto));
-    setShowList(!showList);
+    dispatch(actions.setLeftTabHeight('treeHeight', showTree ? -1 : 1));
+    setShowTree(!showTree);
   };
 
   const closeAboutWindow = useCallback(() => {
@@ -102,16 +92,16 @@ export function MainMenu() {
         </MenuSection>
         <MenuSection header={'Панели'} className={'map-panel-main'} style={{display: 'flex'}}>
           <PanelToggle
-            text={'Глобальные параметры'} icon={LeftPanelItems.GLOBAL}
+            text={'Глобальные параметры'} icon={'g'}
             active={showGlobal} onClick={togglePanelGlobal}
           />
           <PanelToggle
-            text={'Параметры презентации'} icon={LeftPanelItems.FORM}
+            text={'Параметры презентации'} icon={'f'}
             active={showForm} onClick={togglePanelForm}
           />
           <PanelToggle
-            text={'Презентации'} icon={LeftPanelItems.LIST}
-            active={showList} onClick={togglePanelList}
+            text={'Презентации'} icon={'l'}
+            active={showTree} onClick={togglePanelList}
           />
         </MenuSection>
       </div>

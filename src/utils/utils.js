@@ -25,11 +25,6 @@ export const compareArrays = (a1, a2) => {
   return a1.length === a2.length && a1.every((v, i) => v === a2[i]);
 }
 
-export const capitalizeFirstLetter = (string) => {
-  if (typeof string !== 'string') return null;
-  return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
 export const equalParams = (p1, p2) => {
   if (!p1 || !p2 || p1.length !== p2.length) return false;
 
@@ -37,11 +32,6 @@ export const equalParams = (p1, p2) => {
     if (p1[i] !== p2[i]) return false;
   }
   return true;
-}
-
-export const getRootFormID = (formId) => {
-  const index = formId.indexOf(',');
-  return (index === -1) ? formId : formId.substring(0, index);
 }
 
 export const getParentFormId = (formId) => {

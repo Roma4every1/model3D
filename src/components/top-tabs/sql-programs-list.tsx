@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Skeleton } from "@progress/kendo-react-indicators";
-import ProgramButton from "../forms/grid/plugins/sql-programs/program-button";
+import ProgramButton from "../sql-programs/program-button";
 import { actions, selectors } from "../../store";
 import { fetchFormPrograms } from "../../store/thunks";
 
@@ -29,13 +29,8 @@ export function SqlProgramsList({formID}: PropsFormID) {
   }, [programList]);
 
   const mapProgramList = useCallback((program: ProgramListItem) => {
-    return (
-      <ProgramButton
-        key={program.id} formID={formID} program={program}
-        sessionManager={sessionManager} sessionID={sessionID}
-      />
-    );
-  },[formID, sessionID, sessionManager]);
+    return <ProgramButton key={program.id} formID={formID} program={program}/>;
+  },[formID]);
 
   const notReady = !programList || programList.loading || programList.success === undefined;
 

@@ -3,15 +3,15 @@ import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { Button } from "@progress/kendo-react-buttons";
-import FormParametersList from "../../../../common/form-parameters-list";
+import FormParametersList from "../common/form-parameters-list";
 import ProgramParametersButton from "./program-parameters-button";
-import { actions, selectors } from "../../../../../store";
+import { actions, selectors } from "../../store";
 
 
 export default function ProgramParametersList(props) {
+  const { formId, presentationId, handleClose, handleProcessing, programDisplayName } = props;
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const { formId, presentationId, handleClose, handleProcessing, programDisplayName } = props;
 
   const sessionManager = useSelector(selectors.sessionManager);
   const sessionId = useSelector(selectors.sessionID);
@@ -51,7 +51,9 @@ export default function ProgramParametersList(props) {
       return getResult();
     } else {
       handleProcessing(false);
-      dispatch(actions.closeWindowNotification())
+      setTimeout(() => {
+        dispatch(actions.closeWindowNotification());
+      }, 3000);
     }
   }, [programDisplayName, presentationId, sessionId, sessionManager, handleProcessing, t, dispatch]);
 
@@ -79,7 +81,7 @@ export default function ProgramParametersList(props) {
   }, [watchOperation, sessionId, formId, presentationId, formParams, sessionManager, dispatch, programDisplayName, handleProcessing, t]);
 
   return (
-    <Dialog title={t('report.params')} onClose={handleClose} initialHeight={350}>
+    <Dialog title={t('report.params')} onClose={handleClose} initialHeight={350} style={{zIndex: 99}}>
       <FormParametersList formId={formId} />
       <DialogActionsBar>
         <ProgramParametersButton formId={formId} runReport={runReport} handleClose={handleClose} />

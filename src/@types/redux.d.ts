@@ -157,8 +157,8 @@ interface FormLayout {
 
 /** Разметка общих элементов. */
 type CommonLayout = {
-  left: string[],
   dock: DockLayout,
+  left: LeftPanelLayout,
 };
 
 /** Разметка контейнера. */
@@ -173,6 +173,20 @@ interface DockLayout {
   leftPanelWidth: number,
   /** Ширина панели с права. */
   rightPanelWidth: number,
+}
+
+/** Разметка левой панели с параметрами.
+ * + высота <= 0 — не показывать
+ * + высота == 1 — автоподбор
+ * + иначе принудительный размер
+ * */
+interface LeftPanelLayout {
+  /** Высотка вкладки _"Глобальные параметры"_. */
+  globalParamsHeight: number,
+  /** Высотка вкладки _"Параметры презентации"_. */
+  formParamsHeight: number,
+  /** Высотка вкладки _"Презентации"_ (дерево). */
+  treeHeight: number,
 }
 
 

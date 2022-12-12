@@ -3,6 +3,13 @@ import { WDispatch, actions } from "../store";
 
 const defaultErrorNotice = 'Ошибка при выполнении запроса';
 
+/** Принимает {@link Promise}, при его завершении выведется уведомление.
+ * @param promise промис
+ * @param dispatch функция из `useDispatch`
+ * @param successText текст уведомления
+ * @param errorText текст уведомления в случае ошибки
+ * @param duration сколько будет показываться уведомление
+ * */
 export function callBackWithNotices(
   promise: Promise<any>, dispatch: WDispatch,
   successText: string, errorText = defaultErrorNotice, duration = 2,

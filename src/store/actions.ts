@@ -145,11 +145,9 @@ export class WellManagerActionsCreator {
 
   /* --- Layout Actions --- */
 
-  // public setDockLayout(layout: DockLayout): LayoutAction {
-  //   return {type: LayoutActions.SET_DOCK_LAYOUT, payload: layout};
-  // }
-  public setLeftLayout(layout: string[]): LayoutAction {
-    return {type: LayoutActions.SET_LEFT_LAYOUT, payload: layout};
+  /** Установить принудительную высоту влкадки в левой панели. */
+  public setLeftTabHeight(tab: keyof LeftPanelLayout, height: number): LayoutAction {
+    return {type: LayoutActions.SET_LEFT_TAB_HEIGHT, payload: {tab, height}};
   }
 
   /* --- Charts Actions --- */

@@ -1,30 +1,31 @@
-import { LeftPanelItems } from "../../layout/left-tabs";
-
-
 /* --- Actions Types --- */
 
 export enum LayoutActions {
-  SET_LEFT_LAYOUT = 'layout/left',
   SET_DOCK_LAYOUT = 'layout/dock',
+  SET_LEFT_TAB_HEIGHT = 'layout/left',
 }
 
 /* --- Actions Interfaces --- */
 
-interface ActionSetLeftLayout {
-  type: LayoutActions.SET_LEFT_LAYOUT,
-  payload: string[],
-}
 interface ActionSetDockLayout {
   type: LayoutActions.SET_DOCK_LAYOUT,
   payload: DockLayout,
 }
+interface ActionSetLeftTabHeight {
+  type: LayoutActions.SET_LEFT_TAB_HEIGHT,
+  payload: {tab: keyof LeftPanelLayout, height: number},
+}
 
-export type LayoutAction = ActionSetLeftLayout | ActionSetDockLayout;
+export type LayoutAction = ActionSetDockLayout | ActionSetLeftTabHeight;
 
 /* --- Reducer --- */
 
 const init: CommonLayout = {
-  left: [LeftPanelItems.GLOBAL, LeftPanelItems.FORM, LeftPanelItems.LIST],
+  left: {
+    globalParamsHeight: 1,
+    formParamsHeight: 1,
+    treeHeight: 1,
+  },
   dock: {
     selectedTopTab: -1,   // нет активной вкладки
     selectedRightTab: -1, // нет активной вкладки
@@ -41,8 +42,9 @@ export const layoutReducer = (state: CommonLayout = init, action: LayoutAction):
       return {...state, dock: action.payload};
     }
 
-    case LayoutActions.SET_LEFT_LAYOUT: {
-      return {...state, left: action.payload};
+    case LayoutActions.SET_LEFT_TAB_HEIGHT: {
+      const { tab, height } = action.payload;
+      return {...state, left: {...state.left, [tab]: height}};
     }
 
     default: return state;

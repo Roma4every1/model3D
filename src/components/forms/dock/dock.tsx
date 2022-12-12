@@ -2,6 +2,7 @@ import { useEffect, useMemo, useCallback } from "react";
 import { IJsonModel, Model, Layout, TabNode } from "flexlayout-react";
 import { useSelector } from "react-redux";
 import { MainMenu } from "../../top-tabs/main-menu";
+import { DownloadFiles } from "../../right-tabs/download-files";
 import { LeftPanel } from "./left-panel";
 import { TopTab } from "../../top-tabs/top-tab";
 import { RightTab } from "../../right-tabs/right-tab";
@@ -34,8 +35,9 @@ export default function Dock({formData: {id: formID}}) {
   const factory = useCallback((node: TabNode) => {
     const id = node.getId();
     if (id === 'top-menu') return <MainMenu/>;
+    if (id === 'right-dock') return <DownloadFiles/>;
     if (id.startsWith('top')) return <TopTab id={id}/>;
-    if (id.startsWith('right')) return <RightTab id={id}/>
+    if (id.startsWith('right')) return <RightTab/>;
     if (node.getComponent() === 'left') return <LeftPanel/>;
     return <DockForm formID={formID}/>;
   }, [formID]);

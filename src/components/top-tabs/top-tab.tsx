@@ -23,9 +23,10 @@ export const topPanelsDict: Record<string, [FunctionComponent<PropsFormID>, Form
 
 export function TopTab({id}: {id: string}) {
   const presentation = useSelector(selectors.displayedPresentation);
-  const activeChildID = presentation.activeChildren[0];
-  if (id === 'top-programs') return <SqlProgramsList formID={activeChildID}/>;
+  if (!presentation) return null;
+  if (id === 'top-programs') return <SqlProgramsList formID={presentation.id}/>;
 
+  const activeChildID = presentation.activeChildren[0];
   const activeFormType = presentation.children.find(child => child.id === activeChildID).type;
   const [TopTabComponent, formType] = topPanelsDict[id];
 
