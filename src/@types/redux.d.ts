@@ -192,8 +192,13 @@ interface LeftPanelLayout {
 
 /* --- state.charts --- */
 
+/** Хранилище состояний графика. */
 type ChartsState = Record<FormID, ChartState>;
 
+/** Состояние графика.
+ * + `tooltip` — показывать ли подсказку
+ * + `seriesSettings` — внешний вид
+ * */
 interface ChartState {
   tooltip: boolean,
   seriesSettings: any,

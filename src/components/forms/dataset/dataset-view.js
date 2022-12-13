@@ -1,6 +1,7 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Grid, GridColumn as Column, getSelectedState, getSelectedStateFromKeyDown, GridColumnMenuFilter } from "@progress/kendo-react-grid";
+import { Grid, GridColumn as Column, getSelectedState, getSelectedStateFromKeyDown,
+  GridColumnMenuFilter } from "@progress/kendo-react-grid";
 import ColumnMenu from "./column-menu";
 import { SecondLevelTable } from "./second-level-table";
 import { Button } from "@progress/kendo-react-buttons";
@@ -30,7 +31,8 @@ function DataSetView(props, ref) {
     const dispatch = useDispatch();
     const sessionManager = useSelector(selectors.sessionManager);
     const sessionId = useSelector(selectors.sessionID);
-    const { inputTableData, formData, apply, deleteRows, getRow, reload, editable, dataPart, activeChannelName } = props;
+    const { inputTableData, formData, apply, deleteRows, getRow, reload, editable, dataPart,
+      activeChannelName } = props;
 
     const [rowAdding, setRowAdding] = React.useState(false);
     const [edited, setEdited] = React.useState(false);
@@ -49,8 +51,12 @@ function DataSetView(props, ref) {
     const [selectedState, setRealSelectedState] = React.useState({});
     const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
 
-    const tableSettings = useSelector((state) => state.formSettings[formData.id]);
-    const tableColumnGroupSettings = useSelector((state) => state.formSettings[formData.id]?.columns?.ColumnGroupSettings);
+    const tableSettings = useSelector((state) => {
+      return state.formSettings[formData.id]
+    });
+    const tableColumnGroupSettings = useSelector((state) => {
+      return state.formSettings[formData.id]?.columns?.ColumnGroupSettings
+    });
 
     var selectedStateChanged = React.useRef(false);
     const setSelectedState = (newValue) => {
@@ -121,7 +127,8 @@ function DataSetView(props, ref) {
                             case "System.DateTime":
                                 if (typeof fieldFilter === 'string') {
                                     var pattern = /(\d{2})\.(\d{2})\.(\d{4})/;
-                                    fieldFilter = new Date(fieldFilter.replace(pattern, '$3/$2/$1'));
+                                    fieldFilter = new Date(fieldFilter
+                                      .replace(pattern, '$3/$2/$1'));
                                     filter.value = fieldFilter;
                                 }
                                 break;
@@ -130,23 +137,27 @@ function DataSetView(props, ref) {
                             case "System.Int32":
                             case "System.Int64":
                                 if (typeof fieldFilter === 'string') {
-                                    fieldFilter = Number(fieldFilter.replace(',', '.'));
+                                    fieldFilter = Number(fieldFilter
+                                      .replace(',', '.'));
                                 }
                                 break;
                             default:
                                 break;
                         }
                         if (!operation.includes("Null")) {
-                            center = `<netType typeName="${col.netType}" value="${utils.dateToString(fieldFilter)}"/>`
+                            center = `<netType typeName="${col.netType}" value="${utils
+                              .dateToString(fieldFilter)}"/>`
                         }
                         filterValue += `<${operation}>${center}</${operation}>`;
                     });
                     filterValue += `</${flt.logic}>`;
-                    neededParamArray.push({ name: fieldName + "ConditionFilterObject", value: filterValue });
+                    neededParamArray.push({ name: fieldName + "ConditionFilterObject",
+                      value: filterValue });
                 });
             }
             inputTableData.columnsJSON.forEach(c => {
-                let needClear = (!dataState.filter) || !dataState.filter.filters.some(flt => flt.filters[0].field === c.field);
+                let needClear = (!dataState.filter) || !dataState.filter.filters
+                  .some(flt => flt.filters[0].field === c.field);
                 if (needClear) {
                     neededParamArray.push({ name: c.field + "ConditionFilterObject", value: null });
                 }
@@ -158,7 +169,9 @@ function DataSetView(props, ref) {
     const onDataStateChange = (event) => {
         setDataState(event.dataState);
         if (dataPart && (dataToShow.length < event.dataState.skip + event.dataState.take * 2)) {
-            sessionManager.paramsManager.updateParamValue(activeChannelName, "maxRowCount", dataToShow.length + addRowCount, true);
+            sessionManager.paramsManager.updateParamValue(
+              activeChannelName, "maxRowCount",
+              dataToShow.length + addRowCount, true);
         }
     };
 
@@ -175,7 +188,8 @@ function DataSetView(props, ref) {
         var toEnd = false;
         var index = Infinity;
         if (Object.entries(selectedState).length > 0) {
-            index = Math.min(Object.entries(selectedState).filter(e => e[1] === true).map(e => e[0]), Infinity);
+            index = Math.min(Object.entries(selectedState)
+              .filter(e => e[1] === true).map(e => e[0]), Infinity);
         }
         if (index === tableData.rowsJSON.length - 1) {
             toEnd = true;
@@ -196,46 +210,53 @@ function DataSetView(props, ref) {
             newRecord = await getRow();
         }
         if (toEnd) {
-            setTableData({ rowsJSON: [...tableData.rowsJSON, newRecord], columnsJSON: tableData.columnsJSON });
+            setTableData({ rowsJSON: [...tableData.rowsJSON, newRecord],
+              columnsJSON: tableData.columnsJSON });
         }
         else if (!toEnd) {
             var startPart = tableData.rowsJSON.slice(0, index);
             var finishPart = tableData.rowsJSON.slice(index);
-            setTableData({ rowsJSON: [...startPart, newRecord, ...finishPart], columnsJSON: tableData.columnsJSON });
+            setTableData({ rowsJSON: [...startPart, newRecord, ...finishPart],
+              columnsJSON: tableData.columnsJSON });
         }
         setEditID(idGetter(newRecord));
         setRowAdding(true);
     };
 
-    const excelExport = async () => {
-        const dataD = sessionManager.channelsManager.getAllChannelParams(activeChannelName);
-        var neededParamValues = sessionManager.paramsManager.getParameterValues(dataD, formData.id, false, activeChannelName);
-        var settings = tableSettings?.columns;
-        if (settings) {
-            settings = { ...settings, columnsSettings: settings.columnsSettings.map(c => { return { ...c, isVisible: tableData.columnsJSON.some(cc => cc.field === c.channelPropertyName) } }) };
-        }
-        var jsonToSend = {
-            sessionId: sessionId,
-            channelName: activeChannelName,
-            paramName: formData.displayName,
-            presentationId: utils.getParentFormId(formData.id),
-            paramValues: neededParamValues,
-            settings: settings
-        };
-        const jsonToSendString = JSON.stringify(jsonToSend);
-        var data = await sessionManager.fetchData(`exportToExcel`,
-            {
-                method: 'POST',
-                body: jsonToSendString
-            });
-        sessionManager.watchReport(data.OperationId, data);
+  const excelExport = async () => {
+    const dataD = sessionManager.channelsManager.getAllChannelParams(activeChannelName);
+    var neededParamValues = sessionManager.paramsManager
+      .getParameterValues(dataD, formData.id, false, activeChannelName);
+    var settings = tableSettings?.columns;
+    if (settings) {
+      settings = {
+        ...settings,
+        columnsSettings: settings.columnsSettings
+          .map(c => { return { ...c, isVisible: tableData.columnsJSON
+              .some(cc => cc.field === c.channelPropertyName) } }) };
+    }
+    var jsonToSend = {
+      sessionId: sessionId,
+      channelName: activeChannelName,
+      paramName: formData.displayName,
+      presentationId: utils.getParentFormId(formData.id),
+      paramValues: neededParamValues,
+      settings: settings
     };
+    const body = JSON.stringify(jsonToSend);
+    var data = await sessionManager.fetchData(`exportToExcel`,
+      {method: 'POST', body});
+    sessionManager.watchReport(data.OperationId);
+  };
 
     const onItemChange = (event) => {
         setEdited(true);
         const editedItemID = idGetter(event.dataItem);
+        const field = event.field + '_jsoriginal';
         const data = tableData.rowsJSON.map(item =>
-            idGetter(item) === editedItemID ? (event.dataItem[event.field + '_jsoriginal'] ? { ...item, [event.field]: event.value, [event.field + '_jsoriginal']: event.dataItem[event.field + '_jsoriginal'] } : { ...item, [event.field]: event.value }) : item
+            idGetter(item) === editedItemID ? (event.dataItem[field]
+              ? { ...item, [event.field]: event.value, [field]: event.dataItem[field] }
+              : { ...item, [event.field]: event.value }) : item
         );
         setTableData({ rowsJSON: data, columnsJSON: tableData.columnsJSON });
     };
@@ -287,7 +308,8 @@ function DataSetView(props, ref) {
             }
             case 'Delete': {
                 if (!event?.syntheticEvent?.target?.form?.className?.includes('filter')) {
-                    if (editable && !(editID != null && editField) && _.countBy(Object.keys(selectedState), o => selectedState[o]).true > 0) {
+                    if (editable && !(editID != null && editField) && _.countBy(
+                      Object.keys(selectedState), o => selectedState[o]).true > 0) {
                         handleDeleteDialogOpen();
                     }
                 }
@@ -321,8 +343,8 @@ function DataSetView(props, ref) {
                 if (event.nativeEvent.ctrlKey) {
                     if (tableData.rowsJSON.length > 0) {
                         let rowIndex = tableData.rowsJSON.length - 1;
-                        //_ref.current.element.children[1].children[0].scrollTop = _ref.current.element.children[1].children[0].scrollHeight;
-                        setDataState({ ...dataState, skip: rowIndex - 20 > 0 ? rowIndex - 20 : 0 });
+                        setDataState({
+                          ...dataState, skip: rowIndex - 20 > 0 ? rowIndex - 20 : 0 });
                         let newState = {};
                         newState[rowIndex] = true;
                         setSelectedState(newState);
@@ -366,7 +388,9 @@ function DataSetView(props, ref) {
             }
             case 'ArrowDown': {
                 if (editable && (!rowAdding) && !(editID && editField)) {
-                    var index = Math.min(Object.entries(selectedState).filter(e => e[1] === true).map(e => e[0]));
+                    var index = Math.min(Object.entries(selectedState)
+                      .filter(e => e[1] === true)
+                      .map(e => e[0]));
                     if (index === tableData.rowsJSON.length - 1) {
                         if (event.nativeEvent.ctrlKey) {
                             addRecord(true);
@@ -389,41 +413,50 @@ function DataSetView(props, ref) {
             selectedStateChanged.current = false;
             if (Object.entries(selectedState).filter(e => e[1] === true).length === 1) {
                 let row = Object.entries(selectedState).find(e => e[1] === true);
-                sessionManager.paramsManager.updateParamValue(utils.getParentFormId(formData.id), inputTableData.currentRowObjectName, utils.tableRowToString(inputTableData.databaseData, inputTableData.databaseData.data.Rows[row[0]])?.value, true);
+                sessionManager.paramsManager.updateParamValue(
+                  utils.getParentFormId(formData.id),
+                  inputTableData.currentRowObjectName,
+                  utils.tableRowToString(
+                    inputTableData.databaseData,
+                    inputTableData.databaseData.data.Rows[row[0]]
+                  )?.value,
+                  true
+                );
             }
         }
     }, [selectedState, inputTableData, sessionManager, formData]);
 
-    React.useEffect(() => {
-        setSelectedState({});
-    }, [inputTableData]);
+  React.useEffect(() => {
+    setSelectedState({});
+  }, [inputTableData]);
 
-    React.useEffect(() => {
-        var columnNames = [];
-        if (!tableSettings || !tableSettings.attachedProperties) {
-            setTableData(inputTableData);
+  React.useEffect(() => {
+    var columnNames = [];
+    if (!tableSettings || !tableSettings.attachedProperties) {
+      setTableData(inputTableData);
+    } else {
+      if (tableSettings?.attachedProperties?.attachOption !== "AttachNothing") {
+        columnNames = inputTableData.columnsJSON.map(c => c.field)
+          .filter(f => !tableSettings?.attachedProperties?.exclude.includes(f));
+      }
+      else {
+        if (tableSettings?.attachedProperties?.exclude) {
+          columnNames = tableSettings?.attachedProperties?.exclude
         }
-        else {
-            if (tableSettings?.attachedProperties?.attachOption !== "AttachNothing") {
-                columnNames = inputTableData.columnsJSON.map(c => c.field).filter(f => !tableSettings?.attachedProperties?.exclude.includes(f));
-            }
-            else {
-                if (tableSettings?.attachedProperties?.exclude) {
-                    columnNames = tableSettings?.attachedProperties?.exclude
-                }
-            }
-            if (tableSettings.columns.columnsSettings) {
-                tableSettings.columns.columnsSettings.sort((a, b) => a.displayIndex - b.displayIndex);
-                columnNames = tableSettings.columns.columnsSettings.map(s => s.channelPropertyName).filter(n => columnNames.includes(n));
-            }
-            var columns = columnNames.map(c => inputTableData.columnsJSON.find(jsc => jsc.field === c));
-            var count = tableSettings.columns.frozenColumnCount ?? 0;
-            for (let i = 0; i < columns.length; i++) {
-                columns[i].locked = i < count;
-            }
-            setTableData({ rowsJSON: inputTableData.rowsJSON, columnsJSON: columns });
-        }
-    }, [inputTableData, tableSettings]);
+      }
+      if (tableSettings.columns.columnsSettings) {
+        tableSettings.columns.columnsSettings.sort((a, b) => a.displayIndex - b.displayIndex);
+        columnNames = tableSettings.columns.columnsSettings.map(s => s.channelPropertyName)
+          .filter(n => columnNames.includes(n));
+      }
+      var columns = columnNames.map(c => inputTableData.columnsJSON.find(jsc => jsc.field === c));
+      var count = tableSettings.columns.frozenColumnCount ?? 0;
+      for (let i = 0; i < columns.length; i++) {
+        columns[i].locked = i < count;
+      }
+      setTableData({ rowsJSON: inputTableData.rowsJSON, columnsJSON: columns });
+    }
+  }, [inputTableData, tableSettings]);
 
     async function deleteSelectedRows() {
         var elementsToRemove = ',';
@@ -466,7 +499,8 @@ function DataSetView(props, ref) {
         if (inputTableData.properties) {
             const property = inputTableData.properties.find(o => o.name === column.field);
             if (property && property.secondLevelChannelName) {
-                result.setOpened = (arg) => dispatch(actions.setOpenedWindow(property.name, arg, <SecondLevelTable
+                result.setOpened = (arg) => dispatch(actions.setOpenedWindow(property.name, arg,
+                  <SecondLevelTable
                     key={formData.id + property.name}
                     keyProp={formData.id + property.name}
                     secondLevelFormId={formData.id + property.name}
@@ -553,27 +587,31 @@ function DataSetView(props, ref) {
         activeCell: () => { return activeCell; }
     }));
 
-    const otherButtons =
-        <div>
-            <button className="k-button k-button-clear" onClick={excelExport}>
-                <span className="k-icon k-i-xls" />
-            </button>
-            {editable && <button className="k-button k-button-clear" onClick={handleDeleteDialogOpen}>
-                <span className="k-icon k-i-minus" />
-            </button>}
-            {editable && <button className="k-button k-button-clear" onClick={() => addRecord()} disabled={rowAdding}>
-                <span className="k-icon k-i-plus" />
-            </button>}
-            {editable && <button className="k-button k-button-clear" onClick={applyEdit} disabled={!edited && !rowAdding}>
-                <span className="k-icon k-i-check" />
-            </button>}
-            {editable && <button className="k-button k-button-clear" onClick={() => { reload(); setEditID(null); setRowAdding(false); }}>
-                <span className="k-icon k-i-cancel" />
-            </button>}
-            <button className="k-button k-button-clear" onClick={reload}>
-                <span className="k-icon k-i-reset" />
-            </button>
-        </div>;
+    const otherButtons = (
+      <div>
+        <button className="k-button k-button-clear" onClick={excelExport}>
+          <span className="k-icon k-i-xls" />
+        </button>
+        {editable && <button className="k-button k-button-clear" onClick={handleDeleteDialogOpen}>
+          <span className="k-icon k-i-minus" />
+        </button>}
+        {editable && <button className="k-button k-button-clear" onClick={() => addRecord()}
+                             disabled={rowAdding}>
+          <span className="k-icon k-i-plus" />
+        </button>}
+        {editable && <button className="k-button k-button-clear" onClick={applyEdit}
+                             disabled={!edited && !rowAdding}>
+          <span className="k-icon k-i-check" />
+        </button>}
+        {editable && <button className="k-button k-button-clear" onClick={() => {
+          reload(); setEditID(null); setRowAdding(false); }}>
+          <span className="k-icon k-i-cancel" />
+        </button>}
+        <button className="k-button k-button-clear" onClick={reload}>
+          <span className="k-icon k-i-reset" />
+        </button>
+      </div>
+    );
 
     const enterEdit = (dataItem, field) => {
         const newData = tableData.rowsJSON.map((item) => ({
@@ -605,7 +643,8 @@ function DataSetView(props, ref) {
 
     const onColumnResize = (event) => {
         const setWidth = c => {
-            var columnSetting = tableSettings.columns.columnsSettings.find(s => s.channelPropertyName === c.field);
+            var columnSetting = tableSettings.columns.columnsSettings
+              .find(s => s.channelPropertyName === c.field);
             if (columnSetting) {
                 columnSetting.width = c.width;
             }
@@ -665,14 +704,16 @@ function DataSetView(props, ref) {
         var columnSetting = null;
         var header = column.headerName;
         if (tableSettings && tableSettings.columns) {
-            columnSetting = tableSettings.columns.columnsSettings.find(s => s.channelPropertyName === column.field);
+            columnSetting = tableSettings.columns.columnsSettings
+              .find(s => s.channelPropertyName === column.field);
         }
         if (columnSetting?.displayName || columnSetting?.calculatedDisplayName) {
             header = columnSetting?.calculatedDisplayName ?? columnSetting?.displayName;
         }
 
         return <Column
-            headerClassName={GridColumnMenuFilter.active(column.field, dataState.filter) ? "active" : ""}
+            headerClassName={GridColumnMenuFilter
+              .active(column.field, dataState.filter) ? "active" : ""}
             locked={column.locked}
             key={column.field}
             field={column.field}
@@ -689,93 +730,90 @@ function DataSetView(props, ref) {
         />
     }, [tableSettings, tableData, dataState, activeChannelName, formData]);
 
-    React.useEffect(() => {
-        var groupingData = [];
-        tableData.columnsJSON.forEach(col => {
-            if (!col.treePath || col.treePath.length === 0) {
-                groupingData.push(drawColumn(col));
-            }
-            else {
-                var parent = null;
-                col.treePath.forEach(part => {
-                    var trimPart = part.trim();
-                    var parentArray = parent?.props?.children ?? groupingData;
-                    parent = parentArray.find(p => p?.key === trimPart);
-                    var columnSetting = tableColumnGroupSettings?.find(setting => setting.columnGroupName === trimPart);
-                    if (!parent) {
-                        var children = [];
-                        parent = <Column
-                            key={trimPart}
-                            title={columnSetting?.calculatedDisplayName ?? (columnSetting?.columnGroupDisplayName ?? trimPart)}
-                            children={children}>
-                        </Column>;
-                        parentArray.push(parent);
-                    }
-                });
-                parent.props.children.push(drawColumn(col))
-            }
+  React.useEffect(() => {
+    var groupingData = [];
+    tableData.columnsJSON.forEach(col => {
+      if (!col.treePath || col.treePath.length === 0) {
+        groupingData.push(drawColumn(col));
+      } else {
+        var parent = null;
+        col.treePath.forEach(part => {
+          var trimPart = part.trim();
+          var parentArray = parent?.props?.children ?? groupingData;
+          parent = parentArray.find(p => p?.key === trimPart);
+          var columnSetting = tableColumnGroupSettings?.find(
+            setting => setting.columnGroupName === trimPart);
+          if (!parent) {
+            var children = [];
+            parent = <Column
+              key={trimPart}
+              title={columnSetting?.calculatedDisplayName
+                ?? (columnSetting?.columnGroupDisplayName ?? trimPart)}
+              children={children}>
+            </Column>;
+            parentArray.push(parent);
+          }
         });
-        setColumnGroupingData(groupingData);
-    }, [tableData, drawColumn, tableColumnGroupSettings]);
+        parent.props.children.push(drawColumn(col))
+      }
+    });
+    setColumnGroupingData(groupingData);
+  }, [tableData, drawColumn, tableColumnGroupSettings]);
 
-    if (columnGroupingData.length > 0) {
-        return (
-            <LocalizationProvider language="ru-RU">
-                <IntlProvider locale="ru">
-                    {deleteDialogOpen && (
-                        <Dialog title={t('table.deleteRowsHeader')} onClose={handleDeleteDialogClose}>
-                            <p
-                                style={{
-                                    margin: "25px",
-                                    textAlign: "center",
-                                }}
-                            >
-                                {t('table.areYouSureToDeleteRows', { count: _.countBy(Object.keys(selectedState), o => selectedState[o]).true })}
-                            </p>
-                            <DialogActionsBar>
-                                <Button className="actionbutton" primary={true} onClick={() => { handleDeleteDialogClose(); deleteSelectedRows(); }}>
-                                    {t('base.ok')}
-                                </Button>
-                                <Button className="actionbutton" onClick={handleDeleteDialogClose}>
-                                    {t('base.cancel')}
-                                </Button>
-                            </DialogActionsBar>
-                        </Dialog>
-                    )}
-                    <FormHeader formData={formData} additionalButtons={otherButtons} />
-                    <Grid ref={_ref} className="grid-content"
-                        resizable={true}
-                        onColumnResize={onColumnResize}
-                        sortable={true}
-                        data={dataToShow ? dataToShow.slice(dataState.skip, dataState.skip + dataState.take) : dataToShow}
-                        {...dataState}
-                        navigatable={true}
-                        onDataStateChange={onDataStateChange}
-                        cellRender={customCellRender}
-                        rowRender={customRowRender}
-                        onItemChange={onItemChange}
-                        dataItemKey={DATA_ITEM_KEY}
-                        editField={editable ? EDIT_FIELD : null}
-                        selectedField={SELECTED_FIELD}
-                        selectable={{
-                            enabled: true,
-                            drag: true,
-                            cell: false,
-                            mode: 'multiple'
-                        }}
-                        onSelectionChange={onSelectionChange}
-                        onKeyDown={onKeyDown}
-                        rowHeight={15} pageSize={30}
-                        total={dataToShow.length}
-                        filterOperators={filterOperators}
-                        scrollable={'virtual'}
-                    >
-                        {columnGroupingData}
-                    </Grid>
-                </IntlProvider>
-            </LocalizationProvider>
-        );
-    }
-    else return <div />
+  if (columnGroupingData.length > 0) {
+    return (
+      <LocalizationProvider language="ru-RU">
+        <IntlProvider locale="ru">
+          {deleteDialogOpen && (
+            <Dialog title={t('table.deleteRowsHeader')} onClose={handleDeleteDialogClose}>
+              <p style={{margin: "25px", textAlign: "center"}}>
+                {t('table.areYouSureToDeleteRows', {
+                  count: _.countBy(Object.keys(selectedState), o => selectedState[o]).true
+                })}
+              </p>
+              <DialogActionsBar>
+                <Button className="actionbutton" primary={true} onClick={() => {
+                  handleDeleteDialogClose(); deleteSelectedRows();
+                }}>
+                  {t('base.ok')}
+                </Button>
+                <Button className="actionbutton" onClick={handleDeleteDialogClose}>
+                  {t('base.cancel')}
+                </Button>
+              </DialogActionsBar>
+            </Dialog>
+          )}
+          <FormHeader formData={formData} additionalButtons={otherButtons} />
+          <Grid
+            ref={_ref} className="grid-content"
+            resizable={true}
+            onColumnResize={onColumnResize}
+            sortable={true}
+            data={dataToShow
+              ? dataToShow.slice(dataState.skip, dataState.skip + dataState.take)
+              : dataToShow}
+            navigatable={true}
+            onDataStateChange={onDataStateChange}
+            cellRender={customCellRender}
+            rowRender={customRowRender}
+            onItemChange={onItemChange}
+            dataItemKey={DATA_ITEM_KEY}
+            editField={editable ? EDIT_FIELD : null}
+            selectedField={SELECTED_FIELD}
+            selectable={{enabled: true, drag: true, cell: false, mode: 'multiple'}}
+            onSelectionChange={onSelectionChange}
+            onKeyDown={onKeyDown}
+            rowHeight={15} pageSize={30}
+            total={dataToShow.length}
+            filterOperators={filterOperators}
+            scrollable={'virtual'}
+            {...dataState}
+          >
+            {columnGroupingData}
+          </Grid>
+        </IntlProvider>
+      </LocalizationProvider>
+    );
+  } else return <div />
 }
 export default DataSetView = React.forwardRef(DataSetView); // eslint-disable-line

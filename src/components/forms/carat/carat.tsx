@@ -9,6 +9,8 @@ import { drawCarat } from "./drawer";
 //   return this.map(channel => state.channelsData[channel]);
 // }
 
+//const allChannels = ['LOAD CARAT POINTS', 'V_CORE_ROOT', 'V_RIGIS_INTERVAL'];
+
 export default function Carat({data: {activeChannels, formId: formID}}) {
   const dispatch = useDispatch();
 
@@ -26,7 +28,7 @@ export default function Carat({data: {activeChannels, formId: formID}}) {
     if (canvasRef.current && canvasRef.current !== canvas) {
       dispatch(actions.setCaratCanvas(formID, canvasRef.current));
     }
-    drawCarat(canvasRef.current, 'well id');
+    //drawCarat(canvasRef.current, 'well id');
   });
 
   return (

@@ -3,7 +3,7 @@ import { ReactNode, CSSProperties } from "react";
 
 interface MenuSectionProps {
   header: string,
-  className?: 'menu-list' | 'map-panel-main'
+  className?: 'menu-list' | 'map-panel-main' | 'map-actions',
   style?: CSSProperties,
   children: ReactNode,
 }

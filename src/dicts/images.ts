@@ -37,6 +37,13 @@ import presentationsListIcon from "../static/images/menu/presentations-list.png"
 
 import runProgramIcon from "../static/images/menu/run-program.png";
 
+/* --- DataSet --- */
+
+import tableSelectAllIcon from "../static/images/dataset/select-all.png";
+import exportToExcelIcon from "../static/images/dataset/export-to-excel.png";
+import statisticsIcon from "../static/images/dataset/statistics.png";
+import columnVisibilityIcon from "../static/images/dataset/columns-visibility.png";
+
 /* --- Chart --- */
 
 import chartTooltipIcon from "../static/images/chart/tooltip.png";
@@ -112,6 +119,14 @@ export const menuIconsDict: Record<string, string> = {
   'l': presentationsListIcon,      // LeftPanelItems.LIST
 
   'run': runProgramIcon,
+};
+
+/** Иконки для панели таблицы. */
+export const dataSetIconsDict: Record<string, string> = {
+  'select-all': tableSelectAllIcon,
+  'export': exportToExcelIcon,
+  'stat': statisticsIcon,
+  'visibility': columnVisibilityIcon,
 };
 
 /** Иконки для панели графика. */

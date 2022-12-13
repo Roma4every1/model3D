@@ -27,3 +27,10 @@ interface CaratColumnSettings {
   type: string,
   borderColor: string,
 }
+
+/** carat > child client > caratColumn > plugins > plugin > caratDataSelection */
+interface CaratDataSelection {
+  start: string, // из атрибута date
+  end: string,   // из атрибута date
+  selection: {expression: string, isSelected: boolean}[] // массив
+}

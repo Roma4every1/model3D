@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { CSSProperties, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { actions, selectors } from "../../../../store";
 
@@ -40,6 +40,7 @@ const toEnd = (colSettings, cell, index: number, count: number) => {
 }
 
 const dict = {'start': toStart, 'left': toLeft, 'right': toRight, 'end': toEnd};
+const style: CSSProperties = {display: 'flex', gridGap: '6px', padding: '4px'};
 
 
 export function ColumnSettings({formID}: PropsFormID) {
@@ -69,7 +70,7 @@ export function ColumnSettings({formID}: PropsFormID) {
   }, [tableSettings, formRef, formID, dispatch]);
 
   return (
-    <div>
+    <div style={style}>
       <Button icon={'arrow-double-60-left'} title={'В начало'} onClick={() => moveColumnTo('start')}/>
       <Button icon={'arrow-60-left'} title={'Влево'} onClick={() => moveColumnTo('left')}/>
       <Button icon={'arrow-60-right'} title={'Вправо'} onClick={() => moveColumnTo('right')}/>

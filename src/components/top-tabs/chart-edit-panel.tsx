@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { MenuSection } from "../common/menu-ui";
 import { actions, selectors } from "../../store";
 import { chartIconsDict } from "../../dicts/images";
 
@@ -15,15 +16,12 @@ export function ChartEditPanel({formID}: PropsFormID) {
   const className = 'map-action' + (chartState?.tooltip ? ' selected' : '');
   return (
     <div className={'menu'}>
-      <section>
-        <div className={'menu-header'}>Настройки</div>
-        <div className={'map-panel-main'}>
-          <button className={className} onClick={toggleTooltipVisible}>
-            <div><img src={chartIconsDict['tooltip']} alt={'tooltip'}/></div>
-            <div>Показывать значения</div>
-          </button>
-        </div>
-      </section>
+      <MenuSection header={'Настройки'}>
+        <button className={className} onClick={toggleTooltipVisible}>
+          <div><img src={chartIconsDict['tooltip']} alt={'tooltip'}/></div>
+          <div>Показывать значения</div>
+        </button>
+      </MenuSection>
     </div>
   );
 }

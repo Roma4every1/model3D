@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Popup } from "@progress/kendo-react-popup";
-import { Button } from "@progress/kendo-react-buttons";
 import ColumnsVisibilityContent from "./columns-visibility-content";
+import { dataSetIconsDict } from "../../../../dicts/images";
 
 
 export function ColumnsVisibility({formID}: PropsFormID) {
@@ -14,13 +14,14 @@ export function ColumnsVisibility({formID}: PropsFormID) {
   };
 
   return (
-    <div>
-      <Button className={'actionbutton'} onClick={showColumnListClick}>
-        {t('table.columnsVisibility')}
-      </Button>
+    <>
+      <button className={'map-action'} onClick={showColumnListClick}>
+        <div><img src={dataSetIconsDict['visibility']} alt={'visibility'}/></div>
+        <div>{t('table.columnsVisibility')}</div>
+      </button>
       <Popup className={'popup'} id={formID} show={popoverState.open} anchor={popoverState.anchorEl}>
         <ColumnsVisibilityContent formId={formID} />
       </Popup>
-    </div>
+    </>
   );
 }

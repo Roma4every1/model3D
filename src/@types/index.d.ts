@@ -1,5 +1,6 @@
 // noinspection LanguageDetectionInspection
 
+/** Пропс с единственным полем `formID`. */
 type PropsFormID = {formID: FormID};
 
 /** Словарь типа `{ [formID]: data }`. */
@@ -147,6 +148,7 @@ interface SessionManager {
   getJsonDataWithError(response: any): Promise<any | null>
 }
 
+/** Менеджер параметров. */
 interface ParamsManager {
   loadFormParameters(formID: FormID, force: boolean): Promise<any>
   loadFormSettings(formID: FormID): Promise<any>
@@ -157,16 +159,17 @@ interface ParamsManager {
   updateParamSet(formID: FormID, newParamValues: any): void
 }
 
+/** Менеджер каналов. */
 interface ChannelsManager {
   getAllChannelParams(channelName: ChannelName): any[]
   loadFormChannelsList(channelName: ChannelName): Promise<any>
-  loadAllChannelData(channelName: ChannelName, formID: FormID, force?: boolean): Promise<any>
+  loadAllChannelData(channelName: ChannelName, formID: FormID, force?: boolean): Promise<boolean>
   setFormInactive(formID: FormID): Promise<void>
-  updateTables(modifiedTables: any, baseChannelName: ChannelName): Promise<void>
 
   getNewRow(tableID: any): Promise<any>
   getStatistics(tableID: any, columnName: string): Promise<any>
   insertRow(tableID: any, dataJSON: any): Promise<void>
   updateRow(tableID: any, editID: any, newRowData: any): Promise<void>
   deleteRows(tableID: any, elementsToRemove: any, removeAll: any): Promise<void>
+  updateTables(modifiedTables: any, baseChannelName: ChannelName): Promise<void>
 }

@@ -157,8 +157,8 @@ export default function createSessionManager(store) {
   const watchReport = (operationId) => {
     setTimeout(async function tick() {
       const result = await getReportStatus(operationId);
-      if (result !== true) setTimeout(tick, 5);
-    }, 5);
+      if (result !== true) setTimeout(tick, 1000);
+    }, 1000);
   }
 
   const getJsonDataWithError = async (response) => {

@@ -6,7 +6,7 @@ import { Provider } from "react-redux";
 import { createStore , applyMiddleware } from "redux";
 import { rootReducer } from "./store";
 
-import createSessionManager from "./dataManagers/session-manager";
+import createSessionManager from "./data-managers/session-manager";
 import registerServiceWorker from "./service-worker";
 import App from "./components/app";
 

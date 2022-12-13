@@ -31,23 +31,19 @@ export function DownloadFiles() {
 
   return (
     <div className={'font-10'}>
-      <div className={'reportsHeaderString'}>
-        <div className={'reportsFilter'}>
-          <Checkbox
-            id={'downloadFiles'} name={'downloadFiles'}
-            label={t('downloadFiles.filter')}
-            value={filterByPresentation}
-            onChange={(e) => {setFilterByPresentation(Boolean(e.target.value))}}
+      <div className={'reports-header-string'}>
+        <Checkbox
+          id={'downloadFiles'} name={'downloadFiles'}
+          label={t('downloadFiles.filter')}
+          value={filterByPresentation}
+          onChange={(e) => {setFilterByPresentation(Boolean(e.target.value))}}
+        />
+        <Button className={'k-button k-button-clear'} onClick={deleteReports}>
+          <img
+            src={reportDeleteIcon} alt={t('downloadFiles.clear')}
+            title={t('downloadFiles.clear')}
           />
-        </div>
-        <div className={'reportsDelete'}>
-          <Button className={'k-button k-button-clear'} onClick={deleteReports}>
-            <img
-              src={reportDeleteIcon} alt={t('downloadFiles.clear')}
-              title={t('downloadFiles.clear')}
-            />
-          </Button>
-        </div>
+        </Button>
       </div>
       {filterByPresentation
         ? reports.filter(r => r.ID_PR === activeChildID).map(mapReports)
