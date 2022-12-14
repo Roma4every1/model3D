@@ -8,8 +8,8 @@ import DownloadFileItem from "../forms/dock/plugins/download-file-item";
 import reportDeleteIcon from "../../static/images/report_delete.png";
 
 
-const reportsSelector = (state: WState) => Object.values<any>(state.reports).reverse();
-const mapReports = (report: any) => <DownloadFileItem key={report.Id} operationData={report} />;
+const reportsSelector = (state: WState) => Object.values<Report>(state.reports).reverse();
+const mapReports = (report: Report, i: number) => <DownloadFileItem key={i} report={report}/>;
 
 export function DownloadFiles() {
   const { t } = useTranslation();
@@ -30,8 +30,8 @@ export function DownloadFiles() {
   };
 
   return (
-    <div className={'font-10'}>
-      <div className={'reports-header-string'}>
+    <>
+      <div className={'reports-header'}>
         <Checkbox
           id={'downloadFiles'} name={'downloadFiles'}
           label={t('downloadFiles.filter')}
@@ -46,8 +46,8 @@ export function DownloadFiles() {
         </Button>
       </div>
       {filterByPresentation
-        ? reports.filter(r => r.ID_PR === activeChildID).map(mapReports)
+        ? reports.filter(report => report.ID_PR === activeChildID).map(mapReports)
         : reports.map(mapReports)}
-    </div>
+    </>
   );
 }

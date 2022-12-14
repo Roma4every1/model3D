@@ -28,7 +28,7 @@
     "comment": "Комментарий: {{comment}}",
     "date": "Дата: {{date}}",
     "error": "Ошибки при получении отчета: {{error}}",
-    "filter": "Фильтровать по активной презентации",
+    "filter": "Текущая презентация",
     "inOrderAndProgress": "В очереди: {{order}}, прогресс: {{progress}}%"
   },
   "editors": {

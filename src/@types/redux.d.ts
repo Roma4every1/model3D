@@ -15,7 +15,7 @@ interface WState {
   maps: MapsState,
   presentations: PresentationsState,
   programs: ProgramsState,
-  reports: any,
+  reports: Reports,
   sessionId: SessionID,
   sessionManager: SessionManager,
   windowData: any,
@@ -315,8 +315,30 @@ interface ProgramListItem {
 
 /* --- state.reports --- */
 
-//TODO: типизация
+type Reports = Record<string, Report>;
 
+interface Report {
+  Comment: string,
+  Cur_page: any,
+  DefaultResult: string,
+  DisplayType: number,
+  Dt: string,
+  Error: string,
+  ErrorType: any,
+  Hash: string,
+  ID_PR: FormID,
+  Id: string,
+  IsReport: string,
+  ModifiedTables: any,
+  Ord: string,
+  Pages: any,
+  Path: string,
+  Progress: number,
+  SessionId: SessionID,
+  SystemName: string,
+  Usr: string,
+  WrongResult: boolean,
+}
 
 /* --- state.sessionId --- */
 

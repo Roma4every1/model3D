@@ -44,10 +44,14 @@ export const getParentFormId = (formId) => {
   return (index === -1) ? '' : formId.substring(0, index);
 }
 
-export const toDate = (wmwDateString) => {
-  const startIndex = wmwDateString.indexOf('(');
-  const finishIndex = wmwDateString.lastIndexOf('+');
-  const dateValue = wmwDateString.slice(startIndex + 1, finishIndex);
+/**
+ * @param dateStrWMW {string}
+ * @return {Date}
+ * */
+export const toDate = (dateStrWMW) => {
+  const startIndex = dateStrWMW.indexOf('(');
+  const finishIndex = dateStrWMW.lastIndexOf('+');
+  const dateValue = dateStrWMW.slice(startIndex + 1, finishIndex);
 
   const date = new Date();
   date.setTime(dateValue);
