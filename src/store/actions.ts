@@ -77,7 +77,11 @@ export class WellManagerActionsCreator {
   }
   /** Установить элемент холста. */
   public setCaratCanvas(formID: FormID, canvas: HTMLCanvasElement): CaratsAction {
-    return {type: CaratsActions.SET, formID, payload: canvas};
+    return {type: CaratsActions.SET_CANVAS, formID, payload: canvas};
+  }
+  /** Установить отрисовщик каротажа. */
+  public setCaratDrawer(formID: FormID, drawer: ICaratDrawer): CaratsAction {
+    return {type: CaratsActions.SET_DRAWER, formID, payload: drawer};
   }
 
   /* --- Channels Data Actions --- */

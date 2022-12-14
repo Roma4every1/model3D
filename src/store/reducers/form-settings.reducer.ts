@@ -16,9 +16,9 @@ export type FormSettingsAction = ActionSet;
 
 /* --- reducer --- */
 
-const initFormSettings: FormSettings = {};
+const initFormSettings: FormsSettings = {};
 
-export const formSettingsReducer = (state: FormSettings = initFormSettings, action: FormSettingsAction): FormSettings => {
+export const formSettingsReducer = (state: FormsSettings = initFormSettings, action: FormSettingsAction): FormsSettings => {
   switch (action.type) {
 
     case FormSettingsActions.SET: {

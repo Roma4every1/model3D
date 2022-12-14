@@ -25,17 +25,6 @@ import dateFields from "cldr-dates-full/main/ru/dateFields.json";
 import timeZoneNames from "cldr-dates-full/main/ru/timeZoneNames.json";
 
 
-if (!Object.fromEntries) {
-  Object.fromEntries = (entries) => {
-    const result = {};
-    entries.forEach((entry) => {
-      const [key, value] = entry;
-      result[key] = value;
-    });
-    return result;
-  }
-}
-
 loadMessages(ruMessages, 'ru-RU');
 load(likelySubtags, currencyData, weekData, numbers, currencies, caGregorian, dateFields, timeZoneNames);
 

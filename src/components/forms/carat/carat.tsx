@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectors, actions } from "../../../store";
-import { drawCarat } from "./drawer";
+import { CaratDrawer } from "./drawer";
 
 
 // function caratSelector(this: ChannelName[], state: WState) {
@@ -9,7 +9,6 @@ import { drawCarat } from "./drawer";
 //   return this.map(channel => state.channelsData[channel]);
 // }
 
-//const allChannels = ['LOAD CARAT POINTS', 'V_CORE_ROOT', 'V_RIGIS_INTERVAL'];
 
 export default function Carat({data: {activeChannels, formId: formID}}) {
   const dispatch = useDispatch();
@@ -19,16 +18,24 @@ export default function Carat({data: {activeChannels, formId: formID}}) {
 
   const canvas = caratState?.canvas;
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const drawerRef = useRef<CaratDrawer>(null);
 
   useEffect(() => {
     if (!caratState) dispatch(actions.createCaratState(formID));
   }, [caratState, formID, dispatch]);
 
+  useEffect(() => {
+    if (caratState?.columns) drawerRef.current?.render(caratState.columns);
+  }, [caratState?.columns]);
+
+  // обновление ссылки на холст
   useLayoutEffect(() => {
-    if (canvasRef.current && canvasRef.current !== canvas) {
-      dispatch(actions.setCaratCanvas(formID, canvasRef.current));
-    }
-    //drawCarat(canvasRef.current, 'well id');
+    const currentCanvas = canvasRef.current;
+    if (!currentCanvas || currentCanvas === canvas) return;
+    drawerRef.current
+      ? drawerRef.current.setCanvas(currentCanvas)
+      : drawerRef.current = new CaratDrawer(currentCanvas);
+    dispatch(actions.setCaratCanvas(formID, currentCanvas));
   });
 
   return (

@@ -8,7 +8,7 @@ interface WState {
   childForms: ChildForms,
   formParams: FormParams,
   formRefs: FormRefs,
-  formSettings: FormSettings,
+  formSettings: FormsSettings,
   formLayout: FormsLayout,
   layout: CommonLayout,
   charts: ChartsState,
@@ -69,13 +69,16 @@ type CanRunReport = boolean;
 type CaratsState = FormDict<CaratState>;
 
 /** Состояние каротажа.
+ * + `settings` — настройки
  * + `columns` — колонки
  * + `canvas` — элемент холста
+ * + `drawer` — отрисовщик
  * */
 interface CaratState {
   settings: CaratSettings,
   columns: CaratColumn[],
   canvas: HTMLCanvasElement,
+  drawer: ICaratDrawer,
 }
 
 /* --- state.channelsData --- */
@@ -138,14 +141,21 @@ type FormRefs = FormDict;
 /* --- state.formSettings --- */
 
 /** Настройки форм. */
-type FormSettings = FormDict;
+type FormsSettings = FormDict<FormSettings>;
 
+/** Настройки формы. */
+interface FormSettings {
+  id: any,
+  columns: any,
+  attachedProperties: any,
+}
 
 /* --- state.formLayout --- */
 
 /** Разметка форм. */
-type FormsLayout = Record<FormID, FormLayout>;
+type FormsLayout = FormDict<FormLayout>;
 
+/** Разметка формы. */
 interface FormLayout {
   global: any,
   borders?: any[],
@@ -156,10 +166,10 @@ interface FormLayout {
 /* --- state.layout --- */
 
 /** Разметка общих элементов. */
-type CommonLayout = {
+interface CommonLayout {
   dock: DockLayout,
   left: LeftPanelLayout,
-};
+}
 
 /** Разметка контейнера. */
 interface DockLayout {

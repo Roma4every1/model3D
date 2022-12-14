@@ -1,3 +1,10 @@
+/** Отрисовщик каротажной диаграммы. */
+interface ICaratDrawer {
+  render(data: any): void
+}
+
+/* --- --- --- */
+
 /**
  * Атрибуты тега <carat/>, данная структура должна добавляться в ответ
  * на запрос /getFormSettings для каротажной формы.
@@ -14,8 +21,9 @@ interface CaratSettings {
 interface CaratColumn {
   type: string,
   columnSettings: Partial<CaratColumnSettings>,
-  plugins: any[], // массив плагинов,
+  plugins: Partial<CaratColumnPlugins>,
 }
+
 /** carat > child client > caratColumn > columnSettings */
 interface CaratColumnSettings {
   label: string,
@@ -26,6 +34,20 @@ interface CaratColumnSettings {
   visibleSubColumns: number,
   type: string,
   borderColor: string,
+}
+
+interface CaratColumnPlugins {
+  zones: CaratZones,
+  dataSelection: CaratDataSelection,
+  channelSettings: any,
+  channelCaratSettings: any,
+}
+
+/* --- Carat Plugins --- */
+
+/** carat > child client > caratColumn > plugins > plugin > caratZones */
+interface CaratZones {
+  zones: string[][], // из zones массив zone[], из zone types массив string[]
 }
 
 /** carat > child client > caratColumn > plugins > plugin > caratDataSelection */
