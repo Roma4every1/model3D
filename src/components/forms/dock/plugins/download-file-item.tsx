@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { saveAs } from "@progress/kendo-file-saver";
 import { webFetch } from "../../../../api/initialization";
 import { toDate } from "../../../../utils/utils";
-import { filesDict } from "../../../../dicts/images";
+import { filesDict, defaultFileIcon, importFileIcon } from "../../../../dicts/images";
 
 
 const extensions = [
@@ -31,8 +31,8 @@ export default function DownloadFileItem({report}: {report: Report}) {
     : report.Path ?? report.DefaultResult;
 
   const fileImage = needShowResult
-    ? filesDict[ext] || filesDict['default']
-    : report.DisplayType === 4 ? filesDict['import'] : filesDict['default'];
+    ? filesDict[ext] || defaultFileIcon
+    : report.DisplayType === 4 ? importFileIcon : defaultFileIcon;
 
   const download = () => { downloadFile(report.Path, report.SessionId); };
   const date = toDate(report.Dt).toLocaleString(undefined, dateStyle);

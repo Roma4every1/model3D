@@ -1,6 +1,7 @@
 import { TFunction } from "react-i18next";
 import { useCallback } from "react";
-import { mapIconsDict } from "../../../../dicts/images";
+import { MenuSection, BigButton } from "../../../common/menu-ui";
+import { pdfIcon} from "../../../../dicts/images";
 import "svg2pdf.js";
 import C2S from "canvas2svg";
 import { jsPDF } from "jspdf";
@@ -34,14 +35,8 @@ export const Export = ({mapState, t}: ActionsProps) => {
   }, [canvas, utils, mapData]);
 
   return (
-    <section className={'map-export'}>
-      <div className={'menu-header'}>{t('map.actions.header')}</div>
-      <div className={'map-panel-main map-actions'}>
-        <button className={'map-action'} onClick={exportToPDF}>
-          <div><img src={mapIconsDict['pdf']} alt={'pdf'}/></div>
-          <div>{t('map.actions.export')}</div>
-        </button>
-      </div>
-    </section>
+    <MenuSection header={t('map.actions.header')} className={'map-actions'}>
+      <BigButton text={t('map.actions.export')} icon={pdfIcon} action={exportToPDF}/>
+    </MenuSection>
   );
 };

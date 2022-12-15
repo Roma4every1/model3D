@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 import { selectors } from "../../store";
-import { MenuSection, MenuListItem } from "../common/menu-ui";
+import { MenuSection, ButtonIconStock } from "../common/menu-ui";
 import IntegerTextEditor from "../editors/integer-text.editor";
 
 
@@ -10,8 +10,8 @@ export function TracksEditPanel({formID}: PropsFormID) {
   return (
     <div className={'menu'}>
       <MenuSection header={'Масштаб'}>
-        <MenuListItem text={'Увеличить'} icon={'zoom-in'}/>
-        <MenuListItem text={'Уменьшить'} icon={'zoom-out'}/>
+        <ButtonIconStock text={'Увеличить'} icon={'zoom-in'}/>
+        <ButtonIconStock text={'Уменьшить'} icon={'zoom-out'}/>
         <div>
           <span className={'k-icon k-i-pan'}/>
           <span>1 / </span>

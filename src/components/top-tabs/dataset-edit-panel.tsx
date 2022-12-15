@@ -1,20 +1,13 @@
 import { useCallback } from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { selectors } from "../../store";
-import { dataSetIconsDict } from "../../dicts/images";
-import { MenuSection } from "../common/menu-ui";
+import { MenuSkeleton, MenuSection, BigButton } from "../common/menu-ui";
 import { ColumnSettings } from "../forms/dataset/plugins/column-settings";
 import { ColumnsVisibility } from "../forms/dataset/plugins/columns-visibility";
 import { ColumnHeaderSetter } from "../forms/dataset/plugins/column-header-setter";
 import { ColumnSettingsAnalyzer } from "../forms/dataset/plugins/column-settings-analyzer";
-
-
-interface DataSetActionProps {
-  title: string,
-  icon: string,
-  action: () => void,
-}
+import { selectors } from "../../store";
+import { tableSelectAllIcon, exportToExcelIcon, statisticsIcon } from "../../dicts/images";
 
 
 function formRefSelector(this: FormID, state: WState) {
@@ -41,7 +34,7 @@ export function DataSetEditPanel({formID}: PropsFormID) {
     });
   }, [formRef, sessionManager, t]);
 
-  if (!formRef) return null;
+  if (!formRef) return <MenuSkeleton template={['175px', '165px', '115px']}/>;
 
   const excelExport = () => { formRef.excelExport(); }
   const selectAll = () => { formRef.selectAll(); }
@@ -53,11 +46,11 @@ export function DataSetEditPanel({formID}: PropsFormID) {
   return (
     <div className={'menu'}>
       <MenuSection header={'Функции'} className={'map-actions'}>
-        <DataSetAction title={excelExportTitle} icon={'export'} action={excelExport}/>
-        <DataSetAction title={statTitle} icon={'stat'} action={getStat}/>
+        <BigButton text={excelExportTitle} icon={exportToExcelIcon} action={excelExport}/>
+        <BigButton text={statTitle} icon={statisticsIcon} action={getStat}/>
       </MenuSection>
       <MenuSection header={'Выделение'} className={'map-actions'}>
-        <DataSetAction title={selectTitle} icon={'select-all'} action={selectAll}/>
+        <BigButton text={selectTitle} icon={tableSelectAllIcon} action={selectAll}/>
         <ColumnsVisibility formID={formID}/>
       </MenuSection>
       <MenuSection header={'Колонка'}>
@@ -66,14 +59,5 @@ export function DataSetEditPanel({formID}: PropsFormID) {
         <ColumnSettingsAnalyzer formID={formID}/>
       </MenuSection>
     </div>
-  );
-}
-
-function DataSetAction({title, icon, action}: DataSetActionProps) {
-  return (
-    <button className={'map-action'} onClick={action}>
-      <div><img src={dataSetIconsDict[icon]} alt={icon}/></div>
-      <div>{title}</div>
-    </button>
   );
 }

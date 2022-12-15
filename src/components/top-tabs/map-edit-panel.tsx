@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
-import { Skeleton } from "@progress/kendo-react-indicators";
-
+import { MenuSkeleton } from "../common/menu-ui";
 import { Dimensions } from "../forms/map/plugins/dimensions";
 import { Export } from "../forms/map/plugins/export";
 import { Selecting } from "../forms/map/plugins/selecting/selecting";
@@ -10,28 +9,10 @@ import { Editing } from "../forms/map/plugins/editing/editing";
 import { SaveMap } from "../forms/map/plugins/save-map";
 import { getParentFormId } from "../../utils/utils";
 import { actions, selectors } from "../../store";
-
 import "../../styles/map-edit-panel.scss";
 
 
-const EditPanelItemSkeleton = ({width}: {width: string}) => {
-  return (
-    <div className={'map-panel-skeleton'} style={{width}}>
-      <Skeleton shape={'rectangle'} animation={{type: 'wave'}}/>
-      <Skeleton shape={'rectangle'} animation={{type: 'wave'}}/>
-    </div>
-  );
-}
-
-const MapEditPanelSkeleton = () => {
-  return (
-    <div className={'map-edit-panel'}>
-      <EditPanelItemSkeleton width={'30%'}/>
-      <EditPanelItemSkeleton width={'30%'}/>
-      <EditPanelItemSkeleton width={'40%'}/>
-    </div>
-  );
-}
+const panelTemplate = ['330px', '90px', '275px', 'calc(100% - 785px)', '90px'];
 
 /** Панель редактирования карты. */
 export function MapEditPanel({formID}: PropsFormID) {
@@ -63,7 +44,7 @@ export function MapEditPanel({formID}: PropsFormID) {
     mapState?.utils.updateCanvas();
   }, [mapState?.utils, formID]);
 
-  if (!mapState) return <MapEditPanelSkeleton/>;
+  if (!mapState) return <MenuSkeleton template={panelTemplate}/>;
 
   return (
     <div className={'map-edit-panel menu'} style={{display: 'grid'}}>
@@ -74,4 +55,4 @@ export function MapEditPanel({formID}: PropsFormID) {
       <SaveMap mapState={mapState} formID={formID} t={t}/>
     </div>
   );
-};
+}

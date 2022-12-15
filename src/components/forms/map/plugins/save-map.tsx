@@ -1,7 +1,8 @@
 import { TFunction } from "react-i18next"
 import { useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { mapIconsDict } from "../../../../dicts/images";
+import { MenuSection, BigButton } from "../../../common/menu-ui";
+import { saveMapIcon } from "../../../../dicts/images";
 import { actions, selectors } from "../../../../store";
 import { converter } from "../../../../utils/maps-api.utils";
 import { callBackWithNotices } from "../../../../utils/notifications";
@@ -35,14 +36,8 @@ export const SaveMap = ({mapState, formID, t}: ActionsProps) => {
   }, [owner, mapData, mapID, sessionManager, sessionID, formID, dispatch, t]);
 
   return (
-    <section className={'map-save'}>
-      <div className={'menu-header'}>{'Хранение'}</div>
-      <div className={'map-panel-main map-actions'}>
-        <button className={'map-action'} onClick={saveMap} disabled={!isModified}>
-          <div><img src={mapIconsDict['save']} alt={'save'}/></div>
-          <div>{'Сохранить карту'}</div>
-        </button>
-      </div>
-    </section>
+    <MenuSection header={'Хранение'} className={'map-actions'}>
+      <BigButton text={'Сохранить карту'} icon={saveMapIcon} action={saveMap} disabled={!isModified}/>
+    </MenuSection>
   );
 };

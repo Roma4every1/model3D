@@ -1,7 +1,6 @@
 import { FunctionComponent } from "react";
 import { useSelector } from "react-redux";
 import { selectors } from "../../store";
-import { Toolbar } from "@progress/kendo-react-buttons";
 import ErrorBoundary from "../common/error-boundary";
 
 import { SqlProgramsList } from "./sql-programs-list";
@@ -34,11 +33,5 @@ export function TopTab({id}: {id: string}) {
     ? activeChildID
     : presentation.children.find(child => child.type === formType).id;
 
-  return (
-    <ErrorBoundary>
-      <Toolbar style={{padding: 1}}>
-        <TopTabComponent formID={formID}/>
-      </Toolbar>
-    </ErrorBoundary>
-  );
+  return <ErrorBoundary><TopTabComponent formID={formID}/></ErrorBoundary>;
 }

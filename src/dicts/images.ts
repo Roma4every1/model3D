@@ -50,8 +50,6 @@ import chartTooltipIcon from "../static/images/chart/tooltip.png";
 
 /* --- Map --- */
 
-import acceptIcon from "../static/images/map/accept.png";
-import cancelIcon from "../static/images/map/cancel.png";
 import addBetween from "../static/images/map/add-between.png";
 import handIcon from "../static/images/map/hand.png";
 import movePoint from "../static/images/map/move-point.png";
@@ -69,20 +67,32 @@ import pdfIcon from "../static/images/map/pdf.png";
 import saveMapIcon from "../static/images/map/save-map.png";
 
 import createPolylineIcon from "../static/images/map/create-polyline.png";
-import createPolygonIcon from "../static/images/map/create-polygon.png";
 import createLabelIcon from "../static/images/map/create-label.png";
 import createSignIcon from "../static/images/map/create-sign.png";
 
 import selectingIcon from "../static/images/map/selecting-mode.png";
-import creatingIcon from "../static/images/map/creating-mode.png";
+
+
+export { backToSystemsIcon, aboutProgramIcon, saveSessionIcon, defaultSessionIcon };
+export { globalParametersIcon, presentationParametersIcon, presentationsListIcon };
+export { runProgramIcon, importFileIcon, defaultFileIcon };
+
+export { tableSelectAllIcon, exportToExcelIcon, statisticsIcon, columnVisibilityIcon };
+export { chartTooltipIcon };
+
+export { xIcon, yIcon, scaleIcon, synchronizeIcon, selectAllIcon };
+export { pdfIcon, saveMapIcon };
+export { selectingIcon };
 
 /* --- --- --- */
 
 type IconPath = string;
-type ImagesDict = Record<string, IconPath>;
+type ImagesDict<Items extends string> = Record<Items, IconPath>;
+
+type FileExtension = 'csv' | 'doc' | 'docx' | 'xls' | 'xlsx' | 'xlsm' | 'xlsxm' | 'zip';
 
 /** Используется в компоненте `DownloadFileItem` (иконки файлов по расширениям). */
-export const filesDict: ImagesDict = {
+export const filesDict: ImagesDict<FileExtension> = {
   'csv': csvFileIcon,
   'doc': docFileIcon,
   'docx': docxFileIcon,
@@ -91,13 +101,10 @@ export const filesDict: ImagesDict = {
   'xlsm': xlsmFileIcon,
   'xlsxm': xlsxmFileIcon,
   'zip': zipFileIcon,
-  /* --- */
-  'import': importFileIcon,
-  'default': defaultFileIcon,
 };
 
 /** Используется в компоненте `Screenshot` (заглушки нереализованных форм). */
-export const formIconsDict: ImagesDict = {
+export const formIconsDict: ImagesDict<string> = {
   'carat': caratIcon,
   'files': filesIcon,
   'filesList': filesListIcon,
@@ -108,48 +115,6 @@ export const formIconsDict: ImagesDict = {
   'spreadsheet': spreadsheetIcon,
   'spreadsheetUnite': spreadsheetUniteIcon,
   'transferForm': transferFormIcon,
-};
-
-/** Иконки для меню (компонент `Menu`). */
-export const menuIconsDict: ImagesDict = {
-  'back': backToSystemsIcon,
-  'about': aboutProgramIcon,
-  'save': saveSessionIcon,
-  'load': defaultSessionIcon,
-
-  'g': globalParametersIcon,       // LeftPanelItems.GLOBAL
-  'f': presentationParametersIcon, // LeftPanelItems.FORM
-  'l': presentationsListIcon,      // LeftPanelItems.LIST
-
-  'run': runProgramIcon,
-};
-
-/** Иконки для панели таблицы. */
-export const dataSetIconsDict: ImagesDict = {
-  'select-all': tableSelectAllIcon,
-  'export': exportToExcelIcon,
-  'stat': statisticsIcon,
-  'visibility': columnVisibilityIcon,
-};
-
-/** Иконки для панели графика. */
-export const chartIconsDict: ImagesDict = {
-  'tooltip': chartTooltipIcon,
-};
-
-/** ### Общие иконки для карт.
- *
- * Используется в компонентах `EditElement` и `MapEditPanel` (редактирование карт). */
-export const mapIconsDict: ImagesDict = {
-  'x': xIcon,
-  'y': yIcon,
-  'scale': scaleIcon,
-  'select-all': selectAllIcon,
-  'synchronize': synchronizeIcon,
-  'pdf': pdfIcon,
-  'save': saveMapIcon,
-  'accept': acceptIcon,
-  'cancel': cancelIcon,
 };
 
 /** Иконки режимов редактирования. */
@@ -164,15 +129,8 @@ export const mapEditIconsDict: {[key: number]: IconPath} = {
 };
 
 /** Иконки создания новых элементов карты. */
-export const mapCreatingIcons: ImagesDict = {
+export const mapCreatingIcons: ImagesDict<'polyline' | 'label' | 'sign'> = {
   'polyline': createPolylineIcon,
-  'polygon': createPolygonIcon,
   'label': createLabelIcon,
   'sign': createSignIcon,
-};
-
-/** Иконки некоторых режимов редактирования карты. */
-export const mapModesIcons: ImagesDict = {
-  'selecting': selectingIcon,
-  'creating': creatingIcon,
 };

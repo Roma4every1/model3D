@@ -1,8 +1,8 @@
 import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { MenuSection } from "../common/menu-ui";
+import { MenuSkeleton, MenuSection, BigButtonToggle } from "../common/menu-ui";
 import { actions, selectors } from "../../store";
-import { chartIconsDict } from "../../dicts/images";
+import { chartTooltipIcon } from "../../dicts/images";
 
 
 export function ChartEditPanel({formID}: PropsFormID) {
@@ -13,14 +13,15 @@ export function ChartEditPanel({formID}: PropsFormID) {
     dispatch(actions.setChartTooltipVisible(formID, !chartState.tooltip))
   }, [chartState, formID, dispatch]);
 
-  const className = 'map-action' + (chartState?.tooltip ? ' selected' : '');
+  if (!chartState) return <MenuSkeleton template={['80px']}/>;
+
   return (
     <div className={'menu'}>
       <MenuSection header={'Настройки'}>
-        <button className={className} onClick={toggleTooltipVisible}>
-          <div><img src={chartIconsDict['tooltip']} alt={'tooltip'}/></div>
-          <div>Показывать значения</div>
-        </button>
+        <BigButtonToggle
+          text={'Показывать значения'} icon={chartTooltipIcon}
+          action={toggleTooltipVisible} active={chartState.tooltip}
+        />
       </MenuSection>
     </div>
   );

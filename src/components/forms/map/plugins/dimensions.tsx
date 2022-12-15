@@ -2,10 +2,11 @@ import { NumericTextBoxChangeEvent } from "@progress/kendo-react-inputs";
 import { TFunction } from "react-i18next";
 import { useState, useEffect, useCallback } from "react";
 import { useDispatch } from "react-redux";
+import { BigButton, BigButtonToggle } from "../../../common/menu-ui";
 import IntegerTextEditor from "../../../editors/integer-text.editor";
 
 import { actions } from "../../../../store";
-import { mapIconsDict } from "../../../../dicts/images";
+import { xIcon, yIcon, scaleIcon, synchronizeIcon, selectAllIcon } from "../../../../dicts/images";
 import { getParentFormId } from "../../../../utils/utils";
 import { getFullViewport, getPointToMap } from "../map-utils";
 
@@ -77,27 +78,27 @@ export const Dimensions = ({mapState, sync, formID, t}: DimensionsProps) => {
       <div className={'map-panel-main'}>
         <div className={'map-dimensions-viewer'}>
           <div>
-            <span title={t('map.dimensions.x')}><img src={mapIconsDict['x']} alt={'x'}/> x:</span>
+            <span title={t('map.dimensions.x')}><img src={xIcon} alt={'x'}/> x:</span>
             <IntegerTextEditor id={'xDimensionEditor'} value={x} selectionChanged={xChanged} />
           </div>
           <div>
-            <span title={t('map.dimensions.y')}><img src={mapIconsDict['y']} alt={'y'}/> y:</span>
+            <span title={t('map.dimensions.y')}><img src={yIcon} alt={'y'}/> y:</span>
             <IntegerTextEditor id={'yDimensionEditor'} value={y} selectionChanged={yChanged} />
           </div>
           <div>
-            <span title={t('map.dimensions.scale')}><img src={mapIconsDict['scale']} alt={'scale'}/> 1/</span>
+            <span title={t('map.dimensions.scale')}><img src={scaleIcon} alt={'scale'}/> 1/</span>
             <IntegerTextEditor id={'scaleDimensionEditor'} value={scale} selectionChanged={scaleChanged} />
           </div>
         </div>
         <div className={'map-actions'}>
-          <button className={'map-action'} onClick={toFullViewPort} disabled={canvas?.blocked === true}>
-            <div><img src={mapIconsDict['select-all']} alt={'select-all'}/></div>
-            <div>{t('map.actions.show-all')}</div>
-          </button>
-          <button className={'map-action' + (sync ? ' selected' : '')} onClick={toggleSync} disabled={sync === undefined}>
-            <div><img src={mapIconsDict['synchronize']} alt={'synchronize'}/></div>
-            <div>{'Синхронизация карт по центру'}</div>
-          </button>
+          <BigButton
+            text={t('map.actions.show-all')} icon={selectAllIcon}
+            action={toFullViewPort} disabled={canvas?.blocked === true}
+          />
+          <BigButtonToggle
+            text={'Синхронизация карт по центру'} icon={synchronizeIcon}
+            action={toggleSync} active={sync} disabled={sync === undefined}
+          />
         </div>
       </div>
     </section>

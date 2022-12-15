@@ -1,25 +1,29 @@
-import { useState } from "react";
+import { MouseEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { BigButton } from "../../../common/menu-ui";
 import { Popup } from "@progress/kendo-react-popup";
+import { columnVisibilityIcon } from "../../../../dicts/images";
 import ColumnsVisibilityContent from "./columns-visibility-content";
-import { dataSetIconsDict } from "../../../../dicts/images";
 
 
 export function ColumnsVisibility({formID}: PropsFormID) {
   const { t } = useTranslation();
-  const [popoverState, setPopoverState] = useState({anchorEl: null, open: false});
+  const [isOpen, setIsOpen] = useState(false);
+  const [anchor, setAnchor] = useState(null);
 
-  const showColumnListClick = (event) => {
-    setPopoverState({anchorEl: event.currentTarget, open: !popoverState.open});
+  const showColumnListClick = (event: MouseEvent) => {
+    const target = event.currentTarget;
+    if (anchor !== target) setAnchor(target);
+    setIsOpen(!isOpen);
   };
 
   return (
     <>
-      <button className={'map-action'} onClick={showColumnListClick}>
-        <div><img src={dataSetIconsDict['visibility']} alt={'visibility'}/></div>
-        <div>{t('table.columnsVisibility')}</div>
-      </button>
-      <Popup className={'popup'} id={formID} show={popoverState.open} anchor={popoverState.anchorEl}>
+      <BigButton
+        text={t('table.columnsVisibility')} icon={columnVisibilityIcon}
+        action={showColumnListClick}
+      />
+      <Popup className={'popup'} id={formID} show={isOpen} anchor={anchor}>
         <ColumnsVisibilityContent formId={formID} />
       </Popup>
     </>

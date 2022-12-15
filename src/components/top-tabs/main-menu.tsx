@@ -4,11 +4,11 @@ import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import { Button } from "@progress/kendo-react-buttons";
 import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
-import { Toolbar } from "@progress/kendo-react-buttons";
-import { MenuSection } from "../common/menu-ui";
+import { MenuSection, ButtonIcon, BigButtonToggle } from "../common/menu-ui";
 
 import { actions, selectors } from "../../store";
-import { menuIconsDict } from "../../dicts/images";
+import { backToSystemsIcon, aboutProgramIcon, saveSessionIcon, defaultSessionIcon } from "../../dicts/images";
+import { globalParametersIcon, presentationParametersIcon, presentationsListIcon } from "../../dicts/images";
 import { callBackWithNotices } from "../../utils/notifications";
 import PACKAGE from "../../../package.json";
 import "../../styles/menu.scss";
@@ -17,11 +17,6 @@ import "../../styles/menu.scss";
 interface AboutProgramWindowProps {
   config: ClientConfiguration,
   onClose: () => void,
-}
-interface MenuListItemProps {
-  text: string,
-  icon: string,
-  onClick?: () => void
 }
 
 
@@ -71,41 +66,39 @@ export function MainMenu() {
   }, [config, closeAboutWindow, dispatch]);
 
   return (
-    <Toolbar style={{padding: 1}}>
-      <div className={'menu'} style={{display: 'flex'}}>
-        <MenuSection header={'Главная'}>
-          <Link to={config.root} onClick={sessionManager.stopSession}>
-            <img src={menuIconsDict['back']} alt={'back'}/>
-            <span>Назад к списку систем</span>
-          </Link>
-          <MenuListItem text={'О программе'} icon={'about'} onClick={showAboutWindow}/>
-        </MenuSection>
-        <MenuSection header={'Сессия'}>
-          <MenuListItem
-            text={t('menucommands.savesession')} icon={'save'}
-            onClick={saveSession}
-          />
-          <MenuListItem
-            text={t('menucommands.loadsessionbydefault')} icon={'load'}
-            onClick={loadSessionByDefault}
-          />
-        </MenuSection>
-        <MenuSection header={'Панели'} className={'map-panel-main'} style={{display: 'flex'}}>
-          <PanelToggle
-            text={'Глобальные параметры'} icon={'g'}
-            active={showGlobal} onClick={togglePanelGlobal}
-          />
-          <PanelToggle
-            text={'Параметры презентации'} icon={'f'}
-            active={showForm} onClick={togglePanelForm}
-          />
-          <PanelToggle
-            text={'Презентации'} icon={'l'}
-            active={showTree} onClick={togglePanelList}
-          />
-        </MenuSection>
-      </div>
-    </Toolbar>
+    <div className={'menu'}>
+      <MenuSection header={'Главная'}>
+        <Link to={config.root} onClick={sessionManager.stopSession}>
+          <img src={backToSystemsIcon} alt={'back'}/>
+          <span>Назад к списку систем</span>
+        </Link>
+        <ButtonIcon text={'О программе'} icon={aboutProgramIcon} action={showAboutWindow}/>
+      </MenuSection>
+      <MenuSection header={'Сессия'}>
+        <ButtonIcon
+          text={t('menucommands.savesession')} icon={saveSessionIcon}
+          action={saveSession}
+        />
+        <ButtonIcon
+          text={t('menucommands.loadsessionbydefault')} icon={defaultSessionIcon}
+          action={loadSessionByDefault}
+        />
+      </MenuSection>
+      <MenuSection header={'Панели'} className={'map-panel-main'} style={{display: 'flex'}}>
+        <BigButtonToggle
+          text={'Глобальные параметры'} icon={globalParametersIcon}
+          active={showGlobal} action={togglePanelGlobal}
+        />
+        <BigButtonToggle
+          text={'Параметры презентации'} icon={presentationParametersIcon}
+          active={showForm} action={togglePanelForm}
+        />
+        <BigButtonToggle
+          text={'Презентации'} icon={presentationsListIcon}
+          active={showTree} action={togglePanelList}
+        />
+      </MenuSection>
+    </div>
   );
 }
 
@@ -124,21 +117,3 @@ const AboutProgramWindow = ({config, onClose}: AboutProgramWindowProps) => {
     </Dialog>
   );
 }
-
-export const MenuListItem = ({text, icon, onClick}: MenuListItemProps) => {
-  return (
-    <button onClick={onClick}>
-      <img src={menuIconsDict[icon]} alt={icon}/>
-      <span>{text}</span>
-    </button>
-  );
-}
-
-const PanelToggle = ({text, icon, active, onClick}: MenuListItemProps & {active: boolean}) => {
-  return (
-    <button className={'map-action' + (active ? ' selected' : '')} onClick={onClick}>
-      <div><img src={menuIconsDict[icon]} alt={icon}/></div>
-      <div>{text}</div>
-    </button>
-  );
-};

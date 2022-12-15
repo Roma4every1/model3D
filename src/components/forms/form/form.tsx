@@ -11,6 +11,8 @@ export default function Form({formData, data}) {
   const dispatch = useDispatch();
 
   const {id: formID, type: formType} = formData;
+  const isDataSet = formType === 'dataSet';
+
   const _form = useRef(null);
   const [formLoadedData, setFormLoadedData] = useState({
     formId: formID,
@@ -42,6 +44,7 @@ export default function Form({formData, data}) {
         return await sessionManager.channelsManager.loadFormChannelsList(formID);
       }
       async function fetchSettings() {
+        if (!isDataSet) return {};
         return await sessionManager.paramsManager.loadFormSettings(formID);
       }
 
@@ -80,21 +83,21 @@ export default function Form({formData, data}) {
         sessionManager.channelsManager.setFormInactive(formID);
       }
     };
-  }, [formID, formLoadedData, data, sessionManager]);
+  }, [formID, isDataSet, formLoadedData, data, sessionManager]);
 
   const FormByType = formDict[formType];
 
   useLayoutEffect(() => {
-    dispatch(actions.setFormRefs(formID, _form));
-  }, [formID, dispatch]);
+    if (isDataSet) dispatch(actions.setFormRefs(formID, _form));
+  }, [formID, isDataSet, dispatch]);
 
   if (!formLoadedData.loaded) return <div className={'form-container'}/>;
-  const formRef = formType === 'dataSet' ? _form : undefined;
+  const formRef = isDataSet ? _form : undefined;
 
   return (
     <ErrorBoundary>
       <div className={'form-container form-' + formType}>
-        <FormByType key={'mainForm'} formData={formData} data={formLoadedData} ref={formRef} />
+        <FormByType key={'mainForm'} formData={formData} data={formLoadedData} ref={formRef}/>
       </div>
     </ErrorBoundary>
   );

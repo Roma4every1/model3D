@@ -7,7 +7,7 @@ import { MapModes } from "../../enums";
 import { clientPoint, listenerOptions } from "../../map-utils";
 import { checkDistance, checkDistancePoints, getNearestElements, selectElement, unselectElement } from "./selecting-utils";
 import { actions } from "../../../../../store";
-import { mapModesIcons } from "../../../../../dicts/images";
+import { selectingIcon } from "../../../../../dicts/images";
 
 
 interface SelectingProps {
@@ -150,7 +150,7 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
             className={'map-panel-button' + (isInSelectingMode ? ' active' : '')}
             onClick={toggleSelecting} title={t('map.selecting.button-hint')}
           >
-            <img src={mapModesIcons['selecting']} alt={'selecting'}/>
+            <img src={selectingIcon} alt={'selecting'}/>
           </button>
         </div>
         <div>

@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { Loader } from "@progress/kendo-react-indicators";
 import ProgramParametersList from "./program-parameters-list";
-import { menuIconsDict } from "../../dicts/images";
+import { runProgramIcon } from "../../dicts/images";
 import { selectors } from "../../store";
 
 
@@ -33,7 +33,7 @@ export default function ProgramButton({formID, program}: ProgramButtonProps) {
       <div onClick={fillReportParameters}>
         {isProcessing
           ? <Loader size={'medium'} type={'pulsing'} />
-          : <img src={menuIconsDict['run']} alt={'run'}/>}
+          : <img src={runProgramIcon} alt={'run'}/>}
         <div>{program.displayName}</div>
       </div>
       {isOpen && <ProgramParametersList
