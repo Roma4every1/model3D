@@ -151,7 +151,7 @@ interface SessionManager {
 /** Менеджер параметров. */
 interface ParamsManager {
   loadFormParameters(formID: FormID, force: boolean): Promise<any>
-  loadFormSettings(formID: FormID): Promise<any>
+  loadFormSettings(formID: FormID, force?: boolean): Promise<FormSettings>
 
   getCanRunReport(formID: FormID): Promise<void>
   getParameterValues(neededParamList: any, formID: FormID, addToLocal: any, channelName: ChannelName): any

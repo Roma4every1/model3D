@@ -6,14 +6,15 @@ import { actions } from "../store";
 export default function createParamsManager(store) {
   const oldParamValues = {};
   const paramValuesToSet = {};
+  let reportFormID = null;
 
-  const getParameterValues = (neededParamList, formId, addToLocal, channelName) => {
+  const getParameterValues = (neededParamList, formID, addToLocal, channelName) => {
     const paramsToUse = [];
     neededParamList.forEach(paramElement => {
       const param = paramElement.Key ?? paramElement;
       let element = null;
-      let currentFormId = formId;
-      while (!element || (addToLocal && (currentFormId === getParentFormId(formId)))) {
+      let currentFormId = formID;
+      while (!element || (addToLocal && (currentFormId === getParentFormId(formID)))) {
         element = store.getState().formParams[currentFormId]?.find(o => o.id === param);
         if (currentFormId === '') break;
         currentFormId = getParentFormId(currentFormId);
@@ -22,10 +23,10 @@ export default function createParamsManager(store) {
         element = store.getState().formParams[channelName]?.find(o => o.id === param);
       }
       if (element && element.value !== undefined) {
-        if (addToLocal && (element.formId !== formId)) {
-          let localElement = store.getState().formParams[formId]?.find(o => o.id === param);
+        if (addToLocal && (element.formId !== formID)) {
+          let localElement = store.getState().formParams[formID]?.find(o => o.id === param);
           if (localElement) {
-            updateParamValue(formId, param, element.value, false);
+            updateParamValue(formID, param, element.value, false);
           } else {
             var newElement = {
               id: element.id,
@@ -33,7 +34,7 @@ export default function createParamsManager(store) {
               nullDisplayValue: element.nullDisplayValue,
               showNullValue: element.showNullValue,
               formIdToLoad: element.formId,
-              formId: formId,
+              formId: formID,
               value: element.value,
               dependsOn: element.dependsOn,
               type: element.type,
@@ -42,7 +43,7 @@ export default function createParamsManager(store) {
               externalChannelName: element.externalChannelName,
               displayName: element.displayName
             }
-            store.dispatch(actions.addParam(formId, newElement));
+            store.dispatch(actions.addParam(formID, newElement));
           }
           paramsToUse.push(newElement);
         } else {
@@ -57,43 +58,43 @@ export default function createParamsManager(store) {
    *
    * Используется только при работе с картами (ProgramParametersList.js).
    * */
-  const updateParamSet = (formId, newParamValues) => {
-    const params = store.getState().formParams[formId];
+  const updateParamSet = (formID, newParamValues) => {
+    const params = store.getState().formParams[formID];
     newParamValues.forEach(p => {
       const param = params.find(pp => pp.id === p.id);
       if (param) {
         if (param.externalChannelName) {
-          paramValuesToSet[formId + '__' + param.id] = p.value;
+          paramValuesToSet[formID + '__' + param.id] = p.value;
           const externalChannelData = store.getState().channelsData[param.externalChannelName];
           const externalChannelDataRows = externalChannelData?.data?.Rows;
           if (externalChannelDataRows && externalChannelDataRows.length > 0) {
             const externalChannelDataRowsConverted = externalChannelDataRows.map(row => tableRowToString(externalChannelData, row));
             let oldValueInNewRows = find(externalChannelDataRowsConverted, row => String(row.id) === p.value);
             if (oldValueInNewRows) {
-              paramValuesToSet[formId + '__' + param.id] = null;
-              updateParamValue(formId, param.id, oldValueInNewRows.value, false);
+              paramValuesToSet[formID + '__' + param.id] = null;
+              updateParamValue(formID, param.id, oldValueInNewRows.value, false);
             }
           }
         } else {
-          updateParamValue(formId, param.id, p.value, true);
+          updateParamValue(formID, param.id, p.value, true);
         }
       }
     });
   }
 
-  const setDefaultParamValue = (formId, param) => {
+  const setDefaultParamValue = (formID, param) => {
     if (!param.externalChannelName || param.canBeNull) return;
     const externalChannelLoading = store.getState().channelsLoading[param.externalChannelName]?.loading;
 
-    if (externalChannelLoading && !paramValuesToSet[formId + '__' + param.id]) {
-      oldParamValues[formId + '__' + param.id] = param.value ?? undefined;
+    if (externalChannelLoading && !paramValuesToSet[formID + '__' + param.id]) {
+      oldParamValues[formID + '__' + param.id] = param.value ?? undefined;
       return;
     }
     if (externalChannelLoading) return;
 
-    let oldValue = oldParamValues[formId + '__' + param.id];
-    let paramValueToSet = paramValuesToSet[formId + '__' + param.id];
-    oldParamValues[formId + '__' + param.id] = null;
+    let oldValue = oldParamValues[formID + '__' + param.id];
+    let paramValueToSet = paramValuesToSet[formID + '__' + param.id];
+    oldParamValues[formID + '__' + param.id] = null;
 
     const externalChannelData = store.getState().channelsData[param.externalChannelName];
     const externalChannelDataRows = externalChannelData?.data?.Rows;
@@ -104,18 +105,18 @@ export default function createParamsManager(store) {
         let dataValue = oldValue ? stringToTableCell(oldValue, 'LOOKUPCODE') : (paramValueToSet ?? stringToTableCell(param.value, 'LOOKUPCODE'));
         let oldValueInNewRows = find(externalChannelDataRowsConverted, row => String(row.id) === dataValue);
         if (oldValueInNewRows) {
-          if (!oldValue && paramValuesToSet[formId + '__' + param.id]) {
-            paramValuesToSet[formId + '__' + param.id] = null;
+          if (!oldValue && paramValuesToSet[formID + '__' + param.id]) {
+            paramValuesToSet[formID + '__' + param.id] = null;
           }
-          updateParamValue(formId, param.id, oldValueInNewRows.value, false);
+          updateParamValue(formID, param.id, oldValueInNewRows.value, false);
           return;
         }
       }
       if (oldValue !== null || !param.value) {
-        updateParamValue(formId, param.id, tableRowToString(externalChannelData, externalChannelDataRows[0]).value, true);
+        updateParamValue(formID, param.id, tableRowToString(externalChannelData, externalChannelDataRows[0]).value, true);
       }
     } else if (externalChannelData && param.value) {
-      updateParamValue(formId, param.id, null, true);
+      updateParamValue(formID, param.id, null, true);
     }
   }
 
@@ -123,41 +124,43 @@ export default function createParamsManager(store) {
     store.dispatch(actions.updateParam(formID, paramID, value, manual));
   }
 
-  let reportFormId = null;
-
-  const loadFormParameters = async (formId, force) => {
-    if (force || !store.getState().formParams[formId]) {
+  const loadFormParameters = async (formID, force) => {
+    if (force || !store.getState().formParams[formID]) {
       const sessionId = store.getState().sessionId;
-      const data = await store.getState().sessionManager.fetchData(`getFormParameters?sessionId=${sessionId}&formId=${formId}`);
+      const data = await store.getState().sessionManager.fetchData(`getFormParameters?sessionId=${sessionId}&formId=${formID}`);
 
-      data.forEach((param) => {param.formId = formId});
-      store.dispatch(actions.setParams(formId, data));
+      data.forEach((param) => {param.formId = formID});
+      store.dispatch(actions.setParams(formID, data));
       data.forEach(async (param) => {
         if (param.externalChannelName && !param.canBeNull) {
-          await store.getState().sessionManager.channelsManager.loadAllChannelData(param.externalChannelName, formId, false);
+          await store.getState().sessionManager.channelsManager.loadAllChannelData(param.externalChannelName, formID, false);
         }
       });
       return data;
     }
   }
 
-  const loadFormSettings = async (formId) => {
-    let data = store.getState().formSettings[formId];
-    if (!data) {
-      const sessionId = store.getState().sessionId;
-      data = await store.getState().sessionManager.fetchData(`getFormSettings?sessionId=${sessionId}&formId=${formId}`);
-      store.dispatch(actions.setFormSettings(formId, data));
+  const loadFormSettings = async (formID, force = false) => {
+    let data = store.getState().formSettings[formID];
+    if (data) return data;
+    if (force) {
+      data = {};
+    } else {
+      const sessionID = store.getState().sessionId;
+      const path = `getFormSettings?sessionId=${sessionID}&formId=${formID}`;
+      data = await store.getState().sessionManager.fetchData(path);
     }
+    store.dispatch(actions.setFormSettings(formID, data));
     return data;
   }
 
-  const getCanRunReport = async (formId) => {
+  const getCanRunReport = async (formID) => {
     const canRunReport = store.getState().canRunReport;
-    reportFormId = formId;
-    if (formId != null) {
-      const paramValues = store.getState().formParams[formId];
+    reportFormID = formID;
+    if (formID != null) {
+      const paramValues = store.getState().formParams[formID];
       const sessionId = store.getState().sessionId;
-      const jsonToSend = {sessionId: sessionId, reportId: formId, paramValues: paramValues};
+      const jsonToSend = {sessionId: sessionId, reportId: formID, paramValues: paramValues};
       const jsonToSendString = JSON.stringify(jsonToSend);
       const data = await store.getState().sessionManager.fetchData(`canRunReport`, {
         method: 'POST',
@@ -173,14 +176,12 @@ export default function createParamsManager(store) {
 
   // будет вызываться каждый раз при отправке действия (и когда состояние могло измениться)
   store.subscribe(() => {
-    if (reportFormId) {
-      getCanRunReport(reportFormId).then();
-    }
+    if (reportFormID) getCanRunReport(reportFormID).then();
     const formParams = store.getState().formParams;
 
-    for (let formId in formParams) {
-      for (let param in formParams[formId]) {
-        setDefaultParamValue(formId, formParams[formId][param]);
+    for (let formID in formParams) {
+      for (let param in formParams[formID]) {
+        setDefaultParamValue(formID, formParams[formID][param]);
       }
     }
   });

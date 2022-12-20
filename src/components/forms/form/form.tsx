@@ -19,7 +19,7 @@ export default function Form({formData, data}) {
     loaded: false,
     activeChannels: data?.activeChannels ?? [],
     activeParams: [],
-    settings: []
+    settings: {},
   });
 
   useEffect(() => {
@@ -44,8 +44,7 @@ export default function Form({formData, data}) {
         return await sessionManager.channelsManager.loadFormChannelsList(formID);
       }
       async function fetchSettings() {
-        if (!isDataSet) return {};
-        return await sessionManager.paramsManager.loadFormSettings(formID);
+        return await sessionManager.paramsManager.loadFormSettings(formID, !isDataSet);
       }
 
       if (!formLoadedData.loaded) {

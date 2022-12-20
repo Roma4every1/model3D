@@ -1,7 +1,7 @@
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectors, actions } from "../../../store";
-import { CaratDrawer } from "./drawer";
+import { CaratDrawer, CaratRenderData } from "./drawer";
 
 
 // function caratSelector(this: ChannelName[], state: WState) {
@@ -10,31 +10,36 @@ import { CaratDrawer } from "./drawer";
 // }
 
 
-export default function Carat({data: {activeChannels, formId: formID}}) {
+export default function Carat({data: {formId: formID}}) {
   const dispatch = useDispatch();
 
   const caratState: CaratState = useSelector(selectors.caratState.bind(formID));
+  const settings: FormSettings = useSelector(selectors.formSettings.bind(formID));
+  const wellID = useSelector(selectors.currentWellID);
   //const channels: any[] = useSelector(caratSelector.bind(activeChannels));
+  console.log(settings);
 
   const canvas = caratState?.canvas;
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const drawerRef = useRef<CaratDrawer>(null);
+  const drawerRef = useRef<CaratDrawer>(new CaratDrawer());
 
   useEffect(() => {
     if (!caratState) dispatch(actions.createCaratState(formID));
   }, [caratState, formID, dispatch]);
 
+  const renderData = useMemo<CaratRenderData>(() => {
+    return {wellID, columns: caratState?.columns}
+  }, [caratState, wellID]);
+
   useEffect(() => {
-    if (caratState?.columns) drawerRef.current?.render(caratState.columns);
-  }, [caratState?.columns]);
+    drawerRef.current.render(renderData);
+  }, [renderData]);
 
   // обновление ссылки на холст
   useLayoutEffect(() => {
     const currentCanvas = canvasRef.current;
-    if (!currentCanvas || currentCanvas === canvas) return;
-    drawerRef.current
-      ? drawerRef.current.setCanvas(currentCanvas)
-      : drawerRef.current = new CaratDrawer(currentCanvas);
+    if (!currentCanvas || currentCanvas === canvas || !caratState) return;
+    drawerRef.current.setCanvas(currentCanvas);
     dispatch(actions.setCaratCanvas(formID, currentCanvas));
   });
 
