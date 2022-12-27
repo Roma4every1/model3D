@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { GridLayout, GridLayoutItem } from "@progress/kendo-react-layout";
@@ -12,28 +12,23 @@ import { actions } from "../../store";
 const blobOptions = {type: 'text/plain;charset=utf-8'};
 const notificationGroupStyle = {width: 250, right: 0, bottom: 0, zIndex: 30, position: 'fixed'};
 
-export default function WindowHandler() {
+export const WindowHandler = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
   const windowData = useSelector((state) => state.windowData?.messageWindow);
   const windows = useSelector((state) => state.windowData?.windows);
-  const WindowNotification = useSelector((state) => state.windowData?.Notification);
+  const windowNotification = useSelector((state) => state.windowData?.Notification);
 
   const [stackTraceVisible, setStackTraceVisible] = useState(false);
 
-  const handleStackTrace = useCallback(() => {
-    setStackTraceVisible(!stackTraceVisible);
-  }, [stackTraceVisible]);
+  const handleStackTrace = () => { setStackTraceVisible(!stackTraceVisible); };
+  const handleClose = () => { dispatch(actions.closeWindow()); };
 
-  const handleClose = useCallback(() => {
-    dispatch(actions.closeWindow());
-  }, [dispatch]);
-
-  const handleSave = useCallback(() => {
+  const handleSave = () => {
     const blob = new Blob([windowData.text.replaceAll('\n', '\r\n')], blobOptions);
     saveAs(blob, windowData.fileToSaveName);
-  }, [windowData]);
+  };
 
   let typeIcon = 'k-i-x-circle';
   let classButton = '';
@@ -54,7 +49,7 @@ export default function WindowHandler() {
           <GridLayout gap={{rows: 2, cols: 2,}}>
             <GridLayoutItem row={1} col={1} rowSpan={2} className="horizontal">
               <div className={"margin-5 " + classButton} onClick={handleStackTrace}>
-                <span className={"cursor-pointer " + classIcon} onClick={handleStackTrace} />
+                <span className={"cursor-pointer " + classIcon}/>
               </div>
             </GridLayoutItem>
             <GridLayoutItem row={1} col={2}>
@@ -74,9 +69,9 @@ export default function WindowHandler() {
           </div>}
         </DialogActionsBar>
       </Dialog>}
-      {WindowNotification?.opened && <NotificationGroup style = {notificationGroupStyle}>
+      {windowNotification?.opened && <NotificationGroup style = {notificationGroupStyle}>
         <Notification type = {{style: 'info', icon: true}}>
-          <span>{WindowNotification.text}</span>
+          <span>{windowNotification.text}</span>
         </Notification>
       </NotificationGroup>}
     </div>

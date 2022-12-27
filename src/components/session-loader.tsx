@@ -1,39 +1,31 @@
 import { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { selectors, actions } from "../store";
+import { useDispatch } from "react-redux";
+import { actions } from "../store";
+import { API } from "../api/api";
 
 import Form from './forms/form/form';
-import LoadingStatus from "./common/loading-status";
-import WindowHandler from "./common/window-handler";
+import { LoadingStatus } from "./common/loading-status";
+import { WindowHandler } from "./common/window-handler";
 
 
-export default function SessionLoader() {
+export const SessionLoader = () => {
   const dispatch = useDispatch();
-  const sessionID = useSelector(selectors.sessionID);
-  const sessionManager = useSelector(selectors.sessionManager);
-
-  const [formData, setFormData] = useState<any>();
+  const [formData, setFormData] = useState<FormDataWMR>();
 
   useEffect(() => {
-    let ignore = false;
-
-    async function getFormData() {
-      if (sessionID && !ignore) {
-        const data = await sessionManager.fetchData(`getRootForm?sessionId=${sessionID}`);
-        dispatch(actions.setRootFormID(data.id));
-        setFormData(data);
-      }
-    }
-    getFormData();
-
-    return () => { ignore = true; }
-  }, [sessionID, sessionManager, dispatch]);
+    if (formData) return;
+    API.forms.getRootForm().then((res) => {
+      if (!res.ok) return;
+      dispatch(actions.setRootFormID(res.data.id));
+      setFormData(res.data);
+    });
+  }, [formData, dispatch]);
 
   return (
     <>
-      {(!formData || sessionManager.getSessionLoading())
+      {!formData
         ? <LoadingStatus loadingType={'session'}/>
-        : <Form key={'root'} formData={formData} data={undefined}/>}
+        : <Form formData={formData} data={undefined}/>}
       <WindowHandler />
     </>
   );

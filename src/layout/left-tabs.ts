@@ -1,4 +1,4 @@
-import { IJsonModel } from "flexlayout-react";
+import { Model, IJsonModel } from "flexlayout-react";
 import { IGlobalAttributes, IJsonTabNode, IJsonTabSetNode } from "flexlayout-react/declarations/model/IJsonModel";
 
 
@@ -39,7 +39,7 @@ const presentationListTab: [IJsonTabNode] = [
 export function getLeftPanelLayout(
   proto: LeftPanelLayout,
   globalParams: FormParameter[], formParams: FormParameter[],
-): IJsonModel {
+): Model {
   const children: IJsonTabSetNode[] = [];
   const { globalParamsHeight, formParamsHeight, treeHeight } = proto;
 
@@ -75,7 +75,8 @@ export function getLeftPanelLayout(
     });
   }
 
-  return {global: globalAttributes, layout: {type: 'row', children}};
+  const layout: IJsonModel = {global: globalAttributes, layout: {type: 'row', children}};
+  return Model.fromJson(layout);
 }
 
 /** Вычисляет высоту компонента вкладки `ParametersList` по набору параметров. */

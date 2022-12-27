@@ -15,7 +15,7 @@ interface SystemListProps {
 
 
 /** Страница списка систем. */
-export default function SystemList({root, systemListState}: SystemListProps) {
+export const SystemList = ({root, systemListState}: SystemListProps) => {
   const { t } = useTranslation();
 
   const mapSystems = useCallback((system: WMWSystem) => {
@@ -75,7 +75,7 @@ const SystemsSkeleton = () => {
       <SystemSkeleton/>
     </div>
   );
-}
+};
 const SystemSkeleton = () => {
   return (
     <section>
@@ -89,4 +89,4 @@ const SystemSkeleton = () => {
       <div><Skeleton shape={'rectangle'} animation={{type: 'wave'}}/></div>
     </section>
   );
-}
+};

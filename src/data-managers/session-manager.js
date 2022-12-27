@@ -12,7 +12,7 @@ export default function createSessionManager(store) {
   let timerId;
 
   const iAmAlive = async () => {
-    const { ok, data } = await API.session.iAmAlive(store.getState().sessionId);
+    const { ok, data } = await API.session.iAmAlive();
     if (!ok || data === 'false') {
       clearInterval(timerId);
       handleWindowWarning(i18n.t('messages.sessionLost'));
@@ -38,9 +38,11 @@ export default function createSessionManager(store) {
           clearInterval(timerId);
           stopSession();
         });
+        const sessionID = res.data;
         // старое и новое хранилище, потом старое уберётся
-        store.dispatch(actions.setSessionId(res.data));
-        store.dispatch(actions.setSessionID(res.data));
+        store.dispatch(actions.setSessionId(sessionID));
+        store.dispatch(actions.setSessionID(sessionID));
+        API.setSessionID(sessionID);
       }
       return res;
     }

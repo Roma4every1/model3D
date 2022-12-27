@@ -5,10 +5,15 @@
  * @return WMWSystem
  * */
 export const mapSystem = (rawSystem) => {
-  const attributes = rawSystem['Attributes'].map(attr => [attr.Key, attr.Value]);
-  const system = Object.fromEntries(attributes);
-  system.id = rawSystem.Name;
-  return system;
+  const id = rawSystem['Name'];
+  const attributes = rawSystem['Attributes'];
+  if (attributes instanceof Array) {
+    const system = Object.fromEntries(attributes.map(attr => [attr.Key, attr.Value]));
+    system.id = id;
+    return system;
+  } else {
+    return {...rawSystem['Attributes'], id};
+  }
 }
 
 /** Сравнивает два массива на равенство.

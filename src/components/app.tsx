@@ -4,10 +4,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchConfig, fetchSystems } from "../store/thunks";
 import { selectors } from "../store";
 
-import SystemList from "./system-list";
-import SystemRoot from "./system-root";
-import UnknownRoute from "./common/unknown-route";
-import LoadingStatus from "./common/loading-status";
+import { SystemList } from "./system-list";
+import { SystemRoot } from "./system-root";
+import { UnknownRoute } from "./common/unknown-route";
+import { LoadingStatus } from "./common/loading-status";
 
 import "@progress/kendo-theme-default/dist/all.css";
 import "flexlayout-react/style/light.css";

@@ -7,36 +7,11 @@ interface LoadingStatusProps {
   readonly success?: boolean,
 }
 
-const LoadingStatus = ({loadingType, success}: LoadingStatusProps) => {
+
+export const LoadingStatus = ({loadingType, success}: LoadingStatusProps) => {
   const { t } = useTranslation();
   const isError = success === false;
-
-  let loadingStatusText;
-  switch (loadingType) {
-    case 'config': {
-      loadingStatusText = isError
-        ? t('clientConfig.loadingError')
-        : t('clientConfig.loading');
-      break;
-    }
-    case 'systems': {
-      loadingStatusText = isError
-        ? t('systems.loadingError')
-        : t('systems.loading');
-      break;
-    }
-    case 'session': {
-      loadingStatusText = isError
-        ? t('session.loadingError')
-        : t('session.loading');
-      break;
-    }
-    default: {
-      loadingStatusText = isError
-      ? t('base.wrong')
-      : t('base.loading');
-    }
-  }
+  const loadingStatusText = t(getKey(loadingType, isError));
 
   return (
     <div className={'loading-status'}>
@@ -46,4 +21,15 @@ const LoadingStatus = ({loadingType, success}: LoadingStatusProps) => {
   );
 }
 
-export default LoadingStatus;
+function getKey(type: string, isError: boolean): string {
+  if (type === 'config') {
+    return isError ? 'clientConfig.loadingError' : 'clientConfig.loading';
+  }
+  if (type === 'systems') {
+    return isError ? 'systems.loadingError' : 'systems.loading';
+  }
+  if (type === 'session') {
+    return isError ? 'session.loadingError' : 'session.loading';
+  }
+  return isError ? 'base.wrong' : 'base.loading';
+}

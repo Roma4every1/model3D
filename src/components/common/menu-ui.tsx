@@ -18,7 +18,7 @@ export function MenuSection({header, className, style, children}: MenuSectionPro
   );
 }
 
-const mapSectionSkeletons = (width: string) => <MenuSectionSkeleton width={width}/>
+const mapSectionSkeletons = (width: string, i) => <MenuSectionSkeleton key={i} width={width}/>;
 
 export function MenuSkeleton({template}: {template: string[]}) {
   return (

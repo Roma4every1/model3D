@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 
 /** Страница-заглушка для несуществующих путей. */
-const UnknownRoute = ({root}) => {
+export const UnknownRoute = ({root}: {root: string}) => {
   const { t } = useTranslation();
   const unresolvedPath = window.location.pathname;
 
@@ -27,5 +27,3 @@ const UnknownRoute = ({root}) => {
     </div>
   );
 }
-
-export default UnknownRoute;

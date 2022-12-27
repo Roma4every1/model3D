@@ -14,10 +14,10 @@ export default function Carat({data: {formId: formID}}) {
   const dispatch = useDispatch();
 
   const caratState: CaratState = useSelector(selectors.caratState.bind(formID));
-  const settings: FormSettings = useSelector(selectors.formSettings.bind(formID));
+  //const settings = useSelector(selectors.formSettings.bind(formID));
   const wellID = useSelector(selectors.currentWellID);
   //const channels: any[] = useSelector(caratSelector.bind(activeChannels));
-  console.log(settings);
+  //console.log(settings);
 
   const canvas = caratState?.canvas;
   const canvasRef = useRef<HTMLCanvasElement>(null);

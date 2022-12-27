@@ -39,30 +39,27 @@ export class MapsAPI {
   }
 
   /** Загрузка общих данных карты. */
-  public async getMap(sessionId: SessionID, formId: FormID, mapId: MapID): Promise<Res<MapDataRaw>> {
-    const query = {sessionId, formId, mapId};
+  public async getMap(formId: FormID, mapId: MapID): Promise<Res<MapDataRaw>> {
+    const query = {sessionId: this.requester.sessionID, formId, mapId};
     return await this.request<MapDataRaw>({path: 'getMap', query});
   }
 
   /** Загрузка контейнера карты. */
-  public async getMapContainer(containerName: string, sessionId: SessionID, formId: FormID, owner: MapOwner, index?: string): Promise<ParsedContainer | string> {
-    const query = {sessionId, formId, owner, containerName, index};
+  public async getMapContainer(containerName: string, formId: FormID, owner: MapOwner, index?: string): Promise<ParsedContainer | string> {
+    const query = {sessionId: this.requester.sessionID, formId, owner, containerName, index};
     const response = await this.request<ArrayBuffer>({path: 'getContainer', query, mapper: 'buffer'});
     if (response.ok === false) return response.data;
     return converter.parse(response.data);
   }
 
   /** Запрос именных точек. */
-  public async setNamedPoints(
-    mapData: MapDataRaw, sessionID: SessionID, formID: FormID,
-    owner: MapOwner, needReload = true,
-  ): Promise<void> {
-    const data = await this.getMapContainer(mapData.namedpoints, sessionID, formID, owner);
+  public async setNamedPoints(mapData: MapDataRaw, formID: FormID, owner: MapOwner, needReload = true): Promise<void> {
+    const data = await this.getMapContainer(mapData.namedpoints, formID, owner);
     if (typeof data === 'string') {
       if (needReload) {
         // mapData.mapErrors.push('try to reload named points from ' + mapData.namedpoints);
         setTimeout(() => {
-          this.setNamedPoints(mapData, sessionID, formID, owner, false);
+          this.setNamedPoints(mapData, formID, owner, false);
         }, 500);
       } else {
         mapData.mapErrors.push('error loading named points from ' + mapData.namedpoints);
@@ -76,16 +73,16 @@ export class MapsAPI {
   /** Запрос контейнеров и подготовка элементов слоя. */
   public async setLayerElements(
     mapData: MapDataRaw, layer: MapLayerRaw, provider: any, indexName: string,
-    sessionID: SessionID, formID: FormID, owner: MapOwner, needReload = true,
+    formID: FormID, owner: MapOwner, needReload = true,
   ): Promise<void> {
     let elements: MapElement[] = [];
     try {
-      const data = await this.getMapContainer(layer.container, sessionID, formID, owner, indexName);
+      const data = await this.getMapContainer(layer.container, formID, owner, indexName);
       if (typeof data === 'string') {
         if (needReload) {
           // mapData.mapErrors.push(`try to reload container ${layer.container}`);
           setTimeout(() => {
-            this.setLayerElements(mapData, layer, provider, indexName, sessionID, formID, owner, false);
+            this.setLayerElements(mapData, layer, provider, indexName, formID, owner, false);
           }, 500);
         } else {
           mapData.mapErrors.push(`error loading container ${layer.container}: ${data}`);
@@ -117,18 +114,18 @@ export class MapsAPI {
   }
 
   /** Загрузка карты. */
-  public async loadMap(provider, sessionId: SessionID, formId: FormID, mapId: MapID, owner = 'Common'): Promise<MapData | string> {
-    const response = await this.getMap(sessionId, formId, mapId);
+  public async loadMap(provider, formId: FormID, mapId: MapID, owner = 'Common'): Promise<MapData | string> {
+    const response = await this.getMap(formId, mapId);
     if (!response.ok) return response.data as string;
     const mapData = response.data;
     mapData.mapErrors = [];
 
-    await this.setNamedPoints(mapData, sessionId, formId, owner);
+    await this.setNamedPoints(mapData, formId, owner);
 
     for (const layer of mapData.layers) {
       handleLayerScales(layer);
       const indexName = checkLayerIndex(mapData, layer);
-      await this.setLayerElements(mapData, layer, provider, indexName, sessionId, formId, owner);
+      await this.setLayerElements(mapData, layer, provider, indexName, formId, owner);
 
       if (mapData.mapErrors.length > 3) {
         const errors = mapData.mapErrors.join('\n');

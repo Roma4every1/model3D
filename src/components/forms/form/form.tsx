@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { formDict } from "../../../dicts/forms";
 import { actions, selectors } from "../../../store";
 import ErrorBoundary from "../../common/error-boundary";
+import { MultiMap } from "../grid/multi-map";
 
 
 /** Обобщённый компонент всех типов форм. */
@@ -23,31 +24,20 @@ export default function Form({formData, data}) {
   });
 
   useEffect(() => {
-    if (formLoadedData.formId !== formID) {
-      setFormLoadedData({
-        formId: formID,
-        loaded: false,
-        activeChannels: formLoadedData.activeChannels,
-        activeParams: formLoadedData.activeParams,
-        settings: formLoadedData.settings
-      });
-    }
-  }, [formID, formLoadedData]);
-
-  useEffect(() => {
     let ignore = false;
     if (!data) {
-      async function fetchParams() {
-        return await sessionManager.paramsManager.loadFormParameters(formID, false);
-      }
-      async function fetchChannels() {
-        return await sessionManager.channelsManager.loadFormChannelsList(formID);
-      }
-      async function fetchSettings() {
-        return await sessionManager.paramsManager.loadFormSettings(formID, !isDataSet);
-      }
-
       if (!formLoadedData.loaded) {
+        async function fetchParams() {
+          return await sessionManager.paramsManager.loadFormParameters(formID, false);
+        }
+        async function fetchChannels() {
+          return await sessionManager.channelsManager.loadFormChannelsList(formID);
+        }
+        async function fetchSettings() {
+          const force = formType !== 'dataSet' && formType !== 'grid';
+          return await sessionManager.paramsManager.loadFormSettings(formID, force);
+        }
+
         Promise.all([fetchParams(), fetchChannels(), fetchSettings()]).then(values => {
           if (!ignore) {
             setFormLoadedData({
@@ -61,9 +51,10 @@ export default function Form({formData, data}) {
         });
       }
     } else {
-      Promise.all(formLoadedData.activeChannels.map(async ch =>
-        await sessionManager.channelsManager.loadAllChannelData(ch, formID, false)
-      )).then(() => {
+      const load = async (channel) => {
+        return await sessionManager.channelsManager.loadAllChannelData(channel, formID, false);
+      }
+      Promise.all(formLoadedData.activeChannels.map(load)).then(() => {
         if (!formLoadedData.loaded) {
           setFormLoadedData({
             formId: formID,
@@ -78,11 +69,9 @@ export default function Form({formData, data}) {
 
     return () => {
       ignore = true;
-      if (formLoadedData.loaded) {
-        sessionManager.channelsManager.setFormInactive(formID);
-      }
+      if (formLoadedData.loaded) sessionManager.channelsManager.setFormInactive(formID);
     };
-  }, [formID, isDataSet, formLoadedData, data, sessionManager]);
+  }, [formID, formType, formLoadedData, data, sessionManager]);
 
   const FormByType = formDict[formType];
 
@@ -90,8 +79,10 @@ export default function Form({formData, data}) {
     if (isDataSet) dispatch(actions.setFormRefs(formID, _form));
   }, [formID, isDataSet, dispatch]);
 
-  if (!formLoadedData.loaded) return <div className={'form-container'}/>;
   const formRef = isDataSet ? _form : undefined;
+  const multiMapChannel = formLoadedData.settings['multiMapChannel'];
+  if (!formLoadedData.loaded) return <div className={'form-container'}/>;
+  if (multiMapChannel) return <MultiMap formID={formData.id} channel={multiMapChannel}/>;
 
   return (
     <ErrorBoundary>

@@ -1,4 +1,5 @@
 import { MapsAPI } from "./maps.api";
+import { FormsAPI } from "./forms.api";
 import { SessionAPI } from "./session.api";
 
 
@@ -7,6 +8,7 @@ interface IRequester {
 }
 interface IWellManagerReactAPI {
   readonly maps: MapsAPI;
+  readonly forms: FormsAPI;
   readonly session: SessionAPI;
 
   setBase(base: string): void
@@ -22,7 +24,15 @@ const toBuffer = (res: Response) => res.arrayBuffer();
 
 
 export class Requester implements IRequester {
-  constructor(public base: string, public root: string) {}
+  public base: string;
+  public root: string;
+  public sessionID: SessionID;
+
+  constructor() {
+    this.base = '/';
+    this.root = '/';
+    this.sessionID = '';
+  }
 
   public static resMapDict = {'json': toJSON, 'text': toText, 'blob': toBLOB, 'buffer': toBuffer};
 
@@ -51,11 +61,13 @@ export class Requester implements IRequester {
 class WellManagerReactAPI implements IWellManagerReactAPI {
   public readonly requester: Requester;
   public readonly maps: MapsAPI;
+  public readonly forms: FormsAPI;
   public readonly session: SessionAPI;
 
   constructor() {
-    this.requester = new Requester('/', '/');
+    this.requester = new Requester();
     this.maps = new MapsAPI(this.requester);
+    this.forms = new FormsAPI(this.requester);
     this.session = new SessionAPI(this.requester);
   }
 
@@ -64,6 +76,9 @@ class WellManagerReactAPI implements IWellManagerReactAPI {
   }
   public setRoot(root: string) {
     this.requester.root = root;
+  }
+  public setSessionID(id: string) {
+    this.requester.sessionID = id;
   }
 
   public async request<Expected>(req: WRequest): Promise<Res<Expected>> {

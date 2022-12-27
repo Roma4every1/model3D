@@ -1,4 +1,4 @@
-import { IJsonModel } from "flexlayout-react";
+import { Model, IJsonModel } from "flexlayout-react";
 import { IGlobalAttributes, IJsonTabSetNode } from "flexlayout-react/declarations/model/IJsonModel";
 import { getTopPanelTabs } from "./top-tabs";
 import { getRightPanelTabs } from "./right-tabs";
@@ -17,14 +17,14 @@ const formTabset: IJsonTabSetNode = {
   children: [{type: 'tab', component: 'form'}],
 };
 
-export function getDockLayout(displayedFormTypes: FormType[], dockLayout: DockLayout): IJsonModel {
+export function getDockLayout(displayedFormTypes: FormType[], dockLayout: DockLayout): Model {
   const topTabs = getTopPanelTabs(displayedFormTypes);
   const rightTabs = getRightPanelTabs(displayedFormTypes);
 
   const selectedTop = dockLayout.selectedTopTab < topTabs.length ? dockLayout.selectedTopTab : -1;
   const selectedRight = dockLayout.selectedRightTab < rightTabs.length ? dockLayout.selectedRightTab : -1
 
-  return {
+  const layout: IJsonModel = {
     global: globalAttributes,
     borders: [
       {
@@ -49,4 +49,5 @@ export function getDockLayout(displayedFormTypes: FormType[], dockLayout: DockLa
       ],
     },
   };
+  return Model.fromJson(layout);
 }

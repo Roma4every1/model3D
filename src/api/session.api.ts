@@ -25,7 +25,8 @@ export class SessionAPI {
   }
 
   /** Продлить срок жизни сессии. */
-  public async iAmAlive(sessionID: SessionID): Promise<Res<'true' | 'false'>> {
-    return this.request({path: 'iAmAlive', query: {sessionId: sessionID}, mapper: 'text'});
+  public async iAmAlive(): Promise<Res<'true' | 'false'>> {
+    const query = {sessionId: this.requester.sessionID};
+    return this.request({path: 'iAmAlive', query, mapper: 'text'});
   }
 }

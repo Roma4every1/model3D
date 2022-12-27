@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from "react";
+import { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { LayersTreeElement } from "../forms/map/plugins/layers-tree/layers-tree-element";
 import { selectors } from "../../store";
@@ -34,20 +34,17 @@ const getLayersTree = (sublayers: MapLayer[]): LayerTreeItem[] => {
   return tree;
 }
 
-export default function MapLayersTree({formID}: {formID: FormID}) {
-  const formChildrenState: FormChildrenState = useSelector(selectors.formChildrenState.bind(formID));
-  const activeChildID = formChildrenState?.activeChildren[0];
-
-  const mapState: MapState = useSelector(selectors.mapState.bind(activeChildID));
+export default function MapLayersTree({formID}: PropsFormID) {
+  const mapState: MapState = useSelector(selectors.mapState.bind(formID));
   const sublayers = mapState?.mapData?.layers;
 
   const layersTree = useMemo(() => {
     return getLayersTree(sublayers);
   }, [sublayers]);
 
-  const mapLayersTree = useCallback((item: LayerTreeItem, index: number) => {
-    return <LayersTreeElement key={index} item={item} mapState={mapState} formID={activeChildID} />;
-  }, [mapState, activeChildID]);
+  const mapLayersTree = (item: LayerTreeItem, index: number) => {
+    return <LayersTreeElement key={index} item={item} mapState={mapState} formID={formID} />;
+  };
 
   return <div className={'wrapper'}>{layersTree.map(mapLayersTree)}</div>;
 }

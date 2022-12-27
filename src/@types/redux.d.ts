@@ -141,10 +141,14 @@ type FormRefs = FormDict;
 /* --- state.formSettings --- */
 
 /** Настройки форм. */
-type FormsSettings = FormDict<FormSettings>;
+type FormsSettings = FormDict<GridFormSettings | DataSetFormSettings>;
 
-/** Настройки формы. */
-interface FormSettings {
+/** Настройки формы грида. */
+interface GridFormSettings {
+  multiMapChannel: string | null
+}
+/** Настройки формы таблицы. */
+interface DataSetFormSettings {
   id: any,
   columns: any,
   attachedProperties: any,

@@ -18,23 +18,23 @@ const drawOptions = {
 };
 
 
-export function createMapsDrawer(sessionManager: SessionManager, sessionID: SessionID, formID: FormID, owner: MapOwner) {
+export function createMapsDrawer(formID: FormID, owner: MapOwner) {
 	const getImage = cache((imageName) => loadImage(API.requester.root + 'images/' + imageName));
 
 	let provider = {
 		drawOptions,
 		getSymbolsLib: cache(() => API.maps.getSymbolsLib()),
 		getPatternLib: cache((libName) => API.maps.getPatternLib(libName)),
-		getMap: cache((mapID) => API.maps.getMap(sessionID, formID, mapID)),
+		getMap: cache((mapID) => API.maps.getMap(formID, mapID)),
 		getContainer: cache((containerName, indexName) => {
-			return API.maps.getMapContainer(containerName, sessionID, formID, owner, indexName);
+			return API.maps.getMapContainer(containerName, formID, owner, indexName);
 		}),
 		getPatternImage: getImage,
 		getSignImage: getImage,
 		linesConfigJson: { data: lines },
 		getProfile: async () => {
-			const done = await fetch('profileUrl', {credentials: 'include'});
-			return await sessionManager.getJsonDataWithError(done);
+			const response = await fetch('profileUrl', {credentials: 'include'});
+      return await response.json();
 		}
 	};
 
@@ -47,7 +47,7 @@ export function createMapsDrawer(sessionManager: SessionManager, sessionID: Sess
 	mapsDrawer.getSignImage = provider.getSignImage;
 	mapsDrawer.changeOwner = (newOwner) => {
 		provider.getContainer = cache((containerName, indexName) => {
-			return API.maps.getMapContainer(containerName, sessionID, formID, newOwner, indexName);
+			return API.maps.getMapContainer(containerName, formID, newOwner, indexName);
 		})
 	};
 	return mapsDrawer;

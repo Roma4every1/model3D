@@ -44,6 +44,7 @@ export const selectors = {
   windows: (state: WState) => state.windowData?.windows,
   /** ID текущей скважины. */
   currentWellID: currentWellIDSelector,
+  globalParam: globalParamSelector,
 
   /** {@link FormChildrenState} текущей презентации. */
   displayedPresentation: displayedPresentationSelector,
@@ -51,6 +52,11 @@ export const selectors = {
   displayedPresentationID: displayedPresentationIDSelector,
   /** Список типов всех отображаемых форм (без повторений). */
   displayedFormTypes: displayedFormTypesSelector,
+}
+
+function globalParamSelector(this: ParameterID, state: WState): FormParameter {
+  const globalParams = state.formParams[state.appState.rootFormID];
+  return globalParams.find(param => param.id === this);
 }
 
 function formLayoutSelector(this: FormID, state: WState): FormLayout {
@@ -99,7 +105,8 @@ function mapStateSelector(this: FormID, state: WState): MapState {
 function currentWellIDSelector(state: WState): string | null {
   const rootFormParams = state.formParams[state.appState.rootFormID];
   const currentWellParam = rootFormParams.find((param) => param.id === 'currentWell');
-  return currentWellParam ? stringToTableCell(currentWellParam.value, 'LOOKUPVALUE') : null;
+  const value = currentWellParam?.value;
+  return value ? stringToTableCell(value, 'LOOKUPVALUE') : null;
 }
 function displayedPresentationIDSelector(state: WState): FormID {
   return state.childForms[state.appState.rootFormID]?.activeChildren[0]

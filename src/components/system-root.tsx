@@ -5,8 +5,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { startSession } from "../store/thunks";
 import { actions, selectors } from "../store";
 
-import LoadingStatus from "./common/loading-status";
-import SessionLoader from "./session-loader";
+import { LoadingStatus } from "./common/loading-status";
+import { SessionLoader } from "./session-loader";
 
 
 /** Проверяет, есть ли указанная система в списке доступных систем. */
@@ -26,7 +26,7 @@ const SystemNotFound = ({root, name}: {root: string, name: string}) => {
 }
 
 /** Корень системы. Route: `/systems/:systemID`. */
-const SystemRoot = ({root}: {root: string}) => {
+export const SystemRoot = ({root}: {root: string}) => {
   const dispatch = useDispatch();
   const { systemID: paramsSystemID } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -69,5 +69,3 @@ const SystemRoot = ({root}: {root: string}) => {
   }
   return <SystemNotFound name={systemID} root={root}/>;
 }
-
-export default SystemRoot;

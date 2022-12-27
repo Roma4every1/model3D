@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef} from "react";
+import { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Loader } from "@progress/kendo-react-indicators";
@@ -15,15 +15,12 @@ export default function Map({formData: {id: formID}, data}) {
   const dispatch = useDispatch();
   const parentForm = getParentFormId(formID);
 
-  const sessionID = useSelector(selectors.sessionID);
   const sessionManager = useSelector(selectors.sessionManager);
-
-  const activeChannel = useSelector(selectors.channel.bind(data.activeChannels[0]));
+  const rootFormID = useSelector(selectors.rootFormID); // TODO: убрать
   const currentWellID = useSelector(selectors.currentWellID);
 
   const mapsState = useSelector(selectors.mapsState);
-  /** @type MapState */
-  const mapState = useSelector(selectors.mapState.bind(formID));
+  const mapState: MapState = useSelector(selectors.mapState.bind(formID));
 
   const canvasRef = useRef(null);
   const mapDrawnData = useRef(null);
@@ -34,10 +31,6 @@ export default function Map({formData: {id: formID}, data}) {
   const mapData = mapState?.mapData;
   const selectedElement = mapState?.element;
   const utils = mapState?.utils;
-
-  const getDrawer = useCallback((owner) => {
-    return createMapsDrawer(sessionManager, sessionID, formID, owner);
-  }, [formID, sessionManager, sessionID]);
 
   const wellsMaxScale = useMemo(() => {
     const layers = mapData?.layers;
@@ -56,8 +49,11 @@ export default function Map({formData: {id: formID}, data}) {
 
   // добавление состояния в хранилище состояний карт
   useEffect(() => {
-    if (!mapState) dispatch(actions.createMapState(formID, getDrawer('Common')));
-  }, [mapState, getDrawer, dispatch, formID]);
+    if (!mapState) {
+      const drawer = createMapsDrawer(formID, 'Common');
+      dispatch(actions.createMapState(formID, drawer));
+    }
+  }, [mapState, dispatch, formID]);
 
   const draw = useCallback((canvas, map, scale, x, y, selected) => {
     if (!mapState?.drawer || !canvas) return;
@@ -66,9 +62,23 @@ export default function Map({formData: {id: formID}, data}) {
     mapDrawnData.current = mapState.drawer.showMap(canvas, map, data);
   }, [mapState?.drawer]);
 
+  const isPartOfDynamicMultiMap = typeof data === 'string';
+  const activeChannelName = isPartOfDynamicMultiMap ? null : data.activeChannels[0];
+  const activeChannel: any = useSelector(selectors.channel.bind(activeChannelName));
+
+  useEffect(() => {
+    if (!mapState || !isPartOfDynamicMultiMap) return;
+    setIsMapExist(true);
+
+    if (data !== mapState.mapID) {
+      dispatch(actions.setMapField(formID, 'mapID', data));
+      dispatch(fetchMapData(mapState.drawer.provider, formID, data, 'Common', rootFormID));
+    }
+  }, [isPartOfDynamicMultiMap, mapState, formID, data, dispatch, rootFormID]);
+
   // проверка параметров формы
   useEffect(() => {
-    if (!mapState) return;
+    if (!mapState || isPartOfDynamicMultiMap) return;
     if (!(activeChannel?.data?.Rows && activeChannel.data['Rows'].length > 0))
       return setIsMapExist(false);
 
@@ -93,9 +103,9 @@ export default function Map({formData: {id: formID}, data}) {
     }
     if (changeMapID) {
       dispatch(actions.setMapField(formID, 'mapID', mapID));
-      dispatch(fetchMapData(mapState.drawer.provider, sessionID, formID, mapID, owner));
+      dispatch(fetchMapData(mapState.drawer.provider, formID, mapID, owner));
     }
-  }, [mapState, activeChannel, getDrawer, sessionManager, draw, sessionID, formID, parentForm, dispatch]);
+  }, [mapState, activeChannel, sessionManager, formID, parentForm, isPartOfDynamicMultiMap, dispatch]);
 
   const updateCanvas = useCallback((newCS, context) => {
     if (!mapData) return;
@@ -112,7 +122,7 @@ export default function Map({formData: {id: formID}, data}) {
 
   // переопределение функции updateCanvas
   useEffect(() => {
-    if (utils) return utils.updateCanvas = updateCanvas;
+    if (utils) utils.updateCanvas = updateCanvas;
   }, [utils, updateCanvas]);
 
   const getWellCS = useCallback((wellID, maxScale) => {
