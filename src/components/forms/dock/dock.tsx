@@ -1,5 +1,5 @@
 import { Model, Layout, TabNode } from "flexlayout-react";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { MainMenu } from "../../top-tabs/main-menu";
 import { DownloadFiles } from "../../right-tabs/download-files";
@@ -15,7 +15,7 @@ import translator from "../../../locales/layout";
 
 
 const dockLayoutSelector = (state: WState): DockLayout => {
-  console.log(state);
+  // console.log(state);
   return state.layout.dock;
 };
 const activePresentationSelector = (state: WState): FormDataWMR => {
@@ -33,14 +33,9 @@ const factory = (node: TabNode) => {
   return <DockForm/>;
 };
 
-export default function Dock({formData: {id: formID}}) {
-  const sessionManager = useSelector(selectors.sessionManager);
+export const Dock = ({formID}: PropsFormID) => {
   const formTypes = useSelector(selectors.displayedFormTypes, compareArrays);
   const dockLayout = useSelector(dockLayoutSelector);
-
-  useEffect(() => {
-    sessionManager.getChildForms(formID).then();
-  }, [formID, sessionManager]);
 
   const model = useMemo<Model>(() => {
     return getDockLayout(formTypes, dockLayout);

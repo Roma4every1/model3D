@@ -26,11 +26,12 @@ export function DataSetEditPanel({formID}: PropsFormID) {
 
     sessionManager.channelsManager.getStatistics(tableID, cell.column).then((data) => {
       if (typeof data !== 'object') return;
-      const result: JSX.Element[] = data.Values
-        .map(item => item.Key + ': ' + item.Value)
-        .map((value, index) => <li key={index}>{value}</li>);
+      const listItems: JSX.Element[] = [];
+      for (const key in data.Values) {
+        listItems.push(<li key={key}>{key}: {data.Values[key]}</li>);
+      }
       const header = t('pluginNames.statistics');
-      sessionManager.handleWindowInfo(<ul>{result}</ul>, null, header);
+      sessionManager.handleWindowInfo(<ul>{listItems}</ul>, null, header);
     });
   }, [formRef, sessionManager, t]);
 

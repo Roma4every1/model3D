@@ -1,6 +1,7 @@
 import { MapsAPI } from "./maps.api";
 import { FormsAPI } from "./forms.api";
 import { SessionAPI } from "./session.api";
+import { ChannelsAPI } from "./channels.api";
 
 
 interface IRequester {
@@ -10,6 +11,7 @@ interface IWellManagerReactAPI {
   readonly maps: MapsAPI;
   readonly forms: FormsAPI;
   readonly session: SessionAPI;
+  readonly channels: ChannelsAPI;
 
   setBase(base: string): void
   setRoot(root: string): void
@@ -63,12 +65,14 @@ class WellManagerReactAPI implements IWellManagerReactAPI {
   public readonly maps: MapsAPI;
   public readonly forms: FormsAPI;
   public readonly session: SessionAPI;
+  public readonly channels: ChannelsAPI;
 
   constructor() {
     this.requester = new Requester();
     this.maps = new MapsAPI(this.requester);
     this.forms = new FormsAPI(this.requester);
     this.session = new SessionAPI(this.requester);
+    this.channels = new ChannelsAPI(this.requester);
   }
 
   public setBase(base: string) {
@@ -106,6 +110,30 @@ class WellManagerReactAPI implements IWellManagerReactAPI {
   /** Запрос списка доступных систем. */
   public async getSystemList() {
     return await this.request<any[]>({path: 'systemList'});
+  }
+
+  /** Запрос состояния корневой формы. */
+  public async getRootFormState(channelManager: ChannelsManager): Promise<RootFormState | string> {
+    const resRootForm = await this.forms.getRootForm();
+    if (!resRootForm.ok) return 'ошибка при получении id корневой формы';
+    const id = resRootForm.data.id;
+
+    const resChildren = await this.forms.getFormChildren(id);
+    if (!resChildren.ok) return 'ошибка при получении списка презентаций';
+
+    const resParams = await this.forms.getFormParameters(id);
+    if (!resParams.ok) return 'ошибка при получении глобальных параметров';
+
+    for (const param of resParams.data) {
+      param.formId = id;
+      if (param.externalChannelName && !param.canBeNull) {
+        await channelManager.loadAllChannelData(param.externalChannelName, id, false);
+      }
+    }
+    await channelManager.loadFormChannelsList(id);
+    channelManager.setFormInactive(id);
+
+    return {id, children: resChildren.data, parameters: resParams.data};
   }
 }
 

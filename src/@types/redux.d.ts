@@ -141,7 +141,10 @@ type FormRefs = FormDict;
 /* --- state.formSettings --- */
 
 /** Настройки форм. */
-type FormsSettings = FormDict<GridFormSettings | DataSetFormSettings>;
+type FormsSettings = FormDict<FormSettings>;
+
+/** Настройки формы. */
+type FormSettings = GridFormSettings | DataSetFormSettings;
 
 /** Настройки формы грида. */
 interface GridFormSettings {

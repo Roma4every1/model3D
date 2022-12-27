@@ -2,6 +2,7 @@ import i18n from "../locales/i18n";
 import { findIndex, uniq } from "lodash";
 import { equalParams } from "../utils/utils";
 import { actions } from "../store";
+import { API } from "../api/api";
 
 
 export default function createChannelsManager(store) {
@@ -12,30 +13,15 @@ export default function createChannelsManager(store) {
   /* `{[key: string]: string[]}` */
   const channelsParamsValues = {};
 
-  const loadFormChannelsList = async (formId) => {
-    const sessionId = store.getState().sessionId;
-    const data = await store.getState().sessionManager
-      .fetchData(`getChannelsForForm?sessionId=${sessionId}&formId=${formId}`);
-    await Promise.all(data.map(async (channel) => await loadAllChannelData(channel, formId, false)));
-    return data;
+  const loadFormChannelsList = async (formID) => {
+    const res = await API.forms.getFormChannelsList(formID);
+    if (!res.ok) return [];
+    const mapper = async (channel) => await loadAllChannelData(channel, formID, false);
+    await Promise.all(res.data.map(mapper));
+    return res.data;
   }
 
-  const loadChannelParamsList = async (channelName) => {
-    const sessionId = store.getState().sessionId;
-    return await store.getState().sessionManager
-      .fetchData(`getNeededParamForChannel?sessionId=${sessionId}&channelName=${channelName}`);
-  }
-
-  /* channelName: string, paramValues: Param[]*/
-  const loadChannelData = async (channelName, paramValues) => {
-    const sessionId = store.getState().sessionId;
-    return await store.getState().sessionManager.fetchData('getChannelDataByName', {
-      method: 'POST',
-      body: JSON.stringify({sessionId, channelName, paramValues})
-    });
-  }
-
-  const setFormInactive = async (inputFormId) => {
+  const setFormInactive = (inputFormId) => {
     for (let channelName in allChannelsForms) {
       for (let formId in allChannelsForms[channelName]) {
         if (formId === inputFormId) allChannelsForms[channelName][formId] = false;
@@ -60,7 +46,7 @@ export default function createChannelsManager(store) {
     allChannelsForms[channelName][formId] = true;
 
     if (!channelsParams[channelName]) {
-      const channelParamsList = await loadChannelParamsList(channelName);
+      const { data: channelParamsList } = await API.channels.getChannelParameters(channelName);
       channelsParams[channelName] = channelParamsList ?? [];
     }
 
@@ -73,7 +59,7 @@ export default function createChannelsManager(store) {
       store.dispatch(actions.setChannelsLoading(channelName, true));
       channelsParamsValues[formId + '_' + channelName] = neededParamValues.map(np => np.value);
 
-      const channelData = await loadChannelData(channelName, neededParamValues);
+      const { data: channelData } = await API.channels.getChannelData(channelName, neededParamValues);
       if (channelData && channelData.data && channelData.data['ModifiedTables'] && channelData.data['ModifiedTables']['ModifiedTables']) {
         await updateTables(channelData.data['ModifiedTables']['ModifiedTables'], channelName);
       }
@@ -170,38 +156,31 @@ export default function createChannelsManager(store) {
   }
 
   const getNewRow = async (tableID) => {
-    const sessionId = store.getState().sessionId;
-    return await store.getState().sessionManager.fetchData(`getNewRow?sessionId=${sessionId}&tableId=${tableID}`);
+    const { data } = await API.channels.getNewRow(tableID);
+    return data;
   }
 
   const insertRow = async (tableID, dataJSON) => {
-    const sessionId = store.getState().sessionId;
-    const data = await store.getState().sessionManager.fetchData(`insertRow?sessionId=${sessionId}&tableId=${tableID}&rowData=${dataJSON}`);
+    const { data } = await API.channels.insertRow(tableID, dataJSON);
     updateTablesByResult(tableID, data);
   }
 
   const updateRow = async (tableID, editID, newRowData) => {
-    const sessionID = store.getState().sessionId;
-    const data = await store.getState().sessionManager.fetchData('updateRow',
-      {
-        method: 'POST',
-        body: JSON.stringify({sessionId: sessionID, tableId: tableID, rowsIndices: editID, newRowData}),
-      });
+    const { data } = await API.channels.updateRow(tableID, editID, newRowData);
     updateTablesByResult(tableID, data);
   }
 
   const deleteRows = async (tableID, elementsToRemove, removeAll) => {
-    const sessionId = store.getState().sessionId;
-    const data = await store.getState().sessionManager.fetchData(`removeRows?sessionId=${sessionId}&tableId=${tableID}&rows=${elementsToRemove}&removeAll=${!!removeAll}`);
+    const { data } = await API.channels.removeRows(tableID, elementsToRemove, String(!!removeAll));
     updateTablesByResult(tableID, data);
   }
 
-  const getStatistics = async (tableId, columnName) => {
-    const sessionId = store.getState().sessionId;
-    return await store.getState().sessionManager.fetchData(`getStatistics?sessionId=${sessionId}&tableId=${tableId}&columnName=${columnName}`);
+  const getStatistics = async (tableID, columnName) => {
+    const { data } = await API.channels.getStatistics(tableID, columnName);
+    return data;
   }
 
-  // будет вызываться каждый раз при отправке действия (и когда состояние могло измениться)
+  // автообновление данных каналов при обновлении параметров
   store.subscribe(async () => {
     for (let channelName in allChannelsForms) {
       for (let formId in allChannelsForms[channelName]) {

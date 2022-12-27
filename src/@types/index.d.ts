@@ -1,5 +1,11 @@
 // noinspection LanguageDetectionInspection
 
+interface RootFormState {
+  id: FormID,
+  children: FormChildrenState,
+  parameters: FormParameter[],
+}
+
 /** Пропс с единственным полем `formID`. */
 type PropsFormID = {formID: FormID};
 
@@ -162,9 +168,9 @@ interface ParamsManager {
 /** Менеджер каналов. */
 interface ChannelsManager {
   getAllChannelParams(channelName: ChannelName): any[]
-  loadFormChannelsList(channelName: ChannelName): Promise<any>
+  loadFormChannelsList(formID: FormID): Promise<ChannelName[]>
   loadAllChannelData(channelName: ChannelName, formID: FormID, force?: boolean): Promise<boolean>
-  setFormInactive(formID: FormID): Promise<void>
+  setFormInactive(formID: FormID): void
 
   getNewRow(tableID: any): Promise<any>
   getStatistics(tableID: any, columnName: string): Promise<any>

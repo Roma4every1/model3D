@@ -3,7 +3,6 @@ import { FunctionComponent } from "react";
 import Carat from "../components/forms/carat/carat";
 import Chart from "../components/forms/chart/chart";
 import DataSet from "../components/forms/dataset/dataset";
-import Dock from "../components/forms/dock/dock";
 import Files from "../components/forms/files";
 import FilesList from "../components/forms/files-list";
 import Grid from "../components/forms/grid/grid";
@@ -23,7 +22,6 @@ export const formDict: {[key: string]: FunctionComponent<any>} = {
   carat: Carat,
   chart: Chart,
   dataSet: DataSet,
-  dock: Dock,
   files: Files,
   filesList: FilesList,
   grid: Grid,

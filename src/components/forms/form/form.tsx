@@ -15,7 +15,7 @@ export default function Form({formData, data}) {
   const isDataSet = formType === 'dataSet';
 
   const _form = useRef(null);
-  const [formLoadedData, setFormLoadedData] = useState({
+  const [formLoadedData, setFormLoadedData] = useState<any>({
     formId: formID,
     loaded: false,
     activeChannels: data?.activeChannels ?? [],
@@ -80,7 +80,7 @@ export default function Form({formData, data}) {
   }, [formID, isDataSet, dispatch]);
 
   const formRef = isDataSet ? _form : undefined;
-  const multiMapChannel = formLoadedData.settings['multiMapChannel'];
+  const multiMapChannel = formLoadedData.settings?.multiMapChannel;
   if (!formLoadedData.loaded) return <div className={'form-container'}/>;
   if (multiMapChannel) return <MultiMap formID={formData.id} channel={multiMapChannel}/>;
 
