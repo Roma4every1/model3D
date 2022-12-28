@@ -1,3 +1,4 @@
+import { IJsonModel } from "flexlayout-react";
 import { AppStateAction, AppStateActions } from "./reducers/app-state.reducer";
 import { CanRunReportAction, CanRunReportActions } from "./reducers/can-run-report.reducer";
 import { ChannelsDataAction, ChannelsDataActions } from "./reducers/channels-data.reducer";
@@ -143,7 +144,7 @@ export class WellManagerActionsCreator {
 
   /* --- Form Layout Actions --- */
 
-  public setFormLayout(formID: FormID, layout: any): FormLayoutAction {
+  public setFormLayout(formID: FormID, layout: IJsonModel): FormLayoutAction {
     return {type: FormLayoutActions.SET, formID, payload: layout};
   }
 
@@ -247,21 +248,13 @@ export class WellManagerActionsCreator {
 
   /* --- Presentations Actions --- */
 
-  /** Начало запроса списка презентаций. */
-  public fetchPresentationsStart(): PresentationsAction {
-    return {type: PresentationsActions.FETCH_START};
-  }
   /** Конец запроса списка презентаций. */
-  public fetchPresentationsEnd(data: PresentationItem | string, activeID = ''): PresentationsAction {
-    return {type: PresentationsActions.FETCH_END, payload: {data, activeID}};
-  }
-  /** Обновление презентаций при смене ID сессии и корневой формы. */
-  public changePresentations(sessionID: SessionID, formID: FormID) {
-    return {type: PresentationsActions.CHANGE, sessionID, formID};
+  public setPresentations(data: PresentationItem[], activeID: FormID): PresentationsAction {
+    return {type: PresentationsActions.SET, payload: {data, activeID}};
   }
   /** Выбор презентации из списка. */
   public selectPresentation(item: PresentationItem): PresentationsAction {
-    return {type: PresentationsActions.SET_SELECTED, item};
+    return {type: PresentationsActions.SET_SELECTED, payload: item};
   }
 
   /* --- Programs Actions --- */

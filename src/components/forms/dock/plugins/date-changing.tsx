@@ -4,7 +4,8 @@ import { selectors } from "../../../../store";
 import DateChangingRule from "./date-changing-rule";
 
 
-export default function DateChanging({formID}) {
+export default function DateChanging() {
+  const formID = useSelector(selectors.rootFormID);
   const sessionID = useSelector(selectors.sessionID);
   const sessionManager = useSelector(selectors.sessionManager);
   const [pluginData, setPluginData] = useState(null);

@@ -59,7 +59,7 @@ function globalParamSelector(this: ParameterID, state: WState): FormParameter {
   return globalParams.find(param => param.id === this);
 }
 
-function formLayoutSelector(this: FormID, state: WState): FormLayout {
+function formLayoutSelector(this: FormID, state: WState) {
   return state.formLayout[this];
 }
 function formSettingsSelector(this: FormID, state: WState) {

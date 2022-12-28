@@ -1,36 +1,30 @@
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Model, IJsonModel } from "flexlayout-react";
+import { IJsonModel, Model } from "flexlayout-react";
 import { Loader } from "@progress/kendo-react-indicators";
 import { Container } from "./container";
-import { correctElement, pushElement, isMultiMap, getMultiMapChildrenID } from "./grid-utils";
+import { fillLayout, createLayout, isMultiMap, getMultiMapChildrenID } from "./grid-utils";
 import { selectors, actions } from "../../../store";
+import { API } from "../../../api/api";
 
 
 export default function Grid({formData: {id: formID}}) {
   const dispatch = useDispatch();
+  const [model, setModel] = useState<Model>(null);
 
-  const sessionID = useSelector(selectors.sessionID);
-  const sessionManager = useSelector(selectors.sessionManager);
   const formChildrenState: FormChildrenState = useSelector(selectors.formChildrenState.bind(formID));
-  const layout: FormLayout = useSelector(selectors.formLayout.bind(formID));
+  const layout: IJsonModel = useSelector(selectors.formLayout.bind(formID));
 
   const children = formChildrenState?.children;
   const activeChildren = formChildrenState?.activeChildren;
   const openedChildren = formChildrenState?.openedChildren;
 
-  const [openedForms, setOpenedForms] = useState<FormChildren>(null);
-  const [model, setModel] = useState<Model>(null);
-
+  // получить данные о дочерних формах, если этого нет
   useEffect(() => {
-    sessionManager.getChildForms(formID).then();
-  }, [formID, sessionManager]);
-
-  useEffect(() => {
-    if (openedForms) return;
-    const callback = formID => children?.find(p => p.id === formID);
-    setOpenedForms(openedChildren?.map(callback));
-  }, [children, openedChildren, openedForms]);
+    if (!formChildrenState) API.forms.getFormChildren(formID).then((res) => {
+      if (res.ok) dispatch(actions.setChildForms(formID, res.data))
+    });
+  }, [formChildrenState, formID, dispatch]);
 
   // проверка на то, что форма является мультикартой
   useEffect(() => {
@@ -40,36 +34,26 @@ export default function Grid({formData: {id: formID}}) {
     }
   }, [formID, children, dispatch]);
 
+  // создание модели разметки
   useEffect(() => {
-    let ignore = false;
-    if (layout) {
-      setModel(Model.fromJson(layout));
-    } else {
-      const newJSON: IJsonModel = {
-        global: {rootOrientationVertical: false, splitterSize: 4},
-        borders: [],
-        layout: {type: 'row', weight: 100, children: []},
-      };
-      setModel(Model.fromJson(newJSON));
+    if (model || !children) return;
+    if (layout) { setModel(Model.fromJson(layout)); return; }
 
-      if (activeChildren && openedForms && !ignore) {
-        const path = `getFormLayout?sessionId=${sessionID}&formId=${formID}`;
-        sessionManager.fetchData(path).then((data: IJsonModel) => {
-          if (data.layout && data.layout.children && openedForms) {
-            correctElement(data.layout, openedForms, activeChildren);
-            setModel(Model.fromJson(data));
-          } else if (openedForms) {
-            openedForms.forEach(openedForm => {
-              if (openedForm) pushElement(newJSON, openedForm, activeChildren);
-            });
-            setModel(Model.fromJson(newJSON));
-          }
-        });
+    API.forms.getFormLayout(formID).then((res) => {
+      let formLayout;
+      const openedForms = openedChildren.map(formID => children.find(p => p.id === formID))
+      if (res.ok && res.data.layout?.children) {
+        formLayout = res.data;
+        fillLayout(formLayout.layout, openedForms, activeChildren[0]);
+        setModel(Model.fromJson(formLayout));
+      } else {
+        formLayout = createLayout(openedForms, activeChildren[0]);
+        setModel(Model.fromJson(formLayout));
       }
-    }
-    return () => { ignore = true; }
-  }, [activeChildren, formID, openedForms, layout, sessionID, sessionManager]);
+      dispatch(actions.setFormLayout(formID, formLayout));
+    });
+  }, [activeChildren, openedChildren, children, model, formID, layout, dispatch]);
 
-  if (!openedForms) return <Loader size={'small'} type={'infinite-spinner'} />;
+  if (!model) return <Loader size={'small'} type={'infinite-spinner'} />;
   return <Container formID={formID} model={model}/>;
 }

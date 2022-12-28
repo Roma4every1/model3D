@@ -11,24 +11,22 @@ import { WindowHandler } from "./common/window-handler";
 export const SessionLoader = () => {
   const dispatch = useDispatch();
   const sessionManager = useSelector(selectors.sessionManager);
-  const [formID, setFormID] = useState(null);
+  const [loadSuccess, setLoadSuccess] = useState(undefined);
 
   useEffect(() => {
-    if (formID) return;
+    if (loadSuccess) return;
     API.getRootFormState(sessionManager.channelsManager).then((data) => {
-      if (typeof data === 'string') return;
+      if (typeof data === 'string') { setLoadSuccess(false); return; }
       const rootFormID = data.id;
       dispatch(actions.setRootFormID(rootFormID));
       dispatch(actions.setChildForms(rootFormID, data.children));
       dispatch(actions.setParams(rootFormID, data.parameters));
-      setFormID(rootFormID);
+      dispatch(actions.setPresentations(data.presentations, data.children.openedChildren[0]));
+      setLoadSuccess(true);
     });
-  }, [formID, sessionManager, dispatch]);
+  }, [loadSuccess, sessionManager, dispatch]);
 
-  return (
-    <>
-      {formID ? <Dock formID={formID}/> : <LoadingStatus loadingType={'session'}/>}
-      <WindowHandler />
-    </>
-  );
+  if (loadSuccess === undefined) return <LoadingStatus loadingType={'session'}/>;
+  if (loadSuccess === false) return <LoadingStatus loadingType={'session'} success={false}/>;
+  return <><Dock/><WindowHandler/></>;
 }

@@ -1,6 +1,7 @@
 import { inflate, deflate } from "pako";
 import { readXml } from "../components/forms/map/drawer/gs-transform";
 import { types } from "../components/forms/map/drawer/map-drawer";
+import { provider } from "../components/forms/map/drawer";
 
 
 /* --- Map Data --- */
@@ -43,7 +44,7 @@ export function checkLayerIndex(mapData: MapDataRaw, layer: MapLayerRaw) {
 }
 
 /** Задание изображений для элементов (для `sign`, `polyline` и `field`). */
-export async function loadLayerElements(elements: MapElement[], provider: any) {
+export async function loadLayerElements(elements: MapElement[]) {
   for (const element of elements) {
     const t = types[element.type];
     if (t && t.loaded) await t.loaded(element, provider);

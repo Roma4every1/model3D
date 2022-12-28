@@ -1,23 +1,7 @@
 /** Отрисовщик карты. */
 interface MapsDrawer {
-  provider: any,
-
-  checkIndex(ret, context): any;
-  loadMap(map, context): any
-  loadProfile(): any
-  drawTrack(canvas, scale, centerx, centery, track): any
-  drawContour(canvas, map, scale, centerx, centery, contour, closeContour): any
-  getStocksWithinContour(canvas, map, scale, centerx, centery, contour, contourOptions): any
-  getStocksWithinDrenageArea(canvas, map, scale, centerx, centery, drenageArea): any
-  getDrenageAreaByWellId(wellId, map, targetLayerOptions): any
-  getDrenageAreaByPoint(canvas, map, scale, centerx, centery, point, targetLayerOptions): any
-  getFieldValueInPoint(canvas, map, scale, centerx, centery, point): any
-  drawPoint(canvas, map, scale, centerx, centery, point): any
-  highlightDrenageArea(canvas, map, scale, centerx, centery, drenageArea, styles): any
   showMap(canvas: HTMLCanvasElement, map, data: ShowMapData = {}): any
-
   getSignImage(fontName: string, symbolCode: number, color: string): Promise<HTMLImageElement>
-  changeOwner(owner: MapOwner): void
 }
 
 interface ShowMapData {

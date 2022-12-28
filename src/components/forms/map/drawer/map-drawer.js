@@ -5,6 +5,7 @@ import { loadImageData } from "./html-helper";
 import startThread from "./start-thread";
 import parseSMB from "./parse-smb";
 import pngMono from "./png-mono";
+import { provider } from "./index";
 import { API } from "../../../../api/api";
 
 
@@ -14,7 +15,7 @@ const namedPointDraft = (i, options) => {
 	const p = options.pointToControl(i);
 	const context = options.context;
 	const drawOptions = options.provider.drawOptions;
-	context.strokeStyle = drawOptions.selectedColor || "#0000FF";
+	context.strokeStyle = drawOptions.selectedColor || '#0000FF';
 	context.lineWidth = ( drawOptions.selectedWidth || 0.75 ) * 0.001 * options.dotsPerMeter;
 	const s = (drawOptions.selectedSize || 5) * 0.001 * options.dotsPerMeter;
 	context.strokeRect( p.x - s / 2, p.y - s / 2, s, s );
@@ -159,7 +160,7 @@ var field = declareType('field', {
 	},
 	getFieldValueInPoint: (i, point, options) => {
 		let bounds = field.bound(i);
-		// if selected point belongs to field..
+		// if selected point belongs to field...
 		if (point.x >= bounds.min.x && point.x <= bounds.max.x &&
 			point.y >= bounds.min.y && point.y <= bounds.max.y) {
 			let coords = options.coords;
@@ -846,7 +847,6 @@ var polyline = declareType('polyline', {
 		/** @type CanvasRenderingContext2D */
 		const context = options.context;
 
-		// Checking if there a config for the current type of line
 		let linesConfig = [];
 		if (options.provider.linesConfigJson)
 			linesConfig = options.provider.linesConfigJson.data.BorderStyles[0].Element;
@@ -1118,7 +1118,7 @@ export function startPaint(canvas, map, options) {
 
 	const context = canvas.getContext ? canvas.getContext('2d') : canvas;
 	const drawOptions = {
-		provider: options.provider,
+		provider: provider,
 		selected: options.selected,
 		pointToControl: coords.pointToControl,
 		context,

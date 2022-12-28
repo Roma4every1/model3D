@@ -160,14 +160,7 @@ interface DataSetFormSettings {
 /* --- state.formLayout --- */
 
 /** Разметка форм. */
-type FormsLayout = FormDict<FormLayout>;
-
-/** Разметка формы. */
-interface FormLayout {
-  global: any,
-  borders?: any[],
-  layout: any,
-}
+type FormsLayout = FormDict;
 
 
 /* --- state.layout --- */
@@ -293,7 +286,7 @@ interface MapSelectingState {
 
 /* --- state.presentations --- */
 
-type PresentationsState = FetchState<PresentationItem> & {sessionID: SessionID, formID: FormID};
+type PresentationsState = PresentationItem[];
 
 interface PresentationItem {
   id: string | null,

@@ -1,3 +1,4 @@
+import { IJsonModel } from "flexlayout-react";
 import { Requester } from "./api";
 
 
@@ -12,6 +13,12 @@ export class FormsAPI {
   public async getRootForm(): Promise<Res<FormDataWMR>> {
     const query = {sessionId: this.requester.sessionID};
     return await this.request<FormDataWMR>({path: 'getRootForm', query});
+  }
+
+  /** Запрос разметки формы. */
+  public async getFormLayout(formID: FormID): Promise<Res<IJsonModel>> {
+    const query = {sessionId: this.requester.sessionID, formId: formID};
+    return await this.request<IJsonModel>({path: 'getFormLayout', query});
   }
 
   /** Запрос настроек формы. */

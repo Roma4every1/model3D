@@ -8,7 +8,7 @@ import lines from "../lines.json";
 
 
 const drawOptions = {
-	zoomSleep: 500,
+	zoomSleep: 400,
 	selectedSize: 6,
 	selectedColor: '#000FFF',
 	selectedWidth: 1,
@@ -16,39 +16,29 @@ const drawOptions = {
 	piesliceBorderWidth: 0.2,
 	piesliceAlpha: 0.7,
 };
+const getImage = cache((imageName) => loadImage(API.requester.root + 'images/' + imageName));
 
+function createProvider() {
+  let provider = {
+    drawOptions,
+    getSymbolsLib: cache(() => API.maps.getSymbolsLib()),
+    getPatternLib: cache((libName) => API.maps.getPatternLib(libName)),
+    getPatternImage: getImage,
+    getSignImage: getImage,
+    linesConfigJson: { data: lines },
+  };
 
-export function createMapsDrawer(formID: FormID, owner: MapOwner) {
-	const getImage = cache((imageName) => loadImage(API.requester.root + 'images/' + imageName));
-
-	let provider = {
-		drawOptions,
-		getSymbolsLib: cache(() => API.maps.getSymbolsLib()),
-		getPatternLib: cache((libName) => API.maps.getPatternLib(libName)),
-		getMap: cache((mapID) => API.maps.getMap(formID, mapID)),
-		getContainer: cache((containerName, indexName) => {
-			return API.maps.getMapContainer(containerName, formID, owner, indexName);
-		}),
-		getPatternImage: getImage,
-		getSignImage: getImage,
-		linesConfigJson: { data: lines },
-		getProfile: async () => {
-			const response = await fetch('profileUrl', {credentials: 'include'});
-      return await response.json();
-		}
-	};
-
-	provider = symbols(provider);
-	provider = patterns(provider);
-
-	// @ts-ignore
-	const mapsDrawer: MapsDrawer = new Maps(provider);
-	mapsDrawer.provider = provider;
-	mapsDrawer.getSignImage = provider.getSignImage;
-	mapsDrawer.changeOwner = (newOwner) => {
-		provider.getContainer = cache((containerName, indexName) => {
-			return API.maps.getMapContainer(containerName, formID, newOwner, indexName);
-		})
-	};
-	return mapsDrawer;
+  provider = symbols(provider);
+  provider = patterns(provider);
+  return provider;
 }
+
+export function createMapsDrawer() {
+  // @ts-ignore
+  const mapsDrawer: MapsDrawer = new Maps();
+  mapsDrawer.getSignImage = provider.getSignImage;
+  return mapsDrawer;
+}
+
+export const provider = createProvider();
+

@@ -1,40 +1,30 @@
-/* --- actions types --- */
+/* --- Actions Types --- */
 
 export enum PresentationsActions {
-  FETCH_START = 'presentations/start',
-  FETCH_END = 'presentations/end',
-  CHANGE = 'presentations/change',
-  SET_SELECTED = 'presentations/set',
+  SET = 'presentations/set',
+  SET_SELECTED = 'presentations/setSelected',
 }
 
-/* --- actions interfaces --- */
+/* --- Actions Interfaces --- */
 
-interface ActionFetchStart {
-  type: PresentationsActions.FETCH_START,
-}
-interface ActionFetchEnd {
-  type: PresentationsActions.FETCH_END,
-  payload: {data: PresentationItem | string, activeID: FormID},
-}
-interface ActionChange {
-  type: PresentationsActions.CHANGE,
-  sessionID: SessionID,
-  formID: FormID
+interface ActionSet {
+  type: PresentationsActions.SET,
+  payload: {data: PresentationItem[], activeID: FormID},
 }
 interface ActionSetSelected {
   type: PresentationsActions.SET_SELECTED,
-  item: PresentationItem,
+  payload: PresentationItem,
 }
 
-export type PresentationsAction = ActionChange | ActionFetchStart | ActionFetchEnd | ActionSetSelected;
+export type PresentationsAction = ActionSet | ActionSetSelected;
 
-/* --- reducer --- */
+/* --- Init State & Reducer --- */
 
 const clearSelect = (items: PresentationItem[]) => {
   items.forEach(item => {
     item.items ? clearSelect(item.items) : item.selected = false;
   });
-}
+};
 const setActive = (items: PresentationItem[], activeID: FormID) => {
   for (const item of items) {
     if (item.items) {
@@ -46,39 +36,19 @@ const setActive = (items: PresentationItem[], activeID: FormID) => {
   }
 };
 
-const init: PresentationsState = {
-  loading: false, success: undefined, data: null,
-  sessionID: null, formID: null
-};
-
-export const presentationsReducer = (state: PresentationsState = init, action: PresentationsAction): PresentationsState => {
+export const presentationsReducer = (state: PresentationsState = [], action: PresentationsAction): PresentationsState => {
   switch (action.type) {
 
-    case PresentationsActions.FETCH_START: {
-      return {...state, loading: true, success: undefined, data: null};
-    }
-
-    case PresentationsActions.FETCH_END: {
+    case PresentationsActions.SET: {
       const { data, activeID } = action.payload;
-      if (typeof data === 'string') {
-        return {...state, loading: false, success: false, data};
-      } else {
-        setActive(data.items, activeID);
-        return {...state, loading: false, success: true, data};
-      }
-    }
-
-    case PresentationsActions.CHANGE: {
-      const { sessionID, formID } = action;
-      return {...init, sessionID, formID};
+      setActive(data, activeID);
+      return data;
     }
 
     case PresentationsActions.SET_SELECTED: {
-      if (typeof state.data === 'string') return state;
-      const item = action.item;
-      clearSelect(state.data.items);
-      item.selected = true;
-      return {...state};
+      clearSelect(state);
+      action.payload.selected = true;
+      return [...state];
     }
 
     default: return state;

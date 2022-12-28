@@ -2,13 +2,13 @@ import i18n from '../locales/i18n';
 import { webFetch } from "../api/initialization";
 import { actions } from "../store";
 import { API } from "../api/api";
+import { startSession as startSessionThunk } from "../store/thunks";
 
 import createChannelsManager from "./channels-manager";
 import createParamsManager from "./params-manager";
 
 
 export default function createSessionManager(store) {
-  let sessionLoading = true;
   let timerId;
 
   const iAmAlive = async () => {
@@ -19,10 +19,7 @@ export default function createSessionManager(store) {
     }
   }
 
-  const getSessionLoading = () => sessionLoading;
-
   const startSession = async (isDefault = false) => {
-    sessionLoading = true;
     const systemName = store.getState().appState.systemID;
     if (!systemName) {
       const message = i18n.t('messages.systemNotDefined');
@@ -31,7 +28,6 @@ export default function createSessionManager(store) {
     } else {
       const res = await API.session.startSession(systemName, isDefault);
       if (res.ok === true) {
-        sessionLoading = false;
         timerId = setInterval(iAmAlive, 2 * 60 * 1000);
 
         window.addEventListener('beforeunload', () => {
@@ -50,12 +46,7 @@ export default function createSessionManager(store) {
 
   const loadSessionByDefault = async () => {
     await stopSession(false);
-    sessionLoading = true;
-    const systemName = store.getState().appState.systemID;
-    const data = await fetchData(`startSession?systemName=${systemName}&defaultConfiguration=true`);
-    sessionLoading = false;
-    store.dispatch(actions.setSessionId(data));
-    store.dispatch(actions.setSessionID(data));
+    store.dispatch(startSessionThunk(startSession, true));
   }
 
   const getSavedSession = () => {
@@ -64,30 +55,45 @@ export default function createSessionManager(store) {
 
     const paramsArray = [];
     const formParams = state.formParams;
-
     for (const formParameter in formParams) {
       paramsArray.push({id: formParameter, value: formParams[formParameter]});
     }
 
     const childArray = [];
     const childForms = state.childForms;
-    for (let form in childForms) childArray.push(childForms[form]);
+    const rootFormID = state.appState.rootFormID;
+
+    for (let form in childForms) {
+      const formChildren = childForms[form];
+      if (formChildren.id === rootFormID) {
+        const multiMapReplacer = (c) => c.type === 'multiMap' ? {...c, type: 'grid'} : c;
+        const correctedChildren = formChildren.children.map(multiMapReplacer);
+        childArray.push({...formChildren, children: correctedChildren});
+      } else {
+        childArray.push(formChildren);
+      }
+    }
 
     const layoutArray = [];
     const layouts = state.formLayout;
-    for (let layout in layouts) layoutArray.push({id: layout, ...layouts[layout]});
+    for (const layout in layouts) layoutArray.push({id: layout, ...layouts[layout]});
 
     const settingsArray = [];
     const settings = state.formSettings;
-    for (let setting in settings) settingsArray.push({id: setting, ...settings[setting]});
+    for (let setting in settings) {
+      const formSettings = settings[setting];
+      if (formSettings.hasOwnProperty('columns'))
+        settingsArray.push({id: setting, ...formSettings});
+    }
 
-    return JSON.stringify({
+    const session = {
       sessionId: state.sessionId,
       activeParams: paramsArray,
       children: childArray,
       layout: layoutArray,
       settings: settingsArray
-    });
+    };
+    return JSON.stringify(session);
   }
 
   const saveSession = async () => {
@@ -105,7 +111,6 @@ export default function createSessionManager(store) {
 
   const loadSessionFromFile = async (file) => {
     await stopSession();
-    sessionLoading = true;
     let reader = new FileReader();
 
     reader.onload = async function () {
@@ -113,17 +118,10 @@ export default function createSessionManager(store) {
         `startSessionFromFile`,
         {method: 'POST', body: reader.result}
       );
-      sessionLoading = false;
       store.dispatch(actions.setSessionId(data));
       store.dispatch(actions.setSessionID(data));
     }
     reader.readAsText(file);
-  }
-
-  const getChildForms = async (formId) => {
-    const sessionId = store.getState().sessionId;
-    const data = await fetchData(`getChildrenForms?sessionId=${sessionId}&formId=${formId}`);
-    store.dispatch(actions.setChildForms(formId, data));
   }
 
   const handleWindowError = (text, stackTrace, header, fileToSaveName) => {
@@ -213,8 +211,6 @@ export default function createSessionManager(store) {
     saveSessionToFile,
     loadSessionByDefault,
     loadSessionFromFile,
-    getSessionLoading,
-    getChildForms,
     handleWindowError,
     handleWindowInfo,
     handleWindowWarning,

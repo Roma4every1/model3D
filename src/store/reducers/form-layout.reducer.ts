@@ -1,3 +1,5 @@
+import { IJsonModel } from "flexlayout-react";
+
 /* --- Actions Types --- */
 
 export enum FormLayoutActions {
@@ -9,7 +11,7 @@ export enum FormLayoutActions {
 interface ActionSet {
   type: FormLayoutActions.SET,
   formID: FormID,
-  payload: FormLayout,
+  payload: IJsonModel,
 }
 
 export type FormLayoutAction = ActionSet;

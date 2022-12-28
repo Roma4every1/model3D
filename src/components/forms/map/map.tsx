@@ -49,10 +49,7 @@ export default function Map({formData: {id: formID}, data}) {
 
   // добавление состояния в хранилище состояний карт
   useEffect(() => {
-    if (!mapState) {
-      const drawer = createMapsDrawer(formID, 'Common');
-      dispatch(actions.createMapState(formID, drawer));
-    }
+    if (!mapState) dispatch(actions.createMapState(formID, createMapsDrawer()));
   }, [mapState, dispatch, formID]);
 
   const draw = useCallback((canvas, map, scale, x, y, selected) => {
@@ -72,7 +69,7 @@ export default function Map({formData: {id: formID}, data}) {
 
     if (data !== mapState.mapID) {
       dispatch(actions.setMapField(formID, 'mapID', data));
-      dispatch(fetchMapData(mapState.drawer.provider, formID, data, 'Common', rootFormID));
+      dispatch(fetchMapData(formID, data, 'Common', rootFormID));
     }
   }, [isPartOfDynamicMultiMap, mapState, formID, data, dispatch, rootFormID]);
 
@@ -99,11 +96,10 @@ export default function Map({formData: {id: formID}, data}) {
     }
     if (changeOwner) {
       dispatch(actions.setMapField(formID, 'owner', owner));
-      mapState.drawer.changeOwner(owner);
     }
     if (changeMapID) {
       dispatch(actions.setMapField(formID, 'mapID', mapID));
-      dispatch(fetchMapData(mapState.drawer.provider, formID, mapID, owner));
+      dispatch(fetchMapData(formID, mapID, owner));
     }
   }, [mapState, activeChannel, sessionManager, formID, parentForm, isPartOfDynamicMultiMap, dispatch]);
 

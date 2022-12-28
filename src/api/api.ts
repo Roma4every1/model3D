@@ -112,19 +112,30 @@ class WellManagerReactAPI implements IWellManagerReactAPI {
     return await this.request<any[]>({path: 'systemList'});
   }
 
+  public async getPresentationsList(rootFormID: FormID): Promise<Res<PresentationItem>> {
+    const query = {sessionId: this.requester.sessionID, formId: rootFormID};
+    return await this.request<PresentationItem>({path: 'presentationList', query});
+  }
+
   /** Запрос состояния корневой формы. */
   public async getRootFormState(channelManager: ChannelsManager): Promise<RootFormState | string> {
     const resRootForm = await this.forms.getRootForm();
     if (!resRootForm.ok) return 'ошибка при получении id корневой формы';
     const id = resRootForm.data.id;
 
+    const resPresentations = await this.getPresentationsList(id);
+    if (!resPresentations.ok) return 'ошибка при получении списка презентаций';
+    const presentations = resPresentations.data.items;
+
     const resChildren = await this.forms.getFormChildren(id);
     if (!resChildren.ok) return 'ошибка при получении списка презентаций';
+    const children = resChildren.data;
 
     const resParams = await this.forms.getFormParameters(id);
     if (!resParams.ok) return 'ошибка при получении глобальных параметров';
+    const parameters = resParams.data;
 
-    for (const param of resParams.data) {
+    for (const param of parameters) {
       param.formId = id;
       if (param.externalChannelName && !param.canBeNull) {
         await channelManager.loadAllChannelData(param.externalChannelName, id, false);
@@ -133,7 +144,7 @@ class WellManagerReactAPI implements IWellManagerReactAPI {
     await channelManager.loadFormChannelsList(id);
     channelManager.setFormInactive(id);
 
-    return {id, children: resChildren.data, parameters: resParams.data};
+    return {id, children, parameters, presentations};
   }
 }
 

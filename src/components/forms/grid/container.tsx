@@ -11,19 +11,6 @@ interface ContainerProps {
 }
 
 
-const getOpenedChildren = (layout: IJsonRowNode | IJsonTabSetNode, list: OpenedChildrenList) => {
-  if (layout.type === 'tabset') layout.children.forEach(child => list.push(child.id));
-  if (layout.children) layout.children.forEach(child => getOpenedChildren(child, list));
-};
-const getActiveChildren = (layout: IJsonRowNode | IJsonTabSetNode, list: ActiveChildrenList) => {
-  if (layout.type === 'tabset' && layout.active && layout.children[layout.selected ?? 0]) {
-    list.push(layout.children[layout.selected ?? 0].id);
-  }
-
-  if (layout.children) layout.children.forEach(child => getActiveChildren(child, list));
-};
-const factory = (node) => node.getComponent();
-
 export function Container({formID, model}: ContainerProps) {
   const dispatch = useDispatch();
 
@@ -32,8 +19,8 @@ export function Container({formID, model}: ContainerProps) {
     const opened: OpenedChildrenList = [];
     const active: ActiveChildrenList = [];
 
-    getOpenedChildren(json.layout, opened);
-    getActiveChildren(json.layout, active);
+    fillOpenedChildren(json.layout, opened);
+    fillActiveChildren(json.layout, active);
 
     dispatch(actions.setActiveChildren(formID, active));
     dispatch(actions.setOpenedChildren(formID, opened));
@@ -49,3 +36,16 @@ export function Container({formID, model}: ContainerProps) {
     />
   );
 }
+
+const factory = (node) => node.getComponent();
+
+const fillOpenedChildren = (layout: IJsonRowNode | IJsonTabSetNode, list: OpenedChildrenList) => {
+  if (layout.type === 'tabset') layout.children.forEach(child => list.push(child.id));
+  if (layout.children) layout.children.forEach(child => fillOpenedChildren(child, list));
+};
+const fillActiveChildren = (layout: IJsonRowNode | IJsonTabSetNode, list: ActiveChildrenList) => {
+  if (layout.type === 'tabset' && layout.active && layout.children[layout.selected ?? 0]) {
+    list.push(layout.children[layout.selected ?? 0].id);
+  }
+  if (layout.children) layout.children.forEach(child => fillActiveChildren(child, list));
+};

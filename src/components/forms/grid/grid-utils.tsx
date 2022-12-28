@@ -1,40 +1,56 @@
-import { IJsonModel } from "flexlayout-react";
+import { IJsonModel, IJsonRowNode } from "flexlayout-react/declarations/model/IJsonModel";
+import { IJsonTabNode, IJsonTabSetNode } from "flexlayout-react/declarations/model/IJsonModel";
 import Form from "../form/form";
 import FormDisplayName from "../form/form-display-name";
 
 
-export const pushElement = (json: IJsonModel, form: FormDataWMR, activeIds: ActiveChildrenList) => {
-  json.layout.children.push({
-    type: 'tabset',
-    selected: 0,
-    active: activeIds.includes(form.id),
-    children: [{
-      id: form.id, type: 'tab', name: form.displayName,
-      // @ts-ignore
-      component: <Form key={form.id} formData={form} data={undefined}/>
-    }],
-  });
-};
+type LayoutArg = IJsonRowNode | IJsonTabSetNode | IJsonTabNode;
 
-export const correctElement = (layout, forms, activeIds) => {
+
+export function createLayout(forms: FormDataWMR[] = [], active: FormID = undefined): IJsonModel {
+  const children = forms.map(form => createTabSetNode(form, active));
+  return {
+    global: {rootOrientationVertical: false, splitterSize: 4},
+    layout: {type: 'row', children},
+  };
+}
+
+export function fillLayout(layout: LayoutArg, forms: FormDataWMR[], active: FormID) {
   if (layout.type === 'tabset') {
-    layout.active = layout.children.some(child => activeIds.includes(child.id))
+    // @ts-ignore
+    layout.active = layout.children.some(child => child.id === active);
   } else if (layout.type === 'tab') {
     const form = forms.find(f => f.id === layout.id);
-    if (form) {
-      if (!layout.title) {
-        layout.name = <FormDisplayName formData={form} />;
-      } else {
-        layout.name = layout.title;
-      }
-      layout.component = <Form key={form.id} formData={form} data={undefined}/>
-    }
+    if (form) fillTabNode(layout, form);
   }
+  // @ts-ignore
+  layout.children?.forEach(child => fillLayout(child, forms, active));
+}
 
-  if (layout.children) {
-    layout.children.forEach(child => correctElement(child, forms, activeIds));
+/* --- --- */
+
+function createTabSetNode(form: FormDataWMR, active: FormID): IJsonTabSetNode {
+  return {
+    type: 'tabset', selected: 0, active: form.id === active,
+    children: [{
+      id: form.id, type: 'tab', name: form.displayName,
+      component: <Form key={form.id} formData={form} data={undefined}/> as any,
+    }],
+  };
+}
+
+function fillTabNode(node: IJsonTabNode, form: FormDataWMR) {
+  if (form.displayNameString) {
+    // @ts-ignore
+    node.name = <FormDisplayName formID={form.id} pattern={form.displayNameString}/>;
+  } else {
+    node.name = form.displayName;
   }
-};
+  // @ts-ignore
+  node.component = <Form key={form.id} formData={form} data={undefined}/>
+}
+
+/* --- --- */
 
 /** Является ли форма мультикартой (т.е. содержит несколько карт). */
 export const isMultiMap = (children: FormChildren) => {

@@ -72,7 +72,7 @@ export class MapsAPI {
 
   /** Запрос контейнеров и подготовка элементов слоя. */
   public async setLayerElements(
-    mapData: MapDataRaw, layer: MapLayerRaw, provider: any, indexName: string,
+    mapData: MapDataRaw, layer: MapLayerRaw, indexName: string,
     formID: FormID, owner: MapOwner, needReload = true,
   ): Promise<void> {
     let elements: MapElement[] = [];
@@ -82,7 +82,7 @@ export class MapsAPI {
         if (needReload) {
           // mapData.mapErrors.push(`try to reload container ${layer.container}`);
           setTimeout(() => {
-            this.setLayerElements(mapData, layer, provider, indexName, formID, owner, false);
+            this.setLayerElements(mapData, layer, indexName, formID, owner, false);
           }, 500);
         } else {
           mapData.mapErrors.push(`error loading container ${layer.container}: ${data}`);
@@ -106,7 +106,7 @@ export class MapsAPI {
         if (newLayer != null) elements = newLayer.elements;
       }
 
-      await loadLayerElements(elements, provider);
+      await loadLayerElements(elements);
     } finally {
       // @ts-ignore
       layer.elements = elements;
@@ -114,18 +114,18 @@ export class MapsAPI {
   }
 
   /** Загрузка карты. */
-  public async loadMap(provider, formId: FormID, mapId: MapID, owner = 'Common'): Promise<MapData | string> {
-    const response = await this.getMap(formId, mapId);
+  public async loadMap(formID: FormID, mapID: MapID, owner = 'Common'): Promise<MapData | string> {
+    const response = await this.getMap(formID, mapID);
     if (!response.ok) return response.data as string;
     const mapData = response.data;
     mapData.mapErrors = [];
 
-    await this.setNamedPoints(mapData, formId, owner);
+    await this.setNamedPoints(mapData, formID, owner);
 
     for (const layer of mapData.layers) {
       handleLayerScales(layer);
       const indexName = checkLayerIndex(mapData, layer);
-      await this.setLayerElements(mapData, layer, provider, indexName, formId, owner);
+      await this.setLayerElements(mapData, layer, indexName, formID, owner);
 
       if (mapData.mapErrors.length > 3) {
         const errors = mapData.mapErrors.join('\n');

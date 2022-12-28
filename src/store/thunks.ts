@@ -34,35 +34,18 @@ export const startSession = (startSessionFn, isDefault: boolean) => {
 }
 
 export const fetchMapData = (
-  provider: any, formID: FormID, mapID: MapID,
+  formID: FormID, mapID: MapID,
   owner: MapOwner, x: string = undefined,
 ) => {
   return async (dispatch: WDispatch) => {
     dispatch(actions.startMapLoad(formID));
-    const loadedMap = await API.maps.loadMap(provider, x || formID, mapID, owner);
+    const loadedMap = await API.maps.loadMap(x || formID, mapID, owner);
     if (typeof loadedMap === 'string') {
       console.warn(loadedMap);
       dispatch(actions.loadMapError(formID));
     } else {
       if (loadedMap.mapErrors.length) loadedMap.mapErrors.forEach(err => console.warn(err));
       dispatch(actions.loadMapSuccess(formID, loadedMap));
-    }
-  }
-}
-
-export const fetchPresentations = (
-  sessionManager: SessionManager, sessionID: SessionID,
-  formID: FormID, activeChildID: FormID
-) => {
-  return async (dispatch: WDispatch) => {
-    try {
-      dispatch(actions.fetchPresentationsStart());
-      const path = `presentationList?sessionId=${sessionID}&formId=${formID}`;
-      const data = await sessionManager.fetchData(path);
-      dispatch(actions.fetchPresentationsEnd(data, activeChildID));
-    } catch (error) {
-      console.warn(error);
-      dispatch(actions.fetchPresentationsEnd(error.message));
     }
   }
 }

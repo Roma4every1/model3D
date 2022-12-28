@@ -20,8 +20,8 @@ const dockLayoutSelector = (state: WState): DockLayout => {
 };
 const activePresentationSelector = (state: WState): FormDataWMR => {
   const rootFormState = state.childForms[state.appState.rootFormID];
-  const id = rootFormState?.activeChildren[0];
-  return rootFormState?.children.find(child => child.id === id);
+  const id = rootFormState.activeChildren[0];
+  return rootFormState.children.find(child => child.id === id);
 };
 const factory = (node: TabNode) => {
   const id = node.getId();
@@ -33,7 +33,7 @@ const factory = (node: TabNode) => {
   return <DockForm/>;
 };
 
-export const Dock = ({formID}: PropsFormID) => {
+export const Dock = () => {
   const formTypes = useSelector(selectors.displayedFormTypes, compareArrays);
   const dockLayout = useSelector(dockLayoutSelector);
 
@@ -56,7 +56,7 @@ export const Dock = ({formID}: PropsFormID) => {
         model={model} factory={factory}
         onModelChange={onModelChange} i18nMapper={translator}
       />
-      <DateChanging formID={formID}/>
+      <DateChanging/>
     </>
   );
 }

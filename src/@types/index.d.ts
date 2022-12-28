@@ -4,6 +4,7 @@ interface RootFormState {
   id: FormID,
   children: FormChildrenState,
   parameters: FormParameter[],
+  presentations: PresentationItem[],
 }
 
 /** Пропс с единственным полем `formID`. */
@@ -75,8 +76,9 @@ type ParameterOrder = number;
 type ParameterDepends = ParameterID[];
 
 /** Тип формы. */
-type FormType = 'carat' | 'chart' | 'dataSet' | 'dock' | 'files' | 'filesList' | 'grid' | 'image' | 'map' |
-  'model3D' | 'profile' | 'screenshot' | 'slide' | 'spreadsheet' | 'spreadsheetUnite' | 'transferForm';
+type FormType = 'carat' | 'chart' | 'dataSet' | 'dock' | 'files' | 'filesList' |
+  'grid' | 'image' | 'map' | 'multiMap' | 'model3D' | 'profile' | 'screenshot' |
+  'slide' | 'spreadsheet' | 'spreadsheetUnite' | 'transferForm';
 
 /* --- Fetch State --- */
 
@@ -140,11 +142,8 @@ interface SessionManager {
   saveSessionToFile(): void
   loadSessionByDefault(): Promise<void>
   loadSessionFromFile(file: any): Promise<void>
-  getSessionLoading(): boolean
 
   watchReport(operationID: any): void
-  getChildForms(formID: FormID): Promise<void>
-
   handleWindowError(text: any, stackTrace?: any, header?: any, fileToSaveName?: string): void
   handleWindowInfo(text: any, stackTrace?: any, header?: any, fileToSaveName?: string): void
   handleWindowWarning(text: any, stackTrace?: any, header?: any, fileToSaveName?: string): void
