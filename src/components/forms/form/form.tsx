@@ -2,7 +2,7 @@ import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { formDict } from "../../../dicts/forms";
 import { actions, selectors } from "../../../store";
-import { MultiMap } from "../grid/multi-map";
+import { MultiMap } from "../multi-map/multi-map";
 
 
 interface FormState {

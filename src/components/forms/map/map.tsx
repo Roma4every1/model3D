@@ -1,8 +1,8 @@
 import { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { Loader } from "@progress/kendo-react-indicators";
 import { Scroller } from "./drawer/scroller";
+import { MapNotFound, MapLoadError, CircularProgressBar } from "../multi-map/multi-map-item";
 import { createMapsDrawer } from "./drawer";
 import { getParentFormId, tableRowToString } from "../../../utils/utils";
 import { getFullViewport, getMultiMapChildrenCanvases } from "./map-utils";
@@ -16,7 +16,6 @@ export default function Map({formData: {id: formID}, data}) {
   const parentForm = getParentFormId(formID);
 
   const sessionManager = useSelector(selectors.sessionManager);
-  const rootFormID = useSelector(selectors.rootFormID); // TODO: убрать
   const currentWellID = useSelector(selectors.currentWellID);
 
   const mapsState = useSelector(selectors.mapsState);
@@ -25,7 +24,9 @@ export default function Map({formData: {id: formID}, data}) {
   const canvasRef = useRef(null);
   const mapDrawnData = useRef(null);
   const scroller = useRef(null);
-  const [isMapExist, setIsMapExist] = useState(false);
+
+  const [isMapExist, setIsMapExist] = useState(true);
+  const [progress, setProgress] = useState(0);
 
   const canvas = mapState?.canvas;
   const mapData = mapState?.mapData;
@@ -59,7 +60,7 @@ export default function Map({formData: {id: formID}, data}) {
     mapDrawnData.current = mapState.drawer.showMap(canvas, map, data);
   }, [mapState?.drawer]);
 
-  const isPartOfDynamicMultiMap = typeof data === 'string';
+  const isPartOfDynamicMultiMap = data.activeChannels === undefined;
   const activeChannelName = isPartOfDynamicMultiMap ? null : data.activeChannels[0];
   const activeChannel: any = useSelector(selectors.channel.bind(activeChannelName));
 
@@ -67,11 +68,11 @@ export default function Map({formData: {id: formID}, data}) {
     if (!mapState || !isPartOfDynamicMultiMap) return;
     setIsMapExist(true);
 
-    if (data !== mapState.mapID) {
+    if (!mapState.mapID && data.layers) {
       dispatch(actions.setMapField(formID, 'mapID', data));
-      dispatch(fetchMapData(formID, data, 'Common', rootFormID));
+      dispatch(actions.loadMapSuccess(formID, data));
     }
-  }, [isPartOfDynamicMultiMap, mapState, formID, data, dispatch, rootFormID]);
+  }, [isPartOfDynamicMultiMap, mapState, formID, data, dispatch]);
 
   // проверка параметров формы
   useEffect(() => {
@@ -98,8 +99,9 @@ export default function Map({formData: {id: formID}, data}) {
       dispatch(actions.setMapField(formID, 'owner', owner));
     }
     if (changeMapID) {
+      setProgress(0);
       dispatch(actions.setMapField(formID, 'mapID', mapID));
-      dispatch(fetchMapData(formID, mapID, owner));
+      dispatch(fetchMapData(formID, mapID, owner, null, setProgress));
     }
   }, [mapState, activeChannel, sessionManager, formID, parentForm, isPartOfDynamicMultiMap, dispatch]);
 
@@ -151,9 +153,9 @@ export default function Map({formData: {id: formID}, data}) {
     }
   });
 
-  if (!mapState) return <MapLoading/>;
+  if (!mapState) return null;
   if (!isMapExist) return <MapNotFound t={t}/>;
-  if (mapState.isLoadSuccessfully === undefined) return <MapLoading/>;
+  if (mapState.isLoadSuccessfully === undefined) return <CircularProgressBar percentage={progress} size={100}/>;
   if (mapState.isLoadSuccessfully === false) return <MapLoadError t={t}/>;
 
   return (
@@ -161,20 +163,4 @@ export default function Map({formData: {id: formID}, data}) {
       <canvas style={{cursor: mapState.cursor}} ref={canvasRef}/>
     </div>
   );
-}
-
-function MapLoading() {
-  return (
-    <div className={'map-container loading'}>
-      <Loader type={'infinite-spinner'} size={'large'}/>
-    </div>
-  );
-}
-
-function MapNotFound({t}) {
-  return <div className={'map-not-found'}>{t('map.not-found')}</div>;
-}
-
-function MapLoadError({t}) {
-  return <div className={'map-not-found'}>{t('map.not-loaded')}</div>;
 }

@@ -114,13 +114,16 @@ export class MapsAPI {
   }
 
   /** Загрузка карты. */
-  public async loadMap(formID: FormID, mapID: MapID, owner = 'Common'): Promise<MapData | string> {
+  public async loadMap(formID: FormID, mapID: MapID, owner: MapOwner, setProgress: Function): Promise<MapData | string> {
     const response = await this.getMap(formID, mapID);
     if (!response.ok) return response.data as string;
     const mapData = response.data;
     mapData.mapErrors = [];
 
     await this.setNamedPoints(mapData, formID, owner);
+
+    let i = 1;
+    const step = Math.ceil(100 / mapData.layers.length);
 
     for (const layer of mapData.layers) {
       handleLayerScales(layer);
@@ -131,6 +134,7 @@ export class MapsAPI {
         const errors = mapData.mapErrors.join('\n');
         return 'More than 3 errors while load map:\n' + errors;
       }
+      setProgress(i * step); i++;
     }
     return mapData as any as MapData;
   }

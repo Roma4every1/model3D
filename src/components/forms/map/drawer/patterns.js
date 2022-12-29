@@ -26,8 +26,10 @@ export default function patterns(provider) {
 			}
 
 			const lib = yield ret.getPatternLib(libName);
-			const png = pngMono(lib[index], color, backColor);
-			return yield loadImageData(png, 'image/png');
+      const pngRaw = lib[index]; if (!pngRaw) return;
+
+      const png = pngMono(pngRaw, color, backColor);
+      return yield loadImageData(png, 'image/png');
 		});
 	});
 

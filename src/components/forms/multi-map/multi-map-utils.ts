@@ -3,7 +3,15 @@ import { IGlobalAttributes, IJsonRowNode } from "flexlayout-react/declarations/m
 import { IJsonTabSetNode, IJsonTabNode } from "flexlayout-react/declarations/model/IJsonModel";
 
 
+export interface MapItemConfig {
+  id: MapID,
+  data: any,
+  formID: FormID,
+  progress: number,
+  setProgress?: Function,
+}
 type MapChannelCell = [number, string, string, string];
+export type MapTuple = [Model, ActiveChildrenList, MapItemConfig[]];
 
 
 const globalSettings: IGlobalAttributes = {
@@ -15,7 +23,7 @@ const globalSettings: IGlobalAttributes = {
   splitterSize: 4,
 };
 
-export const getMultiMapLayout = (rows: MapChannelCell[], formID: FormID): [Model, FormID[]] => {
+export const getMultiMapLayout = (rows: MapChannelCell[], formID: FormID): MapTuple => {
   const n = rows.length;
 
   let rowsCount = 1;
@@ -34,6 +42,7 @@ export const getMultiMapLayout = (rows: MapChannelCell[], formID: FormID): [Mode
 
   let i = 0;
   const childrenList = [];
+  const configList = [];
 
   for (const row of children) {
     for (const tab of row.children) {
@@ -42,14 +51,20 @@ export const getMultiMapLayout = (rows: MapChannelCell[], formID: FormID): [Mode
       tab.id = childFormID;
 
       const child: IJsonTabNode = tab.children[0];
+      const config: MapItemConfig = {
+        id, data: {}, formID: childFormID,
+        progress: 0, setProgress: () => {},
+      };
+
       child.id = id;
-      child.component = childFormID;
       child.name = rows[i][3];
+      child.config = config;
 
       childrenList.push(childFormID);
+      configList.push(config);
       i++;
     }
   }
   const layout: IJsonModel = {global: globalSettings, layout: {type: 'row', children}};
-  return [Model.fromJson(layout), childrenList];
+  return [Model.fromJson(layout), childrenList, configList];
 };
