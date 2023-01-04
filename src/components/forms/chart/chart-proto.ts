@@ -1,7 +1,7 @@
 import { Payload } from "recharts/types/component/DefaultLegendContent";
 import { YAxisProps, getYAxisProto, toMonYear, toYear, monthStep, yearStep } from "./chart-axes";
 import { ChartDiagram, getDiagramProto, getDiagramLegend } from "./chart-diagrams";
-import { ChartMarkProps, getChartMarkProto, getChartMarkLegend } from "./chart-marks";
+import { ChartMarkProps, getChartMarkProto, getChartMarkLegend, getChartMarkLabel } from "./chart-marks";
 
 
 export interface ChartProto {
@@ -55,23 +55,24 @@ export const getChartProto = (channels: Channel[], seriesSettings: ChartSeriesSe
 
       const dataKey = columns[dataIndex].Name;
       const settingsItem = settings.seriesSettings;
+      const item = settingsItem[dataKey];
       const name = property.displayName;
+      if (!item) continue;
 
-      for (const axisID in settingsItem) {
-        const item = settingsItem[axisID];
-        if (item.channelPropertyName === dataKey) {
-          if (item.typeCode === 'vertical') {
-            xValues.forEach((xValue, i) => {
-              const id = rows[i].Cells[dataIndex];
-              marks.push(getChartMarkProto(xValue.x, dataKey + i, property, item, id));
-            });
-            legend.push(getChartMarkLegend(dataKey, name, item.color));
+      if (item.typeCode === 'vertical') {
+        xValues.forEach((xValue, i) => {
+          const id = rows[i].Cells[dataIndex], key = dataKey + i;
+          const sameMark = marks.find(mark => mark.x === xValue.x);
+          if (sameMark) {
+            sameMark.label.value.push(getChartMarkLabel(property, id));
           } else {
-            diagrams.push(getDiagramProto(dataKey, axisID, name, item));
-            legend.push(getDiagramLegend(dataKey, name, item));
+            marks.push(getChartMarkProto(xValue.x, key, property, item, id));
           }
-          break;
-        }
+        });
+        legend.push(getChartMarkLegend(dataKey, name, item.color));
+      } else {
+        diagrams.push(getDiagramProto(dataKey, name, item));
+        legend.push(getDiagramLegend(dataKey, name, item));
       }
 
       if (columns[dataIndex].NetType === 'System.Decimal') {

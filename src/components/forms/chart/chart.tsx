@@ -18,7 +18,7 @@ function chartDataSelector(this: ChannelName[], state: WState): Channel[] {
 }
 
 const chartStyle = {overflow: 'hidden'};
-const chartMargin = {top: 0, left: 0, bottom: 0, right: 0};
+const chartMargin = {top: 2, left: 0, bottom: 0, right: 0};
 
 export default function Chart({data: {formId: formID, activeChannels}}: ChartProps) {
   const channels: Channel[] = useSelector(chartDataSelector.bind(activeChannels), compareArrays);
@@ -33,9 +33,9 @@ export default function Chart({data: {formId: formID, activeChannels}}: ChartPro
 
   return (
     <ResponsiveContainer>
-      <ComposedChart data={proto.data} margin={chartMargin} style={chartStyle}>
+      <ComposedChart data={proto.data} margin={chartMargin} style={chartStyle} barGap={1}>
         {tooltip && <Tooltip/>}
-        <Legend verticalAlign={'top'} align={'center'} payload={proto.legend} height={24}/>
+        <Legend verticalAlign={'top'} payload={proto.legend}/>
         <CartesianGrid strokeDasharray={'4 4'}/>
         <XAxis dataKey={'x'}/>
         {proto.axes.map(mapAxes)}

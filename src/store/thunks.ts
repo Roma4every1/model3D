@@ -33,13 +33,10 @@ export const startSession = (startSessionFn, isDefault: boolean) => {
   }
 }
 
-export const fetchMapData = (
-  formID: FormID, mapID: MapID,
-  owner: MapOwner, x: string, setProgress: Function
-) => {
+export const fetchMapData = (formID: FormID, mapID: MapID, owner: MapOwner, setProgress: Function) => {
   return async (dispatch: WDispatch) => {
     dispatch(actions.startMapLoad(formID));
-    const loadedMap = await API.maps.loadMap(x || formID, mapID, owner, setProgress);
+    const loadedMap = await API.maps.loadMap(mapID, owner, setProgress);
     if (typeof loadedMap === 'string') {
       console.warn(loadedMap);
       dispatch(actions.loadMapError(formID));

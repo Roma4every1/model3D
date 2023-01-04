@@ -26,10 +26,7 @@ type DiagramComponent = typeof Bar | typeof Line | typeof Area;
 
 
 /** Строит объект, по которому отрендерится линия/область/гистограмма из _Recharts_. */
-export const getDiagramProto = (
-  dataKey: string, id: string, name: string,
-  settings: SeriesSettingsItem
-): ChartDiagram => {
+export const getDiagramProto = (dataKey: string, name: string, settings: SeriesSettingsItem): ChartDiagram => {
   const color: string = settings.color;
   const dot = settings.showPoint ? {stroke: 'none', fill: color} : false;
 
@@ -37,7 +34,7 @@ export const getDiagramProto = (
   const child = settings.showLabels && createElement(LabelList, {dataKey, position: 'top'});
 
   const props: DiagramProps = {
-    key: dataKey, yAxisId: id, dataKey, name: name, dot, stroke: color,
+    key: dataKey, yAxisId: settings.yAxisId, dataKey, name: name, dot, stroke: color,
     type: 'linear', strokeWidth: 2, fill: 'none',
     isAnimationActive: false, connectNulls: true,
   };

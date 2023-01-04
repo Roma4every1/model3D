@@ -231,7 +231,7 @@ type SeriesSettings = Record<string, SeriesSettingsItem>;
 type AxesSettings = Record<string, AxisSettings>;
 
 interface SeriesSettingsItem {
-  channelPropertyName: string,
+  yAxisId: string,
   typeCode: ChartTypeCode,
   color: string,
   showLabels: boolean,

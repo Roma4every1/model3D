@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { GridColumnMenuFilter, GridColumnMenuCheckboxFilter } from "@progress/kendo-react-grid";
 import { selectors } from "../../../store";
+import { toDate } from "../../../utils/utils";
 
 
 export default function ColumnMenu(props) {
@@ -35,14 +36,7 @@ export default function ColumnMenu(props) {
         } else {
           let existingValues = dataAll.data.Rows.map(r => {
             let rowValue = r.Cells[0];
-            if (tableColumn.netType === 'System.DateTime' && rowValue) {
-              const startIndex = rowValue.indexOf('(');
-              const finishIndex = rowValue.lastIndexOf('+');
-              const dateValue = rowValue.slice(startIndex + 1, finishIndex);
-              var d = new Date();
-              d.setTime(dateValue);
-              return d;
-            }
+            if (tableColumn.netType === 'System.DateTime' && rowValue) return toDate(rowValue);
             return rowValue;
           });
           let data = existingValues.map(ld => {

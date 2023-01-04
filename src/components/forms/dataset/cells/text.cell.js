@@ -1,22 +1,13 @@
-import * as React from "react";
+import React from "react";
 import { Input } from "@progress/kendo-react-inputs";
 
-export const TextCell = (props) => {
-    const handleChange = (e) => {
-        if (props.onChange) {
-            props.onChange({
-                dataIndex: 0,
-                dataItem: props.dataItem,
-                field: props.field,
-                syntheticEvent: e.syntheticEvent,
-                value: e.target.value
-            });
-        }
-    };
-    return (
-        <Input
-            onChange={handleChange}
-            value={props.dataValue}
-        />
-    );
+
+export const TextCell = ({dataValue, dataItem, field, onChange}) => {
+  const handleChange = (e) => {
+    if (!onChange) return;
+    const value = e.target.value;
+    onChange({dataIndex: 0, dataItem, field, syntheticEvent: e.syntheticEvent, value});
+  };
+
+  return <Input onChange={handleChange} value={dataValue}/>;
 };

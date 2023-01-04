@@ -99,7 +99,7 @@ export default function Map({formData: {id: formID}, data}) {
     if (changeMapID) {
       setProgress(0);
       dispatch(actions.setMapField(formID, 'mapID', mapID));
-      dispatch(fetchMapData(formID, mapID, owner, null, setProgress));
+      dispatch(fetchMapData(formID, mapID, owner, setProgress));
     }
   }, [mapState, activeChannel, sessionManager, formID, parentForm, isPartOfDynamicMultiMap, dispatch]);
 

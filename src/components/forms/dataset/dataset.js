@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState, useCallback, useRef, useImperativeHandle } from "react";
 import { useSelector } from "react-redux";
 import DataSetView from "./dataset-view";
 import { selectors } from "../../../store";
+import { toDate } from "../../../utils/utils";
 
 
 const rowConverter = (databaseData, columnsJSON, row, rowIndex) => {
@@ -13,12 +14,7 @@ const rowConverter = (databaseData, columnsJSON, row, rowIndex) => {
       if (i >= 0) {
         let rowValue = row.Cells[i];
         if (column.netType === 'System.DateTime' && rowValue) {
-          const startIndex = rowValue.indexOf('(');
-          const finishIndex = rowValue.lastIndexOf('+');
-          const dateValue = rowValue.slice(startIndex + 1, finishIndex);
-          var d = new Date();
-          d.setTime(dateValue);
-          temp[column.field] = d;
+          temp[column.field] = toDate(rowValue);
         }
         else {
           if (column.lookupData) {
@@ -37,38 +33,45 @@ const rowConverter = (databaseData, columnsJSON, row, rowIndex) => {
   return temp;
 };
 
-function DataSet({formData, data}, ref) {
-  const sessionManager = useSelector(selectors.sessionManager);
-  const [activeChannelName] = React.useState(data.activeChannels[0]);
-  const rowToAdd = React.useRef(null);
+function mapColumns(property) {
+  const condition = c => c.Name === (property.fromColumn ?? property.name);
+  const column = this.find(condition);
 
-  const reload = React.useCallback(async () => {
+  return {
+    treePath: property.treePath,
+    field: property.name,
+    fromColumn: property.fromColumn,
+    netType: column?.NetType,
+    headerName: property.displayName,
+    lookupChannelName: property.lookupChannelName,
+    lookupData: property.lookupData,
+  };
+}
+
+function DataSet({formData, data}, ref) {
+  const [activeChannelName] = useState(data.activeChannels[0]);
+
+  /** @type Channel */
+  const databaseData = useSelector(selectors.channel.bind(activeChannelName));
+  const sessionManager = useSelector(selectors.sessionManager);
+
+  const rowToAdd = useRef(null);
+
+  const reload = useCallback(async () => {
     await sessionManager.channelsManager.loadAllChannelData(activeChannelName, formData.id, true);
   }, [activeChannelName, formData, sessionManager]);
 
-  const databaseData = useSelector((state) => state.channelsData[activeChannelName]);
-
-  var columnsJSON = [];
-  var rowsJSON = [];
+  let columnsJSON = [];
+  let rowsJSON = [];
 
   if (databaseData && databaseData.data && databaseData.properties) {
-    columnsJSON = databaseData.properties.map(function (property) {
-      const column = databaseData.data.Columns.find(o => o.Name === (property.fromColumn ?? property.name));
-      const temp = {};
-      temp.treePath = property.treePath;
-      temp.field = property.name;
-      temp.fromColumn = property.fromColumn;
-      temp.netType = column?.NetType;
-      temp.headerName = property.displayName;
-      temp.lookupChannelName = property.lookupChannelName;
-      temp.lookupData = property.lookupData;
-      return temp;
+    columnsJSON = databaseData.properties.map(mapColumns.bind(databaseData.data.Columns));
+    rowsJSON = databaseData.data.Rows.map((row, rowIndex) => {
+      return rowConverter(databaseData, columnsJSON, row, rowIndex)
     });
-
-    rowsJSON = databaseData.data.Rows.map((row, rowIndex) => rowConverter(databaseData, columnsJSON, row, rowIndex));
   }
 
-  var tableData = {
+  const tableData = {
     rowsJSON: rowsJSON,
     columnsJSON: columnsJSON,
     databaseData: databaseData,
@@ -98,23 +101,15 @@ function DataSet({formData, data}, ref) {
       }
       else {
         let rowValue = (rowAdding ? rowToAdd.current : databaseData.data.Rows[rowToInsert['js_id']])?.Cells[index];
-        if (column.NetType === 'System.DateTime' && rowValue) {
-          const startIndex = rowValue.indexOf('(');
-          const finishIndex = rowValue.lastIndexOf('+');
-          const dateValue = rowValue.slice(startIndex + 1, finishIndex);
-          var d = new Date();
-          d.setTime(dateValue);
-          rowValue = d;
-        }
+        if (column.NetType === 'System.DateTime' && rowValue) rowValue = toDate(rowValue);
         return cells.push(rowValue)
       }
     });
-    var itemToInsert = { Id: null, Cells: cells };
+    const itemToInsert = {Id: null, Cells: cells};
     const dataJSON = JSON.stringify([itemToInsert]);
     if (rowAdding) {
       await sessionManager.channelsManager.insertRow(databaseData.tableId, dataJSON);
-    }
-    else {
+    } else {
       await sessionManager.channelsManager.updateRow(databaseData.tableId, editID, [itemToInsert]);
     }
   }
@@ -125,12 +120,12 @@ function DataSet({formData, data}, ref) {
     return rowConverter(databaseData, tableData.columnsJSON, result, tableData.rowsJSON.length);
   }
 
-  const _viewRef = React.useRef(null);
+  const viewRef = useRef(null);
 
-  React.useImperativeHandle(ref, () => ({
-    excelExport: () => { _viewRef.current.excelExport(); },
-    selectAll: () => { _viewRef.current.selectAll(); },
-    activeCell: () => _viewRef.current.activeCell(),
+  useImperativeHandle(ref, () => ({
+    excelExport: () => { viewRef.current.excelExport(); },
+    selectAll: () => { viewRef.current.selectAll(); },
+    activeCell: () => viewRef.current.activeCell(),
     properties: () => databaseData?.properties,
     tableId: () => databaseData?.tableId,
   }));
@@ -147,7 +142,7 @@ function DataSet({formData, data}, ref) {
         deleteRows={deleteRows}
         getRow={getRow}
         reload={reload}
-        ref={_viewRef}
+        ref={viewRef}
       />
     </div>
   );

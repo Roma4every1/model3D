@@ -1,22 +1,18 @@
-import * as React from "react";
+import React from "react";
 import { DatePicker } from "@progress/kendo-react-dateinputs";
 
-export const DateCell = (props) => {
-    const handleChange = (e) => {
-        if (props.onChange) {
-            props.onChange({
-                dataIndex: 0,
-                dataItem: props.dataItem,
-                field: props.field,
-                syntheticEvent: e.syntheticEvent,
-                value: e.target.value
-            });
-        }
-    };
-    return (
-        <DatePicker
-            onChange={handleChange}
-            defaultValue={props.dataValue && typeof props.dataValue === 'object' ? props.dataValue : undefined}
-        />
-    );
+
+export const DateCell = ({dataValue, dataItem, field, onChange}) => {
+  const handleChange = (e) => {
+    if (!onChange) return;
+    const value = e.target.value;
+    onChange({dataIndex: 0, dataItem, field, syntheticEvent: e.syntheticEvent, value});
+  };
+
+  return (
+    <DatePicker
+      onChange={handleChange}
+      defaultValue={typeof dataValue === 'object' ? dataValue : undefined}
+    />
+  );
 };

@@ -48,8 +48,8 @@ export const MultiMap = ({formID, channel}: MultiMapProps) => {
   }, [children, formID, dispatch]);
 
   useEffect(() => {
-    setTimeout(() => loadMultiMap(formID, configs).then(), 200);
-  }, [configs, formID]);
+    setTimeout(() => loadMultiMap(configs).then(), 200);
+  }, [configs]);
 
   const onAction = (action: Action) => {
     if (action.type === Actions.SET_ACTIVE_TABSET) {
@@ -67,10 +67,10 @@ export const MultiMap = ({formID, channel}: MultiMapProps) => {
   );
 };
 
-async function loadMultiMap(formID: FormID, configs: MapItemConfig[]) {
+async function loadMultiMap(configs: MapItemConfig[]) {
   for (const config of configs) {
     config.setProgress(0);
-    const loadedMap = await API.maps.loadMap(formID, config.id, 'Common', config.setProgress);
+    const loadedMap = await API.maps.loadMap(config.id, 'Common', config.setProgress);
     config.data = loadedMap;
     config.setProgress(typeof loadedMap === 'string' ? -1 : 100);
   }
