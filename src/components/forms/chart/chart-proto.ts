@@ -25,7 +25,7 @@ export const getChartProto = (channels: Channel[], seriesSettings: ChartSeriesSe
   const stepFn = dateStep === 'month' ? monthStep : yearStep;
 
   for (const channel of channels) {
-    const rows = channel.data?.Rows;
+    const rows = channel?.data?.Rows;
     const settings = seriesSettings[channel.id];
     if (!rows?.length || settings.xAxisType !== 'Dates') continue;
 
