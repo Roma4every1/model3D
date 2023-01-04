@@ -1,84 +1,51 @@
-import { useEffect, useMemo } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { ResponsiveContainer, ComposedChart, CartesianGrid, Legend, Tooltip, YAxis, XAxis } from "recharts";
-import { actions, selectors } from "../../../store";
-import { getChartPrototype, mapDiagramsData } from "./chart-utils";
-import { mapAxesData } from "./chart-axis-utils";
-import { ChartMark, chartMarksSelector, mapChartMarks } from "./chart-marks";
+import { useMemo } from "react";
+import { useSelector } from "react-redux";
+import { ResponsiveContainer, ComposedChart, CartesianGrid, Legend, Tooltip, XAxis } from "recharts";
+import { ChartProto, getChartProto } from "./chart-proto";
+import { mapAxes, mapDiagrams, mapMarks } from "./chart-mappers";
 import { compareArrays } from "../../../utils/utils";
+import { selectors } from "../../../store";
 import "../../../styles/chart.scss";
 
 
-function chartDataSelector(this: ChannelName, state: WState) {
-  try {
-    const { data, properties } = state.channelsData[this];
-    return [data.Columns, data['Rows'].map((row) => row.Cells), properties];
-  } catch {
-    return [null, null, null];
-  }
+interface ChartProps {
+  data: {formId: FormID, activeChannels: ChannelName[]},
 }
 
-export default function Chart({data}) {
-  const dispatch = useDispatch();
-  const formID = data.formId;
 
-  const chartState: ChartState = useSelector(selectors.chartState.bind(formID));
-  const [columns, rows, properties] = useSelector(chartDataSelector.bind(data.activeChannels[0]), compareArrays);
+function chartDataSelector(this: ChannelName[], state: WState): Channel[] {
+  return this.map(channel => state.channelsData[channel]);
+}
 
-  const sessionID = useSelector(selectors.sessionID);
-  const sessionManager = useSelector(selectors.sessionManager);
+const chartStyle = {overflow: 'hidden'};
+const chartMargin = {top: 0, left: 0, bottom: 0, right: 0};
 
-  // добавление состояние в хранилище графиков
-  useEffect(() => {
-    if (!chartState) dispatch(actions.createChartState(formID));
-  }, [chartState, formID, dispatch]);
+export default function Chart({data: {formId: formID, activeChannels}}: ChartProps) {
+  const channels: Channel[] = useSelector(chartDataSelector.bind(activeChannels), compareArrays);
+  const settings: ChartSettings = useSelector(selectors.formSettings.bind(formID));
+  const { seriesSettings, dateStep, tooltip } = settings;
 
-  // загрузка настроек графика
-  useEffect(() => {
-    let ignore = false;
-    if (sessionID) {
-      const path = `pluginData?sessionId=${sessionID}&formId=${formID}&pluginName=chartSeriesSettings`;
-      sessionManager.fetchData(path).then((data: any) => {
-        if (!ignore && data) dispatch(actions.setSeriesSettings(formID, data.chartSeriesSettings));
-      });
-    }
-    return () => { ignore = true; }
-  }, [formID, sessionID, sessionManager, dispatch]);
+  const proto = useMemo<ChartProto>(() => {
+    return getChartProto(channels, seriesSettings, dateStep);
+  }, [channels, seriesSettings, dateStep]);
 
-  const [diagramsData, chartData, axesData, xAxisID, dateFn] = useMemo(() => {
-    return getChartPrototype(chartState?.seriesSettings, properties, columns, rows);
-  }, [properties, columns, rows, chartState?.seriesSettings]);
-
-  const chartMarks: ChartMark[] = useSelector(chartMarksSelector.bind({
-    channelName: data.activeChannels[1], dateFn,
-  }));
-
-  if (!diagramsData || !chartData || rows.length === 0) return <EmptyChart/>;
+  if (proto.diagrams.length === 0) return <EmptyChart/>;
 
   return (
     <ResponsiveContainer>
-      <ComposedChart margin={{top: 0, left: 0, bottom: 0, right: 0}} data={chartData} style={{overflow: 'hidden'}}>
-        {chartState?.tooltip && <Tooltip />}
-        <Legend verticalAlign={'top'} align={'center'} />
-        <CartesianGrid strokeDasharray={'4 4'} />
-        <XAxis dataKey={xAxisID} />
-
-        {axesData.map(mapAxesData)}
-        {diagramsData.map(mapDiagramsData)}
-        {chartMarks.map(mapChartMarks)}
+      <ComposedChart data={proto.data} margin={chartMargin} style={chartStyle}>
+        {tooltip && <Tooltip/>}
+        <Legend verticalAlign={'top'} align={'center'} payload={proto.legend} height={24}/>
+        <CartesianGrid strokeDasharray={'4 4'}/>
+        <XAxis dataKey={'x'}/>
+        {proto.axes.map(mapAxes)}
+        {proto.diagrams.map(mapDiagrams)}
+        {proto.marks.map(mapMarks)}
       </ComposedChart>
     </ResponsiveContainer>
   );
 }
 
 const EmptyChart = () => {
-  return (
-    <ResponsiveContainer>
-      <ComposedChart margin={{right: 10, top: 10}} data={[]}>
-        <XAxis/>
-        <YAxis/>
-        <Legend verticalAlign={'top'} align={'center'} payload={[{value: 'Нет данных.'}]} />
-      </ComposedChart>
-    </ResponsiveContainer>
-  );
-}
+  return <div className={'map-not-found'}>Данные отсутствуют</div>;
+};

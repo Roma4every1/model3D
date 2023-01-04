@@ -139,7 +139,6 @@ interface SessionManager {
   startSession(): Promise<any | null | undefined>
   stopSession(): Promise<void>
   saveSession(): Promise<void>
-  saveSessionToFile(): void
   loadSessionByDefault(): Promise<void>
   loadSessionFromFile(file: any): Promise<void>
 

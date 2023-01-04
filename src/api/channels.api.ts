@@ -15,10 +15,10 @@ export class ChannelsAPI {
   }
 
   /** Запрос данных канала. */
-  public async getChannelData(channelName: ChannelName, paramValues: any[]): Promise<Res<any>> {
+  public async getChannelData(channelName: ChannelName, paramValues: any[]): Promise<Res<Channel>> {
     const sessionID = this.requester.sessionID;
     const body = JSON.stringify({sessionId: sessionID, channelName, paramValues});
-    return await this.request<any>({method: 'POST', path: 'getChannelDataByName', body});
+    return await this.request<Channel>({method: 'POST', path: 'getChannelDataByName', body});
   }
 
   /* --- --- */

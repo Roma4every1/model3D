@@ -12,11 +12,10 @@ export default function createSessionManager(store) {
   let timerId;
 
   const iAmAlive = async () => {
-    const { ok, data } = await API.session.iAmAlive();
-    if (!ok || data === 'false') {
-      clearInterval(timerId);
-      handleWindowWarning(i18n.t('messages.sessionLost'));
-    }
+    const response = await API.session.iAmAlive();
+    if (response.ok && response.data) return;
+    clearInterval(timerId);
+    handleWindowWarning(i18n.t('messages.sessionLost'));
   }
 
   const startSession = async (isDefault = false) => {
@@ -62,21 +61,28 @@ export default function createSessionManager(store) {
     const childArray = [];
     const childForms = state.childForms;
     const rootFormID = state.appState.rootFormID;
+    const multiMapsID = [];
 
     for (let form in childForms) {
       const formChildren = childForms[form];
       if (formChildren.id === rootFormID) {
-        const multiMapReplacer = (c) => c.type === 'multiMap' ? {...c, type: 'grid'} : c;
-        const correctedChildren = formChildren.children.map(multiMapReplacer);
+        const correctedChildren = [];
+        for (const child of formChildren.children) {
+          if (child.type === 'multiMap') {
+            multiMapsID.push(child.id);
+          } else {
+            correctedChildren.push(child);
+          }
+        }
         childArray.push({...formChildren, children: correctedChildren});
       } else {
-        childArray.push(formChildren);
+        if (!multiMapsID.includes(formChildren.id)) childArray.push(formChildren);
       }
     }
 
     const layoutArray = [];
     const layouts = state.formLayout;
-    for (const layout in layouts) layoutArray.push({id: layout, ...layouts[layout]});
+    for (const id in layouts) layoutArray.push({id, ...layouts[id]});
 
     const settingsArray = [];
     const settings = state.formSettings;
@@ -97,48 +103,51 @@ export default function createSessionManager(store) {
   }
 
   const saveSession = async () => {
-    const { ok, data } = await API.session.saveSession(getSavedSession());
-    if (!ok || data === 'false') handleWindowWarning(i18n.t('messages.errorOnSessionSave'));
+    const response = await API.session.saveSession(getSavedSession());
+    if (response.ok && response.data) {
+      const clearNotice = () => { store.dispatch(actions.closeWindowNotification()); };
+      store.dispatch(actions.setWindowNotification('Сессия сохранена'));
+      setTimeout(clearNotice, 3000);
+    } else {
+      handleWindowWarning(i18n.t('messages.errorOnSessionSave'));
+    }
   }
-
-  const saveSessionToFile = async () => {};
 
   const stopSession = async (clear = true) => {
     const { ok, data } = await API.session.stopSession(getSavedSession());
-    if (!ok || data === 'false') return handleWindowWarning(i18n.t('messages.errorOnSessionStop'));
+    if (!ok || !data) return handleWindowWarning(i18n.t('messages.errorOnSessionStop'));
     if (clear) store.dispatch(actions.clearSession());
   }
 
   const loadSessionFromFile = async (file) => {
     await stopSession();
-    let reader = new FileReader();
+    const reader = new FileReader();
 
-    reader.onload = async function () {
-      const data = await fetchData(
-        `startSessionFromFile`,
-        {method: 'POST', body: reader.result}
-      );
-      store.dispatch(actions.setSessionId(data));
-      store.dispatch(actions.setSessionID(data));
+    reader.onload = () => {
+      const requestData = {method: 'POST', body: reader.result};
+      fetchData(`startSessionFromFile`, requestData).then((data) => {
+        store.dispatch(actions.setSessionId(data));
+        store.dispatch(actions.setSessionID(data));
+      });
     }
     reader.readAsText(file);
   }
 
   const handleWindowError = (text, stackTrace, header, fileToSaveName) => {
     store.dispatch(actions.setWindowError(text, stackTrace, header, fileToSaveName));
-  }
+  };
 
   const handleWindowInfo = (text, stackTrace, header, fileToSaveName) => {
     store.dispatch(actions.setWindowInfo(text, stackTrace, header, fileToSaveName));
-  }
+  };
 
   const handleWindowWarning = (text, stackTrace, header, fileToSaveName) => {
     store.dispatch(actions.setWindowWarning(text, stackTrace, header, fileToSaveName));
-  }
+  };
 
   const handleNotification = (text) => {
     store.dispatch(actions.setWindowNotification(text));
-  }
+  };
 
   const getReportStatus = async (operationId) => {
     try {
@@ -208,7 +217,6 @@ export default function createSessionManager(store) {
     startSession,
     stopSession,
     saveSession,
-    saveSessionToFile,
     loadSessionByDefault,
     loadSessionFromFile,
     handleWindowError,

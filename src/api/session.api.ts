@@ -15,18 +15,18 @@ export class SessionAPI {
   }
 
   /** Закрыть сессию. */
-  public async stopSession(session: string): Promise<Res<'true' | 'false'>> {
-    return this.request({method: 'POST', path: 'stopSession', body: session});
+  public async stopSession(sessionJSON: string): Promise<Res<boolean>> {
+    return this.request({method: 'POST', path: 'stopSession', body: sessionJSON});
   }
 
   /** Сохранить состояние текущей сессии. */
-  public async saveSession(session: string): Promise<Res<'true' | 'false'>> {
-    return this.request({method: 'POST', path: 'saveSession', body: session});
+  public async saveSession(sessionJSON: string): Promise<Res<boolean>> {
+    return this.request({method: 'POST', path: 'saveSession', body: sessionJSON});
   }
 
   /** Продлить срок жизни сессии. */
-  public async iAmAlive(): Promise<Res<'true' | 'false'>> {
+  public async iAmAlive(): Promise<Res<boolean>> {
     const query = {sessionId: this.requester.sessionID};
-    return this.request({path: 'iAmAlive', query, mapper: 'text'});
+    return this.request({path: 'iAmAlive', query});
   }
 }

@@ -12,7 +12,6 @@ import { formParamsReducer, FormParamsAction, FormParamsActions } from "./reduce
 import { formSettingsReducer, FormSettingsAction, FormSettingsActions } from "./reducers/form-settings.reducer";
 import { formLayoutReducer, FormLayoutAction, FormLayoutActions } from "./reducers/form-layout.reducer";
 import { layoutReducer, LayoutAction, LayoutActions } from "./reducers/layout.reducer";
-import { chartsReducer, ChartsAction, ChartsActions } from "./reducers/charts.reducer";
 import { mapsReducer, MapsAction, MapsActions } from "./reducers/maps.reducer";
 import { presentationsReducer, PresentationsAction, PresentationsActions } from "./reducers/presentations.reducer";
 import { programsReducer, ProgramsAction, ProgramsActions } from "./reducers/programs.reducer";
@@ -25,13 +24,13 @@ import { windowDataReducer, WindowDataAction, WindowDataActions } from "./reduce
 /** Well Manager Action Type. */
 export type WActionType = AppStateActions | CanRunReportActions | ChannelsDataActions |
   ChannelsLoadingActions | ChildFormsActions | FormRefsActions | FormParamsActions | FormSettingsActions |
-  FormLayoutActions | LayoutActions | MapsActions | ChartsActions | PresentationsActions | ProgramsActions |
+  FormLayoutActions | LayoutActions | MapsActions | PresentationsActions | ProgramsActions |
   ReportsActions | SessionIDActions | SessionManagerActions | WindowDataActions | CaratsActions;
 
 /** Well Manager Action. */
 export type WAction = AppStateAction | CanRunReportAction | ChannelsDataAction | ChannelsLoadingAction |
   ChildFormsAction | FormRefsAction | FormParamsAction | FormSettingsAction | FormLayoutAction | LayoutAction |
-  MapsAction | ChartsAction | PresentationsAction | ProgramsAction | ReportsAction |
+  MapsAction | PresentationsAction | ProgramsAction | ReportsAction |
   SessionIDAction | SessionManagerAction | WindowDataAction | CaratsAction;
 
 /** Well Manager Dispatch. */
@@ -54,7 +53,6 @@ export const rootReducer: Reducer<WState, WAction> = combineReducers({
   formSettings: formSettingsReducer,
   formLayout: formLayoutReducer,
   layout: layoutReducer,
-  charts: chartsReducer,
   maps: mapsReducer,
   presentations: presentationsReducer,
   programs: programsReducer,

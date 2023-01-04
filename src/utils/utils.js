@@ -54,6 +54,7 @@ export const getParentFormId = (formId) => {
  * @return {Date}
  * */
 export const toDate = (dateStrWMW) => {
+  if (!dateStrWMW.startsWith('/')) return new Date(dateStrWMW);
   const startIndex = dateStrWMW.indexOf('(');
   const finishIndex = dateStrWMW.lastIndexOf('+');
   const dateValue = dateStrWMW.slice(startIndex + 1, finishIndex);

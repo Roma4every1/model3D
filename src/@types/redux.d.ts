@@ -11,7 +11,6 @@ interface WState {
   formSettings: FormsSettings,
   formLayout: FormsLayout,
   layout: CommonLayout,
-  charts: ChartsState,
   maps: MapsState,
   presentations: PresentationsState,
   programs: ProgramsState,
@@ -84,8 +83,58 @@ interface CaratState {
 /* --- state.channelsData --- */
 
 /** Данные каналов. */
-type ChannelsData = {[key: ChannelName]: any};
+type ChannelsData = Record<ChannelName, Channel>;
 
+interface Channel {
+  id: ChannelName,
+  displayName: string,
+  currentRowObjectName: string | null,
+  data: ChannelData | null,
+  idIndex: number,
+  nameIndex: number,
+  parentIndex: number,
+  properties: ChannelProperty[],
+  tableId: string,
+}
+
+interface ChannelData {
+  Rows: ChannelRow[],
+  Columns: ChannelColumn[],
+  DataPath: boolean,
+  Editable: boolean,
+  ModifiedTables: any,
+  PrimaryColumn: any,
+  TotalsRows: any,
+}
+
+interface ChannelRow {
+  ID: any,
+  Cells: any[],
+}
+
+interface ChannelColumn {
+  Name: string,
+  NetType: string,
+  AllowDBNull: boolean
+}
+
+interface ChannelProperty {
+  name: string,
+  fromColumn: string,
+  displayName: string,
+  treePath: any[],
+  file: any,
+  lookupChannelName: string | null,
+  secondLevelChannelName: string | null,
+  lookupData: LookupDataItem[],
+}
+
+interface LookupDataItem {
+  id: any,
+  value: any,
+  text: any,
+  parent?: any,
+}
 
 /* --- state.channelsLoading --- */
 
@@ -144,7 +193,7 @@ type FormRefs = FormDict;
 type FormsSettings = FormDict<FormSettings>;
 
 /** Настройки формы. */
-type FormSettings = GridFormSettings | DataSetFormSettings;
+type FormSettings = GridFormSettings | DataSetFormSettings | ChartSettings;
 
 /** Настройки формы грида. */
 interface GridFormSettings {
@@ -156,6 +205,70 @@ interface DataSetFormSettings {
   columns: any,
   attachedProperties: any,
 }
+/** Настройки графика. */
+interface ChartSettings {
+  tooltip: boolean,
+  dateStep: ChartDateStep,
+  seriesSettings: ChartSeriesSettings,
+}
+
+type ChartDateStep = 'month' | 'year';
+type ChartSeriesSettings = Record<ChannelName, ChannelSeriesSettings>;
+
+/** Настройки для отображения каждого канала. */
+interface ChannelSeriesSettings {
+  seriesSettings: SeriesSettings,
+  axesSettings: AxesSettings,
+  dateStep: string,
+  gridStep: string,
+  labelInterval: number,
+  tickOrigin: string,
+  xAxisFieldName: string,
+  xAxisType: string,
+}
+
+type SeriesSettings = Record<string, SeriesSettingsItem>;
+type AxesSettings = Record<string, AxisSettings>;
+
+interface SeriesSettingsItem {
+  channelPropertyName: string,
+  typeCode: ChartTypeCode,
+  color: string,
+  showLabels: boolean,
+  showLine: boolean,
+  showPoint: boolean,
+  pointFigureIndex: string,
+  lineStyleIndex: string,
+  sizeMultiplier: number,
+  zIndex: number,
+}
+
+interface AxisSettings {
+  location: string,
+  color: string,
+  min: number | null,
+  max: number | null,
+  tickCount: number,
+  inverse: boolean,
+  half: boolean,
+  displayName: string,
+}
+
+/** ## Типы отображения значений на графике.
+ * + `gist` — гистограмма
+ * + `gistStack` — гистограмма накопл.
+ * + `area` — область
+ * + `areaSpline` — сглаженная область
+ * + `areaDiscr` — дискретная область
+ * + `graph` — линия
+ * + `graphSpline` — сглаженная линия
+ * + `graphDiscr` — дискретная линия
+ * + `point` — набор точек
+ * + `vertical` — вертикальные линии
+ * */
+type ChartTypeCode = 'gist' | 'gistStack' | 'area' | 'areaSpline' | 'areaDiscr' |
+  'graph' | 'graphSpline' | 'graphDiscr' | 'point' | 'vertical';
+
 
 /* --- state.formLayout --- */
 
@@ -197,21 +310,6 @@ interface LeftPanelLayout {
   formParamsHeight: number,
   /** Высотка вкладки _"Презентации"_ (дерево). */
   treeHeight: number,
-}
-
-
-/* --- state.charts --- */
-
-/** Хранилище состояний графика. */
-type ChartsState = Record<FormID, ChartState>;
-
-/** Состояние графика.
- * + `tooltip` — показывать ли подсказку
- * + `seriesSettings` — внешний вид
- * */
-interface ChartState {
-  tooltip: boolean,
-  seriesSettings: any,
 }
 
 

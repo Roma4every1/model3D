@@ -156,7 +156,6 @@ export const mapsReducer = (state: MapsState = initMaps, action: MapsAction): Ma
     /* --- multi --- */
 
     case MapsActions.ADD_MULTI_MAP: {
-      if (state.multi[action.formID]) return state;
       state.multi[action.formID] = {sync: true, children: action.payload};
       return {...state};
     }

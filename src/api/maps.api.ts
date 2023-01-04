@@ -57,7 +57,6 @@ export class MapsAPI {
     const data = await this.getMapContainer(mapData.namedpoints, formID, owner);
     if (typeof data === 'string') {
       if (needReload) {
-        // mapData.mapErrors.push('try to reload named points from ' + mapData.namedpoints);
         setTimeout(() => {
           this.setNamedPoints(mapData, formID, owner, false);
         }, 500);
@@ -80,7 +79,6 @@ export class MapsAPI {
       const data = await this.getMapContainer(layer.container, formID, owner, indexName);
       if (typeof data === 'string') {
         if (needReload) {
-          // mapData.mapErrors.push(`try to reload container ${layer.container}`);
           setTimeout(() => {
             this.setLayerElements(mapData, layer, indexName, formID, owner, false);
           }, 500);

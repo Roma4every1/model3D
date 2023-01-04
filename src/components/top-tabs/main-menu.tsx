@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
@@ -9,7 +9,6 @@ import { MenuSection, ButtonIcon, BigButtonToggle } from "../common/menu-ui";
 import { actions, selectors } from "../../store";
 import { backToSystemsIcon, aboutProgramIcon, saveSessionIcon, defaultSessionIcon } from "../../dicts/images";
 import { globalParametersIcon, presentationParametersIcon, presentationsListIcon } from "../../dicts/images";
-import { callBackWithNotices } from "../../utils/notifications";
 import PACKAGE from "../../../package.json";
 import "../../styles/menu.scss";
 
@@ -33,37 +32,29 @@ export function MainMenu() {
   const [showForm, setShowForm] = useState(leftLayout.formParamsHeight > 0);
   const [showTree, setShowTree] = useState(leftLayout.treeHeight > 0);
 
-  const saveSession = useCallback(() => {
-    callBackWithNotices(sessionManager.saveSession(), dispatch, 'Сессия сохранена')
-  }, [sessionManager, dispatch]);
-
-  const loadSessionByDefault = useCallback(() => {
-    sessionManager.loadSessionByDefault().then();
-  }, [sessionManager]);
-
   const togglePanelGlobal = () => {
     dispatch(actions.setLeftTabHeight('globalParamsHeight', showGlobal ? -1 : 1));
     setShowGlobal(!showGlobal);
   };
-
   const togglePanelForm = () => {
     dispatch(actions.setLeftTabHeight('formParamsHeight', showForm ? -1 : 1));
     setShowForm(!showForm);
   };
-
   const togglePanelList = () => {
     dispatch(actions.setLeftTabHeight('treeHeight', showTree ? -1 : 1));
     setShowTree(!showTree);
   };
 
-  const closeAboutWindow = useCallback(() => {
+  const closeAboutWindow = () => {
     dispatch(actions.setOpenedWindow('about', false, null));
-  }, [dispatch]);
-
-  const showAboutWindow = useCallback(() => {
+  };
+  const showAboutWindow = () => {
     const window = <AboutProgramWindow config={config} onClose={closeAboutWindow}/>;
     dispatch(actions.setOpenedWindow('about', true, window));
-  }, [config, closeAboutWindow, dispatch]);
+  };
+
+  const saveSession = () => { sessionManager.saveSession().then(); };
+  const loadSessionByDefault = () => { sessionManager.loadSessionByDefault().then(); };
 
   return (
     <div className={'menu'}>

@@ -66,8 +66,6 @@ export default function Map({formData: {id: formID}, data}) {
 
   useEffect(() => {
     if (!mapState || !isPartOfDynamicMultiMap) return;
-    setIsMapExist(true);
-
     if (!mapState.mapID && data.layers) {
       dispatch(actions.setMapField(formID, 'mapID', data));
       dispatch(actions.loadMapSuccess(formID, data));

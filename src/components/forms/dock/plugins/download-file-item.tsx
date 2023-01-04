@@ -1,4 +1,4 @@
-import { CSSProperties } from "react";
+import { CSSProperties, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { saveAs } from "@progress/kendo-file-saver";
 import { webFetch } from "../../../../api/initialization";
@@ -35,7 +35,11 @@ export default function DownloadFileItem({report}: {report: Report}) {
     : report.DisplayType === 4 ? importFileIcon : defaultFileIcon;
 
   const download = () => { downloadFile(report.Path, report.SessionId); };
-  const date = toDate(report.Dt).toLocaleString(undefined, dateStyle);
+
+  const date = useMemo(() => {
+    const dt = report.Dt.startsWith('/') ? toDate(report.Dt) : new Date(report.Dt);
+    return dt.toLocaleString(undefined, dateStyle);
+  }, [report.Dt]);
 
   return (
     <section className={'report-item'}>

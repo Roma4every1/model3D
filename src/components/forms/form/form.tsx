@@ -83,13 +83,21 @@ export default function Form({formData, data}) {
   );
 }
 
+const needSettingsFormTypes = ['dataSet', 'grid', 'chart'];
+
 async function getFormState(formID: FormID, formData: FormDataWMR, sessionManager: SessionManager): Promise<FormState> {
   const params = await sessionManager.paramsManager.loadFormParameters(formID, false);
   const channels = await sessionManager.channelsManager.loadFormChannelsList(formID);
 
-  const force = formData.type !== 'dataSet' && formData.type !== 'grid';
-  const settings = await sessionManager.paramsManager.loadFormSettings(formID, force);
-  if (settings['multiMapChannel']) formData.type = 'multiMap';
+  const force = !needSettingsFormTypes.includes(formData.type);
+  const settings = await sessionManager.paramsManager.loadFormSettings(formID, force) as any;
+
+  if (settings.multiMapChannel) {
+    formData.type = 'multiMap';
+  } else if (settings.seriesSettings) {
+    settings.tooltip = true;
+    settings.dateStep = settings.seriesSettings[channels[0]]?.dateStep === 'Month' ? 'month' : 'year';
+  }
 
   return {formId: formID, loaded: true, activeChannels: channels, activeParams: params, settings};
 }

@@ -1,5 +1,5 @@
 import i18n from "../locales/i18n";
-import { findIndex, uniq } from "lodash";
+import { uniq } from "lodash";
 import { equalParams } from "../utils/utils";
 import { actions } from "../store";
 import { API } from "../api/api";
@@ -30,10 +30,14 @@ export default function createChannelsManager(store) {
   }
 
   const updateTables = async (modifiedTables, baseChannelName) => {
-    for (let channelName in allChannelsForms) {
-      for (let formId in allChannelsForms[channelName]) {
-        if (allChannelsForms[channelName][formId] && store.getState().channelsData[channelName] && modifiedTables?.includes(store.getState().channelsData[channelName].tableId)) {
-          await loadAllChannelData(channelName, formId, baseChannelName !== channelName);
+    if (!modifiedTables) return;
+    const channelsData = store.getState().channelsData;
+
+    for (const channelName in allChannelsForms) {
+      for (const formID in allChannelsForms[channelName]) {
+        const tableID = channelsData[channelName]?.tableId;
+        if (allChannelsForms[channelName][formID] && tableID && modifiedTables.includes(tableID)) {
+          await loadAllChannelData(channelName, formID, baseChannelName !== channelName);
         }
       }
     }
@@ -50,84 +54,85 @@ export default function createChannelsManager(store) {
       channelsParams[channelName] = channelParamsList ?? [];
     }
 
-    const neededParamValues = store.getState().sessionManager.paramsManager.getParameterValues(channelsParams[channelName], formId, false, channelName);
+    const sessionManager = store.getState().sessionManager;
+    const neededParamValues = sessionManager.paramsManager.getParameterValues(channelsParams[channelName], formId, false, channelName);
 
     let isEqualParams = equalParams(channelsParamsValues[formId + '_' + channelName], neededParamValues.map(np => np.value));
     let changed = !channelsParamsValues[formId + '_' + channelName] || !isEqualParams || force;
+    if (!changed) return false;
 
-    if (changed) {
-      store.dispatch(actions.setChannelsLoading(channelName, true));
-      channelsParamsValues[formId + '_' + channelName] = neededParamValues.map(np => np.value);
+    store.dispatch(actions.setChannelsLoading(channelName, true));
+    channelsParamsValues[formId + '_' + channelName] = neededParamValues.map(np => np.value);
 
-      const { data: channelData } = await API.channels.getChannelData(channelName, neededParamValues);
-      if (channelData && channelData.data && channelData.data['ModifiedTables'] && channelData.data['ModifiedTables']['ModifiedTables']) {
-        await updateTables(channelData.data['ModifiedTables']['ModifiedTables'], channelName);
+    const { ok, data: channelData } = await API.channels.getChannelData(channelName, neededParamValues);
+    if (!ok) sessionManager.handleWindowWarning(channelData);
+
+    const modifiedTables = channelData?.data?.ModifiedTables.ModifiedTables;
+    if (modifiedTables?.length) await updateTables(modifiedTables, channelName);
+
+    const columns = channelData?.data?.Columns;
+    const properties = channelData?.properties;
+
+    let codeColumnName = 'LOOKUPCODE';
+    let valueColumnName = 'LOOKUPVALUE';
+    let parentColumnName = 'LOOKUPPARENTCODE';
+
+    if (properties) {
+      let codePropertyColumnName, valuePropertyColumnName, parentPropertyColumnName;
+      for (const property of properties) {
+        const upper = property.name.toUpperCase();
+        if (upper === codeColumnName) codePropertyColumnName = property;
+        else if (upper === valueColumnName) valuePropertyColumnName = property;
+        else if (upper === parentColumnName) parentPropertyColumnName = property;
       }
 
-      let idIndex = 0, nameIndex = -1, parentIndex = -1;
-      let codeColumnName = 'LOOKUPCODE';
-      let valueColumnName = 'LOOKUPVALUE';
-      let parentColumnName = 'LOOKUPPARENTCODE';
-
-      if (channelData?.properties) {
-        let codePropertyColumnName = channelData.properties.find(p => p.name.toUpperCase() === codeColumnName);
-        let valuePropertyColumnName = channelData.properties.find(p => p.name.toUpperCase() === valueColumnName);
-        let parentPropertyColumnName = channelData.properties.find(p => p.name.toUpperCase() === parentColumnName);
-
-        if (codePropertyColumnName) {
-          codeColumnName = codePropertyColumnName.fromColumn.toUpperCase();
-        }
-        if (valuePropertyColumnName) {
-          valueColumnName = valuePropertyColumnName.fromColumn.toUpperCase();
-        }
-        if (parentPropertyColumnName) {
-          parentColumnName = parentPropertyColumnName.fromColumn.toUpperCase();
-        }
+      if (codePropertyColumnName) {
+        codeColumnName = codePropertyColumnName.fromColumn.toUpperCase();
       }
-
-      if (channelData?.data?.Columns) {
-        idIndex = findIndex(channelData.data.Columns, (o) => o.Name.toUpperCase() === codeColumnName);
-        nameIndex = findIndex(channelData.data.Columns, (o) => o.Name.toUpperCase() === valueColumnName);
-        parentIndex = findIndex(channelData.data.Columns, (o) => o.Name.toUpperCase() === parentColumnName);
-        if (nameIndex < 0) {
-          nameIndex = idIndex;
-        }
+      if (valuePropertyColumnName) {
+        valueColumnName = valuePropertyColumnName.fromColumn.toUpperCase();
       }
-
-      if (channelData) {
-        channelData.idIndex = idIndex;
-        channelData.nameIndex = nameIndex;
-        channelData.parentIndex = parentIndex;
+      if (parentPropertyColumnName) {
+        parentColumnName = parentPropertyColumnName.fromColumn.toUpperCase();
       }
-
-      if (channelData && channelData.properties) {
-        await Promise.all(
-          channelData.properties.map(async (property) => {
-            if (property.lookupChannelName) {
-              const lookupChanged = await loadAllChannelData(property.lookupChannelName, formId, false);
-              if (lookupChanged) changed = true;
-
-              const lookupChannelData = store.getState().channelsData[property.lookupChannelName];
-              if (lookupChannelData && lookupChannelData.data) {
-                property.lookupData = lookupChannelData.data.Rows.map((row) => {
-                  const temp = {
-                    id: row.Cells[lookupChannelData.idIndex],
-                    value: row.Cells[lookupChannelData.nameIndex] ?? '',
-                    text: row.Cells[lookupChannelData.nameIndex] ?? '',
-                  };
-                  if (lookupChannelData.parentIndex >= 0) {
-                    temp.parent = row.Cells[lookupChannelData.parentIndex] ?? '';
-                  }
-                  return temp;
-                });
-              }
-            }
-          }));
-        store.dispatch(actions.setChannelsData(channelName, channelData));
-      }
-      store.dispatch(actions.setChannelsLoading(channelName, false));
     }
-    return changed;
+
+    if (columns) {
+      let idIndex = columns.findIndex(c => c.Name.toUpperCase() === codeColumnName);
+      let nameIndex = columns.findIndex(c => c.Name.toUpperCase() === valueColumnName);
+      if (nameIndex < 0) nameIndex = idIndex;
+
+      channelData.idIndex = idIndex;
+      channelData.nameIndex = nameIndex;
+      channelData.parentIndex = columns.findIndex(c => c.Name.toUpperCase() === parentColumnName);
+    }
+
+    if (properties) {
+      await Promise.all(properties.map(async (property) => {
+        if (property.lookupChannelName) {
+          await loadAllChannelData(property.lookupChannelName, formId, false);
+
+          const lookupChannelData = store.getState().channelsData[property.lookupChannelName];
+          if (lookupChannelData && lookupChannelData.data) {
+            property.lookupData = lookupChannelData.data.Rows.map((row) => {
+              const temp = {
+                id: row.Cells[lookupChannelData.idIndex],
+                value: row.Cells[lookupChannelData.nameIndex] ?? '',
+                text: row.Cells[lookupChannelData.nameIndex] ?? '',
+              };
+              if (lookupChannelData.parentIndex >= 0) {
+                temp.parent = row.Cells[lookupChannelData.parentIndex] ?? '';
+              }
+              return temp;
+            });
+          }
+        }
+      }));
+      store.dispatch(actions.setChannelsData(channelName, channelData));
+    }
+
+    store.dispatch(actions.setChannelsLoading(channelName, false));
+    return true;
   }
 
   const updateTablesByResult = (tableId, operationResult) => {
@@ -156,28 +161,33 @@ export default function createChannelsManager(store) {
   }
 
   const getNewRow = async (tableID) => {
-    const { data } = await API.channels.getNewRow(tableID);
+    const { ok, data } = await API.channels.getNewRow(tableID);
+    if (!ok) store.getState().sessionManager.handleWindowWarning(data);
     return data;
   }
 
   const insertRow = async (tableID, dataJSON) => {
-    const { data } = await API.channels.insertRow(tableID, dataJSON);
-    updateTablesByResult(tableID, data);
+    const { ok, data } = await API.channels.insertRow(tableID, dataJSON);
+    if (ok) return updateTablesByResult(tableID, data);
+    store.getState().sessionManager.handleWindowWarning(data);
   }
 
   const updateRow = async (tableID, editID, newRowData) => {
-    const { data } = await API.channels.updateRow(tableID, editID, newRowData);
-    updateTablesByResult(tableID, data);
+    const { ok, data } = await API.channels.updateRow(tableID, editID, newRowData);
+    if (ok) return updateTablesByResult(tableID, data);
+    store.getState().sessionManager.handleWindowWarning(data);
   }
 
   const deleteRows = async (tableID, elementsToRemove, removeAll) => {
-    const { data } = await API.channels.removeRows(tableID, elementsToRemove, String(!!removeAll));
-    updateTablesByResult(tableID, data);
+    const { ok, data } = await API.channels.removeRows(tableID, elementsToRemove, String(!!removeAll));
+    if (ok) return updateTablesByResult(tableID, data);
+    store.getState().sessionManager.handleWindowWarning(data);
   }
 
   const getStatistics = async (tableID, columnName) => {
-    const { data } = await API.channels.getStatistics(tableID, columnName);
-    return data;
+    const { ok, data } = await API.channels.getStatistics(tableID, columnName);
+    if (ok) return data;
+    store.getState().sessionManager.handleWindowWarning(data);
   }
 
   // автообновление данных каналов при обновлении параметров

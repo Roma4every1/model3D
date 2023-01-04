@@ -34,8 +34,6 @@ export const selectors = {
 
   /** Хранилище состояния каротажной формы. */
   caratState: caratStateSelector,
-  /** Хранилище состояния графика. */
-  chartState: chartStateSelector,
   /** Хранилище состояния карты. */
   mapState: mapStateSelector,
 
@@ -90,9 +88,6 @@ function channelSelector(this: ChannelName, state: WState) {
 
 function caratStateSelector(this: FormID, state: WState): any {
   return state.carats[this];
-}
-function chartStateSelector(this: FormID, state: WState): ChartState {
-  return state.charts[this];
 }
 
 function multiMapStateSelector(this: FormID, state: WState): MultiMapState {

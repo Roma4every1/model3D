@@ -9,7 +9,6 @@ import { FormParamsAction, FormParamsActions } from "./reducers/form-params.redu
 import { FormSettingsAction, FormSettingsActions } from "./reducers/form-settings.reducer";
 import { FormLayoutAction, FormLayoutActions } from "./reducers/form-layout.reducer";
 import { LayoutAction, LayoutActions } from "./reducers/layout.reducer";
-import { ChartsAction, ChartsActions } from "./reducers/charts.reducer";
 import { MapsAction, MapsActions } from "./reducers/maps.reducer";
 import { PresentationsAction, PresentationsActions } from "./reducers/presentations.reducer";
 import { ProgramsAction, ProgramsActions } from "./reducers/programs.reducer";
@@ -138,8 +137,11 @@ export class WellManagerActionsCreator {
 
   /* --- Form Settings Actions --- */
 
-  public setFormSettings(formId, value): FormSettingsAction {
-    return {type: FormSettingsActions.SET, formId, value};
+  public setFormSettings(formID: FormID, value: FormSettings): FormSettingsAction {
+    return {type: FormSettingsActions.SET, formID, value};
+  }
+  public setSettingsField(formID: FormID, field: string, value: any): FormSettingsAction {
+    return {type: FormSettingsActions.SET_FIELD, formID, field, value};
   }
 
   /* --- Form Layout Actions --- */
@@ -153,21 +155,6 @@ export class WellManagerActionsCreator {
   /** Установить принудительную высоту влкадки в левой панели. */
   public setLeftTabHeight(tab: keyof LeftPanelLayout, height: number): LayoutAction {
     return {type: LayoutActions.SET_LEFT_TAB_HEIGHT, payload: {tab, height}};
-  }
-
-  /* --- Charts Actions --- */
-
-  /** Добавляет в хранилище состояний графиков новый график. */
-  public createChartState(formID: FormID): ChartsAction {
-    return {type: ChartsActions.ADD, formID};
-  }
-  /** Устанавливает видимость подсказки для графика. */
-  public setChartTooltipVisible(formID: FormID, visible: boolean): ChartsAction {
-    return {type: ChartsActions.SET_TOOLTIP_VISIBLE, formID, payload: visible};
-  }
-  /** Устанавливает настройки SeriesSettings для графика. */
-  public setSeriesSettings(formID, seriesSettings): ChartsAction {
-    return {type: ChartsActions.SET_SERIES_SETTINGS, formID, payload: seriesSettings};
   }
 
   /* --- Maps Actions --- */

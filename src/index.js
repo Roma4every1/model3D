@@ -7,7 +7,6 @@ import { createStore , applyMiddleware } from "redux";
 import { rootReducer } from "./store";
 
 import createSessionManager from "./data-managers/session-manager";
-import registerServiceWorker from "./service-worker";
 import App from "./components/app";
 
 import "./locales/i18n";
@@ -27,8 +26,6 @@ import timeZoneNames from "cldr-dates-full/main/ru/timeZoneNames.json";
 
 loadMessages(ruMessages, 'ru-RU');
 load(likelySubtags, currencyData, weekData, numbers, currencies, caGregorian, dateFields, timeZoneNames);
-
-try { registerServiceWorker(); } catch {}
 
 const store = createStore(rootReducer, applyMiddleware(thunk));
 createSessionManager(store);
