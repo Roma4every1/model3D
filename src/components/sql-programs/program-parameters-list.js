@@ -6,6 +6,7 @@ import { Button } from "@progress/kendo-react-buttons";
 import FormParametersList from "../common/form-parameters-list";
 import ProgramParametersButton from "./program-parameters-button";
 import { actions, selectors } from "../../store";
+import { API } from "../../api/api";
 
 
 export default function ProgramParametersList(props) {
@@ -27,8 +28,7 @@ export default function ProgramParametersList(props) {
     if (data?.OperationId) {
       const getResult = async () => {
         sessionManager.watchReport(data.OperationId);
-        const path = `getOperationResult?sessionId=${sessionId}&operationId=${data.OperationId}&waitResult=true`;
-        const reportResult = await sessionManager.fetchData(path);
+        const { data: reportResult } = API.programs.getOperationResult(data.OperationId, 'true');
 
         if (reportResult?.report?.ModifiedTables?.ModifiedTables) {
           sessionManager.channelsManager.updateTables(reportResult.report.ModifiedTables.ModifiedTables);
@@ -55,16 +55,13 @@ export default function ProgramParametersList(props) {
         dispatch(actions.closeWindowNotification());
       }, 3000);
     }
-  }, [programDisplayName, presentationId, sessionId, sessionManager, handleProcessing, t, dispatch]);
+  }, [programDisplayName, presentationId, sessionManager, handleProcessing, t, dispatch]);
 
   const runReport = useCallback(async () => {
     handleProcessing(true);
     sessionManager.handleNotification(t('report.inProgress', {programName: programDisplayName}))
     const jsonToSend = {sessionId, reportId: formId, presentationId, paramValues: formParams};
-    const data = await sessionManager.fetchData(
-      'runReport',
-      {method: 'POST', body: JSON.stringify(jsonToSend)}
-    );
+    const { data } = await API.programs.runReport(JSON.stringify(jsonToSend));
 
     if (data?.ModifiedTables?.ModifiedTables) {
       sessionManager.channelsManager.updateTables(data.ModifiedTables.ModifiedTables);

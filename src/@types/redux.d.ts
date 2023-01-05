@@ -438,6 +438,12 @@ interface Report {
   WrongResult: boolean,
 }
 
+interface OperationResult {
+  isReady: boolean,
+  report: Report,
+  reportLog: any,
+}
+
 /* --- state.sessionId --- */
 
 /** Идентификатор сессии. */

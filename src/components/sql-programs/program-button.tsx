@@ -4,6 +4,7 @@ import { Loader } from "@progress/kendo-react-indicators";
 import ProgramParametersList from "./program-parameters-list";
 import { runProgramIcon } from "../../dicts/images";
 import { selectors } from "../../store";
+import { API } from "../../api/api";
 
 
 interface ProgramButtonProps {
@@ -13,7 +14,6 @@ interface ProgramButtonProps {
 
 
 export default function ProgramButton({formID, program}: ProgramButtonProps) {
-  const sessionID = useSelector(selectors.sessionID);
   const sessionManager = useSelector(selectors.sessionManager);
 
   const programID = program.id;
@@ -22,11 +22,11 @@ export default function ProgramButton({formID, program}: ProgramButtonProps) {
 
   const fillReportParameters = useCallback(async () => {
     await sessionManager.paramsManager.loadFormParameters(programID, true);
-    const path = `getAllNeedParametersForForm?sessionId=${sessionID}&formId=${programID}`;
-    const data = await sessionManager.fetchData(path);
-    await sessionManager.paramsManager.getParameterValues(data, programID, true, undefined);
+    const res = await API.forms.getAllNeedParametersForForm(programID);
+    if (!res.ok) return sessionManager.handleWindowWarning(res.data);
+    await sessionManager.paramsManager.getParameterValues(res.data, programID, true);
     setIsIsOpen(true);
-  }, [programID, sessionManager, sessionID]);
+  }, [programID, sessionManager]);
 
   return (
     <>

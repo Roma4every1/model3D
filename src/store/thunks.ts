@@ -51,11 +51,10 @@ export const fetchFormPrograms = (formID: FormID, sessionManager: SessionManager
   return async (dispatch: WDispatch) => {
     try {
       dispatch(actions.fetchProgramsStart(formID));
+      const res = await API.programs.getProgramsList(formID);
+      if (res.ok === false) { dispatch(actions.fetchProgramsEndError(formID, res.data)); return; }
 
-      const path = `programsList?sessionId=${sessionID}&formId=${formID}`;
-      const data: ProgramListData = await sessionManager.fetchData(path);
-
-      for (const program of data) {
+      for (const program of res.data) {
         if (program.needCheckVisibility === false) {
           program.visible = true; continue;
         }
@@ -63,17 +62,16 @@ export const fetchFormPrograms = (formID: FormID, sessionManager: SessionManager
         const params = program.paramsForCheckVisibility;
         try {
           const paramValues = sessionManager.paramsManager
-            .getParameterValues(params, formID, false, undefined);
+            .getParameterValues(params, formID, false);
 
           const body = {sessionId: sessionID, reportId: program.id, paramValues};
-          const requestInit: RequestInit = {method: 'POST', body: JSON.stringify(body)};
-          const visible = await sessionManager.fetchData('programVisibility', requestInit);
+          const { data: visible } = await API.programs.getProgramVisibility(JSON.stringify(body));
           program.visible = visible === 'true';
         } catch {
           program.visible = false;
         }
       }
-      dispatch(actions.fetchProgramsEndSuccess(formID, data));
+      dispatch(actions.fetchProgramsEndSuccess(formID, res.data));
     } catch (error) {
       console.warn(error);
       dispatch(actions.fetchProgramsEndError(formID, error.message));

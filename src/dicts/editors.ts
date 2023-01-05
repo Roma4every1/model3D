@@ -13,7 +13,7 @@ import TableRowComboEditor from "../components/editors/table-row-combo.editor";
 
 
 /** Словарь для выбора редактора по типу; используется в компоненте `BaseEditor`. */
-export const editorsDict: {[key: string]: FunctionComponent} = {
+export const editorsDict: Record<string, FunctionComponent<any>> = {
   boolTextEditor: BoolTextEditor,
   dateIntervalTextEditor: DateIntervalTextEditor,
   dateKMNEditor: DateTextEditor,
@@ -27,4 +27,4 @@ export const editorsDict: {[key: string]: FunctionComponent} = {
   tableRowComboEditor: TableRowComboEditor,
   tableRowComboListEditor: TableRowComboEditor,
   tableRowTreeMultiEditor: TableRowComboEditor,
-}
+};

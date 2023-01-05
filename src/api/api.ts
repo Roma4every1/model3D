@@ -2,6 +2,7 @@ import { MapsAPI } from "./maps.api";
 import { FormsAPI } from "./forms.api";
 import { SessionAPI } from "./session.api";
 import { ChannelsAPI } from "./channels.api";
+import { ProgramsAPI } from "./programs.api";
 
 
 interface IRequester {
@@ -12,6 +13,7 @@ interface IWellManagerReactAPI {
   readonly forms: FormsAPI;
   readonly session: SessionAPI;
   readonly channels: ChannelsAPI;
+  readonly programs: ProgramsAPI;
 
   setBase(base: string): void
   setRoot(root: string): void
@@ -66,6 +68,7 @@ class WellManagerReactAPI implements IWellManagerReactAPI {
   public readonly forms: FormsAPI;
   public readonly session: SessionAPI;
   public readonly channels: ChannelsAPI;
+  public readonly programs: ProgramsAPI;
 
   constructor() {
     this.requester = new Requester();
@@ -73,6 +76,7 @@ class WellManagerReactAPI implements IWellManagerReactAPI {
     this.forms = new FormsAPI(this.requester);
     this.session = new SessionAPI(this.requester);
     this.channels = new ChannelsAPI(this.requester);
+    this.programs = new ProgramsAPI(this.requester);
   }
 
   public setBase(base: string) {

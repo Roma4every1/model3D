@@ -1,6 +1,7 @@
 import { find } from "lodash";
 import { getParentFormId, tableRowToString, stringToTableCell } from "../utils/utils";
 import { actions } from "../store";
+import { API } from "../api/api";
 
 
 export default function createParamsManager(store) {
@@ -126,8 +127,8 @@ export default function createParamsManager(store) {
 
   const loadFormParameters = async (formID, force) => {
     if (force || !store.getState().formParams[formID]) {
-      const sessionId = store.getState().sessionId;
-      const data = await store.getState().sessionManager.fetchData(`getFormParameters?sessionId=${sessionId}&formId=${formID}`);
+      const { ok, data } = await API.forms.getFormParameters(formID);
+      if (!ok) return [];
 
       data.forEach((param) => {param.formId = formID});
       store.dispatch(actions.setParams(formID, data));
@@ -146,30 +147,22 @@ export default function createParamsManager(store) {
     if (force) {
       data = {};
     } else {
-      const sessionID = store.getState().sessionId;
-      const path = `getFormSettings?sessionId=${sessionID}&formId=${formID}`;
-      data = await store.getState().sessionManager.fetchData(path);
+      const res = await API.forms.getFormSettings(formID);
+      data = res.ok ? res.data : {};
     }
     store.dispatch(actions.setFormSettings(formID, data));
     return data;
   }
 
   const getCanRunReport = async (formID) => {
-    const canRunReport = store.getState().canRunReport;
+    const state = store.getState();
     reportFormID = formID;
     if (formID != null) {
-      const paramValues = store.getState().formParams[formID];
-      const sessionId = store.getState().sessionId;
-      const jsonToSend = {sessionId: sessionId, reportId: formID, paramValues: paramValues};
-      const jsonToSendString = JSON.stringify(jsonToSend);
-      const data = await store.getState().sessionManager.fetchData(`canRunReport`, {
-        method: 'POST',
-        body: jsonToSendString
-      });
-      if (canRunReport !== data) {
-        store.dispatch(actions.setCanRunReport(data));
-      }
-    } else if (canRunReport) {
+      const paramValues = state.formParams[formID];
+      const jsonToSend = {sessionId: state.sessionId, reportId: formID, paramValues: paramValues};
+      const { data } = await API.programs.getCanRunReport(JSON.stringify(jsonToSend));
+      if (state.canRunReport !== data) store.dispatch(actions.setCanRunReport(data));
+    } else if (state.canRunReport) {
       store.dispatch(actions.setCanRunReport(false));
     }
   }

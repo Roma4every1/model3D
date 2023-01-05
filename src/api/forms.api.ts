@@ -44,4 +44,12 @@ export class FormsAPI {
     const query = {sessionId: this.requester.sessionID, formId: formID};
     return await this.request<ChannelName[]>({path: 'getChannelsForForm', query});
   }
+
+  public async getAllNeedParametersForForm(formID: FormID): Promise<Res<any[]>> {
+    const query = {sessionId: this.requester.sessionID, formId: formID};
+    const res = await this.request<any[]>({path: 'getAllNeedParametersForForm', query});
+    if (!res.ok) return res;
+    res.data = Object.entries(res.data).map(param => ({Key: param[0], Value: param[1]}));
+    return res;
+  };
 }

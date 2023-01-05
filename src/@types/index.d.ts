@@ -158,7 +158,7 @@ interface ParamsManager {
   loadFormSettings(formID: FormID, force?: boolean): Promise<FormSettings>
 
   getCanRunReport(formID: FormID): Promise<void>
-  getParameterValues(neededParamList: any, formID: FormID, addToLocal: any, channelName: ChannelName): any
+  getParameterValues(neededParamList: any, formID: FormID, addToLocal: any, channelName?: ChannelName): any
   updateParamValue(formID: FormID, paramID: ParameterID, value: any, manual: boolean): void
   updateParamSet(formID: FormID, newParamValues: any): void
 }
