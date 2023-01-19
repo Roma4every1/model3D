@@ -23,6 +23,8 @@ export const selectors = {
   formSettings: formSettingsSelector,
   /** Параметры конкретной формы; `this - formID`. */
   formParams: formParamsSelector,
+  /** Параметр конкретной формы; `this - {formID, id}`. */
+  formParam: formParamSelector,
   /** Список доступных программ для формы. */
   formPrograms: formProgramsSelector,
   /** Список дочерних форм; `this - formID`. */
@@ -50,7 +52,7 @@ export const selectors = {
   displayedPresentationID: displayedPresentationIDSelector,
   /** Список типов всех отображаемых форм (без повторений). */
   displayedFormTypes: displayedFormTypesSelector,
-}
+};
 
 function globalParamSelector(this: ParameterID, state: WState): FormParameter {
   const globalParams = state.formParams[state.appState.rootFormID];
@@ -63,11 +65,16 @@ function formLayoutSelector(this: FormID, state: WState) {
 function formSettingsSelector(this: FormID, state: WState) {
   return state.formSettings[this];
 }
-function formParamsSelector(this: FormID, state: WState): FormParameter[] {
-  return state.formParams[this];
-}
 function formProgramsSelector(this: FormID, state: WState): FetchState<ProgramListData> {
   return state.programs[this];
+}
+
+function formParamSelector(this: {formID: FormID, id: ParameterID}, state: WState) {
+  const formParams = state.formParams[this.formID];
+  return formParams?.find(param => param.id === this.id);
+}
+function formParamsSelector(this: FormID, state: WState): FormParameter[] {
+  return state.formParams[this];
 }
 
 function formChildrenStateSelector(this: FormID, state: WState): FormChildrenState {

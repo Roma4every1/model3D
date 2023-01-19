@@ -1,4 +1,4 @@
-/** Well Manager State. */
+/** Well Manager React State. */
 interface WState {
   appState: AppState,
   canRunReport: CanRunReport,
@@ -22,8 +22,14 @@ interface WState {
 
 /* --- state.appState --- */
 
-/** Состояние, необходимое для компонента `SystemRouter`. */
-type AppState = {
+/** Данные общего характера.
+ * + `config`: {@link FetchState} of {@link ClientConfiguration}
+ * + `systemList`: {@link FetchState} of {@link SystemList}
+ * + `sessionID`: {@link FetchState} of {@link SessionID}
+ * + `rootFormID`: {@link FormID}
+ * + `systemID`: {@link SystemID}
+ * */
+interface AppState {
   config: FetchState<ClientConfiguration>,
   systemList: FetchState<SystemList>,
   sessionID: FetchState<SessionID>,
@@ -126,7 +132,7 @@ interface ChannelProperty {
   file: any,
   lookupChannelName: string | null,
   secondLevelChannelName: string | null,
-  lookupData: LookupDataItem[],
+  lookupData?: LookupDataItem[],
 }
 
 interface LookupDataItem {
@@ -193,81 +199,7 @@ type FormRefs = FormDict;
 type FormsSettings = FormDict<FormSettings>;
 
 /** Настройки формы. */
-type FormSettings = GridFormSettings | DataSetFormSettings | ChartSettings;
-
-/** Настройки формы грида. */
-interface GridFormSettings {
-  multiMapChannel: string | null
-}
-/** Настройки формы таблицы. */
-interface DataSetFormSettings {
-  id: any,
-  columns: any,
-  attachedProperties: any,
-}
-/** Настройки графика. */
-interface ChartSettings {
-  tooltip: boolean,
-  dateStep: ChartDateStep,
-  seriesSettings: ChartSeriesSettings,
-}
-
-type ChartDateStep = 'month' | 'year';
-type ChartSeriesSettings = Record<ChannelName, ChannelSeriesSettings>;
-
-/** Настройки для отображения каждого канала. */
-interface ChannelSeriesSettings {
-  seriesSettings: SeriesSettings,
-  axesSettings: AxesSettings,
-  dateStep: string,
-  gridStep: string,
-  labelInterval: number,
-  tickOrigin: string,
-  xAxisFieldName: string,
-  xAxisType: string,
-}
-
-type SeriesSettings = Record<string, SeriesSettingsItem>;
-type AxesSettings = Record<string, AxisSettings>;
-
-interface SeriesSettingsItem {
-  yAxisId: string,
-  typeCode: ChartTypeCode,
-  color: string,
-  showLabels: boolean,
-  showLine: boolean,
-  showPoint: boolean,
-  pointFigureIndex: string,
-  lineStyleIndex: string,
-  sizeMultiplier: number,
-  zIndex: number,
-}
-
-interface AxisSettings {
-  location: string,
-  color: string,
-  min: number | null,
-  max: number | null,
-  tickCount: number,
-  inverse: boolean,
-  half: boolean,
-  displayName: string,
-}
-
-/** ## Типы отображения значений на графике.
- * + `gist` — гистограмма
- * + `gistStack` — гистограмма накопл.
- * + `area` — область
- * + `areaSpline` — сглаженная область
- * + `areaDiscr` — дискретная область
- * + `graph` — линия
- * + `graphSpline` — сглаженная линия
- * + `graphDiscr` — дискретная линия
- * + `point` — набор точек
- * + `vertical` — вертикальные линии
- * */
-type ChartTypeCode = 'gist' | 'gistStack' | 'area' | 'areaSpline' | 'areaDiscr' |
-  'graph' | 'graphSpline' | 'graphDiscr' | 'point' | 'vertical';
+type FormSettings = DockFormSettings | GridFormSettings | DataSetFormSettings | ChartFormSettings;
 
 
 /* --- state.formLayout --- */

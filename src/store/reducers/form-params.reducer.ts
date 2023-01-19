@@ -27,7 +27,7 @@ interface ActionAddSet {
 interface ActionUpdate {
   type: FormParamsActions.UPDATE,
   formId: FormID,
-  id: any,
+  id: ParameterID,
   value: any,
   manual: boolean,
 }
@@ -41,9 +41,9 @@ export type FormParamsAction = ActionSet | ActionAdd | ActionAddSet | ActionUpda
 
 /* --- reducer --- */
 
-const initFormParams: FormParams = {};
+const init: FormParams = {};
 
-export const formParamsReducer = (state: FormParams = initFormParams, action: FormParamsAction): FormParams => {
+export const formParamsReducer = (state: FormParams = init, action: FormParamsAction): FormParams => {
   switch (action.type) {
 
     case FormParamsActions.SET: {
@@ -75,8 +75,8 @@ export const formParamsReducer = (state: FormParams = initFormParams, action: Fo
     case FormParamsActions.ADD_SET: {
       if (state[action.set.channelName]) {
         return {
-            ...state,
-            [action.set.channelName]: [...state[action.set.channelName], ...action.set.params]
+          ...state,
+          [action.set.channelName]: [...state[action.set.channelName], ...action.set.params]
         };
       } else {
         return {...state, [action.set.channelName]: [...action.set.params]};
@@ -90,7 +90,7 @@ export const formParamsReducer = (state: FormParams = initFormParams, action: Fo
       if (updatedParam) {
         updatedParam.value = action.value;
       } else {
-          updatedForm.push({id: action.id, value: action.value, type: "string"});
+        updatedForm.push({id: action.id, value: action.value, type: 'string'});
       }
       return {...state};
     }

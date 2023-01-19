@@ -3,14 +3,16 @@ import { useSelector, useDispatch } from "react-redux";
 import { IJsonModel, Model } from "flexlayout-react";
 import { Loader } from "@progress/kendo-react-indicators";
 import { Container } from "./container";
-import { fillLayout, createLayout, isMultiMap, getMultiMapChildrenID } from "./grid-utils";
+import { gridLayoutGlobalAttrs, fillLayout, createLayout } from "./grid-utils";
+import { isMultiMap, getMultiMapChildrenID } from "./grid-utils";
+import { applyDisplayNamePattern } from "../../../utils/display-name-string";
 import { selectors, actions } from "../../../store";
 import { API } from "../../../api/api";
 
 
 export default function Grid({formData: {id: formID}}) {
   const dispatch = useDispatch();
-  const [model, setModel] = useState<Model>(null);
+  const [model, setModel] = useState<Model>();
 
   const formChildrenState: FormChildrenState = useSelector(selectors.formChildrenState.bind(formID));
   const layout: IJsonModel = useSelector(selectors.formLayout.bind(formID));
@@ -22,7 +24,11 @@ export default function Grid({formData: {id: formID}}) {
   // получить данные о дочерних формах, если этого нет
   useEffect(() => {
     if (!formChildrenState) API.forms.getFormChildren(formID).then((res) => {
-      if (res.ok) dispatch(actions.setChildForms(formID, res.data))
+      const data: FormChildrenState = res.ok
+        ? res.data
+        : {id: formID, children: [], activeChildren: [], openedChildren: []};
+      data.children.forEach(applyDisplayNamePattern);
+      dispatch(actions.setChildForms(formID, data));
     });
   }, [formChildrenState, formID, dispatch]);
 
@@ -40,10 +46,11 @@ export default function Grid({formData: {id: formID}}) {
     if (layout) { setModel(Model.fromJson(layout)); return; }
 
     API.forms.getFormLayout(formID).then((res) => {
-      let formLayout;
+      let formLayout: IJsonModel;
       const openedForms = openedChildren.map(formID => children.find(p => p.id === formID))
       if (res.ok && res.data.layout?.children) {
         formLayout = res.data;
+        formLayout.global = gridLayoutGlobalAttrs;
         fillLayout(formLayout.layout, openedForms, activeChildren[0]);
         setModel(Model.fromJson(formLayout));
       } else {

@@ -1,25 +1,24 @@
-import { useCallback } from "react";
 import { useSelector } from "react-redux";
 import BaseEditor from "../editors/base-editor";
 
 
-/** Функция сортировки параметров. */
+const filterParams = (p: FormParameter) => Boolean(p.editorType);
 const sortParams = (a: FormParameter, b: FormParameter) => a.editorDisplayOrder - b.editorDisplayOrder;
 const paramsManagerSelector = (state: WState) => state.sessionManager.paramsManager;
 
 /** Компонент списка параметров. */
-export default function ParametersList(props) {
+export default function ParametersList({parametersJSON}: {parametersJSON: FormParameter[]}) {
   const paramsManager = useSelector(paramsManagerSelector);
 
-  const updateEditedJSON = useCallback((action, formID: FormID) => {
+  const updateEditedJSON = (action, formID: FormID) => {
     const { name, value, manual } = action.target;
     paramsManager.updateParamValue(formID, name, action.value ?? value, manual ?? true);
-  }, [paramsManager]);
+  };
 
-  const paramToEditor = useCallback((param: FormParameter) => {
+  const paramToEditor = (param: FormParameter, i: number) => {
     return (
       <BaseEditor
-        key={param.id}
+        key={i}
         editorType={param.editorType}
         id={param.id}
         formId={param.formId}
@@ -30,11 +29,11 @@ export default function ParametersList(props) {
         selectionChanged={(action) => updateEditedJSON(action, param.formId)}
       />
     );
-  }, [updateEditedJSON]);
+  };
 
   return (
     <div className={'parameters-list'}>
-      {props.parametersJSON.filter(param => param.editorType).sort(sortParams).map(paramToEditor)}
+      {parametersJSON.filter(filterParams).sort(sortParams).map(paramToEditor)}
     </div>
   );
 }

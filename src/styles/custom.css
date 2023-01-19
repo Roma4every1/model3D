@@ -111,6 +111,7 @@ html {
 .grid-content {
   height: 100%;
   flex-grow: 1;
+  overflow-x: auto;
 }
 
 .k-treeview-item {

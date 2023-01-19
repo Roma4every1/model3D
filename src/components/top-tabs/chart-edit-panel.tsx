@@ -12,7 +12,7 @@ const dateStepData = [
 
 export const ChartEditPanel = ({formID}: PropsFormID) => {
   const dispatch = useDispatch();
-  const settings: ChartSettings = useSelector(selectors.formSettings.bind(formID));
+  const settings: ChartFormSettings = useSelector(selectors.formSettings.bind(formID));
 
   if (!settings) return <MenuSkeleton template={['80px']}/>;
 
@@ -33,11 +33,11 @@ export const ChartEditPanel = ({formID}: PropsFormID) => {
       </MenuSection>
       <MenuSection header={'Интервал'} style={{minWidth: 100}}>
         <DropDownList
-          data={dateStepData} textField={'text'} dataItemKey={'id'}
+          data={dateStepData} dataItemKey={'id'} textField={'text'}
           value={dateStepData[settings.dateStep === 'month' ? 0 : 1]}
           onChange={toggleDateStep}
         />
       </MenuSection>
     </div>
   );
-}
+};

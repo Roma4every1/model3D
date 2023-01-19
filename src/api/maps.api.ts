@@ -1,5 +1,6 @@
 import { Requester } from "./api";
-import { converter, handleLayerScales, checkLayerIndex, loadLayerElements } from "../utils/maps-api.utils";
+import { converter } from "../utils/maps-api.utils";
+import { handleLayerScales, checkLayerIndex, loadLayerElements } from "../utils/maps-api.utils";
 
 import symbolDef from "../static/libs/symbol.def";
 import dro32Lib from "../static/libs/dro32_.smb";
@@ -38,6 +39,18 @@ export class MapsAPI {
     return new Uint8Array(buffer);
   }
 
+  /** Загрузка легенды карты. */
+  public async getMapLegend(): Promise<Res<any>> {
+    const query = {sessionId: this.requester.sessionID};
+    return await this.request<any>({path: 'mapLegends', query});
+  }
+
+  /** Запрос на сохранение карты. */
+  public async saveMap(bodyJSON: string): Promise<Res<any>> {
+    const body = converter.encode(bodyJSON);
+    return await this.request<any>({method: 'POST', path: 'saveMap', body});
+  }
+
   /** Загрузка общих данных карты. */
   public async getMap(mapID: MapID): Promise<Res<MapDataRaw>> {
     const query = {sessionId: this.requester.sessionID, mapId: mapID};
@@ -51,6 +64,8 @@ export class MapsAPI {
     if (response.ok === false) return response.data;
     return converter.parse(response.data);
   }
+
+  /* --- Utils --- */
 
   /** Запрос именных точек. */
   public async setNamedPoints(mapData: MapDataRaw, owner: MapOwner, needReload = true): Promise<void> {

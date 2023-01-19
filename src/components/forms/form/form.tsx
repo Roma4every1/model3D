@@ -5,6 +5,10 @@ import { actions, selectors } from "../../../store";
 import { MultiMap } from "../multi-map/multi-map";
 
 
+interface FormProps {
+  formData: FormDataWMR,
+  data: any,
+}
 interface FormState {
   formId: FormID,
   loaded: boolean,
@@ -15,9 +19,9 @@ interface FormState {
 
 
 /** Обобщённый компонент всех типов форм. */
-export default function Form({formData, data}) {
-  const sessionManager = useSelector(selectors.sessionManager);
+export default function Form({formData, data}: FormProps) {
   const dispatch = useDispatch();
+  const sessionManager = useSelector(selectors.sessionManager);
 
   const formID = formData.id;
   const isDataSet = formData.type === 'dataSet';

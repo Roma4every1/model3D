@@ -3,7 +3,7 @@ import { IGlobalAttributes, IJsonTabNode, IJsonTabSetNode } from "flexlayout-rea
 
 
 /** Высота заголовка в элементе TabSet. */
-const TAB_STRIP_HEIGHT = 28;   // px
+const TAB_STRIP_HEIGHT = 26;   // px
 /** Ширина элемента с названием параметра. */
 const PARAM_LABEL_WIDTH = 110; // px
 

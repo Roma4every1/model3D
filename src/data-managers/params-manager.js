@@ -11,45 +11,49 @@ export default function createParamsManager(store) {
 
   const getParameterValues = (neededParamList, formID, addToLocal, channelName) => {
     const paramsToUse = [];
+    const formParams = store.getState().formParams;
     neededParamList.forEach(paramElement => {
-      const param = paramElement.Key ?? paramElement;
       let element = null;
       let currentFormId = formID;
+      const param = paramElement.Key ?? paramElement;
+      const findByID = (p) => p.id === param;
+
       while (!element || (addToLocal && (currentFormId === getParentFormId(formID)))) {
-        element = store.getState().formParams[currentFormId]?.find(o => o.id === param);
+        element = formParams[currentFormId]?.find(findByID);
         if (currentFormId === '') break;
         currentFormId = getParentFormId(currentFormId);
       }
+
       if (!element && channelName) {
-        element = store.getState().formParams[channelName]?.find(o => o.id === param);
+        element = formParams[channelName]?.find(findByID);
       }
-      if (element && element.value !== undefined) {
-        if (addToLocal && (element.formId !== formID)) {
-          let localElement = store.getState().formParams[formID]?.find(o => o.id === param);
-          if (localElement) {
-            updateParamValue(formID, param, element.value, false);
-          } else {
-            var newElement = {
-              id: element.id,
-              canBeNull: element.canBeNull,
-              nullDisplayValue: element.nullDisplayValue,
-              showNullValue: element.showNullValue,
-              formIdToLoad: element.formId,
-              formId: formID,
-              value: element.value,
-              dependsOn: element.dependsOn,
-              type: element.type,
-              editorType: paramElement.Value ? null : element.editorType,
-              editorDisplayOrder: element.editorDisplayOrder,
-              externalChannelName: element.externalChannelName,
-              displayName: element.displayName
-            }
-            store.dispatch(actions.addParam(formID, newElement));
-          }
-          paramsToUse.push(newElement);
+      if (element?.value === undefined) return;
+
+      if (addToLocal && (element.formId !== formID)) {
+        let localElement = formParams[formID]?.find(findByID);
+        if (localElement) {
+          updateParamValue(formID, param, element.value, false);
         } else {
-          paramsToUse.push(element);
+          var newElement = {
+            id: element.id,
+            canBeNull: element.canBeNull,
+            nullDisplayValue: element.nullDisplayValue,
+            showNullValue: element.showNullValue,
+            formIdToLoad: element.formId,
+            formId: formID,
+            value: element.value,
+            dependsOn: element.dependsOn,
+            type: element.type,
+            editorType: paramElement.Value ? null : element.editorType,
+            editorDisplayOrder: element.editorDisplayOrder,
+            externalChannelName: element.externalChannelName,
+            displayName: element.displayName
+          }
+          store.dispatch(actions.addParam(formID, newElement));
         }
+        paramsToUse.push(newElement);
+      } else {
+        paramsToUse.push(element);
       }
     });
     return paramsToUse;
@@ -172,9 +176,9 @@ export default function createParamsManager(store) {
     if (reportFormID) getCanRunReport(reportFormID).then();
     const formParams = store.getState().formParams;
 
-    for (let formID in formParams) {
-      for (let param in formParams[formID]) {
-        setDefaultParamValue(formID, formParams[formID][param]);
+    for (const formID in formParams) {
+      for (const param of formParams[formID]) {
+        setDefaultParamValue(formID, param);
       }
     }
   });

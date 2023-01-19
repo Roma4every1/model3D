@@ -5,9 +5,6 @@ import { ChannelsAPI } from "./channels.api";
 import { ProgramsAPI } from "./programs.api";
 
 
-interface IRequester {
-  request<Expected>(req: WRequest): Promise<Res<Expected>>
-}
 interface IWellManagerReactAPI {
   readonly maps: MapsAPI;
   readonly forms: FormsAPI;
@@ -17,17 +14,13 @@ interface IWellManagerReactAPI {
 
   setBase(base: string): void
   setRoot(root: string): void
+  setSessionID(sessionID: SessionID): void
+
   request<Expected>(req: WRequest): Promise<Res<Expected>>
 }
 
 
-const toJSON = (res: Response) => res.json();
-const toText = (res: Response) => res.text();
-const toBLOB = (res: Response) => res.blob();
-const toBuffer = (res: Response) => res.arrayBuffer();
-
-
-export class Requester implements IRequester {
+export class Requester {
   public base: string;
   public root: string;
   public sessionID: SessionID;
@@ -38,7 +31,12 @@ export class Requester implements IRequester {
     this.sessionID = '';
   }
 
-  public static resMapDict = {'json': toJSON, 'text': toText, 'blob': toBLOB, 'buffer': toBuffer};
+  public static resMapDict = {
+    'json': (res: Response) => res.json(),
+    'text': (res: Response) => res.text(),
+    'blob': (res: Response) => res.blob(),
+    'buffer': (res: Response) => res.arrayBuffer(),
+  };
 
   public async request<Expected>(req: WRequest): Promise<Res<Expected>> {
     try {
@@ -79,14 +77,14 @@ class WellManagerReactAPI implements IWellManagerReactAPI {
     this.programs = new ProgramsAPI(this.requester);
   }
 
-  public setBase(base: string) {
+  public setBase(base: string): void {
     this.requester.base = base;
   }
-  public setRoot(root: string) {
+  public setRoot(root: string): void {
     this.requester.root = root;
   }
-  public setSessionID(id: string) {
-    this.requester.sessionID = id;
+  public setSessionID(sessionID: SessionID): void {
+    this.requester.sessionID = sessionID;
   }
 
   public async request<Expected>(req: WRequest): Promise<Res<Expected>> {

@@ -26,6 +26,7 @@ interface FormDataWMR {
   type: FormType,
   displayName: string,
   displayNameString?: string,
+  displayNamePattern?: any,
 }
 
 /** Параметр формы. */
@@ -41,7 +42,7 @@ interface FormParameter {
   dependsOn?: ParameterDepends,
   canBeNull?: boolean,
   showNullValue?: boolean,
-  nullDisplayValue?: any,
+  nullDisplayValue?: string,
 }
 
 /** Идентификатор формы. */

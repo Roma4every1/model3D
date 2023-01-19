@@ -10,7 +10,7 @@ const globalAttributes: IGlobalAttributes = {
   tabEnableRename: false,
   tabEnableClose: false,
   tabEnableDrag: false,
-  splitterSize: 6,
+  splitterSize: 8,
 };
 const formTabset: IJsonTabSetNode = {
   type: 'tabset', minWidth: 200,
@@ -29,12 +29,12 @@ export function getDockLayout(displayedFormTypes: FormType[], dockLayout: DockLa
     borders: [
       {
         type: 'border', location: 'top',
-        barSize: 30, size: dockLayout.topPanelHeight, minSize: 80, selected: selectedTop,
+        barSize: 26, size: dockLayout.topPanelHeight, minSize: 80, selected: selectedTop,
         children: topTabs,
       },
       {
         type: 'border', location: 'right',
-        barSize: 30, size: dockLayout.rightPanelWidth, minSize: 150, selected: selectedRight,
+        barSize: 26, size: dockLayout.rightPanelWidth, minSize: 150, selected: selectedRight,
         children: rightTabs,
       },
     ],

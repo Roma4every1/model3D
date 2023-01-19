@@ -1,21 +1,29 @@
+import { IGlobalAttributes } from "flexlayout-react/declarations/model/IJsonModel";
 import { IJsonModel, IJsonRowNode } from "flexlayout-react/declarations/model/IJsonModel";
 import { IJsonTabNode, IJsonTabSetNode } from "flexlayout-react/declarations/model/IJsonModel";
+import { FormName } from "../form/form-name";
 import Form from "../form/form";
-import FormDisplayName from "../form/form-display-name";
 
 
 type LayoutArg = IJsonRowNode | IJsonTabSetNode | IJsonTabNode;
 
 
+export const gridLayoutGlobalAttrs: IGlobalAttributes = {
+  rootOrientationVertical: false,
+  tabEnableRename: false,
+  tabSetTabStripHeight: 26,
+  splitterSize: 6,
+};
+
 export function createLayout(forms: FormDataWMR[] = [], active: FormID = undefined): IJsonModel {
   const children = forms.map(form => createTabSetNode(form, active));
   return {
-    global: {rootOrientationVertical: false, splitterSize: 4},
+    global: gridLayoutGlobalAttrs,
     layout: {type: 'row', children},
   };
 }
 
-export function fillLayout(layout: LayoutArg, forms: FormDataWMR[], active: FormID) {
+export function fillLayout(layout: LayoutArg, forms: FormDataWMR[], active: FormID): void {
   if (layout.type === 'tabset') {
     // @ts-ignore
     layout.active = layout.children.some(child => child.id === active);
@@ -34,20 +42,22 @@ function createTabSetNode(form: FormDataWMR, active: FormID): IJsonTabSetNode {
     type: 'tabset', selected: 0, active: form.id === active,
     children: [{
       id: form.id, type: 'tab', name: form.displayName,
-      component: <Form key={form.id} formData={form} data={undefined}/> as any,
+      component: <Form formData={form} data={undefined}/> as any,
     }],
   };
 }
 
-function fillTabNode(node: IJsonTabNode, form: FormDataWMR) {
-  if (form.displayNameString) {
+function fillTabNode(node: IJsonTabNode, form: FormDataWMR): void {
+  const displayNamePattern = form.displayNamePattern;
+  if (displayNamePattern) {
+    const { pattern, params } = displayNamePattern;
     // @ts-ignore
-    node.name = <FormDisplayName formID={form.id} pattern={form.displayNameString}/>;
+    node.name = <FormName formID={form.id} pattern={pattern} params={params}/>;
   } else {
     node.name = form.displayName;
   }
   // @ts-ignore
-  node.component = <Form key={form.id} formData={form} data={undefined}/>
+  node.component = <Form formData={form} data={undefined}/>
 }
 
 /* --- --- */

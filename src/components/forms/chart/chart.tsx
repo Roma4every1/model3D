@@ -22,7 +22,7 @@ const chartMargin = {top: 2, left: 0, bottom: 0, right: 0};
 
 export default function Chart({data: {formId: formID, activeChannels}}: ChartProps) {
   const channels: Channel[] = useSelector(chartDataSelector.bind(activeChannels), compareArrays);
-  const settings: ChartSettings = useSelector(selectors.formSettings.bind(formID));
+  const settings: ChartFormSettings = useSelector(selectors.formSettings.bind(formID));
   const { seriesSettings, dateStep, tooltip } = settings;
 
   const proto = useMemo<ChartProto>(() => {

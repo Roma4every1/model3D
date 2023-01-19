@@ -62,7 +62,7 @@ export default function Map({formData: {id: formID}, data}) {
 
   const isPartOfDynamicMultiMap = data.activeChannels === undefined;
   const activeChannelName = isPartOfDynamicMultiMap ? null : data.activeChannels[0];
-  const activeChannel: any = useSelector(selectors.channel.bind(activeChannelName));
+  const activeChannel: Channel = useSelector(selectors.channel.bind(activeChannelName));
 
   useEffect(() => {
     if (!mapState || !isPartOfDynamicMultiMap) return;
@@ -75,12 +75,12 @@ export default function Map({formData: {id: formID}, data}) {
   // проверка параметров формы
   useEffect(() => {
     if (!mapState || isPartOfDynamicMultiMap) return;
-    if (!(activeChannel?.data?.Rows && activeChannel.data['Rows'].length > 0))
-      return setIsMapExist(false);
+    const rows = activeChannel?.data?.Rows;
+    if (!rows || rows.length === 0) return setIsMapExist(false);
 
     setIsMapExist(true);
 
-    const mapInfo = activeChannel.data['Rows'][0];
+    const mapInfo = rows[0];
     const owner = mapInfo.Cells[12];
     const mapID = String(mapInfo.Cells[0]);
 

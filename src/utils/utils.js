@@ -18,17 +18,42 @@ export const mapSystem = (rawSystem) => {
 
 /** Сравнивает два массива на равенство.
  *
- * **Не проводит глубокое сравнение.**
- * На первом уровне вложенности сравнивает примитивные значениея или ссылки.
+ * **Не делает глубокое сравнение.**
+ * @param a {any[]}
+ * @param b {any[]}
  * @example
  * const obj = {}
- * compareArrays([1, 2], [1, 2]) // true
- * compareArrays([obj], [obj])   // true
- * compareArrays([obj], [{}])    // false
+ * compareArrays([1, 2], [1, 2]) => true
+ * compareArrays([obj], [obj])   => true
+ * compareArrays([obj], [{}])    => false
  * */
-export const compareArrays = (a1, a2) => {
-  return a1.length === a2.length && a1.every((v, i) => v === a2[i]);
-}
+export const compareArrays = (a, b) => {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+};
+
+/** Сравнивает два объекта на равенство.
+ *
+ * **Не делает глубокое сравнение.**
+ * @param a {object}
+ * @param b {object}
+ * @example
+ * compareObjects({x: 1}, {x: 1})   => true
+ * compareObjects({x: []}, {x: []}) => false
+ * */
+export const compareObjects = (a, b) => {
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (aKeys.length !== bKeys.length) return false;
+
+  for (const key of aKeys) {
+    if (a[key] !== b[key]) return false;
+  }
+  return true;
+};
 
 export const equalParams = (p1, p2) => {
   if (!p1 || !p2 || p1.length !== p2.length) return false;
@@ -119,7 +144,7 @@ export const tableRowToString = (valuesToSelect, row) => {
 
   return {
     id: row.Cells[valuesToSelect.idIndex],
-    name: row.Cells[valuesToSelect.nameIndex],
+    name: row.Cells[valuesToSelect.nameIndex] ?? '',
     value: valueString,
   };
 }
@@ -152,7 +177,11 @@ export const tableCellToString = (valuesToSelect, row) => {
   return temp;
 }
 
-/* (rowString: string, columnName: string): string */
+/**
+ * @param rowString {string}
+ * @param columnName {string}
+ * @return string
+ * */
 export const stringToTableCell = (rowString, columnName) => {
   rowString = rowString.toString();
   const startIndex = rowString.indexOf(columnName + '#');
