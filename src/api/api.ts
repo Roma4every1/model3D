@@ -123,46 +123,6 @@ class WellManagerReactAPI implements IWellManagerReactAPI {
     return await this.request<PresentationItem>({path: 'presentationList', query});
   }
 
-  /** Запрос состояния корневой формы. */
-  public async getRootFormState(channelManager: ChannelsManager): Promise<RootFormState | string> {
-    const resRootForm = await this.forms.getRootForm();
-    if (!resRootForm.ok) return 'ошибка при получении id корневой формы';
-    const id = resRootForm.data.id;
-
-    const resPresentations = await this.getPresentationsList(id);
-    if (!resPresentations.ok) return 'ошибка при получении списка презентаций';
-    const presentations = resPresentations.data.items;
-
-    const resChildren = await this.forms.getFormChildren(id);
-    if (!resChildren.ok) return 'ошибка при получении списка презентаций';
-    const children = resChildren.data;
-
-    const resSettings = await this.getPluginData(id, 'dateChanging');
-    const dateChangingRaw = resSettings.data?.dateChanging;
-
-    const dateChanging = dateChangingRaw ? {
-      yearParameter: dateChangingRaw['@yearParameter'],
-      dateIntervalParameter: dateChangingRaw['@dateIntervalParameter'],
-      columnName: dateChangingRaw['@columnNameParameter'] ?? null
-    } : null;
-    const settings: DockFormSettings = {dateChanging, parameterGroups: null};
-
-    const resParams = await this.forms.getFormParameters(id);
-    if (!resParams.ok) return 'ошибка при получении глобальных параметров';
-    const parameters = resParams.data;
-
-    for (const param of parameters) {
-      param.formID = id;
-      if (param['externalChannelName'] && !param.canBeNull) {
-        await channelManager.loadAllChannelData(param['externalChannelName'], id, false);
-      }
-    }
-    await channelManager.loadFormChannelsList(id);
-    channelManager.setFormInactive(id);
-
-    return {id, settings, children, parameters, presentations};
-  }
-
   public async getPluginData(formID: FormID, pluginName: string) {
     const query = {sessionId: this.requester.sessionID, formId: formID, pluginName};
     return await this.request<any>({path: 'pluginData', query});

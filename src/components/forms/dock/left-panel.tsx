@@ -3,7 +3,7 @@ import { Model, Layout, TabNode, Action, Actions } from "flexlayout-react";
 import { useSelector } from "react-redux";
 import PresentationList from "./presentation-list";
 import FormParametersList from "../../common/form-parameters-list";
-import translator from "../../../locales/layout";
+import { i18nMapper } from "../../../locales/i18n";
 import { getLeftPanelLayout } from "../../../layout/left-tabs";
 import { selectors } from "../../../store";
 
@@ -36,5 +36,5 @@ export const LeftPanel = () => {
     return action;
   };
 
-  return <Layout model={model} factory={factory} onAction={onAction} i18nMapper={translator}/>;
+  return <Layout model={model} factory={factory} onAction={onAction} i18nMapper={i18nMapper}/>;
 };

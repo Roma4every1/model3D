@@ -110,7 +110,7 @@ type ParamValueTableCell = string;
  * "1#System.Int16|2#System.Int16" // serialized
  * */
 type ParamCellsArray = FormParamProto<'tableCellsArray', ParamValueCellsArray> & TableParamsAttrs;
-type ParamValueCellsArray = string;
+type ParamValueCellsArray = string[];
 
 /** ### Параметр, хранящий хранит набор структур "поле-значение-тип".
  * Редакторы: `tableRowComboEditor`.

@@ -11,7 +11,7 @@ function getParsedParamValue(type: ParameterType, rawValue: string | null) {
   switch (type) {
     case 'tableRow': { return rawValue; }
     case 'tableCell': { return rawValue; }
-    case 'tableCellsArray': { return rawValue; }
+    case 'tableCellsArray': { return rawValue.split('|'); }
     case 'date': { return new Date(rawValue); }
     case 'dateInterval': { return parseDateInterval(rawValue); }
     case 'double': { return parseFloat(rawValue); }
@@ -59,7 +59,7 @@ export function serializeParamValue(type: ParameterType, value: any): string | n
   switch (type) {
     case 'tableRow': { return value; }
     case 'tableCell': { return value; }
-    case 'tableCellsArray': { return value; }
+    case 'tableCellsArray': { return value.join('|'); }
     case 'date': { return serializeDate(value); }
     case 'dateInterval': { return serializeDateInterval(value.start, value.end); }
     case 'double': { return value.toString(); }

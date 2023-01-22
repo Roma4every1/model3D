@@ -1,8 +1,8 @@
 import { Layout, Model } from "flexlayout-react";
 import { IJsonRowNode, IJsonTabSetNode } from "flexlayout-react/declarations/model/IJsonModel";
 import { useDispatch } from "react-redux";
+import { i18nMapper } from "../../../locales/i18n";
 import { actions } from "../../../store";
-import translator from "../../../locales/layout";
 
 
 interface ContainerProps {
@@ -32,7 +32,7 @@ export function Container({formID, model}: ContainerProps) {
       model={model}
       factory={factory}
       onModelChange={onModelChange}
-      i18nMapper={translator}
+      i18nMapper={i18nMapper}
     />
   );
 }

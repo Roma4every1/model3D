@@ -1,7 +1,6 @@
 import { FunctionComponent } from "react";
 import { useSelector } from "react-redux";
 import { selectors } from "../../store";
-import ErrorBoundary from "../common/error-boundary";
 
 import { SqlProgramsList } from "./sql-programs-list";
 import { DataSetEditPanel } from "./dataset-edit-panel";
@@ -33,5 +32,5 @@ export function TopTab({id}: {id: string}) {
     ? activeChildID
     : presentation.children.find(child => child.type === formType).id;
 
-  return <ErrorBoundary><TopTabComponent formID={formID}/></ErrorBoundary>;
+  return <TopTabComponent formID={formID}/>;
 }

@@ -31,12 +31,8 @@ export class WellManagerActionsCreator {
     return {type: AppStateActions.FETCH_SESSION_START};
   }
   /** Конец загрузки новой сессии. */
-  public fetchSessionEnd(payload: Res<SessionID>): AppStateAction {
-    return {type: AppStateActions.FETCH_SESSION_END, payload};
-  }
-  /** Установить новый ID сессии. */
-  public setSessionID(sessionID: SessionID): AppStateAction {
-    return {type: AppStateActions.SET_SESSION_ID, payload: sessionID};
+  public fetchSessionEnd(res: {ok: boolean, data: string, rootFormID?: string}): AppStateAction {
+    return {type: AppStateActions.FETCH_SESSION_END, payload: res};
   }
   /** Очистить хранилище сесиии. */
   public clearSession(): AppStateAction {
@@ -45,10 +41,6 @@ export class WellManagerActionsCreator {
   /** Установить новую систему. */
   public setSystemName(systemName: SystemID): AppStateAction {
     return {type: AppStateActions.SET_SYSTEM_ID, payload: systemName};
-  }
-  /** Установить ID корневой формы. */
-  public setRootFormID(id: FormID): AppStateAction {
-    return {type: AppStateActions.SET_ROOT_FORM_ID, payload: id};
   }
 
   /* --- Can Run Report Actions --- */

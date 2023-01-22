@@ -10,7 +10,6 @@ export interface MapItemConfig {
   progress: number,
   setProgress?: Function,
 }
-type MapChannelCell = [number, string, string, string];
 export type MapTuple = [Model, ActiveChildrenList, MapItemConfig[]];
 
 
@@ -23,7 +22,7 @@ const globalSettings: IGlobalAttributes = {
   splitterSize: 4,
 };
 
-export const getMultiMapLayout = (rows: MapChannelCell[], formID: FormID): MapTuple => {
+export const getMultiMapLayout = (rows: ChannelRow[], formID: FormID): MapTuple => {
   const n = rows.length;
 
   let rowsCount = 1;
@@ -46,7 +45,7 @@ export const getMultiMapLayout = (rows: MapChannelCell[], formID: FormID): MapTu
 
   for (const row of children) {
     for (const tab of row.children) {
-      const id = rows[i][0].toString();
+      const id = rows[i].Cells[0].toString();
       const childFormID = formID + ',' + id;
       tab.id = childFormID;
 
@@ -57,7 +56,7 @@ export const getMultiMapLayout = (rows: MapChannelCell[], formID: FormID): MapTu
       };
 
       child.id = id;
-      child.name = rows[i][3];
+      child.name = rows[i].Cells[3];
       child.config = config;
 
       childrenList.push(childFormID);

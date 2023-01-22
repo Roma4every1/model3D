@@ -10,7 +10,7 @@
 // }
 
 
-export default function Carat({data: {formId: formID}}) {
+export const Carat = ({formID}: FormProps) => {
   return <div/>;
   // const dispatch = useDispatch();
   //
@@ -49,4 +49,4 @@ export default function Carat({data: {formId: formID}}) {
   //     <canvas ref={canvasRef}/>
   //   </div>
   // );
-}
+};

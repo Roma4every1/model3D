@@ -8,11 +8,6 @@ import { selectors } from "../../../store";
 import "../../../styles/chart.scss";
 
 
-interface ChartProps {
-  data: {formId: FormID, activeChannels: ChannelName[]},
-}
-
-
 function chartDataSelector(this: ChannelName[], state: WState): Channel[] {
   return this.map(channel => state.channelsData[channel]);
 }
@@ -20,14 +15,14 @@ function chartDataSelector(this: ChannelName[], state: WState): Channel[] {
 const chartStyle = {overflow: 'hidden'};
 const chartMargin = {top: 2, left: 0, bottom: 0, right: 0};
 
-export default function Chart({data: {formId: formID, activeChannels}}: ChartProps) {
-  const channels: Channel[] = useSelector(chartDataSelector.bind(activeChannels), compareArrays);
+export const Chart = ({formID, channels}: FormProps) => {
+  const channelsData: Channel[] = useSelector(chartDataSelector.bind(channels), compareArrays);
   const settings: ChartFormSettings = useSelector(selectors.formSettings.bind(formID));
   const { seriesSettings, dateStep, tooltip } = settings;
 
   const proto = useMemo<ChartProto>(() => {
-    return getChartProto(channels, seriesSettings, dateStep);
-  }, [channels, seriesSettings, dateStep]);
+    return getChartProto(channelsData, seriesSettings, dateStep);
+  }, [channelsData, seriesSettings, dateStep]);
 
   if (proto.diagrams.length === 0) return <EmptyChart/>;
 
@@ -44,7 +39,7 @@ export default function Chart({data: {formId: formID, activeChannels}}: ChartPro
       </ComposedChart>
     </ResponsiveContainer>
   );
-}
+};
 
 const EmptyChart = () => {
   return <div className={'map-not-found'}>Данные отсутствуют</div>;

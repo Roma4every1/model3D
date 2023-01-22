@@ -8,6 +8,11 @@ interface RootFormState {
   presentations: PresentationItem[],
 }
 
+interface FormProps {
+  formID: FormID,
+  channels: ChannelName[],
+}
+
 /** Пропс с единственным полем `formID`. */
 type PropsFormID = {formID: FormID};
 
@@ -38,7 +43,7 @@ type ChannelName = string;
 
 /** Тип формы. */
 type FormType = 'carat' | 'chart' | 'dataSet' | 'dock' | 'files' | 'filesList' |
-  'grid' | 'image' | 'map' | 'multiMap' | 'model3D' | 'profile' | 'screenshot' |
+  'grid' | 'image' | 'map' | 'multiMap' | 'model3D' | 'profile' |
   'slide' | 'spreadsheet' | 'spreadsheetUnite' | 'transferForm';
 
 /** Число для сортировки каких-либо элементов. */
@@ -100,7 +105,7 @@ interface SessionManager {
   paramsManager: ParamsManager,
   channelsManager: ChannelsManager,
 
-  startSession(isDefault?: boolean): Promise<any | null | undefined>
+  startSession(isDefault?: boolean): Promise<Res<SessionID>>
   stopSession(): Promise<void>
   saveSession(): Promise<void>
   loadSessionByDefault(): Promise<void>

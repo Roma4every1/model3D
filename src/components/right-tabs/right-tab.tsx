@@ -1,7 +1,6 @@
 import { useSelector } from "react-redux";
-import { selectors } from "../../store";
-import ErrorBoundary from "../common/error-boundary";
 import MapLayersTree from "./layers-tree";
+import { selectors } from "../../store";
 
 
 export function RightTab() {
@@ -14,5 +13,5 @@ export function RightTab() {
     ? activeChildID
     : presentation.children.find(child => child.type === 'map').id;
 
-  return <ErrorBoundary><MapLayersTree formID={formID}/></ErrorBoundary>;
+  return <MapLayersTree formID={formID}/>;
 }

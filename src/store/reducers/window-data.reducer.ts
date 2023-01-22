@@ -1,6 +1,6 @@
-import i18n from '../../locales/i18n';
+import { t } from '../../locales/i18n';
 
-/* --- actions types --- */
+/* --- Actions Types --- */
 
 export enum WindowDataActions {
   SET_INFO = 'windowData/setInfo',
@@ -12,7 +12,7 @@ export enum WindowDataActions {
   CLOSE_NOTIFICATION = 'windowData/closeNotification',
 }
 
-/* --- actions interfaces --- */
+/* --- Actions Interfaces --- */
 
 interface ActionSetInfo {
   type: WindowDataActions.SET_INFO,
@@ -56,18 +56,16 @@ interface ActionCloseNotification {
 export type WindowDataAction = ActionSetInfo | ActionSetWarning | ActionSetError |
   ActionSetOpenedWindow | ActionClose | ActionSetNotification | ActionCloseNotification;
 
-/* --- reducer --- */
+/* --- Reducer --- */
 
-const initWindowData = null;
-
-export const windowDataReducer = (state = initWindowData, action: WindowDataAction) => {
-  let newState = {...state };
+export const windowDataReducer = (state = null, action: WindowDataAction) => {
+  let newState = {...state};
   switch (action.type) {
 
     case WindowDataActions.SET_INFO: {
       newState.messageWindow = {
         opened: true,
-        header: action.header || i18n.t('base.info'),
+        header: action.header || t('base.info'),
         text: action.text,
         stackTrace: action.stackTrace,
         fileToSaveName: action.fileToSaveName,
@@ -79,7 +77,7 @@ export const windowDataReducer = (state = initWindowData, action: WindowDataActi
     case WindowDataActions.SET_WARNING: {
       newState.messageWindow = {
         opened: true,
-        header: action.header || i18n.t('base.warning'),
+        header: action.header || t('base.warning'),
         text: action.text,
         stackTrace: action.stackTrace,
         fileToSaveName: action.fileToSaveName,
@@ -91,7 +89,7 @@ export const windowDataReducer = (state = initWindowData, action: WindowDataActi
     case WindowDataActions.SET_ERROR: {
       newState.messageWindow = {
         opened: true,
-        header: action.header || i18n.t('base.error'),
+        header: action.header || t('base.error'),
         text: action.text,
         stackTrace: action.stackTrace,
         fileToSaveName: action.fileToSaveName,

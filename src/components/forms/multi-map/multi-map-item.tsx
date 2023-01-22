@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { TFunction, useTranslation } from "react-i18next";
 import { MapItemConfig } from "./multi-map-utils";
-import Map from "../map/map";
+import { Map } from "../map/map";
 
 
 export const MultiMapItem = ({config}: {config: MapItemConfig}) => {
@@ -14,7 +14,7 @@ export const MultiMapItem = ({config}: {config: MapItemConfig}) => {
 
   if (progress < 0) return <MapLoadError t={t}/>;
   if (progress < 100) return <CircularProgressBar percentage={progress} size={100}/>;
-  return <Map formData={{id: config.formID}} data={config.data}/>;
+  return <Map formID={config.formID} channels={[]} data={config.data}/>;
 };
 
 export const MapNotFound = ({t}: {t: TFunction}) => {

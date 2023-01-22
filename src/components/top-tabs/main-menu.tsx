@@ -48,7 +48,7 @@ export const MainMenu = () => {
     dispatch(actions.setOpenedWindow('about', false, null));
   };
   const showAboutWindow = () => {
-    const window = <AboutProgramWindow config={config} onClose={closeAboutWindow}/>;
+    const window = <AboutProgramWindow key={'about'} config={config} onClose={closeAboutWindow}/>;
     dispatch(actions.setOpenedWindow('about', true, window));
   };
 

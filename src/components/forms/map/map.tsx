@@ -10,7 +10,7 @@ import { fetchMapData } from "../../../store/thunks";
 import { actions, selectors } from "../../../store";
 
 
-export default function Map({formData: {id: formID}, data}) {
+export const Map = ({formID, channels, data}: FormProps & {data?: MapData}) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const parentForm = getParentFormId(formID);
@@ -31,36 +31,20 @@ export default function Map({formData: {id: formID}, data}) {
   const selectedElement = mapState?.element;
   const utils = mapState?.utils;
 
-  const wellsMaxScale = useMemo(() => {
-    const layers = mapData?.layers;
-    if (!layers) return 50_000;
-    for (const { elements, highscale } of layers) {
-      if (elements.length && elements[0].type === 'sign') return highscale;
-    }
-    return 50_000;
-  }, [mapData?.layers]);
-
-  // обновление списка связанных карт
-  useEffect(() => {
-    const canvases = getMultiMapChildrenCanvases(mapsState.multi, mapsState.single, formID);
-    if (scroller.current) scroller.current.setList(canvases);
-  }, [mapsState, mapState, formID]);
+  const isPartOfDynamicMultiMap = data !== undefined;
+  const activeChannelName = isPartOfDynamicMultiMap ? null : channels[0];
+  const activeChannel: Channel = useSelector(selectors.channel.bind(activeChannelName));
 
   // добавление состояния в хранилище состояний карт
   useEffect(() => {
     if (!mapState) dispatch(actions.createMapState(formID, createMapsDrawer()));
   }, [mapState, dispatch, formID]);
 
-  const draw = useCallback((canvas, map, scale, x, y, selected) => {
-    if (!mapState?.drawer || !canvas) return;
-    if (mapDrawnData.current) mapDrawnData.current.emit('detach');
-    const data = {centerx: x, centery: y, scale, selected};
-    mapDrawnData.current = mapState.drawer.showMap(canvas, map, data);
-  }, [mapState?.drawer]);
-
-  const isPartOfDynamicMultiMap = data.activeChannels === undefined;
-  const activeChannelName = isPartOfDynamicMultiMap ? null : data.activeChannels[0];
-  const activeChannel: Channel = useSelector(selectors.channel.bind(activeChannelName));
+  // обновление списка связанных карт
+  useEffect(() => {
+    const canvases = getMultiMapChildrenCanvases(mapsState.multi, mapsState.single, formID);
+    if (scroller.current) scroller.current.setList(canvases);
+  }, [mapsState, mapState, formID]);
 
   useEffect(() => {
     if (!mapState || !isPartOfDynamicMultiMap) return;
@@ -99,6 +83,13 @@ export default function Map({formData: {id: formID}, data}) {
     }
   }, [mapState, activeChannel, formID, parentForm, isPartOfDynamicMultiMap, dispatch]);
 
+  const draw = useCallback((canvas, map, scale, x, y, selected) => {
+    if (!mapState?.drawer || !canvas) return;
+    if (mapDrawnData.current) mapDrawnData.current.emit('detach');
+    const data = {centerx: x, centery: y, scale, selected};
+    mapDrawnData.current = mapState.drawer.showMap(canvas, map, data);
+  }, [mapState?.drawer]);
+
   const updateCanvas = useCallback((newCS, context) => {
     if (!mapData) return;
     let x,y, scale;
@@ -125,6 +116,15 @@ export default function Map({formData: {id: formID}, data}) {
     }
     return null;
   }, [mapData]);
+
+  const wellsMaxScale = useMemo(() => {
+    const layers = mapData?.layers;
+    if (!layers) return 50_000;
+    for (const { elements, highscale } of layers) {
+      if (elements.length && elements[0].type === 'sign') return highscale;
+    }
+    return 50_000;
+  }, [mapData?.layers]);
 
   // подстраивание карты под выбранную скважину
   useEffect(() => {
@@ -157,4 +157,4 @@ export default function Map({formData: {id: formID}, data}) {
       <canvas style={{cursor: mapState.cursor}} ref={canvasRef}/>
     </div>
   );
-}
+};

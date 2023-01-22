@@ -1,4 +1,4 @@
-import i18n from "../locales/i18n";
+import { t } from "../locales/i18n";
 import { uniq } from "lodash";
 import { equalParams } from "../utils/utils";
 import { actions } from "../store";
@@ -140,7 +140,7 @@ export default function createChannelsManager(store) {
       if (!operationResult['WrongResult']) {
         updateTables([tableId, ...operationResult?.ModifiedTables?.ModifiedTables]).then();
       } else {
-        store.dispatch(actions.setWindowError(i18n.t('messages.dataSaveError')));
+        store.dispatch(actions.setWindowError(t('messages.dataSaveError')));
       }
     } else {
       //reject

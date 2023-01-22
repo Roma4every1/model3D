@@ -79,15 +79,15 @@ export const Dimensions = ({mapState, sync, formID, t}: DimensionsProps) => {
         <div className={'map-dimensions-viewer'}>
           <div>
             <span title={t('map.dimensions.x')}><img src={xIcon} alt={'x'}/> x:</span>
-            <NumericTextBox value={x} onChange={xChanged}/>
+            <NumericTextBox value={x} onChange={xChanged} format={'#'}/>
           </div>
           <div>
             <span title={t('map.dimensions.y')}><img src={yIcon} alt={'y'}/> y:</span>
-            <NumericTextBox value={y} onChange={yChanged}/>
+            <NumericTextBox value={y} onChange={yChanged} format={'#'}/>
           </div>
           <div>
             <span title={t('map.dimensions.scale')}><img src={scaleIcon} alt={'scale'}/> 1/</span>
-            <NumericTextBox value={scale} onChange={scaleChanged}/>
+            <NumericTextBox value={scale} onChange={scaleChanged} format={'#'}/>
           </div>
         </div>
         <div className={'map-actions'}>

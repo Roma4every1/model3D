@@ -2,10 +2,10 @@ import { Layout, TabNode, Action, Actions } from "flexlayout-react";
 import { useEffect, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { selectors, actions } from "../../../store";
-import { getMultiMapLayout, MapTuple, MapItemConfig } from "./multi-map-utils";
-import translator from "../../../locales/layout";
+import { getMultiMapLayout, MapItemConfig } from "./multi-map-utils";
+import { i18nMapper } from "../../../locales/i18n";
 import { MultiMapItem, MapNotFound } from "./multi-map-item";
+import { actions } from "../../../store";
 import { API } from "../../../api/api";
 
 
@@ -14,17 +14,20 @@ const factory = (node: TabNode) => {
   return <MultiMapItem config={config}/>;
 };
 
+function multiMapChannelSelector(this: FormID, state: WState): Channel {
+  const settings = state.formSettings[this] as GridFormSettings;
+  return state.channelsData[settings.multiMapChannel];
+}
+
 export const MultiMap = ({formID}: PropsFormID) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const channelData: Channel = useSelector(multiMapChannelSelector.bind(formID));
 
-  const settings: GridFormSettings = useSelector(selectors.formSettings.bind(formID));
-  const channelData: any = useSelector(selectors.channel.bind(settings.multiMapChannel));
-
-  const [model, children, configs] = useMemo<MapTuple>(() => {
+  const [model, children, configs] = useMemo(() => {
     const rows = channelData?.data?.Rows;
     if (!rows || !rows.length) return [null, null, []];
-    return getMultiMapLayout(rows.map(row => row.Cells), formID);
+    return getMultiMapLayout(rows, formID);
   }, [channelData, formID]);
 
   useEffect(() => {
@@ -57,7 +60,7 @@ export const MultiMap = ({formID}: PropsFormID) => {
   return (
     <Layout
       model={model} factory={factory}
-      onAction={onAction} i18nMapper={translator}
+      onAction={onAction} i18nMapper={i18nMapper}
     />
   );
 };

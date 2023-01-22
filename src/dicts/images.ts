@@ -11,18 +11,18 @@ import zipFileIcon from "../static/images/download-files/zip.png";
 import importFileIcon from "../static/images/download-files/import.png";
 import defaultFileIcon from "../static/images/download-files/default.png";
 
-/* --- Forms --- */
+/* --- Not Supported Form Icons --- */
 
-import caratIcon from "../static/images/forms/carat.png";
-import filesIcon from "../static/images/forms/files.png";
-import filesListIcon from "../static/images/forms/filesList.png";
-import imageIcon from "../static/images/forms/image.png";
-import model3DIcon from "../static/images/forms/model3D.png";
-import profileIcon from "../static/images/forms/profile.png";
-import slideIcon from "../static/images/forms/slide.png";
-import spreadsheetIcon from "../static/images/forms/spreadsheet.png";
-import spreadsheetUniteIcon from "../static/images/forms/spreadsheetUnite.png";
-import transferFormIcon from "../static/images/forms/transferForm.png";
+// import caratIcon from "../static/images/forms/carat.png";
+// import filesIcon from "../static/images/forms/files.png";
+// import filesListIcon from "../static/images/forms/filesList.png";
+// import imageIcon from "../static/images/forms/image.png";
+// import model3DIcon from "../static/images/forms/model3D.png";
+// import profileIcon from "../static/images/forms/profile.png";
+// import slideIcon from "../static/images/forms/slide.png";
+// import spreadsheetIcon from "../static/images/forms/spreadsheet.png";
+// import spreadsheetUniteIcon from "../static/images/forms/spreadsheetUnite.png";
+// import transferFormIcon from "../static/images/forms/transferForm.png";
 
 /* --- Menu --- */
 
@@ -104,19 +104,19 @@ export const filesDict: ImagesDict<FileExtension> = {
   'zip': zipFileIcon,
 };
 
-/** Используется в компоненте `Screenshot` (заглушки нереализованных форм). */
-export const formIconsDict: ImagesDict<string> = {
-  'carat': caratIcon,
-  'files': filesIcon,
-  'filesList': filesListIcon,
-  'image': imageIcon,
-  'model3D': model3DIcon,
-  'profile': profileIcon,
-  'slide': slideIcon,
-  'spreadsheet': spreadsheetIcon,
-  'spreadsheetUnite': spreadsheetUniteIcon,
-  'transferForm': transferFormIcon,
-};
+// /** Используется в компоненте `Screenshot` (заглушки нереализованных форм). */
+// export const formIconsDict: ImagesDict<string> = {
+//   'carat': caratIcon,
+//   'files': filesIcon,
+//   'filesList': filesListIcon,
+//   'image': imageIcon,
+//   'model3D': model3DIcon,
+//   'profile': profileIcon,
+//   'slide': slideIcon,
+//   'spreadsheet': spreadsheetIcon,
+//   'spreadsheetUnite': spreadsheetUniteIcon,
+//   'transferForm': transferFormIcon,
+// };
 
 /** Иконки режимов редактирования. */
 export const mapEditIconsDict: {[key: number]: IconPath} = {

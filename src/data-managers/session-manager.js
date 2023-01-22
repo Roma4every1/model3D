@@ -1,4 +1,4 @@
-import i18n from '../locales/i18n';
+import { t } from '../locales/i18n';
 import { actions } from "../store";
 import { API } from "../api/api";
 import { startSession as startSessionThunk } from "../store/thunks";
@@ -15,13 +15,13 @@ export function createSessionManager(store) {
     const res = await API.session.iAmAlive();
     if (res.ok && res.data) return;
     clearInterval(timerId);
-    store.dispatch(actions.setWindowWarning(i18n.t('messages.sessionLost')));
+    store.dispatch(actions.setWindowWarning(t('messages.sessionLost')));
   };
 
   const startSession = async (isDefault = false) => {
     const systemName = store.getState().appState.systemID;
     if (!systemName) {
-      const message = i18n.t('messages.systemNotDefined');
+      const message = t('messages.systemNotDefined');
       store.dispatch(actions.setWindowError(message));
       return {ok: false, data: message};
     } else {
@@ -36,7 +36,6 @@ export function createSessionManager(store) {
         const sessionID = res.data;
         // старое и новое хранилище, потом старое уберётся
         store.dispatch(actions.setSessionId(sessionID));
-        store.dispatch(actions.setSessionID(sessionID));
         API.setSessionID(sessionID);
       }
       return res;
@@ -55,14 +54,14 @@ export function createSessionManager(store) {
       store.dispatch(actions.setWindowNotification('Сессия сохранена'));
       setTimeout(clearNotice, 3000);
     } else {
-      store.dispatch(actions.setWindowWarning(i18n.t('messages.errorOnSessionSave')));
+      store.dispatch(actions.setWindowWarning(t('messages.errorOnSessionSave')));
     }
   };
 
   const stopSession = async (clear = true) => {
     const { ok, data } = await API.session.stopSession(getSessionToSave(store.getState()));
     if (!ok || !data) {
-      const message = i18n.t('messages.errorOnSessionStop');
+      const message = t('messages.errorOnSessionStop');
       store.dispatch(actions.setWindowWarning(message)); return;
     }
     if (clear) store.dispatch(actions.clearSession());

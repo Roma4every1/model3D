@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { formDict } from "../../../dicts/forms";
 import { actions, sessionManager } from "../../../store";
 import { MultiMap } from "../multi-map/multi-map";
+import Dataset from "../dataset/dataset";
 
 
 interface FormProps {
@@ -12,7 +13,7 @@ interface FormProps {
 interface FormState {
   formId: FormID,
   loaded: boolean,
-  activeChannels: ChannelName[],
+  channels: ChannelName[],
 }
 
 
@@ -26,7 +27,7 @@ export default function Form({formData, channels}: FormProps) {
   const [formState, setFormState] = useState<FormState>({
     formId: formID,
     loaded: false,
-    activeChannels: channels ?? [],
+    channels: channels ?? [],
   });
 
   useEffect(() => {
@@ -41,14 +42,8 @@ export default function Form({formData, channels}: FormProps) {
       const load = async (channel) => {
         return await sessionManager.channelsManager.loadAllChannelData(channel, formID, false);
       }
-      Promise.all(formState.activeChannels.map(load)).then(() => {
-        if (!formState.loaded) {
-          setFormState({
-            formId: formID,
-            loaded: true,
-            activeChannels: channels,
-          });
-        }
+      Promise.all(formState.channels.map(load)).then(() => {
+        if (!formState.loaded) setFormState({formId: formID, loaded: true, channels});
       });
     }
 
@@ -59,7 +54,6 @@ export default function Form({formData, channels}: FormProps) {
   }, [formID, formData, formState, channels]);
 
   const ref = useRef(null);
-  const formRef = isDataSet ? ref : undefined;
 
   useLayoutEffect(() => {
     if (isDataSet) dispatch(actions.setFormRefs(formID, ref));
@@ -67,11 +61,12 @@ export default function Form({formData, channels}: FormProps) {
 
   if (!formState.loaded) return <div className={'form-container'}/>;
   if (formData.type === 'multiMap') return <MultiMap formID={formID}/>;
+  if (isDataSet) return <Dataset formData={formData} channels={formState.channels} ref={ref}/>;
 
   const FormByType = formDict[formData.type];
   return (
     <div className={'form-container'}>
-      <FormByType formData={formData} data={formState} ref={formRef}/>
+      <FormByType formID={formID} channels={formState.channels}/>
     </div>
   );
 }
@@ -93,5 +88,5 @@ async function getFormState(formID: FormID, formData: FormDataWMR): Promise<Form
     settings.dateStep = settings.seriesSettings[channels[0]]?.dateStep === 'Month' ? 'month' : 'year';
   }
 
-  return {formId: formID, loaded: true, activeChannels: channels};
+  return {formId: formID, loaded: true, channels};
 }

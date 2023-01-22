@@ -387,10 +387,10 @@ function DataSetView(props, ref) {
     const { databaseData, currentRowObjectName } = inputTableData;
     const row = selectedValues.find(e => e === true);
 
-    const parentFormID = getParentFormId(formData.id);
+    const parentFormID = getParentFormId(formID);
     const value = tableRowToString(databaseData, databaseData.data.Rows[row[0]])?.value;
     dispatch(actions.updateParam(parentFormID, currentRowObjectName, value));
-  }, [selectedState, inputTableData, formData, dispatch]);
+  }, [selectedState, inputTableData, formID, dispatch]);
 
   useEffect(() => {
     setSelectedState({});
@@ -467,9 +467,9 @@ function DataSetView(props, ref) {
             if (property && property.secondLevelChannelName) {
                 result.setOpened = (arg) => dispatch(actions.setOpenedWindow(property.name, arg,
                   <SecondLevelTable
-                    key={formData.id + property.name}
-                    keyProp={formData.id + property.name}
-                    secondLevelFormId={formData.id + property.name}
+                    key={formID + property.name}
+                    keyProp={formID + property.name}
+                    secondLevelFormId={formID + property.name}
                     channelName={property.secondLevelChannelName}
                     setOpened={(arg) =>
                         dispatch(actions.setOpenedWindow(property.name, arg, null))
@@ -643,11 +643,11 @@ function DataSetView(props, ref) {
             columnMenu={(props) => <ColumnMenu
                 {...props}
                 tableColumn={column}
-                formId={formData.id}
+                formId={formID}
                 activeChannelName={activeChannelName}
             />}
         />
-  }, [tableSettings, tableData, dataState, activeChannelName, formData]);
+  }, [tableSettings, tableData, dataState, activeChannelName, formID]);
 
   useEffect(() => {
     var groupingData = [];

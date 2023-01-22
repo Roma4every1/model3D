@@ -1,4 +1,4 @@
-import React, { useState, useRef, useImperativeHandle } from "react";
+import React, { useRef, useImperativeHandle } from "react";
 import { useSelector } from "react-redux";
 import DataSetView from "./dataset-view";
 import { selectors, sessionManager } from "../../../store";
@@ -48,16 +48,15 @@ function mapColumns(property) {
   };
 }
 
-function DataSet({formData, data}, ref) {
-  const [activeChannelName] = useState(data.activeChannels[0]);
-
+function DataSet({formData, channels}, ref) {
+  const channelName = channels[0];
   /** @type Channel */
-  const databaseData = useSelector(selectors.channel.bind(activeChannelName));
+  const databaseData = useSelector(selectors.channel.bind(channelName));
 
   const rowToAdd = useRef(null);
 
   const reload = async () => {
-    await sessionManager.channelsManager.loadAllChannelData(activeChannelName, formData.id, true);
+    await sessionManager.channelsManager.loadAllChannelData(channelName, formData.id, true);
   };
 
   let columnsJSON = [];
@@ -134,7 +133,7 @@ function DataSet({formData, data}, ref) {
     <div className={'grid-container'}>
       <DataSetView
         inputTableData={tableData}
-        activeChannelName={activeChannelName}
+        activeChannelName={channelName}
         editable={databaseData?.data?.Editable}
         dataPart={databaseData?.data?.DataPart}
         formData={formData}

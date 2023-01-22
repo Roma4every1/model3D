@@ -6,11 +6,11 @@ import { DownloadFiles } from "../../right-tabs/download-files";
 import { LeftPanel } from "./left-panel";
 import { TopTab } from "../../top-tabs/top-tab";
 import { RightTab } from "../../right-tabs/right-tab";
+import { i18nMapper } from "../../../locales/i18n";
 import { compareArrays } from "../../../utils/utils";
-import { selectors } from "../../../store";
 import { getDockLayout } from "../../../layout/dock-layout";
+import { selectors } from "../../../store";
 import Form from "../form/form";
-import translator from "../../../locales/layout";
 
 
 const dockLayoutSelector = (state: WState): DockLayout => {
@@ -52,7 +52,7 @@ export const Dock = () => {
   return (
     <Layout
       model={model} factory={factory}
-      onModelChange={onModelChange} i18nMapper={translator}
+      onModelChange={onModelChange} i18nMapper={i18nMapper}
     />
   );
 };

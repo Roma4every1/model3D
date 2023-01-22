@@ -36,13 +36,13 @@
     "filesCount": "Выбрано файлов: {{count}}",
     "filesNotSelected": "Файлы не выбраны"
   },
-  "flexlayout": {
+  "layout": {
     "close": "Закрыть",
-    "error": "Ошибка при отрисовке компонента",
-    "hiddenTabs": "Скрытые вкладки",
-    "maximizeTabset": "Развернуть окно",
-    "move": "Переместить: ",
-    "restoreTabset": "Восстановить окно"
+    "restore": "Восстановить окно",
+    "maximize": "Развернуть окно",
+    "move-tab": "Переместить: ",
+    "move-tabset": "Переместить вкладку",
+    "error": "Ошибка при отрисовке компонента"
   },
   "formNames": {
     "carat": "Каротаж",

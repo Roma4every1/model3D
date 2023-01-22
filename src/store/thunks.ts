@@ -1,8 +1,8 @@
 import { WDispatch } from "./index";
-import { API } from "../api/api";
 import { mapSystem } from "../utils/utils";
-import { createClientConfig } from "../api/initialization";
+import { createClientConfig, fetchRootFormState } from "../api/initialization";
 import { actions, sessionManager } from "./index";
+import { API } from "../api/api";
 
 
 export async function initialize(dispatch: WDispatch) {
@@ -19,8 +19,25 @@ export async function initialize(dispatch: WDispatch) {
 
 export async function startSession(this: boolean, dispatch: WDispatch) {
   dispatch(actions.fetchSessionStart());
-  const res: Res<SessionID> = await sessionManager.startSession(this);
-  dispatch(actions.fetchSessionEnd(res));
+
+  const resSessionID = await sessionManager.startSession(this);
+  if (resSessionID.ok === false) {
+    dispatch(actions.fetchSessionEnd(resSessionID)); return;
+  }
+
+  const resRoot = await fetchRootFormState();
+  if (typeof resRoot === 'string') {
+    dispatch(actions.fetchSessionEnd({ok: false, data: resRoot})); return;
+  }
+
+  const rootFormID = resRoot.id;
+  const activeFormID = resRoot.children.openedChildren[0];
+
+  dispatch(actions.setFormSettings(rootFormID, resRoot.settings));
+  dispatch(actions.setChildForms(rootFormID, resRoot.children));
+  dispatch(actions.setParams(rootFormID, resRoot.parameters));
+  dispatch(actions.setPresentations(resRoot.presentations, activeFormID));
+  dispatch(actions.fetchSessionEnd({ok: true, data: resSessionID.data, rootFormID}));
 }
 
 export const fetchMapData = (formID: FormID, mapID: MapID, owner: MapOwner, setProgress: Function) => {

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { IJsonModel, Model } from "flexlayout-react";
-import { Loader } from "@progress/kendo-react-indicators";
 import { Container } from "./container";
 import { gridLayoutGlobalAttrs, fillLayout, createLayout } from "./grid-utils";
 import { isMultiMap, getMultiMapChildrenID } from "./grid-utils";
@@ -10,7 +9,7 @@ import { selectors, actions } from "../../../store";
 import { API } from "../../../api/api";
 
 
-export default function Grid({formData: {id: formID}}) {
+export const Grid = ({formID}: FormProps) => {
   const dispatch = useDispatch();
   const [model, setModel] = useState<Model>();
 
@@ -61,6 +60,6 @@ export default function Grid({formData: {id: formID}}) {
     });
   }, [activeChildren, openedChildren, children, model, formID, layout, dispatch]);
 
-  if (!model) return <Loader size={'small'} type={'infinite-spinner'} />;
+  if (!model) return <div/>;
   return <Container formID={formID} model={model}/>;
-}
+};
