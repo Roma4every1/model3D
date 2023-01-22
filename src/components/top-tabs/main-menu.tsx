@@ -6,7 +6,7 @@ import { Button } from "@progress/kendo-react-buttons";
 import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { MenuSection, ButtonIcon, BigButtonToggle } from "../common/menu-ui";
 
-import { actions, selectors } from "../../store";
+import { actions, selectors, sessionManager } from "../../store";
 import { backToSystemsIcon, aboutProgramIcon, saveSessionIcon, defaultSessionIcon } from "../../dicts/images";
 import { globalParametersIcon, presentationParametersIcon, presentationsListIcon } from "../../dicts/images";
 import PACKAGE from "../../../package.json";
@@ -20,13 +20,12 @@ interface AboutProgramWindowProps {
 
 
 /** Меню в верхней панели. */
-export function MainMenu() {
+export const MainMenu = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
 
   const config = useSelector(selectors.config);
   const leftLayout = useSelector(selectors.leftLayout);
-  const sessionManager = useSelector(selectors.sessionManager);
 
   const [showGlobal, setShowGlobal] = useState(leftLayout.globalParamsHeight > 0);
   const [showForm, setShowForm] = useState(leftLayout.formParamsHeight > 0);
@@ -53,9 +52,6 @@ export function MainMenu() {
     dispatch(actions.setOpenedWindow('about', true, window));
   };
 
-  const saveSession = () => { sessionManager.saveSession().then(); };
-  const loadSessionByDefault = () => { sessionManager.loadSessionByDefault().then(); };
-
   return (
     <div className={'menu'}>
       <MenuSection header={'Главная'}>
@@ -68,11 +64,11 @@ export function MainMenu() {
       <MenuSection header={'Сессия'}>
         <ButtonIcon
           text={t('menucommands.savesession')} icon={saveSessionIcon}
-          action={saveSession}
+          action={sessionManager.saveSession}
         />
         <ButtonIcon
           text={t('menucommands.loadsessionbydefault')} icon={defaultSessionIcon}
-          action={loadSessionByDefault}
+          action={sessionManager.loadSessionByDefault}
         />
       </MenuSection>
       <MenuSection header={'Панели'} className={'map-panel-main'} style={{display: 'flex'}}>
@@ -91,7 +87,7 @@ export function MainMenu() {
       </MenuSection>
     </div>
   );
-}
+};
 
 /** Окно "О программе". */
 const AboutProgramWindow = ({config, onClose}: AboutProgramWindowProps) => {
@@ -107,4 +103,4 @@ const AboutProgramWindow = ({config, onClose}: AboutProgramWindowProps) => {
       </DialogActionsBar>
     </Dialog>
   );
-}
+};

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Grid, GridColumn as Column, getSelectedState, getSelectedStateFromKeyDown,
   GridColumnMenuFilter } from "@progress/kendo-react-grid";
@@ -13,11 +13,11 @@ import { useTranslation } from "react-i18next";
 import { CellRender, RowRender } from "./renderers";
 import filterOperators from "./filter-operators.json";
 import filterOperations from "./filter-operations.json";
-import FormHeader from "../form/form-header";
-import { actions, selectors } from "../../../store";
+import { DataSetEditToolbar } from "./dataset-edit-toolbar";
+import { getParentFormId, tableRowToString } from "../../../utils/utils";
+import { actions, selectors, sessionManager } from "../../../store";
+import { API } from "../../../api/api";
 
-
-var utils = require("../../../utils/utils");
 var _ = require("lodash");
 const DATA_ITEM_KEY = "js_id";
 const SELECTED_FIELD = "js_selected";
@@ -26,72 +26,78 @@ const idGetter = getter(DATA_ITEM_KEY);
 const addRowCount = 500;
 
 
+const getFormat = (column) => {
+  switch (column.netType) {
+    case "System.DateTime":
+      return "{0:d}";
+    default:
+      return null;
+  }
+};
+
+const getFilterByType = (column) => {
+  switch (column.netType) {
+    case "System.DateTime":
+      return "date";
+    case "System.Decimal":
+    case "System.Double":
+    case "System.Int32":
+    case "System.Int64":
+      return "numeric";
+    default:
+      return "text";
+  }
+};
+
 function DataSetView(props, ref) {
-    const { t } = useTranslation();
-    const dispatch = useDispatch();
-    const sessionManager = useSelector(selectors.sessionManager);
-    const sessionId = useSelector(selectors.sessionID);
-    const { inputTableData, formData, apply, deleteRows, getRow, reload, editable, dataPart,
-      activeChannelName } = props;
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
 
-    const [rowAdding, setRowAdding] = React.useState(false);
-    const [edited, setEdited] = React.useState(false);
-    const [activeCell, setActiveCell] = React.useState(null);
-    const [columnGroupingData, setColumnGroupingData] = React.useState([]);
-    const [tableData, setTableData] = React.useState({
-        rowsJSON: [],
-        columnsJSON: []
+  const { apply, deleteRows, getRow, reload } = props;
+  const { inputTableData, formData, activeChannelName, editable, dataPart } = props;
+  const formID = formData.id;
+
+  const tableSettings = useSelector(selectors.formSettings.bind(formID));
+  const tableColumnGroupSettings = useSelector((state) => {
+    return state.formSettings[formID]?.columns?.ColumnGroupSettings
+  });
+
+  const [rowAdding, setRowAdding] = useState(false);
+  const [edited, setEdited] = useState(false);
+  const [activeCell, setActiveCell] = useState(null);
+  const [columnGroupingData, setColumnGroupingData] = useState([]);
+  const [tableData, setTableData] = useState({rowsJSON: [], columnsJSON: []});
+  const [dataState, setDataState] = useState({skip: 0, take: 100});
+  const [editField, setEditField] = useState(undefined);
+  const [editID, setEditID] = useState(null);
+  const [selectedState, setRealSelectedState] = useState({});
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  var selectedStateChanged = React.useRef(false);
+
+  const setSelectedState = (newValue) => {
+    selectedStateChanged.current = true;
+    setRealSelectedState(newValue);
+  };
+
+  useEffect(() => {
+    if (!inputTableData.properties) return;
+    let neededParamArray = { channelName: activeChannelName, params: [] };
+    inputTableData.properties.forEach(prop => {
+      const conditionElement = {id: prop.name + 'ConditionFilterObject', type: 'condition'};
+      neededParamArray.params.push(conditionElement);
     });
-    const [dataState, setDataState] = React.useState({
-        skip: 0,
-        take: 100
-    });
-    const [editField, setEditField] = React.useState(undefined);
-    const [editID, setEditID] = React.useState(null);
-    const [selectedState, setRealSelectedState] = React.useState({});
-    const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+    dispatch(actions.addParamSet(neededParamArray));
+  }, [activeChannelName, inputTableData.properties, dispatch]);
 
-    const tableSettings = useSelector((state) => {
-      return state.formSettings[formData.id]
-    });
-    const tableColumnGroupSettings = useSelector((state) => {
-      return state.formSettings[formData.id]?.columns?.ColumnGroupSettings
-    });
+  useEffect(() => {
+    const maxRowCountElement = {id: 'maxRowCount', type: 'integer'};
+    const sortOrder = {id: 'sortOrder', type: 'sortOrder'}
+    dispatch(actions.addParam(activeChannelName, maxRowCountElement));
+    dispatch(actions.addParam(activeChannelName, sortOrder));
+  }, [activeChannelName, dispatch]);
 
-    var selectedStateChanged = React.useRef(false);
-    const setSelectedState = (newValue) => {
-        selectedStateChanged.current = true;
-        setRealSelectedState(newValue);
-    }
-
-    React.useEffect(() => {
-        if (inputTableData.properties) {
-            let neededParamArray = { channelName: activeChannelName, params: [] };
-            inputTableData.properties.forEach(prop => {
-                const conditionElement = {
-                    id: prop.name + "ConditionFilterObject",
-                    type: "condition"
-                };
-                neededParamArray.params.push(conditionElement);
-            });
-            dispatch(actions.addParamSet(neededParamArray));
-        }
-    }, [activeChannelName, inputTableData.properties, dispatch]);
-
-    React.useEffect(() => {
-        const maxRowCountElement = {
-            id: "maxRowCount",
-            type: "integer"
-        };
-        const sortOrder = {
-            id: "sortOrder",
-            type: "sortOrder"
-        }
-        dispatch(actions.addParam(activeChannelName, maxRowCountElement));
-        dispatch(actions.addParam(activeChannelName, sortOrder));
-    }, [activeChannelName, dispatch]);
-
-    React.useEffect(() => {
+  useEffect(() => {
         if (dataState) {
             let neededParamArray = [];
             if (!dataState.sort) {
@@ -126,9 +132,7 @@ function DataSetView(props, ref) {
                         else switch (col.netType) {
                             case "System.DateTime":
                                 if (typeof fieldFilter === 'string') {
-                                    var pattern = /(\d{2})\.(\d{2})\.(\d{4})/;
-                                    fieldFilter = new Date(fieldFilter
-                                      .replace(pattern, '$3/$2/$1'));
+                                    fieldFilter = new Date(fieldFilter);
                                     filter.value = fieldFilter;
                                 }
                                 break;
@@ -145,8 +149,8 @@ function DataSetView(props, ref) {
                                 break;
                         }
                         if (!operation.includes("Null")) {
-                            center = `<netType typeName="${col.netType}" value="${utils
-                              .dateToString(fieldFilter)}"/>`
+                            center = `<netType typeName="${col.netType}" value="${
+                              fieldFilter.toJSON()}"/>`
                         }
                         filterValue += `<${operation}>${center}</${operation}>`;
                     });
@@ -164,69 +168,56 @@ function DataSetView(props, ref) {
             });
             dispatch(actions.updateParamSet(activeChannelName, neededParamArray));
         }
-    }, [dataState, activeChannelName, sessionManager, inputTableData, dispatch]);
+  }, [dataState, activeChannelName, inputTableData, dispatch]);
 
-    const onDataStateChange = (event) => {
-        setDataState(event.dataState);
-        if (dataPart && (dataToShow.length < event.dataState.skip + event.dataState.take * 2)) {
-            sessionManager.paramsManager.updateParamValue(
-              activeChannelName, "maxRowCount",
-              dataToShow.length + addRowCount, true);
-        }
-    };
+  const onDataStateChange = (event) => {
+    setDataState(event.dataState);
+    if (dataPart && (dataToShow.length < event.dataState.skip + event.dataState.take * 2)) {
+      const value = dataToShow.length + addRowCount;
+      dispatch(actions.updateParam(activeChannelName, 'maxRowCount', value));
+    }
+  };
 
-    const handleDeleteDialogOpen = () => {
-        setDeleteDialogOpen(true);
-    };
+  const handleDeleteDialogOpen = () => { setDeleteDialogOpen(true); };
+  const handleDeleteDialogClose = () => { setDeleteDialogOpen(false); };
 
-    const handleDeleteDialogClose = () => {
-        setDeleteDialogOpen(false);
-    };
+  const addRecord = async (existingRecord) => {
+    var copy = true;
+    var toEnd = false;
+    var index = Infinity;
+    if (Object.entries(selectedState).length > 0) {
+      index = Math.min(Object.entries(selectedState)
+        .filter(e => e[1] === true).map(e => e[0]), Infinity);
+    }
+    if (index === tableData.rowsJSON.length - 1) toEnd = true;
+    if (index === Infinity) { copy = false; index = 1; }
 
-    const addRecord = async (existingRecord) => {
-        var copy = true;
-        var toEnd = false;
-        var index = Infinity;
-        if (Object.entries(selectedState).length > 0) {
-            index = Math.min(Object.entries(selectedState)
-              .filter(e => e[1] === true).map(e => e[0]), Infinity);
-        }
-        if (index === tableData.rowsJSON.length - 1) {
-            toEnd = true;
-        }
-        if (index === Infinity) {
-            copy = false;
-            index = 1;
-        }
-
-        var newRecord;
-        if (existingRecord && copy) {
-            newRecord = {
-                ...tableData.rowsJSON[index],
-                [DATA_ITEM_KEY]: tableData.rowsJSON.length + 1,
-            };
-        }
-        else {
-            newRecord = await getRow();
-        }
-        if (toEnd) {
-            setTableData({ rowsJSON: [...tableData.rowsJSON, newRecord],
-              columnsJSON: tableData.columnsJSON });
-        }
-        else if (!toEnd) {
-            var startPart = tableData.rowsJSON.slice(0, index);
-            var finishPart = tableData.rowsJSON.slice(index);
-            setTableData({ rowsJSON: [...startPart, newRecord, ...finishPart],
-              columnsJSON: tableData.columnsJSON });
-        }
-        setEditID(idGetter(newRecord));
-        setRowAdding(true);
-    };
+    var newRecord;
+    if (existingRecord && copy) {
+      newRecord = {
+        ...tableData.rowsJSON[index],
+        [DATA_ITEM_KEY]: tableData.rowsJSON.length + 1,
+      };
+    } else {
+      newRecord = await getRow();
+    }
+    if (toEnd) {
+      setTableData({ rowsJSON: [...tableData.rowsJSON, newRecord],
+        columnsJSON: tableData.columnsJSON });
+    } else if (!toEnd) {
+      var startPart = tableData.rowsJSON.slice(0, index);
+      var finishPart = tableData.rowsJSON.slice(index);
+      setTableData({ rowsJSON: [...startPart, newRecord, ...finishPart],
+        columnsJSON: tableData.columnsJSON });
+    }
+    setEditID(idGetter(newRecord));
+    setRowAdding(true);
+  };
 
   const excelExport = async () => {
     const dataD = sessionManager.channelsManager.getAllChannelParams(activeChannelName);
     var neededParamValues = sessionManager.paramsManager
-      .getParameterValues(dataD, formData.id, false, activeChannelName);
+      .getParameterValues(dataD, formID, false, activeChannelName);
     var settings = tableSettings?.columns;
     if (settings) {
       settings = {
@@ -235,202 +226,177 @@ function DataSetView(props, ref) {
           .map(c => { return { ...c, isVisible: tableData.columnsJSON
               .some(cc => cc.field === c.channelPropertyName) } }) };
     }
-    var jsonToSend = {
-      sessionId: sessionId,
+    const exportData = {
       channelName: activeChannelName,
       paramName: formData.displayName,
-      presentationId: utils.getParentFormId(formData.id),
+      presentationId: getParentFormId(formID),
       paramValues: neededParamValues,
-      settings: settings
+      settings: settings,
     };
-    const body = JSON.stringify(jsonToSend);
-    var data = await sessionManager.fetchData(`exportToExcel`,
-      {method: 'POST', body});
-    sessionManager.watchReport(data.OperationId);
+    const { ok, data } = await API.exportToExcel(exportData);
+    if (ok) sessionManager.watchReport(data.OperationId);
   };
 
-    const onItemChange = (event) => {
-        setEdited(true);
-        const editedItemID = idGetter(event.dataItem);
-        const field = event.field + '_jsoriginal';
-        const data = tableData.rowsJSON.map(item =>
-            idGetter(item) === editedItemID ? (event.dataItem[field]
-              ? { ...item, [event.field]: event.value, [field]: event.dataItem[field] }
-              : { ...item, [event.field]: event.value }) : item
-        );
-        setTableData({ rowsJSON: data, columnsJSON: tableData.columnsJSON });
-    };
+  const onItemChange = (event) => {
+    setEdited(true);
+    const editedItemID = idGetter(event.dataItem);
+    const field = event.field + '_jsoriginal';
+    const data = tableData.rowsJSON.map(item =>
+        idGetter(item) === editedItemID ? (event.dataItem[field]
+          ? { ...item, [event.field]: event.value, [field]: event.dataItem[field] }
+          : { ...item, [event.field]: event.value }) : item
+    );
+    setTableData({ rowsJSON: data, columnsJSON: tableData.columnsJSON });
+  };
 
-    const onSelectionChange = (event) => {
-        const newSelectedState = getSelectedState({
-            event,
-            selectedState: selectedState,
-            dataItemKey: DATA_ITEM_KEY,
-        });
-        if (!_.isEqual(newSelectedState, selectedState)) {
-            setSelectedState(newSelectedState);
-            if (edited) {
-                applyEdit();
-            }
+  const onSelectionChange = (event) => {
+    const newSelectedState = getSelectedState({
+      event,
+      selectedState: selectedState,
+      dataItemKey: DATA_ITEM_KEY,
+    });
+    if (!_.isEqual(newSelectedState, selectedState)) {
+      setSelectedState(newSelectedState);
+      if (edited) applyEdit();
+      setEditID(null);
+    }
+  };
+
+  const onKeyDown = (event) => {
+    const newSelectedState = getSelectedStateFromKeyDown({
+      event,
+      selectedState: selectedState,
+      dataItemKey: DATA_ITEM_KEY,
+    });
+    if (!_.isEqual(newSelectedState, selectedState)) {
+      setSelectedState(newSelectedState);
+      if (edited) applyEdit();
+      setEditID(null);
+    }
+
+    switch (event.nativeEvent.key) {
+      case 'Insert': {
+        if (editable && !rowAdding) addRecord(event.nativeEvent.ctrlKey);
+        break;
+      }
+      case 'Escape': {
+        exitEdit();
+        break;
+      }
+      case 'Delete': {
+        if (!event?.syntheticEvent?.target?.form?.className?.includes('filter')) {
+          if (editable && !(editID != null && editField) && _.countBy(
+            Object.keys(selectedState), o => selectedState[o]).true > 0) {
+            handleDeleteDialogOpen();
+          }
+        }
+        break;
+      }
+      case 'Enter': {
+        if (deleteDialogOpen) {
+          event.nativeEvent.preventDefault();
+          handleDeleteDialogClose();
+          deleteSelectedRows();
+        } else if (edited) applyEdit();
+        break;
+      }
+      case 'Home': {
+        if (event.nativeEvent.ctrlKey) {
+          if (tableData.rowsJSON.length > 0) {
+            setDataState({ ...dataState, skip: 0 });
+            _ref.current.element.children[1].children[0].scrollTop = 0;
+            setSelectedState({ 0: true });
+            applyEdit();
             setEditID(null);
+            event.nativeEvent.preventDefault();
+          }
         }
-    };
-
-    const onKeyDown = (event) => {
-        const newSelectedState = getSelectedStateFromKeyDown({
-            event,
-            selectedState: selectedState,
-            dataItemKey: DATA_ITEM_KEY,
-        });
-        if (!_.isEqual(newSelectedState, selectedState)) {
-            setSelectedState(newSelectedState);
-            if (edited) {
-                applyEdit();
-            }
+        break;
+      }
+      case 'End': {
+        if (event.nativeEvent.ctrlKey) {
+          if (tableData.rowsJSON.length > 0) {
+            let rowIndex = tableData.rowsJSON.length - 1;
+            setDataState({
+              ...dataState, skip: rowIndex - 20 > 0 ? rowIndex - 20 : 0 });
+            let newState = {};
+            newState[rowIndex] = true;
+            setSelectedState(newState);
+            applyEdit();
             setEditID(null);
+          }
         }
-
-        switch (event.nativeEvent.key) {
-            case 'Insert': {
-                if (editable && !rowAdding) {
-                    if (event.nativeEvent.ctrlKey) {
-                        addRecord(true);
-                    }
-                    else {
-                        addRecord();
-                    }
-                }
-                break;
-            }
-            case 'Escape': {
-                exitEdit();
-                break;
-            }
-            case 'Delete': {
-                if (!event?.syntheticEvent?.target?.form?.className?.includes('filter')) {
-                    if (editable && !(editID != null && editField) && _.countBy(
-                      Object.keys(selectedState), o => selectedState[o]).true > 0) {
-                        handleDeleteDialogOpen();
-                    }
-                }
-                break;
-            }
-            case 'Enter': {
-                if (deleteDialogOpen) {
-                    event.nativeEvent.preventDefault();
-                    handleDeleteDialogClose();
-                    deleteSelectedRows();
-                }
-                else if (edited) {
-                    applyEdit();
-                }
-                break;
-            }
-            case 'Home': {
-                if (event.nativeEvent.ctrlKey) {
-                    if (tableData.rowsJSON.length > 0) {
-                        setDataState({ ...dataState, skip: 0 });
-                        _ref.current.element.children[1].children[0].scrollTop = 0;
-                        setSelectedState({ 0: true });
-                        applyEdit();
-                        setEditID(null);
-                        event.nativeEvent.preventDefault();
-                    }
-                }
-                break;
-            }
-            case 'End': {
-                if (event.nativeEvent.ctrlKey) {
-                    if (tableData.rowsJSON.length > 0) {
-                        let rowIndex = tableData.rowsJSON.length - 1;
-                        setDataState({
-                          ...dataState, skip: rowIndex - 20 > 0 ? rowIndex - 20 : 0 });
-                        let newState = {};
-                        newState[rowIndex] = true;
-                        setSelectedState(newState);
-                        applyEdit();
-                        setEditID(null);
-                    }
-                }
-                break;
-            }
-            case 'PageUp': {
-                if (tableData.rowsJSON.length > 0) {
-                    setSelectedState({ 0: true });
-                    applyEdit();
-                    setEditID(null);
-                }
-                break;
-            }
-            case 'PageDown': {
-                if (tableData.rowsJSON.length > 0) {
-                    let rowIndex = tableData.rowsJSON.length - 1;
-                    let newState = {};
-                    newState[rowIndex] = true;
-                    setSelectedState(newState);
-                    applyEdit();
-                    setEditID(null);
-                }
-                break;
-            }
-            case 'Ф':
-            case 'ф':
-            case 'A':
-            case 'a': {
-                if (event.nativeEvent.ctrlKey) {
-                    selectAll();
-                    event.nativeEvent.preventDefault();
-                }
-                break;
-            }
-            case 'ArrowUp': {
-                break;
-            }
-            case 'ArrowDown': {
-                if (editable && (!rowAdding) && !(editID && editField)) {
-                    var index = Math.min(Object.entries(selectedState)
-                      .filter(e => e[1] === true)
-                      .map(e => e[0]));
-                    if (index === tableData.rowsJSON.length - 1) {
-                        if (event.nativeEvent.ctrlKey) {
-                            addRecord(true);
-                        }
-                        else {
-                            addRecord(false);
-                        }
-                    }
-                }
-                break;
-            }
-            default: {
-                break;
-            }
+        break;
+      }
+      case 'PageUp': {
+        if (tableData.rowsJSON.length > 0) {
+          setSelectedState({ 0: true });
+          applyEdit();
+          setEditID(null);
         }
-    };
-
-    React.useEffect(() => {
-        if (selectedStateChanged.current && inputTableData.currentRowObjectName) {
-            selectedStateChanged.current = false;
-            if (Object.entries(selectedState).filter(e => e[1] === true).length === 1) {
-                let row = Object.entries(selectedState).find(e => e[1] === true);
-                sessionManager.paramsManager.updateParamValue(
-                  utils.getParentFormId(formData.id),
-                  inputTableData.currentRowObjectName,
-                  utils.tableRowToString(
-                    inputTableData.databaseData,
-                    inputTableData.databaseData.data.Rows[row[0]]
-                  )?.value,
-                  true
-                );
-            }
+        break;
+      }
+      case 'PageDown': {
+        if (tableData.rowsJSON.length > 0) {
+          let rowIndex = tableData.rowsJSON.length - 1;
+          let newState = {};
+          newState[rowIndex] = true;
+          setSelectedState(newState);
+          applyEdit();
+          setEditID(null);
         }
-    }, [selectedState, inputTableData, sessionManager, formData]);
+        break;
+      }
+      case 'Ф':
+      case 'ф':
+      case 'A':
+      case 'a': {
+        if (event.nativeEvent.ctrlKey) {
+          selectAll();
+          event.nativeEvent.preventDefault();
+        }
+        break;
+      }
+      case 'ArrowDown': {
+        if (editable && (!rowAdding) && !(editID && editField)) {
+          var index = Math.min(Object.entries(selectedState)
+            .filter(e => e[1] === true)
+            .map(e => e[0]));
+          if (index === tableData.rowsJSON.length - 1) {
+            if (event.nativeEvent.ctrlKey) {
+              addRecord(true);
+            }
+            else {
+              addRecord(false);
+            }
+          }
+        }
+        break;
+      }
+      default: {}
+    }
+  };
 
-  React.useEffect(() => {
+  useEffect(() => {
+    if (!selectedStateChanged.current || !inputTableData.currentRowObjectName) return;
+    selectedStateChanged.current = false;
+
+    const selectedValues = Object.values(selectedState);
+    if (selectedValues.filter(e => e === true).length !== 1) return;
+
+    const { databaseData, currentRowObjectName } = inputTableData;
+    const row = selectedValues.find(e => e === true);
+
+    const parentFormID = getParentFormId(formData.id);
+    const value = tableRowToString(databaseData, databaseData.data.Rows[row[0]])?.value;
+    dispatch(actions.updateParam(parentFormID, currentRowObjectName, value));
+  }, [selectedState, inputTableData, formData, dispatch]);
+
+  useEffect(() => {
     setSelectedState({});
   }, [inputTableData]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     var columnNames = [];
     if (!tableSettings || !tableSettings.attachedProperties) {
       setTableData(inputTableData);
@@ -458,7 +424,7 @@ function DataSetView(props, ref) {
     }
   }, [inputTableData, tableSettings]);
 
-    async function deleteSelectedRows() {
+  async function deleteSelectedRows() {
         var elementsToRemove = ',';
         var tableDataCopy = tableData;
         var selectedRows = Object.keys(selectedState).filter(element => selectedState[element]);
@@ -482,7 +448,7 @@ function DataSetView(props, ref) {
             elementsToRemove = elementsToRemove.slice(1, -1);
             await deleteRows(elementsToRemove);
         }
-    }
+  }
 
     var dataToShow = tableData.rowsJSON;
     dataToShow = dataToShow.map((item) => ({
@@ -491,7 +457,7 @@ function DataSetView(props, ref) {
         [EDIT_FIELD]: idGetter(item) === editID
     }));
 
-    const getEditorType = (column) => {
+  const getEditorType = (column) => {
         if (!column) {
             return "string";
         }
@@ -531,32 +497,9 @@ function DataSetView(props, ref) {
             }
         }
         return result;
-    }
+  }
 
-    const getFormat = (column) => {
-        switch (column.netType) {
-            case "System.DateTime":
-                return "{0:d}";
-            default:
-                return null;
-        }
-    }
-
-    const getFilterByType = (column) => {
-        switch (column.netType) {
-            case "System.DateTime":
-                return "date";
-            case "System.Decimal":
-            case "System.Double":
-            case "System.Int32":
-            case "System.Int64":
-                return "numeric";
-            default:
-                return "text";
-        }
-    }
-
-    const applyEdit = React.useCallback(async () => {
+  const applyEdit = React.useCallback(async () => {
         if (edited || rowAdding) {
             const rowToInsert = tableData.rowsJSON.find(item =>
                 idGetter(item) === editID
@@ -571,109 +514,85 @@ function DataSetView(props, ref) {
                 }
             }
         }
-    }, [tableData, edited, editID, rowAdding, apply]);
+  }, [tableData, edited, editID, rowAdding, apply]);
 
-    const selectAll = () => {
-        const newSelectedState = {};
-        tableData.rowsJSON.forEach((item) => {
-            newSelectedState[idGetter(item)] = true;
-        });
-        setSelectedState(newSelectedState);
-    };
+  const selectAll = () => {
+    const newSelectedState = {};
+    tableData.rowsJSON.forEach((item) => { newSelectedState[idGetter(item)] = true; });
+    setSelectedState(newSelectedState);
+  };
 
-    React.useImperativeHandle(ref, () => ({
-        excelExport: excelExport,
-        selectAll: selectAll,
-        activeCell: () => { return activeCell; }
-    }));
+  React.useImperativeHandle(ref, () => ({
+    excelExport: excelExport,
+    selectAll: selectAll,
+    activeCell: () => { return activeCell; }
+  }));
 
-    const otherButtons = (
+    const otherButtons = editable ? (
       <div>
-        <button className="k-button k-button-clear" onClick={excelExport}>
-          <span className="k-icon k-i-xls" />
-        </button>
-        {editable && <button className="k-button k-button-clear" onClick={handleDeleteDialogOpen}>
+        <button className="k-button k-button-clear" onClick={handleDeleteDialogOpen}>
           <span className="k-icon k-i-minus" />
-        </button>}
-        {editable && <button className="k-button k-button-clear" onClick={() => addRecord()}
-                             disabled={rowAdding}>
+        </button>
+        <button className="k-button k-button-clear" onClick={() => addRecord()} disabled={rowAdding}>
           <span className="k-icon k-i-plus" />
-        </button>}
-        {editable && <button className="k-button k-button-clear" onClick={applyEdit}
-                             disabled={!edited && !rowAdding}>
+        </button>
+        <button className="k-button k-button-clear" onClick={applyEdit} disabled={!edited && !rowAdding}>
           <span className="k-icon k-i-check" />
-        </button>}
-        {editable && <button className="k-button k-button-clear" onClick={() => {
+        </button>
+        <button className="k-button k-button-clear" onClick={() => {
           reload(); setEditID(null); setRowAdding(false); }}>
           <span className="k-icon k-i-cancel" />
-        </button>}
-        <button className="k-button k-button-clear" onClick={reload}>
-          <span className="k-icon k-i-reset" />
         </button>
       </div>
-    );
+    ) : null;
 
-    const enterEdit = (dataItem, field) => {
-        const newData = tableData.rowsJSON.map((item) => ({
-            ...item,
-            [EDIT_FIELD]: idGetter(item) === idGetter(dataItem)
-        }));
-        setTableData({ rowsJSON: newData, columnsJSON: tableData.columnsJSON });
-        setEditField(field);
-        setEditID(idGetter(dataItem));
+  const enterEdit = (dataItem, field) => {
+    const newData = tableData.rowsJSON.map((item) => ({
+      ...item,
+      [EDIT_FIELD]: idGetter(item) === idGetter(dataItem)
+    }));
+    setTableData({ rowsJSON: newData, columnsJSON: tableData.columnsJSON });
+    setEditField(field);
+    setEditID(idGetter(dataItem));
+  };
+
+  const exitEdit = () => {
+    const newData = tableData.rowsJSON.map((item) => ({ ...item, [EDIT_FIELD]: false }));
+    setTableData({ rowsJSON: newData, columnsJSON: tableData.columnsJSON });
+    setEditField(undefined);
+  };
+
+  const customCellRender = (td, props) => (
+    <CellRender
+      editable={editable}
+      originalProps={props}
+      td={td}
+      editor={getEditorType(tableData.columnsJSON.find(col => col.field === props.field))}
+      enterEdit={enterEdit}
+      setActiveCell={setActiveCell}
+      editField={editField}
+    />
+  );
+
+  const onColumnResize = (event) => {
+    if (!tableSettings || !tableSettings.columns) return;
+    const columnsSettings = tableSettings.columns.columnsSettings;
+    const setWidth = (c) => {
+      const columnSetting = columnsSettings.find(s => s.channelPropertyName === c.field);
+      if (columnSetting) columnSetting.width = c.width;
+      if (c.children) c.children.forEach(cc => { setWidth(cc); });
     };
+    event.columns.forEach((c) => { setWidth(c); });
+    dispatch(actions.setFormSettings(formID, {...tableSettings}));
+  };
 
-    const exitEdit = () => {
-        const newData = tableData.rowsJSON.map((item) => ({ ...item, [EDIT_FIELD]: false }));
-        setTableData({ rowsJSON: newData, columnsJSON: tableData.columnsJSON });
-        setEditField(undefined);
-    };
+  const customRowRender = (tr, props) => {
+    return <RowRender originalProps={props} tr={tr} exitEdit={exitEdit} editField={editField}/>;
+  };
 
-    const customCellRender = (td, props) => (
-        <CellRender
-            editable={editable}
-            originalProps={props}
-            td={td}
-            editor={getEditorType(tableData.columnsJSON.find(col => col.field === props.field))}
-            enterEdit={enterEdit}
-            setActiveCell={setActiveCell}
-            editField={editField}
-        />
-    );
+  const _ref = React.useRef();
 
-    const onColumnResize = (event) => {
-        const setWidth = c => {
-            var columnSetting = tableSettings.columns.columnsSettings
-              .find(s => s.channelPropertyName === c.field);
-            if (columnSetting) {
-                columnSetting.width = c.width;
-            }
-            if (c.children) {
-                c.children.forEach(cc => {
-                    setWidth(cc);
-                });
-            }
-        }
-        if (tableSettings && tableSettings.columns) {
-            event.columns.forEach(c => {
-                setWidth(c);
-            });
-            dispatch(actions.setFormSettings(formData.id, { ...tableSettings }));
-        }
-    };
-
-    const customRowRender = (tr, props) => (
-        <RowRender
-            originalProps={props}
-            tr={tr}
-            exitEdit={exitEdit}
-            editField={editField}
-        />
-    );
-
-    const _ref = React.useRef();
-
-    const drawColumn = React.useCallback(column => {
+  const drawColumn = React.useCallback(column => {
 
         const calculateWidth = (headerName, field, columnSetting) => {
             if (columnSetting) {
@@ -728,9 +647,9 @@ function DataSetView(props, ref) {
                 activeChannelName={activeChannelName}
             />}
         />
-    }, [tableSettings, tableData, dataState, activeChannelName, formData]);
+  }, [tableSettings, tableData, dataState, activeChannelName, formData]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     var groupingData = [];
     tableData.columnsJSON.forEach(col => {
       if (!col.treePath || col.treePath.length === 0) {
@@ -744,13 +663,9 @@ function DataSetView(props, ref) {
           var columnSetting = tableColumnGroupSettings?.find(
             setting => setting.columnGroupName === trimPart);
           if (!parent) {
-            var children = [];
-            parent = <Column
-              key={trimPart}
-              title={columnSetting?.calculatedDisplayName
-                ?? (columnSetting?.columnGroupDisplayName ?? trimPart)}
-              children={children}>
-            </Column>;
+            const title = columnSetting?.calculatedDisplayName
+              ?? (columnSetting?.columnGroupDisplayName ?? trimPart);
+            parent = <Column key={trimPart} title={title} children={[]}/>;
             parentArray.push(parent);
           }
         });
@@ -760,10 +675,10 @@ function DataSetView(props, ref) {
     setColumnGroupingData(groupingData);
   }, [tableData, drawColumn, tableColumnGroupSettings]);
 
-  if (columnGroupingData.length > 0) {
-    return (
-      <LocalizationProvider language="ru-RU">
-        <IntlProvider locale="ru">
+  if (columnGroupingData.length === 0) return <div/>;
+  return (
+    <LocalizationProvider language="ru-RU">
+      <IntlProvider locale="ru">
           {deleteDialogOpen && (
             <Dialog title={t('table.deleteRowsHeader')} onClose={handleDeleteDialogClose}>
               <p style={{margin: "25px", textAlign: "center"}}>
@@ -783,7 +698,7 @@ function DataSetView(props, ref) {
               </DialogActionsBar>
             </Dialog>
           )}
-          <FormHeader formData={formData} additionalButtons={otherButtons} />
+          {editable && <DataSetEditToolbar buttons={otherButtons}/>}
           <Grid
             ref={_ref} className="grid-content"
             resizable={true}
@@ -811,9 +726,8 @@ function DataSetView(props, ref) {
           >
             {columnGroupingData}
           </Grid>
-        </IntlProvider>
-      </LocalizationProvider>
-    );
-  } else return <div />
+      </IntlProvider>
+    </LocalizationProvider>
+  );
 }
 export default DataSetView = React.forwardRef(DataSetView); // eslint-disable-line

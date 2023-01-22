@@ -1,4 +1,5 @@
 import { Requester } from "./api";
+import { paramToChannelParamData } from "../utils/params.utils";
 
 
 export class ChannelsAPI {
@@ -15,8 +16,9 @@ export class ChannelsAPI {
   }
 
   /** Запрос данных канала. */
-  public async getChannelData(channelName: ChannelName, paramValues: any[]): Promise<Res<Channel>> {
+  public async getChannelData(channelName: ChannelName, parameters: FormParameter[]) {
     const sessionID = this.requester.sessionID;
+    const paramValues = parameters.map(paramToChannelParamData);
     const body = JSON.stringify({sessionId: sessionID, channelName, paramValues});
     return await this.request<Channel>({method: 'POST', path: 'getChannelDataByName', body});
   }

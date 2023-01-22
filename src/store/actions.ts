@@ -22,21 +22,9 @@ import { CaratsAction, CaratsActions } from "./reducers/carats.reducer";
 export class WellManagerActionsCreator {
   /* --- App State Actions --- */
 
-  /** Начало загрузки клиентской конфигурации. */
-  public fetchConfigStart(): AppStateAction {
-    return {type: AppStateActions.FETCH_CONFIG_START};
-  }
-  /** Конец загрузки клиентской конфигурации. */
-  public fetchConfigEnd(payload: Res<ClientConfiguration>): AppStateAction {
-    return {type: AppStateActions.FETCH_CONFIG_END, payload};
-  }
-  /** Начало загрузки списка систем. */
-  public fetchSystemListStart(): AppStateAction {
-    return {type: AppStateActions.FETCH_SYSTEM_LIST_START};
-  }
-  /** Конец загрузки списка систем. */
-  public fetchSystemListEnd(payload: Res<SystemList>): AppStateAction {
-    return {type: AppStateActions.FETCH_SYSTEM_LIST_END, payload};
+  /** Установить клиентскую конфигурацию. */
+  public setInitResult(config: ClientConfiguration, systemList: SystemList | null): AppStateAction {
+    return {type: AppStateActions.INIT_RESULT, payload: {config, systemList}};
   }
   /** Начало загрузки новой сессии. */
   public fetchSessionStart(): AppStateAction {
@@ -119,20 +107,20 @@ export class WellManagerActionsCreator {
 
   /* --- Form Params Actions --- */
 
-  public setParams(formId: FormID, value: any): FormParamsAction {
-    return {type: FormParamsActions.SET, formId, value};
+  public setParams(formID: FormID, value: any): FormParamsAction {
+    return {type: FormParamsActions.SET, formID, value};
   }
-  public addParam(formId: FormID, parameter: any): FormParamsAction {
-    return {type: FormParamsActions.ADD, formId, parameter};
+  public addParam(formID: FormID, parameter: FormParameter): FormParamsAction {
+    return {type: FormParamsActions.ADD, formID, parameter};
   }
   public addParamSet(set: any): FormParamsAction {
     return {type: FormParamsActions.ADD_SET, set};
   }
-  public updateParam(formId: FormID, id: ParameterID, value: any, manual: boolean): FormParamsAction {
-    return {type: FormParamsActions.UPDATE, formId, id, value, manual};
+  public updateParam(formID: FormID, id: ParameterID, value: any): FormParamsAction {
+    return {type: FormParamsActions.UPDATE, formID, id, value};
   }
-  public updateParamSet(formId: FormID, values: any): FormParamsAction {
-    return {type: FormParamsActions.UPDATE_SET, formId, values};
+  public updateParamSet(formID: FormID, values: any): FormParamsAction {
+    return {type: FormParamsActions.UPDATE_SET, formID, values};
   }
 
   /* --- Form Settings Actions --- */

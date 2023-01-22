@@ -1,22 +1,22 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { actions } from "../../../../store";
+import { actions, selectors } from "../../../../store";
 import { stringToTableCell } from "../../../../utils/utils";
 
 
 export default function ColumnSettingsAnalyzerItem(props) {
-  const { item, parameterName, path, propertyName, type, formId, start, finish } = props;
   const dispatch = useDispatch();
-  const neededParamValues = useSelector((state) => state.sessionManager.paramsManager
-    .getParameterValues([parameterName], formId, false));
-  let propertyValue = neededParamValues[0].value;
+  const { item, parameterName, path, propertyName, type, formId, start, finish } = props;
+
+  const tableSettings = useSelector(selectors.formSettings.bind(formId));
+  const valueSelector = selectors.formParamValue.bind({formID: formId, id: parameterName});
+  let propertyValue = useSelector(valueSelector);
 
   if (type === 'CellValue' && propertyValue) {
-    propertyValue = stringToTableCell(neededParamValues[0].value, propertyName);
+    propertyValue = stringToTableCell(propertyValue, propertyName);
   }
 
   const addedProperty = propertyValue ? start + propertyValue + finish : null;
-  const tableSettings = useSelector((state) => state.formSettings[formId]);
   let changed = false;
 
   if (path === 'ColumnGroupSettings') {

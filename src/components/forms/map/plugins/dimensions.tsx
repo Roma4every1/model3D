@@ -3,7 +3,7 @@ import { TFunction } from "react-i18next";
 import { useState, useEffect, useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { BigButton, BigButtonToggle } from "../../../common/menu-ui";
-import IntegerTextEditor from "../../../editors/integer-text.editor";
+import { NumericTextBox } from "@progress/kendo-react-inputs";
 
 import { actions } from "../../../../store";
 import { xIcon, yIcon, scaleIcon, synchronizeIcon, selectAllIcon } from "../../../../dicts/images";
@@ -79,15 +79,15 @@ export const Dimensions = ({mapState, sync, formID, t}: DimensionsProps) => {
         <div className={'map-dimensions-viewer'}>
           <div>
             <span title={t('map.dimensions.x')}><img src={xIcon} alt={'x'}/> x:</span>
-            <IntegerTextEditor id={'xDimensionEditor'} value={x} selectionChanged={xChanged} />
+            <NumericTextBox value={x} onChange={xChanged}/>
           </div>
           <div>
             <span title={t('map.dimensions.y')}><img src={yIcon} alt={'y'}/> y:</span>
-            <IntegerTextEditor id={'yDimensionEditor'} value={y} selectionChanged={yChanged} />
+            <NumericTextBox value={y} onChange={yChanged}/>
           </div>
           <div>
             <span title={t('map.dimensions.scale')}><img src={scaleIcon} alt={'scale'}/> 1/</span>
-            <IntegerTextEditor id={'scaleDimensionEditor'} value={scale} selectionChanged={scaleChanged} />
+            <NumericTextBox value={scale} onChange={scaleChanged}/>
           </div>
         </div>
         <div className={'map-actions'}>

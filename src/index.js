@@ -1,13 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-import thunk from "redux-thunk";
 import { Provider } from "react-redux";
-import { createStore , applyMiddleware } from "redux";
-import { rootReducer } from "./store";
-
-import createSessionManager from "./data-managers/session-manager";
-import App from "./components/app";
+import { App } from "./components/app";
+import { store } from "./store";
 
 import "./locales/i18n";
 import "bootstrap/dist/css/bootstrap.css";
@@ -27,8 +23,5 @@ import timeZoneNames from "cldr-dates-full/main/ru/timeZoneNames.json";
 loadMessages(ruMessages, 'ru-RU');
 load(likelySubtags, currencyData, weekData, numbers, currencies, caGregorian, dateFields, timeZoneNames);
 
-const store = createStore(rootReducer, applyMiddleware(thunk));
-createSessionManager(store);
-
 const root = document.getElementById('root');
-ReactDOM.render(<Provider store={store}><App /></Provider>, root);
+ReactDOM.render(<Provider store={store}><App/></Provider>, root);

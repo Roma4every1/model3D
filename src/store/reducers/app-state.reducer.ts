@@ -1,11 +1,7 @@
 /* --- Actions Types --- */
 
 export enum AppStateActions {
-  FETCH_CONFIG_START = 'app/configStart',
-  FETCH_CONFIG_END = 'app/configEnd',
-
-  FETCH_SYSTEM_LIST_START = 'app/systemsStart',
-  FETCH_SYSTEM_LIST_END = 'app/systemsEnd',
+  INIT_RESULT = 'app/init',
 
   FETCH_SESSION_START = 'app/sessionStart',
   FETCH_SESSION_END = 'app/sessionEnd',
@@ -19,20 +15,9 @@ export enum AppStateActions {
 
 /* --- Actions Interfaces --- */
 
-interface ActionFetchConfigStart {
-  type: AppStateActions.FETCH_CONFIG_START,
-}
-interface ActionFetchConfigEnd {
-  type: AppStateActions.FETCH_CONFIG_END,
-  payload: Res<ClientConfiguration>,
-}
-
-interface ActionFetchSystemListStart {
-  type: AppStateActions.FETCH_SYSTEM_LIST_START,
-}
-interface ActionFetchSystemListEnd {
-  type: AppStateActions.FETCH_SYSTEM_LIST_END,
-  payload: Res<SystemList>
+interface ActionInitResult {
+  type: AppStateActions.INIT_RESULT,
+  payload: {config: ClientConfiguration, systemList: SystemList | null},
 }
 
 interface ActionFetchSessionStart {
@@ -59,44 +44,26 @@ interface ActionSetRootFormID {
   payload: FormID,
 }
 
-export type AppStateAction = ActionSetSystemName | ActionSetSessionID |
-  ActionFetchConfigStart | ActionFetchConfigEnd | ActionSetRootFormID |
-  ActionFetchSystemListStart | ActionFetchSystemListEnd |
+export type AppStateAction = ActionInitResult |
+  ActionSetSystemName | ActionSetSessionID | ActionSetRootFormID |
   ActionFetchSessionStart | ActionFetchSessionEnd | ActionClearSessionID;
 
 /* --- Reducer --- */
 
 const init: AppState = {
-  config: {loading: false, success: undefined, data: null},
-  systemList: {loading: false, success: undefined, data: null},
-  sessionID: {loading: false, success: undefined, data: null},
+  config: null,
+  systemList: null,
   rootFormID: null,
   systemID: null,
+  sessionID: {loading: false, success: undefined, data: null},
 };
 
 export const appStateReducer = (state: AppState = init, action: AppStateAction): AppState => {
   switch (action.type) {
 
-    case AppStateActions.FETCH_CONFIG_START: {
-      return {...state, config: {loading: true, success: undefined, data: null}};
-    }
-
-    case AppStateActions.FETCH_CONFIG_END: {
-      const { ok, data } = action.payload;
-      return ok
-        ? {...state, config: {loading: false, success: true, data}}
-        : {...state, config: {loading: false, success: false, data: data as string}};
-    }
-
-    case AppStateActions.FETCH_SYSTEM_LIST_START: {
-      return {...state, systemList: {loading: true, success: undefined, data: null}};
-    }
-
-    case AppStateActions.FETCH_SYSTEM_LIST_END: {
-      const { ok, data } = action.payload;
-      return ok
-        ? {...state, systemList: {loading: false, success: true, data}}
-        : {...state, systemList: {loading: false, success: false, data: data as string}};
+    case AppStateActions.INIT_RESULT: {
+      const { config, systemList } = action.payload
+      return {...state, config, systemList};
     }
 
     case AppStateActions.FETCH_SESSION_START: {

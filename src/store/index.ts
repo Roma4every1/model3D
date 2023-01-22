@@ -1,31 +1,28 @@
-import { Reducer, Dispatch, combineReducers } from "redux";
+import thunk from "redux-thunk";
+import { Reducer, Dispatch } from "redux";
 import { WellManagerActionsCreator } from "./actions";
+import { combineReducers, createStore, applyMiddleware } from "redux";
+import { createSessionManager } from "../data-managers/session-manager";
 
-import { appStateReducer, AppStateAction, AppStateActions } from "./reducers/app-state.reducer";
-import { canRunReportReducer, CanRunReportAction, CanRunReportActions } from "./reducers/can-run-report.reducer";
-import { caratsReducer, CaratsAction, CaratsActions } from "./reducers/carats.reducer";
-import { channelsDataReducer, ChannelsDataAction, ChannelsDataActions } from "./reducers/channels-data.reducer";
-import { channelsLoadingReducer, ChannelsLoadingAction, ChannelsLoadingActions } from "./reducers/channels-loading.reducer";
-import { childFormsReducer, ChildFormsAction, ChildFormsActions } from "./reducers/child-forms.reducer";
-import { formRefsReducer, FormRefsAction, FormRefsActions } from "./reducers/form-refs.reducer";
-import { formParamsReducer, FormParamsAction, FormParamsActions } from "./reducers/form-params.reducer";
-import { formSettingsReducer, FormSettingsAction, FormSettingsActions } from "./reducers/form-settings.reducer";
-import { formLayoutReducer, FormLayoutAction, FormLayoutActions } from "./reducers/form-layout.reducer";
-import { layoutReducer, LayoutAction, LayoutActions } from "./reducers/layout.reducer";
-import { mapsReducer, MapsAction, MapsActions } from "./reducers/maps.reducer";
-import { presentationsReducer, PresentationsAction, PresentationsActions } from "./reducers/presentations.reducer";
-import { programsReducer, ProgramsAction, ProgramsActions } from "./reducers/programs.reducer";
-import { reportsReducer, ReportsAction, ReportsActions } from "./reducers/reports.reducer";
-import { sessionIdReducer, SessionIDAction, SessionIDActions } from "./reducers/session-id.reducer";
-import { sessionManagerReducer, SessionManagerAction, SessionManagerActions } from "./reducers/session-manager.reducer";
-import { windowDataReducer, WindowDataAction, WindowDataActions } from "./reducers/window-data.reducer";
+import { appStateReducer, AppStateAction } from "./reducers/app-state.reducer";
+import { canRunReportReducer, CanRunReportAction } from "./reducers/can-run-report.reducer";
+import { caratsReducer, CaratsAction } from "./reducers/carats.reducer";
+import { channelsDataReducer, ChannelsDataAction } from "./reducers/channels-data.reducer";
+import { channelsLoadingReducer, ChannelsLoadingAction } from "./reducers/channels-loading.reducer";
+import { childFormsReducer, ChildFormsAction } from "./reducers/child-forms.reducer";
+import { formRefsReducer, FormRefsAction } from "./reducers/form-refs.reducer";
+import { formParamsReducer, FormParamsAction } from "./reducers/form-params.reducer";
+import { formSettingsReducer, FormSettingsAction } from "./reducers/form-settings.reducer";
+import { formLayoutReducer, FormLayoutAction } from "./reducers/form-layout.reducer";
+import { layoutReducer, LayoutAction } from "./reducers/layout.reducer";
+import { mapsReducer, MapsAction } from "./reducers/maps.reducer";
+import { presentationsReducer, PresentationsAction } from "./reducers/presentations.reducer";
+import { programsReducer, ProgramsAction } from "./reducers/programs.reducer";
+import { reportsReducer, ReportsAction } from "./reducers/reports.reducer";
+import { sessionIdReducer, SessionIDAction } from "./reducers/session-id.reducer";
+import { sessionManagerReducer, SessionManagerAction } from "./reducers/session-manager.reducer";
+import { windowDataReducer, WindowDataAction } from "./reducers/window-data.reducer";
 
-
-/** Well Manager Action Type. */
-export type WActionType = AppStateActions | CanRunReportActions | ChannelsDataActions |
-  ChannelsLoadingActions | ChildFormsActions | FormRefsActions | FormParamsActions | FormSettingsActions |
-  FormLayoutActions | LayoutActions | MapsActions | PresentationsActions | ProgramsActions |
-  ReportsActions | SessionIDActions | SessionManagerActions | WindowDataActions | CaratsActions;
 
 /** Well Manager Action. */
 export type WAction = AppStateAction | CanRunReportAction | ChannelsDataAction | ChannelsLoadingAction |
@@ -37,11 +34,8 @@ export type WAction = AppStateAction | CanRunReportAction | ChannelsDataAction |
 export type WDispatch = Dispatch<WAction>;
 
 
-/** Все действия. */
-export const actions = new WellManagerActionsCreator();
-
 /** Главный обработчик Well Manager Store. */
-export const rootReducer: Reducer<WState, WAction> = combineReducers({
+const rootReducer: Reducer<WState, WAction> = combineReducers({
   appState: appStateReducer,
   canRunReport: canRunReportReducer,
   carats: caratsReducer,
@@ -62,4 +56,11 @@ export const rootReducer: Reducer<WState, WAction> = combineReducers({
   windowData: windowDataReducer
 });
 
+/** Генератор синхронных действий. */
+export const actions = new WellManagerActionsCreator();
+/** Well Manager Store. */
+export const store = createStore(rootReducer, applyMiddleware(thunk));
+/** Менеджер сессии. */
+export const sessionManager: SessionManager = createSessionManager(store);
+/** Селекторы состояния. */
 export { selectors } from "./selectors";

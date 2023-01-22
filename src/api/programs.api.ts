@@ -29,4 +29,9 @@ export class ProgramsAPI {
     const query = {sessionId: this.requester.sessionID, operationId: id, waitResult};
     return await this.request<OperationResult>({path: 'getOperationResult', query});
   }
+
+  public async clearReports(id: string): Promise<void> {
+    const query = {sessionId: this.requester.sessionID, presentationId: id};
+    await this.request<any>({path: 'clearReports', query});
+  }
 }

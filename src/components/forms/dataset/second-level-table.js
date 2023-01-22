@@ -21,7 +21,7 @@ export const SecondLevelTable = ({secondLevelFormId, setOpened, channelName, key
 
   return (
     <Window key={keyProp} title={formData.displayName} onClose={() => { setOpened(false); }}>
-      <Form formData={formData} data={{activeChannels: [channelName]}} />
+      <Form formData={formData} channels={[channelName]}/>
     </Window>
   );
 };

@@ -1,9 +1,9 @@
 import { CSSProperties, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { saveAs } from "@progress/kendo-file-saver";
-import { webFetch } from "../../../../api/initialization";
-import { toDate } from "../../../../utils/utils";
-import { filesDict, defaultFileIcon, importFileIcon } from "../../../../dicts/images";
+import { toDate } from "../../../utils/utils";
+import { filesDict, defaultFileIcon, importFileIcon } from "../../../dicts/images";
+import { API } from "../../../api/api";
 
 
 const extensions = [
@@ -14,32 +14,30 @@ const styleOk: CSSProperties = {color: '#0968c5', cursor: 'pointer', fontWeight:
 const styleError: CSSProperties = {color: 'gray'};
 const dateStyle: Intl.DateTimeFormatOptions = {timeStyle: 'short', dateStyle: 'long'};
 
-function downloadFile(resource: string, sessionID: SessionID) {
-  const fileExactName = resource.split('\\').pop().split('/').pop();
-  const path = `downloadResource?resourceName=${resource}&sessionId=${sessionID}`;
-  webFetch(path).then(data => data.blob()).then(data => saveAs(data, fileExactName));
-}
 
 export default function DownloadFileItem({report}: {report: Report}) {
   const { t } = useTranslation();
+  const { Path: path, Dt: rawDate } = report;
 
-  const ext = report.Path?.split('.').pop();
+  const ext = path?.split('.').pop();
   const needShowResult = ext && extensions.includes(ext);
 
   const displayName = needShowResult
-    ? report.Path.split('\\').pop().split('/').pop()
-    : report.Path ?? report.DefaultResult;
+    ? path.split('\\').pop().split('/').pop()
+    : path ?? report.DefaultResult;
 
   const fileImage = needShowResult
     ? filesDict[ext] || defaultFileIcon
     : report.DisplayType === 4 ? importFileIcon : defaultFileIcon;
 
-  const download = () => { downloadFile(report.Path, report.SessionId); };
+  const download = () => {
+    const fileExactName = path.split('\\').pop().split('/').pop();
+    API.downloadFile(path).then((res) => { if (res.ok) saveAs(res.data, fileExactName); });
+  };
 
-  const date = useMemo(() => {
-    const dt = report.Dt.startsWith('/') ? toDate(report.Dt) : new Date(report.Dt);
-    return dt.toLocaleString(undefined, dateStyle);
-  }, [report.Dt]);
+  const displayDate = useMemo(() => {
+    return toDate(rawDate).toLocaleString(undefined, dateStyle);
+  }, [rawDate]);
 
   return (
     <section className={'report-item'}>
@@ -52,7 +50,7 @@ export default function DownloadFileItem({report}: {report: Report}) {
           {t('downloadFiles.inOrderAndProgress', {order: report.Ord, progress: report.Progress})}
         </div>
         <div>
-          {t('downloadFiles.date', {date})}
+          {t('downloadFiles.date', {date: displayDate})}
         </div>
         {report.Comment &&
           <div style={{color: 'lightgray'}}>

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { ExpansionPanel, ExpansionPanelContent } from "@progress/kendo-react-layout";
 import { LayersTreeLayer } from "./layers-tree-layer";
 
@@ -13,11 +13,11 @@ interface LayersTreeElementProps {
 export const LayersTreeElement = ({item, mapState, formID}: LayersTreeElementProps) => {
   const [expanded, setExpanded] = useState(false);
 
-  const mapItems = useCallback((item: LayerTreeItem) => {
+  const mapItems = (item: LayerTreeItem) => {
     return item.items
       ? <LayersTreeElement key={item.text} item={item} mapState={mapState} formID={formID} />
       : <LayersTreeLayer key={item.text} layer={item.sublayer} mapState={mapState} formID={formID} />
-  }, [mapState, formID]);
+  };
 
   return (
     <ExpansionPanel
@@ -28,4 +28,4 @@ export const LayersTreeElement = ({item, mapState, formID}: LayersTreeElementPro
       {expanded && <ExpansionPanelContent>{item.items?.map(mapItems)}</ExpansionPanelContent>}
     </ExpansionPanel>
   );
-}
+};

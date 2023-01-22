@@ -1,5 +1,4 @@
-import { useCallback } from "react";
-import { useTranslation } from "react-i18next";
+import { TFunction, useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { Skeleton } from "@progress/kendo-react-indicators";
 
@@ -9,24 +8,28 @@ import loadDefaultIcon from "../static/images/start-page/load-default.svg";
 
 
 interface SystemListProps {
+  config: ClientConfiguration,
+  list: SystemList,
+}
+interface SystemItemProps {
   root: string,
-  systemListState: FetchState<SystemList>,
+  system: WMWSystem,
+  t: TFunction,
 }
 
 
 /** Страница списка систем. */
-export const SystemList = ({root, systemListState}: SystemListProps) => {
+export const SystemList = ({config, list}: SystemListProps) => {
   const { t } = useTranslation();
 
-  const mapSystems = useCallback((system: WMWSystem) => {
-    return <SystemItem key={system.id} data={system} root={root} />;
-  }, [root]);
-
   let mainContent;
-  if (systemListState.loading) {
-    mainContent = <SystemsSkeleton/>;
-  } else if (systemListState.success) {
-    mainContent = <div>{systemListState.data.map(mapSystems)}</div>;
+  if (config === null) {
+    mainContent = <SystemListSkeleton/>;
+  } else if (list) {
+    const systemToListItem = (system: WMWSystem, i: number) => {
+      return <SystemItem key={i} root={config.root} system={system} t={t}/>;
+    };
+    mainContent = <div>{list.map(systemToListItem)}</div>;
   } else {
     mainContent = <div className={'not-loaded'}>{t('systems.loadingError')}</div>;
   }
@@ -43,8 +46,9 @@ export const SystemList = ({root, systemListState}: SystemListProps) => {
 }
 
 /** Элемент списка системы. */
-const SystemItem = ({data, root}) => {
-  const { id, displayName, description } = data;
+const SystemItem = ({root, system, t}: SystemItemProps) => {
+  const id = system.id;
+  const title = t('systems.load-by-default-title')
 
   return (
     <section>
@@ -52,21 +56,21 @@ const SystemItem = ({data, root}) => {
         <img src={systemIcon} alt={'system'}/>
         <div>
           <div>
-            <span className={'system-name'}>{displayName}</span>
+            <span className={'system-name'}>{system.displayName}</span>
             <span className={'system-id'}>{`(${id})`}</span>
           </div>
-          <div>{description}</div>
+          <div>{system.description}</div>
         </div>
       </Link>
-      <Link to={root + 'systems/' + id + '?defaultSession=true'} title={'Запустить со стандартными настройками'}>
+      <Link to={root + 'systems/' + id + '?defaultSession=true'} title={title}>
         <img src={loadDefaultIcon} alt={'load-default'}/>
       </Link>
     </section>
   );
-}
+};
 
 /** Скелет списка систем, пока он загружается. */
-const SystemsSkeleton = () => {
+export const SystemListSkeleton = () => {
   return (
     <div>
       <SystemSkeleton/>
@@ -76,6 +80,7 @@ const SystemsSkeleton = () => {
     </div>
   );
 };
+
 const SystemSkeleton = () => {
   return (
     <section>

@@ -43,6 +43,7 @@ import tableSelectAllIcon from "../static/images/dataset/select-all.png";
 import exportToExcelIcon from "../static/images/dataset/export-to-excel.png";
 import statisticsIcon from "../static/images/dataset/statistics.png";
 import columnVisibilityIcon from "../static/images/dataset/columns-visibility.png";
+import reloadIcon from "../static/images/dataset/reload.png";
 
 /* --- Chart --- */
 
@@ -77,7 +78,7 @@ export { backToSystemsIcon, aboutProgramIcon, saveSessionIcon, defaultSessionIco
 export { globalParametersIcon, presentationParametersIcon, presentationsListIcon };
 export { runProgramIcon, importFileIcon, defaultFileIcon };
 
-export { tableSelectAllIcon, exportToExcelIcon, statisticsIcon, columnVisibilityIcon };
+export { tableSelectAllIcon, exportToExcelIcon, statisticsIcon, columnVisibilityIcon, reloadIcon };
 export { chartTooltipIcon };
 
 export { xIcon, yIcon, scaleIcon, synchronizeIcon, selectAllIcon };

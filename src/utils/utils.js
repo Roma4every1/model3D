@@ -89,24 +89,9 @@ export const toDate = (dateStrWMW) => {
   return date;
 }
 
-const addToTwo = (value) => {
-  while (value.length < 2) {
-    value = '0' + value;
-  }
-  return value;
-}
-
-export const dateToString = (value) => {
+const dateToString = (value) => {
   if (!(value instanceof Date)) return value;
-
-  const month = addToTwo('' + (value.getMonth() + 1));
-  const day = addToTwo('' + value.getDate());
-  const year = '' + value.getFullYear();
-  const hours = addToTwo('' + value.getHours());
-  const minutes = addToTwo('' + value.getMinutes());
-  const seconds = addToTwo('' + value.getSeconds());
-
-  return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
+  return value.toJSON();
 }
 
 export const tableRowToString = (valuesToSelect, row) => {
@@ -155,7 +140,7 @@ export const tableCellToString = (valuesToSelect, row) => {
   const addParam = (column, rowValue) => {
     let valueString;
     if (column['NetType'] === "System.DateTime" && rowValue != null) {
-      valueString = dateToString(toDate(rowValue)) + '#' + column['NetType'];
+      valueString = rowValue + '#' + column['NetType'];
     } else if (rowValue != null) {
       valueString = rowValue + '#' + column['NetType'];
     } else {

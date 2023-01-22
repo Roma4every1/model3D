@@ -1,9 +1,9 @@
-import { useState, useCallback } from "react";
-import { useSelector } from "react-redux";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
 import { Loader } from "@progress/kendo-react-indicators";
 import ProgramParametersList from "./program-parameters-list";
 import { runProgramIcon } from "../../dicts/images";
-import { selectors } from "../../store";
+import {actions, sessionManager} from "../../store";
 import { API } from "../../api/api";
 
 
@@ -14,19 +14,19 @@ interface ProgramButtonProps {
 
 
 export default function ProgramButton({formID, program}: ProgramButtonProps) {
-  const sessionManager = useSelector(selectors.sessionManager);
-
   const programID = program.id;
+  const dispatch = useDispatch();
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [isOpen, setIsIsOpen] = useState(false);
 
-  const fillReportParameters = useCallback(async () => {
+  const fillReportParameters = async () => {
     await sessionManager.paramsManager.loadFormParameters(programID, true);
     const res = await API.forms.getAllNeedParametersForForm(programID);
-    if (!res.ok) return sessionManager.handleWindowWarning(res.data);
+    if (!res.ok) { dispatch(actions.setWindowWarning(res.data)); return; }
     await sessionManager.paramsManager.getParameterValues(res.data, programID, true);
     setIsIsOpen(true);
-  }, [programID, sessionManager]);
+  };
 
   return (
     <>

@@ -1,4 +1,5 @@
 import { Requester } from "./api";
+import { SessionToSave } from "../utils/session.utils";
 
 
 export class SessionAPI {
@@ -10,23 +11,25 @@ export class SessionAPI {
 
   /** Новая сессия. */
   public async startSession(systemID: SystemID, isDefault: boolean): Promise<Res<SessionID>> {
-    const query = {systemName: systemID, defaultConfiguration: isDefault ? 'true' : 'false'};
-    return this.request({path: 'startSession', query});
+    const query = {systemName: systemID, defaultConfiguration: String(isDefault)};
+    return await this.request<SessionID>({path: 'startSession', query});
   }
 
   /** Закрыть сессию. */
-  public async stopSession(sessionJSON: string): Promise<Res<boolean>> {
-    return this.request({method: 'POST', path: 'stopSession', body: sessionJSON});
+  public async stopSession(sessionToSave: SessionToSave) {
+    const body = JSON.stringify(sessionToSave);
+    return await this.request<boolean>({method: 'POST', path: 'stopSession', body});
   }
 
   /** Сохранить состояние текущей сессии. */
-  public async saveSession(sessionJSON: string): Promise<Res<boolean>> {
-    return this.request({method: 'POST', path: 'saveSession', body: sessionJSON});
+  public async saveSession(sessionToSave: SessionToSave) {
+    const body = JSON.stringify(sessionToSave);
+    return await this.request<boolean>({method: 'POST', path: 'saveSession', body});
   }
 
   /** Продлить срок жизни сессии. */
-  public async iAmAlive(): Promise<Res<boolean>> {
+  public async iAmAlive() {
     const query = {sessionId: this.requester.sessionID};
-    return this.request({path: 'iAmAlive', query});
+    return await this.request<boolean>({path: 'iAmAlive', query});
   }
 }

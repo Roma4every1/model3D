@@ -18,7 +18,7 @@ interface ParameterGroup {
 interface DateChangingPlugin {
   yearParameter: ParameterID,
   dateIntervalParameter: ParameterID,
-  columnName: string,
+  columnName: string | null,
 }
 
 /* --- Grid --- */

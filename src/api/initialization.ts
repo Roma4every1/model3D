@@ -1,39 +1,31 @@
-/** Ссылка на службу веб запросов WMW. */
-let webServicesURL = '';
-
 /** По конфигу устанавливает значение для ссылки на службу запросов. */
-export function applyConfig(res: Res<unknown>): WResponse<ClientConfiguration> {
-  const data = res.data;
-  const config: ClientConfiguration = {webServicesURL: '', root: ''};
+export function createClientConfig(data: unknown): ClientConfiguration {
+  const config: ClientConfiguration = {webServicesURL: '', root: getAppLocation()};
 
   if (data instanceof Object) {
     const configURL = data['webServicesURL'];
-    if (typeof configURL === 'string') { config.webServicesURL = configURL; webServicesURL = configURL; }
-    const root = data['root'];
-    if (typeof root === 'string') config.root = root;
+    if (typeof configURL === 'string') config.webServicesURL = configURL;
   }
 
-  if (config.webServicesURL === '') {
+  if (config.webServicesURL.length === 0) {
     let pathName = window.location.pathname.slice(1);
     if (pathName.includes('/')) {
       pathName = pathName.slice(0, pathName.indexOf('/'));
     }
-    webServicesURL = window.location.origin + '/' + pathName + '/WebRequests.svc/';
+    const webServicesURL = window.location.origin + '/' + pathName + '/WebRequests.svc/';
     console.warn('use default URL for web requests: ' + webServicesURL);
     console.warn('invalid config:\n', data);
+    config.webServicesURL = webServicesURL;
   }
-  if (config.root === '') {
-    let location = window.location.pathname;
-    if (location.includes('/systems/')) {
-      location = location.slice(0, location.indexOf('systems/'))
-    }
-    if (!location.endsWith('/')) location += '/';
-    config.root = location;
-  }
-  return {ok: true, data: config};
+
+  return config;
 }
 
-/** Универсальная функция для запросов к серверу. */
-export async function webFetch(request: string, params: any = undefined) {
-  return await fetch(webServicesURL + request, {credentials: 'include', ...params});
+export function getAppLocation() {
+  let location = window.location.pathname;
+  if (location.includes('/systems/')) {
+    location = location.slice(0, location.indexOf('systems/'))
+  }
+  if (!location.endsWith('/')) location += '/';
+  return location;
 }

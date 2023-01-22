@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useRef, useImperativeHandle } from "react";
+import React, { useState, useRef, useImperativeHandle } from "react";
 import { useSelector } from "react-redux";
 import DataSetView from "./dataset-view";
-import { selectors } from "../../../store";
+import { selectors, sessionManager } from "../../../store";
 import { toDate } from "../../../utils/utils";
 
 
@@ -53,13 +53,12 @@ function DataSet({formData, data}, ref) {
 
   /** @type Channel */
   const databaseData = useSelector(selectors.channel.bind(activeChannelName));
-  const sessionManager = useSelector(selectors.sessionManager);
 
   const rowToAdd = useRef(null);
 
-  const reload = useCallback(async () => {
+  const reload = async () => {
     await sessionManager.channelsManager.loadAllChannelData(activeChannelName, formData.id, true);
-  }, [activeChannelName, formData, sessionManager]);
+  };
 
   let columnsJSON = [];
   let rowsJSON = [];
@@ -128,6 +127,7 @@ function DataSet({formData, data}, ref) {
     activeCell: () => viewRef.current.activeCell(),
     properties: () => databaseData?.properties,
     tableId: () => databaseData?.tableId,
+    reload: reload,
   }));
 
   return (

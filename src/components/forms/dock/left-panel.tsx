@@ -1,7 +1,7 @@
 import { ReactNode, useMemo } from "react";
 import { Model, Layout, TabNode, Action, Actions } from "flexlayout-react";
 import { useSelector } from "react-redux";
-import PresentationList from "./plugins/presentation-list";
+import PresentationList from "./presentation-list";
 import FormParametersList from "../../common/form-parameters-list";
 import translator from "../../../locales/layout";
 import { getLeftPanelLayout } from "../../../layout/left-tabs";

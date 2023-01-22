@@ -12,13 +12,13 @@ export enum FormParamsActions {
 
 interface ActionSet {
   type: FormParamsActions.SET,
-  formId: FormID,
+  formID: FormID,
   value: any,
 }
 interface ActionAdd {
   type: FormParamsActions.ADD,
-  formId: FormID,
-  parameter: any,
+  formID: FormID,
+  parameter: FormParameter,
 }
 interface ActionAddSet {
   type: FormParamsActions.ADD_SET,
@@ -26,14 +26,13 @@ interface ActionAddSet {
 }
 interface ActionUpdate {
   type: FormParamsActions.UPDATE,
-  formId: FormID,
+  formID: FormID,
   id: ParameterID,
   value: any,
-  manual: boolean,
 }
 interface ActionUpdateSet {
   type: FormParamsActions.UPDATE_SET,
-  formId: FormID,
+  formID: FormID,
   values: any,
 }
 
@@ -47,66 +46,65 @@ export const formParamsReducer = (state: FormParams = init, action: FormParamsAc
   switch (action.type) {
 
     case FormParamsActions.SET: {
+      const formID = action.formID;
       const newState = [...action.value];
-      if (state[action.formId]) {
-        for (let paramId in newState) {
-          if (state[action.formId][paramId]) {
-            newState[paramId] = state[action.formId][paramId]
-          }
-        }
 
-        for (let paramId in state[action.formId]) {
-          if (!newState[paramId]) {
-            newState[paramId] = state[action.formId][paramId]
-          }
+      if (state[formID]) {
+        for (let paramID in newState) {
+          if (state[formID][paramID]) newState[paramID] = state[formID][paramID]
+        }
+        for (let paramID in state[formID]) {
+          if (!newState[paramID]) newState[paramID] = state[formID][paramID]
         }
       }
-      return {...state, [action.formId]: newState};
+      return {...state, [formID]: newState};
     }
 
     case FormParamsActions.ADD: {
-      if (state[action.formId]) {
-        return {...state, [action.formId]: [...state[action.formId], action.parameter]};
+      const { formID, parameter } = action;
+      if (state[formID]) {
+        return {...state, [formID]: [...state[formID], parameter]};
       } else {
-        return {...state, [action.formId]: [action.parameter]}
+        return {...state, [formID]: [parameter]}
       }
     }
 
     case FormParamsActions.ADD_SET: {
-      if (state[action.set.channelName]) {
-        return {
-          ...state,
-          [action.set.channelName]: [...state[action.set.channelName], ...action.set.params]
-        };
+      const { channelName, params } = action.set;
+      if (state[channelName]) {
+        return {...state, [channelName]: [...state[channelName], ...params]};
       } else {
-        return {...state, [action.set.channelName]: [...action.set.params]};
+        return {...state, [channelName]: [...params]};
       }
     }
 
     case FormParamsActions.UPDATE: {
-      const updatedForm = state[action.formId];
-      const updatedParam = updatedForm.find(param => param.id === action.id);
+      const { id, value, formID } = action;
+      const updatedForm = state[formID];
+      const updatedParam = updatedForm.find(param => param.id === id);
 
       if (updatedParam) {
         updatedParam.value = action.value;
       } else {
-        updatedForm.push({id: action.id, value: action.value, type: 'string'});
+        const param: FormParameter = {type: 'string', id, value, formID, dependsOn: null};
+        updatedForm.push(param);
       }
       return {...state};
     }
 
     case FormParamsActions.UPDATE_SET: {
-      if (state[action.formId]) {
-        let newParamsUpdateForm = [...state[action.formId]];
+      const formID = action.formID;
+      if (state[formID]) {
+        const newParamsUpdateForm = [...state[formID]];
 
         action.values.forEach(val => {
           const neededParam = newParamsUpdateForm.find(element => element.id === val.name);
           if (neededParam) neededParam.value = val.value;
         });
 
-        return {...state, [action.formId]: [...newParamsUpdateForm]};
+        return {...state, [formID]: [...newParamsUpdateForm]};
       } else {
-        return {...state, [action.formId]: [...action.values]};
+        return {...state, [formID]: [...action.values]};
       }
     }
 

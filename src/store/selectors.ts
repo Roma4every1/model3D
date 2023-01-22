@@ -1,4 +1,4 @@
-import { stringToTableCell } from "../utils/utils";
+import { stringToTableCell, getParentFormId } from "../utils/utils";
 
 
 /** Селекторы. */
@@ -6,13 +6,11 @@ export const selectors = {
   /** Общее состояние приложения. */
   appState: (state: WState) => state.appState,
   /** Клиентская конфигурация. */
-  config: (state: WState) => state.appState.config.data as ClientConfiguration,
+  config: (state: WState) => state.appState.config,
   /** ID сессии. */
   sessionID: (state: WState) => state.sessionId,
   /** ID корневой формы. */
   rootFormID: (state: WState) => state.appState.rootFormID,
-  /** Менеджер сессии. */
-  sessionManager: (state: WState) => state.sessionManager,
   /** Прототип разметки левой панели. */
   leftLayout: (state: WState) => state.layout.left,
   /** Данные канала; `this - channelName`. */
@@ -25,6 +23,8 @@ export const selectors = {
   formParams: formParamsSelector,
   /** Параметр конкретной формы; `this - {formID, id}`. */
   formParam: formParamSelector,
+  /** Значение параметра конкретной формы; `this - {formID, id}`. */
+  formParamValue: formParamValueSelector,
   /** Список доступных программ для формы. */
   formPrograms: formProgramsSelector,
   /** Список дочерних форм; `this - formID`. */
@@ -69,12 +69,26 @@ function formProgramsSelector(this: FormID, state: WState): FetchState<ProgramLi
   return state.programs[this];
 }
 
+function formParamsSelector(this: FormID, state: WState): FormParameter[] {
+  return state.formParams[this];
+}
 function formParamSelector(this: {formID: FormID, id: ParameterID}, state: WState) {
   const formParams = state.formParams[this.formID];
   return formParams?.find(param => param.id === this.id);
 }
-function formParamsSelector(this: FormID, state: WState): FormParameter[] {
-  return state.formParams[this];
+function formParamValueSelector(this: {formID: FormID, id: ParameterID}, state: WState) {
+  const formsParams = state.formParams;
+  const findByID = param => param.id === this.id;
+
+  const formParams = formsParams[this.formID];
+  const fromForm = formParams?.find(findByID);
+  if (fromForm) return fromForm.value;
+
+  const parentParams = formsParams[getParentFormId(this.formID)];
+  const fromParent = parentParams?.find(findByID);
+  if (fromParent) return fromParent.value;
+
+  return formsParams[state.appState.rootFormID].find(findByID)?.value;
 }
 
 function formChildrenStateSelector(this: FormID, state: WState): FormChildrenState {
@@ -108,7 +122,7 @@ function currentWellIDSelector(state: WState): string | null {
   const rootFormParams = state.formParams[state.appState.rootFormID];
   const currentWellParam = rootFormParams.find((param) => param.id === 'currentWell');
   const value = currentWellParam?.value;
-  return value ? stringToTableCell(value, 'LOOKUPVALUE') : null;
+  return value ? stringToTableCell(value as string, 'LOOKUPVALUE') : null;
 }
 function displayedPresentationIDSelector(state: WState): FormID {
   return state.childForms[state.appState.rootFormID]?.activeChildren[0]

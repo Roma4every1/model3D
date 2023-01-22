@@ -1,27 +1,24 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { formDict } from "../../../dicts/forms";
-import { actions, selectors } from "../../../store";
+import { actions, sessionManager } from "../../../store";
 import { MultiMap } from "../multi-map/multi-map";
 
 
 interface FormProps {
   formData: FormDataWMR,
-  data: any,
+  channels?: ChannelName[],
 }
 interface FormState {
   formId: FormID,
   loaded: boolean,
-  activeParams: any[],
   activeChannels: ChannelName[],
-  settings: FormSettings,
 }
 
 
 /** Обобщённый компонент всех типов форм. */
-export default function Form({formData, data}: FormProps) {
+export default function Form({formData, channels}: FormProps) {
   const dispatch = useDispatch();
-  const sessionManager = useSelector(selectors.sessionManager);
 
   const formID = formData.id;
   const isDataSet = formData.type === 'dataSet';
@@ -29,16 +26,14 @@ export default function Form({formData, data}: FormProps) {
   const [formState, setFormState] = useState<FormState>({
     formId: formID,
     loaded: false,
-    activeChannels: data?.activeChannels ?? [],
-    activeParams: [],
-    settings: undefined,
+    activeChannels: channels ?? [],
   });
 
   useEffect(() => {
     let ignore = false;
-    if (!data) {
+    if (!channels) {
       if (!formState.loaded) {
-        getFormState(formID, formData, sessionManager).then(data => {
+        getFormState(formID, formData).then(data => {
           if (!ignore) setFormState(data);
         });
       }
@@ -51,9 +46,7 @@ export default function Form({formData, data}: FormProps) {
           setFormState({
             formId: formID,
             loaded: true,
-            activeChannels: data.activeChannels,
-            activeParams: data.activeParams,
-            settings: data.settings
+            activeChannels: channels,
           });
         }
       });
@@ -63,7 +56,7 @@ export default function Form({formData, data}: FormProps) {
       ignore = true;
       if (formState.loaded) sessionManager.channelsManager.setFormInactive(formID);
     };
-  }, [formID, formData, formState, data, sessionManager]);
+  }, [formID, formData, formState, channels]);
 
   const ref = useRef(null);
   const formRef = isDataSet ? ref : undefined;
@@ -73,11 +66,7 @@ export default function Form({formData, data}: FormProps) {
   }, [formID, isDataSet, dispatch]);
 
   if (!formState.loaded) return <div className={'form-container'}/>;
-
-  if (formData.type === 'multiMap') {
-    const channel = formState.settings['multiMapChannel'];
-    return <MultiMap formID={formID} channel={channel}/>;
-  }
+  if (formData.type === 'multiMap') return <MultiMap formID={formID}/>;
 
   const FormByType = formDict[formData.type];
   return (
@@ -87,10 +76,11 @@ export default function Form({formData, data}: FormProps) {
   );
 }
 
-const needSettingsFormTypes = ['dataSet', 'grid', 'chart'];
+/** Типы форм, для которых требуется запрос настроек. */
+const needSettingsFormTypes: FormType[] = ['dataSet', 'grid', 'chart'];
 
-async function getFormState(formID: FormID, formData: FormDataWMR, sessionManager: SessionManager): Promise<FormState> {
-  const params = await sessionManager.paramsManager.loadFormParameters(formID, false);
+async function getFormState(formID: FormID, formData: FormDataWMR): Promise<FormState> {
+  await sessionManager.paramsManager.loadFormParameters(formID, false);
   const channels = await sessionManager.channelsManager.loadFormChannelsList(formID);
 
   const force = !needSettingsFormTypes.includes(formData.type);
@@ -103,5 +93,5 @@ async function getFormState(formID: FormID, formData: FormDataWMR, sessionManage
     settings.dateStep = settings.seriesSettings[channels[0]]?.dateStep === 'Month' ? 'month' : 'year';
   }
 
-  return {formId: formID, loaded: true, activeChannels: channels, activeParams: params, settings};
+  return {formId: formID, loaded: true, activeChannels: channels};
 }

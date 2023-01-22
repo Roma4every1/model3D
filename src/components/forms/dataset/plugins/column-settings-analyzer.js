@@ -1,64 +1,58 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
 import ColumnSettingsAnalyzerItem from "./column-settings-analyzer-item";
-import { selectors } from "../../../../store";
+import { API } from "../../../../api/api";
 
 
-export function ColumnSettingsAnalyzer({formID}) {
-  const sessionID = useSelector(selectors.sessionID);
-  const sessionManager = useSelector(selectors.sessionManager);
-
+export const ColumnSettingsAnalyzer = ({formID}) => {
   const [pluginData, setPluginData] = useState(null);
 
   useEffect(() => {
     let ignore = false;
-    if (sessionID) {
-      const addSubstitution = (substitutes, value, path, item) => {
-        if (value?.includes('$(')) {
-          let startIndex = value.indexOf('$(');
-          let finishIndex = value.indexOf(')', startIndex);
-          let start = value.slice(0, startIndex);
-          let finish = value.slice(finishIndex + 1);
-          let pathToChange = value.slice(startIndex + 2, finishIndex);
-          let pointIndex = pathToChange.indexOf('.');
-          let bracketIndex = pathToChange.indexOf('[');
-          let parameterName = pathToChange.slice(0, pointIndex);
-          let type = pathToChange.slice(pointIndex + 1, bracketIndex);
-          let propertyName = pathToChange.slice(bracketIndex + 1, -1);
+    const addSubstitution = (substitutes, value, path, item) => {
+      if (value?.includes('$(')) {
+        let startIndex = value.indexOf('$(');
+        let finishIndex = value.indexOf(')', startIndex);
+        let start = value.slice(0, startIndex);
+        let finish = value.slice(finishIndex + 1);
+        let pathToChange = value.slice(startIndex + 2, finishIndex);
+        let pointIndex = pathToChange.indexOf('.');
+        let bracketIndex = pathToChange.indexOf('[');
+        let parameterName = pathToChange.slice(0, pointIndex);
+        let type = pathToChange.slice(pointIndex + 1, bracketIndex);
+        let propertyName = pathToChange.slice(bracketIndex + 1, -1);
 
-          if (bracketIndex < 0) {
-            type = pathToChange.slice(pointIndex + 1);
-            propertyName = null;
-          }
-          substitutes.push({type, parameterName, propertyName, path, item, formID, start, finish});
+        if (bracketIndex < 0) {
+          type = pathToChange.slice(pointIndex + 1);
+          propertyName = null;
         }
-      };
-
-      async function fetchData() {
-        const data = await sessionManager.fetchData(`pluginData?sessionId=${sessionID}&formId=${formID}&pluginName=tableColumnsSettings`);
-        if (!ignore && data) {
-          let substitutes = [];
-          if (data?.tableColumnsSettings?.ColumnGroupSettings?.ColumnGroupSettings) {
-            data.tableColumnsSettings.ColumnGroupSettings.ColumnGroupSettings.forEach(gs => (
-            addSubstitution(substitutes, gs['@ColumnGroupDisplayName'], 'ColumnGroupSettings', gs['@ColumnGroupName'])
-            ));
-          }
-          if (data?.tableColumnsSettings?.ColumnsSettings?.ColumnsSettings) {
-            data.tableColumnsSettings.ColumnsSettings.ColumnsSettings.forEach(gs => (
-            addSubstitution(substitutes, gs['@DisplayName'], 'ColumnsSettings', gs['@ChannelPropertyName'])
-            ));
-          }
-          setPluginData(substitutes);
-        }
+        substitutes.push({type, parameterName, propertyName, path, item, formID, start, finish});
       }
-      fetchData();
+    };
+
+    async function fetchData() {
+      const { ok, data } = await API.getPluginData(formID, 'tableColumnsSettings')
+      if (!ignore && ok && data) {
+        let substitutes = [];
+        if (data?.tableColumnsSettings?.ColumnGroupSettings?.ColumnGroupSettings) {
+          data.tableColumnsSettings.ColumnGroupSettings.ColumnGroupSettings.forEach(gs => (
+            addSubstitution(substitutes, gs['@ColumnGroupDisplayName'], 'ColumnGroupSettings', gs['@ColumnGroupName'])
+          ));
+        }
+        if (data?.tableColumnsSettings?.ColumnsSettings?.ColumnsSettings) {
+          data.tableColumnsSettings.ColumnsSettings.ColumnsSettings.forEach(gs => (
+            addSubstitution(substitutes, gs['@DisplayName'], 'ColumnsSettings', gs['@ChannelPropertyName'])
+          ));
+        }
+        setPluginData(substitutes);
+      }
     }
+    fetchData();
     return () => { ignore = true; }
-  }, [formID, sessionID, sessionManager]);
+  }, [formID]);
 
   return (
     <div>
       {pluginData?.map(substitute => <ColumnSettingsAnalyzerItem {...substitute} />)}
     </div>
   );
-}
+};

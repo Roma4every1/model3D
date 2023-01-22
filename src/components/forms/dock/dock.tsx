@@ -10,7 +10,6 @@ import { compareArrays } from "../../../utils/utils";
 import { selectors } from "../../../store";
 import { getDockLayout } from "../../../layout/dock-layout";
 import Form from "../form/form";
-import DateChanging from "./plugins/date-changing";
 import translator from "../../../locales/layout";
 
 
@@ -51,17 +50,14 @@ export const Dock = () => {
   };
 
   return (
-    <>
-      <Layout
-        model={model} factory={factory}
-        onModelChange={onModelChange} i18nMapper={translator}
-      />
-      <DateChanging/>
-    </>
+    <Layout
+      model={model} factory={factory}
+      onModelChange={onModelChange} i18nMapper={translator}
+    />
   );
-}
+};
 
 const DockForm = () => {
   const activeChild = useSelector(activePresentationSelector);
-  return activeChild ? <Form data={null} formData={activeChild}/> : null;
-}
+  return activeChild ? <Form formData={activeChild}/> : null;
+};

@@ -42,7 +42,7 @@ function createTabSetNode(form: FormDataWMR, active: FormID): IJsonTabSetNode {
     type: 'tabset', selected: 0, active: form.id === active,
     children: [{
       id: form.id, type: 'tab', name: form.displayName,
-      component: <Form formData={form} data={undefined}/> as any,
+      component: <Form formData={form}/> as any,
     }],
   };
 }
@@ -51,13 +51,11 @@ function fillTabNode(node: IJsonTabNode, form: FormDataWMR): void {
   const displayNamePattern = form.displayNamePattern;
   if (displayNamePattern) {
     const { pattern, params } = displayNamePattern;
-    // @ts-ignore
-    node.name = <FormName formID={form.id} pattern={pattern} params={params}/>;
+    node.name = <FormName formID={form.id} pattern={pattern} params={params}/> as any;
   } else {
     node.name = form.displayName;
   }
-  // @ts-ignore
-  node.component = <Form formData={form} data={undefined}/>
+  node.component = <Form formData={form}/> as any
 }
 
 /* --- --- */

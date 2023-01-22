@@ -15,9 +15,7 @@ export default function Map({formData: {id: formID}, data}) {
   const dispatch = useDispatch();
   const parentForm = getParentFormId(formID);
 
-  const sessionManager = useSelector(selectors.sessionManager);
   const currentWellID = useSelector(selectors.currentWellID);
-
   const mapsState = useSelector(selectors.mapsState);
   const mapState: MapState = useSelector(selectors.mapState.bind(formID));
 
@@ -88,10 +86,8 @@ export default function Map({formData: {id: formID}, data}) {
     const changeMapID = mapID !== mapState.mapID;
 
     if (changeOwner || changeMapID || activeChannel.currentRowObjectName) {
-      sessionManager.paramsManager.updateParamValue(
-        parentForm, activeChannel.currentRowObjectName,
-        tableRowToString(activeChannel, mapInfo)?.value, true
-      );
+      const value = tableRowToString(activeChannel, mapInfo)?.value;
+      dispatch(actions.updateParam(parentForm, activeChannel.currentRowObjectName, value));
     }
     if (changeOwner) {
       dispatch(actions.setMapField(formID, 'owner', owner));
@@ -101,7 +97,7 @@ export default function Map({formData: {id: formID}, data}) {
       dispatch(actions.setMapField(formID, 'mapID', mapID));
       dispatch(fetchMapData(formID, mapID, owner, setProgress));
     }
-  }, [mapState, activeChannel, sessionManager, formID, parentForm, isPartOfDynamicMultiMap, dispatch]);
+  }, [mapState, activeChannel, formID, parentForm, isPartOfDynamicMultiMap, dispatch]);
 
   const updateCanvas = useCallback((newCS, context) => {
     if (!mapData) return;

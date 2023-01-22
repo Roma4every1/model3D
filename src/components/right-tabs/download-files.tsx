@@ -4,7 +4,8 @@ import { useTranslation } from "react-i18next";
 import { Checkbox } from "@progress/kendo-react-inputs";
 import { Button } from "@progress/kendo-react-buttons";
 import { actions, selectors } from "../../store";
-import DownloadFileItem from "../forms/dock/plugins/download-file-item";
+import { API } from "../../api/api";
+import DownloadFileItem from "../forms/dock/download-file-item";
 import reportDeleteIcon from "../../static/images/report_delete.png";
 
 
@@ -17,15 +18,12 @@ export function DownloadFiles() {
   const [filterByPresentation, setFilterByPresentation] = useState(true);
 
   const rootFormID = useSelector(selectors.rootFormID);
-  const sessionID = useSelector(selectors.sessionID);
-  const sessionManager = useSelector(selectors.sessionManager);
   const reports = useSelector(reportsSelector);
   const activeChildID: FormID = useSelector(selectors.activeChildID.bind(rootFormID));
 
-  const deleteReports = async () => {
+  const deleteReports = () => {
     const presentationID = filterByPresentation ? activeChildID : null;
-    const path = `clearReports?sessionId=${sessionID}&presentationId=${presentationID}`;
-    await sessionManager.fetchData(path);
+    API.programs.clearReports(presentationID).then();
     dispatch(actions.clearReports(presentationID));
   };
 

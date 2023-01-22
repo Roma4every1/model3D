@@ -1,11 +1,11 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { Button } from "@progress/kendo-react-buttons";
 import FormParametersList from "../common/form-parameters-list";
 import ProgramParametersButton from "./program-parameters-button";
-import { actions, selectors } from "../../store";
+import { actions, selectors, sessionManager } from "../../store";
 import { API } from "../../api/api";
 
 
@@ -14,7 +14,6 @@ export default function ProgramParametersList(props) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const sessionManager = useSelector(selectors.sessionManager);
   const sessionId = useSelector(selectors.sessionID);
   /** @type FormParameter[] */
   const formParams = useSelector(selectors.formParams.bind(formId));
@@ -22,9 +21,9 @@ export default function ProgramParametersList(props) {
   useEffect(() => {
     sessionManager.paramsManager.getCanRunReport(formId);
     return () => { sessionManager.paramsManager.getCanRunReport(null); }
-  }, [formId, sessionManager]);
+  }, [formId]);
 
-  const watchOperation = useCallback((data) => {
+  const watchOperation = (data) => {
     if (data?.OperationId) {
       const getResult = async () => {
         sessionManager.watchReport(data.OperationId);
@@ -35,7 +34,9 @@ export default function ProgramParametersList(props) {
         }
 
         if (reportResult?.reportLog) {
-          sessionManager.handleWindowInfo(reportResult.reportLog, null, t('report.result'), programDisplayName + ".log");
+          const text = reportResult.reportLog;
+          const fileName = programDisplayName + '.log';
+          dispatch(actions.setWindowInfo(text, null, t('report.result'), fileName));
         }
 
         if (data?.Pages) {
@@ -55,11 +56,11 @@ export default function ProgramParametersList(props) {
         dispatch(actions.closeWindowNotification());
       }, 3000);
     }
-  }, [programDisplayName, presentationId, sessionManager, handleProcessing, t, dispatch]);
+  };
 
-  const runReport = useCallback(async () => {
+  const runReport = async () => {
     handleProcessing(true);
-    sessionManager.handleNotification(t('report.inProgress', {programName: programDisplayName}))
+    dispatch(actions.setWindowNotification(t('report.inProgress', {programName: programDisplayName})));
     const jsonToSend = {sessionId, reportId: formId, presentationId, paramValues: formParams};
     const { data } = await API.programs.runReport(JSON.stringify(jsonToSend));
 
@@ -67,15 +68,17 @@ export default function ProgramParametersList(props) {
       sessionManager.channelsManager.updateTables(data.ModifiedTables.ModifiedTables);
     }
     if (data?.ReportResult) {
-      sessionManager.handleWindowInfo(data.ReportResult, null, t('report.result'), programDisplayName + ".log");
+      const text = data.ReportResult;
+      const fileName = programDisplayName + '.log';
+      dispatch(actions.setWindowInfo(text, null, t('report.result'), fileName));
     }
     formParams.forEach(param => {
       if (param.editorType === 'fileTextEditor' || param.editorType === 'filesTextEditor') {
-          dispatch(actions.updateParam(formId, param.id, null, true));
+          dispatch(actions.updateParam(formId, param.id, null));
       }
     });
     watchOperation(data);
-  }, [watchOperation, sessionId, formId, presentationId, formParams, sessionManager, dispatch, programDisplayName, handleProcessing, t]);
+  };
 
   return (
     <Dialog title={t('report.params')} onClose={handleClose} initialHeight={350} style={{zIndex: 99}}>

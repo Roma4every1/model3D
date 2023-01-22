@@ -1,5 +1,6 @@
-import { IJsonModel } from "flexlayout-react";
 import { Requester } from "./api";
+import { IJsonModel } from "flexlayout-react";
+import { parseParamValue } from "../utils/params.utils";
 
 
 export class FormsAPI {
@@ -30,7 +31,9 @@ export class FormsAPI {
   /** Запрос параметров формы. */
   public async getFormParameters(formID: FormID): Promise<Res<FormParameter[]>> {
     const query = {sessionId: this.requester.sessionID, formId: formID};
-    return await this.request<FormParameter[]>({path: 'getFormParameters', query});
+    const res = await this.request<FormParameter[]>({path: 'getFormParameters', query});
+    if (res.ok) res.data.forEach(parseParamValue);
+    return res;
   }
 
   /** Запрос дочерних форм. */

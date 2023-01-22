@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useCallback } from "react";
+import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Skeleton } from "@progress/kendo-react-indicators";
 import ProgramButton from "../sql-programs/program-button";
@@ -6,10 +6,8 @@ import { actions, selectors } from "../../store";
 import { fetchFormPrograms } from "../../store/thunks";
 
 
-export function SqlProgramsList({formID}: PropsFormID) {
+export const SqlProgramsList = ({formID}: PropsFormID) => {
   const dispatch = useDispatch();
-  const sessionID = useSelector(selectors.sessionID);
-  const sessionManager = useSelector(selectors.sessionManager);
   const programList: FetchState<ProgramListData> = useSelector(selectors.formPrograms.bind(formID));
 
   // добавить хранилище для формы
@@ -20,17 +18,17 @@ export function SqlProgramsList({formID}: PropsFormID) {
   // загрузить данные о программах и проверить их на видимость
   useEffect(() => {
     if (programList && programList.success === undefined && programList.loading === false)
-      dispatch(fetchFormPrograms(formID, sessionManager, sessionID));
-  }, [programList, sessionManager, sessionID, dispatch, formID]);
+      dispatch(fetchFormPrograms.bind(formID));
+  }, [programList, formID, dispatch]);
 
   const visiblePrograms = useMemo<ProgramListData | null>(() => {
     if (!programList?.data || typeof programList.data === 'string') return null;
     return programList.data.filter((program) => program.visible);
   }, [programList]);
 
-  const mapProgramList = useCallback((program: ProgramListItem) => {
+  const mapProgramList = (program: ProgramListItem) => {
     return <ProgramButton key={program.id} formID={formID} program={program}/>;
-  },[formID]);
+  };
 
   const notReady = !programList || programList.loading || programList.success === undefined;
 
@@ -39,11 +37,11 @@ export function SqlProgramsList({formID}: PropsFormID) {
   if (visiblePrograms.length === 0) return <EmptyList text={'Программы отсутствуют.'}/>;
 
   return <div className={'program-list'}>{visiblePrograms.map(mapProgramList)}</div>;
-}
+};
 
 const EmptyList = ({text}: {text: string}) => {
   return <div className={'program-list-empty'}><span>{text}</span></div>
-}
+};
 
 const ProgramsListLoading = () => {
   return (
@@ -53,7 +51,7 @@ const ProgramsListLoading = () => {
       <ProgramButtonSkeleton/>
     </div>
   );
-}
+};
 const ProgramButtonSkeleton = () => {
   return (
     <div>
@@ -65,4 +63,4 @@ const ProgramButtonSkeleton = () => {
       </div>
     </div>
   );
-}
+};

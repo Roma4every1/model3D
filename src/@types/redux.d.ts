@@ -23,15 +23,15 @@ interface WState {
 /* --- state.appState --- */
 
 /** Данные общего характера.
- * + `config`: {@link FetchState} of {@link ClientConfiguration}
- * + `systemList`: {@link FetchState} of {@link SystemList}
+ * + `config`: {@link ClientConfiguration}
+ * + `systemList`: {@link SystemList}
  * + `sessionID`: {@link FetchState} of {@link SessionID}
  * + `rootFormID`: {@link FormID}
  * + `systemID`: {@link SystemID}
  * */
 interface AppState {
-  config: FetchState<ClientConfiguration>,
-  systemList: FetchState<SystemList>,
+  config: ClientConfiguration,
+  systemList: SystemList,
   sessionID: FetchState<SessionID>,
   rootFormID: FormID,
   systemID: SystemID,

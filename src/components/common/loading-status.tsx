@@ -3,7 +3,7 @@ import { Loader } from "@progress/kendo-react-indicators";
 
 
 interface LoadingStatusProps {
-  readonly loadingType: 'config' | 'systems' | 'session' | string,
+  readonly loadingType: 'systems' | 'session' | string,
   readonly success?: boolean,
 }
 
@@ -22,9 +22,6 @@ export const LoadingStatus = ({loadingType, success}: LoadingStatusProps) => {
 }
 
 function getKey(type: string, isError: boolean): string {
-  if (type === 'config') {
-    return isError ? 'clientConfig.loadingError' : 'clientConfig.loading';
-  }
   if (type === 'systems') {
     return isError ? 'systems.loadingError' : 'systems.loading';
   }

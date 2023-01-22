@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
 import { GridColumnMenuFilter, GridColumnMenuCheckboxFilter } from "@progress/kendo-react-grid";
-import { selectors } from "../../../store";
+import { sessionManager } from "../../../store";
 import { API } from "../../../api/api";
 import { toDate } from "../../../utils/utils";
 
 
 export default function ColumnMenu(props) {
   const { tableColumn, formId, activeChannelName } = props;
-  const sessionManager = useSelector(selectors.sessionManager);
-
   const [distinctData, setDistinctData] = useState([]);
 
   useEffect(() => {
@@ -45,7 +42,7 @@ export default function ColumnMenu(props) {
     }
     fetchData();
     return () => { ignore = true; };
-  }, [tableColumn, activeChannelName, formId, sessionManager]);
+  }, [tableColumn, activeChannelName, formId]);
 
   const Filter = tableColumn.lookupData ? ColumnMenuCheckboxFilter : ColumnMenuFilter;
   return <Filter {...props} data={distinctData}/>;

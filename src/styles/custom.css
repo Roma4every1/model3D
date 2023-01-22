@@ -535,7 +535,7 @@ html {
   padding-block: 0;
 }
 
-.parameters-list > div {
+.parameter {
   display: grid;
   grid-template-columns: 110px calc(100% - 112px);
   grid-gap: 2px;
@@ -545,47 +545,16 @@ html {
   padding: 2px;
   border-top: 1px solid #f5f5f5;
 }
-
-.parameter-label {
+.parameter > :first-child {
   width: 110px;
   font-size: 12px;
   line-height: 1.2;
 }
-
-.parametereditor {
-  float: right;
-  font-size: 12px;
-  height: 20px;
-  width: 100%;
-}
-
-.parametereditorwithoutwidth {
-  float: right;
+.parameter > :last-child {
   font-size: 12px;
   height: 20px;
 }
 
-.parametereditorwithoutheight {
-  float: right;
-  font-size: 12px;
-  vertical-align: middle;
-  max-width: 200px;
-  max-height: 200px;
-}
-
-.filestexteditortextarea {
-  float: left;
-  width: 165px;
-}
-
-.parametereditorwithoutheightcb {
-  float: left;
-  padding-right: 170px;
-}
-
-.date-interval-text-editor {
-  display: block;
-}
 
 .k-clear-value, .k-combobox .k-input, .k-dropdown-wrap {
   height: 100%;
@@ -597,10 +566,6 @@ html {
 }
 
 .k-textbox, .k-dropdown .k-input, .k-dropdowntree .k-input, .k-datepicker, .k-dateinput, .k-numerictextbox .k-input {
-  height: 20px;
-}
-
-.programmbutton {
   height: 20px;
 }
 

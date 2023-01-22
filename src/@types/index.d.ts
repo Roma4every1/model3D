@@ -2,6 +2,7 @@
 
 interface RootFormState {
   id: FormID,
+  settings: DockFormSettings,
   children: FormChildrenState,
   parameters: FormParameter[],
   presentations: PresentationItem[],
@@ -29,57 +30,19 @@ interface FormDataWMR {
   displayNamePattern?: any,
 }
 
-/** Параметр формы. */
-interface FormParameter {
-  id: ParameterID,
-  type: ParameterType,
-  value: any,
-  formId?: FormID,
-  editorType?: ParameterEditorType,
-  editorDisplayOrder?: ParameterOrder,
-  externalChannelName?: ChannelName,
-  displayName?: string,
-  dependsOn?: ParameterDepends,
-  canBeNull?: boolean,
-  showNullValue?: boolean,
-  nullDisplayValue?: string,
-}
-
 /** Идентификатор формы. */
 type FormID = string;
 
 /** Идентификатор канала с данными. */
 type ChannelName = string;
 
-/** Идентификатор параметра формы.
- * @see FormParameter
- * */
-type ParameterID = string;
-
-/** Тип параметра формы.
- * @see FormParameter
- * */
-type ParameterType = string;
-
-/** Тип редактора для данного параметра.
- * @see FormParameter
- * */
-type ParameterEditorType = string;
-
-/** Влияет на то, в каком порядке отображать редакторы параметров.
- * @see FormParameter
- * */
-type ParameterOrder = number;
-
-/** Список параметров (ID), которые зависят от данного.
- * @see FormParameter
- * */
-type ParameterDepends = ParameterID[];
-
 /** Тип формы. */
 type FormType = 'carat' | 'chart' | 'dataSet' | 'dock' | 'files' | 'filesList' |
   'grid' | 'image' | 'map' | 'multiMap' | 'model3D' | 'profile' | 'screenshot' |
   'slide' | 'spreadsheet' | 'spreadsheetUnite' | 'transferForm';
+
+/** Число для сортировки каких-либо элементов. */
+type Order = number;
 
 /* --- Fetch State --- */
 
@@ -137,20 +100,11 @@ interface SessionManager {
   paramsManager: ParamsManager,
   channelsManager: ChannelsManager,
 
-  startSession(): Promise<any | null | undefined>
+  startSession(isDefault?: boolean): Promise<any | null | undefined>
   stopSession(): Promise<void>
   saveSession(): Promise<void>
   loadSessionByDefault(): Promise<void>
-  loadSessionFromFile(file: any): Promise<void>
-
   watchReport(operationID: any): void
-  handleWindowError(text: any, stackTrace?: any, header?: any, fileToSaveName?: string): void
-  handleWindowInfo(text: any, stackTrace?: any, header?: any, fileToSaveName?: string): void
-  handleWindowWarning(text: any, stackTrace?: any, header?: any, fileToSaveName?: string): void
-  handleNotification(text: any): void
-
-  fetchData(request: any, params?: any): Promise<any | null | undefined>
-  getJsonDataWithError(response: any): Promise<any | null>
 }
 
 /** Менеджер параметров. */
@@ -159,8 +113,7 @@ interface ParamsManager {
   loadFormSettings(formID: FormID, force?: boolean): Promise<FormSettings>
 
   getCanRunReport(formID: FormID): Promise<void>
-  getParameterValues(neededParamList: any, formID: FormID, addToLocal: any, channelName?: ChannelName): any
-  updateParamValue(formID: FormID, paramID: ParameterID, value: any, manual: boolean): void
+  getParameterValues(ids: ParameterID[], formID: FormID, addToLocal: any, channelName?: ChannelName): any
   updateParamSet(formID: FormID, newParamValues: any): void
 }
 

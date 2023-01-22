@@ -1,7 +1,7 @@
 import { TreeViewExpandChangeEvent, TreeViewItemClickEvent } from "@progress/kendo-react-treeview";
 import { useSelector, useDispatch } from "react-redux";
 import { TreeView } from "@progress/kendo-react-treeview";
-import { actions, selectors } from "../../../../store";
+import { actions, selectors } from "../../../store";
 
 
 const onExpandChange = (event: TreeViewExpandChangeEvent) => {

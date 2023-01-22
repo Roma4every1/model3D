@@ -12,7 +12,7 @@ import { SessionLoader } from "./session-loader";
 /** Проверяет, есть ли указанная система в списке доступных систем. */
 const checkSystem = (systemName: string, systemList: SystemList): boolean => {
   return systemList.find((system) => system.id === systemName) !== undefined;
-}
+};
 
 /** Компонент, использующийся если система не найдена. */
 const SystemNotFound = ({root, name}: {root: string, name: string}) => {
@@ -23,23 +23,21 @@ const SystemNotFound = ({root, name}: {root: string, name: string}) => {
       <Link to={root}>&#11176; {t('systems.backToSystemList')}</Link>
     </div>
   );
-}
+};
 
 /** Корень системы. Route: `/systems/:systemID`. */
-export const SystemRoot = ({root}: {root: string}) => {
+export const SystemRoot = () => {
   const dispatch = useDispatch();
+  const { systemList, systemID, sessionID, config } = useSelector(selectors.appState);
+
   const { systemID: paramsSystemID } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const { systemList, systemID, sessionID } = useSelector(selectors.appState);
-  const sessionManager = useSelector(selectors.sessionManager);
-
   const isNeedStartSession = useMemo(() => {
-    if (!sessionManager) return false;
-    const isSystemExist = systemList.success && checkSystem(paramsSystemID, systemList.data);
+    const isSystemExist = systemList && checkSystem(paramsSystemID, systemList);
     const isSessionNeedLoad = sessionID.success === undefined && sessionID.loading === false;
     return isSystemExist && (isSessionNeedLoad || paramsSystemID !== systemID);
-  }, [sessionID, systemList, systemID, paramsSystemID, sessionManager]);
+  }, [sessionID, systemList, systemID, paramsSystemID]);
 
   useEffect(() => {
     if (paramsSystemID !== systemID) dispatch(actions.setSystemName(paramsSystemID));
@@ -49,16 +47,16 @@ export const SystemRoot = ({root}: {root: string}) => {
     if (isNeedStartSession) {
       const isDefault = searchParams.get('defaultSession') === 'true';
       if (isDefault) setSearchParams({});
-      dispatch(startSession(sessionManager.startSession, isDefault));
+      dispatch(startSession.bind(isDefault));
     }
-  }, [isNeedStartSession, sessionManager, searchParams, setSearchParams, dispatch]);
+  }, [isNeedStartSession, searchParams, setSearchParams, dispatch]);
 
-  if (sessionID.success) return <SessionLoader />;
+  if (sessionID.success) return <SessionLoader/>;
 
-  if (systemList.loading) {
+  if (config === null) {
     return <LoadingStatus loadingType={'systems'}/>;
   }
-  if (systemList.success === false) {
+  if (!systemList) {
     return <LoadingStatus loadingType={'systems'} success={false}/>;
   }
   if (sessionID.loading) {
@@ -67,5 +65,5 @@ export const SystemRoot = ({root}: {root: string}) => {
   if (sessionID.success === false) {
     return <LoadingStatus loadingType={'session'} success={false}/>
   }
-  return <SystemNotFound name={systemID} root={root}/>;
-}
+  return <SystemNotFound name={systemID} root={config.root}/>;
+};

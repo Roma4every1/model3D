@@ -1,13 +1,12 @@
-import { useCallback } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { MenuSkeleton, MenuSection, BigButton } from "../common/menu-ui";
 import { ColumnSettings } from "../forms/dataset/plugins/column-settings";
 import { ColumnsVisibility } from "../forms/dataset/plugins/columns-visibility";
 import { ColumnHeaderSetter } from "../forms/dataset/plugins/column-header-setter";
 import { ColumnSettingsAnalyzer } from "../forms/dataset/plugins/column-settings-analyzer";
-import { selectors } from "../../store";
-import { tableSelectAllIcon, exportToExcelIcon, statisticsIcon } from "../../dicts/images";
+import { actions, sessionManager } from "../../store";
+import { tableSelectAllIcon, exportToExcelIcon, statisticsIcon, reloadIcon } from "../../dicts/images";
 
 
 function formRefSelector(this: FormID, state: WState) {
@@ -16,10 +15,10 @@ function formRefSelector(this: FormID, state: WState) {
 
 export function DataSetEditPanel({formID}: PropsFormID) {
   const { t } = useTranslation();
+  const dispatch = useDispatch();
   const formRef: any = useSelector(formRefSelector.bind(formID));
-  const sessionManager = useSelector(selectors.sessionManager);
 
-  const getStat = useCallback(() => {
+  const getStat = () => {
     const cell = formRef.activeCell();
     const tableID = formRef.tableId();
     if (!cell) return;
@@ -31,9 +30,9 @@ export function DataSetEditPanel({formID}: PropsFormID) {
         listItems.push(<li key={key}>{key}: {data.Values[key]}</li>);
       }
       const header = t('pluginNames.statistics');
-      sessionManager.handleWindowInfo(<ul>{listItems}</ul>, null, header);
+      dispatch(actions.setWindowInfo(<ul>{listItems}</ul>, null, header));
     });
-  }, [formRef, sessionManager, t]);
+  };
 
   if (!formRef) return <MenuSkeleton template={['175px', '165px', '115px']}/>;
 
@@ -47,6 +46,7 @@ export function DataSetEditPanel({formID}: PropsFormID) {
   return (
     <div className={'menu'}>
       <MenuSection header={'Функции'} className={'map-actions'}>
+        <BigButton text={'Обновить'} icon={reloadIcon} action={formRef.reload}/>
         <BigButton text={excelExportTitle} icon={exportToExcelIcon} action={excelExport}/>
         <BigButton text={statTitle} icon={statisticsIcon} action={getStat}/>
       </MenuSection>

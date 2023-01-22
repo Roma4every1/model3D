@@ -69,12 +69,14 @@ class WellManagerReactAPI implements IWellManagerReactAPI {
   public readonly programs: ProgramsAPI;
 
   constructor() {
-    this.requester = new Requester();
-    this.maps = new MapsAPI(this.requester);
-    this.forms = new FormsAPI(this.requester);
-    this.session = new SessionAPI(this.requester);
-    this.channels = new ChannelsAPI(this.requester);
-    this.programs = new ProgramsAPI(this.requester);
+    const requester = new Requester();
+    this.requester = requester;
+
+    this.maps = new MapsAPI(requester);
+    this.forms = new FormsAPI(requester);
+    this.session = new SessionAPI(requester);
+    this.channels = new ChannelsAPI(requester);
+    this.programs = new ProgramsAPI(requester);
   }
 
   public setBase(base: string): void {
@@ -92,7 +94,7 @@ class WellManagerReactAPI implements IWellManagerReactAPI {
   }
 
   /** Запрос клиентской конфигурации. */
-  public async getClientConfig(): Promise<Res<unknown>> {
+  public async getClientConfig(): Promise<unknown> {
     let configLocation = window.location.pathname;
     if (configLocation.includes('/systems/')) {
       configLocation = configLocation.slice(0, configLocation.indexOf('systems/'))
@@ -102,16 +104,18 @@ class WellManagerReactAPI implements IWellManagerReactAPI {
 
     try {
       const res = await fetch(configLocation, {credentials: 'include'});
-      return {ok: true, data: await res.json()}
+      return await res.json();
     }
     catch (e) {
-      return {ok: false, data: e.message};
+      return null;
     }
   }
 
   /** Запрос списка доступных систем. */
   public async getSystemList() {
-    return await this.request<any[]>({path: 'systemList'});
+    const res = await this.request<any[]>({path: 'systemList'});
+    res.ok = res.ok && (res.data instanceof Array)
+    return res;
   }
 
   public async getPresentationsList(rootFormID: FormID): Promise<Res<PresentationItem>> {
@@ -133,20 +137,51 @@ class WellManagerReactAPI implements IWellManagerReactAPI {
     if (!resChildren.ok) return 'ошибка при получении списка презентаций';
     const children = resChildren.data;
 
+    const resSettings = await this.getPluginData(id, 'dateChanging');
+    const dateChangingRaw = resSettings.data?.dateChanging;
+
+    const dateChanging = dateChangingRaw ? {
+      yearParameter: dateChangingRaw['@yearParameter'],
+      dateIntervalParameter: dateChangingRaw['@dateIntervalParameter'],
+      columnName: dateChangingRaw['@columnNameParameter'] ?? null
+    } : null;
+    const settings: DockFormSettings = {dateChanging, parameterGroups: null};
+
     const resParams = await this.forms.getFormParameters(id);
     if (!resParams.ok) return 'ошибка при получении глобальных параметров';
     const parameters = resParams.data;
 
     for (const param of parameters) {
-      param.formId = id;
-      if (param.externalChannelName && !param.canBeNull) {
-        await channelManager.loadAllChannelData(param.externalChannelName, id, false);
+      param.formID = id;
+      if (param['externalChannelName'] && !param.canBeNull) {
+        await channelManager.loadAllChannelData(param['externalChannelName'], id, false);
       }
     }
     await channelManager.loadFormChannelsList(id);
     channelManager.setFormInactive(id);
 
-    return {id, children, parameters, presentations};
+    return {id, settings, children, parameters, presentations};
+  }
+
+  public async getPluginData(formID: FormID, pluginName: string) {
+    const query = {sessionId: this.requester.sessionID, formId: formID, pluginName};
+    return await this.request<any>({path: 'pluginData', query});
+  }
+
+  public async exportToExcel(data: any) {
+    data.sessionId = this.requester.sessionID;
+    const body = JSON.stringify(data);
+    return await this.request<any>({method: 'POST', path: 'exportToExcel', body});
+  }
+
+  public async uploadFile(fileName: string, data: string | ArrayBuffer) {
+    const query = {sessionId: this.requester.sessionID, filename: fileName};
+    return await this.request<any>({method: 'POST', path: 'uploadFile', query, body: data});
+  }
+
+  public async downloadFile(resourceName: string) {
+    const query = {sessionId: this.requester.sessionID, resourceName};
+    return await this.request<Blob>({path: 'downloadResource', query, mapper: 'blob'});
   }
 }
 

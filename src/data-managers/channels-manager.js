@@ -65,7 +65,7 @@ export default function createChannelsManager(store) {
     channelsParamsValues[formId + '_' + channelName] = neededParamValues.map(np => np.value);
 
     const { ok, data: channelData } = await API.channels.getChannelData(channelName, neededParamValues);
-    if (!ok) sessionManager.handleWindowWarning(channelData);
+    if (!ok) store.dispatch(actions.setWindowWarning(channelData));
 
     const modifiedTables = channelData?.data?.ModifiedTables.ModifiedTables;
     if (modifiedTables?.length) await updateTables(modifiedTables, channelName);
@@ -140,7 +140,7 @@ export default function createChannelsManager(store) {
       if (!operationResult['WrongResult']) {
         updateTables([tableId, ...operationResult?.ModifiedTables?.ModifiedTables]).then();
       } else {
-        store.getState().sessionManager.handleWindowError(i18n.t('messages.dataSaveError'));
+        store.dispatch(actions.setWindowError(i18n.t('messages.dataSaveError')));
       }
     } else {
       //reject
@@ -162,41 +162,41 @@ export default function createChannelsManager(store) {
 
   const getNewRow = async (tableID) => {
     const { ok, data } = await API.channels.getNewRow(tableID);
-    if (!ok) store.getState().sessionManager.handleWindowWarning(data);
+    if (!ok) store.dispatch(actions.setWindowWarning(data));
     return data;
   }
 
   const insertRow = async (tableID, dataJSON) => {
     const { ok, data } = await API.channels.insertRow(tableID, dataJSON);
     if (ok) return updateTablesByResult(tableID, data);
-    store.getState().sessionManager.handleWindowWarning(data);
+    store.dispatch(actions.setWindowWarning(data));
   }
 
   const updateRow = async (tableID, editID, newRowData) => {
     const { ok, data } = await API.channels.updateRow(tableID, editID, newRowData);
     if (ok) return updateTablesByResult(tableID, data);
-    store.getState().sessionManager.handleWindowWarning(data);
+    store.dispatch(actions.setWindowWarning(data));
   }
 
   const deleteRows = async (tableID, elementsToRemove, removeAll) => {
     const { ok, data } = await API.channels.removeRows(tableID, elementsToRemove, String(!!removeAll));
     if (ok) return updateTablesByResult(tableID, data);
-    store.getState().sessionManager.handleWindowWarning(data);
+    store.dispatch(actions.setWindowWarning(data));
   }
 
   const getStatistics = async (tableID, columnName) => {
     const { ok, data } = await API.channels.getStatistics(tableID, columnName);
     if (ok) return data;
-    store.getState().sessionManager.handleWindowWarning(data);
+    store.dispatch(actions.setWindowWarning(data));
   }
 
   // автообновление данных каналов при обновлении параметров
   store.subscribe(async () => {
     for (let channelName in allChannelsForms) {
-      for (let formId in allChannelsForms[channelName]) {
-        if (allChannelsForms[channelName][formId]) {
+      for (let formID in allChannelsForms[channelName]) {
+        if (allChannelsForms[channelName][formID]) {
           if (!store.getState().channelsLoading[channelName]?.loading) {
-            await loadAllChannelData(channelName, formId, false);
+            await loadAllChannelData(channelName, formID, false);
           }
         }
       }

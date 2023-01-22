@@ -1,29 +1,22 @@
-import { useState, useEffect, useCallback } from "react";
-import { useSelector } from "react-redux";
-import { selectors } from "../../../../store";
+import { useState, useEffect } from "react";
 import ColumnHeaderLabelSetter from "./column-header-label-setter";
+import { API } from "../../../../api/api";
 
 
-export function ColumnHeaderSetter({formID}: PropsFormID) {
-  const sessionId = useSelector(selectors.sessionID);
-  const sessionManager = useSelector(selectors.sessionManager);
-
+export const ColumnHeaderSetter = ({formID}: PropsFormID) => {
   const [pluginData, setPluginData] = useState(null);
 
   useEffect(() => {
     let ignore = false;
-    if (sessionId) {
-      async function fetchData() {
-        const path = `pluginData?sessionId=${sessionId}&formId=${formID}&pluginName=tableColumnHeaderSetter`;
-        const data = await sessionManager.fetchData(path);
-        if (!ignore && data) setPluginData(data);
-      }
-      fetchData();
+    async function fetchData() {
+      const { ok, data } = await API.getPluginData(formID, 'tableColumnHeaderSetter');
+      if (!ignore && ok && data) setPluginData(data);
     }
+    fetchData();
     return () => { ignore = true; }
-  }, [formID, sessionId, sessionManager]);
+  }, [formID]);
 
-  const mapLabels = useCallback((label) => {
+  const mapLabels = (label) => {
     return (
       <ColumnHeaderLabelSetter
         formId={formID} column={label['@columnName']}
@@ -31,7 +24,7 @@ export function ColumnHeaderSetter({formID}: PropsFormID) {
         property={label['@ChannelPropertyName']}
       />
     );
-  }, [formID])
+  };
 
   return <div>{pluginData?.tableColumnHeaderSetter?.specialLabel?.map(mapLabels)}</div>;
-}
+};

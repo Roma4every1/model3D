@@ -39,5 +39,5 @@ export const FormName = ({formID, pattern, params}: FormNameProps) => {
   const selector = getParamValues.bind({formID, params});
   const dict: ParamValuesDict = useSelector(selector, compareObjects);
 
-  return getDisplayName(pattern, dict);
+  return <>{getDisplayName(pattern, dict)}</>;
 };

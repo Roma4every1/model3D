@@ -9,22 +9,17 @@ import { MultiMapItem, MapNotFound } from "./multi-map-item";
 import { API } from "../../../api/api";
 
 
-interface MultiMapProps {
-  formID: FormID,
-  channel: ChannelName,
-}
-
-
 const factory = (node: TabNode) => {
   const config = node.getConfig();
   return <MultiMapItem config={config}/>;
 };
 
-export const MultiMap = ({formID, channel}: MultiMapProps) => {
+export const MultiMap = ({formID}: PropsFormID) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const channelData: any = useSelector(selectors.channel.bind(channel));
+  const settings: GridFormSettings = useSelector(selectors.formSettings.bind(formID));
+  const channelData: any = useSelector(selectors.channel.bind(settings.multiMapChannel));
 
   const [model, children, configs] = useMemo<MapTuple>(() => {
     const rows = channelData?.data?.Rows;

@@ -1,11 +1,12 @@
+import { EditorProps } from "./base-editor";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { ComboBoxChangeEvent, ComboBox } from "@progress/kendo-react-dropdowns";
 import { stringToTableCell, tableRowToString } from "../../utils/utils";
-import { selectors } from "../../store";
+import { selectors, sessionManager } from "../../store";
 
 
-const getValueToShow = (channel: Channel, formParameter: FormParameter) => {
+const getValueToShow = (channel: Channel, formParameter: ParamTableRow) => {
   let data = [], initValue;
   const value = formParameter.value;
   const nullDisplayValue = formParameter.nullDisplayValue ?? 'Нет значения';
@@ -39,30 +40,26 @@ const getValueToShow = (channel: Channel, formParameter: FormParameter) => {
   return [initValue, data, nullDisplayValue];
 };
 
-export default function TableRowComboEditor({id, formId: formID, externalChannelName}) {
-  const sessionManager = useSelector(selectors.sessionManager);
-  const formParameter: FormParameter = useSelector(selectors.formParam.bind({formID, id}));
-  const channel: Channel = useSelector(selectors.channel.bind(externalChannelName));
+export const TableRowComboEditor = ({id, formID, update, channelName}: EditorProps) => {
+  const formParameter: ParamTableRow = useSelector(selectors.formParam.bind({formID, id}));
+  const channel: Channel = useSelector(selectors.channel.bind(channelName));
 
   const [initValue, data, nullDisplayValue] = getValueToShow(channel, formParameter);
-  const [value, setValue] = useState(initValue);
+  const [x, setX] = useState(false); // for rerender
 
   const onChange = (event: ComboBoxChangeEvent) => {
-    const listItem = event.target.value;
-    setValue(listItem);
-    sessionManager.paramsManager.updateParamValue(formID, id, listItem?.value, true);
+    update(event.target.value?.value ?? null); setX(!x);
   };
   const onOpen = () => {
-    sessionManager.channelsManager.loadAllChannelData(externalChannelName, formID, false);
+    sessionManager.channelsManager.loadAllChannelData(channelName, formID, false);
   };
 
   return (
     <ComboBox
-      className={'parametereditor'} dataItemKey={'id'} textField={'name'}
-      name={id} data={data}
-      value={value} placeholder={nullDisplayValue}
+      data={data} dataItemKey={'id'} textField={'name'}
+      value={initValue} placeholder={nullDisplayValue}
       suggest={true} allowCustom={true}
       onChange={onChange} onOpen={onOpen}
     />
   );
-}
+};

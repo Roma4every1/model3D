@@ -1,7 +1,6 @@
 import { TFunction } from "react-i18next";
-import { useCallback } from "react";
 import { MenuSection, BigButton } from "../../../common/menu-ui";
-import { pdfIcon} from "../../../../dicts/images";
+import { pdfIcon } from "../../../../dicts/images";
 import "svg2pdf.js";
 import C2S from "canvas2svg";
 import { jsPDF } from "jspdf";
@@ -16,8 +15,7 @@ interface ActionsProps {
 export const Export = ({mapState, t}: ActionsProps) => {
   const { canvas, mapData, utils } = mapState;
 
-  /** Экспортировать карту в PDF. */
-  const exportToPDF = useCallback(() => {
+  const exportToPDF = () => {
     const doc = new jsPDF({unit: 'px', orientation: 'l', format: [canvas.width, canvas.height + 25]});
     const mapName = mapData?.mapName || 'Map', date = mapData?.date || '';
     const mockCtx = new C2S(canvas.width, canvas.height);
@@ -32,7 +30,7 @@ export const Export = ({mapState, t}: ActionsProps) => {
 
     doc.text(date, 5, 15);
     doc.svg(mockCtx.getSvg(), {x: 0, y: 25}).then(() => {doc.save(mapName + '.pdf')});
-  }, [canvas, utils, mapData]);
+  };
 
   return (
     <MenuSection header={t('map.actions.header')} className={'map-actions'}>
