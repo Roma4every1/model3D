@@ -1,9 +1,9 @@
-import { MapModes } from "../../components/forms/map/enums";
-import { chunk } from "lodash";
-import { getParentFormId } from "../../utils/utils";
-import { getBoundsByPoints, getMultiMapChildrenCanvases } from "../../components/forms/map/map-utils";
+import { MapModes } from '../../components/forms/map/enums';
+import { chunk } from 'lodash';
+import { getParentFormId } from '../../utils/utils';
+import { getBoundsByPoints, getMultiMapChildrenCanvases } from '../../components/forms/map/map-utils';
 
-/* --- Actions Types --- */
+/* --- Action Types --- */
 
 export enum MapsActions {
   ADD_MULTI_MAP = 'maps/add_multi',
@@ -24,7 +24,7 @@ export enum MapsActions {
   CANCEL_CREATING = 'maps/cancelCreate'
 }
 
-/* --- Actions Interfaces --- */
+/* --- Action Interfaces --- */
 
 interface MapAction {
   type: MapsActions,
@@ -97,7 +97,7 @@ export type MapsAction = ActionAddMulti | ActionSetSync | ActionAdd |
   ActionStartEditing | ActionAcceptEditing | ActionCancelEditing |
   ActionStartCreating | ActionCreateElement | ActionCancelCreating;
 
-/* --- Utils --- */
+/* --- Reducer Utils --- */
 
 const getDefaultSelecting = (): MapSelectingState => {
   return {nearestElements: [], activeIndex: 0, lastPoint: null}
@@ -107,7 +107,7 @@ const clearOldData = (mapState: MapState): void => {
   mapState.oldData.x = null;
   mapState.oldData.y = null;
   mapState.oldData.arc = null;
-}
+};
 
 const clearSelect = (mapState: MapState): void => {
   if (mapState.element) {
@@ -118,13 +118,13 @@ const clearSelect = (mapState: MapState): void => {
   mapState.isElementEditing = false;
 
   clearOldData(mapState);
-}
+};
 
 const setMultiMapBlocked = (state: MapsState, parentFormID: FormID, blocked: boolean): void => {
   state.multi[parentFormID].children.forEach((formID) => {
     state.single[formID].canvas.blocked = blocked;
   });
-}
+};
 
 const initMapState: MapState = {
   mode: MapModes.NONE,
@@ -146,11 +146,11 @@ const initMapState: MapState = {
   utils: { updateCanvas: () => {}, pointToMap: (point) => point },
 };
 
-/* --- Reducer --- */
+/* --- Init State & Reducer --- */
 
-const initMaps: MapsState = {multi: {}, single: {}};
+const init: MapsState = {multi: {}, single: {}};
 
-export const mapsReducer = (state: MapsState = initMaps, action: MapsAction): MapsState => {
+export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsState => {
   switch (action.type) {
 
     /* --- multi --- */
@@ -380,4 +380,4 @@ export const mapsReducer = (state: MapsState = initMaps, action: MapsAction): Ma
 
     default: return state;
   }
-}
+};

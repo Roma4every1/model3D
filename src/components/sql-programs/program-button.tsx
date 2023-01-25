@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { Loader } from "@progress/kendo-react-indicators";
-import ProgramParametersList from "./program-parameters-list";
-import { runProgramIcon } from "../../dicts/images";
-import {actions, sessionManager} from "../../store";
-import { API } from "../../api/api";
+import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { Loader } from '@progress/kendo-react-indicators';
+import { ProgramParametersList } from './program-parameters-list';
+import { runProgramIcon } from '../../dicts/images';
+import { actions, sessionManager } from '../../store';
+import { API } from '../../api/api';
 
 
 interface ProgramButtonProps {
@@ -13,7 +13,7 @@ interface ProgramButtonProps {
 }
 
 
-export default function ProgramButton({formID, program}: ProgramButtonProps) {
+export const ProgramButton = ({formID, program}: ProgramButtonProps) => {
   const programID = program.id;
   const dispatch = useDispatch();
 
@@ -43,4 +43,4 @@ export default function ProgramButton({formID, program}: ProgramButtonProps) {
       />}
     </>
   );
-}
+};

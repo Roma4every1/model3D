@@ -1,12 +1,12 @@
-import { IJsonModel } from "flexlayout-react";
+import { IJsonModel } from 'flexlayout-react';
 
-/* --- Actions Types --- */
+/* --- Action Types --- */
 
 export enum FormLayoutActions {
   SET = 'formLayout/set',
 }
 
-/* --- Actions Interfaces --- */
+/* --- Action Interfaces --- */
 
 interface ActionSet {
   type: FormLayoutActions.SET,
@@ -16,9 +16,11 @@ interface ActionSet {
 
 export type FormLayoutAction = ActionSet;
 
-/* --- Reducer --- */
+/* --- Init State & Reducer --- */
 
-export const formLayoutReducer = (state: FormsLayout = {}, action: FormLayoutAction): FormsLayout => {
+const init: FormsLayout = {};
+
+export const formLayoutReducer = (state: FormsLayout = init, action: FormLayoutAction): FormsLayout => {
   switch (action.type) {
 
     case FormLayoutActions.SET: {
@@ -27,4 +29,4 @@ export const formLayoutReducer = (state: FormsLayout = {}, action: FormLayoutAct
 
     default: return state;
   }
-}
+};

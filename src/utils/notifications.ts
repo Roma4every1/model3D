@@ -1,4 +1,4 @@
-import { WDispatch, actions } from "../store";
+import { WDispatch, actions } from '../store';
 
 
 const defaultErrorNotice = 'Ошибка при выполнении запроса';

@@ -1,6 +1,6 @@
-import { FunctionComponent, useState } from "react";
-import { textWidth } from "../../../layout/left-tabs";
-import { Payload } from "recharts/types/component/DefaultLegendContent";
+import { FunctionComponent, useState } from 'react';
+import { Payload } from 'recharts/types/component/DefaultLegendContent';
+import { textWidth } from '../../../layout/left-tabs';
 
 
 /** Вертикальная пометка на графике.

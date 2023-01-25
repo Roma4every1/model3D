@@ -1,8 +1,8 @@
-import { IGlobalAttributes } from "flexlayout-react/declarations/model/IJsonModel";
-import { IJsonModel, IJsonRowNode } from "flexlayout-react/declarations/model/IJsonModel";
-import { IJsonTabNode, IJsonTabSetNode } from "flexlayout-react/declarations/model/IJsonModel";
-import { FormName } from "../form/form-name";
-import Form from "../form/form";
+import { IGlobalAttributes } from 'flexlayout-react/declarations/model/IJsonModel';
+import { IJsonModel, IJsonRowNode } from 'flexlayout-react/declarations/model/IJsonModel';
+import { IJsonTabNode, IJsonTabSetNode } from 'flexlayout-react/declarations/model/IJsonModel';
+import { Form } from '../form/form';
+import { FormName } from '../form/form-name';
 
 
 type LayoutArg = IJsonRowNode | IJsonTabSetNode | IJsonTabNode;

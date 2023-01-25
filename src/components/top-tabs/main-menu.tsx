@@ -1,16 +1,16 @@
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useSelector, useDispatch } from "react-redux";
-import { Link } from "react-router-dom";
-import { Button } from "@progress/kendo-react-buttons";
-import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
-import { MenuSection, ButtonIcon, BigButtonToggle } from "../common/menu-ui";
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useSelector, useDispatch } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { Button } from '@progress/kendo-react-buttons';
+import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
+import { MenuSection, ButtonIcon, BigButtonToggle } from '../common/menu-ui';
 
-import { actions, selectors, sessionManager } from "../../store";
-import { backToSystemsIcon, aboutProgramIcon, saveSessionIcon, defaultSessionIcon } from "../../dicts/images";
-import { globalParametersIcon, presentationParametersIcon, presentationsListIcon } from "../../dicts/images";
-import PACKAGE from "../../../package.json";
-import "../../styles/menu.scss";
+import { actions, selectors, sessionManager } from '../../store';
+import { backToSystemsIcon, aboutProgramIcon, saveSessionIcon, defaultSessionIcon } from '../../dicts/images';
+import { globalParametersIcon, presentationParametersIcon, presentationsListIcon } from '../../dicts/images';
+import PACKAGE from '../../../package.json';
+import '../../styles/menu.scss';
 
 
 interface AboutProgramWindowProps {

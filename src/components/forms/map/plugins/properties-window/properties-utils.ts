@@ -1,7 +1,7 @@
-import lines from "../../lines.json";
-import parseColor from "parse-color";
-import { polylineType } from "../selecting/selecting-utils";
-import { ColorPickerPaletteSettings, ColorPickerGradientSettings } from "@progress/kendo-react-inputs";
+import lines from '../../lines.json';
+import parseColor from 'parse-color';
+import { polylineType } from '../selecting/selecting-utils';
+import { ColorPickerPaletteSettings, ColorPickerGradientSettings } from '@progress/kendo-react-inputs';
 
 
 export interface InitLabelState {

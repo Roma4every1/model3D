@@ -1,10 +1,10 @@
-import symbols from "./symbols";
-import patterns from "./patterns";
-import cache from "./cache";
-import Maps from "./maps";
-import { loadImage } from "./html-helper";
-import { API } from "../../../../api/api";
-import lines from "../lines.json";
+import symbols from './symbols';
+import patterns from './patterns';
+import cache from './cache';
+import Maps from './maps';
+import { loadImage } from './html-helper';
+import { API } from '../../../../api/api';
+import lines from '../lines.json';
 
 
 const drawOptions = {

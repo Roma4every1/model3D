@@ -1,4 +1,4 @@
-import { CheckboxChangeEvent, Checkbox } from "@progress/kendo-react-inputs";
+import { CheckboxChangeEvent, Checkbox } from '@progress/kendo-react-inputs';
 
 
 export const BooleanCell = ({data, dataItem, field, onChange}) => {

@@ -1,9 +1,9 @@
-import { useCallback } from "react";
-import { useDispatch } from "react-redux";
-import { useTranslation } from "react-i18next";
-import { Button } from "@progress/kendo-react-buttons";
-import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
-import { actions } from "../../../../../store";
+import { useCallback } from 'react';
+import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@progress/kendo-react-buttons';
+import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
+import { actions } from '../../../../../store';
 
 
 interface DeleteElementWindowProps {

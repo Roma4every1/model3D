@@ -1,11 +1,11 @@
-/* --- Actions Types --- */
+/* --- Action Types --- */
 
 export enum FormSettingsActions {
   SET = 'formSettings/set',
   SET_FIELD = 'formSettings/setField',
 }
 
-/* --- Actions Interfaces --- */
+/* --- Action Interfaces --- */
 
 interface ActionSet {
   type: FormSettingsActions.SET,
@@ -21,9 +21,11 @@ interface ActionSetField {
 
 export type FormSettingsAction = ActionSet | ActionSetField;
 
-/* --- Reducer --- */
+/* --- Init State & Reducer --- */
 
-export const formSettingsReducer = (state: FormsSettings = {}, action: FormSettingsAction): FormsSettings => {
+const init: FormsSettings = {};
+
+export const formSettingsReducer = (state: FormsSettings = init, action: FormSettingsAction): FormsSettings => {
   switch (action.type) {
 
     case FormSettingsActions.SET: {
@@ -37,4 +39,4 @@ export const formSettingsReducer = (state: FormsSettings = {}, action: FormSetti
 
     default: return state;
   }
-}
+};

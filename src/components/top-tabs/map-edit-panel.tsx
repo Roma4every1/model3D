@@ -1,16 +1,16 @@
-import { useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { useSelector, useDispatch } from "react-redux";
-import { MenuSkeleton } from "../common/menu-ui";
-import { Dimensions } from "../forms/map/plugins/dimensions";
-import { Export } from "../forms/map/plugins/export";
-import { Selecting } from "../forms/map/plugins/selecting/selecting";
-import { Editing } from "../forms/map/plugins/editing/editing";
-import { SaveMap } from "../forms/map/plugins/save-map";
-import { getParentFormId } from "../../utils/utils";
-import { actions, selectors } from "../../store";
-import { API } from "../../api/api";
-import "../../styles/map-edit-panel.scss";
+import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useSelector, useDispatch } from 'react-redux';
+import { MenuSkeleton } from '../common/menu-ui';
+import { Dimensions } from '../forms/map/plugins/dimensions';
+import { Export } from '../forms/map/plugins/export';
+import { Selecting } from '../forms/map/plugins/selecting/selecting';
+import { Editing } from '../forms/map/plugins/editing/editing';
+import { SaveMap } from '../forms/map/plugins/save-map';
+import { getParentFormId } from '../../utils/utils';
+import { actions, selectors } from '../../store';
+import { API } from '../../api/api';
+import '../../styles/map-edit-panel.scss';
 
 
 const panelTemplate = ['330px', '90px', '275px', 'calc(100% - 785px)', '90px'];

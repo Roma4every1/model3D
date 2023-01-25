@@ -1,13 +1,13 @@
-import { useEffect, useMemo } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector } from "react-redux";
-import { startSession } from "../store/thunks";
-import { actions, selectors } from "../store";
+import { useEffect, useMemo } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
+import { startSession } from '../store/thunks';
+import { actions, selectors } from '../store';
 
-import { Dock } from "./forms/dock/dock";
-import { LoadingStatus } from "./common/loading-status";
-import { WindowHandler } from "./common/window-handler";
+import { Dock } from './forms/dock/dock';
+import { LoadingStatus } from './common/loading-status';
+import { WindowHandler } from './common/window-handler';
 
 
 /** Проверяет, есть ли указанная система в списке доступных систем. */

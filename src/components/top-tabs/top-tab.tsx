@@ -1,13 +1,13 @@
-import { FunctionComponent } from "react";
-import { useSelector } from "react-redux";
-import { selectors } from "../../store";
+import { FunctionComponent } from 'react';
+import { useSelector } from 'react-redux';
+import { selectors } from '../../store';
 
-import { SqlProgramsList } from "./sql-programs-list";
-import { DataSetEditPanel } from "./dataset-edit-panel";
-import { ChartEditPanel } from "./chart-edit-panel";
-import { MapEditPanel } from "./map-edit-panel";
-import { TracksEditPanel } from "./tracks-edit-panel";
-import { CaratEditPanel } from "./carat-edit-panel";
+import { SqlProgramsList } from './sql-programs-list';
+import { DataSetEditPanel } from './dataset-edit-panel';
+import { ChartEditPanel } from './chart-edit-panel';
+import { MapEditPanel } from './map-edit-panel';
+import { TracksEditPanel } from './tracks-edit-panel';
+import { CaratEditPanel } from './carat-edit-panel';
 
 
 /** Словарь всех компонентов верхней панели. */
@@ -19,7 +19,7 @@ export const topPanelsDict: Record<string, [FunctionComponent<PropsFormID>, Form
   'top-carat': [CaratEditPanel, 'carat'],
 };
 
-export function TopTab({id}: {id: string}) {
+export const TopTab = ({id}: {id: string}) => {
   const presentation = useSelector(selectors.displayedPresentation);
   if (!presentation) return null;
   if (id === 'top-programs') return <SqlProgramsList formID={presentation.id}/>;
@@ -33,4 +33,4 @@ export function TopTab({id}: {id: string}) {
     : presentation.children.find(child => child.type === formType).id;
 
   return <TopTabComponent formID={formID}/>;
-}
+};

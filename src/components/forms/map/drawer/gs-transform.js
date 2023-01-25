@@ -1,6 +1,6 @@
-import { xml2js } from "xml-js";
-import { toPairs, fromPairs } from "lodash";
-import xmlTransform from "./xml-transform";
+import { xml2js } from 'xml-js';
+import { toPairs, fromPairs } from 'lodash';
+import xmlTransform from './xml-transform';
 
 
 const transform = xmlTransform({

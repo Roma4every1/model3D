@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { GridColumnMenuFilter, GridColumnMenuCheckboxFilter } from "@progress/kendo-react-grid";
-import { sessionManager } from "../../../store";
-import { API } from "../../../api/api";
-import { toDate } from "../../../utils/utils";
+import React, { useState, useEffect } from 'react';
+import { GridColumnMenuFilter, GridColumnMenuCheckboxFilter } from '@progress/kendo-react-grid';
+import { sessionManager } from '../../../store';
+import { API } from '../../../api/api';
+import { toDate } from '../../../utils/utils';
 
 
 export const ColumnMenu = (props) => {

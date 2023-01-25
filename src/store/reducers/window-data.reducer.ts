@@ -1,6 +1,6 @@
 import { t } from '../../locales/i18n';
 
-/* --- Actions Types --- */
+/* --- Action Types --- */
 
 export enum WindowDataActions {
   SET_INFO = 'windowData/setInfo',
@@ -12,7 +12,7 @@ export enum WindowDataActions {
   CLOSE_NOTIFICATION = 'windowData/closeNotification',
 }
 
-/* --- Actions Interfaces --- */
+/* --- Action Interfaces --- */
 
 interface ActionSetInfo {
   type: WindowDataActions.SET_INFO,
@@ -56,9 +56,11 @@ interface ActionCloseNotification {
 export type WindowDataAction = ActionSetInfo | ActionSetWarning | ActionSetError |
   ActionSetOpenedWindow | ActionClose | ActionSetNotification | ActionCloseNotification;
 
-/* --- Reducer --- */
+/* --- Init State & Reducer --- */
 
-export const windowDataReducer = (state = null, action: WindowDataAction) => {
+const init = null;
+
+export const windowDataReducer = (state = init, action: WindowDataAction) => {
   let newState = {...state};
   switch (action.type) {
 
@@ -125,4 +127,4 @@ export const windowDataReducer = (state = null, action: WindowDataAction) => {
 
     default: return state;
   }
-}
+};

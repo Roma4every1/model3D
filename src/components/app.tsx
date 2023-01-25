@@ -1,17 +1,17 @@
-import { useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { initialize } from "../store/thunks";
-import { getAppLocation } from "../api/initialization";
-import { selectors } from "../store";
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { initialize } from '../store/thunks';
+import { getAppLocation } from '../api/initialization';
+import { selectors } from '../store';
 
-import { SystemList } from "./system-list";
-import { SystemRoot } from "./system-root";
-import { UnknownRoute } from "./common/unknown-route";
+import { SystemList } from './system-list';
+import { SystemRoot } from './system-root';
+import { UnknownRoute } from './common/unknown-route';
 
-import "@progress/kendo-theme-default/dist/all.css";
-import "flexlayout-react/style/light.css";
-import "../styles/custom.css";
+import '@progress/kendo-theme-default/dist/all.css';
+import 'flexlayout-react/style/light.css';
+import '../styles/custom.css';
 
 
 /** Корень приложения. */

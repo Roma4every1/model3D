@@ -1,16 +1,16 @@
-import { TFunction } from "react-i18next";
-import { useState, useEffect, useCallback, cloneElement } from "react";
-import { Button } from "@progress/kendo-react-buttons";
-import { Label } from "@progress/kendo-react-labels";
-import { DropDownList, DropDownListChangeEvent } from "@progress/kendo-react-dropdowns";
-import { Checkbox } from "@progress/kendo-react-inputs";
-import { ColorPicker } from "@progress/kendo-react-inputs";
-import { NumericTextBox } from "@progress/kendo-react-inputs";
-import { FillNameTemplate } from "./fill-name-template";
-import { StyleTemplate } from "./style-template";
-import { applyLegend, InitPolylineState } from "../properties-utils";
-import { stylesData, templatesData, paletteSettings, gradientSettings, updateImg } from "../properties-utils";
-import parseColor from "parse-color";
+import { TFunction } from 'react-i18next';
+import { useState, useEffect, useCallback, cloneElement } from 'react';
+import { Button } from '@progress/kendo-react-buttons';
+import { Label } from '@progress/kendo-react-labels';
+import { DropDownList, DropDownListChangeEvent } from '@progress/kendo-react-dropdowns';
+import { Checkbox } from '@progress/kendo-react-inputs';
+import { ColorPicker } from '@progress/kendo-react-inputs';
+import { NumericTextBox } from '@progress/kendo-react-inputs';
+import { FillNameTemplate } from './fill-name-template';
+import { StyleTemplate } from './style-template';
+import { applyLegend, InitPolylineState } from '../properties-utils';
+import { stylesData, templatesData, paletteSettings, gradientSettings, updateImg } from '../properties-utils';
+import parseColor from 'parse-color';
 
 
 interface PolylinePropertiesProps {

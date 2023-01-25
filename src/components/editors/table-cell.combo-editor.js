@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { mapTree, extendDataItem } from "@progress/kendo-react-common";
-import { DropDownTree } from "@progress/kendo-react-dropdowns";
-import { filterBy } from "@progress/kendo-react-data-tools";
-import { tableCellToString } from "../../utils/utils";
-import { selectors, sessionManager } from "../../store";
+import { mapTree, extendDataItem } from '@progress/kendo-react-common';
+import { DropDownTree } from '@progress/kendo-react-dropdowns';
+import { filterBy } from '@progress/kendo-react-data-tools';
+import { tableCellToString } from '../../utils/utils';
+import { selectors, sessionManager } from '../../store';
 
 const expandField = 'expanded';
 const dataItemKey = 'id';

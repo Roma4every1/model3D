@@ -1,5 +1,5 @@
-import { IJsonModel } from "flexlayout-react";
-import { serializeParamValue } from "./params.utils";
+import { IJsonModel } from 'flexlayout-react';
+import { serializeParamValue } from './params.utils';
 
 
 type FormParameterToSave = Omit<FormParameter, 'value'> & {value: string};

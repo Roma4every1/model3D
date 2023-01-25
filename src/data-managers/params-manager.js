@@ -1,7 +1,7 @@
-import { find } from "lodash";
-import { getParentFormId, tableRowToString } from "../utils/utils";
-import { actions } from "../store";
-import { API } from "../api/api";
+import { find } from 'lodash';
+import { getParentFormId, tableRowToString } from '../utils/utils';
+import { actions } from '../store';
+import { API } from '../api/api';
 
 
 export default function createParamsManager(store) {
@@ -60,10 +60,7 @@ export default function createParamsManager(store) {
     store.dispatch(actions.updateParam(formID, paramID, value));
   };
 
-  /** Позволяет обновить сразу несколько параметров.
-   *
-   * Используется только при работе с картами (ProgramParametersList.js).
-   * */
+  /** Позволяет обновить сразу несколько параметров. */
   const updateParamSet = (formID, newParamValues) => {
     const params = store.getState().formParams[formID];
     newParamValues.forEach(p => {

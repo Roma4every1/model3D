@@ -1,7 +1,7 @@
-import { useSelector } from "react-redux";
-import { compareObjects, getParentFormId } from "../../../utils/utils";
-import { getDisplayName } from "../../../utils/display-name-string";
-import { FormDisplayNamePattern, ParamValuesDict } from "../../../utils/display-name-string";
+import { useSelector } from 'react-redux';
+import { compareObjects, getParentFormId } from '../../../utils/utils';
+import { getDisplayName } from '../../../utils/display-name-string';
+import { FormDisplayNamePattern, ParamValuesDict } from '../../../utils/display-name-string';
 
 
 interface FormNameProps {

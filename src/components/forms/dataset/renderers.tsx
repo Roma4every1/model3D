@@ -1,7 +1,7 @@
-import { cloneElement } from "react";
-import { BaseCell } from "./cells/base-cell";
-// import { GridCellProps } from "@progress/kendo-react-grid";
-// import { useTableKeyboardNavigation } from "@progress/kendo-react-data-tools";
+import { cloneElement } from 'react';
+import { BaseCell } from './cells/base-cell';
+// import { GridCellProps } from '@progress/kendo-react-grid';
+// import { useTableKeyboardNavigation } from '@progress/kendo-react-data-tools';
 
 
 export const CellRender = (props) => {

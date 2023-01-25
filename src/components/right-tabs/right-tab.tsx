@@ -1,9 +1,9 @@
-import { useSelector } from "react-redux";
-import MapLayersTree from "./layers-tree";
-import { selectors } from "../../store";
+import { useSelector } from 'react-redux';
+import { MapLayersTree } from './layers-tree';
+import { selectors } from '../../store';
 
 
-export function RightTab() {
+export const RightTab = () => {
   const presentation = useSelector(selectors.displayedPresentation);
   if (!presentation) return null;
 
@@ -14,4 +14,4 @@ export function RightTab() {
     : presentation.children.find(child => child.type === 'map').id;
 
   return <MapLayersTree formID={formID}/>;
-}
+};

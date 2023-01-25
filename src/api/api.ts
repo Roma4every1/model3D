@@ -1,8 +1,8 @@
-import { MapsAPI } from "./maps.api";
-import { FormsAPI } from "./forms.api";
-import { SessionAPI } from "./session.api";
-import { ChannelsAPI } from "./channels.api";
-import { ProgramsAPI } from "./programs.api";
+import { MapsAPI } from './maps.api';
+import { FormsAPI } from './forms.api';
+import { SessionAPI } from './session.api';
+import { ChannelsAPI } from './channels.api';
+import { ProgramsAPI } from './programs.api';
 
 
 interface IWellManagerReactAPI {

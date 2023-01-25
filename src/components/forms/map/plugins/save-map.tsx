@@ -1,10 +1,10 @@
-import { TFunction } from "react-i18next"
-import { useDispatch } from "react-redux";
-import { MenuSection, BigButton } from "../../../common/menu-ui";
-import { saveMapIcon as icon } from "../../../../dicts/images";
-import { actions } from "../../../../store";
-import { API } from "../../../../api/api";
-import { callBackWithNotices } from "../../../../utils/notifications";
+import { TFunction } from 'react-i18next'
+import { useDispatch } from 'react-redux';
+import { MenuSection, BigButton } from '../../../common/menu-ui';
+import { saveMapIcon as icon } from '../../../../dicts/images';
+import { actions } from '../../../../store';
+import { API } from '../../../../api/api';
+import { callBackWithNotices } from '../../../../utils/notifications';
 
 
 interface SaveMapProps {

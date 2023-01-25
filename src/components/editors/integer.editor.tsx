@@ -1,6 +1,6 @@
-import { EditorProps } from "./base-editor";
-import { useSelector } from "react-redux";
-import { NumericTextBoxChangeEvent, NumericTextBox } from "@progress/kendo-react-inputs";
+import { EditorProps } from './base-editor';
+import { useSelector } from 'react-redux';
+import { NumericTextBoxChangeEvent, NumericTextBox } from '@progress/kendo-react-inputs';
 
 
 /** Редактор целого числа.

@@ -1,40 +1,41 @@
-/* --- actions types --- */
+/* --- Action Types --- */
 
 export enum ReportsActions {
   SET = 'reports/set',
   CLEAR = 'reports/clear',
 }
 
-/* --- actions interfaces --- */
+/* --- Action Interfaces --- */
 
 export interface ActionSet {
   type: ReportsActions.SET,
-  operationId: any,
+  operationID: string,
   value: any,
 }
 export interface ActionClear {
   type: ReportsActions.CLEAR,
-  presentationId: any,
+  presentationID: string,
 }
 
 export type ReportsAction = ActionSet | ActionClear;
 
-/* --- reducer --- */
+/* --- Init State & Reducer --- */
 
-const initReports = [];
+const init: Reports = {};
 
-export const reportsReducer = (state = initReports, action: ReportsAction) => {
+export const reportsReducer = (state: Reports = init, action: ReportsAction): Reports => {
   switch (action.type) {
 
     case ReportsActions.SET: {
-      return {...state, [action.operationId]: action.value};
+      return {...state, [action.operationID]: action.value};
     }
 
     case ReportsActions.CLEAR: {
-      if (action.presentationId == null) return {};
-      return Object.fromEntries(Object.entries(state).filter(e => e[1].ID_PR !== action.presentationId));
+      const id = action.presentationID;
+      if (id == null) return {};
+      return Object.fromEntries(Object.entries(state).filter(e => e[1].ID_PR !== id));
     }
 
     default: return state;
   }
-}
+};

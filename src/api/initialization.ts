@@ -1,5 +1,5 @@
-import { API } from "./api";
-import { sessionManager } from "../store";
+import { API } from './api';
+import { sessionManager } from '../store';
 
 
 /** По конфигу устанавливает значение для ссылки на службу запросов. */

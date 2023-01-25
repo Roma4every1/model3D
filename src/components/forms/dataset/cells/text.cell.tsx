@@ -1,4 +1,4 @@
-import { Input } from "@progress/kendo-react-inputs";
+import { Input } from '@progress/kendo-react-inputs';
 
 
 export const TextCell = ({data, dataItem, field, onChange}) => {

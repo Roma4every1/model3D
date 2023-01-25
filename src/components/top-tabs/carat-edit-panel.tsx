@@ -1,6 +1,6 @@
-// import { useSelector } from "react-redux";
-// import { MenuSection } from "../common/menu-ui";
-// import { selectors } from "../../store";
+// import { useSelector } from 'react-redux';
+// import { MenuSection } from '../common/menu-ui';
+// import { selectors } from '../../store';
 
 
 /** Панель редактирования каротажа. */

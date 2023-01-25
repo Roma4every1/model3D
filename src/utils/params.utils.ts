@@ -74,7 +74,6 @@ export function serializeParamValue(type: ParameterType, value: any): string | n
 
 /** Сериализует дату в серверный формат. */
 function serializeDate(date: Date): string {
-  // TODO: протестить
   return date.toJSON();
   // const month = date.getMonth() + 1;
   // const monthString = month > 9 ? month.toString() : '0' + month;

@@ -1,9 +1,9 @@
-import { FunctionComponent } from "react";
-import { Grid } from "../components/forms/grid/grid";
-import { Chart } from "../components/forms/chart/chart";
-import { Map } from "../components/forms/map/map";
-// import { Carat } from "../components/forms/carat/carat";
-// import { Model3D } from "../components/forms/model3d";
+import { FunctionComponent } from 'react';
+import { Grid } from '../components/forms/grid/grid';
+import { Chart } from '../components/forms/chart/chart';
+import { Map } from '../components/forms/map/map';
+// import { Carat } from '../components/forms/carat/carat';
+// import { Model3D } from '../components/forms/model3d';
 
 
 /** Заглушка для не поддерживаемых форм. */

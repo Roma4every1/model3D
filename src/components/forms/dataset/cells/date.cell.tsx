@@ -1,5 +1,4 @@
-import React from "react";
-import { DatePicker } from "@progress/kendo-react-dateinputs";
+import { DatePicker } from '@progress/kendo-react-dateinputs';
 
 
 export const DateCell = ({data, dataItem, field, onChange}) => {

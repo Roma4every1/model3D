@@ -128,6 +128,7 @@ interface ChannelsManager {
   loadFormChannelsList(formID: FormID): Promise<ChannelName[]>
   loadAllChannelData(channelName: ChannelName, formID: FormID, force?: boolean): Promise<boolean>
   setFormInactive(formID: FormID): void
+  reset(): void
 
   getNewRow(tableID: string): Promise<ChannelRow | null>
   insertRow(tableID: string, rows: ChannelRow[]): Promise<boolean>

@@ -1,10 +1,10 @@
-/* --- actions types --- */
+/* --- Action Types --- */
 
 export enum CanRunReportActions {
   SET = 'canRunReport/set',
 }
 
-/* --- actions interfaces --- */
+/* --- Action Interfaces --- */
 
 interface ActionSet {
   type: CanRunReportActions.SET,
@@ -13,11 +13,11 @@ interface ActionSet {
 
 export type CanRunReportAction = ActionSet;
 
-/* --- reducer --- */
+/* --- Init State & Reducer --- */
 
-const initCanRunReport = false;
+const init = false;
 
-export const canRunReportReducer = (state: CanRunReport = initCanRunReport, action: CanRunReportAction): CanRunReport => {
+export const canRunReportReducer = (state: CanRunReport = init, action: CanRunReportAction): CanRunReport => {
   switch (action.type) {
 
     case CanRunReportActions.SET: {
@@ -26,4 +26,4 @@ export const canRunReportReducer = (state: CanRunReport = initCanRunReport, acti
 
     default: return state;
   }
-}
+};

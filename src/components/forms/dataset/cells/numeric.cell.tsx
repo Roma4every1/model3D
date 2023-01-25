@@ -1,4 +1,4 @@
-import { NumericTextBox } from "@progress/kendo-react-inputs";
+import { NumericTextBox } from '@progress/kendo-react-inputs';
 
 
 export const NumericCell = ({data, dataItem, field, onChange}) => {

@@ -1,4 +1,4 @@
-/* --- actions types --- */
+/* --- Action Types --- */
 
 export enum ChildFormsActions {
   SET = 'childForms/set',
@@ -6,7 +6,7 @@ export enum ChildFormsActions {
   SET_ACTIVE = 'childForms/setActive',
 }
 
-/* --- actions interfaces --- */
+/* --- Action Interfaces --- */
 
 interface ActionSet {
   type: ChildFormsActions.SET,
@@ -26,7 +26,7 @@ interface ActionSetActive {
 
 export type ChildFormsAction = ActionSet | ActionSetOpened | ActionSetActive;
 
-/* --- reducer --- */
+/* --- Init State & Reducer --- */
 
 const init: ChildForms = {};
 
@@ -49,4 +49,4 @@ export const childFormsReducer = (state: ChildForms = init, action: ChildFormsAc
 
     default: return state;
   }
-}
+};

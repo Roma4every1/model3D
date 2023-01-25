@@ -1,12 +1,12 @@
-import * as _ from "lodash";
-import { rects } from "./geom";
-import * as parseColor from "parse-color";
-import { loadImageData } from "./html-helper";
-import startThread from "./start-thread";
-import parseSMB from "./parse-smb";
-import pngMono from "./png-mono";
-import { provider } from "./index";
-import { API } from "../../../../api/api";
+import * as _ from 'lodash';
+import { rects } from './geom';
+import * as parseColor from 'parse-color';
+import { loadImageData } from './html-helper';
+import startThread from './start-thread';
+import parseSMB from './parse-smb';
+import pngMono from './png-mono';
+import { provider } from './index';
+import { API } from '../../../../api/api';
 
 
 const twoPi = 2 * Math.PI;

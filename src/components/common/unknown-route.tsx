@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 
 /** Страница-заглушка для несуществующих путей. */
@@ -26,4 +26,4 @@ export const UnknownRoute = ({root}: {root: string}) => {
       </ul>
     </div>
   );
-}
+};

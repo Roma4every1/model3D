@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import { useTranslation } from "react-i18next";
-import { useDispatch } from "react-redux";
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
 
-import { EditElement } from "./edit-element";
-import { CreateElement } from "./create-element";
-import { DeleteElementWindow } from "./delete-element";
-import { PropertiesWindow } from "../properties-window/properties";
-import { AttrTableWindow } from "./attr-table";
+import { EditElement } from './edit-element';
+import { CreateElement } from './create-element';
+import { DeleteElementWindow } from './delete-element';
+import { PropertiesWindow } from '../properties-window/properties';
+import { AttrTableWindow } from './attr-table';
 
 import { MapModes } from "../../enums";
 import { getHeaderText } from "./editing-utils";

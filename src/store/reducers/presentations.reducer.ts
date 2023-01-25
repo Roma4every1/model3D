@@ -1,11 +1,11 @@
-/* --- Actions Types --- */
+/* --- Action Types --- */
 
 export enum PresentationsActions {
   SET = 'presentations/set',
-  SET_SELECTED = 'presentations/setSelected',
+  SET_SELECTED = 'presentations/select',
 }
 
-/* --- Actions Interfaces --- */
+/* --- Action Interfaces --- */
 
 interface ActionSet {
   type: PresentationsActions.SET,
@@ -18,7 +18,7 @@ interface ActionSetSelected {
 
 export type PresentationsAction = ActionSet | ActionSetSelected;
 
-/* --- Init State & Reducer --- */
+/* --- Reducer Utils --- */
 
 const clearSelect = (items: PresentationItem[]) => {
   items.forEach(item => {
@@ -36,7 +36,11 @@ const setActive = (items: PresentationItem[], activeID: FormID) => {
   }
 };
 
-export const presentationsReducer = (state: PresentationsState = [], action: PresentationsAction): PresentationsState => {
+/* --- Init State & Reducer --- */
+
+const init: PresentationsState = [];
+
+export const presentationsReducer = (state: PresentationsState = init, action: PresentationsAction): PresentationsState => {
   switch (action.type) {
 
     case PresentationsActions.SET: {
@@ -53,4 +57,4 @@ export const presentationsReducer = (state: PresentationsState = [], action: Pre
 
     default: return state;
   }
-}
+};

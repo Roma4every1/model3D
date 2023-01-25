@@ -1,4 +1,4 @@
-import { Requester } from "./api";
+import { Requester } from './api';
 
 
 export class ProgramsAPI {

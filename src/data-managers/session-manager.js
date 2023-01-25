@@ -1,11 +1,11 @@
 import { t } from '../locales/i18n';
-import { actions } from "../store";
-import { API } from "../api/api";
-import { startSession as startSessionThunk } from "../store/thunks";
-import { getSessionToSave } from "../utils/session.utils";
+import { actions } from '../store';
+import { API } from '../api/api';
+import { startSession as startSessionThunk } from '../store/thunks';
+import { getSessionToSave } from '../utils/session.utils';
 
-import createChannelsManager from "./channels-manager";
-import createParamsManager from "./params-manager";
+import createChannelsManager from './channels-manager';
+import createParamsManager from './params-manager';
 
 
 export function createSessionManager(store) {

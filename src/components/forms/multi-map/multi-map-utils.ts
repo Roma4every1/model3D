@@ -1,6 +1,6 @@
-import { IJsonModel, Model } from "flexlayout-react";
-import { IGlobalAttributes, IJsonRowNode } from "flexlayout-react/declarations/model/IJsonModel";
-import { IJsonTabSetNode, IJsonTabNode } from "flexlayout-react/declarations/model/IJsonModel";
+import { IJsonModel, Model } from 'flexlayout-react';
+import { IGlobalAttributes, IJsonRowNode } from 'flexlayout-react/declarations/model/IJsonModel';
+import { IJsonTabSetNode, IJsonTabNode } from 'flexlayout-react/declarations/model/IJsonModel';
 
 
 export interface MapItemConfig {

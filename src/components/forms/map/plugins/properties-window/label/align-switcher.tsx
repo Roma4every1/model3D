@@ -1,6 +1,3 @@
-import { useCallback } from "react";
-
-
 interface SwitchAlignmentProps {
   h: MapLabelAlignment,
   v: MapLabelAlignment,
@@ -39,7 +36,7 @@ const AlignRect = ({ownH, ownV}: AlignRectProps) => {
 /** Компонент настройки выравнивания подписи. */
 export const AlignSwitcher = ({h, v, onChange}: SwitchAlignmentProps) => {
 
-  const AlignSetter = useCallback(({ownH, ownV}: AlignRectProps) => {
+  const AlignSetter = ({ownH, ownV}: AlignRectProps) => {
     const x = hAlignSetterDict[ownH], y = vAlignSetterDict[ownV];
     const className = (h === ownH && v === ownV) ? 'selected' : undefined;
     const setter = () => { onChange(ownH, ownV); };
@@ -50,7 +47,7 @@ export const AlignSwitcher = ({h, v, onChange}: SwitchAlignmentProps) => {
         x={x} y={y} width={thirdWidth} height={thirdHeight} rx={2} ry={2}
       />
     );
-  }, [h, v, onChange]);
+  };
 
   return (
     <svg viewBox={`0 0 ${width} ${height}`} width={width} height={height} className={'switch-alignment'}>
@@ -74,4 +71,4 @@ export const AlignSwitcher = ({h, v, onChange}: SwitchAlignmentProps) => {
       </g>
     </svg>
   );
-}
+};

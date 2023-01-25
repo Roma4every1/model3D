@@ -1,12 +1,12 @@
-import React from "react";
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useInternationalization } from "@progress/kendo-react-intl";
+import { useInternationalization } from '@progress/kendo-react-intl';
 
-import { BooleanCell } from "./boolean.cell";
-import { DateCell } from "./date.cell";
-import { DropDownCell } from "./drop-down.cell";
-import { NumericCell } from "./numeric.cell";
-import { TextCell } from "./text.cell";
+import { BooleanCell } from './boolean.cell';
+import { DateCell } from './date.cell';
+import { DropDownCell } from './drop-down.cell';
+import { NumericCell } from './numeric.cell';
+import { TextCell } from './text.cell';
 
 
 export const BaseCell = ({dataItem, format, field, editField, onChange, editor}) => {

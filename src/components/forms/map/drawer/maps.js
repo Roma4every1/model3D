@@ -1,11 +1,11 @@
-import EventEmitter from "events";
-import nextTick from "async/nextTick";
-import { once, identity } from "lodash";
-import startThread, { sleep } from "./start-thread";
-import { startPaint } from "./map-drawer";
-import { getTranslator, rects } from "./geom";
-import { onElementSize } from "./html-helper";
-import { PIXEL_PER_METER } from "../map-utils";
+import EventEmitter from 'events';
+import nextTick from 'async/nextTick';
+import { once, identity } from 'lodash';
+import startThread, { sleep } from './start-thread';
+import { startPaint } from './map-drawer';
+import { getTranslator, rects } from './geom';
+import { onElementSize } from './html-helper';
+import { PIXEL_PER_METER } from '../map-utils';
 
 
 const devicePixelRatio = window.devicePixelRatio || 1;

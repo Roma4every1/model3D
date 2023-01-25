@@ -1,5 +1,5 @@
-import PNGlib from "./pnglib";
-import parseColor from "parse-color";
+import PNGlib from './pnglib';
+import parseColor from 'parse-color';
 
 
 export default function pngMono(matrix, color, backColor) {

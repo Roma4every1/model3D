@@ -1,9 +1,9 @@
-import { useDispatch } from "react-redux";
-import { TFunction, useTranslation } from "react-i18next";
+import { useDispatch } from 'react-redux';
+import { TFunction, useTranslation } from 'react-i18next';
 
-import { MapModes, MapModes as Modes } from "../../enums";
-import { mapEditIconsDict } from "../../../../../dicts/images";
-import { actions } from "../../../../../store";
+import { MapModes, MapModes as Modes } from '../../enums';
+import { mapEditIconsDict } from '../../../../../dicts/images';
+import { actions } from '../../../../../store';
 
 
 interface EditElementProps {

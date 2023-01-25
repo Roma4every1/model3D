@@ -1,7 +1,7 @@
-import { EditorProps } from "./base-editor";
+import { EditorProps } from './base-editor';
 import { useSelector } from 'react-redux';
-import { ComboBoxChangeEvent, ComboBox } from "@progress/kendo-react-dropdowns";
-import { selectors, sessionManager } from "../../store";
+import { ComboBoxChangeEvent, ComboBox } from '@progress/kendo-react-dropdowns';
+import { selectors, sessionManager } from '../../store';
 
 
 export const StringComboEditor = ({formID, valueSelector, update, channelName}: EditorProps) => {

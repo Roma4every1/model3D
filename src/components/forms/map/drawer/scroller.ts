@@ -1,6 +1,6 @@
-import Events from "events";
-import { Translator, getTranslator } from "./geom";
-import { clientPoint, listenerOptions } from "../map-utils";
+import Events from 'events';
+import { Translator, getTranslator } from './geom';
+import { clientPoint, listenerOptions } from '../map-utils';
 
 
 interface ScrollerAction {

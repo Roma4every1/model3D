@@ -1,9 +1,9 @@
-import { useMemo, useCallback } from "react";
-import { useDispatch } from "react-redux";
-import { TFunction, useTranslation } from "react-i18next";
-import { Window, DialogActionsBar } from "@progress/kendo-react-dialogs";
-import { Button } from "@progress/kendo-react-buttons";
-import { actions } from "../../../../../store";
+import { useMemo, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
+import { TFunction, useTranslation } from 'react-i18next';
+import { Window, DialogActionsBar } from '@progress/kendo-react-dialogs';
+import { Button } from '@progress/kendo-react-buttons';
+import { actions } from '../../../../../store';
 
 
 interface LayerStatWindowProps {

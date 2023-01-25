@@ -1,6 +1,6 @@
-import { Requester } from "./api";
-import { IJsonModel } from "flexlayout-react";
-import { parseParamValue } from "../utils/params.utils";
+import { Requester } from './api';
+import { IJsonModel } from 'flexlayout-react';
+import { parseParamValue } from '../utils/params.utils';
 
 
 export class FormsAPI {

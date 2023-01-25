@@ -1,4 +1,4 @@
-/* --- actions types --- */
+/* --- Action Types --- */
 
 export enum ProgramsActions {
   ADD = 'programs/add',
@@ -6,7 +6,7 @@ export enum ProgramsActions {
   FETCH_END = 'programs/end',
 }
 
-/* --- actions interfaces --- */
+/* --- Action Interfaces --- */
 
 interface ActionAdd {
   type: ProgramsActions.ADD,
@@ -29,9 +29,11 @@ interface ActionFetchEndError {
 
 export type ProgramsAction = ActionAdd | ActionFetchStart | ActionFetchEndSuccess | ActionFetchEndError;
 
-/* --- reducer --- */
+/* --- Init State & Reducer --- */
 
-export const programsReducer = (state: ProgramsState = {}, action: ProgramsAction): ProgramsState => {
+const init: ProgramsState = {};
+
+export const programsReducer = (state: ProgramsState = init, action: ProgramsAction): ProgramsState => {
   switch (action.type) {
 
     case ProgramsActions.ADD: {
@@ -53,4 +55,4 @@ export const programsReducer = (state: ProgramsState = {}, action: ProgramsActio
 
     default: return state;
   }
-}
+};

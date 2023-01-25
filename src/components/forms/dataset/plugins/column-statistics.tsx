@@ -1,9 +1,9 @@
-import { useDispatch } from "react-redux";
-import { BigButton } from "../../../common/menu-ui";
-import { showNotice } from "../../../../utils/notifications";
-import { API } from "../../../../api/api";
-import { actions } from "../../../../store";
-import { statisticsIcon } from "../../../../dicts/images";
+import { useDispatch } from 'react-redux';
+import { BigButton } from '../../../common/menu-ui';
+import { showNotice } from '../../../../utils/notifications';
+import { API } from '../../../../api/api';
+import { actions } from '../../../../store';
+import { statisticsIcon } from '../../../../dicts/images';
 
 
 /** Статистика по колонке из таблицы в БД. */

@@ -1,13 +1,13 @@
-import { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useTranslation } from "react-i18next";
-import { Scroller } from "./drawer/scroller";
-import { MapNotFound, MapLoadError, CircularProgressBar } from "../multi-map/multi-map-item";
-import { createMapsDrawer } from "./drawer";
-import { getParentFormId, tableRowToString } from "../../../utils/utils";
-import { getFullViewport, getMultiMapChildrenCanvases } from "./map-utils";
-import { fetchMapData } from "../../../store/thunks";
-import { actions, selectors } from "../../../store";
+import { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { Scroller } from './drawer/scroller';
+import { MapNotFound, MapLoadError, CircularProgressBar } from '../multi-map/multi-map-item';
+import { createMapsDrawer } from './drawer';
+import { getParentFormId, tableRowToString } from '../../../utils/utils';
+import { getFullViewport, getMultiMapChildrenCanvases } from './map-utils';
+import { fetchMapData } from '../../../store/thunks';
+import { actions, selectors } from '../../../store';
 
 
 export const Map = ({formID, channels, data}: FormProps & {data?: MapData}) => {

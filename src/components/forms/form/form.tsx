@@ -1,9 +1,9 @@
-import { useState, useEffect, useLayoutEffect, useRef } from "react";
-import { useDispatch } from "react-redux";
-import { formDict } from "../../../dicts/forms";
-import { actions, sessionManager } from "../../../store";
-import { MultiMap } from "../multi-map/multi-map";
-import Dataset from "../dataset/dataset";
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import { useDispatch } from 'react-redux';
+import { formDict } from '../../../dicts/forms';
+import { actions, sessionManager } from '../../../store';
+import { MultiMap } from '../multi-map/multi-map';
+import Dataset from '../dataset/dataset';
 
 
 interface FormProps {
@@ -18,7 +18,7 @@ interface FormState {
 
 
 /** Обобщённый компонент всех типов форм. */
-export default function Form({formData, channel}: FormProps) {
+export const Form = ({formData, channel}: FormProps) => {
   const dispatch = useDispatch();
 
   const formID = formData.id;
@@ -68,7 +68,7 @@ export default function Form({formData, channel}: FormProps) {
       <FormByType formID={formID} channels={formState.channels}/>
     </div>
   );
-}
+};
 
 /** Типы форм, для которых требуется запрос настроек. */
 const needSettingsFormTypes: FormType[] = ['dataSet', 'grid', 'chart'];

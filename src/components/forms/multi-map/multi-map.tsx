@@ -1,12 +1,12 @@
-import { Layout, TabNode, Action, Actions } from "flexlayout-react";
-import { useEffect, useMemo } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { useTranslation } from "react-i18next";
-import { getMultiMapLayout, MapItemConfig } from "./multi-map-utils";
-import { i18nMapper } from "../../../locales/i18n";
-import { MultiMapItem, MapNotFound } from "./multi-map-item";
-import { actions } from "../../../store";
-import { API } from "../../../api/api";
+import { Layout, TabNode, Action, Actions } from 'flexlayout-react';
+import { useEffect, useMemo } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { getMultiMapLayout, MapItemConfig } from './multi-map-utils';
+import { i18nMapper } from '../../../locales/i18n';
+import { MultiMapItem, MapNotFound } from './multi-map-item';
+import { actions } from '../../../store';
+import { API } from '../../../api/api';
 
 
 const factory = (node: TabNode) => {

@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { useTranslation } from "react-i18next";
-import { GridLayout, GridLayoutItem } from "@progress/kendo-react-layout";
-import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
-import { Button } from "@progress/kendo-react-buttons";
-import { saveAs } from "@progress/kendo-file-saver";
-import { Notification, NotificationGroup } from "@progress/kendo-react-notification";
-import { actions } from "../../store";
+import React, { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { GridLayout, GridLayoutItem } from '@progress/kendo-react-layout';
+import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
+import { Button } from '@progress/kendo-react-buttons';
+import { saveAs } from '@progress/kendo-file-saver';
+import { Notification, NotificationGroup } from '@progress/kendo-react-notification';
+import { actions } from '../../store';
 
 
 const blobOptions = {type: 'text/plain;charset=utf-8'};
@@ -76,4 +76,4 @@ export const WindowHandler = () => {
       </NotificationGroup>}
     </div>
   );
-}
+};

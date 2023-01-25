@@ -1,11 +1,11 @@
-import { useMemo } from "react";
-import { useSelector } from "react-redux";
-import { ResponsiveContainer, ComposedChart, CartesianGrid, Legend, Tooltip, XAxis } from "recharts";
-import { ChartProto, getChartProto } from "./chart-proto";
-import { mapAxes, mapDiagrams, mapMarks } from "./chart-mappers";
-import { compareArrays } from "../../../utils/utils";
-import { selectors } from "../../../store";
-import "../../../styles/chart.scss";
+import { useMemo } from 'react';
+import { useSelector } from 'react-redux';
+import { ResponsiveContainer, ComposedChart, CartesianGrid, Legend, Tooltip, XAxis } from 'recharts';
+import { ChartProto, getChartProto } from './chart-proto';
+import { mapAxes, mapDiagrams, mapMarks } from './chart-mappers';
+import { compareArrays } from '../../../utils/utils';
+import { selectors } from '../../../store';
+import '../../../styles/chart.scss';
 
 
 function chartDataSelector(this: ChannelName[], state: WState): Channel[] {

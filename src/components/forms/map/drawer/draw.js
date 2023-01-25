@@ -1,9 +1,7 @@
-import { getJSON } from "./http-client";
-import { onElementSize } from "./html-helper";
-import { startPaint } from "./map-drawer";
-import { rects } from "./geom";
-import { PIXEL_PER_METER } from "../map-utils";
-import startThread from "./start-thread";
+import { onElementSize } from './html-helper';
+import { startPaint } from './map-drawer';
+import { rects } from './geom';
+import { PIXEL_PER_METER } from '../map-utils';
 
 
 const devicePixelRatio = window.devicePixelRatio || 1;
@@ -12,31 +10,6 @@ function updateCanvasSize(canvas) {
 	canvas.width = canvas.clientWidth * devicePixelRatio || 0
 	canvas.height = canvas.clientHeight * devicePixelRatio || 0
 }
-
-function loadMapData(name) {
-	return startThread(function* loadDataThread() {
-		return yield getJSON(`/maps/Containers/${name}.json`);
-	});
-}
-
-export function loadMap(path) {
-	return startThread(function* loadMapThread() {
-		if (typeof path != 'string') path = path.PATH;
-		const ret = yield getJSON(`/maps${path}`);
-		const coll = {};
-		const loadData = name => coll['_' + name] || (coll['_' + name] = loadMapData(name));
-
-		ret.namedpointsContainer = ret.namedpoints;
-		ret.namedpoints = loadData(ret.namedpointsContainer).then(data => data.namedpoints).catch(() => []);
-
-		for (let layer of ret.layers) {
-			layer.data = loadData(layer.container).then(data => data.layers[layer.uid].elements).catch(() => []);
-		}
-		return ret;
-	})
-}
-
-export var mapInfo = getJSON("/maps/mapinfo.json");
 
 const RESOLVED = Promise.resolve();
 

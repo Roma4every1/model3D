@@ -1,8 +1,8 @@
-import { extend } from "lodash";
-import { parseDef } from "./symbol2svg";
-import { loadImageData } from "./html-helper";
-import cache from "./cache";
-import startThread from "./start-thread";
+import { extend } from 'lodash';
+import { parseDef } from './symbol2svg';
+import { loadImageData } from './html-helper';
+import cache from './cache';
+import startThread from './start-thread';
 
 
 export default function symbols(provider) {

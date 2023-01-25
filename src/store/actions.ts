@@ -1,21 +1,21 @@
-import { IJsonModel } from "flexlayout-react";
-import { AppStateAction, AppStateActions } from "./reducers/app-state.reducer";
-import { CanRunReportAction, CanRunReportActions } from "./reducers/can-run-report.reducer";
-import { ChannelsDataAction, ChannelsDataActions } from "./reducers/channels-data.reducer";
-import { ChannelsLoadingAction, ChannelsLoadingActions } from "./reducers/channels-loading.reducer";
-import { ChildFormsAction, ChildFormsActions } from "./reducers/child-forms.reducer";
-import { FormRefsAction, FormRefsActions } from "./reducers/form-refs.reducer";
-import { FormParamsAction, FormParamsActions } from "./reducers/form-params.reducer";
-import { FormSettingsAction, FormSettingsActions } from "./reducers/form-settings.reducer";
-import { FormLayoutAction, FormLayoutActions } from "./reducers/form-layout.reducer";
-import { LayoutAction, LayoutActions } from "./reducers/layout.reducer";
-import { MapsAction, MapsActions } from "./reducers/maps.reducer";
-import { PresentationsAction, PresentationsActions } from "./reducers/presentations.reducer";
-import { ProgramsAction, ProgramsActions } from "./reducers/programs.reducer";
-import { ReportsAction, ReportsActions } from "./reducers/reports.reducer";
-import { SessionManagerAction, SessionManagerActions } from "./reducers/session-manager.reducer";
-import { WindowDataAction, WindowDataActions } from "./reducers/window-data.reducer";
-import { CaratsAction, CaratsActions } from "./reducers/carats.reducer";
+import { IJsonModel } from 'flexlayout-react';
+import { AppStateAction, AppStateActions } from './reducers/app-state.reducer';
+import { CanRunReportAction, CanRunReportActions } from './reducers/can-run-report.reducer';
+import { ChannelsDataAction, ChannelsDataActions } from './reducers/channels-data.reducer';
+import { ChannelsLoadingAction, ChannelsLoadingActions } from './reducers/channels-loading.reducer';
+import { ChildFormsAction, ChildFormsActions } from './reducers/child-forms.reducer';
+import { FormRefsAction, FormRefsActions } from './reducers/form-refs.reducer';
+import { FormParamsAction, FormParamsActions } from './reducers/form-params.reducer';
+import { FormSettingsAction, FormSettingsActions } from './reducers/form-settings.reducer';
+import { FormLayoutAction, FormLayoutActions } from './reducers/form-layout.reducer';
+import { LayoutAction, LayoutActions } from './reducers/layout.reducer';
+import { MapsAction, MapsActions } from './reducers/maps.reducer';
+import { PresentationsAction, PresentationsActions } from './reducers/presentations.reducer';
+import { ProgramsAction, ProgramsActions } from './reducers/programs.reducer';
+import { ReportsAction, ReportsActions } from './reducers/reports.reducer';
+import { SessionManagerAction, SessionManagerActions } from './reducers/session-manager.reducer';
+import { WindowDataAction, WindowDataActions } from './reducers/window-data.reducer';
+import { CaratsAction, CaratsActions } from './reducers/carats.reducer';
 
 
 export class WellManagerActionsCreator {
@@ -245,12 +245,12 @@ export class WellManagerActionsCreator {
   /* --- Reports Actions --- */
 
   /** Установить репорт. */
-  public setReport(operationId: any, value: any): ReportsAction {
-    return {type: ReportsActions.SET, operationId, value};
+  public setReport(operationID: any, value: any): ReportsAction {
+    return {type: ReportsActions.SET, operationID, value};
   }
   /** Очистить репорты для презентации. */
-  public clearReports(presentationId: any): ReportsAction {
-    return {type: ReportsActions.CLEAR, presentationId: presentationId};
+  public clearReports(presentationID: any): ReportsAction {
+    return {type: ReportsActions.CLEAR, presentationID};
   }
 
   /* --- Session Manager Actions --- */

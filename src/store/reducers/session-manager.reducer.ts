@@ -1,10 +1,10 @@
-/* --- actions types --- */
+/* --- Action types --- */
 
 export enum SessionManagerActions {
   SET = 'sessionManager/set',
 }
 
-/* --- actions interfaces --- */
+/* --- Action Interfaces --- */
 
 export interface ActionSet {
   type: SessionManagerActions.SET,
@@ -13,7 +13,7 @@ export interface ActionSet {
 
 export type SessionManagerAction = ActionSet;
 
-/* --- reducer --- */
+/* --- Init State & reducer --- */
 
 const init = null;
 
@@ -26,4 +26,4 @@ export const sessionManagerReducer = (state: SessionManager = init, action: Sess
 
     default: return state;
   }
-}
+};

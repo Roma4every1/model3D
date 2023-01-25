@@ -1,6 +1,6 @@
-import { chunk } from "lodash";
-import { types } from "../../drawer/map-drawer";
-import { PIXEL_PER_METER } from "../../map-utils";
+import { chunk } from 'lodash';
+import { types } from '../../drawer/map-drawer';
+import { PIXEL_PER_METER } from '../../map-utils';
 
 
 /** Функция, определяющая ширину текста внутри {@link HTMLCanvasElement}. */

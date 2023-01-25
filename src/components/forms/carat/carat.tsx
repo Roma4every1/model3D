@@ -1,7 +1,7 @@
-// import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
-// import { useSelector, useDispatch } from "react-redux";
-// import { selectors, actions } from "../../../store";
-// import { CaratDrawer, CaratRenderData } from "./drawer";
+// import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+// import { useSelector, useDispatch } from 'react-redux';
+// import { selectors, actions } from '../../../store';
+// import { CaratDrawer, CaratRenderData } from './drawer';
 
 
 // function caratSelector(this: ChannelName[], state: WState) {

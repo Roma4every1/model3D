@@ -1,24 +1,30 @@
-import { useEffect } from "react";
-import { useSelector } from "react-redux";
-import { useTranslation } from "react-i18next";
-import { Button } from "@progress/kendo-react-buttons";
-import { sessionManager } from "../../store";
+import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@progress/kendo-react-buttons';
+import { sessionManager } from '../../store';
 
 
-export default function ProgramParametersButton({formId, runReport, handleClose}) {
+interface ProgramParametersButtonProps {
+  formID: FormID,
+  onClick: () => void,
+}
+
+
+const selector = (state: WState) => state.canRunReport;
+
+export const ProgramParametersButton = ({formID, onClick}: ProgramParametersButtonProps) => {
   const { t } = useTranslation();
+  const canRunReport = useSelector(selector);
 
   useEffect(() => {
-    sessionManager.paramsManager.getCanRunReport(formId);
+    sessionManager.paramsManager.getCanRunReport(formID);
     return () => { sessionManager.paramsManager.getCanRunReport(null); }
-  }, [formId]);
-
-  const canRunReport = useSelector((state: WState) => state.canRunReport);
-  const handleRun = () => { runReport(); handleClose(); }
+  }, [formID]);
 
   return (
-    <Button className={'actionbutton'} disabled={!canRunReport} onClick={handleRun}>
+    <Button className={'actionbutton'} disabled={!canRunReport} onClick={onClick}>
       {t('base.run')}
     </Button>
   );
-}
+};

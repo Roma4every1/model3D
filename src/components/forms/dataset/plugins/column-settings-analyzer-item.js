@@ -1,7 +1,7 @@
-import React from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { actions, selectors } from "../../../../store";
-import { stringToTableCell } from "../../../../utils/utils";
+import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { actions, selectors } from '../../../../store';
+import { stringToTableCell } from '../../../../utils/utils';
 
 
 export default function ColumnSettingsAnalyzerItem(props) {

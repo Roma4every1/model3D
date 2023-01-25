@@ -1,6 +1,6 @@
-import { caratSettings, caratColumns } from "../../components/forms/carat/data";
+import { caratSettings, caratColumns } from '../../components/forms/carat/data';
 
-/* --- Actions Types --- */
+/* --- Action Types --- */
 
 export enum CaratsActions {
   ADD = 'carat/add',
@@ -8,7 +8,7 @@ export enum CaratsActions {
   SET_DRAWER = 'carat/setDrawer',
 }
 
-/* --- Actions Interfaces --- */
+/* --- Action Interfaces --- */
 
 interface ActionAdd {
   type: CaratsActions.ADD,
@@ -27,7 +27,7 @@ interface ActionSetDrawer {
 
 export type CaratsAction = ActionAdd | ActionSetCanvas | ActionSetDrawer;
 
-/* --- Reducer --- */
+/* --- Init State & Reducer --- */
 
 const defaultCaratState: CaratState = {
   settings: caratSettings,
@@ -36,11 +36,13 @@ const defaultCaratState: CaratState = {
   drawer: null,
 };
 
-export const caratsReducer = (state: CaratsState = {}, action: CaratsAction): CaratsState => {
+const init: CaratsState = {};
+
+export const caratsReducer = (state: CaratsState = init, action: CaratsAction): CaratsState => {
   switch (action.type) {
 
     case CaratsActions.ADD: {
-      return {...state, [action.formID]: {...defaultCaratState}};
+      return {...state, [action.formID]: JSON.parse(JSON.stringify(defaultCaratState))};
     }
 
     case CaratsActions.SET_CANVAS: {
@@ -53,4 +55,4 @@ export const caratsReducer = (state: CaratsState = {}, action: CaratsAction): Ca
 
     default: return state;
   }
-}
+};

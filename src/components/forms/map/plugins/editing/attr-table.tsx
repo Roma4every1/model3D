@@ -1,18 +1,18 @@
-import { useState, useEffect, useRef } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { useTranslation } from "react-i18next";
-import { Label } from "@progress/kendo-react-labels";
-import { Button } from "@progress/kendo-react-buttons";
-import { Window } from "@progress/kendo-react-dialogs";
-import { Input } from "@progress/kendo-react-inputs";
+import { useState, useEffect, useRef } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { Label } from '@progress/kendo-react-labels';
+import { Button } from '@progress/kendo-react-buttons';
+import { Window } from '@progress/kendo-react-dialogs';
+import { Input } from '@progress/kendo-react-inputs';
 
-import { toPairs } from "lodash";
-import { actions } from "../../../../../store";
+import { toPairs } from 'lodash';
+import { actions } from '../../../../../store';
 
 
 const windowsSelector = (state: WState) => state.windowData.windows;
 
-export const AttrTableWindow = ({formID}: {formID: FormID}) => {
+export const AttrTableWindow = ({formID}: PropsFormID) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 

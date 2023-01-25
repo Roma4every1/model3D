@@ -1,4 +1,4 @@
-import { IJsonTabNode } from "flexlayout-react/declarations/model/IJsonModel";
+import { IJsonTabNode } from 'flexlayout-react/declarations/model/IJsonModel';
 
 
 const allRightTabs: IJsonTabNode[] = [

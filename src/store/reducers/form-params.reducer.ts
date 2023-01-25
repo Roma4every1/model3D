@@ -1,4 +1,4 @@
-/* --- actions types --- */
+/* --- Action Types --- */
 
 export enum FormParamsActions {
   SET = 'params/set',
@@ -8,7 +8,7 @@ export enum FormParamsActions {
   UPDATE_SET = 'params/updateSet',
 }
 
-/* --- actions interfaces --- */
+/* --- Action Interfaces --- */
 
 interface ActionSet {
   type: FormParamsActions.SET,
@@ -38,7 +38,7 @@ interface ActionUpdateSet {
 
 export type FormParamsAction = ActionSet | ActionAdd | ActionAddSet | ActionUpdate | ActionUpdateSet;
 
-/* --- reducer --- */
+/* --- Init State & Reducer --- */
 
 const init: FormParams = {};
 
@@ -110,4 +110,4 @@ export const formParamsReducer = (state: FormParams = init, action: FormParamsAc
 
     default: return state;
   }
-}
+};

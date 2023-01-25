@@ -1,10 +1,10 @@
-// import { useSelector } from "react-redux";
-// import { selectors } from "../../store";
-// import { MenuSection, ButtonIconStock } from "../common/menu-ui";
-// import IntegerTextEditor from "../editors/integer-text.editor";
+// import { useSelector } from 'react-redux';
+// import { MenuSection, ButtonIconStock } from '../common/menu-ui';
+// import { IntegerEditor } from '../editors/integer.editor';
+// import { selectors } from '../../store';
 
 
-export function TracksEditPanel({formID}: PropsFormID) {
+export const TracksEditPanel = ({formID}: PropsFormID) => {
   // const caratState: CaratState = useSelector(selectors.caratState.bind(formID));
 
   return <div/>;
@@ -33,7 +33,7 @@ export function TracksEditPanel({formID}: PropsFormID) {
   //     </MenuSection>
   //   </div>
   // );
-}
+};
 
 // const TextGrid = ({labels}: {labels: string[]}) => {
 //   return (
@@ -41,4 +41,4 @@ export function TracksEditPanel({formID}: PropsFormID) {
 //       {labels.map((label, i) => <div key={i}>{label}</div>)}
 //     </div>
 //   );
-// }
+// };

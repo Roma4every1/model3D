@@ -1,14 +1,14 @@
-import { IntlProvider, LocalizationProvider } from "@progress/kendo-react-intl";
-import { useEffect, useCallback, useMemo, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useTranslation } from "react-i18next";
-import { Window } from "@progress/kendo-react-dialogs";
+import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
+import { useEffect, useCallback, useMemo, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { Window } from '@progress/kendo-react-dialogs';
 
-import { MapModes } from "../../enums";
-import { PolylineProperties } from "./polyline/polyline-properties";
-import { LabelProperties } from "./label/label-properties";
-import { actions, selectors } from "../../../../../store";
-import { createLabelInit, createPolylineInit, rollbackLabel, rollbackPolyline } from "./properties-utils";
+import { MapModes } from '../../enums';
+import { PolylineProperties } from './polyline/polyline-properties';
+import { LabelProperties } from './label/label-properties';
+import { actions, selectors } from '../../../../../store';
+import { createLabelInit, createPolylineInit, rollbackLabel, rollbackPolyline } from './properties-utils';
 
 
 const windowSizeDict: Record<'polyline' | 'label', [number, number]> = {

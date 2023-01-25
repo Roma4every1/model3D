@@ -1,9 +1,9 @@
-import { useEffect, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { Skeleton } from "@progress/kendo-react-indicators";
-import ProgramButton from "../sql-programs/program-button";
-import { actions, selectors } from "../../store";
-import { fetchFormPrograms } from "../../store/thunks";
+import { useEffect, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Skeleton } from '@progress/kendo-react-indicators';
+import { ProgramButton } from '../sql-programs/program-button';
+import { actions, selectors } from '../../store';
+import { fetchFormPrograms } from '../../store/thunks';
 
 
 export const SqlProgramsList = ({formID}: PropsFormID) => {

@@ -1,6 +1,6 @@
-import { CSSProperties, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { actions, selectors } from "../../../../store";
+import { CSSProperties, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { actions, selectors } from '../../../../store';
 
 
 interface ButtonProps {

@@ -1,15 +1,15 @@
-import React, { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { useTranslation } from "react-i18next";
-import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
-import { Button } from "@progress/kendo-react-buttons";
-import FormParametersList from "../common/form-parameters-list";
-import ProgramParametersButton from "./program-parameters-button";
-import { actions, selectors, sessionManager } from "../../store";
-import { API } from "../../api/api";
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
+import { Button } from '@progress/kendo-react-buttons';
+import { FormParametersList } from '../common/form-parameters-list';
+import { ProgramParametersButton } from './program-parameters-button';
+import { actions, selectors, sessionManager } from '../../store';
+import { API } from '../../api/api';
 
 
-export default function ProgramParametersList(props) {
+export const ProgramParametersList = (props) => {
   const { formId, presentationId, handleClose, handleProcessing, programDisplayName } = props;
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -80,11 +80,11 @@ export default function ProgramParametersList(props) {
 
   return (
     <Dialog title={t('report.params')} onClose={handleClose} initialHeight={350} style={{zIndex: 99}}>
-      <FormParametersList formId={formId} />
+      <FormParametersList formID={formId} />
       <DialogActionsBar>
-        <ProgramParametersButton formId={formId} runReport={runReport} handleClose={handleClose} />
+        <ProgramParametersButton formID={formId} onClick={() => { runReport(); handleClose(); }}/>
         <Button className={'actionbutton'} onClick={handleClose}>{t('base.cancel')}</Button>
       </DialogActionsBar>
     </Dialog>
   );
-}
+};

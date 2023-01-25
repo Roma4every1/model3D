@@ -1,4 +1,4 @@
-import { Toolbar } from "@progress/kendo-react-buttons";
+import { Toolbar } from '@progress/kendo-react-buttons';
 
 
 interface EditToolbarProps {

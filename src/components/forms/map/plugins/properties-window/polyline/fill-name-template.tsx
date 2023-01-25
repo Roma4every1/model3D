@@ -1,5 +1,5 @@
-import { useLayoutEffect, useRef } from "react";
-import { polylineType } from "../../selecting/selecting-utils";
+import { useLayoutEffect, useRef } from 'react';
+import { polylineType } from '../../selecting/selecting-utils';
 
 
 const width = 110;

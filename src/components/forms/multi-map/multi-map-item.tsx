@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { TFunction, useTranslation } from "react-i18next";
-import { MapItemConfig } from "./multi-map-utils";
-import { Map } from "../map/map";
+import { useEffect, useState } from 'react';
+import { TFunction, useTranslation } from 'react-i18next';
+import { MapItemConfig } from './multi-map-utils';
+import { Map } from '../map/map';
 
 
 export const MultiMapItem = ({config}: {config: MapItemConfig}) => {

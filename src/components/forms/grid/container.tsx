@@ -1,8 +1,8 @@
-import { Layout, Model } from "flexlayout-react";
-import { IJsonRowNode, IJsonTabSetNode } from "flexlayout-react/declarations/model/IJsonModel";
-import { useDispatch } from "react-redux";
-import { i18nMapper } from "../../../locales/i18n";
-import { actions } from "../../../store";
+import { Layout, Model } from 'flexlayout-react';
+import { IJsonRowNode, IJsonTabSetNode } from 'flexlayout-react/declarations/model/IJsonModel';
+import { useDispatch } from 'react-redux';
+import { i18nMapper } from '../../../locales/i18n';
+import { actions } from '../../../store';
 
 
 interface ContainerProps {

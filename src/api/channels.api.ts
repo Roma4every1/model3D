@@ -1,5 +1,5 @@
-import { Requester } from "./api";
-import { paramToChannelParamData } from "../utils/params.utils";
+import { Requester } from './api';
+import { paramToChannelParamData } from '../utils/params.utils';
 
 
 export class ChannelsAPI {

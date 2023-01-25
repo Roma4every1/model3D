@@ -1,17 +1,17 @@
-import { t } from "../locales/i18n";
-import { uniq } from "lodash";
-import { equalParams } from "../utils/utils";
-import { actions } from "../store";
-import { API } from "../api/api";
+import { t } from '../locales/i18n';
+import { uniq } from 'lodash';
+import { equalParams } from '../utils/utils';
+import { actions } from '../store';
+import { API } from '../api/api';
 
 
 export default function createChannelsManager(store) {
   /* `{[key: string]: ???}` */
-  const allChannelsForms = {};
+  let allChannelsForms = {};
   /* `{[key: string]: string[]}` */
-  const channelsParams = {};
+  let channelsParams = {};
   /* `{[key: string]: string[]}` */
-  const channelsParamsValues = {};
+  let channelsParamsValues = {};
 
   const loadFormChannelsList = async (formID) => {
     const res = await API.forms.getFormChannelsList(formID);
@@ -196,6 +196,12 @@ export default function createChannelsManager(store) {
     return ok;
   };
 
+  const reset = () => {
+    allChannelsForms = {};
+    channelsParams = {};
+    channelsParamsValues = {};
+  };
+
   // автообновление данных каналов при обновлении параметров
   store.subscribe(async () => {
     for (let channelName in allChannelsForms) {
@@ -211,9 +217,8 @@ export default function createChannelsManager(store) {
 
   return {
     loadFormChannelsList, loadAllChannelData,
-    setFormInactive,
-    updateTables,
+    setFormInactive, updateTables,
     insertRow, updateRow, deleteRows,
-    getNewRow, getAllChannelParams
+    getNewRow, getAllChannelParams, reset,
   };
 }

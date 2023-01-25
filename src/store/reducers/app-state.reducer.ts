@@ -1,4 +1,4 @@
-/* --- Actions Types --- */
+/* --- Action Types --- */
 
 export enum AppStateActions {
   INIT_RESULT = 'app/init',
@@ -8,7 +8,7 @@ export enum AppStateActions {
   CLEAR_SESSION_ID = 'app/clear',
 }
 
-/* --- Actions Interfaces --- */
+/* --- Action Interfaces --- */
 
 interface ActionInitResult {
   type: AppStateActions.INIT_RESULT,
@@ -32,7 +32,7 @@ interface ActionSetSystemName {
 export type AppStateAction = ActionInitResult | ActionSetSystemName |
   ActionFetchSessionStart | ActionFetchSessionEnd | ActionClearSessionID;
 
-/* --- Reducer --- */
+/* --- Init State & Reducer --- */
 
 const init: AppState = {
   config: null,
@@ -74,4 +74,4 @@ export const appStateReducer = (state: AppState = init, action: AppStateAction):
 
     default: return state;
   }
-}
+};

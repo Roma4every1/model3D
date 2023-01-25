@@ -1,8 +1,8 @@
-import React, { useMemo } from "react";
+import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Window } from "@progress/kendo-react-dialogs";
-import Form from "../form/form";
+import { Window } from '@progress/kendo-react-dialogs';
+import { Form } from '../form/form';
 
 
 export const SecondLevelTable = ({formID, parentFormID, channelName, onClose}) => {

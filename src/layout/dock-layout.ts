@@ -1,7 +1,7 @@
-import { Model, IJsonModel } from "flexlayout-react";
-import { IGlobalAttributes, IJsonTabSetNode } from "flexlayout-react/declarations/model/IJsonModel";
-import { getTopPanelTabs } from "./top-tabs";
-import { getRightPanelTabs } from "./right-tabs";
+import { Model, IJsonModel } from 'flexlayout-react';
+import { IGlobalAttributes, IJsonTabSetNode } from 'flexlayout-react/declarations/model/IJsonModel';
+import { getTopPanelTabs } from './top-tabs';
+import { getRightPanelTabs } from './right-tabs';
 
 
 const globalAttributes: IGlobalAttributes = {

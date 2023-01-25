@@ -1,6 +1,6 @@
-import { FunctionComponentElement, createElement } from "react";
-import { Area, Bar, Line, LabelList, LegendType } from "recharts";
-import { Payload } from "recharts/types/component/DefaultLegendContent";
+import { FunctionComponentElement, createElement } from 'react';
+import { Area, Bar, Line, LabelList, LegendType } from 'recharts';
+import { Payload } from 'recharts/types/component/DefaultLegendContent';
 
 
 export interface ChartDiagram {

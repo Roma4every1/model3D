@@ -1,4 +1,4 @@
-import { stringToTableCell } from "./utils";
+import { stringToTableCell } from './utils';
 
 
 type ParamStringGetter = (value: string) => string;

@@ -1,13 +1,14 @@
-import { TFunction } from "react-i18next";
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { useDispatch } from "react-redux";
-import { Checkbox } from "@progress/kendo-react-inputs";
+import { TFunction } from 'react-i18next';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
+import { Checkbox } from '@progress/kendo-react-inputs';
 
-import { MapModes } from "../../enums";
-import { clientPoint, listenerOptions } from "../../map-utils";
-import { checkDistance, checkDistancePoints, getNearestElements, selectElement, unselectElement } from "./selecting-utils";
-import { actions } from "../../../../../store";
-import { selectingIcon } from "../../../../../dicts/images";
+import { MapModes } from '../../enums';
+import { clientPoint, listenerOptions } from '../../map-utils';
+import { checkDistance, checkDistancePoints, getNearestElements } from './selecting-utils';
+import { selectElement, unselectElement } from './selecting-utils';
+import { actions } from '../../../../../store';
+import { selectingIcon } from '../../../../../dicts/images';
 
 
 interface SelectingProps {

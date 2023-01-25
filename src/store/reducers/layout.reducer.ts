@@ -1,11 +1,11 @@
-/* --- Actions Types --- */
+/* --- Action Types --- */
 
 export enum LayoutActions {
   SET_DOCK_LAYOUT = 'layout/dock',
   SET_LEFT_TAB_HEIGHT = 'layout/left',
 }
 
-/* --- Actions Interfaces --- */
+/* --- Action Interfaces --- */
 
 interface ActionSetDockLayout {
   type: LayoutActions.SET_DOCK_LAYOUT,
@@ -18,7 +18,7 @@ interface ActionSetLeftTabHeight {
 
 export type LayoutAction = ActionSetDockLayout | ActionSetLeftTabHeight;
 
-/* --- Reducer --- */
+/* --- Init State & Reducer --- */
 
 const init: CommonLayout = {
   left: {
@@ -49,4 +49,4 @@ export const layoutReducer = (state: CommonLayout = init, action: LayoutAction):
 
     default: return state;
   }
-}
+};

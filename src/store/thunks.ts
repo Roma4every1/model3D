@@ -1,8 +1,8 @@
-import { WDispatch } from "./index";
-import { mapSystem } from "../utils/utils";
-import { createClientConfig, fetchRootFormState } from "../api/initialization";
-import { actions, sessionManager } from "./index";
-import { API } from "../api/api";
+import { WDispatch } from './index';
+import { mapSystem } from '../utils/utils';
+import { createClientConfig, fetchRootFormState } from '../api/initialization';
+import { actions, sessionManager } from './index';
+import { API } from '../api/api';
 
 
 export async function initialize(dispatch: WDispatch) {

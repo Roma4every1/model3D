@@ -1,5 +1,5 @@
-import { Requester } from "./api";
-import { SessionToSave } from "../utils/session.utils";
+import { Requester } from './api';
+import { SessionToSave } from '../utils/session.utils';
 
 
 export class SessionAPI {

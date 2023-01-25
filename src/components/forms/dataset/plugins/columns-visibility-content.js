@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { TreeView, processTreeViewItems, handleTreeViewCheckChange } from "@progress/kendo-react-treeview";
-import { actions, selectors } from "../../../../store";
+import React, { useState, useEffect, useRef } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { TreeView, processTreeViewItems, handleTreeViewCheckChange } from '@progress/kendo-react-treeview';
+import { actions, selectors } from '../../../../store';
 
 
 const getColumnForTree = (col, index) => {

@@ -1,4 +1,4 @@
-import { stringToTableCell, getParentFormId } from "../utils/utils";
+import { stringToTableCell, getParentFormId } from '../utils/utils';
 
 
 /** Селекторы. */

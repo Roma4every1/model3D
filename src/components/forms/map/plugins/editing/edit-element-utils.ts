@@ -1,6 +1,6 @@
-import { MapModes } from "../../enums";
-import { getAngle } from "./editing-utils";
-import { getNearestPointIndex, getNearestSegment, PIXEL_PER_METER } from "../../map-utils";
+import { MapModes } from '../../enums';
+import { getAngle } from './editing-utils';
+import { getNearestPointIndex, getNearestSegment, PIXEL_PER_METER } from '../../map-utils';
 
 
 export interface MouseDownEditAction {

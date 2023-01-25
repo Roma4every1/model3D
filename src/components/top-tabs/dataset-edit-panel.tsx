@@ -1,12 +1,12 @@
-import { useSelector } from "react-redux";
-import { useTranslation } from "react-i18next";
-import { MenuSkeleton, MenuSection, BigButton } from "../common/menu-ui";
-import { ColumnStatistics } from "../forms/dataset/plugins/column-statistics";
-import { ColumnSettings } from "../forms/dataset/plugins/column-settings";
-import { ColumnsVisibility } from "../forms/dataset/plugins/columns-visibility";
-import { ColumnHeaderSetter } from "../forms/dataset/plugins/column-header-setter";
-import { ColumnSettingsAnalyzer } from "../forms/dataset/plugins/column-settings-analyzer";
-import { tableSelectAllIcon, exportToExcelIcon, reloadIcon } from "../../dicts/images";
+import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { MenuSkeleton, MenuSection, BigButton } from '../common/menu-ui';
+import { ColumnStatistics } from '../forms/dataset/plugins/column-statistics';
+import { ColumnSettings } from '../forms/dataset/plugins/column-settings';
+import { ColumnsVisibility } from '../forms/dataset/plugins/columns-visibility';
+import { ColumnHeaderSetter } from '../forms/dataset/plugins/column-header-setter';
+import { ColumnSettingsAnalyzer } from '../forms/dataset/plugins/column-settings-analyzer';
+import { tableSelectAllIcon, exportToExcelIcon, reloadIcon } from '../../dicts/images';
 
 
 function formRefSelector(this: FormID, state: WState) {

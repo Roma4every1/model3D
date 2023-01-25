@@ -1,12 +1,12 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { useDispatch } from "react-redux";
-import { TFunction, useTranslation } from "react-i18next";
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
+import { TFunction, useTranslation } from 'react-i18next';
 
-import { MapModes } from "../../enums";
-import { clientPoint, listenerOptions } from "../../map-utils";
-import { polylineByLegends, getDefaultSign, getDefaultLabel } from "./editing-utils";
-import { mapCreatingIcons } from "../../../../../dicts/images";
-import { actions } from "../../../../../store";
+import { MapModes } from '../../enums';
+import { clientPoint, listenerOptions } from '../../map-utils';
+import { polylineByLegends, getDefaultSign, getDefaultLabel } from './editing-utils';
+import { mapCreatingIcons } from '../../../../../dicts/images';
+import { actions } from '../../../../../store';
 
 
 interface CreateElementProps {

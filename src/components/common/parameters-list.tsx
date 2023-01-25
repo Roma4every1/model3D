@@ -1,8 +1,13 @@
-import { useSelector, useDispatch } from "react-redux";
-import { BaseEditor } from "../editors/base-editor";
-import { stringToTableCell } from "../../utils/utils";
-import { selectors, actions } from "../../store";
-import { IntlProvider, LocalizationProvider } from "@progress/kendo-react-intl";
+import { useSelector, useDispatch } from 'react-redux';
+import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
+import { BaseEditor } from '../editors/base-editor';
+import { stringToTableCell } from '../../utils/utils';
+import { selectors, actions } from '../../store';
+
+
+interface ParametersListProps {
+  params: FormParameter[],
+}
 
 
 const dateChangingSelector = (state: WState): DateChangingPlugin => {
@@ -16,7 +21,7 @@ const sortParams = (a: FormParameter, b: FormParameter) => a.editorDisplayOrder 
 
 
 /** Компонент списка параметров. */
-export default function ParametersList({parametersJSON}: {parametersJSON: FormParameter[]}) {
+export const ParametersList = ({params}: ParametersListProps) => {
   const dispatch = useDispatch();
   const rootFormID = useSelector(selectors.rootFormID);
   const dateChanging = useSelector(dateChangingSelector);
@@ -57,9 +62,9 @@ export default function ParametersList({parametersJSON}: {parametersJSON: FormPa
     <LocalizationProvider language={'ru-RU'}>
       <IntlProvider locale={'ru'}>
         <div className={'parameters-list'}>
-          {parametersJSON.filter(filterParams).sort(sortParams).map(paramToEditor)}
+          {params.filter(filterParams).sort(sortParams).map(paramToEditor)}
         </div>
       </IntlProvider>
     </LocalizationProvider>
   );
-}
+};

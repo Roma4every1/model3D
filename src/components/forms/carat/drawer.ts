@@ -1,4 +1,4 @@
-import { polylineType } from "../map/plugins/selecting/selecting-utils";
+import { polylineType } from '../map/plugins/selecting/selecting-utils';
 
 
 export interface CaratRenderData {

@@ -1,12 +1,12 @@
-import { MouseEvent, useState, useEffect, useCallback, useRef } from "react";
-import { useDispatch } from "react-redux";
-import { useTranslation } from "react-i18next";
-import { InputChangeEvent, Input, Checkbox } from "@progress/kendo-react-inputs";
-import { Button } from "@progress/kendo-react-buttons";
-import { Popup } from "@progress/kendo-react-popup";
-import { MenuSelectEvent, Menu, MenuItem } from "@progress/kendo-react-layout";
-import { LayerStatisticsWindow } from "./layer-stat-window";
-import { actions } from "../../../../../store";
+import { MouseEvent, useState, useEffect, useCallback, useRef } from 'react';
+import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { InputChangeEvent, Input, Checkbox } from '@progress/kendo-react-inputs';
+import { Button } from '@progress/kendo-react-buttons';
+import { Popup } from '@progress/kendo-react-popup';
+import { MenuSelectEvent, Menu, MenuItem } from '@progress/kendo-react-layout';
+import { LayerStatisticsWindow } from './layer-stat-window';
+import { actions } from '../../../../../store';
 
 
 interface LayersTreeLayerProps {

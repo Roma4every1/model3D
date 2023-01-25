@@ -1,6 +1,6 @@
-import { useTranslation } from "react-i18next";
-import { Button } from "@progress/kendo-react-buttons";
-import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
+import { useTranslation } from 'react-i18next';
+import { Button } from '@progress/kendo-react-buttons';
+import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 
 
 interface DeleteRowsDialogProps {

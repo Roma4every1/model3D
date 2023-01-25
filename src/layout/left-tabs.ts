@@ -1,5 +1,6 @@
-import { Model, IJsonModel } from "flexlayout-react";
-import { IGlobalAttributes, IJsonTabNode, IJsonTabSetNode } from "flexlayout-react/declarations/model/IJsonModel";
+import { Model, IJsonModel } from 'flexlayout-react';
+import { IGlobalAttributes } from 'flexlayout-react/declarations/model/IJsonModel';
+import { IJsonTabNode, IJsonTabSetNode } from 'flexlayout-react/declarations/model/IJsonModel';
 
 
 /** Высота заголовка в элементе TabSet. */

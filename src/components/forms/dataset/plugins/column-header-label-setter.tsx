@@ -1,6 +1,6 @@
-import { useSelector } from "react-redux";
-import { stringToTableCell } from "../../../../utils/utils";
-import { selectors } from "../../../../store";
+import { useSelector } from 'react-redux';
+import { stringToTableCell } from '../../../../utils/utils';
+import { selectors } from '../../../../store';
 
 
 interface ColumnHeaderSetterProps {

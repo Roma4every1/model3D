@@ -1,9 +1,9 @@
-import i18n from "i18next";
-import { I18nLabel } from "flexlayout-react";
-import { TFunction, initReactI18next } from "react-i18next";
+import i18n from 'i18next';
+import { I18nLabel } from 'flexlayout-react';
+import { TFunction, initReactI18next } from 'react-i18next';
 
-import translationEN from "./en/custom.json";
-import translationRU from "./ru/custom.json";
+import translationEN from './en/custom.json';
+import translationRU from './ru/custom.json';
 
 
 i18n.use(initReactI18next).init({

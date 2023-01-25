@@ -1,6 +1,6 @@
-import { TFunction } from "react-i18next";
-import { distance } from "../../map-utils";
-import { getBoundsByPoints } from "../../map-utils";
+import { TFunction } from 'react-i18next';
+import { distance } from '../../map-utils';
+import { getBoundsByPoints } from '../../map-utils';
 
 
 /** Линия со стандартными свойствами. */

@@ -1,8 +1,8 @@
-import React, { useRef, useImperativeHandle } from "react";
-import { useSelector } from "react-redux";
-import DataSetView from "./dataset-view";
-import { selectors, sessionManager } from "../../../store";
-import { convertRow, channelPropertyToColumn } from "./dataset-utils";
+import React, { useRef, useImperativeHandle } from 'react';
+import { useSelector } from 'react-redux';
+import DataSetView from './dataset-view';
+import { selectors, sessionManager } from '../../../store';
+import { convertRow, channelPropertyToColumn } from './dataset-utils';
 
 
 function DataSet({formData, channels}, ref) {

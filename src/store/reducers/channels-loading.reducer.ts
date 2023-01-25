@@ -1,10 +1,10 @@
-/* --- actions types --- */
+/* --- Action Types --- */
 
 export enum ChannelsLoadingActions {
   SET = 'channelsLoading/set',
 }
 
-/* --- actions interfaces --- */
+/* --- Action Interfaces --- */
 
 interface ActionSet {
   type: ChannelsLoadingActions.SET,
@@ -14,11 +14,11 @@ interface ActionSet {
 
 export type ChannelsLoadingAction = ActionSet;
 
-/* --- reducer --- */
+/* --- Init State & Reducer --- */
 
-const initChannelsLoading: ChannelsLoading = {};
+const init: ChannelsLoading = {};
 
-export const channelsLoadingReducer = (state: ChannelsLoading = initChannelsLoading, action: ChannelsLoadingAction): ChannelsLoading => {
+export const channelsLoadingReducer = (state: ChannelsLoading = init, action: ChannelsLoadingAction): ChannelsLoading => {
   switch (action.type) {
 
     case ChannelsLoadingActions.SET: {
@@ -27,4 +27,4 @@ export const channelsLoadingReducer = (state: ChannelsLoading = initChannelsLoad
 
     default: return state;
   }
-}
+};

@@ -1,10 +1,10 @@
-/* --- actions types --- */
+/* --- Action Types --- */
 
 export enum FormRefsActions {
   SET = 'formRefs/set',
 }
 
-/* --- actions interfaces --- */
+/* --- Action Interfaces --- */
 
 interface ActionSet {
   type: FormRefsActions.SET,
@@ -14,11 +14,11 @@ interface ActionSet {
 
 export type FormRefsAction = ActionSet;
 
-/* --- reducer --- */
+/* --- Init State & Reducer --- */
 
-const initFormRefs: FormRefs = {};
+const init: FormRefs = {};
 
-export const formRefsReducer = (state: FormRefs = initFormRefs, action: FormRefsAction): FormRefs => {
+export const formRefsReducer = (state: FormRefs = init, action: FormRefsAction): FormRefs => {
   switch (action.type) {
 
     case FormRefsActions.SET: {
@@ -27,4 +27,4 @@ export const formRefsReducer = (state: FormRefs = initFormRefs, action: FormRefs
 
     default: return state;
   }
-}
+};

@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { ColumnHeaderLabelSetter } from "./column-header-label-setter";
-import { API } from "../../../../api/api";
+import { useState, useEffect } from 'react';
+import { ColumnHeaderLabelSetter } from './column-header-label-setter';
+import { API } from '../../../../api/api';
 
 
 export const ColumnHeaderSetter = ({formID}: PropsFormID) => {

@@ -1,4 +1,4 @@
-import { GridFilterOperators } from "@progress/kendo-react-grid";
+import { GridFilterOperators } from '@progress/kendo-react-grid';
 
 
 export const filterOperators: GridFilterOperators = {

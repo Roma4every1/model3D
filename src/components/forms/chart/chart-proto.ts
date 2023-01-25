@@ -1,7 +1,7 @@
-import { Payload } from "recharts/types/component/DefaultLegendContent";
-import { YAxisProps, getYAxisProto, toMonYear, toYear, monthStep, yearStep } from "./chart-axes";
-import { ChartDiagram, getDiagramProto, getDiagramLegend } from "./chart-diagrams";
-import { ChartMarkProps, getChartMarkProto, getChartMarkLegend, getChartMarkLabel } from "./chart-marks";
+import { Payload } from 'recharts/types/component/DefaultLegendContent';
+import { YAxisProps, getYAxisProto, toMonYear, toYear, monthStep, yearStep } from './chart-axes';
+import { ChartDiagram, getDiagramProto, getDiagramLegend } from './chart-diagrams';
+import { ChartMarkProps, getChartMarkProto, getChartMarkLegend, getChartMarkLabel } from './chart-marks';
 
 
 export interface ChartProto {

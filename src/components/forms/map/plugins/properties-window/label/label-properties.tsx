@@ -1,11 +1,12 @@
-import { TFunction } from "react-i18next";
-import { InputChangeEvent, ColorPickerChangeEvent, NumericTextBoxChangeEvent, CheckboxChangeEvent } from "@progress/kendo-react-inputs";
-import { useState, useCallback } from "react";
-import { ColorPicker, NumericTextBox, Checkbox, Input } from "@progress/kendo-react-inputs";
-import { Button } from "@progress/kendo-react-buttons";
-import { InitLabelState, paletteSettings, gradientSettings } from "../properties-utils";
-import { AlignSwitcher } from "./align-switcher";
-import "../../../../../../styles/label-properties.scss";
+import { TFunction } from 'react-i18next';
+import { InputChangeEvent, ColorPickerChangeEvent } from '@progress/kendo-react-inputs';
+import { NumericTextBoxChangeEvent, CheckboxChangeEvent } from '@progress/kendo-react-inputs';
+import { useState, useCallback } from 'react';
+import { ColorPicker, NumericTextBox, Checkbox, Input } from '@progress/kendo-react-inputs';
+import { Button } from '@progress/kendo-react-buttons';
+import { InitLabelState, paletteSettings, gradientSettings } from '../properties-utils';
+import { AlignSwitcher } from './align-switcher';
+import '../../../../../../styles/label-properties.scss';
 
 
 interface LabelPropertiesProps {

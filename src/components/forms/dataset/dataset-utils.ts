@@ -1,6 +1,6 @@
-import calculateSize from "calculate-size";
-import { toDate } from "../../../utils/utils";
-import { sessionManager } from "../../../store";
+import calculateSize from 'calculate-size';
+import { toDate } from '../../../utils/utils';
+import { sessionManager } from '../../../store';
 
 
 interface TableColumnInfo {

@@ -1,10 +1,10 @@
-import { EditorProps } from "./base-editor";
-import { ChangeEvent, useRef } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { useTranslation } from "react-i18next";
-import { Button } from "@progress/kendo-react-buttons";
-import { showNotice } from "../../utils/notifications";
-import { API } from "../../api/api";
+import { EditorProps } from './base-editor';
+import { ChangeEvent, useRef } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@progress/kendo-react-buttons';
+import { showNotice } from '../../utils/notifications';
+import { API } from '../../api/api';
 
 
 export const FileEditor = ({valueSelector, update}: EditorProps<ParamValueString>) => {

@@ -1,9 +1,9 @@
-import { CSSProperties, useMemo } from "react";
-import { useTranslation } from "react-i18next";
-import { saveAs } from "@progress/kendo-file-saver";
-import { toDate } from "../../../utils/utils";
-import { filesDict, defaultFileIcon, importFileIcon } from "../../../dicts/images";
-import { API } from "../../../api/api";
+import { CSSProperties, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { saveAs } from '@progress/kendo-file-saver';
+import { toDate } from '../../../utils/utils';
+import { filesDict, defaultFileIcon, importFileIcon } from '../../../dicts/images';
+import { API } from '../../../api/api';
 
 
 const extensions = [

@@ -1,5 +1,5 @@
-import { useTranslation } from "react-i18next";
-import { Loader } from "@progress/kendo-react-indicators";
+import { useTranslation } from 'react-i18next';
+import { Loader } from '@progress/kendo-react-indicators';
 
 
 interface LoadingStatusProps {

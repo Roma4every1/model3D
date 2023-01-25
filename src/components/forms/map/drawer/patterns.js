@@ -1,10 +1,10 @@
-import { extend } from "lodash";
-import { loadImageData } from "./html-helper";
-import startThread from "./start-thread";
-import cache from "./cache";
-import parseSMB from "./parse-smb";
-import pngMono from "./png-mono";
-import parseColor from "parse-color";
+import { extend } from 'lodash';
+import { loadImageData } from './html-helper';
+import startThread from './start-thread';
+import cache from './cache';
+import parseSMB from './parse-smb';
+import pngMono from './png-mono';
+import parseColor from 'parse-color';
 
 
 export default function patterns(provider) {

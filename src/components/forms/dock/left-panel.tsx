@@ -1,11 +1,11 @@
-import { ReactNode, useMemo } from "react";
-import { Model, Layout, TabNode, Action, Actions } from "flexlayout-react";
-import { useSelector } from "react-redux";
-import PresentationList from "./presentation-list";
-import FormParametersList from "../../common/form-parameters-list";
-import { i18nMapper } from "../../../locales/i18n";
-import { getLeftPanelLayout } from "../../../layout/left-tabs";
-import { selectors } from "../../../store";
+import { ReactNode, useMemo } from 'react';
+import { Model, Layout, TabNode, Action, Actions } from 'flexlayout-react';
+import { useSelector } from 'react-redux';
+import PresentationList from './presentation-list';
+import { FormParametersList } from '../../common/form-parameters-list';
+import { i18nMapper } from '../../../locales/i18n';
+import { getLeftPanelLayout } from '../../../layout/left-tabs';
+import { selectors } from '../../../store';
 
 
 /** Левая боковая панель (содержит параметры и список презентаций). */
@@ -23,8 +23,8 @@ export const LeftPanel = () => {
 
   const factory = (node: TabNode): ReactNode => {
     const component = node.getComponent();
-    if (component === 'global') return <FormParametersList formId={rootFormID}/>;
-    if (component === 'form') return <FormParametersList formId={activeChildId}/>;
+    if (component === 'global') return <FormParametersList formID={rootFormID}/>;
+    if (component === 'form') return <FormParametersList formID={activeChildId}/>;
     return <PresentationList/>;
   };
 

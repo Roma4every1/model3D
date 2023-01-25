@@ -1,4 +1,4 @@
-import { extend, mapValues, constant, toPairs, fromPairs } from "lodash";
+import { extend, mapValues, constant, toPairs, fromPairs } from 'lodash';
 
 
 export default extend(function (transforms) {

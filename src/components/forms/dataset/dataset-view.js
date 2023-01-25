@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { IntlProvider, LocalizationProvider } from "@progress/kendo-react-intl";
-import { Grid, GridColumn, GridColumnMenuFilter } from "@progress/kendo-react-grid";
-import { getSelectedState, getSelectedStateFromKeyDown } from "@progress/kendo-react-grid";
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
+import { Grid, GridColumn, GridColumnMenuFilter } from '@progress/kendo-react-grid';
+import { getSelectedState, getSelectedStateFromKeyDown } from '@progress/kendo-react-grid';
 
-import { ColumnMenu } from "./column-menu";
-import { SecondLevelTable } from "./second-level-table";
-import { DataSetEditToolbar } from "./dataset-edit-toolbar";
-import { DeleteRowsDialog } from "./delete-rows-dialog";
-import { CellRender } from "./renderers";
+import { ColumnMenu } from './column-menu';
+import { SecondLevelTable } from './second-level-table';
+import { DataSetEditToolbar } from './dataset-edit-toolbar';
+import { DeleteRowsDialog } from './delete-rows-dialog';
+import { CellRender } from './renderers';
 
-import { getFilterByType, getColumnWidth, apply } from "./dataset-utils";
-import { getParentFormId, tableRowToString, compareObjects } from "../../../utils/utils";
-import { filterOperators, filterOperations } from "./constants";
-import { actions, selectors, sessionManager } from "../../../store";
+import { getFilterByType, getColumnWidth, apply } from './dataset-utils';
+import { getParentFormId, tableRowToString, compareObjects } from '../../../utils/utils';
+import { filterOperators, filterOperations } from './constants';
+import { actions, selectors, sessionManager } from '../../../store';
 import { API } from "../../../api/api";
 
 const DATA_ITEM_KEY = 'js_id';
