@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import ColumnHeaderLabelSetter from "./column-header-label-setter";
+import { ColumnHeaderLabelSetter } from "./column-header-label-setter";
 import { API } from "../../../../api/api";
 
 
@@ -16,11 +16,12 @@ export const ColumnHeaderSetter = ({formID}: PropsFormID) => {
     return () => { ignore = true; }
   }, [formID]);
 
-  const mapLabels = (label) => {
+  const mapLabels = (label, i: number) => {
     return (
       <ColumnHeaderLabelSetter
-        formId={formID} column={label['@columnName']}
-        parameter={label['@switchingParameterName']}
+        key={i} formID={formID}
+        id={label['@switchingParameterName']}
+        column={label['@columnName']}
         property={label['@ChannelPropertyName']}
       />
     );

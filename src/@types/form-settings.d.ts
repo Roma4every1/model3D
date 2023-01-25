@@ -12,12 +12,12 @@ interface DockFormSettings {
 }
 
 interface ParameterGroup {
-  id: string,
+  code: string,
   displayName: string,
 }
 interface DateChangingPlugin {
-  yearParameter: ParameterID,
-  dateIntervalParameter: ParameterID,
+  year: ParameterID,
+  dateInterval: ParameterID,
   columnName: string | null,
 }
 
@@ -29,15 +29,47 @@ interface DateChangingPlugin {
 interface GridFormSettings {
   /** Название канала с картами, в случае если презентация это мультикарта. */
   multiMapChannel: string | null
+  parametersGroups?: ParameterGroup[] | null,
 }
 
 /* --- DataSet --- */
 
 /** Настройки формы **DataSet**. */
 interface DataSetFormSettings {
-  id: any,
-  columns: any,
-  attachedProperties: any,
+  id: FormID,
+  columns: DataSetColumnsSettings,
+  attachedProperties: DataSetAttachedProperties,
+}
+
+interface DataSetAttachedProperties {
+  attachOption: string,
+  exclude: string[],
+}
+
+interface DataSetColumnsSettings {
+  columnsSettings: DataSetColumnSettings[],
+  frozenColumnCount: number,
+  canUserFreezeColumns: boolean,
+  isTableMode: boolean,
+  alternate: boolean,
+  alternateRowBackground: any
+}
+
+interface DataSetColumnSettings {
+  channelPropertyName: string,
+  displayName: string,
+  headerBackground: string,
+  headerForeground: string,
+  background: string,
+  foreground: string,
+  typeFormat: any,
+  width: number,
+  isReadOnly: boolean,
+  isHeaderRotated: boolean,
+  hideIfEmpty: boolean,
+  displayIndex: number,
+  isVisible: boolean,
+  isContainsSearchMode: boolean
 }
 
 /* --- Chart --- */

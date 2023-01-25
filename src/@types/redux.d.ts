@@ -15,7 +15,6 @@ interface WState {
   presentations: PresentationsState,
   programs: ProgramsState,
   reports: Reports,
-  sessionId: SessionID,
   sessionManager: SessionManager,
   windowData: any,
 }
@@ -65,7 +64,7 @@ type SystemID = string;
 
 /* --- state.canRunReport --- */
 
-/** Можно ли отправить репорт. */
+/** Можно ли запустить текущую программу/отчёт. */
 type CanRunReport = boolean;
 
 
@@ -375,12 +374,3 @@ interface OperationResult {
   report: Report,
   reportLog: any,
 }
-
-/* --- state.sessionId --- */
-
-/** Идентификатор сессии. */
-type SessionID = string;
-
-/* --- state.windowData --- */
-
-//TODO: типизация

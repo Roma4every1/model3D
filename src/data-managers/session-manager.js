@@ -33,10 +33,7 @@ export function createSessionManager(store) {
           clearInterval(timerId);
           stopSession();
         });
-        const sessionID = res.data;
-        // старое и новое хранилище, потом старое уберётся
-        store.dispatch(actions.setSessionId(sessionID));
-        API.setSessionID(sessionID);
+        API.setSessionID(res.data);
       }
       return res;
     }

@@ -3,10 +3,18 @@ import { stringToTableCell } from "../../../../utils/utils";
 import { selectors } from "../../../../store";
 
 
-export default function ColumnHeaderLabelSetter({parameter, property, column, formId}) {
-  const tableSettings: DataSetFormSettings = useSelector(selectors.formSettings.bind(formId));
-  const valueSelector = selectors.formParamValue.bind({formID: formId, id: parameter});
-  const paramValue: any = useSelector(valueSelector);
+interface ColumnHeaderSetterProps {
+  formID: FormID,
+  id: ParameterID,
+  column: string,
+  property: string,
+}
+
+
+export const ColumnHeaderLabelSetter = ({formID, id, column, property}: ColumnHeaderSetterProps) => {
+  const tableSettings: DataSetFormSettings = useSelector(selectors.formSettings.bind(formID));
+  const paramValue: string = useSelector(selectors.formParamValue.bind({formID, id}));
+
   const propertyValue = stringToTableCell(paramValue, column);
 
   const channelProperty = tableSettings?.columns?.columnsSettings.find(cs => {

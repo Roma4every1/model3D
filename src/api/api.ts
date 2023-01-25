@@ -136,7 +136,7 @@ class WellManagerReactAPI implements IWellManagerReactAPI {
 
   public async uploadFile(fileName: string, data: string | ArrayBuffer) {
     const query = {sessionId: this.requester.sessionID, filename: fileName};
-    return await this.request<any>({method: 'POST', path: 'uploadFile', query, body: data});
+    return await this.request<string>({method: 'POST', path: 'uploadFile', query, body: data});
   }
 
   public async downloadFile(resourceName: string) {

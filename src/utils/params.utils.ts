@@ -2,12 +2,12 @@
 
 /** Десереализует значение параметра из сервернего формата во внутренний. */
 export function parseParamValue(parameter: FormParameter): void {
-  parameter.value = getParsedParamValue(parameter.type, parameter.value as string);
+  parameter.value = getParsedParamValue(parameter.type, parameter.value);
 }
 
 /** Возвращает десереализованное значение параметра исходя из его типа. */
-function getParsedParamValue(type: ParameterType, rawValue: string | null) {
-  if (rawValue === null) return rawValue;
+function getParsedParamValue(type: ParameterType, rawValue: unknown) {
+  if (typeof rawValue !== 'string') return null;
   switch (type) {
     case 'tableRow': { return rawValue; }
     case 'tableCell': { return rawValue; }

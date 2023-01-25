@@ -1,27 +1,26 @@
-import React, { useState } from "react";
+import React, { useMemo } from "react";
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Window } from "@progress/kendo-react-dialogs";
 import Form from "../form/form";
-import { getParentFormId } from "../../../utils/utils";
 
 
-export const SecondLevelTable = ({secondLevelFormId, setOpened, channelName, keyProp}) => {
+export const SecondLevelTable = ({formID, parentFormID, channelName, onClose}) => {
   const { t } = useTranslation();
 
-  const [staticFormData] = useState({
-    id: secondLevelFormId,
-    type: 'dataSet',
-    displayName: t('table.linkedTable')
+  const stateFormData = useSelector((state) => {
+    return state.childForms[parentFormID]?.children.find(p => p.id === formID);
   });
 
-  const formData = useSelector((state) => (state
-    .childForms[getParentFormId(secondLevelFormId)]?.children
-    .find(p => p.id === secondLevelFormId)) ?? staticFormData);
+  const staticFormData = useMemo(() => {
+    return {id: formID, type: 'dataSet', displayName: t('table.linkedTable')};
+  }, [formID, t]);
+
+  const formData = stateFormData || staticFormData;
 
   return (
-    <Window key={keyProp} title={formData.displayName} onClose={() => { setOpened(false); }}>
-      <Form formData={formData} channels={[channelName]}/>
+    <Window key={formID} title={formData.displayName} onClose={onClose} style={{zIndex: 99}}>
+      <Form formData={formData} channel={channelName}/>
     </Window>
   );
 };

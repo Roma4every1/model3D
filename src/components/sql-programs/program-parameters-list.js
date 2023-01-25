@@ -14,7 +14,6 @@ export default function ProgramParametersList(props) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const sessionId = useSelector(selectors.sessionID);
   /** @type FormParameter[] */
   const formParams = useSelector(selectors.formParams.bind(formId));
 
@@ -61,8 +60,7 @@ export default function ProgramParametersList(props) {
   const runReport = async () => {
     handleProcessing(true);
     dispatch(actions.setWindowNotification(t('report.inProgress', {programName: programDisplayName})));
-    const jsonToSend = {sessionId, reportId: formId, presentationId, paramValues: formParams};
-    const { data } = await API.programs.runReport(JSON.stringify(jsonToSend));
+    const { data } = await API.programs.runReport(formId, presentationId, formParams);
 
     if (data?.ModifiedTables?.ModifiedTables) {
       sessionManager.channelsManager.updateTables(data.ModifiedTables.ModifiedTables);
@@ -73,8 +71,8 @@ export default function ProgramParametersList(props) {
       dispatch(actions.setWindowInfo(text, null, t('report.result'), fileName));
     }
     formParams.forEach(param => {
-      if (param.editorType === 'fileTextEditor' || param.editorType === 'filesTextEditor') {
-          dispatch(actions.updateParam(formId, param.id, null));
+      if (param.editorType === 'fileTextEditor') {
+        dispatch(actions.updateParam(formId, param.id, null));
       }
     });
     watchOperation(data);

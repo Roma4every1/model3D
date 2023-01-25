@@ -5,7 +5,7 @@ import { API } from "../../../api/api";
 import { toDate } from "../../../utils/utils";
 
 
-export default function ColumnMenu(props) {
+export const ColumnMenu = (props) => {
   const { tableColumn, formId, activeChannelName } = props;
   const [distinctData, setDistinctData] = useState([]);
 
@@ -46,13 +46,13 @@ export default function ColumnMenu(props) {
 
   const Filter = tableColumn.lookupData ? ColumnMenuCheckboxFilter : ColumnMenuFilter;
   return <Filter {...props} data={distinctData}/>;
-}
+};
 
 const ColumnMenuFilter = (props) => {
   return (
     <div>
       <GridColumnMenuFilter {...props} expanded={true} />
-      <div className="checkboxFilter">
+      <div className={'checkboxFilter'}>
         <GridColumnMenuCheckboxFilter
           {...props}
           data={props.data}

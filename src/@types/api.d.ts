@@ -1,3 +1,6 @@
+/** Идентификатор сессии. */
+type SessionID = string;
+
 /* --- Well Manager Custom Request --- */
 
 /** ## Well Manager API Request.

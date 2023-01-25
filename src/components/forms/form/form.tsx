@@ -8,7 +8,7 @@ import Dataset from "../dataset/dataset";
 
 interface FormProps {
   formData: FormDataWMR,
-  channels?: ChannelName[],
+  channel?: ChannelName,
 }
 interface FormState {
   formId: FormID,
@@ -18,7 +18,7 @@ interface FormState {
 
 
 /** Обобщённый компонент всех типов форм. */
-export default function Form({formData, channels}: FormProps) {
+export default function Form({formData, channel}: FormProps) {
   const dispatch = useDispatch();
 
   const formID = formData.id;
@@ -27,23 +27,22 @@ export default function Form({formData, channels}: FormProps) {
   const [formState, setFormState] = useState<FormState>({
     formId: formID,
     loaded: false,
-    channels: channels ?? [],
+    channels: [],
   });
 
   useEffect(() => {
     let ignore = false;
-    if (!channels) {
+    if (!channel) {
       if (!formState.loaded) {
         getFormState(formID, formData).then(data => {
           if (!ignore) setFormState(data);
         });
       }
     } else {
-      const load = async (channel) => {
-        return await sessionManager.channelsManager.loadAllChannelData(channel, formID, false);
-      }
-      Promise.all(formState.channels.map(load)).then(() => {
-        if (!formState.loaded) setFormState({formId: formID, loaded: true, channels});
+      sessionManager.channelsManager.loadAllChannelData(channel, formID, false).then(() => {
+        if (!formState.loaded) {
+          setFormState({formId: formID, loaded: true, channels: [channel]});
+        }
       });
     }
 
@@ -51,7 +50,7 @@ export default function Form({formData, channels}: FormProps) {
       ignore = true;
       if (formState.loaded) sessionManager.channelsManager.setFormInactive(formID);
     };
-  }, [formID, formData, formState, channels]);
+  }, [formID, formData, formState, channel]);
 
   const ref = useRef(null);
 

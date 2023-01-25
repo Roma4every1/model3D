@@ -21,28 +21,28 @@ export default function ParametersList({parametersJSON}: {parametersJSON: FormPa
   const rootFormID = useSelector(selectors.rootFormID);
   const dateChanging = useSelector(dateChangingSelector);
 
-  const dateChangingUpdate = (yearValue) => {
-    const { dateIntervalParameter, columnName } = dateChanging;
+  const dateChangingUpdate = dateChanging ? (yearValue) => {
+    const columnName = dateChanging.columnName;
     const year: number = columnName
       ? parseInt(stringToTableCell(yearValue, columnName))
       : yearValue.getFullYear();
 
     const newValue: ParamValueDateInterval = {
-      start: new Date(year, 0, 0),
+      start: new Date(year, 0, 1),
       end: new Date(year, 11, 31),
     };
-    dispatch(actions.updateParam(rootFormID, dateIntervalParameter, newValue));
-  };
+    dispatch(actions.updateParam(rootFormID, dateChanging.dateInterval, newValue));
+  } : undefined;
 
   const paramToEditor = (param: FormParameter, i: number) => {
     // @ts-ignore
     const { id, formID, externalChannelName: channelName } = param;
-    const isYearParam = dateChanging && dateChanging.yearParameter === id;
+    const isYearParam = dateChanging && dateChanging.year === id;
     const valueSelector = selectors.formParamValue.bind({id, formID});
 
     const update = (value: any) => {
       dispatch(actions.updateParam(formID, id, value))
-      if (isYearParam) dateChangingUpdate(value);
+      if (isYearParam && value) dateChangingUpdate(value);
     };
 
     return (

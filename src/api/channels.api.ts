@@ -30,24 +30,27 @@ export class ChannelsAPI {
     return await this.request<any>({path: 'getStatistics', query})
   }
 
-  public async getNewRow(tableID: string): Promise<Res<any>> {
+  public async getNewRow(tableID: string) {
     const query = {sessionId: this.requester.sessionID, tableId: tableID};
-    return await this.request<any>({path: 'getNewRow', query});
+    return await this.request<ChannelRow>({path: 'getNewRow', query});
   }
 
-  public async insertRow(tableID: string, rowData: string): Promise<Res<any>> {
+  public async insertRow(tableID: string, newRows: ChannelRow[]) {
+    const rowData = JSON.stringify(newRows);
     const query = {sessionId: this.requester.sessionID, tableId: tableID, rowData};
-    return await this.request<any>({path: 'insertRow', query});
+    return await this.request<OperationResult>({path: 'insertRow', query});
   }
 
-  public async updateRow(tableID: string, rowsIndices, newRowData): Promise<Res<any>> {
-    const body = {sessionId: this.requester.sessionID, tableId: tableID, rowsIndices, newRowData};
+  public async updateRow(tableID: string, ids: number[], newRowData: ChannelRow[]) {
+    const sessionId = this.requester.sessionID;
+    const body = {sessionId, tableId: tableID, rowsIndices: ids.join(','), newRowData};
     const req: WRequest = {method: 'POST', path: 'updateRow', body: JSON.stringify(body)};
-    return await this.request<any>(req);
+    return await this.request<OperationResult>(req);
   }
 
-  public async removeRows(tableID: string, rows: string, removeAll: string): Promise<Res<any>> {
-    const query = {sessionId: this.requester.sessionID, tableId: tableID, rows, removeAll};
-    return await this.request<any>({path: 'removeRows', query});
+  public async removeRows(tableID: string, indexes: number[], all: boolean) {
+    const sessionId = this.requester.sessionID;
+    const query = {sessionId, tableId: tableID, rows: indexes.join(','), removeAll: String(all)};
+    return await this.request<OperationResult>({path: 'removeRows', query});
   }
 }

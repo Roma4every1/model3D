@@ -13,7 +13,6 @@ import { MapsAction, MapsActions } from "./reducers/maps.reducer";
 import { PresentationsAction, PresentationsActions } from "./reducers/presentations.reducer";
 import { ProgramsAction, ProgramsActions } from "./reducers/programs.reducer";
 import { ReportsAction, ReportsActions } from "./reducers/reports.reducer";
-import { SessionIDAction, SessionIDActions } from "./reducers/session-id.reducer";
 import { SessionManagerAction, SessionManagerActions } from "./reducers/session-manager.reducer";
 import { WindowDataAction, WindowDataActions } from "./reducers/window-data.reducer";
 import { CaratsAction, CaratsActions } from "./reducers/carats.reducer";
@@ -254,12 +253,8 @@ export class WellManagerActionsCreator {
     return {type: ReportsActions.CLEAR, presentationId: presentationId};
   }
 
-  /* --- Session Actions --- */
+  /* --- Session Manager Actions --- */
 
-  /** Установить ID сессии. */
-  public setSessionId(value: SessionID): SessionIDAction {
-    return {type: SessionIDActions.SET, value};
-  }
   /** Установить менеджер сесии. */
   public setSessionManager(value: any): SessionManagerAction {
     return {type: SessionManagerActions.SET, value};

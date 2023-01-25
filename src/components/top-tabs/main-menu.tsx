@@ -57,17 +57,17 @@ export const MainMenu = () => {
       <MenuSection header={'Главная'}>
         <Link to={config.root} onClick={sessionManager.stopSession}>
           <img src={backToSystemsIcon} alt={'back'}/>
-          <span>Назад к списку систем</span>
+          <span>{t('menu.back')}</span>
         </Link>
-        <ButtonIcon text={'О программе'} icon={aboutProgramIcon} action={showAboutWindow}/>
+        <ButtonIcon text={t('menu.about')} icon={aboutProgramIcon} action={showAboutWindow}/>
       </MenuSection>
       <MenuSection header={'Сессия'}>
         <ButtonIcon
-          text={t('menucommands.savesession')} icon={saveSessionIcon}
+          text={t('menu.save-session')} icon={saveSessionIcon}
           action={sessionManager.saveSession}
         />
         <ButtonIcon
-          text={t('menucommands.loadsessionbydefault')} icon={defaultSessionIcon}
+          text={t('menu.load-default-session')} icon={defaultSessionIcon}
           action={sessionManager.loadSessionByDefault}
         />
       </MenuSection>

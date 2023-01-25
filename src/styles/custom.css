@@ -555,14 +555,30 @@ html {
   height: 20px;
 }
 
+.file-text-editor {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.file-text-editor > input {
+  display: none;
+}
+.file-text-editor > span {
+  font-size: 1.1em;
+  font-weight: bold;
+  padding-left: 4px;
+}
+.file-text-editor button {
+  padding: 0 4px 2px 6px;
+  height: 20px;
+}
 
 .k-clear-value, .k-combobox .k-input, .k-dropdown-wrap {
   height: 100%;
 }
 
-.dropdownPopup {
-  max-height: 40vh;
-  width: 300%;
+.dropdown-popup {
+  max-height: 35vh;
 }
 
 .k-textbox, .k-dropdown .k-input, .k-dropdowntree .k-input, .k-datepicker, .k-dateinput, .k-numerictextbox .k-input {

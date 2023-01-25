@@ -14,8 +14,8 @@ const getValueToShow = (channel: Channel, formParameter: ParamTableRow) => {
 
   if (channel && channel.properties) {
     // сюда попадем если данные канала уже загружены
-    const valuesFromJSON = channel?.data?.Rows?.map(row => tableRowToString(channel, row));
-    if (valuesFromJSON) data = valuesFromJSON;
+    const valuesFromChannel = channel?.data?.Rows?.map(row => tableRowToString(channel, row));
+    if (valuesFromChannel) data = valuesFromChannel;
 
     if (showNullValue) {
       data.push({id: null, name: nullDisplayValue, value: null})
@@ -44,11 +44,11 @@ export const TableRowComboEditor = ({id, formID, update, channelName}: EditorPro
   const formParameter: ParamTableRow = useSelector(selectors.formParam.bind({formID, id}));
   const channel: Channel = useSelector(selectors.channel.bind(channelName));
 
-  const [initValue, data, nullDisplayValue] = getValueToShow(channel, formParameter);
+  const [value, data, nullDisplayValue] = getValueToShow(channel, formParameter);
   const [x, setX] = useState(false); // for rerender
 
   const onChange = (event: ComboBoxChangeEvent) => {
-    update(event.target.value?.value ?? null); setX(!x);
+    update(event.value?.value ?? null); setX(!x);
   };
   const onOpen = () => {
     sessionManager.channelsManager.loadAllChannelData(channelName, formID, false);
@@ -57,9 +57,8 @@ export const TableRowComboEditor = ({id, formID, update, channelName}: EditorPro
   return (
     <ComboBox
       data={data} dataItemKey={'id'} textField={'name'}
-      value={initValue} placeholder={nullDisplayValue}
-      suggest={true} allowCustom={true}
-      onChange={onChange} onOpen={onOpen}
+      value={value} placeholder={nullDisplayValue}
+      suggest={true} onChange={onChange} onOpen={onOpen}
     />
   );
 };

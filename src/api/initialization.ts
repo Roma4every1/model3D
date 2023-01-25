@@ -60,8 +60,8 @@ export async function fetchRootFormState(): Promise<RootFormState | string> {
   const dateChangingRaw = resSettings.data?.dateChanging;
 
   const dateChanging = dateChangingRaw ? {
-    yearParameter: dateChangingRaw['@yearParameter'],
-    dateIntervalParameter: dateChangingRaw['@dateIntervalParameter'],
+    year: dateChangingRaw['@yearParameter'],
+    dateInterval: dateChangingRaw['@dateIntervalParameter'],
     columnName: dateChangingRaw['@columnNameParameter'] ?? null
   } : null;
   const settings: DockFormSettings = {dateChanging, parameterGroups: null};

@@ -46,8 +46,10 @@ export class MapsAPI {
   }
 
   /** Запрос на сохранение карты. */
-  public async saveMap(bodyJSON: string): Promise<Res<any>> {
-    const body = converter.encode(bodyJSON);
+  public async saveMap(formID: FormID, mapID: MapID, mapData: any, owner: MapOwner) {
+    const sessionId = this.requester.sessionID;
+    const data = {sessionId, formId: formID, mapId: mapID, mapData, owner};
+    const body = converter.encode(JSON.stringify(data));
     return await this.request<any>({method: 'POST', path: 'saveMap', body});
   }
 

@@ -9,9 +9,7 @@ import { NumericCell } from "./numeric.cell";
 import { TextCell } from "./text.cell";
 
 
-export const BaseCell = (props) => {
-  const { dataItem, format, setOpened, field, editField } = props;
-
+export const BaseCell = ({dataItem, format, field, editField, onChange, editor}) => {
   const { t } = useTranslation();
   const intlService = useInternationalization();
 
@@ -22,32 +20,25 @@ export const BaseCell = (props) => {
     stringData = format ? intlService.format(format, data) : data.toString();
   }
 
+  /** @type any */
   let element;
-  const openNestedForm = () => { setOpened(true); };
 
   if (dataItem.js_inEdit && editField === field) {
-    switch (props.type) {
-      case 'lookup':
-        element = <DropDownCell {...props} lookupData={props.values} dataValue={data} />;
-        break;
-      case 'numeric':
-        element = <NumericCell {...props} dataValue={data} />;
-        break;
-      case 'date':
-        element = <DateCell {...props} dataValue={data} />;
-        break;
-      case 'boolean':
-        element = <BooleanCell {...props} dataValue={data} />;
-        break;
-      default:
-        element = <TextCell {...props} dataValue={data} />;
-        break;
+    let CellEditor;
+    switch (editor.type) {
+      case 'lookup': { CellEditor = DropDownCell; data = editor.values; break; }
+      case 'numeric': { CellEditor = NumericCell; break; }
+      case 'date': { CellEditor = DateCell; break; }
+      case 'boolean': { CellEditor = BooleanCell; break; }
+      default: { CellEditor = TextCell; }
     }
+    element = <CellEditor data={data} dataItem={dataItem} field={field} onChange={onChange}/>;
   } else {
     element = stringData;
   }
 
-  if ((!(dataItem.js_inEdit && editField === field)) && setOpened) {
+  if ((!(dataItem.js_inEdit && editField === field)) && editor.setOpened) {
+    const openNestedForm = () => { editor.setOpened(true); };
     return (
       <div>
         {element}

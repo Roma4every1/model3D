@@ -163,32 +163,38 @@ export default function createChannelsManager(store) {
   const getNewRow = async (tableID) => {
     const { ok, data } = await API.channels.getNewRow(tableID);
     if (!ok) store.dispatch(actions.setWindowWarning(data));
-    return data;
-  }
+    return ok ? data : null;
+  };
 
-  const insertRow = async (tableID, dataJSON) => {
-    const { ok, data } = await API.channels.insertRow(tableID, dataJSON);
-    if (ok) return updateTablesByResult(tableID, data);
-    store.dispatch(actions.setWindowWarning(data));
-  }
+  const insertRow = async (tableID, rows) => {
+    const { ok, data } = await API.channels.insertRow(tableID, rows);
+    if (ok) {
+      updateTablesByResult(tableID, data)
+    } else {
+      store.dispatch(actions.setWindowWarning(data));
+    }
+    return ok;
+  };
 
-  const updateRow = async (tableID, editID, newRowData) => {
-    const { ok, data } = await API.channels.updateRow(tableID, editID, newRowData);
-    if (ok) return updateTablesByResult(tableID, data);
-    store.dispatch(actions.setWindowWarning(data));
-  }
+  const updateRow = async (tableID, ids, rows) => {
+    const { ok, data } = await API.channels.updateRow(tableID, ids, rows);
+    if (ok) {
+      updateTablesByResult(tableID, data)
+    } else {
+      store.dispatch(actions.setWindowWarning(data));
+    }
+    return ok;
+  };
 
-  const deleteRows = async (tableID, elementsToRemove, removeAll) => {
-    const { ok, data } = await API.channels.removeRows(tableID, elementsToRemove, String(!!removeAll));
-    if (ok) return updateTablesByResult(tableID, data);
-    store.dispatch(actions.setWindowWarning(data));
-  }
-
-  const getStatistics = async (tableID, columnName) => {
-    const { ok, data } = await API.channels.getStatistics(tableID, columnName);
-    if (ok) return data;
-    store.dispatch(actions.setWindowWarning(data));
-  }
+  const deleteRows = async (tableID, indexes, all) => {
+    const { ok, data } = await API.channels.removeRows(tableID, indexes, all);
+    if (ok) {
+      updateTablesByResult(tableID, data)
+    } else {
+      store.dispatch(actions.setWindowWarning(data));
+    }
+    return ok;
+  };
 
   // автообновление данных каналов при обновлении параметров
   store.subscribe(async () => {
@@ -208,6 +214,6 @@ export default function createChannelsManager(store) {
     setFormInactive,
     updateTables,
     insertRow, updateRow, deleteRows,
-    getStatistics, getNewRow, getAllChannelParams
+    getNewRow, getAllChannelParams
   };
 }

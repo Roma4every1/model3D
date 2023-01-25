@@ -1,132 +1,84 @@
-import * as React from "react";
-import { mapTree, extendDataItem } from "@progress/kendo-react-common";
+import React, { useState, useEffect, useMemo } from "react";
 import { DropDownTree } from "@progress/kendo-react-dropdowns";
-import { filterBy } from "@progress/kendo-react-data-tools";
-const selectField = "selected";
-const expandField = "expanded";
-const dataItemKey = "id";
-const subItemsField = "items";
-const fields = {
-    selectField,
-    expandField,
-    dataItemKey,
-    subItemsField,
+import { mapTree } from "@progress/kendo-react-common";
+
+
+const processTreeData = (data, value, expandedItems) => {
+  const callback = (item) => {
+    const expanded = expandedItems.includes(item.id);
+    const selected = value && item.id === value.id;
+    return {...item, expanded, selected};
+  };
+  return mapTree(data, 'items', callback);
 };
 
-const processTreeData = (data, state, fields) => {
-    const { selectField, expandField, dataItemKey, subItemsField } = fields;
-    const { expanded, value, filter } = state;
-    const filtering = Boolean(filter && filter.value);
-    return mapTree(
-        filtering ? filterBy(data, [filter], subItemsField) : data,
-        subItemsField,
-        (item) => {
-            const props = {
-                [expandField]: expanded.includes(item[dataItemKey]),
-                [selectField]: value && item[dataItemKey] === value[dataItemKey],
-            };
-            return filtering
-                ? extendDataItem(item, subItemsField, props)
-                : { ...item, ...props };
-        }
-    );
+const expandedState = (item, expanded) => {
+  const nextExpanded = expanded.slice();
+  const itemKey = item.id;
+  const index = expanded.indexOf(itemKey);
+  index === -1 ? nextExpanded.push(itemKey) : nextExpanded.splice(index, 1);
+  return nextExpanded;
 };
 
-const expandedState = (item, dataItemKey, expanded) => {
-    const nextExpanded = expanded.slice();
-    const itemKey = item[dataItemKey];
-    const index = expanded.indexOf(itemKey);
-    index === -1 ? nextExpanded.push(itemKey) : nextExpanded.splice(index, 1);
-    return nextExpanded;
+const findChildren = (localValues, valuesToSelect) => {
+  for (const value of localValues) {
+    value.items = valuesToSelect.filter(row => row.parent === value.id);
+    findChildren(value.items, valuesToSelect);
+  }
 };
 
-export const DropDownCell = (props) => {
-    const [expanded, setExpanded] = React.useState([]);
-    const [values, setValues] = React.useState([]);
-    const [valueToShow, setValueToShow] = React.useState(undefined);
-    const { dataItem, lookupData } = props;
-    const field = props.field || "";
-    const dataValue = dataItem[field] === null ? "" : dataItem[field];
 
-    const handleChange = (e) => {
-        if (props.onChange) {
-            dataItem[props.field + '_jsoriginal'] = e.value.id;
-            props.onChange({
-                dataIndex: 0,
-                dataItem: props.dataItem,
-                field: props.field,
-                syntheticEvent: e.syntheticEvent,
-                value: e.value.value
-            });
-        }
-    };
+export const DropDownCell = ({data: lookupData, dataItem, field, onChange}) => {
+  field = field || '';
+  const dataValue = dataItem[field] === null ? '' : dataItem[field];
 
-    const onExpandChange = React.useCallback(
-        (event) => setExpanded(expandedState(event.item, dataItemKey, expanded)),
-        [expanded]
-    );
-    const treeData = React.useMemo(
-        () =>
-            processTreeData(
-                values,
-                {
-                    expanded,
-                    valueToShow,
-                },
-                fields
-            ),
-        [expanded, valueToShow, values]
-    );
+  const [expanded, setExpanded] = useState([]);
+  const [values, setValues] = useState([]);
+  const [valueToShow, setValueToShow] = useState(undefined);
 
-    const findChildren = React.useCallback((localValues, valuesToSelect) => {
-        localValues.forEach(v => {
-            v.items = valuesToSelect.filter(row => row.parent === v.id);
-            findChildren(v.items, valuesToSelect);
-        })
-    }, []);
+  const treeData = useMemo(() => {
+    return processTreeData(values, valueToShow, expanded);
+  }, [expanded, valueToShow, values]);
 
-    React.useEffect(() => {
-        var localValues = [];
-        const valuesFromJSON = lookupData;
+  useEffect(() => {
+    let localValues;
 
-        if (valuesFromJSON && valuesFromJSON.length > 0) {
-            if (valuesFromJSON[0].hasOwnProperty('parent')) {
-                localValues = valuesFromJSON.filter(row => !row.parent);
-                findChildren(localValues, valuesFromJSON);
-            }
-            else {
-                localValues = valuesFromJSON;
-            }
-        }
-        else {
-            localValues = [];
-        }
+    if (lookupData && lookupData.length) {
+      if (lookupData[0].hasOwnProperty('parent')) {
+        localValues = lookupData.filter(row => !row.parent);
+        findChildren(localValues, lookupData);
+      } else {
+        localValues = lookupData;
+      }
+    } else {
+      localValues = [];
+    }
 
-        if (dataValue) {
-            let calculatedValueToShow = valuesFromJSON.find(o => String(o.value) === dataValue);
-            if (calculatedValueToShow) {
-                setValueToShow(calculatedValueToShow);
-            }
-            else {
-                setValueToShow('');
-            }
-        }
-        else {
-            setValueToShow('');
-        }
-        setValues(localValues);
-    }, [lookupData, findChildren, dataValue]);
+    if (dataValue) {
+      const newValue = lookupData.find((item) => String(item.value) === dataValue);
+      setValueToShow(newValue || '');
+    } else {
+      setValueToShow('');
+    }
+    setValues(localValues);
+  }, [lookupData, dataValue]);
 
-    return (
-        <DropDownTree
-            popupSettings={{ popupClass: 'dropdownPopup' }}
-            data={treeData}
-            value={lookupData.find((c) => c.value === dataValue)}
-            dataItemKey={dataItemKey}
-            textField="text"
-            expandField={expandField}
-            onExpandChange={onExpandChange}
-            onChange={handleChange}
-        />
-    );
+  const handleChange = (e) => {
+    const { id, value } = e.value;
+    if (!onChange) return;
+    dataItem[field + '_jsoriginal'] = id;
+    onChange({dataIndex: 0, syntheticEvent: e.syntheticEvent, dataItem, field, value});
+  };
+  const onExpandChange = (event) => {
+    setExpanded(expandedState(event.item, expanded))
+  };
+
+  return (
+    <DropDownTree
+      popupSettings={{popupClass: 'dropdown-popup'}} style={{maxHeight: 20}}
+      data={treeData} value={lookupData.find((c) => c.value === dataValue)}
+      dataItemKey={'id'} textField={'text'} expandField={'expanded'}
+      onExpandChange={onExpandChange} onChange={handleChange}
+    />
+  );
 };

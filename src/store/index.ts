@@ -19,16 +19,15 @@ import { mapsReducer, MapsAction } from "./reducers/maps.reducer";
 import { presentationsReducer, PresentationsAction } from "./reducers/presentations.reducer";
 import { programsReducer, ProgramsAction } from "./reducers/programs.reducer";
 import { reportsReducer, ReportsAction } from "./reducers/reports.reducer";
-import { sessionIdReducer, SessionIDAction } from "./reducers/session-id.reducer";
 import { sessionManagerReducer, SessionManagerAction } from "./reducers/session-manager.reducer";
 import { windowDataReducer, WindowDataAction } from "./reducers/window-data.reducer";
 
 
 /** Well Manager Action. */
 export type WAction = AppStateAction | CanRunReportAction | ChannelsDataAction | ChannelsLoadingAction |
-  ChildFormsAction | FormRefsAction | FormParamsAction | FormSettingsAction | FormLayoutAction | LayoutAction |
-  MapsAction | PresentationsAction | ProgramsAction | ReportsAction |
-  SessionIDAction | SessionManagerAction | WindowDataAction | CaratsAction;
+  ChildFormsAction | FormRefsAction | FormParamsAction | FormSettingsAction | FormLayoutAction |
+  LayoutAction | MapsAction | PresentationsAction | ProgramsAction | ReportsAction |
+  SessionManagerAction | WindowDataAction | CaratsAction;
 
 /** Well Manager Dispatch. */
 export type WDispatch = Dispatch<WAction>;
@@ -51,7 +50,6 @@ const rootReducer: Reducer<WState, WAction> = combineReducers({
   presentations: presentationsReducer,
   programs: programsReducer,
   reports: reportsReducer,
-  sessionId: sessionIdReducer,
   sessionManager: sessionManagerReducer,
   windowData: windowDataReducer
 });

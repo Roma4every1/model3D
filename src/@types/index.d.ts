@@ -129,10 +129,9 @@ interface ChannelsManager {
   loadAllChannelData(channelName: ChannelName, formID: FormID, force?: boolean): Promise<boolean>
   setFormInactive(formID: FormID): void
 
-  getNewRow(tableID: any): Promise<any>
-  getStatistics(tableID: any, columnName: string): Promise<any>
-  insertRow(tableID: any, dataJSON: any): Promise<void>
-  updateRow(tableID: any, editID: any, newRowData: any): Promise<void>
-  deleteRows(tableID: any, elementsToRemove: any, removeAll: any): Promise<void>
+  getNewRow(tableID: string): Promise<ChannelRow | null>
+  insertRow(tableID: string, rows: ChannelRow[]): Promise<boolean>
+  updateRow(tableID: string, ids: number[], rows: ChannelRow[]): Promise<boolean>
+  deleteRows(tableID: string, indexes: number[], all: boolean): Promise<boolean>
   updateTables(modifiedTables: any, baseChannelName: ChannelName): Promise<void>
 }

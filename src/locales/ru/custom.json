@@ -31,10 +31,11 @@
     "inOrderAndProgress": "В очереди: {{order}}, прогресс: {{progress}}%"
   },
   "editors": {
-    "activeObjectNullDisplayName": "Нет значения",
-    "fileNotSelected": "Файл не выбран",
-    "filesCount": "Выбрано файлов: {{count}}",
-    "filesNotSelected": "Файлы не выбраны"
+    "files-count": "Выбрано файлов: {{count}}",
+    "file-not-selected": "Файл не выбран",
+    "files-not-selected": "Файлы не выбраны",
+    "file-upload-error": "При загрузке файла произошла ошибка",
+    "activeObjectNullDisplayName": "Нет значения"
   },
   "layout": {
     "close": "Закрыть",
@@ -99,7 +100,6 @@
       "min-scale": "Мин. масштаб:",
       "max-scale": "Макс. масштаб:"
     },
-
     "dimensions": {
       "header": "Навигация",
       "x": "Центр по X",
@@ -155,13 +155,11 @@
       "save-end": "Карта сохранена"
     }
   },
-  "menucommands": {
+  "menu": {
     "about": "О программе",
-    "loadsessionbydefault": "Загрузить сессию по умолчанию",
-    "loadsessionfromfile": "Загрузить сессию из файла",
-    "log": "Лог",
-    "savesession": "Сохранить сессию",
-    "savesessiontofile": "Сохранить сессию в файл"
+    "back": "Назад к списку систем",
+    "save-session": "Сохранить сессию",
+    "load-default-session": "Загрузить сессию по умолчанию"
   },
   "messages": {
     "dataSaveError": "Ошибка сервера при сохранении изменений в таблице. Подробности см. в логе сервера.",
@@ -171,7 +169,8 @@
     "responseReadError": "Ошибка при обработке запроса от сервера.",
     "serverDisabled": "Ошибка: нет ответа от сервера.",
     "sessionLost": "Сессия на сервере потеряна. В дальнейшем данные грузиться не будут. Пожалуйста, обновите вкладку.",
-    "systemNotDefined": "Ошибка: не задана система для запуска."
+    "systemNotDefined": "Ошибка: не задана система для запуска.",
+    "statistics": "Для получения статистики необходимо выбрать колонку."
   },
   "pluginNames": {
     "exportToExcel": "Экспорт в Excel",
@@ -198,9 +197,9 @@
     "load-by-default-title": "Запустить систему со стандартными настройками"
   },
   "table": {
-    "areYouSureToDeleteRows": "Вы уверены, что хотите удалить строки (к-во: {{count}})?",
+    "delete-rows": "Вы уверены, что хотите удалить строки (к-во: {{n}})?",
+    "delete-rows-header": "Удаление строк",
     "columnsVisibility": "Видимость",
-    "deleteRowsHeader": "Удаление строк",
     "linkedTable": "Привязанная таблица",
     "showDetailInfo": "Показать детальную информацию"
   },

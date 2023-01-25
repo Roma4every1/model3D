@@ -116,14 +116,13 @@ export default function createParamsManager(store) {
     return data;
   }
 
-  const getCanRunReport = async (formID) => {
+  const getCanRunReport = async (reportID) => {
     const state = store.getState();
-    reportFormID = formID;
-    if (formID != null) {
-      const paramValues = state.formParams[formID];
-      const jsonToSend = {sessionId: state.sessionId, reportId: formID, paramValues: paramValues};
-      const { data } = await API.programs.getCanRunReport(JSON.stringify(jsonToSend));
-      if (state.canRunReport !== data) store.dispatch(actions.setCanRunReport(data));
+    reportFormID = reportID;
+    if (reportID != null) {
+      const paramValues = state.formParams[reportID];
+      const { ok, data } = await API.programs.getCanRunReport(reportID, paramValues);
+      if (ok && state.canRunReport !== data) store.dispatch(actions.setCanRunReport(data));
     } else if (state.canRunReport) {
       store.dispatch(actions.setCanRunReport(false));
     }

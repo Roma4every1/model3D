@@ -7,8 +7,6 @@ export const selectors = {
   appState: (state: WState) => state.appState,
   /** Клиентская конфигурация. */
   config: (state: WState) => state.appState.config,
-  /** ID сессии. */
-  sessionID: (state: WState) => state.sessionId,
   /** ID корневой формы. */
   rootFormID: (state: WState) => state.appState.rootFormID,
   /** Прототип разметки левой панели. */
