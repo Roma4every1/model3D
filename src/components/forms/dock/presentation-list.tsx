@@ -9,17 +9,18 @@ const onExpandChange = (event: TreeViewExpandChangeEvent) => {
 };
 const presentationsSelector = (state: WState) => state.presentations;
 
-export default function PresentationList() {
+export const PresentationList = () => {
   const dispatch = useDispatch();
 
   const formID = useSelector(selectors.rootFormID);
   const presentations = useSelector(presentationsSelector);
 
   const onItemClick = (event: TreeViewItemClickEvent) => {
-    if (event.item.items) return onExpandChange(event);
-    dispatch(actions.setActiveChildren(formID, [event.item.id]));
-    dispatch(actions.setOpenedChildren(formID, [event.item.id]));
-    dispatch(actions.selectPresentation(event.item));
+    const item = event.item;
+    if (item.items) return onExpandChange(event);
+    dispatch(actions.setActiveChildren(formID, [item.id]));
+    dispatch(actions.setOpenedChildren(formID, [item.id]));
+    dispatch(actions.selectPresentation(item));
   };
 
   return (
@@ -29,4 +30,4 @@ export default function PresentationList() {
       onExpandChange={onExpandChange} onItemClick={onItemClick}
     />
   );
-}
+};

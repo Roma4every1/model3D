@@ -11,6 +11,8 @@ import zipFileIcon from '../static/images/download-files/zip.png';
 import importFileIcon from '../static/images/download-files/import.png';
 import defaultFileIcon from '../static/images/download-files/default.png';
 
+import reportDeleteIcon from '../static/images/report_delete.png';
+
 /* --- Not Supported Form Icons --- */
 
 // import caratIcon from '../static/images/forms/carat.png';
@@ -76,7 +78,7 @@ import selectingIcon from '../static/images/map/selecting-mode.png';
 
 export { backToSystemsIcon, aboutProgramIcon, saveSessionIcon, defaultSessionIcon };
 export { globalParametersIcon, presentationParametersIcon, presentationsListIcon };
-export { runProgramIcon, importFileIcon, defaultFileIcon };
+export { reportDeleteIcon, runProgramIcon, importFileIcon, defaultFileIcon };
 
 export { tableSelectAllIcon, exportToExcelIcon, statisticsIcon, columnVisibilityIcon, reloadIcon };
 export { chartTooltipIcon };

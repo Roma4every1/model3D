@@ -1,7 +1,7 @@
 import { ReactNode, useMemo } from 'react';
 import { Model, Layout, TabNode, Action, Actions } from 'flexlayout-react';
 import { useSelector } from 'react-redux';
-import PresentationList from './presentation-list';
+import { PresentationList } from './presentation-list';
 import { FormParametersList } from '../../common/form-parameters-list';
 import { i18nMapper } from '../../../locales/i18n';
 import { getLeftPanelLayout } from '../../../layout/left-tabs';
@@ -30,8 +30,9 @@ export const LeftPanel = () => {
 
   const onAction = (action: Action): Action => {
     if (action.type === Actions.ADJUST_SPLIT) { // ручное регулирование высоты
-      leftLayout[action.data?.node1] = action.data?.pixelWidth1;
-      leftLayout[action.data?.node2] = action.data?.pixelWidth2;
+      const data = action.data;
+      leftLayout[data?.node1] = data?.pixelWidth1;
+      leftLayout[data?.node2] = data?.pixelWidth2;
     }
     return action;
   };

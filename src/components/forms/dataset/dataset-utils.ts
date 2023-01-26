@@ -102,7 +102,7 @@ export async function apply(editID: number, row, rowAdding: boolean, channelData
     if (!rowAdding) prop = properties.find((property) => {
       const name = property.fromColumn ?? property.name;
       const key = property.name + (property.lookupData ? '_jsoriginal' : '');
-      return column.Name === name && rows[editID].Cells[cells.length] !== row[key];
+      return column.Name === name && rows[editID].Cells[index + 1] !== row[key];
     });
 
     if (!prop) prop = properties.find((property) => {
@@ -121,7 +121,7 @@ export async function apply(editID: number, row, rowAdding: boolean, channelData
   });
 
   const newRows = [{ID: null, Cells: cells}];
-  if (!validateRow(cells, columns)) { console.log('not validated'); return false; }
+  if (!validateRow(cells, columns)) { return false; }
 
   return rowAdding
     ? await sessionManager.channelsManager.insertRow(tableID, newRows)

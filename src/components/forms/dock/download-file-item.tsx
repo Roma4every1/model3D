@@ -15,7 +15,7 @@ const styleError: CSSProperties = {color: 'gray'};
 const dateStyle: Intl.DateTimeFormatOptions = {timeStyle: 'short', dateStyle: 'long'};
 
 
-export default function DownloadFileItem({report}: {report: Report}) {
+export const DownloadFileItem = ({report}: {report: Report}) => {
   const { t } = useTranslation();
   const { Path: path, Dt: rawDate } = report;
 
@@ -63,4 +63,4 @@ export default function DownloadFileItem({report}: {report: Report}) {
       </div>
     </section>
   );
-}
+};

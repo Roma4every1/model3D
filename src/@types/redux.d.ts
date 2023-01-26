@@ -105,7 +105,7 @@ interface Channel {
 interface ChannelData {
   Rows: ChannelRow[],
   Columns: ChannelColumn[],
-  DataPath: boolean,
+  DataPart: boolean,
   Editable: boolean,
   ModifiedTables: any,
   PrimaryColumn: any,

@@ -3,10 +3,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Checkbox } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
+import { DownloadFileItem } from '../forms/dock/download-file-item';
 import { actions, selectors } from '../../store';
 import { API } from '../../api/api';
-import DownloadFileItem from '../forms/dock/download-file-item';
-import reportDeleteIcon from '../../static/images/report_delete.png';
+import { reportDeleteIcon } from '../../dicts/images';
 
 
 const reportsSelector = (state: WState) => Object.values<Report>(state.reports).reverse();
@@ -23,8 +23,8 @@ export const DownloadFiles = () => {
 
   const deleteReports = () => {
     const presentationID = filterByPresentation ? activeChildID : null;
-    API.programs.clearReports(presentationID).then();
-    dispatch(actions.clearReports(presentationID));
+    const onClearEnd = () => { dispatch(actions.clearReports(presentationID)); };
+    API.programs.clearReports(presentationID).then(onClearEnd);
   };
 
   return (
