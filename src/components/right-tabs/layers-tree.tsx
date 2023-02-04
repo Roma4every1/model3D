@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { LayersTreeElement } from '../forms/map/plugins/layers-tree/layers-tree-element';
 import { selectors } from '../../store';
-import '../../styles/layers-tree.scss';
+import '../forms/map/plugins/layers-tree/layers-tree.scss';
 
 
 const getGroupForTree = (sublayer: MapLayer): LayerTreeItem => {

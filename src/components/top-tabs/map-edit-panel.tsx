@@ -10,7 +10,7 @@ import { SaveMap } from '../forms/map/plugins/save-map';
 import { getParentFormId } from '../../utils/utils';
 import { actions, selectors } from '../../store';
 import { API } from '../../api/api';
-import '../../styles/map-edit-panel.scss';
+import './map-edit-panel.scss';
 
 
 const panelTemplate = ['330px', '90px', '275px', 'calc(100% - 785px)', '90px'];

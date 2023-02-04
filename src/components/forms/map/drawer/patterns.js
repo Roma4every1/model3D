@@ -13,8 +13,6 @@ export default function patterns(provider) {
 	ret.getPatternLib = cache(libName => provider.getPatternLib(libName).then(parseSMB));
 
 	ret.getPatternImage = cache((name, color, backColor) => {
-		if (name.match(/\./)) return provider.getPatternImage(name);
-
 		return startThread(function* () {
 			const [, libName, index] = name.match(/^(.+)-(\d+)$/);
 

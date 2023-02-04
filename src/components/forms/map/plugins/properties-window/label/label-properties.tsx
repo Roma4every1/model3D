@@ -6,7 +6,7 @@ import { ColorPicker, NumericTextBox, Checkbox, Input } from '@progress/kendo-re
 import { Button } from '@progress/kendo-react-buttons';
 import { InitLabelState, paletteSettings, gradientSettings } from '../properties-utils';
 import { AlignSwitcher } from './align-switcher';
-import '../../../../../../styles/label-properties.scss';
+import './label-properties.scss';
 
 
 interface LabelPropertiesProps {

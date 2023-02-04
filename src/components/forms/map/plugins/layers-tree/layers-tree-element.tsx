@@ -21,7 +21,7 @@ export const LayersTreeElement = ({item, mapState, formID}: LayersTreeElementPro
 
   return (
     <ExpansionPanel
-      className={'layerGroupPanel'} expanded={expanded}
+      expanded={expanded} style={{fontSize: '12px'}}
       title={item.text} tabIndex={0}
       onAction={() => {setExpanded(!expanded)}}
     >

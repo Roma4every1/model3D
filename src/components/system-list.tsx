@@ -2,7 +2,7 @@ import { TFunction, useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Skeleton } from '@progress/kendo-react-indicators';
 
-import '../styles/start-page.scss';
+import './start-page.scss';
 import systemIcon from '../assets/images/start-page/system.svg';
 import loadDefaultIcon from '../assets/images/start-page/load-default.svg';
 

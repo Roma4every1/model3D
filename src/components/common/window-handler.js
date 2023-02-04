@@ -45,32 +45,32 @@ export const WindowHandler = () => {
     <div>
       {windows ? Object.values(windows).filter(w => w.visible).map(w => w.window) : <div/>}
       {windowData?.opened && <Dialog title={windowData.header} onClose={handleClose}>
-        <div className={"grid-layout-container-" + stackTraceVisible} >
+        <div className={'grid-layout-container-' + stackTraceVisible} >
           <GridLayout gap={{rows: 2, cols: 2,}}>
-            <GridLayoutItem row={1} col={1} rowSpan={2} className="horizontal">
-              <div className={"margin-5 " + classButton} onClick={handleStackTrace}>
-                <span className={"cursor-pointer " + classIcon}/>
+            <GridLayoutItem row={1} col={1} rowSpan={2} className={'horizontal'}>
+              <div className={classButton} style={{margin: 5}} onClick={handleStackTrace}>
+                <span className={'cursor-pointer ' + classIcon}/>
               </div>
             </GridLayoutItem>
             <GridLayoutItem row={1} col={2}>
-              <div className="windowhandler-text">{windowData.text}</div>
+              <div className={'windowhandler-text'}>{windowData.text}</div>
             </GridLayoutItem>
             {stackTraceVisible && <GridLayoutItem row={2} col={2}>
-              <div className="windowhandler-stacktrace">{windowData.stackTrace}</div>
+              <div className={'windowhandler-stacktrace'}>{windowData.stackTrace}</div>
             </GridLayoutItem>}
           </GridLayout>
         </div>
         <DialogActionsBar>
-          <div className="windowButtonContainer">
-            <Button className="windowButton" onClick={handleClose}>{t('base.ok')}</Button>
+          <div className={'windowButtonContainer'}>
+            <Button className='windowButton' onClick={handleClose}>{t('base.ok')}</Button>
           </div>
-          {windowData.fileToSaveName && <div className="windowButtonContainer">
-            <Button className="windowButton" onClick={handleSave}>{t('base.save')}</Button>
+          {windowData.fileToSaveName && <div className={'windowButtonContainer'}>
+            <Button className={'windowButton'} onClick={handleSave}>{t('base.save')}</Button>
           </div>}
         </DialogActionsBar>
       </Dialog>}
       {windowNotification?.opened && <NotificationGroup style = {notificationGroupStyle}>
-        <Notification type = {{style: 'info', icon: true}}>
+        <Notification type={{style: 'info', icon: true}}>
           <span>{windowNotification.text}</span>
         </Notification>
       </NotificationGroup>}

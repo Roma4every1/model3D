@@ -13,8 +13,6 @@ export default function symbols(provider) {
 	}));
 
 	ret.getSignImage = cache((name, index, color) => {
-		if (name.match(/\.(png|gif|jpg|jpeg|svg)$/)) return provider.getSignImage(name);
-
 		return startThread(function* () {
 			const lib = yield ret.getSymbolsLib();
 			const template = lib[`${name.toUpperCase()} (${index})`] || lib['PNT.CHR (0)'];

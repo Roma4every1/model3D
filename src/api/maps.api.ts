@@ -3,7 +3,7 @@ import { converter } from '../utils/maps-api.utils';
 import { handleLayerScales, checkLayerIndex, loadLayerElements } from '../utils/maps-api.utils';
 
 import symbolDef from '../assets/libs/symbol.def';
-import dro32Lib from '../assets/libs/dro32_.smb';
+import dro32Lib from '../assets/libs/dro32.smb';
 import gridsLib from '../assets/libs/grids.smb';
 import litLib from '../assets/libs/lit.smb';
 import regionalLib from '../assets/libs/regional.smb';

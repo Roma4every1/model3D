@@ -11,6 +11,7 @@ import { StyleTemplate } from './style-template';
 import { applyLegend, InitPolylineState } from '../properties-utils';
 import { stylesData, templatesData, paletteSettings, gradientSettings, updateImg } from '../properties-utils';
 import parseColor from 'parse-color';
+import './polyline-properties.scss';
 
 
 interface PolylinePropertiesProps {
@@ -52,7 +53,6 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
   const onLegendChange = useCallback((event) => {
     polyline.legend = event.value;
     setLegend(polyline.legend);
-    // TODO set...
     applyLegend(polyline, event.value);
     onChange();
   }, [polyline, onChange]);
@@ -210,10 +210,10 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
         textField={'name'}
         onChange={onLegendChange}
       />
-      <Label editorId="fillColor" className='polylinePropertiesFillColorLabel'>
+      <Label editorId={'fillColor'} className={'polylinePropertiesFillColorLabel'}>
         {t('map.fillColor')}
       </Label>
-      <div className="polylinePropertiesFillColorCombobox">
+      <div className={'polylinePropertiesFillColorCombobox'}>
         <ColorPicker
           view={'gradient'} value={fillColor}
           paletteSettings={paletteSettings}
@@ -221,10 +221,10 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
           onChange={onFillColorChange}
         />
       </div>
-      <Label editorId="bkColor" className='polylinePropertiesBkColorLabel'>
+      <Label editorId={'bkColor'} className={'polylinePropertiesBkColorLabel'}>
         {t('map.bkColor')}
       </Label>
-      <div className="polylinePropertiesBkColorCombobox">
+      <div className={'polylinePropertiesBkColorCombobox'}>
         <ColorPicker
           view={'gradient'} value={fillBackColor}
           paletteSettings={paletteSettings}
@@ -232,7 +232,7 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
           onChange={onFillBackColorChange}
         />
       </div>
-      <Label editorId="template" className='polylinePropertiesTemplateLabel'>
+      <Label editorId={'template'} className={'polylinePropertiesTemplateLabel'}>
         {t('map.template')}
       </Label>
       <DropDownList
@@ -245,10 +245,10 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
         onChange={onFillNameChange}
         disabled={!Boolean(fillColor)}
       />
-      <Label editorId="strokeColor" className='polylinePropertiesStrokeColorLabel'>
+      <Label editorId={'strokeColor'} className={'polylinePropertiesStrokeColorLabel'}>
         {t('map.strokeColor')}
       </Label>
-      <div className="polylinePropertiesStrokeColorCombobox">
+      <div className={'polylinePropertiesStrokeColorCombobox'}>
         <ColorPicker
           view={'gradient'} value={borderColor}
           disabled={borderColorDisabled}
@@ -257,10 +257,7 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
           onChange={onBorderColorChange}
         />
       </div>
-      <Label
-        editorId="strokeWidth"
-        className='polylinePropertiesStrokeWidthLabel'
-      >
+      <Label editorId={'strokeWidth'} className={'polylinePropertiesStrokeWidthLabel'}>
         {t('map.strokeWidth')}
       </Label>
       <NumericTextBox
@@ -269,10 +266,7 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
         min={0} max={20} step={0.25} format={'n2'}
         disabled={borderWidthDisabled} onChange={onBorderWidthChange}
       />
-      <Label
-        editorId="style"
-        className='polylinePropertiesStyleLabel'
-      >
+      <Label editorId={'style'} className={'polylinePropertiesStyleLabel'}>
         {t('map.style')}
       </Label>
       <DropDownList
@@ -286,15 +280,15 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
         disabled={!Boolean(borderColor)}
       />
       <Checkbox
-        className='polylinePropertiesTransparencyCheckbox'
-        name="transparency"
+        className={'polylinePropertiesTransparencyCheckbox'}
+        name={'transparency'}
         label={t('map.transparency')}
         checked={transparent}
         onChange={onTransparentChange}
       />
       <Checkbox
-        className='polylinePropertiesClosedCheckbox'
-        name="closed"
+        className={'polylinePropertiesClosedCheckbox'}
+        name={'closed'}
         label={t('map.closed')}
         checked={closed}
         onChange={onChangeClosed}
@@ -307,4 +301,4 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
       </Button>
     </div>
   );
-}
+};

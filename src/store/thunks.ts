@@ -43,13 +43,13 @@ export async function startSession(this: boolean, dispatch: Dispatch) {
 export const fetchMapData = (formID: FormID, mapID: MapID, owner: MapOwner, setProgress: Function) => {
   return async (dispatch: Dispatch) => {
     dispatch(actions.startMapLoad(formID));
-    const loadedMap = await API.maps.loadMap(mapID, owner, setProgress);
-    if (typeof loadedMap === 'string') {
-      console.warn(loadedMap);
+    const mapData = await API.maps.loadMap(mapID, owner, setProgress);
+    if (typeof mapData === 'string') {
+      console.warn(mapData);
       dispatch(actions.loadMapError(formID));
     } else {
-      if (loadedMap.mapErrors.length) loadedMap.mapErrors.forEach(err => console.warn(err));
-      dispatch(actions.loadMapSuccess(formID, loadedMap));
+      if (mapData.mapErrors.length) mapData.mapErrors.forEach(err => console.warn(err));
+      dispatch(actions.loadMapSuccess(formID, mapData));
     }
   }
 };

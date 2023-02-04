@@ -8,7 +8,7 @@ import { MenuSection, ButtonIcon, BigButtonToggle } from '../common/menu-ui';
 import { actions, selectors, sessionManager } from '../../store';
 import PACKAGE from '../../../package.json';
 
-import '../../styles/menu.scss';
+import './menu.scss';
 import backToSystemsIcon from '../../assets/images/menu/back-to-systems.png';
 import aboutProgramIcon from '../../assets/images/menu/about-program.png';
 import saveSessionIcon from '../../assets/images/menu/save-session.png';

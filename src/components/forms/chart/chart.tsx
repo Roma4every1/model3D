@@ -5,7 +5,7 @@ import { ChartProto, getChartProto } from './chart-proto';
 import { mapAxes, mapDiagrams, mapMarks } from './chart-mappers';
 import { compareArrays } from '../../../utils/utils';
 import { selectors } from '../../../store';
-import '../../../styles/chart.scss';
+import './chart.scss';
 
 
 function chartDataSelector(this: ChannelName[], state: WState): Channel[] {

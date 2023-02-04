@@ -42,7 +42,7 @@ export const BaseCell = ({dataItem, format, field, editField, onChange, editor})
     return (
       <div>
         {element}
-        <div className={'buttonCell'}>
+        <div style={{float: 'right'}}>
           <span
             className={'k-icon k-i-window font-10'}
             title={t('table.showDetailInfo')} onClick={openNestedForm}

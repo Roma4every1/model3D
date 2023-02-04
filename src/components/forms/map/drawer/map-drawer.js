@@ -7,6 +7,7 @@ import parseSMB from './parse-smb';
 import pngMono from './png-mono';
 import { provider } from './index';
 import { API } from '../../../../api/api';
+import linesDefStub from './lines.def.stub.json';
 
 
 const twoPi = 2 * Math.PI;
@@ -46,11 +47,6 @@ const declareType = (name, data) => {
 	return data;
 };
 
-function allPromises(...args) {
-	args = args.filter(Boolean);
-	return args.length < 2 ? args[0] : Promise.all(args);
-}
-
 function checkBoundX(bounds, x) {
 	if (bounds.max.x === undefined || x > bounds.max.x) bounds.max.x = x;
 	if (bounds.min.x === undefined || x < bounds.min.x) bounds.min.x = x;
@@ -75,8 +71,6 @@ function* getElementImage(i, options) {
 }
 
 const defaultLineWidth = 0.23;
-const draftLineWidth = 0.1;
-const signSize = 2;
 
 declareType('sign', {
 	bound: pointBounds,
@@ -85,15 +79,6 @@ declareType('sign', {
 
 	loaded: (i, provider) => {
 		setElementImage(i, provider.getSignImage(i.fontname, i.symbolcode, i.color))
-	},
-
-	draft_: (i, options) => {
-		const p = options.pointToControl(i);
-		const context = options.context;
-		context.strokeStyle = i.color;
-		context.lineWidth = draftLineWidth * 0.001 * options.dotsPerMeter;
-		const s = signSize * 0.001 * options.dotsPerMeter;
-		context.strokeRect(p.x - s / 2, p.y - s / 2, s, s);
 	},
 
 	draw: function* drawThread(i, options) {
@@ -112,418 +97,90 @@ declareType('sign', {
 	},
 });
 
-var field = declareType('field', {
-	sourceRenderDataMatrix: null,
-	deltasPalette: null,
-	lastUsedScale: undefined,
-	lastUsedRenderDataMatrix: null,
-	lastUsedImageData: null,
-	calculationTimer: null,
-
-	bound: (p) => {
-		return {
-			min: {x: p.x, y: p.y - p.sizey * p.stepy},
-			max: {x: p.x + p.sizex * p.stepx, y: p.y},
-		};
-	},
-	loaded: (i) => {
-		// initialization
-		i.sourceRenderDataMatrix = _.chunk(field._parseSourceRenderData(i.data), i.sizex).reverse(); //reverse 'cause the source array isn't oriented right
-		i.deltasPalette = field._getDeltasPalette(field._getRgbPaletteFromHex(i.palette[0].level));
-		i.calculationTimer = {
-			isActive: false,
-			mainTimer: null,
-			innerTimers: [],
-			reset: () => {
-				i.calculationTimer.innerTimers.forEach((cancellable) => cancellable.cancel());
-				i.calculationTimer.innerTimers.length = 0;
-				clearTimeout(i.calculationTimer.mainTimer);
-				i.calculationTimer.isActive = false;
-			}
-		};
-	},
-	draw: function* drawThread(i, options) { // eslint-disable-line
-		/*
-			* _draw method contains all the logic that used to be here.
-			* _draw method invokation is omitted 'cause of performance.
-			* the main problem is a huge amount of calculations. I've not found any other
-			* way but calculating interpolated field each time a user changes scale.
-			* I calculate the whole field (not only the visible area) in order to not to
-			* recalculate it again and again for the same scale when moving across the map.
-			* Both workers (regular workers) and timers crash browser (either safari or chrome) due the amount
-			* of memory used.
-			* Hope, one day you'll find the way to render the field in a fast and safe way.
-			* UPD: there is sharing memory proposal in ES2017. Maybe it would be a good option when available
-		*/
-		// field._draw( i, options );
-		// return;
-	},
-	getFieldValueInPoint: (i, point, options) => {
-		let bounds = field.bound(i);
-		// if selected point belongs to field...
-		if (point.x >= bounds.min.x && point.x <= bounds.max.x &&
-			point.y >= bounds.min.y && point.y <= bounds.max.y) {
-			let coords = options.coords;
-			let xStart = i.x, yStart = i.y - i.stepy * i.sizey;
-			let xStep = i.stepx, yStep = i.stepy;
-			let rowLength = i.sourceRenderDataMatrix[0].length;
-			let columnLength = i.sourceRenderDataMatrix.length;
-			let translatedSourcePoints = [];
-			let fromRenderDataToPoint = (value, xIndex, yIndex, xStart, yStart, xStep, yStep) => {
-				return {x: xStart + (xStep * xIndex), y: yStart + (yStep * yIndex), value};
-			};
-
-			//translate sourceRenderDataMatrix to coords
-			for (let yIndex = 0; yIndex < columnLength; yIndex++) {
-				let translatedRow = [];
-				translatedSourcePoints.push(translatedRow);
-				for (let xIndex = 0; xIndex < rowLength; xIndex++) {
-					let translatedSourcePoint = fromRenderDataToPoint(
-						i.sourceRenderDataMatrix[yIndex][xIndex],
-						xIndex, yIndex,
-						xStart, yStart,
-						xStep, yStep
-					);
-					translatedRow.push(translatedSourcePoint);
-					// if (ctx.isPointInPath(Math.round(point.x), Math.round(point.y))){
-					//     pointsInsideContour.push(i.sourceRenderDataMatrix[yIndex][xIndex])
-					// }
-				}
-			}
-
-			let indexesOfClosest = {
-				row: {next: Number.POSITIVE_INFINITY, prev: Number.POSITIVE_INFINITY},
-				col: {next: Number.POSITIVE_INFINITY, prev: Number.POSITIVE_INFINITY}
-			};
-
-			let minDistY = Number.POSITIVE_INFINITY;
-			translatedSourcePoints.forEach((row, index) => {
-				let delta = row[0].y - point.y;
-				if (Math.abs(delta) < minDistY) {
-					minDistY = Math.abs(delta);
-					if (delta < 0) {
-						indexesOfClosest.row.prev = index;
-						indexesOfClosest.row.next = index + 1;
-					}
-					else {
-						indexesOfClosest.row.next = index;
-						indexesOfClosest.row.prev = index - 1;
-					}
-				}
-			});
-			let minDistX = Number.POSITIVE_INFINITY;
-			translatedSourcePoints[indexesOfClosest.row.prev].forEach((cell, index) => {
-				let delta = cell.x - point.x;
-				if (Math.abs(delta) < minDistX) {
-					minDistX = Math.abs(delta);
-					if (delta < 0) {
-						indexesOfClosest.col.prev = index;
-						indexesOfClosest.col.next = index + 1;
-					}
-					else {
-						indexesOfClosest.col.next = index;
-						indexesOfClosest.col.prev = index - 1;
-					}
-				}
-			});
-			// now we have source points for rect which clicked-point belong. Interpolate rect's border by X axis
-			// then by Y axis to get value. points of square are encoded as 'ne' where 'n' is north, 'e' - east and so on.
-			// north and east have greater coord values
-			let nw = translatedSourcePoints[indexesOfClosest.row.next][indexesOfClosest.col.prev];
-			let ne = translatedSourcePoints[indexesOfClosest.row.next][indexesOfClosest.col.next];
-			let sw = translatedSourcePoints[indexesOfClosest.row.prev][indexesOfClosest.col.prev];
-			let se = translatedSourcePoints[indexesOfClosest.row.prev][indexesOfClosest.col.next];
-			nw.screenCoords = coords.pointToControl(nw);
-			ne.screenCoords = coords.pointToControl(ne);
-			sw.screenCoords = coords.pointToControl(sw);
-			se.screenCoords = coords.pointToControl(se);
-
-			let ewBorderSize = Math.floor(ne.screenCoords.x) - (~~(nw.screenCoords.x));
-			let nsBorderSize = Math.floor(ne.screenCoords.y) - (~~(se.screenCoords.y));
-
-			let ewPointBorderIndex = Math.round((ewBorderSize - 1) * (point.x - nw.x) / (ne.x - nw.x));
-			let nsPointBorderIndex = Math.round((nsBorderSize - 1) * (point.y - se.y) / (ne.y - se.y));
-
-			let interpolatedUpperBorder = field._interpolateArray([nw.value, ne.value], ewBorderSize);
-			let interpolatedBottomBorder = field._interpolateArray([sw.value, se.value], ewBorderSize);
-
-			return field._interpolateArray(
-				[interpolatedBottomBorder[ewPointBorderIndex], interpolatedUpperBorder[ewPointBorderIndex]],
-				nsBorderSize
-			)[nsPointBorderIndex];
-		}
-		else {return 0}
-	},
-	getStocksWithinContour: (i, options) => {
-		let ctx = options.canvas.getContext("2d");
-		let coords = options.coords;
-		if (options.contourBuildRequired) {
-			let contour = options.contour;
-
-			ctx.strokeStyle = "#FF0000";
-			ctx.lineWidth = 3;
-			ctx.beginPath();
-
-			let translatedContour = contour.map((p) => coords.pointToControl(p));
-			ctx.moveTo(translatedContour[0].x, translatedContour[0].y);
-			translatedContour.forEach((item) => {
-				ctx.lineTo(item.x, item.y);
-			});
-			ctx.lineTo(translatedContour[0].x, translatedContour[0].y);
-		}
-
-		let fromRenderDataToPoint = (value, xIndex, yIndex, xStart, yStart, xStep, yStep) => {
-			return {x: xStart + (xStep * xIndex), y: yStart + (yStep * yIndex), value};
-		};
-
-		let xStart = i.x;
-		let yStart = i.y - i.stepy * i.sizey;
-		let xStep = i.stepx;
-		let yStep = i.stepy;
-
-		let pointsInsideContour = [];
-		let rowLength = i.sourceRenderDataMatrix[0].length;
-		let columnLength = i.sourceRenderDataMatrix.length;
-		let pointsArr = [];
-		for (let yIndex = 0; yIndex < columnLength; yIndex++) {
-			for (let xIndex = 0; xIndex < rowLength; xIndex++) {
-				let point = coords.pointToControl(
-					fromRenderDataToPoint(
-						i.sourceRenderDataMatrix[yIndex][xIndex],
-						xIndex, yIndex,
-						xStart, yStart,
-						xStep, yStep
-					)
-				);
-				pointsArr.push(point);
-				if (ctx.isPointInPath(Math.round(point.x), Math.round(point.y))) {
-					pointsInsideContour.push(i.sourceRenderDataMatrix[yIndex][xIndex]);
-				}
-			}
-		}
-		let summaryStocks = pointsInsideContour.reduce((acc, item) => {
-			if (!item) return acc;
-			return (acc += item);
-		}, 0);
-
-		return summaryStocks * xStep * yStep;
-	},
-	updatePalette: (i, newPalette) => {
-		i.deltasPalette = field._getDeltasPalette(field._getRgbPaletteFromHex(newPalette));
-		i.lastUsedScale = undefined; // for rebuilding on redraw
-	},
-	_getVisiblePartOfField: (sourceRenderDataMatrix, fieldBounds, drawBounds) => {
-		let xSize = sourceRenderDataMatrix[0].length;
-		let ySize = sourceRenderDataMatrix.length;
-		let xIntersectStartIndex = ~~(xSize * field._getIntersectionStartPercent(fieldBounds, drawBounds, "x"));
-		let yIntersectStartIndex = ~~(ySize * field._getIntersectionStartPercent(fieldBounds, drawBounds, "y"));
-		let xIntersectEndIndex = Math.ceil(xSize * field._getIntersectionEndPercent(fieldBounds, drawBounds, "x"));
-		let yIntersectEndIndex = Math.ceil(ySize * field._getIntersectionEndPercent(fieldBounds, drawBounds, "y"));
-		//filtering
-		return sourceRenderDataMatrix.reduce((acc, row, rowIndex) => {
-			if (rowIndex >= yIntersectStartIndex && rowIndex <= yIntersectEndIndex) {
-				return acc.concat(row.filter((i, colIndex) => colIndex >= xIntersectStartIndex && colIndex <= xIntersectEndIndex));
-			}
-			return acc;
-		}, []);
-	},
-	_getIntersectionStartPercent: (fieldBounds, drawBounds, dimension) => {
-		let intersectStartPercent;
-		if (fieldBounds.min[dimension] >= drawBounds.min[dimension]) {
-			intersectStartPercent = 0;
-		}
-		else {
-			intersectStartPercent = (drawBounds.min[dimension] - fieldBounds.min[dimension]) /
-				(fieldBounds.max[dimension] - fieldBounds.min[dimension]);
-		}
-		return intersectStartPercent;
-	},
-	_getIntersectionEndPercent: (fieldBounds, drawBounds, dimension) => {
-		let intersectEndPercent;
-		if (fieldBounds.max[dimension] <= drawBounds.max[dimension]) {
-			intersectEndPercent = 1;
-		}
-		else {
-			intersectEndPercent = (drawBounds.max[dimension] - fieldBounds.min[dimension]) / (fieldBounds.max[dimension] - fieldBounds.min[dimension]);
-		}
-		return intersectEndPercent;
-	},
-	_parseSourceRenderData: (stringData) => {
-		// parse string "n*50 123.123 132.323 ..." to an array (n*50 is equal to repeating null 50 times)
-		let data = stringData.split(" ");
-		let ret = [];
-		for (let i = 0; i < data.length; i++) {
-			let val = data[i];
-			let starIndex = val.indexOf("*");
-			if (starIndex === -1) {
-				ret.push(+val);
-			} else {
-				let arr = val.split("*");
-				let valToPush = (arr[0] === "n") ? null : (+arr[0]); //toNumber
-				let counter = arr[1];
-				for (let j = counter; j > 0; j--) {
-					ret.push(valToPush);
-				}
-			}
-		}
-		return ret;
-	},
-	_getRgbPaletteFromHex: (hexPalette) => {
-		return hexPalette.map((item) => {
-			let hexColorsArr = _.chunk(item.color.slice(1).split(''), 2).map((i) => i.join(""));
-			return {
-				hexColor: item.color,
-				value: item.value,
-				red: parseInt(hexColorsArr[0], 16),
-				green: parseInt(hexColorsArr[1], 16),
-				blue: parseInt(hexColorsArr[2], 16)
-			};
-		});
-	},
-	_getDeltasPalette: (palette) => {
-		return palette
-			.sort((a, b) => (a.value - b.value))
-			.reduce((acc, item, index, arr) => {
-				if (index !== arr.length - 1) {
-					return acc.concat({
-						min: item.value,
-						max: arr[index + 1].value,
-						delta: arr[index + 1].value - item.value,
-						redStart: item.red,
-						greenStart: item.green,
-						blueStart: item.blue,
-						redDelta: arr[index + 1].red - item.red,
-						greenDelta: arr[index + 1].green - item.green,
-						blueDelta: arr[index + 1].blue - item.blue
-					});
-				}
-				return acc;
-			}, []);
-	},
-	_interpolateArray: (data, fitCount) => {
-		let newData = [];
-		let springFactor = (data.length - 1) / (fitCount - 1);
-		newData[0] = data[0];
-		for (let i = 1; i < fitCount - 1; i++) {
-			let tmp = i * springFactor;
-			let before = ~~(tmp).toFixed();
-			let after = Math.ceil(tmp).toFixed();
-			let atPoint = tmp - before;
-			newData[i] = field._linearInterpolate(data[before], data[after], atPoint);
-		}
-		newData[fitCount - 1] = data[data.length - 1];
-		return newData;
-	},
-	_linearInterpolate: (before, after, atPoint) => {
-		return before + (after - before) * atPoint;
-	},
-	_getPaletteDeltaForValue: (value, deltasPalette) => {
-		for (var i = deltasPalette.length - 1; i >= 0; i--) {
-			if (value >= deltasPalette[i].min && value <= deltasPalette[i].max) {
-				return deltasPalette[i];
-			}
-		}
-	},
-	_getRenderArrayFromData: (renderData, sizex, sizey, deltasPalette) => {
-		var renderArr = new Uint8ClampedArray(sizex * sizey * 4);
-		for (var i = 0; i < renderData.length; i++) {
-			if (renderData[i] === null || renderData[i] === 0 || isNaN(renderData[i])) {
-				renderArr[i * 4] = 255;
-				renderArr[i * 4 + 1] = 255;
-				renderArr[i * 4 + 2] = 255;
-				renderArr[i * 4 + 3] = 255;
-				continue;
-			}
-			var currentPalette = field._getPaletteDeltaForValue(renderData[i], deltasPalette);
-			if (!currentPalette) {
-				renderArr[i * 4] = 255;
-				renderArr[i * 4 + 1] = 255;
-				renderArr[i * 4 + 2] = 255;
-				renderArr[i * 4 + 3] = 255;
-				continue;
-			}
-			var deltaCoef = (renderData[i] - currentPalette.min) / currentPalette.delta;
-			renderArr[i * 4] = currentPalette.redStart + (~~(deltaCoef * currentPalette.redDelta));
-			renderArr[i * 4 + 1] = currentPalette.greenStart + (~~(deltaCoef * currentPalette.greenDelta));
-			renderArr[i * 4 + 2] = currentPalette.blueStart + (~~(deltaCoef * currentPalette.blueDelta));
-			renderArr[i * 4 + 3] = 255;
-		}
-		return renderArr;
-	},
-	_draw: (i, options) => {
-		if (i.calculationTimer.isActive) {
-			return;
-		}
-		let context = options.context;
-		let firstRenderPoint = options.pointToControl({x: i.x, y: i.y - i.sizey * i.stepy});
-		let secondRenderPoint = options.pointToControl({x: i.x + i.sizex * i.stepx, y: i.y});
-		let newSizex = ~~Math.abs(firstRenderPoint.x - secondRenderPoint.x);
-		let newSizey = ~~Math.abs(firstRenderPoint.y - secondRenderPoint.y);
-
-		let doUseSavedRenderData;
-		if (options.scale === i.lastUsedScale) {
-			doUseSavedRenderData = true;
-		} else {
-			//recalculate matrix and cancel previous calculations
-			doUseSavedRenderData = false;
-			i.calculationTimer.reset();
-		}
-		i.lastUsedScale = options.scale;
-
-		if (doUseSavedRenderData && i.lastUsedImageData) {
-			context.putImageData(i.lastUsedImageData, firstRenderPoint.x, firstRenderPoint.y);
-			return;
-		}
-		options.events.emit("fieldCalculationStarted");
-		i.calculationTimer.mainTimer = setTimeout(() => {
-			i.calculationTimer.isActive = true;
-			let newRenderDataRows = i.sourceRenderDataMatrix.map(row => field._interpolateArray(row, newSizex));
-			//calculate each column in a separate thread and return result column as a promise
-			for (let c = 0; c < newSizex; c++) { // c is for column
-				let innerTimer;
-				let promise = new Promise((resolve, reject) => {
-					innerTimer = setTimeout(() => {
-						let column = field._interpolateArray(Array.from({
-							length: i.sizey
-						}, (k, v) => newRenderDataRows[v][c]), newSizey);
-						resolve(column);
-					}, 20 + c * 25);
-				});
-
-				i.calculationTimer.innerTimers.push({
-					promise,
-					cancel: () => {
-						clearTimeout(innerTimer);
-					}
-				});
-			}
-
-			//when all the columns are recalculated, collect all the result and set as i.lastUsedImageData
-			Promise.all(i.calculationTimer.innerTimers.map((item) => item.promise))
-				.then((columnsArr) => {
-					let newRenderDataMatrix = []; //from columnsArr -> rowsArr
-					for (let r = 0; r < newSizey; r++) {
-						let row = columnsArr.map((column) => column[r]);
-						newRenderDataMatrix.push(row);
-					}
-					i.lastUsedRenderDataMatrix = newRenderDataMatrix;
-					let currentRenderArr = field._getRenderArrayFromData(
-						_.flatten(newRenderDataMatrix),
-						newSizex, newSizey,
-						i.deltasPalette
-					);
-					let imgData = context.createImageData(newSizex, newSizey);
-					for (let index = 0; index < newSizex * newSizey * 4; index++) {
-						imgData.data[index] = currentRenderArr[index];
-					}
-					i.lastUsedImageData = imgData;
-					i.calculationTimer.isActive = false;
-					options.events.emit('fieldCalculationFinished');
-					options.events.emit('update');
-				});
-		}, 20);
-	}
-});
+// var field = declareType('field', {
+// 	sourceRenderDataMatrix: null,
+// 	deltasPalette: null,
+// 	lastUsedScale: undefined,
+// 	lastUsedRenderDataMatrix: null,
+// 	lastUsedImageData: null,
+// 	calculationTimer: null,
+//
+// 	bound: (p) => {
+// 		return {
+// 			min: {x: p.x, y: p.y - p.sizey * p.stepy},
+// 			max: {x: p.x + p.sizex * p.stepx, y: p.y},
+// 		};
+// 	},
+// 	loaded: (i) => {
+// 		i.sourceRenderDataMatrix = _.chunk(field._parseSourceRenderData(i.data), i.sizex).reverse(); //reverse 'cause the source array isn't oriented right
+// 		i.deltasPalette = field._getDeltasPalette(field._getRgbPaletteFromHex(i.palette[0].level));
+// 		i.calculationTimer = {
+// 			isActive: false,
+// 			mainTimer: null,
+// 			innerTimers: [],
+// 			reset: () => {
+// 				i.calculationTimer.innerTimers.forEach((cancellable) => cancellable.cancel());
+// 				i.calculationTimer.innerTimers.length = 0;
+// 				clearTimeout(i.calculationTimer.mainTimer);
+// 				i.calculationTimer.isActive = false;
+// 			}
+// 		};
+// 	},
+// 	draw: () => {},
+//
+// 	_parseSourceRenderData: (stringData) => {
+// 		// parse string "n*50 123.123 132.323 ..." to an array (n*50 is equal to repeating null 50 times)
+// 		let data = stringData.split(" ");
+// 		let ret = [];
+// 		for (let i = 0; i < data.length; i++) {
+// 			let val = data[i];
+// 			let starIndex = val.indexOf("*");
+// 			if (starIndex === -1) {
+// 				ret.push(+val);
+// 			} else {
+// 				let arr = val.split("*");
+// 				let valToPush = (arr[0] === "n") ? null : (+arr[0]); //toNumber
+// 				let counter = arr[1];
+// 				for (let j = counter; j > 0; j--) {
+// 					ret.push(valToPush);
+// 				}
+// 			}
+// 		}
+// 		return ret;
+// 	},
+// 	_getRgbPaletteFromHex: (hexPalette) => {
+// 		return hexPalette.map((item) => {
+// 			let hexColorsArr = _.chunk(item.color.slice(1).split(''), 2).map((i) => i.join(""));
+// 			return {
+// 				hexColor: item.color,
+// 				value: item.value,
+// 				red: parseInt(hexColorsArr[0], 16),
+// 				green: parseInt(hexColorsArr[1], 16),
+// 				blue: parseInt(hexColorsArr[2], 16)
+// 			};
+// 		});
+// 	},
+// 	_getDeltasPalette: (palette) => {
+// 		return palette
+// 			.sort((a, b) => (a.value - b.value))
+// 			.reduce((acc, item, index, arr) => {
+// 				if (index !== arr.length - 1) {
+// 					return acc.concat({
+// 						min: item.value,
+// 						max: arr[index + 1].value,
+// 						delta: arr[index + 1].value - item.value,
+// 						redStart: item.red,
+// 						greenStart: item.green,
+// 						blueStart: item.blue,
+// 						redDelta: arr[index + 1].red - item.red,
+// 						greenDelta: arr[index + 1].green - item.green,
+// 						blueDelta: arr[index + 1].blue - item.blue
+// 					});
+// 				}
+// 				return acc;
+// 			}, []);
+// 	},
+// });
 
 var polyline = declareType('polyline', {
 	borderStyles: ['Solid', 'Dash', 'Dot', 'DashDot', 'DashDotDot', 'Clear'],
@@ -551,46 +208,51 @@ var polyline = declareType('polyline', {
 	},
 
 	bkcolor: function (i) {
-		var color = i.fillbkcolor;
-		if (i.selected) {
-			var parsedColor = parseColor(i.fillbkcolor).rgb;
-			var stepvalue = 50;
-			if (parsedColor[0] < 255 - stepvalue) {
-				color = "rgba(" + (parsedColor[0] + stepvalue) + "," + parsedColor[1] + "," + parsedColor[2] + ",1)";
-			}
-			else if ((parsedColor[1] > stepvalue - 1) && (parsedColor[2] > stepvalue - 1)) {
-				color = "rgba(" + parsedColor[0] + "," + (parsedColor[1] - stepvalue) + "," + (parsedColor[2] - stepvalue) + ",1)";
-			}
-			else {
-				color = "rgba(255," + Math.max(parsedColor[1] - stepvalue, 0) + "," + Math.max(parsedColor[2] - stepvalue, 0) + ",1)";
+    let color = i.fillbkcolor;
+    if (i.selected) {
+      const [red, green, blue] = parseColor(i.fillbkcolor).rgb;
+      const stepValue = 50;
+
+      if (red < 255 - stepValue) {
+				color = 'rgba(' + (red + stepValue) + ',' + green + ',' + blue + ',1)';
+			} else if ((green > stepValue - 1) && (blue > stepValue - 1)) {
+				color = 'rgba(' + red + ',' + (green - stepValue) + ',' + (blue - stepValue) + ',1)';
+			} else {
+        const greenMax = Math.max(green - stepValue, 0);
+        const blueMax = Math.max(blue - stepValue, 0);
+				color = 'rgba(255,' + greenMax + ',' + blueMax + ',1)';
 			}
 		}
 		return color;
 	},
 
-	bound: function (p) {
-		if (p.bounds)
-			return p.bounds;
-		if (!p.arcs)
-			return undefined;
+	bound: (p) => {
+		if (p.bounds) return p.bounds;
+		if (!p.arcs) return undefined;
+
 		const bounds = {
 			max: {x: undefined, y: undefined},
 			min: {x: undefined, y: undefined},
 		};
-		p.arcs.forEach(function (arcItem) {
-			arcItem.path.forEach(function (coord, ind) {
-				ind % 2 === 0 ? checkBoundX(bounds, coord) : checkBoundY(bounds, coord);
+
+		p.arcs.forEach((arc) => {
+			arc.path.forEach((coordinate, i) => {
+				i % 2 === 0
+          ? checkBoundX(bounds, coordinate)
+          : checkBoundY(bounds, coordinate);
 			});
 		});
 		return bounds;
 	},
 
-	loaded: (i, provider) => allPromises(
-		i.fillname && setElementImage(i, provider.getPatternImage(
-			i.fillname, i.fillcolor, i.transparent ? 'none' : polyline.bkcolor(i))),  //commented 'cause sometimes transparent is set to true for non-transparent elements. (ex. "HALFTONE-64")
-		i.borderstyleid && provider.getLinesDefStub && provider.getLinesDefStub() &&
-		(provider.getLinesDefStub().then(stub => i.style = stub && stub[i.borderstyleid]), true)
-	),
+	loaded: (i, provider) => {
+    if (i.fillname) {
+      const backColor = i.transparent ? 'none' : polyline.bkcolor(i);
+      const pattern = provider.getPatternImage(i.fillname, i.fillcolor, backColor);
+      setElementImage(i, pattern);
+    }
+    if (i.borderstyleid) i.style = linesDefStub[i.borderstyleid];
+  },
 
 	points: function (i, options) {
 		/** @type CanvasRenderingContext2D */
@@ -791,7 +453,7 @@ var polyline = declareType('polyline', {
 		if (i.arcs.length === 1 && i.arcs[0].closed) {
 			let s = options.pointToControl({ x: i.arcs[0].path[0], y: i.arcs[0].path[1] });
 			let fi = options.pointToControl({ x: i.arcs[0].path[i.arcs[0].path.length - 2], y: i.arcs[0].path[i.arcs[0].path.length - 1] });
-			overhead = fillSegmentWithDecoration(context, lineConfig, s, fi, overhead, i, options);
+			fillSegmentWithDecoration(context, lineConfig, s, fi, overhead, i, options);
 			context.closePath();
 		}
 	},
@@ -906,17 +568,17 @@ var polyline = declareType('polyline', {
 		pathNeeded();
 		context.strokeStyle = i.bordercolor;
 		context.lineWidth = (i.borderwidth || defaultLineWidth) * 0.001 * options.dotsPerMeter;
+
 		// if a default style is present, set dash
 		if (i.borderstyle !== undefined && i.borderstyle != null) {
-			var baseThicknessCoefficient = Math.round((i.borderwidth || defaultLineWidth) / defaultLineWidth);
-			var dash = polyline.styleShapes[polyline.borderStyles[i.borderstyle]].slice();
-			for (let j = dash.length - 1; j >= 0; j--) {
+      const baseThicknessCoefficient = Math.round((i.borderwidth || defaultLineWidth) / defaultLineWidth);
+      const dash = polyline.styleShapes[polyline.borderStyles[i.borderstyle]].slice();
+      for (let j = dash.length - 1; j >= 0; j--) {
 				dash[j] = dash[j] * configThicknessCoefficient * baseThicknessCoefficient;
 			}
 			if (context.setLineDash) context.setLineDash(dash);
 		}
 
-		// заглушка для ВНК да рэалізацыі lines.def
 		if (i.style) {
 			context.strokeStyle = i.style.baseColor ? i.style.baseColor._value : i.bordercolor;
 			if (i.style.baseThickness)
@@ -942,8 +604,8 @@ var polyline = declareType('polyline', {
 		if (context.setLineDash) context.setLineDash([]);
 
 		if (i.style) {
-			var decorationPathNeeded = _.once(() => polyline.decorationPath(i, options, i.style));
-			decorationPathNeeded();
+      const decorationPathNeeded = _.once(() => polyline.decorationPath(i, options, i.style));
+      decorationPathNeeded();
 			context.stroke();
 			if (context.setLineDash) context.setLineDash([]);
 		}
@@ -1063,24 +725,24 @@ var label = declareType('label', {
 declareType('pieslice', {
 	bound: pointBounds,
 	draw: function* drawThread(i, options) { // eslint-disable-line
-		var context = options.context;
-		var maxRadius = 16;
-		var minRadius = 2;
-		var p = options.pointToControl(i);
-		var customIncreaseCoefficient = 1.5;
-		// radius restrictions
-		if (i.radius > maxRadius) i.radius = maxRadius;
+    const context = options.context;
+    const maxRadius = 16;
+    const minRadius = 2;
+    const p = options.pointToControl(i);
+    const customIncreaseCoefficient = 1.5;
+
+    if (i.radius > maxRadius) i.radius = maxRadius;
 		if (i.radius < minRadius) i.radius = minRadius;
-		var r = i.radius * 0.001 * options.dotsPerMeter * customIncreaseCoefficient;
-		context.beginPath();
+    const r = i.radius * 0.001 * options.dotsPerMeter * customIncreaseCoefficient;
+    context.beginPath();
 		if (!(i.startangle === 0 && Math.abs(i.endangle - twoPi) < 1e-6)) context.moveTo(p.x, p.y);
 		context.arc(p.x, p.y, r, i.startangle + Math.PI / 2, i.endangle + Math.PI / 2, false);
 		context.closePath();
-		var drawOptions = options.provider.drawOptions || {};
-		context.strokeStyle = (drawOptions.piesliceBorderColor || "black"); // i.bordercolor
+    const drawOptions = options.provider.drawOptions || {};
+    context.strokeStyle = (drawOptions.piesliceBorderColor || 'black');
 		context.lineWidth = (drawOptions.piesliceBorderWidth || 0.2) * 0.001 * options.dotsPerMeter;
-		var gradient = context.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
-		gradient.addColorStop(0, "white");
+    const gradient = context.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+    gradient.addColorStop(0, 'white');
 		gradient.addColorStop(1, i.color);
 		context.fillStyle = gradient; // i.color
 		context.globalAlpha = drawOptions.piesliceAlpha || 0.7;

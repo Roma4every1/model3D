@@ -1,4 +1,4 @@
-import lines from '../../lines.json';
+import lines from '../../drawer/lines.json';
 import parseColor from 'parse-color';
 import { polylineType } from '../selecting/selecting-utils';
 import { ColorPickerPaletteSettings, ColorPickerGradientSettings } from '@progress/kendo-react-inputs';

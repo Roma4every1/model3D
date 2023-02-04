@@ -11,7 +11,7 @@ import { UnknownRoute } from './common/unknown-route';
 
 import '@progress/kendo-theme-default/dist/all.css';
 import 'flexlayout-react/style/light.css';
-import '../styles/custom.css';
+import './custom.css';
 
 
 /** Корень приложения. */
