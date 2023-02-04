@@ -6,7 +6,7 @@ import { Button } from '@progress/kendo-react-buttons';
 import { DownloadFileItem } from '../forms/dock/download-file-item';
 import { actions, selectors } from '../../store';
 import { API } from '../../api/api';
-import { reportDeleteIcon } from '../../dicts/images';
+import reportDeleteIcon from '../../assets/images/report_delete.png';
 
 
 const reportsSelector = (state: WState) => Object.values<Report>(state.reports).reverse();

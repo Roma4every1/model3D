@@ -1,11 +1,11 @@
-import { WDispatch } from './index';
+import { Dispatch } from 'redux';
 import { mapSystem } from '../utils/utils';
 import { createClientConfig, fetchRootFormState } from '../api/initialization';
 import { actions, sessionManager } from './index';
 import { API } from '../api/api';
 
 
-export async function initialize(dispatch: WDispatch) {
+export async function initialize(dispatch: Dispatch) {
   const resConfig = await API.getClientConfig();
   const config = createClientConfig(resConfig);
 
@@ -17,7 +17,7 @@ export async function initialize(dispatch: WDispatch) {
   dispatch(actions.setInitResult(config, systemList));
 }
 
-export async function startSession(this: boolean, dispatch: WDispatch) {
+export async function startSession(this: boolean, dispatch: Dispatch) {
   dispatch(actions.fetchSessionStart());
 
   const resSessionID = await sessionManager.startSession(this);
@@ -41,7 +41,7 @@ export async function startSession(this: boolean, dispatch: WDispatch) {
 }
 
 export const fetchMapData = (formID: FormID, mapID: MapID, owner: MapOwner, setProgress: Function) => {
-  return async (dispatch: WDispatch) => {
+  return async (dispatch: Dispatch) => {
     dispatch(actions.startMapLoad(formID));
     const loadedMap = await API.maps.loadMap(mapID, owner, setProgress);
     if (typeof loadedMap === 'string') {
@@ -54,7 +54,7 @@ export const fetchMapData = (formID: FormID, mapID: MapID, owner: MapOwner, setP
   }
 };
 
-export async function fetchFormPrograms(this: FormID, dispatch: WDispatch) {
+export async function fetchFormPrograms(this: FormID, dispatch: Dispatch) {
   try {
     dispatch(actions.fetchProgramsStart(this));
     const res = await API.programs.getProgramsList(this);

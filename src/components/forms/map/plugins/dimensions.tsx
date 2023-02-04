@@ -4,11 +4,15 @@ import { useState, useEffect, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { BigButton, BigButtonToggle } from '../../../common/menu-ui';
 import { NumericTextBox } from '@progress/kendo-react-inputs';
-
 import { actions } from '../../../../store';
-import { xIcon, yIcon, scaleIcon, synchronizeIcon, selectAllIcon } from '../../../../dicts/images';
 import { getParentFormId } from '../../../../utils/utils';
 import { getFullViewport, getPointToMap } from '../map-utils';
+
+import xIcon from '../../../../assets/images/map/x.png';
+import yIcon from '../../../../assets/images/map/y.png';
+import scaleIcon from '../../../../assets/images/map/scale.png';
+import selectAllIcon from '../../../../assets/images/map/select-all.png';
+import synchronizeIcon from '../../../../assets/images/map/synchronize.png';
 
 
 interface DimensionsProps {

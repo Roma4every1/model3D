@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
-import { formDict } from '../../../dicts/forms';
+import { formDict } from './form-dict';
 import { actions, sessionManager } from '../../../store';
 import { MultiMap } from '../multi-map/multi-map';
 import Dataset from '../dataset/dataset';

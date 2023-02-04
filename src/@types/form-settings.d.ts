@@ -119,14 +119,21 @@ interface SeriesSettingsItem {
   zIndex: number,
 }
 
+/** Настройки оси графика. */
 interface AxisSettings {
+  /** Расположение оси слева или справа. */
   location: string,
+  /** Цвет оси. */
   color: string,
+  /** Минимальное значение. */
   min: number | null,
+  /** Максимальное значение. */
   max: number | null,
+  /** Количество засечек. */
   tickCount: number,
+  /** Прямое или обратное направление оси. */
   inverse: boolean,
-  half: boolean,
+  /** Подпись к оси. */
   displayName: string,
 }
 

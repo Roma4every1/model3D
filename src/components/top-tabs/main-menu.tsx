@@ -5,12 +5,17 @@ import { Link } from 'react-router-dom';
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { MenuSection, ButtonIcon, BigButtonToggle } from '../common/menu-ui';
-
 import { actions, selectors, sessionManager } from '../../store';
-import { backToSystemsIcon, aboutProgramIcon, saveSessionIcon, defaultSessionIcon } from '../../dicts/images';
-import { globalParametersIcon, presentationParametersIcon, presentationsListIcon } from '../../dicts/images';
 import PACKAGE from '../../../package.json';
+
 import '../../styles/menu.scss';
+import backToSystemsIcon from '../../assets/images/menu/back-to-systems.png';
+import aboutProgramIcon from '../../assets/images/menu/about-program.png';
+import saveSessionIcon from '../../assets/images/menu/save-session.png';
+import defaultSessionIcon from '../../assets/images/menu/default-session.png';
+import globalParametersIcon from '../../assets/images/menu/global-parameters.png';
+import presentationParametersIcon from '../../assets/images/menu/presentation-parameters.png';
+import presentationsListIcon from '../../assets/images/menu/presentations-list.png';
 
 
 interface AboutProgramWindowProps {

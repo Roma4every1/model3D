@@ -13,7 +13,6 @@ import { MapsAction, MapsActions } from './reducers/maps.reducer';
 import { PresentationsAction, PresentationsActions } from './reducers/presentations.reducer';
 import { ProgramsAction, ProgramsActions } from './reducers/programs.reducer';
 import { ReportsAction, ReportsActions } from './reducers/reports.reducer';
-import { SessionManagerAction, SessionManagerActions } from './reducers/session-manager.reducer';
 import { WindowDataAction, WindowDataActions } from './reducers/window-data.reducer';
 import { CaratsAction, CaratsActions } from './reducers/carats.reducer';
 
@@ -71,7 +70,7 @@ export class WellManagerActionsCreator {
 
   /* --- Channels Loading Actions --- */
 
-  public setChannelsLoading(channelName: ChannelName, loading: IsChannelLoading): ChannelsLoadingAction {
+  public setChannelsLoading(channelName: ChannelName, loading: boolean): ChannelsLoadingAction {
     return {type: ChannelsLoadingActions.SET, channelName, loading};
   }
 
@@ -251,13 +250,6 @@ export class WellManagerActionsCreator {
   /** Очистить репорты для презентации. */
   public clearReports(presentationID: any): ReportsAction {
     return {type: ReportsActions.CLEAR, presentationID};
-  }
-
-  /* --- Session Manager Actions --- */
-
-  /** Установить менеджер сесии. */
-  public setSessionManager(value: any): SessionManagerAction {
-    return {type: SessionManagerActions.SET, value};
   }
 
   /* --- Window Data Actions --- */

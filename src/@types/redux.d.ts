@@ -29,10 +29,15 @@ interface WState {
  * + `systemID`: {@link SystemID}
  * */
 interface AppState {
+  /** Клиентская конфигурация. */
   config: ClientConfiguration,
+  /** Список систем. */
   systemList: SystemList,
+  /** Состояние сессии. */
   sessionID: FetchState<SessionID>,
+  /** ID главной формы. */
   rootFormID: FormID,
+  /** ID текущей системы. */
   systemID: SystemID,
 }
 
@@ -90,64 +95,12 @@ interface CaratState {
 /** Данные каналов. */
 type ChannelsData = Record<ChannelName, Channel>;
 
-interface Channel {
-  id: ChannelName,
-  displayName: string,
-  currentRowObjectName: string | null,
-  data: ChannelData | null,
-  idIndex: number,
-  nameIndex: number,
-  parentIndex: number,
-  properties: ChannelProperty[],
-  tableId: string,
-}
-
-interface ChannelData {
-  Rows: ChannelRow[],
-  Columns: ChannelColumn[],
-  DataPart: boolean,
-  Editable: boolean,
-  ModifiedTables: any,
-  PrimaryColumn: any,
-  TotalsRows: any,
-}
-
-interface ChannelRow {
-  ID: any,
-  Cells: any[],
-}
-
-interface ChannelColumn {
-  Name: string,
-  NetType: string,
-  AllowDBNull: boolean
-}
-
-interface ChannelProperty {
-  name: string,
-  fromColumn: string,
-  displayName: string,
-  treePath: any[],
-  file: any,
-  lookupChannelName: string | null,
-  secondLevelChannelName: string | null,
-  lookupData?: LookupDataItem[],
-}
-
-interface LookupDataItem {
-  id: any,
-  value: any,
-  text: any,
-  parent?: any,
-}
+// type ChannelsState = Record<ChannelName, Channel_>;
 
 /* --- state.channelsLoading --- */
 
 /** Данные о загрузке каналов. */
-type ChannelsLoading = {[key: ChannelName]: {loading: IsChannelLoading}};
-
-/** Загружается ли канал. */
-type IsChannelLoading = boolean;
+type ChannelsLoading = {[key: ChannelName]: {loading: boolean}};
 
 
 /* --- state.childForms --- */
@@ -211,11 +164,13 @@ type FormsLayout = FormDict;
 
 /** Разметка общих элементов. */
 interface CommonLayout {
+  /** Разметка главной формы. */
   dock: DockLayout,
+  /** Разметка левой панели. */
   left: LeftPanelLayout,
 }
 
-/** Разметка контейнера. */
+/** Разметка главной формы. */
 interface DockLayout {
   /** Номер активной верхней вкладки. */
   selectedTopTab: number,

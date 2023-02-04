@@ -2,8 +2,8 @@ import { MouseEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BigButton } from '../../../common/menu-ui';
 import { Popup } from '@progress/kendo-react-popup';
-import { columnVisibilityIcon } from '../../../../dicts/images';
 import ColumnsVisibilityContent from './columns-visibility-content';
+import columnVisibilityIcon from '../../../../assets/images/dataset/columns-visibility.png';
 
 
 export function ColumnsVisibility({formID}: PropsFormID) {

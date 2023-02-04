@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Loader } from '@progress/kendo-react-indicators';
 import { ProgramParametersList } from './program-parameters-list';
-import { runProgramIcon } from '../../dicts/images';
 import { actions, sessionManager } from '../../store';
 import { API } from '../../api/api';
+import runProgramIcon from '../../assets/images/menu/run-program.png';
 
 
 interface ProgramButtonProps {

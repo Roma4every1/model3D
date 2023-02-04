@@ -91,6 +91,6 @@ export function createSessionManager(store) {
     watchReport,
   };
 
-  store.dispatch(actions.setSessionManager(sessionManager));
+  store.dispatch({type: 'sessionManager/set', value: sessionManager});
   return sessionManager;
 }

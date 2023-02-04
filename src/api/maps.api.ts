@@ -2,11 +2,11 @@ import { Requester } from './api';
 import { converter } from '../utils/maps-api.utils';
 import { handleLayerScales, checkLayerIndex, loadLayerElements } from '../utils/maps-api.utils';
 
-import symbolDef from '../static/libs/symbol.def';
-import dro32Lib from '../static/libs/dro32_.smb';
-import gridsLib from '../static/libs/grids.smb';
-import litLib from '../static/libs/lit.smb';
-import regionalLib from '../static/libs/regional.smb';
+import symbolDef from '../assets/libs/symbol.def';
+import dro32Lib from '../assets/libs/dro32_.smb';
+import gridsLib from '../assets/libs/grids.smb';
+import litLib from '../assets/libs/lit.smb';
+import regionalLib from '../assets/libs/regional.smb';
 
 
 export class MapsAPI {

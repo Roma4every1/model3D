@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { MenuSkeleton, MenuSection, BigButtonToggle } from '../common/menu-ui';
 import { DropDownList, DropDownListChangeEvent } from '@progress/kendo-react-dropdowns';
 import { actions, selectors } from '../../store';
-import { chartTooltipIcon } from '../../dicts/images';
+import chartTooltipIcon from '../../assets/images/chart/tooltip.png';
 
 
 const dateStepData = [

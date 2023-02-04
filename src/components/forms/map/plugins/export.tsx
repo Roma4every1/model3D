@@ -1,9 +1,9 @@
 import { TFunction } from 'react-i18next';
 import { MenuSection, BigButton } from '../../../common/menu-ui';
-import { pdfIcon } from '../../../../dicts/images';
 import 'svg2pdf.js';
 import C2S from 'canvas2svg';
-import { jsPDF } from 'jspdf';
+import { jsPDF } from 'jspdf'
+import pdfIcon from '../../../..//assets/images/map/pdf.png';
 
 
 interface ActionsProps {

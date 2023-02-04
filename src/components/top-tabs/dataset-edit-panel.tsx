@@ -6,7 +6,10 @@ import { ColumnSettings } from '../forms/dataset/plugins/column-settings';
 import { ColumnsVisibility } from '../forms/dataset/plugins/columns-visibility';
 import { ColumnHeaderSetter } from '../forms/dataset/plugins/column-header-setter';
 import { ColumnSettingsAnalyzer } from '../forms/dataset/plugins/column-settings-analyzer';
-import { tableSelectAllIcon, exportToExcelIcon, reloadIcon } from '../../dicts/images';
+
+import tableSelectAllIcon from '../../assets/images/dataset/select-all.png';
+import exportToExcelIcon from '../../assets/images/dataset/export-to-excel.png';
+import reloadIcon from '../../assets/images/dataset/reload.png';
 
 
 function formRefSelector(this: FormID, state: WState) {

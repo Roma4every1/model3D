@@ -1,10 +1,10 @@
 import { TFunction } from 'react-i18next'
 import { useDispatch } from 'react-redux';
 import { MenuSection, BigButton } from '../../../common/menu-ui';
-import { saveMapIcon as icon } from '../../../../dicts/images';
 import { actions } from '../../../../store';
 import { API } from '../../../../api/api';
 import { callBackWithNotices } from '../../../../utils/notifications';
+import saveMapIcon from '../../../../assets/images/map/save-map.png';
 
 
 interface SaveMapProps {
@@ -30,7 +30,7 @@ export const SaveMap = ({mapState, formID, t}: SaveMapProps) => {
 
   return (
     <MenuSection header={'Хранение'} className={'map-actions'}>
-      <BigButton text={'Сохранить карту'} icon={icon} action={saveMap} disabled={!isModified}/>
+      <BigButton text={'Сохранить карту'} icon={saveMapIcon} action={saveMap} disabled={!isModified}/>
     </MenuSection>
   );
 };

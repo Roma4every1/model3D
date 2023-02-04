@@ -1,24 +1,40 @@
 import { useDispatch } from 'react-redux';
 import { TFunction, useTranslation } from 'react-i18next';
-
-import { MapModes, MapModes as Modes } from '../../enums';
-import { mapEditIconsDict } from '../../../../../dicts/images';
+import { MapModes } from '../../enums';
 import { actions } from '../../../../../store';
+
+import addBetween from '../../../../../assets/images/map/add-between.png';
+import handIcon from '../../../../../assets/images/map/hand.png';
+import movePoint from '../../../../../assets/images/map/move-point.png';
+import addEnd from '../../../../../assets/images/map/add-end.png';
+import deletePoint from '../../../../../assets/images/map/delete-point.png';
+import moveIcon from '../../../../../assets/images/map/move.png';
+import rotateIcon from '../../../../../assets/images/map/rotate.png';
 
 
 interface EditElementProps {
   type: string,
-  mode: Modes,
+  mode: MapModes,
   formID: FormID,
 }
 interface EditItemProps {
-  ownMode: Modes,
+  ownMode: MapModes,
   selected: boolean,
   t: TFunction,
   action: () => void,
 }
 
 
+/** Иконки режимов редактирования. */
+const mapEditIconsDict: {[key: number]: IconPath} = {
+  10: handIcon,    // MapModes.MOVE_MAP
+  11: moveIcon,    // MapModes.MOVE
+  12: rotateIcon,  // MapModes.ROTATE
+  21: movePoint,   // MapModes.MOVE_POINT
+  22: addEnd,      // MapModes.ADD_END
+  23: addBetween,  // MapModes.ADD_BETWEEN
+  24: deletePoint, // MapModes.DELETE_POINT
+};
 /** Подсказки режимов редактирования. */
 const translationDict: {[key: number]: string} = {
   10: 'map.editing.move-map',     // MapModes.MOVE_MAP
@@ -31,34 +47,38 @@ const translationDict: {[key: number]: string} = {
 };
 
 /** Доступные режимы редактирования для выбранных элементов карты. */
-const elementsModes: {[key: string]: Modes[]} = {
-  'polyline': [Modes.MOVE_MAP, Modes.MOVE_POINT, Modes.ADD_END, Modes.ADD_BETWEEN, Modes.DELETE_POINT],
-  'label': [Modes.MOVE_MAP, Modes.MOVE, MapModes.ROTATE],
-  'sign': [Modes.MOVE_MAP, Modes.MOVE],
+const elementsModes: {[key: string]: MapModes[]} = {
+  'polyline': [
+    MapModes.MOVE_MAP, MapModes.MOVE_POINT,
+    MapModes.ADD_END, MapModes.ADD_BETWEEN, MapModes.DELETE_POINT
+  ],
+  'label': [MapModes.MOVE_MAP, MapModes.MOVE, MapModes.ROTATE],
+  'sign': [MapModes.MOVE_MAP, MapModes.MOVE],
 };
-
-const EditItem = ({ownMode, selected, t, action}: EditItemProps) => {
-  const src = mapEditIconsDict[ownMode], alt = translationDict[ownMode];
-  return (
-    <button className={'map-panel-button' + (selected ? ' selected' : '')} onClick={action}>
-      <img src={src} alt={alt} title={t(alt)}/>
-    </button>
-  );
-}
 
 export const EditElement = ({type, mode, formID}: EditElementProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
   const buttons = (elementsModes[type] || []).map((ownMode) => {
+    const isSameMode = mode === ownMode;
     const action = () => {
       if (mode < MapModes.MOVE_MAP) dispatch(actions.startMapEditing(formID));
-
-      mode === ownMode
-        ? dispatch(actions.setEditMode(formID, Modes.NONE))
-        : dispatch(actions.setEditMode(formID, ownMode));
+      dispatch(actions.setEditMode(formID, isSameMode ? MapModes.NONE : ownMode));
     }
-    return <EditItem key={ownMode} ownMode={ownMode} selected={ownMode === mode} t={t} action={action}/>;
+    return <EditItem key={ownMode} ownMode={ownMode} selected={isSameMode} t={t} action={action}/>;
   });
   return <div>{buttons}</div>;
-}
+};
+
+const EditItem = ({ownMode, selected, t, action}: EditItemProps) => {
+  const src = mapEditIconsDict[ownMode], alt = translationDict[ownMode];
+  const className = 'map-panel-button' + (selected ? ' selected' : '');
+  const title = t(alt);
+
+  return (
+    <button className={className} onClick={action}>
+      <img src={src} alt={title} title={title}/>
+    </button>
+  );
+};

@@ -1,12 +1,14 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { TFunction, useTranslation } from 'react-i18next';
-
 import { MapModes } from '../../enums';
 import { clientPoint, listenerOptions } from '../../map-utils';
 import { polylineByLegends, getDefaultSign, getDefaultLabel } from './editing-utils';
-import { mapCreatingIcons } from '../../../../../dicts/images';
 import { actions } from '../../../../../store';
+
+import createPolylineIcon from '../../../../../assets/images/map/create-polyline.png';
+import createLabelIcon from '../../../../../assets/images/map/create-label.png';
+import createSignIcon from '../../../../../assets/images/map/create-sign.png';
 
 
 interface CreateElementProps {
@@ -21,7 +23,13 @@ interface CreateItemProps {
 }
 
 
-// TODO: polygon
+/** Иконки создания новых элементов карты. */
+const mapCreatingIcons: ImagesDict<'polyline' | 'label' | 'sign'> = {
+  'polyline': createPolylineIcon,
+  'label': createLabelIcon,
+  'sign': createSignIcon,
+};
+
 const creatingElementTypes: MapElementType[] = ['polyline', 'sign', 'label'];
 const defaultSignProto: SignImageProto = {fontName: 'PNT.CHR', symbolCode: 68, color: '#DDDDDD'}
 

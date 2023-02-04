@@ -1,4 +1,5 @@
-import { WDispatch, actions } from '../store';
+import { Dispatch } from 'redux';
+import { actions } from '../store';
 
 
 const defaultErrorNotice = 'Ошибка при выполнении запроса';
@@ -11,7 +12,7 @@ const defaultErrorNotice = 'Ошибка при выполнении запро�
  * @param duration сколько секунд будет показываться уведомление
  * */
 export function callBackWithNotices(
-  promise: Promise<any>, dispatch: WDispatch,
+  promise: Promise<any>, dispatch: Dispatch,
   successText: string, errorText = defaultErrorNotice, duration = 3,
 ) {
   const durationMs = duration * 1000;
@@ -31,7 +32,7 @@ export function callBackWithNotices(
  * @param text текст уведомления
  * @param duration сколько секунд будет показываться уведомление
  * */
-export function showNotice(dispatch: WDispatch, text: string, duration: number = 3) {
+export function showNotice(dispatch: Dispatch, text: string, duration: number = 3) {
   const clearNotice = () => { dispatch(actions.closeWindowNotification()); };
   dispatch(actions.setWindowNotification(text));
   setTimeout(clearNotice, duration * 1000);

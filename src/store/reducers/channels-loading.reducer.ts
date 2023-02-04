@@ -9,7 +9,7 @@ export enum ChannelsLoadingActions {
 interface ActionSet {
   type: ChannelsLoadingActions.SET,
   channelName: ChannelName,
-  loading: IsChannelLoading,
+  loading: boolean,
 }
 
 export type ChannelsLoadingAction = ActionSet;

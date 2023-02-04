@@ -3,7 +3,7 @@ import { BigButton } from '../../../common/menu-ui';
 import { showNotice } from '../../../../utils/notifications';
 import { API } from '../../../../api/api';
 import { actions } from '../../../../store';
-import { statisticsIcon } from '../../../../dicts/images';
+import statisticsIcon from '../../../../assets/images/dataset/statistics.png';
 
 
 /** Статистика по колонке из таблицы в БД. */

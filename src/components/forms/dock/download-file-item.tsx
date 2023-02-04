@@ -1,15 +1,36 @@
 import { CSSProperties, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { saveAs } from '@progress/kendo-file-saver';
-import { toDate } from '../../../utils/utils';
-import { filesDict, defaultFileIcon, importFileIcon } from '../../../dicts/images';
 import { API } from '../../../api/api';
+
+import importFileIcon from '../../../assets/images/download-files/import.png';
+import defaultFileIcon from '../../../assets/images/download-files/default.png';
+
+import csvFileIcon from '../../../assets/images/download-files/csv.png';
+import docFileIcon from '../../../assets/images/download-files/doc.png';
+import docxFileIcon from '../../../assets/images/download-files/docx.png';
+import xlsFileIcon from '../../../assets/images/download-files/xls.png';
+import xlsmFileIcon from '../../../assets/images/download-files/xlsm.png';
+import xlsxFileIcon from '../../../assets/images/download-files/xlsx.png';
+import xlsxmFileIcon from '../../../assets/images/download-files/xlsxm.png';
+import zipFileIcon from '../../../assets/images/download-files/zip.png';
 
 
 const extensions = [
   'csv', 'doc', 'docx', 'xls', 'xlsx', 'xlsm', 'xlsmx',
   'zip', 'ppt', 'pptx', 'txt', 'html', 'pdf'
 ];
+const filesDict: ImagesDict = {
+  'csv': csvFileIcon,
+  'doc': docFileIcon,
+  'docx': docxFileIcon,
+  'xls': xlsFileIcon,
+  'xlsx': xlsxFileIcon,
+  'xlsm': xlsmFileIcon,
+  'xlsxm': xlsxmFileIcon,
+  'zip': zipFileIcon,
+};
+
 const styleOk: CSSProperties = {color: '#0968c5', cursor: 'pointer', fontWeight: 'bold'};
 const styleError: CSSProperties = {color: 'gray'};
 const dateStyle: Intl.DateTimeFormatOptions = {timeStyle: 'short', dateStyle: 'long'};
@@ -36,7 +57,7 @@ export const DownloadFileItem = ({report}: {report: Report}) => {
   };
 
   const displayDate = useMemo(() => {
-    return toDate(rawDate).toLocaleString(undefined, dateStyle);
+    return new Date(rawDate).toLocaleString(undefined, dateStyle);
   }, [rawDate]);
 
   return (

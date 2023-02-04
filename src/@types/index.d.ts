@@ -49,6 +49,9 @@ type FormType = 'carat' | 'chart' | 'dataSet' | 'dock' | 'files' | 'filesList' |
 /** Число для сортировки каких-либо элементов. */
 type Order = number;
 
+type IconPath = string;
+type ImagesDict<Items extends string = string> = Record<Items, IconPath>;
+
 /* --- Fetch State --- */
 
 /** ## Состояние загружаемых данных.
