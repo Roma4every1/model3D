@@ -1,0 +1,57 @@
+#program-name {
+  font-size: 1.9rem;
+  font-weight: bold;
+  text-align: center;
+
+  margin: 0 1rem;
+  padding-bottom: 4px;
+}
+
+#system-list {
+  h2 {
+    padding: 0.1em 0.75em;
+  }
+
+  section {
+    display: grid;
+    grid-template-columns: calc(100% - 54px) 54px;
+    align-items: stretch;
+    border-top: 1px solid #e0cdcd;
+
+    img, .k-skeleton-rectangle {
+      width: 32px;
+      height: 32px;
+      margin: 0 12px;
+      border-radius: 4px;
+    }
+
+    > * {
+      display: flex;
+      align-items: center;
+      padding: 4px 0;
+
+      font-size: 1.1rem;
+      color: #4f4747;
+      transition: 0.2s;
+
+      &:hover {
+        background-color: #fff0eb;
+        text-decoration: none;
+      }
+    }
+  }
+
+  .system-name {
+    font-weight: bold;
+    font-size: 1.3rem;
+    color: #262323;
+  }
+  .system-id {
+    margin-left: 4px;
+    color: #727272;
+  }
+
+  .not-loaded {
+    font-size: 1.1rem;
+  }
+}

@@ -1,0 +1,14 @@
+.loading-status {
+  width: 100%;
+  height: 70%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.loading-status-text {
+  margin-top: 1rem;
+  font-size: 1.2rem;
+  font-style: italic;
+}

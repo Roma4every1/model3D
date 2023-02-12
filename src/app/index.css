@@ -1,0 +1,345 @@
+/* --- General --- */
+
+html {
+  font: 12px sans-serif;
+  margin: 0;
+}
+
+#root {
+  min-width: 100vw;
+  min-height: 100vh;
+}
+
+.font-10 {
+  font-size: 10px;
+}
+
+.k-icon-32 {
+  font-size: 32px;
+}
+
+.form-container {
+  height: 100%;
+  width: 100%;
+}
+
+.grid-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.grid-content {
+  height: 100%;
+  flex-grow: 1;
+  overflow-x: auto;
+}
+
+.k-treeview-item {
+  margin: 0;
+}
+
+.k-treeview-md .k-treeview-leaf {
+  padding: 2px 5px 2px 5px;
+}
+
+.grid-layout-container-true {
+  max-width: 800px;
+}
+
+.grid-layout-container-false {
+  max-width: 400px;
+}
+
+.windowhandler-text {
+  margin: 5px;
+  max-height: 60vh;
+  white-space: pre-wrap;
+}
+
+.windowhandler-stacktrace {
+  margin: 5px;
+  max-height: 60vh;
+  white-space: pre-wrap;
+}
+
+.reports-header {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 8px;
+}
+
+.report-item {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  grid-gap: 4px;
+  margin: 0 6px;
+  padding: 6px 0;
+  border-top: 1px solid #a7afb0;
+  cursor: default;
+}
+
+.k-expander-header {
+  padding: 4px;
+}
+
+.k-expander-title {
+  text-transform: none;
+  font-weight: 500;
+}
+
+.k-expander-content {
+  padding: 4px;
+}
+
+.map-container, .carat-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.map-container > canvas, .carat-container > canvas {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.map-container.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.map-not-found {
+  font-size: 1.5rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+.mapEditWindow .k-window-titlebar {
+  padding: 5px;
+}
+
+.mapEditWindow .k-window-title {
+  padding: 5px;
+  margin: 0;
+  height: 25px;
+  font-size: 16px;
+}
+
+.mapEditWindow .k-window-content {
+  padding: 5px;
+  overflow-y: hidden;
+  overflow-x: hidden;
+}
+
+.mapEditing {
+  width: 36px;
+  height: 36px;
+}
+
+.mapEditingHorSpace {
+  width: 36px;
+  height: 36px;
+  margin-left: 5px;
+}
+
+.propertiesWindow .k-window-titlebar {
+  padding: 5px;
+}
+
+.propertiesWindow .k-window-title {
+  padding: 5px;
+  margin: 0;
+  height: 25px;
+  font-size: 16px;
+}
+
+.propertiesWindow .k-window-content {
+  padding: 5px;
+  overflow-y: hidden;
+  overflow-x: hidden;
+}
+
+.k-colorpicker {
+  margin: 0;
+  padding: 0;
+  width: 70px;
+  height: 20px;
+}
+
+.k-colorpicker .k-color-preview {
+  width: 60px;
+  padding: 0;
+  margin-left: -2px;
+  margin-right: -4px;
+  margin-bottom: 11px;
+  height: 14px;
+}
+
+.k-colorpicker .k-icon .k-i-arrow-s {
+  width: 10px;
+}
+
+.attrTableBlock {
+  margin: 5px;
+}
+
+.attrTableLabel {
+  width: 45%;
+  height: 20px;
+}
+
+.attrTableEditor {
+  width: 45%;
+  height: 20px;
+}
+
+.horizontalHeader {
+  white-space: nowrap;
+}
+
+.horizontalFixed {
+  width: 25px;
+  display: inline-block;
+  vertical-align: middle;
+  margin: 5px;
+  white-space: normal;
+}
+
+.horizontal {
+  width: 85%;
+  display: inline-block;
+  vertical-align: middle;
+  margin: 5px;
+  white-space: normal;
+}
+
+.windowButtonContainer {
+  text-align: center;
+}
+.windowButton {
+  width: 200px;
+}
+
+.treeview {
+  font-size: 12px;
+}
+
+.presentation {
+  margin: 0 auto;
+  float: right;
+  height: 400px;
+}
+
+.k-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.blockheader {
+  width: 100%;
+  align-content: center;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.blockheadertoolbar {
+  height: 30px;
+  padding: 0;
+  padding-inline: 0;
+  padding-block: 0;
+}
+
+.parameter {
+  display: grid;
+  grid-template-columns: 110px calc(100% - 112px);
+  grid-gap: 2px;
+  align-items: center;
+
+  min-width: 200px;
+  padding: 2px;
+  border-top: 1px solid #f5f5f5;
+}
+.parameter > :first-child {
+  width: 110px;
+  font-size: 12px;
+  line-height: 1.2;
+}
+.parameter > :last-child {
+  font-size: 12px;
+  height: 20px;
+}
+
+.file-text-editor {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.file-text-editor > input {
+  display: none;
+}
+.file-text-editor > span {
+  font-size: 1.1em;
+  font-weight: bold;
+  padding-left: 4px;
+}
+.file-text-editor button {
+  padding: 0 4px 2px 6px;
+  height: 20px;
+}
+
+.k-clear-value, .k-combobox .k-input, .k-dropdown-wrap {
+  height: 100%;
+}
+
+.dropdown-popup {
+  max-height: 35vh;
+}
+
+.k-textbox, .k-dropdown .k-input, .k-dropdowntree .k-input, .k-datepicker, .k-dateinput, .k-numerictextbox .k-input {
+  height: 20px;
+}
+
+.k-grid {
+  font-size: 12px;
+}
+
+.k-grid .k-grid-edit-row td:not(.k-hierarchy-cell),
+.k-grid .k-grid-edit-row {
+  padding: 1px;
+}
+
+.k-grid td {
+  padding: 1px;
+}
+
+.k-grid-header .k-header {
+  height: 20px;
+  padding: 5px 30px 5px 5px;
+}
+
+th.k-header.active .k-grid-filter {
+  color: #fff;
+  background-color: #ff6358;
+}
+
+.k-dateinput {
+  float: right;
+  font-size: 12px;
+}
+
+.k-datepicker {
+  font-size: 12px;
+}
+
+.k-multicheck-wrap {
+  max-height: 20vh;
+}
+
+.popuptreeview {
+  font-size: 12px;
+  max-height: 60vh;
+}
