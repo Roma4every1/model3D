@@ -3,11 +3,6 @@ export const rootFormStateSelector = (state: WState): RootFormState => {
   return state.root;
 };
 
-/** ID главной формы. */
-export const rootFormIDSelector = (state: WState): FormID => {
-  return state.root.id;
-}
-
 /** ID активной презентации. */
 export const rootActiveChildIDSelector = (state: WState): FormID => {
   return state.root.activeChildID;
@@ -24,11 +19,21 @@ export const dockLayoutSelector = (state: WState): CommonLayout => {
 };
 
 /** Дерево презентаций. */
-export const presentationsTreeSelector = (state: WState): PresentationsTree => {
-  return state.root.presentationsTree;
+export const presentationTreeSelector = (state: WState): PresentationsTree => {
+  return state.root.presentationTree;
 };
 
-/** Настройки плагина `dateChanging`. */
-export const dateChangingSelector = (state: WState): DateChangingPlugin => {
-  return state.root.settings.dateChanging;
+/** Глобальные параметры. */
+export const globalParamsSelector = (state: WState): Parameter[] => {
+  return state.parameters[state.root.id];
+};
+
+/** Парамерты текущей презентации. */
+export const activeChildParamsSelector = (state: WState): Parameter[] => {
+  return state.parameters[state.root.activeChildID];
+};
+
+/** Список программ/отчётов текущей презентации. */
+export const activeChildReportsSelector = (state: WState): ReportInfo[] => {
+  return state.presentations[state.root.activeChildID].reports;
 };

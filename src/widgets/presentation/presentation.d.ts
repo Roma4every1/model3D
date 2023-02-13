@@ -1,5 +1,5 @@
 /** Состояние презентаций. */
-type PresentationsState = FormDict<PresentationState>;
+type PresentationDict = FormDict<PresentationState>;
 
 /** Состояние презентации.
  * + `id`: {@link FormID}
@@ -8,7 +8,7 @@ type PresentationsState = FormDict<PresentationState>;
  * + `children`: {@link FormDataWMR}[]
  * + `childrenTypes`: {@link FormType}[]
  * + `activeChildID`: {@link FormID}
- * + `programs`: {@link ProgramListData}
+ * + `reports`: {@link ReportInfo}[]
  * */
 interface PresentationState {
   /** ID презентации. */
@@ -23,8 +23,8 @@ interface PresentationState {
   childrenTypes: FormType[],
   /** Активная формы */
   activeChildID: FormID,
-  /** Список SQL-программ и отчётов. */
-  programs: ProgramListData,
+  /** Список программ и отчётов. */
+  reports: ReportInfo[],
 }
 
 /** Настройки формы **Grid**.

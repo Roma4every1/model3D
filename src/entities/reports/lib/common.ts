@@ -1,6 +1,6 @@
 import { Dispatch } from 'redux';
-import { programsAPI } from './programs.api';
-import { setReport } from '../store/reports/reports.actions';
+import { reportsAPI } from './reports.api';
+import { setReport } from '../store/reports.actions';
 import { ParamsGetter, fillParamValues } from 'entities/parameters';
 
 
@@ -12,7 +12,7 @@ export function watchReport(operationID: string, dispatch: Dispatch) {
 }
 
 async function getReportStatus(operationID, dispatch: Dispatch) {
-  const { ok, data } = await programsAPI.getOperationResult(operationID);
+  const { ok, data } = await reportsAPI.getOperationResult(operationID);
   if (ok && data) {
     dispatch(setReport(operationID, data.report));
     return data.isReady;
@@ -24,7 +24,7 @@ async function getReportStatus(operationID, dispatch: Dispatch) {
 
 /** Создаёт список программ/отчётов для презентации. */
 export async function createPrograms(params: ParamDict, rootID: FormID, id: FormID) {
-  const res = await programsAPI.getProgramsList(id);
+  const res = await reportsAPI.getPresentationReports(id);
   const programs = res.ok ? res.data : [];
 
   if (programs.length) {
@@ -36,8 +36,8 @@ export async function createPrograms(params: ParamDict, rootID: FormID, id: Form
   return programs;
 }
 
-async function getProgramVisibility(program: ProgramListItem, getter: ParamsGetter): Promise<boolean> {
+async function getProgramVisibility(program: ReportInfo, getter: ParamsGetter): Promise<boolean> {
   if (!program.needCheckVisibility) return true;
   const paramValues = getter(program.paramsForCheckVisibility);
-  return programsAPI.getProgramVisibility(program.id, paramValues);
+  return reportsAPI.getProgramVisibility(program.id, paramValues);
 }

@@ -40,7 +40,7 @@ const presentationListTab: [IJsonTabNode] = [
  * */
 export function getLeftPanelLayout(
   proto: LeftPanelLayout,
-  globalParams: FormParameter[], formParams: FormParameter[],
+  globalParams: Parameter[], formParams: Parameter[],
 ): Model {
   const children: IJsonTabSetNode[] = [];
   const { globalParamsHeight, formParamsHeight, treeHeight } = proto;
@@ -82,7 +82,7 @@ export function getLeftPanelLayout(
 }
 
 /** Вычисляет высоту компонента вкладки `ParametersList` по набору параметров. */
-function getParamsListHeight(params: FormParameter[]): number {
+function getParamsListHeight(params: Parameter[]): number {
   let height = TAB_STRIP_HEIGHT;
   for (const param of params) {
     if (!param.editorType) continue;

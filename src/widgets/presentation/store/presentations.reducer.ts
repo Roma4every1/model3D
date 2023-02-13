@@ -34,9 +34,9 @@ export type PresentationsAction = ActionSet | ActionSetLayout |
 
 /* --- Init State & Reducer --- */
 
-const init: PresentationsState = {};
+const init: PresentationDict = {};
 
-export const presentationsReducer = (state: PresentationsState = init, action: PresentationsAction): PresentationsState => {
+export const presentationsReducer = (state: PresentationDict = init, action: PresentationsAction): PresentationDict => {
   switch (action.type) {
 
     case PresentationsActions.SET: {

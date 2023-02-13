@@ -64,7 +64,7 @@ async function createRootFormState(): Promise<Omit<RootFormState, 'layout'> | st
   const { children, activeChildren: [activeChildID] } = resChildren.data;
 
   const settings = await createRootFormSettings(resSettings);
-  return {id, settings, presentationsTree, children, activeChildID};
+  return {id, settings, presentationTree: presentationsTree, children, activeChildID};
 }
 
 /** Создаёт объект настроек главной формы. */

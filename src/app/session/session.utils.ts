@@ -39,7 +39,7 @@ function getParametersToSave(formParams: ParamDict): FormParamsArray {
 
 /* --- Children --- */
 
-function getChildrenToSave(root: RootFormState, presentations: PresentationsState): FormChildrenState[] {
+function getChildrenToSave(root: RootFormState, presentations: PresentationDict): FormChildrenState[] {
   const childArray = Object.values(presentations).map(presentationStateToChildren);
   childArray.push({
     id: root.id,
@@ -73,7 +73,7 @@ function getSettingsToSave(formsSettings: FormsState): FormSettingsArray {
 
 /* --- Layout --- */
 
-function getLayoutsToSave(formsLayout: PresentationsState): FormLayoutArray {
+function getLayoutsToSave(formsLayout: PresentationDict): FormLayoutArray {
   const layoutArray: FormLayoutArray = [];
   for (const id in formsLayout) layoutArray.push({...formsLayout[id].layout, id});
   return layoutArray;

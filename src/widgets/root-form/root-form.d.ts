@@ -18,7 +18,7 @@ interface RootFormState {
   /** ID активной презентации. */
   activeChildID: FormID,
   /** Дерево презентаций. */
-  presentationsTree: PresentationsTree,
+  presentationTree: PresentationsTree,
 }
 
 /** Дерево презентаций. */

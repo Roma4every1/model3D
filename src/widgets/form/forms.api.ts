@@ -39,7 +39,7 @@ export class FormsAPI {
   /** Запрос параметров формы. */
   public async getFormParameters(formID: FormID) {
     const query = {sessionId: this.requester.sessionID, formId: formID};
-    const res = await this.request<FormParameter[]>({path: 'getFormParameters', query});
+    const res = await this.request<Parameter[]>({path: 'getFormParameters', query});
 
     if (res.ok) {
       res.data.forEach(handleParam.bind(formID));

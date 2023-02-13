@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@progress/kendo-react-buttons';
 import { showNotice } from 'entities/windows';
-import { programsAPI } from '../../reports/lib/programs.api';
+import { reportsAPI } from '../../reports/lib/reports.api';
 
 
 export const FileEditor = ({valueSelector, update}: EditorProps<ParamValueString>) => {
@@ -20,7 +20,7 @@ export const FileEditor = ({valueSelector, update}: EditorProps<ParamValueString
 
     const reader = new FileReader();
     reader.onload = async () => {
-      const { ok, data } = await programsAPI.uploadFile(file.name, reader.result);
+      const { ok, data } = await reportsAPI.uploadFile(file.name, reader.result);
       if (ok && data.endsWith(file.name)) return update(data);
       showNotice(dispatch, t('editors.file-upload-error'));
       update(t('base.error'))

@@ -32,7 +32,7 @@ const init: RootFormState = {
   settings: {dateChanging: null, parameterGroups: null},
   children: [],
   activeChildID: '',
-  presentationsTree: [],
+  presentationTree: [],
   layout: {
     left: {
       globalParamsHeight: 1,
@@ -54,15 +54,15 @@ export const rootFormReducer = (state: RootFormState = init, action: RootFormAct
 
     case RootFormActions.SET: {
       const newState = action.payload;
-      setActive(newState.presentationsTree, newState.activeChildID);
+      setActive(newState.presentationTree, newState.activeChildID);
       return {...newState, layout: state.layout};
     }
 
     case RootFormActions.SELECT_PRESENTATION: {
-      clearSelect(state.presentationsTree);
+      clearSelect(state.presentationTree);
       action.payload.selected = true;
-      const presentationsTree = [...state.presentationsTree];
-      return {...state, presentationsTree, activeChildID: action.payload.id};
+      const presentationsTree = [...state.presentationTree];
+      return {...state, presentationTree: presentationsTree, activeChildID: action.payload.id};
     }
 
     case RootFormActions.SET_LEFT_TAB_HEIGHT: {

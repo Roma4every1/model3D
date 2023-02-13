@@ -2,7 +2,7 @@ import { FormParamsAction, FormParamsActions } from './parameters.reducer';
 
 
 /** Установить набор параметров для указанной формы. */
-export const setParams = (formID: FormID, params: FormParameter[]): FormParamsAction => {
+export const setParams = (formID: FormID, params: Parameter[]): FormParamsAction => {
   return {type: FormParamsActions.SET, payload: {formID, params}};
 };
 
@@ -11,7 +11,7 @@ export const setParamDict = (dict: ParamDict): FormParamsAction => {
 };
 
 /** Добавить параметр для указанной формы. */
-export const addParam = (formID: FormID, parameter: FormParameter): FormParamsAction => {
+export const addParam = (formID: FormID, parameter: Parameter): FormParamsAction => {
   return {type: FormParamsActions.ADD, payload: {formID, parameter}};
 };
 

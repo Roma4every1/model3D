@@ -12,7 +12,7 @@ export enum FormParamsActions {
 
 interface ActionSet {
   type: FormParamsActions.SET,
-  payload: {formID: FormID, params: FormParameter[]}
+  payload: {formID: FormID, params: Parameter[]}
 }
 interface ActionSetDict {
   type: FormParamsActions.SET_DICT,
@@ -20,7 +20,7 @@ interface ActionSetDict {
 }
 interface ActionAdd {
   type: FormParamsActions.ADD,
-  payload: {formID: FormID, parameter: FormParameter},
+  payload: {formID: FormID, parameter: Parameter},
 }
 interface ActionUpdate {
   type: FormParamsActions.UPDATE,

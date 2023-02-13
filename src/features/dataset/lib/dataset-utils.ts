@@ -1,6 +1,6 @@
 import { ThunkDispatch } from 'redux-thunk';
+import { measureText } from 'shared/lib';
 import { insertRows, updateRows } from 'entities/channels';
-import calculateSize from 'calculate-size';
 
 
 interface TableColumnInfo {
@@ -25,15 +25,13 @@ export function getFilterByType(type: string | null | undefined): ColumnFilterTy
 
 /* --- --- --- */
 
-const textOptions = {font: 'Arial', fontSize: '14px'};
-
 export function getColumnWidth(header: string, field: string, rows: any[]): number {
-  let maxWidth = calculateSize(header, textOptions).width + 10;
+  let maxWidth = measureText(header) + 10;
   for (const row of rows) {
     let value = row[field];
     if (value instanceof Date) value = value.toLocaleDateString();
-    const size = calculateSize(value, textOptions);
-    if (size.width > maxWidth) maxWidth = size.width;
+    const size = measureText(value);
+    if (size > maxWidth) maxWidth = size;
   }
   return maxWidth + 20;
 }

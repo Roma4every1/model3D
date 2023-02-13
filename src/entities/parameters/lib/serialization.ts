@@ -1,5 +1,5 @@
 /** Убирает лишние свойста и сериализует значение параметра перед отправкой запроса на сервер. */
-export function serializeParameter(parameter: FormParameter): SerializedFormParameter {
+export function serializeParameter(parameter: Parameter): SerializedFormParameter {
   const type = parameter.type;
   const value = serializeParamValue(type, parameter.value);
   return {id: parameter.id, type, value};

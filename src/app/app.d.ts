@@ -5,7 +5,7 @@ interface WState {
   /** Состояние корневой формы. */
   root: RootFormState,
   /** Состояния презентаций. */
-  presentations: PresentationsState,
+  presentations: PresentationDict,
   /** Состояния форм. */
   forms: FormsState,
   /** Параметры форм. */
@@ -14,18 +14,16 @@ interface WState {
   channels: ChannelDict,
   /** Хранилище данных таблиц. */
   dataSets: TablesState,
-  /** Хранилище каротажных диаграмм. */
-  carats: CaratsState,
+  // /** Хранилище каротажных диаграмм. */
+  // carats: CaratsState,
   /** Хранилище карт. */
   maps: MapsState,
   /** Список активных отчётов и SQL-программ. */
-  reports: ReportsState,
+  reports: ReportDict,
   /** Окна и диалоги. */
   windowData: any,
   /** Состояние серверных запросов. */
   fetches: FetchesState,
-  /* --- Временное --- */
-  canRunReport: boolean,
 }
 
 /* --- --- --- */

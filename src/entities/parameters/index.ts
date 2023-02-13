@@ -1,7 +1,7 @@
-export type { ParametersListProps } from './components/parameters-list';
-export { ParametersList } from './components/parameters-list';
+export type { ParametersListProps } from './components/parameter-list';
+export { ParameterList } from './components/parameter-list';
 
-export type ParamsGetter = (ids: ParameterID[]) => FormParameter[];
+export type ParamsGetter = (ids: ParameterID[]) => Parameter[];
 export { handleParam, fillParamValues } from './lib/utils';
 export { serializeParameter } from './lib/serialization';
 

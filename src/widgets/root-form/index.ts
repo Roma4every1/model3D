@@ -1,4 +1,4 @@
-export { Dock } from './dock/dock';
+export { Dock } from './components/dock';
 
 export * from './store/root-form.thunks';
 export * from './store/root-form.actions';

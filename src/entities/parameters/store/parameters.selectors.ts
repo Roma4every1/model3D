@@ -3,7 +3,7 @@ import { stringToTableCell } from '../lib/table-row';
 
 
 /** Параметры конкретной формы; `this - formID`. */
-export function formParamsSelector(this: FormID, state: WState): FormParameter[] {
+export function formParamsSelector(this: FormID, state: WState): Parameter[] {
   return state.parameters[this];
 }
 

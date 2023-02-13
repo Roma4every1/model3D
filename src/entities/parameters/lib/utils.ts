@@ -2,7 +2,7 @@ import { getParsedParamValue } from './parsing';
 
 
 /** Обработка модели параметра после серверного запроса. */
-export function handleParam(this: FormID, parameter: FormParameter): void {
+export function handleParam(this: FormID, parameter: Parameter): void {
   parameter.formID = this;
   parameter.value = getParsedParamValue(parameter.type, parameter.value);
   if (!parameter.nullDisplayValue) parameter.nullDisplayValue = 'Нет значения';
@@ -17,7 +17,7 @@ export function handleParam(this: FormID, parameter: FormParameter): void {
  * fillParamValues(ids, storage, [rootID, presentationID]);
  * */
 export function fillParamValues(ids: ParameterID[], storage: ParamDict, clientsID: Iterable<FormID>) {
-  const result: FormParameter[] = [];
+  const result: Parameter[] = [];
   for (const id of ids) {
     for (const clientID of clientsID) {
       const clientParams = storage[clientID];

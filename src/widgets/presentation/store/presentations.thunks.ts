@@ -10,7 +10,7 @@ import { setParamDict } from 'entities/parameters';
 import { fetchFormsStart, fetchFormsEnd, fetchFormError } from 'entities/fetch-state';
 import { setPresentationState } from './presentations.actions';
 import { createMapState } from 'features/map/store/maps.actions';
-import { createCaratState } from 'features/carat/store/carats.actions';
+// import { createCaratState } from 'features/carat/store/carats.actions';
 import { setFormsState } from 'widgets/form/store/forms.actions';
 
 
@@ -33,7 +33,7 @@ export const fetchPresentationState = (id: FormID): Thunk => {
     const rootID = state.root.id;
 
     const programParamDict = {[rootID]: state.parameters[rootID], [id]: paramDict[id]};
-    presentation.programs = await createPrograms(programParamDict, rootID, id);
+    presentation.reports = await createPrograms(programParamDict, rootID, id);
 
     dispatch(fetchFormsStart(childrenID));
     dispatch(setPresentationState(presentation));
@@ -60,6 +60,6 @@ export const fetchPresentationState = (id: FormID): Thunk => {
 function applyCustomFormStates(dispatch: Dispatch, parentID: FormID, data: FormDataWMR[]) {
   for (const { id, type } of data) {
     if (type === 'map') dispatch(createMapState(id, parentID));
-    if (type === 'carat') dispatch(createCaratState(id));
+    // if (type === 'carat') dispatch(createCaratState(id));
   }
 }

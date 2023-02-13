@@ -58,7 +58,7 @@ export class ChannelsAPI {
   }
 
   /** Запрос данных канала. */
-  public async getChannelData(channelName: ChannelName, parameters: FormParameter[]) {
+  public async getChannelData(channelName: ChannelName, parameters: Parameter[]) {
     const sessionID = this.baseAPI.sessionID;
     const paramValues = parameters.map(serializeParameter);
     const body = JSON.stringify({sessionId: sessionID, channelName, paramValues});

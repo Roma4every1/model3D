@@ -17,13 +17,3 @@ export const displayedFormTypesSelector = (state: WState): FormType[] => {
 export function presentationStateSelector(this: FormID, state: WState): PresentationState {
   return state.presentations[this];
 }
-
-/** ID активного потомка формы; `this - formID`. */
-export function activeChildIDSelector(this: FormID, state: WState): FormID {
-  return state.presentations[this]?.activeChildID;
-}
-
-/** Список программ презентации; `this - formID`. */
-export function programsSelector(this: FormID, state: WState): ProgramListData {
-  return state.presentations[this]?.programs;
-}

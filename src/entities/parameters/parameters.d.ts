@@ -1,12 +1,5 @@
-/** Менеджер параметров. */
-interface ParamsManager {
-  getCanRunReport(formID: FormID): Promise<void>
-  getParameterValues(ids: ParameterID[], formID: FormID, addToLocal: any, channelName?: ChannelName): any
-  updateParamSet(formID: FormID, newParamValues: any): void
-}
-
 /** Словарь параметров. */
-type ParamDict = Record<string, FormParameter[]>;
+type ParamDict = Record<string, Parameter[]>;
 
 /** Идентификатор параметра формы. */
 type ParameterID = string;
@@ -16,7 +9,7 @@ type ParameterType = 'bool' | 'integer' | 'integerArray' | 'string' | 'stringArr
   'doubleInterval' | 'date' | 'dateInterval' | 'tableCell' | 'tableCellsArray' | 'tableRow';
 
 /** Параметр формы. */
-type FormParameter = ParamBool | ParamInteger | ParamIntegerArray | ParamString |
+type Parameter = ParamBool | ParamInteger | ParamIntegerArray | ParamString |
   ParamStringArray | ParamDouble | ParamDoubleInterval | ParamDate | ParamDateInterval |
   ParamTableRow | ParamTableCell | ParamCellsArray;
 

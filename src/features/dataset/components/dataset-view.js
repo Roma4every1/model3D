@@ -1,24 +1,22 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useStore, useSelector, useDispatch } from 'react-redux';
 import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
 import { Grid, GridColumn, GridColumnMenuFilter } from '@progress/kendo-react-grid';
 import { getSelectedState, getSelectedStateFromKeyDown } from '@progress/kendo-react-grid';
 
-import { ColumnMenu } from './column-menu';
 import { SecondLevelTable } from './second-level-table';
 import { DataSetEditToolbar } from './dataset-edit-toolbar';
 import { DeleteRowsDialog } from './delete-rows-dialog';
 import { CellRender } from './renderers';
 
 import { getFilterByType, getColumnWidth, apply } from '../lib/dataset-utils';
-import { getParentFormId, tableRowToString, compareObjects } from '../../../shared/lib';
-import { filterOperators, /*filterOperations*/ } from '../lib/constants';
-import { sessionManager, paramsManager } from '../../../app/store';
+import { getParentFormId, compareObjects } from '../../../shared/lib';
+import { tableRowToString } from '../../../entities/parameters/lib/table-row';
 import { formSettingsSelector, setFormSettings } from '../../../widgets/form';
-import { addParam, updateParam } from '../../../entities/parameters';
+import { updateParam, fillParamValues } from '../../../entities/parameters';
 import { deleteRows } from '../../../entities/channels';
 import { setOpenedWindow } from '../../../entities/windows';
-import { programsAPI } from '../../../entities/reports/lib/programs.api';
+import { reportsAPI } from '../../../entities/reports/lib/reports.api';
 import { watchReport } from '../../../entities/reports';
 
 const DATA_ITEM_KEY = 'js_id';
@@ -93,6 +91,7 @@ const getEditor = (column, properties, formID, dispatch) => {
 };
 
 function DataSetView_(props, ref) {
+  const store = useStore();
   const dispatch = useDispatch();
   const { getRow, reload, channelName, inputTableData, formData } = props;
 
@@ -115,88 +114,6 @@ function DataSetView_(props, ref) {
   const [editID, setEditID] = useState(null);
   const [selectedState, setSelectedState] = useState({});
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-
-  // useEffect(() => {
-  //   if (!inputTableData.properties) return;
-  //   let neededParamArray = { channelName, params: [] };
-  //   inputTableData.properties.forEach(prop => {
-  //     const id = prop.name + 'ConditionFilterObject';
-  //     neededParamArray.params.push({id, type: 'condition', value: null});
-  //   });
-  //   dispatch(addParamSet(neededParamArray));
-  // }, [channelName, inputTableData.properties, dispatch]);
-
-  useEffect(() => {
-    const maxRowCountElement = {id: 'maxRowCount', type: 'integer', value: null};
-    //const sortOrder = {id: 'sortOrder', type: 'sortOrder', value: null}
-    dispatch(addParam(channelName, maxRowCountElement));
-    //dispatch(addParam(channelName, sortOrder));
-  }, [channelName, dispatch]);
-
-  // useEffect(() => {
-  //   if (!dataState) return;
-  //   let neededParamArray = [];
-  //
-  //   if (!dataState.sort) {
-  //     neededParamArray.push({name: "sortOrder", value: null});
-  //   } else {
-  //     const newValue = dataState.sort.map((el) => {
-  //       let field = el.field;
-  //       if (inputTableData.properties) {
-  //         const property = inputTableData.properties.find(o => o.name === el.field);
-  //         field = property.fromColumn ?? property.name;
-  //       }
-  //       return `${field} ${el.dir}`;
-  //     }).join(',');
-  //     neededParamArray.push({name: "sortOrder", value: newValue});
-  //   }
-  //
-  //   if (dataState.filter) {
-  //     dataState.filter.filters.forEach(flt => {
-  //       let filterValue = `<${flt.logic}>`;
-  //       let fieldName = flt.filters[0].field;
-  //       let col = inputTableData.columnsJSON.find(c => c.field === fieldName);
-  //       flt.filters.forEach(filter => {
-  //         const operation = filterOperations[filter.operator] || 'equal';
-  //         let center = '';
-  //         let fieldFilter = filter.value;
-  //         if (col.lookupData) {
-  //           fieldFilter = col.lookupData.find(ld => ld.value === fieldFilter).id;
-  //         } else switch (col.netType) {
-  //           case "System.DateTime":
-  //             if (typeof fieldFilter === 'string') {
-  //               fieldFilter = new Date(fieldFilter);
-  //               filter.value = fieldFilter;
-  //             }
-  //             break;
-  //           case "System.Decimal":
-  //           case "System.Double":
-  //           case "System.Int32":
-  //           case "System.Int64":
-  //             if (typeof fieldFilter === 'string') {
-  //               fieldFilter = Number(fieldFilter.replace(',', '.'));
-  //             }
-  //             break;
-  //           default: {}
-  //         }
-  //         if (!operation.includes('Null')) {
-  //           center = `<netType typeName="${col.netType}" value="${fieldFilter}"/>`
-  //         }
-  //         filterValue += `<${operation}>${center}</${operation}>`;
-  //       });
-  //       filterValue += `</${flt.logic}>`;
-  //       neededParamArray.push({ name: fieldName + "ConditionFilterObject", value: filterValue });
-  //     });
-  //   }
-  //   inputTableData.columnsJSON.forEach((c) => {
-  //     let needClear = (!dataState.filter) || !dataState.filter.filters
-  //       .some(flt => flt.filters[0].field === c.field);
-  //     if (needClear) {
-  //       neededParamArray.push({ name: c.field + "ConditionFilterObject", value: null });
-  //     }
-  //   });
-  //   dispatch(updateParamSet(channelName, neededParamArray));
-  // }, [dataState, channelName, inputTableData, dispatch]);
 
   const onDataStateChange = (event) => {
     setDataState(event.dataState);
@@ -226,8 +143,9 @@ function DataSetView_(props, ref) {
   };
 
   const excelExport = async () => {
-    const dataD = sessionManager.channelsManager.getAllChannelParams(channelName);
-    const paramValues = paramsManager.getParameterValues(dataD, formID, false, channelName);
+    const { parameters } = store.getState();
+    const channelInfo = inputTableData.databaseData.info;
+    const paramValues = fillParamValues(channelInfo.parameters, parameters, channelInfo.clients);
 
     let settings = tableSettings?.columns;
     if (settings) {
@@ -244,7 +162,7 @@ function DataSetView_(props, ref) {
       paramName: formData.displayName,
       presentationId: getParentFormId(formID),
     };
-    const { ok, data } = await programsAPI.exportToExcel(exportData);
+    const { ok, data } = await reportsAPI.exportToExcel(exportData);
     if (ok) watchReport(data.OperationId, dispatch);
   };
 
@@ -507,15 +425,6 @@ function DataSetView_(props, ref) {
       ? columnSetting.width
       : getColumnWidth(header, field, rows);
 
-    const ColumnMenuComponent = (props) => {
-      return (
-        <ColumnMenu
-          {...props}
-          tableColumn={column} formId={formID} activeChannelName={channelName}
-        />
-      );
-    };
-
     const isActive = GridColumnMenuFilter.active(field, dataState.filter);
     const format = netType && netType.endsWith('DateTime') ? '{0:d}' : null;
     const filter = getFilterByType(netType);
@@ -525,10 +434,9 @@ function DataSetView_(props, ref) {
         key={field} field={field} title={header} width={width} locked={column.locked}
         headerClassName={isActive ? 'active' : undefined}
         format={format} filter={filter}
-        columnMenu={ColumnMenuComponent}
       />
     );
-  }, [tableSettings, dataState, channelName, formID]);
+  }, [tableSettings, dataState]);
 
   const gridColumns = useMemo(() => {
     return getGridColumns(tableData, drawColumn, tableColumnGroupSettings);
@@ -559,7 +467,6 @@ function DataSetView_(props, ref) {
           selectable={{drag: true}}
           resizable={true} sortable={true} navigatable={true}
           fixedScroll={true} scrollable={'virtual'}
-          filterOperators={filterOperators}
           onColumnResize={onColumnResize}
           onDataStateChange={onDataStateChange}
           cellRender={customCellRender}
