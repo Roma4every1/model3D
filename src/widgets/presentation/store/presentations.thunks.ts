@@ -11,7 +11,7 @@ import { fetchFormsStart, fetchFormsEnd, fetchFormError } from 'entities/fetch-s
 import { setPresentationState } from './presentations.actions';
 import { createMapState } from 'features/map/store/maps.actions';
 // import { createCaratState } from 'features/carat/store/carats.actions';
-import { setFormsState } from 'widgets/form/store/forms.actions';
+import { setFormsState } from 'widgets/presentation/store/forms.actions';
 
 
 /** Инициализация презентации. */

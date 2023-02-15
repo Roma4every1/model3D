@@ -1,4 +1,4 @@
-import { MouseEvent, useState, useEffect, useCallback, useRef } from 'react';
+import { MouseEvent, useState, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { InputChangeEvent, Input, Checkbox } from '@progress/kendo-react-inputs';
@@ -53,25 +53,25 @@ export const LayersTreeLayer = ({layer, mapState, formID}: LayersTreeLayerProps)
     setInitHighScale(layer.highscale);
   }, [layer]);
 
-  const onLowScaleChange = useCallback((e: InputChangeEvent) => {
+  const onLowScaleChange = (e: InputChangeEvent) => {
     setLowScale(e.value);
-  }, []);
+  };
 
-  const onHighScaleChange = useCallback((e: InputChangeEvent) => {
+  const onHighScaleChange = (e: InputChangeEvent) => {
     setHighScale(e.value);
-  }, []);
+  };
 
-  const setExpandedState = useCallback(() => {
+  const setExpandedState = () => {
     setExpanded(!expanded)
-  }, [expanded]);
-  const setInfinity = useCallback(() => {
+  };
+  const setInfinity = () => {
     setHighScale(t('base.infinitySign'))
-  }, [t]);
-  const onPopupOpen = useCallback(() => {
+  };
+  const onPopupOpen = () => {
     menuWrapperRef.current.querySelector("[tabindex]").focus()
-  }, []);
+  };
 
-  const onChecked = useCallback(() => {
+  const onChecked = () => {
     layer.visible = !checked;
     setChecked(!checked);
     if (!layer.visible && selected) {
@@ -79,9 +79,9 @@ export const LayersTreeLayer = ({layer, mapState, formID}: LayersTreeLayerProps)
       setSelected(false);
     }
     utils.updateCanvas();
-  }, [checked, selected, layer, utils, dispatch, formID]);
+  };
 
-  const setSelectedState = useCallback(() => {
+  const setSelectedState = () => {
     if (selected) {
       dispatch(setActiveLayer(formID, null));
     } else {
@@ -89,9 +89,9 @@ export const LayersTreeLayer = ({layer, mapState, formID}: LayersTreeLayerProps)
       if (!checked) onChecked();
     }
     setSelected(!selected);
-  }, [selected, layer, onChecked, checked, dispatch, formID]);
+  };
 
-  const applyLayerScales = useCallback(() => {
+  const applyLayerScales = () => {
     const newLowScale = parseInt(lowScale);
     const newHighScale = highScale === t('base.infinitySign') ? 'INF' : parseInt(highScale);
 
@@ -104,42 +104,42 @@ export const LayersTreeLayer = ({layer, mapState, formID}: LayersTreeLayerProps)
       setInitHighScale(newHighScale);
     }
     utils.updateCanvas();
-  }, [layer, lowScale, highScale, utils, t]);
+  };
 
-  const rollbackLayerScales = useCallback(() => {
+  const rollbackLayerScales = () => {
     layer.lowscale = initLowScale;
     layer.highscale = initHighScale;
     setLowScale(initLowScale.toString());
     setHighScale(initHighScale === 'INF' ? t('base.infinitySign') : initHighScale.toString());
     utils.updateCanvas();
-  }, [layer, initLowScale, initHighScale, utils, t]);
+  };
 
-  const onMenuSelect = useCallback((e: MenuSelectEvent) => {
+  const onMenuSelect = (e: MenuSelectEvent) => {
     if (e.item.text === t('base.statistics')) {
       const window = <LayerStatisticsWindow header={layer.name} key={'layerStatWindow'} layer={layer}/>;
       dispatch(setOpenedWindow('layerStatWindow', true, window));
     }
     setMenuOpen(false);
-  }, [layer, t, dispatch]);
+  };
 
-  const onContextMenu = useCallback((e: MouseEvent) => {
+  const onContextMenu = (e: MouseEvent) => {
     setOffset({ left: e.clientX, top: e.clientY });
     setMenuOpen(true);
     e.preventDefault();
-  }, []);
+  };
 
   return (
     <div className={'map-layer'}>
       <div className={'map-layer-header' + (selected ? ' selected' : '')} onContextMenu={onContextMenu}>
         <Checkbox value={checked} onChange={onChecked} />
         <span onClick={setSelectedState}>{layer.name}</span>
-        <button className="k-button k-button-clear" onClick={setExpandedState} title={t('map.layerVisibilityControl')}>
-          <span className="k-icon k-i-gear" />
+        <button className={'k-button k-button-clear'} onClick={setExpandedState} title={t('map.layerVisibilityControl')}>
+          <span className={'k-icon k-i-gear'}/>
         </button>
         <Popup popupClass={'popup-content'} offset={offset} show={menuOpen} onOpen={onPopupOpen}>
           <div ref={menuWrapperRef} onBlur={() => setMenuOpen(false)}>
             <Menu vertical={true} style={{display: 'inline-block'}} onSelect={onMenuSelect}>
-              <MenuItem key="statistics" text={t('base.statistics')} />
+              <MenuItem text={t('base.statistics')} />
             </Menu>
           </div>
         </Popup>

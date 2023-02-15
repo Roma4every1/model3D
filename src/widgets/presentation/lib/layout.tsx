@@ -1,7 +1,7 @@
 import { IGlobalAttributes } from 'flexlayout-react/declarations/model/IJsonModel';
 import { IJsonModel, IJsonRowNode } from 'flexlayout-react/declarations/model/IJsonModel';
 import { IJsonTabNode, IJsonTabSetNode } from 'flexlayout-react/declarations/model/IJsonModel';
-import { Form } from 'widgets/form';
+import { Form } from '../components/form';
 import { FormName } from '../components/form-name';
 
 

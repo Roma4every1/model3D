@@ -7,7 +7,7 @@ export type StateGetter = () => WState;
 export type Thunk<Result = void> = (dispatch: Dispatch, getState?: StateGetter) => Promise<Result>;
 
 
-export { measureText } from './layout';
+export { measureText, getTextLinesCount } from './layout';
 export { compareObjects, compareArrays, setUnion, leftAntiJoin } from './common';
 export { API, BaseAPI } from './api';
 

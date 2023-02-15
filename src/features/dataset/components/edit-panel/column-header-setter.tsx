@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { formParamValueSelector } from 'entities/parameters';
 import { stringToTableCell } from 'entities/parameters/lib/table-row';
-import { formSettingsSelector } from 'widgets/form';
-import { formsAPI } from 'widgets/form/forms.api';
+import { formSettingsSelector } from 'widgets/presentation';
+import { formsAPI } from 'widgets/presentation/lib/forms.api';
 
 
 interface ColumnHeaderSetterProps {

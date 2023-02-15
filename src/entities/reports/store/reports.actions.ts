@@ -7,6 +7,6 @@ export const setReport = (operationID: any, value: any): ReportsAction => {
 };
 
 /** Очистить репорты для презентации. */
-export const clearReports = (presentationID: any): ReportsAction => {
+export const clearReports = (presentationID: FormID | null): ReportsAction => {
   return {type: ReportsActions.CLEAR, presentationID};
 };

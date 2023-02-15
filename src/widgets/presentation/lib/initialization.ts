@@ -2,9 +2,8 @@ import { setUnion, leftAntiJoin } from 'shared/lib';
 import { createChannels, applyEditorColumnNames } from 'entities/channels';
 import { addExternalChannels, addLinkedChannels } from 'entities/channels';
 import { handleLayout } from './layout';
-import { getFormTypes } from './utils';
 import { applyDisplayNamePattern } from './display-name-string';
-import { formsAPI } from 'widgets/form/forms.api';
+import { formsAPI } from 'widgets/presentation/lib/forms.api';
 
 
 /** Создаёт состояние презентации. */
@@ -28,7 +27,7 @@ export async function createPresentationState(id: FormID): Promise<PresentationS
   return {
     id, settings, layout, children,
     activeChildID: activeChildren[0],
-    childrenTypes: getFormTypes(children),
+    childrenTypes: new Set(children.map(child => child.type)),
     reports: [],
   };
 }

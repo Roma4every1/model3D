@@ -13,10 +13,10 @@ interface LayersTreeElementProps {
 export const LayersTreeElement = ({item, mapState, formID}: LayersTreeElementProps) => {
   const [expanded, setExpanded] = useState(false);
 
-  const mapItems = (item: LayerTreeItem) => {
+  const itemToElement = (item: LayerTreeItem, i: number) => {
     return item.items
-      ? <LayersTreeElement key={item.text} item={item} mapState={mapState} formID={formID} />
-      : <LayersTreeLayer key={item.text} layer={item.sublayer} mapState={mapState} formID={formID} />
+      ? <LayersTreeElement key={i} item={item} mapState={mapState} formID={formID} />
+      : <LayersTreeLayer key={i} layer={item.sublayer} mapState={mapState} formID={formID} />
   };
 
   return (
@@ -25,7 +25,7 @@ export const LayersTreeElement = ({item, mapState, formID}: LayersTreeElementPro
       title={item.text} tabIndex={0}
       onAction={() => {setExpanded(!expanded)}}
     >
-      {expanded && <ExpansionPanelContent>{item.items?.map(mapItems)}</ExpansionPanelContent>}
+      {expanded && <ExpansionPanelContent>{item.items?.map(itemToElement)}</ExpansionPanelContent>}
     </ExpansionPanel>
   );
 };

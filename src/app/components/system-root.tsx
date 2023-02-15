@@ -4,9 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSystemName } from '../store/app-state/app.actions';
 import { appStateSelector } from '../store/app-state/app.selectors';
+import { startSession } from '../store/root-form/root-form.thunks';
 import { stateNeedFetch, stateNotLoaded, sessionFetchStateSelector } from 'entities/fetch-state';
 
-import { Dock, startSession } from 'widgets/root-form';
+import { Dock } from './dock';
 import { LoadingStatus } from './loading-status';
 import { WindowHandler } from 'entities/windows/window-handler';
 
@@ -53,7 +54,7 @@ export const SystemRoot = () => {
     }
   }, [isNeedStartSession, searchParams, setSearchParams, dispatch]);
 
-  if (fetchState?.ok) return <><Dock/><WindowHandler/></>;
+  if (fetchState?.ok) return <><Dock config={config}/><WindowHandler/></>;
 
   if (config === null) {
     return <LoadingStatus loadingType={'systems'}/>;

@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { MenuSkeleton, MenuSection, BigButtonToggle } from 'shared/ui';
 import { DropDownList, DropDownListChangeEvent } from '@progress/kendo-react-dropdowns';
-import { formSettingsSelector, setSettingsField } from 'widgets/form';
+import { formSettingsSelector, setSettingsField } from 'widgets/presentation';
 import chartTooltipIcon from 'assets/images/chart/tooltip.png';
 
 

@@ -1,6 +1,6 @@
 import { CSSProperties } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { formSettingsSelector, setFormSettings } from 'widgets/form';
+import { formSettingsSelector, setFormSettings } from 'widgets/presentation';
 import { formRefValueSelector } from '../../store/datasets.selectors';
 
 

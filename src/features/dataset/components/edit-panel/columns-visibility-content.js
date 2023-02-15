@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { TreeView, processTreeViewItems, handleTreeViewCheckChange } from '@progress/kendo-react-treeview';
-import { formSettingsSelector, setFormSettings } from '../../../../widgets/form';
+import { formSettingsSelector, setFormSettings } from '../../../../widgets/presentation';
 import { formRefValueSelector } from '../../store/datasets.selectors';
 
 

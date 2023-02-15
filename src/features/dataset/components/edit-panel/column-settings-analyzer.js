@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ColumnSettingsAnalyzerItem from './column-settings-analyzer-item';
-import { formsAPI } from '../../../../widgets/form/forms.api';
+import { formsAPI } from '../../../../widgets/presentation/lib/forms.api';
 
 
 export const ColumnSettingsAnalyzer = ({formID}) => {

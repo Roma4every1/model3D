@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { formSettingsSelector, setFormSettings } from '../../../../widgets/form';
+import { formSettingsSelector, setFormSettings } from '../../../../widgets/presentation';
 import { formParamValueSelector } from '../../../../entities/parameters';
 import { stringToTableCell } from '../../../../entities/parameters/lib/table-row';
 

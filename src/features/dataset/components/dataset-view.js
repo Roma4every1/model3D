@@ -12,7 +12,7 @@ import { CellRender } from './renderers';
 import { getFilterByType, getColumnWidth, apply } from '../lib/dataset-utils';
 import { getParentFormId, compareObjects } from '../../../shared/lib';
 import { tableRowToString } from '../../../entities/parameters/lib/table-row';
-import { formSettingsSelector, setFormSettings } from '../../../widgets/form';
+import { formSettingsSelector, setFormSettings } from '../../../widgets/presentation';
 import { updateParam, fillParamValues } from '../../../entities/parameters';
 import { deleteRows } from '../../../entities/channels';
 import { setOpenedWindow } from '../../../entities/windows';

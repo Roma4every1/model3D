@@ -1,12 +1,12 @@
 import thunk from 'redux-thunk';
 import { Reducer } from 'redux';
 import { combineReducers, createStore, applyMiddleware } from 'redux';
-import { createSessionManager } from '../session/session-manager';
+import { createSessionManager } from '../lib/session-manager';
 
 import { appReducer } from './app-state/app.reducer';
-import { rootFormReducer } from 'widgets/root-form/store/root-form.reducer';
+import { rootFormReducer } from 'app/store/root-form/root-form.reducer';
 import { presentationsReducer } from 'widgets/presentation/store/presentations.reducer';
-import { formsReducer } from 'widgets/form/store/forms.reducer';
+import { formsReducer } from 'widgets/presentation/store/forms.reducer';
 import { parametersReducer } from 'entities/parameters/store/parameters.reducer';
 import { channelsReducer } from 'entities/channels/store/channels.reducer';
 import { datasetsReducer } from 'features/dataset/store/datasets.reducer';

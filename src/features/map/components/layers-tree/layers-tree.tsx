@@ -9,7 +9,7 @@ const getGroupForTree = (sublayer: MapLayer): LayerTreeItem => {
   const visible = typeof sublayer.visible === 'string' ? (sublayer.visible !== '0') : sublayer.visible;
   return {id: sublayer.uid, text: sublayer.name, sublayer, visible};
 };
-const getLayersTree = (sublayers: MapLayer[]): LayerTreeItem[] => {
+const getTreeItems = (sublayers: MapLayer[]): LayerTreeItem[] => {
   const tree: LayerTreeItem[] = [];
   if (sublayers) {
     sublayers.forEach(sublayer => {
@@ -34,17 +34,17 @@ const getLayersTree = (sublayers: MapLayer[]): LayerTreeItem[] => {
   return tree;
 }
 
-export const MapLayersTree = ({formID}: PropsFormID) => {
+export const MapLayerTree = ({formID}: PropsFormID) => {
   const mapState: MapState = useSelector(mapStateSelector.bind(formID));
-  const sublayers = mapState?.mapData?.layers;
+  const layers = mapState?.mapData?.layers;
 
-  const layersTree = useMemo(() => {
-    return getLayersTree(sublayers);
-  }, [sublayers]);
+  const treeItems = useMemo(() => {
+    return getTreeItems(layers);
+  }, [layers]);
 
-  const mapLayersTree = (item: LayerTreeItem, index: number) => {
-    return <LayersTreeElement key={index} item={item} mapState={mapState} formID={formID}/>;
+  const itemToElement = (item: LayerTreeItem, i: number) => {
+    return <LayersTreeElement key={i} item={item} mapState={mapState} formID={formID}/>;
   };
 
-  return <div className={'wrapper'}>{layersTree.map(mapLayersTree)}</div>;
+  return <div className={'wrapper'}>{treeItems.map(itemToElement)}</div>;
 };

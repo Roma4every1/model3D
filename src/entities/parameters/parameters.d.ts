@@ -8,6 +8,14 @@ type ParameterID = string;
 type ParameterType = 'bool' | 'integer' | 'integerArray' | 'string' | 'stringArray' | 'double' |
   'doubleInterval' | 'date' | 'dateInterval' | 'tableCell' | 'tableCellsArray' | 'tableRow';
 
+/** Группа параметров. */
+interface ParameterGroup {
+  /** ID который содержат параметры в поле `group`. */
+  code: string,
+  /** Название группы. */
+  displayName: DisplayName,
+}
+
 /** Параметр формы. */
 type Parameter = ParamBool | ParamInteger | ParamIntegerArray | ParamString |
   ParamStringArray | ParamDouble | ParamDoubleInterval | ParamDate | ParamDateInterval |

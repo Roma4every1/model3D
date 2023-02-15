@@ -1,0 +1,58 @@
+import { Model, Layout, TabNode } from 'flexlayout-react';
+import { useMemo } from 'react';
+import { useSelector } from 'react-redux';
+import { i18nMapper } from 'shared/locales';
+import { getDockLayout } from '../lib/dock-layout';
+import { rootStateSelector, presentationSelector } from '../store/root-form/root-form.selectors';
+
+import { Presentation } from 'widgets/presentation';
+import { LeftPanel } from 'widgets/left-panel';
+import { ActiveReports, RightTab } from 'widgets/right-panel';
+import { MainMenu, PresentationReports, FormPanel } from 'widgets/top-panel';
+
+
+/** Главная форма. */
+export const Dock = ({config}: {config: ClientConfiguration}) => {
+  const rootState = useSelector(rootStateSelector);
+  const presentation = useSelector(presentationSelector);
+
+  const activeID = rootState.activeChildID;
+  const { common: dockLayout, left: leftLayout } = rootState.layout;
+
+  const reports = presentation?.reports;
+  const formTypes = presentation?.childrenTypes;
+
+  const model = useMemo<Model>(() => {
+    return getDockLayout(formTypes, dockLayout);
+  }, [formTypes, dockLayout]);
+
+  const onModelChange = (model: Model) => {
+    const [topBorder, rightBorder] = model.getBorderSet().getBorders();
+    dockLayout.topPanelHeight = topBorder.getSize();
+    dockLayout.leftPanelWidth = model.getNodeById('left').getRect().width;
+    dockLayout.rightPanelWidth = rightBorder.getSize();
+    dockLayout.selectedTopTab = topBorder.getSelected();
+    dockLayout.selectedRightTab = rightBorder.getSelected();
+  };
+
+  const factory = (node: TabNode) => {
+    const id = node.getId();
+    if (id === 'left') return <LeftPanel rootState={rootState}/>;
+
+    if (id === 'menu') return <MainMenu leftLayout={leftLayout} config={config}/>;
+    if (id === 'reports') return <PresentationReports id={activeID} reports={reports}/>;
+    if (id.startsWith('top')) return <FormPanel panelID={id} presentation={presentation}/>;
+
+    if (id === 'right-dock') return <ActiveReports activeID={activeID}/>;
+    if (id.startsWith('right')) return <RightTab presentation={presentation}/>;
+
+    return <Presentation id={activeID} state={presentation}/>;
+  };
+
+  return (
+    <Layout
+      model={model} factory={factory}
+      onModelChange={onModelChange} i18nMapper={i18nMapper}
+    />
+  );
+};

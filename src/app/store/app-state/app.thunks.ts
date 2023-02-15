@@ -1,5 +1,6 @@
 import { Dispatch } from 'redux';
 import { API } from 'shared/lib';
+import { appAPI } from '../../lib/app.api';
 import { createClientConfig, getAppLocation } from '../../lib/initialization';
 import { setInitResult } from './app.actions';
 
@@ -11,7 +12,7 @@ export async function initialize(dispatch: Dispatch) {
   API.setBase(config.webServicesURL);
   API.setRoot(config.root);
 
-  const systemList = await getSystemList();
+  const systemList = await appAPI.getSystemList();
   dispatch(setInitResult(config, systemList));
 }
 
@@ -25,12 +26,4 @@ async function getClientConfig(): Promise<unknown> {
   catch (e) {
     return null;
   }
-}
-
-/** Запрос списка доступных систем. */
-async function getSystemList(): Promise<SystemWMR[] | null> {
-  const { ok, data } = await API.request<any[]>({path: 'systemList'});
-  return ok && Array.isArray(data)
-    ? data.map((rawSystem) => ({id: rawSystem['Name'], ...rawSystem['Attributes']}))
-    : null;
 }

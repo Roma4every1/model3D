@@ -1,5 +1,5 @@
 /** Состояние презентаций. */
-type PresentationDict = FormDict<PresentationState>;
+type PresentationDict = Record<FormID, PresentationState>;
 
 /** Состояние презентации.
  * + `id`: {@link FormID}
@@ -20,7 +20,7 @@ interface PresentationState {
   /** Дочерние формы. */
   children: FormDataWMR[],
   /** Список всех типов форм внутри презентации. */
-  childrenTypes: FormType[],
+  childrenTypes: Set<FormType>,
   /** Активная формы */
   activeChildID: FormID,
   /** Список программ и отчётов. */

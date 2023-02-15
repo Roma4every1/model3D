@@ -58,5 +58,14 @@ interface SystemWMR {
   description: string,
 }
 
-/** ID текущей системы. */
+/** ID системы. */
 type SystemID = string;
+
+/* --- Session Manager --- */
+
+interface SessionManager {
+  startSession(isDefault?: boolean): Promise<Res<SessionID>>
+  stopSession(): Promise<void>
+  saveSession(): Promise<void>
+  loadSessionByDefault(): Promise<void>
+}

@@ -3,7 +3,7 @@ import { Thunk, StateGetter } from 'shared/lib';
 import { setWindowWarning } from 'entities/windows';
 import { setChannels, fillChannels } from 'entities/channels';
 import { createClientChannels } from '../../../widgets/presentation/lib/initialization';
-import { formsAPI } from 'widgets/form/forms.api';
+import { formsAPI } from 'widgets/presentation/lib/forms.api';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
 import { addReportParams } from '../lib/report-params';
 

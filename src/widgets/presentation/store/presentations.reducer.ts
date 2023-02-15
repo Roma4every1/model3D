@@ -1,5 +1,4 @@
 import { IJsonModel } from 'flexlayout-react';
-import { getFormTypes } from '../lib/utils';
 
 /* --- Action Types --- */
 
@@ -50,7 +49,7 @@ export const presentationsReducer = (state: PresentationDict = init, action: Pre
 
     case PresentationsActions.SET_CHILDREN: {
       const { id, children } = action.payload;
-      const childrenTypes = getFormTypes(children);
+      const childrenTypes = new Set(children.map(child => child.type));
       const activeChildID = children[0].id;
       return {...state, [id]: {...state[id], children, activeChildID, childrenTypes}};
     }
