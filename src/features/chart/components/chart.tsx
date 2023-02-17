@@ -22,7 +22,7 @@ export const Chart = ({channels, settings}: FormState) => {
   if (proto.diagrams.length === 0) return <EmptyChart/>;
 
   return (
-    <ResponsiveContainer>
+    <ResponsiveContainer width='100%' height='99%'>
       <ComposedChart data={proto.data} margin={chartMargin} style={chartStyle} barGap={1}>
         {tooltip && <Tooltip/>}
         <Legend verticalAlign={'top'} payload={proto.legend}/>

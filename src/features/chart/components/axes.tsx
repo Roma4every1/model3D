@@ -1,13 +1,18 @@
+import {AxisDomain, AxisInterval} from "recharts/types/util/types";
+
 export interface YAxisProps {
   key: string,
   yAxisId: string,
   label: YAxisPropsLabel,
-  domain: [any, any],
+  domain: AxisDomain,
   width: number,
   orientation: 'left' | 'right',
   reversed: boolean,
   stroke: string,
   tickCount: number,
+  interval?: AxisInterval,
+  minTickGap?: number,
+  tickFormatter? (tick: number | string):  string
 }
 export interface YAxisPropsLabel {
   value: string,
@@ -28,10 +33,22 @@ export const getYAxisProto = (id: string, axis: AxisSettings): YAxisProps => {
     position: isLeft ? 'insideLeft' : 'insideRight', offset: 10,
   };
 
+  // const getTicks = () => {
+  //     let ticks = []
+  //     const step = Math.floor((max - min) / (axis.tickCount || 12))
+  //     for (let i = min; i < max; i+=step) {
+  //         ticks.push(i)
+  //     }
+  // }
+
+  const tickFormatter = (tick) => tick.toString().length <= 3 ?
+      tick
+      : numberToAbbreviatedStringFormatter(tick, 2)
+
   return {
-    key: id, yAxisId: id, domain: [min, max], tickCount: axis.tickCount || 12,
+    key: id, yAxisId: id, domain: [min, max], tickCount: axis.tickCount || 10, interval: 0,
     orientation: isLeft ? 'left' : 'right', label,
-    stroke: axis.color, reversed: axis.inverse, width: 50,
+    stroke: axis.color, reversed: axis.inverse, width: 50, tickFormatter: tickFormatter,
   };
 };
 
@@ -97,3 +114,31 @@ export const toYear = (date: Date): string => {
 export const yearStep = (date: Date): number => {
   return date.getFullYear();
 };
+
+/** Конвертирует число в строку в аббревиатурной форме с точностью (количество цифр) precision.
+ * @example
+ * numberToAbbreviatedStringFormatter(1230) => "1.2k"
+ * */
+const numberToAbbreviatedStringFormatter = (n: number, precision: number = 2) : string => {
+    const digits = n.toString().length;
+    let rank: string = 'u';
+    let rankNum = 3;
+    if (digits <= precision) return n.toString();
+    if (digits > 12) {
+        rank = 'b'
+        rankNum = 12
+    }
+    else if (digits > 9) {
+        rank = 'b'
+        rankNum = 9
+    }
+    else if (digits > 6) {
+        rank = 'm'
+        rankNum = 6
+    }
+    else if (digits > 3) {
+        rankNum = 3
+        rank = 'k'
+    }
+    return (n / Math.pow(10,rankNum)).toPrecision(precision) + rank
+}
