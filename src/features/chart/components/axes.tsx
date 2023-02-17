@@ -1,19 +1,22 @@
-import {AxisDomain, AxisInterval} from "recharts/types/util/types";
+import {AxisDomain, AxisInterval, TickItem} from "recharts/types/util/types";
 
 export interface YAxisProps {
   key: string,
   yAxisId: string,
   label: YAxisPropsLabel,
-  domain: AxisDomain,
+  domain?: AxisDomain,
   width: number,
   orientation: 'left' | 'right',
   reversed: boolean,
   stroke: string,
-  tickCount: number,
+  tickCount?: number,
   interval?: AxisInterval,
   minTickGap?: number,
-  tickFormatter? (tick: number | string):  string
+  ticks?: Array<string | number>,
+  padding?: {top: number, bottom: number},
+  tickFormatter?(tick: number | string): string
 }
+
 export interface YAxisPropsLabel {
   value: string,
   angle: number,
@@ -25,34 +28,34 @@ export interface YAxisPropsLabel {
 /** Строит объект, по которому отрендерится ось из _Recharts_. */
 export const getYAxisProto = (id: string, axis: AxisSettings): YAxisProps => {
   const isLeft = axis.location === 'Left';
-  const min = axis.min !== null ? axis.min : (x: number) => getMin(x);
-  const max = axis.max !== null ? axis.max : (x: number) => getMax(x);
 
   const label: YAxisPropsLabel = {
     value: axis.displayName, angle: isLeft ? -90 : 90,
     position: isLeft ? 'insideLeft' : 'insideRight', offset: 10,
   };
 
-  // const getTicks = () => {
-  //     let ticks = []
-  //     const step = Math.floor((max - min) / (axis.tickCount || 12))
-  //     for (let i = min; i < max; i+=step) {
-  //         ticks.push(i)
-  //     }
-  // }
+  const domain = (axis.max !== null && axis.min !== null) ? [axis.min, axis.max] : getFormattedMinMax;
 
-  const tickFormatter = (tick) => tick.toString().length <= 3 ?
-      tick
-      : numberToAbbreviatedStringFormatter(tick, 2)
+  const tickFormatter = (tick) => Math.ceil(tick).toString().length <= 3 ?
+    Math.ceil(tick).toString()
+    : numberToAbbreviatedStringFormatter(tick, 2)
 
   return {
-    key: id, yAxisId: id, domain: [min, max], tickCount: axis.tickCount || 10, interval: 0,
+    key: id, yAxisId: id, domain: domain, tickCount: axis.tickCount ? axis.tickCount + 1 : 11, minTickGap: 0,
     orientation: isLeft ? 'left' : 'right', label,
     stroke: axis.color, reversed: axis.inverse, width: 50, tickFormatter: tickFormatter,
   };
 };
 
 /* --- --- */
+
+const getFormattedMinMax = ([dataMin, dataMax] : [number, number]) => {
+  let min = getMin(dataMin);
+  let max = getMax(dataMax);
+  const currStep = Math.floor((max-min) / 10)
+  if (currStep > min) min=0
+  return [min, max] as [number, number]
+}
 
 /** Округляет в низ до ближайшего числа, удобного для восприятия на оси графика.
  * @example
@@ -62,6 +65,7 @@ export const getYAxisProto = (id: string, axis: AxisSettings): YAxisProps => {
  * */
 const getMin = (n: number): number => {
   n = Math.floor(n);
+  console.log(n)
   if (n < 10) return 0;
   const e = Math.pow(10, n.toString().length - 1);
   n = n / e;
@@ -88,6 +92,31 @@ const getMax = (n: number): number => {
   return (n <= 5 ? 5 : 10) * e;
 }
 
+/** Конвертирует число в строку в аббревиатурной форме с точностью (количество цифр) precision.
+ * @example
+ * numberToAbbreviatedStringFormatter(1230) => "1.2k"
+ * */
+const numberToAbbreviatedStringFormatter = (n: number, precision: number = 2): string => {
+  console.log(n)
+  const digits = Math.ceil(n).toString().length;
+  let rank: string = 'u';
+  let rankNum = 3;
+  if (digits <= precision) return n.toString();
+  if (digits > 12) {
+    rank = 'b'
+    rankNum = 12
+  } else if (digits > 9) {
+    rank = 'b'
+    rankNum = 9
+  } else if (digits > 6) {
+    rank = 'm'
+    rankNum = 6
+  } else if (digits > 3) {
+    rankNum = 3
+    rank = 'k'
+  }
+  return (n / Math.pow(10, rankNum)).toPrecision(precision) + rank
+}
 /* --- --- */
 
 /** Сокращения месяцов на русском языке. */
@@ -115,30 +144,4 @@ export const yearStep = (date: Date): number => {
   return date.getFullYear();
 };
 
-/** Конвертирует число в строку в аббревиатурной форме с точностью (количество цифр) precision.
- * @example
- * numberToAbbreviatedStringFormatter(1230) => "1.2k"
- * */
-const numberToAbbreviatedStringFormatter = (n: number, precision: number = 2) : string => {
-    const digits = n.toString().length;
-    let rank: string = 'u';
-    let rankNum = 3;
-    if (digits <= precision) return n.toString();
-    if (digits > 12) {
-        rank = 'b'
-        rankNum = 12
-    }
-    else if (digits > 9) {
-        rank = 'b'
-        rankNum = 9
-    }
-    else if (digits > 6) {
-        rank = 'm'
-        rankNum = 6
-    }
-    else if (digits > 3) {
-        rankNum = 3
-        rank = 'k'
-    }
-    return (n / Math.pow(10,rankNum)).toPrecision(precision) + rank
-}
+
