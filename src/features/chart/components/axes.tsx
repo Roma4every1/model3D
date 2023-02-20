@@ -1,4 +1,4 @@
-import {AxisDomain, AxisInterval, TickItem} from "recharts/types/util/types";
+import {AxisDomain, AxisInterval} from "recharts/types/util/types";
 
 export interface YAxisProps {
   key: string,
@@ -12,7 +12,6 @@ export interface YAxisProps {
   tickCount?: number,
   interval?: AxisInterval,
   minTickGap?: number,
-  ticks?: Array<string | number>,
   padding?: {top: number, bottom: number},
   tickFormatter?(tick: number | string): string
 }
@@ -65,7 +64,6 @@ const getFormattedMinMax = ([dataMin, dataMax] : [number, number]) => {
  * */
 const getMin = (n: number): number => {
   n = Math.floor(n);
-  console.log(n)
   if (n < 10) return 0;
   const e = Math.pow(10, n.toString().length - 1);
   n = n / e;
@@ -94,28 +92,30 @@ const getMax = (n: number): number => {
 
 /** Конвертирует число в строку в аббревиатурной форме с точностью (количество цифр) precision.
  * @example
- * numberToAbbreviatedStringFormatter(1230) => "1.2k"
+ * numberToAbbreviatedStringFormatter(1.123, 2) => "1.1"
+ * numberToAbbreviatedStringFormatter(1230, 2) => "1.2k"
+ * numberToAbbreviatedStringFormatter(12330, 3) => "12.3k"
+ * numberToAbbreviatedStringFormatter(123456) => "0.12M"
  * */
-const numberToAbbreviatedStringFormatter = (n: number, precision: number = 2): string => {
-  console.log(n)
-  const digits = Math.ceil(n).toString().length;
-  let rank: string = 'u';
+const numberToAbbreviatedStringFormatter = (n: number, precision: number = 3): string => {
+  const digits = Math.round(n).toString().length; // количество цифр
+  if (digits <= 3) {
+    if (digits <= precision) return n.toFixed(precision-digits); // менее 3 цифр
+    else return Math.round(n).toString() // 3 цифры
+  }
+  let rank: string = 'k';
   let rankNum = 3;
-  if (digits <= precision) return n.toString();
-  if (digits > 12) {
-    rank = 'b'
-    rankNum = 12
-  } else if (digits > 9) {
-    rank = 'b'
+  if (digits >= 9) {
+    rank = 'B'
     rankNum = 9
-  } else if (digits > 6) {
-    rank = 'm'
+  } else if (digits >= 6) {
+    rank = 'M'
     rankNum = 6
-  } else if (digits > 3) {
+  } else if (digits >= 3) {
     rankNum = 3
     rank = 'k'
   }
-  return (n / Math.pow(10, rankNum)).toPrecision(precision) + rank
+  return (n / Math.pow(10, rankNum)).toFixed(precision - (digits - rankNum)).toString() + rank
 }
 /* --- --- */
 
