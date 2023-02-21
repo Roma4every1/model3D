@@ -10,6 +10,8 @@ interface ChartFormSettings {
   dateStep: ChartDateStep,
   /** Настройки внешнего вида. */
   seriesSettings: ChartSeriesSettings,
+  /** Колбэк для сохранения графика в png */
+  downloadChart: () => Promise<string>
 }
 
 type ChartDateStep = 'month' | 'year';
