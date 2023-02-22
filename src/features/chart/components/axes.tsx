@@ -48,6 +48,11 @@ export const getYAxisProto = (id: string, axis: AxisSettings): YAxisProps => {
 
 /* --- --- */
 
+/** Возвращает изменненные значения минимума и максимума для оси графика в соответствии
+ * с лоигкой подсчета шага на оси графика библиотеки Recharts
+ * @example
+ * getFormattedMinMax([1000,25000])    => [0,25000]
+ * */
 const getFormattedMinMax = ([dataMin, dataMax] : [number, number]) => {
   let min = getMin(dataMin);
   let max = getMax(dataMax);
@@ -97,7 +102,7 @@ const getMax = (n: number): number => {
  * numberToAbbreviatedStringFormatter(12330, 3) => "12.3k"
  * numberToAbbreviatedStringFormatter(123456) => "0.12M"
  * */
-const numberToAbbreviatedStringFormatter = (n: number, precision: number = 3): string => {
+const numberToAbbreviatedStringFormatter = (n: number, precision: number = 2): string => {
   const digits = Math.round(n).toString().length; // количество цифр
   if (digits <= 3) {
     if (digits <= precision) return n.toFixed(precision-digits); // менее 3 цифр
@@ -115,7 +120,7 @@ const numberToAbbreviatedStringFormatter = (n: number, precision: number = 3): s
     rankNum = 3
     rank = 'k'
   }
-  return (n / Math.pow(10, rankNum)).toFixed(precision - (digits - rankNum)).toString() + rank
+  return (n / Math.pow(10, rankNum)).toFixed(precision - ((digits - rankNum) || 1)).toString() + rank
 }
 /* --- --- */
 
