@@ -24,12 +24,12 @@ export const Chart = ({id, channels, settings}: FormState) => {
   const handleDownload = useCallback(async () => {
     const png = await getPng();
     if (png) {
-      FileSaver.saveAs(png, 'myChart.png');
+      FileSaver.saveAs(png, 'chart.png');
     }
   }, [getPng]);
   useEffect(() => {
     dispatch(setSettingsField(id, 'downloadChart', handleDownload))
-  }, [])
+  }, [id])
 
 
   const proto = useMemo<ChartProto>(() => {
@@ -53,7 +53,6 @@ export const Chart = ({id, channels, settings}: FormState) => {
           {proto.marks.map(mapMarks)}
         </ComposedChart>
       </ResponsiveContainer>
-      <button type='button' onClick={handleDownload}>Сохранить график</button>
     </>
   );
 };

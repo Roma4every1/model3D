@@ -3,6 +3,7 @@ import { MenuSkeleton, MenuSection, BigButtonToggle, BigButton } from 'shared/ui
 import { DropDownList, DropDownListChangeEvent } from '@progress/kendo-react-dropdowns';
 import { formSettingsSelector, setSettingsField } from 'widgets/presentation';
 import chartTooltipIcon from 'assets/images/chart/tooltip.png';
+import chartDownloadIcon from 'assets/images/chart/download-png.png'
 
 const dateStepData = [
   {id: 'month', text: 'Месяц'},
@@ -41,7 +42,7 @@ export const ChartEditPanel = ({id}: FormEditPanelProps) => {
       </MenuSection>
       <MenuSection header={'Экспорт'}>
         <BigButton
-          text={'Изображение'} icon={chartTooltipIcon}
+          text={'Изображение'} icon={chartDownloadIcon}
           action={downloadChart}
         />
       </MenuSection>
