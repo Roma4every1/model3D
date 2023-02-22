@@ -7,15 +7,14 @@ import { channelsSelector } from 'entities/channels';
 import { compareArrays } from 'shared/lib';
 import './chart.scss';
 import {useCurrentPng} from 'recharts-to-png';
-import FileSaver from 'file-saver'
+import {saveAs} from '@progress/kendo-file-saver'
 import {setSettingsField} from "../../../widgets/presentation";
 
 
-const chartStyle = {overflow: 'hidden'};
+const chartStyle = {overflow: 'hidden', width: '100%', height: '100%'};
 const chartMargin = {top: 2, left: 0, bottom: 0, right: 0};
 
 export const Chart = ({id, channels, settings}: FormState) => {
-
   const channelsData: Channel[] = useSelector(channelsSelector.bind(channels), compareArrays);
   const { seriesSettings, dateStep, tooltip} = settings as ChartFormSettings;
 
@@ -24,25 +23,22 @@ export const Chart = ({id, channels, settings}: FormState) => {
   const handleDownload = useCallback(async () => {
     const png = await getPng();
     if (png) {
-      FileSaver.saveAs(png, 'chart.png');
+      saveAs(png, 'chart.png');
     }
   }, [getPng]);
   useEffect(() => {
     dispatch(setSettingsField(id, 'downloadChart', handleDownload))
-  }, [id])
-
+  }, [id, handleDownload])
 
   const proto = useMemo<ChartProto>(() => {
     return getChartProto(channels, channelsData, seriesSettings, dateStep);
   }, [channels, channelsData, seriesSettings, dateStep]);
 
-
-
   if (proto.diagrams.length === 0) return <EmptyChart/>;
 
   return (
     <>
-      <ResponsiveContainer width='100%' height='99%'>
+      <ResponsiveContainer>
         <ComposedChart ref={ref} data={proto.data} margin={chartMargin} style={chartStyle} barGap={1}>
           {tooltip && <Tooltip/>}
           <Legend verticalAlign={'top'} payload={proto.legend}/>

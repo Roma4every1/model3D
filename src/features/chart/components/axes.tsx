@@ -104,10 +104,12 @@ const getMax = (n: number): number => {
  * */
 const numberToAbbreviatedStringFormatter = (n: number, precision: number = 2): string => {
   const digits = Math.round(n).toString().length; // количество цифр
+
   if (digits <= 3) {
     if (digits <= precision) return n.toFixed(precision-digits); // менее 3 цифр
     else return Math.round(n).toString() // 3 цифры
   }
+
   let rank: string = 'k';
   let rankNum = 3;
   if (digits >= 9) {
@@ -120,7 +122,10 @@ const numberToAbbreviatedStringFormatter = (n: number, precision: number = 2): s
     rankNum = 3
     rank = 'k'
   }
-  return (n / Math.pow(10, rankNum)).toFixed(precision - ((digits - rankNum) || 1)).toString() + rank
+  const resultNumber = (n / Math.pow(10, rankNum)) // результирующее число при более 3 цифр
+  const resultDigitsAmount = precision - ((digits - rankNum) || 1) // количество цифр в результирующем числе
+
+  return resultNumber.toFixed(resultDigitsAmount).toString() + rank
 }
 /* --- --- */
 

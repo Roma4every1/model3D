@@ -14,9 +14,9 @@ export const ChartEditPanel = ({id}: FormEditPanelProps) => {
   const dispatch = useDispatch();
   const settings: ChartFormSettings = useSelector(formSettingsSelector.bind(id));
 
-  const { downloadChart } = settings as ChartFormSettings;
-
   if (!settings) return <MenuSkeleton template={['80px']}/>;
+
+  const { downloadChart } = settings as ChartFormSettings;
 
   const toggleTooltipVisible = () => {
     dispatch(setSettingsField(id, 'tooltip', !settings.tooltip))
