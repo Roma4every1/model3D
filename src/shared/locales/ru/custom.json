@@ -75,6 +75,17 @@
     }
   },
 
+  "chart": {
+    "panel": {
+      "tooltip-header": "Подсказка",
+      "tooltip-label": "Показывать значения",
+      "export-header": "Экспорт",
+      "export-png": "Изображение",
+      "interval-header": "Интервал"
+    },
+    "empty": "Нет данных"
+  },
+
   "map": {
     "areYouSureToDelete": "Вы действительно хотите удалить выбранный элемент?",
     "attr-table": "Атрибутивная таблица",

@@ -99,7 +99,7 @@ async function createFormSettings({id, type}: FormDataWMR): Promise<FormSettings
     const seriesSettingsKeys = Object.keys(settings.seriesSettings);
     const firstSeries = settings.seriesSettings[seriesSettingsKeys[0]];
     settings.dateStep = firstSeries?.dateStep === 'Month' ? 'month' : 'year';
-    settings.tooltip = true;
+    settings.tooltip = false;
   }
   return settings;
 }

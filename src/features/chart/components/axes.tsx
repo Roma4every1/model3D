@@ -1,4 +1,5 @@
-import {AxisDomain, AxisInterval} from "recharts/types/util/types";
+import { AxisDomain, AxisInterval } from 'recharts/types/util/types';
+
 
 export interface YAxisProps {
   key: string,
@@ -33,16 +34,19 @@ export const getYAxisProto = (id: string, axis: AxisSettings): YAxisProps => {
     position: isLeft ? 'insideLeft' : 'insideRight', offset: 10,
   };
 
+  const tickCount = axis.tickCount ? axis.tickCount + 1 : 11;
   const domain = (axis.max !== null && axis.min !== null) ? [axis.min, axis.max] : getFormattedMinMax;
 
-  const tickFormatter = (tick) => Math.ceil(tick).toString().length <= 3 ?
-    Math.ceil(tick).toString()
-    : numberToAbbreviatedStringFormatter(tick, 2)
+  const tickFormatter = (tick) => {
+    const tickStr = Math.ceil(tick).toString();
+    if (tickStr.length <= 3) return tickStr;
+    return numberToAbbreviation(tick, 2);
+  };
 
   return {
-    key: id, yAxisId: id, domain: domain, tickCount: axis.tickCount ? axis.tickCount + 1 : 11, minTickGap: 0,
+    key: id, yAxisId: id, domain: domain, tickCount, minTickGap: 0,
     orientation: isLeft ? 'left' : 'right', label,
-    stroke: axis.color, reversed: axis.inverse, width: 50, tickFormatter: tickFormatter,
+    stroke: axis.color, reversed: axis.inverse, width: 50, tickFormatter,
   };
 };
 
@@ -56,10 +60,10 @@ export const getYAxisProto = (id: string, axis: AxisSettings): YAxisProps => {
 const getFormattedMinMax = ([dataMin, dataMax] : [number, number]) => {
   let min = getMin(dataMin);
   let max = getMax(dataMax);
-  const currStep = Math.floor((max-min) / 10)
-  if (currStep > min) min=0
-  return [min, max] as [number, number]
-}
+  const currStep = Math.floor((max - min) / 10);
+  if (currStep > min) min = 0;
+  return [min, max] as [number, number];
+};
 
 /** Округляет в низ до ближайшего числа, удобного для восприятия на оси графика.
  * @example
@@ -76,7 +80,7 @@ const getMin = (n: number): number => {
   if (n >= 5) return 5 * e;
   if (n >= 2.5) return 2.5 * e;
   return (n >= 2 ? 2 : 1) * e;
-}
+};
 
 /** Округляет в вверх до ближайшего числа, удобного для восприятия на оси графика.
  * @example
@@ -97,36 +101,41 @@ const getMax = (n: number): number => {
 
 /** Конвертирует число в строку в аббревиатурной форме с точностью (количество цифр) precision.
  * @example
- * numberToAbbreviatedStringFormatter(1.123, 2) => "1.1"
- * numberToAbbreviatedStringFormatter(1230, 2) => "1.2k"
- * numberToAbbreviatedStringFormatter(12330, 3) => "12.3k"
- * numberToAbbreviatedStringFormatter(123456) => "0.12M"
+ * numberToAbbreviation(1.123, 2) => "1.1"
+ * numberToAbbreviation(1230, 2)  => "1.2k"
+ * numberToAbbreviation(12330, 3) => "12.3k"
+ * numberToAbbreviation(123456)   => "0.12M"
  * */
-const numberToAbbreviatedStringFormatter = (n: number, precision: number = 2): string => {
+const numberToAbbreviation = (n: number, precision: number = 2): string => {
   const digits = Math.round(n).toString().length; // количество цифр
 
   if (digits <= 3) {
-    if (digits <= precision) return n.toFixed(precision-digits); // менее 3 цифр
-    else return Math.round(n).toString() // 3 цифры
+    if (digits <= precision) return n.toFixed(precision - digits); // менее 3 цифр
+    else return Math.round(n).toString(); // 3 цифры
   }
 
-  let rank: string = 'k';
+  let rank = 'k';
   let rankNum = 3;
-  if (digits >= 9) {
-    rank = 'B'
-    rankNum = 9
-  } else if (digits >= 6) {
-    rank = 'M'
-    rankNum = 6
-  } else if (digits >= 3) {
-    rankNum = 3
-    rank = 'k'
-  }
-  const resultNumber = (n / Math.pow(10, rankNum)) // результирующее число при более 3 цифр
-  const resultDigitsAmount = precision - ((digits - rankNum) || 1) // количество цифр в результирующем числе
 
-  return resultNumber.toFixed(resultDigitsAmount).toString() + rank
-}
+  if (digits >= 9) {
+    rank = 'B';
+    rankNum = 9;
+  } else if (digits >= 6) {
+    rank = 'M';
+    rankNum = 6;
+  } else if (digits >= 3) {
+    rankNum = 3;
+    rank = 'k';
+  }
+
+  // результирующее число при более 3 цифр
+  const resultNumber = (n / Math.pow(10, rankNum));
+  // количество цифр в результирующем числе
+  const resultDigitsAmount = precision - ((digits - rankNum) || 1);
+
+  return resultNumber.toFixed(resultDigitsAmount).toString() + rank;
+};
+
 /* --- --- */
 
 /** Сокращения месяцов на русском языке. */
@@ -153,5 +162,3 @@ export const toYear = (date: Date): string => {
 export const yearStep = (date: Date): number => {
   return date.getFullYear();
 };
-
-
