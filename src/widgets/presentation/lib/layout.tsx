@@ -48,7 +48,7 @@ function fillTabNode(node: IJsonTabNode, form: FormDataWMR) {
   } else {
     node.name = form.displayName;
   }
-  node.component = <Form formData={form}/> as any
+  node.component = <Form id={form.id} type={form.type}/> as any;
 }
 
 /* --- --- */
@@ -67,7 +67,7 @@ function createTabSetNode(form: FormDataWMR, active: FormID): IJsonTabSetNode {
     type: 'tabset', selected: 0, active: form.id === active,
     children: [{
       id: form.id, type: 'tab', name: form.displayName,
-      component: <Form formData={form}/> as any,
+      component: <Form id={form.id} type={form.type}/> as any,
     }],
   };
 }

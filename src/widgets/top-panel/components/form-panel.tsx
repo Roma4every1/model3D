@@ -1,5 +1,5 @@
 import { FunctionComponent } from 'react';
-import { DataSetEditPanel } from 'features/dataset';
+import { TableEditPanel } from 'features/table';
 import { ChartEditPanel } from 'features/chart';
 import { MapEditPanel } from 'features/map';
 import { TracksEditPanel } from 'features/carat';
@@ -13,7 +13,7 @@ export interface FormPanelProps {
 
 /** Словарь всех компонентов верхней панели. */
 const editPanelDict: Record<string, [FunctionComponent<FormEditPanelProps>, FormType]> = {
-  'top-dataset': [DataSetEditPanel, 'dataSet'],
+  'top-dataset': [TableEditPanel, 'dataSet'],
   'top-chart': [ChartEditPanel, 'chart'],
   'top-map': [MapEditPanel, 'map'],
   'top-tracks': [TracksEditPanel, 'carat'],

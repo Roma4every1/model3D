@@ -1,0 +1,26 @@
+.table-toolbar {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: center;
+
+  height: 26px;
+  padding: 1px;
+  background-color: #f7f7f7;
+
+  > button {
+    padding: 2px 6px 4px;
+    height: 24px;
+    border: none;
+    border-radius: 2px;
+    background-color: unset;
+    transition: 0.2s;
+
+    &:hover:not(:disabled) {
+      background-color: #fccbc7;
+    }
+    &:active {
+      background-color: #f3afa7;
+    }
+  }
+}

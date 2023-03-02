@@ -21,7 +21,7 @@ export function tableRowToString(channel: Channel, row: ChannelRow) {
   }
 
   const columns = channel.data.columns;
-  const editorColumns = channel.info.editorColumns;
+  const editorColumns = channel.info.lookupColumns;
 
   const valueString = [];
   columns.forEach((column, index) => {
@@ -29,8 +29,8 @@ export function tableRowToString(channel: Channel, row: ChannelRow) {
   });
 
   return {
-    id: row.Cells[editorColumns.lookupCode.index],
-    name: row.Cells[editorColumns.lookupValue.index] ?? '',
+    id: row.Cells[editorColumns.id.index],
+    name: row.Cells[editorColumns.value.index] ?? '',
     value: valueString.join(''),
   };
 }

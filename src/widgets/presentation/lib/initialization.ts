@@ -1,5 +1,5 @@
 import { setUnion, leftAntiJoin } from 'shared/lib';
-import { createChannels, applyEditorColumnNames } from 'entities/channels';
+import { createChannels, applyLookupColumnNames } from 'entities/channels';
 import { addExternalChannels, addLinkedChannels } from 'entities/channels';
 import { handleLayout } from './layout';
 import { applyDisplayNamePattern } from './display-name-string';
@@ -39,15 +39,15 @@ export async function createClientChannels(set: Set<ChannelName>, dict: ParamDic
   const names = [...leftAntiJoin(setUnion(set, externalSet), existing)];
   const channels = await createChannels(names);
 
-  externalSet.forEach((name) => applyEditorColumnNames(channels[name]));
-
   set = new Set();
   names.forEach((name) => addLinkedChannels(channels[name], set));
 
   const linkedNames = [...leftAntiJoin(set, existing.concat(names))];
   const linkedChannels = await createChannels(linkedNames);
 
-  return {...channels, ...linkedChannels} as ChannelDict;
+  const allChannels: ChannelDict = {...channels, ...linkedChannels};
+  Object.values(allChannels).forEach(applyLookupColumnNames);
+  return allChannels;
 }
 
 /** Запрашивает параметры презентации и всех дочерних форм. */

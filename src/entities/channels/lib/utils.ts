@@ -1,6 +1,6 @@
 import { channelsAPI } from './channels.api';
 import { fillParamValues } from 'entities/parameters';
-import { findEditorColumnIndexes } from './common';
+import { findLookupColumnIndexes, findLookupChannels } from './lookup';
 
 
 /** Наполняет каналы данными. */
@@ -20,8 +20,7 @@ export async function fillChannel(name: ChannelName, channel: Channel, paramDict
   channel.tableID = tableID;
 
   const columns = data?.columns;
-  const editorColumns = channel.info.editorColumns;
-  if (editorColumns && columns) findEditorColumnIndexes(columns, editorColumns);
+  if (columns) findLookupColumnIndexes(columns, channel.info.lookupColumns);
 }
 
 
@@ -34,5 +33,17 @@ export function createChannels(names: ChannelName[]): Promise<ChannelDict> {
 async function createChannel(name: ChannelName): Promise<[ChannelName, Channel]> {
   const resInfo = await channelsAPI.getChannelInfo(name);
   if (!resInfo.ok) return;
-  return [name, {info: resInfo.data, data: null, tableID: null}];
+
+  const info = resInfo.data;
+  info.lookupChannels = findLookupChannels(info.properties);
+
+  for (const property of info.properties) {
+    if (!property.name) property.name = property.fromColumn;
+  }
+
+  const channel: Channel = {
+    info, data: null, tableID: null,
+    query: {maxRowCount: null, filters: null, order: null},
+  };
+  return [name, channel];
 }

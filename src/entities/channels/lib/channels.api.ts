@@ -93,7 +93,7 @@ export class ChannelsAPI {
   }
 
   /** Запрос на добавление записи в таблицу. */
-  public async insertRow(tableID: TableID, newRows: ChannelRow[]) {
+  public async insertRows(tableID: TableID, newRows: ChannelRow[]) {
     const rowData = JSON.stringify(newRows);
     const query = {sessionId: this.baseAPI.sessionID, tableId: tableID, rowData};
     return await this.request<Report>({path: 'insertRow', query});
@@ -108,9 +108,10 @@ export class ChannelsAPI {
   }
 
   /** Запрос на удаление записей из таблицы. */
-  public async removeRows(tableID: TableID, ids: number[], all: boolean) {
+  public async removeRows(tableID: TableID, ids: number[] | 'all') {
     const sessionId = this.baseAPI.sessionID;
-    const query = {sessionId, tableId: tableID, rows: ids.join(','), removeAll: String(all)};
+    const rows = ids === 'all' ? '' : ids.join(',');
+    const query = {sessionId, tableId: tableID, rows, removeAll: String(ids === 'all')};
     return await this.request<Report>({path: 'removeRows', query});
   }
 }

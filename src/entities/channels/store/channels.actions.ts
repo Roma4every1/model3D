@@ -21,6 +21,11 @@ export const setChannelsData = (payload: ChannelDataEntries): ChannelsAction => 
   return {type: ChannelsActions.SET_CHANNELS_DATA, payload};
 };
 
+/** Перезаписывает ограничитель количества строк. */
+export const setChannelMaxRowCount = (name: ChannelName, count: number | null): ChannelsAction => {
+  return {type: ChannelsActions.SET_MAX_ROW_COUNT, payload: {name, count}};
+};
+
 /** Очищает данные всех каналов. */
 export const clearChannels = (): ChannelsAction => {
   return {type: ChannelsActions.CLEAR};

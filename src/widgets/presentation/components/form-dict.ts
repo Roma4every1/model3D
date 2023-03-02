@@ -1,5 +1,6 @@
 import { FunctionComponent } from 'react';
 import { NotSupportedForm } from './plugs';
+import { Table } from 'features/table';
 import { Chart } from 'features/chart';
 import { Map } from 'features/map';
 // import { Carat } from 'features/carat';
@@ -7,9 +8,10 @@ import { Map } from 'features/map';
 
 /** Словарь для выбора формы по типу; используется в компоненте `Form`.
  *
- * **Не содержит типы `dock`, `grid`, `dataSet` и `multiMap`.**
+ * **Не содержит типы `dock`, `grid` и `multiMap`.**
  * */
 export const formDict: Record<string, FunctionComponent<FormState>> = {
+  dataSet: Table,
   carat: NotSupportedForm,
   chart: Chart,
   files: NotSupportedForm,

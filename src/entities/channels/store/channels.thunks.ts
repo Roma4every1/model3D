@@ -1,6 +1,5 @@
 import { Dispatch } from 'redux';
 import { Thunk, StateGetter } from 'shared/lib';
-import { channelsAPI } from 'entities/channels/lib/channels.api';
 import { fillChannels } from '../lib/utils';
 import { findChannelsByTables } from '../lib/common';
 import { setChannelData, setChannelsData } from './channels.actions';
@@ -32,44 +31,11 @@ export const reloadChannel = (name: ChannelName): Thunk => {
   };
 };
 
-/* --- Table Editing --- */
-
-export const insertRows = (tableID: TableID, rows: ChannelRow[]): Thunk<boolean> => {
-  return async (dispatch: Dispatch) => {
-    const res = await channelsAPI.insertRow(tableID, rows);
-    updateTablesByResult(res, tableID, dispatch);
-    return res.ok;
-  };
-};
-
-export const updateRows = (tableID: TableID, ids: number[], rows: ChannelRow[]): Thunk<boolean> => {
-  return async (dispatch: Dispatch) => {
-    const res = await channelsAPI.updateRows(tableID, ids, rows);
-    updateTablesByResult(res, tableID, dispatch);
-    return res.ok && !res.data.WrongResult;
-  };
-};
-
-export const deleteRows = (tableID: TableID, ids: number[], all: boolean): Thunk<boolean> => {
-  return async (dispatch: Dispatch) => {
-    const res = await channelsAPI.removeRows(tableID, ids, all);
-    updateTablesByResult(res, tableID, dispatch);
-    return res.ok && !res.data.WrongResult;
-  };
-};
-
-const updateTablesByResult = (res: Res<Report>, tableID: TableID, dispatch: Dispatch<any>) => {
-  const tables = [tableID];
-  if (res.ok && !res.data.WrongResult) {
-    tables.push(...res.data.ModifiedTables?.ModifiedTables);
-  }
-  dispatch(updateTables(tables));
-};
-
+/** Перезагрузить данные каналов по ID таблиц. */
 export const updateTables = (tables: TableID[]) => {
-  return (dispatch: Dispatch<any>, getState: StateGetter) => {
+  return async (dispatch: Dispatch<any>, getState: StateGetter) => {
     const state = getState();
     const channelNames = findChannelsByTables(tables, state.channels);
-    dispatch(reloadChannels(channelNames));
+    await dispatch(reloadChannels(channelNames));
   };
 };

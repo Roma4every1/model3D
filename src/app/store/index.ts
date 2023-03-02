@@ -9,7 +9,7 @@ import { presentationsReducer } from 'widgets/presentation/store/presentations.r
 import { formsReducer } from 'widgets/presentation/store/forms.reducer';
 import { parametersReducer } from 'entities/parameters/store/parameters.reducer';
 import { channelsReducer } from 'entities/channels/store/channels.reducer';
-import { datasetsReducer } from 'features/dataset/store/datasets.reducer';
+import { tablesReducer } from 'features/table/store/tables.reducer';
 // import { caratsReducer } from 'features/carat/store/carats.reducer';
 import { mapsReducer } from 'features/map/store/maps.reducer';
 import { reportsReducer } from 'entities/reports/store/reports.reducer';
@@ -25,7 +25,7 @@ const rootReducer: Reducer<WState, any> = combineReducers({
   forms: formsReducer,
   parameters: parametersReducer,
   channels: channelsReducer,
-  dataSets: datasetsReducer,
+  tables: tablesReducer,
   // carats: caratsReducer,
   maps: mapsReducer,
   reports: reportsReducer,

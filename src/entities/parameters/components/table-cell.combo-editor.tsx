@@ -26,14 +26,14 @@ const tableCellToString = (channel: Channel, row: ChannelRow) => {
     return valueString;
   }
 
-  const editorColumns = channel.info.editorColumns;
-  const idIndex = editorColumns.lookupCode.index;
-  const parentIndex = editorColumns.lookupParentCode.index;
+  const editorColumns = channel.info.lookupColumns;
+  const idIndex = editorColumns.id.index;
+  const parentIndex = editorColumns.parent.index;
 
   const id = row.Cells[idIndex];
   return {
     id,
-    name: row.Cells[editorColumns.lookupValue.index],
+    name: row.Cells[editorColumns.value.index],
     value: addParam(channel.data.columns[idIndex], id),
     parent: parentIndex !== -1 ? row.Cells[parentIndex] : undefined,
   };
@@ -89,7 +89,7 @@ export const TableCellComboEditor = ({valueSelector, update, channelName}) => {
     const valuesFromJSON = channel?.data?.rows?.map((row) => tableCellToString(channel, row));
 
     if (valuesFromJSON) {
-      if (channel.info.editorColumns.lookupParentCode.index >= 0) {
+      if (channel.info.lookupColumns.parent.index >= 0) {
         localValues = valuesFromJSON.filter(row => row.parent === null);
         findChildren(localValues, valuesFromJSON);
       } else {

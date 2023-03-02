@@ -13,7 +13,7 @@ interface WState {
   /** Данные каналов. */
   channels: ChannelDict,
   /** Хранилище данных таблиц. */
-  dataSets: TablesState,
+  tables: TablesState,
   // /** Хранилище каротажных диаграмм. */
   // carats: CaratsState,
   /** Хранилище карт. */
