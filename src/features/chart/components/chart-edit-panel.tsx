@@ -1,9 +1,9 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { MenuSkeleton, MenuSection, BigButtonToggle } from 'shared/ui';
+import { MenuSkeleton, MenuSection, BigButtonToggle, BigButton } from 'shared/ui';
 import { DropDownList, DropDownListChangeEvent } from '@progress/kendo-react-dropdowns';
 import { formSettingsSelector, setSettingsField } from 'widgets/presentation';
 import chartTooltipIcon from 'assets/images/chart/tooltip.png';
-
+import chartDownloadIcon from 'assets/images/chart/download-png.png'
 
 const dateStepData = [
   {id: 'month', text: 'Месяц'},
@@ -15,6 +15,8 @@ export const ChartEditPanel = ({id}: FormEditPanelProps) => {
   const settings: ChartFormSettings = useSelector(formSettingsSelector.bind(id));
 
   if (!settings) return <MenuSkeleton template={['80px']}/>;
+
+  const { downloadChart } = settings as ChartFormSettings;
 
   const toggleTooltipVisible = () => {
     dispatch(setSettingsField(id, 'tooltip', !settings.tooltip))
@@ -36,6 +38,12 @@ export const ChartEditPanel = ({id}: FormEditPanelProps) => {
           data={dateStepData} dataItemKey={'id'} textField={'text'}
           value={dateStepData[settings.dateStep === 'month' ? 0 : 1]}
           onChange={toggleDateStep}
+        />
+      </MenuSection>
+      <MenuSection header={'Экспорт'}>
+        <BigButton
+          text={'Изображение'} icon={chartDownloadIcon}
+          action={downloadChart}
         />
       </MenuSection>
     </div>
