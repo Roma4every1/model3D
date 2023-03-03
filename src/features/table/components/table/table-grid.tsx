@@ -11,7 +11,6 @@ import { setOpenedWindow } from 'entities/windows';
 import { ToolbarActions, CellActions, SaveTableMetadata, SetRecords } from '../../lib/types';
 import { scrollCellIntoView } from '../../lib/common';
 import { rollbackRecord, applyRecordEdit, validateRecord } from '../../lib/records';
-import { getColumnModel } from '../../lib/column-tree';
 import { applyColumnsWidth } from '../../lib/column-tree-actions';
 import { setTableColumns, setTableSelection } from '../../store/tables.actions';
 import { setTableActiveCell, startTableEditing, endTableEditing } from '../../store/tables.actions';
@@ -26,16 +25,17 @@ import { DeleteRecordsDialog } from '../dialogs/delete-records';
 interface TableGridProps {
   id: FormID,
   state: TableState,
+  children: JSX.Element[],
   records: TableRecord[],
   setRecords: SetRecords,
 }
 
 
-export const TableGrid = ({id, state, records, setRecords}: TableGridProps) => {
+export const TableGrid = ({id, state, records, setRecords, children}: TableGridProps) => {
   const dispatch = useDispatch();
   const [skip, setSkip] = useState(0);
 
-  const { columns: columnsState, columnTree, selection, activeCell, total, edit } = state;
+  const { columns: columnsState, selection, activeCell, total, edit } = state;
   const activeRecordID = activeCell.recordID, activeColumnID = activeCell.columnID;
 
   const isTopCell = activeRecordID === 0;
@@ -46,10 +46,6 @@ export const TableGrid = ({id, state, records, setRecords}: TableGridProps) => {
 
   const ref = useRef<HTMLDivElement>();
   const container = ref.current;
-
-  const columnModel = useMemo(() => {
-    return getColumnModel(columnsState, columnTree);
-  }, [columnsState, columnTree]);
 
   const data = useMemo(() => {
     records.forEach((record) => { record.selected = selection[record.id]; });
@@ -313,7 +309,7 @@ export const TableGrid = ({id, state, records, setRecords}: TableGridProps) => {
           selectable={{drag: !isEditing}} onSelectionChange={onSelectionChange}
           cellRender={cellRender}
         >
-          {columnModel}
+          {children}
         </Grid>
       </IntlProvider>
     </div>

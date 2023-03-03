@@ -1,5 +1,6 @@
 import { BaseAPI, API } from 'shared/lib';
 import { serializeParameter } from 'entities/parameters';
+import { applyQuerySettings } from './common';
 
 
 interface ChannelDTO {
@@ -58,10 +59,11 @@ export class ChannelsAPI {
   }
 
   /** Запрос данных канала. */
-  public async getChannelData(channelName: ChannelName, parameters: Parameter[]) {
+  public async getChannelData(name: ChannelName, parameters: Parameter[], query: ChannelQuerySettings) {
     const sessionID = this.baseAPI.sessionID;
     const paramValues = parameters.map(serializeParameter);
-    const body = JSON.stringify({sessionId: sessionID, channelName, paramValues});
+    applyQuerySettings(paramValues, query);
+    const body = JSON.stringify({sessionId: sessionID, channelName: name, paramValues});
 
     const req: WRequest = {method: 'POST', path: 'getChannelDataByName', body};
     const res = await this.request<ChannelDTO>(req);

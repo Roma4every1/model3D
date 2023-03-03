@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { compareObjects } from 'shared/lib';
 import { channelSelector, channelDictSelector } from 'entities/channels';
 import { tableStateSelector } from '../../store/tables.selectors';
 import { resetTable } from '../../store/tables.actions';
+import { getColumnModel } from '../../lib/column-tree';
 import { createRecords, applyLookupData } from '../../lib/records';
 import { TableGrid } from './table-grid';
 import './table.scss';
@@ -15,10 +16,10 @@ export const Table = ({id}: FormState) => {
   const [records, setRecords] = useState<TableRecord[]>([]);
 
   const state: TableState = useSelector(tableStateSelector.bind(id));
-  const columnsState = state.columns;
+  const { channelName, columns: columnsState, columnTree } = state;
 
-  const channel: Channel = useSelector(channelSelector.bind(state.channelName));
-  const channelData = channel.data;
+  const channel: Channel = useSelector(channelSelector.bind(channelName));
+  const { data: channelData, query } = channel;
 
   const lookups = channel.info.lookupChannels;
   const lookupData: ChannelDict = useSelector(channelDictSelector.bind(lookups), compareObjects);
@@ -36,5 +37,13 @@ export const Table = ({id}: FormState) => {
     setRecords(newRecords);
   }, [channelData]); // eslint-disable-line
 
-  return <TableGrid id={id} state={state} records={records} setRecords={setRecords}/>;
+  const columnModel = useMemo(() => {
+    return getColumnModel(columnsState, columnTree, channelName, query);
+  }, [columnsState, columnTree, channelName, query]);
+
+  return (
+    <TableGrid id={id} state={state} records={records} setRecords={setRecords}>
+      {columnModel}
+    </TableGrid>
+  );
 };

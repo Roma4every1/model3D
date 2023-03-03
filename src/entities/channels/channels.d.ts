@@ -11,6 +11,7 @@ type ChannelDict = Record<ChannelName, Channel>;
  * + `query`: {@link ChannelQuerySettings}
  * */
 interface Channel {
+  name: ChannelName,
   /** ID для API редактирования записей. */
   tableID: TableID,
   /** Данные из базы. */
@@ -125,11 +126,32 @@ interface LookupColumnInfo {
 interface ChannelQuerySettings {
   /** Ограничение по количеству строк. */
   maxRowCount: number | null,
-  /** Порядок строк. */
-  order: any[] | null,
+  /** Порядок сортировки строк. */
+  order: SortOrder,
   /** Фильтры. */
   filters: any[] | null,
 }
+
+/** Порядок сортировки. */
+type SortOrder = SortOrderItem[];
+
+/** Элемент порядка сортировки.
+ * + `column: string`
+ * + `direction`: {@link SortOrderDirection}
+ * */
+interface SortOrderItem {
+  /** ID колонки. */
+  column: string,
+  /** Направление сортировки. */
+  direction: SortOrderDirection,
+}
+
+/** Направление порядка.
+ * + `asc`  — в порядке возрастания
+ * + `desc` — в порядке убывания
+ * */
+type SortOrderDirection = 'asc' | 'desc';
+
 
 /** Набор пар канал-данные. */
 type ChannelDataEntries = [ChannelName, ChannelData][];

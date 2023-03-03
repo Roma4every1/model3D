@@ -3,7 +3,7 @@ import { serializeParameter } from 'entities/parameters';
 import { TableFormSettings, tableStateToFormSettings } from 'features/table';
 
 
-type FormParamsArray = {id: FormID, value: SerializedFormParameter[]}[];
+type FormParamsArray = {id: FormID, value: SerializedParameter[]}[];
 type FormLayoutArray = ({id: FormID} & IJsonModel)[];
 type FormSettingsArray = TableFormSettings[];
 

@@ -98,10 +98,14 @@ interface TableColumnState {
   autoWidth: boolean,
   /** Закреплена ли колонка. */
   locked: boolean,
+  /** Запрещено ли колонку редактировать. */
+  readOnly: boolean,
   /** Тип колонки. */
   type?: TableColumnType,
   /** Формат записи. */
   format?: string,
+  /** Имя колонки **в данных канала**. */
+  colName?: string,
   /** Индекс колонки **в данных канала**. */
   colIndex?: number,
   /** Может ли ячейка быть пустой. */

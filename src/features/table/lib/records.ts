@@ -33,10 +33,10 @@ export function createRecord(id: TableRecordID, cells: any[], columns: TableColu
   const result: Record<string, any> = {id, cells};
 
   for (const column of columns) {
-    let value = cells[column.colIndex];
-    const type = column.type;
+    let value = cells[column.colIndex] ?? null;
 
     if (value !== null) {
+      const type = column.type;
       if (type === 'date') {
         value = new Date(value);
       } else if (type === 'real') {
@@ -58,6 +58,7 @@ export function rollbackRecord(record: TableRecord, columns: TableColumnsState) 
 export function applyRecordEdit(record: TableRecord, columns: TableColumnsState) {
   const cells = record.cells as any[];
   for (const column of Object.values(columns)) {
+    if (column.colIndex === -1) continue;
     let value = record[column.field];
     if (column.type === 'date') value = value.toJSON();
     cells[column.colIndex] = value;

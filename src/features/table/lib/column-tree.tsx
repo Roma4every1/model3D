@@ -1,5 +1,5 @@
 import { GridColumn } from '@progress/kendo-react-grid';
-import { HeaderCell } from '../components/cells/custom-cell';
+import { HeaderCell, GroupHeaderCell } from '../components/cells/header';
 
 
 /** По свойствам канала создаёт дерево колонок. */
@@ -29,24 +29,31 @@ export function createColumnTree(properties: ChannelProperty[]): ColumnTree {
 /* --- --- */
 
 /** Возвращает модель колонок таблицы. */
-export function getColumnModel(columns: TableColumnsState, tree: ColumnTree) {
+export function getColumnModel(
+  columns: TableColumnsState, tree: ColumnTree,
+  channelName: ChannelName, query: ChannelQuerySettings
+) {
   const gridColumns: JSX.Element[] = [];
   tree.forEach((item, i) => {
     if (item.visible === false) return;
-    gridColumns.push(getColumnGroup(columns, item, i));
+    gridColumns.push(getColumnGroup(columns, item, i, channelName, query));
   });
   return gridColumns;
 }
 
-function getColumnGroup(columns: TableColumnsState, treeItem: ColumnTreeItem, i: number) {
+function getColumnGroup(
+  columns: TableColumnsState, treeItem: ColumnTreeItem, i: number,
+  channelName: ChannelName, query: ChannelQuerySettings,
+) {
   const items = treeItem.children;
   const field = treeItem.field;
 
   if (!items) {
-    const { title, width, locked, format } = columns[field];
+    const { title, width, locked, format, colName } = columns[field];
+    const headerCellThis = {channelName, query, channelColumn: colName};
     return (
       <GridColumn
-        key={i} id={field} field={field} format={format} headerCell={HeaderCell}
+        key={i} id={field} field={field} format={format} headerCell={HeaderCell.bind(headerCellThis)}
         title={title} width={width} locked={locked}
       />
     );
@@ -54,11 +61,11 @@ function getColumnGroup(columns: TableColumnsState, treeItem: ColumnTreeItem, i:
 
   const columnGroupItems: JSX.Element[] = [];
   items.forEach((item, i) => {
-    if (item.visible) columnGroupItems.push(getColumnGroup(columns, item, i));
+    if (item.visible) columnGroupItems.push(getColumnGroup(columns, item, i, channelName, query));
   });
 
   return (
-    <GridColumn key={i} title={treeItem.title} headerCell={HeaderCell}>
+    <GridColumn key={i} title={treeItem.title} headerCell={GroupHeaderCell}>
       {columnGroupItems}
     </GridColumn>
   );

@@ -20,7 +20,7 @@ export function handleLayout(res: Res<IJsonModel>, children: FormDataWMR[], acti
   let formLayout: IJsonModel;
   if (res.ok && res.data?.layout?.children) {
     formLayout = res.data;
-    formLayout.global = gridLayoutGlobalAttrs;
+    formLayout.global = {...gridLayoutGlobalAttrs, ...formLayout.global};
     fillLayout(formLayout.layout, children, activeID);
   } else {
     formLayout = createLayout(children, activeID);
@@ -46,7 +46,7 @@ function fillTabNode(node: IJsonTabNode, form: FormDataWMR) {
     const { pattern, params } = displayNamePattern;
     node.name = <FormName formID={form.id} pattern={pattern} params={params}/> as any;
   } else {
-    node.name = form.displayName;
+    node.name = node['title'] ?? form.displayName;
   }
   node.component = <Form id={form.id} type={form.type}/> as any;
 }

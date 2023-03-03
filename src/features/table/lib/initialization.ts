@@ -21,8 +21,9 @@ export function applyColumnTypes(state: TableState, channelColumns: ChannelColum
       else if (type === 'date') columnState.format = '{0:d}';
     }
 
-    columnState.allowNull = AllowDBNull;
+    columnState.colName = Name;
     columnState.colIndex = i;
+    columnState.allowNull = AllowDBNull;
   });
   state.columns = {...state.columns};
   state.properties.typesApplied = true;
@@ -85,15 +86,17 @@ export function settingsToState(init: TableInit): TableState {
 }
 
 function getColumn(property: ChannelProperty, settings: DataSetColumnSettings): TableColumnState {
-  const field = property.name;
   const title = settings?.displayName ?? property.displayName ?? property.name;
-
   let width = settings?.width, autoWidth = false;
   if (!width || width === 1) { width = getColumnWidth(title); autoWidth = true; }
 
-  const lookupChannel = property.lookupChannelName;
-  const linkedTableChannel = property.secondLevelChannelName;
-  return {field, title, width, autoWidth, lookupChannel, linkedTableChannel, locked: false};
+  return {
+    field: property.name, colIndex: -1,
+    title, width, autoWidth,
+    lookupChannel: property.lookupChannelName,
+    linkedTableChannel: property.secondLevelChannelName,
+    readOnly: settings?.isReadOnly === true, locked: false,
+  };
 }
 
 /** Возвращает список свойств, по которому будут строиться колонки. */

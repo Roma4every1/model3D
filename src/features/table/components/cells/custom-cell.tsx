@@ -1,5 +1,5 @@
 import { CellActions } from '../../lib/types';
-import { GridCellProps, GridHeaderCellProps } from '@progress/kendo-react-grid';
+import { GridCellProps } from '@progress/kendo-react-grid';
 import { ReactElement, ComponentProps, cloneElement } from 'react';
 import { BaseEditCell } from './base-edit-cell';
 import { LinkedTableCell } from './linked-table-cell';
@@ -24,7 +24,7 @@ export const CustomCell = ({td, props, state, actions}: CustomCellProps) => {
 
   const onClick = () => {
     if (isActiveCell) {
-      if (!activeCell.edited) actions.startEdit(columnID, recordID);
+      if (state.editable && !activeCell.edited) actions.startEdit(columnID, recordID);
     } else {
       const edited = activeCell.edited && isActiveRecord;
       actions.setActiveCell({columnID, recordID, edited});
@@ -56,9 +56,4 @@ export const CustomCell = ({td, props, state, actions}: CustomCellProps) => {
     }
   }
   return cell ? cloneElement(td, tdProps, cell) : cloneElement(td, tdProps);
-};
-
-
-export const HeaderCell = ({title}: GridHeaderCellProps) => {
-  return <span>{title}</span>;
 };

@@ -1,3 +1,14 @@
+export function applyQuerySettings(paramValues: SerializedParameter[], query: ChannelQuerySettings) {
+  if (query.maxRowCount) {
+    const value = query.maxRowCount.toString();
+    paramValues.push({id: 'maxRowCount', type: 'integer', value});
+  }
+  if (query.order.length) {
+    const value = query.order.map(sort => sort.column + ' ' + sort.direction).join(',');
+    paramValues.push({id: 'sortOrder', type: 'sortOrder', value});
+  }
+}
+
 /** По ID таблиц находит нужные каналы. */
 export function findChannelsByTables(ids: TableID[], channels: ChannelDict): ChannelName[] {
   const channelNames: ChannelName[] = [];
