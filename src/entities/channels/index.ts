@@ -1,6 +1,6 @@
 export { createChannels, fillChannels } from './lib/utils';
-export { addExternalChannels, addLinkedChannels } from './lib/common';
-export { applyLookupColumnNames, createLookupList, createLookupTree } from './lib/lookup'
+export { createLookupList, createLookupTree } from './lib/lookup';
+export { getExternalChannels, getLinkedChannels, getLookupChannels } from './lib/common';
 
 export * from './store/channels.actions';
 export * from './store/channels.selectors';

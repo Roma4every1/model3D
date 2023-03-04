@@ -60,7 +60,7 @@ export function applyRecordEdit(record: TableRecord, columns: TableColumnsState)
   for (const column of Object.values(columns)) {
     if (column.colIndex === -1) continue;
     let value = record[column.field];
-    if (column.type === 'date') value = value.toJSON();
+    if (column.type === 'date' && value) value = value.toJSON();
     cells[column.colIndex] = value;
   }
 }

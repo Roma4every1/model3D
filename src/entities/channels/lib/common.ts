@@ -23,19 +23,35 @@ export function findChannelsByTables(ids: TableID[], channels: ChannelDict): Cha
 
 /* --- --- */
 
-/** Добавляет привязанные каналы. */
-export function addLinkedChannels(channel: Channel, set: Set<ChannelName>) {
-  for (const property of channel.info.properties) {
-    const { lookupChannelName, secondLevelChannelName } = property;
-    if (lookupChannelName) set.add(lookupChannelName);
-    if (secondLevelChannelName) set.add(secondLevelChannelName);
+/** Находит и возвращает список привязанных каналов. */
+export function getLinkedChannels(dict: ChannelDict): Set<ChannelName> {
+  const linkedChannels = new Set<ChannelName>();
+  for (const name in dict) {
+    const properties = dict[name].info.properties;
+    for (const property of properties) {
+      const linkedChannelName = property.secondLevelChannelName;
+      if (linkedChannelName) linkedChannels.add(linkedChannelName);
+    }
   }
+  return linkedChannels;
 }
 
-/** Добавляет каналы, необходимые для параметров. */
-export function addExternalChannels(params: Parameter[], set: Set<ChannelName>) {
+/** Находит и возвращает список каналов-справочников. */
+export function getLookupChannels(dict: ChannelDict): Set<ChannelName> {
+  const lookupChannels = new Set<ChannelName>();
+  for (const name in dict) {
+    const lookups = dict[name].info.lookupChannels;
+    for (const lookupName of lookups) lookupChannels.add(lookupName);
+  }
+  return lookupChannels;
+}
+
+/** Находит и возвращает список каналов, необходимых для параметров. */
+export function getExternalChannels(params: Parameter[]): Set<ChannelName> {
+  const externalChannels = new Set<ChannelName>();
   for (const param of params) {
     const channel = param.externalChannelName;
-    if (channel) set.add(channel);
+    if (channel) externalChannels.add(channel);
   }
+  return externalChannels;
 }

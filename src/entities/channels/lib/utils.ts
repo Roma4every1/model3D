@@ -1,6 +1,6 @@
 import { channelsAPI } from './channels.api';
 import { fillParamValues } from 'entities/parameters';
-import { findLookupColumnIndexes, findLookupChannels } from './lookup';
+import { findLookupColumnIndexes, createLookupChannels, createLookupColumnNames } from './lookup';
 
 
 /** Наполняет каналы данными. */
@@ -35,11 +35,13 @@ async function createChannel(name: ChannelName): Promise<[ChannelName, Channel]>
   if (!resInfo.ok) return;
 
   const info = resInfo.data;
-  info.lookupChannels = findLookupChannels(info.properties);
+  const properties = info.properties;
 
-  for (const property of info.properties) {
+  for (const property of properties) {
     if (!property.name) property.name = property.fromColumn;
   }
+  info.lookupChannels = createLookupChannels(properties);
+  info.lookupColumns = createLookupColumnNames(properties);
 
   const channel: Channel = {
     name, info, data: null, tableID: null,

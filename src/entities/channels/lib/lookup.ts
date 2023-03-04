@@ -1,5 +1,5 @@
 /** Находит все каналы справочники по набору свойств. */
-export function findLookupChannels(properties: ChannelProperty[]): ChannelName[] {
+export function createLookupChannels(properties: ChannelProperty[]): ChannelName[] {
   const result = new Set<ChannelName>();
   for (const property of properties) {
     const lookupChannel = property.lookupChannelName;
@@ -11,13 +11,13 @@ export function findLookupChannels(properties: ChannelProperty[]): ChannelName[]
 /* --- Adjacency List --- */
 
 /** Находит названия колонок для задания списка значений или списка смежностей дерева. */
-export function applyLookupColumnNames(channel: Channel) {
-  let idColumnName = 'LOOKUPCODE';           // стандартное названия свойства с ID
-  let valueColumnName = 'LOOKUPVALUE';       // стандартное названия свойства со значением
-  let parentColumnName = 'LOOKUPPARENTCODE'; // стандартное названия свойства с ID родителя
+export function createLookupColumnNames(properties: ChannelProperty[]): LookupColumns {
+  let idColumnName = 'LOOKUPCODE';           // стандартное название свойства с ID
+  let valueColumnName = 'LOOKUPVALUE';       // стандартное название свойства со значением
+  let parentColumnName = 'LOOKUPPARENTCODE'; // стандартное название свойства с ID родителя
 
   let codePropertyColumnName, valuePropertyColumnName, parentPropertyColumnName;
-  for (const property of channel.info.properties) {
+  for (const property of properties) {
     const upper = property.name.toUpperCase();
     if (upper === idColumnName) codePropertyColumnName = property;
     else if (upper === valueColumnName) valuePropertyColumnName = property;
@@ -34,7 +34,7 @@ export function applyLookupColumnNames(channel: Channel) {
     parentColumnName = parentPropertyColumnName.fromColumn.toUpperCase();
   }
 
-  channel.info.lookupColumns = {
+  return {
     id: {name: idColumnName, index: -1},
     value: {name: valueColumnName, index: -1},
     parent: {name: parentColumnName, index: -1},

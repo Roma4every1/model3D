@@ -45,7 +45,8 @@ export const fetchPresentationState = (id: FormID): Thunk => {
     const existingChannels = Object.keys(state.channels);
     const channels = await createClientChannels(baseChannels, paramDict, existingChannels);
 
-    for (const id of childrenID) createFormState(id, formsState[id], channels, dispatch);
+    const allChannels = {...state.channels, ...channels};
+    for (const id of childrenID) createFormState(id, formsState[id], allChannels, dispatch);
 
     paramDict[rootID] = state.parameters[rootID];
     applyChannelsDeps(channels, paramDict);

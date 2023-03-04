@@ -20,6 +20,7 @@ import { CustomCell } from '../cells/custom-cell';
 import { TableToolbar } from '../toolbar/table-toolbar';
 import { ValidationDialog } from '../dialogs/validation';
 import { DeleteRecordsDialog } from '../dialogs/delete-records';
+import { LinkedTable } from './linked-table';
 
 
 interface TableGridProps {
@@ -75,6 +76,7 @@ export const TableGrid = ({id, state, records, setRecords, children}: TableGridP
   /* --- Editing --- */
 
   const addRecord = (copy: boolean, index?: number) => {
+    if (!state.editable || edit.isNew) return;
     if (activeRecordID === null) contentElement?.scrollTo({top: 0});
     dispatch(getNewRow(id, state, setRecords, copy, index));
   };
@@ -103,6 +105,7 @@ export const TableGrid = ({id, state, records, setRecords, children}: TableGridP
   };
 
   const startEdit = (columnID: string, recordID: TableRecordID) => {
+    if (!state.editable) return;
     dispatch(startTableEditing(id, columnID, recordID, edit.isNew));
   };
 
@@ -264,8 +267,11 @@ export const TableGrid = ({id, state, records, setRecords, children}: TableGridP
     setRecords(records);
   };
 
-  const openLinkedTable = () => {
-    console.log('open linked table');
+  const openLinkedTable = (columnID: TableColumnID) => {
+    const linkedTableID = id + columnID;
+    const onClose = () => dispatch(setOpenedWindow(linkedTableID, false, null));
+    const window = <LinkedTable key={linkedTableID} id={linkedTableID} onClose={onClose}/>;
+    dispatch(setOpenedWindow(linkedTableID, true, window));
   };
 
   const cellActions: CellActions = {

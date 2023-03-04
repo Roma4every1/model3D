@@ -39,7 +39,7 @@ export function compareObjects(a: Record<any, any>, b: Record<any, any>): boolea
  * @example
  * const a = new Set([1, 2]);
  * const b = new Set([2, 3]);
- * const c = mergeSets(a, b); // Set {1, 2, 3}
+ * const c = setUnion(a, b); // Set {1, 2, 3}
  * */
 export function setUnion<Type>(a: Set<Type>, b: Set<Type>): Set<Type> {
   return new Set([...a, ...b]);

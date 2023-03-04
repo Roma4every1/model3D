@@ -1,6 +1,6 @@
 import { setUnion, leftAntiJoin } from 'shared/lib';
-import { createChannels, applyLookupColumnNames } from 'entities/channels';
-import { addExternalChannels, addLinkedChannels } from 'entities/channels';
+import { createChannels } from 'entities/channels';
+import { getExternalChannels, getLinkedChannels, getLookupChannels } from 'entities/channels';
 import { handleLayout } from './layout';
 import { applyDisplayNamePattern } from './display-name-string';
 import { formsAPI } from 'widgets/presentation/lib/forms.api';
@@ -15,8 +15,7 @@ export async function createPresentationState(id: FormID): Promise<PresentationS
   ]);
 
   if (!resChildren.ok) return;
-  const { children: allChildren, openedChildren, activeChildren } = resChildren.data;
-  const children = allChildren.filter((child) => openedChildren.includes(child.id));
+  const { children, activeChildren } = resChildren.data;
   children.forEach(applyDisplayNamePattern);
 
   const settings = resSettings.ok
@@ -32,22 +31,37 @@ export async function createPresentationState(id: FormID): Promise<PresentationS
   };
 }
 
+/** Создаёт все необходимые каналы для клиента.
+ *
+ * Итоговый список каналов состоит из:
+ * + базовых каналов (передаётся)
+ * + каналов для параметров
+ * + привязанных каналов
+ * + каналов-справочников
+ *
+ * @param set базовый набор каналов
+ * @param dict параметры клиента
+ * @param existing список уже существующих каналов
+ * */
 export async function createClientChannels(set: Set<ChannelName>, dict: ParamDict, existing: ChannelName[]) {
-  const externalSet: Set<ChannelName> = new Set();
-  Object.values(dict).forEach((params) => addExternalChannels(params, externalSet));
+  const clientParams: Parameter[] = [];
+  Object.values(dict).forEach((params) => { clientParams.push(...params); });
+  const externalSet = getExternalChannels(clientParams);
 
-  const names = [...leftAntiJoin(setUnion(set, externalSet), existing)];
-  const channels = await createChannels(names);
+  const baseNames = [...leftAntiJoin(setUnion(set, externalSet), existing)];
+  const baseChannels = await createChannels(baseNames);
+  existing = existing.concat(baseNames);
 
-  set = new Set();
-  names.forEach((name) => addLinkedChannels(channels[name], set));
-
-  const linkedNames = [...leftAntiJoin(set, existing.concat(names))];
+  const linkedSet = getLinkedChannels(baseChannels);
+  const linkedNames = [...leftAntiJoin(linkedSet, existing)];
   const linkedChannels = await createChannels(linkedNames);
+  existing = existing.concat(linkedNames);
 
-  const allChannels: ChannelDict = {...channels, ...linkedChannels};
-  Object.values(allChannels).forEach(applyLookupColumnNames);
-  return allChannels;
+  const lookupSet = getLookupChannels({...baseChannels, ...linkedChannels});
+  const lookupNames = [...leftAntiJoin(lookupSet, existing)];
+  const lookupChannels = await createChannels(lookupNames);
+
+  return {...baseChannels, ...linkedChannels, ...lookupChannels};
 }
 
 /** Запрашивает параметры презентации и всех дочерних форм. */
@@ -78,12 +92,15 @@ export async function getPresentationChannels(id: FormID, ids: FormID[]) {
   return [all, dict] as [Set<ChannelName>, Record<FormID, ChannelName[]>];
 }
 
-export async function createFormStates(id: FormID, data: FormDataWMR[], channels: Record<FormID, ChannelName[]>) {
+export async function createFormStates(
+  parent: FormID, data: FormDataWMR[],
+  channels: Record<FormID, ChannelName[]>
+) {
   const states: FormsState = {};
   const settingsArray = await Promise.all(data.map(createFormSettings));
 
-  data.forEach(({ id, type }, i) => {
-    states[id] = {id, type, parent: id, channels: channels[id], settings: settingsArray[i]};
+  data.forEach(({id, type}, i) => {
+    states[id] = {id, type, parent, channels: channels[id], settings: settingsArray[i]};
   });
   return states;
 }

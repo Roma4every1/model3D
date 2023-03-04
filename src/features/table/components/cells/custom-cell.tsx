@@ -24,7 +24,7 @@ export const CustomCell = ({td, props, state, actions}: CustomCellProps) => {
 
   const onClick = () => {
     if (isActiveCell) {
-      if (state.editable && !activeCell.edited) actions.startEdit(columnID, recordID);
+      if (!activeCell.edited) actions.startEdit(columnID, recordID);
     } else {
       const edited = activeCell.edited && isActiveRecord;
       actions.setActiveCell({columnID, recordID, edited});

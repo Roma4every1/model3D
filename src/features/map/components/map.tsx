@@ -9,7 +9,7 @@ import { setMapField, loadMapSuccess } from '../store/maps.actions';
 import { fetchMapData } from '../store/maps.thunks';
 import { tableRowToString } from 'entities/parameters/lib/table-row';
 import { updateParam, currentWellIDSelector } from 'entities/parameters';
-import { channelSelector, applyLookupColumnNames } from 'entities/channels';
+import { channelSelector } from 'entities/channels';
 import { CircularProgressBar } from 'shared/ui';
 
 
@@ -68,7 +68,6 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
     const objectName = activeChannel.info.currentRowObjectName;
 
     if (objectName && (changeOwner || changeMapID)) {
-      if (!activeChannel.info.lookupColumns) applyLookupColumnNames(activeChannel);
       const value = tableRowToString(activeChannel, mapInfo)?.value;
       dispatch(updateParam(parent, objectName, value));
     }
