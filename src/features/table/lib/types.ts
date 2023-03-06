@@ -1,15 +1,9 @@
-/** Набор данных для инициализации состояния таблицы. */
-export interface TableInit {
-  channelName: ChannelName,
-  settings: TableFormSettings,
-  properties: ChannelProperty[],
-}
-
 /** Серверный формат настроек формы **DataSet**. */
 export interface TableFormSettings {
   id: FormID,
   columns: DataSetColumnsSettings,
   attachedProperties: InitAttachedProperties,
+  headerSetterRules: HeaderSetterRule[],
 }
 
 /** Настройки отображаемых свойств канала.

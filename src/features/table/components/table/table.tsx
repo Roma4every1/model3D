@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { compareObjects } from 'shared/lib';
+import { compareObjects, compareArrays } from 'shared/lib';
 import { channelSelector, channelDictSelector } from 'entities/channels';
-import { tableStateSelector } from '../../store/tables.selectors';
-import { resetTable } from '../../store/tables.actions';
+import { tableStateSelector, headerSetterParamsSelector } from '../../store/tables.selectors';
+import { resetTable, setTableColumnTree } from '../../store/tables.actions';
 import { getColumnModel } from '../../lib/column-tree';
+import { applyColumnsHeaders } from '../../lib/column-tree-actions';
 import { createRecords, applyLookupData } from '../../lib/records';
 import { TableGrid } from './table-grid';
 import './table.scss';
@@ -16,13 +17,23 @@ export const Table = ({id}: FormState) => {
   const [records, setRecords] = useState<TableRecord[]>([]);
 
   const state: TableState = useSelector(tableStateSelector.bind(id));
-  const { channelName, columns: columnsState, columnTree } = state;
+  const { channelName, headerSetterRules: rules, columns: columnsState, columnTree } = state;
 
   const channel: Channel = useSelector(channelSelector.bind(channelName));
   const { data: channelData, query } = channel;
 
   const lookups = channel.info.lookupChannels;
   const lookupData: ChannelDict = useSelector(channelDictSelector.bind(lookups), compareObjects);
+
+  const paramsSelector = headerSetterParamsSelector.bind(rules);
+  const headerSetterParams: Parameter[] = useSelector(paramsSelector, compareArrays);
+
+  // Обновление заголовков колонок
+  useEffect(() => {
+    if (rules.length === 0) return;
+    applyColumnsHeaders(columnTree, rules, headerSetterParams);
+    dispatch(setTableColumnTree(id, [...columnTree]));
+  }, [headerSetterParams, rules, id]); // eslint-disable-line
 
   // Обновление данных справочников
   useEffect(() => {
@@ -42,7 +53,7 @@ export const Table = ({id}: FormState) => {
   }, [columnsState, columnTree, channelName, query]);
 
   return (
-    <TableGrid id={id} state={state} records={records} setRecords={setRecords}>
+    <TableGrid id={id} state={state} query={query} records={records} setRecords={setRecords}>
       {columnModel}
     </TableGrid>
   );

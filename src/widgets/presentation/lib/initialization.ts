@@ -106,17 +106,33 @@ export async function createFormStates(
 }
 
 async function createFormSettings({id, type}: FormDataWMR): Promise<FormSettings> {
-  let settings: any = {};
-  if (type === 'dataSet' || type === 'chart') {
+  if (type === 'dataSet') {
     const res = await formsAPI.getFormSettings(id);
-    if (res.ok) settings = res.data;
+    if (!res.ok) return {};
+    const settings = res.data;
+
+    const resPlugin = await formsAPI.getPluginData(id, 'tableColumnHeaderSetter');
+    const rules: any[] = resPlugin.ok ? resPlugin.data?.tableColumnHeaderSetter?.specialLabel : [];
+
+    settings.headerSetterRules = rules?.map((item): HeaderSetterRule => ({
+      parameter: item['@switchingParameterName'],
+      property: item['@ChannelPropertyName'],
+      column: item['@columnName'],
+    })) ?? [];
+
+    return settings;
   }
 
-  if (settings.seriesSettings) {
+  if (type === 'chart') {
+    const res: Res<ChartFormSettings> = await formsAPI.getFormSettings(id);
+    if (!res.ok) return {};
+    const settings = res.data;
+
     const seriesSettingsKeys = Object.keys(settings.seriesSettings);
     const firstSeries = settings.seriesSettings[seriesSettingsKeys[0]];
     settings.dateStep = firstSeries?.dateStep === 'Month' ? 'month' : 'year';
     settings.tooltip = false;
+    return settings;
   }
-  return settings;
+  return {};
 }

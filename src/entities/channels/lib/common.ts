@@ -1,7 +1,7 @@
 export function applyQuerySettings(paramValues: SerializedParameter[], query: ChannelQuerySettings) {
   if (query.maxRowCount) {
-    const value = query.maxRowCount.toString();
-    paramValues.push({id: 'maxRowCount', type: 'integer', value});
+    paramValues.push({id: 'readAllRows', type: 'bool', value: 'false'});
+    paramValues.push({id: 'maxRowCount', type: 'integer', value: query.maxRowCount.toString()});
   }
   if (query.order.length) {
     const value = query.order.map(sort => sort.column + ' ' + sort.direction).join(',');

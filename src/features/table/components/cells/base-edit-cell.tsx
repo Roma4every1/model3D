@@ -18,8 +18,8 @@ const cellMetadataInt: EditCellMetadata = {
   parse: parseInt
 };
 const cellMetadataReal: EditCellMetadata = {
-  regex: /^[+-]?((\d+(\.\d*)?)|(\.\d+))$/,
-  parse: parseFloat
+  regex: /^[+-]?((\d+([.,]\d*)?)|([.,]\d+))$/,
+  parse: (str) => parseFloat(str.replace(',', '.')),
 };
 
 const cellsDict: Record<TableColumnType, FunctionComponent<EditCellProps>> = {

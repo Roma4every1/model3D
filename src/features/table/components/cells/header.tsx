@@ -1,6 +1,6 @@
 import { GridHeaderCellProps } from '@progress/kendo-react-grid';
 import { useDispatch } from 'react-redux';
-import { updateSortOrder } from 'entities/channels/store/channels.thunks';
+import { updateSortOrder } from 'entities/channels';
 
 
 interface HeaderCellThis {

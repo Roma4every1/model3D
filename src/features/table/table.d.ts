@@ -28,6 +28,8 @@ interface TableState {
   properties: AttachedProperties,
   /** Глобальные настройки колонок таблицы. */
   columnsSettings: TableColumnsSettings,
+  /** Правила установки заголовков колонок. */
+  headerSetterRules: HeaderSetterRule[],
   /** Состояние колонок. */
   columns: TableColumnsState,
   /** Дерево колонок: отображает группировку, видимость и названия. */
@@ -83,6 +85,16 @@ interface TableColumnsSettings {
   alternateRowBackground: string,
 }
 
+/** Правило установки заголовка колонки. */
+interface HeaderSetterRule {
+  /** Параметр системы `(tableRow)` для установки значения. */
+  parameter: ParameterID,
+  /** Свойства **канала**, которому соответствует изменяемая колонка. */
+  property: string,
+  /** Название колонки **параметра**, значение которого устанавливается как название столбца. */
+  column: string,
+}
+
 /** Состояние колонок в таблице. */
 type TableColumnsState = Record<TableColumnID, TableColumnState>;
 
@@ -136,12 +148,14 @@ type ColumnTree = ColumnTreeItem[];
 
 /** Элемент дерева колонок таблицы.
  * + `title: string`
+ * + `paramTitle?: string`
  * + `visible: boolean`
  * + `field?: string` — есть только у листьев
- * + `items`: {@link ColumnTreeItem}[] — есть только у групп
+ * + `children`: {@link ColumnTreeItem}[] — есть только у групп
  * */
 interface ColumnTreeItem {
   title: string,
+  paramTitle?: string,
   visible: boolean,
   field?: TableColumnID,
   children?: ColumnTreeItem[],

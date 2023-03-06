@@ -4,4 +4,5 @@ export { getExternalChannels, getLinkedChannels, getLookupChannels } from './lib
 
 export * from './store/channels.actions';
 export * from './store/channels.selectors';
-export { reloadChannel, reloadChannels, updateTables } from './store/channels.thunks';
+export { reloadChannel, reloadChannels } from './store/channels.thunks';
+export { updateSortOrder, updateMaxRowCount, updateTables } from './store/channels.thunks';

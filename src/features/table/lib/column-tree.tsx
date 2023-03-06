@@ -54,7 +54,7 @@ function getColumnGroup(
     return (
       <GridColumn
         key={i} id={field} field={field} format={format} headerCell={HeaderCell.bind(headerCellThis)}
-        title={title} width={width} locked={locked}
+        title={treeItem.paramTitle ?? title} width={width} locked={locked}
       />
     );
   }
@@ -73,15 +73,24 @@ function getColumnGroup(
 
 /* --- --- */
 
+/** Вызывает указанную функцию для каждого листа дерева колонок. */
+export function forEachLeaf(tree: ColumnTree, fn: (item: ColumnTreeItem, i?: number) => void) {
+  let i = 0;
+  const iterate = (treeItems: ColumnTreeItem[]) => {
+    for (const item of treeItems) {
+      if (item.children) {
+        iterate(item.children)
+      } else {
+        fn(item, i); i++;
+      }
+    }
+  };
+  iterate(tree);
+}
+
 /** Возвращает упорядоченный массив ID колонок с учётом их видимости. */
 export function getFlatten(tree: ColumnTree): TableColumnID[] {
   const result: TableColumnID[] = [];
-  const iterate = (treeItems: ColumnTreeItem[]) => {
-    for (const { field, children, visible } of treeItems) {
-      if (field && visible) result.push(field);
-      if (children) iterate(children);
-    }
-  }
-  iterate(tree);
+  forEachLeaf(tree, (item) => { result.push(item.field); });
   return result;
 }

@@ -1,10 +1,10 @@
-import { TableInit } from '../lib/types';
+import { TableFormSettings } from '../lib/types';
 import { TableActions, TablesAction } from './tables.reducer';
 
 
 /** Добавить новую таблицу в хранилище состояний. */
-export const createTableState = (id: FormID, init: TableInit): TablesAction => {
-  return {type: TableActions.CREATE, payload: {id, init}};
+export const createTableState = (id: FormID, channel: Channel, settings: TableFormSettings): TablesAction => {
+  return {type: TableActions.CREATE, payload: {id, channel, settings}};
 };
 
 /** Установить состояние колонок таблицы. */

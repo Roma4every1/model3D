@@ -7,6 +7,7 @@ import { GridColumnResizeEvent, GridPageChangeEvent } from '@progress/kendo-reac
 import { GridSelectionChangeEvent, getSelectedState } from '@progress/kendo-react-grid';
 import { compareObjects } from 'shared/lib';
 import { setOpenedWindow } from 'entities/windows';
+import { updateMaxRowCount } from 'entities/channels';
 
 import { ToolbarActions, CellActions, SaveTableMetadata, SetRecords } from '../../lib/types';
 import { scrollCellIntoView } from '../../lib/common';
@@ -26,15 +27,17 @@ import { LinkedTable } from './linked-table';
 interface TableGridProps {
   id: FormID,
   state: TableState,
-  children: JSX.Element[],
+  query: ChannelQuerySettings,
   records: TableRecord[],
   setRecords: SetRecords,
+  children: JSX.Element[],
 }
 
 
-export const TableGrid = ({id, state, records, setRecords, children}: TableGridProps) => {
+export const TableGrid = ({id, state, query, records, setRecords, children}: TableGridProps) => {
   const dispatch = useDispatch();
   const [skip, setSkip] = useState(0);
+  const pageSize = 50;
 
   const { columns: columnsState, selection, activeCell, total, edit } = state;
   const activeRecordID = activeCell.recordID, activeColumnID = activeCell.columnID;
@@ -220,11 +223,13 @@ export const TableGrid = ({id, state, records, setRecords, children}: TableGridP
       case 'ArrowUp':
       case 'PageUp': {
         event.preventDefault();
+        if (isEditing && columnsState[activeColumnID].type === 'date') break;
         event.ctrlKey ? toStart() : moveCellVertical(-1); break;
       }
       case 'ArrowDown':
       case 'PageDown': {
         event.preventDefault();
+        if (isEditing && columnsState[activeColumnID].type === 'date') break;
         event.ctrlKey ? toEnd() : moveCellVertical(1);
         if (isBottomCell) addRecord(event.ctrlKey, state.total); break;
       }
@@ -289,11 +294,16 @@ export const TableGrid = ({id, state, records, setRecords, children}: TableGridP
   };
 
   // если данных много, то использовать виртуальную прокрутку
-  const scrollProps: Partial<GridProps> = total > 100 ? {
+  const scrollProps: Partial<GridProps> = total > 99 ? {
     scrollable: 'virtual',
-    data: data.slice(skip, skip + 50),
-    skip, total, pageSize: 50,
-    onPageChange: (event: GridPageChangeEvent) => setSkip(event.page.skip),
+    data: data.slice(skip, skip + pageSize),
+    skip, total, pageSize,
+    onPageChange: (event: GridPageChangeEvent) => {
+      const newSkip = event.page.skip; setSkip(newSkip);
+      if (newSkip + pageSize > total && total === query.maxRowCount) {
+        dispatch(updateMaxRowCount(state.channelName, total + 2 * pageSize));
+      }
+    },
   } : {
     scrollable: 'scrollable',
     data: data,

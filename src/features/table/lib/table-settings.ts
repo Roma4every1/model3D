@@ -1,10 +1,23 @@
 import { TableFormSettings, InitAttachedProperties, DataSetColumnSettings } from './types';
+import { forEachLeaf } from './column-tree';
 
 
 /** Функция, возвращающая исходные настройки по состоянию таблицы. */
 export function tableStateToFormSettings (id: FormID, state: TableState): TableFormSettings {
-  const columns = state.columnTreeFlatten.map(columnID => state.columns[columnID]);
-  const columnsSettings = state.columnsSettings;
+  const { columnsSettings, columns } = state;
+  const columnSettings: DataSetColumnSettings[] = [];
+
+  forEachLeaf(state.columnTree, (item, i) => {
+    const columnState = columns[item.field];
+    columnSettings.push({
+      channelPropertyName: item.field,
+      displayName: item.title,
+      isVisible: item.visible,
+      displayIndex: i,
+      width: columnState.autoWidth ? 1 : columnState.width,
+      isReadOnly: columnState.readOnly,
+    } as any);
+  });
 
   const attachedProperties: InitAttachedProperties = {
     attachOption: state.properties.attachOption,
@@ -19,17 +32,7 @@ export function tableStateToFormSettings (id: FormID, state: TableState): TableF
       canUserFreezeColumns: columnsSettings.canUserLockColumns,
       alternate: columnsSettings.alternate,
       alternateRowBackground: columnsSettings.alternateRowBackground,
-      columnsSettings: columns.map(columnStateToSettings),
+      columnsSettings: columnSettings,
     },
-  };
-}
-
-function columnStateToSettings(state: TableColumnState, i: number): DataSetColumnSettings {
-  return {
-    channelPropertyName: state.field,
-    displayName: state.title,
-    width: state.autoWidth ? 1 : state.width,
-    displayIndex: i,
-    isVisible: true,
-  } as DataSetColumnSettings;
+  } as any;
 }

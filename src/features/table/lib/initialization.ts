@@ -1,4 +1,4 @@
-import { TableInit, InitAttachedProperties, DataSetColumnSettings } from './types';
+import { InitAttachedProperties, TableFormSettings, DataSetColumnSettings } from './types';
 import { getColumnWidth } from './common';
 import { createColumnTree, getFlatten } from './column-tree';
 
@@ -41,10 +41,12 @@ function getColumnType(netType: string): TableColumnType {
 /* --- --- --- */
 
 /** Функция, создающая состояние таблицы по её начальным настройкам. */
-export function settingsToState(init: TableInit): TableState {
-  const { channelName, properties: allProperties } = init;
-  const { columns, attachedProperties } = init.settings;
+export function settingsToState(channel: Channel, settings: TableFormSettings): TableState {
+  const channelName = channel.name;
+  const allProperties = channel.info.properties;
+  channel.query.maxRowCount = 100;
 
+  const { columns, attachedProperties } = settings;
   const columnsState: TableColumnsState = {};
   const properties = getDisplayedProperties(allProperties, attachedProperties);
 
@@ -77,7 +79,7 @@ export function settingsToState(init: TableInit): TableState {
   const columnTreeFlatten = getFlatten(columnTree);
 
   return {
-    editable: false, tableID: null,
+    editable: false, tableID: null, headerSetterRules: settings.headerSetterRules,
     channelName, columnsSettings, columns: columnsState, columnTree, columnTreeFlatten,
     properties: {...attachedProperties, list: properties, typesApplied: false},
     activeCell: {columnID: null, recordID: null, edited: false},

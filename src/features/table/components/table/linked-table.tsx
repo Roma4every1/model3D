@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Window } from '@progress/kendo-react-dialogs';
 import { Form } from 'widgets/presentation/components/form';
@@ -15,7 +16,11 @@ export const LinkedTable = ({id, onClose}: LinkedTableProps) => {
   const child = presentation?.children.find(c => c.id === id);
 
   // закрывает окно при смене презентации, либо если привязанной таблицы не существует
-  if (!child) { onClose(); return null; }
+  useEffect(() => {
+    if (!child) onClose();
+  }, [child, onClose]);
+
+  if (!child) return null;
   const title = child.displayName;
 
   return (
