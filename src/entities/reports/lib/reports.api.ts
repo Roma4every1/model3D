@@ -63,8 +63,9 @@ export class ReportsAPI {
 
   public exportToExcel(data: any) {
     data.sessionId = this.baseAPI.sessionID;
+    data.paramValues = data.paramValues.map(serializeParameter);
     const body = JSON.stringify(data);
-    return this.baseAPI.request<any>({method: 'POST', path: 'exportToExcel', body});
+    return this.baseAPI.request<NewOperationData>({method: 'POST', path: 'exportToExcel', body});
   }
 }
 

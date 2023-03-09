@@ -5,10 +5,14 @@ import { t } from 'shared/locales';
 import { updateTables } from 'entities/channels';
 import { createRecord } from '../lib/records';
 import { startTableEditing } from './tables.actions';
+import { tableStateToFormSettings } from '../lib/table-settings';
+import { watchReport } from 'entities/reports';
 import { reloadChannel } from 'entities/channels';
+import { fillParamValues } from 'entities/parameters';
 import { setWindowWarning, showNotice } from 'entities/windows';
 import { setWindowNotification, closeWindowNotification } from 'entities/windows';
 import { channelsAPI } from 'entities/channels/lib/channels.api';
+import { reportsAPI } from 'entities/reports/lib/reports.api';
 
 
 /** Перезагрузка данных канала таблицы. */
@@ -107,5 +111,27 @@ export const getNewRow = (
 
     const editColumnID = state.activeCell.columnID ?? state.columnTreeFlatten[0];
     dispatch(startTableEditing(id, editColumnID, newID, true));
+  };
+};
+
+export const exportTableToExcel = (id: FormID): Thunk => {
+  return async (dispatch: Dispatch, getState: StateGetter) => {
+    const state = getState();
+    const tableState = state.tables[id];
+    const info = state.channels[tableState.channelName].info;
+
+    const parentID = state.forms[id].parent;
+    const parentState = state.presentations[parentID];
+
+    const exportData = {
+      channelName: tableState.channelName,
+      paramName: parentState.children.find(child => child.id === id)?.displayName ?? 'Таблица',
+      presentationId: parentID,
+      paramValues: fillParamValues(info.parameters, state.parameters, info.clients),
+      settings: tableStateToFormSettings(id, tableState).columns,
+    };
+
+    const res = await reportsAPI.exportToExcel(exportData);
+    if (res.ok && res.data.OperationId) watchReport(null, res.data.OperationId, dispatch);
   };
 };

@@ -15,7 +15,7 @@ export function watchReport(report: ReportModel, operationID: OperationID, dispa
     const modifiedTables = data?.report?.ModifiedTables?.ModifiedTables ?? [];
     if (modifiedTables.length) dispatch(updateTables(modifiedTables));
 
-    if (data?.reportLog) {
+    if (data?.reportLog && report) {
       const text = data.reportLog;
       const fileName = report.displayName + '.log';
       dispatch(setWindowInfo(text, null, t('report.result'), fileName));

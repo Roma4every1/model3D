@@ -19,7 +19,7 @@ export const TableEditPanel = ({id}: FormEditPanelProps) => {
   return (
     <div className={'menu'}>
       <MenuSection header={'Функции'} className={'map-actions'}>
-        <ExcelExport/>
+        <ExcelExport id={id}/>
         <ColumnStatistics state={tableState}/>
         <ColumnVisibility id={id} tree={tableState.columnTree}/>
       </MenuSection>

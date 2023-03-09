@@ -1,9 +1,11 @@
 import { ToolbarActions } from '../../lib/types';
+import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { ButtonIconStock } from 'shared/ui';
 import { SelectionNavigation } from './selection-navigation';
 import { EditButtons } from './edit-buttons';
 import { ReloadButton } from './reload-button';
+import { exportTableToExcel } from '../../store/tables.thunks';
 import './table-toolbar.scss';
 
 
@@ -17,11 +19,13 @@ interface TableToolbarProps {
 
 export const TableToolbar = ({id, state, actions, selectedRecords}: TableToolbarProps) => {
   const { t } = useTranslation();
+  const dispatch = useDispatch();
 
   return (
     <div className={'table-toolbar'}>
       <ButtonIconStock
         icon={'excel'} title={t('table.toolbar.export-to-excel')}
+        action={() => dispatch(exportTableToExcel(id))}
       />
       <SelectionNavigation
         selectedRecords={selectedRecords} total={state.total}
