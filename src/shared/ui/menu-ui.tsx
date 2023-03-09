@@ -4,7 +4,7 @@ import { Skeleton } from '@progress/kendo-react-indicators';
 
 interface MenuSectionProps {
   header: string,
-  className?: 'menu-list' | 'map-panel-main' | 'map-actions',
+  className?: string,
   style?: CSSProperties,
   children: ReactNode,
 }
@@ -44,12 +44,13 @@ interface ButtonIconProps {
   icon: string,
   title?: string,
   action?: () => void
+  disabled?: boolean,
 }
 
 /** Кнопка с иконкой и подписью. */
-export const ButtonIcon = ({text, icon, title, action}: ButtonIconProps) => {
+export const ButtonIcon = ({text, icon, title, action, disabled}: ButtonIconProps) => {
   return (
-    <button onClick={action} title={title}>
+    <button onClick={action} title={title} disabled={disabled}>
       <img src={icon} alt={'icon'}/>
       <span>{text}</span>
     </button>
@@ -59,11 +60,22 @@ export const ButtonIcon = ({text, icon, title, action}: ButtonIconProps) => {
 /** Кнопка с иконкой _Telerik_ и подписью.
  * @see https://www.telerik.com/kendo-react-ui/components/styling/icons/
  * */
-export const ButtonIconStock = ({text, icon, title, action}: ButtonIconProps) => {
+export const ButtonStock = ({text, icon, title, action, disabled}: ButtonIconProps) => {
   return (
-    <button onClick={action} title={title}>
+    <button onClick={action} title={title} disabled={disabled}>
       <span className={'k-icon k-i-' + icon}/>
       <span>{text}</span>
+    </button>
+  );
+};
+
+/** Кнопка с иконкой _Telerik_.
+ * @see https://www.telerik.com/kendo-react-ui/components/styling/icons/
+ * */
+export const ButtonIconStock = ({icon, title, action, disabled}: Omit<ButtonIconProps, 'text'>) => {
+  return (
+    <button onClick={action} title={title} disabled={disabled}>
+      <span className={'k-icon k-i-' + icon}/>
     </button>
   );
 };

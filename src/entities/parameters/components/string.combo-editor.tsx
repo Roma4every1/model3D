@@ -10,10 +10,10 @@ export const StringComboEditor = ({valueSelector, update, channelName}: EditorPr
   const channel: Channel = useSelector(channelSelector.bind(channelName));
 
   if (channel && channel.info.properties) {
-    const editorColumns = channel.info.editorColumns;
+    const editorColumns = channel.info.lookupColumns;
 
-    const idIndex = editorColumns.lookupCode.index;
-    const nameIndex = editorColumns.lookupValue.index;
+    const idIndex = editorColumns.id.index;
+    const nameIndex = editorColumns.value.index;
 
     const valuesFromJSON = channel?.data?.rows.map((row) => {
       return {id: row.Cells[idIndex], name: row.Cells[nameIndex]}

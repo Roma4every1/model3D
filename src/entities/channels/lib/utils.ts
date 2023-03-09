@@ -1,18 +1,18 @@
 import { channelsAPI } from './channels.api';
 import { fillParamValues } from 'entities/parameters';
-import { findEditorColumnIndexes } from './common';
+import { findLookupColumnIndexes, createLookupChannels, createLookupColumnNames } from './lookup';
 
 
 /** Наполняет каналы данными. */
 export function fillChannels(channelDict: ChannelDict, paramDict: ParamDict) {
-  const mapper = ([name, channel]) => fillChannel(name, channel, paramDict);
-  return Promise.all(Object.entries(channelDict).map(mapper));
+  const mapper = (channel) => fillChannel(channel, paramDict);
+  return Promise.all(Object.values(channelDict).map(mapper));
 }
 
 /** Наполняет канал данными. */
-export async function fillChannel(name: ChannelName, channel: Channel, paramDict: ParamDict) {
+export async function fillChannel(channel: Channel, paramDict: ParamDict) {
   const paramValues = fillParamValues(channel.info.parameters, paramDict, channel.info.clients);
-  const resData = await channelsAPI.getChannelData(name, paramValues);
+  const resData = await channelsAPI.getChannelData(channel.name, paramValues, channel.query);
   if (!resData.ok) return;
 
   const { data, tableID } = resData.data;
@@ -20,8 +20,7 @@ export async function fillChannel(name: ChannelName, channel: Channel, paramDict
   channel.tableID = tableID;
 
   const columns = data?.columns;
-  const editorColumns = channel.info.editorColumns;
-  if (editorColumns && columns) findEditorColumnIndexes(columns, editorColumns);
+  if (columns) findLookupColumnIndexes(columns, channel.info.lookupColumns);
 }
 
 
@@ -34,5 +33,19 @@ export function createChannels(names: ChannelName[]): Promise<ChannelDict> {
 async function createChannel(name: ChannelName): Promise<[ChannelName, Channel]> {
   const resInfo = await channelsAPI.getChannelInfo(name);
   if (!resInfo.ok) return;
-  return [name, {info: resInfo.data, data: null, tableID: null}];
+
+  const info = resInfo.data;
+  const properties = info.properties;
+
+  for (const property of properties) {
+    if (!property.name) property.name = property.fromColumn;
+  }
+  info.lookupChannels = createLookupChannels(properties);
+  info.lookupColumns = createLookupColumnNames(properties);
+
+  const channel: Channel = {
+    name, info, data: null, tableID: null,
+    query: {maxRowCount: null, filters: null, order: []},
+  };
+  return [name, channel];
 }

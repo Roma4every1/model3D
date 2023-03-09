@@ -68,8 +68,12 @@ export const parametersReducer = (state: ParamDict = init, action: FormParamsAct
 
     case FormParamsActions.UPDATE: {
       const { id, value, formID } = action.payload;
-      const updatedParam = state[formID].find(param => param.id === id);
-      if (updatedParam) updatedParam.value = value;
+      const params = state[formID];
+
+      const index = params.findIndex(param => param.id === id);
+      if (index === -1) return state;
+
+      params[index] = {...params[index], value};
       return {...state};
     }
 

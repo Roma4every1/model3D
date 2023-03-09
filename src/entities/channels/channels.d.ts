@@ -5,78 +5,25 @@ type ChannelName = string;
 type ChannelDict = Record<ChannelName, Channel>;
 
 /** Модель канала данных.
- * + `info`: {@link ChannelInfo}
- * + `data`: {@link ChannelData}
  * + `tableID`: {@link TableID}
+ * + `data`: {@link ChannelData}
+ * + `info`: {@link ChannelInfo}
+ * + `query`: {@link ChannelQuerySettings}
  * */
 interface Channel {
-  /** Информация о канале. */
-  info: ChannelInfo,
-  /** Данные из базы. */
-  data: ChannelData | null,
+  name: ChannelName,
   /** ID для API редактирования записей. */
   tableID: TableID,
-  /** Фильтры. */
-  filters?: any[],
+  /** Данные из базы. */
+  data: ChannelData | null,
+  /** Информация о канале. */
+  info: ChannelInfo,
+  /** Настройки запроса данных. */
+  query: ChannelQuerySettings,
 }
 
-/** Информация о канале, не меняющаяся в течение сессии.
- * + `displayName`: {@link DisplayName}
- * + `parameters`: {@link ParameterID}[]
- * + `properties`: {@link ChannelProperty}[]
- * + `currentRowObjectName: string`
- * + `editorColumns?`: {@link EditorColumns}
- * + `clients`: {@link Set} of {@link FormID}
- * */
-interface ChannelInfo {
-  /** Название для отображения на интерфейсе. */
-  displayName: DisplayName,
-  /** Параметры канала. */
-  parameters: ParameterID[],
-  /** Свойства канала. */
-  properties: ChannelProperty[],
-  /** ID параметра, к которому привязан канал. */
-  currentRowObjectName: string,
-  /** ID форм, в которых лежат необходимые параметры. */
-  clients?: Set<FormID>,
-  /** Названия колонок, необходимых для редакторов параметров. */
-  editorColumns?: EditorColumns,
-}
-
-/** Дополнительные свойства колонки. */
-interface ChannelProperty {
-  /** Название свойства. */
-  name: string,
-  /** Какой колонке относится. */
-  fromColumn: string,
-  /** Название для отображения на интерфейсе. */
-  displayName: string,
-  /** Группировка относительно других колонок. */
-  treePath: string[],
-  /** ??? */
-  lookupChannelName: string | null,
-  /** Название канала для привязанной таблицы. */
-  secondLevelChannelName: string | null,
-}
-
-/** Информация о колонках, необходимых для редакторов параметров.
- * + `lookupCode`: {@link EditorColumnInfo}
- * + `lookupValue`: {@link EditorColumnInfo}
- * + `lookupParentCode`: {@link EditorColumnInfo}
- * */
-interface EditorColumns {
-  lookupCode: EditorColumnInfo,
-  lookupValue: EditorColumnInfo,
-  lookupParentCode: EditorColumnInfo,
-}
-
-/** Информация о колонке канала необходимой для редакторов параметров. */
-interface EditorColumnInfo {
-  /** Название колонки. */
-  name: string,
-  /** Порядковый номер. */
-  index: number,
-}
+/** ID для API редактирования записей. */
+type TableID = string;
 
 /** Данные канала.
  * + `columns`: {@link ChannelColumn}[]
@@ -97,7 +44,7 @@ interface ChannelData {
 
 /** Запись из данных канала. */
 interface ChannelRow {
-  ID: any,
+  ID: number | null,
   Cells: any[],
 }
 
@@ -111,8 +58,141 @@ interface ChannelColumn {
   AllowDBNull: boolean
 }
 
-/** ID для API редактирования записей. */
-type TableID = string;
+/** Информация о канале, не меняющаяся в течение сессии.
+ * + `displayName`: {@link DisplayName}
+ * + `parameters`: {@link ParameterID}[]
+ * + `properties`: {@link ChannelProperty}[]
+ * + `currentRowObjectName`: {@link ParameterID}
+ * + `clients`: {@link Set} of {@link FormID}
+ * + `lookupChannels`: {@link ChannelName}[]
+ * + `lookupColumns`: {@link LookupColumns}
+ * */
+interface ChannelInfo {
+  /** Название для отображения на интерфейсе. */
+  displayName: DisplayName,
+  /** Параметры канала. */
+  parameters: ParameterID[],
+  /** Свойства канала. */
+  properties: ChannelProperty[],
+  /** ID параметра, к которому привязан канал. */
+  currentRowObjectName: ParameterID,
+  /** ID форм, в которых лежат необходимые параметры. */
+  clients?: Set<FormID>,
+  /** Список каналов справочников. */
+  lookupChannels?: ChannelName[],
+  /** Названия колонок, необходимых для редакторов параметров. */
+  lookupColumns?: LookupColumns,
+}
+
+/** Дополнительные свойства колонки. */
+interface ChannelProperty {
+  /** Название свойства. */
+  name: string,
+  /** Какой колонке относится. */
+  fromColumn: string,
+  /** Название для отображения на интерфейсе. */
+  displayName: string,
+  /** Группировка относительно других колонок. */
+  treePath: string[],
+  /** Канал-справочник. */
+  lookupChannelName: string | null,
+  /** Название канала для привязанной таблицы. */
+  secondLevelChannelName: string | null,
+}
+
+/** Информация о колонках, необходимых для редакторов параметров.
+ * + `id`: {@link LookupColumnInfo}
+ * + `value`: {@link LookupColumnInfo}
+ * + `parent`: {@link LookupColumnInfo}
+ * */
+interface LookupColumns {
+  /** Название и индекс колонки с идентификаторами. */
+  id: LookupColumnInfo,
+  /** Название и индекс колонки со значениями. */
+  value: LookupColumnInfo,
+  /** Название и индекс колонки с ID родителей. */
+  parent: LookupColumnInfo,
+}
+
+/** Информация о колонке канала необходимой для редакторов параметров. */
+interface LookupColumnInfo {
+  /** Название колонки. */
+  name: string,
+  /** Порядковый номер. */
+  index: number,
+}
+
+/** Настройки запроса данных. */
+interface ChannelQuerySettings {
+  /** Ограничение по количеству строк. */
+  maxRowCount: number | null,
+  /** Порядок сортировки строк. */
+  order: SortOrder,
+  /** Фильтры. */
+  filters: any[] | null,
+}
+
+/** Порядок сортировки. */
+type SortOrder = SortOrderItem[];
+
+/** Элемент порядка сортировки.
+ * + `column: string`
+ * + `direction`: {@link SortOrderDirection}
+ * */
+interface SortOrderItem {
+  /** ID колонки. */
+  column: string,
+  /** Направление сортировки. */
+  direction: SortOrderDirection,
+}
+
+/** Направление порядка.
+ * + `asc`  — в порядке возрастания
+ * + `desc` — в порядке убывания
+ * */
+type SortOrderDirection = 'asc' | 'desc';
+
 
 /** Набор пар канал-данные. */
 type ChannelDataEntries = [ChannelName, ChannelData][];
+
+/* --- Lookup --- */
+
+/** Список возможных значений из канала-справочника. */
+type LookupList = LookupListItem[];
+
+/** Значение из канала справочника.
+ * + `id: any`
+ * + `value: any`
+ * */
+interface LookupListItem {
+  /** Идентификатор; обычно число. */
+  id: LookupItemID,
+  /** Значение; обычно строка. */
+  value: any,
+}
+
+/** Дерево возможных значений из канала-справочника. */
+type LookupTree = LookupTreeNode[];
+
+/** Элемент дерева значений канала-справочника.
+ * + `id: any`
+ * + `value: any`
+ * + `children?`: {@link LookupTreeNode}[]
+ * */
+interface LookupTreeNode {
+  /** Идентификатор; обычно число. */
+  id: LookupItemID,
+  /** Значение; обычно строка. */
+  value: any,
+  /** Идентификатор родителя. */
+  parent?: LookupItemID,
+  /** Дочерние элементы. */
+  children?: LookupTreeNode[],
+}
+
+/** Словарь данных канала-справочника. */
+type LookupDict = Record<LookupItemID, any>;
+
+/** Идентификатор значения из канала-справочника. */
+type LookupItemID = number | string;

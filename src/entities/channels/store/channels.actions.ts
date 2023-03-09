@@ -21,6 +21,16 @@ export const setChannelsData = (payload: ChannelDataEntries): ChannelsAction => 
   return {type: ChannelsActions.SET_CHANNELS_DATA, payload};
 };
 
+/** Добавляет или перезаписывает данные о порядке строк. */
+export const setChannelSortOrder = (name: ChannelName, order: SortOrder): ChannelsAction => {
+  return {type: ChannelsActions.SET_SORT_ORDER, payload: {name, order}};
+};
+
+/** Перезаписывает ограничитель количества строк. */
+export const setChannelMaxRowCount = (name: ChannelName, count: number | null): ChannelsAction => {
+  return {type: ChannelsActions.SET_MAX_ROW_COUNT, payload: {name, count}};
+};
+
 /** Очищает данные всех каналов. */
 export const clearChannels = (): ChannelsAction => {
   return {type: ChannelsActions.CLEAR};

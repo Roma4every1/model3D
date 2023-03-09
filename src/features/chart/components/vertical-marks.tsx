@@ -12,10 +12,19 @@ import { measureText } from 'shared/lib';
 export interface ChartMarkProps {
   key: string,
   x: string,
-  label: {content: FunctionComponent, value: any},
+  label: {content: FunctionComponent, value: ChartMarkLabelItem[]},
   stroke: string,
 }
+interface ChartMarkLabelItem {
+  id: string,
+  text?: string,
+  property: ChannelProperty,
+}
 
+interface ChartMarkViewProps {
+  value: ChartMarkLabelItem[],
+  viewBox: {x: number, y: number, width: number, height: number},
+}
 interface MarkTextBoxProps {
   x: number,
   y: number,
@@ -28,22 +37,15 @@ export const getChartMarkProto = (
   x: string, key: string, property: ChannelProperty,
   item: SeriesSettingsItem, id: string,
 ): ChartMarkProps => {
-  const value = getChartMarkLabel(property, id);
-  return {x, key, label: {content: ChartMarkView, value: [value]}, stroke: item.color};
+  const value = [{id, property}];
+  return {x, key, label: {content: ChartMarkView, value}, stroke: item.color};
 };
-
-export const getChartMarkLabel = (property: ChannelProperty, id: string) => {
-  const expandedText = 'TODO'; // property.lookupData.find(datum => datum.id === id)?.value;
-  return {defaultText: property.displayName, expandedText};
-};
-
-const payload = {strokeDasharray: '6 6'};
 
 export const getChartMarkLegend = (id: string, name: string, color: string): Payload => {
-  return {id, type: 'plainline', value: name, payload, color};
+  return {id, type: 'plainline', value: name, payload: {strokeDasharray: '6 6'}, color};
 };
 
-const ChartMarkView = ({value, viewBox: { x, height }}) => {
+const ChartMarkView = ({value, viewBox: { x, height }}: ChartMarkViewProps) => {
   const [expandArray, setExpandArray] = useState<boolean[]>(new Array(value.length).fill(false));
 
   const y = height / 2;
@@ -51,7 +53,7 @@ const ChartMarkView = ({value, viewBox: { x, height }}) => {
 
   for (let i = 0; i < value.length; i++) {
     const item = value[i], isExpanded = expandArray[i];
-    const text = isExpanded ? item.expandedText : item.defaultText;
+    const text = isExpanded && item.text ? item.text : item.property.displayName;
 
     const onClick = () => {
       setExpandArray(expandArray.map((expanded, idx) => idx === i ? !expanded : expanded));

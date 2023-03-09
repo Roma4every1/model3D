@@ -1,9 +1,9 @@
 import { Dispatch } from 'redux';
 import { Thunk, StateGetter } from 'shared/lib';
-import { channelsAPI } from 'entities/channels/lib/channels.api';
-import { fillChannels } from '../lib/utils';
+import { fillChannel, fillChannels } from '../lib/utils';
 import { findChannelsByTables } from '../lib/common';
 import { setChannelData, setChannelsData } from './channels.actions';
+import { setChannelSortOrder, setChannelMaxRowCount } from './channels.actions';
 
 
 /** Перезагрузить данные каналов. */
@@ -24,52 +24,33 @@ export const reloadChannels = (names: ChannelName[]): Thunk => {
 export const reloadChannel = (name: ChannelName): Thunk => {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const { channels, parameters } = getState();
-    const dict = {[name]: channels[name]};
-    await fillChannels(dict, parameters);
-
-    const { data, tableID } = dict[name];
+    await fillChannel(channels[name], parameters);
+    const { data, tableID } = channels[name];
     dispatch(setChannelData(name, data, tableID));
   };
 };
 
-/* --- Table Editing --- */
-
-export const insertRows = (tableID: TableID, rows: ChannelRow[]): Thunk<boolean> => {
-  return async (dispatch: Dispatch) => {
-    const res = await channelsAPI.insertRow(tableID, rows);
-    updateTablesByResult(res, tableID, dispatch);
-    return res.ok;
+/** Обновляет порядок сортировки и перезагружает канал. */
+export const updateSortOrder = (name: ChannelName, order: SortOrder): Thunk => {
+  return async (dispatch: Dispatch, getState: StateGetter) => {
+    dispatch(setChannelSortOrder(name, order));
+    await reloadChannel(name)(dispatch, getState);
   };
 };
 
-export const updateRows = (tableID: TableID, ids: number[], rows: ChannelRow[]): Thunk<boolean> => {
-  return async (dispatch: Dispatch) => {
-    const res = await channelsAPI.updateRows(tableID, ids, rows);
-    updateTablesByResult(res, tableID, dispatch);
-    return res.ok && !res.data.WrongResult;
+/** Обновляет ограничитель количества строк и перезагружает канал. */
+export const updateMaxRowCount = (name: ChannelName, count: number): Thunk => {
+  return async (dispatch: Dispatch, getState: StateGetter) => {
+    dispatch(setChannelMaxRowCount(name, count));
+    await reloadChannel(name)(dispatch, getState);
   };
 };
 
-export const deleteRows = (tableID: TableID, ids: number[], all: boolean): Thunk<boolean> => {
-  return async (dispatch: Dispatch) => {
-    const res = await channelsAPI.removeRows(tableID, ids, all);
-    updateTablesByResult(res, tableID, dispatch);
-    return res.ok && !res.data.WrongResult;
-  };
-};
-
-const updateTablesByResult = (res: Res<Report>, tableID: TableID, dispatch: Dispatch<any>) => {
-  const tables = [tableID];
-  if (res.ok && !res.data.WrongResult) {
-    tables.push(...res.data.ModifiedTables?.ModifiedTables);
-  }
-  dispatch(updateTables(tables));
-};
-
+/** Перезагрузить данные каналов по ID таблиц. */
 export const updateTables = (tables: TableID[]) => {
-  return (dispatch: Dispatch<any>, getState: StateGetter) => {
+  return async (dispatch: Dispatch<any>, getState: StateGetter) => {
     const state = getState();
     const channelNames = findChannelsByTables(tables, state.channels);
-    dispatch(reloadChannels(channelNames));
+    await reloadChannels(channelNames)(dispatch, () => state);
   };
 };

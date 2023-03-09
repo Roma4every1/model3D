@@ -1,5 +1,6 @@
 import { BaseAPI, API } from 'shared/lib';
 import { serializeParameter } from 'entities/parameters';
+import { applyQuerySettings } from './common';
 
 
 interface ChannelDTO {
@@ -58,10 +59,11 @@ export class ChannelsAPI {
   }
 
   /** Запрос данных канала. */
-  public async getChannelData(channelName: ChannelName, parameters: Parameter[]) {
+  public async getChannelData(name: ChannelName, parameters: Parameter[], query: ChannelQuerySettings) {
     const sessionID = this.baseAPI.sessionID;
     const paramValues = parameters.map(serializeParameter);
-    const body = JSON.stringify({sessionId: sessionID, channelName, paramValues});
+    applyQuerySettings(paramValues, query);
+    const body = JSON.stringify({sessionId: sessionID, channelName: name, paramValues});
 
     const req: WRequest = {method: 'POST', path: 'getChannelDataByName', body};
     const res = await this.request<ChannelDTO>(req);
@@ -93,7 +95,7 @@ export class ChannelsAPI {
   }
 
   /** Запрос на добавление записи в таблицу. */
-  public async insertRow(tableID: TableID, newRows: ChannelRow[]) {
+  public async insertRows(tableID: TableID, newRows: ChannelRow[]) {
     const rowData = JSON.stringify(newRows);
     const query = {sessionId: this.baseAPI.sessionID, tableId: tableID, rowData};
     return await this.request<Report>({path: 'insertRow', query});
@@ -108,9 +110,10 @@ export class ChannelsAPI {
   }
 
   /** Запрос на удаление записей из таблицы. */
-  public async removeRows(tableID: TableID, ids: number[], all: boolean) {
+  public async removeRows(tableID: TableID, ids: number[] | 'all') {
     const sessionId = this.baseAPI.sessionID;
-    const query = {sessionId, tableId: tableID, rows: ids.join(','), removeAll: String(all)};
+    const rows = ids === 'all' ? '' : ids.join(',');
+    const query = {sessionId, tableId: tableID, rows, removeAll: String(ids === 'all')};
     return await this.request<Report>({path: 'removeRows', query});
   }
 }

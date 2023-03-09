@@ -1,0 +1,33 @@
+.column-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  > * {
+    font-size: 13px;
+    border: none;
+    height: 20px;
+    text-align: left;
+    padding: 2px 4px;
+  }
+
+  .k-icon {
+    margin-right: 4px;
+  }
+
+  span {
+    vertical-align: center;
+  }
+
+  button {
+    border-radius: 2px;
+    background-color: inherit;
+    transition: 0.2s;
+
+    &:hover {
+      background-color: #eedcdc;
+    }
+    &:disabled {
+      background-color: inherit;
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import { Payload } from 'recharts/types/component/DefaultLegendContent';
 import { YAxisProps, getYAxisProto, toMonYear, toYear, monthStep, yearStep } from '../components/axes';
 import { ChartDiagram, getDiagramProto, getDiagramLegend } from '../components/diagrams';
-import { ChartMarkProps, getChartMarkProto, getChartMarkLegend, getChartMarkLabel } from '../components/vertical-marks';
+import { ChartMarkProps, getChartMarkProto, getChartMarkLegend } from '../components/vertical-marks';
 
 
 export interface ChartProto {
@@ -69,7 +69,7 @@ export const getChartProto = (
           const id = rows[i].Cells[dataIndex], key = dataKey + i;
           const sameMark = marks.find(mark => mark.x === xValue.x);
           if (sameMark) {
-            sameMark.label.value.push(getChartMarkLabel(property, id));
+            sameMark.label.value.push({id, property});
           } else {
             marks.push(getChartMarkProto(xValue.x, key, property, item, id));
           }

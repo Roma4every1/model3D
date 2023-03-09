@@ -1,10 +1,11 @@
 import { IJsonModel } from 'flexlayout-react';
 import { serializeParameter } from 'entities/parameters';
+import { TableFormSettings, tableStateToFormSettings } from 'features/table';
 
 
-type FormParamsArray = {id: FormID, value: SerializedFormParameter[]}[];
+type FormParamsArray = {id: FormID, value: SerializedParameter[]}[];
 type FormLayoutArray = ({id: FormID} & IJsonModel)[];
-type FormSettingsArray = ({id: FormID} & FormSettings)[];
+type FormSettingsArray = TableFormSettings[];
 
 /** Модель, используемая в серверных запросах для сохранения сессии. */
 export interface SessionToSave {
@@ -22,7 +23,7 @@ export function getSessionToSave(state: WState): SessionToSave {
     activeParams: getParametersToSave(state.parameters),
     children: getChildrenToSave(state.root, state.presentations),
     layout: getLayoutsToSave(state.presentations),
-    settings: getSettingsToSave(state.forms),
+    settings: getSettingsToSave(state.tables),
   };
 }
 
@@ -61,12 +62,11 @@ function presentationStateToChildren(state: PresentationState): FormChildrenStat
 
 /* --- Settings --- */
 
-function getSettingsToSave(formsSettings: FormsState): FormSettingsArray {
+function getSettingsToSave(tableStates: TablesState): FormSettingsArray {
   const settingsArray: FormSettingsArray = [];
-  for (const id in formsSettings) {
-    const formSettings = formsSettings[id].settings;
-    if (formSettings.hasOwnProperty('columns'))
-      settingsArray.push({...formSettings, id});
+  for (const id in tableStates) {
+    const tableState = tableStates[id];
+    settingsArray.push(tableStateToFormSettings(id, tableState));
   }
   return settingsArray;
 }

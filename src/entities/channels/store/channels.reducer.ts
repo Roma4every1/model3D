@@ -5,6 +5,8 @@ export enum ChannelsActions {
   SET_CHANNELS = 'channels/sets',
   SET_CHANNEL_DATA = 'channels/datum',
   SET_CHANNELS_DATA = 'channels/data',
+  SET_SORT_ORDER = 'channels/order',
+  SET_MAX_ROW_COUNT = 'channels/count',
   CLEAR = 'channels/clear',
 }
 
@@ -26,12 +28,20 @@ interface ActionSetChannelsData {
   type: ChannelsActions.SET_CHANNELS_DATA,
   payload: ChannelDataEntries,
 }
+interface ActionSetSortOrder {
+  type: ChannelsActions.SET_SORT_ORDER,
+  payload: {name: ChannelName, order: SortOrder},
+}
+interface ActionSetMaxRowCount {
+  type: ChannelsActions.SET_MAX_ROW_COUNT,
+  payload: {name: ChannelName, count: number | null}
+}
 interface ActionClear {
   type: ChannelsActions.CLEAR,
 }
 
-export type ChannelsAction = ActionSetChannel | ActionSetChannels |
-  ActionSetChannelData | ActionSetChannelsData | ActionClear;
+export type ChannelsAction = ActionSetChannel | ActionSetChannels | ActionSetChannelData |
+  ActionSetChannelsData | ActionSetSortOrder | ActionSetMaxRowCount | ActionClear;
 
 /* --- Init State & Reducer --- */
 
@@ -59,6 +69,19 @@ export const channelsReducer = (state: ChannelDict = init, action: ChannelsActio
         state[name] = {...state[name], data}
       }
       return {...state};
+    }
+
+    case ChannelsActions.SET_SORT_ORDER: {
+      const { name, order } = action.payload;
+      const channel = state[name];
+      return {...state, [name]: {...channel, query: {...channel.query, order}}};
+    }
+
+    case ChannelsActions.SET_MAX_ROW_COUNT: {
+      const { name, count } = action.payload;
+      const channel = state[name];
+      const query: ChannelQuerySettings = {...channel.query, maxRowCount: count};
+      return {...state, [name]: {...channel, query}}
     }
 
     case ChannelsActions.CLEAR: {

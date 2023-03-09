@@ -22,7 +22,11 @@ type Parameter = ParamBool | ParamInteger | ParamIntegerArray | ParamString |
   ParamTableRow | ParamTableCell | ParamCellsArray;
 
 /** Необходимые свойства параметра для получения данных канала. */
-type SerializedFormParameter = {id: ParameterID, type: ParameterType, value: string | null};
+type SerializedParameter = {
+  id: ParameterID,
+  type: ParameterType | 'sortOrder',
+  value: string | null
+};
 
 /** ### Параметр, хранящий булево значение.
  * Редакторы: `boolTextEditor`.

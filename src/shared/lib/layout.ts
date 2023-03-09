@@ -17,3 +17,10 @@ export function getTextLinesCount(text: string, maxWidth: number): number {
   }
   return lines;
 }
+
+/** Возвращает функцию, которая измеряет длину текста. */
+export function getMeasurerForFont(font: string): (text: string) => number {
+  const ctx = canvas.getContext('2d');
+  ctx.font = font;
+  return (text: string) => Math.ceil(ctx.measureText(text).width);
+}

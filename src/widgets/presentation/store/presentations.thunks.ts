@@ -9,8 +9,8 @@ import { applyChannelsDeps } from '../lib/channels-auto-update';
 import { setParamDict } from 'entities/parameters';
 import { fetchFormsStart, fetchFormsEnd, fetchFormError } from 'entities/fetch-state';
 import { setPresentationState } from './presentations.actions';
+import { createTableState } from 'features/table';
 import { createMapState } from 'features/map/store/maps.actions';
-// import { createCaratState } from 'features/carat/store/carats.actions';
 import { setFormsState } from 'widgets/presentation/store/forms.actions';
 
 
@@ -41,13 +41,15 @@ export const fetchPresentationState = (id: FormID): Thunk => {
 
     const [baseChannels, childrenChannelNames] = await getPresentationChannels(id, childrenID);
     const formsState = await createFormStates(id, children, childrenChannelNames);
-    applyCustomFormStates(dispatch, id, children);
 
     const existingChannels = Object.keys(state.channels);
     const channels = await createClientChannels(baseChannels, paramDict, existingChannels);
 
+    const allChannels = {...state.channels, ...channels};
+    for (const id of childrenID) createFormState(id, formsState[id], allChannels, dispatch);
+
     paramDict[rootID] = state.parameters[rootID];
-    applyChannelsDeps(channels, paramDict);
+    applyChannelsDeps(allChannels, paramDict);
     await fillChannels(channels, paramDict);
 
     dispatch(setParamDict(paramDict));
@@ -57,9 +59,13 @@ export const fetchPresentationState = (id: FormID): Thunk => {
   };
 };
 
-function applyCustomFormStates(dispatch: Dispatch, parentID: FormID, data: FormDataWMR[]) {
-  for (const { id, type } of data) {
-    if (type === 'map') dispatch(createMapState(id, parentID));
-    // if (type === 'carat') dispatch(createCaratState(id));
+function createFormState(id: FormID, state: FormState, channelDict: ChannelDict, dispatch: Dispatch) {
+  const type = state.type;
+
+  if (type === 'dataSet') {
+    const channel = channelDict[state.channels[0]];
+    dispatch(createTableState(id, channel, state.settings));
+  } else if (type === 'map') {
+    dispatch(createMapState(id, state.parent));
   }
 }

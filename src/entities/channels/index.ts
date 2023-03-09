@@ -1,6 +1,8 @@
 export { createChannels, fillChannels } from './lib/utils';
-export { addExternalChannels, addLinkedChannels, applyEditorColumnNames } from './lib/common';
+export { createLookupList, createLookupTree } from './lib/lookup';
+export { getExternalChannels, getLinkedChannels, getLookupChannels } from './lib/common';
 
-export * from './store/channels.thunks';
 export * from './store/channels.actions';
 export * from './store/channels.selectors';
+export { reloadChannel, reloadChannels } from './store/channels.thunks';
+export { updateSortOrder, updateMaxRowCount, updateTables } from './store/channels.thunks';

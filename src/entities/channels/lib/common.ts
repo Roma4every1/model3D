@@ -1,3 +1,14 @@
+export function applyQuerySettings(paramValues: SerializedParameter[], query: ChannelQuerySettings) {
+  if (query.maxRowCount) {
+    paramValues.push({id: 'readAllRows', type: 'bool', value: 'false'});
+    paramValues.push({id: 'maxRowCount', type: 'integer', value: query.maxRowCount.toString()});
+  }
+  if (query.order.length) {
+    const value = query.order.map(sort => sort.column + ' ' + sort.direction).join(',');
+    paramValues.push({id: 'sortOrder', type: 'sortOrder', value});
+  }
+}
+
 /** По ID таблиц находит нужные каналы. */
 export function findChannelsByTables(ids: TableID[], channels: ChannelDict): ChannelName[] {
   const channelNames: ChannelName[] = [];
@@ -12,64 +23,35 @@ export function findChannelsByTables(ids: TableID[], channels: ChannelDict): Cha
 
 /* --- --- */
 
-/** Добавляет привязанные каналы. */
-export function addLinkedChannels(channel: Channel, set: Set<ChannelName>) {
-  for (const property of channel.info.properties) {
-    const { lookupChannelName, secondLevelChannelName } = property;
-    if (lookupChannelName) set.add(lookupChannelName);
-    if (secondLevelChannelName) set.add(secondLevelChannelName);
+/** Находит и возвращает список привязанных каналов. */
+export function getLinkedChannels(dict: ChannelDict): Set<ChannelName> {
+  const linkedChannels = new Set<ChannelName>();
+  for (const name in dict) {
+    const properties = dict[name].info.properties;
+    for (const property of properties) {
+      const linkedChannelName = property.secondLevelChannelName;
+      if (linkedChannelName) linkedChannels.add(linkedChannelName);
+    }
   }
+  return linkedChannels;
 }
 
-/** Добавляет каналы, необходимые для параметров. */
-export function addExternalChannels(params: Parameter[], set: Set<ChannelName>) {
+/** Находит и возвращает список каналов-справочников. */
+export function getLookupChannels(dict: ChannelDict): Set<ChannelName> {
+  const lookupChannels = new Set<ChannelName>();
+  for (const name in dict) {
+    const lookups = dict[name].info.lookupChannels;
+    for (const lookupName of lookups) lookupChannels.add(lookupName);
+  }
+  return lookupChannels;
+}
+
+/** Находит и возвращает список каналов, необходимых для параметров. */
+export function getExternalChannels(params: Parameter[]): Set<ChannelName> {
+  const externalChannels = new Set<ChannelName>();
   for (const param of params) {
     const channel = param.externalChannelName;
-    if (channel) set.add(channel);
+    if (channel) externalChannels.add(channel);
   }
-}
-
-/* --- Editor Columns --- */
-
-export function findEditorColumnIndexes(columns: ChannelColumn[], editorColumns: EditorColumns) {
-  const codeName = editorColumns.lookupCode.name;
-  const valueName = editorColumns.lookupValue.name;
-  const parentName = editorColumns.lookupParentCode.name;
-
-  columns.forEach((column, i) => {
-    const name = column.Name;
-    if (name === codeName) return editorColumns.lookupCode.index = i;
-    if (name === valueName) return editorColumns.lookupValue.index = i;
-    if (name === parentName) return editorColumns.lookupParentCode.index = i;
-  });
-}
-
-export function applyEditorColumnNames(channel: Channel) {
-  let codeColumnName = 'LOOKUPCODE';
-  let valueColumnName = 'LOOKUPVALUE';
-  let parentColumnName = 'LOOKUPPARENTCODE';
-
-  let codePropertyColumnName, valuePropertyColumnName, parentPropertyColumnName;
-  for (const property of channel.info.properties) {
-    const upper = property.name.toUpperCase();
-    if (upper === codeColumnName) codePropertyColumnName = property;
-    else if (upper === valueColumnName) valuePropertyColumnName = property;
-    else if (upper === parentColumnName) parentPropertyColumnName = property;
-  }
-
-  if (codePropertyColumnName) {
-    codeColumnName = codePropertyColumnName.fromColumn.toUpperCase();
-  }
-  if (valuePropertyColumnName) {
-    valueColumnName = valuePropertyColumnName.fromColumn.toUpperCase();
-  }
-  if (parentPropertyColumnName) {
-    parentColumnName = parentPropertyColumnName.fromColumn.toUpperCase();
-  }
-
-  channel.info.editorColumns = {
-    lookupCode: {name: codeColumnName, index: -1},
-    lookupValue: {name: valueColumnName, index: -1},
-    lookupParentCode: {name: parentColumnName, index: -1},
-  };
+  return externalChannels;
 }

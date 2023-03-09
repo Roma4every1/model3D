@@ -1,6 +1,6 @@
 import { setUnion, leftAntiJoin } from 'shared/lib';
-import { createChannels, applyEditorColumnNames } from 'entities/channels';
-import { addExternalChannels, addLinkedChannels } from 'entities/channels';
+import { createChannels } from 'entities/channels';
+import { getExternalChannels, getLinkedChannels, getLookupChannels } from 'entities/channels';
 import { handleLayout } from './layout';
 import { applyDisplayNamePattern } from './display-name-string';
 import { formsAPI } from 'widgets/presentation/lib/forms.api';
@@ -15,8 +15,7 @@ export async function createPresentationState(id: FormID): Promise<PresentationS
   ]);
 
   if (!resChildren.ok) return;
-  const { children: allChildren, openedChildren, activeChildren } = resChildren.data;
-  const children = allChildren.filter((child) => openedChildren.includes(child.id));
+  const { children, activeChildren } = resChildren.data;
   children.forEach(applyDisplayNamePattern);
 
   const settings = resSettings.ok
@@ -32,22 +31,37 @@ export async function createPresentationState(id: FormID): Promise<PresentationS
   };
 }
 
+/** Создаёт все необходимые каналы для клиента.
+ *
+ * Итоговый список каналов состоит из:
+ * + базовых каналов (передаётся)
+ * + каналов для параметров
+ * + привязанных каналов
+ * + каналов-справочников
+ *
+ * @param set базовый набор каналов
+ * @param dict параметры клиента
+ * @param existing список уже существующих каналов
+ * */
 export async function createClientChannels(set: Set<ChannelName>, dict: ParamDict, existing: ChannelName[]) {
-  const externalSet: Set<ChannelName> = new Set();
-  Object.values(dict).forEach((params) => addExternalChannels(params, externalSet));
+  const clientParams: Parameter[] = [];
+  Object.values(dict).forEach((params) => { clientParams.push(...params); });
+  const externalSet = getExternalChannels(clientParams);
 
-  const names = [...leftAntiJoin(setUnion(set, externalSet), existing)];
-  const channels = await createChannels(names);
+  const baseNames = [...leftAntiJoin(setUnion(set, externalSet), existing)];
+  const baseChannels = await createChannels(baseNames);
+  existing = existing.concat(baseNames);
 
-  externalSet.forEach((name) => applyEditorColumnNames(channels[name]));
-
-  set = new Set();
-  names.forEach((name) => addLinkedChannels(channels[name], set));
-
-  const linkedNames = [...leftAntiJoin(set, existing.concat(names))];
+  const linkedSet = getLinkedChannels(baseChannels);
+  const linkedNames = [...leftAntiJoin(linkedSet, existing)];
   const linkedChannels = await createChannels(linkedNames);
+  existing = existing.concat(linkedNames);
 
-  return {...channels, ...linkedChannels} as ChannelDict;
+  const lookupSet = getLookupChannels({...baseChannels, ...linkedChannels});
+  const lookupNames = [...leftAntiJoin(lookupSet, existing)];
+  const lookupChannels = await createChannels(lookupNames);
+
+  return {...baseChannels, ...linkedChannels, ...lookupChannels};
 }
 
 /** Запрашивает параметры презентации и всех дочерних форм. */
@@ -78,28 +92,47 @@ export async function getPresentationChannels(id: FormID, ids: FormID[]) {
   return [all, dict] as [Set<ChannelName>, Record<FormID, ChannelName[]>];
 }
 
-export async function createFormStates(id: FormID, data: FormDataWMR[], channels: Record<FormID, ChannelName[]>) {
+export async function createFormStates(
+  parent: FormID, data: FormDataWMR[],
+  channels: Record<FormID, ChannelName[]>
+) {
   const states: FormsState = {};
   const settingsArray = await Promise.all(data.map(createFormSettings));
 
-  data.forEach(({ id, type }, i) => {
-    states[id] = {id, type, parent: id, channels: channels[id], settings: settingsArray[i]};
+  data.forEach(({id, type}, i) => {
+    states[id] = {id, type, parent, channels: channels[id], settings: settingsArray[i]};
   });
   return states;
 }
 
 async function createFormSettings({id, type}: FormDataWMR): Promise<FormSettings> {
-  let settings: any = {};
-  if (type === 'dataSet' || type === 'chart') {
+  if (type === 'dataSet') {
     const res = await formsAPI.getFormSettings(id);
-    if (res.ok) settings = res.data;
+    if (!res.ok) return {};
+    const settings = res.data;
+
+    const resPlugin = await formsAPI.getPluginData(id, 'tableColumnHeaderSetter');
+    const rules: any[] = resPlugin.ok ? resPlugin.data?.tableColumnHeaderSetter?.specialLabel : [];
+
+    settings.headerSetterRules = rules?.map((item): HeaderSetterRule => ({
+      parameter: item['@switchingParameterName'],
+      property: item['@ChannelPropertyName'],
+      column: item['@columnName'],
+    })) ?? [];
+
+    return settings;
   }
 
-  if (settings.seriesSettings) {
+  if (type === 'chart') {
+    const res: Res<ChartFormSettings> = await formsAPI.getFormSettings(id);
+    if (!res.ok) return {};
+    const settings = res.data;
+
     const seriesSettingsKeys = Object.keys(settings.seriesSettings);
     const firstSeries = settings.seriesSettings[seriesSettingsKeys[0]];
     settings.dateStep = firstSeries?.dateStep === 'Month' ? 'month' : 'year';
-    settings.tooltip = true;
+    settings.tooltip = false;
+    return settings;
   }
-  return settings;
+  return {};
 }

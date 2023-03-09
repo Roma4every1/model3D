@@ -1,0 +1,37 @@
+import { ToolbarActions } from '../../lib/types';
+import { useTranslation } from 'react-i18next';
+import { ButtonIconStock } from 'shared/ui';
+import { SelectionNavigation } from './selection-navigation';
+import { EditButtons } from './edit-buttons';
+import { ReloadButton } from './reload-button';
+import './table-toolbar.scss';
+
+
+interface TableToolbarProps {
+  id: FormID,
+  state: TableState,
+  actions: ToolbarActions,
+  selectedRecords: TableRecordID[],
+}
+
+
+export const TableToolbar = ({id, state, actions, selectedRecords}: TableToolbarProps) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className={'table-toolbar'}>
+      <ButtonIconStock
+        icon={'excel'} title={t('table.toolbar.export-to-excel')}
+      />
+      <SelectionNavigation
+        selectedRecords={selectedRecords} total={state.total}
+        actions={actions} t={t}
+      />
+      {state.editable && <EditButtons
+        state={state} actions={actions}
+        selectedRecords={selectedRecords} t={t}
+      />}
+      <ReloadButton id={id} t={t}/>
+    </div>
+  );
+};
