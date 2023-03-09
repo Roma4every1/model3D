@@ -21,7 +21,8 @@ export enum MapsActions {
   CANCEL_EDITING = 'maps/cancelEdit',
   START_CREATING = 'maps/startCreate',
   CREATE_ELEMENT = 'maps/createEl',
-  CANCEL_CREATING = 'maps/cancelCreate'
+  CANCEL_CREATING = 'maps/cancelCreate',
+  ADD_LAYER = 'maps/addLayer'
 }
 
 /* --- Action Interfaces --- */
@@ -91,11 +92,16 @@ interface ActionCancelCreating extends MapAction {
   type: MapsActions.CANCEL_CREATING,
 }
 
+interface ActionAddLayer extends MapAction {
+  type: MapsActions.ADD_LAYER,
+  payload: MapLayer,
+}
+
 export type MapsAction = ActionAddMulti | ActionSetSync | ActionAdd |
   ActionStartLoad | ActionLoadSuccess | ActionLoadError |
   ActionSetMode | ActionSetDimensions | ActionSetField | ActionClearSelect |
   ActionStartEditing | ActionAcceptEditing | ActionCancelEditing |
-  ActionStartCreating | ActionCreateElement | ActionCancelCreating;
+  ActionStartCreating | ActionCreateElement | ActionCancelCreating | ActionAddLayer;
 
 /* --- Reducer Utils --- */
 
@@ -375,6 +381,14 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
       newMapState.mode = MapModes.NONE;
       newMapState.utils.updateCanvas();
       state.single[action.formID] = newMapState;
+      return {...state};
+    }
+
+    case MapsActions.ADD_LAYER: {
+      const { formID, payload } = action;
+      const mapData = state.single[formID].mapData
+      const newLayers = [...mapData.layers, payload]
+      state.single[formID] = {...state.single[formID], mapData: {...mapData, layers: newLayers}};
       return {...state};
     }
 

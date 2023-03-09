@@ -90,3 +90,8 @@ export const createMapElement = (formID: FormID, element: MapElement): MapsActio
 export const cancelCreatingElement = (formID: FormID): MapsAction => {
   return {type: MapsActions.CANCEL_CREATING, formID};
 };
+
+/** Выйти из режима создания элемента. */
+export const addMapLayer = (formID: FormID, layer: MapLayer): MapsAction => {
+  return {type: MapsActions.ADD_LAYER, formID, payload: layer};
+};

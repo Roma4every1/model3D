@@ -3,15 +3,19 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Scroller } from '../drawer/scroller';
 import { MapNotFound, MapLoadError} from '../../multi-map/multi-map-item';
-import { getFullViewport, getMultiMapChildrenCanvases } from '../lib/map-utils';
+import { getFullViewport, getMultiMapChildrenCanvases} from '../lib/map-utils';
 import { mapsStateSelector, mapStateSelector } from '../store/maps.selectors';
-import { setMapField, loadMapSuccess } from '../store/maps.actions';
+import {
+  setMapField,
+  loadMapSuccess, addMapLayer, setActiveLayer, startCreatingElement, createMapElement, setEditMode,
+} from '../store/maps.actions';
 import { fetchMapData } from '../store/maps.thunks';
 import { tableRowToString } from 'entities/parameters/lib/table-row';
 import { updateParam, currentWellIDSelector } from 'entities/parameters';
 import { channelSelector, applyEditorColumnNames } from 'entities/channels';
 import { CircularProgressBar } from 'shared/ui';
-
+import { getCurrentTraceMapElement, traceLayerProto} from "../lib/traces-utils";
+import {MapModes} from "../lib/enums";
 
 export const Map = ({id: formID, parent, channels, data}: FormState & {data?: MapData}) => {
   const { t } = useTranslation();
@@ -145,6 +149,53 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
       updateCanvas(cs, canvasRef.current);
     }
   });
+
+  /** СОЗДАНИЕ СЛОЯ ДЛЯ ТРАСС **/
+  useEffect( () => {
+    if (!mapState?.isLoadSuccessfully ||
+      mapData.layers.find(layer => layer.uid==='{TRACES-LAYER}')) return;
+
+    dispatch(addMapLayer(formID, traceLayerProto));
+  }, [formID, mapState?.isLoadSuccessfully, dispatch, mapData?.layers]);
+
+  const tracesChannelName = 'traces';
+  const traces: Channel = useSelector(channelSelector.bind(tracesChannelName));
+  const currentTraceParamValue = useSelector<WState, string | null>(
+    (state: WState) =>
+      state.parameters[state.root.id]
+      .find(el => el.id === 'currentTrace')
+      ?.value?.toString() || null
+  )
+  /** **/
+
+  /** СОЗДАНИЕ И ОТРИСОВКА ВЫБРАННОЙ ТРАССЫ **/
+  useEffect( () => {
+    if (!mapState?.isLoadSuccessfully ||
+      !mapData ) return;
+
+    const traceLayer = mapData.layers.find(layer => layer.uid==='{TRACES-LAYER}');
+    if (!traceLayer) return;
+    traceLayer.elements = [];
+
+    const traceElement= getCurrentTraceMapElement(
+      formID,
+      mapData.points,
+      currentTraceParamValue,
+      traces
+    )
+    if (!traceElement) return;
+
+    dispatch(setActiveLayer(formID, traceLayerProto));
+    dispatch(startCreatingElement(formID));
+    dispatch(createMapElement(formID, traceElement));
+    dispatch(setEditMode(formID, MapModes.NONE));
+    dispatch(setActiveLayer(formID, null));
+  }, [formID, mapState.isLoadSuccessfully, mapData, traces, currentTraceParamValue, dispatch]);
+
+  useEffect( () => {
+    mapState?.utils.updateCanvas()
+  }, [mapData?.layers, currentTraceParamValue, mapState?.utils]);
+  /** **/
 
   if (!mapState) return null;
   if (!isMapExist) return <MapNotFound t={t}/>;
