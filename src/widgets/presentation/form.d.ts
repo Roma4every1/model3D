@@ -74,8 +74,5 @@ interface FormState {
   channels: ChannelName[],
 }
 
-/** Настройки формы.
- * + {@link DataSetFormSettings} для таблиц
- * + {@link ChartFormSettings} для графиков
- * */
-type FormSettings = DataSetFormSettings | ChartFormSettings | {};
+/** Настройки формы. */
+type FormSettings = any | ChartFormSettings | {};

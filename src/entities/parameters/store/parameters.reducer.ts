@@ -74,7 +74,7 @@ export const parametersReducer = (state: ParamDict = init, action: FormParamsAct
       if (index === -1) return state;
 
       params[index] = {...params[index], value};
-      return {...state};
+      return {...state, [formID]: [...params]};
     }
 
     case FormParamsActions.CLEAR: {

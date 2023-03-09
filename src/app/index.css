@@ -64,26 +64,6 @@ html {
   white-space: pre-wrap;
 }
 
-.reports-header {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  justify-content: space-between;
-  padding-left: 8px;
-}
-
-.report-item {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: flex-start;
-  justify-content: flex-start;
-  grid-gap: 4px;
-  margin: 0 6px;
-  padding: 6px 0;
-  border-top: 1px solid #a7afb0;
-  cursor: default;
-}
-
 .k-expander-header {
   padding: 4px;
 }
@@ -323,9 +303,4 @@ html {
 
 .k-multicheck-wrap {
   max-height: 20vh;
-}
-
-.popuptreeview {
-  font-size: 12px;
-  max-height: 60vh;
 }

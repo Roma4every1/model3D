@@ -1,43 +1,64 @@
 import { Dispatch } from 'redux';
+import { t } from 'shared/locales';
 import { reportsAPI } from './reports.api';
-import { setReport } from '../store/reports.actions';
+import { setOperationStatus } from '../store/reports.actions';
 import { ParamsGetter, fillParamValues } from 'entities/parameters';
+import { updateTables } from '../../channels';
+import { setWindowInfo } from '../../windows';
 
 
-export function watchReport(operationID: string, dispatch: Dispatch) {
-  setTimeout(async function tick() {
-    const result = await getReportStatus(operationID, dispatch);
-    if (result !== true) setTimeout(tick, 1000);
-  }, 1000);
-}
+export function watchReport(report: ReportModel, operationID: OperationID, dispatch: Dispatch<any>) {
+  async function tick() {
+    const { ok, data } = await reportsAPI.getOperationResult(operationID);
+    if (!ok || !data) return;
 
-async function getReportStatus(operationID, dispatch: Dispatch) {
-  const { ok, data } = await reportsAPI.getOperationResult(operationID);
-  if (ok && data) {
-    dispatch(setReport(operationID, data.report));
-    return data.isReady;
-  } else {
-    return true;
+    const modifiedTables = data?.report?.ModifiedTables?.ModifiedTables ?? [];
+    if (modifiedTables.length) dispatch(updateTables(modifiedTables));
+
+    if (data?.reportLog) {
+      const text = data.reportLog;
+      const fileName = report.displayName + '.log';
+      dispatch(setWindowInfo(text, null, t('report.result'), fileName));
+    }
+
+    dispatch(setOperationStatus(convertOperationStatus(data.report)));
+    if (data.isReady === false) setTimeout(tick, 1000);
   }
+  tick();
 }
 
+/** Конвертирует ответ сервера в подготовленный вид. */
+function convertOperationStatus(raw: ReportStatus): OperationStatus {
+  let file: OperationFile | null = null;
+  if (raw.Path) {
+    const name = raw.Path?.split('\\').pop().split('/').pop()
+    file = {name, path: raw.Path, extension: name.split('.').pop()};
+  }
+  return {
+    id: raw.Id, clientID: raw.ID_PR,
+    queueNumber: raw.Ord, progress: raw.Progress, timestamp: new Date(raw.Dt),
+    file, description: raw.Comment, defaultResult: raw.DefaultResult, error: raw.Error,
+  };
+}
+
+/* --- --- */
 
 /** Создаёт список программ/отчётов для презентации. */
-export async function createPrograms(params: ParamDict, rootID: FormID, id: FormID) {
+export async function createReportModels(params: ParamDict, rootID: FormID, id: FormID) {
   const res = await reportsAPI.getPresentationReports(id);
   const programs = res.ok ? res.data : [];
 
   if (programs.length) {
     const paramsGetter: ParamsGetter = (ids) => fillParamValues(ids, params, [rootID, id]);
-    const mapper = (program) => getProgramVisibility(program, paramsGetter);
+    const mapper = (program) => getReportVisibility(program, paramsGetter);
     const visibilityList = await Promise.all(programs.map(mapper));
     programs.forEach((program, i) => program.visible = visibilityList[i]);
   }
   return programs;
 }
 
-async function getProgramVisibility(program: ReportInfo, getter: ParamsGetter): Promise<boolean> {
-  if (!program.needCheckVisibility) return true;
-  const paramValues = getter(program.paramsForCheckVisibility);
-  return reportsAPI.getProgramVisibility(program.id, paramValues);
+async function getReportVisibility(report: ReportModel, getter: ParamsGetter): Promise<boolean> {
+  if (!report.needCheckVisibility) return true;
+  const paramValues = getter(report.paramsForCheckVisibility);
+  return reportsAPI.getProgramVisibility(report.id, paramValues);
 }

@@ -3,10 +3,11 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Checkbox } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
-import { ActiveReport } from './active-report';
-import { reportsSelector, clearReports } from 'entities/reports';
+import { ActiveOperationStatus } from './active-operation-status';
+import { operationsSelector, clearReports } from 'entities/reports';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
-import reportDeleteIcon from 'assets/images/report_delete.png';
+import reportDeleteIcon from 'assets/images/reports/report_delete.png';
+import './active-operations.scss';
 
 
 export interface ActiveReportsProps {
@@ -15,11 +16,11 @@ export interface ActiveReportsProps {
 
 
 /** Список активных отчётов, готовых или в процессе. */
-export const ActiveReports = ({activeID}: ActiveReportsProps) => {
+export const ActiveOperations = ({activeID}: ActiveReportsProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const reports = useSelector(reportsSelector);
+  const operations = useSelector(operationsSelector);
   const [filterByPresentation, setFilterByPresentation] = useState(true);
 
   const deleteReports = () => {
@@ -30,12 +31,12 @@ export const ActiveReports = ({activeID}: ActiveReportsProps) => {
 
   return (
     <>
-      <div className={'reports-header'}>
+      <div className={'active-operations-header'}>
         <Checkbox
           id={'downloadFiles'} name={'downloadFiles'}
           label={t('downloadFiles.filter')}
           value={filterByPresentation}
-          onChange={(e) => {setFilterByPresentation(Boolean(e.target.value))}}
+          onChange={(e) => {setFilterByPresentation(e.value)}}
         />
         <Button className={'k-button k-button-clear'} onClick={deleteReports}>
           <img
@@ -45,12 +46,12 @@ export const ActiveReports = ({activeID}: ActiveReportsProps) => {
         </Button>
       </div>
       {filterByPresentation
-        ? reports.filter(report => report.ID_PR === activeID).map(mapReports)
-        : reports.map(mapReports)}
+        ? operations.filter(o => o.clientID === activeID).map(mapReports)
+        : operations.map(mapReports)}
     </>
   );
 };
 
-const mapReports = (report: Report, i: number) => {
-  return <ActiveReport key={i} report={report}/>;
+const mapReports = (status: OperationStatus, i: number) => {
+  return <ActiveOperationStatus key={i} status={status}/>;
 };

@@ -1,6 +1,6 @@
 import { Dispatch } from 'redux';
 import { StateGetter, Thunk } from 'shared/lib';
-import { createPrograms } from 'entities/reports';
+import { createReportModels, setReportModels } from 'entities/reports';
 import { fillChannels, setChannels } from 'entities/channels';
 import { getPresentationParams, getPresentationChannels } from '../lib/initialization';
 import { createPresentationState, createClientChannels, createFormStates } from '../lib/initialization';
@@ -32,10 +32,11 @@ export const fetchPresentationState = (id: FormID): Thunk => {
     const state = getState();
     const rootID = state.root.id;
 
-    const programParamDict = {[rootID]: state.parameters[rootID], [id]: paramDict[id]};
-    presentation.reports = await createPrograms(programParamDict, rootID, id);
+    const reportParamDict = {[rootID]: state.parameters[rootID], [id]: paramDict[id]};
+    const reportModels = await createReportModels(reportParamDict, rootID, id);
 
     dispatch(fetchFormsStart(childrenID));
+    dispatch(setReportModels(id, reportModels));
     dispatch(setPresentationState(presentation));
     dispatch(fetchFormsEnd([id]));
 

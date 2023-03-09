@@ -10,17 +10,10 @@ import { TableCellComboEditor } from './table-cell.combo-editor';
 import { TableRowComboEditor } from './table-row.combo-editor';
 
 
-interface BaseEditorProps {
-  type: string,
-  displayName: string,
-  editorProps: EditorProps,
-}
-export interface EditorProps<Value = any> {
-  id: ParameterID,
-  formID: FormID,
-  valueSelector: (state: WState) => Value | null
-  channelName: ChannelName,
-  update: (value: Value) => void,
+export interface EditorProps<Param extends Parameter = Parameter> {
+  parameter: Param,
+  channel?: Channel,
+  update: (value: Param['value']) => void,
 }
 
 
@@ -41,13 +34,13 @@ const editorsDict: Record<string, FunctionComponent<EditorProps>> = {
 };
 
 
-export const BaseEditor = ({type, displayName, editorProps}: BaseEditorProps) => {
-  const SpecificEditor = editorsDict[type] || StringEditor;
+export const BaseEditor = (props: EditorProps) => {
+  const SpecificEditor = editorsDict[props.parameter.editorType] || StringEditor;
 
   return (
     <div className={'parameter'}>
-      <span>{displayName}</span>
-      {createElement<EditorProps>(SpecificEditor, editorProps)}
+      <span>{props.parameter.displayName}</span>
+      {createElement<EditorProps>(SpecificEditor, props)}
     </div>
   );
 };

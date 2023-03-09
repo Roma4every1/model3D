@@ -1,11 +1,11 @@
-import csvFileIcon from 'assets/images/download-files/csv.png';
-import docFileIcon from 'assets/images/download-files/doc.png';
-import docxFileIcon from 'assets/images/download-files/docx.png';
-import xlsFileIcon from 'assets/images/download-files/xls.png';
-import xlsmFileIcon from 'assets/images/download-files/xlsm.png';
-import xlsxFileIcon from 'assets/images/download-files/xlsx.png';
-import xlsxmFileIcon from 'assets/images/download-files/xlsxm.png';
-import zipFileIcon from 'assets/images/download-files/zip.png';
+import csvFileIcon from 'assets/images/reports/csv.png';
+import docFileIcon from 'assets/images/reports/doc.png';
+import docxFileIcon from 'assets/images/reports/docx.png';
+import xlsFileIcon from 'assets/images/reports/xls.png';
+import xlsmFileIcon from 'assets/images/reports/xlsm.png';
+import xlsxFileIcon from 'assets/images/reports/xlsx.png';
+import xlsxmFileIcon from 'assets/images/reports/xlsxm.png';
+import zipFileIcon from 'assets/images/reports/zip.png';
 
 
 export const fileExtensionDict: ImageDict = {

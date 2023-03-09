@@ -1,7 +1,8 @@
-import { useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { ParameterList, updateParam } from 'entities/parameters';
-import { reloadChannels } from 'entities/channels';
+import { channelDictSelector, getExternalChannels, reloadChannels } from 'entities/channels';
 import { stringToTableCell } from 'entities/parameters/lib/table-row';
+import { compareObjects } from 'shared/lib';
 
 
 interface GlobalParamListProps {
@@ -14,6 +15,8 @@ interface GlobalParamListProps {
 /** Редактор глобальных параметров. */
 export const GlobalParamList = ({rootID, list, dateChanging}: GlobalParamListProps) => {
   const dispatch = useDispatch();
+  const externalChannels = [...getExternalChannels(list)];
+  const channels = useSelector(channelDictSelector.bind(externalChannels), compareObjects);
 
   const dateChangingUpdate = dateChanging ? (yearValue) => {
     const columnName = dateChanging.columnName;
@@ -34,5 +37,5 @@ export const GlobalParamList = ({rootID, list, dateChanging}: GlobalParamListPro
     if (dateChanging && dateChanging.year === id && newValue) dateChangingUpdate(newValue);
   };
 
-  return <ParameterList params={list} onChange={onChange}/>;
+  return <ParameterList params={list} channels={channels} onChange={onChange}/>;
 };

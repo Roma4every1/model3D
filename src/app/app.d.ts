@@ -18,8 +18,8 @@ interface WState {
   // carats: CaratsState,
   /** Хранилище карт. */
   maps: MapsState,
-  /** Список активных отчётов и SQL-программ. */
-  reports: ReportDict,
+  /** Состояние отчётов и SQL-программ. */
+  reports: Reports,
   /** Окна и диалоги. */
   windowData: any,
   /** Состояние серверных запросов. */

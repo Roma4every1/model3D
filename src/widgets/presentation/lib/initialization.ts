@@ -27,7 +27,6 @@ export async function createPresentationState(id: FormID): Promise<PresentationS
     id, settings, layout, children,
     activeChildID: activeChildren[0],
     childrenTypes: new Set(children.map(child => child.type)),
-    reports: [],
   };
 }
 

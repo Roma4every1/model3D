@@ -1,13 +1,10 @@
 import { EditorProps } from './base-editor';
-import { useSelector } from 'react-redux';
 import { ComboBoxChangeEvent, ComboBox } from '@progress/kendo-react-dropdowns';
-import { channelSelector } from 'entities/channels';
 
 
-export const StringComboEditor = ({valueSelector, update, channelName}: EditorProps) => {
+export const StringComboEditor = ({parameter, update, channel}: EditorProps<ParamTableRow>) => {
   let values = [], valueToShow = undefined;
-  let value = useSelector(valueSelector);
-  const channel: Channel = useSelector(channelSelector.bind(channelName));
+  let value = parameter.value;
 
   if (channel && channel.info.properties) {
     const editorColumns = channel.info.lookupColumns;

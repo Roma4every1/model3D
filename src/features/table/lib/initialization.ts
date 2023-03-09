@@ -31,11 +31,14 @@ export function applyColumnTypes(state: TableState, channelColumns: ChannelColum
 
 /** Определяет тип колонки по типу `.NET`. */
 function getColumnType(netType: string): TableColumnType {
-  if (netType.endsWith('String')) return 'text'; // 'System.String'
   if (netType.includes('Int')) return 'int'; // 'System.Int16', 'System.Int32', ...
-  if (netType.endsWith('Decimal') || netType.endsWith('Double')) return 'real';
+  if (netType.includes('Bool')) return 'bool';
+
+  if (netType.endsWith('Decimal') || netType.endsWith('Double') || netType.endsWith('Single')) {
+    return 'real';
+  }
   if (netType.endsWith('DateTime')) return 'date'; // 'System.DateTime'
-  return 'bool';
+  return 'text';
 }
 
 /* --- --- --- */

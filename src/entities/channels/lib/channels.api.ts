@@ -98,7 +98,7 @@ export class ChannelsAPI {
   public async insertRows(tableID: TableID, newRows: ChannelRow[]) {
     const rowData = JSON.stringify(newRows);
     const query = {sessionId: this.baseAPI.sessionID, tableId: tableID, rowData};
-    return await this.request<Report>({path: 'insertRow', query});
+    return await this.request<ReportStatus>({path: 'insertRow', query});
   }
 
   /** Запрос обновления записи в таблице. */
@@ -106,7 +106,7 @@ export class ChannelsAPI {
     const sessionId = this.baseAPI.sessionID;
     const rowsIndices = ids.join(',');
     const body = JSON.stringify({sessionId, tableId: tableID, rowsIndices, newRowData});
-    return await this.request<Report>({method: 'POST', path: 'updateRow', body});
+    return await this.request<ReportStatus>({method: 'POST', path: 'updateRow', body});
   }
 
   /** Запрос на удаление записей из таблицы. */
@@ -114,7 +114,7 @@ export class ChannelsAPI {
     const sessionId = this.baseAPI.sessionID;
     const rows = ids === 'all' ? '' : ids.join(',');
     const query = {sessionId, tableId: tableID, rows, removeAll: String(ids === 'all')};
-    return await this.request<Report>({path: 'removeRows', query});
+    return await this.request<ReportStatus>({path: 'removeRows', query});
   }
 }
 

@@ -98,15 +98,15 @@ function getMoveButtonsDisabled(
   settings: TableColumnsSettings, column: TableColumnState,
   index: number, total: number,
 ) {
+  const leftDisabled = !column || index === 0;
   const locked = column?.locked === true;
-  const isFirstColumn = index === 0;
   const isLastColumn = index === total - 1;
   const isLastLockedColumn = locked && index === settings.lockedCount - 1
 
   return {
-    left: isFirstColumn,
+    left: leftDisabled,
     right: isLastColumn || isLastLockedColumn,
-    start: isFirstColumn,
+    start: leftDisabled,
     end: isLastColumn || locked,
   };
 }

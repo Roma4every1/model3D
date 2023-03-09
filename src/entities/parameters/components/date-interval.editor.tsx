@@ -1,10 +1,9 @@
 import { EditorProps } from './base-editor';
 import { DatePickerChangeEvent, DatePicker } from '@progress/kendo-react-dateinputs';
-import { useSelector } from 'react-redux';
 
 
-export const DateIntervalEditor = ({valueSelector, update}: EditorProps<ParamValueDateInterval>) => {
-  let value = useSelector(valueSelector);
+export const DateIntervalEditor = ({parameter, update}: EditorProps<ParamDateInterval>) => {
+  let value = parameter.value;
   if (!value) value = {start: undefined, end: undefined};
 
   const onStartChange = (e: DatePickerChangeEvent) => {

@@ -29,7 +29,7 @@ export const saveTableRecord = ({type, formID, row}: SaveTableMetadata): Thunk =
     dispatch(setWindowNotification(t('table.save.start')));
     const state = getState();
     const tableID = state.tables[formID].tableID;
-    let res: Res<Report>, wrongResult: boolean, error: string;
+    let res: Res<ReportStatus>, wrongResult: boolean, error: string;
 
     if (type === 'insert') {
       res = await channelsAPI.insertRows(tableID, [row]);

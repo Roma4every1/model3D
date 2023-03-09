@@ -1,10 +1,6 @@
 import { EditorProps } from './base-editor';
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
 import { ComboBoxChangeEvent, ComboBox } from '@progress/kendo-react-dropdowns';
 import { stringToTableCell, tableRowToString } from '../lib/table-row';
-import { channelSelector } from 'entities/channels';
-import { formParamSelector } from '../store/parameters.selectors';
 
 
 const getValueToShow = (channel: Channel, formParameter: ParamTableRow) => {
@@ -41,15 +37,11 @@ const getValueToShow = (channel: Channel, formParameter: ParamTableRow) => {
   return [initValue, data, nullDisplayValue];
 };
 
-export const TableRowComboEditor = ({id, formID, update, channelName}: EditorProps) => {
-  const formParameter: ParamTableRow = useSelector(formParamSelector.bind({formID, id}));
-  const channel: Channel = useSelector(channelSelector.bind(channelName));
-
-  const [value, data, nullDisplayValue] = getValueToShow(channel, formParameter);
-  const [x, setX] = useState(false); // for rerender
+export const TableRowComboEditor = ({parameter, update, channel}: EditorProps<ParamTableRow>) => {
+  const [value, data, nullDisplayValue] = getValueToShow(channel, parameter);
 
   const onChange = (event: ComboBoxChangeEvent) => {
-    update(event.value?.value ?? null); setX(!x);
+    update(event.value?.value ?? null);
   };
 
   return (

@@ -1,17 +1,17 @@
 import { EditorProps } from './base-editor';
 import { ChangeEvent, useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@progress/kendo-react-buttons';
 import { showNotice } from 'entities/windows';
 import { reportsAPI } from '../../reports/lib/reports.api';
 
 
-export const FileEditor = ({valueSelector, update}: EditorProps<ParamValueString>) => {
+export const FileEditor = ({parameter, update}: EditorProps<ParamString>) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  let value: string | null = useSelector(valueSelector);
+  let value = parameter.value;
   if (value) value = value.substring(value.lastIndexOf('\\') + 1)
 
   const onChange = (event: ChangeEvent<HTMLInputElement>) => {

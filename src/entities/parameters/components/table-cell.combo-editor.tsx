@@ -1,14 +1,11 @@
+import { EditorProps } from './base-editor';
 import { useState, useEffect, useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import { mapTree, extendDataItem } from '@progress/kendo-react-common';
 import { DropDownTree } from '@progress/kendo-react-dropdowns';
 import { filterBy } from '@progress/kendo-react-data-tools';
-import { channelSelector } from 'entities/channels';
 
-const expandField = 'expanded';
-const dataItemKey = 'id';
 const subItemsField = 'items';
-const fields = {selectField: 'selected', expandField, dataItemKey, subItemsField};
+const fields = {selectField: 'selected', expandField: 'expanded', dataItemKey: 'id', subItemsField};
 
 
 const tableCellToString = (channel: Channel, row: ChannelRow) => {
@@ -59,9 +56,9 @@ const processTreeData = (data, state, fields) => {
   );
 };
 
-const expandedState = (item, dataItemKey, expanded) => {
+const expandedState = (item, expanded) => {
   const nextExpanded = expanded.slice();
-  const itemKey = item[dataItemKey];
+  const itemKey = item.id;
   const index = expanded.indexOf(itemKey);
   index === -1 ? nextExpanded.push(itemKey) : nextExpanded.splice(index, 1);
   return nextExpanded;
@@ -74,14 +71,11 @@ const findChildren = (localValues, valuesToSelect) => {
   });
 };
 
-export const TableCellComboEditor = ({valueSelector, update, channelName}) => {
+export const TableCellComboEditor = ({parameter, update, channel}: EditorProps<ParamTableCell>) => {
+  const value = parameter.value;
   const [values, setValues] = useState([]);
   const [expanded, setExpanded] = useState([]);
   const [valueToShow, setValueToShow] = useState(undefined);
-
-  const value = useSelector(valueSelector);
-
-  const channel: Channel = useSelector(channelSelector.bind(channelName));
 
   useEffect(() => {
     if (!channel?.info.properties) return;
@@ -121,7 +115,7 @@ export const TableCellComboEditor = ({valueSelector, update, channelName}) => {
     update(event.value?.value);
   };
   const onExpandChange = (event) => {
-    setExpanded(expandedState(event.item, dataItemKey, expanded))
+    setExpanded(expandedState(event.item, expanded))
   };
 
   return (
@@ -130,9 +124,9 @@ export const TableCellComboEditor = ({valueSelector, update, channelName}) => {
       popupSettings={{popupClass: 'dropdownPopup'}}
       data={treeData}
       value={valueToShow}
-      dataItemKey={dataItemKey}
+      dataItemKey={'id'}
       textField={'name'}
-      expandField={expandField}
+      expandField={'expanded'}
       onChange={onChange}
       onExpandChange={onExpandChange}
     />

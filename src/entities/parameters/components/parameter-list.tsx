@@ -1,10 +1,10 @@
 import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
 import { BaseEditor } from './base-editor';
-import { formParamValueSelector } from '../store/parameters.selectors';
 
 
 export interface ParametersListProps {
   params: Parameter[],
+  channels: ChannelDict,
   onChange?: (param: Parameter, newValue: any) => void,
 }
 
@@ -14,18 +14,12 @@ const sortParams = (a: Parameter, b: Parameter) => a.editorDisplayOrder - b.edit
 
 
 /** Компонент списка параметров. */
-export const ParameterList = ({params, onChange}: ParametersListProps) => {
-  const paramToEditor = (param: Parameter, i: number) => {
-    const { id, formID, externalChannelName: channelName } = param;
-    const valueSelector = formParamValueSelector.bind({id, formID});
-    const update = (value: any) => { onChange(param, value); };
-
-    return (
-      <BaseEditor
-        key={i} type={param.editorType} displayName={param.displayName}
-        editorProps={{id, formID, channelName, valueSelector, update}}
-      />
-    );
+export const ParameterList = ({params, onChange, channels}: ParametersListProps) => {
+  const paramToEditor = (parameter: Parameter, i: number) => {
+    const channelName = parameter.externalChannelName;
+    const channel = channelName ? channels[channelName] : undefined;
+    const update = (value: any) => { onChange(parameter, value); };
+    return <BaseEditor key={i} parameter={parameter} update={update} channel={channel}/>;
   };
 
   return (

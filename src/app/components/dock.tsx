@@ -7,7 +7,7 @@ import { rootStateSelector, presentationSelector } from '../store/root-form/root
 
 import { Presentation } from 'widgets/presentation';
 import { LeftPanel } from 'widgets/left-panel';
-import { ActiveReports, RightTab } from 'widgets/right-panel';
+import { ActiveOperations, RightTab } from 'widgets/right-panel';
 import { MainMenu, PresentationReports, FormPanel } from 'widgets/top-panel';
 
 
@@ -18,8 +18,6 @@ export const Dock = ({config}: {config: ClientConfiguration}) => {
 
   const activeID = rootState.activeChildID;
   const { common: dockLayout, left: leftLayout } = rootState.layout;
-
-  const reports = presentation?.reports;
   const formTypes = presentation?.childrenTypes;
 
   const model = useMemo<Model>(() => {
@@ -40,10 +38,10 @@ export const Dock = ({config}: {config: ClientConfiguration}) => {
     if (id === 'left') return <LeftPanel rootState={rootState}/>;
 
     if (id === 'menu') return <MainMenu leftLayout={leftLayout} config={config}/>;
-    if (id === 'reports') return <PresentationReports id={activeID} reports={reports}/>;
+    if (id === 'reports') return <PresentationReports id={activeID}/>;
     if (id.startsWith('top')) return <FormPanel panelID={id} presentation={presentation}/>;
 
-    if (id === 'right-dock') return <ActiveReports activeID={activeID}/>;
+    if (id === 'right-dock') return <ActiveOperations activeID={activeID}/>;
     if (id.startsWith('right')) return <RightTab presentation={presentation}/>;
 
     return <Presentation id={activeID} state={presentation}/>;

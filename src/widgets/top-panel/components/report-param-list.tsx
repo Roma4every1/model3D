@@ -1,61 +1,30 @@
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Button } from '@progress/kendo-react-buttons';
+import { ParameterList } from 'entities/parameters';
 import { updateTables } from 'entities/channels';
-import { ParameterList, formParamsSelector, updateParam } from 'entities/parameters';
-import { setWindowInfo, setWindowNotification, closeWindowNotification } from 'entities/windows';
+import { showNotice, setWindowInfo, setWindowWarning } from 'entities/windows';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
-import { watchReport } from 'entities/reports';
+import { watchReport, updateReportParam, updateReportParameter } from 'entities/reports';
 
 
-interface ProgramParamListProps {
+interface ReportParamListProps {
   id: FormID,
-  report: ReportInfo,
-  setProcessing: (value: boolean) => void,
+  report: ReportModel,
   close: () => void,
 }
 
 
 /** Редактор параметров SQL-программы или отчёта. */
-export const ReportParamList = ({id, report, setProcessing, close}: ProgramParamListProps) => {
+export const ReportParamList = ({id, report, close}: ReportParamListProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const programParams: Parameter[] = useSelector(formParamsSelector.bind(report.id));
-
-  const watchOperation = (data) => {
-    if (data?.OperationId) {
-      const getResult = async () => {
-        watchReport(data.OperationId, dispatch);
-        const { data: reportResult } = await reportsAPI.getOperationResult(data.OperationId, 'true');
-        if (typeof reportResult === 'string') return;
-
-        const modifiedTables = reportResult?.report?.ModifiedTables?.ModifiedTables;
-        if (modifiedTables) dispatch(updateTables(modifiedTables));
-
-        if (reportResult?.reportLog) {
-          const text = reportResult.reportLog;
-          const fileName = report.displayName + '.log';
-          dispatch(setWindowInfo(text, null, t('report.result'), fileName));
-        }
-
-        watchOperation(reportResult);
-        return reportResult;
-      }
-      return getResult();
-    } else {
-      setProcessing(false);
-      setTimeout(() => {
-        dispatch(closeWindowNotification());
-      }, 3000);
-    }
-  };
+  const { channels, parameters, canRun } = report;
 
   const runReport = async () => {
-    setProcessing(true);
-    dispatch(setWindowNotification(t('report.inProgress', {programName: report.displayName})));
-    const { data } = await reportsAPI.runReport(report.id, id, programParams);
-    if (typeof data === 'string') return;
+    const { data } = await reportsAPI.runReport(report.id, id, parameters);
+    if (typeof data === 'string') { dispatch(setWindowWarning(data)); return; }
 
     const modifiedTables = data?.ModifiedTables?.ModifiedTables;
     if (modifiedTables) dispatch(updateTables(modifiedTables));
@@ -65,19 +34,26 @@ export const ReportParamList = ({id, report, setProcessing, close}: ProgramParam
       const fileName = report.displayName + '.log';
       dispatch(setWindowInfo(text, null, t('report.result'), fileName));
     }
-    programParams.forEach(param => {
+    parameters.forEach(param => {
       if (param.editorType === 'fileTextEditor') {
-        dispatch(updateParam(report.id, param.id, null));
+        dispatch(updateReportParam(id, report.id, param.id, null));
       }
     });
-    watchOperation(data);
+    if (data.OperationId) {
+      showNotice(dispatch, t('report.inProgress', {programName: report.displayName}));
+      await watchReport(report, data.OperationId, dispatch);
+    }
+  };
+
+  const onParamChange = (param: Parameter, newValue: any) => {
+    dispatch(updateReportParameter(id, report.id, param.id, newValue));
   };
 
   return (
     <Dialog title={t('report.params')} onClose={close} style={{zIndex: 99}}>
-      <ParameterList params={programParams ?? []}/>
+      <ParameterList params={parameters} channels={channels} onChange={onParamChange}/>
       <DialogActionsBar>
-        <Button onClick={() => { runReport(); close(); }}>
+        <Button onClick={() => { runReport(); close(); }} disabled={!canRun}>
           {t('base.run')}
         </Button>
         <Button onClick={close}>

@@ -1,0 +1,39 @@
+.active-operations-header {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 8px;
+}
+
+.active-operation {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  grid-gap: 4px;
+  margin: 0 6px;
+  padding: 6px 0;
+  border-top: 1px solid #a7afb0;
+  cursor: default;
+}
+
+.operation-header {
+  color: gray;
+
+  &.operation-file {
+    color: #0968c5;
+    cursor: pointer;
+    font-weight: bold;
+  }
+}
+
+.operation-description {
+  color: lightgray;
+}
+
+.operation-error {
+  color: orangered;
+  max-height: 70px;
+  overflow: hidden;
+}

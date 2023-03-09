@@ -8,7 +8,6 @@ type PresentationDict = Record<FormID, PresentationState>;
  * + `children`: {@link FormDataWMR}[]
  * + `childrenTypes`: {@link FormType}[]
  * + `activeChildID`: {@link FormID}
- * + `reports`: {@link ReportInfo}[]
  * */
 interface PresentationState {
   /** ID презентации. */
@@ -23,8 +22,6 @@ interface PresentationState {
   childrenTypes: Set<FormType>,
   /** Активная формы */
   activeChildID: FormID,
-  /** Список программ и отчётов. */
-  reports: ReportInfo[],
 }
 
 /** Настройки формы **Grid**.
