@@ -63,7 +63,7 @@ export const MainMenu = ({leftLayout, config}: MainMenuProps) => {
   return (
     <div className={'menu'}>
       <MenuSection header={'Главная'}>
-        <Link to={config.root} onClick={sessionManager.stopSession}>
+        <Link to={config.root}>
           <img src={backToSystemsIcon} alt={'back'}/>
           <span>{t('menu.back')}</span>
         </Link>

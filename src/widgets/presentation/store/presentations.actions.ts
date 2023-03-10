@@ -21,3 +21,8 @@ export const setPresentationLayout = (id: FormID, layout: IJsonModel): Presentat
 export const setActiveForm = (id: FormID, activeChildID: FormID): PresentationsAction => {
   return {type: PresentationsActions.SET_ACTIVE_FORM, payload: {id, activeChildID}};
 };
+
+/** Очистить состояния презентаций. */
+export const clearPresentations = (): PresentationsAction => {
+  return {type: PresentationsActions.CLEAR};
+};

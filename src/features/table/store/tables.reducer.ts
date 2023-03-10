@@ -14,6 +14,7 @@ export enum TableActions {
   START_EDITING = 'tables/start',
   END_EDITING = 'tables/end',
   RESET = 'tables/reset',
+  CLEAR = 'tables/clear',
 }
 
 /* --- Action Interfaces --- */
@@ -54,10 +55,13 @@ interface ActionReset {
   type: TableActions.RESET,
   payload: {id: FormID, tableID: TableID, channelData: ChannelData},
 }
+interface ActionClear {
+  type: TableActions.CLEAR,
+}
 
 export type TablesAction = ActionCreate | ActionSetColumns | ActionSetColumnTree |
   ActionSetColumnSettings | ActionSetSelection | ActionSetActiveCell |
-  ActionStartEditing | ActionEndEditing | ActionReset;
+  ActionStartEditing | ActionEndEditing | ActionReset | ActionClear;
 
 /* --- Init State & Reducer --- */
 
@@ -151,6 +155,10 @@ export const tablesReducer = (state: TablesState = init, action: TablesAction): 
 
       const edit = {modified: false, isNew: false};
       return {...state, [id]: {...tableState, tableID, editable, edit}};
+    }
+
+    case TableActions.CLEAR: {
+      return {};
     }
 
     default: return state;

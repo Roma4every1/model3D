@@ -46,15 +46,15 @@ function convertOperationStatus(raw: ReportStatus): OperationStatus {
 /** Создаёт список программ/отчётов для презентации. */
 export async function createReportModels(params: ParamDict, rootID: FormID, id: FormID) {
   const res = await reportsAPI.getPresentationReports(id);
-  const programs = res.ok ? res.data : [];
+  const reportModels = res.ok ? res.data : [];
 
-  if (programs.length) {
+  if (reportModels.length) {
     const paramsGetter: ParamsGetter = (ids) => fillParamValues(ids, params, [rootID, id]);
-    const mapper = (program) => getReportVisibility(program, paramsGetter);
-    const visibilityList = await Promise.all(programs.map(mapper));
-    programs.forEach((program, i) => program.visible = visibilityList[i]);
+    const mapper = (reportModel) => getReportVisibility(reportModel, paramsGetter);
+    const visibilityList = await Promise.all(reportModels.map(mapper));
+    reportModels.forEach((reportModel, i) => reportModel.visible = visibilityList[i]);
   }
-  return programs;
+  return reportModels;
 }
 
 async function getReportVisibility(report: ReportModel, getter: ParamsGetter): Promise<boolean> {

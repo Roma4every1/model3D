@@ -7,6 +7,7 @@ export enum PresentationsActions {
   SET_LAYOUT = 'presentations/layout',
   SET_CHILDREN = 'presentations/children',
   SET_ACTIVE_FORM = 'presentations/active',
+  CLEAR = 'presentations/clear',
 }
 
 /* --- Action Interfaces --- */
@@ -27,9 +28,12 @@ interface ActionSetActiveForm {
   type: PresentationsActions.SET_ACTIVE_FORM,
   payload: {id: FormID, activeChildID: FormID},
 }
+interface ActionClear {
+  type: PresentationsActions.CLEAR,
+}
 
 export type PresentationsAction = ActionSet | ActionSetLayout |
-  ActionSetChildren | ActionSetActiveForm;
+  ActionSetChildren | ActionSetActiveForm | ActionClear;
 
 /* --- Init State & Reducer --- */
 
@@ -57,6 +61,10 @@ export const presentationsReducer = (state: PresentationDict = init, action: Pre
     case PresentationsActions.SET_ACTIVE_FORM: {
       const { id, activeChildID } = action.payload;
       return {...state, [id]: {...state[id], activeChildID}};
+    }
+
+    case PresentationsActions.CLEAR: {
+      return {};
     }
 
     default: return state;

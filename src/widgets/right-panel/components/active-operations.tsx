@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Checkbox } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
 import { ActiveOperationStatus } from './active-operation-status';
-import { operationsSelector, clearReports } from 'entities/reports';
+import { operationsSelector, clearOperations } from 'entities/reports';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
 import reportDeleteIcon from 'assets/images/reports/report_delete.png';
 import './active-operations.scss';
@@ -25,7 +25,7 @@ export const ActiveOperations = ({activeID}: ActiveReportsProps) => {
 
   const deleteReports = () => {
     const presentationID = filterByPresentation ? activeID : null;
-    const onClearEnd = () => { dispatch(clearReports(presentationID)); };
+    const onClearEnd = () => { dispatch(clearOperations(presentationID)); };
     reportsAPI.clearReports(presentationID).then(onClearEnd);
   };
 

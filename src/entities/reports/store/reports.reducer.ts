@@ -6,7 +6,8 @@ export enum ReportsActions {
   SET_FIELD = 'reports/set',
   UPDATE_PARAM = 'reports/param',
   SET_OPERATION_STATUS = 'reports/status',
-  CLEAR_OPERATIONS = 'reports/clear',
+  CLEAR_OPERATIONS = 'reports/operations',
+  CLEAR = 'reports/clear',
 }
 
 /* --- Action Interfaces --- */
@@ -36,9 +37,12 @@ interface ActionClearOperations {
   type: ReportsActions.CLEAR_OPERATIONS,
   payload: FormID | null,
 }
+interface ActionClear {
+  type: ReportsActions.CLEAR,
+}
 
-export type ReportsAction = ActionCreate | ActionInitializeReport |
-  ActionSetField | ActionUpdateParam | ActionSetOperationStatus | ActionClearOperations;
+export type ReportsAction = ActionCreate | ActionInitializeReport | ActionSetField |
+  ActionUpdateParam | ActionSetOperationStatus | ActionClearOperations | ActionClear;
 
 /* --- Init State & Reducer --- */
 
@@ -99,6 +103,10 @@ export const reportsReducer = (state: Reports = init, action: ReportsAction): Re
       if (!id) return {...state, operations: []};
       const operations = state.operations.filter(o => o.clientID !== id);
       return {...state, operations};
+    }
+
+    case ReportsActions.CLEAR: {
+      return {models: {}, operations: []};
     }
 
     default: return state;

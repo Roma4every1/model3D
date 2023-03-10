@@ -2,36 +2,26 @@
 
 export enum FormParamsActions {
   SET = 'params/set',
-  SET_DICT = 'params/dict',
-  ADD = 'params/add',
   UPDATE = 'params/update',
   CLEAR = 'params/clear',
 }
 
 /* --- Action Interfaces --- */
 
-interface ActionSet {
-  type: FormParamsActions.SET,
-  payload: {formID: FormID, params: Parameter[]}
-}
 interface ActionSetDict {
-  type: FormParamsActions.SET_DICT,
+  type: FormParamsActions.SET,
   payload: ParamDict,
-}
-interface ActionAdd {
-  type: FormParamsActions.ADD,
-  payload: {formID: FormID, parameter: Parameter},
 }
 interface ActionUpdate {
   type: FormParamsActions.UPDATE,
-  payload: {formID: FormID, id: ParameterID, value: any}
+  payload: {clientID: FormID, id: ParameterID, value: any}
 }
 interface ActionClear {
   type: FormParamsActions.CLEAR,
   payload: FormID | undefined,
 }
 
-export type FormParamsAction = ActionSet | ActionSetDict | ActionAdd | ActionUpdate | ActionClear;
+export type FormParamsAction = ActionSetDict | ActionUpdate | ActionClear;
 
 /* --- Init State & Reducer --- */
 
@@ -41,40 +31,18 @@ export const parametersReducer = (state: ParamDict = init, action: FormParamsAct
   switch (action.type) {
 
     case FormParamsActions.SET: {
-      const { formID, params: newState } = action.payload;
-      if (state[formID]) {
-        for (let paramID in newState) {
-          if (state[formID][paramID]) newState[paramID] = state[formID][paramID];
-        }
-        for (let paramID in state[formID]) {
-          if (!newState[paramID]) newState[paramID] = state[formID][paramID];
-        }
-      }
-      return {...state, [formID]: newState};
-    }
-
-    case FormParamsActions.SET_DICT: {
       return {...state, ...action.payload};
     }
 
-    case FormParamsActions.ADD: {
-      const { formID, parameter } = action.payload;
-      if (state[formID]) {
-        return {...state, [formID]: [...state[formID], parameter]};
-      } else {
-        return {...state, [formID]: [parameter]}
-      }
-    }
-
     case FormParamsActions.UPDATE: {
-      const { id, value, formID } = action.payload;
-      const params = state[formID];
+      const { clientID, id, value } = action.payload;
+      const params = state[clientID];
 
       const index = params.findIndex(param => param.id === id);
       if (index === -1) return state;
 
       params[index] = {...params[index], value};
-      return {...state, [formID]: [...params]};
+      return {...state, [clientID]: [...params]};
     }
 
     case FormParamsActions.CLEAR: {

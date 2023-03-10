@@ -46,3 +46,8 @@ export const endTableEditing = (id: FormID): TablesAction => {
 export const resetTable = (id: FormID, tableID: TableID, channelData: ChannelData): TablesAction => {
   return {type: TableActions.RESET, payload: {id, tableID, channelData}};
 };
+
+/** Очистить состояние табличных форм. */
+export const clearTables = (): TablesAction => {
+  return {type: TableActions.CLEAR};
+};

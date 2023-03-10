@@ -4,7 +4,7 @@ import { formsAPI } from 'widgets/presentation/lib/forms.api';
 import { fillChannels } from 'entities/channels';
 import { createClientChannels } from 'widgets/presentation/lib/initialization';
 import { applyChannelsDeps } from 'widgets/presentation/lib/channels-auto-update';
-import { setParams } from 'entities/parameters';
+import { setParamDict } from 'entities/parameters';
 import { setChannels } from 'entities/channels';
 import { fetchSessionStart, fetchSessionEnd, fetchSessionError } from 'entities/fetch-state';
 import { setRootFormState } from './root-form.actions';
@@ -36,7 +36,7 @@ export const startSession = (isDefault: boolean): Thunk => {
     applyChannelsDeps(channels, paramDict);
     await fillChannels(channels, paramDict);
 
-    dispatch(setParams(id, parameters));
+    dispatch(setParamDict(paramDict));
     dispatch(setChannels(channels));
     dispatch(setRootFormState(root));
     dispatch(setSessionID(resSessionID.data));

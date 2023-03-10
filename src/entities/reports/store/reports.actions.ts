@@ -31,7 +31,12 @@ export const updateReportParam = (clientID: FormID, id: ReportID, paramID: Param
   return {type: ReportsActions.UPDATE_PARAM, payload: {clientID, id, paramID, value}};
 };
 
-/** Очистить отчёты/программы для презентации. */
-export const clearReports = (clientID: FormID | null): ReportsAction => {
+/** Очистить активные операции для презентации или целиком. */
+export const clearOperations = (clientID: FormID | null): ReportsAction => {
   return {type: ReportsActions.CLEAR_OPERATIONS, payload: clientID};
+};
+
+/** Очистить отчёты/программы для презентации. */
+export const clearReports = (): ReportsAction => {
+  return {type: ReportsActions.CLEAR};
 };

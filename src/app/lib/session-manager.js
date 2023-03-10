@@ -4,7 +4,12 @@ import { appAPI } from './app.api';
 import { getSessionToSave } from './session-save';
 import { clearSession } from '../store/app-state/app.actions';
 import { startSession as startSessionThunk } from '../store/root-form/root-form.thunks';
+import { clearPresentations } from '../../widgets/presentation';
+import { clearForms } from '../../widgets/presentation/store/forms.actions';
+import { clearParams } from '../../entities/parameters';
 import { clearChannels } from '../../entities/channels';
+import { clearReports } from '../../entities/reports';
+import { clearTables } from '../../features/table/store/tables.actions';
 import { setWindowWarning, showNotice } from '../../entities/windows';
 
 
@@ -19,48 +24,54 @@ export function createSessionManager(store) {
     store.dispatch(setWindowWarning(t('messages.session-lost')));
   };
 
+  const save = () => {
+    return appAPI.saveSession(getSessionToSave(store.getState()));
+  };
+
+  const clear = () => {
+    store.dispatch(clearPresentations());
+    store.dispatch(clearForms());
+    store.dispatch(clearTables());
+    store.dispatch(clearParams());
+    store.dispatch(clearChannels());
+    store.dispatch(clearReports());
+    store.dispatch(clearSession());
+  };
+
   const startSession = async (isDefault = false) => {
-    const systemName = store.getState().appState.systemID;
+    const state = store.getState();
+    if (Object.keys(state.presentations).length > 0) clear();
+
+    const systemName = state.appState.systemID;
     const res = await appAPI.startSession(systemName, isDefault);
 
     if (res.ok === true) {
-      if (!timerID) window.addEventListener('beforeunload', stopSession);
+      if (timerID) clearInterval(timerID);
       timerID = setInterval(extendSession, 2 * 60 * 1000);
       API.setSessionID(res.data);
+    } else {
+      store.dispatch(setWindowWarning(res.data));
     }
     return res;
   };
 
-  const loadSessionByDefault = async () => {
-    await stopSession(false);
-    store.dispatch(startSessionThunk(true));
-  };
-
   const saveSession = async () => {
-    const response = await appAPI.saveSession(getSessionToSave(store.getState()));
-    if (response.ok && response.data) {
+    const res = await save();
+    if (res.ok && res.data) {
       showNotice(store.dispatch, t('messages.session-save-ok'));
     } else {
       store.dispatch(setWindowWarning(t('messages.session-save-error')));
     }
   };
 
-  const stopSession = async (clear = true) => {
-    const { ok, data } = await appAPI.stopSession(getSessionToSave(store.getState()));
-    if (!ok || !data) {
-      const message = t('messages.session-stop-error');
-      store.dispatch(setWindowWarning(message)); return;
-    }
-    if (clear) {
-      store.dispatch(clearChannels());
-      store.dispatch(clearSession());
-    }
-    if (timerID) clearInterval(timerID);
+  const loadSessionByDefault = async () => {
+    store.dispatch(startSessionThunk(true));
   };
+
+  window.addEventListener('beforeunload', () => { save(); });
 
   return {
     startSession,
-    stopSession,
     saveSession,
     loadSessionByDefault,
   };
