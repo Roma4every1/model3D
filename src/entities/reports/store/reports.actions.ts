@@ -3,7 +3,7 @@ import { ReportsAction, ReportsActions } from './reports.reducer';
 
 /** Создать новые отчёты/программы для презентации. */
 export const setReportModels = (clientID: FormID, models: ReportModel[]): ReportsAction => {
-  return {type: ReportsActions.CREATE, payload: {clientID, models}};
+  return {type: ReportsActions.SET, payload: {clientID, models}};
 };
 
 /** Инициализация списка параметров отчёта/программы. */

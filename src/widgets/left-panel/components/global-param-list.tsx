@@ -1,4 +1,5 @@
 import { useSelector, useDispatch } from 'react-redux';
+import { updateReportsVisibility } from 'entities/reports';
 import { ParameterList, updateParam } from 'entities/parameters';
 import { channelDictSelector, getExternalChannels, reloadChannels } from 'entities/channels';
 import { stringToTableCell } from 'entities/parameters/lib/table-row';
@@ -31,9 +32,10 @@ export const GlobalParamList = ({rootID, list, dateChanging}: GlobalParamListPro
     dispatch(updateParam(rootID, dateChanging.dateInterval, newValue));
   } : undefined;
 
-  const onChange = ({id, relatedChannels}: Parameter, newValue: any) => {
+  const onChange = ({id, relatedChannels, relatedReports}: Parameter, newValue: any) => {
     dispatch(updateParam(rootID, id, newValue))
     if (relatedChannels.length) dispatch(reloadChannels(relatedChannels));
+    if (relatedReports?.length) dispatch(updateReportsVisibility(relatedReports));
     if (dateChanging && dateChanging.year === id && newValue) dateChangingUpdate(newValue);
   };
 

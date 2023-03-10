@@ -1,9 +1,9 @@
 /* --- Action Types --- */
 
 export enum ReportsActions {
-  CREATE = 'reports/create',
+  SET = 'reports/set',
   INITIALIZE = 'reports/init',
-  SET_FIELD = 'reports/set',
+  SET_FIELD = 'reports/field',
   UPDATE_PARAM = 'reports/param',
   SET_OPERATION_STATUS = 'reports/status',
   CLEAR_OPERATIONS = 'reports/operations',
@@ -12,8 +12,8 @@ export enum ReportsActions {
 
 /* --- Action Interfaces --- */
 
-interface ActionCreate {
-  type: ReportsActions.CREATE,
+interface ActionSet {
+  type: ReportsActions.SET,
   payload: {clientID: FormID, models: ReportModel[]},
 }
 interface ActionInitializeReport {
@@ -41,7 +41,7 @@ interface ActionClear {
   type: ReportsActions.CLEAR,
 }
 
-export type ReportsAction = ActionCreate | ActionInitializeReport | ActionSetField |
+export type ReportsAction = ActionSet | ActionInitializeReport | ActionSetField |
   ActionUpdateParam | ActionSetOperationStatus | ActionClearOperations | ActionClear;
 
 /* --- Init State & Reducer --- */
@@ -51,7 +51,7 @@ const init: Reports = {models: {}, operations: []};
 export const reportsReducer = (state: Reports = init, action: ReportsAction): Reports => {
   switch (action.type) {
 
-    case ReportsActions.CREATE: {
+    case ReportsActions.SET: {
       const { clientID, models } = action.payload;
       return {...state, models: {...state.models, [clientID]: models}};
     }

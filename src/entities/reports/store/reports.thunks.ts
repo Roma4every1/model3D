@@ -1,10 +1,12 @@
 import { Dispatch } from 'redux';
 import { Thunk, StateGetter } from 'shared/lib';
 import { fillChannels } from 'entities/channels';
+import { fillParamValues } from '../../parameters';
 import { applyChannelsDeps } from 'widgets/presentation/lib/channels-auto-update';
 import { createClientChannels } from 'widgets/presentation/lib/initialization';
 import { initializeReport, updateReportParam } from './reports.actions';
-import { setCanRunReport, setReportChannels } from './reports.actions';
+import { setReportModels, setCanRunReport, setReportChannels } from './reports.actions';
+import { applyReportVisibility } from '../lib/common';
 import { formsAPI } from 'widgets/presentation/lib/forms.api';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
 
@@ -63,5 +65,34 @@ export const updateReportParameter = (id: FormID, reportID: ReportID, paramID: P
 
     const canRun = await reportsAPI.getCanRunReport(reportID, report.parameters);
     dispatch(setCanRunReport(id, reportID, canRun));
+  };
+};
+
+/** Обновляет видимость программ по набору идентификаторов. */
+export const updateReportsVisibility = (ids: ReportID[]): Thunk => {
+  return async (dispatch: Dispatch, getState: StateGetter) => {
+    const state = getState();
+    const { parameters, reports: { models }, root: { id: rootID } } = state;
+
+    const changedClients: FormID[] = [];
+    const changedReports: Promise<void>[] = [];
+
+    for (const clientID in models) {
+      const reports = models[clientID].filter(m => ids.includes(m.id));
+      if (reports.length === 0) continue;
+
+      changedClients.push(clientID);
+      const clients = [rootID, clientID];
+
+      changedReports.push(...reports.map((report) => {
+        const params = fillParamValues(report.paramsForCheckVisibility, parameters, clients);
+        return applyReportVisibility(report, params)
+      }));
+    }
+
+    await Promise.all(changedReports);
+    for (const clientID of changedClients) {
+      dispatch(setReportModels(clientID, [...models[clientID]]));
+    }
   };
 };

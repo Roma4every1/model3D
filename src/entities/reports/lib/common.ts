@@ -2,7 +2,7 @@ import { Dispatch } from 'redux';
 import { t } from 'shared/locales';
 import { reportsAPI } from './reports.api';
 import { setOperationStatus } from '../store/reports.actions';
-import { ParamsGetter, fillParamValues } from 'entities/parameters';
+import { fillParamValues } from 'entities/parameters';
 import { updateTables } from '../../channels';
 import { setWindowInfo } from '../../windows';
 
@@ -47,18 +47,25 @@ function convertOperationStatus(raw: ReportStatus): OperationStatus {
 export async function createReportModels(params: ParamDict, rootID: FormID, id: FormID) {
   const res = await reportsAPI.getPresentationReports(id);
   const reportModels = res.ok ? res.data : [];
+  if (reportModels.length === 0) return reportModels;
 
-  if (reportModels.length) {
-    const paramsGetter: ParamsGetter = (ids) => fillParamValues(ids, params, [rootID, id]);
-    const mapper = (reportModel) => getReportVisibility(reportModel, paramsGetter);
-    const visibilityList = await Promise.all(reportModels.map(mapper));
-    reportModels.forEach((reportModel, i) => reportModel.visible = visibilityList[i]);
+  const clients = [rootID, id];
+  const changedReports: Promise<void>[] = [];
+
+  for (const report of reportModels) {
+    if (!report.needCheckVisibility) { report.visible = true; continue; }
+    const parameters = fillParamValues(report.paramsForCheckVisibility, params, clients);
+
+    for (const parameter of parameters) {
+      if (!parameter.relatedReports) parameter.relatedReports = [];
+      if (!parameter.relatedReports.includes(report.id)) parameter.relatedReports.push(report.id);
+    }
+    changedReports.push(applyReportVisibility(report, parameters));
   }
+  await Promise.all(changedReports);
   return reportModels;
 }
 
-async function getReportVisibility(report: ReportModel, getter: ParamsGetter): Promise<boolean> {
-  if (!report.needCheckVisibility) return true;
-  const paramValues = getter(report.paramsForCheckVisibility);
-  return reportsAPI.getProgramVisibility(report.id, paramValues);
+export async function applyReportVisibility(report: ReportModel, parameters: Parameter[]) {
+  report.visible = await reportsAPI.getProgramVisibility(report.id, parameters);
 }

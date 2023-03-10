@@ -146,7 +146,10 @@ interface FormParamProto<Type extends ParameterType, Value> {
   displayName?: string,
   editorType?: ParameterEditorType,
   editorDisplayOrder?: Order,
+  /** Каналы, которые зависят от данного параметра. */
   relatedChannels?: ChannelName[],
+  /** Программы, видимость которых зависят от данного параметра. */
+  relatedReports?: ReportID[],
 
   externalChannelName: ChannelName,
   showNullValue: boolean,
