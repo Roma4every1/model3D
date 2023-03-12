@@ -2,7 +2,7 @@ import { RootFormAction, RootFormActions } from './root-form.reducer';
 
 
 /** Установить состояние главной формы. */
-export const setRootFormState = (state: Omit<RootFormState, 'layout'>): RootFormAction => {
+export const setRootFormState = (state: RootFormState): RootFormAction => {
   return {type: RootFormActions.SET, payload: state};
 }
 
@@ -12,6 +12,6 @@ export const selectPresentation = (item: PresentationTreeItem): RootFormAction =
 };
 
 /** Установить принудительную высоту влкадки в левой панели. */
-export const setLeftTabHeight = (tab: keyof LeftPanelLayout, height: number): RootFormAction => {
-  return {type: RootFormActions.SET_LEFT_TAB_HEIGHT, payload: {tab, height}};
+export const setLeftLayout = (layout: LeftPanelLayout): RootFormAction => {
+  return {type: RootFormActions.SET_LEFT_LAYOUT, payload: layout};
 };

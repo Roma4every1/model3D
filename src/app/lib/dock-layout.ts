@@ -10,6 +10,7 @@ const globalAttributes: IGlobalAttributes = {
   tabEnableRename: false,
   tabEnableClose: false,
   tabEnableDrag: false,
+  tabSetEnableDrag: false,
   splitterSize: 8,
 };
 const formTabset: IJsonTabSetNode = {

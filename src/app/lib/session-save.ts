@@ -22,7 +22,7 @@ export function getSessionToSave(state: WState): SessionToSave {
     sessionId: state.appState.sessionID,
     activeParams: getParametersToSave(state.parameters),
     children: getChildrenToSave(state.root, state.presentations),
-    layout: getLayoutsToSave(state.presentations),
+    layout: getLayoutsToSave(state.root, state.presentations),
     settings: getSettingsToSave(state.tables),
   };
 }
@@ -55,9 +55,9 @@ function presentationStateToChildren(state: PresentationState): FormChildrenStat
   return {
     id: state.id,
     children: state.children,
-    openedChildren: state.children.map(child => child.id),
+    openedChildren: state.openedChildren,
     activeChildren: [state.activeChildID],
-  }
+  };
 }
 
 /* --- Settings --- */
@@ -73,8 +73,24 @@ function getSettingsToSave(tableStates: TablesState): FormSettingsArray {
 
 /* --- Layout --- */
 
-function getLayoutsToSave(formsLayout: PresentationDict): FormLayoutArray {
-  const layoutArray: FormLayoutArray = [];
-  for (const id in formsLayout) layoutArray.push({...formsLayout[id].layout, id});
+function getLayoutsToSave(root: RootFormState, presentations: PresentationDict): FormLayoutArray {
+  const layoutArray: FormLayoutArray = [getRootLayout(root)];
+  for (const id in presentations) layoutArray.push({...presentations[id].layout, id});
   return layoutArray;
+}
+
+function getRootLayout(root: RootFormState): any {
+  const { common, left } = root.layout;
+  const model = left.model.toJson();
+
+  model.id = root.id;
+  model.layout = {
+    ...model.layout,
+    sizeleft: common.leftPanelWidth,
+    sizeright: common.rightPanelWidth,
+    selectedtop: common.selectedTopTab,
+    selectedleft: 0,
+    selectedright: common.selectedRightTab
+  };
+  return model;
 }

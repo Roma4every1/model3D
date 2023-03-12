@@ -28,6 +28,7 @@ export const fetchPresentationState = (id: FormID): Thunk => {
     const children = presentation.children;
     const childrenID = children.map(child => child.id);
     const paramDict = await getPresentationParams(id, childrenID);
+    dispatch(setParamDict(paramDict));
 
     const state = getState();
     const rootID = state.root.id;
@@ -53,7 +54,6 @@ export const fetchPresentationState = (id: FormID): Thunk => {
     applyChannelsDeps(allChannels, paramDict);
     await fillChannels(channels, paramDict);
 
-    dispatch(setParamDict(paramDict));
     dispatch(setChannels(channels));
     dispatch(setFormsState(formsState));
     dispatch(fetchFormsEnd(childrenID));

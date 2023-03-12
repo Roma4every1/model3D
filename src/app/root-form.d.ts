@@ -69,19 +69,38 @@ interface CommonLayout {
 }
 
 /** Разметка левой панели с параметрами.
- * + высота <= 0 — не показывать
- * + высота == 1 — автоподбор
- * + иначе принудительный размер
- * @see DockLayout
+ * + `model: Model`
+ * + `global`: {@link LeftTabInfo}
+ * + `presentation`: {@link LeftTabInfo}
+ * + `tree`: {@link LeftTabInfo}
  * */
 interface LeftPanelLayout {
-  /** Высотка вкладки _"Глобальные параметры"_. */
-  globalParamsHeight: number,
-  /** Высотка вкладки _"Параметры презентации"_. */
-  formParamsHeight: number,
-  /** Высотка вкладки _"Презентации"_ (дерево). */
-  treeHeight: number,
+  /** Model из `flex-layout-react`. */
+  model: any, // Model
+  /** Панель глобальных параметров. */
+  global: LeftTabInfo,
+  /** Панель параметров презентации. */
+  presentation: LeftTabInfo,
+  /** Дерево презентаций. */
+  tree: LeftTabInfo,
 }
+
+/** Информация о вкладке. */
+interface LeftTabInfo {
+  /** Показывать ли вкладку. */
+  show: boolean,
+  /** Название вкладки. */
+  displayName: DisplayName,
+  /** ID родителя. */
+  parent?: string,
+  /** Индекс вкладки в группе. */
+  index?: number,
+  /** Запрещено ли менять видимость вкладки. */
+  disabled?: boolean,
+}
+
+/** Типы поддерживаемых вкладок левой панели. */
+type LeftTabType = 'global' | 'presentation' | 'tree';
 
 /* --- Dock Settings --- */
 

@@ -1,23 +1,19 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
-import { MenuSection, ButtonIcon, BigButtonToggle } from 'shared/ui';
+import { MenuSection, ButtonIcon } from 'shared/ui';
+import { PanelsVisibility } from './panels-visibility';
 import { sessionManager } from '../../../app/store';
 import { setOpenedWindow } from 'entities/windows';
-import { setLeftTabHeight } from '../../../app/store/root-form/root-form.actions';
-import PACKAGE from '../../../../package.json';
 
 import './main-menu.scss';
+import PACKAGE from '../../../../package.json';
 import backToSystemsIcon from 'assets/images/menu/back-to-systems.png';
 import aboutProgramIcon from 'assets/images/menu/about-program.png';
 import saveSessionIcon from 'assets/images/menu/save-session.png';
 import defaultSessionIcon from 'assets/images/menu/default-session.png';
-import globalParametersIcon from 'assets/images/menu/global-parameters.png';
-import presentationParametersIcon from 'assets/images/menu/presentation-parameters.png';
-import presentationsListIcon from 'assets/images/menu/presentations-list.png';
 
 
 export interface MainMenuProps {
@@ -34,23 +30,6 @@ interface AboutProgramWindowProps {
 export const MainMenu = ({leftLayout, config}: MainMenuProps) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-
-  const [showGlobal, setShowGlobal] = useState(leftLayout.globalParamsHeight > 0);
-  const [showForm, setShowForm] = useState(leftLayout.formParamsHeight > 0);
-  const [showTree, setShowTree] = useState(leftLayout.treeHeight > 0);
-
-  const togglePanelGlobal = () => {
-    dispatch(setLeftTabHeight('globalParamsHeight', showGlobal ? -1 : 1));
-    setShowGlobal(!showGlobal);
-  };
-  const togglePanelForm = () => {
-    dispatch(setLeftTabHeight('formParamsHeight', showForm ? -1 : 1));
-    setShowForm(!showForm);
-  };
-  const togglePanelList = () => {
-    dispatch(setLeftTabHeight('treeHeight', showTree ? -1 : 1));
-    setShowTree(!showTree);
-  };
 
   const closeAboutWindow = () => {
     dispatch(setOpenedWindow('about', false, null));
@@ -79,20 +58,7 @@ export const MainMenu = ({leftLayout, config}: MainMenuProps) => {
           action={sessionManager.loadSessionByDefault}
         />
       </MenuSection>
-      <MenuSection header={'Панели'} className={'map-panel-main'} style={{display: 'flex'}}>
-        <BigButtonToggle
-          text={'Глобальные параметры'} icon={globalParametersIcon}
-          active={showGlobal} action={togglePanelGlobal}
-        />
-        <BigButtonToggle
-          text={'Параметры презентации'} icon={presentationParametersIcon}
-          active={showForm} action={togglePanelForm}
-        />
-        <BigButtonToggle
-          text={'Презентации'} icon={presentationsListIcon}
-          active={showTree} action={togglePanelList}
-        />
-      </MenuSection>
+      <PanelsVisibility leftLayout={leftLayout}/>
     </div>
   );
 };

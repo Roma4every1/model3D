@@ -1,9 +1,12 @@
-import { ReactNode, useMemo } from 'react';
-import { Model, Layout, TabNode, Action, Actions } from 'flexlayout-react';
-import { useSelector } from 'react-redux';
+import { ReactNode } from 'react';
+import { Layout, TabNode } from 'flexlayout-react';
+import { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { i18nMapper } from 'shared/locales';
-import { getLeftPanelLayout } from '../lib/left-tabs-layout';
+import { setLeftLayout } from '../../../app/store/root-form/root-form.actions';
+import { showLeftTab, hideLeftTab } from '../lib/layout-actions';
 import { globalParamsSelector, presentationParamsSelector } from '../lib/selectors';
+import { globalParamsTabID, presentationParamsTabID, presentationTreeTabID } from '../lib/constants';
 
 import { GlobalParamList } from './global-param-list';
 import { PresentationParamList } from './presentation-param-list';
@@ -17,8 +20,10 @@ export interface LeftPanelProps {
 
 /** Левая боковая панель (содержит параметры и список презентаций). */
 export const LeftPanel = ({rootState}: LeftPanelProps) => {
+  const dispatch = useDispatch();
   const globalParams = useSelector(globalParamsSelector);
   const presentationParams = useSelector(presentationParamsSelector);
+  const presentationParamsLength = presentationParams?.filter(p => p.editorType).length;
 
   const rootID = rootState.id;
   const activeID = rootState.activeChildID;
@@ -27,29 +32,31 @@ export const LeftPanel = ({rootState}: LeftPanelProps) => {
   const presentationTree = rootState.presentationTree;
   const dateChanging = rootState.settings.dateChanging;
 
-  const model = useMemo<Model>(() => {
-    return getLeftPanelLayout(layout, globalParams, presentationParams);
-  }, [layout, globalParams, presentationParams]);
+  useEffect(() => {
+    if (presentationParamsLength === undefined) return;
+    const { show, disabled } = layout.presentation;
 
-  const onAction = (action: Action): Action => {
-    if (action.type === Actions.ADJUST_SPLIT) { // ручное регулирование высоты
-      const data = action.data;
-      layout[data?.node1] = data?.pixelWidth1;
-      layout[data?.node2] = data?.pixelWidth2;
+    if (presentationParamsLength === 0 && !disabled) {
+      layout.presentation.disabled = true;
+      if (show) hideLeftTab(layout, 'presentation');
+      dispatch(setLeftLayout({...layout}));
+    } else if (presentationParamsLength > 0 && disabled) {
+      layout.presentation.disabled = false;
+      if (!show) showLeftTab(layout, 'presentation');
+      dispatch(setLeftLayout({...layout}));
     }
-    return action;
-  };
+  }, [layout, presentationParamsLength, dispatch]);
 
   const factory = (node: TabNode): ReactNode => {
-    const component = node.getComponent();
-    if (component === 'global') {
+    const id = node.getId();
+    if (id === globalParamsTabID)
       return <GlobalParamList rootID={rootID} list={globalParams} dateChanging={dateChanging}/>;
-    }
-    if (component === 'form') {
+    if (id === presentationParamsTabID)
       return <PresentationParamList list={presentationParams} activeID={activeID}/>;
-    }
-    return <PresentationTreeView tree={presentationTree}/>;
+    if (id === presentationTreeTabID)
+      return <PresentationTreeView tree={presentationTree}/>;
+    return null;
   };
 
-  return <Layout model={model} factory={factory} onAction={onAction} i18nMapper={i18nMapper}/>;
+  return <Layout model={layout.model} factory={factory} i18nMapper={i18nMapper}/>;
 };

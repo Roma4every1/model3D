@@ -15,7 +15,7 @@ export async function createPresentationState(id: FormID): Promise<PresentationS
   ]);
 
   if (!resChildren.ok) return;
-  const { children, activeChildren } = resChildren.data;
+  const { children, openedChildren, activeChildren } = resChildren.data;
   children.forEach(applyDisplayNamePattern);
 
   const settings = resSettings.ok
@@ -25,7 +25,7 @@ export async function createPresentationState(id: FormID): Promise<PresentationS
 
   return {
     id, settings, layout, children,
-    activeChildID: activeChildren[0],
+    openedChildren, activeChildID: activeChildren[0],
     childrenTypes: new Set(children.map(child => child.type)),
   };
 }

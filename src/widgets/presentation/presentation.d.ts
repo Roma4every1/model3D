@@ -20,6 +20,8 @@ interface PresentationState {
   children: FormDataWMR[],
   /** Список всех типов форм внутри презентации. */
   childrenTypes: Set<FormType>,
+  /** Отображаемые дочерние формы. */
+  openedChildren: FormID[],
   /** Активная формы */
   activeChildID: FormID,
 }

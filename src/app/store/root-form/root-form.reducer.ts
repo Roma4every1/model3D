@@ -5,22 +5,22 @@ import { setActive, clearSelect } from './utils';
 export enum RootFormActions {
   SET = 'root/set',
   SELECT_PRESENTATION = 'root/select',
-  SET_LEFT_TAB_HEIGHT = 'root/left',
+  SET_LEFT_LAYOUT = 'root/layout',
 }
 
 /* --- Action Interfaces --- */
 
 interface ActionSetRoot {
   type: RootFormActions.SET,
-  payload: Omit<RootFormState, 'layout'>,
+  payload: RootFormState,
 }
 interface ActionSelectPresentation {
   type: RootFormActions.SELECT_PRESENTATION,
   payload: PresentationTreeItem,
 }
 interface ActionSetLeftTabHeight {
-  type: RootFormActions.SET_LEFT_TAB_HEIGHT,
-  payload: {tab: keyof LeftPanelLayout, height: number},
+  type: RootFormActions.SET_LEFT_LAYOUT,
+  payload: LeftPanelLayout,
 }
 
 export type RootFormAction = ActionSetRoot | ActionSelectPresentation | ActionSetLeftTabHeight;
@@ -33,20 +33,7 @@ const init: RootFormState = {
   children: [],
   activeChildID: '',
   presentationTree: [],
-  layout: {
-    left: {
-      globalParamsHeight: 1,
-      formParamsHeight: 1,
-      treeHeight: 1,
-    },
-    common: {
-      selectedTopTab: -1,   // нет активной вкладки
-      selectedRightTab: -1, // нет активной вкладки
-      topPanelHeight: 90,
-      leftPanelWidth: 270,
-      rightPanelWidth: 270,
-    },
-  },
+  layout: null,
 };
 
 export const rootFormReducer = (state: RootFormState = init, action: RootFormAction): RootFormState => {
@@ -55,7 +42,7 @@ export const rootFormReducer = (state: RootFormState = init, action: RootFormAct
     case RootFormActions.SET: {
       const newState = action.payload;
       setActive(newState.presentationTree, newState.activeChildID);
-      return {...newState, layout: state.layout};
+      return newState;
     }
 
     case RootFormActions.SELECT_PRESENTATION: {
@@ -65,10 +52,8 @@ export const rootFormReducer = (state: RootFormState = init, action: RootFormAct
       return {...state, presentationTree: presentationsTree, activeChildID: action.payload.id};
     }
 
-    case RootFormActions.SET_LEFT_TAB_HEIGHT: {
-      const { tab, height } = action.payload;
-      const left: LeftPanelLayout = {...state.layout.left, [tab]: height}
-      return {...state, layout: {...state.layout, left}};
+    case RootFormActions.SET_LEFT_LAYOUT: {
+      return {...state, layout: {...state.layout, left: action.payload}};
     }
 
     default: return state;

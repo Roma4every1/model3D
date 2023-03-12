@@ -12,6 +12,8 @@ const gridLayoutGlobalAttrs: IGlobalAttributes = {
   rootOrientationVertical: false,
   tabEnableRename: false,
   tabEnableClose: false,
+  tabEnableDrag: false,
+  tabSetEnableDrag: false,
   tabSetTabStripHeight: 26,
   splitterSize: 6,
 };

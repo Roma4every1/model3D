@@ -2,6 +2,7 @@ import { Dispatch } from 'redux';
 import { Thunk } from 'shared/lib';
 import { formsAPI } from 'widgets/presentation/lib/forms.api';
 import { fillChannels } from 'entities/channels';
+import { createLeftLayout } from 'widgets/left-panel';
 import { createClientChannels } from 'widgets/presentation/lib/initialization';
 import { applyChannelsDeps } from 'widgets/presentation/lib/channels-auto-update';
 import { setParamDict } from 'entities/parameters';
@@ -46,15 +47,16 @@ export const startSession = (isDefault: boolean): Thunk => {
 
 
 /** Создаёт состояние главной формы. */
-async function createRootFormState(): Promise<Omit<RootFormState, 'layout'> | string> {
+async function createRootFormState(): Promise<RootFormState | string> {
   const resRootForm = await formsAPI.getRootForm();
   if (!resRootForm.ok) return 'ошибка при получении данных главной формы';
   const id = resRootForm.data.id;
 
-  const [resPresentations, resChildren, resSettings] = await Promise.all([
+  const [resPresentations, resChildren, resSettings, resLayout] = await Promise.all([
     formsAPI.getPresentationsList(id),
     formsAPI.getFormChildren(id),
     formsAPI.getPluginData(id, 'dateChanging'),
+    formsAPI.getFormLayout(id),
   ]);
 
   if (!resPresentations.ok) return 'ошибка при получении списка презентаций';
@@ -64,7 +66,8 @@ async function createRootFormState(): Promise<Omit<RootFormState, 'layout'> | st
   const { children, activeChildren: [activeChildID] } = resChildren.data;
 
   const settings = await createRootFormSettings(resSettings);
-  return {id, settings, presentationTree: presentationsTree, children, activeChildID};
+  const layout = createDockLayout(resLayout);
+  return {id, settings, layout, presentationTree: presentationsTree, children, activeChildID};
 }
 
 /** Создаёт объект настроек главной формы. */
@@ -77,4 +80,20 @@ async function createRootFormSettings(res: Res<any>): Promise<DockSettings> {
     columnName: dateChangingRaw['@columnNameParameter'] ?? null
   } : null;
   return {dateChanging, parameterGroups: null};
+}
+
+function createDockLayout(res: Res<any>): DockLayout {
+  const data = res.ok ? res.data : {};
+  const layout = data.layout;
+
+  return {
+    common: {
+      selectedTopTab: layout?.selectedtop ?? -1,
+      selectedRightTab: layout?.selectedright ?? -1,
+      topPanelHeight: 90,
+      leftPanelWidth: layout?.sizeleft ?? 270,
+      rightPanelWidth: layout?.sizeright ?? 270,
+    },
+    left: createLeftLayout(data),
+  };
 }
