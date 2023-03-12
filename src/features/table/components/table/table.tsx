@@ -19,10 +19,10 @@ export const Table = ({id}: FormState) => {
   const state: TableState = useSelector(tableStateSelector.bind(id));
   const { channelName, headerSetterRules: rules, columns: columnsState, columnTree } = state;
 
-  const channel: Channel = useSelector(channelSelector.bind(channelName));
+  const channel: Channel = useSelector(channelSelector.bind(channelName)) ?? {} as any;
   const { data: channelData, query } = channel;
 
-  const lookups = channel.info.lookupChannels;
+  const lookups = channel.info?.lookupChannels ?? [];
   const lookupData: ChannelDict = useSelector(channelDictSelector.bind(lookups), compareObjects);
 
   const paramsSelector = headerSetterParamsSelector.bind(rules);
@@ -52,6 +52,7 @@ export const Table = ({id}: FormState) => {
     return getColumnModel(columnsState, columnTree, channelName, query);
   }, [columnsState, columnTree, channelName, query]);
 
+  if (!channelName) return <div/>;
   return (
     <TableGrid id={id} state={state} query={query} records={records} setRecords={setRecords}>
       {columnModel}

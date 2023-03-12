@@ -1,9 +1,16 @@
 import { useTranslation } from 'react-i18next';
+import { Skeleton, SkeletonProps } from '@progress/kendo-react-indicators';
 
+
+const skeletonProps: SkeletonProps = {
+  shape: 'rectangle',
+  style: {width: '100%', height: '100%'},
+  animation: {type: 'wave'},
+};
 
 /** Лоадер для презентации. */
 export const PresentationSkeleton = () => {
-  return <div className={'form-container'}>Загрузка...</div>;
+  return <Skeleton {...skeletonProps}/>;
 };
 
 /** Заглушка при ошибке инициализации презентации. */
@@ -14,7 +21,7 @@ export const PresentationFetchError = ({details}: {details: string}) => {
 
 /** Лоадер для формы. */
 export const FormSkeleton = () => {
-  return <div className={'form-container'}>Загрузка...</div>;
+  return <Skeleton {...skeletonProps}/>;
 };
 
 /** Заглушка при ошибке инициализации формы. */

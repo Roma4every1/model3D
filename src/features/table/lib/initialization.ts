@@ -45,16 +45,16 @@ function getColumnType(netType: string): TableColumnType {
 
 /** Функция, создающая состояние таблицы по её начальным настройкам. */
 export function settingsToState(channel: Channel, settings: TableFormSettings): TableState {
-  const channelName = channel.name;
-  const allProperties = channel.info.properties;
-  channel.query.maxRowCount = 100;
+  const channelName = channel?.name;
+  const allProperties = channel?.info.properties ?? [];
+  if (channel) channel.query.maxRowCount = 100;
 
   const { columns, attachedProperties } = settings;
   const columnsState: TableColumnsState = {};
   const properties = getDisplayedProperties(allProperties, attachedProperties);
 
   const settingsDict: Record<string, DataSetColumnSettings> = {};
-  columns.columnsSettings.forEach((col) => settingsDict[col.channelPropertyName] = col);
+  columns?.columnsSettings.forEach((col) => settingsDict[col.channelPropertyName] = col);
 
   properties.sort((a, b) => {
     const aIndex = settingsDict[a.name]?.displayIndex ?? 1000;
@@ -67,22 +67,22 @@ export function settingsToState(channel: Channel, settings: TableFormSettings): 
   });
 
   const ids = properties.map(p => p.name);
-  const lockedCount = columns.frozenColumnCount ?? 0;
+  const lockedCount = columns?.frozenColumnCount ?? 0;
   for (let i = 0; i < lockedCount; i++) columnsState[ids[i]].locked = true;
 
   const columnsSettings: TableColumnsSettings = {
     lockedCount, isLockingEnabled: lockedCount > 0,
-    canUserLockColumns: columns.canUserFreezeColumns,
-    alternate: columns.alternate,
-    alternateRowBackground: columns.alternateRowBackground,
-    isTableMode: columns.isTableMode,
+    canUserLockColumns: columns?.canUserFreezeColumns ?? true,
+    alternate: columns?.alternate ?? true,
+    alternateRowBackground: columns?.alternateRowBackground ?? 'none',
+    isTableMode: columns?.isTableMode ?? true,
   };
 
   const columnTree = createColumnTree(properties);
   const columnTreeFlatten = getFlatten(columnTree);
 
   return {
-    editable: false, tableID: null, headerSetterRules: settings.headerSetterRules,
+    editable: false, tableID: null, headerSetterRules: settings.headerSetterRules ?? [],
     channelName, columnsSettings, columns: columnsState, columnTree, columnTreeFlatten,
     properties: {...attachedProperties, list: properties, typesApplied: false},
     activeCell: {columnID: null, recordID: null, edited: false},
@@ -106,8 +106,8 @@ function getColumn(property: ChannelProperty, settings: DataSetColumnSettings): 
 
 /** Возвращает список свойств, по которому будут строиться колонки. */
 function getDisplayedProperties(allProperties: ChannelProperty[], attached: InitAttachedProperties) {
-  const option: AttachOptionType = attached.attachOption ?? 'AttachAll';
-  const excludeList: string[] = attached.exclude ?? [];
+  const option: AttachOptionType = attached?.attachOption ?? 'AttachAll';
+  const excludeList: string[] = attached?.exclude ?? [];
 
   const checker = option === 'AttachAll'
     ? (property) => !excludeList.includes(property.name)

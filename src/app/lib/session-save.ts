@@ -56,7 +56,7 @@ function presentationStateToChildren(state: PresentationState): FormChildrenStat
     id: state.id,
     children: state.children,
     openedChildren: state.openedChildren,
-    activeChildren: [state.activeChildID],
+    activeChildren: state.activeChildID ? [state.activeChildID] : [],
   };
 }
 

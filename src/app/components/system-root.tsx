@@ -1,6 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSystemName } from '../store/app-state/app.actions';
 import { appStateSelector } from '../store/app-state/app.selectors';
@@ -12,22 +11,6 @@ import { LoadingStatus } from './loading-status';
 import { WindowHandler } from 'entities/windows/window-handler';
 
 
-/** Проверяет, есть ли указанная система в списке доступных систем. */
-const checkSystem = (systemName: string, systemList: SystemList): boolean => {
-  return systemList.find((system) => system.id === systemName) !== undefined;
-};
-
-/** Компонент, использующийся если система не найдена. */
-const SystemNotFound = ({root, name}: {root: string, name: string}) => {
-  const { t } = useTranslation();
-  return (
-    <div style={{padding: '2em', fontSize: '1.15rem'}}>
-      <div>{t('systems.notFound', {systemName: name})}</div>
-      <Link to={root}>&#11176; {t('systems.backToSystemList')}</Link>
-    </div>
-  );
-};
-
 /** Корень системы. Route: `/systems/:systemID`. */
 export const SystemRoot = () => {
   const dispatch = useDispatch();
@@ -37,10 +20,13 @@ export const SystemRoot = () => {
   const { systemID: paramsSystemID } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
 
+  const isSystemExist = useMemo(() => {
+    return systemList && systemList.find((system) => system.id === paramsSystemID) !== undefined;
+  }, [systemList, paramsSystemID]);
+
   const isNeedStartSession = useMemo(() => {
-    const isSystemExist = systemList && checkSystem(paramsSystemID, systemList);
     return isSystemExist && (stateNeedFetch(fetchState) || paramsSystemID !== systemID);
-  }, [fetchState, systemList, systemID, paramsSystemID]);
+  }, [fetchState, isSystemExist, systemID, paramsSystemID]);
 
   useEffect(() => {
     if (paramsSystemID !== systemID) dispatch(setSystemName(paramsSystemID));
@@ -55,18 +41,11 @@ export const SystemRoot = () => {
   }, [isNeedStartSession, searchParams, setSearchParams, dispatch]);
 
   if (fetchState?.ok) return <><Dock config={config}/><WindowHandler/></>;
+  if (config === null) return <LoadingStatus loadingType={'systems'}/>;
 
-  if (config === null) {
-    return <LoadingStatus loadingType={'systems'}/>;
-  }
-  if (!systemList) {
-    return <LoadingStatus loadingType={'systems'} success={false}/>;
-  }
-  if (stateNotLoaded(fetchState)) {
-    return <LoadingStatus loadingType={'session'} />;
-  }
-  if (fetchState.ok === false) {
-    return <LoadingStatus loadingType={'session'} success={false}/>
-  }
-  return <SystemNotFound name={systemID} root={config.root}/>;
+  if (!systemList) return <LoadingStatus loadingType={'systems'} success={false}/>;
+  if (!isSystemExist) return <Navigate to={config.root} replace={true}/>;
+
+  if (stateNotLoaded(fetchState)) return <LoadingStatus loadingType={'session'}/>;
+  return <LoadingStatus loadingType={'session'} success={false}/>;
 };
