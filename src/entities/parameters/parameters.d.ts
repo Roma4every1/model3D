@@ -140,12 +140,13 @@ interface FormParamProto<Type extends ParameterType, Value> {
   id: ParameterID,
   type: Type,
   value: Value,
-  formID?: FormID,
-  dependsOn?: ParameterDepends,
   canBeNull?: boolean,
   displayName?: string,
   editorType?: ParameterEditorType,
   editorDisplayOrder?: Order,
+
+  /** Параметры, смена значений которых приводит к сбросу значения. */
+  dependsOn?: ParameterID[],
   /** Каналы, которые зависят от данного параметра. */
   relatedChannels?: ChannelName[],
   /** Программы, видимость которых зависят от данного параметра. */
@@ -159,5 +160,5 @@ interface FormParamProto<Type extends ParameterType, Value> {
 /** Тип редактора для данного параметра. */
 type ParameterEditorType = string;
 
-/** Список параметров (ID), которые зависят от данного. */
-type ParameterDepends = ParameterID[];
+/** Данные для обновления параметра. */
+type UpdateParamData = {clientID: FormID, id: ParameterID, value: any};

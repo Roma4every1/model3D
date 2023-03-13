@@ -4,29 +4,26 @@ import { stringToTableCell, tableRowToString } from '../lib/table-row';
 
 
 const getValueToShow = (channel: Channel, formParameter: ParamTableRow) => {
-  let data = [], initValue;
+  let data = [], initValue = null;
   const value = formParameter.value;
   const nullDisplayValue = formParameter.nullDisplayValue ?? 'Нет значения';
   const showNullValue = formParameter.showNullValue;
 
   if (channel && channel.info.properties) {
-    // сюда попадем если данные канала уже загружены
-    const valuesFromChannel = channel?.data?.rows?.map(row => tableRowToString(channel, row));
+    const valuesFromChannel = getComboBoxItems(channel);
     if (valuesFromChannel) data = valuesFromChannel;
 
     if (showNullValue) {
-      data.push({id: null, name: nullDisplayValue, value: null})
+      data.push({id: null, name: nullDisplayValue, value: null});
     }
 
     if (value) {
       const dataID = stringToTableCell(value, 'LOOKUPCODE');
-      const calculatedValueToShow = data.find(o => String(o.id) === dataID);
-      initValue = calculatedValueToShow ? calculatedValueToShow : '';
+      initValue = data.find(item => String(item.id) === dataID) ?? null;
     } else if (showNullValue) {
       initValue = {id: value, name: nullDisplayValue, value};
     }
   } else if (value) {
-    // сюда попадем если данные канала ещё не загружены
     let lookupCode = stringToTableCell(value, 'LOOKUPCODE')
     let lookupValue = stringToTableCell(value, 'LOOKUPVALUE');
     if (lookupValue === value) lookupValue = lookupCode;
@@ -41,7 +38,10 @@ export const TableRowComboEditor = ({parameter, update, channel}: EditorProps<Pa
   const [value, data, nullDisplayValue] = getValueToShow(channel, parameter);
 
   const onChange = (event: ComboBoxChangeEvent) => {
-    update(event.value?.value ?? null);
+    let newValue = event.value?.value ?? null;
+    if (newValue !== null && typeof newValue !== 'string')
+      newValue = tableRowToString(channel, newValue).value;
+    update(newValue);
   };
 
   return (
@@ -52,3 +52,17 @@ export const TableRowComboEditor = ({parameter, update, channel}: EditorProps<Pa
     />
   );
 };
+
+function getComboBoxItems(channel: Channel) {
+  const rows = channel.data?.rows;
+  if (!rows) return null;
+
+  const lookupColumns = channel.info.lookupColumns;
+  const idIndex = lookupColumns.id.index;
+  const valueIndex = lookupColumns.value.index;
+  return rows.map((row) => getComboBoxItem(row, idIndex, valueIndex));
+}
+
+function getComboBoxItem(row: ChannelRow, idIndex: number, valueIndex: number) {
+  return {id: row.Cells[idIndex], name: row.Cells[valueIndex], value: row};
+}

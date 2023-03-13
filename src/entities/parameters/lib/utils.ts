@@ -2,10 +2,12 @@ import { getParsedParamValue } from './parsing';
 
 
 /** Обработка модели параметра после серверного запроса. */
-export function handleParam(this: FormID, parameter: Parameter): void {
-  parameter.formID = this;
+export function handleParam(parameter: Parameter): void {
   parameter.value = getParsedParamValue(parameter.type, parameter.value);
   if (!parameter.nullDisplayValue) parameter.nullDisplayValue = 'Нет значения';
+  if (!parameter.dependsOn || (parameter.dependsOn.length === 1 && !parameter.dependsOn[0])) {
+    parameter.dependsOn = [];
+  }
 }
 
 /** Находит в хранилище параметров нужные элементы и наполняет массив.
@@ -20,10 +22,20 @@ export function fillParamValues(ids: ParameterID[], storage: ParamDict, clientsI
   const result: Parameter[] = [];
   for (const id of ids) {
     for (const clientID of clientsID) {
-      const clientParams = storage[clientID];
-      const neededParam = clientParams.find(p => p.id === id);
+      const neededParam = storage[clientID].find(p => p.id === id);
       if (neededParam) { result.push(neededParam); break; }
     }
   }
   return result;
+}
+
+/** Рекурсивно сбрасывает значения параметрам, которые зависят от данного. */
+export function clearDependentParameters(id: ParameterID, list: Parameter[], updated: Parameter[]) {
+  for (const parameter of list) {
+    if (parameter.dependsOn.includes(id) && parameter.value !== null) {
+      parameter.value = null;
+      updated.push(parameter);
+      clearDependentParameters(parameter.id, list, updated);
+    }
+  }
 }

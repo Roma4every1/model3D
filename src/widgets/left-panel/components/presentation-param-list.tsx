@@ -1,7 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { updateReportsVisibility } from 'entities/reports';
-import { ParameterList, updateParam } from 'entities/parameters';
-import { channelDictSelector, reloadChannels, getExternalChannels } from 'entities/channels';
+import { ParameterList, updateParamDeep } from 'entities/parameters';
+import { channelDictSelector, getExternalChannels } from 'entities/channels';
 import { compareObjects } from 'shared/lib';
 
 
@@ -17,10 +16,8 @@ export const PresentationParamList = ({list, activeID}: PresentationParamListPro
   const externalChannels = list ? [...getExternalChannels(list)] : [];
   const channels = useSelector(channelDictSelector.bind(externalChannels), compareObjects);
 
-  const onChange = ({id, relatedChannels, relatedReports}: Parameter, newValue: any) => {
-    dispatch(updateParam(activeID, id, newValue))
-    if (relatedChannels.length) dispatch(reloadChannels(relatedChannels));
-    if (relatedReports?.length) dispatch(updateReportsVisibility(relatedReports));
+  const onChange = (parameter: Parameter, newValue: any) => {
+    dispatch(updateParamDeep(activeID, parameter.id, newValue));
   };
 
   return <ParameterList params={list ?? []} channels={channels} onChange={onChange}/>;

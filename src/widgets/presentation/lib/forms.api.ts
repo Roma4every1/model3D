@@ -42,7 +42,7 @@ export class FormsAPI {
     const res = await this.request<Parameter[]>({path: 'getFormParameters', query});
 
     if (res.ok) {
-      res.data.forEach(handleParam.bind(formID));
+      res.data.forEach(handleParam);
       return res.data;
     } else {
       return [];
