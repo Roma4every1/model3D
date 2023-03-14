@@ -23,7 +23,7 @@ export function applyLookupData(lookupData: ChannelDict, columns: TableColumnsSt
 
 /** Создаёт массив объектов данных для рендеринга в `Grid`. */
 export function createRecords(data: ChannelData, columns: TableColumnsState): TableRecord[] {
-  if (!data?.rows) return [];
+  if (!data?.rows.length) return [];
   const columnsArray = Object.values(columns);
   return data.rows.map((row, i) => createRecord(i, row.Cells, columnsArray));
 }

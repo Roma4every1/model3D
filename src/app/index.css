@@ -279,6 +279,7 @@ html {
   width: max-content;
   max-width: 35vw;
   max-height: 35vh;
+  overflow: auto;
 }
 
 .k-textbox, .k-dropdown .k-input, .k-dropdowntree .k-input, .k-datepicker, .k-dateinput, .k-numerictextbox .k-input {

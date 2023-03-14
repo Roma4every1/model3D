@@ -47,7 +47,7 @@ export const TableRowComboEditor = ({parameter, update, channel}: EditorProps<Pa
   return (
     <ComboBox
       data={data} dataItemKey={'id'} textField={'name'}
-      value={value} placeholder={nullDisplayValue}
+      value={value} placeholder={nullDisplayValue} clearButton={parameter.canBeNull}
       suggest={true} onChange={onChange}
     />
   );
@@ -59,10 +59,13 @@ function getComboBoxItems(channel: Channel) {
 
   const lookupColumns = channel.info.lookupColumns;
   const idIndex = lookupColumns.id.index;
-  const valueIndex = lookupColumns.value.index;
+  let valueIndex = lookupColumns.value.index;
+
+  if (valueIndex === -1) valueIndex = idIndex;
   return rows.map((row) => getComboBoxItem(row, idIndex, valueIndex));
 }
 
 function getComboBoxItem(row: ChannelRow, idIndex: number, valueIndex: number) {
-  return {id: row.Cells[idIndex], name: row.Cells[valueIndex], value: row};
+  const id = row.Cells[idIndex];
+  return {id, name: row.Cells[valueIndex] ?? id, value: row};
 }

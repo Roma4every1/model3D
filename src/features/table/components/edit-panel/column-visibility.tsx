@@ -1,6 +1,6 @@
+import { TFunction } from 'react-i18next';
 import { MouseEvent, useState } from 'react';
 import { useDispatch } from 'react-redux';
-//import { useTranslation } from 'react-i18next';
 import { Popup } from '@progress/kendo-react-popup';
 import { TreeView } from '@progress/kendo-react-treeview';
 import { TreeViewExpandChangeEvent, TreeViewCheckChangeEvent } from '@progress/kendo-react-treeview';
@@ -13,6 +13,7 @@ import columnVisibilityIcon from 'assets/images/dataset/columns-visibility.png';
 interface ColumnVisibilityProps {
   id: FormID,
   tree: ColumnTree,
+  t: TFunction,
 }
 interface ColumnTreeVisibilityProps {
   tree: ColumnTree,
@@ -20,8 +21,7 @@ interface ColumnTreeVisibilityProps {
 }
 
 
-export const ColumnVisibility = ({id, tree}: ColumnVisibilityProps) => {
-  //const { t } = useTranslation();
+export const ColumnVisibility = ({id, tree, t}: ColumnVisibilityProps) => {
   const dispatch = useDispatch();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -40,10 +40,10 @@ export const ColumnVisibility = ({id, tree}: ColumnVisibilityProps) => {
   return (
     <>
       <BigButton
-        text={'Видимость'} icon={columnVisibilityIcon}
+        text={t('table.panel.functions.visibility')} icon={columnVisibilityIcon}
         action={showColumnListClick}
       />
-      <Popup className={'popup'} id={id} show={isOpen} anchor={anchor}>
+      <Popup className={'dropdown-popup'} id={id} show={isOpen} anchor={anchor}>
         <ColumnTreeVisibility tree={tree} setTree={setTree}/>
       </Popup>
     </>

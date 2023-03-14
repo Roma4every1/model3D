@@ -1,3 +1,4 @@
+import { TFunction } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { BigButtonToggle } from 'shared/ui';
 import { setTableColumnsSettings, setTableColumns } from '../../store/tables.actions';
@@ -8,10 +9,11 @@ interface ColumnLockingProps {
   id: FormID,
   settings: TableColumnsSettings,
   columns: TableColumnsState,
+  t: TFunction
 }
 
 
-export const ColumnLocking = ({id, settings, columns}: ColumnLockingProps) => {
+export const ColumnLocking = ({id, settings, columns, t}: ColumnLockingProps) => {
   const dispatch = useDispatch();
   const lockingEnabled = settings.isLockingEnabled;
 
@@ -27,7 +29,7 @@ export const ColumnLocking = ({id, settings, columns}: ColumnLockingProps) => {
 
   return (
     <BigButtonToggle
-      text={'Фиксация колонок'} icon={columnsLockingIcon}
+      text={t('table.panel.params.locking')} icon={columnsLockingIcon}
       active={lockingEnabled} action={toggleColumnLocking}
     />
   );

@@ -1,5 +1,5 @@
 import { useDispatch } from 'react-redux';
-//import { useTranslation } from 'react-i18next';
+import { TFunction } from 'react-i18next';
 import { BigButton } from 'shared/ui';
 import { channelsAPI } from 'entities/channels/lib/channels.api';
 import { setWindowInfo, setWindowWarning } from 'entities/windows';
@@ -23,8 +23,7 @@ interface ColumnStat {
 }
 
 
-export const ColumnStatistics = ({state}: {state: TableState}) => {
-  //const { t } = useTranslation();
+export const ColumnStatistics = ({state, t}: {state: TableState, t: TFunction}) => {
   const dispatch = useDispatch();
   const activeColumnID = state.activeCell.columnID;
 
@@ -33,28 +32,28 @@ export const ColumnStatistics = ({state}: {state: TableState}) => {
     if (!ok) { dispatch(setWindowWarning(data)); return; }
     if (typeof data !== 'object' || !data.Values) return;
 
-    const info = <ColumnStatisticsList stat={data.Values}/>;
-    const windowTitle = 'Статистика: ' + state.columns[activeColumnID].title;
+    const info = <ColumnStatisticsList stat={data.Values} t={t}/>;
+    const windowTitle = t('table.stat.window-title', {column: state.columns[activeColumnID].title});
     dispatch(setWindowInfo(info, null, windowTitle));
   };
 
   return (
     <BigButton
-      text={'Статистика'} icon={statisticsIcon}
+      text={t('table.panel.functions.stat')} icon={statisticsIcon}
       action={getStat} disabled={!activeColumnID}
     />
   );
 };
 
-const ColumnStatisticsList = ({stat}: {stat: ColumnStat}) => {
+const ColumnStatisticsList = ({stat, t}: {stat: ColumnStat, t: TFunction}) => {
   return (
     <ul>
-      {stat.MIN && <li>Минимум: {stat.MIN}</li>}
-      {stat.MAX && <li>Максимум: {stat.MAX}</li>}
-      {stat.AVG && <li>В среднем: {stat.AVG}</li>}
-      {stat.SUM && <li>Сумма: {stat.SUM}</li>}
-      {stat.COUNT && <li>Количество строк: {stat.COUNT}</li>}
-      {stat.UNIQ && <li>Уникальных значений: {stat.UNIQ}</li>}
+      {stat.MIN && <li>{t('table.stat.min', {value: stat.MIN})}</li>}
+      {stat.MAX && <li>{t('table.stat.max', {value: stat.MAX})}</li>}
+      {stat.AVG && <li>{t('table.stat.avg', {value: stat.AVG})}</li>}
+      {stat.SUM && <li>{t('table.stat.sum', {value: stat.SUM})}</li>}
+      {stat.COUNT && <li>{t('table.stat.count', {value: stat.COUNT})}</li>}
+      {stat.UNIQ && <li>{t('table.stat.unique', {value: stat.UNIQ})}</li>}
     </ul>
   );
 };

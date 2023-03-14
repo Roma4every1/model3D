@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useInternationalization } from '@progress/kendo-react-intl';
 
 
@@ -9,6 +10,7 @@ interface CellWithLinkedTableProps {
 
 
 export const LinkedTableCell = ({column, value, open}: CellWithLinkedTableProps) => {
+  const { t } = useTranslation();
   const i18nService = useInternationalization();
   const format = column.format;
 
@@ -25,7 +27,7 @@ export const LinkedTableCell = ({column, value, open}: CellWithLinkedTableProps)
         <span
           style={{width: 18, height: 18}}
           className={'k-icon k-i-grid-layout'}
-          title={'Показать детальную информацию'}
+          title={t('table.cells.show-details')}
         />
       </div>
     </div>

@@ -13,7 +13,7 @@ export function applyColumnTypes(state: TableState, channelColumns: ChannelColum
     const columnState = state.columns[property.name];
 
     if (columnState.lookupChannel) {
-      columnState.type = 'list';
+      if (!columnState.type) columnState.type = 'list';
     } else {
       const type = getColumnType(NetType);
       columnState.type = type;

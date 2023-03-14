@@ -107,7 +107,7 @@ function setParentsVisible(tree: ColumnTree, targetItem: ColumnTreeItem, visible
   for (const item of tree) {
     const items: ColumnTreeItem[] = item.children;
     if (items) {
-      if (setParentsVisible(items, targetItem, visible)) { item.visible = visible; return; }
+      if (setParentsVisible(items, targetItem, visible)) { item.visible = visible; return true; }
     } else if (item === targetItem) {
       item.visible = visible;
       return true;

@@ -1,7 +1,7 @@
 import { ReactElement, KeyboardEvent } from 'react';
 import { useState, useLayoutEffect, useMemo, useRef } from 'react';
 import { useDispatch } from 'react-redux';
-import { IntlProvider } from '@progress/kendo-react-intl';
+import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
 import { Grid, GridProps, GridCellProps } from '@progress/kendo-react-grid';
 import { GridColumnResizeEvent, GridPageChangeEvent } from '@progress/kendo-react-grid';
 import { GridSelectionChangeEvent, getSelectedState } from '@progress/kendo-react-grid';
@@ -63,8 +63,8 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
   // сохранение полной видимости активной ячейки
   useLayoutEffect(() => {
     if (!contentElement || activeRecordID === null || activeColumnID === null) return;
-    if (isTopCell) { contentElement.scrollTo({top: 0}); return; }
-    if (isBottomCell) { contentElement.scrollBy({top: 1e10}); return; }
+    if (isTopCell) contentElement.scrollTo({top: 0});
+    if (isBottomCell) contentElement.scrollBy({top: 1e10});
 
     const cellID = activeColumnID + '-' + activeRecordID;
     const cell = document.getElementById(cellID) as HTMLTableCellElement;
@@ -315,19 +315,21 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
         id={id} state={state}
         actions={toolbarActions} selectedRecords={selectedRecords}
       />
-      <IntlProvider locale={'ru'}>
-        <Grid
-          style={{height: '100%'}}
-          {...scrollProps} fixedScroll={true} rowHeight={28}
-          dataItemKey={'id'} selectedField={'selected'}
-          groupable={false} reorderable={false} navigatable={false}
-          resizable={true} onColumnResize={onColumnResize}
-          selectable={{drag: !isEditing}} onSelectionChange={onSelectionChange}
-          cellRender={cellRender}
-        >
-          {children}
-        </Grid>
-      </IntlProvider>
+      <LocalizationProvider language={'ru-RU'}>
+        <IntlProvider locale={'ru'}>
+          <Grid
+            style={{height: '100%'}}
+            {...scrollProps} fixedScroll={true} rowHeight={28}
+            dataItemKey={'id'} selectedField={'selected'}
+            groupable={false} reorderable={false} navigatable={false}
+            resizable={true} onColumnResize={onColumnResize}
+            selectable={{drag: !isEditing}} onSelectionChange={onSelectionChange}
+            cellRender={cellRender}
+          >
+            {children}
+          </Grid>
+        </IntlProvider>
+      </LocalizationProvider>
     </div>
   );
 };

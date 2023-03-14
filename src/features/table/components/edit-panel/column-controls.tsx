@@ -1,3 +1,4 @@
+import { TFunction } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { MenuSection, BigButton, ButtonStock } from 'shared/ui';
 import { getColumnWidth } from '../../lib/common';
@@ -9,15 +10,17 @@ import autoWidthIcon from 'assets/images/dataset/auto-width.png';
 interface ColumnControlsProps {
   id: FormID,
   state: TableState,
+  t: TFunction,
 }
 interface ColumnOrderControlsProps {
   disabled: Record<string, boolean>,
   move: (to: string) => void,
   lock: () => void,
+  t: TFunction,
 }
 
 
-export const ColumnControls = ({id, state}: ColumnControlsProps) => {
+export const ColumnControls = ({id, state, t}: ColumnControlsProps) => {
   const dispatch = useDispatch();
   const settings = state.columnsSettings;
 
@@ -53,41 +56,41 @@ export const ColumnControls = ({id, state}: ColumnControlsProps) => {
   };
 
   return (
-    <MenuSection header={'Колонка'} className={'map-actions'}>
+    <MenuSection header={t('table.panel.column.header')} className={'map-actions'}>
       <BigButton
-        text={'Авто ширина'} icon={autoWidthIcon}
+        text={t('table.panel.column.auto-width')} icon={autoWidthIcon}
         action={setAutoWidth} disabled={!activeColumnID}
       />
       <ColumnOrderControls
-        move={move} lock={lock}
+        move={move} lock={lock} t={t}
         disabled={getMoveButtonsDisabled(settings, activeColumn, groupIndex, groupItems.length)}
       />
     </MenuSection>
   );
 };
 
-const ColumnOrderControls = ({move, lock, disabled}: ColumnOrderControlsProps) => {
+const ColumnOrderControls = ({move, lock, disabled, t}: ColumnOrderControlsProps) => {
   return (
     <div className={'column-controls'}>
-      <span>Порядок</span>
+      <span>{t('table.panel.column.order')}</span>
       <ButtonStock
-        text={'Зафиксировать'} icon={'pin'}
+        text={t('table.panel.column.lock')} icon={'pin'}
         action={lock} disabled={lock === undefined}
       />
       <ButtonStock
-        text={'Переместить влево'} icon={'arrow-60-left'}
+        text={t('table.panel.column.move-left')} icon={'arrow-60-left'}
         action={() => move('left')} disabled={disabled.left}
       />
       <ButtonStock
-        text={'Переместить вправо'} icon={'arrow-60-right'}
+        text={t('table.panel.column.move-right')} icon={'arrow-60-right'}
         action={() => move('right')} disabled={disabled.right}
       />
       <ButtonStock
-        text={'Переместить в начало'} icon={'arrow-double-60-left'}
+        text={t('table.panel.column.move-start')} icon={'arrow-double-60-left'}
         action={() => move('start')} disabled={disabled.start}
       />
       <ButtonStock
-        text={'Переместить в конец'} icon={'arrow-double-60-right'}
+        text={t('table.panel.column.move-end')} icon={'arrow-double-60-right'}
         action={() => move('end')} disabled={disabled.end}
       />
     </div>

@@ -139,17 +139,17 @@ export const tablesReducer = (state: TablesState = init, action: TablesAction): 
 
     case TableActions.RESET: {
       const { id, tableID, channelData } = action.payload;
-      const { columns, editable } = channelData;
-      const total = channelData.rows.length;
       const tableState = state[id];
+      const total = channelData?.rows.length ?? 0;
+      const editable = channelData?.editable ?? tableState.editable;
 
       if (tableState.total !== total) {
         tableState.total = total;
         tableState.selection = {};
         tableState.activeCell = {...tableState.activeCell, recordID: null, edited: false};
       }
-      if (!tableState.properties.typesApplied) {
-        applyColumnTypes(tableState, columns);
+      if (!tableState.properties.typesApplied && channelData?.columns) {
+        applyColumnTypes(tableState, channelData.columns);
         tableState.properties.typesApplied = true;
       }
 

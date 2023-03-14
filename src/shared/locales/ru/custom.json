@@ -43,6 +43,44 @@
   },
 
   "table": {
+    "cells": {
+      "show-details": "Показать детальную информацию"
+    },
+    "panel": {
+      "functions": {
+        "header": "Функции",
+        "export": "Экспорт в Excel",
+        "stat": "Статистика",
+        "visibility": "Видимость"
+      },
+      "selection": {
+        "header": "Выделение",
+        "select-all": "Выделить всё"
+      },
+      "params": {
+        "header": "Параметры",
+        "locking": "Фиксация колонок"
+      },
+      "column": {
+        "header": "Колонка",
+        "auto-width": "Авто ширина",
+        "order": "Порядок",
+        "lock": "Зафиксировать",
+        "move-left": "Переместить влево",
+        "move-right": "Переместить вправо",
+        "move-start": "Переместить в начало",
+        "move-end": "Переместить в конец"
+      }
+    },
+    "stat": {
+      "window-title": "Статистика: {{column}}",
+      "min": "Минимум: {{value}}",
+      "max": "Максимум: {{value}}",
+      "avg": "В среднем: {{value}}",
+      "sum": "Сумма: {{value}}",
+      "count": "Количество строк: {{value}}",
+      "unique": "Уникальных значений: {{value}}"
+    },
     "toolbar": {
       "export-to-excel": "Экспорт таблицы с Excel",
       "to-start": "В начало",

@@ -42,7 +42,6 @@ export const Table = ({id}: FormState) => {
 
   // Обновление записей таблицы и состояния при обновлении данных канала
   useEffect(() => {
-    if (!channelData?.rows?.length) return;
     dispatch(resetTable(id, channel.tableID, channelData));
     const newRecords = createRecords(channelData, columnsState);
     setRecords(newRecords);
