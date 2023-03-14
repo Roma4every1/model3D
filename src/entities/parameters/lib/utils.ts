@@ -30,12 +30,11 @@ export function fillParamValues(ids: ParameterID[], storage: ParamDict, clientsI
 }
 
 /** Рекурсивно сбрасывает значения параметрам, которые зависят от данного. */
-export function clearDependentParameters(id: ParameterID, list: Parameter[], updated: Parameter[]) {
+export function findDependentParameters(id: ParameterID, list: Parameter[], updated: Parameter[]) {
   for (const parameter of list) {
-    if (parameter.dependsOn.includes(id) && parameter.value !== null) {
-      parameter.value = null;
+    if (parameter.dependsOn.includes(id) && !updated.includes(parameter)) {
       updated.push(parameter);
-      clearDependentParameters(parameter.id, list, updated);
+      findDependentParameters(parameter.id, list, updated);
     }
   }
 }

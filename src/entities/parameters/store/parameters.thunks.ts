@@ -2,7 +2,8 @@ import { Dispatch } from 'redux';
 import { Thunk, StateGetter } from 'shared/lib';
 import { reloadChannels } from '../../channels';
 import { updateReportsVisibility } from '../../reports';
-import { clearDependentParameters } from '../lib/utils';
+import { findDependentParameters } from '../lib/utils';
+import { tableRowToString } from '../lib/table-row';
 import { updateParam, updateParams } from './parameters.actions';
 
 
@@ -11,34 +12,41 @@ import { updateParam, updateParams } from './parameters.actions';
  * + зависимые каналы
  * + зависимые программы отчёты
  * */
-export const updateParamDeep = (clientID: FormID, paramID: ParameterID, newValue: any): Thunk => {
+export const updateParamDeep = (clientID: FormID, id: ParameterID, newValue: any): Thunk => {
   return async (dispatch: Dispatch, getState: StateGetter) => {
-    const state = getState(), stateGetter = () => state;
-    const paramDict = state.parameters;
-    const parameter = paramDict[clientID]?.find(p => p.id === paramID);
+    const clientParameters = getState().parameters[clientID];
+    const parameter = clientParameters?.find(p => p.id === id);
 
     if (!parameter) return;
-    const { id, relatedChannels, relatedReports } = parameter;
-    const channelsToUpdate = new Set(relatedChannels), reportsToUpdate = new Set(relatedReports);
+    const { relatedChannels, relatedReports } = parameter;
+    dispatch(updateParam(clientID, id, newValue));
+    if (relatedChannels.length) await reloadChannels(relatedChannels)(dispatch, getState);
 
     const updatedList: Parameter[] = [];
-    clearDependentParameters(id, paramDict[clientID], updatedList);
+    findDependentParameters(id, clientParameters, updatedList);
 
-    if (updatedList.length) {
-      const entries: UpdateParamData[] = [{clientID, id: paramID, value: newValue}];
-      for (const updatedParam of updatedList) {
-        entries.push({clientID, id: updatedParam.id, value: null});
-        updatedParam.relatedChannels?.forEach(channelName => channelsToUpdate.add(channelName));
-        updatedParam.relatedReports?.forEach(reportID => reportsToUpdate.add(reportID));
+    const channels = getState().channels;
+    const entries: UpdateParamData[] = [];
+    const channelsToUpdate = new Set<ChannelName>();
+    const reportsToUpdate = new Set(relatedReports);
+
+    for (const updatedParam of updatedList) {
+      let value = null;
+      if (updatedParam.canBeNull === false && updatedParam.externalChannelName) {
+        const channel = channels[updatedParam.externalChannelName];
+        const rows = channel?.data?.rows;
+        if (rows?.length) value = tableRowToString(channel, rows[0])?.value ?? null;
       }
-      dispatch(updateParams(entries));
-    } else {
-      dispatch(updateParam(clientID, id, newValue));
+      entries.push({clientID, id: updatedParam.id, value});
+      updatedParam.relatedChannels?.forEach((channelName) => channelsToUpdate.add(channelName));
+      updatedParam.relatedReports?.forEach((reportID) => reportsToUpdate.add(reportID));
     }
 
+    if (entries.length)
+      dispatch(updateParams(entries));
     if (channelsToUpdate.size)
-      reloadChannels([...channelsToUpdate])(dispatch, stateGetter).then();
+      reloadChannels([...channelsToUpdate])(dispatch, getState).then();
     if (reportsToUpdate.size)
-      updateReportsVisibility([...reportsToUpdate])(dispatch, stateGetter).then();
+      updateReportsVisibility([...reportsToUpdate])(dispatch, getState).then();
   };
 };
