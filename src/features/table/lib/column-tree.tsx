@@ -1,9 +1,10 @@
+import { DataSetColumnDict } from './types';
 import { GridColumn } from '@progress/kendo-react-grid';
 import { HeaderCell, GroupHeaderCell } from '../components/cells/header';
 
 
 /** По свойствам канала создаёт дерево колонок. */
-export function createColumnTree(properties: ChannelProperty[]): ColumnTree {
+export function createColumnTree(properties: ChannelProperty[], dict: DataSetColumnDict): ColumnTree {
   const groupTree: ColumnTreeItem = {title: '', children: [], visible: true};
 
   for (const property of properties) {
@@ -21,7 +22,8 @@ export function createColumnTree(properties: ChannelProperty[]): ColumnTree {
       node.children.push(nodeItem);
       node = nodeItem;
     }
-    node.children.push({field: property.name, title: property.displayName, visible: true});
+    const visible = dict[property.name]?.isVisible ?? true;
+    node.children.push({field: property.name, title: property.displayName, visible});
   }
   return groupTree.children;
 }
@@ -91,6 +93,6 @@ export function forEachLeaf(tree: ColumnTree, fn: (item: ColumnTreeItem, i?: num
 /** Возвращает упорядоченный массив ID колонок с учётом их видимости. */
 export function getFlatten(tree: ColumnTree): TableColumnID[] {
   const result: TableColumnID[] = [];
-  forEachLeaf(tree, (item) => { result.push(item.field); });
+  forEachLeaf(tree, (item) => { if (item.visible) result.push(item.field); });
   return result;
 }

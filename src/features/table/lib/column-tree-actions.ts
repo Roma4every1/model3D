@@ -56,19 +56,19 @@ export function moveColumn(items: ColumnTreeItem[], index: number, to: string) {
 
   if (to === 'left' && notFirst) {
     targetIndex = index - 1;
+    while (items[targetIndex] && !items[targetIndex].visible) targetIndex--;
   } else if (to === 'right' && notLast) {
     targetIndex = index + 1;
-  }
-  if (targetIndex !== undefined) {
-    const temp = items[index];
-    items[index] = items[targetIndex];
-    items[targetIndex] = temp;
-    return;
+    while (items[targetIndex] && !items[targetIndex].visible) targetIndex++;
+  } else if (to === 'start' && notFirst) {
+    targetIndex = 0;
+  } else if (to === 'end' && notLast) {
+    targetIndex = items.length;
   }
 
-  if ((to === 'start' && notFirst) || (to === 'end' && notLast)) {
+  if (targetIndex !== undefined) {
     const [item] = items.splice(index, 1);
-    to === 'end' ? items.push(item) : items.unshift(item);
+    items.splice(targetIndex, 0, item);
   }
 }
 

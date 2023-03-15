@@ -1,5 +1,5 @@
-import { useDispatch } from 'react-redux';
 import { TFunction } from 'react-i18next';
+import { EditPanelItemProps } from '../../lib/types';
 import { BigButton } from 'shared/ui';
 import { channelsAPI } from 'entities/channels/lib/channels.api';
 import { setWindowInfo, setWindowWarning } from 'entities/windows';
@@ -23,8 +23,7 @@ interface ColumnStat {
 }
 
 
-export const ColumnStatistics = ({state, t}: {state: TableState, t: TFunction}) => {
-  const dispatch = useDispatch();
+export const ColumnStatistics = ({state, dispatch, t}: EditPanelItemProps) => {
   const activeColumnID = state.activeCell.columnID;
 
   const getStat = async () => {

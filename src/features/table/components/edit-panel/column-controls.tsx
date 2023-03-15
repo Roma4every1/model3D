@@ -1,5 +1,6 @@
 import { TFunction } from 'react-i18next';
-import { useDispatch } from 'react-redux';
+import { EditPanelItemProps } from '../../lib/types';
+import { useMemo } from 'react';
 import { MenuSection, BigButton, ButtonStock } from 'shared/ui';
 import { getColumnWidth } from '../../lib/common';
 import { findGroupItems, moveColumn } from '../../lib/column-tree-actions';
@@ -7,11 +8,6 @@ import { setTableColumns, setTableColumnTree } from '../../store/tables.actions'
 import autoWidthIcon from 'assets/images/dataset/auto-width.png';
 
 
-interface ColumnControlsProps {
-  id: FormID,
-  state: TableState,
-  t: TFunction,
-}
 interface ColumnOrderControlsProps {
   disabled: Record<string, boolean>,
   move: (to: string) => void,
@@ -19,14 +15,25 @@ interface ColumnOrderControlsProps {
   t: TFunction,
 }
 
+/** Состояние контролов колонки. */
+interface ControlsData {
+  /** Группа в дереве колонок с активной колонкой. */
+  groupItems: ColumnTreeItem[],
+  /** Индекс колонки в группе. */
+  groupIndex: number,
+  /** Активность кнопок изменения порядка колонки. */
+  disabled: {left: boolean, right: boolean, start: boolean, end: boolean},
+}
 
-export const ColumnControls = ({id, state, t}: ColumnControlsProps) => {
-  const dispatch = useDispatch();
+
+export const ColumnControls = ({id, state, dispatch, t}: EditPanelItemProps) => {
   const settings = state.columnsSettings;
-
   const activeColumnID = state.activeCell.columnID;
   const activeColumn = state.columns[activeColumnID];
-  const [groupItems, groupIndex] = findGroupItems(state.columnTree, activeColumnID);
+
+  const { groupItems, groupIndex, disabled } = useMemo(() => {
+    return getControlsData(state.columnTree, activeColumn, settings.lockedCount);
+  }, [state.columnTree, activeColumn, settings.lockedCount]);
 
   const canLock =
     settings.canUserLockColumns && settings.isLockingEnabled &&
@@ -63,7 +70,7 @@ export const ColumnControls = ({id, state, t}: ColumnControlsProps) => {
       />
       <ColumnOrderControls
         move={move} lock={lock} t={t}
-        disabled={getMoveButtonsDisabled(settings, activeColumn, groupIndex, groupItems.length)}
+        disabled={disabled}
       />
     </MenuSection>
   );
@@ -97,19 +104,29 @@ const ColumnOrderControls = ({move, lock, disabled, t}: ColumnOrderControlsProps
   );
 };
 
+function getControlsData(tree: ColumnTree, column: TableColumnState, lockedCount: number): ControlsData {
+  if (!column) return {
+    groupItems: [], groupIndex: -1,
+    disabled: {left: true, right: true, start: true, end: true}
+  };
+  const [groupItems, groupIndex] = findGroupItems(tree, column.field);
+  const visibleItems = groupItems.filter(item => item.visible);
+  const visibleIndex = visibleItems.findIndex(item => item.field === column.field);
+  const disabled = getMoveButtonsDisabled(column, lockedCount, visibleIndex, visibleItems.length);
+  return {groupItems, groupIndex, disabled};
+}
+
 function getMoveButtonsDisabled(
-  settings: TableColumnsSettings, column: TableColumnState,
-  index: number, total: number,
+  column: TableColumnState,
+  lockedCount: number, index: number, total: number,
 ) {
-  const leftDisabled = !column || index === 0;
-  const locked = column?.locked === true;
+  const leftDisabled = index === 0;
+  const locked = column.locked === true;
   const isLastColumn = index === total - 1;
-  const isLastLockedColumn = locked && index === settings.lockedCount - 1
+  const isLastLockedColumn = locked && index === lockedCount - 1
 
   return {
-    left: leftDisabled,
-    right: isLastColumn || isLastLockedColumn,
-    start: leftDisabled,
-    end: isLastColumn || locked,
+    left: leftDisabled, right: isLastColumn || isLastLockedColumn,
+    start: leftDisabled, end: isLastColumn || locked,
   };
 }

@@ -29,7 +29,7 @@ export function fillParamValues(ids: ParameterID[], storage: ParamDict, clientsI
   return result;
 }
 
-/** Рекурсивно сбрасывает значения параметрам, которые зависят от данного. */
+/** Рекурсивно находит параметры, которые зависят от данного. */
 export function findDependentParameters(id: ParameterID, list: Parameter[], updated: Parameter[]) {
   for (const parameter of list) {
     if (parameter.dependsOn.includes(id) && !updated.includes(parameter)) {

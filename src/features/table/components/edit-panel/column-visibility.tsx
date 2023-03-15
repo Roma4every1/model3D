@@ -1,29 +1,21 @@
-import { TFunction } from 'react-i18next';
 import { MouseEvent, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { Popup } from '@progress/kendo-react-popup';
 import { TreeView } from '@progress/kendo-react-treeview';
 import { TreeViewExpandChangeEvent, TreeViewCheckChangeEvent } from '@progress/kendo-react-treeview';
 import { BigButton } from 'shared/ui';
-import { setTableColumnTree } from '../../store/tables.actions';
-import { toggleTreeItemVisibility } from '../../lib/column-tree-actions';
+import { EditPanelItemProps } from '../../lib/types';
+import { setTableColumnTree, setTableActiveCell } from '../../store/tables.actions';
+import { toggleTreeItemVisibility, findGroupItems } from '../../lib/column-tree-actions';
 import columnVisibilityIcon from 'assets/images/dataset/columns-visibility.png';
 
 
-interface ColumnVisibilityProps {
-  id: FormID,
-  tree: ColumnTree,
-  t: TFunction,
-}
 interface ColumnTreeVisibilityProps {
   tree: ColumnTree,
   setTree: (newTree: ColumnTree) => void,
 }
 
 
-export const ColumnVisibility = ({id, tree, t}: ColumnVisibilityProps) => {
-  const dispatch = useDispatch();
-
+export const ColumnVisibility = ({id, state, dispatch, t}: EditPanelItemProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [anchor, setAnchor] = useState(null);
 
@@ -35,6 +27,13 @@ export const ColumnVisibility = ({id, tree, t}: ColumnVisibilityProps) => {
 
   const setTree = (newTree: ColumnTree) => {
     dispatch(setTableColumnTree(id, newTree));
+    const activeCell = state.activeCell;
+    if (!activeCell.columnID) return;
+
+    const [group, index] = findGroupItems(state.columnTree, activeCell.columnID);
+    if (group[index]?.visible === false) {
+      dispatch(setTableActiveCell(id, {...activeCell, columnID: null}));
+    }
   };
 
   return (
@@ -44,7 +43,7 @@ export const ColumnVisibility = ({id, tree, t}: ColumnVisibilityProps) => {
         action={showColumnListClick}
       />
       <Popup className={'dropdown-popup'} id={id} show={isOpen} anchor={anchor}>
-        <ColumnTreeVisibility tree={tree} setTree={setTree}/>
+        <ColumnTreeVisibility tree={state.columnTree} setTree={setTree}/>
       </Popup>
     </>
   );

@@ -1,4 +1,5 @@
-import { InitAttachedProperties, TableFormSettings, DataSetColumnSettings } from './types';
+import { InitAttachedProperties, TableFormSettings } from './types';
+import { DataSetColumnSettings, DataSetColumnDict } from './types';
 import { getColumnWidth } from './common';
 import { createColumnTree, getFlatten } from './column-tree';
 
@@ -53,7 +54,7 @@ export function settingsToState(channel: Channel, settings: TableFormSettings): 
   const columnsState: TableColumnsState = {};
   const properties = getDisplayedProperties(allProperties, attachedProperties);
 
-  const settingsDict: Record<string, DataSetColumnSettings> = {};
+  const settingsDict: DataSetColumnDict = {};
   columns?.columnsSettings.forEach((col) => settingsDict[col.channelPropertyName] = col);
 
   properties.sort((a, b) => {
@@ -78,7 +79,7 @@ export function settingsToState(channel: Channel, settings: TableFormSettings): 
     isTableMode: columns?.isTableMode ?? true,
   };
 
-  const columnTree = createColumnTree(properties);
+  const columnTree = createColumnTree(properties, settingsDict);
   const columnTreeFlatten = getFlatten(columnTree);
 
   return {

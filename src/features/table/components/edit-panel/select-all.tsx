@@ -1,19 +1,10 @@
-import { TFunction } from 'react-i18next';
-import { useDispatch } from 'react-redux';
+import { EditPanelItemProps } from '../../lib/types';
 import { BigButton } from 'shared/ui';
 import { setTableSelection } from '../../store/tables.actions';
 import selectAllIcon from 'assets/images/dataset/select-all.png';
 
 
-interface SelectAllProps {
-  id: FormID,
-  state: TableState,
-  t: TFunction
-}
-
-
-export const SelectAll = ({id, state, t}: SelectAllProps) => {
-  const dispatch = useDispatch();
+export const SelectAll = ({id, state, dispatch, t}: EditPanelItemProps) => {
   const disabled = state.activeCell.edited;
 
   const selectAll = () => {

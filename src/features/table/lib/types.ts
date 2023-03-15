@@ -1,3 +1,7 @@
+import { Dispatch } from 'redux';
+import { TFunction } from 'react-i18next';
+
+
 /** Серверный формат настроек формы **DataSet**. */
 export interface TableFormSettings {
   id: FormID,
@@ -37,6 +41,8 @@ export interface DataSetColumnSettings {
   isVisible: boolean,
   isContainsSearchMode: boolean,
 }
+
+export type DataSetColumnDict = Record<TableColumnID, DataSetColumnSettings>;
 
 /* --- Actions --- */
 
@@ -91,4 +97,14 @@ interface UpdateRowMetadata {
   type: 'update',
   formID: FormID,
   row: ChannelRow,
+}
+
+/* --- Edit Panel --- */
+
+/** Пропс для компонентов панели таблицы. */
+export interface EditPanelItemProps {
+  id: FormID,
+  state: TableState,
+  dispatch: Dispatch<any>,
+  t: TFunction,
 }

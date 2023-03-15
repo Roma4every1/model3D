@@ -51,7 +51,7 @@ export const Table = ({id}: FormState) => {
     return getColumnModel(columnsState, columnTree, channelName, query);
   }, [columnsState, columnTree, channelName, query]);
 
-  if (!channelName) return <div/>;
+  if (!channelName || !columnModel.length) return <div/>;
   return (
     <TableGrid id={id} state={state} query={query} records={records} setRecords={setRecords}>
       {columnModel}

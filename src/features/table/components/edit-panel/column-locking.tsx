@@ -1,20 +1,11 @@
-import { TFunction } from 'react-i18next';
-import { useDispatch } from 'react-redux';
+import { EditPanelItemProps } from '../../lib/types';
 import { BigButtonToggle } from 'shared/ui';
 import { setTableColumnsSettings, setTableColumns } from '../../store/tables.actions';
 import columnsLockingIcon from 'assets/images/dataset/columns-locking.png';
 
 
-interface ColumnLockingProps {
-  id: FormID,
-  settings: TableColumnsSettings,
-  columns: TableColumnsState,
-  t: TFunction
-}
-
-
-export const ColumnLocking = ({id, settings, columns, t}: ColumnLockingProps) => {
-  const dispatch = useDispatch();
+export const ColumnLocking = ({id, state, dispatch, t}: EditPanelItemProps) => {
+  const { columns, columnsSettings: settings } = state;
   const lockingEnabled = settings.isLockingEnabled;
 
   const toggleColumnLocking = () => {
