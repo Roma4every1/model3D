@@ -27,7 +27,7 @@ export const Presentation = ({id, state}: PresentationProps) => {
   if (fetchState.details) return <PresentationFetchError details={fetchState.details}/>;
 
   const multiMapChannel = state.settings.multiMapChannel;
-  if (multiMapChannel) return <MultiMap formID={id} channel={multiMapChannel}/>;
+  if (multiMapChannel) return <MultiMap id={id} channelName={multiMapChannel}/>;
 
   return <Grid id={id} layout={state.layout}/>;
 };

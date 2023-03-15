@@ -1,23 +1,22 @@
 import { useEffect, useState } from 'react';
 import { TFunction, useTranslation } from 'react-i18next';
-import { MapItemConfig } from './multi-map-utils';
-import { Map } from '../map/components/map';
+import { Map } from '../map';
 import { CircularProgressBar } from 'shared/ui';
 
 
-export const MultiMapItem = ({config}: {config: MapItemConfig}) => {
+export const MultiMapItem = ({parent, config}: {parent: FormID, config: MapItemConfig}) => {
   const { t } = useTranslation();
   const [progress, setProgress] = useState(config.progress);
 
   useEffect(() => {
-    config.setProgress = setProgress;
+    config.setProgress = (n: number) => { setProgress(n); config.progress = n; };
   }, [config]);
 
   if (progress < 0) return <MapLoadError t={t}/>;
   if (progress < 100) return <CircularProgressBar percentage={progress} size={100}/>;
   return (
     <Map
-      id={config.formID} type={'map'} parent={config.parent}
+      id={config.formID} type={'map'} parent={parent}
       settings={{}} channels={[]} data={config.data}
     />
   );

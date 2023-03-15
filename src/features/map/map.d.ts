@@ -10,6 +10,15 @@ type MapsState = { multi: FormDict<MultiMapState>, single: FormDict<MapState> };
 interface MultiMapState {
   sync: boolean,
   children: FormID[],
+  configs: MapItemConfig[],
+}
+
+interface MapItemConfig {
+  id: MapID,
+  data: any,
+  formID: FormID,
+  progress: number,
+  setProgress?: Function,
 }
 
 /** ## Состояние карты.

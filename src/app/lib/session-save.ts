@@ -41,7 +41,10 @@ function getParametersToSave(formParams: ParamDict): FormParamsArray {
 /* --- Children --- */
 
 function getChildrenToSave(root: RootFormState, presentations: PresentationDict): FormChildrenState[] {
-  const childArray = Object.values(presentations).map(presentationStateToChildren);
+  const childArray = Object.values(presentations)
+    .filter(p => !p.settings.multiMapChannel)
+    .map(presentationStateToChildren);
+
   childArray.push({
     id: root.id,
     children: root.children,

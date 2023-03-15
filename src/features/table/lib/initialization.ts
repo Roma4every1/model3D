@@ -54,6 +54,10 @@ export function settingsToState(channel: Channel, settings: TableFormSettings): 
   const columnsState: TableColumnsState = {};
   const properties = getDisplayedProperties(allProperties, attachedProperties);
 
+  if (columns?.columnsSettings.filter((col) => col.isVisible).length === 0) {
+    columns.columnsSettings.forEach((col) => { col.isVisible = true; })
+  } // временная заглушка
+
   const settingsDict: DataSetColumnDict = {};
   columns?.columnsSettings.forEach((col) => settingsDict[col.channelPropertyName] = col);
 

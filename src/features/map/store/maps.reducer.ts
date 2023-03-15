@@ -31,9 +31,10 @@ interface MapAction {
   formID: FormID,
 }
 
-interface ActionAddMulti extends MapAction {
+interface ActionAddMulti {
   type: MapsActions.ADD_MULTI_MAP,
-  payload: FormID[],
+  id: FormID,
+  payload: MapItemConfig[],
 }
 interface ActionSetSync extends MapAction {
   type: MapsActions.SET_SYNC,
@@ -156,7 +157,14 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
     /* --- multi --- */
 
     case MapsActions.ADD_MULTI_MAP: {
-      state.multi[action.formID] = {sync: true, children: action.payload};
+      const { id, payload: configs } = action;
+      const sync = state.multi[id]?.sync ?? true;
+      state.multi[id] = {sync, configs, children: configs.map(c => c.formID)};
+
+      for (const { formID } of configs) {
+        const utils = { updateCanvas: () => {}, pointToMap: (point) => point };
+        state.single[formID] = {...initMapState, utils, childOf: id, drawer: createMapsDrawer()};
+      }
       return {...state};
     }
 

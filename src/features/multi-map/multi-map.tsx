@@ -2,53 +2,64 @@ import { Layout, TabNode, Action, Actions } from 'flexlayout-react';
 import { useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { getMultiMapLayout, MapItemConfig } from './multi-map-utils';
+import { compareArrays } from 'shared/lib';
 import { i18nMapper } from 'shared/locales';
-import { MultiMapItem, MapNotFound } from './multi-map-item';
 import { channelSelector } from 'entities/channels';
+import { stateNeedFetch, formFetchStateSelector } from 'entities/fetch-state';
 import { setPresentationChildren, setActiveForm } from 'widgets/presentation';
+import { getMultiMapLayout } from './multi-map-utils';
+import { MultiMapItem, MapNotFound } from './multi-map-item';
 import { addMultiMap } from '../map/store/maps.actions';
-import { mapsAPI } from '../map/lib/maps.api';
+import { fetchMultiMapData } from '../map/store/maps.thunks';
+import { multiMapStateSelector } from '../map/store/maps.selectors';
 
 
-const factory = (node: TabNode) => {
-  const config = node.getConfig();
-  return <MultiMapItem config={config}/>;
-};
+interface MultiMapProps {
+  id: FormID,
+  channelName: ChannelName,
+}
 
-export const MultiMap = ({formID, channel}: PropsFormID & {channel: ChannelName}) => {
+
+export const MultiMap = ({id, channelName}: MultiMapProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const channelData: Channel = useSelector(channelSelector.bind(channel));
+
+  const channelData: Channel = useSelector(channelSelector.bind(channelName));
+  const state: MultiMapState = useSelector(multiMapStateSelector.bind(id));
+  const fetchState: FetchState = useSelector(formFetchStateSelector.bind(id + '_map'));
 
   const [model, children, configs] = useMemo(() => {
     const rows = channelData?.data?.rows;
-    if (!rows || !rows.length) return [null, null, []];
-    return getMultiMapLayout(rows, formID);
-  }, [channelData, formID]);
+    if (!rows || !rows.length) return [null, [], []];
+    return getMultiMapLayout(rows, id);
+  }, [channelData, id]);
 
   useEffect(() => {
-    if (!children) {
-      dispatch(setPresentationChildren(formID, []));
-    } else {
-      const newChildren: FormDataWMR[] = children.map(id => ({id, type: 'map', displayName: ''}));
-      dispatch(setPresentationChildren(formID, newChildren));
-      dispatch(addMultiMap(formID, children));
-    }
-  }, [children, formID, dispatch]);
+    if (compareArrays(state?.children ?? [], children)) return;
+    const newChildren: FormDataWMR[] = children.map(id => ({id, type: 'map', displayName: ''}));
+    dispatch(setPresentationChildren(id, newChildren));
+    dispatch(addMultiMap(id, configs));
+    if (fetchState) { fetchState.ok = undefined; fetchState.loading = false; }
+  }, [children, configs, state?.children, fetchState, id, dispatch]);
 
   useEffect(() => {
-    setTimeout(() => loadMultiMap(configs).then(), 200);
-  }, [configs]);
+    if (stateNeedFetch(fetchState)) dispatch(fetchMultiMapData(id));
+  }, [fetchState, id, dispatch]);
+
+  const factory = (node: TabNode) => {
+    const tabID = node.getId();
+    const config = state.configs.find(item => item.formID === tabID);
+    return <MultiMapItem parent={id} config={config}/>;
+  };
 
   const onAction = (action: Action) => {
     if (action.type === Actions.SET_ACTIVE_TABSET) {
-      dispatch(setActiveForm(formID, action.data.tabsetNode))
+      dispatch(setActiveForm(id, id + ',' + action.data.tabsetNode));
     }
     return action;
   };
 
-  if (!children) return <MapNotFound t={t}/>;
+  if (!children.length) return <MapNotFound t={t}/>;
   return (
     <Layout
       model={model} factory={factory}
@@ -56,12 +67,3 @@ export const MultiMap = ({formID, channel}: PropsFormID & {channel: ChannelName}
     />
   );
 };
-
-async function loadMultiMap(configs: MapItemConfig[]) {
-  for (const config of configs) {
-    config.setProgress(0);
-    const loadedMap = await mapsAPI.loadMap(config.id, 'Common', config.setProgress);
-    config.data = loadedMap;
-    config.setProgress(typeof loadedMap === 'string' ? -1 : 100);
-  }
-}

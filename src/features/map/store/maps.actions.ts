@@ -2,8 +2,8 @@ import { MapsAction, MapsActions } from './maps.reducer';
 
 
 /** Добавляет в хранилище новую мультикарту. */
-export const addMultiMap = (formID: FormID, forms: FormID[]): MapsAction => {
-  return {type: MapsActions.ADD_MULTI_MAP, formID, payload: forms};
+export const addMultiMap = (id: FormID, children: MapItemConfig[]): MapsAction => {
+  return {type: MapsActions.ADD_MULTI_MAP, id, payload: children};
 };
 
 /** Устанавливает значение параметра синхронизации. */
