@@ -22,7 +22,9 @@ export enum MapsActions {
   START_CREATING = 'maps/startCreate',
   CREATE_ELEMENT = 'maps/createEl',
   CANCEL_CREATING = 'maps/cancelCreate',
-  ADD_LAYER = 'maps/addLayer'
+  ADD_LAYER = 'maps/addLayer',
+  SET_CURRENT_TRACE = 'maps/setCurrentTraceRow',
+  ADD_POINT_TO_CURRENT_TRACE = 'maps/addPointToCurrentTraceRow'
 }
 
 /* --- Action Interfaces --- */
@@ -97,11 +99,23 @@ interface ActionAddLayer extends MapAction {
   payload: MapLayer,
 }
 
+interface ActionSetCurrentTrace extends MapAction {
+  type: MapsActions.SET_CURRENT_TRACE,
+  payload: TraceRow,
+}
+
+interface ActionAddPointToCurrentTrace extends MapAction {
+  type: MapsActions.ADD_POINT_TO_CURRENT_TRACE,
+  payload: MapPoint,
+}
+
+
 export type MapsAction = ActionAddMulti | ActionSetSync | ActionAdd |
   ActionStartLoad | ActionLoadSuccess | ActionLoadError |
   ActionSetMode | ActionSetDimensions | ActionSetField | ActionClearSelect |
   ActionStartEditing | ActionAcceptEditing | ActionCancelEditing |
-  ActionStartCreating | ActionCreateElement | ActionCancelCreating | ActionAddLayer;
+  ActionStartCreating | ActionCreateElement | ActionCancelCreating | ActionAddLayer |
+  ActionSetCurrentTrace | ActionAddPointToCurrentTrace;
 
 /* --- Reducer Utils --- */
 
@@ -150,6 +164,7 @@ const initMapState: MapState = {
   cursor: 'auto',
   childOf: null, scroller: null,
   utils: { updateCanvas: () => {}, pointToMap: (point) => point },
+  currentTraceRow: null
 };
 
 /* --- Init State & Reducer --- */
@@ -389,6 +404,27 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
       const mapData = state.single[formID].mapData
       const newLayers = [...mapData.layers, payload]
       state.single[formID] = {...state.single[formID], mapData: {...mapData, layers: newLayers}};
+      return {...state};
+    }
+
+    case MapsActions.SET_CURRENT_TRACE: {
+      const { formID, payload } = action;
+      state.single[formID] = {...state.single[formID], currentTraceRow: payload};
+      return {...state};
+    }
+
+    case MapsActions.ADD_POINT_TO_CURRENT_TRACE: {
+      const { formID, payload } = action;
+      const newCurrentTraceName = state.single[formID].currentTraceRow.Cells.name + ', ' + payload.name
+      const newCurrentTraceItems = state.single[formID].currentTraceRow.Cells.items + '---' + payload.UWID
+      state.single[formID] = {...state.single[formID],
+        currentTraceRow: {...state.single[formID].currentTraceRow,
+          Cells: {
+            ...state.single[formID].currentTraceRow.Cells,
+            name: newCurrentTraceName,
+            items: newCurrentTraceItems}
+        }
+      }
       return {...state};
     }
 

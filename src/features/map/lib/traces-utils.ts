@@ -1,4 +1,8 @@
 import {getBoundsByPoints} from "./map-utils";
+import {
+  checkDistance,
+  getNearestElements
+} from "../components/edit-panel/selecting/selecting-utils";
 
 /** Прототип объекта слоя трассы. */
 export const traceLayerProto : MapLayer = {
@@ -7,38 +11,30 @@ export const traceLayerProto : MapLayer = {
   elements: [],
   elementsData: Promise<MapElement[]>.resolve([]),
   group: 'Трассы',
-  highscale: 'INF',
-  lowscale: 'INF',
+  highscale: 1000000,
+  lowscale: 0,
   name: 'Трассы',
   uid: '{TRACES-LAYER}',
-  version: '123',
+  version: '1.0',
   visible: true,
 }
 
-/** Возвращает ID выбранной в глобальных параметрах трассы или null. */
-export const getCurrentTraceUID = (currentTraceParam) => {
-  return currentTraceParam
-      ?.toString()
-      .match(/ITEMS#(.+)#/)[1]
-    || null;
-}
-
-/** Возвращает объект текущей трассы */
-export const getCurrentTrace = (formID, points, currentTraceParam, traces) => {
-  const currentTraceUID = getCurrentTraceUID(currentTraceParam);
-
-  return traces.data.rows.find( row =>
-    row.Cells[3]===currentTraceUID
-  ) || null;
-
-}
+/** Возвращает прототип объекта элемента трассы для карты с указанной в параметрах дугой. */
+export const getTraceMapElementProto = (traceArc: PolylineArc) : MapPolyline => ({
+  type: 'polyline',
+  attrTable: {},
+  arcs: [traceArc],
+  bounds: getBoundsByPoints([traceArc.path]),
+  borderstyle: 0,
+  fillbkcolor: '#0000ff', fillcolor: '#0000ff',
+  bordercolor: '#0000ff', borderwidth: 1.25,
+  transparent: true,
+})
 
 /** Возвращает элемент карты polyline для отрисовки трассы */
-export const getCurrentTraceMapElement = (formID, points, currentTraceParam, traces) => {
-  const currentTrace = getCurrentTrace(formID, points, currentTraceParam, traces);
-  if (!currentTrace) return null;
-
-  const traceWellsIDArray = currentTrace.Cells[3].split('---');
+export const getCurrentTraceMapElement = (formID, points, currentTraceRowCells) => {
+  if(!currentTraceRowCells) return;
+  const traceWellsIDArray = currentTraceRowCells.items.split('---');
   const traceWellsPoints = [...traceWellsIDArray.map(id => {
     const point = points.find(({UWID}) => UWID === id)
     if (!point) return null
@@ -59,16 +55,25 @@ export const getCurrentTraceMapElement = (formID, points, currentTraceParam, tra
     closed: traceArcClosed
   };
 
-  const traceElement : MapPolyline = {
-    type: 'polyline',
-    attrTable: {},
-    arcs: [traceArc],
-    bounds: getBoundsByPoints([traceArcPath]),
-    borderstyle: 0,
-    fillbkcolor: '#0000ff', fillcolor: '#0000ff',
-    bordercolor: '#0000ff', borderwidth: 1.25,
-    transparent: true,
-  };
+  return getTraceMapElementProto(traceArc);
+}
 
-  return traceElement;
+/** Получает ближайший элемент типа 'sign' на карте к указанной точке. */
+export const getNearestSignMapElement = (point, canvas, scale, layers) => {
+  const getTextWidth = (text) => canvas.getContext('2d').measureText(text).width;
+  const filterFn = (element) => {
+    if (element.type !== 'sign') return false;
+    return checkDistance(element, point, scale, getTextWidth);
+  }
+  const nearestElements = getNearestElements(layers, null, scale, filterFn);
+
+  const sign = nearestElements[0] as MapSign;
+  if (!sign) return null;
+  return {x: sign.x, y: sign.y} as ClientPoint;
+}
+
+/** Поиск точки из данных карты по коррдинатам. */
+export const findMapPoint = (point: ClientPoint, mapPoints) => {
+  if (!point || !mapPoints || !point.x || !point.y) return null;
+  return mapPoints.find(p => (p.x === point.x) && (p.y === point.y)) ?? null;
 }

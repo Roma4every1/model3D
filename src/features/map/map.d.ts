@@ -44,6 +44,7 @@ interface MapState {
   childOf: FormID,
   scroller: { setList(list: MapCanvas[]) } | null,
   utils: MapUtils,
+  currentTraceRow: TraceRow
 }
 
 type MapCanvas = HTMLCanvasElement & {selectingMode: boolean, blocked: boolean, events: any};

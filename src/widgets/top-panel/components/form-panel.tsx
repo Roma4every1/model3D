@@ -1,12 +1,10 @@
 import { FunctionComponent } from 'react';
 import { TableEditPanel } from 'features/table';
 import { ChartEditPanel } from 'features/chart';
-import { MapEditPanel } from 'features/map';
+import {MapEditPanel, TracesEditPanel} from 'features/map';
 import { TracksEditPanel } from 'features/carat';
 import { CaratEditPanel } from 'features/carat';
-import {
-  TracesEditPanel
-} from "../../../features/map/components/edit-panel/editing/traces-edit-panel";
+
 
 
 

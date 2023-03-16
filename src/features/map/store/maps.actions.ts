@@ -95,3 +95,13 @@ export const cancelCreatingElement = (formID: FormID): MapsAction => {
 export const addMapLayer = (formID: FormID, layer: MapLayer): MapsAction => {
   return {type: MapsActions.ADD_LAYER, formID, payload: layer};
 };
+
+/** Установить текущую трассу. */
+export const setCurrentTrace = (formID: FormID, trace: TraceRow): MapsAction => {
+  return {type: MapsActions.SET_CURRENT_TRACE, formID, payload: trace};
+};
+
+/** Добавить точку к текущей трассе. */
+export const addPointToCurrentTrace = (formID: FormID, point: MapPoint): MapsAction => {
+  return {type: MapsActions.ADD_POINT_TO_CURRENT_TRACE, formID, payload: point};
+};
