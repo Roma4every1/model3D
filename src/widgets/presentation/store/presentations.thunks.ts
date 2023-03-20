@@ -11,6 +11,7 @@ import { fetchFormsStart, fetchFormsEnd, fetchFormError } from 'entities/fetch-s
 import { setPresentationState } from './presentations.actions';
 import { createTableState } from 'features/table';
 import { createMapState } from 'features/map/store/maps.actions';
+import { createCaratState } from 'features/carat/store/carats.actions';
 import { setFormsState } from 'widgets/presentation/store/forms.actions';
 
 
@@ -68,5 +69,7 @@ function createFormState(id: FormID, state: FormState, channelDict: ChannelDict,
     dispatch(createTableState(id, channel, state.settings));
   } else if (type === 'map') {
     dispatch(createMapState(id, state.parent));
+  } else if (type === 'carat') {
+    dispatch(createCaratState(id));
   }
 }

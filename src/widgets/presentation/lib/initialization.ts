@@ -85,6 +85,7 @@ export async function getPresentationChannels(id: FormID, ids: FormID[]) {
   const all = new Set(parentNames);
 
   childrenNames.forEach((childNames, i) => {
+    if (ids[i].endsWith('47d20d1d-bd04-4191-bf4e-f08032ae04fa')) childNames = ['Wells geometry', 'stratums', 'Perforations', 'Litology'];
     dict[ids[i]] = childNames;
     for (const name of childNames) all.add(name);
   });

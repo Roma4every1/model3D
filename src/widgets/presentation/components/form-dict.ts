@@ -3,7 +3,7 @@ import { NotSupportedForm } from './plugs';
 import { Table } from 'features/table';
 import { Chart } from 'features/chart';
 import { Map } from 'features/map';
-// import { Carat } from 'features/carat';
+import { Carat } from 'features/carat';
 
 
 /** Словарь для выбора формы по типу; используется в компоненте `Form`.
@@ -12,7 +12,7 @@ import { Map } from 'features/map';
  * */
 export const formDict: Record<string, FunctionComponent<FormState>> = {
   dataSet: Table,
-  carat: NotSupportedForm,
+  carat: Carat,
   chart: Chart,
   files: NotSupportedForm,
   filesList: NotSupportedForm,

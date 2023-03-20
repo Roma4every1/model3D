@@ -10,7 +10,7 @@ import { formsReducer } from 'widgets/presentation/store/forms.reducer';
 import { parametersReducer } from 'entities/parameters/store/parameters.reducer';
 import { channelsReducer } from 'entities/channels/store/channels.reducer';
 import { tablesReducer } from 'features/table/store/tables.reducer';
-// import { caratsReducer } from 'features/carat/store/carats.reducer';
+import { caratsReducer } from 'features/carat/store/carats.reducer';
 import { mapsReducer } from 'features/map/store/maps.reducer';
 import { reportsReducer } from 'entities/reports/store/reports.reducer';
 import { windowDataReducer } from 'entities/windows/store/window-data.reducer';
@@ -26,7 +26,7 @@ const rootReducer: Reducer<WState, any> = combineReducers({
   parameters: parametersReducer,
   channels: channelsReducer,
   tables: tablesReducer,
-  // carats: caratsReducer,
+  carats: caratsReducer,
   maps: mapsReducer,
   reports: reportsReducer,
   windowData: windowDataReducer,
