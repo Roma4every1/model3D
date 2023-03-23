@@ -24,6 +24,7 @@ export const DeleteTrace = ({mapState, formID, traces}: DeleteTraceProps) => {
     isTraceEditing ||
     mapState?.isElementEditing;
 
+  // onClick коллэк для компонента
   const action = () => {
     if(!currentTraceRow) return;
     const deleteID = traces.data.rows.findIndex((row) => row.ID === currentTraceRow.ID);

@@ -1,7 +1,7 @@
 import {BigButton} from "../../../../../../shared/ui";
 import editTraceIcon from './../../../../../../assets/images/trace/trace_edit_L.png'
 import {
-  setTraceEditing,
+  setTraceEditing, setTraceOldData,
 } from "../../../../store/maps.actions";
 import {useDispatch} from "react-redux";
 
@@ -11,7 +11,7 @@ interface EditTraceProps {
 }
 
 export const EditTrace = ({formID, mapState}: EditTraceProps) => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   const disabled = !mapState ||
     !mapState?.currentTraceRow ||
@@ -19,6 +19,7 @@ export const EditTrace = ({formID, mapState}: EditTraceProps) => {
     mapState?.isElementEditing;
 
   const action = () => {
+    dispatch(setTraceOldData(formID, mapState?.currentTraceRow));
     dispatch(setTraceEditing(formID, true));
   }
 

@@ -3,12 +3,11 @@ import applyTraceChangesIcon from "../../../../../../assets/images/trace/accept.
 import {
   acceptMapEditing,
   setActiveLayer,
-  setCurrentTrace,
-  setTraceEditing
+  setTraceCreating,
+  setTraceEditing, setTraceOldData
 } from "../../../../store/maps.actions";
 import {useDispatch, useSelector} from "react-redux";
 import {saveTraceThunk} from "../../../../store/traces.thunks";
-import {useEffect} from "react";
 import {updateParam} from "../../../../../../entities/parameters";
 import {tableRowToString} from "../../../../../../entities/parameters/lib/table-row";
 import {getCurrentTraceParamName} from "../../../../lib/traces-utils";
@@ -20,14 +19,14 @@ interface ApplyTraceChangesProps {
 }
 
 export const ApplyTraceChanges = ({mapState, formID, traces}: ApplyTraceChangesProps) => {
-  const dispatch = useDispatch()
-  const { oldData, isTraceEditing } = mapState;
+  const dispatch = useDispatch();
+  const { isTraceEditing, isTraceCreating } = mapState;
 
-  const isTraceCreating = oldData.arc !== null
+  // состояние активности кнопки
   const disabledAccept = !isTraceCreating && !isTraceEditing;
 
   // ID таблицы с трассами
-  const tableID = traces.tableID
+  const tableID = traces.tableID;
 
   const currentTraceParamName = getCurrentTraceParamName(traces);
 
@@ -40,58 +39,37 @@ export const ApplyTraceChanges = ({mapState, formID, traces}: ApplyTraceChangesP
       currentTraceRow?.Cells?.stratumID,
       currentTraceRow?.Cells?.items
     ]
-  }
+  };
 
   const rootID = useSelector<WState, string | null>(state => state.root.id);
 
-  const acceptEditing = () => {
-    let method : 'create' | 'update' = 'create';
-    if (newTraceRow.ID !== null) {
-      const editID = traces.data.rows.findIndex((row) => row.ID === currentTraceRow.ID);
-      method = 'update';
-      newTraceRow.ID = editID;
+  // onClick коллэк для компонента
+  const action = () => {
+    if (isTraceEditing) {
+      if (newTraceRow.ID === null) return;
+
+      // установка нового ID для редактирования трассы
+      newTraceRow.ID = traces.data.rows.findIndex((row) => row.ID === currentTraceRow.ID);
+
+      if(currentTraceRow) dispatch(saveTraceThunk(formID, tableID, 'update', newTraceRow));
+      dispatch(setTraceEditing(formID, false));
+
+      const currentTraceValue = tableRowToString(traces, newTraceRow)?.value;
+      dispatch(updateParam(rootID, currentTraceParamName, currentTraceValue));
+      dispatch(setTraceOldData(formID, null));
     }
 
-    if(currentTraceRow) dispatch(saveTraceThunk(formID, tableID, method, newTraceRow));
+    if (isTraceCreating) {
+      if(currentTraceRow) dispatch(saveTraceThunk(formID, tableID, 'create', newTraceRow));
+      dispatch(setTraceCreating(formID, false));
+    }
 
-    if (isTraceEditing) dispatch(setTraceEditing(formID, false))
     dispatch(acceptMapEditing(formID));
     dispatch(setActiveLayer(formID, null));
-    // updateCurrentTraceParams();
   };
-
-  // обновление и установка в параметры новой трассы при её добавлении в каналах
-  useEffect(() => {
-    if (!traces.data.rows) return;
-    if (!mapState?.isModified) return;
-
-
-    // получение последней добавленной трассы из каналов
-    const tracesRows = traces.data.rows
-    const lastTrace = tracesRows[tracesRows.length-1]
-    const lastTraceValue = tableRowToString(traces, lastTrace)?.value;
-
-    // КОСТЫЛЬ!
-    if (currentTraceRow.Cells.items !== lastTrace.Cells[3]) return;
-
-    // установка текущей трассы в store
-    dispatch(setCurrentTrace(formID,
-      {ID: lastTrace.ID,
-        Cells: {
-          ID: lastTrace.Cells[0],
-          name: lastTrace.Cells[1],
-          stratumID: lastTrace.Cells[2],
-          items: lastTrace.Cells[3]
-        }
-      }
-    ));
-
-    // обновление текущей трассы в параметрах
-    dispatch(updateParam(rootID, currentTraceParamName, lastTraceValue));
-  }, [dispatch, formID, rootID, traces])
 
   return <BigButton
     text={'Применить'} icon={applyTraceChangesIcon}
-    action={acceptEditing} disabled={disabledAccept}
+    action={action} disabled={disabledAccept}
   />;
 }

@@ -21,8 +21,8 @@ interface TraceListItemProps {
 
 export const TracesEditWindow = ({formID, mapState}: TracesEditWindowProps) => {
   const dispatch = useDispatch();
-  const [selectedTraceItemUWID, setSelectedTraceItemUWID] = useState<string | null>();
-  const [selectedPointToAdd, setSelectedPointToAdd] = useState<MapPoint | null>()
+  const [selectedTraceItemUWID, setSelectedTraceItemUWID] = useState<string | null>(null);
+  const [selectedPointToAdd, setSelectedPointToAdd] = useState<MapPoint | null>(null);
 
   const handleComboBoxChange = (event: DropDownListChangeEvent) => {
     setSelectedPointToAdd(event.target.value);
@@ -30,46 +30,41 @@ export const TracesEditWindow = ({formID, mapState}: TracesEditWindowProps) => {
 
   const pointsToAdd = mapState?.mapData?.points;
 
-  // useEffect(() => {
-  //   console.log(selectedTraceItemUWID)
-  //   console.log(mapState?.currentTraceRow?.Cells)
-  // }, [mapState?.currentTraceRow?.Cells, selectedTraceItemUWID])
-
   if(!mapState?.currentTraceRow) return <div></div>;
 
   const { Cells } = mapState.currentTraceRow;
   if(!Cells) return <div></div>;
 
-  const { name, items } = Cells
-  const itemsArray = items.split('---')
+  const { name, items } = Cells;
+  const itemsArray = items.split('---');
 
   const changeName = (event: InputChangeEvent) => {
     const newTraceRow : TraceRow = {
       ID: mapState.currentTraceRow.ID,
       Cells: { ...Cells, name: event.target.value.toString() }
     };
-    dispatch(setCurrentTrace(formID, newTraceRow))
+    dispatch(setCurrentTrace(formID, newTraceRow));
   }
 
   const movePoint = (pointUWID: string, direction: 'down' | 'up') => {
-    if(pointUWID === null) return;
+    if(!pointUWID) return;
 
-    const oldPoints = Cells.items.split('---')
-    const pointIndex = oldPoints.findIndex(p => p === pointUWID)
+    const oldPoints = Cells.items.split('---');
+    const pointIndex = oldPoints.findIndex(p => p === pointUWID);
 
-    let newPoints = oldPoints.concat().filter(p => p !== pointUWID)
+    let newPoints = oldPoints.concat().filter(p => p !== pointUWID);
     if (direction === 'up') {
-      newPoints.splice(pointIndex <= 0 ? newPoints.length : pointIndex - 1, 0, pointUWID)
+      newPoints.splice(pointIndex <= 0 ? newPoints.length : pointIndex - 1, 0, pointUWID);
     }
     if (direction === 'down') {
-      newPoints.splice(pointIndex >= newPoints.length ? 0 : pointIndex + 1, 0, pointUWID)
+      newPoints.splice(pointIndex >= newPoints.length ? 0 : pointIndex + 1, 0, pointUWID);
     }
 
     const newTraceRow : TraceRow = {
       ID: mapState.currentTraceRow.ID,
       Cells: { ...Cells, items: newPoints.join('---') }
     };
-    dispatch(setCurrentTrace(formID, newTraceRow))
+    dispatch(setCurrentTrace(formID, newTraceRow));
   }
 
   const removePoint = (pointUWID: string) => {
@@ -79,14 +74,14 @@ export const TracesEditWindow = ({formID, mapState}: TracesEditWindowProps) => {
       ID: mapState.currentTraceRow.ID,
       Cells: { ...Cells, items: Cells.items.split('---').filter(p => p !== pointUWID).join('---') }
     };
-    dispatch(setCurrentTrace(formID, newTraceRow))
+    dispatch(setCurrentTrace(formID, newTraceRow));
   }
 
   const addPoint = (pointUWID: string) => {
     if (pointUWID === null) return;
 
-    const newItems = Cells.items.split('---')
-    newItems.push(pointUWID)
+    const newItems = Cells.items.split('---');
+    newItems.push(pointUWID);
 
     const newTraceRow : TraceRow = {
       ID: mapState.currentTraceRow.ID,
@@ -102,7 +97,7 @@ export const TracesEditWindow = ({formID, mapState}: TracesEditWindowProps) => {
                    selectedTraceItemUWID={selectedTraceItemUWID}
                    removePoint={removePoint}
     />
-  )
+  );
 
   return (
     <section className='trace-edit-window'>
@@ -129,11 +124,13 @@ export const TracesEditWindow = ({formID, mapState}: TracesEditWindowProps) => {
           <div className='menu-header trace-edit-window__title-text'>Элементы</div>
           <div className='change-order-buttons'>
             <Button
+              style={{width: '20px', height: '20px'}}
               icon='sort-asc-sm'
               disabled={false}
               onClick={()=> movePoint(selectedTraceItemUWID, 'up')}
             />
             <Button
+              style={{width: '20px', height: '20px'}}
               icon='sort-desc-sm'
               disabled={false}
               onClick={()=> movePoint(selectedTraceItemUWID, 'down')}
@@ -173,4 +170,4 @@ export const TraceListItem = ({point, selectedTraceItemUWID, setSelectedTraceIte
   <span className='k-clear-value'>
     <span className={'k-icon k-i-x'} onClick={() => removePoint(point.UWID)}/>
   </span>
-</button>
+</button>;

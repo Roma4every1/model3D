@@ -25,7 +25,9 @@ export enum MapsActions {
   ADD_LAYER = 'maps/addLayer',
   SET_CURRENT_TRACE = 'maps/setCurrentTraceRow',
   ADD_POINT_TO_CURRENT_TRACE = 'maps/addPointToCurrentTraceRow',
-  SET_TRACE_EDITING = 'maps/setTraceEditing'
+  SET_TRACE_EDITING = 'maps/setTraceEditing',
+  SET_TRACE_CREATING = 'maps/setTraceCreating',
+  SET_TRACE_OLD_DATA = 'maps/saveTraceOldData'
 }
 
 /* --- Action Interfaces --- */
@@ -115,13 +117,24 @@ interface ActionSetTraceEditing extends MapAction {
   payload: boolean,
 }
 
+interface ActionSetTraceCreating extends MapAction {
+  type: MapsActions.SET_TRACE_CREATING,
+  payload: boolean,
+}
+
+interface ActionSetTraceOldData extends MapAction {
+  type: MapsActions.SET_TRACE_OLD_DATA,
+  payload: TraceRow,
+}
+
 
 export type MapsAction = ActionAddMulti | ActionSetSync | ActionAdd |
   ActionStartLoad | ActionLoadSuccess | ActionLoadError |
   ActionSetMode | ActionSetDimensions | ActionSetField | ActionClearSelect |
   ActionStartEditing | ActionAcceptEditing | ActionCancelEditing |
   ActionStartCreating | ActionCreateElement | ActionCancelCreating | ActionAddLayer |
-  ActionSetCurrentTrace | ActionAddPointToCurrentTrace | ActionSetTraceEditing;
+  ActionSetCurrentTrace | ActionAddPointToCurrentTrace | ActionSetTraceEditing |
+  ActionSetTraceCreating | ActionSetTraceOldData;
 
 /* --- Reducer Utils --- */
 
@@ -171,7 +184,9 @@ const initMapState: MapState = {
   childOf: null, scroller: null,
   utils: { updateCanvas: () => {}, pointToMap: (point) => point },
   currentTraceRow: null,
-  isTraceEditing: false
+  oldTraceDataRow: null,
+  isTraceEditing: false,
+  isTraceCreating: false
 };
 
 /* --- Init State & Reducer --- */
@@ -442,6 +457,23 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
       }
       return {...state};
     }
+
+    case MapsActions.SET_TRACE_CREATING: {
+      const { formID, payload } = action;
+      state.single[formID] = {...state.single[formID],
+        isTraceCreating: payload
+      }
+      return {...state};
+    }
+
+    case MapsActions.SET_TRACE_OLD_DATA: {
+      const { formID, payload } = action;
+      state.single[formID] = {...state.single[formID],
+        oldTraceDataRow: payload
+      }
+      return {...state};
+    }
+
 
     default: return state;
   }

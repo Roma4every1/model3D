@@ -63,11 +63,11 @@ export const TracesEditPanel = ({id}: FormEditPanelProps) => {
   const onDrawEnd = useCallback((canvas, x, y, scale) => {
     if(!mapState) return;
     mapState.utils.pointToMap = getPointToMap(canvas, x, y, scale);
-  }, [mapState?.utils]);
+  }, [mapState]);
 
   useEffect(() => {
     if (mapState?.mapData) dispatch(setOnDrawEnd(id, onDrawEnd));
-  }, [mapState?.mapData, onDrawEnd, dispatch, id]);
+  }, [mapState, onDrawEnd, dispatch, id]);
 
   // ставим слушатели на <canvas>
   useEffect(() => {
@@ -82,7 +82,7 @@ export const TracesEditPanel = ({id}: FormEditPanelProps) => {
         canvas.removeEventListener('mousedown', mouseDown);
       }
     }
-  }, [mapState?.canvas, mouseDown]);
+  }, [mapState, mouseDown]);
 
   if (!mapState.isLoadSuccessfully) return <MenuSkeleton template={panelTemplate}/>;
 

@@ -2,8 +2,8 @@ import {BigButton} from "../../../../../../shared/ui";
 import denyTraceChangesIcon from "../../../../../../assets/images/trace/cancel.png";
 import {
   cancelMapEditing,
-  setActiveLayer,
-  setTraceEditing
+  setActiveLayer, setCurrentTrace,
+  setTraceEditing, setTraceOldData
 } from "../../../../store/maps.actions";
 import {useDispatch} from "react-redux";
 import {updateParam} from "../../../../../../entities/parameters";
@@ -19,29 +19,35 @@ interface DenyTraceChangesProps {
 export const DenyTraceChanges = ({mapState, formID, rootID, traces}: DenyTraceChangesProps) => {
   const dispatch = useDispatch();
 
-  const { oldData, isTraceEditing } = mapState;
+  const { isTraceEditing, isTraceCreating } = mapState;
 
   const currentTraceParamName = getCurrentTraceParamName(traces);
 
   // значения для проверки на активность кнопки
-  const isTraceCreating = oldData.arc !== null
   const disabledDeny = !isTraceCreating && !isTraceEditing;
 
-  const cancelEditing = () => {
+  // onClick коллэк для компонента
+  const action = () => {
+    if (isTraceEditing) {
+      dispatch(setCurrentTrace(formID, mapState?.oldTraceDataRow));
+      dispatch(setTraceOldData(formID, null));
+      dispatch(setTraceEditing(formID, false));
+    }
+
     if (isTraceCreating) {
-      // КОСТЫЛЬ!
       dispatch(updateParam(rootID, currentTraceParamName, null));
     }
+
+    // очистка элементов трасс на слое с трассами
     mapState.mapData.layers.find(layer => layer.uid==='{TRACES-LAYER}').elements = [];
 
-    dispatch(setTraceEditing(formID, false))
     dispatch(cancelMapEditing(formID));
     dispatch(setActiveLayer(formID, null));
   };
 
   return <BigButton
     text={'Отменить'} icon={denyTraceChangesIcon}
-    action={cancelEditing} disabled={disabledDeny}
+    action={action} disabled={disabledDeny}
   />;
 }
 

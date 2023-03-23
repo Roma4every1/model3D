@@ -45,7 +45,9 @@ interface MapState {
   scroller: { setList(list: MapCanvas[]) } | null,
   utils: MapUtils,
   currentTraceRow: TraceRow,
-  isTraceEditing: boolean
+  oldTraceDataRow: TraceRow,
+  isTraceEditing: boolean,
+  isTraceCreating: boolean
 }
 
 type MapCanvas = HTMLCanvasElement & {selectingMode: boolean, blocked: boolean, events: any};

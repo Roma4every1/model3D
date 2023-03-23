@@ -5,7 +5,7 @@ import {clientPoint, listenerOptions} from "../../../../lib/map-utils";
 import {
   createMapElement,
   setActiveLayer, setCurrentTrace,
-  setEditMode, startCreatingElement,
+  setEditMode, setTraceCreating, startCreatingElement,
   startMapEditing
 } from "../../../../store/maps.actions";
 import {useDispatch, useSelector} from "react-redux";
@@ -33,6 +33,20 @@ export const CreateTrace = ({mapState, formID, isTracesChannelLoaded}: CreateTra
   const layers = mapData.layers;
   const scale = mapData.scale;
 
+  // текущее месторождение, используется для получения stratumID
+  const currentMestValue = useSelector<WState, string | null>(
+    (state: WState) =>
+      state.parameters[state.root.id]
+        .find(el => el.id === currentMestParamName)
+        ?.value?.toString() || null
+  );
+
+  // состояние активности кнопки
+  const disabled = !currentMestValue ||
+    !isTracesChannelLoaded ||
+    mapState?.isTraceEditing ||
+    mapState?.isElementEditing;
+
   // создание элемента трассы на карте
   const createElement = useCallback((point: ClientPoint) => {
     const defaultElement = getTraceMapElementProto({ path: [ point.x, point.y ], closed: false});
@@ -40,21 +54,10 @@ export const CreateTrace = ({mapState, formID, isTracesChannelLoaded}: CreateTra
     dispatch(startMapEditing(formID));
   }, [dispatch, formID]);
 
-  // текущее месторождение, используется для получения stratumID
-  const currentMestValue = useSelector<WState, string | null>(
-    (state: WState) =>
-      state.parameters[state.root.id]
-        .find(el => el.id === currentMestParamName)
-        ?.value?.toString() || null
-  )
-
-  const disabled = !currentMestValue ||
-    !isTracesChannelLoaded ||
-    mapState?.isTraceEditing ||
-    mapState?.isElementEditing;
-
   const mouseUp = useCallback((event: MouseEvent) => {
     if (mapState.mode !== MapModes.AWAIT_POINT) return;
+
+    dispatch(setTraceCreating(formID, true));
 
     // получение коодинат точки на карте
     const point = mapState.utils.pointToMap(clientPoint(event));
@@ -101,6 +104,7 @@ export const CreateTrace = ({mapState, formID, isTracesChannelLoaded}: CreateTra
     }
   }, [canvas, mouseUp]);
 
+  // onClick коллэк для компонента
   const action = () => {
     dispatch(setActiveLayer(formID, traceLayerProto));
     dispatch(startCreatingElement(formID));
