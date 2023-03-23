@@ -10,6 +10,7 @@ import {
 } from "../../../../store/maps.actions";
 import {useDispatch, useSelector} from "react-redux";
 import {
+  currentMestParamName,
   findMapPoint,
   getNearestSignMapElement,
   getTraceMapElementProto,
@@ -21,9 +22,10 @@ import {stringToTableCell} from "../../../../../../entities/parameters/lib/table
 interface CreateTraceProps {
   mapState: MapState,
   formID: FormID,
+  isTracesChannelLoaded: boolean
 }
 
-export const CreateTrace = ({mapState, formID}: CreateTraceProps) => {
+export const CreateTrace = ({mapState, formID, isTracesChannelLoaded}: CreateTraceProps) => {
   const dispatch = useDispatch();
 
   const { canvas } = mapState;
@@ -42,9 +44,14 @@ export const CreateTrace = ({mapState, formID}: CreateTraceProps) => {
   const currentMestValue = useSelector<WState, string | null>(
     (state: WState) =>
       state.parameters[state.root.id]
-        .find(el => el.id === 'currentMest')
+        .find(el => el.id === currentMestParamName)
         ?.value?.toString() || null
   )
+
+  const disabled = !currentMestValue ||
+    !isTracesChannelLoaded ||
+    mapState?.isTraceEditing ||
+    mapState?.isElementEditing;
 
   const mouseUp = useCallback((event: MouseEvent) => {
     if (mapState.mode !== MapModes.AWAIT_POINT) return;
@@ -105,6 +112,6 @@ export const CreateTrace = ({mapState, formID}: CreateTraceProps) => {
 
   return <BigButton
     text={'Создать'} icon={createTraceIcon}
-    action={action}
+    action={action} disabled={disabled}
   />;
 }

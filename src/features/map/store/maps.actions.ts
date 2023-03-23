@@ -105,3 +105,8 @@ export const setCurrentTrace = (formID: FormID, trace: TraceRow): MapsAction => 
 export const addPointToCurrentTrace = (formID: FormID, point: MapPoint): MapsAction => {
   return {type: MapsActions.ADD_POINT_TO_CURRENT_TRACE, formID, payload: point};
 };
+
+/** Добавить точку к текущей трассе. */
+export const setTraceEditing = (formID: FormID, value: boolean): MapsAction => {
+  return {type: MapsActions.SET_TRACE_EDITING, formID, payload: value};
+};

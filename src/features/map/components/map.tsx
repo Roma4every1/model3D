@@ -20,8 +20,14 @@ import {stringToTableCell, tableRowToString} from 'entities/parameters/lib/table
 import { updateParam, currentWellIDSelector } from 'entities/parameters';
 import { channelSelector } from 'entities/channels';
 import { CircularProgressBar } from 'shared/ui';
-import { getCurrentTraceMapElement, traceLayerProto} from "../lib/traces-utils";
+import {
+  getCurrentTraceParamName,
+  getCurrentTraceMapElement,
+  traceLayerProto,
+  tracesChannelName
+} from "../lib/traces-utils";
 import {MapModes} from "../lib/enums";
+import {TracesEditWindow} from "./edit-panel/editing/traces-edit-window";
 
 export const Map = ({id: formID, parent, channels, data}: FormState & {data?: MapData}) => {
   const { t } = useTranslation();
@@ -164,28 +170,34 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
   }, [formID, mapState?.isLoadSuccessfully, dispatch, mapData?.layers]);
 
   // получение списка трасс из каналов
-  const tracesChannelName = 'traces';
   const traces: Channel = useSelector(channelSelector.bind(tracesChannelName));
+
+  const currentTraceParamName = getCurrentTraceParamName(traces);
 
   // получение значения текущей трассы из параметров
   const currentTraceParamValue = useSelector<WState, string | null>(
     (state: WState) =>
       state.parameters[state.root.id]
-        .find(el => el.id === 'currentTrace')
+        .find(el => el.id === currentTraceParamName)
         ?.value?.toString() || null
   )
 
   // создание и отрисовка текущей трассы
   useEffect( () => {
     if (!mapState?.isLoadSuccessfully ||
-      !mapData ||
-      !currentTraceParamValue ||
-      !traces
+      !mapData
     ) return;
+
+    if (!traces) return;
 
     const traceLayer = mapData.layers.find(layer => layer.uid==='{TRACES-LAYER}');
     if (!traceLayer) return;
     traceLayer.elements = [];
+
+    if (!currentTraceParamValue) {
+      dispatch(setCurrentTrace(formID, null));
+      return;
+    }
 
     // установка mapState.currentTraceRow
     const currentTraceRowCells = {
@@ -212,12 +224,12 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
     dispatch(createMapElement(formID, traceElement));
     dispatch(setEditMode(formID, MapModes.NONE));
     dispatch(setActiveLayer(formID, null));
-  }, [formID, mapState.isLoadSuccessfully, mapData, traces, currentTraceParamValue, dispatch]);
+  }, [formID, mapState?.isLoadSuccessfully, mapData, traces, currentTraceParamValue, dispatch, mapState?.isTraceEditing]);
 
   // обновление карты при изменении значения текущей трассы в параметрах
   useEffect( () => {
     mapState?.utils.updateCanvas()
-  }, [mapData?.layers, currentTraceParamValue, mapState?.utils]);
+  }, [mapData?.layers, currentTraceParamValue, mapState?.utils, mapState?.isTraceEditing]);
 
   if (!mapState) return null;
   if (!isMapExist) return <MapNotFound t={t}/>;
@@ -225,7 +237,8 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
   if (mapState.isLoadSuccessfully === false) return <MapLoadError t={t}/>;
 
   return (
-    <div className={'map-container'}>
+    <div className={ mapState?.isTraceEditing ? 'map-container trace-edit-panel-open' : 'map-container'}>
+      { mapState?.isTraceEditing && <TracesEditWindow formID={formID} mapState={mapState} traces={traces}/> }
       <canvas style={{cursor: mapState.cursor}} ref={canvasRef}/>
     </div>
   );

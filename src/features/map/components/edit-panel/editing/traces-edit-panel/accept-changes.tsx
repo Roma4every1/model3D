@@ -1,35 +1,41 @@
 import {BigButton} from "../../../../../../shared/ui";
 import applyTraceChangesIcon from "../../../../../../assets/images/trace/accept.png";
-import {acceptMapEditing, setActiveLayer, setCurrentTrace} from "../../../../store/maps.actions";
+import {
+  acceptMapEditing,
+  setActiveLayer,
+  setCurrentTrace,
+  setTraceEditing
+} from "../../../../store/maps.actions";
 import {useDispatch, useSelector} from "react-redux";
 import {saveTraceThunk} from "../../../../store/traces.thunks";
-import {channelSelector} from "../../../../../../entities/channels";
 import {useEffect} from "react";
 import {updateParam} from "../../../../../../entities/parameters";
 import {tableRowToString} from "../../../../../../entities/parameters/lib/table-row";
+import {getCurrentTraceParamName} from "../../../../lib/traces-utils";
 
 interface ApplyTraceChangesProps {
   mapState: MapState,
   formID: FormID,
+  traces: Channel
 }
 
-export const ApplyTraceChanges = ({mapState, formID}: ApplyTraceChangesProps) => {
+export const ApplyTraceChanges = ({mapState, formID, traces}: ApplyTraceChangesProps) => {
   const dispatch = useDispatch()
-  const { oldData } = mapState;
-  const disabledAccept = oldData.x === null && oldData.arc === null;
+  const { oldData, isTraceEditing } = mapState;
 
-  // получение всех трасс из каналов
-  const tracesChannelName = 'traces';
-  const traces: Channel = useSelector(channelSelector.bind(tracesChannelName));
+  const isTraceCreating = oldData.arc !== null
+  const disabledAccept = !isTraceCreating && !isTraceEditing;
 
   // ID таблицы с трассами
   const tableID = traces.tableID
 
+  const currentTraceParamName = getCurrentTraceParamName(traces);
+
   // текущая трасса из store
   const currentTraceRow = mapState.currentTraceRow;
-  const newTraceRow = {ID: null,
+  const newTraceRow = {ID: currentTraceRow?.ID,
     Cells: [
-      null,
+      currentTraceRow?.Cells?.ID,
       currentTraceRow?.Cells?.name,
       currentTraceRow?.Cells?.stratumID,
       currentTraceRow?.Cells?.items
@@ -39,18 +45,34 @@ export const ApplyTraceChanges = ({mapState, formID}: ApplyTraceChangesProps) =>
   const rootID = useSelector<WState, string | null>(state => state.root.id);
 
   const acceptEditing = () => {
-    if(currentTraceRow) dispatch(saveTraceThunk(formID, tableID, 'create', newTraceRow));
+    let method : 'create' | 'update' = 'create';
+    if (newTraceRow.ID !== null) {
+      const editID = traces.data.rows.findIndex((row) => row.ID === currentTraceRow.ID);
+      method = 'update';
+      newTraceRow.ID = editID;
+    }
 
+    if(currentTraceRow) dispatch(saveTraceThunk(formID, tableID, method, newTraceRow));
+
+    if (isTraceEditing) dispatch(setTraceEditing(formID, false))
     dispatch(acceptMapEditing(formID));
     dispatch(setActiveLayer(formID, null));
+    // updateCurrentTraceParams();
   };
 
   // обновление и установка в параметры новой трассы при её добавлении в каналах
   useEffect(() => {
+    if (!traces.data.rows) return;
+    if (!mapState?.isModified) return;
+
+
     // получение последней добавленной трассы из каналов
     const tracesRows = traces.data.rows
     const lastTrace = tracesRows[tracesRows.length-1]
     const lastTraceValue = tableRowToString(traces, lastTrace)?.value;
+
+    // КОСТЫЛЬ!
+    if (currentTraceRow.Cells.items !== lastTrace.Cells[3]) return;
 
     // установка текущей трассы в store
     dispatch(setCurrentTrace(formID,
@@ -65,7 +87,7 @@ export const ApplyTraceChanges = ({mapState, formID}: ApplyTraceChangesProps) =>
     ));
 
     // обновление текущей трассы в параметрах
-    dispatch(updateParam(rootID, 'currentTrace', lastTraceValue));
+    dispatch(updateParam(rootID, currentTraceParamName, lastTraceValue));
   }, [dispatch, formID, rootID, traces])
 
   return <BigButton

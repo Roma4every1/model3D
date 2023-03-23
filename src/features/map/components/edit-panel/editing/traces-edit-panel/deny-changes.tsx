@@ -3,30 +3,38 @@ import denyTraceChangesIcon from "../../../../../../assets/images/trace/cancel.p
 import {
   cancelMapEditing,
   setActiveLayer,
-  setCurrentTrace
+  setTraceEditing
 } from "../../../../store/maps.actions";
-import {useDispatch, useSelector} from "react-redux";
+import {useDispatch} from "react-redux";
 import {updateParam} from "../../../../../../entities/parameters";
+import {getCurrentTraceParamName} from "../../../../lib/traces-utils";
 
 interface DenyTraceChangesProps {
   mapState: MapState,
   formID: FormID,
+  rootID: string | null,
+  traces: Channel
 }
 
-export const DenyTraceChanges = ({mapState, formID}: DenyTraceChangesProps) => {
+export const DenyTraceChanges = ({mapState, formID, rootID, traces}: DenyTraceChangesProps) => {
   const dispatch = useDispatch();
 
-  const { oldData } = mapState;
+  const { oldData, isTraceEditing } = mapState;
+
+  const currentTraceParamName = getCurrentTraceParamName(traces);
 
   // значения для проверки на активность кнопки
-  const disabledDeny = oldData.x === null && oldData.arc === null;
-
-  const rootID = useSelector<WState, string | null>(state => state.root.id);
+  const isTraceCreating = oldData.arc !== null
+  const disabledDeny = !isTraceCreating && !isTraceEditing;
 
   const cancelEditing = () => {
+    if (isTraceCreating) {
+      // КОСТЫЛЬ!
+      dispatch(updateParam(rootID, currentTraceParamName, null));
+    }
     mapState.mapData.layers.find(layer => layer.uid==='{TRACES-LAYER}').elements = [];
-    dispatch(updateParam(rootID, 'currentTrace', null));
-    dispatch(setCurrentTrace(formID, null))
+
+    dispatch(setTraceEditing(formID, false))
     dispatch(cancelMapEditing(formID));
     dispatch(setActiveLayer(formID, null));
   };

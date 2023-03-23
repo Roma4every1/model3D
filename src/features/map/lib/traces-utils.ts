@@ -4,6 +4,11 @@ import {
   getNearestElements
 } from "../components/edit-panel/selecting/selecting-utils";
 
+
+export const currentMestParamName = 'currentMest';
+export const getCurrentTraceParamName = (traces : Channel) => traces.info.currentRowObjectName;
+export const tracesChannelName = 'traces';
+
 /** Прототип объекта слоя трассы. */
 export const traceLayerProto : MapLayer = {
   bounds: { min: {x: -10000000, y: -10000000}, max: {x: 10000000, y: 10000000} },

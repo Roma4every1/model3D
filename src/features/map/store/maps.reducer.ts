@@ -24,7 +24,8 @@ export enum MapsActions {
   CANCEL_CREATING = 'maps/cancelCreate',
   ADD_LAYER = 'maps/addLayer',
   SET_CURRENT_TRACE = 'maps/setCurrentTraceRow',
-  ADD_POINT_TO_CURRENT_TRACE = 'maps/addPointToCurrentTraceRow'
+  ADD_POINT_TO_CURRENT_TRACE = 'maps/addPointToCurrentTraceRow',
+  SET_TRACE_EDITING = 'maps/setTraceEditing'
 }
 
 /* --- Action Interfaces --- */
@@ -109,13 +110,18 @@ interface ActionAddPointToCurrentTrace extends MapAction {
   payload: MapPoint,
 }
 
+interface ActionSetTraceEditing extends MapAction {
+  type: MapsActions.SET_TRACE_EDITING,
+  payload: boolean,
+}
+
 
 export type MapsAction = ActionAddMulti | ActionSetSync | ActionAdd |
   ActionStartLoad | ActionLoadSuccess | ActionLoadError |
   ActionSetMode | ActionSetDimensions | ActionSetField | ActionClearSelect |
   ActionStartEditing | ActionAcceptEditing | ActionCancelEditing |
   ActionStartCreating | ActionCreateElement | ActionCancelCreating | ActionAddLayer |
-  ActionSetCurrentTrace | ActionAddPointToCurrentTrace;
+  ActionSetCurrentTrace | ActionAddPointToCurrentTrace | ActionSetTraceEditing;
 
 /* --- Reducer Utils --- */
 
@@ -164,7 +170,8 @@ const initMapState: MapState = {
   cursor: 'auto',
   childOf: null, scroller: null,
   utils: { updateCanvas: () => {}, pointToMap: (point) => point },
-  currentTraceRow: null
+  currentTraceRow: null,
+  isTraceEditing: false
 };
 
 /* --- Init State & Reducer --- */
@@ -424,6 +431,14 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
             name: newCurrentTraceName,
             items: newCurrentTraceItems}
         }
+      }
+      return {...state};
+    }
+
+    case MapsActions.SET_TRACE_EDITING: {
+      const { formID, payload } = action;
+      state.single[formID] = {...state.single[formID],
+          isTraceEditing: payload
       }
       return {...state};
     }
