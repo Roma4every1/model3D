@@ -1,4 +1,4 @@
-import { caratSettings, caratColumns } from '../utils/data';
+import { caratSettings, caratColumns } from '../lib/data';
 
 /* --- Action Types --- */
 
