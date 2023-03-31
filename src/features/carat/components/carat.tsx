@@ -1,55 +1,105 @@
-import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { MouseEvent, WheelEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { compareArrays } from 'shared/lib';
+import { compareObjects} from 'shared/lib';
 import { currentWellIDSelector } from 'entities/parameters';
-import { channelsSelector } from 'entities/channels';
+import { channelDictSelector } from 'entities/channels';
+
+import { applyIndexesToModel } from '../lib/initialization';
+import { getCaratIntervals } from '../lib/channels';
+import { moveSmoothly } from '../lib/smooth-scroll';
 import { caratStateSelector } from '../store/carats.selectors';
-import { setCaratCanvas } from '../store/carats.actions';
-import { CaratDrawer, CaratRenderData } from '../drawer/drawer';
+import { setCaratData, setCaratActiveColumn, setCaratCanvas } from '../store/carats.actions';
 
 
-export const Carat = ({id: formID, channels}: FormState) => {
+/** Каротажная диаграмма. */
+export const Carat = ({id, channels}: FormState) => {
   const dispatch = useDispatch();
 
-  const caratState: CaratState = useSelector(caratStateSelector.bind(formID));
+  const state: CaratState = useSelector(caratStateSelector.bind(id));
+  const { model, data, drawer, canvas } = state;
+
+  const viewport = model.getViewport();
+  const columns = model.getColumns();
+
   const wellID = useSelector(currentWellIDSelector);
-  const channelData: Channel[] = useSelector(channelsSelector.bind(channels), compareArrays);
+  const channelData: ChannelDict = useSelector(channelDictSelector.bind(channels), compareObjects);
 
-  // const lookupChannelNames = useMemo(() => {
-  //   const result = [];
-  //   channelData.forEach(channel => result.push(...channel.info.lookupChannels));
-  //   return result;
-  // }, [channelData]);
+  // console.log(channelData['Carottage curves'].data.rows.map((row) => {
+  //   return row.Cells[5];
+  // }));
 
-  // const lookupChannelData = useSelector(channelsSelector.bind(lookupChannelNames), compareArrays);
-
-  console.log(channelData);
-  // console.log(lookupChannelData);
-  // console.log([...channelData, ...lookupChannelData].map(c => c.info.displayName))
-
-  const canvas = caratState?.canvas;
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const drawerRef = useRef<CaratDrawer>(new CaratDrawer());
-
-  const renderData = useMemo<CaratRenderData>(() => {
-    return {wellID, columns: caratState?.columns}
-  }, [caratState, wellID]);
+  const isOnMoveRef = useRef<boolean>(false);
+  const observer = useRef<ResizeObserver>();
 
   useEffect(() => {
-    drawerRef.current.render(renderData);
-  }, [renderData]);
+    let initY = Infinity;
+    for (const channelName in data) {
+      const dataModel = data[channelName];
+      const datum = channelData[channelName].data;
+
+      if (!datum?.columns) continue;
+      if (!dataModel.applied) applyIndexesToModel(dataModel, datum.columns);
+
+      const intervals = getCaratIntervals(datum.rows, dataModel.info);
+      initY = Math.min(initY, ...intervals.map(i => i.top));
+      dataModel.data = intervals;
+    }
+    viewport.y = initY === Infinity ? 0 : initY;
+    dispatch(setCaratData(id, {...data}));
+  }, [channelData]); // eslint-disable-line
+
+  useEffect(() => {
+    if (!observer.current) observer.current = new ResizeObserver(() => drawer.render());
+    if (canvas) observer.current.observe(canvas);
+    return () => { if (canvas) observer.current.unobserve(canvas); };
+  }, [drawer, canvas]);
+
+  useLayoutEffect(() => {
+    drawer.render(wellID, viewport, columns, data);
+  }, [viewport, columns, data, wellID, drawer]);
 
   // обновление ссылки на холст
   useLayoutEffect(() => {
     const currentCanvas = canvasRef.current;
-    if (!currentCanvas || currentCanvas === canvas || !caratState) return;
-    drawerRef.current.setCanvas(currentCanvas);
-    dispatch(setCaratCanvas(formID, currentCanvas));
+    if (!currentCanvas || currentCanvas === canvas) return;
+    drawer.setCanvas(currentCanvas);
+    dispatch(setCaratCanvas(id, currentCanvas));
   });
+
+  const onWheel = (e: WheelEvent) => {
+    moveSmoothly(viewport, drawer, e.deltaY > 0 ? 5 : -5);
+  };
+
+  const onMouseDown = (e: MouseEvent) => {
+    const xCoordinate = e.nativeEvent.offsetX;
+    const idx = model.getColumnIndex(xCoordinate);
+
+    if (idx !== -1) {
+      model.setActiveColumn(idx); drawer.render();
+      dispatch(setCaratActiveColumn(id, columns[idx]));
+    }
+    isOnMoveRef.current = true;
+  };
+
+  const onMouseUp = () => {
+    isOnMoveRef.current = false;
+  };
+
+  const onMouseMove = (e: MouseEvent) => {
+    if (!isOnMoveRef.current) return;
+    viewport.y -= e.nativeEvent.movementY / viewport.scale;
+    drawer.render();
+  };
 
   return (
     <div className={'carat-container'}>
-      <canvas ref={canvasRef}/>
+      <canvas
+        ref={canvasRef}
+        onMouseDown={onMouseDown} onMouseUp={onMouseUp}
+        onMouseMove={onMouseMove} onWheel={onWheel}
+      />
     </div>
   );
 };

@@ -1,12 +1,11 @@
-import { useSelector } from 'react-redux';
+// import { useSelector } from 'react-redux';
 import { MenuSection } from 'shared/ui';
-import { caratStateSelector } from '../store/carats.selectors';
+// import { caratStateSelector } from '../store/carats.selectors';
 
 
 /** Панель редактирования каротажа. */
 export function CaratEditPanel({id}: FormEditPanelProps) {
-  const caratState: CaratState = useSelector(caratStateSelector.bind(id));
-  console.log(caratState);
+  // const caratState: CaratState = useSelector(caratStateSelector.bind(id));
 
   return (
     <div className={'menu'}>

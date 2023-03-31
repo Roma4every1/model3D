@@ -1,30 +1,86 @@
-/** Отрисовщик каротажной диаграммы. */
-interface ICaratDrawer {
-  render(data: any): void
-}
-
-/* --- --- --- */
-
+/** Хранилище каротажных диаграмм. */
 type CaratsState = FormDict<CaratState>;
 
-/** Состояние каротажа.
- * + `settings` — настройки
- * + `columns` — колонки
- * + `canvas` — элемент холста
- * + `drawer` — отрисовщик
+/** Состояние каротажной формы.
+ * + `data`: {@link CaratData}
+ * + `model`: {@link ICaratViewModel}
+ * + `drawer`: {@link ICaratDrawer}
+ * + `canvas`: {@link HTMLCanvasElement}
+ * + `activeColumn`: {@link CaratColumn}
  * */
 interface CaratState {
-  settings: CaratSettings,
-  columns: CaratColumn[],
-  canvas: HTMLCanvasElement,
+  /** Данные для отрисовки. */
+  data: CaratData,
+  /** Модель отображения. */
+  model: ICaratViewModel;
+  /** Экземпляр отрисовщика. */
   drawer: ICaratDrawer,
+  /** Ссылка на холст. */
+  canvas: HTMLCanvasElement,
+  /** Текущая активная колонка. */
+  activeColumn: CaratColumn | null,
 }
 
-/**
- * Данная структура должна добавляться в ответ
- * на запрос `/getFormSettings` для каротажной формы
- * */
-interface CaratSettingsResponse {
+/** Порт просмотра. */
+interface CaratViewport {
+  /** Вертикальное положение. */
+  y: number,
+  /** Масштаб: количество пикселей в метре. */
+  scale: number,
+}
+
+/** Данные для отрисовки каротажа. */
+type CaratData = Record<ChannelName, CaratDataModel>;
+
+/** Данные канала для отрисовки каротажной колонки. */
+type CaratDataModel = CaratIntervalsModel;
+
+/** Модель интервального типа отрисовки. */
+interface CaratIntervalsModel {
+  type: 'intervals',
+  /** Найдены ли индексы колонок. */
+  applied: boolean,
+  info: CaratIntervalsInfo,
+  data: CaratRenderedInterval[],
+}
+interface CaratIntervalsInfo {
+  top: PropertyColumnInfo,
+  base: PropertyColumnInfo,
+}
+interface CaratRenderedInterval {
+  top: number,
+  base: number,
+}
+
+interface PropertyColumnInfo {
+  name: string,
+  index: number,
+}
+
+/* --- Rendering --- */
+
+/** Модель отображения каротажной диаграммы. */
+interface ICaratViewModel {
+  getViewport(): CaratViewport
+  getColumns(): CaratColumn[]
+  getColumnIndex(xCoordinate: number): number
+  setActiveColumn(idx: number): void
+  setColumnWidth(idx: number, width: number): void
+  setColumnLabel(idx: number, label: string): void
+  resize(width: number, height: number): void
+  setViewportScale(scale: number): void
+}
+
+/** Отрисовщик каротажной диаграммы. */
+interface ICaratDrawer {
+  setCanvas(canvas: HTMLCanvasElement): void
+  render(well?: string, viewport?: CaratViewport, columns?: CaratColumn[], data?: CaratData): void
+}
+
+/* --- Form Settings --- */
+
+/** Ответ `/getFormSettings` для каротажной формы. */
+interface CaratFormSettings {
   settings: CaratSettings,
   columns: CaratColumn[],
 }
@@ -32,63 +88,43 @@ interface CaratSettingsResponse {
 /** Атрибуты тега <carat/>. */
 interface CaratSettings {
   metersInMeter: number,
-  useStaticScale: boolean,
-  mode: string,
-  preferredInclChannelName: string,
-  preferredPlastsChannelName: string,
 }
 
 /** carat > child client > caratColumn */
 interface CaratColumn {
   type: string,
-  zones?: CaratZones,
-  columnSettings: Partial<CaratColumnSettings>,
+  settings: CaratColumnSettings,
   plugins: Record<ChannelName, Partial<CaratColumnPlugins>>,
-}
-
-/** carat > child client > caratColumn > plugins > plugin > caratZones */
-type CaratZones = CaratZone[];
-
-interface CaratZone {
-  relativeWidth?: number,
-  types: string[],
+  channels: ChannelName[],
+  active?: boolean,
 }
 
 /** carat > child client > caratColumn > columnSettings */
 interface CaratColumnSettings {
   label: string,
   width: number,
-  borderThickness: {top: number, left: number, bottom: number, right: number},
-  index: number,
-  margin: {top: number, left: number, bottom: number, right: number},
-  visibleSubColumns: number,
-  subColumnBorderSize: number,
-  type: string,
-  borderColor: string,
-  showDepthMarks: boolean,
-  showAbsMarks: boolean,
   showAxis: boolean,
   showGrid: boolean,
-  axisDisplaySettings: {zOrder: number, step: number, heightGrid: number},
+  step: number,
 }
 
 interface CaratColumnPlugins {
-  dataSelection: CaratDataSelection,
-  channelSettings: CaratChannelSettings,
-  channelCaratSettings: CaratChannelCaratSettings,
+  channelSettings: CaratChannelSettings | null,
+  channelCaratSettings: CaratChannelCaratSettings | null,
 }
 
 /* --- Carat Plugins --- */
 
-/** carat > child client > caratColumn > plugins > plugin > caratDataSelection */
-interface CaratDataSelection {
-  isCurveSelectingHidden: boolean,
-  start: string, // из атрибута date
-  end: string,   // из атрибута date
-  selection: {expression: string, isSelected: boolean}[] // массив
+/** carat > child client > caratColumn > plugins > plugin > caratChannelSettings */
+interface CaratChannelSettings {
+  fillLineChannelSettings: {
+    showDiagram: boolean, showFill: boolean, showLine: boolean,
+    zOrder: number, thickness: number,
+    color: string,
+    backgroundColor: string,
+    borderColor: string,
+  },
 }
-
-type CaratChannelSettings = any;
 
 /** carat > child client > caratColumn > plugins > plugin > caratChannelCaratSettings */
 interface CaratChannelCaratSettings {

@@ -9,3 +9,25 @@ type ImageDict<Items = string> = Record<Items, ImagePath>;
 
 /** Путь к изображению. */
 type ImagePath = string;
+
+/** HEX цвета.
+ * @example
+ * "#123456"
+ * */
+type ColorHEX = string;
+
+/** Ограничивающий прямоугольник. */
+interface BoundingRect {
+  /** Верхняя координата. */
+  top: number,
+  /** Левая координата. */
+  left: number,
+  /** Нижняя координата. */
+  bottom: number,
+  /** Правая координата. */
+  right: number,
+  /** Ширина координата. */
+  width: number,
+  /** Высота координата. */
+  height: number,
+}

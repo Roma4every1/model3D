@@ -23,13 +23,13 @@ const allTopTabs: IJsonTabNode[] = [
     type: 'tab', enableDrag: false,
     id: 'top-map', name: 'Карта',
   },
-  { // настройки непосредственно каротажа
-    type: 'tab', enableDrag: false,
-    id: 'top-carat', name: 'Каротаж',
-  },
   { // панель настроек трека, относится к каротажу
     type: 'tab', enableDrag: false,
     id: 'top-tracks', name: 'Треки',
+  },
+  { // настройки непосредственно каротажа
+    type: 'tab', enableDrag: false,
+    id: 'top-carat', name: 'Каротаж',
   },
 ];
 

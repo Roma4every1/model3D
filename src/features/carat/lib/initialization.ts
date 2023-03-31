@@ -1,57 +1,47 @@
-export {};
+import { CaratDrawer } from './drawer';
+import { CaratViewModel } from './view-model';
+import { isLithologyChannel, findLithologyIndexes } from './channels';
+import { caratDrawerSettings } from './constants';
 
-/*
-канал литология.
-свойства: WELL ID, STRATUM ID, TOP, BASE
-*/
 
-interface PropertyColumnInfo {
-  name: string,
-  index: number,
-}
+export function settingsToState(channelDict: ChannelDict, settings: CaratFormSettings): CaratState {
+  const caratData: CaratData = {};
+  const scale = CaratDrawer.pixelPerMeter / (settings.settings.metersInMeter ?? 400);
 
-interface LithologyObject {
-  top: number,
-  base: number,
-}
+  const columns = settings.columns.filter((column) => column?.channels.length);
+  if (columns.length) columns[0].active = true;
 
-interface LithologyChannelColumns {
-  wellID: PropertyColumnInfo,
-  stratumID: PropertyColumnInfo,
-  top: PropertyColumnInfo,
-  base: PropertyColumnInfo,
-}
+  for (const column of columns) {
+    for (const channelName of column.channels) {
+      const channelPlugins = column.plugins[channelName];
+      if (!channelPlugins) continue;
+      const channel = channelDict[channelName];
 
-export function findLithologyIndexes(channel: Channel) {
-  const result: LithologyChannelColumns = {
-    wellID: {name: 'WELL ID', index: -1},
-    stratumID: {name: 'STRATUM ID', index: -1},
-    top: {name: 'TOP', index: -1},
-    base: {name: 'BASE', index: -1},
+      if (channel && !caratData[channelName] && isLithologyChannel(channel)) {
+        const info = findLithologyIndexes(channel);
+        caratData[channelName] = {type: 'intervals', info, applied: false, data: null};
+      }
+    }
+  }
+
+  return {
+    data: caratData,
+    model: new CaratViewModel(columns, {y: 0, scale}),
+    drawer: new CaratDrawer(caratDrawerSettings),
+    canvas: null,
+    activeColumn: columns[0] ?? null,
   };
-  channel.info.properties.forEach((property) => {
-    const { name, fromColumn } = property;
-    if (name === 'WELL ID') return result.wellID.name = fromColumn;
-    if (name === 'STRATUM ID') return result.wellID.name = fromColumn;
-    if (name === 'TOP') return result.top.name = fromColumn;
-    if (name === 'BASE') return result.base.name = fromColumn;
-  });
-  channel.data.columns.forEach(({ Name: name }, i) => {
-    if (name === result.wellID.name) return result.wellID.index = i;
-    if (name === result.stratumID.name) return result.stratumID.index = i;
-    if (name === result.top.name) return result.base.index = i;
-    if (name === result.base.name) return result.base.index = i;
-  });
-  return result;
 }
 
-export function getLithologyObjects(rows: ChannelRow[], indexes: LithologyChannelColumns) {
-  const topIndex = indexes.top.index;
-  const baseIndex = indexes.base.index;
+export function applyIndexesToModel(model: CaratDataModel, columns: ChannelColumn[]) {
+  if (model.type === 'intervals') {
+    const topName = model.info.top.name;
+    const baseName = model.info.base.name;
 
-  return rows.map((row) => {
-    const top = parseFloat(row[topIndex].replace(',', '.'));
-    const base = parseFloat(row[baseIndex].replace(',', '.'));
-    return {top, base};
-  });
+    columns.forEach(({ Name: name }, i) => {
+      if (name === topName) return model.info.top.index = i;
+      if (name === baseName) return model.info.base.index = i;
+    });
+  }
+  model.applied = true;
 }

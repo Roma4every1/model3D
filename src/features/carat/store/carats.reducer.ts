@@ -1,56 +1,61 @@
-import { caratSettings, caratColumns } from '../lib/data';
+import { mockCaratSettings } from '../lib/data';
+import { settingsToState } from '../lib/initialization';
 
 /* --- Action Types --- */
 
 export enum CaratsActions {
-  ADD = 'carat/add',
+  CREATE = 'carat/create',
+  SET_DATA = 'carat/data',
+  SET_ACTIVE_COLUMN = 'carat/column',
   SET_CANVAS = 'carat/setCanvas',
-  SET_DRAWER = 'carat/setDrawer',
 }
 
 /* --- Action Interfaces --- */
 
-interface ActionAdd {
-  type: CaratsActions.ADD,
-  formID: FormID,
+interface ActionCreate {
+  type: CaratsActions.CREATE,
+  payload: {id: FormID, channels: ChannelDict},
+}
+interface ActionSetData {
+  type: CaratsActions.SET_DATA,
+  payload: {id: FormID, data: CaratData},
+}
+interface ActionSetColumn {
+  type: CaratsActions.SET_ACTIVE_COLUMN,
+  payload: {id: FormID, column: CaratColumn},
 }
 interface ActionSetCanvas {
   type: CaratsActions.SET_CANVAS,
-  formID: FormID,
-  payload: HTMLCanvasElement,
-}
-interface ActionSetDrawer {
-  type: CaratsActions.SET_DRAWER,
-  formID: FormID,
-  payload: ICaratDrawer,
+  payload: {id: FormID, canvas: HTMLCanvasElement},
 }
 
-export type CaratsAction = ActionAdd | ActionSetCanvas | ActionSetDrawer;
+export type CaratsAction = ActionCreate | ActionSetData | ActionSetColumn | ActionSetCanvas;
 
 /* --- Init State & Reducer --- */
-
-const defaultCaratState: CaratState = {
-  settings: caratSettings,
-  columns: caratColumns,
-  canvas: null,
-  drawer: null,
-};
 
 const init: CaratsState = {};
 
 export const caratsReducer = (state: CaratsState = init, action: CaratsAction): CaratsState => {
   switch (action.type) {
 
-    case CaratsActions.ADD: {
-      return {...state, [action.formID]: JSON.parse(JSON.stringify(defaultCaratState))};
+    case CaratsActions.CREATE: {
+      const { id, channels } = action.payload;
+      return {...state, [id]: settingsToState(channels, mockCaratSettings)};
+    }
+
+    case CaratsActions.SET_DATA: {
+      const { id, data } = action.payload;
+      return {...state, [id]: {...state[id], data: data}};
+    }
+
+    case CaratsActions.SET_ACTIVE_COLUMN: {
+      const { id, column } = action.payload;
+      return {...state, [id]: {...state[id], activeColumn: column}};
     }
 
     case CaratsActions.SET_CANVAS: {
-      return {...state, [action.formID]: {...state[action.formID], canvas: action.payload}};
-    }
-
-    case CaratsActions.SET_DRAWER: {
-      return {...state, [action.formID]: {...state[action.formID], drawer: action.payload}};
+      const { id, canvas } = action.payload;
+      return {...state, [id]: {...state[id], canvas: canvas}};
     }
 
     default: return state;
