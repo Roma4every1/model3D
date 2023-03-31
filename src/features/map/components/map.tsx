@@ -13,7 +13,7 @@ import {
   startCreatingElement,
   createMapElement,
   setEditMode,
-  setCurrentTrace,
+  setCurrentTrace, setTraceOldData, setTraceCreating, cancelCreatingElement, setTraceEditing,
 } from '../store/maps.actions';
 import { fetchMapData } from '../store/maps.thunks';
 import {stringToTableCell, tableRowToString} from 'entities/parameters/lib/table-row';
@@ -239,7 +239,10 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
     if (!traces.data.rows) return;
     if (!mapState?.isModified) return;
 
-    if (mapState?.oldTraceDataRow !== null) return;
+    if (mapState?.oldTraceDataRow !== null) {
+      dispatch(setTraceOldData(formID, null));
+      return;
+    }
 
     // получение последней добавленной трассы из каналов
     const tracesRows = traces.data.rows;
@@ -258,10 +261,11 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
       }
     ));
 
+    dispatch(setTraceOldData(formID, null));
+
     // обновление текущей трассы в параметрах
     dispatch(updateParam(rootID, currentTraceParamName, lastTraceValue));
-  }, [dispatch, formID, rootID, traces, currentTraceParamName,
-    mapState?.oldTraceDataRow, mapState?.isModified])
+  }, [dispatch, formID, rootID, traces, currentTraceParamName, mapState?.isModified])
 
 
   // обновление карты при изменении значения текущей трассы в параметрах

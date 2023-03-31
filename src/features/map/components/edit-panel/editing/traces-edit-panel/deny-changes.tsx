@@ -1,8 +1,9 @@
 import {BigButton} from "../../../../../../shared/ui";
 import denyTraceChangesIcon from "../../../../../../assets/images/trace/cancel.png";
 import {
+  cancelCreatingElement,
   cancelMapEditing,
-  setActiveLayer, setCurrentTrace,
+  setActiveLayer, setCurrentTrace, setTraceCreating,
   setTraceEditing, setTraceOldData
 } from "../../../../store/maps.actions";
 import {useDispatch} from "react-redux";
@@ -36,6 +37,8 @@ export const DenyTraceChanges = ({mapState, formID, rootID, traces}: DenyTraceCh
 
     if (isTraceCreating) {
       dispatch(updateParam(rootID, currentTraceParamName, null));
+      dispatch(setTraceCreating(formID, false));
+      dispatch(cancelCreatingElement(formID));
     }
 
     // очистка элементов трасс на слое с трассами

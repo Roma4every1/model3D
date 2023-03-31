@@ -45,7 +45,8 @@ export const CreateTrace = ({mapState, formID, isTracesChannelLoaded}: CreateTra
   const disabled = !currentMestValue ||
     !isTracesChannelLoaded ||
     mapState?.isTraceEditing ||
-    mapState?.isElementEditing;
+    mapState?.isElementEditing ||
+    mapState?.isTraceCreating;
 
   // создание элемента трассы на карте
   const createElement = useCallback((point: ClientPoint) => {
@@ -56,8 +57,6 @@ export const CreateTrace = ({mapState, formID, isTracesChannelLoaded}: CreateTra
 
   const mouseUp = useCallback((event: MouseEvent) => {
     if (mapState.mode !== MapModes.AWAIT_POINT) return;
-
-    dispatch(setTraceCreating(formID, true));
 
     // получение коодинат точки на карте
     const point = mapState.utils.pointToMap(clientPoint(event));
@@ -106,8 +105,15 @@ export const CreateTrace = ({mapState, formID, isTracesChannelLoaded}: CreateTra
 
   // onClick коллэк для компонента
   const action = () => {
+    const traceLayer = mapData.layers.find(layer => layer.uid==='{TRACES-LAYER}');
+    if (!traceLayer) return;
+    traceLayer.elements = [];
+
+    dispatch(setCurrentTrace(formID, null));
+
     dispatch(setActiveLayer(formID, traceLayerProto));
     dispatch(startCreatingElement(formID));
+    dispatch(setTraceCreating(formID, true));
 
     if (mapState.mode !== MapModes.AWAIT_POINT) {
       dispatch(setEditMode(formID, MapModes.AWAIT_POINT));

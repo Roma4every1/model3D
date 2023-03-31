@@ -416,6 +416,7 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
       const newMapState: MapState = {...state.single[action.formID]};
       clearSelect(newMapState);
       newMapState.mode = MapModes.NONE;
+      newMapState.cursor = 'auto';
       newMapState.utils.updateCanvas();
       state.single[action.formID] = newMapState;
       return {...state};

@@ -1,3 +1,8 @@
+.trace-edit-window-container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+}
+
 .trace-edit-window {
   display: flex;
   flex-direction: column;
@@ -36,8 +41,8 @@
 
   &__body {
     padding: 4px 8px;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
     gap: 20px;
   }
 

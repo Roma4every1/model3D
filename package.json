@@ -21,6 +21,7 @@
     "@progress/kendo-react-labels": "5.9.0",
     "@progress/kendo-react-layout": "5.9.0",
     "@progress/kendo-react-listbox": "5.9.0",
+    "@progress/kendo-react-listview": "^5.12.0",
     "@progress/kendo-react-notification": "5.9.0",
     "@progress/kendo-react-popup": "5.9.0",
     "@progress/kendo-react-progressbars": "5.9.0",

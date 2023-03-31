@@ -1,7 +1,7 @@
 import {BigButton} from "../../../../../../shared/ui";
 import applyTraceChangesIcon from "../../../../../../assets/images/trace/accept.png";
 import {
-  acceptMapEditing,
+  acceptMapEditing, cancelCreatingElement,
   setActiveLayer,
   setTraceCreating,
   setTraceEditing, setTraceOldData
@@ -56,15 +56,19 @@ export const ApplyTraceChanges = ({mapState, formID, traces}: ApplyTraceChangesP
 
       const currentTraceValue = tableRowToString(traces, newTraceRow)?.value;
       dispatch(updateParam(rootID, currentTraceParamName, currentTraceValue));
-      dispatch(setTraceOldData(formID, null));
+      dispatch(acceptMapEditing(formID));
     }
 
     if (isTraceCreating) {
-      if(currentTraceRow) dispatch(saveTraceThunk(formID, tableID, 'create', newTraceRow));
+      if(currentTraceRow && currentTraceRow.Cells.items) {
+        dispatch(saveTraceThunk(formID, tableID, 'create', newTraceRow));
+        dispatch(acceptMapEditing(formID));
+      } else {
+        dispatch(cancelCreatingElement(formID));
+      }
       dispatch(setTraceCreating(formID, false));
     }
 
-    dispatch(acceptMapEditing(formID));
     dispatch(setActiveLayer(formID, null));
   };
 

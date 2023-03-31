@@ -6,7 +6,7 @@ import {useDispatch, useSelector} from "react-redux";
 import {mapStateSelector} from "../../store/maps.selectors";
 import {ApplyTraceChanges} from "./editing/traces-edit-panel/accept-changes";
 import {DenyTraceChanges} from "./editing/traces-edit-panel/deny-changes";
-import {useCallback, useEffect} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {
   clientPoint,
   getPointToMap,
@@ -15,7 +15,12 @@ import {
 import {
   applyMouseDownActionToPolyline,
 } from "./editing/edit-element-utils";
-import {addPointToCurrentTrace, setOnDrawEnd} from "../../store/maps.actions";
+import {
+  addPointToCurrentTrace, cancelCreatingElement, setCurrentTrace,
+  setOnDrawEnd,
+  setTraceCreating, setTraceEditing,
+  setTraceOldData
+} from "../../store/maps.actions";
 import {findMapPoint, getNearestSignMapElement, tracesChannelName} from "../../lib/traces-utils";
 import {channelSelector} from "../../../../entities/channels";
 
@@ -27,6 +32,9 @@ export const TracesEditPanel = ({id}: FormEditPanelProps) => {
 
   const mapState: MapState = useSelector(mapStateSelector.bind(id));
   const rootID = useSelector<WState, string | null>(state => state.root.id);
+
+  const selectedTopTab = useSelector<WState, number | null>(state => state.root.layout.common.selectedTopTab);
+  // const [prevSelectedTopTab, setPrevSelectedTopTab] = useState<number | null>(null)
 
   // получение всех трасс из каналов
   const traces: Channel = useSelector(channelSelector.bind(tracesChannelName));
@@ -83,6 +91,25 @@ export const TracesEditPanel = ({id}: FormEditPanelProps) => {
       }
     }
   }, [mapState, mouseDown]);
+
+  useEffect(() => {
+    console.log(selectedTopTab)
+    if( (selectedTopTab === 3) ) {
+      // if (mapState?.isTraceCreating) {
+      //   // dispatch(updateParam(rootID, currentTraceParamName, null));
+      //   dispatch(setTraceCreating(id, false));
+      //   dispatch(setTraceOldData(id, null));
+      //   dispatch(cancelCreatingElement(id));
+      // }
+      if (mapState?.isTraceEditing) {
+        console.log('editing false')
+        // dispatch(setCurrentTrace(id, mapState?.oldTraceDataRow));
+        // dispatch(setTraceEditing(id, false));
+        // dispatch(setTraceOldData(id, null));
+      }
+    }
+    // setPrevSelectedTopTab(selectedTopTab)
+  }, [selectedTopTab])
 
   if (!mapState.isLoadSuccessfully) return <MenuSkeleton template={panelTemplate}/>;
 

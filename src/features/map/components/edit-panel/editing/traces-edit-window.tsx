@@ -1,22 +1,20 @@
 import {useState} from "react";
 import './traces-edit-window.scss'
 import {useDispatch} from "react-redux";
-import {setCurrentTrace, setTraceEditing} from "../../../store/maps.actions";
+import {
+  setCurrentTrace,
+  setTraceEditing,
+  setTraceOldData
+} from "../../../store/maps.actions";
 import {ComboBox, DropDownListChangeEvent} from "@progress/kendo-react-dropdowns";
 import {Button} from "@progress/kendo-react-buttons";
 import {Input, InputChangeEvent} from "@progress/kendo-react-inputs";
+import {ListView, ListViewItemProps} from "@progress/kendo-react-listview";
 
 interface TracesEditWindowProps {
   formID: string | null,
   mapState: MapState,
   traces: Channel
-}
-
-interface TraceListItemProps {
-  point: MapPoint,
-  selectedTraceItemUWID: string | null,
-  setSelectedTraceItemUWID,
-  removePoint
 }
 
 export const TracesEditWindow = ({formID, mapState}: TracesEditWindowProps) => {
@@ -90,84 +88,107 @@ export const TracesEditWindow = ({formID, mapState}: TracesEditWindowProps) => {
     dispatch(setCurrentTrace(formID, newTraceRow))
   }
 
-  const itemsListComponents = itemsArray.map(i =>
-    <TraceListItem point={mapState.mapData.points.find(p => p.UWID === i)}
-                   key={i}
-                   setSelectedTraceItemUWID={setSelectedTraceItemUWID}
-                   selectedTraceItemUWID={selectedTraceItemUWID}
-                   removePoint={removePoint}
+  const TraceListItemContainer = (props: ListViewItemProps) => (
+    <TraceListItem
+      {...props}
+      pointsToAdd={pointsToAdd}
+      selectedTraceItemUWID={selectedTraceItemUWID}
+      setSelectedTraceItemUWID={setSelectedTraceItemUWID}
+      removePoint={removePoint}
     />
-  );
+  )
 
   return (
-    <section className='trace-edit-window'>
-      <div className="trace-edit-window__header">
-        <div className='title'>
-          <div>Трасса</div>
-        </div>
-        <span className='k-clear-value'>
+    <div className="trace-edit-window-container">
+      <section className='trace-edit-window'>
+        <div className="trace-edit-window__header">
+          <div className='title'>
+            <div>Трасса</div>
+          </div>
+          <span className='k-clear-value'>
           <span className={'k-icon k-i-close'}
-                onClick={() => dispatch(setTraceEditing(formID, false))}
+                onClick={() => {
+                  dispatch(setTraceEditing(formID, false));
+                  dispatch(setTraceOldData(formID, null));
+                }}
           />
         </span>
-      </div>
-      <div className='trace-edit-window__body'>
-        <div className='trace-edit-window__inner-block'>
-          <div className='menu-header trace-edit-window__title-text'>Имя</div>
-          <Input style={{fontSize: '12px'}}
-                 className='change-name'
-                 type='text' value={name}
-                 onChange={changeName}
-          />
         </div>
-        <div className='trace-edit-window__inner-block'>
-          <div className='menu-header trace-edit-window__title-text'>Элементы</div>
-          <div className='change-order-buttons'>
-            <Button
-              style={{width: '20px', height: '20px'}}
-              icon='sort-asc-sm'
-              disabled={false}
-              onClick={()=> movePoint(selectedTraceItemUWID, 'up')}
-            />
-            <Button
-              style={{width: '20px', height: '20px'}}
-              icon='sort-desc-sm'
-              disabled={false}
-              onClick={()=> movePoint(selectedTraceItemUWID, 'down')}
+        <div className='trace-edit-window__body'>
+          <div className='trace-edit-window__inner-block'>
+            <div className='menu-header trace-edit-window__title-text'>Имя</div>
+            <Input style={{fontSize: '12px'}}
+                   className='change-name'
+                   type='text' value={name}
+                   onChange={changeName}
             />
           </div>
-          <div className='items'>
-            { itemsListComponents }
+          <div className='trace-edit-window__inner-block'>
+            <div className='menu-header trace-edit-window__title-text'>Элементы</div>
+            <div className='change-order-buttons'>
+              <Button
+                style={{width: '20px', height: '20px'}}
+                icon='sort-asc-sm'
+                disabled={false}
+                onClick={()=> movePoint(selectedTraceItemUWID, 'up')}
+              />
+              <Button
+                style={{width: '20px', height: '20px'}}
+                icon='sort-desc-sm'
+                disabled={false}
+                onClick={()=> movePoint(selectedTraceItemUWID, 'down')}
+              />
+            </div>
+            <ListView
+              data={itemsArray}
+              item={TraceListItemContainer}
+              className='items'
+              style={{maxHeight: '240px'}}
+            />
+          </div>
+          <div className='trace-edit-window__inner-block'>
+            <div className='menu-header trace-edit-window__title-text'>Добавление</div>
+            <ComboBox style={{fontSize: '12px'}}
+                      data={pointsToAdd}
+                      dataItemKey='UWID'
+                      value={selectedPointToAdd}
+                      textField='name'
+                      onChange={handleComboBoxChange}
+            />
+            <Button
+              style={{fontSize: '12px'}}
+              disabled={!selectedPointToAdd}
+              onClick={()=> addPoint(selectedPointToAdd.UWID)}
+            >
+              <span>Добавить точку</span>
+            </Button>
           </div>
         </div>
-        <div className='trace-edit-window__inner-block'>
-          <div className='menu-header trace-edit-window__title-text'>Добавление</div>
-          <ComboBox style={{fontSize: '12px'}}
-                    data={pointsToAdd}
-                    dataItemKey='UWID'
-                    value={selectedPointToAdd}
-                    textField='name'
-                    onChange={handleComboBoxChange}
-          />
-          <Button
-            style={{fontSize: '12px'}}
-            disabled={false}
-            onClick={()=> addPoint(selectedPointToAdd.UWID)}
-          >
-            <span>Добавить точку</span>
-          </Button>
-        </div>
-      </div>
-    </section>
+      </section>
+      <div className="flexlayout__splitter flexlayout__splitter_vert" style={{width: "8px"}}></div>
+    </div>
   );
 };
 
-export const TraceListItem = ({point, selectedTraceItemUWID, setSelectedTraceItemUWID, removePoint} : TraceListItemProps) => <button
-  className={selectedTraceItemUWID === point.UWID ? 'k-button trace-item selected' : 'k-button trace-item'}
-  disabled={false} onClick={() => setSelectedTraceItemUWID(point.UWID)}
->
-  <span>{point.name}</span>
-  <span className='k-clear-value'>
-    <span className={'k-icon k-i-x'} onClick={() => removePoint(point.UWID)}/>
-  </span>
-</button>;
+interface TraceListItemProps extends ListViewItemProps {
+  pointsToAdd: MapPoint[],
+  selectedTraceItemUWID: string | null,
+  setSelectedTraceItemUWID,
+  removePoint
+}
+
+const TraceListItem = (props: TraceListItemProps) => {
+  const data = props.dataItem
+  const point= props.pointsToAdd.find(p => p.UWID === data)
+  return (
+    <button
+      className={props.selectedTraceItemUWID === point.UWID ? 'k-button trace-item selected' : 'k-button trace-item'}
+      disabled={false} onClick={() => props.setSelectedTraceItemUWID(point.UWID)}
+    >
+      <span>{point.name}</span>
+      <span className='k-clear-value'>
+        <span className={'k-icon k-i-x'} onClick={() => props.removePoint(point.UWID)}/>
+      </span>
+    </button>
+  );
+}
