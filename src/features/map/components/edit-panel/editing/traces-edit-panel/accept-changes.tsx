@@ -1,16 +1,14 @@
 import {BigButton} from "../../../../../../shared/ui";
 import applyTraceChangesIcon from "../../../../../../assets/images/trace/accept.png";
 import {
-  acceptMapEditing, cancelCreatingElement,
-  setActiveLayer,
   setTraceCreating,
-  setTraceEditing, setTraceOldData
+  setTraceEditing,
 } from "../../../../store/maps.actions";
 import {useDispatch, useSelector} from "react-redux";
 import {saveTraceThunk} from "../../../../store/traces.thunks";
 import {updateParam} from "../../../../../../entities/parameters";
 import {tableRowToString} from "../../../../../../entities/parameters/lib/table-row";
-import {getCurrentTraceParamName} from "../../../../lib/traces-utils";
+import {getCurrentTraceParamName, traceObjectToChannelRow} from "../../../../lib/traces-utils";
 
 interface ApplyTraceChangesProps {
   mapState: MapState,
@@ -31,15 +29,8 @@ export const ApplyTraceChanges = ({mapState, formID, traces}: ApplyTraceChangesP
   const currentTraceParamName = getCurrentTraceParamName(traces);
 
   // текущая трасса из store
-  const currentTraceRow = mapState.currentTraceRow;
-  const newTraceRow = {ID: currentTraceRow?.ID,
-    Cells: [
-      currentTraceRow?.Cells?.ID,
-      currentTraceRow?.Cells?.name,
-      currentTraceRow?.Cells?.stratumID,
-      currentTraceRow?.Cells?.items
-    ]
-  };
+  const currentTraceRow = mapState?.currentTraceRow;
+  const newTraceRow = traceObjectToChannelRow(currentTraceRow);
 
   const rootID = useSelector<WState, string | null>(state => state.root.id);
 
@@ -56,20 +47,18 @@ export const ApplyTraceChanges = ({mapState, formID, traces}: ApplyTraceChangesP
 
       const currentTraceValue = tableRowToString(traces, newTraceRow)?.value;
       dispatch(updateParam(rootID, currentTraceParamName, currentTraceValue));
-      dispatch(acceptMapEditing(formID));
     }
 
     if (isTraceCreating) {
       if(currentTraceRow && currentTraceRow.Cells.items) {
         dispatch(saveTraceThunk(formID, tableID, 'create', newTraceRow));
-        dispatch(acceptMapEditing(formID));
       } else {
-        dispatch(cancelCreatingElement(formID));
+        dispatch(updateParam(rootID, currentTraceParamName, null));
       }
       dispatch(setTraceCreating(formID, false));
     }
 
-    dispatch(setActiveLayer(formID, null));
+    mapState.utils.updateCanvas();
   };
 
   return <BigButton

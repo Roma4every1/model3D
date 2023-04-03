@@ -15,9 +15,9 @@ interface TraceRow {
  * */
 interface TraceData {
   ID: number | null,
-  name: string,
-  stratumID: string,
-  items: string
+  name: string | null,
+  stratumID: string | null,
+  items: string | null
 }
 
 

@@ -1,8 +1,6 @@
 import {BigButton} from "../../../../../../shared/ui";
 import denyTraceChangesIcon from "../../../../../../assets/images/trace/cancel.png";
 import {
-  cancelCreatingElement,
-  cancelMapEditing,
   setActiveLayer, setCurrentTrace, setTraceCreating,
   setTraceEditing, setTraceOldData
 } from "../../../../store/maps.actions";
@@ -37,14 +35,14 @@ export const DenyTraceChanges = ({mapState, formID, rootID, traces}: DenyTraceCh
 
     if (isTraceCreating) {
       dispatch(updateParam(rootID, currentTraceParamName, null));
+      dispatch(setCurrentTrace(formID, null));
       dispatch(setTraceCreating(formID, false));
-      dispatch(cancelCreatingElement(formID));
     }
 
     // очистка элементов трасс на слое с трассами
     mapState.mapData.layers.find(layer => layer.uid==='{TRACES-LAYER}').elements = [];
+    mapState.utils.updateCanvas();
 
-    dispatch(cancelMapEditing(formID));
     dispatch(setActiveLayer(formID, null));
   };
 

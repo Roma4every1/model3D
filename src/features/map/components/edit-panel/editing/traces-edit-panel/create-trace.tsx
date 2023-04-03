@@ -1,20 +1,15 @@
 import {BigButton} from "../../../../../../shared/ui";
 import {useCallback, useEffect} from "react";
-import {MapModes} from "../../../../lib/enums";
 import {clientPoint, listenerOptions} from "../../../../lib/map-utils";
 import {
-  createMapElement,
-  setActiveLayer, setCurrentTrace,
-  setEditMode, setTraceCreating, startCreatingElement,
-  startMapEditing
+  setCurrentTrace,
+  setTraceCreating,
 } from "../../../../store/maps.actions";
 import {useDispatch, useSelector} from "react-redux";
 import {
   currentMestParamName,
   findMapPoint,
   getNearestSignMapElement,
-  getTraceMapElementProto,
-  traceLayerProto
 } from "../../../../lib/traces-utils";
 import createTraceIcon from './../../../../../../assets/images/trace/trace_add_L.png'
 import {stringToTableCell} from "../../../../../../entities/parameters/lib/table-row";
@@ -22,10 +17,9 @@ import {stringToTableCell} from "../../../../../../entities/parameters/lib/table
 interface CreateTraceProps {
   mapState: MapState,
   formID: FormID,
-  isTracesChannelLoaded: boolean
 }
 
-export const CreateTrace = ({mapState, formID, isTracesChannelLoaded}: CreateTraceProps) => {
+export const CreateTrace = ({mapState, formID}: CreateTraceProps) => {
   const dispatch = useDispatch();
 
   const { canvas } = mapState;
@@ -43,20 +37,12 @@ export const CreateTrace = ({mapState, formID, isTracesChannelLoaded}: CreateTra
 
   // состояние активности кнопки
   const disabled = !currentMestValue ||
-    !isTracesChannelLoaded ||
     mapState?.isTraceEditing ||
     mapState?.isElementEditing ||
     mapState?.isTraceCreating;
 
-  // создание элемента трассы на карте
-  const createElement = useCallback((point: ClientPoint) => {
-    const defaultElement = getTraceMapElementProto({ path: [ point.x, point.y ], closed: false});
-    dispatch(createMapElement(formID, defaultElement));
-    dispatch(startMapEditing(formID));
-  }, [dispatch, formID]);
-
   const mouseUp = useCallback((event: MouseEvent) => {
-    if (mapState.mode !== MapModes.AWAIT_POINT) return;
+    if (!(mapState?.isTraceCreating && mapState?.currentTraceRow === null) ) return;
 
     // получение коодинат точки на карте
     const point = mapState.utils.pointToMap(clientPoint(event));
@@ -85,12 +71,8 @@ export const CreateTrace = ({mapState, formID, isTracesChannelLoaded}: CreateTra
     // установка значения новой трассы в store
     if(newDataPoint) dispatch(setCurrentTrace(formID, newTraceRow));
 
-    // создание элемента трассы на карте
-    newPoint.x = Math.round(newPoint.x);
-    newPoint.y = Math.round(newPoint.y);
-    createElement(newPoint);
-  }, [mapState.utils, mapState.mode, createElement, canvas,
-    dispatch, layers, mapData.points, scale, formID, currentMestValue]);
+  }, [mapState.utils, mapState.isTraceCreating, canvas,
+    dispatch, layers, mapData.points, scale, formID, currentMestValue, mapState?.currentTraceRow]);
 
   useEffect(() => {
     if (canvas) {
@@ -110,14 +92,7 @@ export const CreateTrace = ({mapState, formID, isTracesChannelLoaded}: CreateTra
     traceLayer.elements = [];
 
     dispatch(setCurrentTrace(formID, null));
-
-    dispatch(setActiveLayer(formID, traceLayerProto));
-    dispatch(startCreatingElement(formID));
     dispatch(setTraceCreating(formID, true));
-
-    if (mapState.mode !== MapModes.AWAIT_POINT) {
-      dispatch(setEditMode(formID, MapModes.AWAIT_POINT));
-    }
   }
 
   return <BigButton

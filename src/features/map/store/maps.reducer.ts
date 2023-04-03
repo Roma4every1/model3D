@@ -462,7 +462,8 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
     case MapsActions.SET_TRACE_CREATING: {
       const { formID, payload } = action;
       state.single[formID] = {...state.single[formID],
-        isTraceCreating: payload
+        isTraceCreating: payload,
+        cursor: payload ? 'crosshair' : 'auto'
       }
       return {...state};
     }

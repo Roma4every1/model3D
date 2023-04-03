@@ -6,7 +6,7 @@ import {
 
 
 export const currentMestParamName = 'currentMest';
-export const getCurrentTraceParamName = (traces : Channel) => traces.info.currentRowObjectName;
+export const getCurrentTraceParamName = (traces : Channel) => traces?.info?.currentRowObjectName;
 export const tracesChannelName = 'traces';
 
 /** Прототип объекта слоя трассы. */
@@ -81,4 +81,32 @@ export const getNearestSignMapElement = (point, canvas, scale, layers) => {
 export const findMapPoint = (point: ClientPoint, mapPoints) => {
   if (!point || !mapPoints || !point.x || !point.y) return null;
   return mapPoints.find(p => (p.x === point.x) && (p.y === point.y)) ?? null;
+}
+
+/** Преобразование строки канала с трассами в объект типа TraceRow. */
+export const traceChannelRowToObject = (traceChannelRow: ChannelRow): TraceRow => {
+  if (!traceChannelRow) return null;
+
+  return {ID: traceChannelRow.ID,
+      Cells: {
+        ID: traceChannelRow.Cells[0],
+        name: traceChannelRow.Cells[1],
+        stratumID: traceChannelRow.Cells[2],
+        items: traceChannelRow.Cells[3]
+      }
+    };
+}
+
+/** Преобразование из объекта типа TraceRow в строку канала с трассами. */
+export const traceObjectToChannelRow = (currentTraceRow: TraceRow): ChannelRow => {
+  if (!currentTraceRow) return null;
+
+  return {ID: currentTraceRow?.ID,
+    Cells: [
+      currentTraceRow?.Cells?.ID || null,
+      currentTraceRow?.Cells?.name || "Без названия",
+      currentTraceRow?.Cells?.stratumID || null,
+      currentTraceRow?.Cells?.items || null
+    ]
+  };
 }

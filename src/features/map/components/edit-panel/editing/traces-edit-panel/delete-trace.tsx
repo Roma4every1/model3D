@@ -25,7 +25,8 @@ export const DeleteTrace = ({mapState, formID, traces}: DeleteTraceProps) => {
 
   const disabled = !currentTraceRow ||
     isTraceEditing ||
-    mapState?.isElementEditing;
+    mapState?.isElementEditing ||
+    mapState?.isTraceCreating;
 
   const showDeleteTraceWindow = () => {
     const name = 'traceDeleteWindow';
@@ -66,8 +67,9 @@ export const DeleteTraceWindow = ({mapState, formID, traces}: DeleteTraceWindowP
 
     dispatch(clearMapSelect(formID));
     mapState.utils.updateCanvas();
+
     closeDeleteWindow();
-  }, [mapState, closeDeleteWindow, dispatch, formID]);
+  }, [mapState, closeDeleteWindow, dispatch, formID, traces]);
 
   return (
     <Dialog

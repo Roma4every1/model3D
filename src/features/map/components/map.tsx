@@ -12,8 +12,9 @@ import {
   setActiveLayer,
   startCreatingElement,
   createMapElement,
-  setEditMode,
-  setCurrentTrace, setTraceOldData, setTraceCreating, cancelCreatingElement, setTraceEditing,
+  setCurrentTrace,
+  setTraceOldData,
+  acceptMapEditing, clearMapSelect,
 } from '../store/maps.actions';
 import { fetchMapData } from '../store/maps.thunks';
 import {stringToTableCell, tableRowToString} from 'entities/parameters/lib/table-row';
@@ -24,9 +25,8 @@ import {
   getCurrentTraceParamName,
   getCurrentTraceMapElement,
   traceLayerProto,
-  tracesChannelName
+  tracesChannelName, traceChannelRowToObject
 } from "../lib/traces-utils";
-import {MapModes} from "../lib/enums";
 import {TracesEditWindow} from "./edit-panel/editing/traces-edit-window";
 
 export const Map = ({id: formID, parent, channels, data}: FormState & {data?: MapData}) => {
@@ -163,13 +163,16 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
 
   // создание слоя для трасс
   useEffect( () => {
+    // проверка на существование слоя для трасс
     if (!mapState?.isLoadSuccessfully ||
       mapData.layers.find(layer => layer.uid==='{TRACES-LAYER}')) return;
 
+    // создание слоя
     dispatch(addMapLayer(formID, traceLayerProto));
   }, [formID, mapState?.isLoadSuccessfully, dispatch, mapData?.layers]);
 
-  // получение списка трасс из каналов
+
+  // получение канала с трассами
   const traces: Channel = useSelector(channelSelector.bind(tracesChannelName));
   const currentTraceParamName = getCurrentTraceParamName(traces);
 
@@ -183,36 +186,39 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
 
   // установка mapState.currentTraceRow при изменении трассы в параметрах
   useEffect( () => {
+    // если канал с трассами не загружен
     if (!traces) return;
+    // если текущая трасса не задана в параметрах
     if (!currentTraceParamValue) {
       dispatch(setCurrentTrace(formID, null));
       return;
     }
 
-    // установка mapState.currentTraceRow
+    // установка mapState.currentTraceRow из значения в параметрах
     const currentTraceRowCells = {
       ID: +stringToTableCell(currentTraceParamValue, 'ID'),
       name: stringToTableCell(currentTraceParamValue, 'NAME'),
       stratumID: stringToTableCell(currentTraceParamValue, 'STRATUM_ID'),
       items: stringToTableCell(currentTraceParamValue, 'ITEMS')
     };
+    // установка ID для mapState.currentTraceRow
     const currentTraceRowID = traces.data.rows.find(row => row.Cells[0] === currentTraceRowCells?.ID)?.ID;
     if(!currentTraceRowID) return;
     const currentTraceRow = {ID: currentTraceRowID, Cells: currentTraceRowCells};
+
 
     dispatch(setCurrentTrace(formID, currentTraceRow));
   }, [formID, dispatch, currentTraceParamValue, traces])
 
   // создание и отрисовка текущей трассы
   useEffect( () => {
-    if (!mapState?.isLoadSuccessfully ||
-      !mapData
-    ) return;
-
+    // если данные карты не загружены
+    if (!mapState?.isLoadSuccessfully || !mapData) return;
+    // если канал с трассами не загружен
     if (!traces) return;
-    if (mapState?.isTraceCreating) return;
 
     const traceLayer = mapData.layers.find(layer => layer.uid==='{TRACES-LAYER}');
+    // если не сущетсвует слоя для трасс
     if (!traceLayer) return;
     traceLayer.elements = [];
 
@@ -222,23 +228,29 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
       mapData.points,
       mapState?.currentTraceRow?.Cells,
     );
+    // если не удалось получить элемент трассы для карты
     if (!traceElement) return;
 
     dispatch(setActiveLayer(formID, traceLayerProto));
+
+    // отрисовка трассы на карте
     dispatch(startCreatingElement(formID));
     dispatch(createMapElement(formID, traceElement));
-    dispatch(setEditMode(formID, MapModes.NONE));
+    dispatch(acceptMapEditing(formID));
+    dispatch(clearMapSelect(formID));
+
     dispatch(setActiveLayer(formID, null));
   }, [formID, mapState?.isLoadSuccessfully, mapData, traces, mapState?.currentTraceRow,
     dispatch, mapState?.isTraceEditing, mapState?.isTraceCreating]);
 
   const rootID = useSelector<WState, string | null>(state => state.root.id);
 
-  // обновление и установка в параметры новой трассы при её добавлении/удалении в каналах
+  // обновление и установка в параметры последней добавленой трассы при её добавлении/удалении в каналах
   useEffect(() => {
-    if (!traces.data.rows) return;
-    if (!mapState?.isModified) return;
+    // если канал с трассами не загружен или канал с трассами пустой
+    if (!traces?.data?.rows) return;
 
+    // не обновлять параметры при редактировании трассы
     if (mapState?.oldTraceDataRow !== null) {
       dispatch(setTraceOldData(formID, null));
       return;
@@ -249,26 +261,22 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
     const lastTrace = tracesRows[tracesRows.length-1];
     const lastTraceValue = tableRowToString(traces, lastTrace)?.value;
 
+    if (!lastTrace) {
+      dispatch(updateParam(rootID, currentTraceParamName, null));
+      return;
+    }
+
     // установка текущей трассы в store
-    dispatch(setCurrentTrace(formID,
-      {ID: lastTrace.ID,
-        Cells: {
-          ID: lastTrace.Cells[0],
-          name: lastTrace.Cells[1],
-          stratumID: lastTrace.Cells[2],
-          items: lastTrace.Cells[3]
-        }
-      }
-    ));
+    dispatch(setCurrentTrace(formID,traceChannelRowToObject(lastTrace)));
 
     dispatch(setTraceOldData(formID, null));
 
     // обновление текущей трассы в параметрах
     dispatch(updateParam(rootID, currentTraceParamName, lastTraceValue));
-  }, [dispatch, formID, rootID, traces, currentTraceParamName, mapState?.isModified])
+  }, [dispatch, formID, rootID, traces, currentTraceParamName])
 
 
-  // обновление карты при изменении значения текущей трассы в параметрах
+  // обновление карты
   useEffect( () => {
     mapState?.utils.updateCanvas();
   }, [mapData?.layers, mapState?.utils, mapState?.isTraceEditing]);

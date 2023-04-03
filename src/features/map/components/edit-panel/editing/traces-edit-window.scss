@@ -55,9 +55,15 @@
   &__title-text {
     line-height: 18px;
   }
+
+  &__splitter {
+    background-color: var(--color-1);
+  }
 }
 
 .trace-edit-window .items {
+  max-height: 250px;
+  overflow: auto;
   display: flex;
   flex-direction: column;
   gap: 0;

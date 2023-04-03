@@ -1,15 +1,19 @@
-import {useState} from "react";
+import {useState} from 'react';
 import './traces-edit-window.scss'
-import {useDispatch} from "react-redux";
+import {useDispatch} from 'react-redux';
 import {
   setCurrentTrace,
   setTraceEditing,
   setTraceOldData
-} from "../../../store/maps.actions";
-import {ComboBox, DropDownListChangeEvent} from "@progress/kendo-react-dropdowns";
-import {Button} from "@progress/kendo-react-buttons";
-import {Input, InputChangeEvent} from "@progress/kendo-react-inputs";
-import {ListView, ListViewItemProps} from "@progress/kendo-react-listview";
+} from '../../../store/maps.actions';
+import {
+  ComboBox,
+  ComboBoxFilterChangeEvent,
+  DropDownListChangeEvent
+} from '@progress/kendo-react-dropdowns';
+import {Button} from '@progress/kendo-react-buttons';
+import {Input, InputChangeEvent} from '@progress/kendo-react-inputs';
+import {filterBy, FilterDescriptor} from '@progress/kendo-data-query';
 
 interface TracesEditWindowProps {
   formID: string | null,
@@ -19,31 +23,33 @@ interface TracesEditWindowProps {
 
 export const TracesEditWindow = ({formID, mapState}: TracesEditWindowProps) => {
   const dispatch = useDispatch();
+
+  const { Cells } = mapState?.currentTraceRow;
+  const { name, items } = Cells;
+  const itemsArray = items.split('---');
+
   const [selectedTraceItemUWID, setSelectedTraceItemUWID] = useState<string | null>(null);
   const [selectedPointToAdd, setSelectedPointToAdd] = useState<MapPoint | null>(null);
+  const points = mapState?.mapData?.points;
+
+  const pointsToAddData = points.filter(p => itemsArray.every(i => i !== p.UWID));
+  const [pointsToAdd, setPointsToAdd] = useState<MapPoint[]>(pointsToAddData);
 
   const handleComboBoxChange = (event: DropDownListChangeEvent) => {
     setSelectedPointToAdd(event.target.value);
   };
 
-  const pointsToAdd = mapState?.mapData?.points;
-
-  if(!mapState?.currentTraceRow) return <div></div>;
-
-  const { Cells } = mapState.currentTraceRow;
-  if(!Cells) return <div></div>;
-
-  const { name, items } = Cells;
-  const itemsArray = items.split('---');
-
+  // изменение имени трассы
   const changeName = (event: InputChangeEvent) => {
+    const newName = event.target.value.toString();
     const newTraceRow : TraceRow = {
       ID: mapState.currentTraceRow.ID,
-      Cells: { ...Cells, name: event.target.value.toString() }
+      Cells: { ...Cells, name:  newName}
     };
     dispatch(setCurrentTrace(formID, newTraceRow));
   }
 
+  // изменение порядка в списке определенной точки
   const movePoint = (pointUWID: string, direction: 'down' | 'up') => {
     if(!pointUWID) return;
 
@@ -65,6 +71,7 @@ export const TracesEditWindow = ({formID, mapState}: TracesEditWindowProps) => {
     dispatch(setCurrentTrace(formID, newTraceRow));
   }
 
+  // удаление точки из трассы
   const removePoint = (pointUWID: string) => {
     if (pointUWID === null) return;
 
@@ -88,20 +95,32 @@ export const TracesEditWindow = ({formID, mapState}: TracesEditWindowProps) => {
     dispatch(setCurrentTrace(formID, newTraceRow))
   }
 
-  const TraceListItemContainer = (props: ListViewItemProps) => (
-    <TraceListItem
-      {...props}
-      pointsToAdd={pointsToAdd}
-      selectedTraceItemUWID={selectedTraceItemUWID}
-      setSelectedTraceItemUWID={setSelectedTraceItemUWID}
-      removePoint={removePoint}
-    />
-  )
+  // фильтрация при выборе точки для добавления в трассу
+  const filterData = (filter: FilterDescriptor) => {
+    const data = pointsToAddData.slice();
+    return filterBy(data, filter);
+  };
+  // изменение фильтра (введенного текста) в ComboBox
+  const filterChange = (event: ComboBoxFilterChangeEvent) => {
+    setPointsToAdd(filterData(event.filter));
+  };
+
+  // список точек трассы
+  const itemsListElements = itemsArray.map(i => <TraceListItem
+    key={i}
+    pointUWID={i}
+    points={points}
+    selectedTraceItemUWID={selectedTraceItemUWID}
+    setSelectedTraceItemUWID={setSelectedTraceItemUWID}
+    removePoint={removePoint}
+  />)
+
+  if(!mapState?.currentTraceRow) return <div></div>;
 
   return (
-    <div className="trace-edit-window-container">
+    <div className='trace-edit-window-container'>
       <section className='trace-edit-window'>
-        <div className="trace-edit-window__header">
+        <div className='trace-edit-window__header'>
           <div className='title'>
             <div>Трасса</div>
           </div>
@@ -139,12 +158,9 @@ export const TracesEditWindow = ({formID, mapState}: TracesEditWindowProps) => {
                 onClick={()=> movePoint(selectedTraceItemUWID, 'down')}
               />
             </div>
-            <ListView
-              data={itemsArray}
-              item={TraceListItemContainer}
-              className='items'
-              style={{maxHeight: '240px'}}
-            />
+            <div className='items'>
+              {itemsArray && itemsListElements}
+            </div>
           </div>
           <div className='trace-edit-window__inner-block'>
             <div className='menu-header trace-edit-window__title-text'>Добавление</div>
@@ -154,6 +170,8 @@ export const TracesEditWindow = ({formID, mapState}: TracesEditWindowProps) => {
                       value={selectedPointToAdd}
                       textField='name'
                       onChange={handleComboBoxChange}
+                      filterable={true}
+                      onFilterChange={filterChange}
             />
             <Button
               style={{fontSize: '12px'}}
@@ -165,29 +183,30 @@ export const TracesEditWindow = ({formID, mapState}: TracesEditWindowProps) => {
           </div>
         </div>
       </section>
-      <div className="flexlayout__splitter flexlayout__splitter_vert" style={{width: "8px"}}></div>
+      <div className='trace-edit-window__splitter' style={{width: '8px'}}></div>
     </div>
   );
 };
 
-interface TraceListItemProps extends ListViewItemProps {
-  pointsToAdd: MapPoint[],
+interface TraceListItemProps {
+  pointUWID: string | null,
+  points: MapPoint[],
   selectedTraceItemUWID: string | null,
   setSelectedTraceItemUWID,
   removePoint
 }
 
-const TraceListItem = (props: TraceListItemProps) => {
-  const data = props.dataItem
-  const point= props.pointsToAdd.find(p => p.UWID === data)
+const TraceListItem = ( {pointUWID, points, selectedTraceItemUWID, setSelectedTraceItemUWID, removePoint}: TraceListItemProps) => {
+  if (!pointUWID) return <></>;
+  const point= points.find(p => p.UWID === pointUWID)
   return (
     <button
-      className={props.selectedTraceItemUWID === point.UWID ? 'k-button trace-item selected' : 'k-button trace-item'}
-      disabled={false} onClick={() => props.setSelectedTraceItemUWID(point.UWID)}
+      className={selectedTraceItemUWID === point.UWID ? 'k-button trace-item selected' : 'k-button trace-item'}
+      disabled={false} onClick={() => setSelectedTraceItemUWID(point.UWID)}
     >
       <span>{point.name}</span>
       <span className='k-clear-value'>
-        <span className={'k-icon k-i-x'} onClick={() => props.removePoint(point.UWID)}/>
+        <span className={'k-icon k-i-x'} onClick={() => removePoint(point.UWID)}/>
       </span>
     </button>
   );

@@ -6,20 +6,15 @@ import {useDispatch, useSelector} from "react-redux";
 import {mapStateSelector} from "../../store/maps.selectors";
 import {ApplyTraceChanges} from "./editing/traces-edit-panel/accept-changes";
 import {DenyTraceChanges} from "./editing/traces-edit-panel/deny-changes";
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect} from "react";
 import {
   clientPoint,
   getPointToMap,
   listenerOptions
 } from "../../lib/map-utils";
 import {
-  applyMouseDownActionToPolyline,
-} from "./editing/edit-element-utils";
-import {
-  addPointToCurrentTrace, cancelCreatingElement, setCurrentTrace,
+  addPointToCurrentTrace,
   setOnDrawEnd,
-  setTraceCreating, setTraceEditing,
-  setTraceOldData
 } from "../../store/maps.actions";
 import {findMapPoint, getNearestSignMapElement, tracesChannelName} from "../../lib/traces-utils";
 import {channelSelector} from "../../../../entities/channels";
@@ -33,24 +28,18 @@ export const TracesEditPanel = ({id}: FormEditPanelProps) => {
   const mapState: MapState = useSelector(mapStateSelector.bind(id));
   const rootID = useSelector<WState, string | null>(state => state.root.id);
 
-  const selectedTopTab = useSelector<WState, number | null>(state => state.root.layout.common.selectedTopTab);
-  // const [prevSelectedTopTab, setPrevSelectedTopTab] = useState<number | null>(null)
-
   // получение всех трасс из каналов
   const traces: Channel = useSelector(channelSelector.bind(tracesChannelName));
   const isTracesChannelLoaded = !!traces;
 
   // добавление точек к текущей трассе
   const mouseDown = useCallback((event: MouseEvent) => {
-    if(!mapState) return;
+    if(!(mapState?.isTraceCreating && mapState?.currentTraceRow !== null)) return;
 
-    const { canvas, utils, mode, isElementEditing, mapData } = mapState;
-    const selectedElement = mapState.element;
+    const { canvas, utils, mapData } = mapState;
 
     if (!mapData) return;
-    if (!mapState.isLoadSuccessfully) return;
-    if (!isElementEditing) return;
-    if (selectedElement?.type !== 'polyline') return;
+    if (!mapState?.isLoadSuccessfully) return;
 
     const point = utils.pointToMap(clientPoint(event));
 
@@ -58,9 +47,6 @@ export const TracesEditPanel = ({id}: FormEditPanelProps) => {
     if (!newPoint) return;
     const newDataPoint : MapPoint = findMapPoint(newPoint, mapData.points)
     if(newDataPoint) dispatch(addPointToCurrentTrace(id, newDataPoint))
-
-    applyMouseDownActionToPolyline(selectedElement, {mode, point: newPoint, scale: mapData.scale});
-    utils.updateCanvas();
   }, [mapState, dispatch, id]);
 
   // при смене активной карты обновить координаты
@@ -92,31 +78,15 @@ export const TracesEditPanel = ({id}: FormEditPanelProps) => {
     }
   }, [mapState, mouseDown]);
 
-  useEffect(() => {
-    console.log(selectedTopTab)
-    if( (selectedTopTab === 3) ) {
-      // if (mapState?.isTraceCreating) {
-      //   // dispatch(updateParam(rootID, currentTraceParamName, null));
-      //   dispatch(setTraceCreating(id, false));
-      //   dispatch(setTraceOldData(id, null));
-      //   dispatch(cancelCreatingElement(id));
-      // }
-      if (mapState?.isTraceEditing) {
-        console.log('editing false')
-        // dispatch(setCurrentTrace(id, mapState?.oldTraceDataRow));
-        // dispatch(setTraceEditing(id, false));
-        // dispatch(setTraceOldData(id, null));
-      }
-    }
-    // setPrevSelectedTopTab(selectedTopTab)
-  }, [selectedTopTab])
-
-  if (!mapState.isLoadSuccessfully) return <MenuSkeleton template={panelTemplate}/>;
+  if (!mapState?.isLoadSuccessfully ||
+    !isTracesChannelLoaded
+  )
+    return <MenuSkeleton template={panelTemplate}/>;
 
   return (
     <div className={'menu'}>
       <MenuSection header={'Управление'} className={'map-actions'}>
-        <CreateTrace mapState={mapState} formID={id} isTracesChannelLoaded={isTracesChannelLoaded}/>
+        <CreateTrace mapState={mapState} formID={id}/>
         <DeleteTrace mapState={mapState} formID={id} traces={traces}/>
         <EditTrace mapState={mapState} formID={id}/>
       </MenuSection>

@@ -16,7 +16,8 @@ export const EditTrace = ({formID, mapState}: EditTraceProps) => {
   const disabled = !mapState ||
     !mapState?.currentTraceRow ||
     mapState?.isTraceEditing ||
-    mapState?.isElementEditing;
+    mapState?.isElementEditing ||
+    mapState?.isTraceCreating;
 
   const action = () => {
     dispatch(setTraceOldData(formID, mapState?.currentTraceRow));
