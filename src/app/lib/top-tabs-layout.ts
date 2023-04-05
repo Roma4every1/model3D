@@ -11,6 +11,10 @@ const allTopTabs: IJsonTabNode[] = [
     type: 'tab', enableDrag: false,
     id: 'reports', name: 'Программы',
   },
+  { // панель настроек трассы, относится к карте
+    type: 'tab', enableDrag: false,
+    id: 'top-traces', name: 'Трасса',
+  },
   { // редактор таблицы
     type: 'tab', enableDrag: false,
     id: 'top-dataset', name: 'Таблица',
@@ -29,8 +33,8 @@ export function getTopPanelTabs(types?: Set<FormType>): IJsonTabNode[] {
   const tabs: IJsonTabNode[] = [allTopTabs[0], allTopTabs[1]];
   if (!types) return tabs;
 
-  if (types.has('dataSet')) tabs.push(allTopTabs[2]);
-  if (types.has('chart')) tabs.push(allTopTabs[3]);
-  if (types.has('map')) tabs.push(allTopTabs[4]);
+  if (types.has('dataSet')) tabs.push(allTopTabs[3]);
+  if (types.has('chart')) tabs.push(allTopTabs[4]);
+  if (types.has('map')) tabs.push(allTopTabs[2], allTopTabs[5]);
   return tabs;
 }

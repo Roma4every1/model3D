@@ -1,24 +1,19 @@
-import {Dispatch} from "redux";
-import {StateGetter, Thunk} from "../../../shared/lib";
-import {
-  closeWindowNotification,
-  setWindowWarning,
-} from "../../../entities/windows";
-import {channelsAPI} from "../../../entities/channels/lib/channels.api";
-import {updateTables} from "../../../entities/channels";
+import { Dispatch } from 'redux';
+import { Thunk, StateGetter } from 'shared/lib';
+import { updateTables } from 'entities/channels';
+import { channelsAPI } from 'entities/channels/lib/channels.api';
+import { closeWindowNotification, setWindowWarning } from 'entities/windows';
 
 
 /** Сохренение изменений в строке с трассой или создание новой строки с трассой. */
 export const saveTraceThunk = (
-  formID : FormID,
-  tableID,
-  method: 'create' | 'update',
-  row: ChannelRow
+  formID: FormID, tableID: TableID,
+  method: 'create' | 'update', row: ChannelRow
 ) => {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const state = getState();
 
-    let res: Res<Report>, wrongResult: boolean, error: string;
+    let res: Res<ReportStatus>, wrongResult: boolean, error: string;
 
     if (method==='create') {
       res = await channelsAPI.insertRows(tableID, [row]);
@@ -44,7 +39,7 @@ export const saveTraceThunk = (
 }
 
 /** Удаление строк трассы по id. */
-export const deleteTraceThunk = (formID: FormID, tableID, id: number): Thunk<boolean> => {
+export const deleteTraceThunk = (formID: FormID, tableID: TableID, id: number): Thunk<boolean> => {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const state = getState();
     const res = await channelsAPI.removeRows(tableID, [id]);

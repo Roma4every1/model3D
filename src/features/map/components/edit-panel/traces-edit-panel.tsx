@@ -1,23 +1,19 @@
-import {MenuSection, MenuSkeleton} from "../../../../shared/ui";
-import {CreateTrace} from "./editing/traces-edit-panel/create-trace";
-import {DeleteTrace} from "./editing/traces-edit-panel/delete-trace";
-import {EditTrace} from "./editing/traces-edit-panel/edit-trace";
-import {useDispatch, useSelector} from "react-redux";
-import {mapStateSelector} from "../../store/maps.selectors";
-import {ApplyTraceChanges} from "./editing/traces-edit-panel/accept-changes";
-import {DenyTraceChanges} from "./editing/traces-edit-panel/deny-changes";
-import {useCallback, useEffect} from "react";
-import {
-  clientPoint,
-  getPointToMap,
-  listenerOptions
-} from "../../lib/map-utils";
-import {
-  addPointToCurrentTrace,
-  setOnDrawEnd,
-} from "../../store/maps.actions";
-import {findMapPoint, getNearestSignMapElement, tracesChannelName} from "../../lib/traces-utils";
-import {channelSelector} from "../../../../entities/channels";
+import { useCallback, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { channelSelector } from 'entities/channels';
+import { mapStateSelector } from '../../store/maps.selectors';
+import { clientPoint, getPointToMap, listenerOptions } from '../../lib/map-utils';
+import { addPointToCurrentTrace, setOnDrawEnd } from '../../store/maps.actions';
+import { findMapPoint, getNearestSignMapElement } from '../../lib/traces-utils';
+import { tracesChannelName } from 'entities/traces';
+
+import { MenuSection, MenuSkeleton } from 'shared/ui';
+import { CreateTrace } from './editing/traces-edit-panel/create-trace';
+import { DeleteTrace } from './editing/traces-edit-panel/delete-trace';
+import { EditTrace } from './editing/traces-edit-panel/edit-trace';
+import { ApplyTraceChanges } from './editing/traces-edit-panel/accept-changes';
+import { DenyTraceChanges } from './editing/traces-edit-panel/deny-changes';
+
 
 const panelTemplate = ['222.363px', '176.8px', '141.488px'];
 

@@ -18,9 +18,12 @@ const formTabset: IJsonTabSetNode = {
   children: [{type: 'tab', component: 'form'}],
 };
 
-export function getDockLayout(formTypes: Set<FormType> | undefined, dockLayout: CommonLayout): Model {
+export function getDockLayout(
+  formTypes: Set<FormType> | undefined, dockLayout: CommonLayout,
+  needTracePanel: boolean
+): Model {
   const topTabs = getTopPanelTabs(formTypes);
-  const rightTabs = getRightPanelTabs(formTypes);
+  const rightTabs = getRightPanelTabs(formTypes, needTracePanel);
 
   const selectedTop = dockLayout.selectedTopTab < topTabs.length ? dockLayout.selectedTopTab : -1;
   const selectedRight = dockLayout.selectedRightTab < rightTabs.length ? dockLayout.selectedRightTab : -1

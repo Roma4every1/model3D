@@ -1,13 +1,9 @@
-import {getBoundsByPoints} from "./map-utils";
-import {
-  checkDistance,
-  getNearestElements
-} from "../components/edit-panel/selecting/selecting-utils";
+import { getBoundsByPoints } from './map-utils';
+import { checkDistance, getNearestElements } from '../components/edit-panel/selecting/selecting-utils';
 
 
 export const currentMestParamName = 'currentMest';
 export const getCurrentTraceParamName = (traces : Channel) => traces?.info?.currentRowObjectName;
-export const tracesChannelName = 'traces';
 
 /** Прототип объекта слоя трассы. */
 export const traceLayerProto : MapLayer = {

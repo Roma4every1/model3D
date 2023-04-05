@@ -25,9 +25,11 @@ import {
   getCurrentTraceParamName,
   getCurrentTraceMapElement,
   traceLayerProto,
-  tracesChannelName, traceChannelRowToObject
-} from "../lib/traces-utils";
-import {TracesEditWindow} from "./edit-panel/editing/traces-edit-window";
+  traceChannelRowToObject
+} from '../lib/traces-utils';
+import { TracesEditWindow } from './edit-panel/editing/traces-edit-window';
+import { tracesChannelName } from 'entities/traces';
+
 
 export const Map = ({id: formID, parent, channels, data}: FormState & {data?: MapData}) => {
   const { t } = useTranslation();
