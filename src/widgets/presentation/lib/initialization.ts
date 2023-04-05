@@ -86,7 +86,12 @@ export async function getPresentationChannels(id: FormID, ids: FormID[]) {
 
   childrenNames.forEach((childNames, i) => {
     if (ids[i].endsWith('47d20d1d-bd04-4191-bf4e-f08032ae04fa'))
-      childNames = ['stratums', 'Wells geometry', 'Litology', 'Perforations', 'Carottage curves'];
+      childNames = [
+        'stratums', 'Wells geometry', 'Litology', 'Perforations', 'Carottage curves',
+        'perfTypeSpr', 'perfColorSpr',
+        'satTypeSpr', 'satColorSpr',
+        'colTypeSpr', 'colColorSpr',
+      ]; // TODO: справочники в презентацию, а отсюда убрать
     dict[ids[i]] = childNames;
     for (const name of childNames) all.add(name);
   });

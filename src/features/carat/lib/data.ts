@@ -1,133 +1,76 @@
-const caratSettings: CaratSettings = {
-  metersInMeter: 300,
-};
-
 const caratColumns: CaratColumn[] = [
   {
-    type: 'Normal',
-    settings: {
-      label: 'Глубина', width: 40,
-      showAxis: true, showGrid: false, step: 5,
-    },
-    plugins: {
-      'stratums': {
-        channelSettings: {
-          fillLineChannelSettings: {
-            showDiagram: true, showFill: true, showLine: false,
-            zOrder: 0, thickness: 2,
-            color: 'rgba(128, 128, 128, 175)',
-            backgroundColor: 'rgba(255, 255, 255, 0)',
-            borderColor: 'rgba(0, 0, 0, 255)',
-          },
-        },
-        channelCaratSettings: null,
-      },
-      // 'Wells geometry': {
-      //   channelSettings: null,
-      //   channelCaratSettings: null,
-      // },
-    },
-    channels: ['stratums' /*, 'Wells geometry'*/],
+    type: 'Background',
+    settings: {label: 'Трек', width: 360, index: -1},
+    axis: {show: false, step: 5, grid: false, absMarks: true, depthMarks: true},
+    channels: [
+      {name: 'stratums', attachOption: 'AttachNothing', exclude: null}
+    ],
+    zones: null,
+    selection: null,
+    plugins: {},
   },
   {
     type: 'Normal',
-    settings: {
-      label: 'Пласты', width: 40,
-      showAxis: false, showGrid: false, step: 5,
-    },
-    plugins: {
-      'Litology': {
-        channelSettings: {
-          fillLineChannelSettings: {
-            showDiagram: false, showFill: true, showLine: false,
-            zOrder: 0, thickness: 2,
-            color: 'rgba(0, 144, 144, 175)',
-            backgroundColor: 'rgba(118, 209, 209, 175)',
-            borderColor: 'rgba(0, 0, 0, 255)',
-          },
-        },
-        channelCaratSettings: null,
-      },
-    },
-    channels: ['Litology'],
+    settings: {label: 'Глубина', width: 40, index: 0},
+    axis: {show: true, step: 5, grid: false, absMarks: true, depthMarks: true},
+    channels: [
+      {name: 'Perforations', attachOption: 'AttachNothing', exclude: ['TYPE']},
+    ],
+    zones: null,
+    selection: null,
+    plugins: {},
   },
   {
     type: 'Normal',
-    settings: {
-      label: 'Перфор.', width: 40,
-      showAxis: false, showGrid: false, step: 5,
-    },
-    plugins: {
-      'Perforations': {
-        channelSettings: {
-          fillLineChannelSettings: {
-            showDiagram: false, showFill: true, showLine: false,
-            zOrder: 0, thickness: 2,
-            color: 'rgba(0, 144, 144, 175)',
-            backgroundColor: 'rgba(244,215,228,255)',
-            borderColor: 'rgba(242,148,192,255)',
-          },
-        },
-        channelCaratSettings: null,
-      },
-    },
-    channels: ['Perforations'],
+    settings: {label: 'Пласты', width: 40, index: 1},
+    axis: {show: false, step: 5, grid: false, absMarks: true, depthMarks: true},
+    channels: [
+
+    ],
+    zones: null,
+    selection: null,
+    plugins: {},
   },
   {
     type: 'Normal',
-    settings: {
-      label: 'Порист.', width: 40,
-      showAxis: false, showGrid: false, step: 5,
-    },
-    plugins: {
-      'Litology': {
-        channelSettings: {
-          fillLineChannelSettings: {
-            showDiagram: false, showFill: true, showLine: false,
-            zOrder: 0, thickness: 2,
-            color: 'rgba(246,199,129,255)',
-            backgroundColor: 'rgba(246,199,129,255)',
-            borderColor: 'rgba(133,83,10,255)',
-          },
-        },
-        channelCaratSettings: null,
-      },
-    },
-    channels: ['Litology'],
+    settings: {label: 'Перфор.', width: 40, index: 2},
+    axis: null,
+    channels: [
+
+    ],
+    zones: null,
+    selection: null,
+    plugins: {},
   },
   {
     type: 'Normal',
-    settings: {
-      label: 'Каротаж', width: 200,
-      showAxis: false, showGrid: true, step: 10,
-    },
-    plugins: {
-      // 'Wells geometry': {
-      //   channelSettings: null,
-      //   channelCaratSettings: null,
-      // },
-      'Carottage curves': {
-        channelSettings: null,
-        channelCaratSettings: null,
-      },
-      'stratums': {
-        channelSettings: {
-          fillLineChannelSettings: {
-            showDiagram: true, showFill: true, showLine: false,
-            zOrder: 0, thickness: 2,
-            color: 'rgba(0, 144, 144, 175)',
-            backgroundColor: 'rgba(118, 209, 209, 0)',
-            borderColor: 'rgba(0, 0, 0, 255)',
-          },
-        },
-        channelCaratSettings: null,
-      },
-    },
-    channels: [/*'Wells geometry',*/ 'Carottage curves', 'stratums'],
+    settings: {label: 'Порист.', width: 40, index: 3},
+    axis: {show: false, step: 5, grid: false, absMarks: true, depthMarks: true},
+    channels: [
+
+    ],
+    zones: null,
+    selection: null,
+    plugins: {},
+  },
+  {
+    type: 'Normal',
+    settings: {label: 'Каротаж', width: 200, index: 4},
+    axis: {show: false, step: 5, grid: false, absMarks: true, depthMarks: true},
+    channels: [
+
+    ],
+    zones: null,
+    selection: null,
+    plugins: {},
   },
 ];
 
 export const mockCaratSettings: CaratFormSettings = {
-  settings: caratSettings,
+  settings: {
+    metersInMeter: 300, useStaticScale: false,
+    strataChannelName: null,
+  },
   columns: caratColumns,
 };
