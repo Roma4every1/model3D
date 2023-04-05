@@ -21,7 +21,13 @@ export enum MapsActions {
   CANCEL_EDITING = 'maps/cancelEdit',
   START_CREATING = 'maps/startCreate',
   CREATE_ELEMENT = 'maps/createEl',
-  CANCEL_CREATING = 'maps/cancelCreate'
+  CANCEL_CREATING = 'maps/cancelCreate',
+  ADD_LAYER = 'maps/addLayer',
+  SET_CURRENT_TRACE = 'maps/setCurrentTraceRow',
+  ADD_POINT_TO_CURRENT_TRACE = 'maps/addPointToCurrentTraceRow',
+  SET_TRACE_EDITING = 'maps/setTraceEditing',
+  SET_TRACE_CREATING = 'maps/setTraceCreating',
+  SET_TRACE_OLD_DATA = 'maps/saveTraceOldData'
 }
 
 /* --- Action Interfaces --- */
@@ -92,11 +98,44 @@ interface ActionCancelCreating extends MapAction {
   type: MapsActions.CANCEL_CREATING,
 }
 
+interface ActionAddLayer extends MapAction {
+  type: MapsActions.ADD_LAYER,
+  payload: MapLayer,
+}
+
+interface ActionSetCurrentTrace extends MapAction {
+  type: MapsActions.SET_CURRENT_TRACE,
+  payload: TraceRow,
+}
+
+interface ActionAddPointToCurrentTrace extends MapAction {
+  type: MapsActions.ADD_POINT_TO_CURRENT_TRACE,
+  payload: MapPoint,
+}
+
+interface ActionSetTraceEditing extends MapAction {
+  type: MapsActions.SET_TRACE_EDITING,
+  payload: boolean,
+}
+
+interface ActionSetTraceCreating extends MapAction {
+  type: MapsActions.SET_TRACE_CREATING,
+  payload: boolean,
+}
+
+interface ActionSetTraceOldData extends MapAction {
+  type: MapsActions.SET_TRACE_OLD_DATA,
+  payload: TraceRow,
+}
+
+
 export type MapsAction = ActionAddMulti | ActionSetSync | ActionAdd |
   ActionStartLoad | ActionLoadSuccess | ActionLoadError |
   ActionSetMode | ActionSetDimensions | ActionSetField | ActionClearSelect |
   ActionStartEditing | ActionAcceptEditing | ActionCancelEditing |
-  ActionStartCreating | ActionCreateElement | ActionCancelCreating;
+  ActionStartCreating | ActionCreateElement | ActionCancelCreating | ActionAddLayer |
+  ActionSetCurrentTrace | ActionAddPointToCurrentTrace | ActionSetTraceEditing |
+  ActionSetTraceCreating | ActionSetTraceOldData;
 
 /* --- Reducer Utils --- */
 
@@ -145,6 +184,10 @@ const initMapState: MapState = {
   cursor: 'auto',
   childOf: null, scroller: null,
   utils: { updateCanvas: () => {}, pointToMap: (point) => point },
+  currentTraceRow: null,
+  oldTraceDataRow: null,
+  isTraceEditing: false,
+  isTraceCreating: false
 };
 
 /* --- Init State & Reducer --- */
@@ -381,10 +424,66 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
       const newMapState: MapState = {...state.single[action.formID]};
       clearSelect(newMapState);
       newMapState.mode = MapModes.NONE;
+      newMapState.cursor = 'auto';
       newMapState.utils.updateCanvas();
       state.single[action.formID] = newMapState;
       return {...state};
     }
+
+    case MapsActions.ADD_LAYER: {
+      const { formID, payload } = action;
+      const mapData = state.single[formID].mapData
+      const newLayers = [...mapData.layers, payload]
+      state.single[formID] = {...state.single[formID], mapData: {...mapData, layers: newLayers}};
+      return {...state};
+    }
+
+    case MapsActions.SET_CURRENT_TRACE: {
+      const { formID, payload } = action;
+      state.single[formID] = {...state.single[formID], currentTraceRow: payload};
+      return {...state};
+    }
+
+    case MapsActions.ADD_POINT_TO_CURRENT_TRACE: {
+      const { formID, payload } = action;
+      const newCurrentTraceName = state.single[formID].currentTraceRow.Cells.name + ', ' + payload.name
+      const newCurrentTraceItems = state.single[formID].currentTraceRow.Cells.items + '---' + payload.UWID
+      state.single[formID] = {...state.single[formID],
+        currentTraceRow: {...state.single[formID].currentTraceRow,
+          Cells: {
+            ...state.single[formID].currentTraceRow.Cells,
+            name: newCurrentTraceName,
+            items: newCurrentTraceItems}
+        }
+      }
+      return {...state};
+    }
+
+    case MapsActions.SET_TRACE_EDITING: {
+      const { formID, payload } = action;
+      state.single[formID] = {...state.single[formID],
+          isTraceEditing: payload
+      }
+      return {...state};
+    }
+
+    case MapsActions.SET_TRACE_CREATING: {
+      const { formID, payload } = action;
+      state.single[formID] = {...state.single[formID],
+        isTraceCreating: payload,
+        cursor: payload ? 'crosshair' : 'auto'
+      }
+      return {...state};
+    }
+
+    case MapsActions.SET_TRACE_OLD_DATA: {
+      const { formID, payload } = action;
+      state.single[formID] = {...state.single[formID],
+        oldTraceDataRow: payload
+      }
+      return {...state};
+    }
+
 
     default: return state;
   }

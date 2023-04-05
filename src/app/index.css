@@ -82,6 +82,12 @@ html {
   height: 100%;
   overflow: hidden;
 }
+
+.trace-edit-panel-open {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+}
+
 .map-container > canvas, .carat-container > canvas {
   width: 100%;
   height: 100%;

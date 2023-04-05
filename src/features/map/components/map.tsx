@@ -3,15 +3,31 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Scroller } from '../drawer/scroller';
 import { MapNotFound, MapLoadError} from '../../multi-map/multi-map-item';
-import { getFullViewport, getMultiMapChildrenCanvases } from '../lib/map-utils';
+import { getFullViewport, getMultiMapChildrenCanvases} from '../lib/map-utils';
 import { mapsStateSelector, mapStateSelector } from '../store/maps.selectors';
-import { setMapField, loadMapSuccess } from '../store/maps.actions';
+import {
+  setMapField,
+  loadMapSuccess,
+  addMapLayer,
+  setActiveLayer,
+  startCreatingElement,
+  createMapElement,
+  setCurrentTrace,
+  setTraceOldData,
+  acceptMapEditing, clearMapSelect,
+} from '../store/maps.actions';
 import { fetchMapData } from '../store/maps.thunks';
-import { tableRowToString } from 'entities/parameters/lib/table-row';
+import {stringToTableCell, tableRowToString} from 'entities/parameters/lib/table-row';
 import { updateParam, currentWellIDSelector } from 'entities/parameters';
 import { channelSelector } from 'entities/channels';
 import { CircularProgressBar } from 'shared/ui';
-
+import {
+  getCurrentTraceParamName,
+  getCurrentTraceMapElement,
+  traceLayerProto,
+  tracesChannelName, traceChannelRowToObject
+} from "../lib/traces-utils";
+import {TracesEditWindow} from "./edit-panel/editing/traces-edit-window";
 
 export const Map = ({id: formID, parent, channels, data}: FormState & {data?: MapData}) => {
   const { t } = useTranslation();
@@ -145,13 +161,134 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
     }
   });
 
+  // создание слоя для трасс
+  useEffect( () => {
+    // проверка на существование слоя для трасс
+    if (!mapState?.isLoadSuccessfully ||
+      mapData.layers.find(layer => layer.uid==='{TRACES-LAYER}')) return;
+
+    // создание слоя
+    dispatch(addMapLayer(formID, traceLayerProto));
+  }, [formID, mapState?.isLoadSuccessfully, dispatch, mapData?.layers]);
+
+
+  // получение канала с трассами
+  const traces: Channel = useSelector(channelSelector.bind(tracesChannelName));
+  const currentTraceParamName = getCurrentTraceParamName(traces);
+
+  // получение значения текущей трассы из параметров
+  const currentTraceParamValue = useSelector<WState, string | null>(
+    (state: WState) =>
+      state.parameters[state.root.id]
+        .find(el => el.id === currentTraceParamName)
+        ?.value?.toString() || null
+  )
+
+  // установка mapState.currentTraceRow при изменении трассы в параметрах
+  useEffect( () => {
+    // если канал с трассами не загружен
+    if (!traces) return;
+    // если текущая трасса не задана в параметрах
+    if (!currentTraceParamValue) {
+      dispatch(setCurrentTrace(formID, null));
+      return;
+    }
+
+    // установка mapState.currentTraceRow из значения в параметрах
+    const currentTraceRowCells = {
+      ID: +stringToTableCell(currentTraceParamValue, 'ID'),
+      name: stringToTableCell(currentTraceParamValue, 'NAME'),
+      stratumID: stringToTableCell(currentTraceParamValue, 'STRATUM_ID'),
+      items: stringToTableCell(currentTraceParamValue, 'ITEMS')
+    };
+    // установка ID для mapState.currentTraceRow
+    const currentTraceRowID = traces.data.rows.find(row => row.Cells[0] === currentTraceRowCells?.ID)?.ID;
+    if(!currentTraceRowID) return;
+    const currentTraceRow = {ID: currentTraceRowID, Cells: currentTraceRowCells};
+
+
+    dispatch(setCurrentTrace(formID, currentTraceRow));
+  }, [formID, dispatch, currentTraceParamValue, traces])
+
+  // создание и отрисовка текущей трассы
+  useEffect( () => {
+    // если данные карты не загружены
+    if (!mapState?.isLoadSuccessfully || !mapData) return;
+    // если канал с трассами не загружен
+    if (!traces) return;
+
+    const traceLayer = mapData.layers.find(layer => layer.uid==='{TRACES-LAYER}');
+    // если не сущетсвует слоя для трасс
+    if (!traceLayer) return;
+    traceLayer.elements = [];
+
+    // получение элемента трассы для карты
+    const traceElement= getCurrentTraceMapElement(
+      formID,
+      mapData.points,
+      mapState?.currentTraceRow?.Cells,
+    );
+    // если не удалось получить элемент трассы для карты
+    if (!traceElement) return;
+
+    dispatch(setActiveLayer(formID, traceLayerProto));
+
+    // отрисовка трассы на карте
+    dispatch(startCreatingElement(formID));
+    dispatch(createMapElement(formID, traceElement));
+    dispatch(acceptMapEditing(formID));
+    dispatch(clearMapSelect(formID));
+
+    dispatch(setActiveLayer(formID, null));
+  }, [formID, mapState?.isLoadSuccessfully, mapData, traces, mapState?.currentTraceRow,
+    dispatch, mapState?.isTraceEditing, mapState?.isTraceCreating]);
+
+  const rootID = useSelector<WState, string | null>(state => state.root.id);
+
+  // обновление и установка в параметры последней добавленой трассы при её добавлении/удалении в каналах
+  useEffect(() => {
+    // если канал с трассами не загружен или канал с трассами пустой
+    if (!traces?.data?.rows) return;
+
+    // не обновлять параметры при редактировании трассы
+    if (mapState?.oldTraceDataRow !== null) {
+      dispatch(setTraceOldData(formID, null));
+      return;
+    }
+
+    // получение последней добавленной трассы из каналов
+    const tracesRows = traces.data.rows;
+    const lastTrace = tracesRows[tracesRows.length-1];
+    const lastTraceValue = tableRowToString(traces, lastTrace)?.value;
+
+    if (!lastTrace) {
+      dispatch(updateParam(rootID, currentTraceParamName, null));
+      return;
+    }
+
+    // установка текущей трассы в store
+    dispatch(setCurrentTrace(formID,traceChannelRowToObject(lastTrace)));
+
+    dispatch(setTraceOldData(formID, null));
+
+    // обновление текущей трассы в параметрах
+    dispatch(updateParam(rootID, currentTraceParamName, lastTraceValue));
+  }, [dispatch, formID, rootID, traces, currentTraceParamName])
+
+
+  // обновление карты
+  useEffect( () => {
+    mapState?.utils.updateCanvas();
+  }, [mapData?.layers, mapState?.utils, mapState?.isTraceEditing]);
+
   if (!mapState) return null;
   if (!isMapExist) return <MapNotFound t={t}/>;
   if (mapState.isLoadSuccessfully === undefined) return <CircularProgressBar percentage={progress} size={100}/>;
   if (mapState.isLoadSuccessfully === false) return <MapLoadError t={t}/>;
 
   return (
-    <div className={'map-container'}>
+    <div className={ mapState?.isTraceEditing ? 'map-container trace-edit-panel-open' : 'map-container'}>
+      { mapState?.isTraceEditing && <TracesEditWindow formID={formID} mapState={mapState} traces={traces}/> }
       <canvas style={{cursor: mapState.cursor}} ref={canvasRef}/>
     </div>
   );

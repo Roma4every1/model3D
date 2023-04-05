@@ -68,7 +68,8 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
         return checkDistance(element, point, scale, getTextWidth);
       }
       const activeLayer_ = isOnlyActiveLayer ? activeLayer : null;
-      const nearestElements = getNearestElements(mapData.layers, activeLayer_, scale, filterFn);
+      const filteredLayers = mapData.layers.filter(layer => layer.uid !== '{TRACES-LAYER}');
+      const nearestElements = getNearestElements(filteredLayers, activeLayer_, scale, filterFn);
 
       if (nearestElements.length === 0) return selectState.lastPoint = null;
 
@@ -149,6 +150,7 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
           <button
             className={'map-panel-button' + (isInSelectingMode ? ' active' : '')}
             onClick={toggleSelecting} title={t('map.selecting.button-hint')}
+            disabled={mapState?.isTraceCreating}
           >
             <img src={selectingIcon} alt={'selecting'}/>
           </button>
