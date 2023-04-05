@@ -24,8 +24,8 @@ export const Chart = ({id, channels, settings}: FormState) => {
   const { seriesSettings, dateStep, tooltip} = settings as ChartFormSettings;
 
   const { data, diagrams, axes, marks, legend } = useMemo<ChartProto>(() => {
-    return getChartProto(channels, channelsData, seriesSettings, dateStep);
-  }, [channels, channelsData, seriesSettings, dateStep]);
+    return getChartProto(channelsData, seriesSettings, dateStep);
+  }, [channelsData, seriesSettings, dateStep]);
 
   const markChannels = useMemo(() => {
     return getChartLookups(marks);

@@ -15,7 +15,7 @@ export interface ChartProto {
 
 /** Строит прототип графика, который далее будет рендерится библиотекой _Recharts_. */
 export const getChartProto = (
-  channelNames: ChannelName[], channelsData: Channel[],
+  channelsData: Channel[],
   seriesSettings: ChartSeriesSettings, dateStep: ChartDateStep
 ): ChartProto => {
   const data: Record<number, Record<string, number | string>> = {};
@@ -27,11 +27,10 @@ export const getChartProto = (
   const dateFn = dateStep === 'month' ? toMonYear : toYear;
   const stepFn = dateStep === 'month' ? monthStep : yearStep;
 
-  for (let i = 0; i < channelsData.length; i++) {
-    const channel = channelsData[i];
+  for (const channel of channelsData) {
     const rows = channel?.data?.rows;
     if (!rows?.length) continue;
-    const settings = seriesSettings[channelNames[i]];
+    const settings = seriesSettings[channel.name];
     if (settings.xAxisType !== 'Dates') continue;
 
     const columns = channel.data.columns;
