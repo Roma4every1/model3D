@@ -55,7 +55,7 @@ export class CaratDrawer implements ICaratDrawer {
     this.drawSettings = drawSettings;
   }
 
-  private updateSize(): void {
+  public resize(): void {
     const width = this.canvas.clientWidth * CaratDrawer.ratio * window.devicePixelRatio;
     const height = this.canvas.clientHeight * CaratDrawer.ratio * window.devicePixelRatio;
 
@@ -67,6 +67,7 @@ export class CaratDrawer implements ICaratDrawer {
       this.canvas.height = height;
       this.height = height;
     }
+    this.render();
   }
 
   public setCanvas(canvas: HTMLCanvasElement): void {
@@ -100,7 +101,7 @@ export class CaratDrawer implements ICaratDrawer {
     const { font, color, markSize } = this.drawSettings.verticalAxes;
     const viewportY = this.viewport.y;
 
-    const step = this.currentColumn.settings.step;
+    const step = this.currentColumn.yAxis.step;
     const minY = Math.ceil(viewportY / step) * step;
     const maxY = minY + (this.height - 6) / this.viewport.scale / CaratDrawer.ratio;
 
@@ -128,7 +129,7 @@ export class CaratDrawer implements ICaratDrawer {
   private renderColumn() {
     this.currentWidth = this.currentColumn.settings.width * CaratDrawer.ratio * window.devicePixelRatio;
     this.renderIntervals();
-    if (this.currentColumn.settings.showAxis) this.renderColumnAxis();
+    if (this.currentColumn.yAxis.show) this.renderColumnAxis();
 
     this.setLineSettings(this.currentColumn.active ? 5 : 2, 'black');
     this.ctx.strokeRect(this.currentX, 115, this.currentWidth, this.height - 120);
@@ -136,18 +137,14 @@ export class CaratDrawer implements ICaratDrawer {
   }
 
   private renderIntervals() {
-    const plugins = this.currentColumn.plugins;
     const { y, scale } = this.viewport;
 
-    for (const channelName of this.currentColumn.channels) {
-      const settings = plugins[channelName].channelSettings?.fillLineChannelSettings;
-      if (!settings) continue;
+    for (const { name } of this.currentColumn.channels) {
+      this.ctx.lineWidth = 2 * CaratDrawer.ratio;
+      this.ctx.strokeStyle = 'black';
+      this.ctx.fillStyle = 'gray';
 
-      this.ctx.lineWidth = settings.thickness * CaratDrawer.ratio;
-      this.ctx.strokeStyle = settings.borderColor;
-      this.ctx.fillStyle = settings.backgroundColor;
-
-      this.data[channelName]?.data.forEach((interval) => {
+      this.data[name]?.data.forEach((interval) => {
         if (interval.base < y) return;
         const intervalY = 115 + scale * CaratDrawer.ratio * (interval.top - y);
         const height = scale * CaratDrawer.ratio * (interval.base - interval.top);
@@ -165,9 +162,7 @@ export class CaratDrawer implements ICaratDrawer {
       this.data = data;
     }
     if (!this.ctx || !this.columns) return;
-
     this.ctx.clearRect(0, 0, this.width, this.height);
-    this.updateSize();
 
     this.currentX = 4;
     for (const column of this.columns) {

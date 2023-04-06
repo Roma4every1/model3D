@@ -19,7 +19,7 @@ export function isLithologyChannel(channel: Channel): boolean {
 /* --- --- */
 
 export function findLithologyIndexes(channel: Channel): CaratIntervalsInfo {
-  const result = {
+  const result: CaratIntervalsInfo = {
     top: {name: 'TOP', index: -1},
     base: {name: 'BASE', index: -1},
   };
@@ -40,4 +40,28 @@ export function getCaratIntervals(rows: ChannelRow[], indexes: CaratIntervalsInf
     const base = parseFloat(row.Cells[baseIndex]?.replace(',', '.'));
     return {top, base};
   });
+}
+
+/* --- --- */
+
+type StrataAppearanceInfo = Record<keyof CaratStratumAppearance, PropertyColumnInfo>;
+
+export function findStrataAppearanceInfo(channel: Channel) {
+  const result: StrataAppearanceInfo = {
+    color: {name: 'COLOR', index: -1},
+    borderColor: {name: 'BORDER COLOR', index: -1},
+    backgroundColor: {name: 'BACKGROUND COLOR', index: -1},
+    fillStyle: {name: 'FILL STYLE', index: -1},
+    lineStyle: {name: 'LINE STYLE', index: -1},
+  };
+  channel.info.properties.forEach((property) => {
+    let { name, fromColumn } = property;
+    name = name.toUpperCase();
+    if (name === 'COLOR') return result.color.name = fromColumn;
+    if (name === 'BORDER COLOR') return result.borderColor.name = fromColumn;
+    if (name === 'BACKGROUND COLOR') return result.backgroundColor.name = fromColumn;
+    if (name === 'FILL STYLE') return result.fillStyle.name = fromColumn;
+    if (name === 'LINE STYLE') return result.lineStyle.name = fromColumn;
+  });
+  return result;
 }

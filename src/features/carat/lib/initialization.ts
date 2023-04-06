@@ -4,22 +4,19 @@ import { isLithologyChannel, findLithologyIndexes } from './channels';
 import { caratDrawerSettings } from './constants';
 
 
-export function settingsToState(channelDict: ChannelDict, settings: CaratFormSettings): CaratState {
+export function settingsToState(channelDict: ChannelDict, init: CaratFormSettings): CaratState {
   const caratData: CaratData = {};
-  const scale = CaratDrawer.pixelPerMeter / (settings.settings.metersInMeter ?? 400);
+  const scale = CaratDrawer.pixelPerMeter / (init.settings.scale ?? 400);
 
-  const columns = settings.columns.filter((column) => column?.channels.length);
+  const columns = init.columns.filter((column) => column?.channels.length);
   if (columns.length) columns[0].active = true;
 
   for (const column of columns) {
-    for (const channelName of column.channels) {
-      const channelPlugins = column.plugins[channelName];
-      if (!channelPlugins) continue;
-      const channel = channelDict[channelName];
-
-      if (channel && !caratData[channelName] && isLithologyChannel(channel)) {
+    for (const { name } of column.channels) {
+      const channel = channelDict[name];
+      if (channel && !caratData[name] && isLithologyChannel(channel)) {
         const info = findLithologyIndexes(channel);
-        caratData[channelName] = {type: 'intervals', info, applied: false, data: null};
+        caratData[name] = {type: 'intervals', info, applied: false, data: null};
       }
     }
   }

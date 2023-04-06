@@ -57,6 +57,16 @@ interface PropertyColumnInfo {
   index: number,
 }
 
+type CaratStrataAppearance = Record<number, CaratStratumAppearance>;
+
+interface CaratStratumAppearance {
+  color: ColorHEX,
+  borderColor: ColorHEX,
+  backgroundColor: ColorHEX,
+  fillStyle: string,
+  lineStyle: string,
+}
+
 /* --- Rendering --- */
 
 /** Модель отображения каротажной диаграммы. */
@@ -73,6 +83,7 @@ interface ICaratViewModel {
 
 /** Отрисовщик каротажной диаграммы. */
 interface ICaratDrawer {
+  resize(): void
   setCanvas(canvas: HTMLCanvasElement): void
   render(well?: string, viewport?: CaratViewport, columns?: CaratColumn[], data?: CaratData): void
 }

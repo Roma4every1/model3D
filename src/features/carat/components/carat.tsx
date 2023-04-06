@@ -1,12 +1,12 @@
 import { MouseEvent, WheelEvent } from 'react';
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { compareObjects} from 'shared/lib';
 import { currentWellIDSelector } from 'entities/parameters';
-import { channelDictSelector } from 'entities/channels';
+import { channelDictSelector, channelSelector } from 'entities/channels';
 
 import { applyIndexesToModel } from '../lib/initialization';
-import { getCaratIntervals } from '../lib/channels';
+import { findStrataAppearanceInfo, getCaratIntervals } from '../lib/channels';
 import { moveSmoothly } from '../lib/smooth-scroll';
 import { caratStateSelector } from '../store/carats.selectors';
 import { setCaratData, setCaratActiveColumn, setCaratCanvas } from '../store/carats.actions';
@@ -25,9 +25,13 @@ export const Carat = ({id, channels}: FormState) => {
   const wellID = useSelector(currentWellIDSelector);
   const channelData: ChannelDict = useSelector(channelDictSelector.bind(channels), compareObjects);
 
-  // console.log(channelData['Carottage curves'].data.rows.map((row) => {
-  //   return row.Cells[5];
-  // }));
+  const strataChannel: Channel = useSelector(channelSelector.bind('colColorSpr'));
+
+  const strataAppearanceInfo = useMemo(() => {
+    return findStrataAppearanceInfo(strataChannel);
+  }, [strataChannel]);
+
+  console.log(strataAppearanceInfo);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isOnMoveRef = useRef<boolean>(false);
@@ -51,7 +55,7 @@ export const Carat = ({id, channels}: FormState) => {
   }, [channelData]); // eslint-disable-line
 
   useEffect(() => {
-    if (!observer.current) observer.current = new ResizeObserver(() => drawer.render());
+    if (!observer.current) observer.current = new ResizeObserver(() => drawer.resize());
     if (canvas) observer.current.observe(canvas);
     return () => { if (canvas) observer.current.unobserve(canvas); };
   }, [drawer, canvas]);

@@ -17,7 +17,8 @@ export const CaratActiveColumnPanel = ({column, drawer}: CaratActiveColumnPanelP
 
   useEffect(() => {
     if (!column) return;
-    const { label, width, step } = column.settings;
+    const { label, width } = column.settings;
+    const step = column.yAxis.step;
     setLabel(label); setWidth(width); setStep(step);
   }, [column]);
 
@@ -35,7 +36,7 @@ export const CaratActiveColumnPanel = ({column, drawer}: CaratActiveColumnPanelP
 
   const onStepChange = (e: NumericTextBoxChangeEvent) => {
     if (!e.value) return;
-    column.settings.step = e.value; drawer.render();
+    column.yAxis.step = e.value; drawer.render();
     setStep(e.value);
   };
 
