@@ -5,7 +5,7 @@ import { MenuSection } from 'shared/ui';
 
 
 interface CaratActiveColumnPanelProps {
-  column: CaratColumn,
+  column: CaratColumnInit,
   drawer: ICaratDrawer,
 }
 

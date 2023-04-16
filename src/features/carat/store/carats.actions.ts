@@ -12,7 +12,7 @@ export const setCaratData = (id: FormID, data: CaratData): CaratsAction => {
 };
 
 /** Устанавливает активную колонку. */
-export const setCaratActiveColumn = (id: FormID, column: CaratColumn): CaratsAction => {
+export const setCaratActiveColumn = (id: FormID, column: CaratColumnInit): CaratsAction => {
   return {type: CaratsActions.SET_ACTIVE_COLUMN, payload: {id, column}};
 };
 

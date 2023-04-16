@@ -1,31 +1,5 @@
-/** Настройки отрисовщика каротажа. */
-export interface CaratDrawerSettings {
-  /** Настройки шапки диаграммы. */
-  header: {
-    /** CSS-font подписи. */
-    font: string,
-    /** Цвет подписи. */
-    color: ColorHEX,
-  },
-  /** Подписей к колонкам. */
-  columnLabels: {
-    /** CSS-font подписи. */
-    font: string,
-    /** Цвет подписи. */
-    color: ColorHEX,
-    /** Горизонатльное выравнивание подписи. */
-    align: CanvasTextAlign,
-  },
-  /** Настройки вертикальных осей. */
-  verticalAxes: {
-    /** CSS-font подписи. */
-    font: string,
-    /** Цвет горизонтальной пометки и подписи. */
-    color: ColorHEX,
-    /** Размер горизонтальной пометки в пикселях. */
-    markSize: number,
-  },
-}
+import { CaratDrawerSettings } from './types';
+
 
 /** Отрисовщик каротажной диаграммы. */
 export class CaratDrawer implements ICaratDrawer {
@@ -45,9 +19,9 @@ export class CaratDrawer implements ICaratDrawer {
   private well: string;
   private data: CaratData;
   private viewport: CaratViewport;
-  private columns: CaratColumn[];
+  private columns: CaratColumnInit[];
 
-  private currentColumn: CaratColumn;
+  private currentColumn: CaratColumnInit;
   private currentX: number;
   private currentWidth: number;
 
@@ -56,18 +30,6 @@ export class CaratDrawer implements ICaratDrawer {
   }
 
   public resize(): void {
-    const width = this.canvas.clientWidth * CaratDrawer.ratio * window.devicePixelRatio;
-    const height = this.canvas.clientHeight * CaratDrawer.ratio * window.devicePixelRatio;
-
-    if (this.canvas.width !== width) {
-      this.canvas.width = width;
-      this.width = width;
-    }
-    if (this.canvas.height !== height) {
-      this.canvas.height = height;
-      this.height = height;
-    }
-    this.render();
   }
 
   public setCanvas(canvas: HTMLCanvasElement): void {
@@ -149,12 +111,12 @@ export class CaratDrawer implements ICaratDrawer {
         const intervalY = 115 + scale * CaratDrawer.ratio * (interval.top - y);
         const height = scale * CaratDrawer.ratio * (interval.base - interval.top);
         this.ctx.fillRect(this.currentX, intervalY, this.currentWidth, height);
-        this.ctx.strokeRect(this.currentX, intervalY, this.currentWidth, height)
+        this.ctx.strokeRect(this.currentX, intervalY, this.currentWidth, height);
       });
     }
   }
 
-  public render(well?: string, viewport?: CaratViewport, columns?: CaratColumn[], data?: CaratData) {
+  public render(well?: string, viewport?: CaratViewport, columns?: CaratColumnInit[], data?: CaratData) {
     if (arguments.length) {
       this.well = well;
       this.viewport = viewport;

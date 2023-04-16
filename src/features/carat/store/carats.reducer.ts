@@ -22,7 +22,7 @@ interface ActionSetData {
 }
 interface ActionSetColumn {
   type: CaratsActions.SET_ACTIVE_COLUMN,
-  payload: {id: FormID, column: CaratColumn},
+  payload: {id: FormID, column: CaratColumnInit},
 }
 interface ActionSetCanvas {
   type: CaratsActions.SET_CANVAS,

@@ -6,7 +6,7 @@ type CaratsState = FormDict<CaratState>;
  * + `model`: {@link ICaratViewModel}
  * + `drawer`: {@link ICaratDrawer}
  * + `canvas`: {@link HTMLCanvasElement}
- * + `activeColumn`: {@link CaratColumn}
+ * + `activeColumn`: {@link CaratColumnInit}
  * */
 interface CaratState {
   /** Данные для отрисовки. */
@@ -18,7 +18,7 @@ interface CaratState {
   /** Ссылка на холст. */
   canvas: HTMLCanvasElement,
   /** Текущая активная колонка. */
-  activeColumn: CaratColumn | null,
+  activeColumn: CaratColumnInit | null,
 }
 
 /** Порт просмотра. */
@@ -57,9 +57,7 @@ interface PropertyColumnInfo {
   index: number,
 }
 
-type CaratStrataAppearance = Record<number, CaratStratumAppearance>;
-
-interface CaratStratumAppearance {
+interface CaratStyleInterval {
   color: ColorHEX,
   borderColor: ColorHEX,
   backgroundColor: ColorHEX,
@@ -67,12 +65,15 @@ interface CaratStratumAppearance {
   lineStyle: string,
 }
 
+/** Тип каротажной кривой. */
+type CaratCurveType = string;
+
 /* --- Rendering --- */
 
 /** Модель отображения каротажной диаграммы. */
 interface ICaratViewModel {
   getViewport(): CaratViewport
-  getColumns(): CaratColumn[]
+  getColumns(): CaratColumnInit[]
   getColumnIndex(xCoordinate: number): number
   setActiveColumn(idx: number): void
   setColumnWidth(idx: number, width: number): void
@@ -85,5 +86,5 @@ interface ICaratViewModel {
 interface ICaratDrawer {
   resize(): void
   setCanvas(canvas: HTMLCanvasElement): void
-  render(well?: string, viewport?: CaratViewport, columns?: CaratColumn[], data?: CaratData): void
+  render(well?: string, viewport?: CaratViewport, columns?: CaratColumnInit[], data?: CaratData): void
 }

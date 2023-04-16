@@ -8,14 +8,14 @@ export class CaratViewModel implements ICaratViewModel {
   // private readonly dataRect: BoundingRect;
 
   private readonly viewport: CaratViewport;
-  private readonly columns: CaratColumn[];
+  private readonly columns: CaratColumnInit[];
 
-  constructor(columns: CaratColumn[], viewport: CaratViewport) {
+  constructor(columns: CaratColumnInit[], viewport: CaratViewport) {
     this.columns = columns;
     this.viewport = viewport;
   }
 
-  public getColumns(): CaratColumn[] {
+  public getColumns(): CaratColumnInit[] {
     return this.columns;
   }
 

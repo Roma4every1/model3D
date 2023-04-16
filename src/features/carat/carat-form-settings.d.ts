@@ -3,19 +3,19 @@ interface CaratFormSettings {
   /** Глобальные настройки диаграммы. */
   settings: CaratSettings,
   /** Список колонок диаграммы. */
-  columns: CaratColumn[],
+  columns: CaratColumnInit[],
 }
 
 /** Глобальные настройки каротажной диаграммы. */
 interface CaratSettings {
   /** Масштабирование колонок. */
-  scale: number, // metersInMeter,
+  scale: number,
   /** Использовать статический масштаб или нет. */
-  useStaticScale: boolean, // если нет, то false
+  useStaticScale: boolean,
   /** Название канала с пластами для выравнивания по активному пласту. */
-  strataChannelName: string | null, // prefferedPlastsChannelName
+  strataChannelName: ChannelName | null,
   /** Зоны распределения каротажных кривых. */
-  zones: CaratZone[], // плагин caratZones, если нет такого или пустой, то []
+  zones: CaratZone[],
 }
 
 /** Зона распределения каротажных кривых. */
@@ -23,13 +23,13 @@ interface CaratZone {
   /** Относительная ширина зоны. */
   relativeWidth: number | null,
   /** Типы кривых. */
-  types: string[],
+  types: CaratCurveType[],
 }
 
 /* --- Carat Column --- */
 
 /** Модель колонки каротажной диаграммы. */
-interface CaratColumn {
+interface CaratColumnInit {
   /** Идентификатор колонки. */
   id: string,
   /** Базовые настройки. */
@@ -90,11 +90,11 @@ interface CaratColumnYAxis {
 /** Выборка каротажных кривых для колонки. */
 interface CaratDataSelection {
   /** Типы кривых. */
-  types: {expression: string, isSelected: boolean}[] // массив popularTypes
+  types: {expression: string, isSelected: boolean}[]
   /** Начальная дата. */
-  start: string, // из атрибута date
+  start: string,
   /** Конечная дата. */
-  end: string,   // из атрибута date
+  end: string,
 }
 
 /** Граничные значения шкалы для кривой. */
@@ -124,18 +124,20 @@ type CaratColumnProperties = Record<string, CaratPropertySettings>;
 interface CaratPropertySettings {
   /** Настройки отображения подписей. */
   text: CaratTextPropertySettings | null,
+  /** Показывать ли текст. */
+  showText: boolean,
   /** Настройки отображения гистограммы. */
   bar: CaratBarPropertySettings | null,
+  /** Показывать ли гистограмму. */
+  showBar: boolean,
 }
 
 /** Настройки отображения подписей для свойства канала. */
 interface CaratTextPropertySettings {
-  /** Показывать ли текст. */
-  show: boolean,
   /** Цвет текста. */
-  color: string,
+  color: ColorHEX,
   /** Фон текста. */
-  backgroundColor: string,
+  backgroundColor: ColorHEX,
   /** Размер шрифта текста. */
   fontSize: number,
   /** Угол поворота текста. */
@@ -144,10 +146,8 @@ interface CaratTextPropertySettings {
 
 /** Настройки отображения гистограммы для свойства канала. */
 interface CaratBarPropertySettings {
-  /** Показывать ли гистограмму. */
-  show: boolean,
   /** Выравнивание гистограммы. */
   align: 'left' | 'right' | 'center',
   /** Цвет внешней границы ячейки. */
-  externalBorderColor: string | null,
+  externalBorderColor: ColorHEX | null,
 }

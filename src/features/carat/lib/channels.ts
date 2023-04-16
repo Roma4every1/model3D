@@ -44,7 +44,7 @@ export function getCaratIntervals(rows: ChannelRow[], indexes: CaratIntervalsInf
 
 /* --- --- */
 
-type StrataAppearanceInfo = Record<keyof CaratStratumAppearance, PropertyColumnInfo>;
+type StrataAppearanceInfo = Record<keyof CaratStyleInterval, PropertyColumnInfo>;
 
 export function findStrataAppearanceInfo(channel: Channel) {
   const result: StrataAppearanceInfo = {

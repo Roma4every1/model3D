@@ -1,4 +1,4 @@
-import { CaratDrawerSettings } from './drawer';
+import { CaratDrawerSettings } from './types';
 
 
 /** Настройки отрисовки. */

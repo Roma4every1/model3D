@@ -20,7 +20,7 @@ export const CaratColumnsPanel = ({id, model, drawer}: CaratColumnsPanelProps) =
     model.setActiveColumn(idx); drawer.render();
   };
 
-  const columnToLabel = (column: CaratColumn, i: number) => {
+  const columnToLabel = (column: CaratColumnInit, i: number) => {
     const onClick = () => setActiveColumn(i);
     return <div key={i} onClick={onClick}>{column.settings.label}</div>;
   };
