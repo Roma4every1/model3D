@@ -1,36 +1,42 @@
-import {BigButton} from "../../../../../../shared/ui";
-import deleteTraceIcon from './../../../../../../assets/images/trace/trace_remove_L.png'
+import deleteTraceIcon from '../../../../assets/images/trace/trace_remove_L.png'
 import {useDispatch} from "react-redux";
-import {deleteTraceThunk} from "../../../../store/traces.thunks";
 import {useTranslation} from "react-i18next";
 import {useCallback} from "react";
-import {setOpenedWindow} from "../../../../../../entities/windows";
-import {clearMapSelect} from "../../../../store/maps.actions";
+
 import {Dialog, DialogActionsBar} from "@progress/kendo-react-dialogs";
 import {Button} from "@progress/kendo-react-buttons";
+import {setOpenedWindow} from "../../../windows";
+import {BigButton} from "../../../../shared/ui";
+import {removeTraceRow} from "../../store/traces.thunks";
+import {setCurrentTraceData} from "../../store/traces.actions";
 
 interface DeleteTraceProps {
-  mapState: MapState,
-  formID: FormID,
-  traces: Channel
+  traces: Channel,
+  tracesState: TracesState,
+  itemsTableID: TableID
 }
 
-export const DeleteTrace = ({mapState, formID, traces}: DeleteTraceProps) => {
+export const DeleteTrace = ({traces, tracesState, itemsTableID}: DeleteTraceProps) => {
   const dispatch = useDispatch();
-
-  const isTraceEditing = mapState?.isTraceEditing;
+  const { isTraceEditing, isTraceCreating } = tracesState;
 
   // получение значения текущей трассы из store
-  const currentTraceRow = mapState.currentTraceRow;
+  const currentTraceData = tracesState.currentTraceData;
 
-  const disabled = !currentTraceRow ||
+  // состояние активности кнопки
+  const disabled = !currentTraceData ||
     isTraceEditing ||
-    mapState?.isElementEditing ||
-    mapState?.isTraceCreating;
+    isTraceCreating;
 
+  // onClick коллбэк для компонента
   const showDeleteTraceWindow = () => {
     const name = 'traceDeleteWindow';
-    const window = <DeleteTraceWindow key={name} mapState={mapState} formID={formID} traces={traces}/>;
+    const window = <DeleteTraceWindow
+      key={name}
+      tracesState={tracesState}
+      traces={traces}
+      itemsTableID={itemsTableID}
+    />;
     dispatch(setOpenedWindow(name, true, window));
   };
 
@@ -41,35 +47,30 @@ export const DeleteTrace = ({mapState, formID, traces}: DeleteTraceProps) => {
 }
 
 interface DeleteTraceWindowProps {
-  mapState: MapState,
-  formID: FormID,
-  traces: Channel
+  tracesState: TracesState,
+  traces: Channel,
+  itemsTableID: TableID
 }
 
-export const DeleteTraceWindow = ({mapState, formID, traces}: DeleteTraceWindowProps) => {
+export const DeleteTraceWindow = ({tracesState, traces, itemsTableID}: DeleteTraceWindowProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const traceName = mapState.currentTraceRow.Cells.name
+  const traceName = tracesState.currentTraceData.name
   const closeDeleteWindow = useCallback(() => {
     dispatch(setOpenedWindow('traceDeleteWindow', false, null));
   }, [dispatch]);
 
+  // onClick коллбэк для компонента
   const handleDelete = useCallback(() => {
-    if (!mapState || !mapState.utils.updateCanvas) return;
-    const currentTraceRow = mapState.currentTraceRow;
-    if(!currentTraceRow) return;
-
-    // получение всех трасс из каналов
-    const tableID = traces.tableID;
-    const deleteID = traces.data.rows.findIndex((row) => row.ID === currentTraceRow.ID);
-    dispatch(deleteTraceThunk(formID, tableID, deleteID));
-
-    dispatch(clearMapSelect(formID));
-    mapState.utils.updateCanvas();
+    const deleteID = traces.data.rows.findIndex((row) =>
+      row.Cells[0] === tracesState.currentTraceData.id);
+    dispatch(removeTraceRow(traces.tableID, deleteID, itemsTableID));
+    dispatch(setCurrentTraceData(null))
 
     closeDeleteWindow();
-  }, [mapState, closeDeleteWindow, dispatch, formID, traces]);
+  }, [closeDeleteWindow, dispatch, itemsTableID, traces.data.rows,
+    traces.tableID, tracesState.currentTraceData.id]);
 
   return (
     <Dialog

@@ -1,9 +1,8 @@
-import {BigButton} from "../../../../../../shared/ui";
-import saveTraceIcon from "../../../../../../assets/images/trace/trace_save_L.png";
+import saveTraceIcon from "../../../../assets/images/trace/trace_save_L.png";
+import {BigButton} from "../../../../shared/ui";
 
 interface SaveTraceProps {
-  mapState: MapState,
-  formID: FormID,
+  tracesState: TracesState
 }
 
 export const SaveTrace = ({}: SaveTraceProps) => {

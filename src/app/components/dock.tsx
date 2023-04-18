@@ -4,11 +4,11 @@ import { useSelector } from 'react-redux';
 import { i18nMapper } from 'shared/locales';
 import { getDockLayout } from '../lib/dock-layout';
 import { rootStateSelector, presentationSelector } from '../store/root-form/root-form.selectors';
-import { traceChannelSelector } from 'entities/traces';
+import {traceChannelSelector, TracesPanel} from 'entities/traces';
 
 import { Presentation } from 'widgets/presentation';
 import { LeftPanel } from 'widgets/left-panel';
-import { TracePanel } from 'entities/traces';
+import { TracesEditTab } from 'entities/traces';
 import { ActiveOperations, RightTab } from 'widgets/right-panel';
 import { MainMenu, PresentationReports, FormPanel } from 'widgets/top-panel';
 
@@ -19,14 +19,16 @@ export const Dock = ({config}: {config: ClientConfiguration}) => {
   const presentation = useSelector(presentationSelector);
   const traceChannel = useSelector(traceChannelSelector);
 
+  const isTraceEditing = useSelector<WState, boolean>(state => state.traces.isTraceEditing);
+
   const activeID = rootState.activeChildID;
   const { common: dockLayout, left: leftLayout } = rootState.layout;
   const formTypes = presentation?.childrenTypes;
   const needTracePanel = Boolean(traceChannel?.data);
 
   const model = useMemo<Model>(() => {
-    return getDockLayout(formTypes, dockLayout, needTracePanel);
-  }, [formTypes, dockLayout, needTracePanel]);
+    return getDockLayout(formTypes, dockLayout, needTracePanel, isTraceEditing);
+  }, [formTypes, dockLayout, needTracePanel, isTraceEditing]);
 
   const onModelChange = (model: Model) => {
     const [topBorder, rightBorder] = model.getBorderSet().getBorders();
@@ -43,10 +45,11 @@ export const Dock = ({config}: {config: ClientConfiguration}) => {
 
     if (id === 'menu') return <MainMenu leftLayout={leftLayout} config={config}/>;
     if (id === 'reports') return <PresentationReports id={activeID}/>;
+    if (id === 'top-traces') return <TracesPanel traces={traceChannel}/>
     if (id.startsWith('top')) return <FormPanel panelID={id} presentation={presentation}/>;
 
     if (id === 'right-dock') return <ActiveOperations activeID={activeID}/>;
-    if (id === 'right-trace') return <TracePanel channel={traceChannel}/>;
+    if (id === 'right-trace') return <TracesEditTab/>;
     if (id.startsWith('right')) return <RightTab presentation={presentation}/>;
 
     return <Presentation id={activeID} state={presentation}/>;

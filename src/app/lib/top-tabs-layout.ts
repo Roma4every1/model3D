@@ -29,12 +29,13 @@ const allTopTabs: IJsonTabNode[] = [
   },
 ];
 
-export function getTopPanelTabs(types?: Set<FormType>): IJsonTabNode[] {
+export function getTopPanelTabs(types?: Set<FormType>, needTracePanel?: boolean): IJsonTabNode[] {
   const tabs: IJsonTabNode[] = [allTopTabs[0], allTopTabs[1]];
   if (!types) return tabs;
 
+  if (needTracePanel) tabs.push(allTopTabs[2]);
   if (types.has('dataSet')) tabs.push(allTopTabs[3]);
   if (types.has('chart')) tabs.push(allTopTabs[4]);
-  if (types.has('map')) tabs.push(allTopTabs[2], allTopTabs[5]);
+  if (types.has('map')) tabs.push(allTopTabs[5]);
   return tabs;
 }

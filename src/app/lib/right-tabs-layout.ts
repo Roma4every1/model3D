@@ -16,9 +16,9 @@ const allRightTabs: IJsonTabNode[] = [
   },
 ];
 
-export function getRightPanelTabs(types: Set<FormType> | undefined, needTracePanel: boolean) {
+export function getRightPanelTabs(types: Set<FormType> | undefined, isTraceEditing) {
   const tabs: IJsonTabNode[] = [allRightTabs[0]];
-  if (needTracePanel) tabs.push(allRightTabs[1]);
+  if (isTraceEditing) tabs.push(allRightTabs[1]);
   if (types && types.has('map')) tabs.push(allRightTabs[2]);
   return tabs;
 }

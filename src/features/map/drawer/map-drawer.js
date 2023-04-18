@@ -498,6 +498,11 @@ var polyline = declareType('polyline', {
 				context.lineWidth = (i.borderwidth || defaultLineWidth) * 0.001 * options.dotsPerMeter;
 		}
 
+    if (i.isTrace) {
+        context.lineCap = 'round';
+        context.lineJoin = 'round';
+    }
+
 		context.stroke();
 		if (context.setLineDash) {context.setLineDash([])}
 		if (i.arcs[0].path.length === 2) polyline.points(i, options);
@@ -600,6 +605,7 @@ var polyline = declareType('polyline', {
 				}
 			}
 		}
+
 		context.stroke();
 		if (context.setLineDash) context.setLineDash([]);
 
@@ -609,6 +615,7 @@ var polyline = declareType('polyline', {
 			context.stroke();
 			if (context.setLineDash) context.setLineDash([]);
 		}
+
 		if (i.edited || i.arcs[0].path.length === 2) polyline.points(i, options);
 	}
 });

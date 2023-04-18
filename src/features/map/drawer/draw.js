@@ -27,7 +27,7 @@ export function showMap(canvas, map, { scale, centerx, centery, idle } = {}) {
 		const dotsPerMeter = canvas.width / (canvas.clientWidth / PIXEL_PER_METER);
 
 		if (centerx == null) {
-			const bounds = rects.join(...map.layers.map(layer => layer.bounds));
+			const bounds = rects.join(...map.layers.filter(l => !l.temporary).map(layer => layer.bounds));
 			if (!bounds) {
 				if (!scale) scale = 5000
 				centerx = 0

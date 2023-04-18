@@ -2,22 +2,21 @@ import { getBoundsByPoints } from './map-utils';
 import { checkDistance, getNearestElements } from '../components/edit-panel/selecting/selecting-utils';
 
 
-export const currentMestParamName = 'currentMest';
-export const getCurrentTraceParamName = (traces : Channel) => traces?.info?.currentRowObjectName;
-
 /** Прототип объекта слоя трассы. */
 export const traceLayerProto : MapLayer = {
+  // bounds: { min: {x: 2323405, y: -6078631}, max: {x: 2342750, y: -6049681} },
   bounds: { min: {x: -10000000, y: -10000000}, max: {x: 10000000, y: 10000000} },
   container: 'null',
   elements: [],
   elementsData: Promise<MapElement[]>.resolve([]),
   group: 'Трассы',
-  highscale: 1000000,
+  highscale: 'INF',
   lowscale: 0,
   name: 'Трассы',
   uid: '{TRACES-LAYER}',
   version: '1.0',
   visible: true,
+  temporary: true
 }
 
 /** Возвращает прототип объекта элемента трассы для карты с указанной в параметрах дугой. */
@@ -30,15 +29,16 @@ export const getTraceMapElementProto = (traceArc: PolylineArc) : MapPolyline => 
   fillbkcolor: '#0000ff', fillcolor: '#0000ff',
   bordercolor: '#0000ff', borderwidth: 1.25,
   transparent: true,
+  isTrace: true
 })
 
 /** Возвращает элемент карты polyline для отрисовки трассы */
-export const getCurrentTraceMapElement = (formID, points, currentTraceRowCells) => {
-  if(!currentTraceRowCells) return;
-  const traceWellsIDArray = currentTraceRowCells.items.split('---');
+export const getCurrentTraceMapElement = (formID, points, currentTraceData: TraceModel) => {
+  if(!currentTraceData?.items) return;
+  const traceWellsIDArray = currentTraceData.items;
   const traceWellsPoints = [...traceWellsIDArray.map(id => {
     const point = points.find(({UWID}) => UWID === id)
-    if (!point) return null
+    if (!point) return null;
 
     return [point.x, point.y]
   })];
@@ -77,32 +77,4 @@ export const getNearestSignMapElement = (point, canvas, scale, layers) => {
 export const findMapPoint = (point: ClientPoint, mapPoints) => {
   if (!point || !mapPoints || !point.x || !point.y) return null;
   return mapPoints.find(p => (p.x === point.x) && (p.y === point.y)) ?? null;
-}
-
-/** Преобразование строки канала с трассами в объект типа TraceRow. */
-export const traceChannelRowToObject = (traceChannelRow: ChannelRow): TraceRow => {
-  if (!traceChannelRow) return null;
-
-  return {ID: traceChannelRow.ID,
-      Cells: {
-        ID: traceChannelRow.Cells[0],
-        name: traceChannelRow.Cells[1],
-        stratumID: traceChannelRow.Cells[2],
-        items: traceChannelRow.Cells[3]
-      }
-    };
-}
-
-/** Преобразование из объекта типа TraceRow в строку канала с трассами. */
-export const traceObjectToChannelRow = (currentTraceRow: TraceRow): ChannelRow => {
-  if (!currentTraceRow) return null;
-
-  return {ID: currentTraceRow?.ID,
-    Cells: [
-      currentTraceRow?.Cells?.ID || null,
-      currentTraceRow?.Cells?.name || "Без названия",
-      currentTraceRow?.Cells?.stratumID || null,
-      currentTraceRow?.Cells?.items || null
-    ]
-  };
 }

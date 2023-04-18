@@ -53,10 +53,6 @@ interface MapState {
   childOf: FormID,
   scroller: { setList(list: MapCanvas[]) } | null,
   utils: MapUtils,
-  currentTraceRow: TraceRow,
-  oldTraceDataRow: TraceRow,
-  isTraceEditing: boolean,
-  isTraceCreating: boolean
 }
 
 type MapCanvas = HTMLCanvasElement & {selectingMode: boolean, blocked: boolean, events: any};
@@ -168,7 +164,8 @@ interface MapLayer {
   index?: any,
   version: any,
   visible?: boolean,
-  modified?: boolean
+  modified?: boolean,
+  temporary?: boolean
 }
 
 /** Максимальный масштаб карты, при котором данный слой будет отрисовываться. */
@@ -248,6 +245,7 @@ interface MapPolyline extends MapElementProto {
   legend?: any,
   img?: any,
   style?: PolylineBorderStyle,
+  isTrace?: boolean
 }
 
 /** ### Дуга линии.

@@ -14,6 +14,7 @@ import { mapsReducer } from 'features/map/store/maps.reducer';
 import { reportsReducer } from 'entities/reports/store/reports.reducer';
 import { windowDataReducer } from 'entities/windows/store/window-data.reducer';
 import { fetchStateReducer } from 'entities/fetch-state/store/fetch-state.reducer';
+import {tracesReducer} from "../../entities/traces/store/traces.reducer";
 
 
 /** Главный обработчик Well Manager Store. */
@@ -29,6 +30,7 @@ const rootReducer: Reducer<WState, any> = combineReducers({
   reports: reportsReducer,
   windowData: windowDataReducer,
   fetches: fetchStateReducer,
+  traces: tracesReducer,
 });
 
 /** Well Manager Store. */

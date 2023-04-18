@@ -3,7 +3,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Scroller } from '../drawer/scroller';
 import { MapNotFound, MapLoadError} from '../../multi-map/multi-map-item';
-import { getFullViewport, getMultiMapChildrenCanvases} from '../lib/map-utils';
+import {
+  clientPoint,
+  getFullViewport,
+  getMultiMapChildrenCanvases, getPointToMap,
+  listenerOptions, PIXEL_PER_METER
+} from '../lib/map-utils';
 import { mapsStateSelector, mapStateSelector } from '../store/maps.selectors';
 import {
   setMapField,
@@ -12,23 +17,22 @@ import {
   setActiveLayer,
   startCreatingElement,
   createMapElement,
-  setCurrentTrace,
-  setTraceOldData,
-  acceptMapEditing, clearMapSelect,
+  acceptMapEditing,
+  clearMapSelect,
+  setOnDrawEnd,
 } from '../store/maps.actions';
 import { fetchMapData } from '../store/maps.thunks';
-import {stringToTableCell, tableRowToString} from 'entities/parameters/lib/table-row';
+import { tableRowToString} from 'entities/parameters/lib/table-row';
 import { updateParam, currentWellIDSelector } from 'entities/parameters';
 import { channelSelector } from 'entities/channels';
 import { CircularProgressBar } from 'shared/ui';
 import {
-  getCurrentTraceParamName,
   getCurrentTraceMapElement,
   traceLayerProto,
-  traceChannelRowToObject
-} from '../lib/traces-utils';
-import { TracesEditWindow } from './edit-panel/editing/traces-edit-window';
-import { tracesChannelName } from 'entities/traces';
+  getNearestSignMapElement, findMapPoint,
+} from '../lib/traces-map-utils';
+import {traceStateSelector} from "../../../entities/traces/store/traces.selectors";
+import {setTraceItems} from "../../../entities/traces/store/traces.actions";
 
 
 export const Map = ({id: formID, parent, channels, data}: FormState & {data?: MapData}) => {
@@ -144,6 +148,7 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
 
   // подстраивание карты под выбранную скважину
   useEffect(() => {
+    if (!currentWellID) return;
     const cs = getWellCS(currentWellID, wellsMaxScale);
     if (cs) updateCanvas(cs, canvasRef.current);
   }, [currentWellID, wellsMaxScale, getWellCS, updateCanvas]);
@@ -174,61 +179,55 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
   }, [formID, mapState?.isLoadSuccessfully, dispatch, mapData?.layers]);
 
 
-  // получение канала с трассами
-  const traces: Channel = useSelector(channelSelector.bind(tracesChannelName));
-  const currentTraceParamName = getCurrentTraceParamName(traces);
+  // получение хранилища трасс трасс
+  const traceState = useSelector(traceStateSelector);
+  const traceLayer = mapData?.layers?.find(layer => layer.uid==='{TRACES-LAYER}');
 
-  // получение значения текущей трассы из параметров
-  const currentTraceParamValue = useSelector<WState, string | null>(
-    (state: WState) =>
-      state.parameters[state.root.id]
-        .find(el => el.id === currentTraceParamName)
-        ?.value?.toString() || null
-  )
+  const getTraceCS = useCallback((traceElement) => {
+    if (!canvas?.width || !canvas?.height || !traceElement || !mapData?.scale) return;
+    if (traceElement && scroller.current) {
+      const minX = traceElement.bounds.min.x;
+      const minY = traceElement.bounds.min.y;
+      const maxX = traceElement.bounds.max.x;
+      const maxY = traceElement.bounds.max.y;
 
-  // установка mapState.currentTraceRow при изменении трассы в параметрах
-  useEffect( () => {
-    // если канал с трассами не загружен
-    if (!traces) return;
-    // если текущая трасса не задана в параметрах
-    if (!currentTraceParamValue) {
-      dispatch(setCurrentTrace(formID, null));
-      return;
+      const centerX = (minX + maxX) / 2;
+      const centerY = (minY + maxY) / 2;
+
+      // размеры прямоугольника, описывающего трассу
+      const lengthX = Math.abs(Math.abs(maxX) - Math.abs(minX));
+      const lengthY = Math.abs(Math.abs(maxY) - Math.abs(minY));
+
+      const newScale = Math.max(lengthX/canvas.width,
+        lengthY/canvas.height)* PIXEL_PER_METER * 1.4;
+
+      if (!isFinite(centerX) || !isFinite(centerY) || !isFinite(newScale)) return null;
+      const scale = newScale;
+      return {centerX, centerY, scale};
     }
-
-    // установка mapState.currentTraceRow из значения в параметрах
-    const currentTraceRowCells = {
-      ID: +stringToTableCell(currentTraceParamValue, 'ID'),
-      name: stringToTableCell(currentTraceParamValue, 'NAME'),
-      stratumID: stringToTableCell(currentTraceParamValue, 'STRATUM_ID'),
-      items: stringToTableCell(currentTraceParamValue, 'ITEMS')
-    };
-    // установка ID для mapState.currentTraceRow
-    const currentTraceRowID = traces.data.rows.find(row => row.Cells[0] === currentTraceRowCells?.ID)?.ID;
-    if(!currentTraceRowID) return;
-    const currentTraceRow = {ID: currentTraceRowID, Cells: currentTraceRowCells};
-
-
-    dispatch(setCurrentTrace(formID, currentTraceRow));
-  }, [formID, dispatch, currentTraceParamValue, traces])
+    return null;
+  }, [mapData?.scale]); // canvas не стоит в зависимостях намеренно
 
   // создание и отрисовка текущей трассы
   useEffect( () => {
     // если данные карты не загружены
-    if (!mapState?.isLoadSuccessfully || !mapData) return;
-    // если канал с трассами не загружен
-    if (!traces) return;
+    if (!mapState?.isLoadSuccessfully || !mapData?.points) return;
 
-    const traceLayer = mapData.layers.find(layer => layer.uid==='{TRACES-LAYER}');
     // если не сущетсвует слоя для трасс
     if (!traceLayer) return;
     traceLayer.elements = [];
 
+    // если в трассе нет скважин
+    if (!traceState?.currentTraceData?.items) {
+      mapState?.utils.updateCanvas();
+      return;
+    }
+
     // получение элемента трассы для карты
     const traceElement= getCurrentTraceMapElement(
       formID,
-      mapData.points,
-      mapState?.currentTraceRow?.Cells,
+      mapData?.points,
+      traceState?.currentTraceData,
     );
     // если не удалось получить элемент трассы для карты
     if (!traceElement) return;
@@ -240,48 +239,71 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
     dispatch(createMapElement(formID, traceElement));
     dispatch(acceptMapEditing(formID));
     dispatch(clearMapSelect(formID));
-
     dispatch(setActiveLayer(formID, null));
-  }, [formID, mapState?.isLoadSuccessfully, mapData, traces, mapState?.currentTraceRow,
-    dispatch, mapState?.isTraceEditing, mapState?.isTraceCreating]);
 
-  const rootID = useSelector<WState, string | null>(state => state.root.id);
+    // подстраивание карты под выбранную трассу после окончания редактирования
+    // и при изменении в параметрах
+    if (!traceState.isTraceEditing) {
+      const cs = getTraceCS(traceElement);
+      if (cs) updateCanvas(cs, canvasRef.current);
+    }
+  }, [formID, mapState?.isLoadSuccessfully, mapData?.points, traceState?.currentTraceData, dispatch,
+    traceState?.isTraceEditing, traceState?.isTraceCreating, mapState?.utils, traceLayer,
+    getTraceCS, updateCanvas]);
 
-  // обновление и установка в параметры последней добавленой трассы при её добавлении/удалении в каналах
+
+  // добавление/удаление точек к текущей трассе через клик по карте
+  const mouseDown = useCallback((event: MouseEvent) => {
+    if(!traceState?.isTraceEditing) return;
+
+    const { canvas, utils, mapData } = mapState;
+
+    if (!mapData) return;
+    if (!mapState?.isLoadSuccessfully) return;
+
+    const point = utils.pointToMap(clientPoint(event));
+
+    // получение элемента скважины на карте
+    const newPoint = getNearestSignMapElement(point, canvas, mapData.scale, mapData.layers);
+    if (!newPoint) return;
+    // получение точки из MapData.points соответсвующей выбраному элементу на карте
+    const newDataPoint : MapPoint = findMapPoint(newPoint, mapData.points)
+    if (!newDataPoint?.UWID || !newDataPoint?.name) return;
+
+    const items = traceState?.currentTraceData?.items || [];
+
+    const pointExistInTrace = !!items?.find(p => p===newDataPoint.UWID);
+
+    let newItems;
+    if (pointExistInTrace) {
+      newItems = items.filter(p => p!==newDataPoint.UWID)
+    } else {
+      newItems = [...items, newDataPoint.UWID]
+    }
+
+    if(newDataPoint) dispatch(setTraceItems(newItems))
+  }, [mapState, dispatch, traceState?.isTraceEditing, traceState?.currentTraceData?.items]);
+
+  // добавление слушателей событий для добавления/удаления точек трассы через клик по скважинам
   useEffect(() => {
-    // если канал с трассами не загружен или канал с трассами пустой
-    if (!traces?.data?.rows) return;
-
-    // не обновлять параметры при редактировании трассы
-    if (mapState?.oldTraceDataRow !== null) {
-      dispatch(setTraceOldData(formID, null));
-      return;
+    if (!canvas) return;
+    if (traceState?.isTraceEditing) {
+      canvas.addEventListener('mousedown', mouseDown, listenerOptions);
+    } else {
+      canvas.removeEventListener('mousedown', mouseDown);
     }
+    return () => canvas.removeEventListener('mousedown', mouseDown);
+  }, [traceState.isTraceEditing, mouseDown, canvas])
 
-    // получение последней добавленной трассы из каналов
-    const tracesRows = traces.data.rows;
-    const lastTrace = tracesRows[tracesRows.length-1];
-    const lastTraceValue = tableRowToString(traces, lastTrace)?.value;
+  const onDrawEnd = useCallback((canvas, x, y, scale) => {
+    if(!mapState) return;
+    mapState.utils.pointToMap = getPointToMap(canvas, x, y, scale);
+  }, [mapState]);
 
-    if (!lastTrace) {
-      dispatch(updateParam(rootID, currentTraceParamName, null));
-      return;
-    }
-
-    // установка текущей трассы в store
-    dispatch(setCurrentTrace(formID,traceChannelRowToObject(lastTrace)));
-
-    dispatch(setTraceOldData(formID, null));
-
-    // обновление текущей трассы в параметрах
-    dispatch(updateParam(rootID, currentTraceParamName, lastTraceValue));
-  }, [dispatch, formID, rootID, traces, currentTraceParamName])
-
-
-  // обновление карты
-  useEffect( () => {
-    mapState?.utils.updateCanvas();
-  }, [mapData?.layers, mapState?.utils, mapState?.isTraceEditing]);
+  // переопределение метода pointToMap при обновлении карты для получения корректных координат точек
+  useEffect(() => {
+    if (mapState?.mapData) dispatch(setOnDrawEnd(formID, onDrawEnd));
+  }, [mapState, onDrawEnd, dispatch, formID]);
 
   if (!mapState) return null;
   if (!isMapExist) return <MapNotFound t={t}/>;
@@ -289,8 +311,7 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
   if (mapState.isLoadSuccessfully === false) return <MapLoadError t={t}/>;
 
   return (
-    <div className={ mapState?.isTraceEditing ? 'map-container trace-edit-panel-open' : 'map-container'}>
-      { mapState?.isTraceEditing && <TracesEditWindow formID={formID} mapState={mapState} traces={traces}/> }
+    <div className='map-container'>
       <canvas style={{cursor: mapState.cursor}} ref={canvasRef}/>
     </div>
   );

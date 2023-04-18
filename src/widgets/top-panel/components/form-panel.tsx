@@ -1,8 +1,7 @@
 import { FunctionComponent } from 'react';
 import { TableEditPanel } from 'features/table';
 import { ChartEditPanel } from 'features/chart';
-import { MapEditPanel, TracesEditPanel } from 'features/map';
-
+import { MapEditPanel } from 'features/map';
 
 export interface FormPanelProps {
   panelID: string,
@@ -14,7 +13,6 @@ const editPanelDict: Record<string, [FunctionComponent<FormEditPanelProps>, Form
   'top-dataset': [TableEditPanel, 'dataSet'],
   'top-chart': [ChartEditPanel, 'chart'],
   'top-map': [MapEditPanel, 'map'],
-  'top-traces': [TracesEditPanel, 'map'],
 };
 
 /** Панель редактирования формы. */

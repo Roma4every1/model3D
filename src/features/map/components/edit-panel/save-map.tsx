@@ -28,7 +28,7 @@ export const SaveMap = ({mapState, formID, t}: SaveMapProps) => {
       y: undefined,
       scale: undefined,
       onDrawEnd: undefined,
-      layers: mapData.layers.filter(layer => layer.uid !== '{TRACES-LAYER}')
+      layers: mapData.layers.filter(layer => !layer.temporary)
     };
 
     const promise = mapsAPI.saveMap(formID, mapID, data, owner);

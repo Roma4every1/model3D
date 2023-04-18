@@ -22,6 +22,8 @@ interface WState {
   windowData: any,
   /** Состояние серверных запросов. */
   fetches: FetchesState,
+  /** Хранилище трасс. */
+  traces: TracesState,
 }
 
 /* --- --- --- */

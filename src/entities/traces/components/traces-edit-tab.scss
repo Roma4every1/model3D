@@ -1,9 +1,4 @@
-.trace-edit-window-container {
-  display: grid;
-  grid-template-columns: 1fr auto;
-}
-
-.trace-edit-window {
+.trace-edit-tab {
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -61,8 +56,8 @@
   }
 }
 
-.trace-edit-window .items {
-  max-height: 250px;
+.trace-edit-tab .items {
+  max-height: 300px;
   overflow: auto;
   display: flex;
   flex-direction: column;

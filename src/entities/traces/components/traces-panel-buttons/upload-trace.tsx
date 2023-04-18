@@ -1,9 +1,8 @@
-import {BigButton} from "../../../../../../shared/ui";
-import uploadTraceIcon from "../../../../../../assets/images/trace/trace_load_L.png";
+import uploadTraceIcon from "../../../../assets/images/trace/trace_load_L.png";
+import {BigButton} from "../../../../shared/ui";
 
 interface UploadTraceProps {
-  mapState: MapState,
-  formID: FormID,
+  tracesState: TracesState
 }
 
 export const UploadTrace = ({}: UploadTraceProps) => {

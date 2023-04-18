@@ -91,31 +91,7 @@ export const cancelCreatingElement = (formID: FormID): MapsAction => {
   return {type: MapsActions.CANCEL_CREATING, formID};
 };
 
-/** Выйти из режима создания элемента. */
+/** Добавить слой на карту. */
 export const addMapLayer = (formID: FormID, layer: MapLayer): MapsAction => {
   return {type: MapsActions.ADD_LAYER, formID, payload: layer};
-};
-
-/** Установить текущую трассу. */
-export const setCurrentTrace = (formID: FormID, trace: TraceRow): MapsAction => {
-  return {type: MapsActions.SET_CURRENT_TRACE, formID, payload: trace};
-};
-
-/** Добавить точку к текущей трассе. */
-export const addPointToCurrentTrace = (formID: FormID, point: MapPoint): MapsAction => {
-  return {type: MapsActions.ADD_POINT_TO_CURRENT_TRACE, formID, payload: point};
-};
-
-/** Установить значение редактирования трассы. */
-export const setTraceEditing = (formID: FormID, value: boolean): MapsAction => {
-  return {type: MapsActions.SET_TRACE_EDITING, formID, payload: value};
-};
-
-/** Установить значение создания трассы. */
-export const setTraceCreating = (formID: FormID, value: boolean): MapsAction => {
-  return {type: MapsActions.SET_TRACE_CREATING, formID, payload: value};
-};
-
-export const setTraceOldData = (formID: FormID, value: TraceRow): MapsAction => {
-  return {type: MapsActions.SET_TRACE_OLD_DATA, formID, payload: value};
 };
