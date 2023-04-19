@@ -1,65 +1,51 @@
-import { CaratDrawerSettings, CaratElement, CaratElementType } from '../lib/types';
+import { CaratElement, CaratElementType } from '../lib/types';
+import { CaratDrawerConfig } from './drawer-settings';
+import { CaratTrackBodyDrawSettings, CaratTrackHeaderDrawSettings } from './drawer-settings';
+import { CaratColumnLabelDrawSettings, CaratColumnYAxisDrawSettings } from './drawer-settings';
+import { createTrackBodyDrawSettings, createTrackHeaderDrawSettings } from './drawer-settings';
+import { createColumnLabelDrawSettings, createColumnYAxisDrawSettings } from './drawer-settings';
 
 
-export interface ICaratDrawer {
-  resize(): void
-  setCanvas(canvas: HTMLCanvasElement): void
+interface ICaratDrawer {
+  setContext(context: CanvasRenderingContext2D): void
 
-  drawTrackHeader(well: string): void
+  drawTrackBody(rect: BoundingRect, well: string): void
   drawColumnHeader(name: string, axes: any[]): void
   drawColumnAxis(): void
-
   drawElement(element: CaratElement): void
 }
 
-
 /** Отрисовщик каротажной диаграммы. */
 export class CaratDrawer implements ICaratDrawer {
-  /** Количество пикселей в метре: `96px = 2.54cm`. */
-  public static readonly pixelPerMeter = 100 * 96 / 2.54;
-  /** Коэффициент уплотнения DPI для улучшения чёткости изображения. */
-  public static readonly ratio = 2;
-
-  /** Настройки отрисовки. */
-  private readonly drawSettings: CaratDrawerSettings;
-
-  /** Ссылка на элемент холста. */
-  private canvas: HTMLCanvasElement;
   /** Контекст отрисовки. */
   private ctx: CanvasRenderingContext2D;
-  /** Ширина области отрисовки. */
-  private width: number;
-  /** Высота области отрисовки. */
-  private height: number;
+
+  /** Настройки отрисовки тела трека. */
+  public readonly trackBodySettings: CaratTrackBodyDrawSettings;
+  /** Настройки отрисовки шапки трека. */
+  public readonly trackHeaderSettings: CaratTrackHeaderDrawSettings;
+  /** Настройки отрисовки колонки. */
+  public readonly columnLabelSettings: CaratColumnLabelDrawSettings;
+  /** Настройки отрисовки колонки. */
+  public readonly columnYAxisSettings: CaratColumnYAxisDrawSettings;
 
   public currentTop: number;
   public currentLeft: number;
   public currentWidth: number;
 
-  constructor(settings: CaratDrawerSettings) {
-    this.drawSettings = settings;
+  constructor(config: CaratDrawerConfig) {
+    this.trackBodySettings = createTrackBodyDrawSettings(config);
+    this.trackHeaderSettings = createTrackHeaderDrawSettings(config);
+    this.columnLabelSettings = createColumnLabelDrawSettings(config);
+    this.columnYAxisSettings = createColumnYAxisDrawSettings(config);
+
     this.currentTop = 0;
     this.currentLeft = 0;
     this.currentWidth = 0;
   }
 
-  public resize() {
-    const width = this.canvas.clientWidth * CaratDrawer.ratio * window.devicePixelRatio;
-    const height = this.canvas.clientHeight * CaratDrawer.ratio * window.devicePixelRatio;
-
-    if (this.canvas.width !== width) {
-      this.canvas.width = width;
-      this.width = width;
-    }
-    if (this.canvas.height !== height) {
-      this.canvas.height = height;
-      this.height = height;
-    }
-  }
-
-  public setCanvas(canvas: HTMLCanvasElement) {
-    this.canvas = canvas;
-    this.ctx = canvas.getContext('2d');
+  public setContext(context: CanvasRenderingContext2D) {
+    this.ctx = context;
   }
 
   private setLineSettings(width: number, color: string) {
@@ -74,21 +60,28 @@ export class CaratDrawer implements ICaratDrawer {
     this.ctx.textBaseline = baseline ?? 'bottom';
   }
 
-  public drawTrackHeader(well: string) {
-    const { font, color } = this.drawSettings.header;
-    this.setTextSettings(font, color, 'center');
-    this.ctx.fillText(well, this.width / 2, 60);
-    this.setLineSettings(1, '#363636');
-    this.ctx.strokeRect(6, 6, this.width - 12, 55);
+  /* --- Rendering --- */
+
+  public drawTrackBody(rect: BoundingRect, well: string) {
+    const { top, left, width } = rect;
+    const { borderColor: bodyColor, borderThickness: bodyThickness } = this.trackBodySettings;
+    const { font, color, borderColor, borderThickness, height, padding } = this.trackHeaderSettings;
+
+    this.setTextSettings(font, color, 'center', 'top');
+    this.ctx.fillText(well, width / 2, top + padding);
+
+    this.setLineSettings(borderThickness, borderColor);
+    this.ctx.strokeRect(left, top, width, height);
+    this.setLineSettings(bodyThickness, bodyColor);
+    this.ctx.strokeRect(left, top, width, rect.height);
   }
 
   public drawColumnHeader(name: string, axes: any[]) {
-    const { font, color, align } = this.drawSettings.columnLabels;
+    const { font, color, align } = this.columnLabelSettings;
     this.setTextSettings(font, color, align);
 
-    const width = this.currentWidth * CaratDrawer.ratio * window.devicePixelRatio;
-    const x = this.currentLeft + width / 2;
-    this.ctx.fillText(name, x, 105, width);
+    const width = this.currentWidth;
+    this.ctx.fillText(name, this.currentLeft + width , 105, width);
   }
 
   public drawColumnAxis() {
@@ -99,12 +92,12 @@ export class CaratDrawer implements ICaratDrawer {
     switch (element.type) {
 
       case CaratElementType.Interval: {
-        this.ctx.lineWidth = 2 * CaratDrawer.ratio;
+        this.ctx.lineWidth = 2;
         this.ctx.strokeStyle = element.style.borderColor;
         this.ctx.fillStyle = element.style.backgroundColor;
 
-        const intervalY = 115 + CaratDrawer.ratio * (element.top - this.currentTop);
-        const height = CaratDrawer.ratio * (element.base - element.top);
+        const intervalY = 115 + (element.top - this.currentTop);
+        const height = element.base - element.top;
         this.ctx.fillRect(this.currentLeft, intervalY, this.currentWidth, height);
         this.ctx.strokeRect(this.currentLeft, intervalY, this.currentWidth, height);
         break;

@@ -6,13 +6,8 @@ export const createCaratState = (id: FormID, channels: ChannelDict): CaratsActio
   return {type: CaratsActions.CREATE, payload: {id, channels}};
 };
 
-/** Перезаписывает данные для отрисовки из каналов. */
-export const setCaratData = (id: FormID, data: CaratData): CaratsAction => {
-  return {type: CaratsActions.SET_DATA, payload: {id, data}};
-};
-
 /** Устанавливает активную колонку. */
-export const setCaratActiveColumn = (id: FormID, column: CaratColumnInit): CaratsAction => {
+export const setCaratActiveColumn = (id: FormID, column: ICaratColumn): CaratsAction => {
   return {type: CaratsActions.SET_ACTIVE_COLUMN, payload: {id, column}};
 };
 

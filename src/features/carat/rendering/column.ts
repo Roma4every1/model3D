@@ -2,12 +2,7 @@ import { CaratDrawer } from './drawer';
 import { CaratCurveAxis, CaratIntervalStyleDict } from '../lib/types';
 
 
-interface ICaratColumn {
-  updateData(): void
-  render(): void
-}
-
-
+/** Колонка каротажной диаграммы. */
 export class CaratColumn implements ICaratColumn {
   /** Крайняя левая точка колонки. */
   private left: number;
@@ -17,7 +12,7 @@ export class CaratColumn implements ICaratColumn {
   private width: number;
 
   /** Имя колонки. */
-  private name: string;
+  private label: string;
   /** Высота заголовка колонки. */
   private headerHeight: number;
 
@@ -36,8 +31,33 @@ export class CaratColumn implements ICaratColumn {
   /** Массив подключённых свойств канала. */
   private readonly properties: string[];
 
-  constructor(drawer: CaratDrawer) {
+  constructor(init: CaratColumnInit, drawer: CaratDrawer) {
     this.drawer = drawer;
+    this.elements = [];
+  }
+
+  public getLabel(): string {
+    return this.label;
+  }
+
+  public getWidth(): number {
+    return this.width;
+  }
+
+  public getYAxisStep(): number {
+    return 0;
+  }
+
+  public setLabel(label: string) {
+    this.label = label;
+  }
+
+  public setWidth(width: number) {
+    this.width = width;
+  }
+
+  public setYAxisStep(step: number) {
+
   }
 
   public updateData() {

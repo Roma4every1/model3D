@@ -1,15 +1,12 @@
-import { CaratDrawerSettings } from './types';
-
-
 /** Отрисовщик каротажной диаграммы. */
-export class CaratDrawer implements ICaratDrawer {
+export class CaratDrawer_ {
   /** Количество пикселей в метре: `96px = 2.54cm`. */
   public static readonly pixelPerMeter = 100 * 96 / 2.54;
   /** Коэффициент уплотнения DPI для улучшения чёткости изображения. */
   public static ratio = 2;
 
   /** Настройки отрисовки. */
-  private readonly drawSettings: CaratDrawerSettings;
+  private readonly drawSettings: any;
 
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -25,7 +22,7 @@ export class CaratDrawer implements ICaratDrawer {
   private currentX: number;
   private currentWidth: number;
 
-  constructor(drawSettings: CaratDrawerSettings) {
+  constructor(drawSettings: any) {
     this.drawSettings = drawSettings;
   }
 
@@ -65,14 +62,14 @@ export class CaratDrawer implements ICaratDrawer {
 
     const step = this.currentColumn.yAxis.step;
     const minY = Math.ceil(viewportY / step) * step;
-    const maxY = minY + (this.height - 6) / this.viewport.scale / CaratDrawer.ratio;
+    const maxY = minY + (this.height - 6) / this.viewport.scale / CaratDrawer_.ratio;
 
     this.setLineSettings(5, '#303030');
     this.setTextSettings(font, color, 'left', 'middle');
     this.ctx.beginPath();
 
     for (let y = minY; y < maxY; y += step) {
-      const canvasY = 115 + (y - viewportY) * this.viewport.scale * CaratDrawer.ratio;
+      const canvasY = 115 + (y - viewportY) * this.viewport.scale * CaratDrawer_.ratio;
       this.ctx.moveTo(this.currentX, canvasY);
       this.ctx.lineTo(this.currentX + markSize, canvasY);
       this.ctx.fillText(y.toString(), this.currentX + 1.1 * markSize, canvasY);
@@ -82,14 +79,14 @@ export class CaratDrawer implements ICaratDrawer {
 
   private renderColumnHeader() {
     const settings = this.currentColumn.settings;
-    const width = settings.width * CaratDrawer.ratio * window.devicePixelRatio;
+    const width = settings.width * CaratDrawer_.ratio * window.devicePixelRatio;
     const x = this.currentX + width / 2;
     if (settings.label) this.ctx.fillText(settings.label, x, 105, width);
     this.currentX += width;
   }
 
   private renderColumn() {
-    this.currentWidth = this.currentColumn.settings.width * CaratDrawer.ratio * window.devicePixelRatio;
+    this.currentWidth = this.currentColumn.settings.width * CaratDrawer_.ratio * window.devicePixelRatio;
     this.renderIntervals();
     if (this.currentColumn.yAxis.show) this.renderColumnAxis();
 
@@ -102,14 +99,14 @@ export class CaratDrawer implements ICaratDrawer {
     const { y, scale } = this.viewport;
 
     for (const { name } of this.currentColumn.channels) {
-      this.ctx.lineWidth = 2 * CaratDrawer.ratio;
+      this.ctx.lineWidth = 2 * CaratDrawer_.ratio;
       this.ctx.strokeStyle = 'black';
       this.ctx.fillStyle = 'gray';
 
       this.data[name]?.data.forEach((interval) => {
         if (interval.base < y) return;
-        const intervalY = 115 + scale * CaratDrawer.ratio * (interval.top - y);
-        const height = scale * CaratDrawer.ratio * (interval.base - interval.top);
+        const intervalY = 115 + scale * CaratDrawer_.ratio * (interval.top - y);
+        const height = scale * CaratDrawer_.ratio * (interval.base - interval.top);
         this.ctx.fillRect(this.currentX, intervalY, this.currentWidth, height);
         this.ctx.strokeRect(this.currentX, intervalY, this.currentWidth, height);
       });

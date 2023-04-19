@@ -2,23 +2,63 @@
 type CaratsState = FormDict<CaratState>;
 
 /** Состояние каротажной формы.
- * + `data`: {@link CaratData}
- * + `model`: {@link ICaratViewModel}
- * + `drawer`: {@link ICaratDrawer}
+ * + `stage`: {@link ICaratStage}
  * + `canvas`: {@link HTMLCanvasElement}
- * + `activeColumn`: {@link CaratColumnInit}
+ * + `activeColumn`: {@link ICaratColumn}
  * */
 interface CaratState {
-  /** Данные для отрисовки. */
-  data: CaratData,
-  /** Модель отображения. */
-  model: ICaratViewModel;
-  /** Экземпляр отрисовщика. */
-  drawer: ICaratDrawer,
+  /** Экземпляр класса сцены. */
+  stage: ICaratStage;
   /** Ссылка на холст. */
   canvas: HTMLCanvasElement,
-  /** Текущая активная колонка. */
-  activeColumn: CaratColumnInit | null,
+  /** Активная колонка. */
+  activeColumn: ICaratColumn | null,
+}
+
+/** Сцена каротажной диаграммы. */
+interface ICaratStage {
+  getActiveTrack(): ICaratTrack
+
+  setCanvas(canvas: HTMLCanvasElement): void
+  setWell(well: string): void
+  setChannelData(channelData: ChannelDict): void
+  setScale(scale: number): void
+
+  handleMouseMove(by: number): void
+  handleMouseWheel(by: number): void
+  handleMouseDown(x: number, y: number): void
+
+  resize(): void
+  render(): void
+}
+
+/** Трек каротажной диаграммы. */
+interface ICaratTrack {
+  getColumns(): ICaratColumn[]
+  getViewport(): CaratViewport
+  getRect(): BoundingRect
+
+  setWell(well: string): void
+  setViewportScale(scale: number): void
+  setActiveColumn(idx: number): void
+
+  handleMouseDown(x: number, y: number): void
+
+  render(): void
+}
+
+/** Колонка каротажной диаграммы. */
+interface ICaratColumn {
+  getLabel(): string
+  getWidth(): number
+  getYAxisStep(): number
+
+  setLabel(label: string): void
+  setWidth(width: number): void
+  setYAxisStep(step: number): void
+  updateData(): void
+
+  render(): void
 }
 
 /** Порт просмотра. */
@@ -28,6 +68,8 @@ interface CaratViewport {
   /** Масштаб: количество пикселей в метре. */
   scale: number,
 }
+
+/* --- OLD --- */
 
 /** Данные для отрисовки каротажа. */
 type CaratData = Record<ChannelName, CaratDataModel>;
@@ -67,24 +109,3 @@ interface CaratStyleInterval {
 
 /** Тип каротажной кривой. */
 type CaratCurveType = string;
-
-/* --- Rendering --- */
-
-/** Модель отображения каротажной диаграммы. */
-interface ICaratViewModel {
-  getViewport(): CaratViewport
-  getColumns(): CaratColumnInit[]
-  getColumnIndex(xCoordinate: number): number
-  setActiveColumn(idx: number): void
-  setColumnWidth(idx: number, width: number): void
-  setColumnLabel(idx: number, label: string): void
-  resize(width: number, height: number): void
-  setViewportScale(scale: number): void
-}
-
-/** Отрисовщик каротажной диаграммы. */
-interface ICaratDrawer {
-  resize(): void
-  setCanvas(canvas: HTMLCanvasElement): void
-  render(well?: string, viewport?: CaratViewport, columns?: CaratColumnInit[], data?: CaratData): void
-}

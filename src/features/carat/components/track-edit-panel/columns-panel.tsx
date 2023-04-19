@@ -5,24 +5,24 @@ import { setCaratActiveColumn } from '../../store/carats.actions';
 
 interface CaratColumnsPanelProps {
   id: FormID,
-  model: ICaratViewModel,
-  drawer: ICaratDrawer,
+  stage: ICaratStage,
+  track: ICaratTrack,
 }
 
 
-export const CaratColumnsPanel = ({id, model, drawer}: CaratColumnsPanelProps) => {
+export const CaratColumnsPanel = ({id, stage, track}: CaratColumnsPanelProps) => {
   const dispatch = useDispatch();
-  const columns = model.getColumns();
+  const columns = track.getColumns();
 
   const setActiveColumn = (idx: number) => {
     const activeColumn = columns[idx];
     dispatch(setCaratActiveColumn(id, activeColumn));
-    model.setActiveColumn(idx); drawer.render();
+    track.setActiveColumn(idx); stage.render();
   };
 
-  const columnToLabel = (column: CaratColumnInit, i: number) => {
+  const columnToLabel = (column: ICaratColumn, i: number) => {
     const onClick = () => setActiveColumn(i);
-    return <div key={i} onClick={onClick}>{column.settings.label}</div>;
+    return <div key={i} onClick={onClick}>{column.getLabel()}</div>;
   };
 
   return (

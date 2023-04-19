@@ -5,26 +5,19 @@ import { compareObjects} from 'shared/lib';
 import { currentWellIDSelector } from 'entities/parameters';
 import { channelDictSelector, channelSelector } from 'entities/channels';
 
-import { applyIndexesToModel } from '../lib/initialization';
-import { findStrataAppearanceInfo, getCaratIntervals } from '../lib/channels';
-import { moveSmoothly } from '../lib/smooth-scroll';
+import { findStrataAppearanceInfo } from '../lib/channels';
 import { caratStateSelector } from '../store/carats.selectors';
-import { setCaratData, setCaratActiveColumn, setCaratCanvas } from '../store/carats.actions';
+import { setCaratCanvas } from '../store/carats.actions';
 
 
 /** Каротажная диаграмма. */
 export const Carat = ({id, channels}: FormState) => {
   const dispatch = useDispatch();
 
-  const state: CaratState = useSelector(caratStateSelector.bind(id));
-  const { model, data, drawer, canvas } = state;
-
-  const viewport = model.getViewport();
-  const columns = model.getColumns();
-
-  const wellID = useSelector(currentWellIDSelector);
+  const { stage, canvas }: CaratState = useSelector(caratStateSelector.bind(id));
   const channelData: ChannelDict = useSelector(channelDictSelector.bind(channels), compareObjects);
 
+  const wellID = useSelector(currentWellIDSelector);
   const strataChannel: Channel = useSelector(channelSelector.bind('colColorSpr'));
 
   const strataAppearanceInfo = useMemo(() => {
@@ -37,53 +30,32 @@ export const Carat = ({id, channels}: FormState) => {
   const isOnMoveRef = useRef<boolean>(false);
   const observer = useRef<ResizeObserver>();
 
+  // обновление данных каналов и активной скважины
   useEffect(() => {
-    let initY = Infinity;
-    for (const channelName in data) {
-      const dataModel = data[channelName];
-      const datum = channelData[channelName].data;
-
-      if (!datum?.columns) continue;
-      if (!dataModel.applied) applyIndexesToModel(dataModel, datum.columns);
-
-      const intervals = getCaratIntervals(datum.rows, dataModel.info);
-      initY = Math.min(initY, ...intervals.map(i => i.top));
-      dataModel.data = intervals;
-    }
-    viewport.y = initY === Infinity ? 0 : initY;
-    dispatch(setCaratData(id, {...data}));
-  }, [channelData]); // eslint-disable-line
+    stage.setWell(wellID);
+    stage.setChannelData(channelData)
+  }, [channelData, wellID, stage]);
 
   useEffect(() => {
-    if (!observer.current) observer.current = new ResizeObserver(() => drawer.resize());
+    if (!observer.current) observer.current = new ResizeObserver(() => stage.resize());
     if (canvas) observer.current.observe(canvas);
     return () => { if (canvas) observer.current.unobserve(canvas); };
-  }, [drawer, canvas]);
-
-  useLayoutEffect(() => {
-    drawer.render(wellID, viewport, columns, data);
-  }, [viewport, columns, data, wellID, drawer]);
+  }, [stage, canvas]);
 
   // обновление ссылки на холст
   useLayoutEffect(() => {
     const currentCanvas = canvasRef.current;
     if (!currentCanvas || currentCanvas === canvas) return;
-    drawer.setCanvas(currentCanvas);
     dispatch(setCaratCanvas(id, currentCanvas));
   });
 
   const onWheel = (e: WheelEvent) => {
-    moveSmoothly(viewport, drawer, e.deltaY > 0 ? 5 : -5);
+    stage.handleMouseWheel(e.deltaY > 0 ? 5 : -5);
   };
 
   const onMouseDown = (e: MouseEvent) => {
-    const xCoordinate = e.nativeEvent.offsetX;
-    const idx = model.getColumnIndex(xCoordinate);
-
-    if (idx !== -1) {
-      model.setActiveColumn(idx); drawer.render();
-      dispatch(setCaratActiveColumn(id, columns[idx]));
-    }
+    const { offsetX: x, offsetY: y } = e.nativeEvent;
+    stage.handleMouseDown(x, y);
     isOnMoveRef.current = true;
   };
 
@@ -93,8 +65,7 @@ export const Carat = ({id, channels}: FormState) => {
 
   const onMouseMove = (e: MouseEvent) => {
     if (!isOnMoveRef.current) return;
-    viewport.y -= e.nativeEvent.movementY / viewport.scale;
-    drawer.render();
+    stage.handleMouseMove(e.nativeEvent.movementY);
   };
 
   return (

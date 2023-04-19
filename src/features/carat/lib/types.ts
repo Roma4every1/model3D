@@ -1,32 +1,3 @@
-/** Настройки отрисовщика каротажа. */
-export interface CaratDrawerSettings {
-  /** Настройки шапки диаграммы. */
-  header: {
-    /** CSS-font подписи. */
-    font: string,
-    /** Цвет подписи. */
-    color: ColorHEX,
-  },
-  /** Подписей к колонкам. */
-  columnLabels: {
-    /** CSS-font подписи. */
-    font: string,
-    /** Цвет подписи. */
-    color: ColorHEX,
-    /** Горизонатльное выравнивание подписи. */
-    align: CanvasTextAlign,
-  },
-  /** Настройки вертикальных осей. */
-  verticalAxes: {
-    /** CSS-font подписи. */
-    font: string,
-    /** Цвет горизонтальной пометки и подписи. */
-    color: ColorHEX,
-    /** Размер горизонтальной пометки в пикселях. */
-    markSize: number,
-  },
-}
-
 /** Модель оси кривой. */
 export interface CaratCurveAxis {
   /** Тип кривой. */

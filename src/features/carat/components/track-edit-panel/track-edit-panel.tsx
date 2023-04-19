@@ -11,13 +11,15 @@ import { CaratActiveColumnPanel } from './active-column-panel';
 export const TracksEditPanel = ({id}: FormEditPanelProps) => {
   const state: CaratState = useSelector(caratStateSelector.bind(id));
   if (!state) return <MenuSkeleton template={['100px', '100px', '100px']}/>;
-  const { model, drawer } = state;
+
+  const stage = state.stage;
+  const track = stage.getActiveTrack();
 
   return (
     <div className={'menu'}>
-      <CaratScalePanel model={model} drawer={drawer}/>
-      <CaratColumnsPanel id={id} model={model} drawer={drawer}/>
-      <CaratActiveColumnPanel column={state.activeColumn} drawer={drawer}/>
+      <CaratScalePanel stage={stage} track={track}/>
+      <CaratColumnsPanel id={id} stage={stage} track={track}/>
+      <CaratActiveColumnPanel stage={stage} column={state.activeColumn}/>
     </div>
   );
 };

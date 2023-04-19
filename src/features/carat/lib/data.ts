@@ -1,4 +1,5 @@
 export const mockCaratSettings: CaratFormSettings = {
+  id: null,
   settings: {
     scale: 300, useStaticScale: false,
     strataChannelName: null, zones: [

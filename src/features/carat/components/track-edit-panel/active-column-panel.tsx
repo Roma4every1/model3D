@@ -5,38 +5,38 @@ import { MenuSection } from 'shared/ui';
 
 
 interface CaratActiveColumnPanelProps {
-  column: CaratColumnInit,
-  drawer: ICaratDrawer,
+  stage: ICaratStage,
+  column: ICaratColumn,
 }
 
 
-export const CaratActiveColumnPanel = ({column, drawer}: CaratActiveColumnPanelProps) => {
+export const CaratActiveColumnPanel = ({stage, column}: CaratActiveColumnPanelProps) => {
   const [label, setLabel] = useState('');
   const [width, setWidth] = useState(null);
   const [step, setStep] = useState(null);
 
   useEffect(() => {
     if (!column) return;
-    const { label, width } = column.settings;
-    const step = column.yAxis.step;
-    setLabel(label); setWidth(width); setStep(step);
+    setLabel(column.getLabel());
+    setWidth(column.getWidth());
+    setStep(column.getYAxisStep());
   }, [column]);
 
   const onLabelChange = (e: TextBoxChangeEvent) => {
     if (typeof e.value !== 'string') return;
-    column.settings.label = e.value; drawer.render();
+    column.setLabel(e.value); stage.render();
     setLabel(e.value);
   };
 
   const onWidthChange = (e: NumericTextBoxChangeEvent) => {
     if (!e.value) return;
-    column.settings.width = e.value; drawer.render();
+    column.setWidth(e.value); stage.render();
     setWidth(e.value);
   };
 
   const onStepChange = (e: NumericTextBoxChangeEvent) => {
     if (!e.value) return;
-    column.yAxis.step = e.value; drawer.render();
+    column.setYAxisStep(e.value); stage.render();
     setStep(e.value);
   };
 

@@ -1,23 +1,23 @@
 import { useState } from 'react';
 import { ButtonStock, MenuSection } from 'shared/ui';
 import { NumericTextBox, NumericTextBoxChangeEvent } from '@progress/kendo-react-inputs';
-import { CaratDrawer } from '../../lib/drawer';
+import { CaratStage } from '../../rendering/stage';
 
 
 interface CaratScalePanelProps {
-  model: ICaratViewModel,
-  drawer: ICaratDrawer,
+  stage: ICaratStage,
+  track: ICaratTrack,
 }
 
 
-export const CaratScalePanel = ({model, drawer}: CaratScalePanelProps) => {
-  const initMetersInMeter = CaratDrawer.pixelPerMeter / model.getViewport().scale;
+export const CaratScalePanel = ({stage, track}: CaratScalePanelProps) => {
+  const initMetersInMeter = CaratStage.pixelPerMeter / track.getViewport().scale;
   const [metersInMeter, setMetersInMeter] = useState(initMetersInMeter);
 
   const changeMetersInMeter = (metersInMeter: number) => {
-    const newScale = CaratDrawer.pixelPerMeter / metersInMeter;
-    model.setViewportScale(newScale);
-    drawer.render();
+    const newScale = CaratStage.pixelPerMeter / metersInMeter;
+    stage.setScale(newScale);
+    stage.render();
     setMetersInMeter(metersInMeter);
   };
 

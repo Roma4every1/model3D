@@ -1,17 +1,14 @@
-import { CaratDrawer } from './drawer';
-import { CaratViewModel } from './view-model';
+import { CaratStage } from '../rendering/stage';
+import { CaratDrawer } from '../rendering/drawer';
 import { isLithologyChannel, findLithologyIndexes } from './channels';
-import { caratDrawerSettings } from './constants';
+import { drawerConfig } from './constants';
 
 
 export function settingsToState(channelDict: ChannelDict, init: CaratFormSettings): CaratState {
   const caratData: CaratData = {};
-  const scale = CaratDrawer.pixelPerMeter / (init.settings.scale ?? 400);
+  init.columns = init.columns.filter((column) => column?.channels.length);
 
-  const columns = init.columns.filter((column) => column?.channels.length);
-  if (columns.length) columns[0].active = true;
-
-  for (const column of columns) {
+  for (const column of init.columns) {
     for (const { name } of column.channels) {
       const channel = channelDict[name];
       if (channel && !caratData[name] && isLithologyChannel(channel)) {
@@ -21,13 +18,8 @@ export function settingsToState(channelDict: ChannelDict, init: CaratFormSetting
     }
   }
 
-  return {
-    data: caratData,
-    model: new CaratViewModel(columns, {y: 0, scale}),
-    drawer: new CaratDrawer(caratDrawerSettings),
-    canvas: null,
-    activeColumn: columns[0] ?? null,
-  };
+  const drawer = new CaratDrawer(drawerConfig);
+  return {stage: new CaratStage(init, drawer), canvas: null, activeColumn: null};
 }
 
 export function applyIndexesToModel(model: CaratDataModel, columns: ChannelColumn[]) {
