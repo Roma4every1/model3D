@@ -9,21 +9,20 @@ export const drawerConfig: CaratDrawerConfig = {
       border: {color: '#111111', thickness: 1},
     },
     header: {
-      padding: 2,
-      text: {font: {size: 24, style: 'bold', family: '"Segoe UI", Roboto'}, color: '#222222'},
+      padding: 3,
+      text: {font: {size: 16, style: 'normal', family: '"Segoe UI", Roboto'}, color: '#222222'},
       border: {color: '#111111', thickness: 1},
     },
   },
   column: {
     label: {
-      font: {size: 18, style: 'normal', family: '"Segoe UI", Roboto'},
+      font: {size: 12, style: 'normal', family: '"Segoe UI", Roboto'},
       color: '#000000',
-      align: 'center',
     },
     verticalAxis: {
-      font: {size: 16, style: 'normal', family: '"Segoe UI", Roboto'},
+      font: {size: 12, style: 'normal', family: '"Segoe UI", Roboto'},
       color: '#303030',
-      markSize: 20, // px
+      markSize: 6, // px
     },
   },
 };

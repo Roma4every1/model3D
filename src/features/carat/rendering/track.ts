@@ -1,3 +1,4 @@
+import { CaratStage } from './stage';
 import { CaratDrawer } from './drawer';
 import { CaratColumn } from './column';
 
@@ -18,32 +19,33 @@ export class CaratTrack implements ICaratTrack {
   /** Порт просмотра трека. */
   private readonly viewport: CaratViewport;
 
-  constructor(columns: CaratColumnInit[], viewport: CaratViewport, drawer: CaratDrawer) {
-    this.columns = [];
+  constructor(
+    rect: BoundingRect, columns: CaratColumnInit[],
+    viewport: CaratViewport, drawer: CaratDrawer
+  ) {
+    this.rect = rect;
     this.drawer = drawer;
     this.viewport = viewport;
 
-    let trackWidth = 760;
-    const trackMargin = drawer.trackBodySettings.margin;
+    let x = rect.left;
+    const top = rect.top + drawer.trackHeaderSettings.height;
+    const bottom = rect.bottom;
+    const height = top - bottom;
+    this.columns = [];
 
     for (const column of columns) {
-      const { type, width } = column.settings;
+      const type = column.settings.type;
+      const width = CaratStage.ratio * column.settings.width;
+      const columnRect: BoundingRect = {top, left: x, bottom, right: x + width, width, height};
 
       if (type === 'normal') {
-        trackWidth += width;
-        for (const channel of column.channels) {
-          this.columns.push(new CaratColumn(column, drawer));
-        }
+        this.columns.push(new CaratColumn({...columnRect}, column, drawer));
+        x += width;
       } else if (type === 'background') {
-        this.backgroundColumn = new CaratColumn(column, drawer);
+        const backColumnRect = {...rect, top};
+        this.backgroundColumn = new CaratColumn(backColumnRect, column, drawer);
       }
     }
-
-    this.rect = {
-      top: trackMargin, left: trackMargin,
-      bottom: 500 + trackMargin, right: trackWidth + trackMargin,
-      width: trackWidth, height: 500,
-    };
   }
 
   public getColumns(): CaratColumn[] {
@@ -73,8 +75,18 @@ export class CaratTrack implements ICaratTrack {
 
   }
 
+  /* --- Rendering --- */
+
+  public setHeight(height: number) {
+    this.rect.height = height;
+    this.rect.bottom = this.rect.top + height;
+
+    const columnHeight = height - this.drawer.trackHeaderSettings.height;
+    for (const column of this.columns) column.setHeight(columnHeight);
+  }
+
   public render() {
     this.drawer.drawTrackBody(this.rect, this.well);
-    for (const column of this.columns) column.render();
+    for (const column of this.columns) column.render(this.viewport);
   }
 }

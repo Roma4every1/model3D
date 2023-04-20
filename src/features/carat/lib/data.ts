@@ -57,7 +57,7 @@ export const mockCaratSettings: CaratFormSettings = {
       id: '',
       settings: {type: 'normal', label: 'Глубина', width: 40, index: 0},
       xAxis: {grid: false, numberOfMarks: 3},
-      yAxis: {show: false, step: 5, grid: false, absMarks: true, depthMarks: true},
+      yAxis: {show: true, step: 5, grid: false, absMarks: true, depthMarks: true},
       channels: [
         {name: 'Perforations', attachOption: 'AttachNothing', exclude: ['TYPE']},
       ],

@@ -34,9 +34,9 @@ interface ICaratStage {
 
 /** Трек каротажной диаграммы. */
 interface ICaratTrack {
+  getRect(): BoundingRect
   getColumns(): ICaratColumn[]
   getViewport(): CaratViewport
-  getRect(): BoundingRect
 
   setWell(well: string): void
   setViewportScale(scale: number): void
@@ -58,7 +58,7 @@ interface ICaratColumn {
   setYAxisStep(step: number): void
   updateData(): void
 
-  render(): void
+  render(viewport: CaratViewport): void
 }
 
 /** Порт просмотра. */

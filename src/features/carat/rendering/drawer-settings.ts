@@ -29,8 +29,6 @@ export interface CaratDrawerConfig {
       font: CSSFont,
       /** Цвет подписи. */
       color: ColorHEX,
-      /** Горизонатльное выравнивание подписи. */
-      align: CanvasTextAlign,
     },
     /** Настройки вертикальных осей. */
     verticalAxis: {
@@ -76,8 +74,6 @@ export interface CaratColumnLabelDrawSettings {
   readonly font: string,
   /** Цвет подписи. */
   readonly color: ColorHEX,
-  /** Горизонатльное выравнивание. */
-  readonly align: CanvasTextAlign,
 }
 
 /** Настройки отрисовки вертикальной оси колонки. */
@@ -119,9 +115,9 @@ export function createTrackHeaderDrawSettings(config: CaratDrawerConfig): CaratT
 
 /** Создаёт настройки отрисовки колонки по конфигу. */
 export function createColumnLabelDrawSettings(config: CaratDrawerConfig): CaratColumnLabelDrawSettings {
-  const { font, color, align } = config.column.label;
+  const { font, color } = config.column.label;
   const labelFontSize = CaratStage.ratio * font.size;
-  return {font: `${font.style} ${labelFontSize}px ${font.family}`, color, align};
+  return {font: `${font.style} ${labelFontSize}px ${font.family}`, color};
 }
 
 /** Создаёт настройки отрисовки колонки по конфигу. */

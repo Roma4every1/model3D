@@ -6,7 +6,7 @@ import { drawerConfig } from './constants';
 
 export function settingsToState(channelDict: ChannelDict, init: CaratFormSettings): CaratState {
   const caratData: CaratData = {};
-  init.columns = init.columns.filter((column) => column?.channels.length);
+  // init.columns = init.columns.filter((column) => column?.channels.length);
 
   for (const column of init.columns) {
     for (const { name } of column.channels) {
@@ -20,6 +20,15 @@ export function settingsToState(channelDict: ChannelDict, init: CaratFormSetting
 
   const drawer = new CaratDrawer(drawerConfig);
   return {stage: new CaratStage(init, drawer), canvas: null, activeColumn: null};
+}
+
+export function calculateTrackWidth(columns: CaratColumnInit[]) {
+  let trackWidth = 0;
+  for (const column of columns) {
+    const { type, width } = column.settings;
+    if (type === 'normal') trackWidth += width;
+  }
+  return CaratStage.ratio * trackWidth;
 }
 
 export function applyIndexesToModel(model: CaratDataModel, columns: ChannelColumn[]) {

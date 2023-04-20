@@ -1,5 +1,6 @@
 import { CaratTrack } from './track';
 import { CaratDrawer } from './drawer';
+import { calculateTrackWidth } from '../lib/initialization';
 import { moveSmoothly, isRectInnerPoint } from '../lib/utils';
 
 
@@ -8,7 +9,7 @@ export class CaratStage implements ICaratStage {
   /** Количество пикселей в метре: `96px = 2.54cm`. */
   public static readonly pixelPerMeter = 100 * 96 / 2.54;
   /** Коэффициент уплотнения DPI для улучшения чёткости изображения. */
-  public static readonly ratio = 2 * window.devicePixelRatio;
+  public static readonly ratio = 2;
 
   /** Отрисовщик. */
   private readonly drawer: CaratDrawer;
@@ -19,17 +20,26 @@ export class CaratStage implements ICaratStage {
   /** Высота области отрисовки. */
   private height: number;
 
-  /** Зоны распределения каротажных кривых. */
-  private readonly zones: CaratZone[];
+  // /** Зоны распределения каротажных кривых. */
+  // private readonly zones: CaratZone[];
   /** Список треков. */
   private readonly trackList: CaratTrack[];
 
   constructor(init: CaratFormSettings, drawer: CaratDrawer) {
     this.drawer = drawer;
-    this.zones = init.settings.zones;
+    // this.zones = init.settings.zones;
+
+    const trackWidth = calculateTrackWidth(init.columns);
+    const trackMargin = drawer.trackBodySettings.margin;
+
+    const rect: BoundingRect = {
+      top: trackMargin, left: trackMargin,
+      bottom: 500 + trackMargin, right: trackWidth + trackMargin,
+      width: trackWidth, height: 500,
+    };
 
     const scale = CaratStage.pixelPerMeter / (init.settings.scale ?? 400);
-    this.trackList = [new CaratTrack(init.columns, {y: 0, scale}, drawer)];
+    this.trackList = [new CaratTrack(rect, init.columns, {y: 0, scale}, drawer)];
   }
 
   public getActiveTrack(): CaratTrack {
@@ -39,6 +49,7 @@ export class CaratStage implements ICaratStage {
   public setCanvas(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.drawer.setContext(canvas.getContext('2d'));
+    this.resize();
   }
 
   public setWell(well: string) {
@@ -86,8 +97,8 @@ export class CaratStage implements ICaratStage {
   }
 
   public resize() {
-    const width = this.canvas.clientWidth * CaratStage.ratio * window.devicePixelRatio;
-    const height = this.canvas.clientHeight * CaratStage.ratio * window.devicePixelRatio;
+    const width = this.canvas.clientWidth * CaratStage.ratio;
+    const height = this.canvas.clientHeight * CaratStage.ratio;
 
     if (this.canvas.width !== width) {
       this.canvas.width = width;
@@ -96,11 +107,14 @@ export class CaratStage implements ICaratStage {
     if (this.canvas.height !== height) {
       this.canvas.height = height;
       this.height = height;
+
+      const trackHeight = height - 2 * this.drawer.trackBodySettings.margin;
+      for (const track of this.trackList) { track.setHeight(trackHeight); track.render(); }
     }
-    this.render();
   }
 
   public render() {
+    this.drawer.clear(0, 0, this.width, this.height);
     for (const track of this.trackList) track.render();
   }
 }

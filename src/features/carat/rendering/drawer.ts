@@ -1,3 +1,4 @@
+import { CaratStage } from './stage';
 import { CaratElement, CaratElementType } from '../lib/types';
 import { CaratDrawerConfig } from './drawer-settings';
 import { CaratTrackBodyDrawSettings, CaratTrackHeaderDrawSettings } from './drawer-settings';
@@ -10,13 +11,15 @@ interface ICaratDrawer {
   setContext(context: CanvasRenderingContext2D): void
 
   drawTrackBody(rect: BoundingRect, well: string): void
-  drawColumnHeader(name: string, axes: any[]): void
-  drawColumnAxis(): void
+  drawColumnBody(rect: BoundingRect, label: string): void
+  drawColumnYAxis(rect: BoundingRect, axis: CaratColumnYAxis, viewport: CaratViewport): void
   drawElement(element: CaratElement): void
 }
 
 /** Отрисовщик каротажной диаграммы. */
 export class CaratDrawer implements ICaratDrawer {
+  /** Пустая функция. */
+  private static readonly emptyFn = () => {};
   /** Контекст отрисовки. */
   private ctx: CanvasRenderingContext2D;
 
@@ -28,6 +31,8 @@ export class CaratDrawer implements ICaratDrawer {
   public readonly columnLabelSettings: CaratColumnLabelDrawSettings;
   /** Настройки отрисовки колонки. */
   public readonly columnYAxisSettings: CaratColumnYAxisDrawSettings;
+
+  private minusWidth: number;
 
   public currentTop: number;
   public currentLeft: number;
@@ -42,10 +47,13 @@ export class CaratDrawer implements ICaratDrawer {
     this.currentTop = 0;
     this.currentLeft = 0;
     this.currentWidth = 0;
+    this.minusWidth = 0;
   }
 
   public setContext(context: CanvasRenderingContext2D) {
     this.ctx = context;
+    this.ctx.font = this.columnYAxisSettings.font;
+    this.minusWidth = context.measureText('-').width;
   }
 
   private setLineSettings(width: number, color: string) {
@@ -53,22 +61,59 @@ export class CaratDrawer implements ICaratDrawer {
     this.ctx.strokeStyle = color;
   }
 
-  private setTextSettings(font: string, color: string, align?: CanvasTextAlign, baseline?: CanvasTextBaseline) {
+  private setTextSettings(font: string, color: string, align: CanvasTextAlign, baseline: CanvasTextBaseline) {
     this.ctx.font = font;
     this.ctx.fillStyle = color;
-    this.ctx.textAlign = align ?? 'left';
-    this.ctx.textBaseline = baseline ?? 'bottom';
+    this.ctx.textAlign = align;
+    this.ctx.textBaseline = baseline
+  }
+
+  private getDrawMarksFn(settings: CaratColumnYAxis, textStart: number) {
+    const { absMarks, depthMarks } = settings;
+    let fn: (y: number, canvasY: number) => void = CaratDrawer.emptyFn;
+
+    if (absMarks && depthMarks) {
+      const absMarkStart = textStart + this.minusWidth;
+      fn = (y, canvasY) => {
+        if (y > 0) {
+          this.ctx.textBaseline = 'bottom';
+          this.ctx.fillText(y.toString(), absMarkStart, canvasY);
+          this.ctx.textBaseline = 'top';
+          this.ctx.fillText((-y).toString(), textStart, canvasY);
+        } else if (y === 0) {
+          this.ctx.fillText('0', textStart, canvasY);
+        } else {
+          this.ctx.textBaseline = 'bottom';
+          this.ctx.fillText(y.toString(), textStart, canvasY);
+          this.ctx.textBaseline = 'top';
+          this.ctx.fillText((-y).toString(), absMarkStart, canvasY);
+        }
+      };
+    } else if (absMarks) {
+      fn = (y, canvasY) => {
+        this.ctx.fillText(y.toString(), textStart, canvasY);
+      };
+    } else if (depthMarks) {
+      fn = (y, canvasY) => {
+        this.ctx.fillText((-y).toString(), textStart, canvasY);
+      };
+    }
+    return fn;
   }
 
   /* --- Rendering --- */
 
+  public clear(x: number, y: number, width: number, height: number) {
+    this.ctx.clearRect(x, y, width, height);
+  }
+
   public drawTrackBody(rect: BoundingRect, well: string) {
     const { top, left, width } = rect;
     const { borderColor: bodyColor, borderThickness: bodyThickness } = this.trackBodySettings;
-    const { font, color, borderColor, borderThickness, height, padding } = this.trackHeaderSettings;
+    const { font, color, borderColor, borderThickness, height } = this.trackHeaderSettings;
 
-    this.setTextSettings(font, color, 'center', 'top');
-    this.ctx.fillText(well, width / 2, top + padding);
+    this.setTextSettings(font, color, 'center', 'middle');
+    this.ctx.fillText(well, width / 2, top + height / 2);
 
     this.setLineSettings(borderThickness, borderColor);
     this.ctx.strokeRect(left, top, width, height);
@@ -76,16 +121,41 @@ export class CaratDrawer implements ICaratDrawer {
     this.ctx.strokeRect(left, top, width, rect.height);
   }
 
-  public drawColumnHeader(name: string, axes: any[]) {
-    const { font, color, align } = this.columnLabelSettings;
-    this.setTextSettings(font, color, align);
+  public drawColumnBody(rect: BoundingRect, label: string) {
+    const { top, left, width, height } = rect;
+    const { font, color } = this.columnLabelSettings;
 
-    const width = this.currentWidth;
-    this.ctx.fillText(name, this.currentLeft + width , 105, width);
+    this.setTextSettings(font, color, 'center', 'bottom');
+    this.ctx.fillText(label, left + width / 2, top, width);
+
+    this.setLineSettings(2, color);
+    this.ctx.strokeRect(left, top, width, height);
   }
 
-  public drawColumnAxis() {
+  public drawColumnYAxis(rect: BoundingRect, axis: CaratColumnYAxis, viewport: CaratViewport) {
+    const step = axis.step;
+    const { top, left } = rect;
+    const { y: viewportY, scale } = viewport;
+    const { font, color, markSize } = this.columnYAxisSettings;
 
+    const markEnd = left + markSize;
+    const textStart = left + 1.1 * markSize;
+    const drawMarksFn = this.getDrawMarksFn(axis, textStart);
+
+    const minY = Math.ceil(viewportY / step) * step;
+    const maxY = minY + rect.height / scale;
+
+    this.setLineSettings(4, '#303030');
+    this.setTextSettings(font, color, 'left', 'middle');
+    this.ctx.beginPath();
+
+    for (let y = minY; y < maxY; y += step) {
+      const canvasY = top + (y - viewportY) * scale * CaratStage.ratio * window.devicePixelRatio;
+      this.ctx.moveTo(left, canvasY);
+      this.ctx.lineTo(markEnd, canvasY);
+      drawMarksFn(y, canvasY);
+    }
+    this.ctx.stroke();
   }
 
   public drawElement(element: CaratElement) {

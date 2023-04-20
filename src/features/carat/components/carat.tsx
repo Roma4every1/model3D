@@ -5,7 +5,7 @@ import { compareObjects} from 'shared/lib';
 import { currentWellIDSelector } from 'entities/parameters';
 import { channelDictSelector, channelSelector } from 'entities/channels';
 
-import { findStrataAppearanceInfo } from '../lib/channels';
+// import { findStrataAppearanceInfo } from '../lib/channels';
 import { caratStateSelector } from '../store/carats.selectors';
 import { setCaratCanvas } from '../store/carats.actions';
 
@@ -18,13 +18,13 @@ export const Carat = ({id, channels}: FormState) => {
   const channelData: ChannelDict = useSelector(channelDictSelector.bind(channels), compareObjects);
 
   const wellID = useSelector(currentWellIDSelector);
-  const strataChannel: Channel = useSelector(channelSelector.bind('colColorSpr'));
+  // const strataChannel: Channel = useSelector(channelSelector.bind('colColorSpr'));
 
-  const strataAppearanceInfo = useMemo(() => {
-    return findStrataAppearanceInfo(strataChannel);
-  }, [strataChannel]);
+  // const strataAppearanceInfo = useMemo(() => {
+  //   return findStrataAppearanceInfo(strataChannel);
+  // }, [strataChannel]);
 
-  console.log(strataAppearanceInfo);
+  // console.log(strataAppearanceInfo);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isOnMoveRef = useRef<boolean>(false);
