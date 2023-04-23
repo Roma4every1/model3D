@@ -41,7 +41,7 @@ interface CaratColumnInit {
   /** Настройки вертикальной оси колонки. */
   yAxis: CaratColumnYAxis | null,
   /** Подключённые каналы. */
-  channels: CaratColumnChannel[],
+  channels: CaratAttachedChannel[],
   /** Выборки кривых. */
   selection: CaratDataSelection | null,
   /** Граничные значения шкал кривых. */
@@ -62,6 +62,8 @@ interface CaratColumnSettings {
   width: number,
   /** Порядковый номер колонки. */
   index: number,
+  /** Цвет обводки колонки. */
+  borderColor: string,
 }
 
 /** Тип колонки: `background` для трека, `external` для корреляций, `normal` для всего остального. */
@@ -110,13 +112,20 @@ interface CaratCurveMeasure {
 }
 
 /** Подключённый к колонке канал. */
-interface CaratColumnChannel {
+interface CaratAttachedChannel {
   /** Название канала. */
   name: ChannelName,
   /** Тип присоединения. */
   attachOption: AttachOptionType,
   /** Список исключений для свойств. */
   exclude: string[] | null,
+
+  /** Тип подключённого канала. */
+  type?: string,
+  /** Найдены ли индексы колонок. */
+  applied?: boolean,
+  /** Индексы колонок. */
+  info?: CaratIntervalsInfo,
 }
 
 /** Словарь настроек отображения свойств канала. */
@@ -150,6 +159,12 @@ interface CaratTextPropertySettings {
 interface CaratBarPropertySettings {
   /** Выравнивание гистограммы. */
   align: 'left' | 'right' | 'center',
+  color: string,
+  backgroundColor: string,
+  borderColor: string,
+  thickness: string,
+  externalColor: string,
   /** Цвет внешней границы ячейки. */
   externalBorderColor: ColorHEX | null,
+  externalThickness: string,
 }

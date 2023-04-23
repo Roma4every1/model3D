@@ -30,5 +30,5 @@ function cubicBezierEaseInOut(t) {
 
 /** Находится ли точка внутри ограничивающего прямоугольника. */
 export function isRectInnerPoint(x: number, y: number, rect: BoundingRect) {
-  return x >= rect.left && x <= rect.right && y >= rect.bottom && y <= rect.top;
+  return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
 }

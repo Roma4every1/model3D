@@ -1,6 +1,6 @@
 import { useDispatch } from 'react-redux';
 import { MenuSection } from 'shared/ui';
-import { setCaratActiveColumn } from '../../store/carats.actions';
+import { setCaratActiveGroup } from '../../store/carats.actions';
 
 
 interface CaratColumnsPanelProps {
@@ -14,14 +14,14 @@ export const CaratColumnsPanel = ({id, stage, track}: CaratColumnsPanelProps) =>
   const dispatch = useDispatch();
   const columns = track.getColumns();
 
-  const setActiveColumn = (idx: number) => {
-    const activeColumn = columns[idx];
-    dispatch(setCaratActiveColumn(id, activeColumn));
+  const setActiveGroup = (idx: number) => {
+    const activeGroup = columns[idx];
+    dispatch(setCaratActiveGroup(id, activeGroup));
     track.setActiveColumn(idx); stage.render();
   };
 
-  const columnToLabel = (column: ICaratColumn, i: number) => {
-    const onClick = () => setActiveColumn(i);
+  const columnToLabel = (column: ICaratColumnGroup, i: number) => {
+    const onClick = () => setActiveGroup(i);
     return <div key={i} onClick={onClick}>{column.getLabel()}</div>;
   };
 

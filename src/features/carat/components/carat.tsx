@@ -1,11 +1,9 @@
 import { MouseEvent, WheelEvent } from 'react';
-import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { compareObjects} from 'shared/lib';
 import { currentWellIDSelector } from 'entities/parameters';
-import { channelDictSelector, channelSelector } from 'entities/channels';
-
-// import { findStrataAppearanceInfo } from '../lib/channels';
+import { channelDictSelector } from 'entities/channels';
 import { caratStateSelector } from '../store/carats.selectors';
 import { setCaratCanvas } from '../store/carats.actions';
 
@@ -14,33 +12,27 @@ import { setCaratCanvas } from '../store/carats.actions';
 export const Carat = ({id, channels}: FormState) => {
   const dispatch = useDispatch();
 
-  const { stage, canvas }: CaratState = useSelector(caratStateSelector.bind(id));
-  const channelData: ChannelDict = useSelector(channelDictSelector.bind(channels), compareObjects);
-
   const wellID = useSelector(currentWellIDSelector);
-  // const strataChannel: Channel = useSelector(channelSelector.bind('colColorSpr'));
+  const { stage, canvas, lookupNames }: CaratState = useSelector(caratStateSelector.bind(id));
 
-  // const strataAppearanceInfo = useMemo(() => {
-  //   return findStrataAppearanceInfo(strataChannel);
-  // }, [strataChannel]);
-
-  // console.log(strataAppearanceInfo);
+  const channelData: ChannelDict = useSelector(channelDictSelector.bind(channels), compareObjects);
+  const lookupData: ChannelDict = useSelector(channelDictSelector.bind(lookupNames), compareObjects);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isOnMoveRef = useRef<boolean>(false);
-  const observer = useRef<ResizeObserver>();
 
   // обновление данных каналов и активной скважины
   useEffect(() => {
     stage.setWell(wellID);
-    stage.setChannelData(channelData)
+    stage.setChannelData(channelData);
+    stage.render();
   }, [channelData, wellID, stage]);
 
+  // обновление данных каналов-справочников
   useEffect(() => {
-    if (!observer.current) observer.current = new ResizeObserver(() => stage.resize());
-    if (canvas) observer.current.observe(canvas);
-    return () => { if (canvas) observer.current.unobserve(canvas); };
-  }, [stage, canvas]);
+    stage.setLookupData(lookupData);
+    stage.render();
+  }, [lookupData, stage]);
 
   // обновление ссылки на холст
   useLayoutEffect(() => {
@@ -49,14 +41,10 @@ export const Carat = ({id, channels}: FormState) => {
     dispatch(setCaratCanvas(id, currentCanvas));
   });
 
-  const onWheel = (e: WheelEvent) => {
-    stage.handleMouseWheel(e.deltaY > 0 ? 5 : -5);
-  };
-
   const onMouseDown = (e: MouseEvent) => {
     const { offsetX: x, offsetY: y } = e.nativeEvent;
-    stage.handleMouseDown(x, y);
-    isOnMoveRef.current = true;
+    const isIntersect = stage.handleMouseDown(x, y);
+    if (isIntersect) isOnMoveRef.current = true;
   };
 
   const onMouseUp = () => {
@@ -66,6 +54,12 @@ export const Carat = ({id, channels}: FormState) => {
   const onMouseMove = (e: MouseEvent) => {
     if (!isOnMoveRef.current) return;
     stage.handleMouseMove(e.nativeEvent.movementY);
+  };
+
+  const onWheel = (e: WheelEvent) => {
+    const by = e.deltaY > 0 ? 5 : -5;
+    const { offsetX: x, offsetY: y } = e.nativeEvent;
+    stage.handleMouseWheel(x, y, by);
   };
 
   return (

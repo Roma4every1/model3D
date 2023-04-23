@@ -34,15 +34,7 @@ export function createRecord(id: TableRecordID, cells: any[], columns: TableColu
 
   for (const column of columns) {
     let value = cells[column.colIndex] ?? null;
-
-    if (value !== null) {
-      const type = column.type;
-      if (type === 'date') {
-        value = new Date(value);
-      } else if (type === 'real') {
-        if (typeof value === 'string') value = parseFloat(value.replace(',', '.'));
-      }
-    }
+    if (value !== null && column.type === 'date') value = new Date(value);
     result[column.field] = value;
   }
   return result;

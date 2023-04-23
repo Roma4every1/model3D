@@ -5,7 +5,7 @@ import { CaratDrawerConfig } from '../rendering/drawer-settings';
 export const drawerConfig: CaratDrawerConfig = {
   track: {
     body: {
-      margin: 2,
+      margin: 4,
       border: {color: '#111111', thickness: 1},
     },
     header: {

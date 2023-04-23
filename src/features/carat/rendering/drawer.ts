@@ -1,5 +1,4 @@
-import { CaratStage } from './stage';
-import { CaratElement, CaratElementType } from '../lib/types';
+import { CaratElementInterval } from '../lib/types';
 import { CaratDrawerConfig } from './drawer-settings';
 import { CaratTrackBodyDrawSettings, CaratTrackHeaderDrawSettings } from './drawer-settings';
 import { CaratColumnLabelDrawSettings, CaratColumnYAxisDrawSettings } from './drawer-settings';
@@ -13,11 +12,16 @@ interface ICaratDrawer {
   drawTrackBody(rect: BoundingRect, well: string): void
   drawColumnBody(rect: BoundingRect, label: string): void
   drawColumnYAxis(rect: BoundingRect, axis: CaratColumnYAxis, viewport: CaratViewport): void
-  drawElement(element: CaratElement): void
+  drawIntervals(rect: BoundingRect, viewport: CaratViewport, elements: CaratElementInterval[]): void
 }
 
 /** Отрисовщик каротажной диаграммы. */
 export class CaratDrawer implements ICaratDrawer {
+  /** Количество пикселей в метре: `96px = 2.54cm`. */
+  public static readonly pixelPerMeter = 100 * 96 / 2.54;
+  /** Коэффициент уплотнения DPI для улучшения чёткости изображения. */
+  public static readonly ratio = 2;
+
   /** Пустая функция. */
   private static readonly emptyFn = () => {};
   /** Контекст отрисовки. */
@@ -107,23 +111,30 @@ export class CaratDrawer implements ICaratDrawer {
     this.ctx.clearRect(x, y, width, height);
   }
 
+  public clearBoundingRect(rect: BoundingRect) {
+    this.ctx.clearRect(rect.left, rect.top, rect.width, rect.height);
+  }
+
   public drawTrackBody(rect: BoundingRect, well: string) {
-    const { top, left, width } = rect;
-    const { borderColor: bodyColor, borderThickness: bodyThickness } = this.trackBodySettings;
+    const { top, left, width, bottom } = rect;
     const { font, color, borderColor, borderThickness, height } = this.trackHeaderSettings;
+    const { borderColor: bodyColor, borderThickness: bodyThickness, margin } = this.trackBodySettings;
 
     this.setTextSettings(font, color, 'center', 'middle');
     this.ctx.fillText(well, width / 2, top + height / 2);
 
     this.setLineSettings(borderThickness, borderColor);
     this.ctx.strokeRect(left, top, width, height);
+
     this.setLineSettings(bodyThickness, bodyColor);
+    this.ctx.clearRect(left - margin, bottom, width + 2 * margin, margin);
     this.ctx.strokeRect(left, top, width, rect.height);
   }
 
   public drawColumnBody(rect: BoundingRect, label: string) {
     const { top, left, width, height } = rect;
     const { font, color } = this.columnLabelSettings;
+    this.ctx.clearRect(left, 0, width, top);
 
     this.setTextSettings(font, color, 'center', 'bottom');
     this.ctx.fillText(label, left + width / 2, top, width);
@@ -150,7 +161,7 @@ export class CaratDrawer implements ICaratDrawer {
     this.ctx.beginPath();
 
     for (let y = minY; y < maxY; y += step) {
-      const canvasY = top + (y - viewportY) * scale * CaratStage.ratio * window.devicePixelRatio;
+      const canvasY = top + (y - viewportY) * scale * CaratDrawer.ratio * window.devicePixelRatio;
       this.ctx.moveTo(left, canvasY);
       this.ctx.lineTo(markEnd, canvasY);
       drawMarksFn(y, canvasY);
@@ -158,29 +169,25 @@ export class CaratDrawer implements ICaratDrawer {
     this.ctx.stroke();
   }
 
-  public drawElement(element: CaratElement) {
-    switch (element.type) {
+  public drawIntervals(rect: BoundingRect, viewport: CaratViewport, elements: CaratElementInterval[]) {
+    const { y, scale } = viewport;
+    const m = CaratDrawer.ratio * window.devicePixelRatio * scale;
+    const { top, left, bottom, width } = rect;
 
-      case CaratElementType.Interval: {
-        this.ctx.lineWidth = 2;
-        this.ctx.strokeStyle = element.style.borderColor;
-        this.ctx.fillStyle = element.style.backgroundColor;
+    this.ctx.lineWidth = 2;
+    this.ctx.strokeStyle = 'black';
+    this.ctx.fillStyle = 'gray';
 
-        const intervalY = 115 + (element.top - this.currentTop);
-        const height = element.base - element.top;
-        this.ctx.fillRect(this.currentLeft, intervalY, this.currentWidth, height);
-        this.ctx.strokeRect(this.currentLeft, intervalY, this.currentWidth, height);
-        break;
-      }
+    for (const element of elements) {
+      let canvasTop = top + (element.top - y) * m;
+      if (canvasTop >= bottom) continue;
+      let canvasBase = top + (element.base - y) * m;
+      if (canvasBase <= top) continue;
 
-      case CaratElementType.Text: {
-        this.ctx.fillStyle = element.style.color;
-        this.ctx.fillText(element.text, this.currentLeft, this.currentTop);
-        // add background
-        break;
-      }
-
-      default: {}
+      if (canvasTop <= top) canvasTop = top; // TODO: убрать
+      const height = canvasBase - canvasTop;
+      this.ctx.fillRect(left, canvasTop, width, height);
+      this.ctx.strokeRect(left, canvasTop, width, height);
     }
   }
 }

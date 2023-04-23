@@ -1,48 +1,51 @@
 import { CaratDrawer } from './drawer';
-import { CaratCurveAxis, CaratIntervalStyleDict } from '../lib/types';
+import { CaratCurveAxis, CaratElementInterval, CaratIntervalStyleDict } from '../lib/types';
+import { applyIndexesToModel } from '../lib/initialization';
+import { getCaratIntervals } from '../lib/channels';
 
 
-/** Колонка каротажной диаграммы. */
-export class CaratColumn implements ICaratColumn {
+/** Группа колонок каротажной диаграммы. */
+export class CaratColumnGroup implements ICaratColumnGroup {
+  /** Ссылка на отрисовщик. */
+  private readonly drawer: CaratDrawer;
   /** Ограничивающий прямоугольник колонки. */
   private readonly rect: BoundingRect;
   /** Ограничивающий прямоугольник для элементов. */
   private readonly elementsRect: BoundingRect;
-
-  /** Имя колонки. */
-  private label: string;
   /** Высота заголовка колонки. */
   private headerHeight: number;
 
-  /** Настройки вертикальной оси колонки. */
-  private readonly yAxis: CaratColumnYAxis;
+  /** Имя колонки. */
+  private label: string;
 
   /** Горизонатльные оси для кривых. */
   private curveAxes: CaratCurveAxis[];
   /** Стиль горизонтальных осей. */
-  private curveAxisStyle: CaratColumnXAxis;
+  private readonly xAxis: CaratColumnXAxis;
+  /** Настройки вертикальной оси колонки. */
+  private readonly yAxis: CaratColumnYAxis;
 
-  /** Ссылка на отрисовщик. */
-  private readonly drawer: CaratDrawer;
-  /** Пласты для отрисовки. */
-  private readonly elements: any[];
-  /** Словарь свойств внешнего вида пластов. */
-  private readonly styleDict: CaratIntervalStyleDict;
+  private readonly zones: CaratZone[];
+  /** Каротажный колонки в группе. */
+  private readonly columns: CaratColumn[];
 
-  /** Массив подключённых свойств канала. */
-  private readonly properties: string[];
-
-  constructor(rect: BoundingRect, init: CaratColumnInit, drawer: CaratDrawer) {
-    this.rect = rect;
+  constructor(rect: BoundingRect, zones: CaratZone[], drawer: CaratDrawer, init: CaratColumnInit) {
     this.drawer = drawer;
-    this.label = init.settings.label;
-    this.elements = [];
+    this.rect = rect;
+    this.zones = zones;
+    this.xAxis = init.xAxis;
     this.yAxis = init.yAxis;
+    this.label = init.settings.label;
+    this.yAxis.absMarks = true;
 
     this.headerHeight = 50;
     this.elementsRect = {...rect};
     this.elementsRect.top += this.headerHeight;
     this.elementsRect.height -= this.headerHeight;
+
+    this.columns = init.channels.map((channel) => {
+      return new CaratColumn({...this.elementsRect}, drawer, channel);
+    });
   }
 
   public getLabel(): string {
@@ -70,19 +73,76 @@ export class CaratColumn implements ICaratColumn {
     this.rect.bottom = this.rect.top + height;
     this.elementsRect.height = height - this.headerHeight;
     this.elementsRect.bottom = this.elementsRect.top + this.elementsRect.height;
+    for (const column of this.columns) column.setRect({...this.elementsRect});
+  }
+
+  public setScale(scale: number) {
+    for (const column of this.columns) column.setScale(scale);
   }
 
   public setYAxisStep(step: number) {
     this.yAxis.step = step;
   }
 
-  public updateData() {
-    // device pixel ratio используется только для элементов, то, что в пикселях - нет
+  public setChannelData(channelData: ChannelDict) {
+    for (const column of this.columns) column.setChannelData(channelData);
+  }
+
+  public setLookupData(lookupData: ChannelDict) {
+    for (const column of this.columns) column.setLookupData(lookupData);
   }
 
   public render(viewport: CaratViewport) {
-    this.drawer.drawColumnBody(this.elementsRect, this.label);
-    // for (const element of this.elements) this.drawer.drawElement(element);
+    for (const column of this.columns) column.render(viewport);
     if (this.yAxis.show) this.drawer.drawColumnYAxis(this.elementsRect, this.yAxis, viewport);
+    this.drawer.drawColumnBody(this.elementsRect, this.label);
+  }
+}
+
+/** Колонка каротажной диаграммы. */
+export class CaratColumn implements ICaratColumn {
+  /** Ссылка на отрисовщик. */
+  private readonly drawer: CaratDrawer;
+  /** Массив подключённых свойств канала. */
+  private readonly channel: CaratAttachedChannel;
+
+  /** Ограничивающий прямоугольник колонки. */
+  private rect: BoundingRect;
+  /** Пласты для отрисовки. */
+  private elements: CaratElementInterval[];
+  /** Словарь свойств внешнего вида пластов. */
+  private readonly styleDict: CaratIntervalStyleDict;
+
+  constructor(rect: BoundingRect, drawer: CaratDrawer, channel: CaratAttachedChannel) {
+    this.rect = rect;
+    this.drawer = drawer;
+    this.channel = channel;
+    this.elements = [];
+  }
+
+  public setRect(rect: BoundingRect) {
+    this.rect = rect;
+  }
+
+  public setScale(scale: number) {
+
+  }
+
+  public setChannelData(channelData: ChannelDict) {
+    if (this.channel.type !== 'intervals') return;
+    const channel = channelData[this.channel.name];
+    const channelColumns = channel?.data?.columns;
+
+    if (!channelColumns) return;
+    if (!this.channel.applied) applyIndexesToModel(this.channel, channelColumns);
+    this.elements = getCaratIntervals(channel.data.rows, this.channel.info);
+  }
+
+  public setLookupData(lookupData: ChannelDict) {
+
+  }
+
+  public render(viewport: CaratViewport) {
+    this.drawer.drawIntervals(this.rect, viewport, this.elements);
   }
 }

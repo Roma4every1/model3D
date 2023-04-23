@@ -81,18 +81,10 @@ export async function getPresentationChannels(id: FormID, ids: FormID[]) {
   const parentNames = await formsAPI.getFormChannelsList(id);
   const childrenNames = await Promise.all(ids.map((id) => formsAPI.getFormChannelsList(id)));
 
-  if (id.endsWith('a794ef38-f2d5-426d-9ab4-70718b0b252f')) parentNames.push(
-    'perfTypeSpr', 'perfColorSpr',
-    'satTypeSpr', 'satColorSpr',
-    'colTypeSpr', 'colColorSpr'
-  );
-
   const dict = {};
   const all = new Set(parentNames);
 
   childrenNames.forEach((childNames, i) => {
-    if (ids[i].endsWith('47d20d1d-bd04-4191-bf4e-f08032ae04fa'))
-      childNames = ['stratums', 'Wells geometry', 'Litology', 'Perforations', 'Carottage curves',];
     dict[ids[i]] = childNames;
     for (const name of childNames) all.add(name);
   });
@@ -113,21 +105,10 @@ export async function createFormStates(
 }
 
 async function createFormSettings({id, type}: FormDataWMR): Promise<FormSettings> {
-  if (type === 'dataSet') {
+  if (type === 'dataSet' || type === 'carat') {
     const res = await formsAPI.getFormSettings(id);
     if (!res.ok) return {};
-    const settings = res.data;
-
-    const resPlugin = await formsAPI.getPluginData(id, 'tableColumnHeaderSetter');
-    const rules: any[] = resPlugin.ok ? resPlugin.data?.tableColumnHeaderSetter?.specialLabel : [];
-
-    settings.headerSetterRules = rules?.map((item): HeaderSetterRule => ({
-      parameter: item['@switchingParameterName'],
-      property: item['@ChannelPropertyName'],
-      column: item['@columnName'],
-    })) ?? [];
-
-    return settings;
+    return res.data;
   }
 
   if (type === 'chart') {

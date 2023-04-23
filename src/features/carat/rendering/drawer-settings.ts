@@ -1,4 +1,5 @@
-import {CaratStage} from "./stage";
+import { CaratDrawer } from "./drawer";
+
 
 /** Настройки отрисовщика каротажа. */
 export interface CaratDrawerConfig {
@@ -92,42 +93,42 @@ export function createTrackBodyDrawSettings(config: CaratDrawerConfig): CaratTra
   const { margin, border } = config.track.body;
 
   return {
-    margin: CaratStage.ratio * margin,
+    margin: CaratDrawer.ratio * margin,
     borderColor: border.color,
-    borderThickness: CaratStage.ratio * border.thickness,
+    borderThickness: CaratDrawer.ratio * border.thickness,
   };
 }
 
 /** Создаёт настройки отрисовки трека по конфигу. */
 export function createTrackHeaderDrawSettings(config: CaratDrawerConfig): CaratTrackHeaderDrawSettings {
   const { padding, text, border } = config.track.header;
-  const headerFontSize = CaratStage.ratio * text.font.size;
+  const headerFontSize = CaratDrawer.ratio * text.font.size;
 
   return {
-    height: headerFontSize + 2 * CaratStage.ratio * padding,
-    padding: CaratStage.ratio * padding,
+    height: headerFontSize + 2 * CaratDrawer.ratio * padding,
+    padding: CaratDrawer.ratio * padding,
     font: `${text.font.style} ${headerFontSize}px ${text.font.family}`,
     color: text.color,
     borderColor: border.color,
-    borderThickness: CaratStage.ratio * border.thickness,
+    borderThickness: CaratDrawer.ratio * border.thickness,
   };
 }
 
 /** Создаёт настройки отрисовки колонки по конфигу. */
 export function createColumnLabelDrawSettings(config: CaratDrawerConfig): CaratColumnLabelDrawSettings {
   const { font, color } = config.column.label;
-  const labelFontSize = CaratStage.ratio * font.size;
+  const labelFontSize = CaratDrawer.ratio * font.size;
   return {font: `${font.style} ${labelFontSize}px ${font.family}`, color};
 }
 
 /** Создаёт настройки отрисовки колонки по конфигу. */
 export function createColumnYAxisDrawSettings(config: CaratDrawerConfig): CaratColumnYAxisDrawSettings {
   const { font, color, markSize } = config.column.verticalAxis;
-  const axisFontSize = CaratStage.ratio * font.size;
+  const axisFontSize = CaratDrawer.ratio * font.size;
 
   return {
     font: `${font.style} ${axisFontSize}px ${font.family}`,
     color: color,
-    markSize: CaratStage.ratio * markSize,
+    markSize: CaratDrawer.ratio * markSize,
   };
 }

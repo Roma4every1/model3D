@@ -70,6 +70,6 @@ function createFormState(id: FormID, state: FormState, channelDict: ChannelDict,
   } else if (type === 'map') {
     dispatch(createMapState(id, state.parent));
   } else if (type === 'carat') {
-    dispatch(createCaratState(id, channelDict));
+    dispatch(createCaratState(id, channelDict, state));
   }
 }

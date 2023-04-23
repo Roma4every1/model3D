@@ -6,11 +6,11 @@ import { MenuSection } from 'shared/ui';
 
 interface CaratActiveColumnPanelProps {
   stage: ICaratStage,
-  column: ICaratColumn,
+  column: ICaratColumnGroup,
 }
 
 
-export const CaratActiveColumnPanel = ({stage, column}: CaratActiveColumnPanelProps) => {
+export const CaratActiveGroupPanel = ({stage, column}: CaratActiveColumnPanelProps) => {
   const [label, setLabel] = useState('');
   const [width, setWidth] = useState(null);
   const [step, setStep] = useState(null);

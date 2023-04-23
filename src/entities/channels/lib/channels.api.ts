@@ -31,31 +31,10 @@ export class ChannelsAPI {
     return this.baseAPI.request<Expected>(req);
   }
 
-  /** Запрос параметров, необходимых для наполнения канала. */
-  public async getChannelParameters(channelName: ChannelName): Promise<Res<ParameterID[]>> {
-    const query = {sessionId: this.baseAPI.sessionID, channelName};
-    return await this.request<ParameterID[]>({path: 'getNeededParamForChannel', query});
-  }
-
   /** Запрос статических данных канала. */
   public async getChannelInfo(channelName: ChannelName): Promise<Res<ChannelInfo>> {
-    const resParams = await this.getChannelParameters(channelName);
-    const params = resParams.ok ? resParams.data : [];
-    const sessionID = this.baseAPI.sessionID;
-    const body = JSON.stringify({sessionId: sessionID, channelName, paramValues: []});
-
-    const req: WRequest = {method: 'POST', path: 'getChannelDataByName', body};
-    const res = await this.request<ChannelDTO>(req);
-    if (!res.ok) return res as Res<ChannelInfo>;
-    const channelDTO = res.data;
-
-    const info: ChannelInfo = {
-      displayName: channelDTO.displayName ?? '',
-      parameters: params,
-      properties: channelDTO.properties ?? [],
-      currentRowObjectName: channelDTO.currentRowObjectName,
-    };
-    return {ok: true, data: info};
+    const query = {sessionId: this.baseAPI.sessionID, channelName};
+    return await this.baseAPI.request<ChannelInfo>({path: 'channelSettings', query});
   }
 
   /** Запрос данных канала. */
@@ -65,7 +44,7 @@ export class ChannelsAPI {
     applyQuerySettings(paramValues, query);
     const body = JSON.stringify({sessionId: sessionID, channelName: name, paramValues});
 
-    const req: WRequest = {method: 'POST', path: 'getChannelDataByName', body};
+    const req: WRequest = {method: 'POST', path: 'channelData', body};
     const res = await this.request<ChannelDTO>(req);
     if (res.ok === false) return res as Res<ChannelDataDTO>;
     const data = res.data.data;

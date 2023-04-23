@@ -5,7 +5,7 @@ import { caratStateSelector } from '../../store/carats.selectors';
 import './track-edit-panel.scss';
 import { CaratScalePanel } from './scale-panel';
 import { CaratColumnsPanel } from './columns-panel';
-import { CaratActiveColumnPanel } from './active-column-panel';
+import { CaratActiveGroupPanel } from './active-column-panel';
 
 
 export const TracksEditPanel = ({id}: FormEditPanelProps) => {
@@ -19,7 +19,7 @@ export const TracksEditPanel = ({id}: FormEditPanelProps) => {
     <div className={'menu'}>
       <CaratScalePanel stage={stage} track={track}/>
       <CaratColumnsPanel id={id} stage={stage} track={track}/>
-      <CaratActiveColumnPanel stage={stage} column={state.activeColumn}/>
+      <CaratActiveGroupPanel stage={stage} column={state.activeGroup}/>
     </div>
   );
 };

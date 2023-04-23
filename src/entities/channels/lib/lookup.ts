@@ -2,8 +2,8 @@
 export function createLookupChannels(properties: ChannelProperty[]): ChannelName[] {
   const result = new Set<ChannelName>();
   for (const property of properties) {
-    const lookupChannel = property.lookupChannelName;
-    if (lookupChannel) result.add(lookupChannel);
+    const lookupChannels = property.lookupChannels;
+    if (lookupChannels) lookupChannels.forEach((channel) => result.add(channel));
   }
   return [...result];
 }

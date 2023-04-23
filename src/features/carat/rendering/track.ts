@@ -1,6 +1,5 @@
-import { CaratStage } from './stage';
 import { CaratDrawer } from './drawer';
-import { CaratColumn } from './column';
+import { CaratColumnGroup, CaratColumn } from './column';
 
 
 /** Трек. */
@@ -8,7 +7,7 @@ export class CaratTrack implements ICaratTrack {
   /** Номер скважины трека. */
   private well: string;
   /** Список колонок. */
-  private readonly columns: CaratColumn[];
+  private readonly groups: CaratColumnGroup[];
   /** Колонка типа `background`. */
   private readonly backgroundColumn: CaratColumn;
 
@@ -19,37 +18,44 @@ export class CaratTrack implements ICaratTrack {
   /** Порт просмотра трека. */
   private readonly viewport: CaratViewport;
 
+  private readonly initColumns: CaratColumnInit[];
+
   constructor(
     rect: BoundingRect, columns: CaratColumnInit[],
-    viewport: CaratViewport, drawer: CaratDrawer
+    viewport: CaratViewport, zones: CaratZone[], drawer: CaratDrawer
   ) {
     this.rect = rect;
     this.drawer = drawer;
     this.viewport = viewport;
+    this.groups = [];
+    this.initColumns = columns;
 
     let x = rect.left;
     const top = rect.top + drawer.trackHeaderSettings.height;
     const bottom = rect.bottom;
     const height = top - bottom;
-    this.columns = [];
 
     for (const column of columns) {
-      const type = column.settings.type;
-      const width = CaratStage.ratio * column.settings.width;
+      let { type, width } = column.settings;
+      width = CaratDrawer.ratio * column.settings.width;
       const columnRect: BoundingRect = {top, left: x, bottom, right: x + width, width, height};
 
       if (type === 'normal') {
-        this.columns.push(new CaratColumn({...columnRect}, column, drawer));
+        this.groups.push(new CaratColumnGroup({...columnRect}, zones, drawer, column));
         x += width;
       } else if (type === 'background') {
         const backColumnRect = {...rect, top};
-        this.backgroundColumn = new CaratColumn(backColumnRect, column, drawer);
+        this.backgroundColumn = new CaratColumn(backColumnRect, drawer, column.channels[0]);
       }
     }
   }
 
-  public getColumns(): CaratColumn[] {
-    return this.columns;
+  public getInitColumns(): CaratColumnInit[] {
+    return this.initColumns;
+  }
+
+  public getColumns(): CaratColumnGroup[] {
+    return this.groups;
   }
 
   public getViewport(): CaratViewport {
@@ -63,8 +69,9 @@ export class CaratTrack implements ICaratTrack {
     this.well = well;
   }
 
-  public setViewportScale(scale: number) {
-
+  public setScale(scale: number) {
+    this.viewport.scale = scale;
+    for (const group of this.groups) group.setScale(scale);
   }
 
   public setActiveColumn(idx: number) {
@@ -75,6 +82,28 @@ export class CaratTrack implements ICaratTrack {
 
   }
 
+  public setChannelData(channelData: ChannelDict) {
+    this.backgroundColumn.setChannelData(channelData);
+    this.groups.forEach(c => c.setChannelData(channelData));
+    // let initY = Infinity;
+    // for (const channelName in data) {
+    //   const dataModel = data[channelName];
+    //   const datum = channelData[channelName].data;
+    //
+    //   if (!datum?.columns) continue;
+    //   if (!dataModel.applied) applyIndexesToModel(dataModel, datum.columns);
+    //
+    //   const intervals = getCaratIntervals(datum.rows, dataModel.info);
+    //   initY = Math.min(initY, ...intervals.map(i => i.top));
+    //   dataModel.data = intervals;
+    // }
+    // viewport.y = initY === Infinity ? 0 : initY;
+  }
+
+  public setLookupData(lookupData: ChannelDict) {
+
+  }
+
   /* --- Rendering --- */
 
   public setHeight(height: number) {
@@ -82,11 +111,14 @@ export class CaratTrack implements ICaratTrack {
     this.rect.bottom = this.rect.top + height;
 
     const columnHeight = height - this.drawer.trackHeaderSettings.height;
-    for (const column of this.columns) column.setHeight(columnHeight);
+    for (const group of this.groups) group.setHeight(columnHeight);
+    this.backgroundColumn.setRect({...this.rect, top: this.rect.top + 50 + this.drawer.trackHeaderSettings.height});
   }
 
   public render() {
+    this.drawer.clearBoundingRect(this.rect);
+    this.backgroundColumn.render(this.viewport);
+    for (const group of this.groups) group.render(this.viewport);
     this.drawer.drawTrackBody(this.rect, this.well);
-    for (const column of this.columns) column.render(this.viewport);
   }
 }

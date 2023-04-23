@@ -1,4 +1,4 @@
-import { mockCaratSettings } from '../lib/data';
+// import { mockCaratSettings } from '../lib/data';
 import { settingsToState } from '../lib/initialization';
 
 /* --- Action Types --- */
@@ -13,18 +13,18 @@ export enum CaratsActions {
 
 interface ActionCreate {
   type: CaratsActions.CREATE,
-  payload: {id: FormID, channels: ChannelDict},
+  payload: {id: FormID, channels: ChannelDict, formState: FormState},
 }
-interface ActionSetColumn {
+interface ActionSetColumnGroup {
   type: CaratsActions.SET_ACTIVE_COLUMN,
-  payload: {id: FormID, column: ICaratColumn},
+  payload: {id: FormID, group: ICaratColumnGroup},
 }
 interface ActionSetCanvas {
   type: CaratsActions.SET_CANVAS,
   payload: {id: FormID, canvas: HTMLCanvasElement},
 }
 
-export type CaratsAction = ActionCreate | ActionSetColumn | ActionSetCanvas;
+export type CaratsAction = ActionCreate | ActionSetColumnGroup | ActionSetCanvas;
 
 /* --- Init State & Reducer --- */
 
@@ -34,21 +34,23 @@ export const caratsReducer = (state: CaratsState = init, action: CaratsAction): 
   switch (action.type) {
 
     case CaratsActions.CREATE: {
-      const { id, channels } = action.payload;
-      return {...state, [id]: settingsToState(channels, mockCaratSettings)};
+      const { id, channels, formState } = action.payload;
+      return {...state, [id]: settingsToState(formState, channels)};
     }
 
     case CaratsActions.SET_ACTIVE_COLUMN: {
-      const { id, column } = action.payload;
-      return {...state, [id]: {...state[id], activeColumn: column}};
+      const { id, group } = action.payload;
+      return {...state, [id]: {...state[id], activeGroup: group}};
     }
 
     case CaratsActions.SET_CANVAS: {
       const { id, canvas } = action.payload;
-      const caratState = state[id];
+      const { stage, observer, canvas: oldCanvas } = state[id];
+      if (oldCanvas) observer.unobserve(oldCanvas);
 
-      caratState.stage.setCanvas(canvas);
-      return {...state, [id]: {...state[id], canvas: canvas}};
+      stage.setCanvas(canvas);
+      observer.observe(canvas);
+      return {...state, [id]: {...state[id], canvas}};
     }
 
     default: return state;
