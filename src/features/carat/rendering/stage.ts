@@ -2,6 +2,7 @@ import { CaratTrack } from './track';
 import { CaratDrawer } from './drawer';
 import { calculateTrackWidth } from '../lib/initialization';
 import { moveSmoothly, isRectInnerPoint } from '../lib/utils';
+import { defaultSettings } from '../lib/constants';
 
 
 /** Сцена диаграммы. */
@@ -10,10 +11,6 @@ export class CaratStage implements ICaratStage {
   private readonly drawer: CaratDrawer;
   /** Ссылка на элемент холста. */
   private canvas: HTMLCanvasElement;
-  /** Ширина области отрисовки. */
-  private width: number;
-  /** Высота области отрисовки. */
-  private height: number;
 
   /** Список треков. */
   private readonly trackList: CaratTrack[];
@@ -25,15 +22,9 @@ export class CaratStage implements ICaratStage {
     this.drawer = drawer;
     const trackWidth = calculateTrackWidth(init.columns);
     const trackMargin = drawer.trackBodySettings.margin;
-
-    const rect: BoundingRect = {
-      top: trackMargin, left: trackMargin,
-      bottom: 200 + trackMargin, right: trackWidth + trackMargin,
-      width: trackWidth, height: 200,
-    };
-
-    const scale = CaratDrawer.pixelPerMeter / (init.settings.scale ?? 400);
-    this.trackList = [new CaratTrack(rect, init.columns, {y: 2500, scale}, zones, drawer)];
+    const rect: BoundingRect = {top: trackMargin, left: trackMargin, width: trackWidth, height: 0};
+    const scale = CaratDrawer.pixelPerMeter / (init.settings.scale ?? defaultSettings.scale);
+    this.trackList = [new CaratTrack(rect, init.columns, {y: 0, scale}, zones, drawer)];
   }
 
   public getCaratSettings(): CaratSettings {
@@ -64,6 +55,11 @@ export class CaratStage implements ICaratStage {
     if (activeTrack) activeTrack.setChannelData(channelData);
   }
 
+  public async setCurveData(channelData: ChannelDict) {
+    const activeTrack = this.trackList[0];
+    if (activeTrack) await activeTrack.setCurveData(channelData);
+  }
+
   public setLookupData(lookupData: ChannelDict) {
     const activeTrack = this.trackList[0];
     if (activeTrack) activeTrack.setLookupData(lookupData);
@@ -74,14 +70,12 @@ export class CaratStage implements ICaratStage {
   }
 
   public handleMouseDown(x: number, y: number): boolean {
-    x *= CaratDrawer.ratio; y *= CaratDrawer.ratio;
     const track = this.trackList.find((t) => isRectInnerPoint(x, y, t.getRect()));
     if (track) track.handleMouseDown(x, y);
     return track !== undefined;
   }
 
   public handleMouseWheel(x: number, y: number, by: number) {
-    x *= CaratDrawer.ratio; y *= CaratDrawer.ratio;
     const track = this.trackList.find((t) => isRectInnerPoint(x, y, t.getRect()));
     if (track) moveSmoothly(track.getViewport(), this, by);
   }
@@ -90,7 +84,7 @@ export class CaratStage implements ICaratStage {
     const activeTrack = this.trackList[0];
     if (!activeTrack) return;
     const viewport = activeTrack.getViewport();
-    viewport.y -= by / viewport.scale;
+    viewport.y -= by / (viewport.scale * window.devicePixelRatio);
     this.render();
   }
 
@@ -100,14 +94,11 @@ export class CaratStage implements ICaratStage {
 
     if (this.canvas.width !== width) {
       this.canvas.width = width;
-      this.width = width;
     }
     if (this.canvas.height !== height) {
       this.canvas.height = height;
-      this.height = height;
-
-      const trackHeight = height - 2 * this.drawer.trackBodySettings.margin;
-      for (const track of this.trackList) { track.setHeight(trackHeight); track.render(); }
+      const trackHeight = this.canvas.clientHeight - 2 * this.drawer.trackBodySettings.margin;
+      for (const track of this.trackList) track.setHeight(trackHeight)
     }
   }
 

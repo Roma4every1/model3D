@@ -94,11 +94,16 @@ interface CaratColumnYAxis {
 /** Выборка каротажных кривых для колонки. */
 interface CaratDataSelection {
   /** Типы кривых. */
-  types: {expression: string, isSelected: boolean}[]
+  types: CaratCurveSelector[]
   /** Начальная дата. */
   start: string,
   /** Конечная дата. */
   end: string,
+}
+
+interface CaratCurveSelector {
+  expression: string,
+  isSelected: boolean,
 }
 
 /** Граничные значения шкалы для кривой. */
@@ -121,11 +126,11 @@ interface CaratAttachedChannel {
   exclude: string[] | null,
 
   /** Тип подключённого канала. */
-  type?: string,
+  type?: CaratChannelType,
   /** Найдены ли индексы колонок. */
   applied?: boolean,
   /** Индексы колонок. */
-  info?: CaratIntervalsInfo,
+  info?: CaratChannelInfo,
 }
 
 /** Словарь настроек отображения свойств канала. */

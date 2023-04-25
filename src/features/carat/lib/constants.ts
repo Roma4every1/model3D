@@ -1,6 +1,19 @@
 import { CaratDrawerConfig } from '../rendering/drawer-settings';
 
 
+/** Значения некоторых настроек по умолчанию. */
+export const defaultSettings = {
+  scale: 400,
+};
+
+/** Свойства для идентификации каналов. */
+export const criterionProperties: Record<CaratChannelType, Record<string, string>> = {
+  'lithology': {top: 'TOP', base: 'BASE', stratum: 'STRATUM ID'},
+  'perforations': {top: 'TOP', base: 'BASE', type: 'TYPE', date: 'DATE'},
+  'curve-set': {id: 'CURVE ID', type: 'CURVE TYPE', date: 'DATE'},
+  'curve-data': {id: 'CURVE ID', data: 'CURVE DATA', top: 'MIN DEPTH', left: 'MIN VALUE'},
+};
+
 /** Настройки отрисовки. */
 export const drawerConfig: CaratDrawerConfig = {
   track: {

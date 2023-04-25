@@ -1,6 +1,3 @@
-import { CaratDrawer } from "./drawer";
-
-
 /** Настройки отрисовщика каротажа. */
 export interface CaratDrawerConfig {
   /** Настройки отрисовки трека. */
@@ -93,42 +90,42 @@ export function createTrackBodyDrawSettings(config: CaratDrawerConfig): CaratTra
   const { margin, border } = config.track.body;
 
   return {
-    margin: CaratDrawer.ratio * margin,
+    margin: margin,
     borderColor: border.color,
-    borderThickness: CaratDrawer.ratio * border.thickness,
+    borderThickness: border.thickness,
   };
 }
 
 /** Создаёт настройки отрисовки трека по конфигу. */
 export function createTrackHeaderDrawSettings(config: CaratDrawerConfig): CaratTrackHeaderDrawSettings {
   const { padding, text, border } = config.track.header;
-  const headerFontSize = CaratDrawer.ratio * text.font.size;
+  const headerFontSize = text.font.size;
 
   return {
-    height: headerFontSize + 2 * CaratDrawer.ratio * padding,
-    padding: CaratDrawer.ratio * padding,
+    height: headerFontSize + 2 * padding,
+    padding: padding,
     font: `${text.font.style} ${headerFontSize}px ${text.font.family}`,
     color: text.color,
     borderColor: border.color,
-    borderThickness: CaratDrawer.ratio * border.thickness,
+    borderThickness: border.thickness,
   };
 }
 
 /** Создаёт настройки отрисовки колонки по конфигу. */
 export function createColumnLabelDrawSettings(config: CaratDrawerConfig): CaratColumnLabelDrawSettings {
   const { font, color } = config.column.label;
-  const labelFontSize = CaratDrawer.ratio * font.size;
+  const labelFontSize = font.size;
   return {font: `${font.style} ${labelFontSize}px ${font.family}`, color};
 }
 
 /** Создаёт настройки отрисовки колонки по конфигу. */
 export function createColumnYAxisDrawSettings(config: CaratDrawerConfig): CaratColumnYAxisDrawSettings {
   const { font, color, markSize } = config.column.verticalAxis;
-  const axisFontSize = CaratDrawer.ratio * font.size;
+  const axisFontSize = font.size;
 
   return {
     font: `${font.style} ${axisFontSize}px ${font.family}`,
     color: color,
-    markSize: CaratDrawer.ratio * markSize,
+    markSize: markSize,
   };
 }

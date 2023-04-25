@@ -24,8 +24,8 @@ export const Carat = ({id, channels}: FormState) => {
   // обновление данных каналов и активной скважины
   useEffect(() => {
     stage.setWell(wellID);
-    stage.setChannelData(channelData);
-    stage.render();
+    stage.setChannelData(channelData); stage.render();
+    stage.setCurveData(channelData).then(() => stage.render());
   }, [channelData, wellID, stage]);
 
   // обновление данных каналов-справочников

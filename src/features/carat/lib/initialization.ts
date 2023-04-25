@@ -1,6 +1,6 @@
 import { CaratStage } from '../rendering/stage';
 import { CaratDrawer } from '../rendering/drawer';
-import { getCaratChannelType, findIntervalsIndexes } from './channels';
+import { identifyCaratChannel } from './channels';
 import { drawerConfig } from './constants';
 
 
@@ -13,13 +13,12 @@ export function settingsToState(formState: FormState, channelDict: ChannelDict):
   for (const column of init.columns) {
     for (const attachedChannel of column.channels) {
       const channel = channelDict[attachedChannel.name];
-      const channelType = getCaratChannelType(channel);
+      identifyCaratChannel(attachedChannel, channel);
 
-      attachedChannel.type = channelType;
-      attachedChannel.applied = false;
-
-      if (channelType === 'intervals') {
-        attachedChannel.info = findIntervalsIndexes(channel);
+      if (attachedChannel.type?.endsWith('data')) {
+        const name = attachedChannel.name;
+        const idx = channels.findIndex(c => c === name);
+        channels.splice(idx, 1);
       }
     }
   }
@@ -41,24 +40,8 @@ function sortColumnsFn(a: CaratColumnInit, b: CaratColumnInit) {
 export function calculateTrackWidth(columns: CaratColumnInit[]) {
   let trackWidth = 0;
   for (const column of columns) {
-    // const { type, width } = column.settings;
-    // if (type === 'normal') trackWidth += width;
-    const id = column.id;
-    const width = column.settings.width;
-    if (id !== 'track' && id !== 'correlations') trackWidth += width;
+    const { type, width } = column.settings;
+    if (type === 'normal') trackWidth += width;
   }
-  return CaratDrawer.ratio * trackWidth;
-}
-
-export function applyIndexesToModel(model: CaratAttachedChannel, columns: ChannelColumn[]) {
-  if (model.type === 'intervals') {
-    const topName = model.info.top.name;
-    const baseName = model.info.base.name;
-
-    columns.forEach(({ Name: name }, i) => {
-      if (name === topName) return model.info.top.index = i;
-      if (name === baseName) return model.info.base.index = i;
-    });
-  }
-  model.applied = true;
+  return trackWidth;
 }

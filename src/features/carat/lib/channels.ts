@@ -1,76 +1,75 @@
-import { CaratDrawer } from '../rendering/drawer';
-import { CaratElementInterval, CaratElementType } from './types';
+import { CaratElementCurve, CaratElementInterval } from './types';
+import { criterionProperties } from './constants';
+import { channelsAPI } from '../../../entities/channels/lib/channels.api';
 
 
-// /** Канал геометрии скважин.
-//  * Свойства: WELL ID, DEPTH, ABS MARK.
-//  * */
-// export function isGeometryChannel(channel: Channel): boolean {
-//   const propertyNames = channel.info.properties.map((property) => property.name.toUpperCase());
-//   const hasDepth = propertyNames.some((name) => name === 'DEPTH');
-//   return hasDepth && propertyNames.some((name) => name === 'ABSMARK');
-// }
-
-export function getCaratChannelType(channel: Channel) {
-  if (isLithologyChannel(channel)) return 'intervals';
-  return '';
+export function identifyCaratChannel(attachment: CaratAttachedChannel, channel: Channel) {
+  for (const channelType in criterionProperties) {
+    const info = createInfo(channel, criterionProperties[channelType]);
+    if (info) {
+      attachment.type = channelType as CaratChannelType;
+      attachment.info = info as any;
+      attachment.applied = false;
+      break;
+    }
+  }
 }
 
-/** Канал литологии.
- * Свойства: TOP, BASE.
- * */
-export function isLithologyChannel(channel: Channel): boolean {
-  const propertyNames = channel.info.properties.map((property) => property.name.toUpperCase());
-  const hasTop = propertyNames.some((name) => name === 'TOP');
-  return hasTop && propertyNames.some((name) => name === 'BASE');
+export function createInfo(channel: Channel, criterion: Record<string, string>): CaratChannelInfo {
+  const properties = channel.info.properties;
+  const propertyNames = properties.map((property) => property.name.toUpperCase());
+
+  const info: CaratChannelInfo = {};
+  for (const field in criterion) {
+    const criterionName = criterion[field];
+    const index = propertyNames.findIndex((name) => name === criterionName);
+
+    if (index === -1) return null;
+    info[field] = {name: properties[index].fromColumn, index: -1};
+  }
+  return info;
 }
 
-/* --- --- */
-
-export function findIntervalsIndexes(channel: Channel): CaratIntervalsInfo {
-  const result: CaratIntervalsInfo = {
-    top: {name: 'TOP', index: -1},
-    base: {name: 'BASE', index: -1},
-  };
-  channel.info.properties.forEach((property) => {
-    const { name, fromColumn } = property;
-    if (name === 'TOP') return result.top.name = fromColumn;
-    if (name === 'BASE') return result.base.name = fromColumn;
-  });
-  return result;
+export function applyInfoIndexes(attachment: CaratAttachedChannel, columns: ChannelColumn[]) {
+  for (const field in attachment.info) {
+    const propertyInfo = attachment.info[field];
+    for (let i = 0; i < columns.length; i++) {
+      const name = columns[i].Name;
+      if (propertyInfo.name === name) { propertyInfo.index = i; break; }
+    }
+  }
+  attachment.applied = true;
 }
 
-export function getCaratIntervals(rows: ChannelRow[], indexes: CaratIntervalsInfo) {
-  const topIndex = indexes.top.index;
-  const baseIndex = indexes.base.index;
+/* --- Elements Creation --- */
+
+export function createCaratIntervals(rows: ChannelRow[], info: CaratLithologyInfo) {
+  const topIndex = info.top.index;
+  const baseIndex = info.base.index;
 
   return rows.map((row): CaratElementInterval => {
-    const top = row.Cells[topIndex];
-    const base = row.Cells[baseIndex];
-    return {type: CaratElementType.Interval, top, base, style: null};
+    const cells = row.Cells;
+    return {top: cells[topIndex], base: cells[baseIndex], style: null};
   });
 }
 
-/* --- --- */
+export function createCaratCurves(rows: ChannelRow[], info: CaratCurveDataInfo): CaratElementCurve[] {
+  const dataIndex = info.data.index;
+  const topIndex = info.top.index;
+  const leftIndex = info.left.index;
 
-// type StrataAppearanceInfo = Record<keyof CaratStyleInterval, PropertyColumnInfo>;
-//
-// export function findStrataAppearanceInfo(channel: Channel) {
-//   const result: StrataAppearanceInfo = {
-//     color: {name: 'COLOR', index: -1},
-//     borderColor: {name: 'BORDER COLOR', index: -1},
-//     backgroundColor: {name: 'BACKGROUND COLOR', index: -1},
-//     fillStyle: {name: 'FILL STYLE', index: -1},
-//     lineStyle: {name: 'LINE STYLE', index: -1},
-//   };
-//   channel.info.properties.forEach((property) => {
-//     let { name, fromColumn } = property;
-//     name = name.toUpperCase();
-//     if (name === 'COLOR') return result.color.name = fromColumn;
-//     if (name === 'BORDER COLOR') return result.borderColor.name = fromColumn;
-//     if (name === 'BACKGROUND COLOR') return result.backgroundColor.name = fromColumn;
-//     if (name === 'FILL STYLE') return result.fillStyle.name = fromColumn;
-//     if (name === 'LINE STYLE') return result.lineStyle.name = fromColumn;
-//   });
-//   return result;
-// }
+  return rows.map((row) => {
+    const cells = row.Cells;
+    const top = cells[topIndex], left = cells[leftIndex];
+
+    const source = window.atob(cells[dataIndex]);
+    const path = new Path2D(source);
+    return {top, left, path, style: null};
+  });
+}
+
+export async function loadCaratCurves(name: ChannelName, ids: string[]): Promise<ChannelData> {
+  const parameter: Parameter = {id: 'currentCurveIds', type: 'stringArray', value: ids} as Parameter;
+  const res = await channelsAPI.getChannelData(name, [parameter], {order: []} as any);
+  return res.ok ? res.data.data : null;
+}

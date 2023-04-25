@@ -37,7 +37,6 @@ export enum CaratElementType {
 }
 
 export interface CaratElementInterval {
-  type: CaratElementType.Interval,
   top: number,
   base: number,
   style: CaratStyleInterval,
@@ -50,8 +49,9 @@ interface CaratStyleInterval {
   lineStyle: string,
 }
 
-interface CaratElementCurve {
-  type: CaratElementType.Curve;
+export interface CaratElementCurve {
+  top: number,
+  left: number,
   path: Path2D;
   style: CaratStyleCurve,
 }

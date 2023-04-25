@@ -34,6 +34,7 @@ interface ICaratStage {
   setScale(scale: number): void
 
   setChannelData(channelData: ChannelDict): void
+  setCurveData(channelData: ChannelDict): Promise<void>
   setLookupData(lookupData: ChannelDict): void
 
   handleMouseMove(by: number): void
@@ -56,6 +57,7 @@ interface ICaratTrack {
   setActiveColumn(idx: number): void
 
   setChannelData(channelData: ChannelDict): void
+  setCurveData(channelData: ChannelDict): Promise<void>
   setLookupData(lookupData: ChannelDict): void
 
   handleMouseDown(x: number, y: number): void
@@ -71,22 +73,12 @@ interface ICaratColumnGroup {
   setLabel(label: string): void
   setWidth(width: number): void
   setHeight(height: number): void
-  setScale(scale: number): void
   setYAxisStep(step: number): void
 
   setChannelData(channelData: ChannelDict): void
   setLookupData(lookupData: ChannelDict): void
 
-  render(viewport: CaratViewport): void
-}
-
-/** Колонка каротажной диаграммы. */
-interface ICaratColumn {
-  setRect(rect: BoundingRect): void
-  setChannelData(channelData: ChannelDict): void
-  setLookupData(lookupData: ChannelDict): void
-
-  render(viewport: CaratViewport): void
+  render(): void
 }
 
 /** Порт просмотра. */
@@ -100,10 +92,16 @@ interface CaratViewport {
 /** Тип каротажной кривой. */
 type CaratCurveType = string;
 
-interface CaratIntervalsInfo {
-  top: PropertyColumnInfo,
-  base: PropertyColumnInfo,
-}
+/** Типы корректных подключённых каналов к каротажной форме. */
+type CaratChannelType = 'lithology' | 'perforations' | 'curve-set' | 'curve-data';
+
+type CaratCurveSetInfo = CaratChannelInfo<'id' | 'type' | 'date'>;
+type CaratCurveDataInfo = CaratChannelInfo<'id' | 'data' | 'top' | 'left'>;
+type CaratLithologyInfo = CaratChannelInfo<'top' | 'base' | 'stratum'>;
+type CaratPerforationsInfo = CaratChannelInfo<'top' | 'base' | 'date'>;
+
+type CaratChannelInfo<Fields extends string = string> = Record<Fields, PropertyColumnInfo>;
+
 interface PropertyColumnInfo {
   name: string,
   index: number,

@@ -35,10 +35,6 @@ interface BoundingRect {
   top: number,
   /** Левая координата. */
   left: number,
-  /** Нижняя координата. */
-  bottom: number,
-  /** Правая координата. */
-  right: number,
   /** Ширина координата. */
   width: number,
   /** Высота координата. */
