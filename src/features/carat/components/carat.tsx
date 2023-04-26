@@ -21,18 +21,18 @@ export const Carat = ({id, channels}: FormState) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isOnMoveRef = useRef<boolean>(false);
 
+  // обновление данных каналов-справочников
+  useEffect(() => {
+    stage.setLookupData(lookupData);
+    stage.render();
+  }, [lookupData, stage]);
+
   // обновление данных каналов и активной скважины
   useEffect(() => {
     stage.setWell(wellID);
     stage.setChannelData(channelData); stage.render();
     stage.setCurveData(channelData).then(() => stage.render());
   }, [channelData, wellID, stage]);
-
-  // обновление данных каналов-справочников
-  useEffect(() => {
-    stage.setLookupData(lookupData);
-    stage.render();
-  }, [lookupData, stage]);
 
   // обновление ссылки на холст
   useLayoutEffect(() => {

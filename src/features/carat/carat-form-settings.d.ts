@@ -127,11 +127,17 @@ interface CaratAttachedChannel {
 
   /** Тип подключённого канала. */
   type?: CaratChannelType,
+  /** Список подключённых свойств. */
+  properties?: ChannelProperty[]
   /** Найдены ли индексы колонок. */
   applied?: boolean,
   /** Индексы колонок. */
   info?: CaratChannelInfo,
+  /** Информация о справочнике стилей элементов. */
+  style?: CaratAttachedStyle,
 }
+
+type CaratAttachedStyle = {name: ChannelName, info: CaratChannelInfo, applied?: boolean};
 
 /** Словарь настроек отображения свойств канала. */
 type CaratColumnProperties = Record<string, CaratPropertySettings>;
@@ -164,12 +170,18 @@ interface CaratTextPropertySettings {
 interface CaratBarPropertySettings {
   /** Выравнивание гистограммы. */
   align: 'left' | 'right' | 'center',
+  /** Цвет элементов во внутренней области. */
   color: string,
+  /** Цвет фона внутренней области. */
   backgroundColor: string,
+  /** Цвет внутренней границы. */
   borderColor: string,
-  thickness: string,
+  /** Толщина внутренней границы. */
+  thickness: number,
+  /** Цвет элементов во внешней области. */
   externalColor: string,
-  /** Цвет внешней границы ячейки. */
+  /** Цвет внешней границы. */
   externalBorderColor: ColorHEX | null,
-  externalThickness: string,
+  /** Толщина внешней границы. */
+  externalThickness: number,
 }

@@ -1,7 +1,8 @@
 import { CaratDrawer } from './drawer';
+import { CaratColumn } from './column';
+import { CaratCurveColumn } from './curve-column';
 import { CaratCurveAxis } from '../lib/types';
 import { CurveSelection } from '../lib/curve-selection';
-import { CaratColumn, CaratCurveColumn } from './column';
 import { applyInfoIndexes, loadCaratCurves } from '../lib/channels';
 
 
@@ -15,7 +16,6 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   private readonly elementsRect: BoundingRect;
   /** Высота заголовка колонки. */
   private readonly headerHeight: number;
-  private readonly isNormal: boolean;
 
   /** Идентификатор колонки. */
   public readonly id: string;
@@ -55,7 +55,6 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     this.properties = init.properties;
     this.channels = init.channels;
     this.active = init.active;
-    this.isNormal = init.settings.type === 'normal';
 
     this.headerHeight = 25;
     this.elementsRect = {...rect};
@@ -74,8 +73,10 @@ export class CaratColumnGroup implements ICaratColumnGroup {
 
       if (channelType === 'curve-set') { curveSetChannel = attachedChannel; continue; }
       if (channelType === 'curve-data') { curveDataChannel = attachedChannel; continue; }
+
       const columnRect = {top: 0, left: 0, width: rect.width, height};
-      this.columns.push(new CaratColumn(columnRect, drawer, attachedChannel));
+      const properties = init.properties[attachedChannel.name];
+      this.columns.push(new CaratColumn(columnRect, drawer, attachedChannel, properties));
     }
 
     if (curveSetChannel && curveDataChannel && (!zones || !zones.length)) {
@@ -111,6 +112,10 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     return this.rect.width;
   }
 
+  public getElementsTop(): number {
+    return this.elementsRect.top;
+  }
+
   public getYAxisStep(): number {
     return this.yAxis.step;
   }
@@ -142,11 +147,8 @@ export class CaratColumnGroup implements ICaratColumnGroup {
 
   public setChannelData(channelData: ChannelDict) {
     for (const column of this.columns) {
-      const attachedChannel = column.channel;
-      const channel = channelData[attachedChannel.name];
-      const rows = channel?.data?.rows;
-      if (rows && !attachedChannel.applied) applyInfoIndexes(attachedChannel, channel.data.columns);
-      column.setChannelData(rows ?? []);
+      const data = channelData[column.channel.name]?.data;
+      column.setChannelData(data);
     }
   }
 
@@ -160,29 +162,36 @@ export class CaratColumnGroup implements ICaratColumnGroup {
       const curveSetInfo: CaratCurveSetInfo = column.curveSetChannel.info as any;
       const rows = this.selection.filterCurves(rawRows ?? [], curveSetInfo);
       const idIndex = curveSetInfo.id.index;
+      const typeIndex = curveSetInfo.type.index;
       const curvesID = rows.map(row => row.Cells[idIndex]).filter(Boolean);
+
+      const dict: Record<number, CaratCurveType> = {};
+      rows.forEach((row) => { dict[row.Cells[idIndex]] = row.Cells[typeIndex] });
 
       const curveDataChannel = column.curveDataChannel;
       const curveData = await loadCaratCurves(curveDataChannel.name, curvesID);
       if (curveData && !curveDataChannel.applied) applyInfoIndexes(curveDataChannel, curveData.columns)
-      column.setCurveData(curveData.rows);
+      column.setCurveData(curveData.rows, dict);
     }
   }
 
   public setLookupData(lookupData: ChannelDict) {
-    // for (const column of this.columns) {
-    //   column.setLookupData(lookupData);
-    // }
-    // for (const column of this.curveColumns) {
-    //   column.setLookupData(lookupData);
-    // }
+    for (const column of this.columns) column.setLookupData(lookupData);
+    for (const column of this.curveColumns) column.setLookupData(lookupData);
   }
 
-  public render() {
+  public renderBody() {
     this.drawer.setCurrentGroup(this.elementsRect);
-    for (const column of this.columns) column.render();
-    for (const column of this.curveColumns) column.render();
-    if (this.yAxis.show) this.drawer.drawColumnGroupYAxis(this.yAxis);
-    if (this.isNormal)this.drawer.drawColumnGroupBody(this.settings);
+    this.drawer.drawColumnGroupBody(this.settings);
+  }
+
+  public renderContent() {
+    this.drawer.setCurrentGroup(this.elementsRect);
+    if (this.yAxis.show) {
+      this.drawer.drawColumnGroupYAxis(this.yAxis);
+    } else {
+      for (const column of this.columns) column.render();
+      for (const column of this.curveColumns) column.render();
+    }
   }
 }

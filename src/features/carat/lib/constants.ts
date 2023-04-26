@@ -4,6 +4,8 @@ import { CaratDrawerConfig } from '../rendering/drawer-settings';
 /** Значения некоторых настроек по умолчанию. */
 export const defaultSettings = {
   scale: 400,
+  curveStyle: {thickness: 2, color: '#000000'},
+  intervalStyle: {borderColor: '#333333', backgroundColor: '#e7e7e7'}
 };
 
 /** Свойства для идентификации каналов. */
@@ -12,6 +14,15 @@ export const criterionProperties: Record<CaratChannelType, Record<string, string
   'perforations': {top: 'TOP', base: 'BASE', type: 'TYPE', date: 'DATE'},
   'curve-set': {id: 'CURVE ID', type: 'CURVE TYPE', date: 'DATE'},
   'curve-data': {id: 'CURVE ID', data: 'CURVE DATA', top: 'MIN DEPTH', left: 'MIN VALUE'},
+};
+
+/** Свойства для идентификации канала с цветами пластов. */
+export const styleCriterionProperties = {
+  id: 'LOOKUPCODE',
+  borderColor: 'BORDER COLOR',
+  backgroundColor: 'BACKGROUND COLOR',
+  fillStyle: 'FILL STYLE',
+  lineStyle: 'LINE STYLE',
 };
 
 /** Настройки отрисовки. */

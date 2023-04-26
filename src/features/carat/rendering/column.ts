@@ -1,28 +1,42 @@
 import { CaratDrawer } from './drawer';
-import { CaratCurveStyleDict, CaratElementCurve } from '../lib/types';
-import { CaratElementInterval, CaratIntervalStyleDict } from '../lib/types';
-import { createCaratIntervals, createCaratCurves } from '../lib/channels';
+import { CaratElementBar, CaratElementInterval, CaratIntervalStyleDict } from '../lib/types';
+import { applyInfoIndexes } from '../lib/channels';
+import { defaultSettings } from '../lib/constants';
 
 
 /** Колонка каротажной диаграммы. */
 export class CaratColumn {
   /** Ссылка на отрисовщик. */
   private readonly drawer: CaratDrawer;
+  /** Ограничивающий прямоугольник колонки. */
+  private readonly rect: BoundingRect;
   /** Массив подключённых свойств канала. */
   public readonly channel: CaratAttachedChannel;
+  /** Словарь настроек отображения свойств. */
+  private readonly properties: CaratColumnProperties;
 
-  /** Ограничивающий прямоугольник колонки. */
-  private rect: BoundingRect;
-  /** Пласты для отрисовки. */
+  /** Пласты. */
   private elements: CaratElementInterval[];
   /** Словарь свойств внешнего вида пластов. */
   private styleDict: CaratIntervalStyleDict;
 
-  constructor(rect: BoundingRect, drawer: CaratDrawer, channel: CaratAttachedChannel) {
+  /** Гистограммы */
+  private bars: CaratElementBar[];
+  private barsStyle: CaratBarPropertySettings | null;
+
+  constructor(
+    rect: BoundingRect, drawer: CaratDrawer,
+    channel: CaratAttachedChannel, properties: CaratColumnProperties
+  ) {
     this.rect = rect;
     this.drawer = drawer;
     this.channel = channel;
+    this.properties = properties;
+
     this.elements = [];
+    this.styleDict = {};
+    this.bars = [];
+    this.barsStyle = null;
   }
 
   public getMinY() {
@@ -34,63 +48,62 @@ export class CaratColumn {
     this.rect.height = height;
   }
 
-  public setChannelData(rows: ChannelRow[]) {
-    const info = this.channel.info;
-    if (info.top) this.elements = createCaratIntervals(rows, info as any);
-  }
+  public setChannelData(data: ChannelData) {
+    const info = this.channel.info as CaratLithologyInfo;
+    const barProperty = this.channel.properties.find(p => this.properties[p.name]?.showBar);
+    if (barProperty && !info.bar) info.bar = {name: barProperty.fromColumn, index: -1};
 
-  public setLookupData(lookupData: ChannelDict) {
-    this.styleDict = {};
-  }
-
-  public render() {
-    this.drawer.setCurrentColumn(this.rect);
-    this.drawer.drawIntervals(this.elements);
-  }
-}
-
-/** Колонка каротажной диаграммы с кривыми. */
-export class CaratCurveColumn {
-  /** Ссылка на отрисовщик. */
-  private readonly drawer: CaratDrawer;
-  /** Ограничивающий прямоугольник колонки. */
-  private readonly rect: BoundingRect;
-
-  /** Подключённый канал со списком кривых. */
-  public readonly curveSetChannel: CaratAttachedChannel;
-  /** Подключённый канал с данными кривых. */
-  public readonly curveDataChannel: CaratAttachedChannel;
-
-  /** Пласты для отрисовки. */
-  private elements: CaratElementCurve[];
-  /** Словарь свойств внешнего вида пластов. */
-  private styleDict: CaratCurveStyleDict;
-
-  constructor(
-    rect: BoundingRect, drawer: CaratDrawer,
-    curveSetChannel: CaratAttachedChannel, curveDataChannel: CaratAttachedChannel
-  ) {
-    this.rect = rect;
-    this.drawer = drawer;
-    this.curveSetChannel = curveSetChannel;
-    this.curveDataChannel = curveDataChannel;
     this.elements = [];
-  }
+    this.bars = [];
 
-  public setHeight(height: number) {
-    this.rect.height = height;
-  }
+    const rows = data?.rows;
+    if (rows && !this.channel.applied) applyInfoIndexes(this.channel, data.columns);
 
-  public setCurveData(rows: ChannelRow[]) {
-    this.elements = createCaratCurves(rows, this.curveDataChannel.info as any);
+    const topIndex = info.top.index;
+    const baseIndex = info.base.index;
+
+    if (barProperty) {
+      this.barsStyle = this.properties[barProperty.name].bar;
+      const barIndex = info.bar.index;
+      const max = Math.max(...rows.map(row => row.Cells[barIndex]));
+
+      this.bars = rows.map((row): CaratElementBar => {
+        const cells = row.Cells;
+        return {top: cells[topIndex], base: cells[baseIndex], value: cells[barIndex] / max};
+      });
+    } else {
+      const styleIndex = info.style?.index;
+      this.elements = rows.map((row): CaratElementInterval => {
+        const cells = row.Cells;
+        const style = this.styleDict[cells[styleIndex]] ?? defaultSettings.intervalStyle as any;
+        return {top: cells[topIndex], base: cells[baseIndex], style};
+      });
+    }
   }
 
   public setLookupData(lookupData: ChannelDict) {
+    const lookup = lookupData[this.channel.style?.name]
+    const rows = lookup?.data?.rows;
     this.styleDict = {};
+
+    if (rows) {
+      if (!this.channel.style.applied) applyInfoIndexes(this.channel.style, lookup.data.columns);
+      const info = this.channel.style.info;
+
+      for (const { Cells: cells } of rows) {
+        const id = cells[info.id.index];
+        const borderColor = cells[info.borderColor.index];
+        const backgroundColor = cells[info.backgroundColor.index];
+        const fillStyle = cells[info.fillStyle.index];
+        const lineStyle = cells[info.lineStyle.index];
+        this.styleDict[id] = {borderColor, backgroundColor, fillStyle, lineStyle};
+      }
+    }
   }
 
   public render() {
     this.drawer.setCurrentColumn(this.rect);
-    this.drawer.drawCurves(this.elements);
+    if (this.elements.length) this.drawer.drawIntervals(this.elements);
+    if (this.bars.length) this.drawer.drawBars(this.bars, this.barsStyle);
   }
 }

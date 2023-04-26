@@ -1,5 +1,5 @@
 import { CaratDrawerConfig } from './drawer-settings';
-import { CaratElementCurve, CaratElementInterval } from '../lib/types';
+import { CaratElementCurve, CaratElementInterval, CaratElementBar } from '../lib/types';
 import { CaratTrackBodyDrawSettings, CaratTrackHeaderDrawSettings } from './drawer-settings';
 import { CaratColumnLabelDrawSettings, CaratColumnYAxisDrawSettings } from './drawer-settings';
 import { createTrackBodyDrawSettings, createTrackHeaderDrawSettings } from './drawer-settings';
@@ -12,13 +12,15 @@ interface ICaratDrawer {
   setCurrentGroup(rect: BoundingRect): void
 
   clearCurrentTrack(): void
-  drawTrackBody(well: string): void
+  drawTrackBody(well: string, headersHeight: number): void
   drawColumnGroupBody(settings: CaratColumnSettings): void
   drawColumnGroupYAxis(axis: CaratColumnYAxis): void
 
   drawCurves(elements: CaratElementCurve[]): void
   drawIntervals(elements: CaratElementInterval[]): void
+  drawBars(elements: CaratElementBar[], settings: CaratBarPropertySettings): void
 }
+
 
 /** Отрисовщик каротажной диаграммы. */
 export class CaratDrawer implements ICaratDrawer {
@@ -41,15 +43,18 @@ export class CaratDrawer implements ICaratDrawer {
   /** Настройки отрисовки колонки. */
   public readonly columnYAxisSettings: CaratColumnYAxisDrawSettings;
 
-  private minusWidth: number;
-
-  private viewport: CaratViewport;
   private trackRect: BoundingRect;
   private groupElementRect: BoundingRect;
   private columnRect: BoundingRect;
 
+  private yMin: number;
+  private yMax: number;
+  private scale: number;
+
   private columnTranslateX: number;
   private columnTranslateY: number;
+
+  private minusWidth: number;
 
   constructor(config: CaratDrawerConfig) {
     this.trackBodySettings = createTrackBodyDrawSettings(config);
@@ -62,7 +67,6 @@ export class CaratDrawer implements ICaratDrawer {
     this.ctx = context;
     this.ctx.font = this.columnYAxisSettings.font;
     this.minusWidth = context.measureText('-').width;
-    window['ctx'] = context;
   }
 
   private setLineSettings(width: number, color: string) {
@@ -121,11 +125,13 @@ export class CaratDrawer implements ICaratDrawer {
 
   public setCurrentTrack(rect: BoundingRect, viewport: CaratViewport) {
     this.trackRect = rect;
-    this.viewport = viewport;
+    this.yMin = viewport.y;
+    this.scale = viewport.scale;
   }
 
   public setCurrentGroup(rect: BoundingRect) {
     this.groupElementRect = rect;
+    this.yMax = this.yMin + rect.height / this.scale;
   }
 
   public setCurrentColumn(rect: BoundingRect) {
@@ -140,11 +146,13 @@ export class CaratDrawer implements ICaratDrawer {
     this.ctx.clearRect(0, 0, width, height);
   }
 
-  public drawTrackBody(well: string) {
+  public drawTrackBody(well: string, headersHeight: number) {
     const { top, left, width, height: trackHeight } = this.trackRect;
     const { font, color, borderColor, borderThickness, height } = this.trackHeaderSettings;
     const { borderColor: bodyColor, borderThickness: bodyThickness, margin } = this.trackBodySettings;
+
     this.setTranslate(left, top);
+    this.ctx.clearRect(0, -top, width, top + headersHeight);
 
     this.setTextSettings(font, color, 'center', 'middle');
     this.ctx.fillText(well, width / 2, height / 2);
@@ -164,7 +172,6 @@ export class CaratDrawer implements ICaratDrawer {
 
     const { width, height } = this.groupElementRect;
     const { font, color } = this.columnLabelSettings;
-    this.ctx.clearRect(0, -translateY, width, translateY);
 
     this.setTextSettings(font, color, 'center', 'bottom');
     this.ctx.fillText(settings.label, width / 2, 0, width);
@@ -174,22 +181,19 @@ export class CaratDrawer implements ICaratDrawer {
   }
 
   public drawColumnGroupYAxis(axis: CaratColumnYAxis) {
-    const { y: viewportY, scale } = this.viewport;
-    const scaleY = window.devicePixelRatio * scale;
-
-    this.setTranslate(
-      this.trackRect.left + this.groupElementRect.left,
-      this.trackRect.top + this.groupElementRect.top - scaleY * viewportY,
-    );
+    const scaleY = window.devicePixelRatio * this.scale;
+    const translateX = this.trackRect.left + this.groupElementRect.left;
+    const translateY = this.trackRect.top + this.groupElementRect.top - scaleY * this.yMin;
+    this.setTranslate(translateX, translateY);
 
     const step = axis.step;
-    const minY = Math.ceil(viewportY / step) * step;
-    const maxY = minY + this.groupElementRect.height / scale;
+    const minY = Math.ceil(this.yMin / step) * step;
+    const maxY = minY + this.groupElementRect.height / this.scale;
 
     const { font, color, markSize } = this.columnYAxisSettings;
     const drawMarksFn = this.getDrawMarksFn(axis, 1.1 * markSize);
 
-    this.setLineSettings(2, '#303030');
+    this.setLineSettings(2, color);
     this.setTextSettings(font, color, 'left', 'middle');
     this.ctx.beginPath();
 
@@ -203,40 +207,80 @@ export class CaratDrawer implements ICaratDrawer {
   }
 
   public drawIntervals(elements: CaratElementInterval[]) {
-    const { y, scale } = this.viewport;
-    const scaleY = window.devicePixelRatio * scale;
-    this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * y);
-
-    this.ctx.lineWidth = 1;
-    this.ctx.strokeStyle = 'black';
-    this.ctx.fillStyle = 'orange';
     const width = this.columnRect.width;
-    const maxY = y + this.groupElementRect.height / scale;
+    const scaleY = window.devicePixelRatio * this.scale;
+    this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
 
-    for (let { top, base } of elements) {
-      if (base < y || top > maxY) continue;
+    for (let { top, base, style } of elements) {
+      if (base < this.yMin || top > this.yMax) continue;
       const canvasTop = scaleY * top;
-      const height = scaleY * (base - top);
-      this.ctx.fillRect(0, canvasTop, width, height);
-      this.ctx.strokeRect(0, canvasTop, width, height);
+      const canvasHeight = scaleY * (base - top);
+
+      this.setLineSettings(2, style.borderColor);
+      this.ctx.fillStyle = style.backgroundColor;
+      this.ctx.fillRect(0, canvasTop, width, canvasHeight);
+      this.ctx.strokeRect(0, canvasTop, width, canvasHeight);
+    }
+  }
+
+  public drawBars(elements: CaratElementBar[], settings: CaratBarPropertySettings) {
+    const width = this.columnRect.width;
+    const scaleY = window.devicePixelRatio * this.scale;
+    this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
+
+    const charCode = settings.align.charCodeAt(0);
+    const { borderColor, backgroundColor, thickness, externalBorderColor, externalThickness } = settings;
+
+    const drawBar = (top, base, barStart, barWidth) => {
+      const canvasTop = scaleY * top;
+      const canvasHeight = scaleY * (base - top);
+
+      this.setLineSettings(externalThickness, externalBorderColor);
+      this.ctx.strokeRect(0, canvasTop, width, canvasHeight);
+
+      this.ctx.fillStyle = backgroundColor;
+      this.ctx.fillRect(barStart, canvasTop, barWidth, canvasHeight);
+
+      this.setLineSettings(thickness, borderColor);
+      this.ctx.strokeRect(barStart, canvasTop, barWidth, canvasHeight);
+    };
+
+    if (charCode === 108) { // 'left'
+      for (let { top, base, value } of elements) {
+        if (base < this.yMin || top > this.yMax || !value) continue;
+        const barWidth = value * width;
+        drawBar(top, base, 0, barWidth);
+      }
+    } else if (charCode === 114) { // 'right'
+      for (let { top, base, value } of elements) {
+        if (base < this.yMin || top > this.yMax || !value) continue;
+        const barWidth = value * width;
+        drawBar(top, base, width - barWidth, barWidth);
+      }
+    } else { // 'center'
+      for (let { top, base, value } of elements) {
+        if (base < this.yMin || top > this.yMax || !value) continue;
+        const barWidth = value * width;
+        drawBar(top, base, (width - barWidth) / 2, barWidth);
+      }
     }
   }
 
   public drawCurves(elements: CaratElementCurve[]) {
     const ratio = CaratDrawer.ratio;
-    const { y: viewportY, scale } = this.viewport;
-    const scaleY = window.devicePixelRatio * scale;
+    const scaleY = window.devicePixelRatio * this.scale;
 
     const translateX = ratio * this.columnTranslateX;
-    const translateY = ratio * (this.columnTranslateY - scaleY * viewportY);
+    const translateY = ratio * (this.columnTranslateY - scaleY * this.yMin);
     const matrix = new DOMMatrix([ratio, 0, 0, scaleY * ratio, translateX, translateY]);
-
     this.ctx.resetTransform();
-    this.setLineSettings(ratio * 2, 'black');
 
     for (const element of elements) {
+      const { thickness, color } = element.style;
+      this.setLineSettings(ratio * thickness, color);
+
       const path = new Path2D();
-      path.addPath(element.path, matrix)
+      path.addPath(element.path, matrix);
       this.ctx.stroke(path);
     }
   }

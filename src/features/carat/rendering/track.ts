@@ -4,8 +4,6 @@ import { CaratColumnGroup } from './column-group';
 
 /** Трек. */
 export class CaratTrack implements ICaratTrack {
-  /** Номер скважины трека. */
-  private well: string;
   /** Список колонок. */
   private readonly groups: CaratColumnGroup[];
   /** Колонка типа `background`. */
@@ -17,6 +15,11 @@ export class CaratTrack implements ICaratTrack {
   private readonly rect: BoundingRect;
   /** Порт просмотра трека. */
   private readonly viewport: CaratViewport;
+
+  /** Номер скважины трека. */
+  private well: string;
+  /** Высота заголовков групп колонок. */
+  private groupHeadersHeight: number;
 
   constructor(
     rect: BoundingRect, columns: CaratColumnInit[],
@@ -44,6 +47,7 @@ export class CaratTrack implements ICaratTrack {
         this.backgroundGroup = new CaratColumnGroup(groupRect, zones, drawer, column);
       }
     }
+    this.groupHeadersHeight = 0;
   }
 
   public getInitColumns(): CaratColumnInit[] {
@@ -78,7 +82,7 @@ export class CaratTrack implements ICaratTrack {
   }
 
   public setChannelData(channelData: ChannelDict) {
-    // this.backgroundColumn.setChannelData(channelData);
+    this.backgroundGroup.setChannelData(channelData);
     this.groups.forEach(c => c.setChannelData(channelData));
 
     const coordinates = this.groups.map(g => g.getMinY());
@@ -91,23 +95,24 @@ export class CaratTrack implements ICaratTrack {
   }
 
   public setLookupData(lookupData: ChannelDict) {
-
+    this.backgroundGroup.setLookupData(lookupData);
+    for (const group of this.groups) group.setLookupData(lookupData);
   }
-
-  /* --- Rendering --- */
 
   public setHeight(height: number) {
     this.rect.height = height;
     const groupHeight = height - this.drawer.trackHeaderSettings.height;
     for (const group of this.groups) group.setHeight(groupHeight);
     this.backgroundGroup.setHeight(groupHeight);
+    this.groupHeadersHeight = Math.max(...this.groups.map(g => g.getElementsTop()));
   }
 
   public render() {
     this.drawer.setCurrentTrack(this.rect, this.viewport);
     this.drawer.clearCurrentTrack();
-    this.backgroundGroup.render();
-    for (const group of this.groups) group.render();
-    this.drawer.drawTrackBody(this.well);
+    this.backgroundGroup.renderContent();
+    for (const group of this.groups) group.renderContent();
+    this.drawer.drawTrackBody(this.well, this.groupHeadersHeight);
+    for (const group of this.groups) group.renderBody();
   }
 }

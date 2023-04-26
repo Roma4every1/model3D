@@ -1,9 +1,9 @@
-import { CaratElementCurve, CaratElementInterval } from './types';
-import { criterionProperties } from './constants';
-import { channelsAPI } from '../../../entities/channels/lib/channels.api';
+import { channelsAPI } from 'entities/channels/lib/channels.api';
+import { criterionProperties, styleCriterionProperties } from './constants';
 
 
 export function identifyCaratChannel(attachment: CaratAttachedChannel, channel: Channel) {
+  attachment.properties = getAttachedProperties(attachment, channel);
   for (const channelType in criterionProperties) {
     const info = createInfo(channel, criterionProperties[channelType]);
     if (info) {
@@ -13,6 +13,42 @@ export function identifyCaratChannel(attachment: CaratAttachedChannel, channel: 
       break;
     }
   }
+}
+
+export function applyStyle(attachment: CaratAttachedChannel, channel: Channel, dict: ChannelDict) {
+  if (attachment.type === 'curve-set') {
+    const colorPropertyName = attachment.info.type.name;
+    const colorProperty = channel.info.properties.find(p => p.fromColumn === colorPropertyName);
+    const curveColorChannel = colorProperty?.lookupChannels?.at(0);
+    if (curveColorChannel) attachment.style = {name: curveColorChannel, info: null};
+  }
+  else if (attachment.type === 'lithology' || attachment.type === 'perforations') {
+    // смотрим на подключённые свойства и на их справочники, если подключено
+    // более 2 свойств, смотрим на первое, свойства должно быть подключено
+    // 2 справочника, один для цветов, второй для подписей
+    for (const property of attachment.properties) {
+      for (const lookupChannelName of property.lookupChannels) {
+        const lookup = dict[lookupChannelName];
+        const info = createInfo(lookup, styleCriterionProperties)
+
+        if (info) {
+          attachment.style = {name: lookupChannelName, info};
+          attachment.info.style = {name: property.fromColumn, index: -1};
+          break;
+        }
+      }
+    }
+  }
+}
+
+export function getAttachedProperties(attachment: CaratAttachedChannel, channel: Channel) {
+  const allProperties = channel.info.properties;
+  const { attachOption, exclude } = attachment;
+
+  const checker = attachOption === 'AttachAll'
+    ? (property) => !exclude.includes(property.name)
+    : (property) => exclude.includes(property.name);
+  return allProperties.filter(checker);
 }
 
 export function createInfo(channel: Channel, criterion: Record<string, string>): CaratChannelInfo {
@@ -30,7 +66,7 @@ export function createInfo(channel: Channel, criterion: Record<string, string>):
   return info;
 }
 
-export function applyInfoIndexes(attachment: CaratAttachedChannel, columns: ChannelColumn[]) {
+export function applyInfoIndexes(attachment: CaratAttachedChannel | CaratAttachedStyle, columns: ChannelColumn[]) {
   for (const field in attachment.info) {
     const propertyInfo = attachment.info[field];
     for (let i = 0; i < columns.length; i++) {
@@ -42,31 +78,6 @@ export function applyInfoIndexes(attachment: CaratAttachedChannel, columns: Chan
 }
 
 /* --- Elements Creation --- */
-
-export function createCaratIntervals(rows: ChannelRow[], info: CaratLithologyInfo) {
-  const topIndex = info.top.index;
-  const baseIndex = info.base.index;
-
-  return rows.map((row): CaratElementInterval => {
-    const cells = row.Cells;
-    return {top: cells[topIndex], base: cells[baseIndex], style: null};
-  });
-}
-
-export function createCaratCurves(rows: ChannelRow[], info: CaratCurveDataInfo): CaratElementCurve[] {
-  const dataIndex = info.data.index;
-  const topIndex = info.top.index;
-  const leftIndex = info.left.index;
-
-  return rows.map((row) => {
-    const cells = row.Cells;
-    const top = cells[topIndex], left = cells[leftIndex];
-
-    const source = window.atob(cells[dataIndex]);
-    const path = new Path2D(source);
-    return {top, left, path, style: null};
-  });
-}
 
 export async function loadCaratCurves(name: ChannelName, ids: string[]): Promise<ChannelData> {
   const parameter: Parameter = {id: 'currentCurveIds', type: 'stringArray', value: ids} as Parameter;

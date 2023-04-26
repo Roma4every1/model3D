@@ -1,6 +1,6 @@
 import { CaratStage } from '../rendering/stage';
 import { CaratDrawer } from '../rendering/drawer';
-import { identifyCaratChannel } from './channels';
+import { identifyCaratChannel, applyStyle } from './channels';
 import { drawerConfig } from './constants';
 
 
@@ -15,10 +15,12 @@ export function settingsToState(formState: FormState, channelDict: ChannelDict):
       const channel = channelDict[attachedChannel.name];
       identifyCaratChannel(attachedChannel, channel);
 
-      if (attachedChannel.type?.endsWith('data')) {
+      if (attachedChannel.type === 'curve-data') {
         const name = attachedChannel.name;
         const idx = channels.findIndex(c => c === name);
         channels.splice(idx, 1);
+      } else {
+        applyStyle(attachedChannel, channel, channelDict);
       }
     }
   }
