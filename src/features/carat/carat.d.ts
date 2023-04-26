@@ -47,10 +47,11 @@ interface ICaratStage {
 
 /** Трек каротажной диаграммы. */
 interface ICaratTrack {
-  getRect(): BoundingRect
+  rect: BoundingRect,
+  viewport: CaratViewport,
+
   getColumns(): ICaratColumnGroup[]
   getInitColumns(): CaratColumnInit[]
-  getViewport(): CaratViewport
 
   setWell(well: string): void
   setScale(scale: number): void
@@ -69,6 +70,8 @@ interface ICaratColumnGroup {
   getLabel(): string
   getWidth(): number
   getYAxisStep(): number
+  getElementsRange(): [number, number]
+  getCurvesRange(): [number, number]
 
   setLabel(label: string): void
   setWidth(width: number): void
@@ -82,12 +85,22 @@ interface ICaratColumnGroup {
   renderContent(): void
 }
 
+interface ICaratColumn {
+  getRange(): [number, number]
+  setHeight(height: number): void
+  render(): void
+}
+
 /** Порт просмотра. */
 interface CaratViewport {
   /** Вертикальное положение. */
   y: number,
   /** Масштаб: количество пикселей в метре. */
   scale: number,
+  /** Минимально возможная координата по Y. */
+  min: number,
+  /** Максимально возможная координата по Y. */
+  max: number,
 }
 
 /** Тип каротажной кривой. */
@@ -96,7 +109,7 @@ type CaratCurveType = string;
 type CaratChannelType = 'lithology' | 'perforations' | 'curve-set' | 'curve-data';
 
 type CaratCurveSetInfo = CaratChannelInfo<'id' | 'type' | 'date'>;
-type CaratCurveDataInfo = CaratChannelInfo<'id' | 'data' | 'top' | 'left'>;
+type CaratCurveDataInfo = CaratChannelInfo<'id' | 'data' | 'top' | 'bottom'>;
 type CaratLithologyInfo = CaratChannelInfo<'top' | 'base' | 'stratum'>;
 type CaratPerforationsInfo = CaratChannelInfo<'top' | 'base' | 'date'>;
 type CaratChannelInfo<Fields = string> = Record<Fields | 'style' | 'bar', LookupColumnInfo>;

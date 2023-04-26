@@ -1,47 +1,50 @@
 import { CaratDrawer } from './drawer';
 import { CaratColumnGroup } from './column-group';
+import { isRectInnerPoint } from '../lib/utils';
 
 
 /** Трек. */
 export class CaratTrack implements ICaratTrack {
+  /** Отрисовщик. */
+  private readonly drawer: CaratDrawer;
   /** Список колонок. */
   private readonly groups: CaratColumnGroup[];
   /** Колонка типа `background`. */
-  private readonly backgroundGroup: CaratColumnGroup;
-
-  /** Отрисовщик. */
-  private readonly drawer: CaratDrawer;
-  /** Ограничивающий прямоугольник. */
-  private readonly rect: BoundingRect;
-  /** Порт просмотра трека. */
-  private readonly viewport: CaratViewport;
+  private backgroundGroup: CaratColumnGroup;
 
   /** Номер скважины трека. */
   private well: string;
   /** Высота заголовков групп колонок. */
   private groupHeadersHeight: number;
+  /** Индекс активной группы. */
+  private activeIndex: number;
+
+  /** Ограничивающий прямоугольник. */
+  public readonly rect: BoundingRect;
+  /** Порт просмотра трека. */
+  public readonly viewport: CaratViewport;
 
   constructor(
     rect: BoundingRect, columns: CaratColumnInit[],
-    viewport: CaratViewport, zones: CaratZone[], drawer: CaratDrawer
+    scale: number, zones: CaratZone[], drawer: CaratDrawer
   ) {
     this.rect = rect;
     this.drawer = drawer;
-    this.viewport = viewport;
+    this.viewport = {y: 0, scale, min: 0, max: 0};
     this.groups = [];
+    this.activeIndex = -1;
 
-    let x = 0;
+    let x = 0, index = 0;
     const top = drawer.trackHeaderSettings.height;
     const height = rect.height - top;
 
     for (const column of columns) {
       let { type, width } = column.settings;
-      width = column.settings.width;
-
       if (type === 'normal') {
         const groupRect = {top, left: x, width, height};
         this.groups.push(new CaratColumnGroup(groupRect, zones, drawer, column));
-        x += width;
+        if (column.active) this.activeIndex = index;
+        x += width; index += 1;
       } else if (type === 'background') {
         const groupRect = {top, left: 0, height, width: rect.width};
         this.backgroundGroup = new CaratColumnGroup(groupRect, zones, drawer, column);
@@ -58,13 +61,6 @@ export class CaratTrack implements ICaratTrack {
     return this.groups;
   }
 
-  public getViewport(): CaratViewport {
-    return this.viewport;
-  }
-  public getRect(): BoundingRect {
-    return this.rect;
-  }
-
   public setWell(well: string) {
     this.well = well;
   }
@@ -74,24 +70,41 @@ export class CaratTrack implements ICaratTrack {
   }
 
   public setActiveColumn(idx: number) {
-
+    if (idx >= this.groups.length) return;
+    this.groups.forEach((group) => { group.active = false; });
+    this.groups[idx].active = true;
+    this.activeIndex = idx;
   }
 
   public handleMouseDown(x: number, y: number) {
-
+    const findFn = (group) => isRectInnerPoint(x, y, group.getElementsRect())
+    const newActiveIndex = this.groups.findIndex(findFn);
+    if (newActiveIndex !== -1) this.setActiveColumn(newActiveIndex);
   }
 
   public setChannelData(channelData: ChannelDict) {
     this.backgroundGroup.setChannelData(channelData);
-    this.groups.forEach(c => c.setChannelData(channelData));
+    [this.viewport.min, this.viewport.max] = this.backgroundGroup.getElementsRange();
 
-    const coordinates = this.groups.map(g => g.getMinY());
-    const trackMinY = Math.min(...coordinates);
-    this.viewport.y = trackMinY === Infinity ? 0 : trackMinY;
+    for (const group of this.groups) {
+      group.setChannelData(channelData);
+      const [groupMin, groupMax] = group.getElementsRange();
+      if (groupMin < this.viewport.min) this.viewport.min = groupMin;
+      if (groupMax > this.viewport.max) this.viewport.max = groupMax;
+    }
+
+    if (this.viewport.min === Infinity) this.viewport.min = 0;
+    if (this.viewport.max === -Infinity) this.viewport.max = 0;
+    this.viewport.y = this.viewport.min;
   }
 
   public async setCurveData(channelData: ChannelDict) {
     await Promise.all(this.groups.map((group) => group.setCurveData(channelData)));
+    for (const group of this.groups) {
+      const [groupMin, groupMax] = group.getCurvesRange();
+      if (groupMin < this.viewport.min) this.viewport.min = groupMin;
+      if (groupMax > this.viewport.max) this.viewport.max = groupMax;
+    }
   }
 
   public setLookupData(lookupData: ChannelDict) {
@@ -113,6 +126,13 @@ export class CaratTrack implements ICaratTrack {
     this.backgroundGroup.renderContent();
     for (const group of this.groups) group.renderContent();
     this.drawer.drawTrackBody(this.well, this.groupHeadersHeight);
-    for (const group of this.groups) group.renderBody();
+
+    for (let i = 0; i < this.activeIndex; i++) {
+      this.groups[i].renderBody();
+    }
+    for (let i = this.activeIndex + 1; i < this.groups.length; i++) {
+      this.groups[i].renderBody();
+    }
+    if (this.activeIndex !== -1) this.groups[this.activeIndex].renderBody();
   }
 }

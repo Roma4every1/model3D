@@ -44,7 +44,7 @@ export const Carat = ({id, channels}: FormState) => {
   const onMouseDown = (e: MouseEvent) => {
     const { offsetX: x, offsetY: y } = e.nativeEvent;
     const isIntersect = stage.handleMouseDown(x, y);
-    if (isIntersect) isOnMoveRef.current = true;
+    if (isIntersect) { isOnMoveRef.current = true; stage.render(); }
   };
 
   const onMouseUp = () => {

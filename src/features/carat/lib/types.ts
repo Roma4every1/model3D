@@ -31,7 +31,7 @@ interface CaratStyleInterval {
 
 export interface CaratElementCurve {
   top: number,
-  left: number,
+  bottom: number,
   path: Path2D;
   style: CaratStyleCurve,
 }

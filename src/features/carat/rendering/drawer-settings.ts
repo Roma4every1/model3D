@@ -21,6 +21,13 @@ export interface CaratDrawerConfig {
   },
   /** Настройки отрисовки колонки. */
   column: {
+    /** Настройки тела колонки. */
+    body: {
+      /** __Боковые__ внутренние отступы элементов. */
+      padding: number,
+      /** Толщина рамки и цвет активной колонки. */
+      border: {thickness: number, activeColor: ColorHEX},
+    },
     /** Настройки подписей к колонкам. */
     label: {
       /** {@link CSSFont} подписи. */
@@ -66,6 +73,16 @@ export interface CaratTrackHeaderDrawSettings {
   readonly borderThickness: number,
 }
 
+/** Настройки тела колонки. */
+export interface CaratColumnBodyDrawSettings {
+  /** Боковые внутренние отступы элементов. */
+  readonly padding: number,
+  /** Толщина рамки колонки. */
+  readonly borderThickness: number,
+  /** Цвет рамки активной колонки. */
+  readonly activeBorderColor: ColorHEX,
+}
+
 /** Настройки отрисовки подписи колонки. */
 export interface CaratColumnLabelDrawSettings {
   /** Шрифт подписи. */
@@ -88,12 +105,7 @@ export interface CaratColumnYAxisDrawSettings {
 /** Создаёт настройки отрисовки трека по конфигу. */
 export function createTrackBodyDrawSettings(config: CaratDrawerConfig): CaratTrackBodyDrawSettings {
   const { margin, border } = config.track.body;
-
-  return {
-    margin: margin,
-    borderColor: border.color,
-    borderThickness: border.thickness,
-  };
+  return {margin, borderColor: border.color, borderThickness: border.thickness};
 }
 
 /** Создаёт настройки отрисовки трека по конфигу. */
@@ -111,21 +123,20 @@ export function createTrackHeaderDrawSettings(config: CaratDrawerConfig): CaratT
   };
 }
 
-/** Создаёт настройки отрисовки колонки по конфигу. */
-export function createColumnLabelDrawSettings(config: CaratDrawerConfig): CaratColumnLabelDrawSettings {
-  const { font, color } = config.column.label;
-  const labelFontSize = font.size;
-  return {font: `${font.style} ${labelFontSize}px ${font.family}`, color};
+/** Создаёт настройки отрисовки тела колонки по конфигу. */
+export function createColumnBodyDrawSettings(config: CaratDrawerConfig): CaratColumnBodyDrawSettings {
+  const { padding, border } = config.column.body
+  return {padding, borderThickness: border.thickness, activeBorderColor: border.activeColor};
 }
 
-/** Создаёт настройки отрисовки колонки по конфигу. */
+/** Создаёт настройки отрисовки подписи колонки по конфигу. */
+export function createColumnLabelDrawSettings(config: CaratDrawerConfig): CaratColumnLabelDrawSettings {
+  const { font, color } = config.column.label;
+  return {font: `${font.style} ${font.size}px ${font.family}`, color};
+}
+
+/** Создаёт настройки отрисовки вертикальной оси колонки по конфигу. */
 export function createColumnYAxisDrawSettings(config: CaratDrawerConfig): CaratColumnYAxisDrawSettings {
   const { font, color, markSize } = config.column.verticalAxis;
-  const axisFontSize = font.size;
-
-  return {
-    font: `${font.style} ${axisFontSize}px ${font.family}`,
-    color: color,
-    markSize: markSize,
-  };
+  return {font: `${font.style} ${font.size}px ${font.family}`, color, markSize};
 }

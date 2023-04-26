@@ -25,7 +25,7 @@ const allTopTabs: IJsonTabNode[] = [
   },
   { // панель настроек трека, относится к каротажу
     type: 'tab', enableDrag: false,
-    id: 'top-tracks', name: 'Треки',
+    id: 'top-tracks', name: 'Трек',
   },
   { // настройки непосредственно каротажа
     type: 'tab', enableDrag: false,

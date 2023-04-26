@@ -11,7 +11,7 @@ interface CaratScalePanelProps {
 
 
 export const CaratScalePanel = ({stage, track}: CaratScalePanelProps) => {
-  const initMetersInMeter = CaratDrawer.pixelPerMeter / track.getViewport().scale;
+  const initMetersInMeter = CaratDrawer.pixelPerMeter / track.viewport.scale;
   const [metersInMeter, setMetersInMeter] = useState(initMetersInMeter);
 
   const changeMetersInMeter = (metersInMeter: number) => {

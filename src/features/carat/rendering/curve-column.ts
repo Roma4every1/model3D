@@ -4,7 +4,7 @@ import { defaultSettings } from '../lib/constants';
 
 
 /** Колонка каротажной диаграммы с кривыми. */
-export class CaratCurveColumn {
+export class CaratCurveColumn implements ICaratColumn {
   /** Ссылка на отрисовщик. */
   private readonly drawer: CaratDrawer;
   /** Ограничивающий прямоугольник колонки. */
@@ -31,6 +31,17 @@ export class CaratCurveColumn {
     this.elements = [];
   }
 
+  public getRange(): [number, number] {
+    let min = Infinity;
+    let max = -Infinity;
+
+    for (const { top, bottom } of this.elements) {
+      if (top < min) min = top;
+      if (bottom > max) max = bottom;
+    }
+    return [min, max];
+  }
+
   public setHeight(height: number) {
     this.rect.height = height;
   }
@@ -40,17 +51,17 @@ export class CaratCurveColumn {
     const idIndex = info.id.index;
     const dataIndex = info.data.index;
     const topIndex = info.top.index;
-    const leftIndex = info.left.index;
+    const bottomIndex = info.bottom.index;
 
     this.elements = rows.map((row): CaratElementCurve => {
       const cells = row.Cells;
       const id = cells[idIndex];
-      const top = cells[topIndex], left = cells[leftIndex];
+      const top = cells[topIndex], bottom = cells[bottomIndex];
 
       const source = window.atob(cells[dataIndex]);
       const path = new Path2D(source);
       const style = this.styleDict[typeDict[id]] ?? defaultSettings.curveStyle;
-      return {top, left, path, style};
+      return {top, bottom, path, style};
     });
   }
 

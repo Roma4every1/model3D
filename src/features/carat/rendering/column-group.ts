@@ -10,8 +10,6 @@ import { applyInfoIndexes, loadCaratCurves } from '../lib/channels';
 export class CaratColumnGroup implements ICaratColumnGroup {
   /** Ссылка на отрисовщик. */
   private readonly drawer: CaratDrawer;
-  /** Ограничивающий прямоугольник колонки. */
-  private readonly rect: BoundingRect;
   /** Ограничивающий прямоугольник для элементов. */
   private readonly elementsRect: BoundingRect;
   /** Высота заголовка колонки. */
@@ -41,11 +39,10 @@ export class CaratColumnGroup implements ICaratColumnGroup {
 
   private readonly channels: CaratAttachedChannel[];
   private readonly properties: Record<ChannelName, CaratColumnProperties>;
-  private readonly active: boolean;
+  public active: boolean;
 
   constructor(rect: BoundingRect, zones: CaratZone[], drawer: CaratDrawer, init: CaratColumnInit) {
     this.drawer = drawer;
-    this.rect = rect;
     this.zones = zones;
     this.xAxis = init.xAxis;
     this.yAxis = init.yAxis;
@@ -108,8 +105,12 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     return this.settings.label;
   }
 
+  public getElementsRect(): BoundingRect {
+    return this.elementsRect;
+  }
+
   public getWidth(): number {
-    return this.rect.width;
+    return this.elementsRect.width;
   }
 
   public getElementsTop(): number {
@@ -120,9 +121,28 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     return this.yAxis.step;
   }
 
-  public getMinY() {
-    const coordinates = this.columns.map(c => c.getMinY());
-    return Math.min(...coordinates);
+  public getElementsRange(): [number, number] {
+    let min = Infinity;
+    let max = -Infinity;
+
+    for (const column of this.columns) {
+      const [colMin, colMax] = column.getRange();
+      if (colMin < min) min = colMin;
+      if (colMax > max) max = colMax;
+    }
+    return [min, max];
+  }
+
+  public getCurvesRange(): [number, number] {
+    let min = Infinity;
+    let max = -Infinity;
+
+    for (const column of this.curveColumns) {
+      const [colMin, colMax] = column.getRange();
+      if (colMin < min) min = colMin;
+      if (colMax > max) max = colMax;
+    }
+    return [min, max];
   }
 
   public setLabel(label: string) {
@@ -130,11 +150,10 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   }
 
   public setWidth(width: number) {
-    this.rect.width = width;
+    this.elementsRect.width = width;
   }
 
   public setHeight(height: number) {
-    this.rect.height = height;
     const columnHeight = height - this.headerHeight;
     this.elementsRect.height = columnHeight;
     for (const column of this.columns) column.setHeight(columnHeight);
@@ -159,7 +178,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
       const rawRows = curveSet?.data?.rows;
       if (rawRows && !curveSetChannel.applied) applyInfoIndexes(curveSetChannel, curveSet.data.columns);
 
-      const curveSetInfo: CaratCurveSetInfo = column.curveSetChannel.info as any;
+      const curveSetInfo = column.curveSetChannel.info as CaratCurveSetInfo;
       const rows = this.selection.filterCurves(rawRows ?? [], curveSetInfo);
       const idIndex = curveSetInfo.id.index;
       const typeIndex = curveSetInfo.type.index;
@@ -182,7 +201,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
 
   public renderBody() {
     this.drawer.setCurrentGroup(this.elementsRect);
-    this.drawer.drawColumnGroupBody(this.settings);
+    this.drawer.drawColumnGroupBody(this.settings, this.active);
   }
 
   public renderContent() {

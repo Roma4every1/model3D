@@ -13,8 +13,15 @@ export function moveSmoothly(viewport: CaratViewport, stage: ICaratStage, by: nu
 
   const id = setInterval(() => {
     let newY = startY + by * cubicBezierEaseInOut(time / duration);
-    viewport.y += newY - lastY;
-    stage.render();
+    let y = viewport.y + newY - lastY;
+
+    if (y > viewport.max) y = viewport.max;
+    else if (y < viewport.min) y = viewport.min;
+
+    if (viewport.y !== y) {
+      viewport.y = y;
+      stage.render();
+    }
     lastY = newY;
     if (time >= duration) clearInterval(id);
     time += frameTime;

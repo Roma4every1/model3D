@@ -5,7 +5,7 @@ import { defaultSettings } from '../lib/constants';
 
 
 /** Колонка каротажной диаграммы. */
-export class CaratColumn {
+export class CaratColumn implements ICaratColumn {
   /** Ссылка на отрисовщик. */
   private readonly drawer: CaratDrawer;
   /** Ограничивающий прямоугольник колонки. */
@@ -39,9 +39,15 @@ export class CaratColumn {
     this.barsStyle = null;
   }
 
-  public getMinY() {
-    const coordinates = this.elements.map(e => e.top);
-    return Math.min(...coordinates);
+  public getRange(): [number, number] {
+    let min = Infinity;
+    let max = -Infinity;
+
+    for (const { top, base } of this.elements) {
+      if (top < min) min = top;
+      if (base > max) max = base;
+    }
+    return [min, max];
   }
 
   public setHeight(height: number) {

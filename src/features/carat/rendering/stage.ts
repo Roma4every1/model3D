@@ -24,11 +24,11 @@ export class CaratStage implements ICaratStage {
     const trackMargin = drawer.trackBodySettings.margin;
     const rect: BoundingRect = {top: trackMargin, left: trackMargin, width: trackWidth, height: 0};
     const scale = CaratDrawer.pixelPerMeter / (init.settings.scale ?? defaultSettings.scale);
-    this.trackList = [new CaratTrack(rect, init.columns, {y: 0, scale}, zones, drawer)];
+    this.trackList = [new CaratTrack(rect, init.columns, scale, zones, drawer)];
   }
 
   public getCaratSettings(): CaratSettings {
-    const scale = this.trackList[0].getViewport().scale;
+    const scale = this.trackList[0].viewport.scale;
     return {
       scale: CaratDrawer.pixelPerMeter / scale, useStaticScale: this.useStaticScale,
       strataChannelName: this.strataChannelName, zones: null,
@@ -46,23 +46,19 @@ export class CaratStage implements ICaratStage {
   }
 
   public setWell(well: string) {
-    const activeTrack = this.trackList[0];
-    if (activeTrack) activeTrack.setWell(well ?? '');
+    this.trackList[0].setWell(well ?? '');
   }
 
   public setChannelData(channelData: ChannelDict) {
-    const activeTrack = this.trackList[0];
-    if (activeTrack) activeTrack.setChannelData(channelData);
+    this.trackList[0].setChannelData(channelData);
   }
 
   public async setCurveData(channelData: ChannelDict) {
-    const activeTrack = this.trackList[0];
-    if (activeTrack) await activeTrack.setCurveData(channelData);
+    await this.trackList[0].setCurveData(channelData);
   }
 
   public setLookupData(lookupData: ChannelDict) {
-    const activeTrack = this.trackList[0];
-    if (activeTrack) activeTrack.setLookupData(lookupData);
+    this.trackList[0].setLookupData(lookupData);
   }
 
   public setScale(scale: number) {
@@ -70,22 +66,24 @@ export class CaratStage implements ICaratStage {
   }
 
   public handleMouseDown(x: number, y: number): boolean {
-    const track = this.trackList.find((t) => isRectInnerPoint(x, y, t.getRect()));
-    if (track) track.handleMouseDown(x, y);
+    const track = this.trackList.find((t) => isRectInnerPoint(x, y, t.rect));
+    if (track) track.handleMouseDown(x - track.rect.left, y - track.rect.top);
     return track !== undefined;
   }
 
   public handleMouseWheel(x: number, y: number, by: number) {
-    const track = this.trackList.find((t) => isRectInnerPoint(x, y, t.getRect()));
-    if (track) moveSmoothly(track.getViewport(), this, by);
+    const track = this.trackList.find((t) => isRectInnerPoint(x, y, t.rect));
+    if (track) moveSmoothly(track.viewport, this, by);
   }
 
   public handleMouseMove(by: number) {
-    const activeTrack = this.trackList[0];
-    if (!activeTrack) return;
-    const viewport = activeTrack.getViewport();
-    viewport.y -= by / (viewport.scale * window.devicePixelRatio);
-    this.render();
+    const viewport = this.trackList[0].viewport;
+    let newY = viewport.y - by / (viewport.scale * window.devicePixelRatio);
+
+    if (newY > viewport.max) newY = viewport.max;
+    else if (newY < viewport.min) newY = viewport.min;
+
+    if (viewport.y !== newY) { viewport.y = newY; this.render(); }
   }
 
   public resize() {
