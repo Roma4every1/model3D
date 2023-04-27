@@ -1,5 +1,5 @@
 import { CaratDrawer } from './drawer';
-import { CaratCurveStyleDict, CaratElementCurve } from '../lib/types';
+import { CaratCurveModel, CaratCurveStyleDict } from '../lib/types';
 import { defaultSettings } from '../lib/constants';
 
 
@@ -16,7 +16,7 @@ export class CaratCurveColumn implements ICaratColumn {
   public readonly curveDataChannel: CaratAttachedChannel;
 
   /** Пласты для отрисовки. */
-  private elements: CaratElementCurve[];
+  private elements: CaratCurveModel[];
   /** Словарь свойств внешнего вида пластов. */
   private styleDict: CaratCurveStyleDict;
 
@@ -46,23 +46,11 @@ export class CaratCurveColumn implements ICaratColumn {
     this.rect.height = height;
   }
 
-  public setCurveData(rows: ChannelRow[], typeDict: Record<number, CaratCurveType>) {
-    const info = this.curveDataChannel.info as CaratCurveDataInfo;
-    const idIndex = info.id.index;
-    const dataIndex = info.data.index;
-    const topIndex = info.top.index;
-    const bottomIndex = info.bottom.index;
-
-    this.elements = rows.map((row): CaratElementCurve => {
-      const cells = row.Cells;
-      const id = cells[idIndex];
-      const top = cells[topIndex], bottom = cells[bottomIndex];
-
-      const source = window.atob(cells[dataIndex]);
-      const path = new Path2D(source);
-      const style = this.styleDict[typeDict[id]] ?? defaultSettings.curveStyle;
-      return {top, bottom, path, style};
-    });
+  public setCurveData(curves: CaratCurveModel[]) {
+    for (const curve of curves) {
+      curve.style = this.styleDict[curve.type] ?? defaultSettings.curveStyle
+    }
+    this.elements = curves;
   }
 
   public setLookupData(lookupData: ChannelDict) {

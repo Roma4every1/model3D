@@ -10,10 +10,23 @@ export const defaultSettings = {
 
 /** Свойства для идентификации каналов. */
 export const criterionProperties: Record<CaratChannelType, Record<string, string>> = {
-  'lithology': {top: 'TOP', base: 'BASE', stratum: 'STRATUM ID'},
-  'perforations': {top: 'TOP', base: 'BASE', type: 'TYPE', date: 'DATE'},
-  'curve-set': {id: 'CURVE ID', type: 'CURVE TYPE', date: 'DATE'},
-  'curve-data': {id: 'CURVE ID', data: 'CURVE DATA', top: 'MIN DEPTH', bottom: 'MAX DEPTH'},
+  'lithology': {
+    stratum: 'STRATUM ID',
+    top: 'TOP', base: 'BASE',
+  },
+  'perforations': {
+    type: 'TYPE', date: 'DATE',
+    top: 'TOP', base: 'BASE',
+  },
+  'curve-set': {
+    id: 'CURVE ID', type: 'CURVE TYPE', date: 'DATE',
+    top: 'DEPTH START', bottom: 'DEPTH END',
+  },
+  'curve-data': {
+    id: 'CURVE ID', data: 'CURVE DATA',
+    top: 'MIN DEPTH', bottom: 'MAX DEPTH',
+    min: 'MIN VALUE', max: 'MAX VALUE',
+  },
 };
 
 /** Свойства для идентификации канала с цветами пластов. */

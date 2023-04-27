@@ -1,3 +1,25 @@
+/** Модель каротажной кривой. */
+export interface CaratCurveModel {
+  /** Идентификатор кривой. */
+  id: CaratCurveID,
+  /** Тип каротажа. */
+  type: CaratCurveType,
+  /** Дата кривой. */
+  date: Date,
+  /** Начальная отметка глубины. */
+  top: number,
+  /** Конечная отметка глубины. */
+  bottom: number,
+  /** Минимальное значение кривой. */
+  min: number,
+  /** Максимальное значение кривой. */
+  max: number,
+  /** Данные кривой (SVG-путь). */
+  path?: Path2D,
+  /** Стиль отрисовки. */
+  style?: CaratStyleCurve,
+}
+
 /** Модель оси кривой. */
 export interface CaratCurveAxis {
   /** Тип кривой. */
@@ -29,12 +51,6 @@ interface CaratStyleInterval {
   lineStyle: string,
 }
 
-export interface CaratElementCurve {
-  top: number,
-  bottom: number,
-  path: Path2D;
-  style: CaratStyleCurve,
-}
 export interface CaratStyleCurve {
   color: ColorHEX,
   thickness: number,

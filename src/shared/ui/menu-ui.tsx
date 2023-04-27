@@ -1,5 +1,6 @@
 import { ReactNode, CSSProperties, MouseEvent } from 'react';
 import { Skeleton } from '@progress/kendo-react-indicators';
+import './menu-ui.scss';
 
 
 interface MenuSectionProps {
@@ -8,6 +9,10 @@ interface MenuSectionProps {
   style?: CSSProperties,
   children: ReactNode,
 }
+interface MenuSectionItemProps {
+  className?: string,
+  children?: ReactNode,
+}
 
 export const MenuSection = ({header, className, style, children}: MenuSectionProps) => {
   return (
@@ -15,6 +20,14 @@ export const MenuSection = ({header, className, style, children}: MenuSectionPro
       <div className={'menu-header'}>{header}</div>
       <div className={className || 'menu-list'} style={style}>{children}</div>
     </section>
+  );
+};
+
+export const MenuSectionItem = ({className, children}: MenuSectionItemProps) => {
+  return (
+    <div className={className}>
+      {children}
+    </div>
   );
 };
 
@@ -28,7 +41,7 @@ export const MenuSkeleton = ({template}: {template: string[]}) => {
   );
 };
 
-export const MenuSectionSkeleton = ({width}: {width: string}) => {
+const MenuSectionSkeleton = ({width}: {width: string}) => {
   return (
     <section className={'menu-section-skeleton'} style={{width}}>
       <Skeleton shape={'rectangle'} animation={{type: 'wave'}}/>

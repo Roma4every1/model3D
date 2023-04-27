@@ -3,23 +3,26 @@ import { MenuSkeleton } from 'shared/ui';
 import { caratStateSelector } from '../../store/carats.selectors';
 
 import './track-edit-panel.scss';
-import { CaratScalePanel } from './scale-panel';
+import { CaratNavigationPanel } from './navigation-panel';
 import { CaratColumnsPanel } from './columns-panel';
-import { CaratActiveGroupPanel } from './active-column-panel';
+import { CaratActiveGroupPanel } from './active-group-panel';
+import { CaratCurvesPanel } from './curves-panel';
 
 
+/** Панель редактирования трека каротажной диаграммы. */
 export const TracksEditPanel = ({id}: FormEditPanelProps) => {
   const state: CaratState = useSelector(caratStateSelector.bind(id));
-  if (!state) return <MenuSkeleton template={['100px', '100px', '100px']}/>;
+  if (!state) return <MenuSkeleton template={['100px', '100px', '100px', '100px']}/>;
 
-  const stage = state.stage;
+  const { stage, activeGroup } = state;
   const track = stage.getActiveTrack();
 
   return (
     <div className={'menu'}>
-      <CaratScalePanel stage={stage} track={track}/>
+      <CaratNavigationPanel stage={stage} track={track}/>
       <CaratColumnsPanel id={id} stage={stage} track={track}/>
-      <CaratActiveGroupPanel stage={stage} column={state.activeGroup}/>
+      <CaratActiveGroupPanel stage={stage} activeGroup={activeGroup}/>
+      <CaratCurvesPanel activeGroup={activeGroup}/>
     </div>
   );
 };

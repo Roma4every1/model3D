@@ -1,4 +1,4 @@
-import { CaratElementCurve, CaratElementInterval, CaratElementBar } from '../lib/types';
+import { CaratElementInterval, CaratElementBar, CaratCurveModel } from '../lib/types';
 
 import {
   CaratDrawerConfig, CaratTrackBodyDrawSettings, CaratTrackHeaderDrawSettings,
@@ -21,7 +21,7 @@ interface ICaratDrawer {
   drawColumnGroupBody(settings: CaratColumnSettings, active: boolean): void
   drawColumnGroupYAxis(axis: CaratColumnYAxis): void
 
-  drawCurves(elements: CaratElementCurve[]): void
+  drawCurves(elements: CaratCurveModel[]): void
   drawIntervals(elements: CaratElementInterval[]): void
   drawBars(elements: CaratElementBar[], settings: CaratBarPropertySettings): void
 }
@@ -281,7 +281,7 @@ export class CaratDrawer implements ICaratDrawer {
     }
   }
 
-  public drawCurves(elements: CaratElementCurve[]) {
+  public drawCurves(elements: CaratCurveModel[]) {
     const ratio = CaratDrawer.ratio;
     const scaleY = window.devicePixelRatio * this.scale;
 

@@ -6,37 +6,37 @@ import { MenuSection } from 'shared/ui';
 
 interface CaratActiveColumnPanelProps {
   stage: ICaratStage,
-  column: ICaratColumnGroup,
+  activeGroup: ICaratColumnGroup,
 }
 
 
-export const CaratActiveGroupPanel = ({stage, column}: CaratActiveColumnPanelProps) => {
+export const CaratActiveGroupPanel = ({stage, activeGroup}: CaratActiveColumnPanelProps) => {
   const [label, setLabel] = useState('');
   const [width, setWidth] = useState(null);
   const [step, setStep] = useState(null);
 
   useEffect(() => {
-    if (!column) return;
-    setLabel(column.getLabel());
-    setWidth(column.getWidth());
-    setStep(column.getYAxisStep());
-  }, [column]);
+    if (!activeGroup) return;
+    setLabel(activeGroup.getLabel());
+    setWidth(activeGroup.getWidth());
+    setStep(activeGroup.getYAxisStep());
+  }, [activeGroup]);
 
   const onLabelChange = (e: TextBoxChangeEvent) => {
     if (typeof e.value !== 'string') return;
-    column.setLabel(e.value); stage.render();
+    activeGroup.setLabel(e.value); stage.render();
     setLabel(e.value);
   };
 
   const onWidthChange = (e: NumericTextBoxChangeEvent) => {
     if (!e.value) return;
-    column.setWidth(e.value); stage.render();
+    activeGroup.setWidth(e.value); stage.render();
     setWidth(e.value);
   };
 
   const onStepChange = (e: NumericTextBoxChangeEvent) => {
     if (!e.value) return;
-    column.setYAxisStep(e.value); stage.render();
+    activeGroup.setYAxisStep(e.value); stage.render();
     setStep(e.value);
   };
 

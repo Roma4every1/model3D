@@ -32,7 +32,7 @@ export const Carat = ({id, channels}: FormState) => {
     stage.setWell(wellID);
     stage.setChannelData(channelData); stage.render();
     stage.setCurveData(channelData).then(() => stage.render());
-  }, [channelData, wellID, stage]);
+  }, [channelData]); // eslint-disable-line
 
   // обновление ссылки на холст
   useLayoutEffect(() => {

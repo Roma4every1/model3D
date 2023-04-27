@@ -61,6 +61,11 @@ export class CaratTrack implements ICaratTrack {
     return this.groups;
   }
 
+  public getActiveGroup(): ICaratColumnGroup | null {
+    if (this.activeIndex === -1) return null;
+    return this.groups[this.activeIndex];
+  }
+
   public setWell(well: string) {
     this.well = well;
   }
@@ -69,7 +74,7 @@ export class CaratTrack implements ICaratTrack {
     this.viewport.scale = scale;
   }
 
-  public setActiveColumn(idx: number) {
+  public setActiveGroup(idx: number) {
     if (idx >= this.groups.length) return;
     this.groups.forEach((group) => { group.active = false; });
     this.groups[idx].active = true;
@@ -79,7 +84,7 @@ export class CaratTrack implements ICaratTrack {
   public handleMouseDown(x: number, y: number) {
     const findFn = (group) => isRectInnerPoint(x, y, group.getElementsRect())
     const newActiveIndex = this.groups.findIndex(findFn);
-    if (newActiveIndex !== -1) this.setActiveColumn(newActiveIndex);
+    if (newActiveIndex !== -1) this.setActiveGroup(newActiveIndex);
   }
 
   public setChannelData(channelData: ChannelDict) {

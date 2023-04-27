@@ -1,4 +1,3 @@
-import { channelsAPI } from 'entities/channels/lib/channels.api';
 import { criterionProperties, styleCriterionProperties } from './constants';
 
 
@@ -75,12 +74,4 @@ export function applyInfoIndexes(attachment: CaratAttachedChannel | CaratAttache
     }
   }
   attachment.applied = true;
-}
-
-/* --- Elements Creation --- */
-
-export async function loadCaratCurves(name: ChannelName, ids: string[]): Promise<ChannelData> {
-  const parameter: Parameter = {id: 'currentCurveIds', type: 'stringArray', value: ids} as Parameter;
-  const res = await channelsAPI.getChannelData(name, [parameter], {order: []} as any);
-  return res.ok ? res.data.data : null;
 }

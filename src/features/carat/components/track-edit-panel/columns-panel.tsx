@@ -1,6 +1,9 @@
 import { useDispatch } from 'react-redux';
-import { MenuSection } from 'shared/ui';
+import { MenuSection, ButtonIcon } from 'shared/ui';
 import { setCaratActiveGroup } from '../../store/carats.actions';
+
+import moveLeftIcon from 'assets/images/carat/move-left.svg';
+import moveRightIcon from 'assets/images/carat/move-right.svg';
 
 
 interface CaratColumnsPanelProps {
@@ -17,7 +20,7 @@ export const CaratColumnsPanel = ({id, stage, track}: CaratColumnsPanelProps) =>
   const setActiveGroup = (idx: number) => {
     const activeGroup = columns[idx];
     dispatch(setCaratActiveGroup(id, activeGroup));
-    track.setActiveColumn(idx); stage.render();
+    track.setActiveGroup(idx); stage.render();
   };
 
   const columnToLabel = (column: ICaratColumnGroup, i: number) => {
@@ -27,9 +30,9 @@ export const CaratColumnsPanel = ({id, stage, track}: CaratColumnsPanelProps) =>
 
   return (
     <MenuSection header={'Управление колонками'} style={{flexDirection: 'row'}}>
-      <div>
-        <div>Вправо</div>
-        <div>Влево</div>
+      <div style={{display: 'flex', flexDirection: 'column'}}>
+        <ButtonIcon text={'Влево'} icon={moveLeftIcon} title={'Переместить активную колонку влево'}/>
+        <ButtonIcon text={'Вправо'} icon={moveRightIcon} title={'Переместить активную колонку вправо'}/>
       </div>
       <div className={'carat-tracks'}>
         {columns.map(columnToLabel)}
