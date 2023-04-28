@@ -1,5 +1,5 @@
-import { Model, Layout, TabNode } from 'flexlayout-react';
-import { useMemo } from 'react';
+import {Model, Layout, TabNode, Actions, DockLocation} from 'flexlayout-react';
+import {useEffect, useMemo} from 'react';
 import { useSelector } from 'react-redux';
 import { i18nMapper } from 'shared/locales';
 import { getDockLayout } from '../lib/dock-layout';
@@ -11,7 +11,13 @@ import { LeftPanel } from 'widgets/left-panel';
 import { TracesEditTab } from 'entities/traces';
 import { ActiveOperations, RightTab } from 'widgets/right-panel';
 import { MainMenu, PresentationReports, FormPanel } from 'widgets/top-panel';
+import {traceStateSelector} from "../../entities/traces/store/traces.selectors";
 
+// вкладка для редактирования трассы
+const traceEditTabJSON = {
+  type: 'tab', enableDrag: false,
+  id: 'right-trace', name: 'Редактирование трассы',
+}
 
 /** Главная форма. */
 export const Dock = ({config}: {config: ClientConfiguration}) => {
@@ -19,7 +25,7 @@ export const Dock = ({config}: {config: ClientConfiguration}) => {
   const presentation = useSelector(presentationSelector);
   const traceChannel = useSelector(traceChannelSelector);
 
-  const isTraceEditing = useSelector<WState, boolean>(state => state.traces.isTraceEditing);
+  const isTraceEditing = useSelector(traceStateSelector)?.isTraceEditing;
 
   const activeID = rootState.activeChildID;
   const { common: dockLayout, left: leftLayout } = rootState.layout;
@@ -27,8 +33,21 @@ export const Dock = ({config}: {config: ClientConfiguration}) => {
   const needTracePanel = Boolean(traceChannel?.data);
 
   const model = useMemo<Model>(() => {
-    return getDockLayout(formTypes, dockLayout, needTracePanel, isTraceEditing);
-  }, [formTypes, dockLayout, needTracePanel, isTraceEditing]);
+    return getDockLayout(formTypes, dockLayout, needTracePanel);
+  }, [formTypes, dockLayout, needTracePanel]);
+
+  useEffect(() => {
+    if (!needTracePanel) return;
+    if (isTraceEditing) {
+      if (!model.getNodeById('right-trace'))
+        model.doAction(Actions.addNode(traceEditTabJSON, 'border_right', DockLocation.RIGHT, 1, true))
+    } else {
+      if (model.getNodeById('right-trace')) {
+        model.doAction(Actions.selectTab('right-trace'));
+        model.doAction(Actions.deleteTab('right-trace'));
+      }
+    }
+  }, [isTraceEditing, model, needTracePanel]);
 
   const onModelChange = (model: Model) => {
     const [topBorder, rightBorder] = model.getBorderSet().getBorders();

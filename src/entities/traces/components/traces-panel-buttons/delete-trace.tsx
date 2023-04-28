@@ -17,6 +17,8 @@ interface DeleteTraceProps {
 }
 
 export const DeleteTrace = ({traces, tracesState, itemsTableID}: DeleteTraceProps) => {
+  const { t } = useTranslation();
+
   const dispatch = useDispatch();
   const { isTraceEditing, isTraceCreating } = tracesState;
 
@@ -41,7 +43,7 @@ export const DeleteTrace = ({traces, tracesState, itemsTableID}: DeleteTraceProp
   };
 
   return <BigButton
-    text={'Удалить'} icon={deleteTraceIcon}
+    text={t('trace.delete')} icon={deleteTraceIcon}
     action={showDeleteTraceWindow} disabled={disabled}
   />;
 }
@@ -62,25 +64,24 @@ export const DeleteTraceWindow = ({tracesState, traces, itemsTableID}: DeleteTra
   }, [dispatch]);
 
   // onClick коллбэк для компонента
-  const handleDelete = useCallback(() => {
+  const handleDelete = () => {
     const deleteID = traces.data.rows.findIndex((row) =>
       row.Cells[0] === tracesState.currentTraceData.id);
     dispatch(removeTraceRow(traces.tableID, deleteID, itemsTableID));
     dispatch(setCurrentTraceData(null))
 
     closeDeleteWindow();
-  }, [closeDeleteWindow, dispatch, itemsTableID, traces.data.rows,
-    traces.tableID, tracesState.currentTraceData.id]);
+  };
 
   return (
     <Dialog
       key={'traceDeleteWindow'}
-      title={t('map.delete-element')}
+      title={t('trace.delete-dialog')}
       onClose={closeDeleteWindow}
     >
-      <div>{t('map.areYouSureToDeleteTrace')}</div>
+      <div>{t('trace.areYouSureToDeleteTrace')}</div>
       <ul style={{paddingLeft: '16px'}}>
-        <li><b>Трасса: </b><span>{traceName}</span></li>
+        <li><b><span>{traceName}</span></b></li>
       </ul>
       <DialogActionsBar>
         <div className={'windowButtonContainer'}>

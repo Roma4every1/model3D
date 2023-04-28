@@ -475,6 +475,11 @@ var polyline = declareType('polyline', {
 			i.style = currentLineConfig[0];
 		}
 
+    if (i.isTrace) {
+        context.lineCap = 'round';
+        context.lineJoin = 'round';
+    }
+
 		polyline.path(i, options);
 		context.strokeStyle = i.bordercolor || i.fillcolor || i.fillbkcolor || "#000000";
 		context.lineWidth = (i.borderwidth || defaultLineWidth) * 0.001 * options.dotsPerMeter;
@@ -497,11 +502,6 @@ var polyline = declareType('polyline', {
 			else
 				context.lineWidth = (i.borderwidth || defaultLineWidth) * 0.001 * options.dotsPerMeter;
 		}
-
-    if (i.isTrace) {
-        context.lineCap = 'round';
-        context.lineJoin = 'round';
-    }
 
 		context.stroke();
 		if (context.setLineDash) {context.setLineDash([])}
@@ -526,6 +526,11 @@ var polyline = declareType('polyline', {
 			i.style = currentLineConfig[0];
 		}
 		const pathNeeded = _.once(() => polyline.path(i, options));
+
+    if (i.isTrace) {
+        context.lineCap = 'round';
+        context.lineJoin = 'round';
+    }
 
 		if ((!i.edited) && i.selected) {
 			context.lineCap = 'round';

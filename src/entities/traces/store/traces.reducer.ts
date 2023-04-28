@@ -82,7 +82,7 @@ export const tracesReducer = (state: TracesState = init, action: TracesAction): 
       const oldTraceData = isTraceEditing ? state.currentTraceData : null;
       return {...state,
         isTraceEditing,
-        oldTraceData
+        oldTraceData,
       };
     }
 

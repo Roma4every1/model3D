@@ -3,6 +3,7 @@ import {useDispatch} from "react-redux";
 import {BigButton} from "../../../../shared/ui";
 import {setCurrentTraceData, setTraceCreating, setTraceEditing} from "../../store/traces.actions";
 import {removeTraceRow} from "../../store/traces.thunks";
+import {useTranslation} from "react-i18next";
 
 
 interface DenyTraceChangesProps {
@@ -12,6 +13,8 @@ interface DenyTraceChangesProps {
 }
 
 export const DenyTraceChanges = ({traces, tracesState, itemsTableID}: DenyTraceChangesProps) => {
+  const { t } = useTranslation();
+
   const dispatch = useDispatch();
 
   const { isTraceEditing, isTraceCreating, oldTraceData } = tracesState;
@@ -35,7 +38,7 @@ export const DenyTraceChanges = ({traces, tracesState, itemsTableID}: DenyTraceC
   };
 
   return <BigButton
-    text={'Отменить'} icon={denyTraceChangesIcon}
+    text={t('base.cancel')} icon={denyTraceChangesIcon}
     action={action} disabled={disabledDeny}
   />;
 }

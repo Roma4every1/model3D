@@ -6,19 +6,14 @@ const allRightTabs: IJsonTabNode[] = [
     type: 'tab', enableDrag: false,
     id: 'right-dock', name: 'Отчёты',
   },
-  { // редактирование трасс
-    type: 'tab', enableDrag: false,
-    id: 'right-trace', name: 'Редактирование трассы',
-  },
   { // вкладка со слоями карты
     type: 'tab', enableDrag: false,
     id: 'right-map', name: 'Слои карты',
   },
 ];
 
-export function getRightPanelTabs(types: Set<FormType> | undefined, isTraceEditing) {
+export function getRightPanelTabs(types: Set<FormType> | undefined) {
   const tabs: IJsonTabNode[] = [allRightTabs[0]];
-  if (isTraceEditing) tabs.push(allRightTabs[1]);
-  if (types && types.has('map')) tabs.push(allRightTabs[2]);
+  if (types && types.has('map')) tabs.push(allRightTabs[1]);
   return tabs;
 }

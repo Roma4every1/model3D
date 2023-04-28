@@ -13,24 +13,10 @@ export const createTraceRow = (
 ) => {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const state = getState();
+
     const row = {ID: null, Cells: [null, "Без имени", currentStratumID, null]};
-
-    let res: Res<ReportStatus>, wrongResult: boolean, error: string;
-
-    res = await channelsAPI.insertRows(tableID, [row]);
-
-    if (res.ok === false) {
-      dispatch(setWindowWarning(res.data));
-    } else {
-      wrongResult = res.data.WrongResult;
-      error = res.data.Error;
-    }
-
-    if (wrongResult && error) {
-      dispatch(setWindowWarning(error));
-      dispatch(closeWindowNotification());
-    }
-
+    const res = await channelsAPI.insertRows(tableID, [row]);
+    checkResultForErrors(res, dispatch);
     await updateTables([tableID])(dispatch, () => state);
   }
 }
@@ -45,22 +31,8 @@ export const updateTraceData = (
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const state = getState();
 
-    let res: Res<ReportStatus>, wrongResult: boolean, error: string;
-
-    res = await channelsAPI.updateRows(tableID, [id], [traceModelToChannelRow(traceData)]);
-
-    if (res.ok === false) {
-      dispatch(setWindowWarning(res.data));
-    } else {
-      wrongResult = res.data.WrongResult;
-      error = res.data.Error;
-    }
-
-    if (wrongResult && error) {
-      dispatch(setWindowWarning(error));
-      dispatch(closeWindowNotification());
-    }
-
+    const res = await channelsAPI.updateRows(tableID, [id], [traceModelToChannelRow(traceData)]);
+    checkResultForErrors(res, dispatch);
     await updateTables([tableID])(dispatch, () => state);
   }
 }
@@ -75,60 +47,56 @@ export const removeTraceRow = (tableID: TableID,
     const state = getState();
 
     const traceRes = await channelsAPI.removeRows(tableID, [id]);
-    if (traceRes.ok === false) { dispatch(setWindowWarning(traceRes.data)); return false; }
-    const traceOk = !traceRes.data.WrongResult;
-    if (!traceOk && traceRes.data.Error) { dispatch(setWindowWarning(traceRes.data.Error)); return false; }
+    checkResultForErrors(traceRes, dispatch);
 
     if (!isTraceCreating) {
       const itemsRes = await channelsAPI.removeRows(itemsTableID, 'all');
-      if (itemsRes.ok === false) { dispatch(setWindowWarning(itemsRes.data)); return false; }
-      const itemsOk = !itemsRes.data.WrongResult;
-      if (!itemsOk && itemsRes.data.Error) { dispatch(setWindowWarning(itemsRes.data.Error)); return false; }
+      checkResultForErrors(itemsRes, dispatch);
     }
 
 
     await updateTables([tableID, itemsTableID])(dispatch, () => state);
-    return traceOk;
+    return traceRes.ok;
   };
 };
 
-
+/** Сохранение изменений в таблице с узлами трассы. */
 export const updateTraceItems = (itemsTableID: TableID, traceID: number, items, isTraceCreating): Thunk<boolean> => {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const state = getState();
 
-    let itemsRes, removeOldItemsRes: Res<ReportStatus>, wrongResult: boolean, error: string;
-
     if (!isTraceCreating) {
-      removeOldItemsRes = await channelsAPI.removeRows(itemsTableID, 'all');
-
-      if (removeOldItemsRes.ok === false) {
-        dispatch(setWindowWarning(removeOldItemsRes.data));
-      } else {
-        wrongResult = removeOldItemsRes.data.WrongResult;
-        error = removeOldItemsRes.data.Error;
-      }
+      const removeOldItemsRes = await channelsAPI.removeRows(itemsTableID, 'all');
+      checkResultForErrors(removeOldItemsRes, dispatch);
     }
 
     const itemsRows : ChannelRow[] = items.map( (item, index) => ({
       ID: null,
       Cells: [traceID, item, (10+index)*1000, null, null]
     }));
-    itemsRes = await channelsAPI.insertRows(itemsTableID, itemsRows);
-
-    if (itemsRes.ok === false) {
-      dispatch(setWindowWarning(itemsRes.data));
-    } else {
-      wrongResult = itemsRes.data.WrongResult;
-      error = itemsRes.data.Error;
-    }
-
-    if (wrongResult && error) {
-      dispatch(setWindowWarning(error));
-      dispatch(closeWindowNotification());
-    }
+    const itemsRes = await channelsAPI.insertRows(itemsTableID, itemsRows);
+    checkResultForErrors(itemsRes, dispatch);
 
     await updateTables([itemsTableID])(dispatch, () => state);
     return itemsRes.ok;
   };
 };
+
+/** Функция с dispatch выполняющая проверку результата выполнения запроса. */
+const checkResultForErrors = (res, dispatch): boolean => {
+  let wrongResult: boolean, error: string;
+
+  if (res.ok === false) {
+    dispatch(setWindowWarning(res.data));
+  } else {
+    wrongResult = res.data.WrongResult;
+    error = res.data.Error;
+  }
+
+  if (wrongResult && error) {
+    dispatch(setWindowWarning(error));
+    dispatch(closeWindowNotification());
+  }
+
+  return res.ok
+}

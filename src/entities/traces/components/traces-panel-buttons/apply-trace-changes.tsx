@@ -3,6 +3,7 @@ import {useDispatch} from "react-redux";
 import {BigButton} from "../../../../shared/ui";
 import {setTraceCreating, setTraceEditing} from "../../store/traces.actions";
 import {updateTraceData, updateTraceItems} from "../../store/traces.thunks";
+import {useTranslation} from "react-i18next";
 
 
 interface ApplyTraceChangesProps {
@@ -12,6 +13,8 @@ interface ApplyTraceChangesProps {
 }
 
 export const ApplyTraceChanges = ({traces, tracesState, itemsTableID}: ApplyTraceChangesProps) => {
+  const { t } = useTranslation();
+
   const dispatch = useDispatch();
   const { isTraceEditing, isTraceCreating, currentTraceData } = tracesState;
 
@@ -35,7 +38,7 @@ export const ApplyTraceChanges = ({traces, tracesState, itemsTableID}: ApplyTrac
   };
 
   return <BigButton
-    text={'Применить'} icon={applyTraceChangesIcon}
+    text={t('base.apply')} icon={applyTraceChangesIcon}
     action={action} disabled={disabledAccept}
   />;
 }

@@ -304,7 +304,7 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
         ? setMultiMapBlocked(state, newMapState.childOf, false)
         : newMapState.canvas.blocked = false;
 
-      const modifiedLayer = newMapState.mapData.layers?.find(l => l.elements?.includes(element));
+      const modifiedLayer = newMapState.mapData?.layers?.find(l => l.elements?.includes(element));
       if (modifiedLayer) {
         modifiedLayer.modified = true;
         newMapState.isModified = true;

@@ -206,7 +206,7 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
       return {centerX, centerY, scale};
     }
     return null;
-  }, [mapData?.scale]); // canvas не стоит в зависимостях намеренно
+  }, [mapData?.scale, canvas]); // canvas не стоит в зависимостях намеренно
 
   // создание и отрисовка текущей трассы
   useEffect( () => {

@@ -1,4 +1,3 @@
-
 /** Хранилище состояний трасс. */
 interface TracesState {
   currentTraceData: TraceModel | null,
@@ -8,7 +7,7 @@ interface TracesState {
 }
 
 /** ## Данные текущей трассы.
- * + `ID` — индекс в таблице
+ * + `id` — индекс в таблице
  * + `name` — имя трассы
  * + `stratumID` — индекс пласта
  * + `items` - UWID точкек трассы
@@ -20,29 +19,18 @@ interface TraceModel {
   items: string[] | null
 }
 
-
-
-
-/** ## Данные строки трассы в таблице.
- * + `ID` — индекс в таблице
- * + `Cells` — имя трассы
+/** ## Данные узла трассы.
+ * + `UWID` — индекс скважины
+ * + `name` — имя скважины
  * */
-interface TraceRow {
-  ID: number | null,
-  Cells: TraceData
+interface TracePoint {
+  UWID: string,
+  name: string,
 }
 
-/** ## Данные строки трассы в таблице.
- * + `ID` — индекс в таблице
- * + `name` — имя трассы
- * + `stratumID` — индекс пласта
- * + `items` - UWID точкек трассы
- * */
-interface TraceData {
-  ID: number | null,
-  name: string | null,
-  stratumID: string | null,
-  items: string | null
-}
+
+
+
+
 
 

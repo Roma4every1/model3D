@@ -3,8 +3,8 @@ import createTraceIcon from '../../../../assets/images/trace/trace_add_L.png'
 import {BigButton} from "../../../../shared/ui";
 import {createTrace} from "../../store/traces.actions";
 import {createTraceRow} from "../../store/traces.thunks";
-import {stringToTableCell} from "../../../parameters/lib/table-row";
-import {currentMestParamName} from "../../lib/constants";
+import {useTranslation} from "react-i18next";
+import {currentStratumIDSelector} from "../../store/traces.selectors";
 
 interface CreateTraceProps {
   tracesState: TracesState,
@@ -12,24 +12,17 @@ interface CreateTraceProps {
 }
 
 export const CreateTrace = ({tracesState, tracesTableID}: CreateTraceProps) => {
+  const { t } = useTranslation();
+
   const dispatch = useDispatch();
   const { isTraceEditing, isTraceCreating } = tracesState;
 
-  // текущее месторождение, используется для получения stratumID
-  const currentMestValue = useSelector<WState, string | null>(
-    (state: WState) =>
-      state.parameters[state.root.id]
-        .find(el => el.id === currentMestParamName)
-        ?.value?.toString() || null
-  );
-
   // получение stratumID
-  const currentStratumID = currentMestValue ?
-    stringToTableCell(currentMestValue, 'LOOKUPCODE') : null;
+  const currentStratumID = useSelector(currentStratumIDSelector);
 
   // состояние активности кнопки
   const disabled = isTraceEditing ||
-    isTraceCreating || !currentMestValue;
+    isTraceCreating || !currentStratumID;
 
   // onClick коллбэк для компонента
   const action = () => {
@@ -38,7 +31,7 @@ export const CreateTrace = ({tracesState, tracesTableID}: CreateTraceProps) => {
   }
 
   return <BigButton
-    text={'Создать'} icon={createTraceIcon}
+    text={t('trace.create')} icon={createTraceIcon}
     action={action} disabled={disabled}
   />;
 }
