@@ -14,6 +14,8 @@ export interface CaratCurveModel {
   min: number,
   /** Максимальное значение кривой. */
   max: number,
+  /** Загружать ли кривую по умолчанию. */
+  defaultLoading: boolean,
   /** Данные кривой (SVG-путь). */
   path?: Path2D,
   /** Стиль отрисовки. */

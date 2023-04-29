@@ -14,29 +14,41 @@ export class CaratStage implements ICaratStage {
 
   /** Список треков. */
   private readonly trackList: CaratTrack[];
+  private zones: CaratZone[];
 
   public readonly useStaticScale: boolean;
   public readonly strataChannelName: ChannelName;
 
   constructor(init: CaratFormSettings, zones: CaratZone[], drawer: CaratDrawer) {
     this.drawer = drawer;
+    this.zones = zones;
     const trackWidth = calculateTrackWidth(init.columns);
     const trackMargin = drawer.trackBodySettings.margin;
     const rect: BoundingRect = {top: trackMargin, left: trackMargin, width: trackWidth, height: 0};
     const scale = CaratDrawer.pixelPerMeter / (init.settings.scale ?? defaultSettings.scale);
-    this.trackList = [new CaratTrack(rect, init.columns, scale, zones, drawer)];
+    this.trackList = [new CaratTrack(rect, init.columns, scale, drawer)];
+    this.trackList[0].setZones(zones);
   }
 
   public getCaratSettings(): CaratSettings {
     const scale = this.trackList[0].viewport.scale;
     return {
       scale: CaratDrawer.pixelPerMeter / scale, useStaticScale: this.useStaticScale,
-      strataChannelName: this.strataChannelName, zones: null,
+      strataChannelName: this.strataChannelName, zones: this.zones,
     };
   }
 
   public getActiveTrack(): CaratTrack {
     return this.trackList[0];
+  }
+
+  public getZones(): CaratZone[] {
+    return this.zones;
+  }
+
+  public setZones(zones: CaratZone[]) {
+    this.zones = zones;
+    for (const track of this.trackList) track.setZones(zones);
   }
 
   public setCanvas(canvas: HTMLCanvasElement) {
@@ -101,6 +113,7 @@ export class CaratStage implements ICaratStage {
   }
 
   public render() {
+    this.drawer.clear();
     for (const track of this.trackList) track.render();
   }
 }

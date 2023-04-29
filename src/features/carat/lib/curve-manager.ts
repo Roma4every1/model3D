@@ -31,7 +31,7 @@ export class CurveManager {
       id: cells[info.id.index],
       type: cells[info.type.index], date: dateString ? new Date(dateString) : null,
       top: cells[info.top.index], bottom: cells[info.bottom.index],
-      min: 0, max: 0,
+      min: 0, max: 0, defaultLoading: Boolean(cells[info.defaultLoading.index]),
     };
   }
 
@@ -85,6 +85,10 @@ export class CurveManager {
 
   public getAllCurves(): CaratCurveModel[] {
     return this.curves;
+  }
+
+  public getDefaultCurves(): CaratCurveModel[] {
+    return this.curves.filter((curve) => curve.defaultLoading);
   }
 
   public getFilteredCurves(): CaratCurveModel[] {

@@ -21,6 +21,7 @@ export const criterionProperties: Record<CaratChannelType, Record<string, string
   'curve-set': {
     id: 'CURVE ID', type: 'CURVE TYPE', date: 'DATE',
     top: 'DEPTH START', bottom: 'DEPTH END',
+    defaultLoading: 'LOAD BY DEFAULT',
   },
   'curve-data': {
     id: 'CURVE ID', data: 'CURVE DATA',

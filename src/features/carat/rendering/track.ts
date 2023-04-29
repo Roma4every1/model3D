@@ -24,10 +24,7 @@ export class CaratTrack implements ICaratTrack {
   /** Порт просмотра трека. */
   public readonly viewport: CaratViewport;
 
-  constructor(
-    rect: BoundingRect, columns: CaratColumnInit[],
-    scale: number, zones: CaratZone[], drawer: CaratDrawer
-  ) {
+  constructor(rect: BoundingRect, columns: CaratColumnInit[], scale: number, drawer: CaratDrawer) {
     this.rect = rect;
     this.drawer = drawer;
     this.viewport = {y: 0, scale, min: 0, max: 0};
@@ -42,12 +39,12 @@ export class CaratTrack implements ICaratTrack {
       let { type, width } = column.settings;
       if (type === 'normal') {
         const groupRect = {top, left: x, width, height};
-        this.groups.push(new CaratColumnGroup(groupRect, zones, drawer, column));
+        this.groups.push(new CaratColumnGroup(groupRect, drawer, column));
         if (column.active) this.activeIndex = index;
         x += width; index += 1;
       } else if (type === 'background') {
         const groupRect = {top, left: 0, height, width: rect.width};
-        this.backgroundGroup = new CaratColumnGroup(groupRect, zones, drawer, column);
+        this.backgroundGroup = new CaratColumnGroup(groupRect, drawer, column);
       }
     }
     this.groupHeadersHeight = 0;
@@ -75,10 +72,29 @@ export class CaratTrack implements ICaratTrack {
   }
 
   public setActiveGroup(idx: number) {
-    if (idx >= this.groups.length) return;
+    if (idx < 0 && idx >= this.groups.length) return;
     this.groups.forEach((group) => { group.active = false; });
     this.groups[idx].active = true;
     this.activeIndex = idx;
+  }
+
+  public setActiveGroupWidth(width: number) {
+    const activeGroup = this.groups[this.activeIndex];
+    if (!activeGroup || width < 10) return;
+
+    const oldWidth = activeGroup.getElementsRect().width;
+    const newWidth = activeGroup.setWidth(width);
+    const delta = newWidth - oldWidth;
+
+    for (let i = this.activeIndex + 1; i < this.groups.length; i++) {
+      this.groups[i].shift(delta);
+    }
+    this.rect.width += delta;
+    this.backgroundGroup.setWidth(this.rect.width);
+  }
+
+  public setZones(zones: CaratZone[]) {
+    for (const group of this.groups) group.setZones(zones);
   }
 
   public handleMouseDown(x: number, y: number) {
@@ -104,12 +120,22 @@ export class CaratTrack implements ICaratTrack {
   }
 
   public async setCurveData(channelData: ChannelDict) {
-    await Promise.all(this.groups.map((group) => group.setCurveData(channelData)));
-    for (const group of this.groups) {
+    const deltas = await Promise.all(this.groups.map((group) => group.setCurveData(channelData)));
+    for (let i = 0; i < deltas.length; i++) {
+      const delta = deltas[i];
+      const group = this.groups[i];
+
+      if (delta !== 0) {
+        for (let j = i + 1; j < this.groups.length; j++) {
+          this.groups[j].shift(delta);
+        }
+        this.rect.width += delta;
+      }
       const [groupMin, groupMax] = group.getCurvesRange();
       if (groupMin < this.viewport.min) this.viewport.min = groupMin;
       if (groupMax > this.viewport.max) this.viewport.max = groupMax;
     }
+    this.backgroundGroup.setWidth(this.rect.width);
   }
 
   public setLookupData(lookupData: ChannelDict) {
@@ -127,7 +153,6 @@ export class CaratTrack implements ICaratTrack {
 
   public render() {
     this.drawer.setCurrentTrack(this.rect, this.viewport);
-    this.drawer.clearCurrentTrack();
     this.backgroundGroup.renderContent();
     for (const group of this.groups) group.renderContent();
     this.drawer.drawTrackBody(this.well, this.groupHeadersHeight);

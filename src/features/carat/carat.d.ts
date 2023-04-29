@@ -6,7 +6,6 @@ type CaratsState = FormDict<CaratState>;
  * + `canvas`: {@link HTMLCanvasElement}
  * + `observer`: {@link ResizeObserver}
  * + `activeGroup`: {@link ICaratColumnGroup}
- * + `zones`: {@link CaratZone}[]
  * + `lookupNames`: {@link ChannelName}[]
  * */
 interface CaratState {
@@ -18,17 +17,17 @@ interface CaratState {
   observer: ResizeObserver,
   /** Активная колонка. */
   activeGroup: ICaratColumnGroup | null,
-  /** Зоны распределения каротажных кривых. */
-  zones: CaratZone[],
   /** Список всех названий каналов-справочников. */
   lookupNames: ChannelName[],
 }
 
 /** Сцена каротажной диаграммы. */
 interface ICaratStage {
+  getZones(): CaratZone[]
   getCaratSettings(): CaratSettings
   getActiveTrack(): ICaratTrack
 
+  setZones(zones: CaratZone[]): void
   setCanvas(canvas: HTMLCanvasElement): void
   setWell(well: string): void
   setScale(scale: number): void
@@ -57,10 +56,7 @@ interface ICaratTrack {
   setWell(well: string): void
   setScale(scale: number): void
   setActiveGroup(idx: number): void
-
-  setChannelData(channelData: ChannelDict): void
-  setCurveData(channelData: ChannelDict): Promise<void>
-  setLookupData(lookupData: ChannelDict): void
+  setActiveGroupWidth(width: number): void
 
   handleMouseDown(x: number, y: number): void
 
@@ -79,12 +75,8 @@ interface ICaratColumnGroup {
   getCurvesRange(): [number, number]
 
   setLabel(label: string): void
-  setWidth(width: number): void
   setHeight(height: number): void
   setYAxisStep(step: number): void
-
-  setChannelData(channelData: ChannelDict): void
-  setLookupData(lookupData: ChannelDict): void
 
   renderBody(): void
   renderContent(): void
@@ -92,7 +84,6 @@ interface ICaratColumnGroup {
 
 interface ICaratColumn {
   getRange(): [number, number]
-  setHeight(height: number): void
   render(): void
 }
 
@@ -116,7 +107,7 @@ type CaratCurveType = string;
 /** Типы корректных подключённых каналов к каротажной форме. */
 type CaratChannelType = 'lithology' | 'perforations' | 'curve-set' | 'curve-data';
 
-type CaratCurveSetInfo = CaratChannelInfo<'id' | 'type' | 'date' | 'top' | 'bottom'>;
+type CaratCurveSetInfo = CaratChannelInfo<'id' | 'type' | 'date' | 'top' | 'bottom' | 'defaultLoading'>;
 type CaratCurveDataInfo = CaratChannelInfo<'id' | 'data' | 'top' | 'bottom' | 'min' | 'max'>;
 type CaratLithologyInfo = CaratChannelInfo<'top' | 'base' | 'stratum'>;
 type CaratPerforationsInfo = CaratChannelInfo<'top' | 'base' | 'date'>;

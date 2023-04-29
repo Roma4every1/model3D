@@ -3,20 +3,25 @@ import { CaratCurveModel, CaratCurveStyleDict } from '../lib/types';
 import { defaultSettings } from '../lib/constants';
 
 
+interface CurveGroupState {
+  rect: BoundingRect,
+  elements: CaratCurveModel[],
+}
+
+
 /** Колонка каротажной диаграммы с кривыми. */
 export class CaratCurveColumn implements ICaratColumn {
   /** Ссылка на отрисовщик. */
   private readonly drawer: CaratDrawer;
-  /** Ограничивающий прямоугольник колонки. */
-  private readonly rect: BoundingRect;
-
   /** Подключённый канал со списком кривых. */
   public readonly curveSetChannel: CaratAttachedChannel;
   /** Подключённый канал с данными кривых. */
   public readonly curveDataChannel: CaratAttachedChannel;
 
-  /** Пласты для отрисовки. */
-  private elements: CaratCurveModel[];
+  /** Группы кривых по зонам. */
+  private groups: CurveGroupState[];
+  /** Координаты по X разделительных линий зон. */
+  private dividingLines: number[];
   /** Словарь свойств внешнего вида пластов. */
   private styleDict: CaratCurveStyleDict;
 
@@ -24,33 +29,77 @@ export class CaratCurveColumn implements ICaratColumn {
     rect: BoundingRect, drawer: CaratDrawer,
     curveSetChannel: CaratAttachedChannel, curveDataChannel: CaratAttachedChannel
   ) {
-    this.rect = rect;
     this.drawer = drawer;
     this.curveSetChannel = curveSetChannel;
     this.curveDataChannel = curveDataChannel;
-    this.elements = [];
+    this.groups = [{rect, elements: []}];
+    this.dividingLines = [];
   }
 
   public getRange(): [number, number] {
     let min = Infinity;
     let max = -Infinity;
 
-    for (const { top, bottom } of this.elements) {
-      if (top < min) min = top;
-      if (bottom > max) max = bottom;
+    for (const curveGroup of this.groups) {
+      for (const { top, bottom } of curveGroup.elements) {
+        if (top < min) min = top;
+        if (bottom > max) max = bottom;
+      }
     }
     return [min, max];
   }
 
-  public setHeight(height: number) {
-    this.rect.height = height;
+  public getGroupWidth() {
+    return this.groups[0].rect.width;
   }
 
-  public setCurveData(curves: CaratCurveModel[]) {
-    for (const curve of curves) {
-      curve.style = this.styleDict[curve.type] ?? defaultSettings.curveStyle
+  public getTotalWidth() {
+    return this.groups[0].rect.width * this.groups.length;
+  }
+
+  public setGroupWidth(width: number) {
+    for (let i = 0; i < this.groups.length; i++) {
+      const left = i * width;
+      const rect = this.groups[i].rect;
+      rect.left = left; rect.width = width;
+      if (i > 0) this.dividingLines[i - 1] = left;
     }
-    this.elements = curves;
+  }
+
+  public setHeight(height: number) {
+    for (const curveGroup of this.groups) {
+      curveGroup.rect.height = height;
+    }
+  }
+
+  public setCurveData(curves: CaratCurveModel[], zones: CaratZone[]) {
+    let curveGroups: CaratCurveModel[][] = [];
+    for (let i = 0; i <= zones.length; i++) curveGroups.push([]);
+
+    for (const curve of curves) {
+      const curveType = curve.type;
+      curve.style = this.styleDict[curveType] ?? defaultSettings.curveStyle;
+
+      let zoneIndex = zones.findIndex((zone) => zone.types.includes(curveType));
+      if (zoneIndex === -1) zoneIndex = zones.length;
+      curveGroups[zoneIndex].push(curve);
+    }
+
+    curveGroups = curveGroups.filter(group => group.length);
+    if (curveGroups.length === 0) {
+      this.groups = [{rect: this.groups[0].rect, elements: []}];
+      return;
+    }
+
+    const { top, width, height } = this.groups[0].rect;
+    this.groups = [];
+    this.dividingLines = [];
+
+    for (let i = 0; i < curveGroups.length; i++) {
+      const rect: BoundingRect = {top, left: i * width, width, height};
+      this.groups.push({rect, elements: curveGroups[i]});
+      if (i > 0) this.dividingLines.push(rect.left);
+    }
   }
 
   public setLookupData(lookupData: ChannelDict) {
@@ -65,7 +114,10 @@ export class CaratCurveColumn implements ICaratColumn {
   }
 
   public render() {
-    this.drawer.setCurrentColumn(this.rect);
-    this.drawer.drawCurves(this.elements);
+    for (const curveGroup of this.groups) {
+      this.drawer.setCurrentColumn(curveGroup.rect);
+      this.drawer.drawCurves(curveGroup.elements);
+    }
+    if (this.dividingLines.length) this.drawer.drawZoneDividingLines(this.dividingLines);
   }
 }

@@ -28,10 +28,15 @@ export function settingsToState(formState: FormState, channelDict: ChannelDict):
   const lookupNames: ChannelName[] = [];
   for (const name of channels) lookupNames.push(...channelDict[name].info.lookupChannels);
 
-  const zones = init.settings.zones;
+  const zones = [
+    {relativeWidth: null, types: ['DS']},
+    {relativeWidth: null, types: ['GK', 'NGK']},
+    {relativeWidth: null, types: ['AK', 'BK']},
+  ];
   const stage = new CaratStage(init, zones, new CaratDrawer(drawerConfig));
+  const activeGroup = stage.getActiveTrack().getActiveGroup();
   const observer = new ResizeObserver(() => { stage.resize(); stage.render(); });
-  return {stage, canvas: null, activeGroup: null, zones, lookupNames, observer};
+  return {stage, canvas: null, activeGroup, lookupNames, observer};
 }
 
 function sortColumnsFn(a: CaratColumnInit, b: CaratColumnInit) {

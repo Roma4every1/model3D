@@ -14,12 +14,13 @@ import {
 interface ICaratDrawer {
   setContext(context: CanvasRenderingContext2D): void
   setCurrentTrack(rect: BoundingRect, viewport: CaratViewport): void
-  setCurrentGroup(rect: BoundingRect): void
+  setCurrentGroup(rect: BoundingRect, settings: CaratColumnSettings): void
+  clear(): void
 
-  clearCurrentTrack(): void
   drawTrackBody(well: string, headersHeight: number): void
-  drawColumnGroupBody(settings: CaratColumnSettings, active: boolean): void
+  drawColumnGroupBody(active: boolean): void
   drawColumnGroupYAxis(axis: CaratColumnYAxis): void
+  drawZoneDividingLines(coordinates: number[]): void
 
   drawCurves(elements: CaratCurveModel[]): void
   drawIntervals(elements: CaratElementInterval[]): void
@@ -51,13 +52,16 @@ export class CaratDrawer implements ICaratDrawer {
   public readonly columnYAxisSettings: CaratColumnYAxisDrawSettings;
 
   private trackRect: BoundingRect;
-  private groupElementRect: BoundingRect;
-  private columnRect: BoundingRect;
-
   private yMin: number;
   private yMax: number;
   private scale: number;
 
+  private groupSettings: CaratColumnSettings;
+  private groupElementRect: BoundingRect;
+  private groupTranslateX: number;
+  private groupTranslateY: number;
+
+  private columnRect: BoundingRect;
   private columnWidth: number;
   private columnTranslateX: number;
   private columnTranslateY: number;
@@ -76,18 +80,6 @@ export class CaratDrawer implements ICaratDrawer {
     this.ctx = context;
     this.ctx.font = this.columnYAxisSettings.font;
     this.minusWidth = context.measureText('-').width;
-  }
-
-  private setLineSettings(width: number, color: string) {
-    this.ctx.lineWidth = width;
-    this.ctx.strokeStyle = color;
-  }
-
-  private setTextSettings(font: string, color: string, align: CanvasTextAlign, baseline: CanvasTextBaseline) {
-    this.ctx.font = font;
-    this.ctx.fillStyle = color;
-    this.ctx.textAlign = align;
-    this.ctx.textBaseline = baseline
   }
 
   private getDrawMarksFn(settings: CaratColumnYAxis, textStart: number) {
@@ -123,14 +115,24 @@ export class CaratDrawer implements ICaratDrawer {
     return fn;
   }
 
-  /* --- Transforms --- */
+  /* --- Rendering --- */
+
+  private setLineSettings(width: number, color: string) {
+    this.ctx.lineWidth = width;
+    this.ctx.strokeStyle = color;
+  }
+
+  private setTextSettings(font: string, color: string, align: CanvasTextAlign, baseline: CanvasTextBaseline) {
+    this.ctx.font = font;
+    this.ctx.fillStyle = color;
+    this.ctx.textAlign = align;
+    this.ctx.textBaseline = baseline
+  }
 
   private setTranslate(x: number, y: number) {
     const ratio = CaratDrawer.ratio;
     this.ctx.setTransform(ratio, 0, 0, ratio, ratio * x, ratio * y);
   }
-
-  /* --- Rendering --- */
 
   public setCurrentTrack(rect: BoundingRect, viewport: CaratViewport) {
     this.trackRect = rect;
@@ -138,24 +140,26 @@ export class CaratDrawer implements ICaratDrawer {
     this.scale = viewport.scale;
   }
 
-  public setCurrentGroup(rect: BoundingRect) {
+  public setCurrentGroup(rect: BoundingRect, settings: CaratColumnSettings) {
+    this.groupSettings = settings;
     this.groupElementRect = rect;
     this.yMax = this.yMin + rect.height / this.scale;
+    this.groupTranslateX = this.trackRect.left + this.groupElementRect.left;
+    this.groupTranslateY = this.trackRect.top + this.groupElementRect.top;
   }
 
   public setCurrentColumn(rect: BoundingRect) {
     this.columnRect = rect;
     const padding = this.columnBodySettings.padding;
-    this.columnTranslateX = this.trackRect.left + this.groupElementRect.left + rect.left + padding;
-    this.columnTranslateY = this.trackRect.top + this.groupElementRect.top + rect.top;
+    this.columnTranslateX = this.groupTranslateX + rect.left + padding;
+    this.columnTranslateY = this.groupTranslateY + rect.top;
     this.columnWidth = rect.width - 2 * padding;
   }
 
-  public clearCurrentTrack() {
-    const margin = this.trackBodySettings.margin;
-    const { top, left, width, height } = this.trackRect;
-    this.setTranslate(left - margin, top);
-    this.ctx.clearRect(0, 0, width + 2 * margin, height);
+  public clear() {
+    const { width, height } = this.ctx.canvas;
+    this.ctx.resetTransform();
+    this.ctx.clearRect(0, 0, width, height);
   }
 
   public drawTrackBody(well: string, headersHeight: number) {
@@ -177,31 +181,26 @@ export class CaratDrawer implements ICaratDrawer {
     this.ctx.strokeRect(0, 0, width, trackHeight);
   }
 
-  public drawColumnGroupBody(settings: CaratColumnSettings, active: boolean) {
-    const translateX = this.trackRect.left + this.groupElementRect.left;
-    const translateY = this.trackRect.top + this.groupElementRect.top;
-    this.setTranslate(translateX, translateY);
-
+  public drawColumnGroupBody(active: boolean) {
     const { width, height } = this.groupElementRect;
     const { font, color } = this.columnLabelSettings;
     const { borderThickness } = this.columnBodySettings;
 
+    this.setTranslate(this.groupTranslateX, this.groupTranslateY);
     this.setTextSettings(font, color, 'center', 'bottom');
-    this.ctx.fillText(settings.label, width / 2, 0, width);
+    this.ctx.fillText(this.groupSettings.label, width / 2, 0, width);
 
     if (active) {
       this.setLineSettings(1.5 * borderThickness, this.columnBodySettings.activeBorderColor);
     } else {
-      this.setLineSettings(borderThickness, settings.borderColor);
+      this.setLineSettings(borderThickness, this.groupSettings.borderColor);
     }
     this.ctx.strokeRect(0, 0, width, height);
   }
 
   public drawColumnGroupYAxis(axis: CaratColumnYAxis) {
     const scaleY = window.devicePixelRatio * this.scale;
-    const translateX = this.trackRect.left + this.groupElementRect.left;
-    const translateY = this.trackRect.top + this.groupElementRect.top - scaleY * this.yMin;
-    this.setTranslate(translateX, translateY);
+    this.setTranslate(this.groupTranslateX, this.groupTranslateY - scaleY * this.yMin);
 
     const step = axis.step;
     const minY = Math.ceil(this.yMin / step) * step;
@@ -219,6 +218,20 @@ export class CaratDrawer implements ICaratDrawer {
       this.ctx.moveTo(0, canvasY);
       this.ctx.lineTo(markSize, canvasY);
       drawMarksFn(y, canvasY);
+    }
+    this.ctx.stroke();
+  }
+
+  public drawZoneDividingLines(coordinates: number[]) {
+    this.setTranslate(this.groupTranslateX, this.groupTranslateY);
+    this.setLineSettings(1, this.groupSettings.borderColor);
+
+    const bottom = this.columnRect.top + this.columnRect.height;
+    this.ctx.beginPath();
+
+    for (const x of coordinates) {
+      this.ctx.moveTo(x, 0);
+      this.ctx.lineTo(x, bottom);
     }
     this.ctx.stroke();
   }
@@ -287,16 +300,20 @@ export class CaratDrawer implements ICaratDrawer {
 
     const translateX = ratio * this.columnTranslateX;
     const translateY = ratio * (this.columnTranslateY - scaleY * this.yMin);
-    const matrix = new DOMMatrix([ratio, 0, 0, scaleY * ratio, translateX, translateY]);
+    const matrix = new DOMMatrix([1, 0, 0, scaleY * ratio, translateX, translateY]);
+
     this.ctx.resetTransform();
+    this.ctx.lineJoin = 'round';
 
     for (const element of elements) {
       const { thickness, color } = element.style;
       this.setLineSettings(ratio * thickness, color);
 
       const path = new Path2D();
+      matrix.a = ratio * (this.columnWidth / element.max);
       path.addPath(element.path, matrix);
       this.ctx.stroke(path);
     }
+    this.ctx.lineJoin = 'miter';
   }
 }

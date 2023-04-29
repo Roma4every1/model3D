@@ -6,11 +6,12 @@ import { MenuSection } from 'shared/ui';
 
 interface CaratActiveColumnPanelProps {
   stage: ICaratStage,
+  track: ICaratTrack,
   activeGroup: ICaratColumnGroup,
 }
 
 
-export const CaratActiveGroupPanel = ({stage, activeGroup}: CaratActiveColumnPanelProps) => {
+export const CaratActiveGroupPanel = ({stage, track, activeGroup}: CaratActiveColumnPanelProps) => {
   const [label, setLabel] = useState('');
   const [width, setWidth] = useState(null);
   const [step, setStep] = useState(null);
@@ -30,7 +31,7 @@ export const CaratActiveGroupPanel = ({stage, activeGroup}: CaratActiveColumnPan
 
   const onWidthChange = (e: NumericTextBoxChangeEvent) => {
     if (!e.value) return;
-    activeGroup.setWidth(e.value); stage.render();
+    track.setActiveGroupWidth(e.value); stage.render();
     setWidth(e.value);
   };
 
@@ -48,7 +49,7 @@ export const CaratActiveGroupPanel = ({stage, activeGroup}: CaratActiveColumnPan
       </div>
       <div>
         <span>Ширина:</span>
-        <NumericTextBox value={width} onChange={onWidthChange} step={1} min={1}/>
+        <NumericTextBox value={width} onChange={onWidthChange} step={1} min={10} max={1000}/>
       </div>
       <div>
         <span>Шаг:</span>

@@ -9,7 +9,7 @@ export class CaratColumn implements ICaratColumn {
   /** Ссылка на отрисовщик. */
   private readonly drawer: CaratDrawer;
   /** Ограничивающий прямоугольник колонки. */
-  private readonly rect: BoundingRect;
+  public readonly rect: BoundingRect;
   /** Массив подключённых свойств канала. */
   public readonly channel: CaratAttachedChannel;
   /** Словарь настроек отображения свойств. */
@@ -48,10 +48,6 @@ export class CaratColumn implements ICaratColumn {
       if (base > max) max = base;
     }
     return [min, max];
-  }
-
-  public setHeight(height: number) {
-    this.rect.height = height;
   }
 
   public setChannelData(data: ChannelData) {

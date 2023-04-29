@@ -21,8 +21,8 @@ export const TracksEditPanel = ({id}: FormEditPanelProps) => {
     <div className={'menu'}>
       <CaratNavigationPanel stage={stage} track={track}/>
       <CaratColumnsPanel id={id} stage={stage} track={track}/>
-      <CaratActiveGroupPanel stage={stage} activeGroup={activeGroup}/>
-      <CaratCurvesPanel activeGroup={activeGroup}/>
+      <CaratActiveGroupPanel stage={stage} track={track} activeGroup={activeGroup}/>
+      <CaratCurvesPanel stage={stage} activeGroup={activeGroup}/>
     </div>
   );
 };

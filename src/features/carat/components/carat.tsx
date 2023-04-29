@@ -5,7 +5,7 @@ import { compareObjects} from 'shared/lib';
 import { currentWellIDSelector } from 'entities/parameters';
 import { channelDictSelector } from 'entities/channels';
 import { caratStateSelector } from '../store/carats.selectors';
-import { setCaratCanvas } from '../store/carats.actions';
+import {setCaratActiveGroup, setCaratCanvas} from '../store/carats.actions';
 
 
 /** Каротажная диаграмма. */
@@ -44,7 +44,9 @@ export const Carat = ({id, channels}: FormState) => {
   const onMouseDown = (e: MouseEvent) => {
     const { offsetX: x, offsetY: y } = e.nativeEvent;
     const isIntersect = stage.handleMouseDown(x, y);
-    if (isIntersect) { isOnMoveRef.current = true; stage.render(); }
+    if (!isIntersect) return;
+    isOnMoveRef.current = true; stage.render();
+    dispatch(setCaratActiveGroup(id, stage.getActiveTrack().getActiveGroup()));
   };
 
   const onMouseUp = () => {

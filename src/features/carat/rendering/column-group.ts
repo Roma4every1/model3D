@@ -23,6 +23,8 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   /** Граничные значения шкал кривых. */
   public readonly measures: Record<CaratCurveType, CaratCurveMeasure>;
 
+  /** Зоны распределения каротажных кривых. */
+  private zones: CaratZone[];
   /** Горизонатльные оси для кривых. */
   private curveAxes: CaratCurveAxis[];
   /** Стиль горизонтальных осей. */
@@ -30,8 +32,6 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   /** Настройки вертикальной оси колонки. */
   private readonly yAxis: CaratColumnYAxis;
 
-  /** Зоны распределения каротажных кривых. */
-  private readonly zones: CaratZone[];
   /** Каротажные колонки в группе. */
   private readonly columns: CaratColumn[];
   /** Каротажные колонки с кривыми. */
@@ -41,9 +41,8 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   private readonly properties: Record<ChannelName, CaratColumnProperties>;
   public active: boolean;
 
-  constructor(rect: BoundingRect, zones: CaratZone[], drawer: CaratDrawer, init: CaratColumnInit) {
+  constructor(rect: BoundingRect, drawer: CaratDrawer, init: CaratColumnInit) {
     this.drawer = drawer;
-    this.zones = zones;
     this.xAxis = init.xAxis;
     this.yAxis = init.yAxis;
     this.settings = init.settings;
@@ -77,7 +76,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
       this.columns.push(new CaratColumn(columnRect, drawer, attachedChannel, properties));
     }
 
-    if (curveSetChannel && curveDataChannel && (!zones || !zones.length)) {
+    if (curveSetChannel && curveDataChannel) {
       const columnRect = {top: 0, left: 0, width: rect.width, height};
       this.curveColumn = new CaratCurveColumn(columnRect, drawer, curveSetChannel, curveDataChannel);
       this.curveManager.setChannels(curveSetChannel, curveDataChannel);
@@ -112,7 +111,11 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   }
 
   public getWidth(): number {
-    return this.elementsRect.width;
+    if (this.curveColumn) {
+      return this.curveColumn.getGroupWidth();
+    } else {
+      return this.elementsRect.width;
+    }
   }
 
   public getElementsTop(): number {
@@ -144,19 +147,33 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     this.settings.label = label;
   }
 
-  public setWidth(width: number) {
+  public setWidth(width: number): number {
+    if (this.curveColumn) {
+      this.curveColumn.setGroupWidth(width);
+      width = this.curveColumn.getTotalWidth();
+    }
     this.elementsRect.width = width;
+    for (const column of this.columns) column.rect.width = width;
+    return width;
   }
 
   public setHeight(height: number) {
     const columnHeight = height - this.headerHeight;
     this.elementsRect.height = columnHeight;
-    for (const column of this.columns) column.setHeight(columnHeight);
+    for (const column of this.columns) column.rect.height = columnHeight;
     if (this.curveColumn) this.curveColumn.setHeight(columnHeight);
+  }
+
+  public shift(by: number) {
+    this.elementsRect.left += by;
   }
 
   public setYAxisStep(step: number) {
     this.yAxis.step = step;
+  }
+
+  public setZones(zones: CaratZone[]) {
+    this.zones = zones;
   }
 
   public setChannelData(channelData: ChannelDict) {
@@ -164,25 +181,34 @@ export class CaratColumnGroup implements ICaratColumnGroup {
       const data = channelData[column.channel.name]?.data;
       column.setChannelData(data);
     }
-    if (this.curveColumn) this.curveColumn.setCurveData([]);
+    if (this.curveColumn) this.curveColumn.setCurveData([], this.zones);
   }
 
   public async setCurveData(channelData: ChannelDict) {
-    if (!this.curveColumn) return;
+    if (!this.curveColumn) return 0;
     const curveSet = channelData[this.curveColumn.curveSetChannel.name];
     this.curveManager.setCurveChannelData(curveSet.data);
-    const curves = this.curveManager.getFilteredCurves();
+    const curves = this.curveManager.getDefaultCurves();
     await this.curveManager.loadCurveData(curves.map(curve => curve.id));
-    this.curveColumn.setCurveData(curves);
+    this.curveColumn.setCurveData(curves, this.zones);
 
-    this.curveAxes = [];
-    const axesTypes = new Set(curves.map(c => c.type));
-    axesTypes.forEach((curveType) => {
-      const color = curves.find(c => c.type === curveType).style.color;
-      const measure = this.measures[curveType];
-      const min = measure?.min ?? null, max = measure?.max ?? null;
-      this.curveAxes.push({type: curveType, min, max, color});
-    });
+    // this.curveAxes = [];
+    // const axesTypes = new Set(curves.map(c => c.type));
+    // axesTypes.forEach((curveType) => {
+    //   const color = curves.find(c => c.type === curveType).style.color;
+    //   const measure = this.measures[curveType];
+    //   const min = measure?.min ?? null, max = measure?.max ?? null;
+    //   this.curveAxes.push({type: curveType, min, max, color});
+    // });
+
+    const oldWidth = this.elementsRect.width;
+    const newWidth = this.curveColumn.getTotalWidth();
+
+    if (oldWidth !== newWidth) {
+      this.elementsRect.width = newWidth;
+      for (const column of this.columns) column.rect.width = newWidth;
+    }
+    return newWidth - oldWidth;
   }
 
   public setLookupData(lookupData: ChannelDict) {
@@ -191,17 +217,14 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   }
 
   public renderBody() {
-    this.drawer.setCurrentGroup(this.elementsRect);
-    this.drawer.drawColumnGroupBody(this.settings, this.active);
+    this.drawer.setCurrentGroup(this.elementsRect, this.settings);
+    this.drawer.drawColumnGroupBody(this.active);
   }
 
   public renderContent() {
-    this.drawer.setCurrentGroup(this.elementsRect);
-    if (this.yAxis.show) {
-      this.drawer.drawColumnGroupYAxis(this.yAxis);
-    } else {
-      for (const column of this.columns) column.render();
-      if (this.curveColumn) this.curveColumn.render();
-    }
+    this.drawer.setCurrentGroup(this.elementsRect, this.settings);
+    for (const column of this.columns) column.render();
+    if (this.curveColumn) this.curveColumn.render();
+    if (this.yAxis.show) this.drawer.drawColumnGroupYAxis(this.yAxis);
   }
 }
