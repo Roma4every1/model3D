@@ -1,7 +1,7 @@
 import { CaratDrawer } from './drawer';
 import { CaratColumn } from './column';
 import { CaratCurveColumn } from './curve-column';
-import { CaratCurveAxis } from '../lib/types';
+import { CurveAxisGroup } from '../lib/types';
 import { CurveManager } from '../lib/curve-manager';
 
 
@@ -11,8 +11,13 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   private readonly drawer: CaratDrawer;
   /** Ограничивающий прямоугольник для элементов. */
   private readonly elementsRect: BoundingRect;
+
+  /** Координата по Y подписи колонки. */
+  private labelBottom: number;
+  /** Высота горизонтальных осей. */
+  private xAxesHeight: number;
   /** Высота заголовка колонки. */
-  private readonly headerHeight: number;
+  private headerHeight: number;
 
   /** Идентификатор колонки. */
   public readonly id: string;
@@ -20,17 +25,15 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   public readonly settings: CaratColumnSettings;
   /** Выборки кривых. */
   public readonly curveManager: CurveManager;
-  /** Граничные значения шкал кривых. */
-  public readonly measures: Record<CaratCurveType, CaratCurveMeasure>;
 
   /** Зоны распределения каротажных кривых. */
   private zones: CaratZone[];
   /** Горизонатльные оси для кривых. */
-  private curveAxes: CaratCurveAxis[];
+  private curveAxes: CurveAxisGroup[];
   /** Стиль горизонтальных осей. */
-  private readonly xAxis: CaratColumnXAxis;
+  public readonly xAxis: CaratColumnXAxis;
   /** Настройки вертикальной оси колонки. */
-  private readonly yAxis: CaratColumnYAxis;
+  public readonly yAxis: CaratColumnYAxis;
 
   /** Каротажные колонки в группе. */
   private readonly columns: CaratColumn[];
@@ -43,21 +46,23 @@ export class CaratColumnGroup implements ICaratColumnGroup {
 
   constructor(rect: BoundingRect, drawer: CaratDrawer, init: CaratColumnInit) {
     this.drawer = drawer;
-    this.xAxis = init.xAxis;
-    this.yAxis = init.yAxis;
     this.settings = init.settings;
-    this.curveManager = new CurveManager(init.selection);
+    this.curveManager = new CurveManager(init.selection, init.measures);
     this.properties = init.properties;
     this.channels = init.channels;
     this.active = init.active;
 
-    this.measures = {};
-    init.measures.forEach((measure) => { this.measures[measure.type] = measure; });
+    this.xAxis = init.xAxis;
+    this.yAxis = init.yAxis;
+    if (this.xAxis.numberOfMarks < 2) this.xAxis.numberOfMarks = 2;
+    if (this.xAxis.numberOfMarks > 8) this.xAxis.numberOfMarks = 8;
 
-    this.headerHeight = 25;
+    this.xAxesHeight = 0;
+    this.headerHeight = drawer.columnLabelSettings.height;
     this.elementsRect = {...rect};
     this.elementsRect.top += this.headerHeight;
     this.elementsRect.height -= this.headerHeight;
+    this.labelBottom = this.elementsRect.top;
 
     this.columns = [];
     let curveSetChannel: CaratAttachedChannel;
@@ -95,8 +100,8 @@ export class CaratColumnGroup implements ICaratColumnGroup {
       xAxis: this.xAxis,
       yAxis: this.yAxis,
       channels: attachedChannels,
-      selection: this.curveManager.getInit(),
-      measures: Object.values(this.measures),
+      selection: this.curveManager.getInitSelection(),
+      measures: this.curveManager.getInitMeasures(),
       properties: this.properties,
       active: this.active,
     };
@@ -120,10 +125,6 @@ export class CaratColumnGroup implements ICaratColumnGroup {
 
   public getElementsTop(): number {
     return this.elementsRect.top;
-  }
-
-  public getYAxisStep(): number {
-    return this.yAxis.step;
   }
 
   public getElementsRange(): [number, number] {
@@ -164,12 +165,19 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     if (this.curveColumn) this.curveColumn.setHeight(columnHeight);
   }
 
-  public shift(by: number) {
-    this.elementsRect.left += by;
+  public setHeaderHeight(headerHeight: number) {
+    const delta = headerHeight - this.headerHeight;
+    this.headerHeight = headerHeight;
+    this.elementsRect.top += delta;
+    this.elementsRect.height -= delta;
+    this.labelBottom = this.elementsRect.top - this.xAxesHeight;
+
+    for (const column of this.columns) column.rect.height = this.elementsRect.height;
+    if (this.curveColumn) this.curveColumn.setHeight(this.elementsRect.height);
   }
 
-  public setYAxisStep(step: number) {
-    this.yAxis.step = step;
+  public shift(by: number) {
+    this.elementsRect.left += by;
   }
 
   public setZones(zones: CaratZone[]) {
@@ -184,22 +192,39 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     if (this.curveColumn) this.curveColumn.setCurveData([], this.zones);
   }
 
-  public async setCurveData(channelData: ChannelDict) {
-    if (!this.curveColumn) return 0;
+  private updateAxes(): number {
+    const curveGroups = this.curveColumn.getGroups();
+    const labelHeight = this.drawer.columnLabelSettings.height;
+    if (curveGroups[0].elements.length === 0) { this.curveAxes = null; return labelHeight; }
+
+    let maxHeight = 0;
+    this.curveAxes = [];
+    const { axisHeight, gap } = this.drawer.columnXAxesSettings;
+
+    for (const { elements, rect } of curveGroups) {
+      const height = (axisHeight + gap) * elements.length + gap;
+      if (height > maxHeight) maxHeight = height;
+
+      const axisRect = {top: labelHeight, left: rect.left, width: rect.width, height: 0};
+      this.curveAxes.push({rect: axisRect, axes: [...elements]});
+    }
+    for (const axisGroup of this.curveAxes) {
+      axisGroup.axes.reverse();
+      axisGroup.rect.height = maxHeight;
+    }
+    this.xAxesHeight = maxHeight;
+    return labelHeight + maxHeight;
+  }
+
+  public async setCurveData(channelData: ChannelDict): Promise<[number, number]> {
+    if (!this.curveColumn) return [0, this.headerHeight];
     const curveSet = channelData[this.curveColumn.curveSetChannel.name];
     this.curveManager.setCurveChannelData(curveSet.data);
     const curves = this.curveManager.getDefaultCurves();
+
     await this.curveManager.loadCurveData(curves.map(curve => curve.id));
     this.curveColumn.setCurveData(curves, this.zones);
-
-    // this.curveAxes = [];
-    // const axesTypes = new Set(curves.map(c => c.type));
-    // axesTypes.forEach((curveType) => {
-    //   const color = curves.find(c => c.type === curveType).style.color;
-    //   const measure = this.measures[curveType];
-    //   const min = measure?.min ?? null, max = measure?.max ?? null;
-    //   this.curveAxes.push({type: curveType, min, max, color});
-    // });
+    const newHeaderHeight = this.updateAxes();
 
     const oldWidth = this.elementsRect.width;
     const newWidth = this.curveColumn.getTotalWidth();
@@ -208,7 +233,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
       this.elementsRect.width = newWidth;
       for (const column of this.columns) column.rect.width = newWidth;
     }
-    return newWidth - oldWidth;
+    return [newWidth - oldWidth, newHeaderHeight];
   }
 
   public setLookupData(lookupData: ChannelDict) {
@@ -218,7 +243,8 @@ export class CaratColumnGroup implements ICaratColumnGroup {
 
   public renderBody() {
     this.drawer.setCurrentGroup(this.elementsRect, this.settings);
-    this.drawer.drawColumnGroupBody(this.active);
+    this.drawer.drawColumnGroupBody(this.labelBottom, this.active);
+    if (this.curveAxes) this.drawer.drawColumnGroupXAxes(this.xAxis, this.curveAxes);
   }
 
   public renderContent() {

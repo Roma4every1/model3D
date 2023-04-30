@@ -43,28 +43,38 @@ export const styleCriterionProperties = {
 export const drawerConfig: CaratDrawerConfig = {
   track: {
     body: {
-      margin: 4, // px
+      margin: 4,
       border: {color: '#111111', thickness: 1},
     },
     header: {
-      padding: 3, // px
+      padding: 3,
       text: {font: {size: 16, style: 'normal', family: '"Segoe UI", Roboto'}, color: '#222222'},
       border: {color: '#111111', thickness: 1},
     },
   },
   column: {
     body: {
-      padding: 1, // px
+      padding: 1,
       border: {thickness: 1, activeColor: '#252525'}
     },
     label: {
       font: {size: 12, style: 'normal', family: '"Segoe UI", Roboto'},
       color: '#000000',
+      marginTop: 4,
     },
-    verticalAxis: {
-      font: {size: 12, style: 'normal', family: '"Segoe UI", Roboto'},
-      color: '#333333',
-      markSize: 6, // px
+    axis: {
+      vertical: {
+        font: {size: 12, style: 'normal', family: '"Segoe UI", Roboto'},
+        color: '#333333',
+        markSize: 6,
+      },
+      horizontal: {
+        font: {size: 13, style: 'normal', family: '"Segoe UI", Roboto'},
+        thickness: 1.5,
+        markSize: 8,
+        gap: 2,
+        grid: {thickness: 1, lineDash: [5, 4]},
+      },
     },
   },
 };

@@ -20,7 +20,7 @@ export const CaratActiveGroupPanel = ({stage, track, activeGroup}: CaratActiveCo
     if (!activeGroup) return;
     setLabel(activeGroup.getLabel());
     setWidth(activeGroup.getWidth());
-    setStep(activeGroup.getYAxisStep());
+    setStep(activeGroup.yAxis.step);
   }, [activeGroup]);
 
   const onLabelChange = (e: TextBoxChangeEvent) => {
@@ -37,7 +37,7 @@ export const CaratActiveGroupPanel = ({stage, track, activeGroup}: CaratActiveCo
 
   const onStepChange = (e: NumericTextBoxChangeEvent) => {
     if (!e.value) return;
-    activeGroup.setYAxisStep(e.value); stage.render();
+    activeGroup.yAxis.step = e.value; stage.render();
     setStep(e.value);
   };
 

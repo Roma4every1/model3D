@@ -15,7 +15,7 @@ export class CaratTrack implements ICaratTrack {
   /** Номер скважины трека. */
   private well: string;
   /** Высота заголовков групп колонок. */
-  private groupHeadersHeight: number;
+  private maxGroupHeaderHeight: number;
   /** Индекс активной группы. */
   private activeIndex: number;
 
@@ -47,7 +47,7 @@ export class CaratTrack implements ICaratTrack {
         this.backgroundGroup = new CaratColumnGroup(groupRect, drawer, column);
       }
     }
-    this.groupHeadersHeight = 0;
+    this.maxGroupHeaderHeight = 0;
   }
 
   public getInitColumns(): CaratColumnInit[] {
@@ -120,22 +120,27 @@ export class CaratTrack implements ICaratTrack {
   }
 
   public async setCurveData(channelData: ChannelDict) {
-    const deltas = await Promise.all(this.groups.map((group) => group.setCurveData(channelData)));
-    for (let i = 0; i < deltas.length; i++) {
-      const delta = deltas[i];
-      const group = this.groups[i];
+    const changes = await Promise.all(this.groups.map((group) => group.setCurveData(channelData)));
+    const maxHeaderHeight = Math.max(...changes.map(item => item[1]));
 
-      if (delta !== 0) {
+    for (let i = 0; i < changes.length; i++) {
+      const widthDelta = changes[i][0];
+      const group = this.groups[i];
+      group.setHeaderHeight(maxHeaderHeight);
+
+      if (widthDelta !== 0) {
         for (let j = i + 1; j < this.groups.length; j++) {
-          this.groups[j].shift(delta);
+          this.groups[j].shift(widthDelta);
         }
-        this.rect.width += delta;
+        this.rect.width += widthDelta;
       }
       const [groupMin, groupMax] = group.getCurvesRange();
       if (groupMin < this.viewport.min) this.viewport.min = groupMin;
       if (groupMax > this.viewport.max) this.viewport.max = groupMax;
     }
     this.backgroundGroup.setWidth(this.rect.width);
+    this.backgroundGroup.setHeaderHeight(maxHeaderHeight);
+    this.maxGroupHeaderHeight = Math.max(...this.groups.map(g => g.getElementsTop()));
   }
 
   public setLookupData(lookupData: ChannelDict) {
@@ -148,14 +153,14 @@ export class CaratTrack implements ICaratTrack {
     const groupHeight = height - this.drawer.trackHeaderSettings.height;
     for (const group of this.groups) group.setHeight(groupHeight);
     this.backgroundGroup.setHeight(groupHeight);
-    this.groupHeadersHeight = Math.max(...this.groups.map(g => g.getElementsTop()));
+    this.maxGroupHeaderHeight = Math.max(...this.groups.map(g => g.getElementsTop()));
   }
 
   public render() {
     this.drawer.setCurrentTrack(this.rect, this.viewport);
     this.backgroundGroup.renderContent();
     for (const group of this.groups) group.renderContent();
-    this.drawer.drawTrackBody(this.well, this.groupHeadersHeight);
+    this.drawer.drawTrackBody(this.well, this.maxGroupHeaderHeight);
 
     for (let i = 0; i < this.activeIndex; i++) {
       this.groups[i].renderBody();

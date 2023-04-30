@@ -67,16 +67,16 @@ interface ICaratColumnGroup {
   readonly id: string,
   readonly settings: CaratColumnSettings,
   readonly curveManager: any,
+  readonly xAxis: CaratColumnXAxis,
+  readonly yAxis: CaratColumnYAxis,
 
   getLabel(): string
   getWidth(): number
-  getYAxisStep(): number
   getElementsRange(): [number, number]
   getCurvesRange(): [number, number]
 
   setLabel(label: string): void
   setHeight(height: number): void
-  setYAxisStep(step: number): void
 
   renderBody(): void
   renderContent(): void

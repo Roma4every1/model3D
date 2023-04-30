@@ -34,15 +34,33 @@ export interface CaratDrawerConfig {
       font: CSSFont,
       /** Цвет подписи. */
       color: ColorHEX,
+      /** Отступ подписи сверху. */
+      marginTop: number,
     },
-    /** Настройки вертикальных осей. */
-    verticalAxis: {
-      /** {@link CSSFont} подписи. */
-      font: CSSFont,
-      /** Цвет горизонтальной пометки и подписи. */
-      color: ColorHEX,
-      /** Размер горизонтальной пометки в пикселях. */
-      markSize: number,
+    /** Настройки осей. */
+    axis: {
+      /** Настройки вертикальной оси. */
+      vertical: {
+        /** {@link CSSFont} подписей. */
+        font: CSSFont,
+        /** Цвет горизонтальной пометки и подписи. */
+        color: ColorHEX,
+        /** Размер горизонтальной пометки. */
+        markSize: number,
+      },
+      /** Настройки горизонтальных осей кривых. */
+      horizontal: {
+        /** {@link CSSFont} подписей. */
+        font: CSSFont,
+        /** Толщина оси. */
+        thickness: number,
+        /** Размер вертикальной пометки. */
+        markSize: number,
+        /** Расстояние между осями по вертикали. */
+        gap: number,
+        /** Толщина и штриховка линий сетки. */
+        grid: {thickness: number, lineDash: number[]},
+      },
     },
   },
 }
@@ -89,6 +107,8 @@ export interface CaratColumnLabelDrawSettings {
   readonly font: string,
   /** Цвет подписи. */
   readonly color: ColorHEX,
+  /** Высота подписи. */
+  readonly height: number,
 }
 
 /** Настройки отрисовки вертикальной оси колонки. */
@@ -97,10 +117,27 @@ export interface CaratColumnYAxisDrawSettings {
   readonly font: string,
   /** Цвет подписей. */
   readonly color: ColorHEX,
-  /** Размер горизонтальной черты в пикселях. */
+  /** Размер горизонтальной черты. */
   readonly markSize: number,
 }
 
+/** Настройки отрисовки горизонтальных осей колонки. */
+export interface CaratColumnXAxesDrawSettings {
+  /** Шрифт подписей. */
+  readonly font: string,
+  /** Толщина оси. */
+  readonly thickness: number,
+  /** Размер горизонтальной черты. */
+  readonly markSize: number,
+  /** Расстояние между осями по вертикали. */
+  readonly gap: number,
+  /** Высота оси. */
+  readonly axisHeight: number,
+  /** Толщина линий сетки. */
+  readonly gridThickness: number,
+  /** Штриховка линий сетки. */
+  readonly gridLineDash: number[],
+}
 
 /** Создаёт настройки отрисовки трека по конфигу. */
 export function createTrackBodyDrawSettings(config: CaratDrawerConfig): CaratTrackBodyDrawSettings {
@@ -131,12 +168,25 @@ export function createColumnBodyDrawSettings(config: CaratDrawerConfig): CaratCo
 
 /** Создаёт настройки отрисовки подписи колонки по конфигу. */
 export function createColumnLabelDrawSettings(config: CaratDrawerConfig): CaratColumnLabelDrawSettings {
-  const { font, color } = config.column.label;
-  return {font: `${font.style} ${font.size}px ${font.family}`, color};
+  const { font, color, marginTop } = config.column.label;
+  const height = font.size + marginTop;
+  return {font: `${font.style} ${font.size}px ${font.family}`, color, height};
 }
 
 /** Создаёт настройки отрисовки вертикальной оси колонки по конфигу. */
 export function createColumnYAxisDrawSettings(config: CaratDrawerConfig): CaratColumnYAxisDrawSettings {
-  const { font, color, markSize } = config.column.verticalAxis;
+  const { font, color, markSize } = config.column.axis.vertical;
   return {font: `${font.style} ${font.size}px ${font.family}`, color, markSize};
+}
+
+/** Создаёт настройки отрисовки горизонтальных осей колонки по конфигу. */
+export function createColumnXAxesDrawSettings(config: CaratDrawerConfig): CaratColumnXAxesDrawSettings {
+  const { font, thickness, markSize, gap, grid } = config.column.axis.horizontal;
+  const axisHeight = font.size + 3 * thickness;
+
+  return {
+    font: `${font.style} ${font.size}px ${font.family}`,
+    thickness, markSize, gap, axisHeight,
+    gridThickness: grid.thickness, gridLineDash: grid.lineDash
+  };
 }

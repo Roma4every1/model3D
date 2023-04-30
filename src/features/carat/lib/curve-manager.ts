@@ -1,6 +1,7 @@
 import { CaratCurveModel } from './types';
 import { channelsAPI } from 'entities/channels/lib/channels.api';
 import { applyInfoIndexes } from './channels';
+import { getPragmaticMax } from 'shared/lib';
 
 
 interface CurveSelector {
@@ -30,8 +31,8 @@ export class CurveManager {
     return {
       id: cells[info.id.index],
       type: cells[info.type.index], date: dateString ? new Date(dateString) : null,
-      top: cells[info.top.index], bottom: cells[info.bottom.index],
-      min: 0, max: 0, defaultLoading: Boolean(cells[info.defaultLoading.index]),
+      top: 0, bottom: 0, min: 0, max: 0, axisMin: 0, axisMax: 0,
+      defaultLoading: Boolean(cells[info.defaultLoading.index]),
     };
   }
 
@@ -43,6 +44,8 @@ export class CurveManager {
 
   /** Типы кривых. */
   public readonly selectors: CurveSelector[];
+  /** Граничные значения шкал кривых. */
+  public readonly measures: Record<CaratCurveType, CaratCurveMeasure>;
   /** Начальная дата. */
   public start: Date | 'now';
   /** Конечная дата. */
@@ -58,11 +61,14 @@ export class CurveManager {
   /** Подключённый канал с данными кривых. */
   public curveDataChannel: CaratAttachedChannel;
 
-  constructor(init: CaratDataSelection) {
+  constructor(initSelection: CaratDataSelection, initMeasures: CaratCurveMeasure[]) {
     this.curves = [];
-    this.selectors = init.types.map(CurveManager.typeToSelector);
-    this.start = init.start === 'now' ? 'now' : new Date(init.start);
-    this.end = init.end === 'now' ? 'now' : new Date(init.end);
+    this.measures = {};
+    initMeasures.forEach((measure) => { this.measures[measure.type] = measure; });
+
+    this.selectors = initSelection.types.map(CurveManager.typeToSelector);
+    this.start = initSelection.start === 'now' ? 'now' : new Date(initSelection.start);
+    this.end = initSelection.end === 'now' ? 'now' : new Date(initSelection.end);
   }
 
   public setChannels(curveSet: CaratAttachedChannel, curveData: CaratAttachedChannel) {
@@ -108,6 +114,12 @@ export class CurveManager {
     });
   }
 
+  private applyCurveAxisRange(model: CaratCurveModel) {
+    const measure = this.measures[model.type];
+    model.axisMin = measure?.min ?? 0;
+    model.axisMax = measure?.max ?? getPragmaticMax(model.max);
+  }
+
   public async loadCurveData(ids: CaratCurveID[]): Promise<boolean> {
     const idsToLoad: CaratCurveID[] = ids.filter(id => !this.curveDict[id].path);
     if (idsToLoad.length === 0) return true;
@@ -126,14 +138,30 @@ export class CurveManager {
       model.bottom = cells[info.bottom.index];
       model.min = cells[info.min.index];
       model.max = cells[info.max.index];
+      this.applyCurveAxisRange(model);
     }
     return true;
   }
 
-  public getInit(): CaratDataSelection {
+  public setMeasure(curveType: CaratCurveType, min: number, max: number) {
+    const measure = this.measures[curveType];
+    if (measure) {
+      measure.min = min;
+      measure.max = max;
+    } else {
+      this.measures[curveType] = {type: curveType, min, max};
+    }
+    this.curves.filter(c => c.type === curveType).forEach(this.applyCurveAxisRange, this);
+  }
+
+  public getInitSelection(): CaratDataSelection {
     const types = this.selectors.map(CurveManager.selectorToType);
     const start = typeof this.start === 'string' ? this.start : this.start.toJSON();
     const end = typeof this.end === 'string' ? this.end : this.end.toJSON();
     return {types, start, end};
+  }
+
+  public getInitMeasures(): CaratCurveMeasure[] {
+    return Object.values(this.measures);
   }
 }

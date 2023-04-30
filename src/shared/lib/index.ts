@@ -9,6 +9,7 @@ export type Thunk<Result = void> = (dispatch: Dispatch, getState?: StateGetter) 
 
 export { measureText, getTextLinesCount } from './layout';
 export { compareObjects, compareArrays, setUnion, leftAntiJoin } from './common';
+export { round, getPragmaticMin, getPragmaticMax } from './common';
 export { API, BaseAPI } from './api';
 
 export const getParentFormId = (formID: FormID): FormID => {

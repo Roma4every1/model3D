@@ -1,5 +1,5 @@
 import { CaratDrawer } from './drawer';
-import { CaratCurveModel, CaratCurveStyleDict } from '../lib/types';
+import { CaratCurveModel, CaratCurveStyleDict} from '../lib/types';
 import { defaultSettings } from '../lib/constants';
 
 
@@ -47,6 +47,10 @@ export class CaratCurveColumn implements ICaratColumn {
       }
     }
     return [min, max];
+  }
+
+  public getGroups() {
+    return this.groups;
   }
 
   public getGroupWidth() {

@@ -14,6 +14,10 @@ export interface CaratCurveModel {
   min: number,
   /** Максимальное значение кривой. */
   max: number,
+  /** Начальная отметка оси. */
+  axisMin: number,
+  /** Конечная отметка оси. */
+  axisMax: number,
   /** Загружать ли кривую по умолчанию. */
   defaultLoading: boolean,
   /** Данные кривой (SVG-путь). */
@@ -22,16 +26,9 @@ export interface CaratCurveModel {
   style?: CaratStyleCurve,
 }
 
-/** Модель оси кривой. */
-export interface CaratCurveAxis {
-  /** Тип кривой. */
-  type: CaratCurveType,
-  /** Цвет оси. */
-  color: ColorHEX,
-  /** Минимальное значение. */
-  min: number,
-  /** Максимальное значение. */
-  max: number,
+export interface CurveAxisGroup {
+  rect: BoundingRect,
+  axes: CaratCurveModel[],
 }
 
 /* --- Carat Elements --- */
