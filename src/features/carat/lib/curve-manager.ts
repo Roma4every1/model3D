@@ -118,7 +118,7 @@ export class CurveManager {
     return this.curves;
   }
 
-  public getDefaultCurves(): CaratCurveModel[] {
+  public getVisibleCurves(): CaratCurveModel[] {
     return this.curves.filter((curve) => curve.defaultLoading);
   }
 

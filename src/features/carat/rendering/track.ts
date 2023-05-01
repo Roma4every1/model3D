@@ -94,7 +94,8 @@ export class CaratTrack implements ICaratTrack {
   }
 
   public setZones(zones: CaratZone[]) {
-    for (const group of this.groups) group.setZones(zones);
+    const changes = this.groups.map((group) => group.setZones(zones));
+    this.rebuildRects(changes);
   }
 
   public handleMouseDown(x: number, y: number) {
@@ -119,8 +120,7 @@ export class CaratTrack implements ICaratTrack {
     this.viewport.y = this.viewport.min;
   }
 
-  public async setCurveData(channelData: ChannelDict) {
-    const changes = await Promise.all(this.groups.map((group) => group.setCurveData(channelData)));
+  private rebuildRects(changes: [number, number][]) {
     const maxHeaderHeight = Math.max(...changes.map(item => item[1]));
 
     for (let i = 0; i < changes.length; i++) {
@@ -141,6 +141,11 @@ export class CaratTrack implements ICaratTrack {
     this.backgroundGroup.setWidth(this.rect.width);
     this.backgroundGroup.setHeaderHeight(maxHeaderHeight);
     this.maxGroupHeaderHeight = Math.max(...this.groups.map(g => g.getElementsTop()));
+  }
+
+  public async setCurveData(channelData: ChannelDict) {
+    const changes = await Promise.all(this.groups.map((group) => group.setCurveData(channelData)));
+    this.rebuildRects(changes);
   }
 
   public setLookupData(lookupData: ChannelDict) {

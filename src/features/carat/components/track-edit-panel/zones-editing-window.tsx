@@ -1,4 +1,4 @@
-import { FunctionComponent, useState, useEffect } from 'react';
+import { FunctionComponent, KeyboardEvent, useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { Window } from '@progress/kendo-react-dialogs';
 import { TextBox, TextBoxChangeEvent } from '@progress/kendo-react-inputs';
@@ -85,9 +85,11 @@ export const ZonesEditingWindow = ({stage}: ZonesEditingWindowProps) => {
       width={720} height={480} resizable={false} style={{zIndex: 99}} onClose={onClose}
     >
       <div className={'zones-editing-window'}>
-        <div style={{gridTemplateColumns: '1fr '.repeat(state.length)}}>
-          {state.map(listToEditor, {allTypes, itemClick, toolClick, addItem, deleteZone})}
-        </div>
+        {state.length
+          ? <div style={{gridTemplateColumns: '1fr '.repeat(state.length)}}>
+              {state.map(listToEditor, {allTypes, itemClick, toolClick, addItem, deleteZone})}
+            </div>
+          : <div className={'map-not-found'}>Зоны отсутствуют</div>}
         <div>
           <Button onClick={addZone}>Добавить зону</Button>
           <Button onClick={onSubmit} style={{width: 50}}>OK</Button>
@@ -101,13 +103,6 @@ const ZoneEditor = ({i, data, toolbar, onItemClick, allTypes, addItem, deleteZon
   const [value, setValue] = useState('');
   const [valid, setValid] = useState(true);
 
-  const onChange = (e: TextBoxChangeEvent) => {
-    const newValue = e.value as string;
-    const newValid = !allTypes.has(newValue);
-    setValid(newValid);
-    setValue(newValue);
-  };
-
   const onAdd = () => {
     if (value) addItem(value, i);
     setValue('');
@@ -115,6 +110,17 @@ const ZoneEditor = ({i, data, toolbar, onItemClick, allTypes, addItem, deleteZon
 
   const onZoneDelete = () => {
     deleteZone(i);
+  };
+
+  const onChange = (e: TextBoxChangeEvent) => {
+    const newValue = e.value as string;
+    const newValid = !allTypes.has(newValue);
+    setValid(newValid);
+    setValue(newValue);
+  };
+
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (e.nativeEvent.key === 'Enter' && valid) onAdd();
   };
 
   return (
@@ -125,7 +131,7 @@ const ZoneEditor = ({i, data, toolbar, onItemClick, allTypes, addItem, deleteZon
       />
       <Button icon={'delete'} themeColor={'primary'} title={'Удалить зону'} onClick={onZoneDelete}/>
       <div>
-        <TextBox rounded={null} value={value} valid={valid} onChange={onChange}/>
+        <TextBox rounded={null} value={value} valid={valid} onChange={onChange} onKeyDown={onKeyDown}/>
         <Button icon={'plus'} disabled={!valid} onClick={onAdd} title={'Добавить тип'}/>
       </div>
     </div>

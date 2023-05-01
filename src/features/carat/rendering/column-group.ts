@@ -1,7 +1,7 @@
 import { CaratDrawer } from './drawer';
 import { CaratColumn } from './column';
 import { CaratCurveColumn } from './curve-column';
-import { CurveAxisGroup } from '../lib/types';
+import {CaratCurveModel, CurveAxisGroup} from '../lib/types';
 import { CurveManager } from '../lib/curve-manager';
 
 
@@ -186,8 +186,12 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     this.elementsRect.left += by;
   }
 
-  public setZones(zones: CaratZone[]) {
+  /** Делает перестроение зон, возвращает изменение ширины и новую высоту заголовка. */
+  public setZones(zones: CaratZone[]): [number, number] {
     this.zones = zones;
+    if (!this.curveColumn) return [0, this.drawer.columnLabelSettings.height];
+    const curves = this.curveManager.getVisibleCurves();
+    return this.groupCurves(curves);
   }
 
   public setChannelData(channelData: ChannelDict) {
@@ -222,13 +226,8 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     return labelHeight + maxHeight;
   }
 
-  public async setCurveData(channelData: ChannelDict): Promise<[number, number]> {
-    if (!this.curveColumn) return [0, this.headerHeight];
-    const curveSet = channelData[this.curveColumn.curveSetChannel.name];
-    this.curveManager.setCurveChannelData(curveSet.data);
-    const curves = this.curveManager.getDefaultCurves();
-
-    await this.curveManager.loadCurveData(curves.map(curve => curve.id));
+  /** Группирует кривые по зонам, возвращает изменение ширины и новую высоту заголовка. */
+  private groupCurves(curves: CaratCurveModel[]): [number, number] {
     this.curveColumn.setCurveData(curves, this.zones);
     const newHeaderHeight = this.updateAxes();
 
@@ -240,6 +239,16 @@ export class CaratColumnGroup implements ICaratColumnGroup {
       for (const column of this.columns) column.rect.width = newWidth;
     }
     return [newWidth - oldWidth, newHeaderHeight];
+  }
+
+  /** Задаёт новый список кривых, возвращает изменение ширины и новую высоту заголовка. */
+  public async setCurveData(channelData: ChannelDict): Promise<[number, number]> {
+    if (!this.curveColumn) return [0, this.drawer.columnLabelSettings.height];
+    const curveSet = channelData[this.curveColumn.curveSetChannel.name];
+    this.curveManager.setCurveChannelData(curveSet.data);
+    const curves = this.curveManager.getVisibleCurves();
+    await this.curveManager.loadCurveData(curves.map(curve => curve.id));
+    return this.groupCurves(curves);
   }
 
   public setLookupData(lookupData: ChannelDict) {
