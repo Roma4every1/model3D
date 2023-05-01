@@ -228,6 +228,23 @@ export class CaratDrawer implements ICaratDrawer {
       drawMarksFn(y, canvasY);
     }
     this.ctx.stroke();
+
+    if (settings.grid) {
+      const { gridThickness, gridLineDash } = this.columnYAxisSettings;
+      const width = this.groupElementRect.width;
+
+      this.setLineSettings(gridThickness, this.groupSettings.borderColor);
+      this.ctx.setLineDash(gridLineDash);
+
+      for (let y = minY; y < maxY; y += step) {
+        const canvasY = y * scaleY;
+        this.ctx.moveTo(0, canvasY);
+        this.ctx.lineTo(width, canvasY);
+      }
+
+      this.ctx.stroke();
+      this.ctx.setLineDash([]);
+    }
   }
 
   public drawColumnGroupXAxes(settings: CaratColumnXAxis, groups: CurveAxisGroup[]) {

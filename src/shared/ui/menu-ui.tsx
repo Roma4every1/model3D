@@ -95,10 +95,41 @@ export const ButtonIconStock = ({icon, title, action, disabled}: Omit<ButtonIcon
 
 /* --- --- --- */
 
+interface ButtonIconRowProps {
+  justifyContent?: string,
+  gap?: number | string,
+  children?: ReactNode,
+}
+interface ButtonIconRowItemProps {
+  icon: string,
+  alt?: string,
+  title?: string,
+  active?: boolean,
+  onClick?: () => void,
+}
+
+export const ButtonIconRow = ({children, justifyContent, gap}: ButtonIconRowProps) => {
+  return (
+    <div className={'button-icon-row'} style={{justifyContent, gap}}>
+      {children}
+    </div>
+  );
+};
+
+export const ButtonIconRowItem = ({icon, alt, title, active, onClick}: ButtonIconRowItemProps) => {
+  return (
+    <button className={active ? 'active' : undefined} onClick={onClick}>
+      <img src={icon} alt={alt} title={title}/>
+    </button>
+  );
+};
+
+/* --- --- --- */
+
 interface BigButtonProps {
   text: string,
   icon: string,
-  action: (event?: MouseEvent) => void,
+  action?: (event?: MouseEvent) => void,
   disabled?: boolean,
 }
 
@@ -111,7 +142,7 @@ export const BigButton = ({text, icon, action, disabled}: BigButtonProps) => {
   );
 };
 
-type BigButtonToggleProps = BigButtonProps & {active: boolean};
+type BigButtonToggleProps = BigButtonProps & {active?: boolean};
 
 export const BigButtonToggle = ({text, icon, active, action, disabled}: BigButtonToggleProps) => {
   const className = 'map-action' + (active ? ' selected' : '');

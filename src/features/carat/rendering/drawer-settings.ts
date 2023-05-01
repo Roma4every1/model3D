@@ -47,6 +47,8 @@ export interface CaratDrawerConfig {
         color: ColorHEX,
         /** Размер горизонтальной пометки. */
         markSize: number,
+        /** Толщина и штриховка линий сетки. */
+        grid: {thickness: number, lineDash: number[]},
       },
       /** Настройки горизонтальных осей кривых. */
       horizontal: {
@@ -119,6 +121,10 @@ export interface CaratColumnYAxisDrawSettings {
   readonly color: ColorHEX,
   /** Размер горизонтальной черты. */
   readonly markSize: number,
+  /** Толщина линий сетки. */
+  readonly gridThickness: number,
+  /** Штриховка линий сетки. */
+  readonly gridLineDash: number[],
 }
 
 /** Настройки отрисовки горизонтальных осей колонки. */
@@ -175,8 +181,11 @@ export function createColumnLabelDrawSettings(config: CaratDrawerConfig): CaratC
 
 /** Создаёт настройки отрисовки вертикальной оси колонки по конфигу. */
 export function createColumnYAxisDrawSettings(config: CaratDrawerConfig): CaratColumnYAxisDrawSettings {
-  const { font, color, markSize } = config.column.axis.vertical;
-  return {font: `${font.style} ${font.size}px ${font.family}`, color, markSize};
+  const { font, color, markSize, grid } = config.column.axis.vertical;
+  return {
+    font: `${font.style} ${font.size}px ${font.family}`, color, markSize,
+    gridThickness: grid.thickness, gridLineDash: grid.lineDash,
+  };
 }
 
 /** Создаёт настройки отрисовки горизонтальных осей колонки по конфигу. */

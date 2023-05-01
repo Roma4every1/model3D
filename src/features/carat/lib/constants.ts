@@ -67,6 +67,7 @@ export const drawerConfig: CaratDrawerConfig = {
         font: {size: 12, style: 'normal', family: '"Segoe UI", Roboto'},
         color: '#333333',
         markSize: 6,
+        grid: {thickness: 1, lineDash: [5, 4]},
       },
       horizontal: {
         font: {size: 13, style: 'normal', family: '"Segoe UI", Roboto'},
