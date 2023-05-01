@@ -37,14 +37,14 @@ const GroupCommonSettings = ({stage, track, activeGroup}: CaratActiveGroupPanelP
 
   useEffect(() => {
     if (!activeGroup) return;
-    setLabel(activeGroup.getLabel());
+    setLabel(activeGroup.settings.label);
     setWidth(activeGroup.getWidth());
     setStep(activeGroup.yAxis.step);
   }, [activeGroup]);
 
   const onLabelChange = (e: TextBoxChangeEvent) => {
     if (typeof e.value !== 'string') return;
-    activeGroup.setLabel(e.value); stage.render();
+    activeGroup.settings.label = e.value; stage.render();
     setLabel(e.value);
   };
 

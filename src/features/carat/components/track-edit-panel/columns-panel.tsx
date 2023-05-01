@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { MenuSection, ButtonIcon } from 'shared/ui';
 import { setCaratActiveGroup } from '../../store/carats.actions';
@@ -15,27 +16,48 @@ interface CaratColumnsPanelProps {
 
 export const CaratColumnsPanel = ({id, stage, track}: CaratColumnsPanelProps) => {
   const dispatch = useDispatch();
-  const columns = track.getGroups();
+  const [signal, setSignal] = useState(false);
+
+  const groups = track.getGroups();
+  const activeIndex = track.getActiveIndex();
 
   const setActiveGroup = (idx: number) => {
-    const activeGroup = columns[idx];
-    dispatch(setCaratActiveGroup(id, activeGroup));
     track.setActiveGroup(idx); stage.render();
+    dispatch(setCaratActiveGroup(id, groups[idx]));
+  };
+
+  const moveLeft = () => {
+    track.moveGroup(activeIndex, 'left');
+    stage.render();
+    setSignal(!signal);
+  };
+
+  const moveRight = () => {
+    track.moveGroup(activeIndex,'right');
+    stage.render();
+    setSignal(!signal);
   };
 
   const columnToLabel = (column: ICaratColumnGroup, i: number) => {
     const onClick = () => setActiveGroup(i);
-    return <div key={i} onClick={onClick}>{column.getLabel()}</div>;
+    const className = i === activeIndex ? 'active' : undefined;
+    return <div key={i} className={className} onClick={onClick}>{column.settings.label}</div>;
   };
 
   return (
     <MenuSection header={'Управление колонками'} style={{flexDirection: 'row'}}>
-      <div style={{display: 'flex', flexDirection: 'column'}}>
-        <ButtonIcon text={'Влево'} icon={moveLeftIcon} title={'Переместить активную колонку влево'}/>
-        <ButtonIcon text={'Вправо'} icon={moveRightIcon} title={'Переместить активную колонку вправо'}/>
+      <div className={'carat-column-moving'}>
+        <ButtonIcon
+          text={'Влево'} icon={moveLeftIcon} title={'Переместить активную колонку влево'}
+          action={moveLeft} disabled={activeIndex <= 0}
+        />
+        <ButtonIcon
+          text={'Вправо'} icon={moveRightIcon} title={'Переместить активную колонку вправо'}
+          action={moveRight} disabled={activeIndex >= groups.length - 1}
+        />
       </div>
       <div className={'carat-tracks'}>
-        {columns.map(columnToLabel)}
+        {groups.map(columnToLabel)}
       </div>
     </MenuSection>
   );

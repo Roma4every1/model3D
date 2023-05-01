@@ -63,6 +63,10 @@ export class CaratTrack implements ICaratTrack {
     return this.groups[this.activeIndex];
   }
 
+  public getActiveIndex(): number {
+    return this.activeIndex;
+  }
+
   public setWell(well: string) {
     this.well = well;
   }
@@ -96,6 +100,22 @@ export class CaratTrack implements ICaratTrack {
   public setZones(zones: CaratZone[]) {
     const changes = this.groups.map((group) => group.setZones(zones));
     this.rebuildRects(changes);
+  }
+
+  public moveGroup(idx: number, to: 'left' | 'right') {
+    const k = to === 'left' ? -1 : 1;
+    const relatedIndex = idx + k;
+    const movedGroup = this.groups[idx];
+    const relatedGroup = this.groups[relatedIndex];
+
+    movedGroup.settings.index = relatedIndex;
+    movedGroup.shift(k * relatedGroup.getElementsRect().width);
+    relatedGroup.settings.index = idx;
+    relatedGroup.shift(-k * movedGroup.getElementsRect().width);
+
+    this.groups[idx] = relatedGroup;
+    this.groups[relatedIndex] = movedGroup;
+    if (idx === this.activeIndex) this.activeIndex = relatedIndex;
   }
 
   public handleMouseDown(x: number, y: number) {

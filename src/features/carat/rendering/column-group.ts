@@ -109,10 +109,6 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     };
   }
 
-  public getLabel(): string {
-    return this.settings.label;
-  }
-
   public getElementsRect(): BoundingRect {
     return this.elementsRect;
   }
@@ -148,10 +144,6 @@ export class CaratColumnGroup implements ICaratColumnGroup {
 
   public hasCurveColumn(): boolean {
     return Boolean(this.curveColumn);
-  }
-
-  public setLabel(label: string) {
-    this.settings.label = label;
   }
 
   public setWidth(width: number): number {

@@ -52,12 +52,14 @@ interface ICaratTrack {
   getGroups(): ICaratColumnGroup[]
   getInitColumns(): CaratColumnInit[]
   getActiveGroup(): ICaratColumnGroup | null
+  getActiveIndex(): number
 
   setWell(well: string): void
   setScale(scale: number): void
   setActiveGroup(idx: number): void
   setActiveGroupWidth(width: number): void
 
+  moveGroup(idx: number, to: 'left' | 'right'): void
   handleMouseDown(x: number, y: number): void
 
   render(): void
@@ -70,13 +72,11 @@ interface ICaratColumnGroup {
   readonly xAxis: CaratColumnXAxis,
   readonly yAxis: CaratColumnYAxis,
 
-  getLabel(): string
   getWidth(): number
   getElementsRange(): [number, number]
   getCurvesRange(): [number, number]
   hasCurveColumn(): boolean
 
-  setLabel(label: string): void
   setHeight(height: number): void
 
   renderBody(): void
