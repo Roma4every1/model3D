@@ -5,6 +5,7 @@ import { settingsToState } from '../lib/initialization';
 
 export enum CaratsActions {
   CREATE = 'carat/create',
+  SET_DATA = 'carat/data',
   SET_ACTIVE_COLUMN = 'carat/column',
   SET_CANVAS = 'carat/setCanvas',
 }
@@ -15,6 +16,10 @@ interface ActionCreate {
   type: CaratsActions.CREATE,
   payload: {id: FormID, channels: ChannelDict, formState: FormState},
 }
+interface ActionSetData {
+  type: CaratsActions.SET_DATA,
+  payload: {id: FormID, data: ChannelDict},
+}
 interface ActionSetColumnGroup {
   type: CaratsActions.SET_ACTIVE_COLUMN,
   payload: {id: FormID, group: ICaratColumnGroup},
@@ -24,7 +29,7 @@ interface ActionSetCanvas {
   payload: {id: FormID, canvas: HTMLCanvasElement},
 }
 
-export type CaratsAction = ActionCreate | ActionSetColumnGroup | ActionSetCanvas;
+export type CaratsAction = ActionCreate | ActionSetData | ActionSetColumnGroup | ActionSetCanvas;
 
 /* --- Init State & Reducer --- */
 
@@ -36,6 +41,14 @@ export const caratsReducer = (state: CaratsState = init, action: CaratsAction): 
     case CaratsActions.CREATE: {
       const { id, channels, formState } = action.payload;
       return {...state, [id]: settingsToState(formState, channels)};
+    }
+
+    case CaratsActions.SET_DATA: {
+      const { id, data } = action.payload;
+      const { stage } = state[id];
+      stage.setChannelData(data); stage.render();
+      stage.setCurveData(data).then(() => stage.render());
+      return {...state, [id]: {...state[id]}}
     }
 
     case CaratsActions.SET_ACTIVE_COLUMN: {

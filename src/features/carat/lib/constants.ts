@@ -4,7 +4,7 @@ import { CaratDrawerConfig } from '../rendering/drawer-settings';
 /** Значения некоторых настроек по умолчанию. */
 export const defaultSettings = {
   scale: 400,
-  curveStyle: {thickness: 2, color: '#694444'},
+  curveStyle: {thickness: 2, color: '#605656'},
   intervalStyle: {borderColor: '#888888', backgroundColor: '#e8e8e8'},
 };
 

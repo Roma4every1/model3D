@@ -54,7 +54,7 @@ export class CaratTrack implements ICaratTrack {
     return this.groups.map(g => g.getInit());
   }
 
-  public getColumns(): CaratColumnGroup[] {
+  public getGroups(): CaratColumnGroup[] {
     return this.groups;
   }
 

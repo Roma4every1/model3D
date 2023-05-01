@@ -1,0 +1,38 @@
+.curve-type-settings {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px;
+
+  &.active {
+    background-color: #fccbc7;
+  }
+
+  > :first-child {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    border-radius: 2px;
+  }
+
+  > :nth-child(2) {
+    text-align: left;
+    min-width: 65px;
+  }
+
+  > :last-child {
+    color: #424242;
+    text-align: left;
+    font-size: 0.8em;
+  }
+}
+
+.measure-settings {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 4px;
+  align-items: center;
+
+  width: 200px;
+  margin-right: 4px;
+}

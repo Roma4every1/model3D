@@ -38,7 +38,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   /** Каротажные колонки в группе. */
   private readonly columns: CaratColumn[];
   /** Каротажные колонки с кривыми. */
-  private readonly curveColumn: CaratCurveColumn;
+  private readonly curveColumn: CaratCurveColumn | null;
 
   private readonly channels: CaratAttachedChannel[];
   private readonly properties: Record<ChannelName, CaratColumnProperties>;
@@ -65,6 +65,8 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     this.labelBottom = this.elementsRect.top;
 
     this.columns = [];
+    this.curveColumn = null;
+
     let curveSetChannel: CaratAttachedChannel;
     let curveDataChannel: CaratAttachedChannel;
     const height = rect.height - this.headerHeight;
@@ -142,6 +144,10 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   public getCurvesRange(): [number, number] {
     if (this.curveColumn) return this.curveColumn.getRange();
     return [Infinity, -Infinity];
+  }
+
+  public hasCurveColumn(): boolean {
+    return Boolean(this.curveColumn);
   }
 
   public setLabel(label: string) {
@@ -238,7 +244,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
 
   public setLookupData(lookupData: ChannelDict) {
     for (const column of this.columns) column.setLookupData(lookupData);
-    if (this.curveColumn) this.curveColumn.setLookupData(lookupData);
+    if (this.curveColumn) this.curveManager.setStyleData(lookupData);
   }
 
   public renderBody() {

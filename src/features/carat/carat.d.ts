@@ -49,7 +49,7 @@ interface ICaratTrack {
   readonly rect: BoundingRect,
   readonly viewport: CaratViewport,
 
-  getColumns(): ICaratColumnGroup[]
+  getGroups(): ICaratColumnGroup[]
   getInitColumns(): CaratColumnInit[]
   getActiveGroup(): ICaratColumnGroup | null
 
@@ -74,6 +74,7 @@ interface ICaratColumnGroup {
   getWidth(): number
   getElementsRange(): [number, number]
   getCurvesRange(): [number, number]
+  hasCurveColumn(): boolean
 
   setLabel(label: string): void
   setHeight(height: number): void

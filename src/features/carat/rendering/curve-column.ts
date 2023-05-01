@@ -1,6 +1,5 @@
 import { CaratDrawer } from './drawer';
-import { CaratCurveModel, CaratCurveStyleDict} from '../lib/types';
-import { defaultSettings } from '../lib/constants';
+import { CaratCurveModel } from '../lib/types';
 
 
 interface CurveGroupState {
@@ -22,8 +21,6 @@ export class CaratCurveColumn implements ICaratColumn {
   private groups: CurveGroupState[];
   /** Координаты по X разделительных линий зон. */
   private dividingLines: number[];
-  /** Словарь свойств внешнего вида пластов. */
-  private styleDict: CaratCurveStyleDict;
 
   constructor(
     rect: BoundingRect, drawer: CaratDrawer,
@@ -82,8 +79,6 @@ export class CaratCurveColumn implements ICaratColumn {
 
     for (const curve of curves) {
       const curveType = curve.type;
-      curve.style = this.styleDict[curveType] ?? defaultSettings.curveStyle;
-
       let zoneIndex = zones.findIndex((zone) => zone.types.includes(curveType));
       if (zoneIndex === -1) zoneIndex = zones.length;
       curveGroups[zoneIndex].push(curve);
@@ -104,17 +99,6 @@ export class CaratCurveColumn implements ICaratColumn {
       this.groups.push({rect, elements: curveGroups[i]});
       if (i > 0) this.dividingLines.push(rect.left);
     }
-  }
-
-  public setLookupData(lookupData: ChannelDict) {
-    this.styleDict = {};
-    const curveColorChannel = lookupData[this.curveSetChannel.style.name];
-
-    curveColorChannel?.data?.rows?.forEach((row) => {
-      let [type, color] = row.Cells as [string, string];
-      if (color.length > 7) color = color.substring(0, 7);
-      this.styleDict[type] = {color, thickness: 2};
-    });
   }
 
   public render() {

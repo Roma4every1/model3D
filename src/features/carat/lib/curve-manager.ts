@@ -1,13 +1,15 @@
-import { CaratCurveModel } from './types';
+import { CaratCurveModel, CaratCurveStyleDict } from './types';
 import { channelsAPI } from 'entities/channels/lib/channels.api';
 import { applyInfoIndexes } from './channels';
 import { getPragmaticMax } from 'shared/lib';
+import { defaultSettings } from './constants';
 
 
 interface CurveSelector {
   regExp: RegExp,
   selected: boolean,
 }
+
 
 export class CurveManager {
   private static typeToSelector(t: CaratCurveSelector): CurveSelector {
@@ -17,52 +19,41 @@ export class CurveManager {
     return {expression: s.regExp.source, isSelected: s.selected};
   }
 
-  private static validateRows(rows: ChannelRow[], info: CaratCurveSetInfo): ChannelRow[] {
-    const idIndex = info.id.index;
-    return rows.filter((row) => {
-      const id = row.Cells[idIndex];
-      return id !== null && id !== undefined;
-    });
-  }
-  private static rowToCurveModel(row: ChannelRow, info: CaratCurveSetInfo): CaratCurveModel {
-    const cells = row.Cells;
-    const dateString = cells[info.date.index];
-
-    return {
-      id: cells[info.id.index],
-      type: cells[info.type.index], date: dateString ? new Date(dateString) : null,
-      top: 0, bottom: 0, min: 0, max: 0, axisMin: 0, axisMax: 0,
-      defaultLoading: Boolean(cells[info.defaultLoading.index]),
-    };
-  }
-
   private static async loadCurveChannelData(name: ChannelName, ids: any[]) {
     const parameter: Parameter = {id: 'currentCurveIds', type: 'stringArray', value: ids} as Parameter;
     const res = await channelsAPI.getChannelData(name, [parameter], {order: []} as any);
     return res.ok ? res.data.data : null;
   }
 
-  /** Типы кривых. */
-  public readonly selectors: CurveSelector[];
-  /** Граничные значения шкал кривых. */
-  public readonly measures: Record<CaratCurveType, CaratCurveMeasure>;
-  /** Начальная дата. */
-  public start: Date | 'now';
-  /** Конечная дата. */
-  public end: Date | 'now';
-
   /** Список кривых. */
   private curves: CaratCurveModel[];
   /** Словарь кривых. */
   private curveDict: Record<CaratCurveID, CaratCurveModel>;
+  /** Типы из списка кривых **без повторений**. */
+  private curveTypes: CaratCurveType[];
+
+  /** Граничные значения шкал кривых. */
+  public readonly measures: Record<CaratCurveType, CaratCurveMeasure>;
+  /** Словарь свойств внешнего вида кривых. */
+  public readonly styleDict: CaratCurveStyleDict;
 
   /** Подключённый канал со списком кривых. */
   public curveSetChannel: CaratAttachedChannel;
   /** Подключённый канал с данными кривых. */
   public curveDataChannel: CaratAttachedChannel;
 
+  /** Типы кривых. */
+  public readonly selectors: CurveSelector[];
+  /** Начальная дата. */
+  public start: Date | 'now';
+  /** Конечная дата. */
+  public end: Date | 'now';
+
   constructor(initSelection: CaratDataSelection, initMeasures: CaratCurveMeasure[]) {
     this.curves = [];
+    this.curveTypes = [];
+    this.styleDict = new Map();
+
     this.measures = {};
     initMeasures.forEach((measure) => { this.measures[measure.type] = measure; });
 
@@ -76,17 +67,51 @@ export class CurveManager {
     this.curveDataChannel = curveData;
   }
 
+  private validateRows(rows: ChannelRow[]): ChannelRow[] {
+    const idIndex = this.curveSetChannel.info.id.index;
+    return rows.filter((row) => {
+      const id = row.Cells[idIndex];
+      return id !== null && id !== undefined;
+    });
+  }
+
+  private createCurveModel(row: ChannelRow): CaratCurveModel {
+    const info = this.curveSetChannel.info as CaratCurveSetInfo;
+    const cells = row.Cells;
+    const dateString = cells[info.date.index];
+    const curveType = cells[info.type.index];
+
+    return {
+      id: cells[info.id.index],
+      type: curveType, date: dateString ? new Date(dateString) : null,
+      top: 0, bottom: 0, min: 0, max: 0, axisMin: 0, axisMax: 0,
+      defaultLoading: Boolean(cells[info.defaultLoading.index]),
+      style: this.styleDict.get(curveType) ?? defaultSettings.curveStyle,
+    };
+  }
+
   public setCurveChannelData(data: ChannelData) {
     this.curveDict = {};
     const rows = data?.rows;
     if (!rows) { this.curves = []; return; }
 
     if (!this.curveSetChannel.applied) applyInfoIndexes(this.curveSetChannel, data.columns);
-    const info = this.curveSetChannel.info as CaratCurveSetInfo;
-    const validatedRows = CurveManager.validateRows(rows, info);
+    const validatedRows = this.validateRows(rows);
 
-    this.curves = validatedRows.map((row) => CurveManager.rowToCurveModel(row, info));
+    this.curves = validatedRows.map(this.createCurveModel, this);
     this.curves.forEach((curve) => { this.curveDict[curve.id] = curve; });
+    this.curveTypes = [...new Set(this.curves.map(curve => curve.type))];
+  }
+
+  public setStyleData(lookupData: ChannelDict) {
+    this.styleDict.clear();
+    const curveColorChannel = lookupData[this.curveSetChannel.style.name];
+
+    curveColorChannel?.data?.rows?.forEach((row) => {
+      let [type, color] = row.Cells as [string, string];
+      if (color.length > 7) color = color.substring(0, 7);
+      this.styleDict.set(type, {color, thickness: 2});
+    });
   }
 
   public getAllCurves(): CaratCurveModel[] {
@@ -112,6 +137,25 @@ export class CurveManager {
       }
       return false;
     });
+  }
+
+  public getCurveTypes(): CaratCurveType[] {
+    return this.curveTypes;
+  }
+
+  public setMeasure(curveType: CaratCurveType, min: number | null, max: number | null) {
+    if (min === null && max === null) {
+      delete this.measures[curveType];
+    } else {
+      const measure = this.measures[curveType];
+      if (measure) {
+        measure.min = min;
+        measure.max = max;
+      } else {
+        this.measures[curveType] = {type: curveType, min, max};
+      }
+    }
+    this.curves.filter(c => c.type === curveType).forEach(this.applyCurveAxisRange, this);
   }
 
   private applyCurveAxisRange(model: CaratCurveModel) {
@@ -141,17 +185,6 @@ export class CurveManager {
       this.applyCurveAxisRange(model);
     }
     return true;
-  }
-
-  public setMeasure(curveType: CaratCurveType, min: number, max: number) {
-    const measure = this.measures[curveType];
-    if (measure) {
-      measure.min = min;
-      measure.max = max;
-    } else {
-      this.measures[curveType] = {type: curveType, min, max};
-    }
-    this.curves.filter(c => c.type === curveType).forEach(this.applyCurveAxisRange, this);
   }
 
   public getInitSelection(): CaratDataSelection {

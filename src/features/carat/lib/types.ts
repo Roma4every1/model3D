@@ -23,7 +23,7 @@ export interface CaratCurveModel {
   /** Данные кривой (SVG-путь). */
   path?: Path2D,
   /** Стиль отрисовки. */
-  style?: CaratStyleCurve,
+  style: CaratStyleCurve,
 }
 
 export interface CurveAxisGroup {
@@ -36,7 +36,7 @@ export interface CurveAxisGroup {
 /** Словарь стилей интервальных элементов. */
 export type CaratIntervalStyleDict = Record<number, CaratStyleInterval>;
 /** Словарь стилей каротажных кривых. */
-export type CaratCurveStyleDict = Record<CaratCurveType, CaratStyleCurve>;
+export type CaratCurveStyleDict = Map<CaratCurveType, CaratStyleCurve>;
 
 export interface CaratElementInterval {
   top: number,

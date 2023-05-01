@@ -5,7 +5,7 @@ import { compareObjects} from 'shared/lib';
 import { currentWellIDSelector } from 'entities/parameters';
 import { channelDictSelector } from 'entities/channels';
 import { caratStateSelector } from '../store/carats.selectors';
-import {setCaratActiveGroup, setCaratCanvas} from '../store/carats.actions';
+import { setCaratData, setCaratActiveGroup, setCaratCanvas } from '../store/carats.actions';
 
 
 /** Каротажная диаграмма. */
@@ -30,8 +30,7 @@ export const Carat = ({id, channels}: FormState) => {
   // обновление данных каналов и активной скважины
   useEffect(() => {
     stage.setWell(wellID);
-    stage.setChannelData(channelData); stage.render();
-    stage.setCurveData(channelData).then(() => stage.render());
+    dispatch(setCaratData(id, channelData));
   }, [channelData]); // eslint-disable-line
 
   // обновление ссылки на холст

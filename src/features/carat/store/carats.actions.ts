@@ -6,6 +6,11 @@ export const createCaratState = (id: FormID, channels: ChannelDict, formState: F
   return {type: CaratsActions.CREATE, payload: {id, channels, formState}};
 };
 
+/** Обновляет данные каналов. */
+export const setCaratData = (id: FormID, data: ChannelDict): CaratsAction => {
+  return {type: CaratsActions.SET_DATA, payload: {id, data}};
+};
+
 /** Устанавливает активную колонку. */
 export const setCaratActiveGroup = (id: FormID, group: ICaratColumnGroup): CaratsAction => {
   return {type: CaratsActions.SET_ACTIVE_COLUMN, payload: {id, group}};

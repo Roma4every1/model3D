@@ -15,7 +15,7 @@ interface CaratColumnsPanelProps {
 
 export const CaratColumnsPanel = ({id, stage, track}: CaratColumnsPanelProps) => {
   const dispatch = useDispatch();
-  const columns = track.getColumns();
+  const columns = track.getGroups();
 
   const setActiveGroup = (idx: number) => {
     const activeGroup = columns[idx];
