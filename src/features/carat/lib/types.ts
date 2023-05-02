@@ -22,8 +22,12 @@ export interface CaratCurveModel {
   defaultLoading: boolean,
   /** Данные кривой (SVG-путь). */
   path?: Path2D,
+  /** Точки кривой. */
+  points?: ClientPoint[],
   /** Стиль отрисовки. */
   style: CaratStyleCurve,
+  /** Является ли кривая активной. */
+  active: boolean,
 }
 
 export interface CurveAxisGroup {
@@ -43,11 +47,9 @@ export interface CaratElementInterval {
   base: number,
   style: CaratStyleInterval,
 }
-interface CaratStyleInterval {
-  borderColor: ColorHEX,
-  backgroundColor: ColorHEX,
-  fillStyle: string,
-  lineStyle: string,
+export interface CaratStyleInterval {
+  fill: ColorHEX | CanvasPattern,
+  stroke: ColorHEX | CanvasPattern,
 }
 
 export interface CaratStyleCurve {

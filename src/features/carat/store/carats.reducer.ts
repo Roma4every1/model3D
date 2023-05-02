@@ -5,8 +5,8 @@ import { settingsToState } from '../lib/initialization';
 
 export enum CaratsActions {
   CREATE = 'carat/create',
-  SET_DATA = 'carat/data',
-  SET_ACTIVE_COLUMN = 'carat/column',
+  SET_ACTIVE_GROUP = 'carat/group',
+  SET_ACTIVE_CURVE = 'carat/curve',
   SET_CANVAS = 'carat/setCanvas',
 }
 
@@ -16,20 +16,20 @@ interface ActionCreate {
   type: CaratsActions.CREATE,
   payload: {id: FormID, channels: ChannelDict, formState: FormState},
 }
-interface ActionSetData {
-  type: CaratsActions.SET_DATA,
-  payload: {id: FormID, data: ChannelDict},
-}
-interface ActionSetColumnGroup {
-  type: CaratsActions.SET_ACTIVE_COLUMN,
+interface ActionSetActiveGroup {
+  type: CaratsActions.SET_ACTIVE_GROUP,
   payload: {id: FormID, group: ICaratColumnGroup},
+}
+interface ActionSetActiveCurve {
+  type: CaratsActions.SET_ACTIVE_CURVE,
+  payload: {id: FormID, curve: any},
 }
 interface ActionSetCanvas {
   type: CaratsActions.SET_CANVAS,
   payload: {id: FormID, canvas: HTMLCanvasElement},
 }
 
-export type CaratsAction = ActionCreate | ActionSetData | ActionSetColumnGroup | ActionSetCanvas;
+export type CaratsAction = ActionCreate | ActionSetActiveGroup | ActionSetActiveCurve | ActionSetCanvas;
 
 /* --- Init State & Reducer --- */
 
@@ -43,17 +43,14 @@ export const caratsReducer = (state: CaratsState = init, action: CaratsAction): 
       return {...state, [id]: settingsToState(formState, channels)};
     }
 
-    case CaratsActions.SET_DATA: {
-      const { id, data } = action.payload;
-      const { stage } = state[id];
-      stage.setChannelData(data); stage.render();
-      stage.setCurveData(data).then(() => stage.render());
-      return {...state, [id]: {...state[id]}}
-    }
-
-    case CaratsActions.SET_ACTIVE_COLUMN: {
+    case CaratsActions.SET_ACTIVE_GROUP: {
       const { id, group } = action.payload;
       return {...state, [id]: {...state[id], activeGroup: group}};
+    }
+
+    case CaratsActions.SET_ACTIVE_CURVE: {
+      const { id, curve } = action.payload;
+      return {...state, [id]: {...state[id], activeCurve: curve}};
     }
 
     case CaratsActions.SET_CANVAS: {

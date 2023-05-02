@@ -1,11 +1,13 @@
-import { MouseEvent, WheelEvent } from 'react';
+import { KeyboardEvent, MouseEvent, WheelEvent } from 'react';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { compareObjects} from 'shared/lib';
 import { currentWellIDSelector } from 'entities/parameters';
 import { channelDictSelector } from 'entities/channels';
+
 import { caratStateSelector } from '../store/carats.selectors';
-import { setCaratData, setCaratActiveGroup, setCaratCanvas } from '../store/carats.actions';
+import { setCaratActiveGroup, setCaratCanvas } from '../store/carats.actions';
+import { setCaratData } from '../store/carats.thunks';
 
 
 /** Каротажная диаграмма. */
@@ -40,6 +42,11 @@ export const Carat = ({id, channels}: FormState) => {
     dispatch(setCaratCanvas(id, currentCanvas));
   });
 
+  const onKeyDown = (e: KeyboardEvent) => {
+    const changed = stage.handleKeyDown(e.nativeEvent.key);
+    if (changed) stage.render();
+  };
+
   const onMouseDown = (e: MouseEvent) => {
     const { offsetX: x, offsetY: y } = e.nativeEvent;
     const isIntersect = stage.handleMouseDown(x, y);
@@ -58,15 +65,16 @@ export const Carat = ({id, channels}: FormState) => {
   };
 
   const onWheel = (e: WheelEvent) => {
-    const by = e.deltaY > 0 ? 5 : -5;
+    const direction = e.deltaY > 0 ? 1 : -1;
     const { offsetX: x, offsetY: y } = e.nativeEvent;
-    stage.handleMouseWheel(x, y, by);
+    stage.handleMouseWheel(x, y, direction);
   };
 
   return (
     <div className={'carat-container'}>
       <canvas
-        ref={canvasRef}
+        ref={canvasRef} style={{outline: 'none'}}
+        tabIndex={0} onKeyDown={onKeyDown}
         onMouseDown={onMouseDown} onMouseUp={onMouseUp}
         onMouseMove={onMouseMove} onWheel={onWheel}
       />

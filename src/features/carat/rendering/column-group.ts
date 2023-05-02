@@ -1,8 +1,9 @@
 import { CaratDrawer } from './drawer';
 import { CaratColumn } from './column';
 import { CaratCurveColumn } from './curve-column';
-import {CaratCurveModel, CurveAxisGroup} from '../lib/types';
+import { CaratCurveModel, CurveAxisGroup } from '../lib/types';
 import { CurveManager } from '../lib/curve-manager';
+import {isPointNearCurve, isRectInnerPoint} from '../lib/utils';
 
 
 /** Группа колонок каротажной диаграммы. */
@@ -142,6 +143,12 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     return [Infinity, -Infinity];
   }
 
+  public getFirstCurve(): CaratCurveModel | null {
+    if (!this.curveColumn) return null;
+    const curveGroups = this.curveColumn.getGroups();
+    return curveGroups[0]?.elements[0] ?? null;
+  }
+
   public hasCurveColumn(): boolean {
     return Boolean(this.curveColumn);
   }
@@ -184,6 +191,32 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     if (!this.curveColumn) return [0, this.drawer.columnLabelSettings.height];
     const curves = this.curveManager.getVisibleCurves();
     return this.groupCurves(curves);
+  }
+
+  public setActiveCurve(id?: CaratCurveID) {
+    if (!this.curveColumn) return;
+    this.curveManager.setActiveCurve(id);
+  }
+
+  /** X и Y в системе координат трека. */
+  public getNearCurve(x: number, y: number, viewport: CaratViewport): CaratCurveModel | null {
+    if (!this.curveColumn) return null;
+    const groups = this.curveColumn.getGroups();
+    x -= this.elementsRect.left;
+    y -= this.elementsRect.top;
+
+    for (const { rect, elements } of groups) {
+      if (!isRectInnerPoint(x, y, rect)) continue;
+      const groupX = x - rect.left;
+      const groupY = y - rect.top;
+
+      for (const curve of elements) {
+        const px = groupX * (curve.axisMax / rect.width);
+        const py = (groupY / (viewport.scale * window.devicePixelRatio)) + viewport.y;
+        if (isPointNearCurve(px, py, curve)) return curve;
+      }
+    }
+    return null;
   }
 
   public setChannelData(channelData: ChannelDict) {

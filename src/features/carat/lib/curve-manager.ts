@@ -25,6 +25,15 @@ export class CurveManager {
     return res.ok ? res.data.data : null;
   }
 
+  private static parseCurvePath(source: string): ClientPoint[] {
+    const items = source.split('L');
+    items[0] = items[0].substring(1);
+    return items.map((item) => {
+      const [x, y] = item.split(',');
+      return {x: parseFloat(x), y: parseFloat(y)};
+    });
+  }
+
   /** Список кривых. */
   private curves: CaratCurveModel[];
   /** Словарь кривых. */
@@ -76,17 +85,19 @@ export class CurveManager {
   }
 
   private createCurveModel(row: ChannelRow): CaratCurveModel {
-    const info = this.curveSetChannel.info as CaratCurveSetInfo;
     const cells = row.Cells;
+    const info = this.curveSetChannel.info as CaratCurveSetInfo;
+
     const dateString = cells[info.date.index];
     const curveType = cells[info.type.index];
+    const style = this.styleDict.get(curveType) ?? defaultSettings.curveStyle;
 
     return {
       id: cells[info.id.index],
       type: curveType, date: dateString ? new Date(dateString) : null,
       top: 0, bottom: 0, min: 0, max: 0, axisMin: 0, axisMax: 0,
       defaultLoading: Boolean(cells[info.defaultLoading.index]),
-      style: this.styleDict.get(curveType) ?? defaultSettings.curveStyle,
+      style, active: false,
     };
   }
 
@@ -101,6 +112,12 @@ export class CurveManager {
     this.curves = validatedRows.map(this.createCurveModel, this);
     this.curves.forEach((curve) => { this.curveDict[curve.id] = curve; });
     this.curveTypes = [...new Set(this.curves.map(curve => curve.type))];
+  }
+
+  public setActiveCurve(id?: CaratCurveID) {
+    this.curves.forEach((curve) => { curve.active = false; });
+    const activeCurve = this.curveDict[id];
+    if (activeCurve) activeCurve.active = true;
   }
 
   public setStyleData(lookupData: ChannelDict) {
@@ -178,6 +195,8 @@ export class CurveManager {
       const pathSource = window.atob(cells[info.data.index]);
 
       model.path = new Path2D(pathSource);
+      model.points = CurveManager.parseCurvePath(pathSource);
+
       model.top = cells[info.top.index];
       model.bottom = cells[info.bottom.index];
       model.min = cells[info.min.index];

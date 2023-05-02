@@ -36,7 +36,7 @@ export function settingsToState(formState: FormState, channelDict: ChannelDict):
   const stage = new CaratStage(init, zones, new CaratDrawer(drawerConfig));
   const activeGroup = stage.getActiveTrack().getActiveGroup();
   const observer = new ResizeObserver(() => { stage.resize(); stage.render(); });
-  return {stage, canvas: null, activeGroup, lookupNames, observer};
+  return {stage, canvas: null, activeGroup, activeCurve: null, lookupNames, observer};
 }
 
 function sortColumnsFn(a: CaratColumnInit, b: CaratColumnInit) {

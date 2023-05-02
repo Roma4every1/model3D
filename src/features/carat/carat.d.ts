@@ -6,6 +6,7 @@ type CaratsState = FormDict<CaratState>;
  * + `canvas`: {@link HTMLCanvasElement}
  * + `observer`: {@link ResizeObserver}
  * + `activeGroup`: {@link ICaratColumnGroup}
+ * + `activeCurve`: CaratCurveModel
  * + `lookupNames`: {@link ChannelName}[]
  * */
 interface CaratState {
@@ -17,6 +18,8 @@ interface CaratState {
   observer: ResizeObserver,
   /** Активная колонка. */
   activeGroup: ICaratColumnGroup | null,
+  /** Активная колонка. */
+  activeCurve: any,
   /** Список всех названий каналов-справочников. */
   lookupNames: ChannelName[],
 }
@@ -33,12 +36,13 @@ interface ICaratStage {
   setScale(scale: number): void
 
   setChannelData(channelData: ChannelDict): void
-  setCurveData(channelData: ChannelDict): Promise<void>
+  setCurveData(channelData: ChannelDict): Promise<any>
   setLookupData(lookupData: ChannelDict): void
 
+  handleKeyDown(key: string): boolean
   handleMouseMove(by: number): void
   handleMouseDown(x: number, y: number): boolean
-  handleMouseWheel(x: number, y: number, by: number): void
+  handleMouseWheel(x: number, y: number, direction: 1 | -1): void
 
   resize(): void
   render(): void
@@ -58,6 +62,7 @@ interface ICaratTrack {
   setScale(scale: number): void
   setActiveGroup(idx: number): void
   setActiveGroupWidth(width: number): void
+  setActiveCurve(curve: any): void,
 
   moveGroup(idx: number, to: 'left' | 'right'): void
   handleMouseDown(x: number, y: number): void

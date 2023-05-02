@@ -1,5 +1,6 @@
 import { CaratElementInterval, CaratElementBar, CaratCurveModel, CurveAxisGroup } from '../lib/types';
 import { round } from 'shared/lib';
+import { polylineType } from '../../map/components/edit-panel/selecting/selecting-utils';
 
 import {
   CaratDrawerConfig, CaratTrackBodyDrawSettings, CaratTrackHeaderDrawSettings,
@@ -89,6 +90,16 @@ export class CaratDrawer implements ICaratDrawer {
     this.minusWidth = context.measureText('-').width;
   }
 
+  public async getPattern(name: string, color: ColorHEX, backgroundColor: ColorHEX) {
+    try {
+      const img = await polylineType.getPattern(name, color, backgroundColor);
+      return this.ctx.createPattern(img, 'repeat');
+    }
+    catch {
+      return null;
+    }
+  }
+
   private getDrawMarksFn(settings: CaratColumnYAxis, textStart: number) {
     const { absMarks, depthMarks } = settings;
     let fn: (y: number, canvasY: number) => void = CaratDrawer.emptyFn;
@@ -124,12 +135,12 @@ export class CaratDrawer implements ICaratDrawer {
 
   /* --- Rendering --- */
 
-  private setLineSettings(width: number, color: string) {
+  private setLineSettings(width: number, color: ColorHEX | CanvasPattern) {
     this.ctx.lineWidth = width;
     this.ctx.strokeStyle = color;
   }
 
-  private setTextSettings(font: string, color: string, align: CanvasTextAlign, baseline: CanvasTextBaseline) {
+  private setTextSettings(font: string, color: ColorHEX, align: CanvasTextAlign, baseline: CanvasTextBaseline) {
     this.ctx.font = font;
     this.ctx.fillStyle = color;
     this.ctx.textAlign = align;
@@ -339,8 +350,8 @@ export class CaratDrawer implements ICaratDrawer {
       const canvasTop = scaleY * top;
       const canvasHeight = scaleY * (base - top);
 
-      this.setLineSettings(2, style.borderColor);
-      this.ctx.fillStyle = style.backgroundColor;
+      this.setLineSettings(2, style.stroke);
+      this.ctx.fillStyle = style.fill;
       this.ctx.fillRect(0, canvasTop, this.columnWidth, canvasHeight);
       this.ctx.strokeRect(0, canvasTop, this.columnWidth, canvasHeight);
     }
@@ -400,7 +411,8 @@ export class CaratDrawer implements ICaratDrawer {
     this.ctx.lineJoin = 'round';
 
     for (const element of elements) {
-      const { thickness, color } = element.style;
+      let { thickness, color } = element.style;
+      if (element.active) thickness *= 2;
       this.setLineSettings(ratio * thickness, color);
 
       const path = new Path2D();
@@ -409,6 +421,6 @@ export class CaratDrawer implements ICaratDrawer {
       path.addPath(element.path, matrix);
       this.ctx.stroke(path);
     }
-    this.ctx.lineJoin = 'miter';
+    this.ctx.restore();
   }
 }

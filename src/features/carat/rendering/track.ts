@@ -1,4 +1,5 @@
 import { CaratDrawer } from './drawer';
+import { CaratCurveModel } from '../lib/types';
 import { CaratColumnGroup } from './column-group';
 import { isRectInnerPoint } from '../lib/utils';
 
@@ -14,10 +15,14 @@ export class CaratTrack implements ICaratTrack {
 
   /** Номер скважины трека. */
   private well: string;
+  /** Подпись трека. */
+  private label: string;
   /** Высота заголовков групп колонок. */
   private maxGroupHeaderHeight: number;
   /** Индекс активной группы. */
   private activeIndex: number;
+  /** Активная кривая. */
+  private activeCurve: CaratCurveModel | null;
 
   /** Ограничивающий прямоугольник. */
   public readonly rect: BoundingRect;
@@ -27,9 +32,12 @@ export class CaratTrack implements ICaratTrack {
   constructor(rect: BoundingRect, columns: CaratColumnInit[], scale: number, drawer: CaratDrawer) {
     this.rect = rect;
     this.drawer = drawer;
+    this.label = '';
     this.viewport = {y: 0, scale, min: 0, max: 0};
     this.groups = [];
     this.activeIndex = -1;
+    this.activeCurve = null;
+    this.maxGroupHeaderHeight = 0;
 
     let x = 0, index = 0;
     const top = drawer.trackHeaderSettings.height;
@@ -47,7 +55,6 @@ export class CaratTrack implements ICaratTrack {
         this.backgroundGroup = new CaratColumnGroup(groupRect, drawer, column);
       }
     }
-    this.maxGroupHeaderHeight = 0;
   }
 
   public getInitColumns(): CaratColumnInit[] {
@@ -67,8 +74,20 @@ export class CaratTrack implements ICaratTrack {
     return this.activeIndex;
   }
 
+  private updateLabel() {
+    const curve = this.activeCurve;
+    if (curve) {
+      const top = Math.floor(curve.top);
+      const bottom = Math.ceil(curve.bottom);
+      this.label = `${this.well} ${curve.type} (${top} - ${bottom})`;
+    } else {
+      this.label = this.well;
+    }
+  }
+
   public setWell(well: string) {
     this.well = well;
+    this.updateLabel();
   }
 
   public setScale(scale: number) {
@@ -97,6 +116,12 @@ export class CaratTrack implements ICaratTrack {
     this.backgroundGroup.setWidth(this.rect.width);
   }
 
+  public setActiveCurve(curve: CaratCurveModel) {
+    this.activeCurve = curve;
+    this.groups.forEach((group) => { group.setActiveCurve(curve.id); });
+    this.updateLabel();
+  }
+
   public setZones(zones: CaratZone[]) {
     const changes = this.groups.map((group) => group.setZones(zones));
     this.rebuildRects(changes);
@@ -119,9 +144,17 @@ export class CaratTrack implements ICaratTrack {
   }
 
   public handleMouseDown(x: number, y: number) {
+    x -= this.rect.left;
+    y -= this.rect.top;
+
     const findFn = (group) => isRectInnerPoint(x, y, group.getElementsRect())
     const newActiveIndex = this.groups.findIndex(findFn);
     if (newActiveIndex !== -1) this.setActiveGroup(newActiveIndex);
+
+    for (const group of this.groups) {
+      const nearCurve = group.getNearCurve(x, y, this.viewport);
+      if (nearCurve) { this.setActiveCurve(nearCurve); break; }
+    }
   }
 
   public setChannelData(channelData: ChannelDict) {
@@ -166,6 +199,14 @@ export class CaratTrack implements ICaratTrack {
   public async setCurveData(channelData: ChannelDict) {
     const changes = await Promise.all(this.groups.map((group) => group.setCurveData(channelData)));
     this.rebuildRects(changes);
+
+    for (const group of this.groups) {
+      const curve = group.getFirstCurve();
+      if (curve) { this.setActiveCurve(curve); break; }
+    }
+    const activeCurveID = this.activeCurve?.id;
+    this.groups.forEach((group) => { group.setActiveCurve(activeCurveID); })
+    return this.activeCurve;
   }
 
   public setLookupData(lookupData: ChannelDict) {
@@ -185,7 +226,7 @@ export class CaratTrack implements ICaratTrack {
     this.drawer.setCurrentTrack(this.rect, this.viewport);
     this.backgroundGroup.renderContent();
     for (const group of this.groups) group.renderContent();
-    this.drawer.drawTrackBody(this.well, this.maxGroupHeaderHeight);
+    this.drawer.drawTrackBody(this.label, this.maxGroupHeaderHeight);
 
     for (let i = 0; i < this.activeIndex; i++) {
       this.groups[i].renderBody();

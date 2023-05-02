@@ -1,3 +1,6 @@
+import { CaratCurveModel } from './types';
+
+
 /** Плавно переместит порт просмотра.
  * @param viewport порт просмотра
  * @param stage экземпляр сцены
@@ -38,4 +41,34 @@ function cubicBezierEaseInOut(t) {
 /** Находится ли точка внутри ограничивающего прямоугольника. */
 export function isRectInnerPoint(x: number, y: number, rect: BoundingRect) {
   return (x >= rect.left && x <= rect.left + rect.width) && (y >= rect.top && y <= rect.top + rect.height);
+}
+
+/** Находится ли точка рядом с кривой. */
+export function isPointNearCurve(px: number, py: number, curve: CaratCurveModel): boolean {
+  const nearestPointIndex = findNearestYPoint(curve.points, py, 0.2);
+  if (nearestPointIndex === -1) return false;
+  const delta = Math.abs(px - curve.points[nearestPointIndex].x);
+  return delta / (curve.max - curve.min) < 0.1;
+}
+
+/** Бинарным поиском находит индекс точки, ближайшей по Y. */
+function findNearestYPoint(arr: ClientPoint[], value: number, precision: number) {
+  let start = 0;
+  let end = arr.length - 1;
+
+  while (start <= end) {
+    let middleIndex = Math.floor((start + end) / 2);
+    const y = arr[middleIndex].y;
+
+    if (Math.abs(y - value) <= precision) {
+      return middleIndex;
+    }
+
+    if (value < y) {
+      end = middleIndex - 1;
+    } else {
+      start = middleIndex + 1;
+    }
+  }
+  return -1;
 }

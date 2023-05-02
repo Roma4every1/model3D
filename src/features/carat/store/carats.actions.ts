@@ -6,14 +6,14 @@ export const createCaratState = (id: FormID, channels: ChannelDict, formState: F
   return {type: CaratsActions.CREATE, payload: {id, channels, formState}};
 };
 
-/** Обновляет данные каналов. */
-export const setCaratData = (id: FormID, data: ChannelDict): CaratsAction => {
-  return {type: CaratsActions.SET_DATA, payload: {id, data}};
-};
-
 /** Устанавливает активную колонку. */
 export const setCaratActiveGroup = (id: FormID, group: ICaratColumnGroup): CaratsAction => {
-  return {type: CaratsActions.SET_ACTIVE_COLUMN, payload: {id, group}};
+  return {type: CaratsActions.SET_ACTIVE_GROUP, payload: {id, group}};
+};
+
+/** Устанавливает активную кривую. */
+export const setCaratActiveCurve = (id: FormID, curve: any): CaratsAction => {
+  return {type: CaratsActions.SET_ACTIVE_CURVE, payload: {id, curve}};
 };
 
 /** Установить элемент холста. */

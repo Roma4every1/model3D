@@ -18,6 +18,7 @@ export class CaratStage implements ICaratStage {
 
   public readonly useStaticScale: boolean;
   public readonly strataChannelName: ChannelName;
+  private readonly moveViewportStep: number;
 
   constructor(init: CaratFormSettings, zones: CaratZone[], drawer: CaratDrawer) {
     this.drawer = drawer;
@@ -28,6 +29,9 @@ export class CaratStage implements ICaratStage {
     const scale = CaratDrawer.pixelPerMeter / (init.settings.scale ?? defaultSettings.scale);
     this.trackList = [new CaratTrack(rect, init.columns, scale, drawer)];
     this.trackList[0].setZones(zones);
+
+    const groupWithYAxis = init.columns.find((group) => group.yAxis.show);
+    this.moveViewportStep = groupWithYAxis?.yAxis.step ?? 5;
   }
 
   public getCaratSettings(): CaratSettings {
@@ -66,7 +70,7 @@ export class CaratStage implements ICaratStage {
   }
 
   public async setCurveData(channelData: ChannelDict) {
-    await this.trackList[0].setCurveData(channelData);
+    return await this.trackList[0].setCurveData(channelData);
   }
 
   public setLookupData(lookupData: ChannelDict) {
@@ -77,15 +81,31 @@ export class CaratStage implements ICaratStage {
     for (const track of this.trackList) track.setScale(scale);
   }
 
+  public handleKeyDown(key: string): boolean {
+    if (key.startsWith('Arrow')) {
+      let direction;
+      if (key.endsWith('Up')) {
+        direction = -1;
+      } else if (key.endsWith('Down')) {
+        direction = 1;
+      }
+      if (direction) {
+        const viewport = this.trackList[0].viewport;
+        moveSmoothly(viewport, this, direction* this.moveViewportStep)
+      }
+    }
+    return false;
+  }
+
   public handleMouseDown(x: number, y: number): boolean {
     const track = this.trackList.find((t) => isRectInnerPoint(x, y, t.rect));
     if (track) track.handleMouseDown(x - track.rect.left, y - track.rect.top);
     return track !== undefined;
   }
 
-  public handleMouseWheel(x: number, y: number, by: number) {
+  public handleMouseWheel(x: number, y: number, direction: 1 | -1) {
     const track = this.trackList.find((t) => isRectInnerPoint(x, y, t.rect));
-    if (track) moveSmoothly(track.viewport, this, by);
+    if (track) moveSmoothly(track.viewport, this, direction * this.moveViewportStep);
   }
 
   public handleMouseMove(by: number) {

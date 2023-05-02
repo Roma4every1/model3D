@@ -5,7 +5,7 @@ import { CaratDrawerConfig } from '../rendering/drawer-settings';
 export const defaultSettings = {
   scale: 400,
   curveStyle: {thickness: 2, color: '#605656'},
-  intervalStyle: {borderColor: '#888888', backgroundColor: '#e8e8e8'},
+  intervalStyle: {stroke: '#888888', fill: '#e8e8e8'},
 };
 
 /** Свойства для идентификации каналов. */
@@ -33,6 +33,7 @@ export const criterionProperties: Record<CaratChannelType, Record<string, string
 /** Свойства для идентификации канала с цветами пластов. */
 export const styleCriterionProperties = {
   id: 'LOOKUPCODE',
+  color: 'COLOR',
   borderColor: 'BORDER COLOR',
   backgroundColor: 'BACKGROUND COLOR',
   fillStyle: 'FILL STYLE',
@@ -48,7 +49,7 @@ export const drawerConfig: CaratDrawerConfig = {
     },
     header: {
       padding: 3,
-      text: {font: {size: 16, style: 'normal', family: '"Segoe UI", Roboto'}, color: '#222222'},
+      text: {font: {size: 14, style: 'normal', family: '"Segoe UI", Roboto'}, color: '#222222'},
       border: {color: '#111111', thickness: 1},
     },
   },

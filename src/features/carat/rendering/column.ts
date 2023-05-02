@@ -58,8 +58,8 @@ export class CaratColumn implements ICaratColumn {
     this.elements = [];
     this.bars = [];
 
-    const rows = data?.rows;
-    if (rows && !this.channel.applied) applyInfoIndexes(this.channel, data.columns);
+    const rows = data?.rows ?? [];
+    if (data?.columns && !this.channel.applied) applyInfoIndexes(this.channel, data.columns);
 
     const topIndex = info.top.index;
     const baseIndex = info.base.index;
@@ -94,11 +94,16 @@ export class CaratColumn implements ICaratColumn {
 
       for (const { Cells: cells } of rows) {
         const id = cells[info.id.index];
+        const color = cells[info.color.index];
         const borderColor = cells[info.borderColor.index];
         const backgroundColor = cells[info.backgroundColor.index];
         const fillStyle = cells[info.fillStyle.index];
-        const lineStyle = cells[info.lineStyle.index];
-        this.styleDict[id] = {borderColor, backgroundColor, fillStyle, lineStyle};
+
+        const style = {fill: backgroundColor, stroke: borderColor};
+        if (fillStyle) this.drawer.getPattern(fillStyle, color, backgroundColor).then((pattern) => {
+          if (pattern) style.fill = pattern;
+        });
+        this.styleDict[id] = style;
       }
     }
   }
