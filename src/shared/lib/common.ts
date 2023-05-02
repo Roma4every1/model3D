@@ -101,3 +101,10 @@ export function getPragmaticMax(n: number): number {
   if (n <= 2.5) return 2.5 * e;
   return (n <= 5 ? 5 : 10) * e;
 }
+
+/** Находит расстояние между двумя точками. */
+export function distance(x1: number, y1: number, x2: number, y2: number): number {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  return Math.sqrt(dx * dx + dy * dy);
+}

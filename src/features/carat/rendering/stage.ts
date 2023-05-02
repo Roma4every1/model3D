@@ -1,5 +1,6 @@
 import { CaratTrack } from './track';
 import { CaratDrawer } from './drawer';
+import { CaratCurveModel } from '../lib/types';
 import { calculateTrackWidth } from '../lib/initialization';
 import { moveSmoothly, isRectInnerPoint } from '../lib/utils';
 import { defaultSettings } from '../lib/constants';
@@ -67,10 +68,13 @@ export class CaratStage implements ICaratStage {
 
   public setChannelData(channelData: ChannelDict) {
     this.trackList[0].setChannelData(channelData);
+    this.resize();
   }
 
   public async setCurveData(channelData: ChannelDict) {
-    return await this.trackList[0].setCurveData(channelData);
+    const activeCurve = await this.trackList[0].setCurveData(channelData);
+    this.resize();
+    return activeCurve;
   }
 
   public setLookupData(lookupData: ChannelDict) {
@@ -97,9 +101,9 @@ export class CaratStage implements ICaratStage {
     return false;
   }
 
-  public handleMouseDown(x: number, y: number): boolean {
+  public handleMouseDown(x: number, y: number): CaratCurveModel | boolean {
     const track = this.trackList.find((t) => isRectInnerPoint(x, y, t.rect));
-    if (track) track.handleMouseDown(x - track.rect.left, y - track.rect.top);
+    if (track) return track.handleMouseDown(x - track.rect.left, y - track.rect.top);
     return track !== undefined;
   }
 
@@ -119,17 +123,21 @@ export class CaratStage implements ICaratStage {
   }
 
   public resize() {
-    const width = this.canvas.clientWidth * CaratDrawer.ratio;
-    const height = this.canvas.clientHeight * CaratDrawer.ratio;
+    const track = this.trackList[0];
+    const trackMargin = this.drawer.trackBodySettings.margin;
+    const trackHeaderHeight = this.drawer.trackHeaderSettings.height;
 
-    if (this.canvas.width !== width) {
-      this.canvas.width = width;
-    }
-    if (this.canvas.height !== height) {
-      this.canvas.height = height;
-      const trackHeight = this.canvas.clientHeight - 2 * this.drawer.trackBodySettings.margin;
-      for (const track of this.trackList) track.setHeight(trackHeight)
-    }
+    const neededWidth = track.rect.width + 2 * trackMargin;
+    const neededHeight = track.rect.top + trackHeaderHeight + track.maxGroupHeaderHeight + 20;
+    const resultHeight = Math.max(this.canvas.clientHeight, neededHeight);
+
+    this.canvas.width = neededWidth * CaratDrawer.ratio;
+    this.canvas.height = resultHeight * CaratDrawer.ratio;
+    this.canvas.style.width = neededWidth + 'px';
+    this.canvas.style.minHeight = neededHeight + 'px';
+
+    const trackHeight = resultHeight - 2 * trackMargin;
+    for (const track of this.trackList) track.setHeight(trackHeight);
   }
 
   public render() {

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { MenuSection, MenuSectionItem, BigButtonToggle } from 'shared/ui';
 import { NumericTextBox, NumericTextBoxChangeEvent } from '@progress/kendo-react-inputs';
 import { CurveManager } from '../../lib/curve-manager';
+import { CaratCurveModel } from '../../lib/types';
 import { defaultSettings } from '../../lib/constants';
 import { round } from 'shared/lib';
 import autoSettingIcon from 'assets/images/carat/column-width.svg';
@@ -10,6 +11,7 @@ import autoSettingIcon from 'assets/images/carat/column-width.svg';
 interface CurveTypesSectionProps {
   stage: ICaratStage,
   group: ICaratColumnGroup,
+  curve: CaratCurveModel | null,
 }
 interface CurveTypeSettingsProps {
   settings: TypeSettingsModel,
@@ -30,11 +32,11 @@ interface TypeSettingsModel {
 }
 
 
-export const CurveTypesSection = ({stage, group}: CurveTypesSectionProps) => {
+export const CurveTypesSection = ({stage, group, curve}: CurveTypesSectionProps) => {
   const curveManager: CurveManager = group?.curveManager;
   const curveTypes = curveManager.getCurveTypes();
 
-  const [models, setModels] = useState([]);
+  const [models, setModels] = useState<TypeSettingsModel[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
@@ -42,8 +44,15 @@ export const CurveTypesSection = ({stage, group}: CurveTypesSectionProps) => {
       type,
       color: curveManager.styleDict.get(type)?.color ?? defaultSettings.curveStyle.color,
       measure: curveManager.measures[type], active: false,
-    })))
+    })));
   }, [curveTypes, curveManager]);
+
+  useEffect(() => {
+    if (!curve) return;
+    let index = models.findIndex(model => curve.type.startsWith(model.type));
+    if (index === -1) index = 0;
+    setActiveIndex(index);
+  }, [curve, models]);
 
   const settings = models[activeIndex] ?? models[0];
   models.forEach((model) => { model.active = false; });

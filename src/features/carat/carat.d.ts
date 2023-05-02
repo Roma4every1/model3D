@@ -41,7 +41,7 @@ interface ICaratStage {
 
   handleKeyDown(key: string): boolean
   handleMouseMove(by: number): void
-  handleMouseDown(x: number, y: number): boolean
+  handleMouseDown(x: number, y: number): any
   handleMouseWheel(x: number, y: number, direction: 1 | -1): void
 
   resize(): void
@@ -65,7 +65,7 @@ interface ICaratTrack {
   setActiveCurve(curve: any): void,
 
   moveGroup(idx: number, to: 'left' | 'right'): void
-  handleMouseDown(x: number, y: number): void
+  handleMouseDown(x: number, y: number): any
 
   render(): void
 }

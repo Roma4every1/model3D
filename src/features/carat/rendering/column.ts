@@ -112,5 +112,6 @@ export class CaratColumn implements ICaratColumn {
     this.drawer.setCurrentColumn(this.rect);
     if (this.elements.length) this.drawer.drawIntervals(this.elements);
     if (this.bars.length) this.drawer.drawBars(this.bars, this.barsStyle);
+    this.drawer.restore();
   }
 }

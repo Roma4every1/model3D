@@ -105,6 +105,7 @@ export class CaratCurveColumn implements ICaratColumn {
     for (const curveGroup of this.groups) {
       this.drawer.setCurrentColumn(curveGroup.rect);
       this.drawer.drawCurves(curveGroup.elements);
+      this.drawer.restore();
     }
     if (this.dividingLines.length) this.drawer.drawZoneDividingLines(this.dividingLines);
   }

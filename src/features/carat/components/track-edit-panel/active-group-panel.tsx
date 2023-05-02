@@ -44,20 +44,21 @@ const GroupCommonSettings = ({stage, track, activeGroup}: CaratActiveGroupPanelP
 
   const onLabelChange = (e: TextBoxChangeEvent) => {
     if (typeof e.value !== 'string') return;
-    activeGroup.settings.label = e.value; stage.render();
-    setLabel(e.value);
+    activeGroup.settings.label = e.value;
+    stage.render(); setLabel(e.value);
   };
 
   const onWidthChange = (e: NumericTextBoxChangeEvent) => {
     if (!e.value) return;
-    track.setActiveGroupWidth(e.value); stage.render();
+    track.setActiveGroupWidth(e.value);
+    stage.resize(); stage.render();
     setWidth(e.value);
   };
 
   const onStepChange = (e: NumericTextBoxChangeEvent) => {
     if (!e.value) return;
-    activeGroup.yAxis.step = e.value; stage.render();
-    setStep(e.value);
+    activeGroup.yAxis.step = e.value;
+    stage.render(); setStep(e.value);
   };
 
   return (

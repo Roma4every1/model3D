@@ -18,7 +18,7 @@ export class CaratTrack implements ICaratTrack {
   /** Подпись трека. */
   private label: string;
   /** Высота заголовков групп колонок. */
-  private maxGroupHeaderHeight: number;
+  public maxGroupHeaderHeight: number;
   /** Индекс активной группы. */
   private activeIndex: number;
   /** Активная кривая. */
@@ -143,7 +143,7 @@ export class CaratTrack implements ICaratTrack {
     if (idx === this.activeIndex) this.activeIndex = relatedIndex;
   }
 
-  public handleMouseDown(x: number, y: number) {
+  public handleMouseDown(x: number, y: number): CaratCurveModel | boolean {
     x -= this.rect.left;
     y -= this.rect.top;
 
@@ -153,8 +153,9 @@ export class CaratTrack implements ICaratTrack {
 
     for (const group of this.groups) {
       const nearCurve = group.getNearCurve(x, y, this.viewport);
-      if (nearCurve) { this.setActiveCurve(nearCurve); break; }
+      if (nearCurve) { this.setActiveCurve(nearCurve); return nearCurve; }
     }
+    return false;
   }
 
   public setChannelData(channelData: ChannelDict) {
@@ -226,7 +227,7 @@ export class CaratTrack implements ICaratTrack {
     this.drawer.setCurrentTrack(this.rect, this.viewport);
     this.backgroundGroup.renderContent();
     for (const group of this.groups) group.renderContent();
-    this.drawer.drawTrackBody(this.label, this.maxGroupHeaderHeight);
+    this.drawer.drawTrackBody(this.label);
 
     for (let i = 0; i < this.activeIndex; i++) {
       this.groups[i].renderBody();

@@ -1,4 +1,5 @@
 import { CaratCurveModel } from './types';
+import { distance } from 'shared/lib';
 
 
 /** Плавно переместит порт просмотра.
@@ -45,14 +46,34 @@ export function isRectInnerPoint(x: number, y: number, rect: BoundingRect) {
 
 /** Находится ли точка рядом с кривой. */
 export function isPointNearCurve(px: number, py: number, curve: CaratCurveModel): boolean {
-  const nearestPointIndex = findNearestYPoint(curve.points, py, 0.2);
-  if (nearestPointIndex === -1) return false;
-  const delta = Math.abs(px - curve.points[nearestPointIndex].x);
-  return delta / (curve.max - curve.min) < 0.1;
+  const nearestPointIndex = findNearestYPoint(curve.points, py);
+  const p1 = curve.points[nearestPointIndex - 1];
+  const p2 = curve.points[nearestPointIndex];
+  const p3 = curve.points[nearestPointIndex + 1];
+
+  const resultDistance = Math.min(
+    distance(px, py, p1.x, p1.y),
+    distance(px, py, p2.x, p2.y),
+    distance(px, py, p3.x, p3.y),
+    distanceFromStraight(px, py, p1, p2),
+    distanceFromStraight(px, py, p2, p3),
+  );
+
+  const maxNearDistance = 0.05 * (curve.max - curve.min);
+  return resultDistance < maxNearDistance;
+}
+
+/** Расстояние от точки до прямой. */
+function distanceFromStraight(x: number, y: number, p1: ClientPoint, p2: ClientPoint) {
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  const numerator = Math.abs(dy * x - dx * y + p2.x * p1.y - p2.y * p1.x);
+  const denominator = Math.sqrt(dx * dx + dy * dy);
+  return numerator / denominator;
 }
 
 /** Бинарным поиском находит индекс точки, ближайшей по Y. */
-function findNearestYPoint(arr: ClientPoint[], value: number, precision: number) {
+function findNearestYPoint(arr: ClientPoint[], value: number) {
   let start = 0;
   let end = arr.length - 1;
 
@@ -60,15 +81,11 @@ function findNearestYPoint(arr: ClientPoint[], value: number, precision: number)
     let middleIndex = Math.floor((start + end) / 2);
     const y = arr[middleIndex].y;
 
-    if (Math.abs(y - value) <= precision) {
-      return middleIndex;
-    }
-
     if (value < y) {
       end = middleIndex - 1;
     } else {
       start = middleIndex + 1;
     }
   }
-  return -1;
+  return start;
 }

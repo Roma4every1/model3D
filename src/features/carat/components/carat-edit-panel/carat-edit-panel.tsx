@@ -26,7 +26,7 @@ export const CaratEditPanel = ({id}: FormEditPanelProps) => {
       <IntlProvider locale={'ru'}>
         <div className={'menu'}>
           <XAxisSection stage={stage} group={curveGroup}/>
-          <CurveTypesSection stage={stage} group={curveGroup}/>
+          <CurveTypesSection stage={stage} group={curveGroup} curve={state.activeCurve}/>
         </div>
       </IntlProvider>
     </LocalizationProvider>

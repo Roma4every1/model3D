@@ -5,8 +5,9 @@ import { compareObjects} from 'shared/lib';
 import { currentWellIDSelector } from 'entities/parameters';
 import { channelDictSelector } from 'entities/channels';
 
+import './carat.scss';
 import { caratStateSelector } from '../store/carats.selectors';
-import { setCaratActiveGroup, setCaratCanvas } from '../store/carats.actions';
+import {setCaratActiveCurve, setCaratActiveGroup, setCaratCanvas} from '../store/carats.actions';
 import { setCaratData } from '../store/carats.thunks';
 
 
@@ -49,10 +50,11 @@ export const Carat = ({id, channels}: FormState) => {
 
   const onMouseDown = (e: MouseEvent) => {
     const { offsetX: x, offsetY: y } = e.nativeEvent;
-    const isIntersect = stage.handleMouseDown(x, y);
-    if (!isIntersect) return;
+    const result = stage.handleMouseDown(x, y);
+    if (!result) return;
     isOnMoveRef.current = true; stage.render();
     dispatch(setCaratActiveGroup(id, stage.getActiveTrack().getActiveGroup()));
+    if (typeof result === 'object') dispatch(setCaratActiveCurve(id, result));
   };
 
   const onMouseUp = () => {
@@ -73,8 +75,7 @@ export const Carat = ({id, channels}: FormState) => {
   return (
     <div className={'carat-container'}>
       <canvas
-        ref={canvasRef} style={{outline: 'none'}}
-        tabIndex={0} onKeyDown={onKeyDown}
+        ref={canvasRef} tabIndex={0} onKeyDown={onKeyDown}
         onMouseDown={onMouseDown} onMouseUp={onMouseUp}
         onMouseMove={onMouseMove} onWheel={onWheel}
       />
