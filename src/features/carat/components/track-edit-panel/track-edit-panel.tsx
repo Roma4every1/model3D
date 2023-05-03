@@ -14,7 +14,7 @@ export const TracksEditPanel = ({id}: FormEditPanelProps) => {
   const state: CaratState = useSelector(caratStateSelector.bind(id));
   if (!state) return <MenuSkeleton template={['100px', '100px', '100px', '100px']}/>;
 
-  const { stage, activeGroup } = state;
+  const { stage, activeGroup, curveGroup } = state;
   const track = stage.getActiveTrack();
 
   return (
@@ -22,7 +22,7 @@ export const TracksEditPanel = ({id}: FormEditPanelProps) => {
       <CaratNavigationPanel stage={stage} track={track}/>
       <CaratColumnsPanel id={id} stage={stage} track={track}/>
       <CaratActiveGroupPanel stage={stage} track={track} activeGroup={activeGroup}/>
-      <CaratCurvesPanel stage={stage} activeGroup={activeGroup}/>
+      <CaratCurvesPanel id={id} stage={stage} curveGroup={curveGroup}/>
     </div>
   );
 };

@@ -33,10 +33,22 @@ export function settingsToState(formState: FormState, channelDict: ChannelDict):
     {relativeWidth: null, types: ['GK', 'NGK']},
     {relativeWidth: null, types: ['AK', 'BK']},
   ];
+
   const stage = new CaratStage(init, zones, new CaratDrawer(drawerConfig));
-  const activeGroup = stage.getActiveTrack().getActiveGroup();
   const observer = new ResizeObserver(() => { stage.resize(); stage.render(); });
-  return {stage, canvas: null, activeGroup, activeCurve: null, lookupNames, observer};
+
+  const track = stage.getActiveTrack();
+  const activeGroup = stage.getActiveTrack().getActiveGroup();
+
+  const curveGroup = activeGroup?.hasCurveColumn()
+    ? activeGroup
+    : track.getGroups().find((group) => group.hasCurveColumn());
+
+  return {
+    stage, canvas: null, observer,
+    activeGroup, curveGroup, activeCurve: null,
+    lookupNames, lastData: {},
+  };
 }
 
 function sortColumnsFn(a: CaratColumnInit, b: CaratColumnInit) {

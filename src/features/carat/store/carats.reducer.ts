@@ -45,7 +45,13 @@ export const caratsReducer = (state: CaratsState = init, action: CaratsAction): 
 
     case CaratsActions.SET_ACTIVE_GROUP: {
       const { id, group } = action.payload;
-      return {...state, [id]: {...state[id], activeGroup: group}};
+      const track = state[id].stage.getActiveTrack();
+
+      const curveGroup = group.hasCurveColumn()
+        ? group
+        : track.getGroups().find((group) => group.hasCurveColumn());
+
+      return {...state, [id]: {...state[id], activeGroup: group, curveGroup}};
     }
 
     case CaratsActions.SET_ACTIVE_CURVE: {

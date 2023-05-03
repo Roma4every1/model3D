@@ -54,6 +54,7 @@ export class CaratStage implements ICaratStage {
   public setZones(zones: CaratZone[]) {
     this.zones = zones;
     for (const track of this.trackList) track.setZones(zones);
+    this.resize();
   }
 
   public setCanvas(canvas: HTMLCanvasElement) {
@@ -103,8 +104,9 @@ export class CaratStage implements ICaratStage {
 
   public handleMouseDown(x: number, y: number): CaratCurveModel | boolean {
     const track = this.trackList.find((t) => isRectInnerPoint(x, y, t.rect));
-    if (track) return track.handleMouseDown(x - track.rect.left, y - track.rect.top);
-    return track !== undefined;
+    if (!track) return false;
+    const activeCurve = track.handleMouseDown(x - track.rect.left, y - track.rect.top);
+    return activeCurve ?? true;
   }
 
   public handleMouseWheel(x: number, y: number, direction: 1 | -1) {

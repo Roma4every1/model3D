@@ -18,10 +18,14 @@ interface CaratState {
   observer: ResizeObserver,
   /** Активная колонка. */
   activeGroup: ICaratColumnGroup | null,
-  /** Активная колонка. */
+  /** Колонка с кривыми (активная или первая с кривыми). */
+  curveGroup: ICaratColumnGroup | null,
+  /** Активная кривая. */
   activeCurve: any,
   /** Список всех названий каналов-справочников. */
   lookupNames: ChannelName[],
+  /** Последние установленные данные. */
+  lastData: ChannelDict,
 }
 
 /** Сцена каротажной диаграммы. */

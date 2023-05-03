@@ -5,17 +5,23 @@ import { getPragmaticMax } from 'shared/lib';
 import { defaultSettings } from './constants';
 
 
-interface CurveSelector {
+interface CurvePopularType {
   regExp: RegExp,
   selected: boolean,
+}
+interface CurveTreeGroup {
+  value: string,
+  checked: boolean,
+  expanded: boolean,
+  children: {value: CaratCurveModel, checked: boolean}[],
 }
 
 
 export class CurveManager {
-  private static typeToSelector(t: CaratCurveSelector): CurveSelector {
+  private static typeToSelector(t: CaratCurveSelector): CurvePopularType {
     return {regExp: new RegExp(t.expression), selected: t.isSelected};
   }
-  private static selectorToType(s: CurveSelector): CaratCurveSelector {
+  private static selectorToType(s: CurvePopularType): CaratCurveSelector {
     return {expression: s.regExp.source, isSelected: s.selected};
   }
 
@@ -40,6 +46,14 @@ export class CurveManager {
   private curveDict: Record<CaratCurveID, CaratCurveModel>;
   /** Типы из списка кривых **без повторений**. */
   private curveTypes: CaratCurveType[];
+  /** Дерево выборки кривых (группы по датам). */
+  private curveTree: CurveTreeGroup[];
+  /** Выборка типов. */
+  private typeSelection: any[];
+  /** Выдавать кривые либо с загрузкой по умолчанию, либо по фильтрам. */
+  public defaultMode: boolean;
+  /** Последние установленные данные канала. */
+  private lastData: ChannelData | null;
 
   /** Граничные значения шкал кривых. */
   public readonly measures: Record<CaratCurveType, CaratCurveMeasure>;
@@ -52,23 +66,27 @@ export class CurveManager {
   public curveDataChannel: CaratAttachedChannel;
 
   /** Типы кривых. */
-  public readonly selectors: CurveSelector[];
+  public readonly popularTypes: CurvePopularType[];
   /** Начальная дата. */
-  public start: Date | 'now';
+  public start: Date;
   /** Конечная дата. */
-  public end: Date | 'now';
+  public end: Date;
 
   constructor(initSelection: CaratDataSelection, initMeasures: CaratCurveMeasure[]) {
+    this.defaultMode = true;
+    this.lastData = null;
     this.curves = [];
     this.curveTypes = [];
+    this.curveTree = [];
+    this.typeSelection = [];
     this.styleDict = new Map();
 
     this.measures = {};
     initMeasures.forEach((measure) => { this.measures[measure.type] = measure; });
 
-    this.selectors = initSelection.types.map(CurveManager.typeToSelector);
-    this.start = initSelection.start === 'now' ? 'now' : new Date(initSelection.start);
-    this.end = initSelection.end === 'now' ? 'now' : new Date(initSelection.end);
+    this.popularTypes = initSelection.types.map(CurveManager.typeToSelector);
+    this.start = initSelection.start === 'now' ? new Date() : new Date(initSelection.start);
+    this.end = initSelection.end === 'now' ? new Date() : new Date(initSelection.end);
   }
 
   public setChannels(curveSet: CaratAttachedChannel, curveData: CaratAttachedChannel) {
@@ -90,18 +108,76 @@ export class CurveManager {
 
     const dateString = cells[info.date.index];
     const curveType = cells[info.type.index];
+    const top = cells[info.top.index], bottom = cells[info.bottom.index];
     const style = this.styleDict.get(curveType) ?? defaultSettings.curveStyle;
 
     return {
       id: cells[info.id.index],
       type: curveType, date: dateString ? new Date(dateString) : null,
-      top: 0, bottom: 0, min: 0, max: 0, axisMin: 0, axisMax: 0,
+      top, bottom, min: 0, max: 0, axisMin: 0, axisMax: 0,
       defaultLoading: Boolean(cells[info.defaultLoading.index]),
       style, active: false,
     };
   }
 
+  private isPopularType(curveType: CaratCurveType): boolean {
+    for (const selector of this.popularTypes) {
+      const matched = selector.regExp.test(curveType);
+      if (matched) return selector.selected;
+    }
+    return false;
+  }
+
+  private isInRange(curve: CaratCurveModel): boolean {
+    const curveDate = curve.date;
+    return curveDate && curveDate >= this.start && curveDate <= this.end;
+  }
+
+  private isInTypeSelection(curve: CaratCurveModel): boolean {
+    for (const selection of this.typeSelection) {
+      if (curve.type === selection.type) return selection.checked;
+    }
+    return true;
+  }
+
+  public testCurve(curve: CaratCurveModel): boolean {
+    return this.isInRange(curve) && this.isInTypeSelection(curve);
+  }
+
+  private resetTree() {
+    const map: Map<number, CaratCurveModel[]> = new Map();
+    for (const curve of this.curves) {
+      const time = curve.date.getTime();
+      if (!map.has(time)) map.set(time, []);
+      map.get(time).push(curve);
+    }
+    this.curveTree = [];
+    for (const list of map.values()) {
+      const children = list.map((curve) => ({value: curve, checked: this.isPopularType(curve.type)}));
+      const value = list[0].date.toLocaleDateString();
+      const checked = children.some(child => child.checked);
+      this.curveTree.push({value, children, checked, expanded: false});
+    }
+  }
+
+  private resetTypeSelection() {
+    this.typeSelection = this.curveTypes.map((curveType) => {
+      return {type: curveType, checked: this.isPopularType(curveType)};
+    });
+  }
+
+  private updateTree() {
+    for (const curveTreeGroup of this.curveTree) {
+      for (const item of curveTreeGroup.children) {
+        item.checked = this.testCurve(item.value);
+      }
+      curveTreeGroup.checked = curveTreeGroup.children.some(item => item.checked);
+    }
+  }
+
   public setCurveChannelData(data: ChannelData) {
+    if (data === this.lastData) return;
+    this.lastData = data;
     this.curveDict = {};
     const rows = data?.rows;
     if (!rows) { this.curves = []; return; }
@@ -112,6 +188,9 @@ export class CurveManager {
     this.curves = validatedRows.map(this.createCurveModel, this);
     this.curves.forEach((curve) => { this.curveDict[curve.id] = curve; });
     this.curveTypes = [...new Set(this.curves.map(curve => curve.type))];
+
+    this.resetTree();
+    this.resetTypeSelection();
   }
 
   public setActiveCurve(id?: CaratCurveID) {
@@ -131,33 +210,46 @@ export class CurveManager {
     });
   }
 
-  public getAllCurves(): CaratCurveModel[] {
-    return this.curves;
-  }
-
   public getVisibleCurves(): CaratCurveModel[] {
-    return this.curves.filter((curve) => curve.defaultLoading);
+    if (this.defaultMode) {
+      return this.curves.filter((curve) => curve.defaultLoading);
+    } else {
+      return this.getFilteredCurves();
+    }
   }
 
   public getFilteredCurves(): CaratCurveModel[] {
-    const start = typeof this.start === 'string' ? new Date() : this.start;
-    const end = typeof this.end === 'string' ? new Date() : this.end;
-
-    return this.curves.filter((curve) => {
-      const curveDate = curve.date;
-      if (!curveDate || curveDate < start || curveDate > end) return false;
-
-      const curveType = curve.type;
-      for (const selector of this.selectors) {
-        const matched = selector.regExp.test(curveType);
-        if (matched) return selector.selected;
+    const result: CaratCurveModel[] = [];
+    for (const group of this.curveTree) {
+      if (!group.checked) continue;
+      for (const item of group.children) {
+        if (item.checked) result.push(item.value);
       }
-      return false;
-    });
+    }
+    return result;
   }
 
   public getCurveTypes(): CaratCurveType[] {
     return this.curveTypes;
+  }
+
+  public getTypeSelection(): any[] {
+    return this.typeSelection;
+  }
+
+  public getCurveTree(): any[] {
+    return this.curveTree;
+  }
+
+  public setRange(start: Date, end: Date) {
+    this.start = start;
+    this.end = end;
+    this.updateTree();
+  }
+
+  public setTypeSelection(types: any[]) {
+    this.typeSelection = types;
+    this.updateTree();
   }
 
   public setMeasure(curveType: CaratCurveType, min: number | null, max: number | null) {
@@ -207,7 +299,7 @@ export class CurveManager {
   }
 
   public getInitSelection(): CaratDataSelection {
-    const types = this.selectors.map(CurveManager.selectorToType);
+    const types = this.popularTypes.map(CurveManager.selectorToType);
     const start = typeof this.start === 'string' ? this.start : this.start.toJSON();
     const end = typeof this.end === 'string' ? this.end : this.end.toJSON();
     return {types, start, end};

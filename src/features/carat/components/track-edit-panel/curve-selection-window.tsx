@@ -1,43 +1,70 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Window } from '@progress/kendo-react-dialogs';
 import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
 import { DateRangePicker, DateRangePickerChangeEvent } from '@progress/kendo-react-dateinputs';
 import { TreeView, TreeViewCheckChangeEvent, TreeViewExpandChangeEvent } from '@progress/kendo-react-treeview';
+import { Checkbox } from '@progress/kendo-react-inputs';
+import { Button } from '@progress/kendo-react-buttons';
 
-import { CaratCurveModel } from '../../lib/types';
-import { CurveManager } from '../../lib/curve-manager';
-import { setOpenedWindow } from 'entities/windows';
 import './curve-selection-window.scss';
+import { CurveManager } from '../../lib/curve-manager';
+import { setCaratData } from '../../store/carats.thunks';
+import { setOpenedWindow } from 'entities/windows';
+import { round } from 'shared/lib';
 
 
 interface CurveSelectionWindowProps {
+  id: FormID,
   activeGroup: ICaratColumnGroup,
+}
+interface CurveFiltersProps {
+  manager: CurveManager,
+  signal: () => void
 }
 
 
-export const CurveSelectionWindow = ({activeGroup}: CurveSelectionWindowProps) => {
+export const CurveSelectionWindow = ({id, activeGroup}: CurveSelectionWindowProps) => {
   const dispatch = useDispatch();
+  const curveManager: CurveManager = activeGroup.curveManager;
 
-  const selection: CurveManager = activeGroup?.curveManager;
-  const [curves, setCurves] = useState(selection?.getAllCurves() ?? []);
+  const tree = curveManager.getCurveTree();
+  const [defaultMode, setDefaultMode] = useState(curveManager.defaultMode);
+
+  const [_signal, setSignal] = useState(false);
+  const signal = () => setSignal(!_signal);
 
   const onExpandChange = (event: TreeViewExpandChangeEvent) => {
     event.item.expanded = !event.item.expanded;
-    setCurves(curves);
+    signal();
   };
 
-  const onCheckChange = (event: TreeViewCheckChangeEvent) => {
-    event.item.checked = !event.item.checked;
-    setCurves(curves);
+  const onCheckChange = ({item}: TreeViewCheckChangeEvent) => {
+    const checked = !item.checked;
+    item.checked = checked;
+    if (item.children) {
+      item.children.forEach(c => c.checked = checked);
+    } else {
+      for (const group of tree) {
+        const isCurrentGroup = group.children.some(i => i === item)
+        if (isCurrentGroup) group.checked = group.children.some(c => c.checked);
+      }
+    }
+    signal();
   };
 
-  const data = useMemo(() => {
-    return createCurveTree(curves);
-  }, [curves]);
+  const onModeChange = () => {
+    curveManager.defaultMode = !defaultMode;
+    setDefaultMode(!defaultMode);
+  };
 
   const onClose = () => {
     dispatch(setOpenedWindow('curve-selection', false, null));
+  };
+
+  const onSubmit = () => {
+    onClose();
+    dispatch(setCaratData(id));
   };
 
   return (
@@ -46,67 +73,63 @@ export const CurveSelectionWindow = ({activeGroup}: CurveSelectionWindowProps) =
       width={720} height={480} resizable={false} style={{zIndex: 99}} onClose={onClose}
     >
       <div className={'curve-selection-window'}>
-        <TreeView
-          data={data} childrenField={'children'} item={CurveTreeItem}
-          expandIcons={true} onExpandChange={onExpandChange}
-          checkboxes={true} onCheckChange={onCheckChange}
-        />
         <div>
-          <CurveFilters selection={selection}/>
-          <div>
-            <button>Ок</button>
-          </div>
+          <section>
+            <h5>Кривые</h5>
+            <TreeView
+              data={tree} childrenField={'children'} item={CurveTreeItem}
+              expandIcons={true} onExpandChange={onExpandChange}
+              checkboxes={true} onCheckChange={onCheckChange}
+            />
+          </section>
+          <section>
+            <h5>Фильтры</h5>
+            <CurveFilters manager={curveManager} signal={signal}/>
+          </section>
+        </div>
+        <div>
+          <Checkbox
+            label={'Оставить только выбранные кривые'}
+            checked={!defaultMode} onChange={onModeChange}
+          />
+          <Button style={{width: 50}} onClick={onSubmit}>Ок</Button>
         </div>
       </div>
     </Window>
   );
 };
 
-const CurveFilters = ({selection}: {selection: CurveManager}) => {
-  const initStart = typeof selection.start === 'string' ? new Date() : selection.start;
-  const [start, setStart] = useState(initStart);
+const CurveFilters = ({manager, signal}: CurveFiltersProps) => {
+  const { start, end } = manager;
+  const types = manager.getTypeSelection();
 
-  const initEnd = typeof selection.end === 'string' ? new Date() : selection.end;
-  const [end, setEnd] = useState(initEnd);
+  const onCheckChange = (event: TreeViewCheckChangeEvent) => {
+    event.item.checked = !event.item.checked;
+    manager.setTypeSelection(types); signal();
+  };
 
-  const onStartChange = (e: DateRangePickerChangeEvent) => {
+  const onRangeChange = (e: DateRangePickerChangeEvent) => {
     const { start, end } = e.value;
-    selection.start = start; selection.end = end;
-    setStart(start); setEnd(end);
+    manager.setRange(start, end); signal();
   };
 
   return (
-    <>
-      <div>
-        <ul>
-          {selection.selectors.map(s => <li>{s.regExp.source + ' ' + s.selected}</li>)}
-        </ul>
-      </div>
-      <div>
+    <div>
+      <TreeView
+        className={'curve-selection-types'}
+        data={types} textField={'type'}
+        checkboxes={true} onCheckChange={onCheckChange}
+      />
+      <div style={{padding: 8}}>
         <LocalizationProvider language={'ru-RU'}>
           <IntlProvider locale={'ru'}>
-            <DateRangePicker value={{start, end}} onChange={onStartChange}/>
+            <DateRangePicker value={{start, end}} onChange={onRangeChange}/>
           </IntlProvider>
         </LocalizationProvider>
       </div>
-    </>
+    </div>
   );
 };
-
-function createCurveTree(curves: CaratCurveModel[]) {
-  const map: Map<number, CaratCurveModel[]> = new Map();
-  for (const curve of curves) {
-    const time = curve.date.getTime();
-    if (!map.has(time)) map.set(time, []);
-    map.get(time).push(curve);
-  }
-  const tree = [];
-  for (const list of map.values()) {
-    const children = list.map((curve) => ({value: curve, checked: true}));
-    tree.push({value: list[0].date.toLocaleDateString(), expanded: false, checked: true, children});
-  }
-  return tree;
-}
 
 const CurveTreeItem = ({item}) => {
   if (typeof item.value === 'string') return item.value as any;
@@ -115,7 +138,7 @@ const CurveTreeItem = ({item}) => {
   return (
     <>
       <span>{curve.type}</span>
-      <span>{`${Math.round(curve.top)} - ${Math.round(curve.bottom)}`}</span>
+      <span>{`${round(curve.top, 2)} - ${round(curve.bottom, 2)}`}</span>
     </>
   );
-}
+};

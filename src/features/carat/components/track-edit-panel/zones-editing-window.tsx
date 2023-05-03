@@ -66,7 +66,8 @@ export const ZonesEditingWindow = ({stage}: ZonesEditingWindowProps) => {
   };
 
   const deleteZone = (index: number) => {
-    state.splice(index, 1);
+    const [zone] = state.splice(index, 1);
+    for (const item of zone) allTypes.delete(item.type);
     setState([...state]);
   };
 
@@ -92,7 +93,7 @@ export const ZonesEditingWindow = ({stage}: ZonesEditingWindowProps) => {
           : <div className={'map-not-found'}>Зоны отсутствуют</div>}
         <div>
           <Button onClick={addZone}>Добавить зону</Button>
-          <Button onClick={onSubmit} style={{width: 50}}>OK</Button>
+          <Button onClick={onSubmit} style={{width: 50}}>Ок</Button>
         </div>
       </div>
     </Window>

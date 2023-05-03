@@ -79,7 +79,7 @@ export class CaratCurveColumn implements ICaratColumn {
 
     for (const curve of curves) {
       const curveType = curve.type;
-      let zoneIndex = zones.findIndex((zone) => zone.types.some((type) => curveType.includes(type)));
+      let zoneIndex = zones.findIndex((zone) => zone.types.some((type) => curveType.startsWith(type)));
       if (zoneIndex === -1) zoneIndex = zones.length;
       curveGroups[zoneIndex].push(curve);
     }

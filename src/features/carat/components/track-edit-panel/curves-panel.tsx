@@ -10,16 +10,17 @@ import curveZonesIcon from 'assets/images/carat/curve-zones.svg';
 
 
 interface CaratCurvesPanelProps {
+  id: FormID,
   stage: ICaratStage,
-  activeGroup: ICaratColumnGroup,
+  curveGroup: ICaratColumnGroup,
 }
 
 
-export const CaratCurvesPanel = ({stage, activeGroup}: CaratCurvesPanelProps) => {
+export const CaratCurvesPanel = ({id, stage, curveGroup}: CaratCurvesPanelProps) => {
   const dispatch = useDispatch();
 
   const openCurveSelectionWindow = () => {
-    const window = <CurveSelectionWindow key={'curve-selection'} activeGroup={activeGroup}/>;
+    const window = <CurveSelectionWindow key={'curve-selection'} id={id} activeGroup={curveGroup}/>;
     dispatch(setOpenedWindow('curve-selection', true, window));
   };
 
@@ -30,8 +31,14 @@ export const CaratCurvesPanel = ({stage, activeGroup}: CaratCurvesPanelProps) =>
 
   return (
     <MenuSection header={'Управление кривыми'} className={'big-buttons'}>
-      <BigButton text={'Выбор кривых'} icon={curvesIcon} action={openCurveSelectionWindow}/>
-      <BigButton text={'Зоны кривых'} icon={curveZonesIcon} action={openZonesEditingWindow}/>
+      <BigButton
+        text={'Выбор кривых'} icon={curvesIcon}
+        action={openCurveSelectionWindow} disabled={!curveGroup}
+      />
+      <BigButton
+        text={'Зоны кривых'} icon={curveZonesIcon}
+        action={openZonesEditingWindow}
+      />
     </MenuSection>
   );
 };
