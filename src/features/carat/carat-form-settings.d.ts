@@ -135,6 +135,8 @@ interface CaratAttachedChannel {
   info?: CaratChannelInfo,
   /** Информация о справочнике стилей элементов. */
   style?: CaratAttachedStyle,
+  /** Справочник с названиями пластов. */
+  namesChannel?: ChannelName,
 }
 
 type CaratAttachedStyle = {name: ChannelName, info: CaratChannelInfo, applied?: boolean};

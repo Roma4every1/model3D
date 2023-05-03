@@ -39,6 +39,10 @@ export class CaratColumn implements ICaratColumn {
     this.barsStyle = null;
   }
 
+  public getElements(): any[] {
+    return this.elements;
+  }
+
   public getRange(): [number, number] {
     let min = Infinity;
     let max = -Infinity;
@@ -77,8 +81,9 @@ export class CaratColumn implements ICaratColumn {
       const styleIndex = info.style?.index;
       this.elements = rows.map((row): CaratElementInterval => {
         const cells = row.Cells;
+        const stratumID = cells[info.stratumID.index];
         const style = this.styleDict[cells[styleIndex]] ?? defaultSettings.intervalStyle as any;
-        return {top: cells[topIndex], base: cells[baseIndex], style};
+        return {stratumID, top: cells[topIndex], base: cells[baseIndex], style};
       });
     }
   }

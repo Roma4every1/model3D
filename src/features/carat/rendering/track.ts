@@ -65,6 +65,10 @@ export class CaratTrack implements ICaratTrack {
     return this.groups;
   }
 
+  public getBackgroundGroup(): ICaratColumnGroup {
+    return this.backgroundGroup;
+  }
+
   public getActiveGroup(): ICaratColumnGroup | null {
     if (this.activeIndex === -1) return null;
     return this.groups[this.activeIndex];

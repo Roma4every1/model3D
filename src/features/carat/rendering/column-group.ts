@@ -110,6 +110,10 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     };
   }
 
+  public getColumns(): ICaratColumn[] {
+    return this.columns;
+  }
+
   public getElementsRect(): BoundingRect {
     return this.elementsRect;
   }

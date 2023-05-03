@@ -30,6 +30,9 @@ interface CaratState {
 
 /** Сцена каротажной диаграммы. */
 interface ICaratStage {
+  readonly useStaticScale: boolean;
+  readonly strataChannelName: ChannelName;
+
   getZones(): CaratZone[]
   getCaratSettings(): CaratSettings
   getActiveTrack(): ICaratTrack
@@ -58,6 +61,7 @@ interface ICaratTrack {
   readonly viewport: CaratViewport,
 
   getGroups(): ICaratColumnGroup[]
+  getBackgroundGroup(): ICaratColumnGroup
   getInitColumns(): CaratColumnInit[]
   getActiveGroup(): ICaratColumnGroup | null
   getActiveIndex(): number
@@ -82,6 +86,7 @@ interface ICaratColumnGroup {
   readonly yAxis: CaratColumnYAxis,
 
   getWidth(): number
+  getColumns(): ICaratColumn[]
   getElementsRange(): [number, number]
   getCurvesRange(): [number, number]
   hasCurveColumn(): boolean
@@ -93,6 +98,8 @@ interface ICaratColumnGroup {
 }
 
 interface ICaratColumn {
+  channel?: CaratAttachedChannel;
+  getElements?(): any[]
   getRange(): [number, number]
   render(): void
 }
@@ -119,6 +126,5 @@ type CaratChannelType = 'lithology' | 'perforations' | 'curve-set' | 'curve-data
 
 type CaratCurveSetInfo = CaratChannelInfo<'id' | 'type' | 'date' | 'top' | 'bottom' | 'defaultLoading'>;
 type CaratCurveDataInfo = CaratChannelInfo<'id' | 'data' | 'top' | 'bottom' | 'min' | 'max'>;
-type CaratLithologyInfo = CaratChannelInfo<'top' | 'base' | 'stratum'>;
-type CaratPerforationsInfo = CaratChannelInfo<'top' | 'base' | 'date'>;
+type CaratLithologyInfo = CaratChannelInfo<'top' | 'base' | 'stratumID'>;
 type CaratChannelInfo<Fields = string> = Record<Fields | 'style' | 'bar', LookupColumnInfo>;

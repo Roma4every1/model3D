@@ -21,15 +21,18 @@ export class CaratStage implements ICaratStage {
   public readonly strataChannelName: ChannelName;
   private readonly moveViewportStep: number;
 
-  constructor(init: CaratFormSettings, zones: CaratZone[], drawer: CaratDrawer) {
+  constructor(init: CaratFormSettings, drawer: CaratDrawer) {
+    this.zones = init.settings.zones;
     this.drawer = drawer;
-    this.zones = zones;
+    this.useStaticScale = init.settings.useStaticScale;
+    this.strataChannelName = init.settings.strataChannelName;
+
     const trackWidth = calculateTrackWidth(init.columns);
     const trackMargin = drawer.trackBodySettings.margin;
     const rect: BoundingRect = {top: trackMargin, left: trackMargin, width: trackWidth, height: 0};
     const scale = CaratDrawer.pixelPerMeter / (init.settings.scale ?? defaultSettings.scale);
     this.trackList = [new CaratTrack(rect, init.columns, scale, drawer)];
-    this.trackList[0].setZones(zones);
+    this.trackList[0].setZones(this.zones);
 
     const groupWithYAxis = init.columns.find((group) => group.yAxis.show);
     this.moveViewportStep = groupWithYAxis?.yAxis.step ?? 5;

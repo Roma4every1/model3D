@@ -47,9 +47,9 @@ export function isRectInnerPoint(x: number, y: number, rect: BoundingRect) {
 /** Находится ли точка рядом с кривой. */
 export function isPointNearCurve(px: number, py: number, curve: CaratCurveModel): boolean {
   const nearestPointIndex = findNearestYPoint(curve.points, py);
-  const p1 = curve.points[nearestPointIndex - 1];
+  const p1 = curve.points[nearestPointIndex - 1] ?? {x: Infinity, y: Infinity};
   const p2 = curve.points[nearestPointIndex];
-  const p3 = curve.points[nearestPointIndex + 1];
+  const p3 = curve.points[nearestPointIndex + 1] ?? {x: Infinity, y: Infinity};
 
   const resultDistance = Math.min(
     distance(px, py, p1.x, p1.y),

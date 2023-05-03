@@ -37,6 +37,11 @@ export function applyStyle(attachment: CaratAttachedChannel, channel: Channel, d
         }
       }
     }
+    for (const property of channel.info.properties) {
+      if (property.name === criterionProperties.lithology.stratumID) {
+        attachment.namesChannel = property.lookupChannels[0];
+      }
+    }
   }
 }
 

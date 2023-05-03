@@ -28,13 +28,7 @@ export function settingsToState(formState: FormState, channelDict: ChannelDict):
   const lookupNames: ChannelName[] = [];
   for (const name of channels) lookupNames.push(...channelDict[name].info.lookupChannels);
 
-  const zones = [
-    {relativeWidth: null, types: ['DS']},
-    {relativeWidth: null, types: ['GK', 'NGK']},
-    {relativeWidth: null, types: ['AK', 'BK']},
-  ];
-
-  const stage = new CaratStage(init, zones, new CaratDrawer(drawerConfig));
+  const stage = new CaratStage(init, new CaratDrawer(drawerConfig));
   const observer = new ResizeObserver(() => { stage.resize(); stage.render(); });
 
   const track = stage.getActiveTrack();

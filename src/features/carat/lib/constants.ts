@@ -11,11 +11,11 @@ export const defaultSettings = {
 /** Свойства для идентификации каналов. */
 export const criterionProperties: Record<CaratChannelType, Record<string, string>> = {
   'lithology': {
-    stratum: 'STRATUM ID',
+    stratumID: 'STRATUM ID',
     top: 'TOP', base: 'BASE',
   },
   'perforations': {
-    type: 'TYPE', date: 'DATE',
+    stratumID: 'STRATUM ID', date: 'DATE',
     top: 'TOP', base: 'BASE',
   },
   'curve-set': {
