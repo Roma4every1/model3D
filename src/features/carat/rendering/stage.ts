@@ -41,7 +41,7 @@ export class CaratStage implements ICaratStage {
   public getCaratSettings(): CaratSettings {
     const scale = this.trackList[0].viewport.scale;
     return {
-      scale: CaratDrawer.pixelPerMeter / scale, useStaticScale: this.useStaticScale,
+      scale: Math.round(CaratDrawer.pixelPerMeter / scale), useStaticScale: this.useStaticScale,
       strataChannelName: this.strataChannelName, zones: this.zones,
     };
   }

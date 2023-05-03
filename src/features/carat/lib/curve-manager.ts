@@ -300,8 +300,8 @@ export class CurveManager {
 
   public getInitSelection(): CaratDataSelection {
     const types = this.popularTypes.map(CurveManager.selectorToType);
-    const start = typeof this.start === 'string' ? this.start : this.start.toJSON();
-    const end = typeof this.end === 'string' ? this.end : this.end.toJSON();
+    const start = this.start.toJSON().substring(0, 10);
+    const end = this.end.toJSON().substring(0, 10);
     return {types, start, end};
   }
 

@@ -15,7 +15,7 @@ export const criterionProperties: Record<CaratChannelType, Record<string, string
     top: 'TOP', base: 'BASE',
   },
   'perforations': {
-    stratumID: 'STRATUM ID', date: 'DATE',
+    type: 'TYPE', date: 'DATE',
     top: 'TOP', base: 'BASE',
   },
   'curve-set': {

@@ -96,7 +96,7 @@ const NavigationSection = ({stage, track}: CaratScalePanelProps) => {
 
   const elementToListItem = (element: CaratElementInterval, i: number) => {
     const name = nameDict[element.stratumID];
-    const onClick = () => setViewportY(element.top);
+    const onClick = () => { setViewportY(element.top); setIsOpen(false); };
     return <StrataListElement key={i} name={name} element={element} onClick={onClick}/>;
   };
 

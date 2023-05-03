@@ -46,6 +46,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   public active: boolean;
 
   constructor(rect: BoundingRect, drawer: CaratDrawer, init: CaratColumnInit) {
+    this.id = init.id;
     this.drawer = drawer;
     this.settings = init.settings;
     this.curveManager = new CurveManager(init.selection, init.measures);
@@ -159,6 +160,11 @@ export class CaratColumnGroup implements ICaratColumnGroup {
 
   public setWidth(width: number): number {
     if (this.curveColumn) {
+      for (let i = 0; i < this.curveAxes.length; i++) {
+        const left = i * width;
+        const rect = this.curveAxes[i].rect;
+        rect.left = left; rect.width = width;
+      }
       this.curveColumn.setGroupWidth(width);
       width = this.curveColumn.getTotalWidth();
     }

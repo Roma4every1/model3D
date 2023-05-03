@@ -11,7 +11,9 @@ export class CaratTrack implements ICaratTrack {
   /** Список колонок. */
   private readonly groups: CaratColumnGroup[];
   /** Колонка типа `background`. */
-  private backgroundGroup: CaratColumnGroup;
+  private readonly backgroundGroup: CaratColumnGroup;
+  /** Настройки корреляций. */
+  private readonly externalInit: CaratColumnInit;
 
   /** Номер скважины трека. */
   private well: string;
@@ -53,12 +55,16 @@ export class CaratTrack implements ICaratTrack {
       } else if (type === 'background') {
         const groupRect = {top, left: 0, height, width: rect.width};
         this.backgroundGroup = new CaratColumnGroup(groupRect, drawer, column);
+      } else {
+        this.externalInit = column;
       }
     }
   }
 
   public getInitColumns(): CaratColumnInit[] {
-    return this.groups.map(g => g.getInit());
+    const init = this.groups.map(g => g.getInit());
+    init.push(this.backgroundGroup.getInit(), this.externalInit);
+    return init;
   }
 
   public getGroups(): CaratColumnGroup[] {

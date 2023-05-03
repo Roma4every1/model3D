@@ -81,7 +81,7 @@ export class CaratColumn implements ICaratColumn {
       const styleIndex = info.style?.index;
       this.elements = rows.map((row): CaratElementInterval => {
         const cells = row.Cells;
-        const stratumID = cells[info.stratumID.index];
+        const stratumID = info.stratumID ? cells[info.stratumID.index] : undefined;
         const style = this.styleDict[cells[styleIndex]] ?? defaultSettings.intervalStyle as any;
         return {stratumID, top: cells[topIndex], base: cells[baseIndex], style};
       });

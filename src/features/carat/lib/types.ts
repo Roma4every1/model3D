@@ -43,7 +43,7 @@ export type CaratIntervalStyleDict = Record<number, CaratStyleInterval>;
 export type CaratCurveStyleDict = Map<CaratCurveType, CaratStyleCurve>;
 
 export interface CaratElementInterval {
-  stratumID: number,
+  stratumID?: number,
   top: number,
   base: number,
   style: CaratStyleInterval,
