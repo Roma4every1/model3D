@@ -42,7 +42,7 @@ export const XAxisSection = ({stage, group}: XAxisSectionProps) => {
         action={onShowGridChange} active={showGrid}
       />
       <NumericTextBox
-        label={'Делений:'} min={2} max={8} step={1} style={{width: 100, height: 24}}
+        label={'Делений:'} min={2} max={10} step={1} style={{width: 100, height: 24}}
         value={marksCount} valid={marksCountValid} onChange={onMarksCountChange}
       />
     </MenuSection>

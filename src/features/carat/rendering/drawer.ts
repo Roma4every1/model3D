@@ -1,4 +1,4 @@
-import { CaratElementInterval, CaratElementBar, CaratCurveModel, CurveAxisGroup } from '../lib/types';
+import { CaratIntervalModel, CaratElementBar, CaratCurveModel, CurveAxisGroup } from '../lib/types';
 import { round } from 'shared/lib';
 import { polylineType } from '../../map/components/edit-panel/selecting/selecting-utils';
 
@@ -40,17 +40,17 @@ export class CaratDrawer {
   /** Настройки отрисовки горизонтальных осей. колонки. */
   public readonly columnXAxesSettings: CaratColumnXAxesDrawSettings;
 
-  private trackRect: BoundingRect;
+  private trackRect: Rectangle;
   private yMin: number;
   private yMax: number;
   private scale: number;
 
   private groupSettings: CaratColumnSettings;
-  private groupElementRect: BoundingRect;
+  private groupElementRect: Rectangle;
   private groupTranslateX: number;
   private groupTranslateY: number;
 
-  private columnRect: BoundingRect;
+  private columnRect: Rectangle;
   private columnWidth: number;
   private columnTranslateX: number;
   private columnTranslateY: number;
@@ -134,13 +134,13 @@ export class CaratDrawer {
     this.ctx.setTransform(ratio, 0, 0, ratio, ratio * x, ratio * y);
   }
 
-  public setCurrentTrack(rect: BoundingRect, viewport: CaratViewport) {
+  public setCurrentTrack(rect: Rectangle, viewport: CaratViewport) {
     this.trackRect = rect;
     this.yMin = viewport.y;
     this.scale = viewport.scale;
   }
 
-  public setCurrentGroup(rect: BoundingRect, settings: CaratColumnSettings) {
+  public setCurrentGroup(rect: Rectangle, settings: CaratColumnSettings) {
     this.groupSettings = settings;
     this.groupElementRect = rect;
     this.yMax = this.yMin + rect.height / this.scale;
@@ -148,7 +148,7 @@ export class CaratDrawer {
     this.groupTranslateY = this.trackRect.top + this.groupElementRect.top;
   }
 
-  public setCurrentColumn(rect: BoundingRect) {
+  public setCurrentColumn(rect: Rectangle) {
     this.columnRect = rect;
     const padding = this.columnBodySettings.padding;
     this.columnTranslateX = this.groupTranslateX + rect.left + padding;
@@ -246,7 +246,6 @@ export class CaratDrawer {
         this.ctx.moveTo(0, canvasY);
         this.ctx.lineTo(width, canvasY);
       }
-
       this.ctx.stroke();
     }
     this.ctx.restore();
@@ -276,15 +275,11 @@ export class CaratDrawer {
         this.ctx.fillStyle = color;
 
         const markTop = y - markSize;
-        const markBottom = y + thickness / 2;
-
         this.ctx.beginPath();
-        this.ctx.moveTo(xStart, y);
-        this.ctx.lineTo(xEnd, y);
         this.ctx.moveTo(xStart, markTop);
-        this.ctx.lineTo(xStart, markBottom);
-        this.ctx.moveTo(xEnd, markTop);
-        this.ctx.lineTo(xEnd, markBottom);
+        this.ctx.lineTo(xStart, y);
+        this.ctx.lineTo(xEnd, y);
+        this.ctx.lineTo(xEnd, markTop);
         this.ctx.stroke();
 
         this.ctx.textAlign = 'left';
@@ -335,19 +330,21 @@ export class CaratDrawer {
     this.ctx.stroke();
   }
 
-  public drawIntervals(elements: CaratElementInterval[]) {
+  public drawIntervals(elements: CaratIntervalModel[]) {
     const scaleY = window.devicePixelRatio * this.scale;
     this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
 
-    for (let { top, base, style } of elements) {
-      if (base < this.yMin || top > this.yMax) continue;
+    for (let { top, bottom, style } of elements) {
+      if (bottom < this.yMin || top > this.yMax) continue;
       const canvasTop = scaleY * top;
-      const canvasHeight = scaleY * (base - top);
+      const canvasHeight = scaleY * (bottom - top);
 
-      this.setLineSettings(2, style.stroke);
       this.ctx.fillStyle = style.fill;
-      this.ctx.fillRect(0, canvasTop, this.columnWidth, canvasHeight);
-      this.ctx.strokeRect(0, canvasTop, this.columnWidth, canvasHeight);
+      this.setLineSettings(2, style.stroke);
+
+      this.ctx.beginPath();
+      this.ctx.rect(0, canvasTop, this.columnWidth, canvasHeight);
+      this.ctx.fill(); this.ctx.stroke();
     }
   }
 
@@ -358,37 +355,38 @@ export class CaratDrawer {
     const charCode = settings.align.charCodeAt(0);
     const { borderColor, backgroundColor, thickness, externalBorderColor, externalThickness } = settings;
 
-    const drawBar = (top, base, barStart, barWidth) => {
+    const drawBar = (top: number, bottom: number, barStart: number, barWidth: number) => {
       const canvasTop = scaleY * top;
-      const canvasHeight = scaleY * (base - top);
+      const canvasHeight = scaleY * (bottom - top);
 
       this.setLineSettings(externalThickness, externalBorderColor);
       this.ctx.strokeRect(0, canvasTop, this.columnWidth, canvasHeight);
 
       this.ctx.fillStyle = backgroundColor;
-      this.ctx.fillRect(barStart, canvasTop, barWidth, canvasHeight);
-
       this.setLineSettings(thickness, borderColor);
-      this.ctx.strokeRect(barStart, canvasTop, barWidth, canvasHeight);
+
+      this.ctx.beginPath();
+      this.ctx.rect(barStart, canvasTop, barWidth, canvasHeight);
+      this.ctx.fill(); this.ctx.stroke();
     };
 
     if (charCode === 108) { // 'left'
-      for (let { top, base, value } of elements) {
-        if (base < this.yMin || top > this.yMax || !value) continue;
+      for (let { top, bottom, value } of elements) {
+        if (bottom < this.yMin || top > this.yMax || !value) continue;
         const barWidth = value * this.columnWidth;
-        drawBar(top, base, 0, barWidth);
+        drawBar(top, bottom, 0, barWidth);
       }
     } else if (charCode === 114) { // 'right'
-      for (let { top, base, value } of elements) {
-        if (base < this.yMin || top > this.yMax || !value) continue;
+      for (let { top, bottom, value } of elements) {
+        if (bottom < this.yMin || top > this.yMax || !value) continue;
         const barWidth = value * this.columnWidth;
-        drawBar(top, base, this.columnWidth - barWidth, barWidth);
+        drawBar(top, bottom, this.columnWidth - barWidth, barWidth);
       }
     } else { // 'center'
-      for (let { top, base, value } of elements) {
-        if (base < this.yMin || top > this.yMax || !value) continue;
+      for (let { top, bottom, value } of elements) {
+        if (bottom < this.yMin || top > this.yMax || !value) continue;
         const barWidth = value * this.columnWidth;
-        drawBar(top, base, (this.columnWidth - barWidth) / 2, barWidth);
+        drawBar(top, bottom, (this.columnWidth - barWidth) / 2, barWidth);
       }
     }
   }

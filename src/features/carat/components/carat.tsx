@@ -50,7 +50,7 @@ export const Carat = ({id, channels}: FormState) => {
 
   const onMouseDown = (e: MouseEvent) => {
     const { offsetX: x, offsetY: y } = e.nativeEvent;
-    const result = stage.handleMouseDown(x, y);
+    const result = stage.handleMouseDown({x, y});
     if (!result) return;
     isOnMoveRef.current = true; stage.render();
     dispatch(setCaratActiveGroup(id, stage.getActiveTrack().getActiveGroup()));
@@ -69,7 +69,7 @@ export const Carat = ({id, channels}: FormState) => {
   const onWheel = (e: WheelEvent) => {
     const direction = e.deltaY > 0 ? 1 : -1;
     const { offsetX: x, offsetY: y } = e.nativeEvent;
-    stage.handleMouseWheel(x, y, direction);
+    stage.handleMouseWheel({x, y}, direction);
   };
 
   return (

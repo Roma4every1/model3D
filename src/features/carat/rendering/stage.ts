@@ -1,8 +1,9 @@
 import { CaratTrack } from './track';
 import { CaratDrawer } from './drawer';
+import { CaratDrawerConfig } from './drawer-settings';
 import { CaratCurveModel } from '../lib/types';
-import { calculateTrackWidth } from '../lib/initialization';
-import { moveSmoothly, isRectInnerPoint } from '../lib/utils';
+import { isRectInnerPoint } from 'shared/lib';
+import { moveSmoothly, calculateTrackWidth } from '../lib/utils';
 import { defaultSettings } from '../lib/constants';
 
 
@@ -21,21 +22,22 @@ export class CaratStage implements ICaratStage {
   public readonly strataChannelName: ChannelName;
   private readonly moveViewportStep: number;
 
-  constructor(init: CaratFormSettings, drawer: CaratDrawer) {
+  constructor(init: CaratFormSettings, drawerConfig: CaratDrawerConfig) {
     this.zones = init.settings.zones;
-    this.drawer = drawer;
+    this.drawer = new CaratDrawer(drawerConfig);
     this.useStaticScale = init.settings.useStaticScale;
     this.strataChannelName = init.settings.strataChannelName;
 
     const trackWidth = calculateTrackWidth(init.columns);
-    const trackMargin = drawer.trackBodySettings.margin;
-    const rect: BoundingRect = {top: trackMargin, left: trackMargin, width: trackWidth, height: 0};
+    const trackMargin = this.drawer.trackBodySettings.margin;
+    const rect: Rectangle = {top: trackMargin, left: trackMargin, width: trackWidth, height: 0};
     const scale = CaratDrawer.pixelPerMeter / (init.settings.scale ?? defaultSettings.scale);
-    this.trackList = [new CaratTrack(rect, init.columns, scale, drawer)];
-    this.trackList[0].setZones(this.zones);
+    const track = new CaratTrack(rect, init.columns, scale, this.drawer);
+    this.trackList = [track];
+    if (this.zones.length) track.setZones(this.zones);
 
     const groupWithYAxis = init.columns.find((group) => group.yAxis.show);
-    this.moveViewportStep = groupWithYAxis?.yAxis.step ?? 5;
+    this.moveViewportStep = groupWithYAxis?.yAxis.step ?? defaultSettings.yAxisStep;
   }
 
   public getCaratSettings(): CaratSettings {
@@ -99,21 +101,21 @@ export class CaratStage implements ICaratStage {
       }
       if (direction) {
         const viewport = this.trackList[0].viewport;
-        moveSmoothly(viewport, this, direction* this.moveViewportStep)
+        moveSmoothly(viewport, this, direction * this.moveViewportStep)
       }
     }
     return false;
   }
 
-  public handleMouseDown(x: number, y: number): CaratCurveModel | boolean {
-    const track = this.trackList.find((t) => isRectInnerPoint(x, y, t.rect));
+  public handleMouseDown(point: Point): CaratCurveModel | boolean {
+    const track = this.trackList.find((t) => isRectInnerPoint(point, t.rect));
     if (!track) return false;
-    const activeCurve = track.handleMouseDown(x - track.rect.left, y - track.rect.top);
+    const activeCurve = track.handleMouseDown(point);
     return activeCurve ?? true;
   }
 
-  public handleMouseWheel(x: number, y: number, direction: 1 | -1) {
-    const track = this.trackList.find((t) => isRectInnerPoint(x, y, t.rect));
+  public handleMouseWheel(point: Point, direction: 1 | -1) {
+    const track = this.trackList.find((t) => isRectInnerPoint(point, t.rect));
     if (track) moveSmoothly(track.viewport, this, direction * this.moveViewportStep);
   }
 

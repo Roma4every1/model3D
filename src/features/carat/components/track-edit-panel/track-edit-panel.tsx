@@ -10,7 +10,7 @@ import { CaratCurvesPanel } from './curves-panel';
 
 
 /** Панель редактирования трека каротажной диаграммы. */
-export const TracksEditPanel = ({id}: FormEditPanelProps) => {
+export const TrackEditPanel = ({id}: FormEditPanelProps) => {
   const state: CaratState = useSelector(caratStateSelector.bind(id));
   if (!state) return <MenuSkeleton template={['100px', '100px', '100px', '100px']}/>;
 

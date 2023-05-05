@@ -29,8 +29,20 @@ interface CSSFont {
   family: string,
 }
 
-/** Ограничивающий прямоугольник. */
-interface BoundingRect {
+/* --- Geometry --- */
+
+/** Точка на плоскости: `x` и `y`. */
+interface Point {
+  /** Координата по X. */
+  x: number,
+  /** Координата по Y. */
+  y: number
+}
+
+/** Прямоугольник по опорной точке и размерам:
+ * `top`, `left`, `width`, `height`.
+ * */
+interface Rectangle {
   /** Верхняя координата. */
   top: number,
   /** Левая координата. */

@@ -2,7 +2,7 @@ import { FunctionComponent } from 'react';
 import { TableEditPanel } from 'features/table';
 import { ChartEditPanel } from 'features/chart';
 import { MapEditPanel } from 'features/map';
-import { TracksEditPanel } from 'features/carat';
+import { TrackEditPanel } from 'features/carat';
 import { CaratEditPanel } from 'features/carat';
 
 
@@ -16,7 +16,7 @@ const editPanelDict: Record<string, [FunctionComponent<FormEditPanelProps>, Form
   'top-dataset': [TableEditPanel, 'dataSet'],
   'top-chart': [ChartEditPanel, 'chart'],
   'top-map': [MapEditPanel, 'map'],
-  'top-tracks': [TracksEditPanel, 'carat'],
+  'top-tracks': [TrackEditPanel, 'carat'],
   'top-carat': [CaratEditPanel, 'carat'],
 };
 

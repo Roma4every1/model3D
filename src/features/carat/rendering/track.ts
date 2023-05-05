@@ -1,7 +1,7 @@
 import { CaratDrawer } from './drawer';
 import { CaratCurveModel } from '../lib/types';
 import { CaratColumnGroup } from './column-group';
-import { isRectInnerPoint } from '../lib/utils';
+import { isRectInnerPoint } from 'shared/lib';
 
 
 /** Трек. */
@@ -27,11 +27,11 @@ export class CaratTrack implements ICaratTrack {
   private activeCurve: CaratCurveModel | null;
 
   /** Ограничивающий прямоугольник. */
-  public readonly rect: BoundingRect;
+  public readonly rect: Rectangle;
   /** Порт просмотра трека. */
   public readonly viewport: CaratViewport;
 
-  constructor(rect: BoundingRect, columns: CaratColumnInit[], scale: number, drawer: CaratDrawer) {
+  constructor(rect: Rectangle, columns: CaratColumnInit[], scale: number, drawer: CaratDrawer) {
     this.rect = rect;
     this.drawer = drawer;
     this.label = '';
@@ -153,16 +153,16 @@ export class CaratTrack implements ICaratTrack {
     if (idx === this.activeIndex) this.activeIndex = relatedIndex;
   }
 
-  public handleMouseDown(x: number, y: number): CaratCurveModel | undefined {
-    x -= this.rect.left;
-    y -= this.rect.top;
+  public handleMouseDown(point: Point): CaratCurveModel | undefined {
+    point.x -= this.rect.left;
+    point.y -= this.rect.top;
 
-    const findFn = (group) => isRectInnerPoint(x, y, group.getElementsRect())
+    const findFn = (group) => isRectInnerPoint(point, group.getElementsRect())
     const newActiveIndex = this.groups.findIndex(findFn);
     if (newActiveIndex !== -1) this.setActiveGroup(newActiveIndex);
 
     for (const group of this.groups) {
-      const nearCurve = group.getNearCurve(x, y, this.viewport);
+      const nearCurve = group.getNearCurve(point, this.viewport);
       if (nearCurve) { this.setActiveCurve(nearCurve); return nearCurve; }
     }
   }

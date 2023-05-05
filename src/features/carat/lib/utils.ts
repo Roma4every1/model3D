@@ -1,6 +1,16 @@
 import { CaratCurveModel } from './types';
-import { distance } from 'shared/lib';
+import { distance, distanceFromStraight } from 'shared/lib';
 
+
+/** Определяет ширину трека по ширинам колонок. */
+export function calculateTrackWidth(columns: CaratColumnInit[]) {
+  let trackWidth = 0;
+  for (const column of columns) {
+    const { type, width } = column.settings;
+    if (type === 'normal') trackWidth += width;
+  }
+  return trackWidth;
+}
 
 /** Плавно переместит порт просмотра.
  * @param viewport порт просмотра
@@ -39,41 +49,24 @@ function cubicBezierEaseInOut(t) {
 
 /* --- Geometry --- */
 
-/** Находится ли точка внутри ограничивающего прямоугольника. */
-export function isRectInnerPoint(x: number, y: number, rect: BoundingRect) {
-  return (x >= rect.left && x <= rect.left + rect.width) && (y >= rect.top && y <= rect.top + rect.height);
-}
-
 /** Находится ли точка рядом с кривой. */
-export function isPointNearCurve(px: number, py: number, curve: CaratCurveModel): boolean {
-  const nearestPointIndex = findNearestYPoint(curve.points, py);
+export function isPointNearCurve(p: Point, curve: CaratCurveModel): boolean {
+  const nearestPointIndex = findNearestYPoint(curve.points, p.y);
   const p1 = curve.points[nearestPointIndex - 1] ?? {x: Infinity, y: Infinity};
   const p2 = curve.points[nearestPointIndex];
   const p3 = curve.points[nearestPointIndex + 1] ?? {x: Infinity, y: Infinity};
 
   const resultDistance = Math.min(
-    distance(px, py, p1.x, p1.y),
-    distance(px, py, p2.x, p2.y),
-    distance(px, py, p3.x, p3.y),
-    distanceFromStraight(px, py, p1, p2),
-    distanceFromStraight(px, py, p2, p3),
+    distance(p, p1), distance(p, p2), distance(p, p3),
+    distanceFromStraight(p, p1, p2), distanceFromStraight(p, p2, p3),
   );
 
   const maxNearDistance = 0.05 * (curve.max - curve.min);
   return resultDistance < maxNearDistance;
 }
 
-/** Расстояние от точки до прямой. */
-function distanceFromStraight(x: number, y: number, p1: ClientPoint, p2: ClientPoint) {
-  const dx = p2.x - p1.x;
-  const dy = p2.y - p1.y;
-  const numerator = Math.abs(dy * x - dx * y + p2.x * p1.y - p2.y * p1.x);
-  const denominator = Math.sqrt(dx * dx + dy * dy);
-  return numerator / denominator;
-}
-
 /** Бинарным поиском находит индекс точки, ближайшей по Y. */
-function findNearestYPoint(arr: ClientPoint[], value: number) {
+function findNearestYPoint(arr: Point[], value: number) {
   let start = 0;
   let end = arr.length - 1;
 

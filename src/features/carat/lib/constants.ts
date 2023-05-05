@@ -4,6 +4,7 @@ import { CaratDrawerConfig } from '../rendering/drawer-settings';
 /** Значения некоторых настроек по умолчанию. */
 export const defaultSettings = {
   scale: 400,
+  yAxisStep: 5,
   curveStyle: {thickness: 2, color: '#605656'},
   intervalStyle: {stroke: '#888888', fill: '#e8e8e8'},
 };
@@ -12,11 +13,11 @@ export const defaultSettings = {
 export const criterionProperties: Record<CaratChannelType, Record<string, string>> = {
   'lithology': {
     stratumID: 'STRATUM ID',
-    top: 'TOP', base: 'BASE',
+    top: 'TOP', bottom: 'BASE',
   },
   'perforations': {
     type: 'TYPE', date: 'DATE',
-    top: 'TOP', base: 'BASE',
+    top: 'TOP', bottom: 'BASE',
   },
   'curve-set': {
     id: 'CURVE ID', type: 'CURVE TYPE', date: 'DATE',

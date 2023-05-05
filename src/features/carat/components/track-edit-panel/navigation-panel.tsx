@@ -4,7 +4,7 @@ import { channelSelector, createLookupList } from 'entities/channels';
 import { MenuSection, MenuSectionItem, ButtonIcon, BigButton } from 'shared/ui';
 import { Popup } from '@progress/kendo-react-popup';
 import { NumericTextBox, NumericTextBoxChangeEvent } from '@progress/kendo-react-inputs';
-import { CaratElementInterval } from '../../lib/types';
+import { CaratIntervalModel } from '../../lib/types';
 import { CaratDrawer } from '../../rendering/drawer';
 
 import scaleIcon from 'assets/images/carat/scale.svg';
@@ -19,7 +19,7 @@ interface CaratScalePanelProps {
 }
 interface StrataListElementProps {
   name: string,
-  element: CaratElementInterval,
+  element: CaratIntervalModel,
   onClick: () => void,
 }
 
@@ -72,7 +72,7 @@ const NavigationSection = ({stage, track}: CaratScalePanelProps) => {
 
   const backgroundColumns = track.getBackgroundGroup().getColumns();
   const strataColumn = backgroundColumns.find((column) => column.channel.type === 'lithology');
-  const strata: CaratElementInterval[] = strataColumn?.getElements() ?? [];
+  const strata: CaratIntervalModel[] = strataColumn?.getElements() ?? [];
 
   const lookupName = strataColumn?.channel.namesChannel;
   const lookupData: Channel = useSelector(channelSelector.bind(lookupName));
@@ -94,7 +94,7 @@ const NavigationSection = ({stage, track}: CaratScalePanelProps) => {
     stage.render();
   };
 
-  const elementToListItem = (element: CaratElementInterval, i: number) => {
+  const elementToListItem = (element: CaratIntervalModel, i: number) => {
     const name = nameDict[element.stratumID];
     const onClick = () => { setViewportY(element.top); setIsOpen(false); };
     return <StrataListElement key={i} name={name} element={element} onClick={onClick}/>;
@@ -120,7 +120,7 @@ const NavigationSection = ({stage, track}: CaratScalePanelProps) => {
 const StrataListElement = ({name, element, onClick}: StrataListElementProps) => {
   return (
     <div onClick={onClick}>
-      {name + ' ' + element.top + ' - ' + element.base}
+      {name + ' ' + element.top + ' - ' + element.bottom}
     </div>
   );
 };

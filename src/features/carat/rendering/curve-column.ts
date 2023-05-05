@@ -3,7 +3,7 @@ import { CaratCurveModel } from '../lib/types';
 
 
 interface CurveGroupState {
-  rect: BoundingRect,
+  rect: Rectangle,
   elements: CaratCurveModel[],
 }
 
@@ -23,7 +23,7 @@ export class CaratCurveColumn implements ICaratColumn {
   private dividingLines: number[];
 
   constructor(
-    rect: BoundingRect, drawer: CaratDrawer,
+    rect: Rectangle, drawer: CaratDrawer,
     curveSetChannel: CaratAttachedChannel, curveDataChannel: CaratAttachedChannel
   ) {
     this.drawer = drawer;
@@ -95,7 +95,7 @@ export class CaratCurveColumn implements ICaratColumn {
     this.dividingLines = [];
 
     for (let i = 0; i < curveGroups.length; i++) {
-      const rect: BoundingRect = {top, left: i * width, width, height};
+      const rect: Rectangle = {top, left: i * width, width, height};
       this.groups.push({rect, elements: curveGroups[i]});
       if (i > 0) this.dividingLines.push(rect.left);
     }

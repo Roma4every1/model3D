@@ -1,5 +1,5 @@
 import { CaratDrawer } from './drawer';
-import { CaratElementBar, CaratElementInterval, CaratIntervalStyleDict } from '../lib/types';
+import { CaratElementBar, CaratIntervalModel, CaratIntervalStyleDict } from '../lib/types';
 import { applyInfoIndexes } from '../lib/channels';
 import { defaultSettings } from '../lib/constants';
 
@@ -9,14 +9,14 @@ export class CaratColumn implements ICaratColumn {
   /** Ссылка на отрисовщик. */
   private readonly drawer: CaratDrawer;
   /** Ограничивающий прямоугольник колонки. */
-  public readonly rect: BoundingRect;
+  public readonly rect: Rectangle;
   /** Массив подключённых свойств канала. */
   public readonly channel: CaratAttachedChannel;
   /** Словарь настроек отображения свойств. */
   private readonly properties: CaratColumnProperties;
 
   /** Пласты. */
-  private elements: CaratElementInterval[];
+  private elements: CaratIntervalModel[];
   /** Словарь свойств внешнего вида пластов. */
   private styleDict: CaratIntervalStyleDict;
 
@@ -25,7 +25,7 @@ export class CaratColumn implements ICaratColumn {
   private barsStyle: CaratBarPropertySettings | null;
 
   constructor(
-    rect: BoundingRect, drawer: CaratDrawer,
+    rect: Rectangle, drawer: CaratDrawer,
     channel: CaratAttachedChannel, properties: CaratColumnProperties
   ) {
     this.rect = rect;
@@ -47,9 +47,9 @@ export class CaratColumn implements ICaratColumn {
     let min = Infinity;
     let max = -Infinity;
 
-    for (const { top, base } of this.elements) {
+    for (const { top, bottom } of this.elements) {
       if (top < min) min = top;
-      if (base > max) max = base;
+      if (bottom > max) max = bottom;
     }
     return [min, max];
   }
@@ -66,7 +66,7 @@ export class CaratColumn implements ICaratColumn {
     if (data?.columns && !this.channel.applied) applyInfoIndexes(this.channel, data.columns);
 
     const topIndex = info.top.index;
-    const baseIndex = info.base.index;
+    const bottomIndex = info.bottom.index;
 
     if (barProperty) {
       this.barsStyle = this.properties[barProperty.name].bar;
@@ -75,15 +75,15 @@ export class CaratColumn implements ICaratColumn {
 
       this.bars = rows.map((row): CaratElementBar => {
         const cells = row.Cells;
-        return {top: cells[topIndex], base: cells[baseIndex], value: cells[barIndex] / max};
+        return {top: cells[topIndex], bottom: cells[bottomIndex], value: cells[barIndex] / max};
       });
     } else {
       const styleIndex = info.style?.index;
-      this.elements = rows.map((row): CaratElementInterval => {
+      this.elements = rows.map((row): CaratIntervalModel => {
         const cells = row.Cells;
         const stratumID = info.stratumID ? cells[info.stratumID.index] : undefined;
         const style = this.styleDict[cells[styleIndex]] ?? defaultSettings.intervalStyle as any;
-        return {stratumID, top: cells[topIndex], base: cells[baseIndex], style};
+        return {stratumID, top: cells[topIndex], bottom: cells[bottomIndex], style};
       });
     }
   }

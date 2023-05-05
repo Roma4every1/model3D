@@ -48,8 +48,8 @@ interface ICaratStage {
 
   handleKeyDown(key: string): boolean
   handleMouseMove(by: number): void
-  handleMouseDown(x: number, y: number): any
-  handleMouseWheel(x: number, y: number, direction: 1 | -1): void
+  handleMouseDown(point: Point): any
+  handleMouseWheel(point: Point, direction: 1 | -1): void
 
   resize(): void
   render(): void
@@ -73,7 +73,7 @@ interface ICaratTrack {
   setActiveCurve(curve: any): void,
 
   moveGroup(idx: number, to: 'left' | 'right'): void
-  handleMouseDown(x: number, y: number): any
+  handleMouseDown(point: Point): any
 
   render(): void
 }
@@ -126,5 +126,5 @@ type CaratChannelType = 'lithology' | 'perforations' | 'curve-set' | 'curve-data
 
 type CaratCurveSetInfo = CaratChannelInfo<'id' | 'type' | 'date' | 'top' | 'bottom' | 'defaultLoading'>;
 type CaratCurveDataInfo = CaratChannelInfo<'id' | 'data' | 'top' | 'bottom' | 'min' | 'max'>;
-type CaratLithologyInfo = CaratChannelInfo<'top' | 'base' | 'stratumID'>;
+type CaratLithologyInfo = CaratChannelInfo<'top' | 'bottom' | 'stratumID'>;
 type CaratChannelInfo<Fields = string> = Record<Fields | 'style' | 'bar', LookupColumnInfo>;

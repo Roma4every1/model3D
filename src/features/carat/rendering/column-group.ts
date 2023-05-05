@@ -3,7 +3,8 @@ import { CaratColumn } from './column';
 import { CaratCurveColumn } from './curve-column';
 import { CaratCurveModel, CurveAxisGroup } from '../lib/types';
 import { CurveManager } from '../lib/curve-manager';
-import {isPointNearCurve, isRectInnerPoint} from '../lib/utils';
+import { isPointNearCurve } from '../lib/utils';
+import { isRectInnerPoint } from 'shared/lib';
 
 
 /** Группа колонок каротажной диаграммы. */
@@ -11,7 +12,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   /** Ссылка на отрисовщик. */
   private readonly drawer: CaratDrawer;
   /** Ограничивающий прямоугольник для элементов. */
-  private readonly elementsRect: BoundingRect;
+  private readonly elementsRect: Rectangle;
 
   /** Координата по Y подписи колонки. */
   private labelBottom: number;
@@ -45,7 +46,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   private readonly properties: Record<ChannelName, CaratColumnProperties>;
   public active: boolean;
 
-  constructor(rect: BoundingRect, drawer: CaratDrawer, init: CaratColumnInit) {
+  constructor(rect: Rectangle, drawer: CaratDrawer, init: CaratColumnInit) {
     this.id = init.id;
     this.drawer = drawer;
     this.settings = init.settings;
@@ -57,7 +58,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     this.xAxis = init.xAxis;
     this.yAxis = init.yAxis;
     if (this.xAxis.numberOfMarks < 2) this.xAxis.numberOfMarks = 2;
-    if (this.xAxis.numberOfMarks > 8) this.xAxis.numberOfMarks = 8;
+    if (this.xAxis.numberOfMarks > 10) this.xAxis.numberOfMarks = 10;
 
     this.xAxesHeight = 0;
     this.headerHeight = drawer.columnLabelSettings.height;
@@ -68,6 +69,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
 
     this.columns = [];
     this.curveColumn = null;
+    this.zones = [];
 
     let curveSetChannel: CaratAttachedChannel;
     let curveDataChannel: CaratAttachedChannel;
@@ -115,7 +117,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     return this.columns;
   }
 
-  public getElementsRect(): BoundingRect {
+  public getElementsRect(): Rectangle {
     return this.elementsRect;
   }
 
@@ -209,21 +211,23 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   }
 
   /** X и Y в системе координат трека. */
-  public getNearCurve(x: number, y: number, viewport: CaratViewport): CaratCurveModel | null {
+  public getNearCurve(p: Point, viewport: CaratViewport): CaratCurveModel | null {
     if (!this.curveColumn) return null;
     const groups = this.curveColumn.getGroups();
-    x -= this.elementsRect.left;
-    y -= this.elementsRect.top;
+    p.x -= this.elementsRect.left;
+    p.y -= this.elementsRect.top;
 
     for (const { rect, elements } of groups) {
-      if (!isRectInnerPoint(x, y, rect)) continue;
-      const groupX = x - rect.left;
-      const groupY = y - rect.top;
+      if (!isRectInnerPoint(p, rect)) continue;
+      const groupX = p.x - rect.left;
+      const groupY = p.y - rect.top;
 
       for (const curve of elements) {
-        const px = groupX * (curve.axisMax / rect.width);
-        const py = (groupY / (viewport.scale * window.devicePixelRatio)) + viewport.y;
-        if (isPointNearCurve(px, py, curve)) return curve;
+        const point: Point = {
+          x: groupX * (curve.axisMax / rect.width),
+          y: (groupY / (viewport.scale * window.devicePixelRatio)) + viewport.y,
+        };
+        if (isPointNearCurve(point, curve)) return curve;
       }
     }
     return null;

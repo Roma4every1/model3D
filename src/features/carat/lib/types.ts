@@ -1,3 +1,8 @@
+/** Словарь стилей интервальных элементов. */
+export type CaratIntervalStyleDict = Record<number, CaratIntervalStyle>;
+/** Словарь стилей каротажных кривых. */
+export type CaratCurveStyleDict = Map<CaratCurveType, CaratCurveStyle>;
+
 /** Модель каротажной кривой. */
 export interface CaratCurveModel {
   /** Идентификатор кривой. */
@@ -23,46 +28,35 @@ export interface CaratCurveModel {
   /** Данные кривой (SVG-путь). */
   path?: Path2D,
   /** Точки кривой. */
-  points?: ClientPoint[],
+  points?: Point[],
   /** Стиль отрисовки. */
-  style: CaratStyleCurve,
+  style: CaratCurveStyle,
   /** Является ли кривая активной. */
   active: boolean,
 }
-
-export interface CurveAxisGroup {
-  rect: BoundingRect,
-  axes: CaratCurveModel[],
-}
-
-/* --- Carat Elements --- */
-
-/** Словарь стилей интервальных элементов. */
-export type CaratIntervalStyleDict = Record<number, CaratStyleInterval>;
-/** Словарь стилей каротажных кривых. */
-export type CaratCurveStyleDict = Map<CaratCurveType, CaratStyleCurve>;
-
-export interface CaratElementInterval {
-  stratumID?: number,
-  top: number,
-  base: number,
-  style: CaratStyleInterval,
-}
-export interface CaratStyleInterval {
-  fill: ColorHEX | CanvasPattern,
-  stroke: ColorHEX | CanvasPattern,
-}
-
-export interface CaratStyleCurve {
+export interface CaratCurveStyle {
   color: ColorHEX,
   thickness: number,
 }
 
-export interface CaratElementText {
-  text: string,
-  style: CaratStyleText,
+export interface CurveAxisGroup {
+  rect: Rectangle,
+  axes: CaratCurveModel[],
 }
-export interface CaratStyleText {
+
+export interface CaratIntervalModel {
+  stratumID?: number,
+  top: number,
+  bottom: number,
+  style: CaratIntervalStyle,
+  label?: CaratIntervalLabel,
+}
+export interface CaratIntervalStyle {
+  fill: ColorHEX | CanvasPattern,
+  stroke: ColorHEX,
+}
+export interface CaratIntervalLabel {
+  text: string,
   color: ColorHEX,
   backgroundColor: ColorHEX,
   angle: number,
@@ -70,7 +64,6 @@ export interface CaratStyleText {
 
 export interface CaratElementBar {
   top: number,
-  base: number,
+  bottom: number,
   value: number, // from 0 to 1
 }
-

@@ -1,5 +1,5 @@
 // import { mockCaratSettings } from '../lib/data';
-import { settingsToState } from '../lib/initialization';
+import { settingsToState } from '../lib/adapter';
 
 /* --- Action Types --- */
 
