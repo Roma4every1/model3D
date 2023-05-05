@@ -34,7 +34,7 @@ export function moveSmoothly(viewport: CaratViewport, stage: ICaratStage, by: nu
 
     if (viewport.y !== y) {
       viewport.y = y;
-      stage.render();
+      stage.lazyRender();
     }
     lastY = newY;
     if (time >= duration) clearInterval(id);

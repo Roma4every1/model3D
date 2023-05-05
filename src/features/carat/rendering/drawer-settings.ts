@@ -15,8 +15,6 @@ export interface CaratDrawerConfig {
       padding: number,
       /** Шрифт и цвет подписи внутри шапки. */
       text: {font: CSSFont, color: ColorHEX},
-      /** Цвет и толщина рамки вокруг шапки. */
-      border: {color: ColorHEX, thickness: number},
     },
   },
   /** Настройки отрисовки колонки. */
@@ -87,10 +85,6 @@ export interface CaratTrackHeaderDrawSettings {
   readonly font: string,
   /** Цвет подписи шапки. */
   readonly color: ColorHEX,
-  /** Цвет рамки вокруг шапки. */
-  readonly borderColor: ColorHEX,
-  /** Толщина рамки вокруг шапки. */
-  readonly borderThickness: number,
 }
 
 /** Настройки тела колонки. */
@@ -153,7 +147,7 @@ export function createTrackBodyDrawSettings(config: CaratDrawerConfig): CaratTra
 
 /** Создаёт настройки отрисовки трека по конфигу. */
 export function createTrackHeaderDrawSettings(config: CaratDrawerConfig): CaratTrackHeaderDrawSettings {
-  const { padding, text, border } = config.track.header;
+  const { padding, text } = config.track.header;
   const headerFontSize = text.font.size;
 
   return {
@@ -161,8 +155,6 @@ export function createTrackHeaderDrawSettings(config: CaratDrawerConfig): CaratT
     padding: padding,
     font: `${text.font.style} ${headerFontSize}px ${text.font.family}`,
     color: text.color,
-    borderColor: border.color,
-    borderThickness: border.thickness,
   };
 }
 

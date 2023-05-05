@@ -53,6 +53,7 @@ interface ICaratStage {
 
   resize(): void
   render(): void
+  lazyRender(): void
 }
 
 /** Трек каротажной диаграммы. */
@@ -74,8 +75,6 @@ interface ICaratTrack {
 
   moveGroup(idx: number, to: 'left' | 'right'): void
   handleMouseDown(point: Point): any
-
-  render(): void
 }
 
 interface ICaratColumnGroup {
@@ -92,16 +91,12 @@ interface ICaratColumnGroup {
   hasCurveColumn(): boolean
 
   setHeight(height: number): void
-
-  renderBody(): void
-  renderContent(): void
 }
 
 interface ICaratColumn {
   channel?: CaratAttachedChannel;
   getElements?(): any[]
   getRange(): [number, number]
-  render(): void
 }
 
 /** Порт просмотра. */

@@ -51,7 +51,6 @@ export const drawerConfig: CaratDrawerConfig = {
     header: {
       padding: 3,
       text: {font: {size: 14, style: 'normal', family: '"Segoe UI", Roboto'}, color: '#222222'},
-      border: {color: '#111111', thickness: 1},
     },
   },
   column: {

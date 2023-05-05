@@ -235,15 +235,30 @@ export class CaratTrack implements ICaratTrack {
   public render() {
     this.drawer.setCurrentTrack(this.rect, this.viewport);
     this.backgroundGroup.renderContent();
-    for (const group of this.groups) group.renderContent();
-    this.drawer.drawTrackBody(this.label);
 
-    for (let i = 0; i < this.activeIndex; i++) {
-      this.groups[i].renderBody();
+    for (const group of this.groups) {
+      if (group.active) continue;
+      group.renderHeader();
+      group.renderContent();
     }
-    for (let i = this.activeIndex + 1; i < this.groups.length; i++) {
-      this.groups[i].renderBody();
+    if (this.activeIndex !== -1) {
+      const group = this.groups[this.activeIndex];
+      group.renderHeader();
+      group.renderContent();
     }
-    if (this.activeIndex !== -1) this.groups[this.activeIndex].renderBody();
+    this.drawer.drawTrackBody(this.label);
+  }
+
+  public lazyRender() {
+    this.drawer.setCurrentTrack(this.rect, this.viewport);
+    this.drawer.clearTrackElementRect(this.maxGroupHeaderHeight);
+    this.backgroundGroup.renderContent();
+
+    for (const group of this.groups) {
+      if (!group.active) group.renderContent();
+    }
+    if (this.activeIndex !== -1) {
+      this.groups[this.activeIndex].renderContent();
+    }
   }
 }

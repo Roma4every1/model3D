@@ -172,30 +172,113 @@ export class CaratDrawer {
     this.ctx.clearRect(0, 0, width, height);
   }
 
-  public drawTrackBody(well: string) {
-    const { top, left, width, height: trackHeight } = this.trackRect;
-    const { font, color, borderColor, borderThickness, height } = this.trackHeaderSettings;
-    const { borderColor: bodyColor, borderThickness: bodyThickness } = this.trackBodySettings;
-    this.setTranslate(left, top);
-
-    this.setTextSettings(font, color, 'center', 'middle');
-    this.ctx.fillText(well, width / 2, height / 2);
-
-    this.setLineSettings(borderThickness, borderColor);
-    this.ctx.strokeRect(0, 0, width, height);
-
-    this.setLineSettings(bodyThickness, bodyColor);
-    this.ctx.strokeRect(0, 0, width, trackHeight);
+  public clearTrackElementRect(headerHeight: number) {
+    this.setTranslate(0, 0);
+    const { top, left, width, height } = this.trackRect;
+    this.ctx.clearRect(left, top + headerHeight, width, height);
   }
 
-  public drawColumnGroupBody(labelBottom: number, active: boolean) {
-    const { width, height } = this.groupElementRect;
+  public drawTrackBody(well: string) {
+    const { top, left, width, height } = this.trackRect;
+    const { font, color, height: headerHeight } = this.trackHeaderSettings;
+    const { borderColor, borderThickness } = this.trackBodySettings;
+    const half = borderThickness / 2;
+
+    this.setTranslate(left, top);
+    this.setTextSettings(font, color, 'center', 'middle');
+    this.ctx.fillText(well, width / 2, headerHeight / 2);
+
+    this.setLineSettings(borderThickness, borderColor);
+    this.ctx.beginPath();
+    this.ctx.rect(-half, -half, width + half, height + half);
+    this.ctx.moveTo(0, headerHeight);
+    this.ctx.lineTo(width, headerHeight);
+    this.ctx.stroke();
+  }
+
+  public drawGroupLabel(labelBottom: number) {
+    const width = this.groupElementRect.width;
     const { font, color } = this.columnLabelSettings;
-    const { borderThickness } = this.columnBodySettings;
 
     this.setTranslate(this.groupTranslateX, this.trackRect.top);
     this.setTextSettings(font, color, 'center', 'bottom');
     this.ctx.fillText(this.groupSettings.label, width / 2, labelBottom, width);
+  }
+
+  public drawGroupXAxes(settings: CaratColumnXAxis, groups: CurveAxisGroup[]) {
+    this.setTranslate(this.groupTranslateX, this.trackRect.top + this.columnLabelSettings.height);
+    const { thickness, gap, axisHeight, markSize, font } = this.columnXAxesSettings;
+    const yStep = axisHeight + gap;
+    const segmentsCount = settings.numberOfMarks - 1;
+
+    this.ctx.font = font;
+    this.ctx.textBaseline = 'bottom';
+    this.ctx.lineWidth = thickness;
+
+    for (const { rect, axes } of groups) {
+      let y = rect.top + rect.height;
+      const xStart = rect.left + thickness, xEnd = rect.left + rect.width - thickness;
+
+      for (const { type, axisMin, axisMax, style: { color } } of axes) {
+        const delta = axisMax - axisMin;
+        const markStep = delta / segmentsCount;
+        const digits = markStep > 1 ? 0 : (markStep < 0.1 ? 2 : 1);
+
+        this.ctx.strokeStyle = color;
+        this.ctx.fillStyle = color;
+
+        const markTop = y - markSize;
+        this.ctx.beginPath();
+        this.ctx.moveTo(xStart, markTop);
+        this.ctx.lineTo(xStart, y);
+        this.ctx.lineTo(xEnd, y);
+        this.ctx.lineTo(xEnd, markTop);
+        this.ctx.stroke();
+
+        this.ctx.textAlign = 'left';
+        this.ctx.fillText(axisMin.toString(), xStart + thickness, y);
+        this.ctx.textAlign = 'right';
+        this.ctx.fillText(axisMax.toString(), xEnd - thickness, y);
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(type, (xStart + xEnd) / 2, y);
+
+        for (let i = 1; i < segmentsCount; i++) {
+          const xMark = i * markStep;
+          const x = xStart + rect.width * (xMark / delta);
+          this.ctx.fillText(round(axisMin + xMark, digits).toString(), x, y);
+        }
+        y -= yStep;
+      }
+    }
+  }
+
+  public drawVerticalGrid(settings: CaratColumnXAxis, groups: CurveAxisGroup[]) {
+    const height = this.groupElementRect.height;
+    const { gridThickness, gridLineDash } = this.columnXAxesSettings;
+    const segmentsCount = settings.numberOfMarks - 1;
+
+    this.setTranslate(this.groupTranslateX, this.groupTranslateY);
+    this.setLineSettings(gridThickness, this.groupSettings.borderColor);
+    this.ctx.setLineDash(gridLineDash);
+    this.ctx.beginPath();
+
+    for (const { rect } of groups) {
+      const xStart = rect.left;
+      const step = rect.width / segmentsCount;
+
+      for (let i = 1; i < segmentsCount; i++) {
+        const x = xStart + i * step;
+        this.ctx.moveTo(x, 0);
+        this.ctx.lineTo(x, height);
+      }
+    }
+    this.ctx.stroke();
+    this.ctx.setLineDash([]);
+  }
+
+  public drawGroupBody(active: boolean) {
+    const { width, height } = this.groupElementRect;
+    const borderThickness = this.columnBodySettings.borderThickness;
 
     if (active) {
       this.setLineSettings(1.5 * borderThickness, this.columnBodySettings.activeBorderColor);
@@ -206,7 +289,7 @@ export class CaratDrawer {
     this.ctx.strokeRect(0, 0, width, height);
   }
 
-  public drawColumnGroupYAxis(settings: CaratColumnYAxis) {
+  public drawGroupYAxis(settings: CaratColumnYAxis) {
     const scaleY = window.devicePixelRatio * this.scale;
     this.setTranslate(this.groupTranslateX, this.groupTranslateY - scaleY * this.yMin);
 
@@ -249,71 +332,6 @@ export class CaratDrawer {
       this.ctx.stroke();
     }
     this.ctx.restore();
-  }
-
-  public drawColumnGroupXAxes(settings: CaratColumnXAxis, groups: CurveAxisGroup[]) {
-    this.setTranslate(this.groupTranslateX, this.trackRect.top + this.columnLabelSettings.height);
-    const { thickness, gap, axisHeight, markSize, font } = this.columnXAxesSettings;
-    const yStep = axisHeight + gap;
-    const segmentsCount = settings.numberOfMarks - 1;
-    const coordinates: number[] = [];
-
-    this.ctx.font = font;
-    this.ctx.textBaseline = 'bottom';
-    this.ctx.lineWidth = thickness;
-
-    for (const { rect, axes } of groups) {
-      let y = rect.top + rect.height;
-      const xStart = rect.left + thickness, xEnd = rect.left + rect.width - thickness;
-
-      for (const { type, axisMin, axisMax, style: { color } } of axes) {
-        const delta = axisMax - axisMin;
-        const markStep = delta / segmentsCount;
-        const digits = markStep > 1 ? 0 : (markStep < 0.1 ? 2 : 1);
-
-        this.ctx.strokeStyle = color;
-        this.ctx.fillStyle = color;
-
-        const markTop = y - markSize;
-        this.ctx.beginPath();
-        this.ctx.moveTo(xStart, markTop);
-        this.ctx.lineTo(xStart, y);
-        this.ctx.lineTo(xEnd, y);
-        this.ctx.lineTo(xEnd, markTop);
-        this.ctx.stroke();
-
-        this.ctx.textAlign = 'left';
-        this.ctx.fillText(axisMin.toString(), xStart + thickness, y);
-        this.ctx.textAlign = 'right';
-        this.ctx.fillText(axisMax.toString(), xEnd - thickness, y);
-        this.ctx.textAlign = 'center';
-        this.ctx.fillText(type, (xStart + xEnd) / 2, y);
-
-        for (let i = 1; i < segmentsCount; i++) {
-          const xMark = i * markStep;
-          const x = xStart + rect.width * (xMark / delta);
-          coordinates.push(x);
-          this.ctx.fillText(round(axisMin + xMark, digits).toString(), x, y);
-        }
-        y -= yStep;
-      }
-    }
-    if (settings.grid) {
-      const height = this.groupElementRect.height;
-      const { gridThickness, gridLineDash } = this.columnXAxesSettings;
-
-      this.setTranslate(this.groupTranslateX, this.groupTranslateY);
-      this.setLineSettings(gridThickness, this.groupSettings.borderColor);
-      this.ctx.setLineDash(gridLineDash);
-      this.ctx.beginPath();
-
-      for (const x of coordinates) {
-        this.ctx.moveTo(x, 0);
-        this.ctx.lineTo(x, height);
-      }
-      this.ctx.stroke();
-      this.ctx.setLineDash([]);
-    }
   }
 
   public drawZoneDividingLines(coordinates: number[]) {

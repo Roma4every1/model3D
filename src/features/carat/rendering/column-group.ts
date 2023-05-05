@@ -295,16 +295,18 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     if (this.curveColumn) this.curveManager.setStyleData(lookupData);
   }
 
-  public renderBody() {
+  public renderHeader() {
     this.drawer.setCurrentGroup(this.elementsRect, this.settings);
-    this.drawer.drawColumnGroupBody(this.labelBottom, this.active);
-    if (this.curveAxes) this.drawer.drawColumnGroupXAxes(this.xAxis, this.curveAxes);
+    this.drawer.drawGroupLabel(this.labelBottom);
+    if (this.curveAxes) this.drawer.drawGroupXAxes(this.xAxis, this.curveAxes);
   }
 
   public renderContent() {
     this.drawer.setCurrentGroup(this.elementsRect, this.settings);
     for (const column of this.columns) column.render();
+    if (this.curveAxes && this.xAxis.grid) this.drawer.drawVerticalGrid(this.xAxis, this.curveAxes);
     if (this.curveColumn) this.curveColumn.render();
-    if (this.yAxis.show) this.drawer.drawColumnGroupYAxis(this.yAxis);
+    if (this.yAxis.show) this.drawer.drawGroupYAxis(this.yAxis);
+    this.drawer.drawGroupBody(this.active);
   }
 }

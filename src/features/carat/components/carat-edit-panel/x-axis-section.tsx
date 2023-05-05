@@ -24,7 +24,7 @@ export const XAxisSection = ({stage, group}: XAxisSectionProps) => {
   };
 
   const onMarksCountChange = ({value}: NumericTextBoxChangeEvent) => {
-    if (Number.isInteger(value) && value > 1 && value < 9) {
+    if (Number.isInteger(value) && value > 1 && value < 11) {
       setMarksCount(value);
       setMarksCountValid(true);
       axisSettings.numberOfMarks = value;

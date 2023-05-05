@@ -126,7 +126,7 @@ export class CaratStage implements ICaratStage {
     if (newY > viewport.max) newY = viewport.max;
     else if (newY < viewport.min) newY = viewport.min;
 
-    if (viewport.y !== newY) { viewport.y = newY; this.render(); }
+    if (viewport.y !== newY) { viewport.y = newY; this.lazyRender(); }
   }
 
   public resize() {
@@ -150,5 +150,9 @@ export class CaratStage implements ICaratStage {
   public render() {
     this.drawer.clear();
     for (const track of this.trackList) track.render();
+  }
+
+  public lazyRender() {
+    this.trackList[0].lazyRender();
   }
 }
