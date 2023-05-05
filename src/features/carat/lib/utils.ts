@@ -20,26 +20,48 @@ export function calculateTrackWidth(columns: CaratColumnInit[]) {
 export function moveSmoothly(viewport: CaratViewport, stage: ICaratStage, by: number) {
   const duration = 250; // 0.25 second
   const frameTime = 16; // 60 FPS => 1000ms / 60
+  const scroll = viewport.scroll;
+
+  const direction = by > 0 ? 1 : -1;
+  if (scroll.direction !== direction) {
+    scroll.direction = direction;
+    scroll.queue = [];
+  }
 
   let time = 0;
-  let startY = viewport.y;
-  let lastY = viewport.y;
+  let prevY = 0;
+  let step = 0;
 
-  const id = setInterval(() => {
-    let newY = startY + by * cubicBezierEaseInOut(time / duration);
-    let y = viewport.y + newY - lastY;
-
-    if (y > viewport.max) y = viewport.max;
-    else if (y < viewport.min) y = viewport.min;
-
-    if (viewport.y !== y) {
-      viewport.y = y;
-      stage.lazyRender();
-    }
-    lastY = newY;
-    if (time >= duration) clearInterval(id);
+  while (time < duration) {
+    const currentY = by * cubicBezierEaseInOut(time / duration);
+    const currentScroll = scroll.queue[step];
+    const delta = currentY - prevY;
+    scroll.queue[step] = isNaN(currentScroll) ? delta : currentScroll + delta;
+    step += 1;
+    prevY = currentY;
     time += frameTime;
-  }, frameTime);
+  }
+
+  if (scroll.id === null) {
+    scroll.id = window.setInterval(moveView, frameTime, viewport, stage);
+  }
+}
+
+function moveView(viewport: CaratViewport, stage: ICaratStage) {
+  const scroll = viewport.scroll;
+  if (scroll.queue.length === 0) {
+    clearInterval(scroll.id);
+    return scroll.id = null;
+  }
+
+  let y = viewport.y + scroll.queue.shift();
+  if (y > viewport.max) y = viewport.max;
+  else if (y < viewport.min) y = viewport.min;
+
+  if (viewport.y !== y) {
+    viewport.y = y;
+    stage.lazyRender();
+  }
 }
 
 /** Аналог CSS timing function `ease-in-out`. */

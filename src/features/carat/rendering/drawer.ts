@@ -218,6 +218,7 @@ export class CaratDrawer {
     for (const { rect, axes } of groups) {
       let y = rect.top + rect.height;
       const xStart = rect.left + thickness, xEnd = rect.left + rect.width - thickness;
+      const xCenter = (xStart + xEnd) / 2;
 
       for (const { type, axisMin, axisMax, style: { color } } of axes) {
         const delta = axisMax - axisMin;
@@ -235,17 +236,27 @@ export class CaratDrawer {
         this.ctx.lineTo(xEnd, markTop);
         this.ctx.stroke();
 
+        const typeHalfWidth = this.ctx.measureText(type).width / 2;
+        const typeStart = xCenter - typeHalfWidth;
+        const typeEnd = xCenter + typeHalfWidth;
+
         this.ctx.textAlign = 'left';
         this.ctx.fillText(axisMin.toString(), xStart + thickness, y);
         this.ctx.textAlign = 'right';
         this.ctx.fillText(axisMax.toString(), xEnd - thickness, y);
         this.ctx.textAlign = 'center';
-        this.ctx.fillText(type, (xStart + xEnd) / 2, y);
+        this.ctx.fillText(type, xCenter, y);
 
         for (let i = 1; i < segmentsCount; i++) {
           const xMark = i * markStep;
           const x = xStart + rect.width * (xMark / delta);
-          this.ctx.fillText(round(axisMin + xMark, digits).toString(), x, y);
+
+          const text = round(axisMin + xMark, digits).toString();
+          const textHalfWidth = this.ctx.measureText(text).width / 2;
+          const textStart = x - textHalfWidth;
+          const textEnd = x + textHalfWidth;
+
+          if (textEnd < typeStart || textStart > typeEnd) this.ctx.fillText(text, x, y);
         }
         y -= yStep;
       }
@@ -260,6 +271,7 @@ export class CaratDrawer {
     this.setTranslate(this.groupTranslateX, this.groupTranslateY);
     this.setLineSettings(gridThickness, this.groupSettings.borderColor);
     this.ctx.setLineDash(gridLineDash);
+    this.ctx.lineDashOffset = this.yMin * window.devicePixelRatio * this.scale;
     this.ctx.beginPath();
 
     for (const { rect } of groups) {
@@ -274,6 +286,7 @@ export class CaratDrawer {
     }
     this.ctx.stroke();
     this.ctx.setLineDash([]);
+    this.ctx.lineDashOffset = 0;
   }
 
   public drawGroupBody(active: boolean) {
@@ -287,6 +300,20 @@ export class CaratDrawer {
     }
     this.setTranslate(this.groupTranslateX, this.groupTranslateY);
     this.ctx.strokeRect(0, 0, width, height);
+  }
+
+  public drawZoneDividingLines(coordinates: number[]) {
+    this.setTranslate(this.groupTranslateX, this.groupTranslateY);
+    this.setLineSettings(this.columnBodySettings.borderThickness, this.groupSettings.borderColor);
+
+    const bottom = this.columnRect.top + this.columnRect.height;
+    this.ctx.beginPath();
+
+    for (const x of coordinates) {
+      this.ctx.moveTo(x, 0);
+      this.ctx.lineTo(x, bottom);
+    }
+    this.ctx.stroke();
   }
 
   public drawGroupYAxis(settings: CaratColumnYAxis) {
@@ -332,20 +359,6 @@ export class CaratDrawer {
       this.ctx.stroke();
     }
     this.ctx.restore();
-  }
-
-  public drawZoneDividingLines(coordinates: number[]) {
-    this.setTranslate(this.groupTranslateX, this.groupTranslateY);
-    this.setLineSettings(1, this.groupSettings.borderColor);
-
-    const bottom = this.columnRect.top + this.columnRect.height;
-    this.ctx.beginPath();
-
-    for (const x of coordinates) {
-      this.ctx.moveTo(x, 0);
-      this.ctx.lineTo(x, bottom);
-    }
-    this.ctx.stroke();
   }
 
   public drawIntervals(elements: CaratIntervalModel[]) {

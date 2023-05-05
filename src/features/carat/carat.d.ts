@@ -109,6 +109,8 @@ interface CaratViewport {
   min: number,
   /** Максимально возможная координата по Y. */
   max: number,
+  /** Состояние прокрутки. */
+  scroll: {queue: any[], direction: number, id: number | null},
 }
 
 /** Идентификатор каротажной кривой. */

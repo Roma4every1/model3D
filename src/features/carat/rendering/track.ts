@@ -35,7 +35,7 @@ export class CaratTrack implements ICaratTrack {
     this.rect = rect;
     this.drawer = drawer;
     this.label = '';
-    this.viewport = {y: 0, scale, min: 0, max: 0};
+    this.viewport = {y: 0, scale, min: 0, max: 0, scroll: {queue: [], direction: 0, id: null}};
     this.groups = [];
     this.activeIndex = -1;
     this.activeCurve = null;
