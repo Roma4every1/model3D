@@ -71,20 +71,28 @@ function cubicBezierEaseInOut(t) {
 
 /* --- Geometry --- */
 
-/** Находится ли точка рядом с кривой. */
-export function isPointNearCurve(p: Point, curve: CaratCurveModel): boolean {
-  const nearestPointIndex = findNearestYPoint(curve.points, p.y);
-  const p1 = curve.points[nearestPointIndex - 1] ?? {x: Infinity, y: Infinity};
-  const p2 = curve.points[nearestPointIndex];
-  const p3 = curve.points[nearestPointIndex + 1] ?? {x: Infinity, y: Infinity};
+/** Расстояние до кривой в пикселях. */
+export function distanceFromCaratCurve(
+  p: Point, curve: CaratCurveModel,
+  rect: Rectangle, viewport: CaratViewport,
+): number {
+  const scaleY = viewport.scale * window.devicePixelRatio;
+  const scaleX = rect.width / curve.axisMax;
+  const nearestPointIndex = findNearestYPoint(curve.points, p.y / scaleY + viewport.y);
 
-  const resultDistance = Math.min(
+  const toRectCoordinates = (p: Point): Point => {
+    if (!p) return {x: Infinity, y: Infinity};
+    return {x: p.x * scaleX, y: (p.y - viewport.y) * scaleY};
+  };
+
+  const p1 = toRectCoordinates(curve.points[nearestPointIndex - 1]);
+  const p2 = toRectCoordinates(curve.points[nearestPointIndex]);
+  const p3 = toRectCoordinates(curve.points[nearestPointIndex + 1]);
+
+  return Math.min(
     distance(p, p1), distance(p, p2), distance(p, p3),
     distanceFromStraight(p, p1, p2), distanceFromStraight(p, p2, p3),
   );
-
-  const maxNearDistance = 0.05 * (curve.max - curve.min);
-  return resultDistance < maxNearDistance;
 }
 
 /** Бинарным поиском находит индекс точки, ближайшей по Y. */

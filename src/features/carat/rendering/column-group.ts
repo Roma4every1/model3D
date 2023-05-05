@@ -3,7 +3,7 @@ import { CaratColumn } from './column';
 import { CaratCurveColumn } from './curve-column';
 import { CaratCurveModel, CurveAxisGroup } from '../lib/types';
 import { CurveManager } from '../lib/curve-manager';
-import { isPointNearCurve } from '../lib/utils';
+import { distanceFromCaratCurve } from '../lib/utils';
 import { isRectInnerPoint } from 'shared/lib';
 
 
@@ -219,16 +219,15 @@ export class CaratColumnGroup implements ICaratColumnGroup {
 
     for (const { rect, elements } of groups) {
       if (!isRectInnerPoint(p, rect)) continue;
-      const groupX = p.x - rect.left;
-      const groupY = p.y - rect.top;
+      const groupPoint: Point = {x: p.x - rect.left, y: p.y - rect.top};
+      let minDistance = Infinity;
+      let nearestCurve: CaratCurveModel = null;
 
       for (const curve of elements) {
-        const point: Point = {
-          x: groupX * (curve.axisMax / rect.width),
-          y: (groupY / (viewport.scale * window.devicePixelRatio)) + viewport.y,
-        };
-        if (isPointNearCurve(point, curve)) return curve;
+        const distance = distanceFromCaratCurve(groupPoint, curve, rect, viewport);
+        if (distance < minDistance) { minDistance = distance; nearestCurve = curve; }
       }
+      if (minDistance < 5) return nearestCurve;
     }
     return null;
   }
