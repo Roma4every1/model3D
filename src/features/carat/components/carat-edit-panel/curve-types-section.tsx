@@ -4,7 +4,6 @@ import { NumericTextBox, NumericTextBoxChangeEvent } from '@progress/kendo-react
 import { CurveManager } from '../../lib/curve-manager';
 import { CaratCurveModel } from '../../lib/types';
 import { defaultSettings } from '../../lib/constants';
-import { round } from 'shared/lib';
 import autoSettingIcon from 'assets/images/carat/column-width.svg';
 
 
@@ -101,11 +100,14 @@ const ActiveTypeSettings = ({stage, manager, settings, onChange}: ActiveTypeSett
   const [max, setMax] = useState(null);
 
   const [auto, setAuto] = useState(false);
+  const [valid, setValid] = useState(true);
   const sectionHeader = settings ? `Настройки типа (${settings.type})` : 'Настройки типа';
 
   useEffect(() => {
-    setMin(settings?.measure?.min ?? null);
-    setMax(settings?.measure?.max ?? null);
+    const min = settings?.measure?.min ?? null;
+    const max = settings?.measure?.max ?? null;
+    setMin(min); setMax(max);
+    setValid(min === null || max === null || min < max);
     setAuto(settings?.measure === undefined);
   }, [settings]);
 
@@ -113,14 +115,8 @@ const ActiveTypeSettings = ({stage, manager, settings, onChange}: ActiveTypeSett
     if (!settings) return;
     setMin(newMin); setMax(newMax);
 
-    if (newMin !== null) {
-      if (newMin < 0) return;
-      newMin = round(newMin, 2);
-    }
-    if (newMax !== null) {
-      if (newMax < 0.1) return;
-      newMax = round(newMax, 2);
-    }
+    const valid = newMin === null || newMax === null || newMin < newMax;
+    setValid(valid); if (!valid) return;
 
     settings.measure = {type: settings.type, min: newMin, max: newMax};
     manager.setMeasure(settings.type, newMin, newMax);
@@ -146,9 +142,9 @@ const ActiveTypeSettings = ({stage, manager, settings, onChange}: ActiveTypeSett
     <MenuSection header={sectionHeader} className={'big-buttons'}>
       <MenuSectionItem className={'measure-settings'}>
         <span>Минимум:</span>
-        <NumericTextBox min={0} value={min} onChange={onMinChange} style={{height: 24}}/>
+        <NumericTextBox value={min} valid={valid} onChange={onMinChange} style={{height: 24}}/>
         <span>Максимум:</span>
-        <NumericTextBox min={0} value={max} onChange={onMaxChange} style={{height: 24}}/>
+        <NumericTextBox value={max} valid={valid} onChange={onMaxChange} style={{height: 24}}/>
       </MenuSectionItem>
       <BigButtonToggle
         text={'Автонастройка'} icon={autoSettingIcon}

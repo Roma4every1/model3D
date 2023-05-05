@@ -126,6 +126,13 @@ export class CaratTrack implements ICaratTrack {
     this.backgroundGroup.setWidth(this.rect.width);
   }
 
+  public setActiveGroupLabel(label: string) {
+    const activeGroup = this.groups[this.activeIndex];
+    if (!activeGroup) return;
+    activeGroup.setLabel(label);
+    this.rebuildHeaders();
+  }
+
   public setActiveCurve(curve: CaratCurveModel) {
     this.activeCurve = curve;
     this.groups.forEach((group) => { group.setActiveCurve(curve.id); });
@@ -135,6 +142,7 @@ export class CaratTrack implements ICaratTrack {
   public setZones(zones: CaratZone[]) {
     const changes = this.groups.map((group) => group.setZones(zones));
     this.rebuildRects(changes);
+    this.rebuildHeaders();
   }
 
   public moveGroup(idx: number, to: 'left' | 'right') {
@@ -183,32 +191,35 @@ export class CaratTrack implements ICaratTrack {
     this.viewport.y = this.viewport.min;
   }
 
-  private rebuildRects(changes: [number, number][]) {
-    const maxHeaderHeight = Math.max(...changes.map(item => item[1]));
+  private rebuildHeaders() {
+    const maxHeight = Math.max(...this.groups.map((g) => g.header.getContentHeight()));
+    if (maxHeight === this.maxGroupHeaderHeight) return;
 
+    for (const group of this.groups) group.setHeaderHeight(maxHeight);
+    this.backgroundGroup.setHeaderHeight(maxHeight);
+    this.maxGroupHeaderHeight = maxHeight;
+  }
+
+  private rebuildRects(changes: number[]) {
     for (let i = 0; i < changes.length; i++) {
-      const widthDelta = changes[i][0];
-      const group = this.groups[i];
-      group.setHeaderHeight(maxHeaderHeight);
-
+      const widthDelta = changes[i];
       if (widthDelta !== 0) {
         for (let j = i + 1; j < this.groups.length; j++) {
           this.groups[j].shift(widthDelta);
         }
         this.rect.width += widthDelta;
       }
-      const [groupMin, groupMax] = group.getCurvesRange();
+      const [groupMin, groupMax] = this.groups[i].getCurvesRange();
       if (groupMin < this.viewport.min) this.viewport.min = groupMin;
       if (groupMax > this.viewport.max) this.viewport.max = groupMax;
     }
     this.backgroundGroup.setWidth(this.rect.width);
-    this.backgroundGroup.setHeaderHeight(maxHeaderHeight);
-    this.maxGroupHeaderHeight = Math.max(...this.groups.map(g => g.getElementsTop()));
   }
 
   public async setCurveData(channelData: ChannelDict) {
     const changes = await Promise.all(this.groups.map((group) => group.setCurveData(channelData)));
     this.rebuildRects(changes);
+    this.rebuildHeaders();
 
     for (const group of this.groups) {
       const curve = group.getFirstCurve();
@@ -229,7 +240,6 @@ export class CaratTrack implements ICaratTrack {
     const groupHeight = height - this.drawer.trackHeaderSettings.height;
     for (const group of this.groups) group.setHeight(groupHeight);
     this.backgroundGroup.setHeight(groupHeight);
-    this.maxGroupHeaderHeight = Math.max(...this.groups.map(g => g.getElementsTop()));
   }
 
   public render() {

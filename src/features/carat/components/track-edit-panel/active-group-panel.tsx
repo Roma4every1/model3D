@@ -44,7 +44,7 @@ const GroupCommonSettings = ({stage, track, activeGroup}: CaratActiveGroupPanelP
 
   const onLabelChange = (e: TextBoxChangeEvent) => {
     if (typeof e.value !== 'string') return;
-    activeGroup.settings.label = e.value;
+    track.setActiveGroupLabel(e.value);
     stage.render(); setLabel(e.value);
   };
 

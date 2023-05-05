@@ -1,11 +1,5 @@
 import { CaratDrawer } from './drawer';
-import { CaratCurveModel } from '../lib/types';
-
-
-interface CurveGroupState {
-  rect: Rectangle,
-  elements: CaratCurveModel[],
-}
+import { CaratCurveModel, CurveGroupState } from '../lib/types';
 
 
 /** Колонка каротажной диаграммы с кривыми. */

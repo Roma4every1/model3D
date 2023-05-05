@@ -1,7 +1,8 @@
 import { CaratDrawer } from './drawer';
 import { CaratColumn } from './column';
 import { CaratCurveColumn } from './curve-column';
-import { CaratCurveModel, CurveAxisGroup } from '../lib/types';
+import { CaratCurveModel } from '../lib/types';
+import { CaratColumnHeader } from './column-header';
 import { CurveManager } from '../lib/curve-manager';
 import { distanceFromCaratCurve } from '../lib/utils';
 import { isRectInnerPoint } from 'shared/lib';
@@ -14,24 +15,17 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   /** Ограничивающий прямоугольник для элементов. */
   private readonly elementsRect: Rectangle;
 
-  /** Координата по Y подписи колонки. */
-  private labelBottom: number;
-  /** Высота горизонтальных осей. */
-  private xAxesHeight: number;
-  /** Высота заголовка колонки. */
-  private headerHeight: number;
-
   /** Идентификатор колонки. */
   public readonly id: string;
   /** Общие настройки. */
   public readonly settings: CaratColumnSettings;
+  /** Заголовок группы. */
+  public readonly header: CaratColumnHeader;
   /** Выборки кривых. */
   public readonly curveManager: CurveManager;
 
   /** Зоны распределения каротажных кривых. */
   private zones: CaratZone[];
-  /** Горизонатльные оси для кривых. */
-  private curveAxes: CurveAxisGroup[];
   /** Стиль горизонтальных осей. */
   public readonly xAxis: CaratColumnXAxis;
   /** Настройки вертикальной оси колонки. */
@@ -50,6 +44,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     this.id = init.id;
     this.drawer = drawer;
     this.settings = init.settings;
+    this.header = new CaratColumnHeader(drawer, init.settings.label);
     this.curveManager = new CurveManager(init.selection, init.measures);
     this.properties = init.properties;
     this.channels = init.channels;
@@ -60,12 +55,10 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     if (this.xAxis.numberOfMarks < 2) this.xAxis.numberOfMarks = 2;
     if (this.xAxis.numberOfMarks > 10) this.xAxis.numberOfMarks = 10;
 
-    this.xAxesHeight = 0;
-    this.headerHeight = drawer.columnLabelSettings.height;
+    const headerHeight = this.header.getHeight();
     this.elementsRect = {...rect};
-    this.elementsRect.top += this.headerHeight;
-    this.elementsRect.height -= this.headerHeight;
-    this.labelBottom = this.elementsRect.top;
+    this.elementsRect.top += headerHeight;
+    this.elementsRect.height -= headerHeight;
 
     this.columns = [];
     this.curveColumn = null;
@@ -73,7 +66,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
 
     let curveSetChannel: CaratAttachedChannel;
     let curveDataChannel: CaratAttachedChannel;
-    const height = rect.height - this.headerHeight;
+    const height = rect.height - headerHeight;
 
     for (const attachedChannel of init.channels) {
       const channelType = attachedChannel.type;
@@ -160,13 +153,14 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     return Boolean(this.curveColumn);
   }
 
+  public setLabel(label: string) {
+    this.header.setLabel(label);
+    this.settings.label = label;
+  }
+
   public setWidth(width: number): number {
     if (this.curveColumn) {
-      for (let i = 0; i < this.curveAxes.length; i++) {
-        const left = i * width;
-        const rect = this.curveAxes[i].rect;
-        rect.left = left; rect.width = width;
-      }
+      this.header.setGroupWidth(width);
       this.curveColumn.setGroupWidth(width);
       width = this.curveColumn.getTotalWidth();
     }
@@ -176,31 +170,31 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   }
 
   public setHeight(height: number) {
-    const columnHeight = height - this.headerHeight;
+    const columnHeight = height - this.header.getHeight();
     this.elementsRect.height = columnHeight;
     for (const column of this.columns) column.rect.height = columnHeight;
     if (this.curveColumn) this.curveColumn.setHeight(columnHeight);
   }
 
-  public setHeaderHeight(headerHeight: number) {
-    const delta = headerHeight - this.headerHeight;
-    this.headerHeight = headerHeight;
+  public setHeaderHeight(height: number) {
+    const delta = height - this.header.getHeight();
+    this.header.setHeight(height);
     this.elementsRect.top += delta;
     this.elementsRect.height -= delta;
-    this.labelBottom = this.elementsRect.top - this.xAxesHeight;
 
-    for (const column of this.columns) column.rect.height = this.elementsRect.height;
-    if (this.curveColumn) this.curveColumn.setHeight(this.elementsRect.height);
+    const elementsHeight = this.elementsRect.height;
+    for (const column of this.columns) column.rect.height = elementsHeight;
+    if (this.curveColumn) this.curveColumn.setHeight(elementsHeight);
   }
 
   public shift(by: number) {
     this.elementsRect.left += by;
   }
 
-  /** Делает перестроение зон, возвращает изменение ширины и новую высоту заголовка. */
-  public setZones(zones: CaratZone[]): [number, number] {
+  /** Делает перестроение зон, возвращает изменение ширины. */
+  public setZones(zones: CaratZone[]): number {
     this.zones = zones;
-    if (!this.curveColumn) return [0, this.drawer.columnLabelSettings.height];
+    if (!this.curveColumn) return 0;
     const curves = this.curveManager.getVisibleCurves();
     return this.groupCurves(curves);
   }
@@ -210,26 +204,25 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     this.curveManager.setActiveCurve(id);
   }
 
-  /** X и Y в системе координат трека. */
+  /** Точка в системе координат трека. */
   public getNearCurve(p: Point, viewport: CaratViewport): CaratCurveModel | null {
     if (!this.curveColumn) return null;
-    const groups = this.curveColumn.getGroups();
     p.x -= this.elementsRect.left;
     p.y -= this.elementsRect.top;
 
-    for (const { rect, elements } of groups) {
-      if (!isRectInnerPoint(p, rect)) continue;
-      const groupPoint: Point = {x: p.x - rect.left, y: p.y - rect.top};
-      let minDistance = Infinity;
-      let nearestCurve: CaratCurveModel = null;
+    const group = this.curveColumn.getGroups().find((g) => isRectInnerPoint(p, g.rect));
+    if (!group) return null;
+    const { rect, elements } = group;
 
-      for (const curve of elements) {
-        const distance = distanceFromCaratCurve(groupPoint, curve, rect, viewport);
-        if (distance < minDistance) { minDistance = distance; nearestCurve = curve; }
-      }
-      if (minDistance < 5) return nearestCurve;
+    const groupPoint: Point = {x: p.x - rect.left, y: p.y - rect.top};
+    let minDistance = Infinity;
+    let nearestCurve: CaratCurveModel = null;
+
+    for (const curve of elements) {
+      const distance = distanceFromCaratCurve(groupPoint, curve, rect, viewport);
+      if (distance < minDistance) { minDistance = distance; nearestCurve = curve; }
     }
-    return null;
+    return minDistance < 5 ? nearestCurve : null;
   }
 
   public setChannelData(channelData: ChannelDict) {
@@ -240,34 +233,10 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     if (this.curveColumn) this.curveColumn.setCurveData([], this.zones);
   }
 
-  private updateAxes(): number {
-    const curveGroups = this.curveColumn.getGroups();
-    const labelHeight = this.drawer.columnLabelSettings.height;
-    if (curveGroups[0].elements.length === 0) { this.curveAxes = null; return labelHeight; }
-
-    let maxHeight = 0;
-    this.curveAxes = [];
-    const { axisHeight, gap } = this.drawer.columnXAxesSettings;
-
-    for (const { elements, rect } of curveGroups) {
-      const height = (axisHeight + gap) * elements.length + gap;
-      if (height > maxHeight) maxHeight = height;
-
-      const axisRect = {top: labelHeight, left: rect.left, width: rect.width, height: 0};
-      this.curveAxes.push({rect: axisRect, axes: [...elements]});
-    }
-    for (const axisGroup of this.curveAxes) {
-      axisGroup.axes.reverse();
-      axisGroup.rect.height = maxHeight;
-    }
-    this.xAxesHeight = maxHeight;
-    return labelHeight + maxHeight;
-  }
-
-  /** Группирует кривые по зонам, возвращает изменение ширины и новую высоту заголовка. */
-  private groupCurves(curves: CaratCurveModel[]): [number, number] {
+  /** Группирует кривые по зонам, возвращает изменение ширины. */
+  private groupCurves(curves: CaratCurveModel[]): number {
     this.curveColumn.setCurveData(curves, this.zones);
-    const newHeaderHeight = this.updateAxes();
+    this.header.setAxes(this.curveColumn.getGroups());
 
     const oldWidth = this.elementsRect.width;
     const newWidth = this.curveColumn.getTotalWidth();
@@ -276,12 +245,12 @@ export class CaratColumnGroup implements ICaratColumnGroup {
       this.elementsRect.width = newWidth;
       for (const column of this.columns) column.rect.width = newWidth;
     }
-    return [newWidth - oldWidth, newHeaderHeight];
+    return newWidth - oldWidth;
   }
 
-  /** Задаёт новый список кривых, возвращает изменение ширины и новую высоту заголовка. */
-  public async setCurveData(channelData: ChannelDict): Promise<[number, number]> {
-    if (!this.curveColumn) return [0, this.drawer.columnLabelSettings.height];
+  /** Задаёт новый список кривых, возвращает изменение ширины. */
+  public async setCurveData(channelData: ChannelDict): Promise<number> {
+    if (!this.curveColumn) return 0;
     const curveSet = channelData[this.curveColumn.curveSetChannel.name];
     this.curveManager.setCurveChannelData(curveSet.data);
     const curves = this.curveManager.getVisibleCurves();
@@ -296,15 +265,17 @@ export class CaratColumnGroup implements ICaratColumnGroup {
 
   public renderHeader() {
     this.drawer.setCurrentGroup(this.elementsRect, this.settings);
-    this.drawer.drawGroupLabel(this.labelBottom);
-    if (this.curveAxes) this.drawer.drawGroupXAxes(this.xAxis, this.curveAxes);
+    this.header.render(this.xAxis);
   }
 
   public renderContent() {
     this.drawer.setCurrentGroup(this.elementsRect, this.settings);
     for (const column of this.columns) column.render();
-    if (this.curveAxes && this.xAxis.grid) this.drawer.drawVerticalGrid(this.xAxis, this.curveAxes);
+
+    const curveAxes = this.header.getCurveAxes();
+    if (curveAxes.length && this.xAxis.grid) this.drawer.drawVerticalGrid(this.xAxis, curveAxes);
     if (this.curveColumn) this.curveColumn.render();
+
     if (this.yAxis.show) this.drawer.drawGroupYAxis(this.yAxis);
     this.drawer.drawGroupBody(this.active);
   }

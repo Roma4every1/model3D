@@ -39,6 +39,10 @@ export interface CaratCurveStyle {
   thickness: number,
 }
 
+export interface CurveGroupState {
+  rect: Rectangle,
+  elements: CaratCurveModel[],
+}
 export interface CurveAxisGroup {
   rect: Rectangle,
   axes: CaratCurveModel[],

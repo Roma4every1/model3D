@@ -70,8 +70,9 @@ interface ICaratTrack {
   setWell(well: string): void
   setScale(scale: number): void
   setActiveGroup(idx: number): void
+  setActiveCurve(curve: any): void
   setActiveGroupWidth(width: number): void
-  setActiveCurve(curve: any): void,
+  setActiveGroupLabel(label: string): void
 
   moveGroup(idx: number, to: 'left' | 'right'): void
   handleMouseDown(point: Point): any
@@ -89,8 +90,6 @@ interface ICaratColumnGroup {
   getElementsRange(): [number, number]
   getCurvesRange(): [number, number]
   hasCurveColumn(): boolean
-
-  setHeight(height: number): void
 }
 
 interface ICaratColumn {

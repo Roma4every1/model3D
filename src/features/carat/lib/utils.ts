@@ -28,15 +28,19 @@ export function moveSmoothly(viewport: CaratViewport, stage: ICaratStage, by: nu
     scroll.queue = [];
   }
 
-  let time = 0;
-  let prevY = 0;
-  let step = 0;
+  const queue = scroll.queue;
+  let time = 0, prevY = 0, step = 0;
 
   while (time < duration) {
     const currentY = by * cubicBezierEaseInOut(time / duration);
-    const currentScroll = scroll.queue[step];
     const delta = currentY - prevY;
-    scroll.queue[step] = isNaN(currentScroll) ? delta : currentScroll + delta;
+
+    if (queue[step] === undefined) {
+      queue.push(delta);
+    } else {
+      queue[step] += delta;
+    }
+
     step += 1;
     prevY = currentY;
     time += frameTime;

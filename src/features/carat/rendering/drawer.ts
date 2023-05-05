@@ -173,9 +173,9 @@ export class CaratDrawer {
   }
 
   public clearTrackElementRect(headerHeight: number) {
-    this.setTranslate(0, 0);
     const { top, left, width, height } = this.trackRect;
-    this.ctx.clearRect(left, top + headerHeight, width, height);
+    this.setTranslate(left, top);
+    this.ctx.clearRect(0, headerHeight + this.trackHeaderSettings.height, width, height);
   }
 
   public drawTrackBody(well: string) {
@@ -196,13 +196,13 @@ export class CaratDrawer {
     this.ctx.stroke();
   }
 
-  public drawGroupLabel(labelBottom: number) {
+  public drawGroupLabel(labelTop: number) {
     const width = this.groupElementRect.width;
-    const { font, color } = this.columnLabelSettings;
+    const { font, color, height } = this.columnLabelSettings;
 
-    this.setTranslate(this.groupTranslateX, this.trackRect.top);
+    this.setTranslate(this.groupTranslateX, this.trackRect.top + this.trackHeaderSettings.height);
     this.setTextSettings(font, color, 'center', 'bottom');
-    this.ctx.fillText(this.groupSettings.label, width / 2, labelBottom, width);
+    this.ctx.fillText(this.groupSettings.label, width / 2, labelTop + height, width);
   }
 
   public drawGroupXAxes(settings: CaratColumnXAxis, groups: CurveAxisGroup[]) {
@@ -439,7 +439,7 @@ export class CaratDrawer {
       this.setLineSettings(ratio * thickness, color);
 
       const path = new Path2D();
-      matrix.a = ratio * (this.columnWidth / element.axisMax);
+      matrix.a = ratio * (this.columnWidth / (element.axisMax - element.axisMin));
       matrix.e = translateX - element.axisMin * matrix.a;
       path.addPath(element.path, matrix);
       this.ctx.stroke(path);
