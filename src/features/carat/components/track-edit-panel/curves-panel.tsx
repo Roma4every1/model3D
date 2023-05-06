@@ -20,7 +20,7 @@ export const CaratCurvesPanel = ({id, stage, curveGroup}: CaratCurvesPanelProps)
   const dispatch = useDispatch();
 
   const openCurveSelectionWindow = () => {
-    const window = <CurveSelectionWindow key={'curve-selection'} id={id} activeGroup={curveGroup}/>;
+    const window = <CurveSelectionWindow key={'curve-selection'} id={id}/>;
     dispatch(setOpenedWindow('curve-selection', true, window));
   };
 

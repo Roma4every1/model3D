@@ -1,14 +1,15 @@
 import { KeyboardEvent, MouseEvent, WheelEvent } from 'react';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { compareObjects} from 'shared/lib';
+import { compareObjects } from 'shared/lib';
 import { currentWellIDSelector } from 'entities/parameters';
 import { channelDictSelector } from 'entities/channels';
+import { TextInfo } from 'shared/ui';
 
 import './carat.scss';
 import { caratStateSelector } from '../store/carats.selectors';
-import {setCaratActiveCurve, setCaratActiveGroup, setCaratCanvas} from '../store/carats.actions';
 import { setCaratData } from '../store/carats.thunks';
+import { setCaratActiveCurve, setCaratActiveGroup, setCaratCanvas } from '../store/carats.actions';
 
 
 /** Каротажная диаграмма. */
@@ -38,10 +39,13 @@ export const Carat = ({id, channels}: FormState) => {
 
   // обновление ссылки на холст
   useLayoutEffect(() => {
-    const currentCanvas = canvasRef.current;
-    if (!currentCanvas || currentCanvas === canvas) return;
-    dispatch(setCaratCanvas(id, currentCanvas));
+    if (canvasRef.current === canvas) return;
+    dispatch(setCaratCanvas(id, canvasRef.current));
   });
+
+  if (wellID === null) {
+    return <TextInfo text={'carat.empty'}/>;
+  }
 
   const onKeyDown = (e: KeyboardEvent) => {
     const changed = stage.handleKeyDown(e.nativeEvent.key);

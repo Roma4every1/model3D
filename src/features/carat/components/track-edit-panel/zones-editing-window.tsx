@@ -1,10 +1,12 @@
 import { FunctionComponent, KeyboardEvent, useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Window } from '@progress/kendo-react-dialogs';
 import { TextBox, TextBoxChangeEvent } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
 import { ListBox, ListBoxToolbar, processListBoxData } from '@progress/kendo-react-listbox';
 import { ListBoxItemClickEvent, ListBoxToolbarClickEvent } from '@progress/kendo-react-listbox';
+import { TextInfo } from 'shared/ui';
 import { setOpenedWindow } from 'entities/windows';
 import './zones-editing-window.scss';
 
@@ -30,6 +32,8 @@ const toolbarTools = ['transferTo', 'transferFrom', 'transferAllTo', 'transferAl
 
 export const ZonesEditingWindow = ({stage}: ZonesEditingWindowProps) => {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
+
   const [state, setState] = useState<ZoneList>([]);
   const [allTypes, setAllTypes] = useState<Set<CaratCurveType>>();
 
@@ -82,7 +86,7 @@ export const ZonesEditingWindow = ({stage}: ZonesEditingWindowProps) => {
 
   return (
     <Window
-      title={'Редактирование зон кривых'} maximizeButton={() => null}
+      title={t('carat.zones.window-title')} maximizeButton={() => null}
       width={720} height={480} resizable={false} style={{zIndex: 99}} onClose={onClose}
     >
       <div className={'zones-editing-window'}>
@@ -90,10 +94,10 @@ export const ZonesEditingWindow = ({stage}: ZonesEditingWindowProps) => {
           ? <div style={{gridTemplateColumns: '1fr '.repeat(state.length)}}>
               {state.map(listToEditor, {allTypes, itemClick, toolClick, addItem, deleteZone})}
             </div>
-          : <div className={'map-not-found'}>Зоны отсутствуют</div>}
+          : <TextInfo text={'carat.no-zones'}/>}
         <div>
-          <Button onClick={addZone}>Добавить зону</Button>
-          <Button onClick={onSubmit} style={{width: 50}}>Ок</Button>
+          <Button onClick={addZone}>{t('carat.zones.add')}</Button>
+          <Button onClick={onSubmit} style={{width: 50}}>{t('base.ok')}</Button>
         </div>
       </div>
     </Window>

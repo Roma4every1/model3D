@@ -38,7 +38,7 @@ export function settingsToState(formState: FormState, channelDict: ChannelDict):
     : track.getGroups().find((group) => group.hasCurveColumn());
 
   return {
-    stage, canvas: null, observer,
+    stage, canvas: undefined, observer,
     activeGroup, curveGroup, activeCurve: null,
     lookupNames, lastData: {},
   };

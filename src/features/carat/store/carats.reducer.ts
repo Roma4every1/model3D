@@ -7,6 +7,7 @@ export enum CaratsActions {
   CREATE = 'carat/create',
   SET_ACTIVE_GROUP = 'carat/group',
   SET_ACTIVE_CURVE = 'carat/curve',
+  SET_DATA = 'carat/data',
   SET_CANVAS = 'carat/setCanvas',
 }
 
@@ -24,12 +25,17 @@ interface ActionSetActiveCurve {
   type: CaratsActions.SET_ACTIVE_CURVE,
   payload: {id: FormID, curve: any},
 }
+interface ActionSetData {
+  type: CaratsActions.SET_DATA,
+  payload: {id: FormID, data: ChannelDict},
+}
 interface ActionSetCanvas {
   type: CaratsActions.SET_CANVAS,
   payload: {id: FormID, canvas: HTMLCanvasElement},
 }
 
-export type CaratsAction = ActionCreate | ActionSetActiveGroup | ActionSetActiveCurve | ActionSetCanvas;
+export type CaratsAction = ActionCreate | ActionSetActiveGroup | ActionSetActiveCurve |
+  ActionSetData | ActionSetCanvas;
 
 /* --- Init State & Reducer --- */
 
@@ -56,16 +62,24 @@ export const caratsReducer = (state: CaratsState = init, action: CaratsAction): 
 
     case CaratsActions.SET_ACTIVE_CURVE: {
       const { id, curve } = action.payload;
-      return {...state, [id]: {...state[id], activeCurve: curve}};
+      const caratState = state[id];
+      if (curve === caratState.activeCurve) return state;
+      return {...state, [id]: {...caratState, activeCurve: curve}};
+    }
+
+    case CaratsActions.SET_DATA: {
+      const { id, data } = action.payload;
+      return {...state, [id]: {...state[id], lastData: data}};
     }
 
     case CaratsActions.SET_CANVAS: {
       const { id, canvas } = action.payload;
       const { stage, observer, canvas: oldCanvas } = state[id];
+
       if (oldCanvas) observer.unobserve(oldCanvas);
+      if (canvas) observer.observe(canvas);
 
       stage.setCanvas(canvas);
-      observer.observe(canvas);
       return {...state, [id]: {...state[id], canvas}};
     }
 

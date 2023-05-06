@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import { Window } from '@progress/kendo-react-dialogs';
 import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
 import { DateRangePicker, DateRangePickerChangeEvent } from '@progress/kendo-react-dateinputs';
 import { TreeView, TreeViewCheckChangeEvent, TreeViewExpandChangeEvent } from '@progress/kendo-react-treeview';
 import { Checkbox } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
+import { TextInfo } from 'shared/ui';
 
 import './curve-selection-window.scss';
 import { CurveManager } from '../../lib/curve-manager';
+import { caratStateSelector } from '../../store/carats.selectors';
 import { setCaratData } from '../../store/carats.thunks';
 import { setOpenedWindow } from 'entities/windows';
 import { round } from 'shared/lib';
@@ -16,7 +18,6 @@ import { round } from 'shared/lib';
 
 interface CurveSelectionWindowProps {
   id: FormID,
-  activeGroup: ICaratColumnGroup,
 }
 interface CurveFiltersProps {
   manager: CurveManager,
@@ -24,12 +25,15 @@ interface CurveFiltersProps {
 }
 
 
-export const CurveSelectionWindow = ({id, activeGroup}: CurveSelectionWindowProps) => {
+export const CurveSelectionWindow = ({id}: CurveSelectionWindowProps) => {
   const dispatch = useDispatch();
-  const curveManager: CurveManager = activeGroup.curveManager;
+  const state: CaratState = useSelector(caratStateSelector.bind(id));
 
-  const tree = curveManager.getCurveTree();
-  const [defaultMode, setDefaultMode] = useState(curveManager.defaultMode);
+  const activeGroup = state?.activeGroup;
+  const curveManager: CurveManager = activeGroup?.curveManager;
+
+  const tree = curveManager?.getCurveTree() ?? [];
+  const [defaultMode, setDefaultMode] = useState(curveManager?.defaultMode);
 
   const [_signal, setSignal] = useState(false);
   const signal = () => setSignal(!_signal);
@@ -76,11 +80,14 @@ export const CurveSelectionWindow = ({id, activeGroup}: CurveSelectionWindowProp
         <div>
           <section>
             <h5>Кривые</h5>
-            <TreeView
-              data={tree} childrenField={'children'} item={CurveTreeItem}
-              expandIcons={true} onExpandChange={onExpandChange}
-              checkboxes={true} onCheckChange={onCheckChange}
-            />
+            {tree.length
+              ? <TreeView
+                  data={tree} childrenField={'children'} item={CurveTreeItem}
+                  expandIcons={true} onExpandChange={onExpandChange}
+                  checkboxes={true} onCheckChange={onCheckChange}
+                 />
+              : <TextInfo text={'carat.empty'}/>
+            }
           </section>
           <section>
             <h5>Фильтры</h5>

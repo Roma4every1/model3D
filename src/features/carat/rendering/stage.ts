@@ -64,8 +64,10 @@ export class CaratStage implements ICaratStage {
 
   public setCanvas(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
-    this.drawer.setContext(canvas.getContext('2d'));
-    this.resize();
+    if (canvas) {
+      this.drawer.setContext(canvas.getContext('2d'));
+      this.resize();
+    }
   }
 
   public setWell(well: string) {
@@ -130,6 +132,7 @@ export class CaratStage implements ICaratStage {
   }
 
   public resize() {
+    if (!this.canvas) return;
     const track = this.trackList[0];
     const trackMargin = this.drawer.trackBodySettings.margin;
     const trackHeaderHeight = this.drawer.trackHeaderSettings.height;
@@ -148,11 +151,13 @@ export class CaratStage implements ICaratStage {
   }
 
   public render() {
+    if (!this.canvas) return;
     this.drawer.clear();
     for (const track of this.trackList) track.render();
   }
 
   public lazyRender() {
+    if (!this.canvas) return;
     this.trackList[0].lazyRender();
   }
 }

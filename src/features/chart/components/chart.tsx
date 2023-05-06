@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useTranslation } from 'react-i18next';
 import { ResponsiveContainer, ComposedChart, CartesianGrid, Legend, Tooltip, XAxis } from 'recharts';
+import { TextInfo } from 'shared/ui';
 import { useCurrentPng } from 'recharts-to-png';
 import { saveAs } from '@progress/kendo-file-saver';
 import { compareObjects, compareArrays } from 'shared/lib';
@@ -46,7 +46,9 @@ export const Chart = ({id, channels, settings}: FormState) => {
     if (marks.length) applyLookupToMarks(marks, lookupData);
   }, [marks, lookupData]);
 
-  if (diagrams.length === 0) return <EmptyChart/>;
+  if (diagrams.length === 0) {
+    return <TextInfo text={'chart.empty'}/>;
+  }
 
   return (
     <ResponsiveContainer width={'100%'} height={'100%'}>
@@ -61,9 +63,4 @@ export const Chart = ({id, channels, settings}: FormState) => {
       </ComposedChart>
     </ResponsiveContainer>
   );
-};
-
-const EmptyChart = () => {
-  const { t } = useTranslation();
-  return <div className={'map-not-found'}>{t('chart.empty')}</div>;
 };

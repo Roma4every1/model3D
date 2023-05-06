@@ -76,6 +76,7 @@ export class CurveManager {
     this.defaultMode = true;
     this.lastData = null;
     this.curves = [];
+    this.curveDict = {};
     this.curveTypes = [];
     this.curveTree = [];
     this.typeSelection = [];
@@ -180,14 +181,17 @@ export class CurveManager {
     this.lastData = data;
     this.curveDict = {};
     const rows = data?.rows;
-    if (!rows) { this.curves = []; return; }
 
-    if (!this.curveSetChannel.applied) applyInfoIndexes(this.curveSetChannel, data.columns);
-    const validatedRows = this.validateRows(rows);
-
-    this.curves = validatedRows.map(this.createCurveModel, this);
-    this.curves.forEach((curve) => { this.curveDict[curve.id] = curve; });
-    this.curveTypes = [...new Set(this.curves.map(curve => curve.type))];
+    if (!rows) {
+      this.curves = [];
+      this.curveTypes = [];
+    } else {
+      if (!this.curveSetChannel.applied) applyInfoIndexes(this.curveSetChannel, data.columns);
+      const validatedRows = this.validateRows(rows);
+      this.curves = validatedRows.map(this.createCurveModel, this);
+      this.curves.forEach((curve) => { this.curveDict[curve.id] = curve; });
+      this.curveTypes = [...new Set(this.curves.map(curve => curve.type))];
+    }
 
     this.resetTree();
     this.resetTypeSelection();
@@ -276,8 +280,10 @@ export class CurveManager {
   public async loadCurveData(ids: CaratCurveID[]): Promise<boolean> {
     const idsToLoad: CaratCurveID[] = ids.filter(id => !this.curveDict[id].path);
     if (idsToLoad.length === 0) return true;
+
+    const lastData = this.lastData;
     const data = await CurveManager.loadCurveChannelData(this.curveDataChannel.name, idsToLoad);
-    if (!data) return false;
+    if (!data || lastData !== this.lastData) return false;
 
     if (!this.curveDataChannel.applied) applyInfoIndexes(this.curveDataChannel, data.columns);
     const info = this.curveDataChannel.info as CaratCurveDataInfo;

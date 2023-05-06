@@ -16,6 +16,11 @@ export const setCaratActiveCurve = (id: FormID, curve: any): CaratsAction => {
   return {type: CaratsActions.SET_ACTIVE_CURVE, payload: {id, curve}};
 };
 
+/** Обновляет данные каналов. */
+export const setCaratChannelData = (id: FormID, data: ChannelDict): CaratsAction => {
+  return {type: CaratsActions.SET_DATA, payload: {id, data}};
+};
+
 /** Установить элемент холста. */
 export const setCaratCanvas = (id: FormID, canvas: HTMLCanvasElement): CaratsAction => {
   return {type: CaratsActions.SET_CANVAS, payload: {id, canvas}};
