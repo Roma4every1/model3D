@@ -51,7 +51,7 @@ export const CurveTypesSection = ({stage, group, curve}: CurveTypesSectionProps)
     let index = models.findIndex((model) => curve.type.startsWith(model.type));
     if (index === -1) index = 0;
     setActiveIndex(index);
-  }, [curve]); // eslint-disable-line
+  }, [curve, models]);
 
   const settings = models[activeIndex] ?? models[0];
   models.forEach((model) => { model.active = false; });

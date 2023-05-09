@@ -24,6 +24,12 @@
     color: #424242;
     text-align: left;
     font-size: 0.8em;
+
+    div {
+      height: 12px;
+      display: flex;
+      align-items: center;
+    }
   }
 }
 
