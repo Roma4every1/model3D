@@ -1,6 +1,6 @@
 import { CaratDrawer } from './drawer';
-import { CaratElementBar, CaratIntervalModel, CaratIntervalStyleDict } from '../lib/types';
-import { applyInfoIndexes } from '../lib/channels';
+import { CaratBarModel, CaratIntervalModel, CaratIntervalStyleDict } from '../lib/types';
+import { applyInfoIndexes, createInfoRecord } from '../lib/channels';
 import { defaultSettings } from '../lib/constants';
 
 
@@ -16,13 +16,19 @@ export class CaratColumn implements ICaratColumn {
   private readonly properties: CaratColumnProperties;
 
   /** Пласты. */
-  private elements: CaratIntervalModel[];
+  private intervals: CaratIntervalModel[];
+  /** Гистограммы */
+  private bars: CaratBarModel[];
+
   /** Словарь свойств внешнего вида пластов. */
   private styleDict: CaratIntervalStyleDict;
+  /** Словарь подписей пластов. */
+  private textDict: Record<number | string, string>;
 
-  /** Гистограммы */
-  private bars: CaratElementBar[];
-  private barsStyle: CaratBarPropertySettings | null;
+  /** Стиль гистограмм. */
+  private barStyle: CaratBarPropertySettings | null;
+  /** Стиль подписей. */
+  private textStyle: CaratTextPropertySettings | null;
 
   constructor(
     rect: Rectangle, drawer: CaratDrawer,
@@ -33,21 +39,23 @@ export class CaratColumn implements ICaratColumn {
     this.channel = channel;
     this.properties = properties;
 
-    this.elements = [];
-    this.styleDict = {};
+    this.intervals = [];
     this.bars = [];
-    this.barsStyle = null;
+    this.styleDict = {};
+    this.textDict = {};
+    this.barStyle = null;
+    this.textStyle = null;
   }
 
   public getElements(): any[] {
-    return this.elements;
+    return this.intervals;
   }
 
   public getRange(): [number, number] {
     let min = Infinity;
     let max = -Infinity;
 
-    for (const { top, bottom } of this.elements) {
+    for (const { top, bottom } of this.intervals) {
       if (top < min) min = top;
       if (bottom > max) max = bottom;
     }
@@ -57,66 +65,110 @@ export class CaratColumn implements ICaratColumn {
   public setChannelData(data: ChannelData) {
     const info = this.channel.info as CaratLithologyInfo;
     const barProperty = this.channel.properties.find(p => this.properties[p.name]?.showBar);
-    if (barProperty && !info.bar) info.bar = {name: barProperty.fromColumn, index: -1};
 
-    this.elements = [];
+    let textProperty: ChannelProperty;
+    if (barProperty && this.properties[barProperty.name].showText) {
+      textProperty = barProperty;
+    } else {
+      textProperty = this.channel.properties.find(p => this.properties[p.name]?.showText);
+    }
+
+    if (barProperty) {
+      if (!info.bar) {
+        info.bar = {name: barProperty.fromColumn, index: -1};
+        this.channel.applied = false;
+      }
+      this.barStyle = this.properties[barProperty.name].bar;
+    } else {
+      delete info.bar;
+      this.barStyle = null;
+    }
+    if (textProperty) {
+      if (!info.text) {
+        info.text = {name: textProperty.fromColumn, index: -1};
+        this.channel.applied = false;
+      }
+      this.textStyle = this.properties[textProperty.name].text;
+    } else {
+      delete info.text;
+      this.textStyle = null;
+    }
+
+    this.intervals = [];
     this.bars = [];
-
     const rows = data?.rows ?? [];
-    if (data?.columns && !this.channel.applied) applyInfoIndexes(this.channel, data.columns);
 
+    if (data?.columns && !this.channel.applied) applyInfoIndexes(this.channel, data.columns);
     const topIndex = info.top.index;
     const bottomIndex = info.bottom.index;
 
     if (barProperty) {
-      this.barsStyle = this.properties[barProperty.name].bar;
+      this.barStyle = this.properties[barProperty.name].bar;
       const barIndex = info.bar.index;
       const max = Math.max(...rows.map(row => row.Cells[barIndex]));
 
-      this.bars = rows.map((row): CaratElementBar => {
+      this.bars = rows.map((row): CaratBarModel => {
         const cells = row.Cells;
-        return {top: cells[topIndex], bottom: cells[bottomIndex], value: cells[barIndex] / max};
+        const value = cells[barIndex] / max;
+        const text = cells[info.text?.index]?.toString();
+        return {top: cells[topIndex], bottom: cells[bottomIndex], value, text};
       });
     } else {
+      const stratumIndex = info.stratumID?.index ?? -1;
       const styleIndex = info.style?.index;
-      this.elements = rows.map((row): CaratIntervalModel => {
+      const textIndex = info.text?.index ?? -1;
+
+      this.intervals = rows.map((row): CaratIntervalModel => {
         const cells = row.Cells;
-        const stratumID = info.stratumID ? cells[info.stratumID.index] : undefined;
+        const stratumID = stratumIndex > 0 ? cells[stratumIndex] : undefined;
         const style = this.styleDict[cells[styleIndex]] ?? defaultSettings.intervalStyle as any;
-        return {stratumID, top: cells[topIndex], bottom: cells[bottomIndex], style};
+
+        let text = textIndex > 0 ? cells[textIndex] : undefined;
+        if (this.channel.text && text !== undefined) text = this.textDict[text];
+        return {stratumID, top: cells[topIndex], bottom: cells[bottomIndex], style, text};
       });
     }
   }
 
   public setLookupData(lookupData: ChannelDict) {
-    const lookup = lookupData[this.channel.style?.name]
-    const rows = lookup?.data?.rows;
+    const styleLookup = this.channel.style;
+    const textLookup = this.channel.text;
+    const styleChannel = lookupData[styleLookup?.name];
+    const textChannel = lookupData[textLookup?.name];
+
     this.styleDict = {};
+    this.textDict = {};
+    const styleRows = styleChannel?.data?.rows;
+    const textRows = textChannel?.data.rows;
 
-    if (rows) {
-      if (!this.channel.style.applied) applyInfoIndexes(this.channel.style, lookup.data.columns);
-      const info = this.channel.style.info;
+    if (styleRows) {
+      if (!styleLookup.applied) applyInfoIndexes(styleLookup, styleChannel.data.columns);
+      const info = styleLookup.info;
 
-      for (const { Cells: cells } of rows) {
-        const id = cells[info.id.index];
-        const color = cells[info.color.index];
-        const borderColor = cells[info.borderColor.index];
-        const backgroundColor = cells[info.backgroundColor.index];
-        const fillStyle = cells[info.fillStyle.index];
-
+      for (const row of styleRows) {
+        const { id, color, borderColor, backgroundColor, fillStyle } = createInfoRecord(row, info);
         const style = {fill: backgroundColor, stroke: borderColor};
-        if (fillStyle) this.drawer.getPattern(fillStyle, color, backgroundColor).then((pattern) => {
-          if (pattern) style.fill = pattern;
-        });
+
+        if (fillStyle) this.drawer.getPattern(fillStyle, color, backgroundColor)
+            .then((pattern) => { if (pattern) style.fill = pattern; });
         this.styleDict[id] = style;
+      }
+    }
+    if (textRows) {
+      if (!textLookup.applied) applyInfoIndexes(textLookup, textChannel.data.columns);
+      const info = textLookup.info;
+
+      for (const row of textRows) {
+        const { id, value } = createInfoRecord(row, info);
+        this.textDict[id] = value;
       }
     }
   }
 
   public render() {
-    this.drawer.setCurrentColumn(this.rect);
-    if (this.elements.length) this.drawer.drawIntervals(this.elements);
-    if (this.bars.length) this.drawer.drawBars(this.bars, this.barsStyle);
+    this.drawer.setCurrentColumn(this.rect, this.barStyle, this.textStyle);
+    if (this.intervals.length) this.drawer.drawIntervals(this.intervals);
+    if (this.bars.length) this.drawer.drawBars(this.bars);
     this.drawer.restore();
   }
 }

@@ -134,12 +134,15 @@ interface CaratAttachedChannel {
   /** Индексы колонок. */
   info?: CaratChannelInfo,
   /** Информация о справочнике стилей элементов. */
-  style?: CaratAttachedStyle,
+  style?: CaratAttachedLookup,
+  /** Информация о справочнике подписей пластов. */
+  text?: CaratAttachedLookup,
   /** Справочник с названиями пластов. */
   namesChannel?: ChannelName,
 }
 
-type CaratAttachedStyle = {name: ChannelName, info: CaratChannelInfo, applied?: boolean};
+/** Справочник, подключённый к каналу каротажной колонки. */
+type CaratAttachedLookup = {name: ChannelName, info: CaratChannelInfo, applied?: boolean};
 
 /** Словарь настроек отображения свойств канала. */
 type CaratColumnProperties = Record<string, CaratPropertySettings>;

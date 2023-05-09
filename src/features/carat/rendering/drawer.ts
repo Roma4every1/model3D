@@ -1,6 +1,6 @@
-import { CaratIntervalModel, CaratElementBar, CaratCurveModel, CurveAxisGroup } from '../lib/types';
-import { round } from 'shared/lib';
+import { CaratIntervalModel, CaratBarModel, CaratCurveModel, CurveAxisGroup } from '../lib/types';
 import { polylineType } from '../../map/components/edit-panel/selecting/selecting-utils';
+import { round } from 'shared/lib';
 
 import {
   CaratDrawerConfig, CaratTrackBodyDrawSettings, CaratTrackHeaderDrawSettings,
@@ -39,6 +39,8 @@ export class CaratDrawer {
   public readonly columnYAxisSettings: CaratColumnYAxisDrawSettings;
   /** Настройки отрисовки горизонтальных осей. колонки. */
   public readonly columnXAxesSettings: CaratColumnXAxesDrawSettings;
+  /** Используемое по умолчанию семейство шрифтов. */
+  public readonly fontFamily: string;
 
   private trackRect: Rectangle;
   private yMin: number;
@@ -55,6 +57,8 @@ export class CaratDrawer {
   private columnTranslateX: number;
   private columnTranslateY: number;
 
+  private barStyle: CaratBarPropertySettings | null;
+  private textStyle: CaratTextPropertySettings | null;
   private minusWidth: number;
 
   constructor(config: CaratDrawerConfig) {
@@ -64,6 +68,7 @@ export class CaratDrawer {
     this.columnLabelSettings = createColumnLabelDrawSettings(config);
     this.columnYAxisSettings = createColumnYAxisDrawSettings(config);
     this.columnXAxesSettings = createColumnXAxesDrawSettings(config);
+    this.fontFamily = config.stage.font.family;
   }
 
   public setContext(context: CanvasRenderingContext2D) {
@@ -148,8 +153,14 @@ export class CaratDrawer {
     this.groupTranslateY = this.trackRect.top + this.groupElementRect.top;
   }
 
-  public setCurrentColumn(rect: Rectangle) {
+  public setCurrentColumn(
+    rect: Rectangle,
+    barStyle?: CaratBarPropertySettings, textStyle?: CaratTextPropertySettings,
+  ) {
     this.columnRect = rect;
+    this.barStyle = barStyle;
+    this.textStyle = textStyle;
+
     const padding = this.columnBodySettings.padding;
     this.columnTranslateX = this.groupTranslateX + rect.left + padding;
     this.columnTranslateY = this.groupTranslateY + rect.top;
@@ -361,11 +372,36 @@ export class CaratDrawer {
     this.ctx.restore();
   }
 
+  private drawIntervalText(text: string, xCenter: number, yCenter: number, maxWidth: number) {
+    const { color, backgroundColor, fontSize: height, angle } = this.textStyle;
+    this.ctx.font = `normal ${height}px ${this.fontFamily}`;
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+
+    this.ctx.save();
+    this.ctx.resetTransform();
+    this.ctx.scale(CaratDrawer.ratio, CaratDrawer.ratio);
+
+    const translateX = this.columnTranslateX;
+    const translateY = this.columnTranslateY - (window.devicePixelRatio * this.scale) * this.yMin;
+    this.ctx.translate(translateX + xCenter, translateY + yCenter);
+
+    if (angle) this.ctx.rotate(-angle * Math.PI / 180);
+    let width = this.ctx.measureText(text).width;
+    if (width > maxWidth) width = maxWidth;
+
+    this.ctx.fillStyle = backgroundColor;
+    this.ctx.fillRect(-width / 2, -height / 2, width, height);
+    this.ctx.fillStyle = color;
+    this.ctx.fillText(text, 0, 0, maxWidth);
+    this.ctx.restore();
+  }
+
   public drawIntervals(elements: CaratIntervalModel[]) {
     const scaleY = window.devicePixelRatio * this.scale;
     this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
 
-    for (let { top, bottom, style } of elements) {
+    for (let { top, bottom, style, text } of elements) {
       if (bottom < this.yMin || top > this.yMax) continue;
       const canvasTop = scaleY * top;
       const canvasHeight = scaleY * (bottom - top);
@@ -376,19 +412,32 @@ export class CaratDrawer {
       this.ctx.beginPath();
       this.ctx.rect(0, canvasTop, this.columnWidth, canvasHeight);
       this.ctx.fill(); this.ctx.stroke();
+
+      if (text !== undefined) {
+        const xCenter = this.columnWidth / 2;
+        const yCenter = canvasTop + canvasHeight / 2;
+        this.drawIntervalText(text, xCenter, yCenter, this.columnWidth);
+      }
     }
   }
 
-  public drawBars(elements: CaratElementBar[], settings: CaratBarPropertySettings) {
+  public drawBars(elements: CaratBarModel[]) {
     const scaleY = window.devicePixelRatio * this.scale;
     this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
 
-    const charCode = settings.align.charCodeAt(0);
-    const { borderColor, backgroundColor, thickness, externalBorderColor, externalThickness } = settings;
+    const charCode = this.barStyle.align.charCodeAt(0);
+    const { externalBorderColor, externalThickness } = this.barStyle;
+    const { borderColor, backgroundColor, thickness } = this.barStyle;
 
-    const drawBar = (top: number, bottom: number, barStart: number, barWidth: number) => {
+    for (let { top, bottom, value, text } of elements) {
+      if (bottom < this.yMin || top > this.yMax || !value) continue;
       const canvasTop = scaleY * top;
       const canvasHeight = scaleY * (bottom - top);
+
+      const barWidth = value * this.columnWidth;
+      let barStart = 0;                                                       // 'left'
+      if (charCode === 114) barStart = this.columnWidth - barWidth;           // 'right'
+      else if (charCode === 99) barStart = (this.columnWidth - barWidth) / 2; // 'center'
 
       this.setLineSettings(externalThickness, externalBorderColor);
       this.ctx.strokeRect(0, canvasTop, this.columnWidth, canvasHeight);
@@ -399,25 +448,11 @@ export class CaratDrawer {
       this.ctx.beginPath();
       this.ctx.rect(barStart, canvasTop, barWidth, canvasHeight);
       this.ctx.fill(); this.ctx.stroke();
-    };
 
-    if (charCode === 108) { // 'left'
-      for (let { top, bottom, value } of elements) {
-        if (bottom < this.yMin || top > this.yMax || !value) continue;
-        const barWidth = value * this.columnWidth;
-        drawBar(top, bottom, 0, barWidth);
-      }
-    } else if (charCode === 114) { // 'right'
-      for (let { top, bottom, value } of elements) {
-        if (bottom < this.yMin || top > this.yMax || !value) continue;
-        const barWidth = value * this.columnWidth;
-        drawBar(top, bottom, this.columnWidth - barWidth, barWidth);
-      }
-    } else { // 'center'
-      for (let { top, bottom, value } of elements) {
-        if (bottom < this.yMin || top > this.yMax || !value) continue;
-        const barWidth = value * this.columnWidth;
-        drawBar(top, bottom, (this.columnWidth - barWidth) / 2, barWidth);
+      if (text !== undefined) {
+        const xCenter = barStart + barWidth / 2;
+        const yCenter = canvasTop + canvasHeight / 2;
+        this.drawIntervalText(text, xCenter, yCenter, barWidth);
       }
     }
   }

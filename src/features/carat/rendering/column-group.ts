@@ -122,10 +122,6 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     }
   }
 
-  public getElementsTop(): number {
-    return this.elementsRect.top;
-  }
-
   public getElementsRange(): [number, number] {
     let min = Infinity;
     let max = -Infinity;

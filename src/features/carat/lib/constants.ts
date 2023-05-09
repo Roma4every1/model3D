@@ -41,8 +41,17 @@ export const styleCriterionProperties = {
   lineStyle: 'LINE STYLE',
 };
 
+/** Свойства для идентификации канала с подписями пластов. */
+export const labelCriterionProperties = {
+  id: 'LOOKUPCODE',
+  value: 'LOOKUPVALUE',
+};
+
 /** Настройки отрисовки. */
 export const drawerConfig: CaratDrawerConfig = {
+  stage: {
+    font: {size: 14, style: 'normal', family: '"Segoe UI", Roboto, sans-serif'}
+  },
   track: {
     body: {
       margin: 4,
@@ -50,7 +59,7 @@ export const drawerConfig: CaratDrawerConfig = {
     },
     header: {
       padding: 3,
-      text: {font: {size: 14, style: 'normal', family: '"Segoe UI", Roboto'}, color: '#222222'},
+      text: {font: {size: 14}, color: '#222222'},
     },
   },
   column: {
@@ -59,19 +68,19 @@ export const drawerConfig: CaratDrawerConfig = {
       border: {thickness: 1, activeColor: '#252525'}
     },
     label: {
-      font: {size: 12, style: 'normal', family: '"Segoe UI", Roboto'},
+      font: {size: 12},
       color: '#000000',
       marginTop: 4,
     },
     axis: {
       vertical: {
-        font: {size: 12, style: 'normal', family: '"Segoe UI", Roboto'},
+        font: {size: 12},
         color: '#333333',
         markSize: 6,
         grid: {thickness: 1, lineDash: [5, 4]},
       },
       horizontal: {
-        font: {size: 13, style: 'normal', family: '"Segoe UI", Roboto'},
+        font: {size: 13},
         thickness: 1.5,
         markSize: 8,
         gap: 2,

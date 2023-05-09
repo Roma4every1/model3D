@@ -1,4 +1,4 @@
-import { criterionProperties, styleCriterionProperties } from './constants';
+import { criterionProperties, styleCriterionProperties, labelCriterionProperties } from './constants';
 
 
 export function identifyCaratChannel(attachment: CaratAttachedChannel, channel: Channel) {
@@ -22,18 +22,18 @@ export function applyStyle(attachment: CaratAttachedChannel, channel: Channel, d
     if (curveColorChannel) attachment.style = {name: curveColorChannel, info: null};
   }
   else if (attachment.type === 'lithology' || attachment.type === 'perforations') {
-    // смотрим на подключённые свойства и на их справочники, если подключено
-    // более 2 свойств, смотрим на первое, свойства должно быть подключено
-    // 2 справочника, один для цветов, второй для подписей
+    // обычно 2 справочника, один для цветов, второй для подписей
     for (const property of attachment.properties) {
       for (const lookupChannelName of property.lookupChannels) {
+        let field = 'style';
         const lookup = dict[lookupChannelName];
-        const info = createInfo(lookup, styleCriterionProperties)
+
+        let info = createInfo(lookup, styleCriterionProperties);
+        if (!info) { info = createInfo(lookup, labelCriterionProperties); field = 'text'; }
 
         if (info) {
-          attachment.style = {name: lookupChannelName, info};
+          attachment[field] = {name: lookupChannelName, info};
           attachment.info.style = {name: property.fromColumn, index: -1};
-          break;
         }
       }
     }
@@ -70,7 +70,7 @@ export function createInfo(channel: Channel, criterion: Record<string, string>):
   return info;
 }
 
-export function applyInfoIndexes(attachment: CaratAttachedChannel | CaratAttachedStyle, columns: ChannelColumn[]) {
+export function applyInfoIndexes(attachment: CaratAttachedChannel | CaratAttachedLookup, columns: ChannelColumn[]) {
   for (const field in attachment.info) {
     const propertyInfo = attachment.info[field];
     for (let i = 0; i < columns.length; i++) {
@@ -79,4 +79,15 @@ export function applyInfoIndexes(attachment: CaratAttachedChannel | CaratAttache
     }
   }
   attachment.applied = true;
+}
+
+export function createInfoRecord<Fields extends string>(row: ChannelRow, info: CaratChannelInfo<Fields>) {
+  const cells = row.Cells;
+  const record: Record<Fields, any> = {} as any;
+
+  for (const field in info) {
+    const index = info[field].index;
+    record[field] = cells[index];
+  }
+  return record;
 }

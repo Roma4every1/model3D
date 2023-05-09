@@ -53,21 +53,15 @@ export interface CaratIntervalModel {
   top: number,
   bottom: number,
   style: CaratIntervalStyle,
-  label?: CaratIntervalLabel,
+  text?: string,
+}
+export interface CaratBarModel {
+  top: number,
+  bottom: number,
+  value: number, // from 0 to 1
+  text?: string,
 }
 export interface CaratIntervalStyle {
   fill: ColorHEX | CanvasPattern,
   stroke: ColorHEX,
-}
-export interface CaratIntervalLabel {
-  text: string,
-  color: ColorHEX,
-  backgroundColor: ColorHEX,
-  angle: number,
-}
-
-export interface CaratElementBar {
-  top: number,
-  bottom: number,
-  value: number, // from 0 to 1
 }
