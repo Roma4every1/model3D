@@ -50,7 +50,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     this.channels = init.channels;
     this.active = init.active;
 
-    this.xAxis = init.xAxis;
+    this.xAxis = init.xAxis ?? {numberOfMarks: 2, grid: false};
     this.yAxis = init.yAxis;
     if (this.xAxis.numberOfMarks < 2) this.xAxis.numberOfMarks = 2;
     if (this.xAxis.numberOfMarks > 10) this.xAxis.numberOfMarks = 10;

@@ -85,9 +85,12 @@ export class CurveManager {
     this.measures = {};
     initMeasures.forEach((measure) => { this.measures[measure.type] = measure; });
 
-    this.popularTypes = initSelection.types.map(CurveManager.typeToSelector);
-    this.start = initSelection.start === 'now' ? new Date() : new Date(initSelection.start);
-    this.end = initSelection.end === 'now' ? new Date() : new Date(initSelection.end);
+    const popularTypes = initSelection?.types ?? [];
+    const start = initSelection?.start ?? 'now';
+    const end = initSelection?.end ?? 'now';
+    this.popularTypes = popularTypes.map(CurveManager.typeToSelector);
+    this.start = start === 'now' ? new Date() : new Date(start);
+    this.end = end === 'now' ? new Date() : new Date(end);
   }
 
   public setChannels(curveSet: CaratAttachedChannel, curveData: CaratAttachedChannel) {
