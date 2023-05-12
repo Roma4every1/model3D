@@ -2,6 +2,7 @@ import { CaratDrawer } from './drawer';
 import { CaratCurveModel } from '../lib/types';
 import { CaratColumnGroup } from './column-group';
 import { isRectInnerPoint } from 'shared/lib';
+import { defaultSettings } from '../lib/constants';
 
 
 /** Трек. */
@@ -35,11 +36,15 @@ export class CaratTrack implements ICaratTrack {
     this.rect = rect;
     this.drawer = drawer;
     this.label = '';
-    this.viewport = {y: 0, scale, min: 0, max: 0, scroll: {queue: [], direction: 0, id: null}};
     this.groups = [];
     this.activeIndex = -1;
     this.activeCurve = null;
     this.maxGroupHeaderHeight = 0;
+
+    const groupWithYAxis = columns.find((group) => group.yAxis?.show);
+    const step = groupWithYAxis?.yAxis.step ?? defaultSettings.yAxisStep;
+    const scroll = {queue: [], direction: 0, step, id: null};
+    this.viewport = {y: 0, scale, min: 0, max: 0, scroll};
 
     let x = 0, index = 0;
     const top = drawer.trackHeaderSettings.height;
@@ -133,6 +138,14 @@ export class CaratTrack implements ICaratTrack {
     this.rebuildHeaders();
   }
 
+  public setActiveGroupYAxisStep(step: number) {
+    const activeGroup = this.groups[this.activeIndex];
+    if (!activeGroup) return;
+    activeGroup.yAxis.step = step;
+    const groupWithYAxis = this.groups.find((group) => group.yAxis?.show);
+    this.viewport.scroll.step = groupWithYAxis?.yAxis.step ?? defaultSettings.yAxisStep;
+  }
+
   public setActiveCurve(curve: CaratCurveModel) {
     this.activeCurve = curve;
     this.groups.forEach((group) => { group.setActiveCurve(curve.id); });
@@ -193,8 +206,6 @@ export class CaratTrack implements ICaratTrack {
 
   private rebuildHeaders() {
     const maxHeight = Math.max(...this.groups.map((g) => g.header.getContentHeight()));
-    if (maxHeight === this.maxGroupHeaderHeight) return;
-
     for (const group of this.groups) group.setHeaderHeight(maxHeight);
     this.backgroundGroup.setHeaderHeight(maxHeight);
     this.maxGroupHeaderHeight = maxHeight;

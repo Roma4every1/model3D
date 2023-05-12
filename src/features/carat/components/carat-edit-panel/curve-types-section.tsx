@@ -38,6 +38,9 @@ export const CurveTypesSection = ({stage, group, curve}: CurveTypesSectionProps)
   const [models, setModels] = useState<TypeSettingsModel[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
 
+  const [_signal, setSignal] = useState(false);
+  const signal = () => setSignal(!_signal);
+
   useEffect(() => {
     setModels(curveTypes.map((type) => ({
       type,
@@ -53,17 +56,13 @@ export const CurveTypesSection = ({stage, group, curve}: CurveTypesSectionProps)
     setActiveIndex(index);
   }, [curve, models]);
 
-  const settings = models[activeIndex] ?? models[0];
+  const settings = models[activeIndex];
   models.forEach((model) => { model.active = false; });
   if (settings) settings.active = true;
 
   const modelToSettings = (model: TypeSettingsModel, i: number) => {
     const onClick = () => setActiveIndex(i);
     return <CurveTypeSettings key={i} settings={model} onClick={onClick}/>
-  };
-
-  const onChange = () => {
-    setModels([...models]);
   };
 
   return (
@@ -73,7 +72,7 @@ export const CurveTypesSection = ({stage, group, curve}: CurveTypesSectionProps)
           {models.map(modelToSettings)}
         </div>
       </MenuSection>
-      <ActiveTypeSettings stage={stage} manager={curveManager} settings={settings} onChange={onChange}/>
+      <ActiveTypeSettings stage={stage} manager={curveManager} settings={settings} onChange={signal}/>
     </>
   );
 };
@@ -125,12 +124,12 @@ const ActiveTypeSettings = ({stage, manager, settings, onChange}: ActiveTypeSett
 
   const onMinChange = (e: NumericTextBoxChangeEvent) => {
     changeMeasure(e.value, max);
-    setAuto(false);
+    if (auto) setAuto(false);
   };
 
   const onMaxChange = (e: NumericTextBoxChangeEvent) => {
     changeMeasure(min, e.value);
-    setAuto(false);
+    if (auto) setAuto(false);
   };
 
   const reset = () => {

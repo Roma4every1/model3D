@@ -20,7 +20,6 @@ export class CaratStage implements ICaratStage {
 
   public readonly useStaticScale: boolean;
   public readonly strataChannelName: ChannelName;
-  private readonly moveViewportStep: number;
 
   constructor(init: CaratFormSettings, drawerConfig: CaratDrawerConfig) {
     this.zones = init.settings.zones;
@@ -35,9 +34,6 @@ export class CaratStage implements ICaratStage {
     const track = new CaratTrack(rect, init.columns, scale, this.drawer);
     this.trackList = [track];
     if (this.zones.length) track.setZones(this.zones);
-
-    const groupWithYAxis = init.columns.find((group) => group.yAxis.show);
-    this.moveViewportStep = groupWithYAxis?.yAxis.step ?? defaultSettings.yAxisStep;
   }
 
   public getCaratSettings(): CaratSettings {
@@ -95,7 +91,7 @@ export class CaratStage implements ICaratStage {
 
   public handleKeyDown(key: string): boolean {
     if (key.startsWith('Arrow')) {
-      let direction;
+      let direction: 1 | -1;
       if (key.endsWith('Up')) {
         direction = -1;
       } else if (key.endsWith('Down')) {
@@ -103,7 +99,7 @@ export class CaratStage implements ICaratStage {
       }
       if (direction) {
         const viewport = this.trackList[0].viewport;
-        moveSmoothly(viewport, this, direction * this.moveViewportStep)
+        moveSmoothly(viewport, this, direction)
       }
     }
     return false;
@@ -118,7 +114,7 @@ export class CaratStage implements ICaratStage {
 
   public handleMouseWheel(point: Point, direction: 1 | -1) {
     const track = this.trackList.find((t) => isRectInnerPoint(point, t.rect));
-    if (track) moveSmoothly(track.viewport, this, direction * this.moveViewportStep);
+    if (track) moveSmoothly(track.viewport, this, direction);
   }
 
   public handleMouseMove(by: number) {

@@ -15,19 +15,19 @@ export function calculateTrackWidth(columns: CaratColumnInit[]) {
 /** Плавно переместит порт просмотра.
  * @param viewport порт просмотра
  * @param stage экземпляр сцены
- * @param by на сколько переместить
+ * @param direction в какую сторону
  * */
-export function moveSmoothly(viewport: CaratViewport, stage: ICaratStage, by: number) {
+export function moveSmoothly(viewport: CaratViewport, stage: ICaratStage, direction: 1 | -1) {
   const duration = 250; // 0.25 second
   const frameTime = 16; // 60 FPS => 1000ms / 60
   const scroll = viewport.scroll;
 
-  const direction = by > 0 ? 1 : -1;
   if (scroll.direction !== direction) {
     scroll.direction = direction;
     scroll.queue = [];
   }
 
+  const by = direction * scroll.step;
   const queue = scroll.queue;
   let time = 0, prevY = 0, step = 0;
 

@@ -28,7 +28,8 @@ type ZoneListItem = {type: CaratCurveType, selected: boolean};
 type ZoneList = ZoneListItem[][];
 
 
-const toolbarTools = ['transferTo', 'transferFrom', 'transferAllTo', 'transferAllFrom', 'remove'];
+const singleZoneTools = ['remove'];
+const pluralZoneTools = ['transferTo', 'transferFrom', 'transferAllTo', 'transferAllFrom', 'remove'];
 
 export const ZonesEditingWindow = ({stage}: ZonesEditingWindowProps) => {
   const dispatch = useDispatch();
@@ -84,6 +85,11 @@ export const ZonesEditingWindow = ({stage}: ZonesEditingWindowProps) => {
     stage.render(); onClose();
   };
 
+  const metaData = {
+    allTypes, itemClick, toolClick, addItem, deleteZone,
+    tools: state.length > 1 ? pluralZoneTools : singleZoneTools,
+  };
+
   return (
     <Window
       title={t('carat.zones.window-title')} maximizeButton={() => null}
@@ -92,9 +98,9 @@ export const ZonesEditingWindow = ({stage}: ZonesEditingWindowProps) => {
       <div className={'zones-editing-window'}>
         {state.length
           ? <div style={{gridTemplateColumns: '1fr '.repeat(state.length)}}>
-              {state.map(listToEditor, {allTypes, itemClick, toolClick, addItem, deleteZone})}
+              {state.map(listToEditor, metaData)}
             </div>
-          : <TextInfo text={'carat.no-zones'}/>}
+          : <TextInfo text={'carat.zones.no-zones'}/>}
         <div>
           <Button onClick={addZone}>{t('carat.zones.add')}</Button>
           <Button onClick={onSubmit} style={{width: 50}}>{t('base.ok')}</Button>
@@ -144,14 +150,14 @@ const ZoneEditor = ({i, data, toolbar, onItemClick, allTypes, addItem, deleteZon
 };
 
 function listToEditor(this: any, list: ZoneListItem[], i: number, state: ZoneList) {
-  const { allTypes, itemClick, toolClick, addItem, deleteZone } = this;
+  const { allTypes, itemClick, toolClick, addItem, deleteZone, tools } = this;
   const connectedIndex = (i + 1) % state.length;
 
   const Toolbar = () => {
     return (
       <ListBoxToolbar
         data={list} dataConnected={state[connectedIndex]}
-        tools={toolbarTools} onToolClick={(e) => toolClick(e, i, connectedIndex)}
+        tools={tools} onToolClick={(e) => toolClick(e, i, connectedIndex)}
       />
     );
   };

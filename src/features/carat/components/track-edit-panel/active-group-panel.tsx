@@ -45,7 +45,8 @@ const GroupCommonSettings = ({stage, track, activeGroup}: CaratActiveGroupPanelP
   const onLabelChange = (e: TextBoxChangeEvent) => {
     if (typeof e.value !== 'string') return;
     track.setActiveGroupLabel(e.value);
-    stage.render(); setLabel(e.value);
+    stage.render();
+    setLabel(e.value);
   };
 
   const onWidthChange = (e: NumericTextBoxChangeEvent) => {
@@ -57,8 +58,9 @@ const GroupCommonSettings = ({stage, track, activeGroup}: CaratActiveGroupPanelP
 
   const onStepChange = (e: NumericTextBoxChangeEvent) => {
     if (!e.value) return;
-    activeGroup.yAxis.step = e.value;
-    stage.render(); setStep(e.value);
+    track.setActiveGroupYAxisStep(e.value);
+    stage.render();
+    setStep(e.value);
   };
 
   return (
@@ -69,11 +71,11 @@ const GroupCommonSettings = ({stage, track, activeGroup}: CaratActiveGroupPanelP
       </div>
       <div>
         <span>Шаг:</span>
-        <NumericTextBox value={step} onChange={onStepChange} step={1} min={1}/>
+        <NumericTextBox value={step} onChange={onStepChange} step={1} min={1} format={'#'}/>
       </div>
       <div>
         <span>Ширина:</span>
-        <NumericTextBox value={width} onChange={onWidthChange} step={1} min={10} max={1000}/>
+        <NumericTextBox value={width} onChange={onWidthChange} step={1} min={10} max={1000} format={'#'}/>
       </div>
     </>
   );

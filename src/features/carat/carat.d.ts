@@ -73,6 +73,7 @@ interface ICaratTrack {
   setActiveCurve(curve: any): void
   setActiveGroupWidth(width: number): void
   setActiveGroupLabel(label: string): void
+  setActiveGroupYAxisStep(step: number): void
 
   moveGroup(idx: number, to: 'left' | 'right'): void
   handleMouseDown(point: Point): any
@@ -109,7 +110,19 @@ interface CaratViewport {
   /** Максимально возможная координата по Y. */
   max: number,
   /** Состояние прокрутки. */
-  scroll: {queue: any[], direction: number, id: number | null},
+  scroll: CaratViewportScroll,
+}
+
+/** Состояние прокрутки. */
+interface CaratViewportScroll {
+  /** Очередь движений. */
+  queue: number[],
+  /** Направление движения. */
+  direction: number,
+  /** Шаг смещения за единицу прокрутки. */
+  step: number,
+  /** ID из `setInterval`. */
+  id: number | null,
 }
 
 /** Идентификатор каротажной кривой. */
