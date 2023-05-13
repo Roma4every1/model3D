@@ -11,7 +11,7 @@ import { CurveTypesSection } from './curve-types-section';
 /** Панель редактирования каротажа. */
 export const CaratEditPanel = ({id}: FormEditPanelProps) => {
   const state: CaratState = useSelector(caratStateSelector.bind(id));
-  if (!state) return <MenuSkeleton template={['100px', '100px', '100px']}/>;
+  if (!state) return <MenuSkeleton template={['205px', '428px', '301px']}/>;
   const { stage, curveGroup } = state;
 
   return (

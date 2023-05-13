@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { TextBox, TextBoxChangeEvent } from '@progress/kendo-react-inputs';
 import { NumericTextBox, NumericTextBoxChangeEvent } from '@progress/kendo-react-inputs';
 import { MenuSection, ButtonIconRow, ButtonIconRowItem } from 'shared/ui';
+import { constraints } from '../../lib/constants';
 
 import yAxisIcon from 'assets/images/carat/y-axis.svg';
 import yAxisAbsMarksIcon from 'assets/images/carat/y-axis-abs-marks.svg';
@@ -13,6 +14,7 @@ interface CaratActiveGroupPanelProps {
   stage: ICaratStage,
   track: ICaratTrack,
   activeGroup: ICaratColumnGroup,
+  signal: () => void,
 }
 interface GroupYAxisSettingsProps {
   stage: ICaratStage,
@@ -21,16 +23,20 @@ interface GroupYAxisSettingsProps {
 
 
 /** Панель настроек активной группы колонок. */
-export const CaratActiveGroupPanel = ({stage, track, activeGroup}: CaratActiveGroupPanelProps) => {
+export const CaratActiveGroupPanel = ({stage, track, activeGroup, signal}: CaratActiveGroupPanelProps) => {
   return (
     <MenuSection header={'Настройки активной колонки'} className={'carat-active-column'}>
-      <GroupCommonSettings stage={stage} track={track} activeGroup={activeGroup}/>
+      <GroupCommonSettings stage={stage} track={track} activeGroup={activeGroup} signal={signal}/>
       <GroupYAxisSettings stage={stage} settings={activeGroup.yAxis}/>
     </MenuSection>
   );
 };
 
-const GroupCommonSettings = ({stage, track, activeGroup}: CaratActiveGroupPanelProps) => {
+const GroupCommonSettings = ({stage, track, activeGroup, signal}: CaratActiveGroupPanelProps) => {
+  const maxLabelLength = constraints.groupLabel.max;
+  const { min: minStep, max: maxStep } = constraints.groupStep;
+  const { min: minWidth, max: maxWidth } = constraints.groupWidth;
+
   const [label, setLabel] = useState('');
   const [width, setWidth] = useState(null);
   const [step, setStep] = useState(null);
@@ -42,40 +48,49 @@ const GroupCommonSettings = ({stage, track, activeGroup}: CaratActiveGroupPanelP
     setStep(activeGroup.yAxis.step);
   }, [activeGroup]);
 
-  const onLabelChange = (e: TextBoxChangeEvent) => {
-    if (typeof e.value !== 'string') return;
-    track.setActiveGroupLabel(e.value);
+  const onLabelChange = ({value}: TextBoxChangeEvent) => {
+    if (typeof value !== 'string') return;
+    setLabel(value); signal();
+    track.setActiveGroupLabel(value);
     stage.render();
-    setLabel(e.value);
   };
 
-  const onWidthChange = (e: NumericTextBoxChangeEvent) => {
-    if (!e.value) return;
-    track.setActiveGroupWidth(e.value);
+  const onWidthChange = ({value}: NumericTextBoxChangeEvent) => {
+    setWidth(value);
+    if (!value || value < minWidth || value > maxWidth) return;
+    track.setActiveGroupWidth(value);
     stage.resize(); stage.render();
-    setWidth(e.value);
   };
 
-  const onStepChange = (e: NumericTextBoxChangeEvent) => {
-    if (!e.value) return;
-    track.setActiveGroupYAxisStep(e.value);
+  const onStepChange = ({value}: NumericTextBoxChangeEvent) => {
+    setStep(value);
+    if (!value || value < minStep || value > maxStep) return;
+    track.setActiveGroupYAxisStep(value);
     stage.render();
-    setStep(e.value);
   };
 
   return (
     <>
       <div>
         <span>Имя:</span>
-        <TextBox value={label} onChange={onLabelChange} spellCheck={false}/>
+        <TextBox
+          max={maxLabelLength} spellCheck={false}
+          value={label} onChange={onLabelChange}
+        />
       </div>
       <div>
         <span>Шаг:</span>
-        <NumericTextBox value={step} onChange={onStepChange} step={1} min={1} format={'#'}/>
+        <NumericTextBox
+          format={'#'} min={minStep} max={maxStep} step={1}
+          value={step} onChange={onStepChange}
+        />
       </div>
       <div>
         <span>Ширина:</span>
-        <NumericTextBox value={width} onChange={onWidthChange} step={1} min={10} max={1000} format={'#'}/>
+        <NumericTextBox
+          format={'#'} min={minWidth} max={maxWidth} step={1}
+          value={width} onChange={onWidthChange}
+        />
       </div>
     </>
   );

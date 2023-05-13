@@ -6,6 +6,7 @@ import { CaratColumnHeader } from './column-header';
 import { CurveManager } from '../lib/curve-manager';
 import { distanceFromCaratCurve } from '../lib/utils';
 import { isRectInnerPoint } from 'shared/lib';
+import { defaultSettings, constraints } from '../lib/constants';
 
 
 /** Группа колонок каротажной диаграммы. */
@@ -50,10 +51,11 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     this.channels = init.channels;
     this.active = init.active;
 
-    this.xAxis = init.xAxis ?? {numberOfMarks: 2, grid: false};
     this.yAxis = init.yAxis;
-    if (this.xAxis.numberOfMarks < 2) this.xAxis.numberOfMarks = 2;
-    if (this.xAxis.numberOfMarks > 10) this.xAxis.numberOfMarks = 10;
+    this.xAxis = init.xAxis ?? defaultSettings.xAxis;
+    const { min: minMarks, max: maxMarks } = constraints.yAxisMarks;
+    if (this.xAxis.numberOfMarks < minMarks) this.xAxis.numberOfMarks = minMarks;
+    if (this.xAxis.numberOfMarks > maxMarks) this.xAxis.numberOfMarks = maxMarks;
 
     const headerHeight = this.header.getHeight();
     this.elementsRect = {...rect};

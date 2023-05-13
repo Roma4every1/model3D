@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { MenuSection, ButtonIcon } from 'shared/ui';
 import { setCaratActiveGroup } from '../../store/carats.actions';
@@ -11,13 +10,12 @@ interface CaratColumnsPanelProps {
   id: FormID,
   stage: ICaratStage,
   track: ICaratTrack,
+  signal: () => void,
 }
 
 
-export const CaratColumnsPanel = ({id, stage, track}: CaratColumnsPanelProps) => {
+export const CaratColumnsPanel = ({id, stage, track, signal}: CaratColumnsPanelProps) => {
   const dispatch = useDispatch();
-  const [signal, setSignal] = useState(false);
-
   const groups = track.getGroups();
   const activeIndex = track.getActiveIndex();
 
@@ -28,14 +26,12 @@ export const CaratColumnsPanel = ({id, stage, track}: CaratColumnsPanelProps) =>
 
   const moveLeft = () => {
     track.moveGroup(activeIndex, 'left');
-    stage.render();
-    setSignal(!signal);
+    stage.render(); signal();
   };
 
   const moveRight = () => {
     track.moveGroup(activeIndex,'right');
-    stage.render();
-    setSignal(!signal);
+    stage.render(); signal();
   };
 
   const columnToLabel = (column: ICaratColumnGroup, i: number) => {

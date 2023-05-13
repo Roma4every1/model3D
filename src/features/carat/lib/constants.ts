@@ -4,9 +4,18 @@ import { CaratDrawerConfig } from '../rendering/drawer-settings';
 /** Значения некоторых настроек по умолчанию. */
 export const defaultSettings = {
   scale: 400,
+  xAxis: {numberOfMarks: 2, grid: false},
   yAxisStep: 5,
   curveStyle: {thickness: 2, color: '#605656'},
   intervalStyle: {stroke: '#888888', fill: '#e8e8e8'},
+};
+
+/** Ограничения на различные настройки каротажа. */
+export const constraints = {
+  yAxisMarks: {min: 2, max: 12},
+  groupLabel: {max: 100}, // length,
+  groupStep: {min: 1, max: 100},
+  groupWidth: {min: 5, max: 1000},
 };
 
 /** Свойства для идентификации каналов. */
