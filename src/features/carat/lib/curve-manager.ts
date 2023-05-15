@@ -6,12 +6,9 @@ import { applyInfoIndexes } from './channels';
 import { defaultSettings } from './constants';
 
 
-interface CurvePopularType {
-  regExp: RegExp,
-  selected: boolean,
-}
 interface CurveTreeGroup {
-  value: string,
+  date: Date,
+  text: string,
   checked: boolean,
   expanded: boolean,
   children: {value: CaratCurveModel, checked: boolean}[],
@@ -19,13 +16,6 @@ interface CurveTreeGroup {
 
 
 export class CurveManager {
-  private static typeToSelector(t: CaratCurveSelector): CurvePopularType {
-    return {regExp: new RegExp(t.expression), selected: t.isSelected};
-  }
-  private static selectorToType(s: CurvePopularType): CaratCurveSelector {
-    return {expression: s.regExp.source, isSelected: s.selected};
-  }
-
   private static async loadCurveChannelData(name: ChannelName, ids: any[]) {
     const parameter: Parameter = {id: 'currentCurveIds', type: 'stringArray', value: ids} as Parameter;
     const res = await channelsAPI.getChannelData(name, [parameter], {order: []} as any);
@@ -67,7 +57,7 @@ export class CurveManager {
   public curveDataChannel: CaratAttachedChannel;
 
   /** Типы кривых. */
-  public readonly popularTypes: CurvePopularType[];
+  public readonly popularTypes: CaratCurveSelector[];
   /** Начальная дата. */
   public start: Date;
   /** Конечная дата. */
@@ -89,7 +79,7 @@ export class CurveManager {
     const popularTypes = initSelection?.types ?? [];
     const start = initSelection?.start ?? 'now';
     const end = initSelection?.end ?? 'now';
-    this.popularTypes = popularTypes.map(CurveManager.typeToSelector);
+    this.popularTypes = popularTypes;
     this.start = start === 'now' ? new Date() : new Date(start);
     this.end = end === 'now' ? new Date() : new Date(end);
   }
@@ -126,14 +116,6 @@ export class CurveManager {
     };
   }
 
-  private isPopularType(curveType: CaratCurveType): boolean {
-    for (const selector of this.popularTypes) {
-      const matched = selector.regExp.test(curveType);
-      if (matched) return selector.selected;
-    }
-    return false;
-  }
-
   private isInRange(curve: CaratCurveModel): boolean {
     const curveDate = curve.date;
     return curveDate && curveDate >= this.start && curveDate <= this.end;
@@ -157,19 +139,30 @@ export class CurveManager {
       if (!map.has(time)) map.set(time, []);
       map.get(time).push(curve);
     }
+
     this.curveTree = [];
-    for (const list of map.values()) {
-      const children = list.map((curve) => ({value: curve, checked: this.isPopularType(curve.type)}));
-      const value = list[0].date.toLocaleDateString();
+    const values = [...map.values()].sort((a, b) => a[0].date.getTime() - b[0].date.getTime());
+
+    for (const list of values) {
+      const children = list.map((curve) => ({value: curve, checked: curve.defaultLoading}));
+      const date = list[0].date;
       const checked = children.some(child => child.checked);
-      this.curveTree.push({value, children, checked, expanded: false});
+      this.curveTree.push({date, text: date.toLocaleDateString(), children, checked, expanded: false});
     }
   }
 
   private resetTypeSelection() {
+    const checkedTypes = this.curves.filter((c) => c.defaultLoading).map((c) => c.type);
     this.typeSelection = this.curveTypes.map((curveType) => {
-      return {type: curveType, checked: this.isPopularType(curveType)};
+      return {type: curveType, checked: checkedTypes.includes(curveType)};
     });
+  }
+
+  private resetDates() {
+    const minDate = this.curveTree.at(0)?.date;
+    const maxDate = this.curveTree.at(-1)?.date;
+    if (minDate) this.start = minDate;
+    if (maxDate) this.end = maxDate;
   }
 
   private updateTree() {
@@ -200,6 +193,7 @@ export class CurveManager {
 
     this.resetTree();
     this.resetTypeSelection();
+    this.resetDates();
   }
 
   public setActiveCurve(id?: CaratCurveID) {
@@ -309,10 +303,9 @@ export class CurveManager {
   }
 
   public getInitSelection(): CaratDataSelection {
-    const types = this.popularTypes.map(CurveManager.selectorToType);
     const start = this.start.toJSON().substring(0, 10);
     const end = this.end.toJSON().substring(0, 10);
-    return {types, start, end};
+    return {types: this.popularTypes, start, end};
   }
 
   public getInitMeasures(): CaratCurveMeasure[] {

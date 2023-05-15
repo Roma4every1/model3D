@@ -52,12 +52,12 @@ export function overlayColor(base: ColorModelRGBA, additive: ColorModelRGBA): Co
   if (!addedAlpha) return base;
 
   const alpha = 1 - (1 - addedAlpha) * (1 - baseAlpha);
-  const k1 = addedAlpha / alpha;
-  const k2 = baseAlpha * (1 - baseAlpha) / alpha;
+  const additiveWeight = addedAlpha / alpha;
+  const baseWeight = baseAlpha * (1 - baseAlpha) / alpha;
 
-  const red   = Math.round(additive[0] * k1 + base[0] * k2);
-  const green = Math.round(additive[1] * k1 + base[1] * k2);
-  const blue  = Math.round(additive[2] * k1 + base[2] * k2);
+  const red   = Math.round(additive[0] * additiveWeight + base[0] * baseWeight);
+  const green = Math.round(additive[1] * additiveWeight + base[1] * baseWeight);
+  const blue  = Math.round(additive[2] * additiveWeight + base[2] * baseWeight);
 
   return [red, green, blue, alpha];
 }

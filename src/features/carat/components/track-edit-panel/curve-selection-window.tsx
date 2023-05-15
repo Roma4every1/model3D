@@ -29,8 +29,8 @@ export const CurveSelectionWindow = ({id}: CurveSelectionWindowProps) => {
   const dispatch = useDispatch();
   const state: CaratState = useSelector(caratStateSelector.bind(id));
 
-  const activeGroup = state?.activeGroup;
-  const curveManager: CurveManager = activeGroup?.curveManager;
+  const curveGroup = state?.curveGroup;
+  const curveManager: CurveManager = curveGroup?.curveManager;
 
   const tree = curveManager?.getCurveTree() ?? [];
   const [defaultMode, setDefaultMode] = useState(curveManager?.defaultMode);
@@ -139,7 +139,7 @@ const CurveFilters = ({manager, signal}: CurveFiltersProps) => {
 };
 
 const CurveTreeItem = ({item}) => {
-  if (typeof item.value === 'string') return item.value as any;
+  if (typeof item.text === 'string') return item.text as any;
   const curve = item.value;
 
   return (
