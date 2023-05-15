@@ -1,6 +1,8 @@
 import { CaratDrawer } from './drawer';
 import { CaratBarModel, CaratIntervalModel, CaratIntervalStyleDict } from '../lib/types';
+import { cartesianProduct, parseColorHEX, stringifyRGBA, overlayColor } from 'shared/lib';
 import { applyInfoIndexes, createInfoRecord } from '../lib/channels';
+import { fixHEX } from '../lib/utils';
 import { defaultSettings } from '../lib/constants';
 
 
@@ -67,8 +69,8 @@ export class CaratColumn implements ICaratColumn {
     const barProperty = this.channel.properties.find(p => this.properties[p.name]?.showBar);
 
     let textProperty: ChannelProperty;
-    if (barProperty && this.properties[barProperty.name].showText) {
-      textProperty = barProperty;
+    if (barProperty) {
+      if (this.properties[barProperty.name].showText) textProperty = barProperty;
     } else {
       textProperty = this.channel.properties.find(p => this.properties[p.name]?.showText);
     }
@@ -84,13 +86,8 @@ export class CaratColumn implements ICaratColumn {
       this.barStyle = null;
     }
     if (textProperty) {
-      if (!info.text) {
-        info.text = {name: textProperty.fromColumn, index: -1};
-        this.channel.applied = false;
-      }
       this.textStyle = this.properties[textProperty.name].text;
     } else {
-      delete info.text;
       this.textStyle = null;
     }
 
@@ -98,7 +95,16 @@ export class CaratColumn implements ICaratColumn {
     this.bars = [];
     const rows = data?.rows ?? [];
 
-    if (data?.columns && !this.channel.applied) applyInfoIndexes(this.channel, data.columns);
+    if (data?.columns && !this.channel.applied) {
+      applyInfoIndexes(this.channel, data.columns);
+      data.columns.forEach(({ Name: name }, i) => {
+        for (const style of this.channel.styles) {
+          if (style.columnName === name) style.columnIndex = i;
+        }
+      });
+      this.channel.styles = this.channel.styles.filter((style) => style.columnIndex >= 0);
+    }
+
     const topIndex = info.top.index;
     const bottomIndex = info.bottom.index;
 
@@ -109,59 +115,104 @@ export class CaratColumn implements ICaratColumn {
 
       this.bars = rows.map((row): CaratBarModel => {
         const cells = row.Cells;
-        const value = cells[barIndex] / max;
-        const text = cells[info.text?.index]?.toString();
-        return {top: cells[topIndex], bottom: cells[bottomIndex], value, text};
+        const barValue = cells[barIndex];
+        const text = (this.textStyle && barValue) ? barValue.toString() : undefined;
+        return {top: cells[topIndex], bottom: cells[bottomIndex], value: barValue / max, text};
       });
     } else {
       const stratumIndex = info.stratumID?.index ?? -1;
-      const styleIndex = info.style?.index;
-      const textIndex = info.text?.index ?? -1;
+      const styles = this.channel.styles;
+      const textDict = styles.at(-1)?.text.dict;
+      const textIndex = styles.at(-1)?.columnIndex ?? -1;
+      const styleIndexes = styles.map((style) => style.columnIndex);
 
       this.intervals = rows.map((row): CaratIntervalModel => {
         const cells = row.Cells;
         const stratumID = stratumIndex > 0 ? cells[stratumIndex] : undefined;
-        const style = this.styleDict[cells[styleIndex]] ?? defaultSettings.intervalStyle as any;
 
-        let text = textIndex > 0 ? cells[textIndex] : undefined;
-        if (this.channel.text && text !== undefined) text = this.textDict[text];
+        const styleID = styleIndexes.map(i => cells[i]).join('&');
+        const style = this.styleDict[styleID] ?? defaultSettings.intervalStyle as any;
+
+        let text = (this.textStyle && textIndex > 0) ? cells[textIndex] : undefined;
+        if (textDict && text !== undefined) text = textDict[text];
         return {stratumID, top: cells[topIndex], bottom: cells[bottomIndex], style, text};
       });
     }
   }
 
   public setLookupData(lookupData: ChannelDict) {
-    const styleLookup = this.channel.style;
-    const textLookup = this.channel.text;
-    const styleChannel = lookupData[styleLookup?.name];
-    const textChannel = lookupData[textLookup?.name];
+    for (const { color: colorLookup, text: textLookup } of this.channel.styles) {
+      const colorChannel = lookupData[colorLookup.name];
+      const colorRows = colorChannel?.data?.rows;
+      colorLookup.dict = {};
 
-    this.styleDict = {};
-    this.textDict = {};
-    const styleRows = styleChannel?.data?.rows;
-    const textRows = textChannel?.data.rows;
+      const textChannel = lookupData[textLookup.name];
+      const textRows = textChannel?.data?.rows;
+      textLookup.dict = {};
 
-    if (styleRows) {
-      if (!styleLookup.applied) applyInfoIndexes(styleLookup, styleChannel.data.columns);
-      const info = styleLookup.info;
+      if (colorRows) {
+        if (!colorLookup.applied) applyInfoIndexes(colorLookup, colorChannel.data.columns);
+        const info = colorLookup.info;
 
-      for (const row of styleRows) {
-        const { id, color, borderColor, backgroundColor, fillStyle } = createInfoRecord(row, info);
-        const style = {fill: backgroundColor, stroke: borderColor};
+        for (const row of colorRows) {
+          const style = createInfoRecord(row, info);
+          style.color = parseColorHEX(fixHEX(style.color));
+          style.borderColor = parseColorHEX(fixHEX(style.borderColor));
+          style.backgroundColor = parseColorHEX(fixHEX(style.backgroundColor));
+          colorLookup.dict[style.id] = style;
+        }
+      }
+      if (textRows) {
+        if (!textLookup.applied) applyInfoIndexes(textLookup, textChannel.data.columns);
+        const info = textLookup.info;
 
-        if (fillStyle) this.drawer.getPattern(fillStyle, color, backgroundColor)
-            .then((pattern) => { if (pattern) style.fill = pattern; });
-        this.styleDict[id] = style;
+        for (const row of textRows) {
+          const { id, value } = createInfoRecord(row, info);
+          textLookup.dict[id] = value;
+        }
       }
     }
-    if (textRows) {
-      if (!textLookup.applied) applyInfoIndexes(textLookup, textChannel.data.columns);
-      const info = textLookup.info;
+    this.updateStyleDict();
+  }
 
-      for (const row of textRows) {
-        const { id, value } = createInfoRecord(row, info);
-        this.textDict[id] = value;
+  private updateStyleDict() {
+    this.styleDict = {};
+    const styles = this.channel.styles;
+
+    if (styles.length > 1) {
+      const colors = styles.map((style) => style.color.dict);
+      const possibleValues = cartesianProduct(...colors.map(Object.keys));
+
+      for (const values of possibleValues) {
+        const transparent: ColorModelRGBA = [0, 0, 0, 0];
+        const style = {
+          color: transparent, borderColor: transparent,
+          backgroundColor: transparent, fillStyle: null,
+        };
+
+        for (let i = 0; i < values.length; i++) {
+          const { color, backgroundColor, borderColor, fillStyle } = colors[i][values[i]];
+          if (color) style.color = overlayColor(style.color, color);
+          if (borderColor) style.borderColor = overlayColor(style.borderColor, borderColor);
+          if (backgroundColor) style.backgroundColor = overlayColor(style.backgroundColor, backgroundColor);
+          if (fillStyle) style.fillStyle = fillStyle;
+        }
+        this.styleDict[values.join('&')] = style;
       }
+    } else if (styles.length) {
+      this.styleDict = styles[0].color.dict;
+    }
+
+    for (const key in this.styleDict) {
+      const style = this.styleDict[key] as any;
+      if (style.color) style.color = stringifyRGBA(style.color);
+      if (style.borderColor) style.borderColor = stringifyRGBA(style.borderColor);
+      if (style.backgroundColor) style.backgroundColor = stringifyRGBA(style.backgroundColor);
+      style.stroke = style.borderColor;
+      style.fill = style.backgroundColor;
+
+      if (style.fillStyle) this.drawer.getPattern(style.fillStyle, style.color, style.backgroundColor)
+        .then((pattern) => { if (pattern) style.fill = pattern; });
     }
   }
 

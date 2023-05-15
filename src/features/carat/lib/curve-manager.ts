@@ -1,7 +1,8 @@
 import { CaratCurveModel, CaratCurveStyleDict } from './types';
 import { channelsAPI } from 'entities/channels/lib/channels.api';
-import { applyInfoIndexes } from './channels';
 import { getPragmaticMax } from 'shared/lib';
+import { fixHEX } from './utils';
+import { applyInfoIndexes } from './channels';
 import { defaultSettings } from './constants';
 
 
@@ -209,12 +210,11 @@ export class CurveManager {
 
   public setStyleData(lookupData: ChannelDict) {
     this.styleDict.clear();
-    const curveColorChannel = lookupData[this.curveSetChannel.style.name];
+    const curveColorChannel = lookupData[this.curveSetChannel.curveColorLookup];
 
     curveColorChannel?.data?.rows?.forEach((row) => {
       let [type, color] = row.Cells as [string, string];
-      if (color.length > 7) color = color.substring(0, 7);
-      this.styleDict.set(type, {color, thickness: 2});
+      this.styleDict.set(type, {color: fixHEX(color), thickness: 2});
     });
   }
 

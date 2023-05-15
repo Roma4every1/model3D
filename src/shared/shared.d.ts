@@ -16,6 +16,13 @@ type ImagePath = string;
  * */
 type ColorHEX = string;
 
+/** Модель цвета в RGBA.
+ * @example
+ * [0, 0, 0, 1] // black
+ * [255, 255, 255, 1] // white
+ * */
+type ColorModelRGBA = [number, number, number, number];
+
 /** Параметры CSS-шрифта.
  * @example
  * { size: 12, style: "normal", family: "monospace" }

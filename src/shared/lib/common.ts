@@ -53,3 +53,11 @@ export function leftAntiJoin<Type>(a: Set<Type>, b: Iterable<Type>): Set<Type> {
   }
   return result;
 }
+
+/** Декартово произведение.
+ * @example
+ * cartesianProduct([1, 2], [3, 4]) => [[1, 3], [1, 4], [2, 3], [2, 4]]
+ * */
+export function cartesianProduct(...values: any[][]): any[][] {
+  return values.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
+}

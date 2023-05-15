@@ -136,4 +136,4 @@ type CaratChannelType = 'lithology' | 'perforations' | 'curve-set' | 'curve-data
 type CaratCurveSetInfo = CaratChannelInfo<'id' | 'type' | 'date' | 'top' | 'bottom' | 'defaultLoading'>;
 type CaratCurveDataInfo = CaratChannelInfo<'id' | 'data' | 'top' | 'bottom' | 'min' | 'max'>;
 type CaratLithologyInfo = CaratChannelInfo<'top' | 'bottom' | 'stratumID'>;
-type CaratChannelInfo<Fields = string> = Record<Fields | 'style' | 'bar' | 'text', LookupColumnInfo>;
+type CaratChannelInfo<Fields = string> = Record<Fields | 'bar', LookupColumnInfo>;

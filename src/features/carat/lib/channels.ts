@@ -18,24 +18,30 @@ export function applyStyle(attachment: CaratAttachedChannel, channel: Channel, d
   if (attachment.type === 'curve-set') {
     const colorPropertyName = attachment.info.type.name;
     const colorProperty = channel.info.properties.find(p => p.fromColumn === colorPropertyName);
-    const curveColorChannel = colorProperty?.lookupChannels?.at(0);
-    if (curveColorChannel) attachment.style = {name: curveColorChannel, info: null};
+    attachment.curveColorLookup = colorProperty?.lookupChannels?.at(0);
   }
   else if (attachment.type === 'lithology' || attachment.type === 'perforations') {
-    // обычно 2 справочника, один для цветов, второй для подписей
+    attachment.styles = [];
     for (const property of attachment.properties) {
-      for (const lookupChannelName of property.lookupChannels) {
-        let field = 'style';
-        const lookup = dict[lookupChannelName];
+      let styleChannel: ChannelName = null, styleInfo: CaratChannelInfo = null;
+      let textChannel: ChannelName = null, textInfo: CaratChannelInfo = null;
+      const lookups = property.lookupChannels.map((channelName) => dict[channelName]);
 
-        let info = createInfo(lookup, styleCriterionProperties);
-        if (!info) { info = createInfo(lookup, labelCriterionProperties); field = 'text'; }
-
-        if (info) {
-          attachment[field] = {name: lookupChannelName, info};
-          attachment.info.style = {name: property.fromColumn, index: -1};
+      for (const lookup of lookups) {
+        if (!styleInfo) {
+          styleInfo = createInfo(lookup, styleCriterionProperties);
+          if (styleInfo) styleChannel = lookup.name;
+        }
+        if (!textInfo) {
+          textInfo = createInfo(lookup, labelCriterionProperties);
+          if (textInfo) textChannel = lookup.name;
         }
       }
+      if (styleChannel || textChannel) attachment.styles.push({
+        columnName: property.fromColumn, columnIndex: -1,
+        color: {name: styleChannel, info: styleInfo, applied: false, dict: {}},
+        text: {name: textChannel, info: textInfo, applied: false, dict: {}},
+      });
     }
     for (const property of channel.info.properties) {
       if (property.name === criterionProperties.lithology.stratumID) {

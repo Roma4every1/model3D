@@ -12,6 +12,14 @@ export function calculateTrackWidth(columns: CaratColumnInit[]) {
   return trackWidth;
 }
 
+/** `#ARGB => #RGBA` */
+export function fixHEX(hex: string) {
+  if (hex?.length > 7) hex = '#' + hex.substring(3) + hex.substring(1, 3);
+  return hex;
+}
+
+/* --- Smooth Scroll ---*/
+
 /** Плавно переместит порт просмотра.
  * @param viewport порт просмотра
  * @param stage экземпляр сцены

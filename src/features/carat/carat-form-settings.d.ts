@@ -133,16 +133,29 @@ interface CaratAttachedChannel {
   applied?: boolean,
   /** Индексы колонок. */
   info?: CaratChannelInfo,
-  /** Информация о справочнике стилей элементов. */
-  style?: CaratAttachedLookup,
-  /** Информация о справочнике подписей пластов. */
-  text?: CaratAttachedLookup,
+  /** Информация о справочнике цветов кривых. */
+  curveColorLookup?: ChannelName,
+  /** Информация о справочниках цветов и текста пропластков. */
+  styles?: CaratStyleLookup[],
   /** Справочник с названиями пластов. */
   namesChannel?: ChannelName,
 }
 
+/** Информация о справочнике цветов и текста пропластков. */
+interface CaratStyleLookup {
+  columnName: string,
+  columnIndex: number,
+  color: CaratAttachedLookup,
+  text: CaratAttachedLookup,
+}
+
 /** Справочник, подключённый к каналу каротажной колонки. */
-type CaratAttachedLookup = {name: ChannelName, info: CaratChannelInfo, applied?: boolean};
+interface CaratAttachedLookup {
+  name: ChannelName,
+  info: CaratChannelInfo,
+  applied: boolean,
+  dict: Record<number, any>,
+}
 
 /** Словарь настроек отображения свойств канала. */
 type CaratColumnProperties = Record<string, CaratPropertySettings>;
