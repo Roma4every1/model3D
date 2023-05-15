@@ -26,9 +26,9 @@ export interface CaratCurveModel {
   /** Загружать ли кривую по умолчанию. */
   defaultLoading: boolean,
   /** Данные кривой (SVG-путь). */
-  path?: Path2D,
+  path: Path2D,
   /** Точки кривой. */
-  points?: Point[],
+  points: Point[],
   /** Стиль отрисовки. */
   style: CaratCurveStyle,
   /** Является ли кривая активной. */

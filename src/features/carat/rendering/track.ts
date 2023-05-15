@@ -189,19 +189,21 @@ export class CaratTrack implements ICaratTrack {
   }
 
   public setChannelData(channelData: ChannelDict) {
+    const viewport = this.viewport;
     this.backgroundGroup.setChannelData(channelData);
-    [this.viewport.min, this.viewport.max] = this.backgroundGroup.getElementsRange();
+    [viewport.min, viewport.max] = this.backgroundGroup.getElementsRange();
+    viewport.y = viewport.min;
 
     for (const group of this.groups) {
       group.setChannelData(channelData);
       const [groupMin, groupMax] = group.getElementsRange();
-      if (groupMin < this.viewport.min) this.viewport.min = groupMin;
-      if (groupMax > this.viewport.max) this.viewport.max = groupMax;
+      if (groupMin < viewport.min) viewport.min = groupMin;
+      if (groupMax > viewport.max) viewport.max = groupMax;
     }
 
-    if (this.viewport.min === Infinity) this.viewport.min = 0;
-    if (this.viewport.max === -Infinity) this.viewport.max = 0;
-    this.viewport.y = this.viewport.min;
+    if (viewport.min === Infinity) viewport.min = 0;
+    if (viewport.max === -Infinity) viewport.max = 0;
+    if (viewport.y === Infinity) viewport.y = viewport.min;
   }
 
   private rebuildHeaders() {

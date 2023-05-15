@@ -120,6 +120,7 @@ export class CurveManager {
       type: curveType, date: dateString ? new Date(dateString) : null,
       top, bottom, min: 0, max: 0, axisMin: 0, axisMax: 0,
       defaultLoading: Boolean(cells[info.defaultLoading.index]),
+      path: new Path2D(), points: null,
       style, active: false,
     };
   }
@@ -281,7 +282,7 @@ export class CurveManager {
   }
 
   public async loadCurveData(ids: CaratCurveID[]): Promise<boolean> {
-    const idsToLoad: CaratCurveID[] = ids.filter(id => !this.curveDict[id].path);
+    const idsToLoad: CaratCurveID[] = ids.filter(id => !this.curveDict[id].points);
     if (idsToLoad.length === 0) return true;
 
     const lastData = this.lastData;
