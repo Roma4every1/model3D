@@ -11,6 +11,8 @@ export interface CaratCurveModel {
   type: CaratCurveType,
   /** Дата кривой. */
   date: Date,
+  /** Описание (метод исследования). */
+  description: string,
   /** Начальная отметка глубины. */
   top: number,
   /** Конечная отметка глубины. */

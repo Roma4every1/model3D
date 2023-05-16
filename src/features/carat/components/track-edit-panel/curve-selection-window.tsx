@@ -1,19 +1,19 @@
 import { useState } from 'react';
-import {useDispatch, useSelector} from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Window } from '@progress/kendo-react-dialogs';
+import { Button } from '@progress/kendo-react-buttons';
 import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
 import { DateRangePicker, DateRangePickerChangeEvent } from '@progress/kendo-react-dateinputs';
 import { TreeView, TreeViewCheckChangeEvent, TreeViewExpandChangeEvent } from '@progress/kendo-react-treeview';
-import { Checkbox } from '@progress/kendo-react-inputs';
-import { Button } from '@progress/kendo-react-buttons';
 import { TextInfo } from 'shared/ui';
+import { round } from 'shared/lib';
+import { setOpenedWindow } from 'entities/windows';
 
 import './curve-selection-window.scss';
 import { CurveManager } from '../../lib/curve-manager';
 import { caratStateSelector } from '../../store/carats.selectors';
 import { setCaratData } from '../../store/carats.thunks';
-import { setOpenedWindow } from 'entities/windows';
-import { round } from 'shared/lib';
+import {CaratCurveModel} from "../../lib/types";
 
 
 interface CurveSelectionWindowProps {
@@ -31,9 +31,7 @@ export const CurveSelectionWindow = ({id}: CurveSelectionWindowProps) => {
 
   const curveGroup = state?.curveGroup;
   const curveManager: CurveManager = curveGroup?.curveManager;
-
   const tree = curveManager?.getCurveTree() ?? [];
-  const [defaultMode, setDefaultMode] = useState(curveManager?.defaultMode);
 
   const [_signal, setSignal] = useState(false);
   const signal = () => setSignal(!_signal);
@@ -57,9 +55,14 @@ export const CurveSelectionWindow = ({id}: CurveSelectionWindowProps) => {
     signal();
   };
 
-  const onModeChange = () => {
-    curveManager.defaultMode = !defaultMode;
-    setDefaultMode(!defaultMode);
+  const onSetDefault = () => {
+    for (const curveTreeGroup of tree) {
+      for (const item of curveTreeGroup.children) {
+        item.checked = item.value.defaultLoading;
+      }
+      curveTreeGroup.checked = curveTreeGroup.children.some(item => item.checked);
+    }
+    signal();
   };
 
   const onClose = () => {
@@ -95,10 +98,7 @@ export const CurveSelectionWindow = ({id}: CurveSelectionWindowProps) => {
           </section>
         </div>
         <div>
-          <Checkbox
-            label={'Оставить только выбранные кривые'}
-            checked={!defaultMode} onChange={onModeChange}
-          />
+          <Button onClick={onSetDefault}>По умолчанию</Button>
           <Button style={{width: 50}} onClick={onSubmit}>Ок</Button>
         </div>
       </div>
@@ -140,12 +140,13 @@ const CurveFilters = ({manager, signal}: CurveFiltersProps) => {
 
 const CurveTreeItem = ({item}) => {
   if (typeof item.text === 'string') return item.text as any;
-  const curve = item.value;
+  const curve: CaratCurveModel = item.value;
 
   return (
     <>
       <span>{curve.type}</span>
       <span>{`${round(curve.top, 2)} - ${round(curve.bottom, 2)}`}</span>
+      <span title={curve.description}>{curve.description}</span>
     </>
   );
 };

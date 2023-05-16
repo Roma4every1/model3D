@@ -41,8 +41,6 @@ export class CurveManager {
   private curveTree: CurveTreeGroup[];
   /** Выборка типов. */
   private typeSelection: any[];
-  /** Выдавать кривые либо с загрузкой по умолчанию, либо по фильтрам. */
-  public defaultMode: boolean;
   /** Последние установленные данные канала. */
   private lastData: ChannelData | null;
 
@@ -64,7 +62,6 @@ export class CurveManager {
   public end: Date;
 
   constructor(initSelection: CaratDataSelection, initMeasures: CaratCurveMeasure[]) {
-    this.defaultMode = true;
     this.lastData = null;
     this.curves = [];
     this.curveDict = {};
@@ -103,12 +100,13 @@ export class CurveManager {
 
     const dateString = cells[info.date.index];
     const curveType = cells[info.type.index];
+    const description = cells[info.description.index] ?? '';
     const top = cells[info.top.index], bottom = cells[info.bottom.index];
     const style = this.styleDict.get(curveType) ?? defaultSettings.curveStyle;
 
     return {
-      id: cells[info.id.index],
-      type: curveType, date: dateString ? new Date(dateString) : null,
+      id: cells[info.id.index], type: curveType, description,
+      date: dateString ? new Date(dateString) : null,
       top, bottom, min: 0, max: 0, axisMin: 0, axisMax: 0,
       defaultLoading: Boolean(cells[info.defaultLoading.index]),
       path: new Path2D(), points: null,
@@ -184,7 +182,10 @@ export class CurveManager {
       this.curves = [];
       this.curveTypes = [];
     } else {
-      if (!this.curveSetChannel.applied) applyInfoIndexes(this.curveSetChannel, data.columns);
+      if (!this.curveSetChannel.applied) {
+        this.curveSetChannel.info.description = {name: 'MNEMONIC_DESCR', index: -1};
+        applyInfoIndexes(this.curveSetChannel, data.columns);
+      }
       const validatedRows = this.validateRows(rows);
       this.curves = validatedRows.map(this.createCurveModel, this);
       this.curves.forEach((curve) => { this.curveDict[curve.id] = curve; });
@@ -213,14 +214,6 @@ export class CurveManager {
   }
 
   public getVisibleCurves(): CaratCurveModel[] {
-    if (this.defaultMode) {
-      return this.curves.filter((curve) => curve.defaultLoading);
-    } else {
-      return this.getFilteredCurves();
-    }
-  }
-
-  public getFilteredCurves(): CaratCurveModel[] {
     const result: CaratCurveModel[] = [];
     for (const group of this.curveTree) {
       if (!group.checked) continue;
@@ -239,7 +232,7 @@ export class CurveManager {
     return this.typeSelection;
   }
 
-  public getCurveTree(): any[] {
+  public getCurveTree(): CurveTreeGroup[] {
     return this.curveTree;
   }
 

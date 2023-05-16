@@ -133,7 +133,7 @@ type CaratCurveType = string;
 /** Типы корректных подключённых каналов к каротажной форме. */
 type CaratChannelType = 'lithology' | 'perforations' | 'curve-set' | 'curve-data';
 
-type CaratCurveSetInfo = CaratChannelInfo<'id' | 'type' | 'date' | 'top' | 'bottom' | 'defaultLoading'>;
+type CaratCurveSetInfo = CaratChannelInfo<'id' | 'type' | 'date' | 'top' | 'bottom' | 'defaultLoading' | 'description'>;
 type CaratCurveDataInfo = CaratChannelInfo<'id' | 'data' | 'top' | 'bottom' | 'min' | 'max'>;
 type CaratLithologyInfo = CaratChannelInfo<'top' | 'bottom' | 'stratumID'>;
 type CaratChannelInfo<Fields = string> = Record<Fields | 'bar', LookupColumnInfo>;

@@ -28,8 +28,14 @@
 
   .k-treeview-leaf-text {
     display: grid;
-    grid-template-columns: 70px 130px;
+    grid-template-columns: 70px 110px calc(100% - 180px);
     width: 100%;
+
+    > :last-child {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
   }
 }
 
