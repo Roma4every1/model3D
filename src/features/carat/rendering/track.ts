@@ -134,7 +134,7 @@ export class CaratTrack implements ICaratTrack {
 
   public setActiveGroupWidth(width: number) {
     const activeGroup = this.groups[this.activeIndex];
-    if (!activeGroup || width < 10) return;
+    if (!activeGroup) return;
 
     const oldWidth = activeGroup.getElementsRect().width;
     const newWidth = activeGroup.setWidth(width);
@@ -279,32 +279,35 @@ export class CaratTrack implements ICaratTrack {
   }
 
   public render() {
+    if (this.rect.width <= 0) return;
     this.drawer.setCurrentTrack(this.rect, this.viewport, this.inclinometry);
     this.backgroundGroup.renderContent();
 
     for (const group of this.groups) {
-      if (group.active) continue;
+      if (group.active || group.settings.width <= 0) continue;
       group.renderHeader();
       group.renderContent();
     }
     if (this.activeIndex !== -1) {
       const group = this.groups[this.activeIndex];
-      group.renderHeader();
-      group.renderContent();
+      if (group.settings.width > 0) {
+        group.renderHeader();
+        group.renderContent();
+      }
     }
     this.drawer.drawTrackBody(this.label);
   }
 
   public lazyRender() {
+    if (this.rect.width <= 0) return;
     this.drawer.setCurrentTrack(this.rect, this.viewport, this.inclinometry);
     this.drawer.clearTrackElementRect(this.maxGroupHeaderHeight);
     this.backgroundGroup.renderContent();
 
     for (const group of this.groups) {
-      if (!group.active) group.renderContent();
+      if (!group.active && group.settings.width > 0) group.renderContent();
     }
-    if (this.activeIndex !== -1) {
-      this.groups[this.activeIndex].renderContent();
-    }
+    const group = this.groups[this.activeIndex];
+    if (group && group.settings.width > 0) group.renderContent();
   }
 }

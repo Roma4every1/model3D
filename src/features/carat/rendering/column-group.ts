@@ -157,11 +157,13 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   }
 
   public setWidth(width: number): number {
+    this.settings.width = width;
     if (this.curveColumn) {
       this.header.setGroupWidth(width);
       this.curveColumn.setGroupWidth(width);
       width = this.curveColumn.getTotalWidth();
     }
+
     this.elementsRect.width = width;
     for (const column of this.columns) column.rect.width = width;
     return width;

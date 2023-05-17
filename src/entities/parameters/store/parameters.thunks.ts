@@ -22,22 +22,34 @@ export const updateParamDeep = (clientID: FormID, id: ParameterID, newValue: any
     dispatch(updateParam(clientID, id, newValue));
     if (relatedChannels.length) await reloadChannels(relatedChannels)(dispatch, getState);
 
-    const updatedList: Parameter[] = [];
-    findDependentParameters(id, clientParameters, updatedList);
-
-    const channels = getState().channels;
+    const { parameters, channels } = getState();
     const entries: UpdateParamData[] = [];
     const channelsToUpdate = new Set<ChannelName>();
     const reportsToUpdate = new Set(relatedReports);
 
+    const rowParams = getCurrentRowParams(relatedChannels, parameters, channels);
+    const updatedList = rowParams.map((item) => item.parameter);
+    findDependentParameters(id, clientParameters, updatedList);
+
     for (const updatedParam of updatedList) {
-      let value = null;
+      let channel: Channel;
+      const updateData: UpdateParamData = {clientID, id: updatedParam.id, value: null};
+
       if (updatedParam.canBeNull === false && updatedParam.externalChannelName) {
-        const channel = channels[updatedParam.externalChannelName];
-        const rows = channel?.data?.rows;
-        if (rows?.length) value = tableRowToString(channel, rows[0])?.value ?? null;
+        channel = channels[updatedParam.externalChannelName];
+      } else {
+        const rowParamItem = rowParams.find((item) => item.parameter === updatedParam);
+        if (rowParamItem) {
+          channel = rowParamItem.channel;
+          updateData.clientID = rowParamItem.clientID;
+        }
       }
-      entries.push({clientID, id: updatedParam.id, value});
+      if (channel) {
+        const rows = channel?.data?.rows;
+        if (rows?.length) updateData.value = tableRowToString(channel, rows[0])?.value ?? null;
+      }
+
+      entries.push(updateData);
       updatedParam.relatedChannels?.forEach((channelName) => channelsToUpdate.add(channelName));
       updatedParam.relatedReports?.forEach((reportID) => reportsToUpdate.add(reportID));
     }
@@ -50,3 +62,30 @@ export const updateParamDeep = (clientID: FormID, id: ParameterID, newValue: any
       updateReportsVisibility([...reportsToUpdate])(dispatch, getState).then();
   };
 };
+
+function getCurrentRowParams(names: ChannelName[], paramDict: ParamDict, channelDict: ChannelDict) {
+  const ids: ParameterID[] = [];
+  const result: {clientID: FormID, parameter: Parameter, channel: Channel}[] = [];
+
+  for (const name of names) {
+    const channel = channelDict[name];
+    const rowParam = channel.info.currentRowObjectName;
+
+    if (rowParam) {
+      ids.push(rowParam);
+      result.push({clientID: null, parameter: null, channel});
+    }
+  }
+
+  ids.forEach((id, i) => {
+    for (const clientID in paramDict) {
+      const neededParam = paramDict[clientID].find(p => p.id === id);
+      if (neededParam) {
+        result[i].clientID = clientID;
+        result[i].parameter = neededParam;
+        return;
+      }
+    }
+  });
+  return result;
+}

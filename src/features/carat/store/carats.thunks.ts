@@ -11,9 +11,6 @@ export const setCaratData = (id: FormID, data?: ChannelDict): Thunk => {
     const stage = caratState.stage;
 
     if (data) {
-      stage.getActiveTrack().getGroups().forEach((group) => {
-        group.curveManager.defaultMode = true;
-      });
       stage.setChannelData(data);
       stage.render();
     }

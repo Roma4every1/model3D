@@ -189,7 +189,7 @@ export class CaratDrawer {
     this.ctx.clearRect(0, headerHeight + this.trackHeaderSettings.height, width, height);
   }
 
-  public drawTrackBody(well: string) {
+  public drawTrackBody(label: string) {
     const { top, left, width, height } = this.trackRect;
     const { font, color, height: headerHeight } = this.trackHeaderSettings;
     const { borderColor, borderThickness } = this.trackBodySettings;
@@ -197,7 +197,7 @@ export class CaratDrawer {
 
     this.setTranslate(left, top);
     this.setTextSettings(font, color, 'center', 'middle');
-    this.ctx.fillText(well, width / 2, headerHeight / 2);
+    this.ctx.fillText(label, width / 2, headerHeight / 2, width);
 
     this.setLineSettings(borderThickness, borderColor);
     this.ctx.beginPath();
@@ -227,7 +227,9 @@ export class CaratDrawer {
     this.ctx.lineWidth = thickness;
 
     for (const { rect, axes } of groups) {
+      const maxWidth = rect.width;
       let y = rect.top + rect.height;
+
       const xStart = rect.left + thickness, xEnd = rect.left + rect.width - thickness;
       const xCenter = (xStart + xEnd) / 2;
 
@@ -252,11 +254,11 @@ export class CaratDrawer {
         const typeEnd = xCenter + typeHalfWidth;
 
         this.ctx.textAlign = 'left';
-        this.ctx.fillText(axisMin.toString(), xStart + thickness, y);
+        this.ctx.fillText(axisMin.toString(), xStart + thickness, y, maxWidth);
         this.ctx.textAlign = 'right';
-        this.ctx.fillText(axisMax.toString(), xEnd - thickness, y);
+        this.ctx.fillText(axisMax.toString(), xEnd - thickness, y, maxWidth);
         this.ctx.textAlign = 'center';
-        this.ctx.fillText(type, xCenter, y);
+        this.ctx.fillText(type, xCenter, y, maxWidth);
 
         for (let i = 1; i < segmentsCount; i++) {
           const xMark = i * markStep;
@@ -267,7 +269,7 @@ export class CaratDrawer {
           const textStart = x - textHalfWidth;
           const textEnd = x + textHalfWidth;
 
-          if (textEnd < typeStart || textStart > typeEnd) this.ctx.fillText(text, x, y);
+          if (textEnd < typeStart || textStart > typeEnd) this.ctx.fillText(text, x, y, maxWidth);
         }
         y -= yStep;
       }

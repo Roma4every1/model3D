@@ -6,16 +6,16 @@ export function applyChannelsDeps(channelDict: ChannelDict, paramDict: ParamDict
   const channelParams: [ChannelName, ChannelInfo][] = [];
   for (const name in channelDict) {
     const channelInfo = channelDict[name].info;
-    channelInfo.clients = new Set();
+    if (!channelInfo.clients) channelInfo.clients = new Set();
     channelParams.push([name, channelInfo]);
   }
 
-  for (const formID in paramDict) {
-    for (const param of paramDict[formID]) {
+  for (const clientID in paramDict) {
+    for (const param of paramDict[clientID]) {
       param.relatedChannels = [];
       for (const [name, info] of channelParams) {
         if (info.parameters.includes(param.id)) {
-          info.clients.add(formID);
+          info.clients.add(clientID);
           param.relatedChannels.push(name);
         }
       }

@@ -71,6 +71,7 @@ export const Carat = ({id, channels}: FormState) => {
   };
 
   const onWheel = (e: WheelEvent) => {
+    if (e.ctrlKey) return;
     const direction = e.deltaY > 0 ? 1 : -1;
     const { offsetX: x, offsetY: y } = e.nativeEvent;
     stage.handleMouseWheel({x, y}, direction);

@@ -15,7 +15,7 @@ export const constraints = {
   yAxisMarks: {min: 2, max: 12},
   groupLabel: {max: 100}, // length,
   groupStep: {min: 1, max: 100},
-  groupWidth: {min: 5, max: 1000},
+  groupWidth: {min: 0, max: 1000},
 };
 
 /** Свойства для идентификации каналов. */

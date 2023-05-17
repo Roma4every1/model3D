@@ -58,7 +58,7 @@ const GroupCommonSettings = ({stage, track, activeGroup, signal}: CaratActiveGro
 
   const onWidthChange = ({value}: NumericTextBoxChangeEvent) => {
     setWidth(value);
-    if (!value || value < minWidth || value > maxWidth) return;
+    if (value === null || value < minWidth || value > maxWidth) return;
     track.setActiveGroupWidth(value);
     stage.resize(); stage.render();
   };
@@ -75,7 +75,7 @@ const GroupCommonSettings = ({stage, track, activeGroup, signal}: CaratActiveGro
       <div>
         <span>Имя:</span>
         <TextBox
-          max={maxLabelLength} spellCheck={false}
+          maxLength={maxLabelLength} spellCheck={false}
           value={label} onChange={onLabelChange}
         />
       </div>
@@ -89,7 +89,7 @@ const GroupCommonSettings = ({stage, track, activeGroup, signal}: CaratActiveGro
       <div>
         <span>Ширина:</span>
         <NumericTextBox
-          format={'#'} min={minWidth} max={maxWidth} step={1}
+          format={'#'} min={minWidth} max={maxWidth} step={5}
           value={width} onChange={onWidthChange}
         />
       </div>

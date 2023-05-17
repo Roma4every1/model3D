@@ -68,7 +68,7 @@ export const CurveTypesSection = ({stage, group, curve}: CurveTypesSectionProps)
   return (
     <>
       <MenuSection header={'Типы кривых'}>
-        <div className={'carat-tracks'} style={{width: 420}}>
+        <div className={'carat-tracks'} style={{width: 450}}>
           {models.map(modelToSettings)}
         </div>
       </MenuSection>
@@ -83,7 +83,7 @@ const CurveTypeSettings = ({settings, onClick}: CurveTypeSettingsProps) => {
   const className = 'curve-type-settings' + (settings.active ? ' active' : '');
 
   return (
-    <div className={className} onClick={onClick}>
+    <div className={className} onClick={onClick} style={{maxWidth: 150}}>
       <div style={{backgroundColor: settings.color}}/>
       <div>{settings.type}</div>
       <div>
@@ -141,9 +141,15 @@ const ActiveTypeSettings = ({stage, manager, settings, onChange}: ActiveTypeSett
     <MenuSection header={sectionHeader} className={'big-buttons'}>
       <MenuSectionItem className={'measure-settings'}>
         <span>Минимум:</span>
-        <NumericTextBox value={min} valid={valid} onChange={onMinChange} style={{height: 24}}/>
+        <NumericTextBox
+          style={{height: 24}} format={'#.###'}
+          value={min} valid={valid} onChange={onMinChange}
+        />
         <span>Максимум:</span>
-        <NumericTextBox value={max} valid={valid} onChange={onMaxChange} style={{height: 24}}/>
+        <NumericTextBox
+          style={{height: 24}} format={'#.###'}
+          value={max} valid={valid} onChange={onMaxChange}
+        />
       </MenuSectionItem>
       <BigButtonToggle
         text={'Автонастройка'} icon={autoSettingIcon}

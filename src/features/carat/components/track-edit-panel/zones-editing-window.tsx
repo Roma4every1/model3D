@@ -56,6 +56,12 @@ export const ZonesEditingWindow = ({stage}: ZonesEditingWindowProps) => {
     const result = processListBoxData(list, connectedList, e.toolName, 'selected');
     state[index] = result.listBoxOneData;
     state[connectedIndex] = result.listBoxTwoData;
+
+    if (e.toolName === 'remove') {
+      const newAllTypes = new Set<CaratCurveType>();
+      for (const group of state) for (const item of group) newAllTypes.add(item.type);
+      setAllTypes(newAllTypes);
+    }
     setState([...state]);
   };
 
