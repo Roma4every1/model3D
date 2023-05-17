@@ -1,6 +1,7 @@
 import { CaratDrawer } from './drawer';
 import { CaratCurveModel } from '../lib/types';
 import { CaratColumnGroup } from './column-group';
+import { CaratInclinometry } from '../lib/inclinometry';
 import { isRectInnerPoint } from 'shared/lib';
 import { defaultSettings } from '../lib/constants';
 
@@ -31,6 +32,8 @@ export class CaratTrack implements ICaratTrack {
   public readonly rect: Rectangle;
   /** Порт просмотра трека. */
   public readonly viewport: CaratViewport;
+  /** Инклинометрия скважины. */
+  public readonly inclinometry: CaratInclinometry;
 
   constructor(rect: Rectangle, columns: CaratColumnInit[], scale: number, drawer: CaratDrawer) {
     this.rect = rect;
@@ -44,13 +47,18 @@ export class CaratTrack implements ICaratTrack {
     const groupWithYAxis = columns.find((group) => group.yAxis?.show);
     const step = groupWithYAxis?.yAxis.step ?? defaultSettings.yAxisStep;
     const scroll = {queue: [], direction: 0, step, id: null};
-    this.viewport = {y: 0, scale, min: 0, max: 0, scroll};
+    this.viewport = {y: 0, height: 0, min: 0, max: 0, scale, scroll};
 
     let x = 0, index = 0;
     const top = drawer.trackHeaderSettings.height;
     const height = rect.height - top;
 
     for (const column of columns) {
+      if (!this.inclinometry) {
+        const channel = column.channels.find(c => c.type === 'inclinometry');
+        if (channel) this.inclinometry = new CaratInclinometry(channel.inclinometry);
+      }
+
       let { type, width } = column.settings;
       if (type === 'normal') {
         const groupRect = {top, left: x, width, height};
@@ -106,7 +114,15 @@ export class CaratTrack implements ICaratTrack {
   }
 
   public setScale(scale: number) {
-    this.viewport.scale = scale;
+    const viewport = this.viewport;
+    viewport.scale = scale;
+
+    const elementsHeight = this.backgroundGroup.getElementsRect().height;
+    viewport.height = elementsHeight / (scale * window.devicePixelRatio);
+
+    if (viewport.y + viewport.height > viewport.max) {
+      viewport.y = viewport.max - viewport.height;
+    }
   }
 
   public setActiveGroup(idx: number) {
@@ -204,6 +220,11 @@ export class CaratTrack implements ICaratTrack {
     if (viewport.min === Infinity) viewport.min = 0;
     if (viewport.max === -Infinity) viewport.max = 0;
     if (viewport.y === Infinity) viewport.y = viewport.min;
+
+    if (this.inclinometry) {
+      this.inclinometry.setChannelData(channelData);
+      this.inclinometry.updateMarks(viewport);
+    }
   }
 
   private rebuildHeaders() {
@@ -233,13 +254,14 @@ export class CaratTrack implements ICaratTrack {
     const changes = await Promise.all(this.groups.map((group) => group.setCurveData(channelData)));
     this.rebuildRects(changes);
     this.rebuildHeaders();
+    if (this.inclinometry) this.inclinometry.updateMarks(this.viewport);
 
     for (const group of this.groups) {
       const curve = group.getFirstCurve();
       if (curve) { this.setActiveCurve(curve); break; }
     }
     const activeCurveID = this.activeCurve?.id;
-    this.groups.forEach((group) => { group.setActiveCurve(activeCurveID); })
+    this.groups.forEach((group) => { group.setActiveCurve(activeCurveID); });
     return this.activeCurve;
   }
 
@@ -253,10 +275,11 @@ export class CaratTrack implements ICaratTrack {
     const groupHeight = height - this.drawer.trackHeaderSettings.height;
     for (const group of this.groups) group.setHeight(groupHeight);
     this.backgroundGroup.setHeight(groupHeight);
+    this.setScale(this.viewport.scale);
   }
 
   public render() {
-    this.drawer.setCurrentTrack(this.rect, this.viewport);
+    this.drawer.setCurrentTrack(this.rect, this.viewport, this.inclinometry);
     this.backgroundGroup.renderContent();
 
     for (const group of this.groups) {
@@ -273,7 +296,7 @@ export class CaratTrack implements ICaratTrack {
   }
 
   public lazyRender() {
-    this.drawer.setCurrentTrack(this.rect, this.viewport);
+    this.drawer.setCurrentTrack(this.rect, this.viewport, this.inclinometry);
     this.drawer.clearTrackElementRect(this.maxGroupHeaderHeight);
     this.backgroundGroup.renderContent();
 

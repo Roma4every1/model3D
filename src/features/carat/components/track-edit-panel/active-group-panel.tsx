@@ -18,6 +18,7 @@ interface CaratActiveGroupPanelProps {
 }
 interface GroupYAxisSettingsProps {
   stage: ICaratStage,
+  track: ICaratTrack,
   settings: CaratColumnYAxis,
 }
 
@@ -27,7 +28,7 @@ export const CaratActiveGroupPanel = ({stage, track, activeGroup, signal}: Carat
   return (
     <MenuSection header={'Настройки активной колонки'} className={'carat-active-column'}>
       <GroupCommonSettings stage={stage} track={track} activeGroup={activeGroup} signal={signal}/>
-      <GroupYAxisSettings stage={stage} settings={activeGroup.yAxis}/>
+      <GroupYAxisSettings stage={stage} track={track} settings={activeGroup.yAxis}/>
     </MenuSection>
   );
 };
@@ -96,7 +97,7 @@ const GroupCommonSettings = ({stage, track, activeGroup, signal}: CaratActiveGro
   );
 };
 
-const GroupYAxisSettings = ({stage, settings}: GroupYAxisSettingsProps) => {
+const GroupYAxisSettings = ({stage, track, settings}: GroupYAxisSettingsProps) => {
   const [show, setShow] = useState(false);
   const [showAbsMarks, setShowAbsMarks] = useState(false);
   const [showDepthMarks, setShowDepthMarks] = useState(false);
@@ -140,12 +141,12 @@ const GroupYAxisSettings = ({stage, settings}: GroupYAxisSettingsProps) => {
         active={show} onClick={onShowChange}
       />
       <ButtonIconRowItem
-        icon={yAxisAbsMarksIcon} alt={'y-axis-abs-marks'} title={'Показывать абсолютную отметку'}
-        active={showAbsMarks} onClick={onShowAbsMarksChange}
-      />
-      <ButtonIconRowItem
         icon={yAxisDepthMarksIcon} alt={'y-axis-depth-marks'} title={'Показывать отметку глубины'}
         active={showDepthMarks} onClick={onShowDepthMarksChange}
+      />
+      <ButtonIconRowItem
+        icon={yAxisAbsMarksIcon} alt={'y-axis-abs-marks'} title={'Показывать абсолютную отметку'}
+        active={showAbsMarks} onClick={onShowAbsMarksChange} disabled={!track.inclinometry}
       />
       <ButtonIconRowItem
         icon={yAxisGridIcon} alt={'y-axis-grid'} title={'Показывать сетку'}

@@ -106,6 +106,7 @@ interface ButtonIconRowItemProps {
   title?: string,
   active?: boolean,
   onClick?: () => void,
+  disabled?: boolean,
 }
 
 export const ButtonIconRow = ({children, justifyContent, gap}: ButtonIconRowProps) => {
@@ -116,10 +117,11 @@ export const ButtonIconRow = ({children, justifyContent, gap}: ButtonIconRowProp
   );
 };
 
-export const ButtonIconRowItem = ({icon, alt, title, active, onClick}: ButtonIconRowItemProps) => {
+export const ButtonIconRowItem = (props: ButtonIconRowItemProps) => {
+  const className = props.active ? 'active' : undefined;
   return (
-    <button className={active ? 'active' : undefined} onClick={onClick}>
-      <img src={icon} alt={alt} title={title}/>
+    <button className={className} onClick={props.onClick} disabled={props.disabled}>
+      <img src={props.icon} alt={props.alt} title={props.title}/>
     </button>
   );
 };

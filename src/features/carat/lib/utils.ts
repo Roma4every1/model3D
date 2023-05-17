@@ -67,7 +67,7 @@ function moveView(viewport: CaratViewport, stage: ICaratStage) {
   }
 
   let y = viewport.y + scroll.queue.shift();
-  if (y > viewport.max) y = viewport.max;
+  if (y + viewport.height > viewport.max) y = viewport.max - viewport.height;
   else if (y < viewport.min) y = viewport.min;
 
   if (viewport.y !== y) {

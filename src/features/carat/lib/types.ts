@@ -67,3 +67,14 @@ export interface CaratIntervalStyle {
   fill: ColorHEX | CanvasPattern,
   stroke: ColorHEX,
 }
+
+/** Отображение "глубина => абс. отметка". */
+export type InclinometryMap = Map<number, number>;
+
+/** Опорная точка инклинометрии. */
+export interface InclinometryMark {
+  /** Значение глубины. */
+  depth: number,
+  /** Значение абсолютной отметки. */
+  absMark: number
+}

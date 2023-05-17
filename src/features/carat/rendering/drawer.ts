@@ -42,6 +42,16 @@ export class CaratDrawer {
   /** Используемое по умолчанию семейство шрифтов. */
   public readonly fontFamily: string;
 
+  /** Настройки внешнего вида гистограмм. */
+  private barStyle: CaratBarPropertySettings | null;
+  /** Настройки внешнего вида текста. */
+  private textStyle: CaratTextPropertySettings | null;
+
+  /** Ширина текста "-" для выравнивания отметок. */
+  private minusWidth: number;
+  /** Инклинометрия скважины для получения абсолютной отметки. */
+  private inclinometry: ICaratInclinometry;
+
   private trackRect: Rectangle;
   private yMin: number;
   private yMax: number;
@@ -56,10 +66,6 @@ export class CaratDrawer {
   private columnWidth: number;
   private columnTranslateX: number;
   private columnTranslateY: number;
-
-  private barStyle: CaratBarPropertySettings | null;
-  private textStyle: CaratTextPropertySettings | null;
-  private minusWidth: number;
 
   constructor(config: CaratDrawerConfig) {
     this.trackBodySettings = createTrackBodyDrawSettings(config);
@@ -89,32 +95,25 @@ export class CaratDrawer {
 
   private getDrawMarksFn(settings: CaratColumnYAxis, textStart: number) {
     const { absMarks, depthMarks } = settings;
-    let fn: (y: number, canvasY: number) => void = CaratDrawer.emptyFn;
+    let fn: (depth: number, canvasY: number) => void = CaratDrawer.emptyFn;
 
-    if (absMarks && depthMarks) {
-      const absMarkStart = textStart + this.minusWidth;
-      fn = (y, canvasY) => {
-        if (y > 0) {
-          this.ctx.textBaseline = 'bottom';
-          this.ctx.fillText(y.toString(), absMarkStart, canvasY);
-          this.ctx.textBaseline = 'top';
-          this.ctx.fillText((-y).toString(), textStart, canvasY);
-        } else if (y === 0) {
-          this.ctx.fillText('0', textStart, canvasY);
-        } else {
-          this.ctx.textBaseline = 'bottom';
-          this.ctx.fillText(y.toString(), textStart, canvasY);
-          this.ctx.textBaseline = 'top';
-          this.ctx.fillText((-y).toString(), absMarkStart, canvasY);
-        }
+    if (depthMarks && absMarks && this.inclinometry) {
+      const positiveStart = textStart + this.minusWidth;
+      fn = (depth, canvasY) => {
+        const absMark = this.inclinometry.getAbsMark(depth);
+        this.ctx.textBaseline = 'bottom';
+        this.ctx.fillText(depth.toString(), depth < 0 ? textStart : positiveStart, canvasY);
+        this.ctx.textBaseline = 'top';
+        this.ctx.fillText(absMark.toString(), absMark < 0 ? textStart : positiveStart, canvasY);
       };
-    } else if (absMarks) {
-      fn = (y, canvasY) => {
-        this.ctx.fillText(y.toString(), textStart, canvasY);
+    } else if (absMarks && this.inclinometry) {
+      fn = (depth, canvasY) => {
+        const absMark = this.inclinometry.getAbsMark(depth);
+        this.ctx.fillText(absMark.toString(), textStart, canvasY);
       };
     } else if (depthMarks) {
-      fn = (y, canvasY) => {
-        this.ctx.fillText((-y).toString(), textStart, canvasY);
+      fn = (depth, canvasY) => {
+        this.ctx.fillText(depth.toString(), textStart, canvasY);
       };
     }
     return fn;
@@ -139,10 +138,11 @@ export class CaratDrawer {
     this.ctx.setTransform(ratio, 0, 0, ratio, ratio * x, ratio * y);
   }
 
-  public setCurrentTrack(rect: Rectangle, viewport: CaratViewport) {
+  public setCurrentTrack(rect: Rectangle, viewport: CaratViewport, inclinometry: ICaratInclinometry) {
     this.trackRect = rect;
     this.yMin = viewport.y;
     this.scale = viewport.scale;
+    this.inclinometry = inclinometry;
   }
 
   public setCurrentGroup(rect: Rectangle, settings: CaratColumnSettings) {

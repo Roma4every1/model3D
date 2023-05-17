@@ -38,6 +38,16 @@ export const criterionProperties: Record<CaratChannelType, Record<string, string
     top: 'MIN DEPTH', bottom: 'MAX DEPTH',
     min: 'MIN VALUE', max: 'MAX VALUE',
   },
+  'inclinometry': {
+    id: 'WELL ID',
+    inclinometry: 'INCLINOMETRY',
+  },
+};
+
+/** Свойства для идентификации канала с данными инклинометрии. */
+export const inclinometryDataProperties = {
+  depth: 'DEPTH',
+  absMark: 'ABSMARK',
 };
 
 /** Свойства для идентификации канала с цветами пластов. */

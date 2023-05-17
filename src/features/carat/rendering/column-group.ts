@@ -72,7 +72,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
 
     for (const attachedChannel of init.channels) {
       const channelType = attachedChannel.type;
-      if (!channelType) continue;
+      if (!channelType || channelType === 'inclinometry') continue;
 
       if (channelType === 'curve-set') { curveSetChannel = attachedChannel; continue; }
       if (channelType === 'curve-data') { curveDataChannel = attachedChannel; continue; }

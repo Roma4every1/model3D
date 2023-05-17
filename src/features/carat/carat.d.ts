@@ -6,8 +6,10 @@ type CaratsState = FormDict<CaratState>;
  * + `canvas`: {@link HTMLCanvasElement}
  * + `observer`: {@link ResizeObserver}
  * + `activeGroup`: {@link ICaratColumnGroup}
- * + `activeCurve`: CaratCurveModel
+ * + `curveGroup`: {@link ICaratColumnGroup}
+ * + `activeCurve: CaratCurveModel`
  * + `lookupNames`: {@link ChannelName}[]
+ * + `lastData`: {@link ChannelDict}
  * */
 interface CaratState {
   /** Экземпляр класса сцены. */
@@ -60,6 +62,7 @@ interface ICaratStage {
 interface ICaratTrack {
   readonly rect: BoundingRect,
   readonly viewport: CaratViewport,
+  readonly inclinometry: ICaratInclinometry;
 
   getGroups(): ICaratColumnGroup[]
   getBackgroundGroup(): ICaratColumnGroup
@@ -77,6 +80,11 @@ interface ICaratTrack {
 
   moveGroup(idx: number, to: 'left' | 'right'): void
   handleMouseDown(point: Point): any
+}
+
+/** Инклинометрия скважины. */
+interface ICaratInclinometry {
+  getAbsMark(depth: number): number
 }
 
 interface ICaratColumnGroup {
@@ -101,14 +109,16 @@ interface ICaratColumn {
 
 /** Порт просмотра. */
 interface CaratViewport {
-  /** Вертикальное положение. */
+  /** Текущая координата по Y. */
   y: number,
-  /** Масштаб: количество пикселей в метре. */
-  scale: number,
+  /** Высота области просмотра. */
+  height: number,
   /** Минимально возможная координата по Y. */
   min: number,
   /** Максимально возможная координата по Y. */
   max: number,
+  /** Масштаб: количество пикселей в метре. */
+  scale: number,
   /** Состояние прокрутки. */
   scroll: CaratViewportScroll,
 }
@@ -131,7 +141,7 @@ type CaratCurveID = number;
 type CaratCurveType = string;
 
 /** Типы корректных подключённых каналов к каротажной форме. */
-type CaratChannelType = 'lithology' | 'perforations' | 'curve-set' | 'curve-data';
+type CaratChannelType = 'lithology' | 'perforations' | 'curve-set' | 'curve-data' | 'inclinometry';
 
 type CaratCurveSetInfo = CaratChannelInfo<'id' | 'type' | 'date' | 'top' | 'bottom' | 'defaultLoading' | 'description'>;
 type CaratCurveDataInfo = CaratChannelInfo<'id' | 'data' | 'top' | 'bottom' | 'min' | 'max'>;

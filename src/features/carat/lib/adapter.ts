@@ -1,6 +1,6 @@
 import { CaratStage } from '../rendering/stage';
-import { identifyCaratChannel, applyStyle } from './channels';
-import { drawerConfig } from './constants';
+import { identifyCaratChannel, applyStyle, createInfo } from './channels';
+import { drawerConfig, criterionProperties, inclinometryDataProperties } from './constants';
 
 
 /** Создаёт состояние каротажа по её начальным настройкам. */
@@ -18,6 +18,18 @@ export function settingsToState(formState: FormState, channelDict: ChannelDict):
         const name = attachedChannel.name;
         const idx = channels.findIndex(c => c === name);
         channels.splice(idx, 1);
+      } if (attachedChannel.type === 'inclinometry') {
+        const propertyName = criterionProperties.inclinometry.inclinometry;
+        const property = channel.info.properties.find(p => p.name === propertyName);
+        const inclinometryChannel = property?.secondLevelChannelName;
+
+        if (inclinometryChannel) {
+          const info = createInfo(channelDict[inclinometryChannel], inclinometryDataProperties);
+          attachedChannel.inclinometry = {name: inclinometryChannel, info, applied: false, dict: null};
+          if (!channels.includes(inclinometryChannel)) channels.push(inclinometryChannel);
+        } else {
+          delete attachedChannel.type;
+        }
       } else {
         applyStyle(attachedChannel, channel, channelDict);
       }
