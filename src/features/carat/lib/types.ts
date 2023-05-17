@@ -54,6 +54,7 @@ export interface CaratIntervalModel {
   stratumID?: number,
   top: number,
   bottom: number,
+  styleID: string,
   style: CaratIntervalStyle,
   text?: string,
 }

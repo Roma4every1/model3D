@@ -3,6 +3,7 @@ import { CaratBarModel, CaratIntervalModel, CaratIntervalStyleDict } from '../li
 import { cartesianProduct, parseColorHEX, stringifyRGBA, overlayColor } from 'shared/lib';
 import { applyInfoIndexes, createInfoRecord } from '../lib/channels';
 import { fixHEX } from '../lib/utils';
+import { patternManager } from '../lib/fill-patterns';
 import { defaultSettings } from '../lib/constants';
 
 
@@ -135,7 +136,7 @@ export class CaratColumn implements ICaratColumn {
 
         let text = (this.textStyle && textIndex > 0) ? cells[textIndex] : undefined;
         if (textDict && text !== undefined) text = textDict[text];
-        return {stratumID, top: cells[topIndex], bottom: cells[bottomIndex], style, text};
+        return {stratumID, top: cells[topIndex], bottom: cells[bottomIndex], styleID, style, text};
       });
     }
   }
@@ -173,6 +174,9 @@ export class CaratColumn implements ICaratColumn {
       }
     }
     this.updateStyleDict();
+    for (const element of this.intervals) {
+      element.style = this.styleDict[element.styleID] ?? defaultSettings.intervalStyle as any;
+    }
   }
 
   private updateStyleDict() {
@@ -208,11 +212,13 @@ export class CaratColumn implements ICaratColumn {
       if (style.color) style.color = stringifyRGBA(style.color);
       if (style.borderColor) style.borderColor = stringifyRGBA(style.borderColor);
       if (style.backgroundColor) style.backgroundColor = stringifyRGBA(style.backgroundColor);
-      style.stroke = style.borderColor;
-      style.fill = style.backgroundColor;
 
-      if (style.fillStyle) this.drawer.getPattern(style.fillStyle, style.color, style.backgroundColor)
-        .then((pattern) => { if (pattern) style.fill = pattern; });
+      if (style.fillStyle) {
+        style.fill = patternManager.createPattern(style.fillStyle, style.color, style.backgroundColor);
+      } else {
+        style.fill = style.backgroundColor;
+      }
+      style.stroke = style.borderColor;
     }
   }
 

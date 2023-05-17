@@ -1,5 +1,5 @@
 import { KeyboardEvent, MouseEvent, WheelEvent } from 'react';
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { compareObjects } from 'shared/lib';
 import { currentWellIDSelector } from 'entities/parameters';
@@ -10,11 +10,13 @@ import './carat.scss';
 import { caratStateSelector } from '../store/carats.selectors';
 import { setCaratData } from '../store/carats.thunks';
 import { setCaratActiveCurve, setCaratActiveGroup, setCaratCanvas } from '../store/carats.actions';
+import { patternManager } from '../lib/fill-patterns';
 
 
 /** Каротажная диаграмма. */
 export const Carat = ({id, channels}: FormState) => {
   const dispatch = useDispatch();
+  const [ready, setReady] = useState(patternManager.ready);
 
   const wellID = useSelector(currentWellIDSelector);
   const { stage, canvas, lookupNames }: CaratState = useSelector(caratStateSelector.bind(id));
@@ -25,11 +27,16 @@ export const Carat = ({id, channels}: FormState) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isOnMoveRef = useRef<boolean>(false);
 
+  // загрузка библиотек заливок
+  useEffect(() => {
+    if (!ready) patternManager.initialize().then(() => setReady(true));
+  }, [ready]);
+
   // обновление данных каналов-справочников
   useEffect(() => {
     stage.setLookupData(lookupData);
     stage.render();
-  }, [lookupData, stage]);
+  }, [lookupData, ready, stage]);
 
   // обновление данных каналов и активной скважины
   useEffect(() => {

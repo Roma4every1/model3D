@@ -1,5 +1,4 @@
 import { CaratIntervalModel, CaratBarModel, CaratCurveModel, CurveAxisGroup } from '../lib/types';
-import { polylineType } from '../../map/components/edit-panel/selecting/selecting-utils';
 import { round } from 'shared/lib';
 
 import {
@@ -81,16 +80,6 @@ export class CaratDrawer {
     this.ctx = context;
     this.ctx.font = this.columnYAxisSettings.font;
     this.minusWidth = context.measureText('-').width;
-  }
-
-  public async getPattern(name: string, color: ColorHEX, backgroundColor: ColorHEX) {
-    try {
-      const img = await polylineType.getPattern(name, color, backgroundColor);
-      return this.ctx.createPattern(img, 'repeat');
-    }
-    catch {
-      return null;
-    }
   }
 
   private getDrawMarksFn(settings: CaratColumnYAxis, textStart: number) {
