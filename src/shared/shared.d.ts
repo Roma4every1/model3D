@@ -10,6 +10,9 @@ type ImageDict<Items = string> = Record<Items, ImagePath>;
 /** Путь к изображению. */
 type ImagePath = string;
 
+/** Двумерная матрица чисел. */
+type Matrix = number[][];
+
 /** HEX цвета.
  * @example
  * "#123456"

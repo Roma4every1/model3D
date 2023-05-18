@@ -10,7 +10,6 @@ export type Thunk<Result = void> = (dispatch: Dispatch, getState?: StateGetter) 
 export * from './common';
 export * from './math';
 export * from './layout';
-export * from './colors';
 export { API, BaseAPI } from './api';
 
 export const getParentFormId = (formID: FormID): FormID => {

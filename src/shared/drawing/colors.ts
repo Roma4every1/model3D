@@ -1,4 +1,4 @@
-import { round } from './math';
+import { round } from '../lib';
 
 
 /** Парсит HEX цвета в RGBA модель.

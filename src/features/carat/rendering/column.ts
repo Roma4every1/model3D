@@ -1,9 +1,9 @@
 import { CaratDrawer } from './drawer';
 import { CaratBarModel, CaratIntervalModel, CaratIntervalStyleDict } from '../lib/types';
-import { cartesianProduct, parseColorHEX, stringifyRGBA, overlayColor } from 'shared/lib';
+import { cartesianProduct } from 'shared/lib';
+import { fillPatterns, parseColorHEX, stringifyRGBA, overlayColor } from 'shared/drawing';
 import { applyInfoIndexes, createInfoRecord } from '../lib/channels';
 import { fixHEX } from '../lib/utils';
-import { patternManager } from '../lib/fill-patterns';
 import { defaultSettings } from '../lib/constants';
 
 
@@ -214,7 +214,7 @@ export class CaratColumn implements ICaratColumn {
       if (style.backgroundColor) style.backgroundColor = stringifyRGBA(style.backgroundColor);
 
       if (style.fillStyle) {
-        style.fill = patternManager.createPattern(style.fillStyle, style.color, style.backgroundColor);
+        style.fill = fillPatterns.createFillStyle(style.fillStyle, style.color, style.backgroundColor);
       } else {
         style.fill = style.backgroundColor;
       }
