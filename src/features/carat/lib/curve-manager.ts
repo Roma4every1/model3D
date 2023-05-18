@@ -131,11 +131,11 @@ export class CurveManager {
   }
 
   private resetTree() {
-    const map: Map<number, CaratCurveModel[]> = new Map();
+    const map: Map<string, CaratCurveModel[]> = new Map();
     for (const curve of this.curves) {
-      const time = curve.date.getTime();
-      if (!map.has(time)) map.set(time, []);
-      map.get(time).push(curve);
+      const date = curve.date.toJSON().slice(0, 10);
+      if (!map.has(date)) map.set(date, []);
+      map.get(date).push(curve);
     }
 
     this.curveTree = [];
