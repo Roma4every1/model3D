@@ -95,7 +95,7 @@ interface ChannelProperty {
   /** Группировка относительно других колонок. */
   treePath: string[],
   /** Канал-справочник. */
-  lookupChannelName: string | null,
+  lookupChannels: string[],
   /** Название канала для привязанной таблицы. */
   secondLevelChannelName: string | null,
 }

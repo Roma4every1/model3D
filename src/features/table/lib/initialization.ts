@@ -103,7 +103,7 @@ function getColumn(property: ChannelProperty, settings: DataSetColumnSettings): 
   return {
     field: property.name, colIndex: -1,
     title, width, autoWidth,
-    lookupChannel: property.lookupChannelName,
+    lookupChannel: property.lookupChannels[0],
     linkedTableChannel: property.secondLevelChannelName,
     readOnly: settings?.isReadOnly === true, locked: false,
   };

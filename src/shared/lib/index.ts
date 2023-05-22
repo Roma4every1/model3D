@@ -7,8 +7,9 @@ export type StateGetter = () => WState;
 export type Thunk<Result = void> = (dispatch: Dispatch, getState?: StateGetter) => Promise<Result>;
 
 
-export { measureText, getTextLinesCount } from './layout';
-export { compareObjects, compareArrays, setUnion, leftAntiJoin } from './common';
+export * from './common';
+export * from './math';
+export * from './layout';
 export { API, BaseAPI } from './api';
 
 export const getParentFormId = (formID: FormID): FormID => {

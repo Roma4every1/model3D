@@ -1,0 +1,50 @@
+.menu-section-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 0;
+}
+
+.big-buttons {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.button-icon-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+
+  button {
+    width: 20px;
+    height: 20px;
+    padding: 2px;
+
+    outline: none;
+    border: none;
+    border-radius: 2px;
+    background-color: #e1e1e1;
+    transition: 0.2s;
+
+    &.active {
+      background-color: #fccbc7;
+    }
+    &:hover {
+      background-color: #f3afa7;
+    }
+    &:disabled {
+      background-color: #e1e1e1;
+      filter: grayscale(1);
+      opacity: 0.75;
+    }
+  }
+
+  img {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    vertical-align: top;
+  }
+}

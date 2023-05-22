@@ -14,6 +14,8 @@ interface WState {
   channels: ChannelDict,
   /** Хранилище данных таблиц. */
   tables: TablesState,
+  /** Хранилище каротажных диаграмм. */
+  carats: CaratsState,
   /** Хранилище карт. */
   maps: MapsState,
   /** Состояние отчётов и SQL-программ. */

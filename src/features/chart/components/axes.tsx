@@ -1,4 +1,5 @@
 import { AxisDomain, AxisInterval } from 'recharts/types/util/types';
+import { getPragmaticMin, getPragmaticMax } from 'shared/lib';
 
 
 export interface YAxisProps {
@@ -58,46 +59,12 @@ export const getYAxisProto = (id: string, axis: AxisSettings): YAxisProps => {
  * getFormattedMinMax([1000,25000])    => [0,25000]
  * */
 const getFormattedMinMax = ([dataMin, dataMax] : [number, number]) => {
-  let min = getMin(dataMin);
-  let max = getMax(dataMax);
+  let min = getPragmaticMin(dataMin);
+  let max = getPragmaticMax(dataMax);
   const currStep = Math.floor((max - min) / 10);
   if (currStep > min) min = 0;
   return [min, max] as [number, number];
 };
-
-/** Округляет в низ до ближайшего числа, удобного для восприятия на оси графика.
- * @example
- * getMin(4)    => 0
- * getMin(33.3) => 25
- * getMin(543)  => 500
- * */
-const getMin = (n: number): number => {
-  n = Math.floor(n);
-  if (n < 10) return 0;
-  const e = Math.pow(10, n.toString().length - 1);
-  n = n / e;
-
-  if (n >= 5) return 5 * e;
-  if (n >= 2.5) return 2.5 * e;
-  return (n >= 2 ? 2 : 1) * e;
-};
-
-/** Округляет в вверх до ближайшего числа, удобного для восприятия на оси графика.
- * @example
- * getMax(4)    => 5
- * getMax(33.3) => 50
- * getMax(543)  => 1000
- * */
-const getMax = (n: number): number => {
-  n = Math.ceil(n);
-  const e = Math.pow(10, n.toString().length - 1);
-  n = n / e;
-
-  if (n <= 1) return e;
-  if (e < 2 && n <= 2) return 2 * e;
-  if (n <= 2.5) return 2.5 * e;
-  return (n <= 5 ? 5 : 10) * e;
-}
 
 /** Конвертирует число в строку в аббревиатурной форме с точностью (количество цифр) precision.
  * @example

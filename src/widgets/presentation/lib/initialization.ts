@@ -3,6 +3,7 @@ import { createChannels } from 'entities/channels';
 import { getExternalChannels, getLinkedChannels, getLookupChannels } from 'entities/channels';
 import { handleLayout } from './layout';
 import { applyDisplayNamePattern } from './display-name-string';
+import { fillPatterns } from 'shared/drawing';
 import { formsAPI } from 'widgets/presentation/lib/forms.api';
 
 
@@ -105,21 +106,11 @@ export async function createFormStates(
 }
 
 async function createFormSettings({id, type}: FormDataWMR): Promise<FormSettings> {
-  if (type === 'dataSet') {
+  if (type === 'dataSet' || type === 'carat') {
     const res = await formsAPI.getFormSettings(id);
+    if (type === 'carat') await fillPatterns.initialize();
     if (!res.ok) return {};
-    const settings = res.data;
-
-    const resPlugin = await formsAPI.getPluginData(id, 'tableColumnHeaderSetter');
-    const rules: any[] = resPlugin.ok ? resPlugin.data?.tableColumnHeaderSetter?.specialLabel : [];
-
-    settings.headerSetterRules = rules?.map((item): HeaderSetterRule => ({
-      parameter: item['@switchingParameterName'],
-      property: item['@ChannelPropertyName'],
-      column: item['@columnName'],
-    })) ?? [];
-
-    return settings;
+    return res.data;
   }
 
   if (type === 'chart') {

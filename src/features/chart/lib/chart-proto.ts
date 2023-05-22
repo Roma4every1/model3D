@@ -79,17 +79,9 @@ export const getChartProto = (
         legend.push(getDiagramLegend(dataKey, name, item));
       }
 
-      if (columns[dataIndex].NetType.endsWith('Decimal')) {
-        xValues.forEach((xValue, i) => {
-          let n = rows[i].Cells[dataIndex];
-          if (n !== null) n = parseFloat(n.replace(',', '.'));
-          data[xValue.step][dataKey] = n;
-        });
-      } else {
-        xValues.forEach((xValue, i) => {
-          data[xValue.step][dataKey] = rows[i].Cells[dataIndex];
-        });
-      }
+      xValues.forEach((xValue, i) => {
+        data[xValue.step][dataKey] = rows[i].Cells[dataIndex];
+      });
     }
   }
   const sortedData = Object.values(data).sort(sortDataFn);

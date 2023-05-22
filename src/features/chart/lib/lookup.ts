@@ -6,7 +6,7 @@ export function getChartLookups(marks: ChartMarkProps[]): ChannelName[] {
   const lookups: ChannelName[] = [];
   for (const mark of marks) {
     for (const item of mark.label.value) {
-      lookups.push(item.property.lookupChannelName);
+      lookups.push(item.property.lookupChannels[0]);
     }
   }
   return lookups;
@@ -16,7 +16,7 @@ export function getChartLookups(marks: ChartMarkProps[]): ChannelName[] {
 export function applyLookupToMarks(marks: ChartMarkProps[], data: ChannelDict) {
   for (const mark of marks) {
     for (const item of mark.label.value) {
-      const channel = data[item.property.lookupChannelName];
+      const channel = data[item.property.lookupChannels[0]];
       const lookupColumns = channel.info.lookupColumns;
 
       const idIndex = lookupColumns.id.index;

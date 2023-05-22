@@ -1,5 +1,6 @@
 import { ReactNode, CSSProperties, MouseEvent } from 'react';
 import { Skeleton } from '@progress/kendo-react-indicators';
+import './menu-ui.scss';
 
 
 interface MenuSectionProps {
@@ -8,6 +9,10 @@ interface MenuSectionProps {
   style?: CSSProperties,
   children: ReactNode,
 }
+interface MenuSectionItemProps {
+  className?: string,
+  children?: ReactNode,
+}
 
 export const MenuSection = ({header, className, style, children}: MenuSectionProps) => {
   return (
@@ -15,6 +20,14 @@ export const MenuSection = ({header, className, style, children}: MenuSectionPro
       <div className={'menu-header'}>{header}</div>
       <div className={className || 'menu-list'} style={style}>{children}</div>
     </section>
+  );
+};
+
+export const MenuSectionItem = ({className, children}: MenuSectionItemProps) => {
+  return (
+    <div className={className}>
+      {children}
+    </div>
   );
 };
 
@@ -28,7 +41,7 @@ export const MenuSkeleton = ({template}: {template: string[]}) => {
   );
 };
 
-export const MenuSectionSkeleton = ({width}: {width: string}) => {
+const MenuSectionSkeleton = ({width}: {width: string}) => {
   return (
     <section className={'menu-section-skeleton'} style={{width}}>
       <Skeleton shape={'rectangle'} animation={{type: 'wave'}}/>
@@ -82,10 +95,43 @@ export const ButtonIconStock = ({icon, title, action, disabled}: Omit<ButtonIcon
 
 /* --- --- --- */
 
+interface ButtonIconRowProps {
+  justifyContent?: string,
+  gap?: number | string,
+  children?: ReactNode,
+}
+interface ButtonIconRowItemProps {
+  icon: string,
+  alt?: string,
+  title?: string,
+  active?: boolean,
+  onClick?: () => void,
+  disabled?: boolean,
+}
+
+export const ButtonIconRow = ({children, justifyContent, gap}: ButtonIconRowProps) => {
+  return (
+    <div className={'button-icon-row'} style={{justifyContent, gap}}>
+      {children}
+    </div>
+  );
+};
+
+export const ButtonIconRowItem = (props: ButtonIconRowItemProps) => {
+  const className = props.active ? 'active' : undefined;
+  return (
+    <button className={className} onClick={props.onClick} disabled={props.disabled}>
+      <img src={props.icon} alt={props.alt} title={props.title}/>
+    </button>
+  );
+};
+
+/* --- --- --- */
+
 interface BigButtonProps {
   text: string,
   icon: string,
-  action: (event?: MouseEvent) => void,
+  action?: (event?: MouseEvent) => void,
   disabled?: boolean,
 }
 
@@ -98,7 +144,7 @@ export const BigButton = ({text, icon, action, disabled}: BigButtonProps) => {
   );
 };
 
-type BigButtonToggleProps = BigButtonProps & {active: boolean};
+type BigButtonToggleProps = BigButtonProps & {active?: boolean};
 
 export const BigButtonToggle = ({text, icon, active, action, disabled}: BigButtonToggleProps) => {
   const className = 'map-action' + (active ? ' selected' : '');

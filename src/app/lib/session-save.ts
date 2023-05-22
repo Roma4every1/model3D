@@ -1,29 +1,34 @@
 import { IJsonModel } from 'flexlayout-react';
 import { serializeParameter } from 'entities/parameters';
 import { TableFormSettings, tableStateToFormSettings } from 'features/table';
+import { caratStateToSettings } from 'features/carat';
 
-
-type FormParamsArray = {id: FormID, value: SerializedParameter[]}[];
-type FormLayoutArray = ({id: FormID} & IJsonModel)[];
-type FormSettingsArray = TableFormSettings[];
 
 /** Модель, используемая в серверных запросах для сохранения сессии. */
 export interface SessionToSave {
   sessionId: SessionID,
-  activeParams: FormParamsArray,
+  parameters: FormParamsArray,
   children: FormChildrenState[],
   layout: FormLayoutArray,
-  settings: FormSettingsArray,
+  settings: SessionSettings,
 }
+
+interface SessionSettings {
+  tables: TableFormSettings[],
+  carats: CaratFormSettings[],
+}
+
+type FormParamsArray = {id: FormID, value: SerializedParameter[]}[];
+type FormLayoutArray = ({id: FormID} & IJsonModel)[];
 
 
 export function getSessionToSave(state: WState): SessionToSave {
   return {
     sessionId: state.appState.sessionID,
-    activeParams: getParametersToSave(state.parameters),
+    parameters: getParametersToSave(state.parameters),
     children: getChildrenToSave(state.root, state.presentations),
     layout: getLayoutsToSave(state.root, state.presentations),
-    settings: getSettingsToSave(state.tables),
+    settings: getSettingsToSave(state.tables, state.carats),
   };
 }
 
@@ -65,13 +70,19 @@ function presentationStateToChildren(state: PresentationState): FormChildrenStat
 
 /* --- Settings --- */
 
-function getSettingsToSave(tableStates: TablesState): FormSettingsArray {
-  const settingsArray: FormSettingsArray = [];
+function getSettingsToSave(tableStates: TablesState, caratsState: CaratsState): SessionSettings {
+  const tables: TableFormSettings[] = [];
+  const carats: CaratFormSettings[] = [];
+
   for (const id in tableStates) {
     const tableState = tableStates[id];
-    settingsArray.push(tableStateToFormSettings(id, tableState));
+    tables.push(tableStateToFormSettings(id, tableState));
   }
-  return settingsArray;
+  for (const id in caratsState) {
+    const caratState = caratsState[id];
+    carats.push(caratStateToSettings(id, caratState));
+  }
+  return {tables, carats};
 }
 
 /* --- Layout --- */
