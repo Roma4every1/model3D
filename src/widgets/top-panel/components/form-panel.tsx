@@ -22,9 +22,9 @@ const editPanelDict: Record<string, [FunctionComponent<FormEditPanelProps>, Form
 
 /** Панель редактирования формы. */
 export const FormPanel = ({panelID, presentation}: FormPanelProps) => {
-  if (!presentation) return null;
+  const activeChildID = presentation?.activeChildID;
+  if (!activeChildID) return null;
 
-  const activeChildID = presentation.activeChildID;
   const activeFormType = presentation.children.find(child => child.id === activeChildID).type;
   const [TopTabComponent, formType] = editPanelDict[panelID];
 

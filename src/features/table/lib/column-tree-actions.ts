@@ -93,24 +93,27 @@ export function findGroupItems(tree: ColumnTree, columnID: TableColumnID): [Colu
  * */
 export function toggleTreeItemVisibility(tree: ColumnTree, item: ColumnTreeItem) {
   const visible = !item.visible;
-  setVisibleDeep(item, visible);
-  if (visible) setParentsVisible(tree, item, visible);
+  setChildrenVisible(item, visible);
+  setParentsVisible(tree, item, visible);
 }
 
-function setVisibleDeep(item: ColumnTreeItem, visible: boolean) {
+function setChildrenVisible(item: ColumnTreeItem, visible: boolean) {
   item.visible = visible;
   const items: ColumnTreeItem[] = item.children;
-  if (items) items.forEach((i) => setVisibleDeep(i, visible));
+  if (items) items.forEach((i) => setChildrenVisible(i, visible));
 }
 
 function setParentsVisible(tree: ColumnTree, targetItem: ColumnTreeItem, visible: boolean) {
   for (const item of tree) {
-    const items: ColumnTreeItem[] = item.children;
-    if (items) {
-      if (setParentsVisible(items, targetItem, visible)) { item.visible = visible; return true; }
-    } else if (item === targetItem) {
+    const items = item.children;
+    if (items && setParentsVisible(items, targetItem, visible)) {
+      item.visible = !items.every(i => !i.visible);
+      return true;
+    }
+    if (item === targetItem) {
       item.visible = visible;
       return true;
     }
   }
+  return false;
 }

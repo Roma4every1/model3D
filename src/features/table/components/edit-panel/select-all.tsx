@@ -5,7 +5,7 @@ import selectAllIcon from 'assets/images/dataset/select-all.png';
 
 
 export const SelectAll = ({id, state, dispatch, t}: EditPanelItemProps) => {
-  const disabled = state.activeCell.edited;
+  const disabled = state.activeCell.edited || !state.total;
 
   const selectAll = () => {
     const total = state.total;

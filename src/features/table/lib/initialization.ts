@@ -50,14 +50,15 @@ export function settingsToState(channel: Channel, settings: TableFormSettings): 
   const allProperties = channel?.info.properties ?? [];
   if (channel) channel.query.maxRowCount = 100;
 
-  const { columns, attachedProperties } = settings;
-  const columnsState: TableColumnsState = {};
+  let { columns, attachedProperties } = settings;
+  if (!attachedProperties) attachedProperties = {attachOption: 'AttachNothing', exclude: []};
   const properties = getDisplayedProperties(allProperties, attachedProperties);
 
   if (columns?.columnsSettings.filter((col) => col.isVisible).length === 0) {
     columns.columnsSettings.forEach((col) => { col.isVisible = true; })
   } // временная заглушка
 
+  const columnsState: TableColumnsState = {};
   const settingsDict: DataSetColumnDict = {};
   columns?.columnsSettings.forEach((col) => settingsDict[col.channelPropertyName] = col);
 
@@ -111,7 +112,7 @@ function getColumn(property: ChannelProperty, settings: DataSetColumnSettings): 
 
 /** Возвращает список свойств, по которому будут строиться колонки. */
 function getDisplayedProperties(allProperties: ChannelProperty[], attached: InitAttachedProperties) {
-  const option: AttachOptionType = attached?.attachOption ?? 'AttachAll';
+  const option: AttachOptionType = attached?.attachOption ?? 'AttachNothing';
   const excludeList: string[] = attached?.exclude ?? [];
 
   const checker = option === 'AttachAll'

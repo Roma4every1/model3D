@@ -3,6 +3,7 @@ import { createChannels } from 'entities/channels';
 import { getExternalChannels, getLinkedChannels, getLookupChannels } from 'entities/channels';
 import { handleLayout } from './layout';
 import { applyDisplayNamePattern } from './display-name-string';
+import { getChildrenTypes } from './utils';
 import { fillPatterns } from 'shared/drawing';
 import { formsAPI } from 'widgets/presentation/lib/forms.api';
 
@@ -27,7 +28,7 @@ export async function createPresentationState(id: FormID): Promise<PresentationS
   return {
     id, settings, layout, children,
     openedChildren, activeChildID: activeChildren[0],
-    childrenTypes: new Set(children.map(child => child.type)),
+    childrenTypes: getChildrenTypes(children, openedChildren),
   };
 }
 

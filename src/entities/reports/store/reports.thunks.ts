@@ -2,7 +2,7 @@ import { Dispatch } from 'redux';
 import { Thunk, StateGetter } from 'shared/lib';
 import { fillChannels } from 'entities/channels';
 import { fillParamValues } from '../../parameters';
-import { applyChannelsDeps } from 'widgets/presentation/lib/channels-auto-update';
+import { applyChannelsDeps } from 'widgets/presentation/lib/utils';
 import { createClientChannels } from 'widgets/presentation/lib/initialization';
 import { initializeReport, updateReportParam } from './reports.actions';
 import { setReportModels, setCanRunReport, setReportChannels } from './reports.actions';

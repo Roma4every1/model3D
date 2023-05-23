@@ -4,7 +4,7 @@ import { formsAPI } from 'widgets/presentation/lib/forms.api';
 import { fillChannels } from 'entities/channels';
 import { createLeftLayout } from 'widgets/left-panel';
 import { createClientChannels } from 'widgets/presentation/lib/initialization';
-import { applyChannelsDeps } from 'widgets/presentation/lib/channels-auto-update';
+import { applyChannelsDeps } from 'widgets/presentation/lib/utils';
 import { setParamDict } from 'entities/parameters';
 import { setChannels } from 'entities/channels';
 import { fetchSessionStart, fetchSessionEnd, fetchSessionError } from 'entities/fetch-state';

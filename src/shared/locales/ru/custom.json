@@ -82,7 +82,7 @@
       "unique": "Уникальных значений: {{value}}"
     },
     "toolbar": {
-      "export-to-excel": "Экспорт таблицы с Excel",
+      "export-to-excel": "Экспорт таблицы в Excel",
       "to-start": "В начало",
       "to-end": "В конец",
       "previous": "Предыдущая строка",

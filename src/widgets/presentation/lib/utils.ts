@@ -22,3 +22,13 @@ export function applyChannelsDeps(channelDict: ChannelDict, paramDict: ParamDict
     }
   }
 }
+
+/** Возвращает список типов форм в презентации с учётом их видимости. */
+export function getChildrenTypes(children: FormDataWMR[], opened: FormID[]): Set<FormType> {
+  const types = new Set<FormType>();
+  for (const child of children) {
+    const isOpened = opened.includes(child.id);
+    if (isOpened) types.add(child.type);
+  }
+  return types;
+}

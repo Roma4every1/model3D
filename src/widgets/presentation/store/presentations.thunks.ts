@@ -4,7 +4,7 @@ import { createReportModels, setReportModels } from 'entities/reports';
 import { fillChannels, setChannels } from 'entities/channels';
 import { getPresentationParams, getPresentationChannels } from '../lib/initialization';
 import { createPresentationState, createClientChannels, createFormStates } from '../lib/initialization';
-import { applyChannelsDeps } from '../lib/channels-auto-update';
+import { applyChannelsDeps } from '../lib/utils';
 
 import { setParamDict } from 'entities/parameters';
 import { fetchFormsStart, fetchFormsEnd, fetchFormError } from 'entities/fetch-state';
