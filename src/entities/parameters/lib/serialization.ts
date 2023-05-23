@@ -13,7 +13,7 @@ function serializeParamValue(type: ParameterType, value: any): string | null {
     case 'tableCell': { return value; }
     case 'tableCellsArray': { return value.join('|'); }
     case 'date': { return value.toJSON(); }
-    case 'dateInterval': { return serializeDateInterval(value.start, value.end); }
+    case 'dateInterval': { return serializeDateInterval(value); }
     case 'double': { return value.toString(); }
     case 'doubleInterval': { return value[0] + '->' + value[1]; }
     case 'string': { return value; }
@@ -25,6 +25,7 @@ function serializeParamValue(type: ParameterType, value: any): string | null {
 }
 
 /** Сериализует интервал дат в серверный формат. */
-function serializeDateInterval(start: Date, end: Date): string {
+function serializeDateInterval({start, end}: ParamValueDateInterval): string {
+  if (!start || !end || start > end) return null;
   return start.toJSON() + ' - ' + end.toJSON();
 }
