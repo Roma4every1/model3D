@@ -6,6 +6,7 @@ import { createLeftLayout } from 'widgets/left-panel';
 import { createClientChannels } from 'widgets/presentation/lib/initialization';
 import { applyChannelsDeps } from 'widgets/presentation/lib/utils';
 import { setParamDict } from 'entities/parameters';
+import { tableRowToString } from 'entities/parameters/lib/table-row';
 import { setChannels } from 'entities/channels';
 import { fetchSessionStart, fetchSessionEnd, fetchSessionError } from 'entities/fetch-state';
 import { setRootFormState } from './root-form.actions';
@@ -35,6 +36,7 @@ export const startSession = (isDefault: boolean): Thunk => {
     const names = await formsAPI.getFormChannelsList(id);
     const channels = await createClientChannels(new Set(names), paramDict, []);
     applyChannelsDeps(channels, paramDict);
+    await checkParamValues(channels, paramDict);
     await fillChannels(channels, paramDict);
 
     dispatch(setParamDict(paramDict));
@@ -45,41 +47,52 @@ export const startSession = (isDefault: boolean): Thunk => {
   };
 };
 
+/** Проверяет, чтобы у всех параметров было корректное значение. */
+async function checkParamValues(channelDict: ChannelDict, paramDict: ParamDict) {
+  const paramsToFill = Object.values(paramDict)[0].filter((param) => {
+    return param.canBeNull === false && param.externalChannelName && param.value === null;
+  });
+  if (paramsToFill.length === 0) return;
+
+  const channelsToFill: ChannelDict = {};
+  paramsToFill.forEach((parameter) => {
+    const channelName = parameter.externalChannelName;
+    channelsToFill[channelName] = channelDict[channelName];
+  });
+  await fillChannels(channelsToFill, paramDict);
+
+  for (const parameter of paramsToFill) {
+    const channel = channelsToFill[parameter.externalChannelName];
+    const rows = channel?.data?.rows;
+    if (rows?.length) parameter.value = tableRowToString(channel, rows[0])?.value ?? null;
+  }
+}
 
 /** Создаёт состояние главной формы. */
 async function createRootFormState(): Promise<RootFormState | string> {
   const resRootForm = await formsAPI.getRootForm();
-  if (!resRootForm.ok) return 'ошибка при получении данных главной формы';
+  if (!resRootForm.ok) return 'Ошибка при получении данных главной формы';
   const id = resRootForm.data.id;
 
   const [resPresentations, resChildren, resSettings, resLayout] = await Promise.all([
     formsAPI.getPresentationsList(id),
     formsAPI.getFormChildren(id),
-    formsAPI.getPluginData(id, 'dateChanging'),
+    formsAPI.getFormSettings(id),
     formsAPI.getFormLayout(id),
   ]);
 
-  if (!resPresentations.ok) return 'ошибка при получении списка презентаций';
+  if (!resPresentations.ok) return 'Ошибка при получении списка презентаций';
   const presentationsTree = resPresentations.data.items;
 
-  if (!resChildren.ok) return 'ошибка при получении данных презентаций';
+  if (!resChildren.ok) return 'Ошибка при получении данных презентаций';
   const { children, activeChildren: [activeChildID] } = resChildren.data;
 
-  const settings = await createRootFormSettings(resSettings);
+  const dateChangingRaw = resSettings.data?.dateChanging;
+  const dateChanging = dateChangingRaw?.year ? dateChangingRaw : null;
+  const settings: DockSettings = {dateChanging, parameterGroups: null};
+
   const layout = createDockLayout(resLayout);
   return {id, settings, layout, presentationTree: presentationsTree, children, activeChildID};
-}
-
-/** Создаёт объект настроек главной формы. */
-async function createRootFormSettings(res: Res<any>): Promise<DockSettings> {
-  const dateChangingRaw = res.data?.dateChanging;
-
-  const dateChanging = dateChangingRaw ? {
-    year: dateChangingRaw['@yearParameter'],
-    dateInterval: dateChangingRaw['@dateIntervalParameter'],
-    columnName: dateChangingRaw['@columnNameParameter'] ?? null
-  } : null;
-  return {dateChanging, parameterGroups: null};
 }
 
 function createDockLayout(res: Res<any>): DockLayout {
