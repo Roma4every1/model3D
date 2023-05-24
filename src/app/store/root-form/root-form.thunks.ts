@@ -37,7 +37,7 @@ export const startSession = (isDefault: boolean): Thunk => {
     const channels = await createClientChannels(new Set(names), paramDict, []);
     applyChannelsDeps(channels, paramDict);
     await checkParamValues(channels, paramDict);
-    await fillChannels(channels, paramDict);
+    fillChannels(channels, paramDict).then();
 
     dispatch(setParamDict(paramDict));
     dispatch(setChannels(channels));

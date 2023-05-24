@@ -34,7 +34,15 @@ export const initializeActiveReport = (id: FormID, reportID: ReportID): Thunk =>
     const paramDict = {[reportID]: parameters};
     const channels = await createClientChannels(new Set(), paramDict, []);
     applyChannelsDeps(channels, paramDict);
-    await fillChannels(channels, {...state.parameters, [reportID]: parameters});
+
+    for (const name in channels) {
+      const clients = channels[name].info.clients;
+      clients.add(rootID); clients.add(id);
+    }
+
+    paramDict[rootID] = parametersState[rootID];
+    paramDict[id] = parametersState[id];
+    await fillChannels(channels, paramDict);
 
     const initData: ReportInitData = {
       parameters, channels,
@@ -46,9 +54,9 @@ export const initializeActiveReport = (id: FormID, reportID: ReportID): Thunk =>
 
 export const updateReportParameter = (id: FormID, reportID: ReportID, paramID: ParameterID, value: any): Thunk => {
   return async (dispatch: Dispatch, getState: StateGetter) => {
-    const state = getState();
+    const { root, reports, parameters } = getState();
 
-    const report = state.reports.models[id].find(r => r.id === reportID);
+    const report = reports.models[id].find(r => r.id === reportID);
     if (!report) return;
     const param = report.parameters.find(p => p.id === paramID);
     if (!param) return;
@@ -59,7 +67,13 @@ export const updateReportParameter = (id: FormID, reportID: ReportID, paramID: P
     if (param.relatedChannels) {
       const dict = {};
       param.relatedChannels.forEach((name) => dict[name] = report.channels[name]);
-      await fillChannels(dict, {[reportID]: report.parameters});
+
+      const paramDict: ParamDict = {
+        [reportID]: report.parameters,
+        [root.id]: parameters[root.id],
+        [id]: parameters[id],
+      };
+      await fillChannels(dict, paramDict);
       dispatch(setReportChannels(id, reportID, {...report.channels}));
     }
 

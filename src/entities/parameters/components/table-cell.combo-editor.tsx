@@ -121,7 +121,7 @@ export const TableCellComboEditor = ({parameter, update, channel}: EditorProps<P
   return (
     <DropDownTree
       className={'table-cell-combo-editor'}
-      popupSettings={{popupClass: 'dropdownPopup'}}
+      popupSettings={{popupClass: 'dropdown-popup'}}
       data={treeData}
       value={valueToShow}
       dataItemKey={'id'}

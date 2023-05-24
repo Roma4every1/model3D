@@ -305,3 +305,7 @@ html {
 .k-multicheck-wrap {
   max-height: 20vh;
 }
+
+.k-animation-container {
+  z-index: 90;
+}
