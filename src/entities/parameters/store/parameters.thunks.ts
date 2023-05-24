@@ -87,5 +87,5 @@ function getCurrentRowParams(names: ChannelName[], paramDict: ParamDict, channel
       }
     }
   });
-  return result;
+  return result.filter(item => item.parameter);
 }

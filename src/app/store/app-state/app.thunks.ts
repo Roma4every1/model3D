@@ -18,7 +18,7 @@ export async function initialize(dispatch: Dispatch) {
 
 /** Запрос клиентской конфигурации. */
 async function getClientConfig(): Promise<unknown> {
-  const configLocation = getAppLocation() + 'clientConfiguration.json';
+  const configLocation = getAppLocation() + 'client-configuration.json';
   try {
     const res = await fetch(configLocation, {credentials: 'include'});
     return await res.json();
