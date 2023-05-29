@@ -6,11 +6,13 @@ export const DateIntervalEditor = ({parameter, update}: EditorProps<ParamDateInt
   const start = parameter.value.start ?? undefined;
   const end = parameter.value.end ?? undefined;
 
-  const onStartChange = (e: DatePickerChangeEvent) => {
-    update({start: e.value, end});
+  const onStartChange = ({value}: DatePickerChangeEvent) => {
+    if (value > end) value = end;
+    update({start: value, end});
   };
-  const onEndChange = (e: DatePickerChangeEvent) => {
-    update({start, end: e.value});
+  const onEndChange = ({value}: DatePickerChangeEvent) => {
+    if (value < start) value = start;
+    update({start, end: value});
   };
 
   return (
