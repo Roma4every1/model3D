@@ -2,8 +2,8 @@ import { useLayoutEffect, useRef } from 'react';
 import { polylineType } from '../../selecting/selecting-utils';
 
 
-const width = 110;
-const height = 40;
+const width = 40;
+const height = 20;
 
 export const FillNameTemplate = ({fillName, fillColor, bkColor, transparent}) => {
   useLayoutEffect(() => {

@@ -1,56 +1,37 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import { TFunction, useTranslation } from 'react-i18next';
 import { MapModes } from '../../../lib/enums';
 import { clientPoint, listenerOptions } from '../../../lib/map-utils';
 import { polylineByLegends, getDefaultSign, getDefaultLabel } from './editing-utils';
-import { createMapElement, startMapEditing, setEditMode } from '../../../store/maps.actions';
+import {
+  createMapElement,
+  startMapEditing,
+  setEditMode,
+  acceptCreatingElement
+} from '../../../store/maps.actions';
 
-import createPolylineIcon from 'assets/images/map/create-polyline.png';
-import createLabelIcon from 'assets/images/map/create-label.png';
-import createSignIcon from 'assets/images/map/create-sign.png';
-
+const creatingElementTypes: MapElementType[] = ['polyline', 'sign', 'label'];
+const hasPropertiesWindow: MapElementType[] = ['polyline', 'label'];
 
 interface CreateElementProps {
   mapState: MapState,
   formID: FormID,
-}
-interface CreateItemProps {
-  ownType: MapElementType,
-  selected: boolean,
-  action: () => void,
-  t: TFunction,
+  creatingType: MapElementType,
+  showPropertiesWindow?
 }
 
-
-/** Иконки создания новых элементов карты. */
-const mapCreatingIcons: ImageDict<'polyline' | 'label' | 'sign'> = {
-  'polyline': createPolylineIcon,
-  'label': createLabelIcon,
-  'sign': createSignIcon,
-};
-
-const creatingElementTypes: MapElementType[] = ['polyline', 'sign', 'label'];
 const defaultSignProto: SignImageProto = {fontName: 'PNT.CHR', symbolCode: 68, color: '#DDDDDD'}
 
-const CreateItem = ({ownType, selected, action, t}: CreateItemProps) => {
-  const src = mapCreatingIcons[ownType], title = t('map.creating.' + ownType);
-  return (
-    <button className={'map-panel-button' + (selected ? ' selected' : '')} title={title} onClick={action}>
-      <img src={src} alt={'create-' + ownType}/>
-    </button>
-  );
-}
 
-
-export const CreateElement = ({mapState, formID}: CreateElementProps) => {
-  const { t } = useTranslation();
+export const CreateElement = ({mapState, formID, creatingType, showPropertiesWindow}: CreateElementProps) => {
   const dispatch = useDispatch();
+  if (mapState.mode !== MapModes.AWAIT_POINT) {
+    dispatch(setEditMode(formID, MapModes.AWAIT_POINT));
+  }
 
   const { activeLayer, legends, canvas } = mapState;
 
   const [defaultSignImage, setDefaultSignImage] = useState<HTMLImageElement>(null);
-  const [selectedType, setSelectedType] = useState<MapElementType>(null);
 
   const signProto = useMemo<SignImageProto>(() => {
     for (const e of activeLayer.elements) {
@@ -73,27 +54,23 @@ export const CreateElement = ({mapState, formID}: CreateElementProps) => {
     if (type === 'polyline') defaultElement = polylineByLegends(point, legends, activeLayer?.name);
     if (!defaultElement) return;
     dispatch(createMapElement(formID, defaultElement));
+    if (type === 'sign' || type === 'label') {
+      if (hasPropertiesWindow.includes(creatingType)) showPropertiesWindow();
+      else dispatch(acceptCreatingElement(formID));
+    }
     dispatch(startMapEditing(formID));
   }, [defaultSignImage, signProto, legends, activeLayer, dispatch, formID]);
 
-  const mapCreatingTypes = useCallback((type: MapElementType) => {
-    const action = () => {
-      setSelectedType(type);
-
-      if (mapState.mode !== MapModes.AWAIT_POINT) {
-        dispatch(setEditMode(formID, MapModes.AWAIT_POINT));
-      }
-    }
-    return <CreateItem key={type} ownType={type} selected={selectedType === type} action={action} t={t}/>
-  }, [mapState.mode, selectedType, t, dispatch, formID]);
-
   const mouseUp = useCallback((event: MouseEvent) => {
+    if (creatingElementTypes.indexOf(creatingType) === -1) {
+      return;
+    }
     if (mapState.mode !== MapModes.AWAIT_POINT) return;
     const point = mapState.utils.pointToMap(clientPoint(event));
     point.x = Math.round(point.x);
     point.y = Math.round(point.y);
-    createElement(selectedType, point);
-  }, [mapState.utils, mapState.mode, createElement, selectedType]);
+    createElement(creatingType, point);
+  }, [mapState.utils, mapState.mode, createElement, creatingType]);
 
   useEffect(() => {
     if (canvas) {
@@ -106,5 +83,5 @@ export const CreateElement = ({mapState, formID}: CreateElementProps) => {
     }
   }, [canvas, mouseUp]);
 
-  return <div>{creatingElementTypes.map(mapCreatingTypes)}</div>;
+  return <div></div>;
 }

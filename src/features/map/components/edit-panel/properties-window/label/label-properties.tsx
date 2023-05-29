@@ -16,10 +16,11 @@ interface LabelPropertiesProps {
   update: () => void,
   cancel: () => void,
   t: TFunction,
+  isElementCreating: boolean,
 }
 
 
-export const LabelProperties = ({element: label, init, apply, update, cancel, t}: LabelPropertiesProps) => {
+export const LabelProperties = ({element: label, init, apply, update, cancel, t, isElementCreating}: LabelPropertiesProps) => {
   const [changed, setChanged] = useState(false);
 
   const onChange = useCallback(() => {
@@ -147,7 +148,7 @@ export const LabelProperties = ({element: label, init, apply, update, cancel, t}
         </div>
       </fieldset>
       <div>
-        <Button disabled={!changed} onClick={apply}>{t('base.apply')}</Button>
+        <Button disabled={ isElementCreating ? false : !changed } onClick={apply}>{t('base.apply')}</Button>
         <Button onClick={cancel}>{t('base.cancel')}</Button>
       </div>
     </div>

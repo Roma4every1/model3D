@@ -46,6 +46,7 @@ interface MapState {
   mapID: MapID,
   element: MapElement,
   isElementEditing: boolean,
+  isElementCreating?: boolean,
   selecting: MapSelectingState,
   oldData: {x: number | null, y: number | null, arc: PolylineArc | null, ange: number | null}
   isModified: boolean,
@@ -164,7 +165,8 @@ interface MapLayer {
   index?: any,
   version: any,
   visible?: boolean,
-  modified?: boolean
+  modified?: boolean,
+  elementType?: MapElementType
 }
 
 /** Максимальный масштаб карты, при котором данный слой будет отрисовываться. */
