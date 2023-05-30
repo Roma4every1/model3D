@@ -121,6 +121,7 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
   }, [utils, updateCanvas]);
 
   const getWellCS = useCallback((wellID, maxScale) => {
+    if (!mapData) return;
     let pointsData;
     if (isPartOfDynamicMultiMap) {
       const currentMapID = parentID + ',' + mapsState.multi[parentID].configs.find(c => c.data.plastCode === currentPlastCode)?.id
