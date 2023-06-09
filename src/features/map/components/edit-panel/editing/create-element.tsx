@@ -35,7 +35,7 @@ export const CreateElement = ({mapState, formID, creatingType, showPropertiesWin
 
   const signProto = useMemo<SignImageProto>(() => {
     for (const e of activeLayer.elements) {
-      if (e.type === 'sign') return {fontName: e.fontname, symbolCode: e.symbolcode, color: e.color};
+      if (e.type === 'sign') return {fontName: e.fontname, symbolCode: 0, color: e.color};
     }
     return defaultSignProto;
   }, [activeLayer]);
