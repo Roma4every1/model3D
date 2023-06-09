@@ -110,7 +110,7 @@ export const LabelProperties = ({element: label, init, apply, update, cancel, t,
         </div>
         <div>
           <span>Размер:</span>
-          <NumericTextBox value={fontSize} format={'#'} onChange={onFontSizeChange}/>
+          <NumericTextBox value={fontSize} format={'#'} min={1} onChange={onFontSizeChange}/>
         </div>
       </fieldset>
       <fieldset style={{gridTemplateColumns: '1fr 1fr 1.5fr'}}>
