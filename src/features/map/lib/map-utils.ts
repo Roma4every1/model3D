@@ -102,6 +102,8 @@ export const getNearestSegment = (point, polyline: MapPolyline) => {
 }
 
 export const squaredDistanceBetweenPointAndSegment = (segment, point) => {
+  if (segment[0][0] === segment[1][0] && segment[0][1] === segment[1][1]) return Infinity;
+
   const aSquared = Math.pow(segment[0][0] - point.x, 2) + Math.pow(segment[0][1] - point.y, 2);
   const bSquared = Math.pow(segment[1][0] - point.x, 2) + Math.pow(segment[1][1] - point.y, 2);
   const cSquared = Math.pow(segment[1][0] - segment[0][0], 2) + Math.pow(segment[1][1] - segment[0][1], 2);
@@ -110,7 +112,8 @@ export const squaredDistanceBetweenPointAndSegment = (segment, point) => {
   if (bSquared > aSquared + cSquared) return aSquared;
 
   const doubleSquare = Math.abs((segment[0][0] - point.x) * (segment[1][1] - point.y) - (segment[1][0] - point.x) * (segment[0][1] - point.y));
-  return (doubleSquare * doubleSquare / cSquared);
+  const distance = doubleSquare * doubleSquare / cSquared;
+  return isNaN(distance) ? Infinity : distance;
 };
 
 /** Определяет состояние карты, чтобы она полностью влазила в экран. */
