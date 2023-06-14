@@ -98,6 +98,7 @@ export const Editing = ({mapState, formID}: EditingProps) => {
 
   const isCreating = mode === MapModes.CREATING || mode === MapModes.AWAIT_POINT;
   const [isPropertiesWindowOpen, setPropertiesWindowOpen] = useState(false);
+  const [isAttrTableOpen, setAttrTableOpen] = useState(false);
   const isPolylineCreating = isElementCreating && creatingType === 'polyline';
 
   const toggleCreating = () => {
@@ -144,7 +145,11 @@ export const Editing = ({mapState, formID}: EditingProps) => {
 
   const showAttrTableWindow = () => {
     const name = 'mapAttrTableWindow';
-    const window = <AttrTableWindow key={name} formID={formID} />;
+    const window = <AttrTableWindow
+      key={name}
+      formID={formID}
+      setAttrTableOpen={setAttrTableOpen}
+    />;
     dispatch(setOpenedWindow(name, true, window));
   };
 
@@ -152,24 +157,32 @@ export const Editing = ({mapState, formID}: EditingProps) => {
     return getHeaderText(isCreating, selectedElement?.type, activeLayer?.name, t);
   }, [activeLayer, selectedElement, isCreating, t]);
 
-  const disabledCreate = (isElementCreating && !isCreating) ||
+  const disableAll = isPropertiesWindowOpen || isAttrTableOpen;
+
+  const disabledCreate = disableAll ||
+    (isElementCreating && !isCreating) ||
     !(activeLayer && activeLayer.visible) ||
     (creatingElementTypes.indexOf(creatingType) === -1);
 
-  const disabledProperties = isElementCreating ||
-    isPropertiesWindowOpen ||
+  const disabledProperties = disableAll||
+    isElementCreating ||
     !hasPropertiesWindow.includes(selectedElement?.type);
 
   const arcPathInvalid = selectedElement?.type === 'polyline' ? selectedElement?.arcs[0]?.path?.length <= 2 : false;
 
-  const disabledAccept = isPropertiesWindowOpen ||
+  const disabledAccept = disableAll ||
     (!isElementCreating && !isElementEditing) ||
     arcPathInvalid ||
     (oldData.x === null && oldData.arc === null);
   const disabledCancel  = disabledAccept && !(isPolylineCreating && !isPropertiesWindowOpen);
 
-  const disabledAttrTable = !selectedElement?.attrTable || Object.keys(selectedElement?.attrTable).length === 0;
-  const disabledDelete = isElementCreating || !selectedElement
+  const disabledAttrTable = disableAll ||
+    !selectedElement?.attrTable ||
+    Object.keys(selectedElement?.attrTable).length === 0;
+
+  const disabledDelete = disableAll ||
+    isElementCreating ||
+    !selectedElement;
 
   return (
     <section className={'map-editing'}>
@@ -197,7 +210,7 @@ export const Editing = ({mapState, formID}: EditingProps) => {
           </button>
           <button
             className={'k-button map-panel-button'} title={t('map.editing.properties')}
-            disabled={disabledProperties} onClick={() => showPropertiesWindow()}
+            disabled={disabledProperties} onClick={showPropertiesWindow}
           >
             <span className={'k-icon k-i-saturation'} />
           </button>
