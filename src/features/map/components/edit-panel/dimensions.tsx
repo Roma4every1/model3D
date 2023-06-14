@@ -108,7 +108,7 @@ export const Dimensions = ({mapState, sync, formID, parentID, t}: DimensionsProp
         <div className={'map-actions'}>
           <BigButton
             text={t('map.actions.show-all')} icon={selectAllIcon}
-            action={toFullViewPort} disabled={canvas?.blocked === true}
+            action={toFullViewPort} disabled={canvas?.blocked === true || !mapState?.isLoadSuccessfully }
           />
           <BigButtonToggle
             text={'Синхронизация карт по центру'} icon={synchronizeIcon}
