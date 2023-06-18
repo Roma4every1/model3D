@@ -43,9 +43,11 @@ export const Dimensions = ({mapState, sync, formID, parentID, t}: DimensionsProp
   }, [setDimensions, utils]);
 
   useEffect(() => {
-    if(mapState?.isLoadSuccessfully)
+    if(mapState?.isLoadSuccessfully && x && y && scale !== 1) {
+      console.log('render')
       updateCanvas(x, y, scale);
-  }, [mapState?.isLoadSuccessfully, x, y, scale])
+    }
+  }, [mapState?.isLoadSuccessfully])
 
   useEffect(() => {
     if (mapData) dispatch(setOnDrawEnd(formID, onDrawEnd));
@@ -68,15 +70,13 @@ export const Dimensions = ({mapState, sync, formID, parentID, t}: DimensionsProp
   }, [utils]);
 
   const xChanged = useCallback((event: NumericTextBoxChangeEvent) => {
-    if (event.value === null) return;
-    const newX = Math.round(+event.value);
+    const newX = event.value === null ? 0 : Math.round(+event.value);
     updateCanvas(newX, mapData.y, mapData.scale);
     setX(newX);
   }, [updateCanvas, mapData]);
 
   const yChanged = useCallback((event: NumericTextBoxChangeEvent) => {
-    if (event.value === null) return;
-    const newY = Math.round(+event.value);
+    const newY = event.value === null ? 0 : Math.round(+event.value);
     updateCanvas(mapData.x, newY, mapData.scale);
     setY(newY);
   }, [updateCanvas, mapData]);
