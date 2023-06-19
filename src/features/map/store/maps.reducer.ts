@@ -209,7 +209,6 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
 
       // задание типов элементов для слоев
       const newLayers = mapData.layers.map(l => ({...l, elementType: l.elements[0].type}));
-      console.log(newLayers)
       const newData = {...mapData, layers: newLayers}
 
       state.single[formID] = {...state.single[formID], mapData: newData, isLoadSuccessfully: true};
