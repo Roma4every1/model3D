@@ -45,20 +45,12 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
     const point = utils.pointToMap(clientPoint(event));
     const scale = mapData.scale;
 
-    if (checkDistancePoints(selectState.lastPoint, point, scale)) {
+    if (checkDistancePoints(selectState.lastPoint, point, scale) && selectState.activeIndex >= 0) {
       if (selectState.nearestElements.length === 0) return;
-      selectState.activeIndex++;
       const setActive = async () => {
         if (selectedElement) await unselectElement(selectedElement);
-
-        if (selectState.activeIndex < selectState.nearestElements.length) {
-          let newElement = selectState.nearestElements[selectState.activeIndex];
-          await selectElement(newElement);
-          dispatch(setSelectedElement(formID, newElement));
-        } else {
-          selectState.activeIndex = -1;
-          dispatch(clearMapSelect(formID));
-        }
+        selectState.activeIndex = -1;
+        dispatch(clearMapSelect(formID));
       }
       setActive().then(() => utils.updateCanvas());
     } else {
