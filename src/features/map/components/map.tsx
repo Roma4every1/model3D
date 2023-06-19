@@ -44,13 +44,6 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
   const currentPlastCode = useSelector(currentPlastCodeSelector)
   const parentID = getParentFormId(formID);
 
-  useEffect(() => {
-    if (!mapData?.layers || !mapState?.isLoadSuccessfully) return;
-    const newLayers = mapData.layers.map(l => ({...l, elementType: l.elements[0].type}));
-    const newMapData = {...mapData, layers: newLayers}
-    dispatch(setMapField(formID, 'mapData', newMapData))
-  }, [mapState?.isLoadSuccessfully, formID, dispatch])
-
   // обновление списка связанных карт
   useEffect(() => {
     const canvases = getMultiMapChildrenCanvases(mapsState.multi, mapsState.single, formID);

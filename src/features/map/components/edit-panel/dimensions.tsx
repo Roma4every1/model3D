@@ -43,13 +43,6 @@ export const Dimensions = ({mapState, sync, formID, parentID, t}: DimensionsProp
   }, [setDimensions, utils]);
 
   useEffect(() => {
-    if(mapState?.isLoadSuccessfully && x && y && scale !== 1) {
-      console.log('render')
-      updateCanvas(x, y, scale);
-    }
-  }, [mapState?.isLoadSuccessfully])
-
-  useEffect(() => {
     if (mapData) dispatch(setOnDrawEnd(formID, onDrawEnd));
   }, [mapData, onDrawEnd, dispatch, formID]);
 

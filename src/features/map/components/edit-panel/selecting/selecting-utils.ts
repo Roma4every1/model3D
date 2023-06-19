@@ -143,9 +143,7 @@ const checkDistanceForPolygon = (polygon: MapPolyline, point: ClientPoint): bool
 export const checkDistance = (element: MapElement, point: ClientPoint, scale: MapScale, getTextWidth: GetTextWidth): boolean => {
   switch (element.type) {
     case 'polyline': {
-      return isPolygon(element)
-        ? checkDistanceForPolygon(element, point)
-        : checkDistanceForPolyline(element, point, scale);
+      return checkDistanceForPolyline(element, point, scale);
     }
     case 'label': {
       return checkDistanceForLabel(element, point, scale, getTextWidth);
