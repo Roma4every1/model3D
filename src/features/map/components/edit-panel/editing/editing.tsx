@@ -117,7 +117,6 @@ export const Editing = ({mapState, formID}: EditingProps) => {
   }
 
   const cancelCreating = () => {
-    if (!selectedElement) return;
     dispatch(cancelCreatingElement(formID));
   };
 
