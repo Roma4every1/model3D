@@ -389,12 +389,15 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
       const newMapState: MapState = {...state.single[action.formID]};
 
       newMapState.isElementCreating = false;
-      newMapState.isElementEditing = false;
+      // newMapState.isElementEditing = true;
       clearOldData(newMapState);
 
       newMapState.activeLayer.modified = true;
       newMapState.isModified = true;
 
+      newMapState.childOf
+        ? setMultiMapBlocked(state, newMapState.childOf, false)
+        : newMapState.canvas.blocked = false;
       newMapState.mode = MapModes.NONE;
       newMapState.utils.updateCanvas();
       state.single[action.formID] = newMapState;
@@ -410,6 +413,10 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
 
       newMapState.activeLayer.elements.pop();
 
+      newMapState.cursor = 'auto';
+      newMapState.childOf
+        ? setMultiMapBlocked(state, newMapState.childOf, false)
+        : newMapState.canvas.blocked = false;
       newMapState.mode = MapModes.NONE;
       newMapState.utils.updateCanvas();
       state.single[action.formID] = newMapState;
