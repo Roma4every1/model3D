@@ -5,14 +5,14 @@ import { createElement } from 'react';
 import { ReferenceLine, YAxis } from 'recharts';
 
 
-export const mapAxes = (props: YAxisProps) => {
+export const propsToYAxis = (props: YAxisProps) => {
   return createElement(YAxis, props);
 };
 
-export const mapDiagrams = (item: ChartDiagram) => {
+export const propsToDiagram = (item: ChartDiagram) => {
   return createElement(item.component as any, item.props, item.child);
 };
 
-export const mapMarks = (props: ChartMarkProps) => {
+export const markToReferenceLine = (props: ChartMarkProps) => {
   return createElement(ReferenceLine as any, props);
 };

@@ -70,7 +70,9 @@ export const getChartProto = (
           if (sameMark) {
             sameMark.label.value.push({id, property});
           } else {
-            marks.push(getChartMarkProto(xValue.x, key, property, item, id));
+            const markProto = getChartMarkProto(xValue.x, key, property, item, id);
+            if (axes.length) markProto.yAxisId = axes[0].yAxisId;
+            marks.push(markProto);
           }
         });
         legend.push(getChartMarkLegend(dataKey, name, item.color));

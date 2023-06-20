@@ -9,11 +9,11 @@ import { channelsSelector, channelDictSelector } from 'entities/channels';
 import { setSettingsField } from 'widgets/presentation';
 import { ChartProto, getChartProto } from '../lib/chart-proto';
 import { getChartLookups, applyLookupToMarks } from '../lib/lookup';
-import { mapAxes, mapDiagrams, mapMarks } from '../lib/chart-mappers';
+import { propsToYAxis, propsToDiagram, markToReferenceLine } from '../lib/chart-mappers';
 import './chart.scss';
 
 
-const chartStyle = {overflow: 'hidden', width: '100%', height: '100%'};
+const chartStyle = {overflow: 'hidden'}; // for correct tooltip display
 const chartMargin = {top: 2, left: 0, bottom: 0, right: 0};
 
 export const Chart = ({id, channels, settings}: FormState) => {
@@ -57,9 +57,9 @@ export const Chart = ({id, channels, settings}: FormState) => {
         <Legend verticalAlign={'top'} payload={legend}/>
         <CartesianGrid strokeDasharray={'4 4'}/>
         <XAxis dataKey={'x'}/>
-        {axes.map(mapAxes)}
-        {diagrams.map(mapDiagrams)}
-        {marks.map(mapMarks)}
+        {axes.map(propsToYAxis)}
+        {diagrams.map(propsToDiagram)}
+        {marks.map(markToReferenceLine)}
       </ComposedChart>
     </ResponsiveContainer>
   );

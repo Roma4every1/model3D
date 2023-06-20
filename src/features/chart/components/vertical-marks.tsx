@@ -12,6 +12,7 @@ import { measureText } from 'shared/lib';
 export interface ChartMarkProps {
   key: string,
   x: string,
+  yAxisId?: string,
   label: {content: FunctionComponent, value: ChartMarkLabelItem[]},
   stroke: string,
 }

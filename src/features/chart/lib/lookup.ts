@@ -17,12 +17,13 @@ export function applyLookupToMarks(marks: ChartMarkProps[], data: ChannelDict) {
   for (const mark of marks) {
     for (const item of mark.label.value) {
       const channel = data[item.property.lookupChannels[0]];
-      const lookupColumns = channel.info.lookupColumns;
+      if (!channel || !channel.data) continue;
 
+      const lookupColumns = channel.info.lookupColumns;
       const idIndex = lookupColumns.id.index;
       if (idIndex === -1) continue;
 
-      const row = channel.data?.rows.find(row => row.Cells[idIndex] === item.id);
+      const row = channel.data.rows.find(row => row.Cells[idIndex] === item.id);
       if (row) item.text = row.Cells[lookupColumns.value.index];
     }
   }
