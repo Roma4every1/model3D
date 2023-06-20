@@ -1,0 +1,21 @@
+* text=auto
+
+# sources
+*.html text eol=lf
+*.css  text eol=lf
+*.scss text eol=lf
+*.js   text eol=lf
+*.ts   text eol=lf
+*.tsx  text eol=lf
+
+# text assets
+*.md   text eol=lf
+*.txt  text eol=lf
+*.json text eol=lf
+*.svg  text eol=lf
+
+# binary
+*.jpg -text
+*.png -text
+*.ico -text
+*.smb -text
