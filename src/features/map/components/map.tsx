@@ -8,7 +8,7 @@ import {
   mapsStateSelector,
   mapStateSelector,
 } from '../store/maps.selectors';
-import { setMapField, loadMapSuccess } from '../store/maps.actions';
+import {setMapField, loadMapSuccess, loadMapError} from '../store/maps.actions';
 import { fetchMapData } from '../store/maps.thunks';
 import { tableRowToString } from 'entities/parameters/lib/table-row';
 import {updateParam, currentWellIDSelector, currentPlastCodeSelector} from 'entities/parameters';
@@ -62,7 +62,17 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
   useEffect(() => {
     if (!mapState || isPartOfDynamicMultiMap) return;
     const rows = activeChannel?.data?.rows;
-    if (!rows || rows.length === 0) return setIsMapExist(false);
+    if (!rows || rows.length === 0) {
+      if (mapState?.isLoadSuccessfully === false) return;
+      dispatch(loadMapError(formID));
+      return setIsMapExist(false);
+    }
+
+    // если карта загружена, но параметры были сброшены
+    if (mapData?.layers && mapState?.isLoadSuccessfully === false) {
+      dispatch(setMapField(formID, 'isLoadSuccessfully', true));
+      return;
+    }
 
     setIsMapExist(true);
 
