@@ -102,9 +102,11 @@ export const Editing = ({mapState, formID}: EditingProps) => {
   const isPolylineCreating = isElementCreating && creatingType === 'polyline';
 
   const toggleCreating = () => {
-    isCreating
-      ? dispatch(cancelCreatingElement(formID))
-      : dispatch(startCreatingElement(formID));
+    if (isCreating) dispatch(cancelCreatingElement(formID));
+    else {
+      dispatch(startCreatingElement(formID));
+      dispatch(setEditMode(formID, MapModes.AWAIT_POINT));
+    }
   };
 
   const acceptEditing = () => {

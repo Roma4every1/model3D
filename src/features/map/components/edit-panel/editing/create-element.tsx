@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { MapModes } from '../../../lib/enums';
 import { clientPoint, listenerOptions } from '../../../lib/map-utils';
@@ -6,8 +6,7 @@ import { polylineByLegends, getDefaultSign, getDefaultLabel } from './editing-ut
 import {
   createMapElement,
   startMapEditing,
-  setEditMode,
-  acceptCreatingElement
+  acceptCreatingElement, acceptMapEditing
 } from '../../../store/maps.actions';
 
 const creatingElementTypes: MapElementType[] = ['polyline', 'sign', 'label'];
@@ -20,25 +19,13 @@ interface CreateElementProps {
   showPropertiesWindow?
 }
 
-const defaultSignProto: SignImageProto = {fontName: 'PNT.CHR', symbolCode: 68, color: '#DDDDDD'}
-
-
 export const CreateElement = ({mapState, formID, creatingType, showPropertiesWindow}: CreateElementProps) => {
   const dispatch = useDispatch();
-  if (mapState.mode !== MapModes.AWAIT_POINT) {
-    dispatch(setEditMode(formID, MapModes.AWAIT_POINT));
-  }
 
   const { activeLayer, legends, canvas } = mapState;
 
   const [defaultSignImage, setDefaultSignImage] = useState<HTMLImageElement>(null);
-
-  const signProto = useMemo<SignImageProto>(() => {
-    for (const e of activeLayer.elements) {
-      if (e.type === 'sign') return {fontName: e.fontname, symbolCode: 0, color: e.color};
-    }
-    return defaultSignProto;
-  }, [activeLayer]);
+  const signProto = {fontName: 'PNT.CHR', symbolCode: 0, color: '#000000'};
 
   useEffect(() => {
     const { fontName, symbolCode, color } = signProto;
@@ -54,11 +41,14 @@ export const CreateElement = ({mapState, formID, creatingType, showPropertiesWin
     if (type === 'polyline') defaultElement = polylineByLegends(point, legends, activeLayer?.name);
     if (!defaultElement) return;
     dispatch(createMapElement(formID, defaultElement));
+    dispatch(startMapEditing(formID));
     if (type === 'sign' || type === 'label') {
       if (hasPropertiesWindow.includes(creatingType)) showPropertiesWindow();
-      else dispatch(acceptCreatingElement(formID));
+      else {
+        dispatch(acceptCreatingElement(formID));
+        dispatch(acceptMapEditing(formID));
+      }
     }
-    dispatch(startMapEditing(formID));
   }, [defaultSignImage, signProto, legends, activeLayer, dispatch, formID]);
 
   const mouseUp = useCallback((event: MouseEvent) => {

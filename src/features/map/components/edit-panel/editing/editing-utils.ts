@@ -35,7 +35,7 @@ export const getDefaultSign = (point: ClientPoint, img: HTMLImageElement, proto:
     type: 'sign',
     color: proto.color, fontname: proto.fontName,
     symbolcode: proto.symbolCode, img,
-    size: 2, x: point.x, y: point.y,
+    size: 1.29999995231628, x: point.x, y: point.y,
   };
 }
 
