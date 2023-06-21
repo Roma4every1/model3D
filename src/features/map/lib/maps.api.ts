@@ -54,8 +54,8 @@ export class MapsAPI {
   }
 
   /** Загрузка общих данных карты. */
-  public async getMap(mapID: MapID): Promise<Res<MapDataRaw>> {
-    const query = {sessionId: this.requester.sessionID, mapId: mapID};
+  public async getMap(mapID: MapID, formID: FormID): Promise<Res<MapDataRaw>> {
+    const query = {sessionId: this.requester.sessionID, mapId: mapID, formId: formID};
     return await this.request<MapDataRaw>({path: 'getMap', query});
   }
 
@@ -129,8 +129,8 @@ export class MapsAPI {
   }
 
   /** Загрузка карты. */
-  public async loadMap(mapID: MapID, owner: MapOwner, setProgress: Function): Promise<MapData | string> {
-    const response = await this.getMap(mapID);
+  public async loadMap(mapID: MapID, owner: MapOwner, setProgress: Function, formID: FormID): Promise<MapData | string> {
+    const response = await this.getMap(mapID, formID);
     if (!response.ok) return response.data as string;
     const mapData = response.data;
     mapData.mapErrors = [];
