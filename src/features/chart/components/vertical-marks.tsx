@@ -1,4 +1,4 @@
-import { ReactNode, CSSProperties, useState } from 'react';
+import { ReactNode, CSSProperties, createElement, useState } from 'react';
 import { Payload } from 'recharts/types/component/DefaultLegendContent';
 import { measureText } from 'shared/lib';
 
@@ -21,6 +21,7 @@ interface ChartMarkLabelItem {
   text?: string,
   property: ChannelProperty,
   color: string,
+  active?: boolean,
 }
 
 interface ChartMarkViewProps {
@@ -32,6 +33,7 @@ interface MarkTextBoxProps {
   y: number,
   text: string,
   color: string,
+  active: boolean,
   onClick: () => void,
 }
 
@@ -51,18 +53,22 @@ export const getChartMarkLegend = (id: string, name: string, color: string): Pay
 const ChartMarkView = ({value, viewBox: { x, y, height }}: ChartMarkViewProps) => {
   const markCount = value.length;
   const step = height / (markCount + 1);
-  const [expandArray, setExpandArray] = useState<boolean[]>(new Array(markCount).fill(false));
+  const [values, setValues] = useState(value);
 
-  return value.map((item , i) => {
-    const text = expandArray[i] && item.text ? item.text : item.property.displayName;
+  const labels = values.map((label, i): MarkTextBoxProps & {key} => {
+    const { text: activeText, active } = label;
+    const text = active && activeText ? activeText : label.property.displayName;
     const textY = y + step * (i + 1);
 
-    const onClick = item.text ? () => {
-      setExpandArray(expandArray.map((expanded, idx) => idx === i ? !expanded : expanded));
+    const onClick = activeText ? () => {
+      label.active = !active;
+      setValues([...values]);
     } : undefined;
 
-    return <MarkTextBox key={i} x={x} y={textY} text={text} color={item.color} onClick={onClick}/>;
+    return {key: i, x, y: textY, text, color: label.color, active: active, onClick};
   });
+
+  return labels.sort(sortMarkLabelFn).map(p => createElement(MarkTextBox, p));
 };
 
 const MarkTextBox = ({x, y, text, onClick, color}: MarkTextBoxProps) => {
@@ -78,3 +84,9 @@ const MarkTextBox = ({x, y, text, onClick, color}: MarkTextBoxProps) => {
     </g>
   );
 };
+
+function sortMarkLabelFn(a: MarkTextBoxProps, b: MarkTextBoxProps): number {
+  if (a.active) return 1;
+  if (b.active) return -1;
+  return 0;
+}
