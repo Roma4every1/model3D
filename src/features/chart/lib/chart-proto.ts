@@ -38,7 +38,7 @@ export const getChartProto = (
     const axesSettings = settings.axesSettings;
 
     for (const yAxisID in axesSettings) {
-      if (axes.some(axis => axis.key === yAxisID)) continue;
+      if (axes.some((axis) => axis.key === yAxisID)) continue;
       axes.push(getYAxisProto(yAxisID, axesSettings[yAxisID]));
     }
 
@@ -68,7 +68,7 @@ export const getChartProto = (
           const id = rows[i].Cells[dataIndex], key = dataKey + i;
           const sameMark = marks.find(mark => mark.x === xValue.x);
           if (sameMark) {
-            sameMark.label.value.push({id, property});
+            sameMark.label.value.push({id, property, color: item.color});
           } else {
             const markProto = getChartMarkProto(xValue.x, key, property, item, id);
             if (axes.length) markProto.yAxisId = axes[0].yAxisId;
