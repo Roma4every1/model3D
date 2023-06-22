@@ -207,14 +207,18 @@ var polyline = declareType('polyline', {
       return `rgba(${b.map((bi, i) => Math.round(bi + (c[i] - bi) * t))}, 1)`;
     }
     const lib = parseSMB(await mapsAPI.getPatternLib(libName));
+    if (index >= lib.length) {
+      const c = parseColor(color).rgb;
+      return `rgba(${c.map((i) => i)}, 1)`;
+    }
     const png = pngMono(lib[index], color, backColor);
     return await loadImageData(png, 'image/png');
   },
 
   bkcolor: function (i) {
-    let color = i.fillbkcolor;
+    let color = i.fillbkcolor === 'background' ? '#ffffff' : i.fillbkcolor ;
     if (i.selected) {
-      const [red, green, blue] = parseColor(i.fillbkcolor).rgb;
+      const [red, green, blue] = parseColor(color).rgb;
       const stepValue = 50;
 
       if (red < 255 - stepValue) {
@@ -923,7 +927,8 @@ export function startPaint(canvas, map, options) {
 
         if (!layer.elements || layer.elements.length === 0) continue;
 
-        for (let element of layer.elements.filter(e => !e.selected)) {
+        // отрисовка всех элементов
+        for (let element of layer.elements) {
           let D = types[element.type];
           if (!rects.intersects(drawBounds, D.bound(element))) continue;
 
@@ -936,29 +941,21 @@ export function startPaint(canvas, map, options) {
             D.draft(element, drawOptions);
           }
         }
-      }
 
-      for (const layer of map.layers) {
-        if (!isLayerVisible(layer, map)) continue;
-        if (!coords.scaleVisible(layer)) continue;
-        if (!rects.intersects(drawBounds, layer.bounds)) continue;
-
-        let c = onCheckExecution();
-        c && (yield c);
-
-        if (!layer.elements || layer.elements.length === 0) continue;
-
-        for (let element of layer.elements.filter(e => e.selected)) {
-          let D = types[element.type];
-          if (!rects.intersects(drawBounds, D.bound(element))) continue;
-
-          c = onCheckExecution();
-          c && (yield c);
-
-          if (D.draw && !options.draftDrawing) {
-            yield* D.draw(element, drawOptions);
-          } else if (D.draft) {
-            D.draft(element, drawOptions);
+        // отрисовка обводки многоугольников
+        for (let i of layer.elements) {
+          if (!i.edited && i.selected && i.type === 'polyline' && i.fillbkcolor && !i.transparent && !options.draftDrawing) {
+            context.lineCap = 'round';
+            context.lineJoin = 'round';
+            polyline.path(i, drawOptions)
+            context.strokeStyle = "#000000";
+            context.lineWidth = ((i.borderwidth || defaultLineWidth) + 4.5 / 96.0 * 25.4) * 0.001 * options.dotsPerMeter;
+            context.stroke();
+            context.strokeStyle = "#ffffff";
+            context.lineWidth = ((i.borderwidth || defaultLineWidth) + 3 / 96.0 * 25.4) * 0.001 * options.dotsPerMeter;
+            context.stroke();
+            context.lineCap = 'butt';
+            context.lineJoin = 'butt';
           }
         }
       }
