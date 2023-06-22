@@ -389,7 +389,7 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
       const newMapState: MapState = {...state.single[action.formID]};
 
       newMapState.isElementCreating = false;
-      // newMapState.isElementEditing = true;
+      newMapState.isElementEditing = false;
       clearOldData(newMapState);
 
       newMapState.activeLayer.modified = true;

@@ -6,7 +6,7 @@ import { polylineByLegends, getDefaultSign, getDefaultLabel } from './editing-ut
 import {
   createMapElement,
   startMapEditing,
-  acceptCreatingElement, acceptMapEditing
+  acceptCreatingElement
 } from '../../../store/maps.actions';
 
 const creatingElementTypes: MapElementType[] = ['polyline', 'sign', 'label'];
@@ -46,7 +46,6 @@ export const CreateElement = ({mapState, formID, creatingType, showPropertiesWin
       if (hasPropertiesWindow.includes(creatingType)) showPropertiesWindow();
       else {
         dispatch(acceptCreatingElement(formID));
-        dispatch(acceptMapEditing(formID));
       }
     }
   }, [defaultSignImage, signProto, legends, activeLayer, dispatch, formID]);
