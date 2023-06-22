@@ -45,12 +45,20 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
     const point = utils.pointToMap(clientPoint(event));
     const scale = mapData.scale;
 
-    if (checkDistancePoints(selectState.lastPoint, point, scale) && selectState.activeIndex >= 0) {
+    if (checkDistancePoints(selectState.lastPoint, point, scale)) {
       if (selectState.nearestElements.length === 0) return;
+      selectState.activeIndex++;
       const setActive = async () => {
         if (selectedElement) await unselectElement(selectedElement);
-        selectState.activeIndex = -1;
-        dispatch(clearMapSelect(formID));
+
+        if (selectState.activeIndex < selectState.nearestElements.length) {
+          let newElement = selectState.nearestElements[selectState.activeIndex];
+          await selectElement(newElement);
+          dispatch(setSelectedElement(formID, newElement));
+        } else {
+          selectState.activeIndex = -1;
+          dispatch(clearMapSelect(formID));
+        }
       }
       setActive().then(() => utils.updateCanvas());
     } else {
@@ -139,7 +147,6 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
       <div className={'map-panel-main'}>
         <div>
           <button
-            disabled={mapState?.isElementCreating || !mapState?.isLoadSuccessfully}
             className={'map-panel-button' + (isInSelectingMode ? ' active' : '')}
             onClick={toggleSelecting} title={t('map.selecting.button-hint')}
           >
