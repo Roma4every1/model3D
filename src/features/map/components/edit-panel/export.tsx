@@ -1,6 +1,5 @@
 import { TFunction } from 'react-i18next';
 import { MenuSection, BigButton } from '../../../../shared/ui';
-import 'svg2pdf.js';
 import { jsPDF } from 'jspdf'
 import pdfIcon from '../../../..//assets/images/map/pdf.png';
 
