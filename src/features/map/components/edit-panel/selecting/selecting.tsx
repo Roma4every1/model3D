@@ -147,6 +147,7 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
       <div className={'map-panel-main'}>
         <div>
           <button
+            disabled={!mapState?.isLoadSuccessfully || mapState?.isElementCreating}
             className={'map-panel-button' + (isInSelectingMode ? ' active' : '')}
             onClick={toggleSelecting} title={t('map.selecting.button-hint')}
           >
