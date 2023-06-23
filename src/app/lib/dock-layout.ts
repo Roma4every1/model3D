@@ -3,7 +3,6 @@ import { IGlobalAttributes, IJsonTabSetNode } from 'flexlayout-react/declaration
 import { getTopPanelTabs } from './top-tabs-layout';
 import { getRightPanelTabs } from './right-tabs-layout';
 
-
 const globalAttributes: IGlobalAttributes = {
   tabSetEnableTabStrip: false,
   borderEnableDrop: false,
@@ -31,12 +30,12 @@ export function getDockLayout(formTypes: Set<FormType> | undefined, dockLayout: 
       {
         type: 'border', location: 'top',
         barSize: 26, size: dockLayout.topPanelHeight, minSize: 80, selected: selectedTop,
-        children: topTabs,
+        className: "no-user-select", children: topTabs,
       },
       {
         type: 'border', location: 'right',
         barSize: 26, size: dockLayout.rightPanelWidth, minSize: 150, selected: selectedRight,
-        children: rightTabs,
+        className: "no-user-select", children: rightTabs,
       },
     ],
     layout: {

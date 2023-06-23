@@ -305,3 +305,7 @@ html {
 .k-multicheck-wrap {
   max-height: 20vh;
 }
+
+.no-user-select {
+    user-select: none;
+}
