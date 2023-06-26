@@ -159,6 +159,7 @@
     "not-loaded": "При загрузке карты произошла ошибка",
     "other": "Другие",
     "pick": "Указать",
+    "pieslice": "Круг",
     "points": "Точки",
     "polyline": "Линия",
     "properties-edit": "Свойства элемента ({{elementType}})",

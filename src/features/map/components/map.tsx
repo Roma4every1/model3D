@@ -4,13 +4,17 @@ import { useTranslation } from 'react-i18next';
 import { Scroller } from '../drawer/scroller';
 import { MapNotFound, MapLoadError} from '../../multi-map/multi-map-item';
 import { getFullViewport, getMultiMapChildrenCanvases } from '../lib/map-utils';
-import { mapsStateSelector, mapStateSelector } from '../store/maps.selectors';
-import { setMapField, loadMapSuccess } from '../store/maps.actions';
+import {
+  mapsStateSelector,
+  mapStateSelector,
+} from '../store/maps.selectors';
+import {setMapField, loadMapSuccess, loadMapError} from '../store/maps.actions';
 import { fetchMapData } from '../store/maps.thunks';
 import { tableRowToString } from 'entities/parameters/lib/table-row';
-import { updateParam, currentWellIDSelector } from 'entities/parameters';
+import {updateParam, currentWellIDSelector, currentPlastCodeSelector} from 'entities/parameters';
 import { channelSelector } from 'entities/channels';
 import { CircularProgressBar } from 'shared/ui';
+import {getParentFormId} from "../../../shared/lib";
 
 
 export const Map = ({id: formID, parent, channels, data}: FormState & {data?: MapData}) => {
@@ -37,6 +41,9 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
   const activeChannelName = isPartOfDynamicMultiMap ? null : channels[0];
   const activeChannel: Channel = useSelector(channelSelector.bind(activeChannelName));
 
+  const currentPlastCode = useSelector(currentPlastCodeSelector)
+  const parentID = getParentFormId(formID);
+
   // обновление списка связанных карт
   useEffect(() => {
     const canvases = getMultiMapChildrenCanvases(mapsState.multi, mapsState.single, formID);
@@ -55,7 +62,17 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
   useEffect(() => {
     if (!mapState || isPartOfDynamicMultiMap) return;
     const rows = activeChannel?.data?.rows;
-    if (!rows || rows.length === 0) return setIsMapExist(false);
+    if (!rows || rows.length === 0) {
+      if (mapState?.isLoadSuccessfully === false) return;
+      dispatch(loadMapError(formID));
+      return setIsMapExist(false);
+    }
+
+    // если карта загружена, но параметры были сброшены
+    if (mapData?.layers && mapState?.isLoadSuccessfully === false) {
+      dispatch(setMapField(formID, 'isLoadSuccessfully', true));
+      return;
+    }
 
     setIsMapExist(true);
 
@@ -107,13 +124,35 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
   }, [utils, updateCanvas]);
 
   const getWellCS = useCallback((wellID, maxScale) => {
-    const point = mapData?.points.find(p => p.name === wellID);
+    if (!mapData) return;
+    let pointsData;
+    if (isPartOfDynamicMultiMap) {
+      const currentMapID = parentID + ',' + mapsState.multi[parentID].configs.find(c => c.data.plastCode === currentPlastCode)?.id
+      const activeMapState : MapState = mapsState.single[currentMapID];
+      if (!activeMapState?.mapData) return;
+      const isSync = mapsState.multi[parentID].sync;
+      const isActiveMap = currentMapID === formID
+
+      if (isActiveMap) {
+        pointsData = mapData.points
+      }
+      if (isSync && !isActiveMap) {
+        pointsData = activeMapState.mapData.points
+      }
+      if (!isSync && !isActiveMap) {
+        return null;
+      }
+    } else {
+      pointsData = mapData.points
+    }
+
+    const point = pointsData.find(p => p.name === wellID);
     if (point && scroller.current) {
       const scale = mapData.scale < maxScale ? mapData.scale : maxScale;
       return {centerX: point.x, centerY: point.y, scale};
     }
     return null;
-  }, [mapData]);
+  }, [mapData, currentPlastCode, formID, parentID, isPartOfDynamicMultiMap, mapsState.multi, mapsState.single]);
 
   const wellsMaxScale = useMemo(() => {
     const layers = mapData?.layers;
@@ -128,7 +167,7 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
   useEffect(() => {
     const cs = getWellCS(currentWellID, wellsMaxScale);
     if (cs) updateCanvas(cs, canvasRef.current);
-  }, [currentWellID, wellsMaxScale, getWellCS, updateCanvas]);
+  }, [currentWellID, getWellCS, wellsMaxScale]);
 
   // закрепление ссылки на холст
   useLayoutEffect(() => {

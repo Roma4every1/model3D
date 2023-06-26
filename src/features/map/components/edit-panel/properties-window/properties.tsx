@@ -8,7 +8,12 @@ import { MapModes } from '../../../lib/enums';
 import { PolylineProperties } from './polyline/polyline-properties';
 import { LabelProperties } from './label/label-properties';
 import { windowsSelector, setOpenedWindow } from 'entities/windows';
-import { setMapField, setEditMode } from '../../../store/maps.actions';
+import {
+  setMapField,
+  setEditMode,
+  acceptCreatingElement,
+  cancelCreatingElement
+} from '../../../store/maps.actions';
 import { mapStateSelector } from '../../../store/maps.selectors';
 import { createLabelInit, createPolylineInit, rollbackLabel, rollbackPolyline } from './properties-utils';
 
@@ -18,16 +23,26 @@ const windowSizeDict: Record<'polyline' | 'label', [number, number]> = {
   label: [350, 205],
 };
 
-export const PropertiesWindow = ({formID}: PropsFormID) => {
+interface PropertiesWindowProps {
+  formID: FormID,
+  setPropertiesWindowOpen?,
+}
+
+export const PropertiesWindow = ({formID, setPropertiesWindowOpen}: PropertiesWindowProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
   const windowName = 'mapPropertiesWindow';
   const windows = useSelector(windowsSelector);
   const mapState: MapState = useSelector(mapStateSelector.bind(formID))
-  const { element, utils, legends, mode } = mapState;
+  const { element, utils, legends, mode, isElementCreating } = mapState;
 
   const windowRef = useRef(null);
+
+  useEffect(() => {
+    setPropertiesWindowOpen(true);
+    return () => setPropertiesWindowOpen(false);
+  }, [])
 
   const close = useCallback(() => {
     let position;
@@ -40,6 +55,10 @@ export const PropertiesWindow = ({formID}: PropsFormID) => {
   }, [utils]);
 
   const apply = () => {
+    if (isElementCreating) {
+      acceptCreating()
+      return;
+    }
     const modifiedLayer = mapState.mapData.layers.find(l => l.elements?.includes(element));
     modifiedLayer.modified = true;
     dispatch(setMapField(formID, 'isModified', true));
@@ -54,6 +73,10 @@ export const PropertiesWindow = ({formID}: PropsFormID) => {
   }, [element]);
 
   const cancel = useCallback(() => {
+    if (isElementCreating) {
+      cancelCreating()
+      return;
+    }
     if (element.type === 'polyline') {
       rollbackPolyline(element, init).then(update).then(close);
     }
@@ -62,21 +85,33 @@ export const PropertiesWindow = ({formID}: PropsFormID) => {
       rollbackLabel(element, init);
       update(); close();
     }
-  }, [element, mode, init, update, close]);
+  }, [element, mode, init, update, close, setPropertiesWindowOpen, isElementCreating]);
+
+  const acceptCreating = () => {
+    if (!element) return;
+    dispatch(acceptCreatingElement(formID));
+    close();
+  };
+
+  const cancelCreating = () => {
+    if (!element) return;
+    dispatch(cancelCreatingElement(formID));
+    close();
+  };
 
   const ElementProperties = () => {
     if (element.type === 'polyline')
       return (
         <PolylineProperties
           element={element} init={init} legends={legends.data}
-          apply={apply} update={update} cancel={cancel} t={t}
+          apply={apply} update={update} cancel={cancel} t={t} isElementCreating={isElementCreating}
         />
       );
     if (element.type === 'label')
       return (
         <LabelProperties
           element={element} init={init}
-          apply={apply} update={update} cancel={cancel} t={t}
+          apply={apply} update={update} cancel={cancel} t={t} isElementCreating={isElementCreating}
         />
       );
     return <div>{t('map.selecting.no-selected')}</div>;

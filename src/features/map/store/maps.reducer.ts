@@ -21,6 +21,7 @@ export enum MapsActions {
   CANCEL_EDITING = 'maps/cancelEdit',
   START_CREATING = 'maps/startCreate',
   CREATE_ELEMENT = 'maps/createEl',
+  ACCEPT_CREATING = 'maps/acceptCreate',
   CANCEL_CREATING = 'maps/cancelCreate'
 }
 
@@ -88,6 +89,9 @@ interface ActionCreateElement extends MapAction {
   type: MapsActions.CREATE_ELEMENT,
   payload: MapElement,
 }
+interface ActionAcceptCreating extends MapAction {
+  type: MapsActions.ACCEPT_CREATING,
+}
 interface ActionCancelCreating extends MapAction {
   type: MapsActions.CANCEL_CREATING,
 }
@@ -96,7 +100,7 @@ export type MapsAction = ActionAddMulti | ActionSetSync | ActionAdd |
   ActionStartLoad | ActionLoadSuccess | ActionLoadError |
   ActionSetMode | ActionSetDimensions | ActionSetField | ActionClearSelect |
   ActionStartEditing | ActionAcceptEditing | ActionCancelEditing |
-  ActionStartCreating | ActionCreateElement | ActionCancelCreating;
+  ActionStartCreating | ActionCreateElement | ActionCancelCreating | ActionAcceptCreating;
 
 /* --- Reducer Utils --- */
 
@@ -139,6 +143,7 @@ const initMapState: MapState = {
   mapID: null,
   element: null,
   isElementEditing: false,
+  isElementCreating: false,
   oldData: {x: null, y: null, arc: null, ange: null},
   selecting: getDefaultSelecting(),
   isModified: false,
@@ -201,7 +206,12 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
     case MapsActions.LOAD_SUCCESS: {
       const { formID, mapData } = action;
       if (!mapData.onDrawEnd) mapData.onDrawEnd = () => {};
-      state.single[formID] = {...state.single[formID], mapData, isLoadSuccessfully: true};
+
+      // задание типов элементов для слоев
+      const newLayers = mapData.layers.map(l => ({...l, elementType: l.elements[0].type}));
+      const newData = {...mapData, layers: newLayers}
+
+      state.single[formID] = {...state.single[formID], mapData: newData, isLoadSuccessfully: true};
       return {...state};
     }
 
@@ -348,6 +358,7 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
       const newMapState: MapState = {...state.single[action.formID]};
       clearSelect(newMapState);
       newMapState.mode = MapModes.CREATING;
+      newMapState.isElementCreating = true;
       newMapState.utils.updateCanvas();
       state.single[action.formID] = newMapState;
       return {...state};
@@ -356,12 +367,9 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
     case MapsActions.CREATE_ELEMENT: {
       const newMapState = {...state.single[action.formID]};
       newMapState.element = action.payload;
-      newMapState.element.edited = true;
-      newMapState.isElementEditing = true;
 
+      newMapState.isElementEditing = true;
       newMapState.activeLayer.elements.push(action.payload);
-      newMapState.activeLayer.modified = true;
-      newMapState.isModified = true;
 
       newMapState.childOf
         ? setMultiMapBlocked(state, newMapState.childOf, false)
@@ -377,9 +385,38 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
       return {...state};
     }
 
+    case MapsActions.ACCEPT_CREATING: {
+      const newMapState: MapState = {...state.single[action.formID]};
+
+      newMapState.isElementCreating = false;
+      newMapState.isElementEditing = false;
+      clearOldData(newMapState);
+
+      newMapState.activeLayer.modified = true;
+      newMapState.isModified = true;
+
+      newMapState.childOf
+        ? setMultiMapBlocked(state, newMapState.childOf, false)
+        : newMapState.canvas.blocked = false;
+      newMapState.mode = MapModes.NONE;
+      newMapState.utils.updateCanvas();
+      state.single[action.formID] = newMapState;
+      return {...state};
+    }
+
     case MapsActions.CANCEL_CREATING: {
       const newMapState: MapState = {...state.single[action.formID]};
+
+      newMapState.isElementCreating = false;
+      newMapState.isElementEditing = false;
       clearSelect(newMapState);
+
+      newMapState.activeLayer.elements.pop();
+
+      newMapState.cursor = 'auto';
+      newMapState.childOf
+        ? setMultiMapBlocked(state, newMapState.childOf, false)
+        : newMapState.canvas.blocked = false;
       newMapState.mode = MapModes.NONE;
       newMapState.utils.updateCanvas();
       state.single[action.formID] = newMapState;

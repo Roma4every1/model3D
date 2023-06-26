@@ -53,8 +53,13 @@ export const MultiMap = ({id, channelName}: MultiMapProps) => {
   };
 
   const onAction = (action: Action) => {
-    if (action.type === Actions.SET_ACTIVE_TABSET) {
-      dispatch(setActiveForm(id, id + ',' + action.data.tabsetNode));
+    const { type, data } = action;
+    if (type === Actions.SET_ACTIVE_TABSET) {
+      const tabset = model.getNodeById(data.tabsetNode);
+      const newActiveID = tabset.getChildren()[0]?.getId();
+      if (newActiveID) dispatch(setActiveForm(id, newActiveID))
+    } else if (type === Actions.SELECT_TAB) {
+      dispatch(setActiveForm(id, data.tabNode));
     }
     return action;
   };

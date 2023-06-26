@@ -90,5 +90,5 @@ export const StyleTemplate = ({style, borderColor, borderWidth, borderStyle}: St
   });
 
   const viewRef = useRef<HTMLCanvasElement>(null);
-  return <canvas key={borderStyle ?? style} ref={viewRef} width={140} height={10}/>;
+  return <canvas key={borderStyle ?? style} ref={viewRef} width={40} height={10}/>;
 }

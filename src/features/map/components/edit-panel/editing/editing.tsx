@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
+import {useDispatch} from 'react-redux';
 
 import { EditElement } from './edit-element';
 import { CreateElement } from './create-element';
@@ -13,9 +13,13 @@ import { getHeaderText } from './editing-utils';
 import { applyMouseDownActionToPolyline, applyMouseMoveActionToElement, applyRotateToLabel } from './edit-element-utils';
 import { clientPoint, getNearestPointIndex, listenerOptions } from '../../../lib/map-utils';
 import { setOpenedWindow } from 'entities/windows';
-import { setEditMode, acceptMapEditing, cancelMapEditing } from '../../../store/maps.actions';
+import {
+  setEditMode,
+  acceptMapEditing,
+  cancelMapEditing,
+  setMapField
+} from '../../../store/maps.actions';
 import { startCreatingElement, cancelCreatingElement } from '../../../store/maps.actions';
-
 
 interface EditingProps {
   mapState: MapState,
@@ -23,13 +27,17 @@ interface EditingProps {
 }
 
 const mouseMoveNeedModes: MapModes[] = [MapModes.MOVE, MapModes.MOVE_POINT, MapModes.ROTATE];
+const creatingElementTypes: MapElementType[] = ['polyline', 'sign', 'label'];
+const hasPropertiesWindow: MapElementType[] = ['polyline', 'label'];
 
 export const Editing = ({mapState, formID}: EditingProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const { canvas, activeLayer, utils, mode, isElementEditing, oldData, mapData } = mapState;
+  const { canvas, activeLayer, utils, mode, isElementEditing, isElementCreating, oldData, mapData } = mapState;
   const selectedElement = mapState.element;
+
+  const creatingType = activeLayer?.elementType;
 
   const isOnMove = useRef(false);
   const pIndex = useRef<number>(null);
@@ -46,6 +54,7 @@ export const Editing = ({mapState, formID}: EditingProps) => {
       pIndex.current = getNearestPointIndex(point, scale, selectedElement);
     }
     applyMouseDownActionToPolyline(selectedElement, {mode, point, scale});
+    dispatch(setMapField(formID, 'element', selectedElement));
     utils.updateCanvas();
   }, [isElementEditing, utils, selectedElement, mode, mapData]);
 
@@ -88,16 +97,29 @@ export const Editing = ({mapState, formID}: EditingProps) => {
   }, [canvas, mouseDown, mouseMove, mouseUp, mouseWheel]);
 
   const isCreating = mode === MapModes.CREATING || mode === MapModes.AWAIT_POINT;
+  const [isPropertiesWindowOpen, setPropertiesWindowOpen] = useState(false);
+  const [isAttrTableOpen, setAttrTableOpen] = useState(false);
+  const isPolylineCreating = isElementCreating && creatingType === 'polyline';
 
   const toggleCreating = () => {
-    isCreating
-      ? dispatch(cancelCreatingElement(formID))
-      : dispatch(startCreatingElement(formID));
+    if (isCreating) dispatch(cancelCreatingElement(formID));
+    else {
+      dispatch(startCreatingElement(formID));
+      dispatch(setEditMode(formID, MapModes.AWAIT_POINT));
+    }
   };
 
   const acceptEditing = () => {
     if (!selectedElement) return;
     dispatch(acceptMapEditing(formID));
+  };
+
+  const acceptPolylineValid = () => {
+    showPropertiesWindow();
+  }
+
+  const cancelCreating = () => {
+    dispatch(cancelCreatingElement(formID));
   };
 
   const cancelEditing = () => {
@@ -113,14 +135,22 @@ export const Editing = ({mapState, formID}: EditingProps) => {
 
   const showPropertiesWindow = () => {
     const name = 'mapPropertiesWindow';
-    const window = <PropertiesWindow key={name} formID={formID}/>;
+    const window = <PropertiesWindow
+      key={name}
+      formID={formID}
+      setPropertiesWindowOpen={setPropertiesWindowOpen}
+    />;
     if (mapState.mode < MapModes.MOVE_MAP) dispatch(setEditMode(formID, MapModes.MOVE_MAP));
     dispatch(setOpenedWindow(name, true, window));
   };
 
   const showAttrTableWindow = () => {
     const name = 'mapAttrTableWindow';
-    const window = <AttrTableWindow key={name} formID={formID} />;
+    const window = <AttrTableWindow
+      key={name}
+      formID={formID}
+      setAttrTableOpen={setAttrTableOpen}
+    />;
     dispatch(setOpenedWindow(name, true, window));
   };
 
@@ -128,10 +158,32 @@ export const Editing = ({mapState, formID}: EditingProps) => {
     return getHeaderText(isCreating, selectedElement?.type, activeLayer?.name, t);
   }, [activeLayer, selectedElement, isCreating, t]);
 
-  const disabledCreate = !(activeLayer && activeLayer.visible);
-  const disabledProperties = !['polyline', 'label'].includes(selectedElement?.type);
-  const disabledAccept = oldData.x === null && oldData.arc === null;
-  const disabledAttrTable = !selectedElement?.attrTable || Object.keys(selectedElement?.attrTable).length === 0;
+  const disableAll = isPropertiesWindowOpen || isAttrTableOpen;
+
+  const disabledCreate = disableAll ||
+    (isElementCreating && !isCreating) ||
+    !(activeLayer && activeLayer.visible) ||
+    (creatingElementTypes.indexOf(creatingType) === -1);
+
+  const disabledProperties = disableAll||
+    isElementCreating ||
+    !hasPropertiesWindow.includes(selectedElement?.type);
+
+  const arcPathInvalid = selectedElement?.type === 'polyline' ? selectedElement?.arcs[0]?.path?.length <= 2 : false;
+
+  const disabledAccept = disableAll ||
+    (!isElementCreating && !isElementEditing) ||
+    arcPathInvalid ||
+    (oldData.x === null && oldData.arc === null);
+  const disabledCancel  = disabledAccept && !(isPolylineCreating && !isPropertiesWindowOpen);
+
+  const disabledAttrTable = disableAll ||
+    !selectedElement?.attrTable ||
+    Object.keys(selectedElement?.attrTable).length === 0;
+
+  const disabledDelete = disableAll ||
+    isElementCreating ||
+    !selectedElement;
 
   return (
     <section className={'map-editing'}>
@@ -140,13 +192,14 @@ export const Editing = ({mapState, formID}: EditingProps) => {
         <div className={'common-buttons'}>
           <button
             className={'map-panel-button k-button'} title={t('map.editing.accept')}
-            disabled={disabledAccept} onClick={acceptEditing}
+            disabled={disabledAccept}
+            onClick={isPolylineCreating ? acceptPolylineValid : acceptEditing}
           >
             <span className={'k-icon k-i-check-outline'} />
           </button>
           <button
             className={'k-button map-panel-button'} title={t('map.editing.cancel')}
-            disabled={disabledAccept} onClick={cancelEditing}
+            disabled={disabledCancel} onClick={isElementCreating ? cancelCreating : cancelEditing}
           >
             <span className={'k-icon k-i-close-outline'} />
           </button>
@@ -158,7 +211,7 @@ export const Editing = ({mapState, formID}: EditingProps) => {
           </button>
           <button
             className={'k-button map-panel-button'} title={t('map.editing.properties')}
-            disabled={disabledProperties} onClick={() => showPropertiesWindow()}
+            disabled={disabledProperties} onClick={showPropertiesWindow}
           >
             <span className={'k-icon k-i-saturation'} />
           </button>
@@ -170,13 +223,18 @@ export const Editing = ({mapState, formID}: EditingProps) => {
           </button>
           <button
             className={'k-button map-panel-button'} title={t('map.editing.delete')}
-            disabled={!selectedElement} onClick={showDeleteWindow}
+            disabled={disabledDelete} onClick={showDeleteWindow}
           >
             <span className={'k-icon k-i-delete'} />
           </button>
         </div>
         {isCreating
-          ? <CreateElement mapState={mapState} formID={formID}/>
+          ? <CreateElement
+            mapState={mapState}
+            formID={formID}
+            creatingType={creatingType}
+            showPropertiesWindow={showPropertiesWindow}
+          />
           : selectedElement ? <EditElement type={selectedElement.type} mode={mode} formID={formID}/> : <div/>
         }
       </div>

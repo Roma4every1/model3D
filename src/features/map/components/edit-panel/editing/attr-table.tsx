@@ -9,16 +9,21 @@ import { Input } from '@progress/kendo-react-inputs';
 import { toPairs } from 'lodash';
 import { setOpenedWindow } from 'entities/windows';
 import { setMapField } from '../../../store/maps.actions';
+import {mapStateSelector} from "../../../store/maps.selectors";
 
+interface AttrTableWindowProps {
+  formID: FormID,
+  setAttrTableOpen
+}
 
 const windowsSelector = (state: WState) => state.windowData.windows;
 
-export const AttrTableWindow = ({formID}: PropsFormID) => {
+export const AttrTableWindow = ({formID, setAttrTableOpen}: AttrTableWindowProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
   const windows = useSelector(windowsSelector);
-  const mapState = useSelector((state: WState) => state.maps[formID]);
+  const mapState : MapState = useSelector(mapStateSelector.bind(formID));
   const selectedObject = mapState.element;
   const modifiedLayer = mapState.mapData?.layers?.find(l => l.elements?.includes(selectedObject));
 
@@ -26,6 +31,11 @@ export const AttrTableWindow = ({formID}: PropsFormID) => {
   const [attrTable, setAttrTable] = useState(null);
 
   const windowRef = useRef(null);
+
+  useEffect(() => {
+    setAttrTableOpen(true);
+    return () => setAttrTableOpen(false);
+  }, [])
 
   useEffect(() => {
     setAttrTable({ ...selectedObject?.attrTable });
@@ -54,12 +64,6 @@ export const AttrTableWindow = ({formID}: PropsFormID) => {
       width={300}
       height={300}
     >
-      <Button disabled={!readyForApply} onClick={apply}>
-        {t('base.apply')}
-      </Button>
-      <Button disabled={!readyForApply} onClick={close}>
-        {t('base.cancel')}
-      </Button>
       {toPairs<any>(attrTable).map(value => {
           return (
             <div className={'attrTableBlock'}>
@@ -79,6 +83,12 @@ export const AttrTableWindow = ({formID}: PropsFormID) => {
             </div>
           );
       })}
+      <Button disabled={!readyForApply} onClick={apply}>
+        {t('base.apply')}
+      </Button>
+      <Button disabled={!readyForApply} onClick={close}>
+        {t('base.cancel')}
+      </Button>
     </Window>
   );
 }

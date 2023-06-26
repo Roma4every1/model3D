@@ -309,3 +309,7 @@ html {
 .k-animation-container {
   z-index: 90;
 }
+
+.no-user-select {
+    user-select: none;
+}

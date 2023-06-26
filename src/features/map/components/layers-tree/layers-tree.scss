@@ -22,6 +22,10 @@
 .map-layer-toolbar {
   padding: 4px;
 
+  .map-layer-type {
+    margin-bottom: 4px;
+  }
+
   fieldset {
     display: grid;
     grid-template-columns: 1.25fr 1fr;

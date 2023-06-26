@@ -86,6 +86,11 @@ export const createMapElement = (formID: FormID, element: MapElement): MapsActio
   return {type: MapsActions.CREATE_ELEMENT, formID, payload: element};
 };
 
+/** Подтвердить создание элемента. */
+export const acceptCreatingElement = (formID: FormID): MapsAction => {
+  return {type: MapsActions.ACCEPT_CREATING, formID};
+};
+
 /** Выйти из режима создания элемента. */
 export const cancelCreatingElement = (formID: FormID): MapsAction => {
   return {type: MapsActions.CANCEL_CREATING, formID};

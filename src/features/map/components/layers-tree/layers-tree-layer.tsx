@@ -146,6 +146,7 @@ export const LayersTreeLayer = ({layer, mapState, formID}: LayersTreeLayerProps)
       </div>
       {expanded &&
         <div className={'map-layer-toolbar'}>
+          <div className={'map-layer-type'}>{`Тип элементов: ${t('map.' + layer.elementType)}`}</div>
           <fieldset>
             <div>{t('map.layers-tree.min-scale')}</div>
             <div>

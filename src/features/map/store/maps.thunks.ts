@@ -8,7 +8,7 @@ import { mapsAPI } from '../lib/maps.api';
 export const fetchMapData = (formID: FormID, mapID: MapID, owner: MapOwner, setProgress: Function) => {
   return async (dispatch: Dispatch) => {
     dispatch(startMapLoad(formID));
-    const mapData = await mapsAPI.loadMap(mapID, owner, setProgress);
+    const mapData = await mapsAPI.loadMap(mapID, owner, setProgress, formID);
     if (typeof mapData === 'string') {
       console.warn(mapData);
       dispatch(loadMapError(formID));
@@ -27,7 +27,7 @@ export const fetchMultiMapData = (id: FormID): Thunk => {
 
     for (const config of multiMapState.configs) {
       config.setProgress(0);
-      const loadedMap = await mapsAPI.loadMap(config.id, 'Common', config.setProgress);
+      const loadedMap = await mapsAPI.loadMap(config.id, 'Common', config.setProgress, id);
       config.data = loadedMap;
 
       const formID = config.formID;

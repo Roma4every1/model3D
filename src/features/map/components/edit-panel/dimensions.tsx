@@ -12,7 +12,7 @@ import yIcon from 'assets/images/map/y.png';
 import scaleIcon from 'assets/images/map/scale.png';
 import selectAllIcon from 'assets/images/map/select-all.png';
 import synchronizeIcon from 'assets/images/map/synchronize.png';
-
+import {NumberFormatOptions} from "@progress/kendo-react-intl";
 
 interface DimensionsProps {
   mapState: MapState,
@@ -22,6 +22,7 @@ interface DimensionsProps {
   t: TFunction,
 }
 
+const coordsFormat : NumberFormatOptions = {style: 'decimal', useGrouping: false, maximumFractionDigits: 2};
 
 export const Dimensions = ({mapState, sync, formID, parentID, t}: DimensionsProps) => {
   const dispatch = useDispatch();
@@ -62,18 +63,21 @@ export const Dimensions = ({mapState, sync, formID, parentID, t}: DimensionsProp
   }, [utils]);
 
   const xChanged = useCallback((event: NumericTextBoxChangeEvent) => {
-    updateCanvas(event.value, mapData.y, mapData.scale);
-    setX(event.value);
+    const newX = event.value === null ? 0 : Math.round(+event.value);
+    updateCanvas(newX, mapData.y, mapData.scale);
+    setX(newX);
   }, [updateCanvas, mapData]);
 
   const yChanged = useCallback((event: NumericTextBoxChangeEvent) => {
-    updateCanvas(mapData.x, event.value, mapData.scale);
-    setY(event.value);
+    const newY = event.value === null ? 0 : Math.round(+event.value);
+    updateCanvas(mapData.x, newY, mapData.scale);
+    setY(newY);
   }, [updateCanvas, mapData]);
 
   const scaleChanged = useCallback((event: NumericTextBoxChangeEvent) => {
-    updateCanvas(mapData.x, mapData.y, event.value);
-    setScale(event.value);
+    const newScale = event.value >= 1 ? event.value : 1;
+    updateCanvas(mapData.x, mapData.y, newScale);
+    setScale(newScale);
   }, [updateCanvas, mapData]);
 
   return (
@@ -83,21 +87,21 @@ export const Dimensions = ({mapState, sync, formID, parentID, t}: DimensionsProp
         <div className={'map-dimensions-viewer'}>
           <div>
             <span title={t('map.dimensions.x')}><img src={xIcon} alt={'x'}/> x:</span>
-            <NumericTextBox value={x} onChange={xChanged} format={'#'}/>
+            <NumericTextBox value={Math.round(x)} onChange={xChanged} format={coordsFormat}/>
           </div>
           <div>
             <span title={t('map.dimensions.y')}><img src={yIcon} alt={'y'}/> y:</span>
-            <NumericTextBox value={y} onChange={yChanged} format={'#'}/>
+            <NumericTextBox value={Math.round(y)} onChange={yChanged} format={coordsFormat}/>
           </div>
           <div>
             <span title={t('map.dimensions.scale')}><img src={scaleIcon} alt={'scale'}/> 1/</span>
-            <NumericTextBox value={scale} onChange={scaleChanged} format={'#'}/>
+            <NumericTextBox defaultValue={1} value={scale < 1 ? 1 : scale} min={1} onChange={scaleChanged} format={'#'}/>
           </div>
         </div>
         <div className={'map-actions'}>
           <BigButton
             text={t('map.actions.show-all')} icon={selectAllIcon}
-            action={toFullViewPort} disabled={canvas?.blocked === true}
+            action={toFullViewPort} disabled={canvas?.blocked === true || !mapState?.isLoadSuccessfully }
           />
           <BigButtonToggle
             text={'Синхронизация карт по центру'} icon={synchronizeIcon}

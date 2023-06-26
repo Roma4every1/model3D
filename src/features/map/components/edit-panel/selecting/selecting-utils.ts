@@ -119,33 +119,35 @@ const checkDistanceForPolyline = (polyline: MapPolyline, point: ClientPoint, sca
 };
 
 /** Проверяет, достаточно ли далеко многоугольник находится от точки. */
-const checkDistanceForPolygon = (polygon: MapPolyline, point: ClientPoint): boolean => {
-  let sum = 0;
-  // ps - сокращение от "points"
-  let ps = chunk<number>(polygon.arcs[0].path, 2);
-  ps = [...(ps.map(p => [p[0] - point.x, p[1] - point.y])), [ps[0][0] - point.x, ps[0][1] - point.y]];
+const checkDistanceForPolygon = (polygon: MapPolyline, point: ClientPoint, scale: MapScale): boolean => {
+  const ps = chunk<number>(polygon.arcs[0].path, 2);
+  ps.pop();
 
-  for (let i = 0; i < ps.length - 1; i++) {
-    const tg1 =
-      (ps[i][0] * ps[i][0] + ps[i][1] * ps[i][1] - ps[i][0] * ps[i + 1][0] - ps[i][1] * ps[i + 1][1]) /
-      (ps[i][0] * ps[i + 1][1] - ps[i][1] * ps[i + 1][0]);
+  const x = point.x;
+  const y = point.y;
 
-    const tg2 =
-      (ps[i + 1][0] * ps[i + 1][0] + ps[i + 1][1] * ps[i + 1][1] - ps[i][0] * ps[i + 1][0] - ps[i][1] * ps[i + 1][1]) /
-      (ps[i][0] * ps[i + 1][1] - ps[i][1] * ps[i + 1][0]);
+  let inside = false;
 
-    sum += Math.atan(tg1) + Math.atan(tg2);
+  for (let i = 0, j = ps.length - 2; i < ps.length - 1; j = i++) {
+    const xi = ps[i][0];
+    const yi = ps[i][1];
+    const xj = ps[j][0];
+    const yj = ps[j][1];
+
+    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
+      inside = !inside;
+    }
   }
-  return Math.abs(sum) > 0.0000001;
-};
+
+  if (inside) return inside;
+  else return checkDistanceForPolyline(polygon, point, scale);
+}
 
 /** Проверяет, достаточно ли далеко произвольный элемент карты находится от точки. */
 export const checkDistance = (element: MapElement, point: ClientPoint, scale: MapScale, getTextWidth: GetTextWidth): boolean => {
   switch (element.type) {
     case 'polyline': {
-      return isPolygon(element)
-        ? checkDistanceForPolygon(element, point)
-        : checkDistanceForPolyline(element, point, scale);
+      return isPolygon(element) ? checkDistanceForPolygon(element, point, scale) : checkDistanceForPolyline(element, point, scale);
     }
     case 'label': {
       return checkDistanceForLabel(element, point, scale, getTextWidth);
