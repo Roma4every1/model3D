@@ -56,7 +56,7 @@ export const Editing = ({mapState, formID}: EditingProps) => {
     applyMouseDownActionToPolyline(selectedElement, {mode, point, scale});
     dispatch(setMapField(formID, 'element', selectedElement));
     utils.updateCanvas();
-  }, [isElementEditing, utils, selectedElement, mode, mapData]);
+  }, [isElementEditing, utils, selectedElement, mode, mapData, formID, dispatch]);
 
   const mouseMove = useCallback((event: MouseEvent) => {
     if (!isOnMove.current) return;

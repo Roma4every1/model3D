@@ -42,7 +42,7 @@ export const PropertiesWindow = ({formID, setPropertiesWindowOpen}: PropertiesWi
   useEffect(() => {
     setPropertiesWindowOpen(true);
     return () => setPropertiesWindowOpen(false);
-  }, [])
+  }, []); // eslint-disable-line
 
   const close = useCallback(() => {
     let position;
@@ -65,7 +65,7 @@ export const PropertiesWindow = ({formID, setPropertiesWindowOpen}: PropertiesWi
     dispatch(setEditMode(formID, MapModes.SELECTING))
     update();
     close();
-  }
+  };
 
   const init = useMemo<any>(() => {
     if (element.type === 'polyline') return createPolylineInit(element);
@@ -85,7 +85,7 @@ export const PropertiesWindow = ({formID, setPropertiesWindowOpen}: PropertiesWi
       rollbackLabel(element, init);
       update(); close();
     }
-  }, [element, mode, init, update, close, setPropertiesWindowOpen, isElementCreating]);
+  }, [element, mode, init, update, close, setPropertiesWindowOpen, isElementCreating]); // eslint-disable-line
 
   const acceptCreating = () => {
     if (!element) return;

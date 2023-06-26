@@ -3,14 +3,11 @@ import { useDispatch } from 'react-redux';
 import { MapModes } from '../../../lib/enums';
 import { clientPoint, listenerOptions } from '../../../lib/map-utils';
 import { polylineByLegends, getDefaultSign, getDefaultLabel } from './editing-utils';
-import {
-  createMapElement,
-  startMapEditing,
-  acceptCreatingElement
-} from '../../../store/maps.actions';
+import { createMapElement, startMapEditing, acceptCreatingElement } from '../../../store/maps.actions';
 
 const creatingElementTypes: MapElementType[] = ['polyline', 'sign', 'label'];
 const hasPropertiesWindow: MapElementType[] = ['polyline', 'label'];
+const signProto = {fontName: 'PNT.CHR', symbolCode: 0, color: '#000000'};
 
 interface CreateElementProps {
   mapState: MapState,
@@ -23,16 +20,14 @@ export const CreateElement = ({mapState, formID, creatingType, showPropertiesWin
   const dispatch = useDispatch();
 
   const { activeLayer, legends, canvas } = mapState;
-
   const [defaultSignImage, setDefaultSignImage] = useState<HTMLImageElement>(null);
-  const signProto = {fontName: 'PNT.CHR', symbolCode: 0, color: '#000000'};
 
   useEffect(() => {
     const { fontName, symbolCode, color } = signProto;
     mapState.drawer.getSignImage(fontName, symbolCode, color).then((img) => {
       setDefaultSignImage(img);
     });
-  }, [mapState.drawer, signProto])
+  }, [mapState.drawer]);
 
   const createElement = useCallback((type: MapElementType, point: ClientPoint) => {
     let defaultElement;
@@ -48,7 +43,7 @@ export const CreateElement = ({mapState, formID, creatingType, showPropertiesWin
         dispatch(acceptCreatingElement(formID));
       }
     }
-  }, [defaultSignImage, signProto, legends, activeLayer, dispatch, formID]);
+  }, [defaultSignImage, legends, activeLayer, creatingType, showPropertiesWindow, dispatch, formID]);
 
   const mouseUp = useCallback((event: MouseEvent) => {
     if (creatingElementTypes.indexOf(creatingType) === -1) {
@@ -72,5 +67,5 @@ export const CreateElement = ({mapState, formID, creatingType, showPropertiesWin
     }
   }, [canvas, mouseUp]);
 
-  return <div></div>;
+  return <div/>;
 }

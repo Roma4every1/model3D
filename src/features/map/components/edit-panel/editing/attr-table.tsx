@@ -9,12 +9,14 @@ import { Input } from '@progress/kendo-react-inputs';
 import { toPairs } from 'lodash';
 import { setOpenedWindow } from 'entities/windows';
 import { setMapField } from '../../../store/maps.actions';
-import {mapStateSelector} from "../../../store/maps.selectors";
+import { mapStateSelector } from '../../../store/maps.selectors';
+
 
 interface AttrTableWindowProps {
   formID: FormID,
-  setAttrTableOpen
+  setAttrTableOpen,
 }
+
 
 const windowsSelector = (state: WState) => state.windowData.windows;
 
@@ -35,7 +37,7 @@ export const AttrTableWindow = ({formID, setAttrTableOpen}: AttrTableWindowProps
   useEffect(() => {
     setAttrTableOpen(true);
     return () => setAttrTableOpen(false);
-  }, [])
+  }, []); // eslint-disable-line
 
   useEffect(() => {
     setAttrTable({ ...selectedObject?.attrTable });

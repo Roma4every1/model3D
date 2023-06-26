@@ -96,7 +96,7 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
       dispatch(setMapField(formID, 'mapID', mapID));
       dispatch(fetchMapData(formID, mapID, owner, setProgress));
     }
-  }, [mapState, activeChannel, formID, parent, isPartOfDynamicMultiMap, dispatch]);
+  }, [mapState, activeChannel, formID, parent, isPartOfDynamicMultiMap, dispatch]); // eslint-disable-line
 
   const draw = useCallback((canvas, map, scale, x, y, selected) => {
     if (!mapState?.drawer || !canvas) return;
@@ -167,7 +167,7 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
   useEffect(() => {
     const cs = getWellCS(currentWellID, wellsMaxScale);
     if (cs) updateCanvas(cs, canvasRef.current);
-  }, [currentWellID, getWellCS, wellsMaxScale]);
+  }, [currentWellID, getWellCS, wellsMaxScale, updateCanvas]);
 
   // закрепление ссылки на холст
   useLayoutEffect(() => {
