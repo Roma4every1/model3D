@@ -16,7 +16,7 @@ interface TraceModel {
   id: number | null,
   name: string | null,
   stratumID: string | null,
-  items: string[] | null
+  items: number[] | null
 }
 
 /** ## Данные узла трассы.
@@ -24,13 +24,6 @@ interface TraceModel {
  * + `name` — имя скважины
  * */
 interface TracePoint {
-  UWID: string,
+  UWID: number,
   name: string,
 }
-
-
-
-
-
-
-

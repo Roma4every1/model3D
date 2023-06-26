@@ -4,24 +4,15 @@ import { useTranslation } from 'react-i18next';
 import { Scroller } from '../drawer/scroller';
 import { MapNotFound, MapLoadError} from '../../multi-map/multi-map-item';
 import {
-  clientPoint,
-  getFullViewport,
-  getMultiMapChildrenCanvases, getPointToMap,
+  clientPoint, getFullViewport, getMultiMapChildrenCanvases, getPointToMap,
   listenerOptions, PIXEL_PER_METER
 } from '../lib/map-utils';
 import { mapsStateSelector, mapStateSelector } from '../store/maps.selectors';
 import {
-  setMapField,
-  loadMapSuccess,
-  addMapLayer,
-  setActiveLayer,
-  startCreatingElement,
-  createMapElement,
-  acceptMapEditing,
-  clearMapSelect,
-  setOnDrawEnd,
+  setMapField, loadMapSuccess, loadMapError,
+  addMapLayer, setActiveLayer, startCreatingElement,
+  createMapElement, acceptMapEditing, clearMapSelect, setOnDrawEnd,
 } from '../store/maps.actions';
-import { setMapField, loadMapSuccess, loadMapError } from '../store/maps.actions';
 import { fetchMapData } from '../store/maps.thunks';
 import { tableRowToString } from 'entities/parameters/lib/table-row';
 import { updateParam, currentWellIDSelector, currentPlastCodeSelector} from 'entities/parameters';
@@ -205,9 +196,8 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
       mapData.layers.find(layer => layer.uid==='{TRACES-LAYER}')) return;
 
     // создание слоя
-    dispatch(addMapLayer(formID, traceLayerProto));
-  }, [formID, mapState?.isLoadSuccessfully, dispatch, mapData?.layers]);
-
+    dispatch(addMapLayer(id, traceLayerProto));
+  }, [id, mapState?.isLoadSuccessfully, dispatch, mapData?.layers]);
 
   // получение хранилища трасс трасс
   const traceState = useSelector(traceStateSelector);
@@ -255,21 +245,21 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
 
     // получение элемента трассы для карты
     const traceElement= getCurrentTraceMapElement(
-      formID,
+      id,
       mapData?.points,
       traceState?.currentTraceData,
     );
     // если не удалось получить элемент трассы для карты
     if (!traceElement) return;
 
-    dispatch(setActiveLayer(formID, traceLayerProto));
+    dispatch(setActiveLayer(id, traceLayerProto));
 
     // отрисовка трассы на карте
-    dispatch(startCreatingElement(formID));
-    dispatch(createMapElement(formID, traceElement));
-    dispatch(acceptMapEditing(formID));
-    dispatch(clearMapSelect(formID));
-    dispatch(setActiveLayer(formID, null));
+    dispatch(startCreatingElement(id));
+    dispatch(createMapElement(id, traceElement));
+    dispatch(acceptMapEditing(id));
+    dispatch(clearMapSelect(id));
+    dispatch(setActiveLayer(id, null));
 
     // подстраивание карты под выбранную трассу после окончания редактирования
     // и при изменении в параметрах
@@ -277,7 +267,7 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
       const cs = getTraceCS(traceElement);
       if (cs) updateCanvas(cs, canvasRef.current);
     }
-  }, [formID, mapState?.isLoadSuccessfully, mapData?.points, traceState?.currentTraceData, dispatch,
+  }, [id, mapState?.isLoadSuccessfully, mapData?.points, traceState?.currentTraceData, dispatch,
     traceState?.isTraceEditing, traceState?.isTraceCreating, mapState?.utils, traceLayer,
     getTraceCS, updateCanvas]);
 
@@ -297,18 +287,19 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
     const newPoint = getNearestSignMapElement(point, canvas, mapData.scale, mapData.layers);
     if (!newPoint) return;
     // получение точки из MapData.points соответсвующей выбраному элементу на карте
-    const newDataPoint : MapPoint = findMapPoint(newPoint, mapData.points)
+    const newDataPoint: MapPoint = findMapPoint(newPoint, mapData.points)
     if (!newDataPoint?.UWID || !newDataPoint?.name) return;
 
+    const uwID = parseInt(newDataPoint.UWID);
     const items = traceState?.currentTraceData?.items || [];
 
-    const pointExistInTrace = !!items?.find(p => p===newDataPoint.UWID);
+    const pointExistInTrace = !!items?.find(p => p === uwID);
 
     let newItems;
     if (pointExistInTrace) {
-      newItems = items.filter(p => p!==newDataPoint.UWID)
+      newItems = items.filter(p => p !== uwID)
     } else {
-      newItems = [...items, newDataPoint.UWID]
+      newItems = [...items, uwID]
     }
 
     if(newDataPoint) dispatch(setTraceItems(newItems))
@@ -332,8 +323,8 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
 
   // переопределение метода pointToMap при обновлении карты для получения корректных координат точек
   useEffect(() => {
-    if (mapState?.mapData) dispatch(setOnDrawEnd(formID, onDrawEnd));
-  }, [mapState, onDrawEnd, dispatch, formID]);
+    if (mapState?.mapData) dispatch(setOnDrawEnd(id, onDrawEnd));
+  }, [mapState, onDrawEnd, dispatch, id]);
 
   if (!mapState) return null;
   if (!isMapExist) return <MapNotFound t={t}/>;

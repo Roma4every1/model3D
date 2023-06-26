@@ -1,5 +1,3 @@
-
-
 /* --- Action Types --- */
 
 export enum TracesActions {
@@ -17,27 +15,22 @@ interface ActionCreate {
   type: TracesActions.CREATE,
   payload: string | null,
 }
-
 interface ActionSetTrace {
   type: TracesActions.SET_CURRENT_TRACE,
   payload: TraceModel | null,
 }
-
 interface ActionSetEditing {
   type: TracesActions.SET_EDITING,
   payload: boolean,
 }
-
 interface ActionSetCreating {
   type: TracesActions.SET_CREATING,
   payload: boolean,
 }
-
 interface ActionSetItems {
   type: TracesActions.SET_ITEMS,
-  payload: string[],
+  payload: number[],
 }
-
 interface ActionSetName {
   type: TracesActions.SET_NAME,
   payload: string,

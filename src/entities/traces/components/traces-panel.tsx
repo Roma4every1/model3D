@@ -1,20 +1,24 @@
-import {MenuSection, MenuSkeleton} from "../../../shared/ui";
-import {ApplyTraceChanges} from "./traces-panel-buttons/apply-trace-changes";
-import {DenyTraceChanges} from "./traces-panel-buttons/deny-trace-changes";
-import {EditTrace} from "./traces-panel-buttons/edit-trace";
-import {DeleteTrace} from "./traces-panel-buttons/delete-trace";
-import {CreateTrace} from "./traces-panel-buttons/create-trace";
-import {useDispatch, useSelector} from "react-redux";
-import {useEffect} from "react";
-import {stringToTableCell, tableRowToString} from "../../parameters/lib/table-row";
-import {setCurrentTraceData} from "../store/traces.actions";
-import {updateParamDeep} from "../../parameters";
-import {currentTraceParamSelector, traceItemsChannelSelector} from "../store/traces.selectors";
-import {useTranslation} from "react-i18next";
+import { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { updateParamDeep } from '../../parameters';
+import { stringToTableCell, tableRowToString } from '../../parameters/lib/table-row';
+import { setCurrentTraceData } from '../store/traces.actions';
+import { traceStateSelector, currentTraceParamSelector } from '../store/traces.selectors';
+import { traceItemsChannelSelector } from '../store/traces.selectors';
+
+import { MenuSection, MenuSkeleton } from 'shared/ui';
+import { EditTrace } from './traces-panel-buttons/edit-trace';
+import { DeleteTrace } from './traces-panel-buttons/delete-trace';
+import { CreateTrace } from './traces-panel-buttons/create-trace';
+import { ApplyTraceChanges } from './traces-panel-buttons/apply-trace-changes';
+import { DenyTraceChanges } from './traces-panel-buttons/deny-trace-changes';
+
 
 interface TracesPanelProps {
   traces: Channel,
 }
+
 
 const panelTemplate = ['222.363px', '176.8px', '141.488px'];
 
@@ -22,9 +26,9 @@ export const TracesPanel = ({traces}: TracesPanelProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const rootID = useSelector<WState, string | null>(state => state.root.id);
-  const tracesState = useSelector<WState, TracesState>(state => state.traces);
-  const tracesTableID = traces?.tableID;
+  const rootID = useSelector<WState, string>(state => state.root.id);
+  const tracesState = useSelector(traceStateSelector);
+
   // получение значения текущей трассы из параметров
   const currentTraceParamName = traces?.info?.currentRowObjectName;
   const currentTraceParamValue: string | null = useSelector(currentTraceParamSelector.bind(currentTraceParamName));
@@ -47,7 +51,7 @@ export const TracesPanel = ({traces}: TracesPanelProps) => {
       id: +stringToTableCell(currentTraceParamValue, 'ID') ?? null,
       name: stringToTableCell(currentTraceParamValue, 'NAME') || 'Без названия',
       stratumID: stringToTableCell(currentTraceParamValue, 'STRATUM_ID') ?? null,
-      items: items ? items.split("---") : null
+      items: items ? items.split('---').map(x => parseInt(x)) : null
     };
 
     dispatch(setCurrentTraceData(currentTraceData))
@@ -76,7 +80,7 @@ export const TracesPanel = ({traces}: TracesPanelProps) => {
   return (
     <div className={'menu'}>
       <MenuSection header={t('trace.controls-section')} className={'map-actions'}>
-        <CreateTrace tracesState={tracesState} tracesTableID={tracesTableID}/>
+        <CreateTrace tracesState={tracesState} tracesTableID={traces?.tableID}/>
         <DeleteTrace tracesState={tracesState} traces={traces} itemsTableID={itemsTableID}/>
         <EditTrace tracesState={tracesState}/>
       </MenuSection>
@@ -85,5 +89,5 @@ export const TracesPanel = ({traces}: TracesPanelProps) => {
         <DenyTraceChanges tracesState={tracesState} traces={traces} itemsTableID={itemsTableID}/>
       </MenuSection>
     </div>
-  )
+  );
 };

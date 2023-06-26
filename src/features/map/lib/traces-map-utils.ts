@@ -4,11 +4,10 @@ import { checkDistance, getNearestElements } from '../components/edit-panel/sele
 
 /** Прототип объекта слоя трассы. */
 export const traceLayerProto : MapLayer = {
-  // bounds: { min: {x: 2323405, y: -6078631}, max: {x: 2342750, y: -6049681} },
   bounds: { min: {x: -10000000, y: -10000000}, max: {x: 10000000, y: 10000000} },
   container: 'null',
   elements: [],
-  elementsData: Promise<MapElement[]>.resolve([]),
+  elementsData: Promise.resolve([]),
   group: 'Трассы',
   highscale: 'INF',
   lowscale: 0,

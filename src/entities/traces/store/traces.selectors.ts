@@ -1,22 +1,21 @@
-import {tracesChannelName} from '../lib/constants';
-import {stringToTableCell} from "../../parameters/lib/table-row";
+import { tracesChannelName } from '../lib/constants';
+import { stringToTableCell } from '../../parameters/lib/table-row';
 
 
-export const traceChannelSelector = (state: WState): Channel => {
+export function traceChannelSelector(state: WState): Channel {
   return state.channels[tracesChannelName];
-};
-
-export const traceStateSelector = (state: WState) => {
-  return state.traces;
-};
-
-export function currentTraceParamSelector (this: string, state: WState) {
-  return state.parameters[state.root.id]
-    .find(el => el.id === this)
-    ?.value?.toString() || null;
 }
 
-export function currentStratumIDSelector (this: string, state: WState) : string | null {
+export function traceStateSelector(state: WState): TracesState {
+  return state.traces;
+}
+
+export function currentTraceParamSelector(this: string, state: WState) {
+  const rootParameters = state.parameters[state.root.id];
+  return rootParameters.find(el => el.id === this)?.value?.toString() || null;
+}
+
+export function currentStratumIDSelector(this: string, state: WState) : string | null {
   const traces = state.channels[tracesChannelName];
   if (!traces) return null;
   const currentTraceParamName = traces.info.currentRowObjectName;
@@ -25,8 +24,7 @@ export function currentStratumIDSelector (this: string, state: WState) : string 
   const currentMestParamName = currentTraceParam.dependsOn[0];
   const currentMestParam = state.parameters[state.root.id].find(p => p.id === currentMestParamName)
   const currentMestValue = currentMestParam?.value?.toString() || null
-  return currentMestValue ?
-    stringToTableCell(currentMestValue, 'LOOKUPCODE') : null;
+  return currentMestValue ? stringToTableCell(currentMestValue, 'LOOKUPCODE') : null;
 }
 
 export function traceItemsChannelSelector (state: WState): Channel {
@@ -41,4 +39,3 @@ export function wellsChannelSelector (state: WState): Channel {
   const itemsChannel = state.channels[traceItemsChannelName];
   return state.channels[itemsChannel.info.lookupChannels[0]];
 }
-

@@ -1,18 +1,17 @@
-import {
-  ComboBox,
-  ComboBoxFilterChangeEvent,
-  DropDownListChangeEvent
-} from "@progress/kendo-react-dropdowns";
-import {Button} from "@progress/kendo-react-buttons";
-import {setTraceItems} from "../../store/traces.actions";
-import {useState} from "react";
-import {filterBy, FilterDescriptor} from "@progress/kendo-data-query";
-import {useDispatch} from "react-redux";
-import './traces-edit-tab.scss'
-import {useTranslation} from "react-i18next";
+import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { setTraceItems } from '../../store/traces.actions';
+import { filterBy, FilterDescriptor } from '@progress/kendo-data-query';
+
+import './traces-edit-tab.scss';
+import { Button } from '@progress/kendo-react-buttons';
+import { ComboBox } from '@progress/kendo-react-dropdowns';
+import { ComboBoxFilterChangeEvent, ComboBoxChangeEvent } from '@progress/kendo-react-dropdowns';
+
 
 interface TraceAddPointProps {
-  items: string[],
+  items: number[],
   points: TracePoint[]
 }
 
@@ -29,12 +28,12 @@ export const TraceAddPoint = ({items, points} : TraceAddPointProps) => {
   const [pointsToAdd, setPointsToAdd] = useState<TracePoint[] | null>(pointsToAddData);
 
   // выбор точки для добавления в ComboBox компоненте
-  const handleComboBoxChange = (event: DropDownListChangeEvent) => {
+  const handleComboBoxChange = (event: ComboBoxChangeEvent) => {
     setSelectedPointToAdd(event.target.value);
   };
 
   // добавление точки в трассу
-  const addPoint = (pointUWID: string) => {
+  const addPoint = (pointUWID: number) => {
     if (pointUWID === null) return;
 
     const newItems = items ? [...items] : [];
@@ -77,5 +76,5 @@ export const TraceAddPoint = ({items, points} : TraceAddPointProps) => {
         <span>{t('trace.add-point-button')}</span>
       </Button>
     </div>
-  )
-}
+  );
+};

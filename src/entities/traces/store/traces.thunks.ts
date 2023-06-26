@@ -1,51 +1,39 @@
-import {Dispatch} from "redux";
-import {StateGetter, Thunk} from "../../../shared/lib";
-import {channelsAPI} from "../../channels/lib/channels.api";
-import {closeWindowNotification, setWindowWarning} from "../../windows";
-import {updateTables} from "../../channels";
-import {traceModelToChannelRow} from "../lib/traces-utils";
+import { Dispatch } from 'redux';
+import { StateGetter, Thunk } from 'shared/lib';
+import { updateTables } from '../../channels';
+import { closeWindowNotification, setWindowWarning } from '../../windows';
+import { traceModelToChannelRow } from '../lib/traces-utils';
+import { channelsAPI } from '../../channels/lib/channels.api';
 
 
 /** Создание новой строки с трассой. */
-export const createTraceRow = (
-  tableID: TableID,
-  currentStratumID
-) => {
+export const createTraceRow = (tableID: TableID, currentStratumID) => {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const state = getState();
-
-    const row = {ID: null, Cells: [null, "Без имени", currentStratumID, null]};
+    const row = {ID: null, Cells: [null, 'Без имени', currentStratumID, null]};
     const res = await channelsAPI.insertRows(tableID, [row]);
     checkResultForErrors(res, dispatch);
     await updateTables([tableID])(dispatch, () => state);
-  }
-}
-
+  };
+};
 
 /** Сохренение изменений в строке с трассой. */
-export const updateTraceData = (
-  tableID: TableID,
-  traceData,
-  id: number | null
-) => {
+export const updateTraceData = (tableID: TableID, traceData, id: number | null) => {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const state = getState();
-
     const res = await channelsAPI.updateRows(tableID, [id], [traceModelToChannelRow(traceData)]);
     checkResultForErrors(res, dispatch);
     await updateTables([tableID])(dispatch, () => state);
-  }
-}
+  };
+};
 
 /** Удаление строк трассы по id. */
-export const removeTraceRow = (tableID: TableID,
-                               id: number,
-                               itemsTableID: TableID,
-                               isTraceCreating?: boolean
+export const removeTraceRow = (
+  tableID: TableID, id: number,
+  itemsTableID: TableID, isTraceCreating?: boolean,
 ): Thunk<boolean> => {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const state = getState();
-
     const traceRes = await channelsAPI.removeRows(tableID, [id]);
     checkResultForErrors(traceRes, dispatch);
 
@@ -53,8 +41,6 @@ export const removeTraceRow = (tableID: TableID,
       const itemsRes = await channelsAPI.removeRows(itemsTableID, 'all');
       checkResultForErrors(itemsRes, dispatch);
     }
-
-
     await updateTables([tableID, itemsTableID])(dispatch, () => state);
     return traceRes.ok;
   };
@@ -97,6 +83,5 @@ const checkResultForErrors = (res, dispatch): boolean => {
     dispatch(setWindowWarning(error));
     dispatch(closeWindowNotification());
   }
-
-  return res.ok
+  return res.ok;
 }

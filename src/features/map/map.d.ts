@@ -165,7 +165,6 @@ interface MapLayer {
   index?: any,
   version: any,
   visible?: boolean,
-  modified?: boolean,
   elementType?: MapElementType
   modified?: boolean,
   temporary?: boolean

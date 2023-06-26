@@ -21,7 +21,7 @@ export const setTraceEditing = (isEditing: boolean): TracesAction => {
 };
 
 /** Устанавливает в хранилище значение узлов трассы. */
-export const setTraceItems = (items: string[]): TracesAction => {
+export const setTraceItems = (items: number[]): TracesAction => {
   return {type: TracesActions.SET_ITEMS, payload: items};
 };
 
