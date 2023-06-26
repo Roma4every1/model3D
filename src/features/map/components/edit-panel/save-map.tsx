@@ -23,7 +23,14 @@ export const SaveMap = ({mapState, formID, t}: SaveMapProps) => {
     dispatch(setMapField(formID, 'isModified', false));
     dispatch(setWindowNotification(t('map.notices.save-start')));
 
-    const data = {...mapData, x: undefined, y: undefined, scale: undefined, onDrawEnd: undefined};
+    const data = {...mapData,
+      x: undefined,
+      y: undefined,
+      scale: undefined,
+      onDrawEnd: undefined,
+      layers: mapData.layers.filter(layer => !layer.temporary)
+    };
+
     const promise = mapsAPI.saveMap(formID, mapID, data, owner);
     callBackWithNotices(promise, dispatch, t('map.notices.save-end'));
   };

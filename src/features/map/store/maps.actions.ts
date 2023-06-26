@@ -95,3 +95,8 @@ export const acceptCreatingElement = (formID: FormID): MapsAction => {
 export const cancelCreatingElement = (formID: FormID): MapsAction => {
   return {type: MapsActions.CANCEL_CREATING, formID};
 };
+
+/** Добавить слой на карту. */
+export const addMapLayer = (formID: FormID, layer: MapLayer): MapsAction => {
+  return {type: MapsActions.ADD_LAYER, formID, payload: layer};
+};

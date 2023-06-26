@@ -167,6 +167,8 @@ interface MapLayer {
   visible?: boolean,
   modified?: boolean,
   elementType?: MapElementType
+  modified?: boolean,
+  temporary?: boolean
 }
 
 /** Максимальный масштаб карты, при котором данный слой будет отрисовываться. */
@@ -246,6 +248,7 @@ interface MapPolyline extends MapElementProto {
   legend?: any,
   img?: any,
   style?: PolylineBorderStyle,
+  isTrace?: boolean
 }
 
 /** ### Дуга линии.

@@ -174,7 +174,7 @@
     "template": "Шаблон",
     "transparency": "Прозрачность",
     "layer-stat-header": "Объекты на подслое:",
-
+    "trace": "Трасса",
     "layers-tree": {
       "min-scale": "Мин. масштаб:",
       "max-scale": "Макс. масштаб:"
@@ -233,6 +233,22 @@
       "save-start": "Сохранение карты...",
       "save-end": "Карта сохранена"
     }
+  },
+  "trace": {
+    "controls-section": "Управление",
+    "edit-section": "Редактирование",
+    "create": "Создать",
+    "delete-dialog": "Удаление трассы",
+    "areYouSureToDeleteTrace": "Вы действительно хотите удалить выбранную трассу?",
+    "delete": "Удалить",
+    "edit": "Редактирование",
+    "edit-panel": "Трасса",
+    "change-name-title": "Имя",
+    "change-items-title": "Элементы",
+    "add-point-title": "Добавление",
+    "add-point-button": "Добавить точку",
+    "wells-not-loaded": "Данные скважин не загружены",
+    "empty-trace": "Пустая трасса"
   },
   "menu": {
     "about": "О программе",

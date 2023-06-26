@@ -5,7 +5,6 @@ import { MapEditPanel } from 'features/map';
 import { TrackEditPanel } from 'features/carat';
 import { CaratEditPanel } from 'features/carat';
 
-
 export interface FormPanelProps {
   panelID: string,
   presentation: PresentationState,

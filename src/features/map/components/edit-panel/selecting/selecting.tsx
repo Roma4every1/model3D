@@ -1,6 +1,6 @@
 import { TFunction } from 'react-i18next';
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Checkbox } from '@progress/kendo-react-inputs';
 import { MapModes } from '../../../lib/enums';
 import { clientPoint, listenerOptions } from '../../../lib/map-utils';
@@ -8,6 +8,7 @@ import { checkDistance, checkDistancePoints, getNearestElements } from './select
 import { selectElement, unselectElement } from './selecting-utils';
 import { setSelectedElement, clearMapSelect, setEditMode, cancelMapEditing } from '../../../store/maps.actions';
 import selectingIcon from 'assets/images/map/selecting-mode.png';
+import { traceStateSelector } from '../../../../../entities/traces/store/traces.selectors';
 
 
 interface SelectingProps {
@@ -19,6 +20,8 @@ interface SelectingProps {
 
 export const Selecting = ({mapState, formID, t}: SelectingProps) => {
   const dispatch = useDispatch();
+
+  const tracesState = useSelector(traceStateSelector);
 
   const { canvas, utils, activeLayer, mapData } = mapState;
   const { element: selectedElement, selecting: selectState } = mapState;
@@ -68,7 +71,8 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
         return checkDistance(element, point, scale, getTextWidth);
       }
       const activeLayer_ = isOnlyActiveLayer ? activeLayer : null;
-      const nearestElements = getNearestElements(mapData.layers, activeLayer_, scale, filterFn);
+      const filteredLayers = mapData.layers.filter(layer => !layer.temporary);
+      const nearestElements = getNearestElements(filteredLayers, activeLayer_, scale, filterFn);
 
       if (nearestElements.length === 0) return selectState.lastPoint = null;
 
@@ -147,7 +151,7 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
       <div className={'map-panel-main'}>
         <div>
           <button
-            disabled={!mapState?.isLoadSuccessfully || mapState?.isElementCreating}
+            disabled={!mapState?.isLoadSuccessfully || mapState?.isElementCreating || tracesState.isTraceEditing}
             className={'map-panel-button' + (isInSelectingMode ? ' active' : '')}
             onClick={toggleSelecting} title={t('map.selecting.button-hint')}
           >
