@@ -1,5 +1,6 @@
 import { TFunction } from 'react-i18next';
 import { NumericTextBoxChangeEvent } from '@progress/kendo-react-inputs';
+import { NumberFormatOptions } from '@progress/kendo-react-intl';
 import { useState, useEffect, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { BigButton, BigButtonToggle } from 'shared/ui';
@@ -12,7 +13,7 @@ import yIcon from 'assets/images/map/y.png';
 import scaleIcon from 'assets/images/map/scale.png';
 import selectAllIcon from 'assets/images/map/select-all.png';
 import synchronizeIcon from 'assets/images/map/synchronize.png';
-import {NumberFormatOptions} from "@progress/kendo-react-intl";
+
 
 interface DimensionsProps {
   mapState: MapState,
@@ -22,7 +23,12 @@ interface DimensionsProps {
   t: TFunction,
 }
 
-const coordsFormat : NumberFormatOptions = {style: 'decimal', useGrouping: false, maximumFractionDigits: 2};
+
+const coordsFormat: NumberFormatOptions = {
+  style: 'decimal',
+  useGrouping: false,
+  maximumFractionDigits: 2,
+};
 
 export const Dimensions = ({mapState, sync, formID, parentID, t}: DimensionsProps) => {
   const dispatch = useDispatch();

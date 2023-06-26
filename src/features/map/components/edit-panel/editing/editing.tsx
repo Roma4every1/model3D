@@ -1,6 +1,6 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import {useDispatch} from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 import { EditElement } from './edit-element';
 import { CreateElement } from './create-element';
@@ -13,18 +13,15 @@ import { getHeaderText } from './editing-utils';
 import { applyMouseDownActionToPolyline, applyMouseMoveActionToElement, applyRotateToLabel } from './edit-element-utils';
 import { clientPoint, getNearestPointIndex, listenerOptions } from '../../../lib/map-utils';
 import { setOpenedWindow } from 'entities/windows';
-import {
-  setEditMode,
-  acceptMapEditing,
-  cancelMapEditing,
-  setMapField
-} from '../../../store/maps.actions';
+import { setEditMode, acceptMapEditing, cancelMapEditing, setMapField } from '../../../store/maps.actions';
 import { startCreatingElement, cancelCreatingElement } from '../../../store/maps.actions';
+
 
 interface EditingProps {
   mapState: MapState,
   formID: FormID,
 }
+
 
 const mouseMoveNeedModes: MapModes[] = [MapModes.MOVE, MapModes.MOVE_POINT, MapModes.ROTATE];
 const creatingElementTypes: MapElementType[] = ['polyline', 'sign', 'label'];
@@ -225,7 +222,7 @@ export const Editing = ({mapState, formID}: EditingProps) => {
             className={'k-button map-panel-button'} title={t('map.editing.delete')}
             disabled={disabledDelete} onClick={showDeleteWindow}
           >
-            <span className={'k-icon k-i-delete'} />
+            <span className={'k-icon k-i-delete'}/>
           </button>
         </div>
         {isCreating
@@ -235,8 +232,9 @@ export const Editing = ({mapState, formID}: EditingProps) => {
             creatingType={creatingType}
             showPropertiesWindow={showPropertiesWindow}
           />
-          : selectedElement ? <EditElement type={selectedElement.type} mode={mode} formID={formID}/> : <div/>
-        }
+          : selectedElement
+            ? <EditElement type={selectedElement.type} mode={mode} formID={formID}/>
+            : <div/>}
       </div>
     </section>
   );

@@ -7,7 +7,7 @@ import { clientPoint, listenerOptions } from '../../../lib/map-utils';
 import { checkDistance, checkDistancePoints, getNearestElements } from './selecting-utils';
 import { selectElement, unselectElement } from './selecting-utils';
 import { setSelectedElement, clearMapSelect, setEditMode, cancelMapEditing } from '../../../store/maps.actions';
-import selectingIcon from '../../../../../assets/images/map/selecting-mode.png';
+import selectingIcon from 'assets/images/map/selecting-mode.png';
 
 
 interface SelectingProps {
@@ -180,4 +180,4 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
       </div>
     </section>
   );
-}
+};

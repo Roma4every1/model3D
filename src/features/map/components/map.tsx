@@ -4,26 +4,22 @@ import { useTranslation } from 'react-i18next';
 import { Scroller } from '../drawer/scroller';
 import { MapNotFound, MapLoadError} from '../../multi-map/multi-map-item';
 import { getFullViewport, getMultiMapChildrenCanvases } from '../lib/map-utils';
-import {
-  mapsStateSelector,
-  mapStateSelector,
-} from '../store/maps.selectors';
-import {setMapField, loadMapSuccess, loadMapError} from '../store/maps.actions';
+import { mapsStateSelector, mapStateSelector } from '../store/maps.selectors';
+import { setMapField, loadMapSuccess, loadMapError } from '../store/maps.actions';
 import { fetchMapData } from '../store/maps.thunks';
 import { tableRowToString } from 'entities/parameters/lib/table-row';
-import {updateParam, currentWellIDSelector, currentPlastCodeSelector} from 'entities/parameters';
+import { updateParam, currentWellIDSelector, currentPlastCodeSelector} from 'entities/parameters';
 import { channelSelector } from 'entities/channels';
 import { CircularProgressBar } from 'shared/ui';
-import {getParentFormId} from "../../../shared/lib";
 
 
-export const Map = ({id: formID, parent, channels, data}: FormState & {data?: MapData}) => {
+export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
   const currentWellID = useSelector(currentWellIDSelector);
   const mapsState = useSelector(mapsStateSelector);
-  const mapState: MapState = useSelector(mapStateSelector.bind(formID));
+  const mapState: MapState = useSelector(mapStateSelector.bind(id));
 
   const canvasRef = useRef(null);
   const mapDrawnData = useRef(null);
@@ -40,23 +36,21 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
   const isPartOfDynamicMultiMap = data !== undefined;
   const activeChannelName = isPartOfDynamicMultiMap ? null : channels[0];
   const activeChannel: Channel = useSelector(channelSelector.bind(activeChannelName));
-
-  const currentPlastCode = useSelector(currentPlastCodeSelector)
-  const parentID = getParentFormId(formID);
+  const currentPlastCode = useSelector(currentPlastCodeSelector);
 
   // обновление списка связанных карт
   useEffect(() => {
-    const canvases = getMultiMapChildrenCanvases(mapsState.multi, mapsState.single, formID);
+    const canvases = getMultiMapChildrenCanvases(mapsState.multi, mapsState.single, id);
     if (scroller.current) scroller.current.setList(canvases);
-  }, [mapsState, mapState, formID]);
+  }, [mapsState, mapState, id]);
 
   useEffect(() => {
     if (!mapState || !isPartOfDynamicMultiMap) return;
     if (!mapState.mapID && data.layers) {
-      dispatch(setMapField(formID, 'mapID', data));
-      dispatch(loadMapSuccess(formID, data));
+      dispatch(setMapField(id, 'mapID', data));
+      dispatch(loadMapSuccess(id, data));
     }
-  }, [isPartOfDynamicMultiMap, mapState, formID, data, dispatch]);
+  }, [isPartOfDynamicMultiMap, mapState, id, data, dispatch]);
 
   // проверка параметров формы
   useEffect(() => {
@@ -64,13 +58,13 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
     const rows = activeChannel?.data?.rows;
     if (!rows || rows.length === 0) {
       if (mapState?.isLoadSuccessfully === false) return;
-      dispatch(loadMapError(formID));
+      dispatch(loadMapError(id));
       return setIsMapExist(false);
     }
 
     // если карта загружена, но параметры были сброшены
     if (mapData?.layers && mapState?.isLoadSuccessfully === false) {
-      dispatch(setMapField(formID, 'isLoadSuccessfully', true));
+      dispatch(setMapField(id, 'isLoadSuccessfully', true));
       return;
     }
 
@@ -89,14 +83,14 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
       dispatch(updateParam(parent, objectName, value));
     }
     if (changeOwner) {
-      dispatch(setMapField(formID, 'owner', owner));
+      dispatch(setMapField(id, 'owner', owner));
     }
     if (changeMapID) {
       setProgress(0);
-      dispatch(setMapField(formID, 'mapID', mapID));
-      dispatch(fetchMapData(formID, mapID, owner, setProgress));
+      dispatch(setMapField(id, 'mapID', mapID));
+      dispatch(fetchMapData(id, mapID, owner, setProgress));
     }
-  }, [mapState, activeChannel, formID, parent, isPartOfDynamicMultiMap, dispatch]); // eslint-disable-line
+  }, [mapState, activeChannel, id, parent, isPartOfDynamicMultiMap, dispatch]); // eslint-disable-line
 
   const draw = useCallback((canvas, map, scale, x, y, selected) => {
     if (!mapState?.drawer || !canvas) return;
@@ -127,21 +121,16 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
     if (!mapData) return;
     let pointsData;
     if (isPartOfDynamicMultiMap) {
-      const currentMapID = parentID + ',' + mapsState.multi[parentID].configs.find(c => c.data.plastCode === currentPlastCode)?.id
+      const currentMapID = parent + ',' + mapsState.multi[parent].configs
+        .find(c => c.data.plastCode === currentPlastCode)?.id
       const activeMapState : MapState = mapsState.single[currentMapID];
       if (!activeMapState?.mapData) return;
-      const isSync = mapsState.multi[parentID].sync;
-      const isActiveMap = currentMapID === formID
+      const isSync = mapsState.multi[parent].sync;
+      const isActiveMap = currentMapID === id
 
-      if (isActiveMap) {
-        pointsData = mapData.points
-      }
-      if (isSync && !isActiveMap) {
-        pointsData = activeMapState.mapData.points
-      }
-      if (!isSync && !isActiveMap) {
-        return null;
-      }
+      if (isActiveMap) pointsData = mapData.points
+      if (isSync && !isActiveMap) pointsData = activeMapState.mapData.points
+      if (!isSync && !isActiveMap) return null;
     } else {
       pointsData = mapData.points
     }
@@ -152,7 +141,10 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
       return {centerX: point.x, centerY: point.y, scale};
     }
     return null;
-  }, [mapData, currentPlastCode, formID, parentID, isPartOfDynamicMultiMap, mapsState.multi, mapsState.single]);
+  }, [
+    mapData, currentPlastCode, id, parent, isPartOfDynamicMultiMap,
+    mapsState.multi, mapsState.single
+  ]);
 
   const wellsMaxScale = useMemo(() => {
     const layers = mapData?.layers;
@@ -172,22 +164,32 @@ export const Map = ({id: formID, parent, channels, data}: FormState & {data?: Ma
   // закрепление ссылки на холст
   useLayoutEffect(() => {
     if (canvasRef.current && canvasRef.current !== canvas && mapData) {
-      dispatch(setMapField(formID, 'canvas', canvasRef.current));
+      dispatch(setMapField(id, 'canvas', canvasRef.current));
 
       scroller.current
         ? scroller.current.setCanvas(canvasRef.current)
         : scroller.current = new Scroller(canvasRef.current);
-      if (!mapState.scroller) dispatch(setMapField(formID, 'scroller', scroller.current));
+      if (!mapState.scroller) dispatch(setMapField(id, 'scroller', scroller.current));
 
-      const cs = getWellCS(currentWellID, wellsMaxScale) || getFullViewport(mapData.layers, canvasRef.current);
+      const cs =
+        getWellCS(currentWellID, wellsMaxScale) ||
+        getFullViewport(mapData.layers, canvasRef.current);
       updateCanvas(cs, canvasRef.current);
     }
   });
 
-  if (!mapState) return null;
-  if (!isMapExist) return <MapNotFound t={t}/>;
-  if (mapState.isLoadSuccessfully === undefined) return <CircularProgressBar percentage={progress} size={100}/>;
-  if (mapState.isLoadSuccessfully === false) return <MapLoadError t={t}/>;
+  if (!mapState) {
+    return null;
+  }
+  if (!isMapExist) {
+    return <MapNotFound t={t}/>;
+  }
+  if (mapState.isLoadSuccessfully === undefined) {
+    return <CircularProgressBar percentage={progress} size={100}/>;
+  }
+  if (mapState.isLoadSuccessfully === false) {
+    return <MapLoadError t={t}/>;
+  }
 
   return (
     <div className={'map-container'}>
