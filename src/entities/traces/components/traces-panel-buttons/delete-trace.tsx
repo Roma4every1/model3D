@@ -7,7 +7,7 @@ import { setCurrentTraceData } from '../../store/traces.actions';
 import { BigButton } from 'shared/ui';
 import { Button } from '@progress/kendo-react-buttons';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
-import deleteTraceIcon from 'assets/images/trace/trace_remove_L.png';
+import deleteTraceIcon from 'assets/images/trace/detele-trace.png';
 
 
 interface DeleteTraceProps {

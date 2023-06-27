@@ -4,7 +4,7 @@ import { createTrace } from '../../store/traces.actions';
 import { createTraceRow } from '../../store/traces.thunks';
 import { currentStratumIDSelector } from '../../store/traces.selectors';
 import { BigButton } from 'shared/ui';
-import createTraceIcon from 'assets/images/trace/trace_add_L.png';
+import createTraceIcon from 'assets/images/trace/create-trace.png';
 
 
 interface CreateTraceProps {

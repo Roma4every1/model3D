@@ -2,7 +2,7 @@ import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { setTraceEditing } from '../../store/traces.actions';
 import { BigButton } from 'shared/ui';
-import editTraceIcon from 'assets/images/trace/trace_edit_L.png'
+import editTraceIcon from 'assets/images/trace/edit-trace.png'
 
 
 interface EditTraceProps {
