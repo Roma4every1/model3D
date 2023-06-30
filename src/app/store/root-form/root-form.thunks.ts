@@ -8,7 +8,7 @@ import { setParamDict } from 'entities/parameters';
 import { tableRowToString } from 'entities/parameters/lib/table-row';
 import { setChannels } from 'entities/channels';
 import { fetchSessionStart, fetchSessionEnd, fetchSessionError } from 'entities/fetch-state';
-import { createObjects, setObjects } from 'entities/objects';
+import { createObjects, createObjectModels, setObjects } from 'entities/objects';
 import { setRootFormState } from './root-form.actions';
 import { setSessionID } from '../app-state/app.actions';
 import { formsAPI } from 'widgets/presentation/lib/forms.api';
@@ -39,16 +39,14 @@ export const startSession = (isDefault: boolean): Thunk => {
     applyChannelsDeps(channels, paramDict);
     await checkParamValues(channels, paramDict);
 
-    fillChannels(channels, paramDict).then(() => {
-      const objects = createObjects(getState());
-      dispatch(setObjects(objects));
-    });
-
     dispatch(setParamDict(paramDict));
     dispatch(setChannels(channels));
     dispatch(setRootFormState(root));
+    dispatch(setObjects(createObjects(getState())));
     dispatch(setSessionID(resSessionID.data));
     dispatch(fetchSessionEnd());
+
+    fillChannels(channels, paramDict).then(() => { createObjectModels(getState()); });
   };
 };
 
@@ -69,7 +67,7 @@ async function checkParamValues(channelDict: ChannelDict, paramDict: ParamDict) 
   for (const parameter of paramsToFill) {
     const channel = channelsToFill[parameter.externalChannelName];
     const rows = channel?.data?.rows;
-    if (rows?.length) parameter.value = tableRowToString(channel, rows[0])?.value ?? null;
+    if (rows?.length) parameter.value = tableRowToString(channel, rows[0]) ?? null;
   }
 }
 

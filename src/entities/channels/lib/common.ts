@@ -41,13 +41,9 @@ export function createColumnInfo<Fields extends string = string>(
   return info;
 }
 
-export function findColumnIndexes(channel: Channel): void {
-  const columnInfo = channel.info.columns;
-  const columns = channel.data?.columns;
-  if (!columns) return;
-
-  for (const field in columnInfo) {
-    const propertyInfo = columnInfo[field];
+export function findColumnIndexes(columns: ChannelColumn[], info: ChannelColumnInfo | LookupColumns) {
+  for (const field in info) {
+    const propertyInfo = info[field];
     for (let i = 0; i < columns.length; i++) {
       const name = columns[i].Name;
       if (propertyInfo.name === name) { propertyInfo.index = i; break; }

@@ -1,16 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { setCurrentTrace } from '../../index';
-import './traces-edit-tab.scss';
+import { setCurrentTrace } from '../../store/objects.actions';
 
 
-interface TraceChangeNameProps {
-  model: TraceModel,
-}
-
-
-export const TraceChangeName = ({model}: TraceChangeNameProps) => {
+export const TraceChangeName = ({model}: {model: TraceModel}) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
@@ -21,11 +15,11 @@ export const TraceChangeName = ({model}: TraceChangeNameProps) => {
     setNewName(name);
   }, [name]);
 
-  const onChangeHandler = (event) => {
+  const onChange = (event) => {
     setNewName(event.target.value.toString());
   };
 
-  const onBlurHandler = () => {
+  const onBlur = () => {
     dispatch(setCurrentTrace({...model, name: newName}));
   };
 
@@ -37,7 +31,7 @@ export const TraceChangeName = ({model}: TraceChangeNameProps) => {
       <input
         type={'text'} style={{fontSize: '12px'}}
         className={'change-name k-input k-input-md k-rounded-md k-input-solid'}
-        value={newName} onChange={onChangeHandler} onBlur={onBlurHandler}
+        value={newName} onChange={onChange} onBlur={onBlur}
       />
     </div>
   );

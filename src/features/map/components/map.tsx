@@ -56,9 +56,9 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
 
   // обновление списка связанных карт
   useEffect(() => {
-    const canvases = getMultiMapChildrenCanvases(mapsState.multi, mapsState.single, id);
+    const canvases = getMultiMapChildrenCanvases(mapsState.multi, mapsState.single, id, parent);
     if (scroller.current) scroller.current.setList(canvases);
-  }, [mapsState, mapState, id]);
+  }, [mapsState, mapState, id, parent]);
 
   useEffect(() => {
     if (!mapState || !isPartOfDynamicMultiMap) return;
@@ -95,7 +95,7 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
     const objectName = activeChannel.info.currentRowObjectName;
 
     if (objectName && (changeOwner || changeMapID)) {
-      const value = tableRowToString(activeChannel, mapInfo)?.value;
+      const value = tableRowToString(activeChannel, mapInfo)
       dispatch(updateParam(parent, objectName, value));
     }
     if (changeOwner) {

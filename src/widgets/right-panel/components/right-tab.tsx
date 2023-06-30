@@ -1,12 +1,14 @@
+import { TracesEditTab } from 'entities/objects';
 import { MapLayerTree } from 'features/map';
 
 
 export interface RightTabProps {
+  panelID: string,
   presentation: PresentationState,
 }
 
 
-export const RightTab = ({presentation}: RightTabProps) => {
+export const RightTab = ({panelID, presentation}: RightTabProps) => {
   if (!presentation) return null;
 
   const activeChildID = presentation.activeChildID;
@@ -16,5 +18,7 @@ export const RightTab = ({presentation}: RightTabProps) => {
     ? activeChildID
     : presentation.children.find(child => child.type === 'map').id;
 
-  return <MapLayerTree formID={formID}/>;
+  return panelID === 'right-trace'
+    ? <TracesEditTab formID={formID}/>
+    : <MapLayerTree formID={formID}/>;
 };

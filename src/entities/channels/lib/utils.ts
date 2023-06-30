@@ -1,6 +1,7 @@
 import { channelsAPI } from './channels.api';
 import { fillParamValues } from 'entities/parameters';
-import { findLookupColumnIndexes, createLookupChannels, createLookupColumnNames } from './lookup';
+import { findColumnIndexes } from './common';
+import { createLookupChannels, createLookupColumnNames } from './lookup';
 
 
 /** Наполняет каналы данными. */
@@ -20,7 +21,13 @@ export async function fillChannel(channel: Channel, paramDict: ParamDict) {
   channel.tableID = tableID;
 
   const columns = data?.columns;
-  if (columns) findLookupColumnIndexes(columns, channel.info.lookupColumns);
+  const info = channel.info;
+
+  if (columns && !info.columnApplied) {
+    info.columnApplied = true;
+    if (info.columns) findColumnIndexes(columns, info.columns);
+    findColumnIndexes(columns, info.lookupColumns);
+  }
 }
 
 

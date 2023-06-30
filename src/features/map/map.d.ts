@@ -119,6 +119,12 @@ interface ParsedContainer {
 
 /* --- --- */
 
+interface MapViewport {
+  centerX: number,
+  centerY: number,
+  scale: number,
+}
+
 interface MapData {
   date: string,
   eTag: string,

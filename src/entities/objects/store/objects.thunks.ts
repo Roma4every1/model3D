@@ -3,8 +3,7 @@ import { Thunk, StateGetter } from 'shared/lib';
 import { reloadChannel, updateTables } from '../../channels';
 import { channelsAPI } from '../../channels/lib/channels.api';
 import { applyModelToRow, traceToNodeChannelRows } from '../lib/common';
-import { createPlaceModel, createWellModel, createTraceModel } from '../lib/creators';
-import { setObjects, setCurrentTrace } from './objects.actions';
+import { setCurrentTrace } from './objects.actions';
 import { updateParamDeep } from '../../parameters';
 import { tableRowToString } from '../../parameters/lib/table-row';
 
@@ -26,7 +25,7 @@ export function createTrace(model: TraceModel): Thunk {
     await channelsAPI.insertRows(traceChannel.tableID, [newRow]).then();
     await reloadChannel(traceChannel.name)(dispatch, getState);
 
-    const rowString = tableRowToString(traceChannel, newRow).value;
+    const rowString = tableRowToString(traceChannel, newRow);
     await updateParamDeep(state.root.id, parameterID, rowString)(dispatch, getState);
     dispatch(setCurrentTrace(undefined, true, true));
   };
@@ -48,7 +47,7 @@ export function saveTrace(saveNodes?: boolean): Thunk {
     await reloadChannel(traceChannel.name)(dispatch, getState);
     if (saveNodes) await saveTraceNodes()(dispatch, getState);
 
-    const rowString = tableRowToString(traceChannel, row).value;
+    const rowString = tableRowToString(traceChannel, row);
     await updateParamDeep(state.root.id, parameterID, rowString)(dispatch, getState);
     dispatch(setCurrentTrace(undefined, false, false));
   };
@@ -111,44 +110,3 @@ export function deleteTrace(): Thunk {
 //   }
 //   return res.ok;
 // }
-
-/* --- --- */
-
-/** По данным обновления параметров обновляет активные объекты. */
-export function updateObjects(updates: UpdateParamData[]): Thunk {
-  return async (dispatch: Dispatch, getState: StateGetter) => {
-    const { channels, objects } = getState();
-    const { place, well, trace } = objects;
-
-    const placeParameterID = place.parameterID;
-    const wellParameterID = well.parameterID;
-    const traceParameterID = trace.parameterID;
-
-    const placeChannel = channels[place.channelName];
-    const wellChannel = channels[well.channelName];
-    const traceChannel = channels[trace.channelName];
-    const nodeChannel = channels[trace.nodeChannelName];
-
-    const changeFlags = {place: false, well: false, trace: false};
-    for (const { id, value } of updates) {
-      if (id === placeParameterID) {
-        place.model = value ? createPlaceModel(value, placeChannel.info.columns) : null;
-        changeFlags.place = true;
-      } else if (id === wellParameterID) {
-        well.model = value ? createWellModel(value, wellChannel.info.columns) : null;
-        changeFlags.well = true;
-      } else if (id === traceParameterID) {
-        trace.model = value ? createTraceModel(value, traceChannel, nodeChannel, wellChannel) : null;
-        changeFlags.trace = true;
-      }
-    }
-
-    if (changeFlags.place || changeFlags.well || changeFlags.trace) {
-      const newObjects: ObjectsState = {place, well, trace};
-      if (changeFlags.place) newObjects.place = {...place};
-      if (changeFlags.well) newObjects.well = {...well};
-      if (changeFlags.trace) newObjects.trace = {...trace};
-      dispatch(setObjects(newObjects));
-    }
-  };
-}

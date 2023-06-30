@@ -1,70 +1,47 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { setCurrentTrace } from '../../index';
-import { wellStateSelector } from '../../index';
-import { channelSelector } from '../../../channels';
-import { filterBy, FilterDescriptor } from '@progress/kendo-data-query';
+import { setCurrentTrace } from '../../store/objects.actions';
 
-import './traces-edit-tab.scss';
 import { Button } from '@progress/kendo-react-buttons';
-import { ComboBox } from '@progress/kendo-react-dropdowns';
-import { ComboBoxFilterChangeEvent, ComboBoxChangeEvent } from '@progress/kendo-react-dropdowns';
+import { ComboBox, ComboBoxChangeEvent } from '@progress/kendo-react-dropdowns';
+import { mapStateSelector } from '../../../../features/map/store/maps.selectors';
 
 
 interface TraceAddPointProps {
+  formID: FormID,
   model: TraceModel,
 }
 
 
-// TODO: переделать
-export const TraceAddPoint = ({model} : TraceAddPointProps) => {
+export const TraceAddPoint = ({formID, model}: TraceAddPointProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const items = model.nodes.map(node => node.id);
 
-  const wellState = useSelector(wellStateSelector)
-  const wellChannel: Channel = useSelector(channelSelector.bind(wellState.channelName));
+  const mapState: MapState = useSelector(mapStateSelector.bind(formID));
+  const allPoints = mapState?.mapData?.points;
+  const [addedPoint, setAddedPoint] = useState<MapPoint>(null);
 
-  // получение значения точек для добавления в трассу из канала "Скважины"
-  const points: any[] = wellChannel ? wellChannel.data.rows.map(row => ({
-    UWID: row.Cells[1],
-    name: row.Cells[2] || row.Cells[3] || row.Cells[1],
-  })) : [];
+  const traceNodeIDs = useMemo(() => {
+    return new Set(model.nodes.map(node => node.id));
+  }, [model.nodes]);
 
-  // получение скважин, которых ещё нет в данной трассе
-  const pointsToAddData = items ? points.filter(p => items.every(i => i !== p.UWID)) : points;
+  const data = useMemo(() => {
+    return allPoints?.filter(p => !traceNodeIDs.has(parseInt(p.UWID))) ?? [];
+  }, [allPoints, traceNodeIDs]);
 
-  // скважина, выбранная для добавления
-  const [selectedPointToAdd, setSelectedPointToAdd] = useState<any>(null);
-
-  const [pointsToAdd, setPointsToAdd] = useState<any>(pointsToAddData);
-
-  // выбор точки для добавления в ComboBox компоненте
-  const handleComboBoxChange = (event: ComboBoxChangeEvent) => {
-    setSelectedPointToAdd(event.target.value);
+  const onChange = (event: ComboBoxChangeEvent) => {
+    setAddedPoint(event.target.value);
   };
 
-  // добавление точки в трассу
-  const addPoint = (pointUWID: number) => {
-    if (pointUWID === null) return;
-
-    const newItems = items ? [...items] : [];
-    newItems.push(pointUWID);
-
-    setSelectedPointToAdd(null);
-    dispatch(setCurrentTrace({...model, nodes: newItems as any}));
-  }
-
-  // фильтрация при выборе точки для добавления в трассу
-  const filterData = (filter: FilterDescriptor) => {
-    const data = pointsToAddData.slice();
-    return filterBy(data, filter);
-  };
-
-  // изменение фильтра (введенного текста) в ComboBox
-  const filterChange = (event: ComboBoxFilterChangeEvent) => {
-    setPointsToAdd(filterData(event.filter));
+  const addPoint = () => {
+    const node: TraceNode = {
+      id: parseInt(addedPoint.UWID), name: addedPoint.name,
+      x: addedPoint.x, y: addedPoint.y,
+    };
+    model.nodes = [...model.nodes, node];
+    setAddedPoint(null);
+    dispatch(setCurrentTrace({...model}));
   };
 
   return (
@@ -73,20 +50,10 @@ export const TraceAddPoint = ({model} : TraceAddPointProps) => {
         {t('trace.add-point-title')}
       </div>
       <ComboBox
-        style={{fontSize: '12px'}}
-        data={pointsToAdd}
-        dataItemKey='UWID'
-        value={selectedPointToAdd}
-        textField='name'
-        onChange={handleComboBoxChange}
-        filterable={true}
-        onFilterChange={filterChange}
+        style={{fontSize: '12px'}} dataItemKey={'UWID'} textField={'name'}
+        data={data} value={addedPoint} onChange={onChange}
       />
-      <Button
-        style={{fontSize: '12px'}}
-        disabled={!selectedPointToAdd}
-        onClick={()=> addPoint(selectedPointToAdd.UWID)}
-      >
+      <Button style={{fontSize: '12px'}} onClick={addPoint} disabled={!addedPoint}>
         {t('trace.add-point-button')}
       </Button>
     </div>

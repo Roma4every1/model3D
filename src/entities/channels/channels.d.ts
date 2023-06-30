@@ -65,7 +65,9 @@ interface ChannelColumn {
  * + `currentRowObjectName`: {@link ParameterID}
  * + `clients`: {@link Set} of {@link FormID}
  * + `lookupChannels`: {@link ChannelName}[]
+ * + `columns`: {@link ChannelColumnInfo}
  * + `lookupColumns`: {@link LookupColumns}
+ * + `columnApplied: boolean`
  * */
 interface ChannelInfo {
   /** Название для отображения на интерфейсе. */
@@ -84,6 +86,8 @@ interface ChannelInfo {
   columns?: ChannelColumnInfo,
   /** Названия колонок, необходимых для справочников. */
   lookupColumns?: LookupColumns,
+  /** Были ли полученны данные о колонках канала. */
+  columnApplied?: boolean,
 }
 
 /** Дополнительные свойства колонки. */

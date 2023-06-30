@@ -4,7 +4,7 @@ const addParam = (column: ChannelColumn, rowValue: any, propName: string) => {
     : propName + '##System.DBNull';
 };
 
-export function tableRowToString(channel: Channel, row: ChannelRow) {
+export function tableRowToString(channel: Channel, row: ChannelRow): string {
   if (!row) return null;
 
   const addParamRow = (properties, column, row, index) => {
@@ -20,19 +20,10 @@ export function tableRowToString(channel: Channel, row: ChannelRow) {
     return result;
   }
 
-  const columns = channel.data.columns;
-  const editorColumns = channel.info.lookupColumns;
-
-  const valueString = [];
-  columns.forEach((column, index) => {
-    valueString.push(addParamRow(channel.info.properties, column, row, index));
+  const valueString = channel.data.columns.map((column, i) => {
+    return addParamRow(channel.info.properties, column, row, i);
   });
-
-  return {
-    id: row.Cells[editorColumns.id.index],
-    name: row.Cells[editorColumns.value.index] ?? '',
-    value: valueString.join(''),
-  };
+  return valueString.join('');
 }
 
 export function stringToTableCell(rowString: string, columnName: string): string {

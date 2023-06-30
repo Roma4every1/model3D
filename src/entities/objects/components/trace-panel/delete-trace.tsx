@@ -13,7 +13,7 @@ interface DeleteTraceProps {
   trace: TraceState,
 }
 interface DeleteTraceWindowProps {
-  trace: TraceState,
+  model: TraceModel,
 }
 
 
@@ -21,45 +21,42 @@ export const DeleteTrace = ({trace}: DeleteTraceProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const showDeleteTraceWindow = () => {
-    const window = <DeleteTraceWindow key={'traceDeleteWindow'} trace={trace}/>;
-    dispatch(setOpenedWindow('traceDeleteWindow', true, window));
+  const openDialog = () => {
+    const window = <DeleteTraceDialog key={'trace-delete-window'} model={trace.model}/>;
+    dispatch(setOpenedWindow('trace-delete-window', true, window));
   };
 
   return (
     <BigButton
       text={t('trace.delete')} icon={deleteTraceIcon}
-      action={showDeleteTraceWindow} disabled={!trace.model || trace.editing || trace.creating}
+      action={openDialog} disabled={!trace.model || trace.editing || trace.creating}
     />
   );
 };
 
-export const DeleteTraceWindow = ({trace}: DeleteTraceWindowProps) => {
+const DeleteTraceDialog = ({model}: DeleteTraceWindowProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const closeDeleteWindow = () => {
-    dispatch(setOpenedWindow('traceDeleteWindow', false, null));
+  const onClose = () => {
+    dispatch(setOpenedWindow('trace-delete-window', false, null));
   };
 
-  const handleDelete = () => {
+  const onApply = () => {
     dispatch(deleteTrace());
-    closeDeleteWindow();
+    onClose();
   };
 
   return (
-    <Dialog key={'traceDeleteWindow'} title={t('trace.delete-dialog')} onClose={closeDeleteWindow}>
-      <div>{t('trace.areYouSureToDeleteTrace')}</div>
-      <ul style={{paddingLeft: '16px'}}>
-        <li style={{fontWeight: 'bold'}}>{trace.model.name}</li>
+    <Dialog title={t('trace.delete-dialog')} onClose={onClose}>
+      <div>{t('trace.delete-dialog-label')}</div>
+      <ul style={{margin: 0, padding: '0.5em 1.5em'}}>
+        <li>Название: <b>{model.name}</b></li>
+        <li>Узлов: <b>{model.nodes.length}</b></li>
       </ul>
       <DialogActionsBar>
-        <div className={'windowButtonContainer'}>
-          <Button className={'windowButton'} onClick={handleDelete}>{t('base.yes')}</Button>
-        </div>
-        <div className={'windowButtonContainer'}>
-          <Button className={'windowButton'} onClick={closeDeleteWindow}>{t('base.no')}</Button>
-        </div>
+        <Button className={'windowButton'} onClick={onApply}>{t('base.yes')}</Button>
+        <Button className={'windowButton'} onClick={onClose}>{t('base.no')}</Button>
       </DialogActionsBar>
     </Dialog>
   );

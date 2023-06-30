@@ -4,22 +4,21 @@ import { getBoundsByPoints } from '../../../lib/map-utils';
 
 
 /** Линия со стандартными свойствами. */
-const getDefaultPolyline = (point: Point): MapPolyline => {
-  const path = [point.x, point.y];
+function getDefaultPolyline(point: Point): MapPolyline {
+  const path: [number, number] = [point.x, point.y];
   return {
     type: 'polyline',
-    attrTable: {},
     arcs: [{closed: false, path}],
     bounds: getBoundsByPoints([path]),
     borderstyle: 0,
     fillbkcolor: '#FFFFFF', fillcolor: '#000000',
     bordercolor: '#000000', borderwidth: 0.25,
-    transparent: true,
+    attrTable: {}, transparent: true,
   };
 }
 
 /** Подпись со стандартными свойствами. */
-export const getDefaultLabel = (point: Point, text: string): MapLabel => {
+export function getDefaultLabel(point: Point, text: string): MapLabel {
   return {
     type: 'label', text, color: '#000000',
     fontname: 'Arial', fontsize: 12,
@@ -30,16 +29,17 @@ export const getDefaultLabel = (point: Point, text: string): MapLabel => {
   };
 }
 
-export const getDefaultSign = (point: Point, img: HTMLImageElement, proto: SignImageProto): MapSign => {
+/** Точечный объект со стандартными свойствами. */
+export function getDefaultSign(point: Point, img: HTMLImageElement, proto: SignImageProto): MapSign {
   return {
     type: 'sign',
     color: proto.color, fontname: proto.fontName,
     symbolcode: proto.symbolCode, img,
-    size: 1.29999995231628, x: point.x, y: point.y,
+    size: 1.3, x: point.x, y: point.y,
   };
 }
 
-export const polylineByLegends = (point: Point, legends: any, layerName: string): MapPolyline => {
+export function polylineByLegends(point: Point, legends: any, layerName: string): MapPolyline {
   const polyline = getDefaultPolyline(point);
   const sublayerSettings = legends?.sublayers?.find(sub => sub.name === layerName);
   if (!sublayerSettings) return polyline;
@@ -95,7 +95,7 @@ export const polylineByLegends = (point: Point, legends: any, layerName: string)
 }
 
 /** Находит новый угол поворота элемента. */
-export const getAngle = (centerPoint: Point, currentPoint: Point): number => {
+export function getAngle(centerPoint: Point, currentPoint: Point): number {
   currentPoint.x -= centerPoint.x; currentPoint.y -= centerPoint.y;
   currentPoint.x /= distance(0, 0, currentPoint.x, currentPoint.y);
   return Math.sign(-currentPoint.y) * Math.acos(currentPoint.x) * 180 / Math.PI;
@@ -105,16 +105,16 @@ export const getAngle = (centerPoint: Point, currentPoint: Point): number => {
 
 type SelectedType = 'polyline' | 'label' | 'sign' | undefined;
 
-const getHeaderEditing = (selectedType: SelectedType, t: TFunction): string => {
+export function getHeaderText(isCreating: boolean, type: SelectedType, layerName: string, t: TFunction): string {
+  return isCreating ? getHeaderCreating(layerName) : getHeaderEditing(type, t);
+}
+
+function getHeaderEditing(selectedType: SelectedType, t: TFunction): string {
   const selectedTypeLabel = selectedType ? ` (тип: ${t('map.' + selectedType)})` : '';
   return `Редактирование${selectedTypeLabel}`;
 }
-const getHeaderCreating = (layerName: string | undefined): string => {
+function getHeaderCreating(layerName: string | undefined): string {
   return layerName
     ? `Создание элемента (подслой: ${layerName})`
     : 'Создание элемента';
-}
-
-export const getHeaderText = (isCreating: boolean, type: SelectedType, layerName: string, t: TFunction): string => {
-  return isCreating ? getHeaderCreating(layerName) : getHeaderEditing(type, t);
 }

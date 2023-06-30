@@ -9,7 +9,7 @@ import { TraceAddPoint } from './trace-add-point';
 
 
 /** Правая панель редактирования трассы. */
-export const TracesEditTab = () => {
+export const TracesEditTab = ({formID}: PropsFormID) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
@@ -33,7 +33,7 @@ export const TracesEditTab = () => {
       <div className='trace-edit-tab__body'>
         <TraceChangeName model={model}/>
         <TracePointsList model={model}/>
-        <TraceAddPoint model={model}/>
+        <TraceAddPoint formID={formID} model={model}/>
       </div>
     </section>
   );

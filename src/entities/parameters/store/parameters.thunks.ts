@@ -21,8 +21,8 @@ export const updateParamDeep = (clientID: FormID, id: ParameterID, newValue: any
     if (!parameter) return;
     const { relatedChannels, relatedReports } = parameter;
     dispatch(updateParam(clientID, id, newValue));
-    updateObjects([{clientID, id, value: newValue}])(dispatch, getState).then();
     if (relatedChannels.length) await reloadChannels(relatedChannels)(dispatch, getState);
+    updateObjects([{clientID, id, value: newValue}], dispatch, getState());
 
     const { parameters, channels } = getState();
     const entries: UpdateParamData[] = [];
@@ -48,7 +48,7 @@ export const updateParamDeep = (clientID: FormID, id: ParameterID, newValue: any
       }
       if (channel) {
         const rows = channel?.data?.rows;
-        if (rows?.length) updateData.value = tableRowToString(channel, rows[0])?.value ?? null;
+        if (rows?.length) updateData.value = tableRowToString(channel, rows[0]) ?? null;
       }
 
       entries.push(updateData);
@@ -58,7 +58,7 @@ export const updateParamDeep = (clientID: FormID, id: ParameterID, newValue: any
 
     if (entries.length) {
       dispatch(updateParams(entries));
-      updateObjects(entries)(dispatch, getState).then();
+      updateObjects(entries, dispatch, getState());
     }
     if (channelsToUpdate.size) {
       reloadChannels([...channelsToUpdate])(dispatch, getState).then();

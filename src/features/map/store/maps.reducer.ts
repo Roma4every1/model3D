@@ -181,14 +181,18 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
     }
 
     case MapsActions.SET_SYNC: {
-      state.multi[action.formID] = {...state.multi[action.formID], sync: action.payload};
-      const children = state.multi[action.formID].children;
-      if (action.payload === false) {
-        children.forEach((formID: FormID) => { state.single[formID]?.scroller?.setList([]); });
+      const { formID: parentID, payload: sync } = action;
+      state.multi[parentID] = {...state.multi[parentID], sync};
+      const children = state.multi[parentID].children;
+
+      if (sync === false) {
+        children.forEach((childID: FormID) => {
+          state.single[childID]?.scroller?.setList([]);
+        });
       } else {
-        children.forEach((formID: FormID) => {
-          const canvases = getMultiMapChildrenCanvases(state.multi, state.single, formID);
-          state.single[formID]?.scroller?.setList(canvases);
+        children.forEach((childID: FormID) => {
+          const canvases = getMultiMapChildrenCanvases(state.multi, state.single, childID, parentID);
+          state.single[childID]?.scroller?.setList(canvases);
         });
       }
       return {...state};
@@ -315,7 +319,7 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
         : newMapState.canvas.blocked = false;
 
       if (element.type === 'polyline') {
-        element.bounds = getBoundsByPoints(chunk(element.arcs[0].path, 2));
+        element.bounds = getBoundsByPoints(chunk(element.arcs[0].path, 2) as [number, number][]);
       }
       const modifiedLayer = newMapState.mapData.layers?.find(l => l.elements?.includes(element));
       if (modifiedLayer) {
@@ -324,7 +328,7 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
       }
 
       if (element.type === 'polyline') {
-        element.bounds = getBoundsByPoints(chunk(element.arcs[0].path, 2));
+        element.bounds = getBoundsByPoints(chunk(element.arcs[0].path, 2) as [number, number][]);
         newMapState.isModified = !(element as MapPolyline)?.isTrace;
       }
 

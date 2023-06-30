@@ -20,11 +20,8 @@ export function createTraceModel(
   rowString: ParamValueTableRow,
   traceChannel: Channel, nodeChannel: Channel, wellChannel: Channel,
 ): TraceModel {
-  console.log(rowString);
-  console.log(traceChannel.data.rows);
   const traceInfo = traceChannel.info.columns;
   const traceID = parseInt(stringToTableCell(rowString, traceInfo.id.name));
-  const ids = stringToTableCell(rowString, traceInfo.nodes.name).split(',');
 
   const nodes: TraceNode[] = [];
   const nodeRows = nodeChannel.data?.rows;
@@ -43,7 +40,7 @@ export function createTraceModel(
 
     for (const { Cells: cells } of nodeRows) {
       const idCell = cells[idIndex];
-      if (cells[traceIDIndex] !== traceID || !ids.includes(idCell)) continue;
+      if (cells[traceIDIndex] !== traceID) continue;
       const nodeID = parseInt(idCell);
 
       const wellRow = wellRows.find(row => row.Cells[wellIDIndex] === nodeID);

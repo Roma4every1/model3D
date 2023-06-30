@@ -1,3 +1,4 @@
+import { chunk } from 'lodash';
 import { getBoundsByPoints, PIXEL_PER_METER } from './map-utils';
 import { checkDistance, getNearestElements } from '../components/edit-panel/selecting/selecting-utils';
 
@@ -19,17 +20,17 @@ export const traceLayerProto : MapLayer = {
 }
 
 /** Возвращает прототип объекта элемента трассы для карты с указанной в параметрах дугой. */
-export const getTraceMapElementProto = (traceArc: PolylineArc): MapPolyline => ({
-  type: 'polyline',
-  attrTable: {},
-  arcs: [traceArc],
-  bounds: getBoundsByPoints([traceArc.path]),
-  borderstyle: 0,
-  fillbkcolor: '#0000ff', fillcolor: '#0000ff',
-  bordercolor: '#0000ff', borderwidth: 1.25,
-  transparent: true,
-  isTrace: true
-});
+export function getTraceMapElementProto(traceArc: PolylineArc): MapPolyline {
+  return {
+    type: 'polyline',
+    arcs: [traceArc],
+    bounds: getBoundsByPoints(chunk(traceArc.path, 2) as [number, number][]),
+    borderstyle: 0,
+    fillbkcolor: '#0000ff', fillcolor: '#0000ff',
+    bordercolor: '#0000ff', borderwidth: 1.25,
+    attrTable: {}, transparent: true, isTrace: true
+  };
+}
 
 /** Возвращает элемент карты polyline для отрисовки трассы */
 export function getCurrentTraceMapElement(points: MapPoint[], model: TraceModel) {
@@ -65,7 +66,7 @@ export function findMapPoint(point: Point, mapPoints: MapPoint[]): MapPoint | nu
 }
 
 /** Определяет вьюпорт карты, чтобы трасса целиком влазила в экран. */
-export function getFullTraceViewport(element: MapPolyline, canvas: HTMLCanvasElement) {
+export function getFullTraceViewport(element: MapPolyline, canvas: HTMLCanvasElement): MapViewport {
   if (!canvas?.width || !canvas?.height || !element) return null;
   if (element) {
     const { bounds: { min, max } } = element;
