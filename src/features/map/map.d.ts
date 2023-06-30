@@ -60,7 +60,7 @@ type MapCanvas = HTMLCanvasElement & {selectingMode: boolean, blocked: boolean, 
 
 interface MapUtils {
   updateCanvas(cs?: {centerX: number, centerY: number, scale: MapScale}, context?: any): void,
-  pointToMap(point: ClientPoint): ClientPoint,
+  pointToMap(point: Point): Point,
 }
 
 /** ## Состояние выделения карты.
@@ -72,7 +72,7 @@ interface MapUtils {
 interface MapSelectingState {
   nearestElements: any[],
   activeIndex: number,
-  lastPoint: ClientPoint,
+  lastPoint: Point,
 }
 
 /* --- Загрузка карты --- */
@@ -177,16 +177,16 @@ type LayerHighScale = number | 'INF';
 type LayerLowScale = number | 'INF';
 
 /** Границы объекта (слоя, элемента) карты.
- * + `max`: {@link ClientPoint}
- * + `min`: {@link ClientPoint}
+ * + `max`: {@link Point}
+ * + `min`: {@link Point}
  * + `top?: number` — верхняя граница
  * + `bottom?: number` — нижняя граница
  * + `left?: number` — левая граница
  * + `right?: number` — правая граница
  * */
 interface Bounds {
-  max: ClientPoint,
-  min: ClientPoint,
+  max: Point,
+  min: Point,
   top?: number,
   bottom?: number,
   left?: number,

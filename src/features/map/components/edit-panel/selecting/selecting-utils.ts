@@ -64,7 +64,7 @@ export const getNearestElements = (layers: MapLayer[], activeLayer: MapLayer, sc
 };
 
 /** Проверяет, достаточно ли далеко находится старая точка от новой. */
-export const checkDistancePoints = (oldPoint: ClientPoint | null, newPoint: ClientPoint, scale: MapScale): boolean => {
+export const checkDistancePoints = (oldPoint: Point | null, newPoint: Point, scale: MapScale): boolean => {
   if (!oldPoint) return false;
   const dx = oldPoint.x - newPoint.x;
   const dy = oldPoint.y - newPoint.y;
@@ -73,7 +73,7 @@ export const checkDistancePoints = (oldPoint: ClientPoint | null, newPoint: Clie
 };
 
 /** Проверяет, достаточно ли далеко находится точка от подписи. */
-const checkDistanceForLabel = (label: MapLabel, point: ClientPoint, scale: MapScale, getTextWidth: GetTextWidth): boolean => {
+const checkDistanceForLabel = (label: MapLabel, point: Point, scale: MapScale, getTextWidth: GetTextWidth): boolean => {
   const fontsize = (label.fontsize + (label.selected ? 2 : 0)) * (1 / 72 * 0.0254) * scale;
   const width = getTextWidth(label.text) * scale / PIXEL_PER_METER;
 
@@ -87,7 +87,7 @@ const checkDistanceForLabel = (label: MapLabel, point: ClientPoint, scale: MapSc
 };
 
 /** Проверяет, достаточно ли далеко сегмент находится от точки. */
-const checkDistanceForSegment = (segment, point: ClientPoint, scale: MapScale): boolean => {
+const checkDistanceForSegment = (segment, point: Point, scale: MapScale): boolean => {
   const minDistance = SELECTION_RADIUS * scale;
 
   const aSquared = Math.pow(segment[0][0] - point.x, 2) + Math.pow(segment[0][1] - point.y, 2);
@@ -105,7 +105,7 @@ const checkDistanceForSegment = (segment, point: ClientPoint, scale: MapScale): 
 };
 
 /** Проверяет, достаточно ли далеко ломанная находится от точки. */
-const checkDistanceForPolyline = (polyline: MapPolyline, point: ClientPoint, scale: MapScale): boolean => {
+const checkDistanceForPolyline = (polyline: MapPolyline, point: Point, scale: MapScale): boolean => {
   let points = chunk(polyline.arcs[0].path, 2);
   if (polyline.arcs[0].closed) {
     points = [...points, points[0]];
@@ -119,7 +119,7 @@ const checkDistanceForPolyline = (polyline: MapPolyline, point: ClientPoint, sca
 };
 
 /** Проверяет, достаточно ли далеко многоугольник находится от точки. */
-const checkDistanceForPolygon = (polygon: MapPolyline, point: ClientPoint, scale: MapScale): boolean => {
+const checkDistanceForPolygon = (polygon: MapPolyline, point: Point, scale: MapScale): boolean => {
   const ps = chunk<number>(polygon.arcs[0].path, 2);
   ps.pop();
 
@@ -144,7 +144,7 @@ const checkDistanceForPolygon = (polygon: MapPolyline, point: ClientPoint, scale
 }
 
 /** Проверяет, достаточно ли далеко произвольный элемент карты находится от точки. */
-export const checkDistance = (element: MapElement, point: ClientPoint, scale: MapScale, getTextWidth: GetTextWidth): boolean => {
+export const checkDistance = (element: MapElement, point: Point, scale: MapScale, getTextWidth: GetTextWidth): boolean => {
   switch (element.type) {
     case 'polyline': {
       return isPolygon(element) ? checkDistanceForPolygon(element, point, scale) : checkDistanceForPolyline(element, point, scale);

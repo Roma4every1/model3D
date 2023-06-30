@@ -2,26 +2,22 @@ import { BaseAPI, API } from 'shared/lib';
 import { converter } from './maps-api.utils';
 import { handleLayerScales, checkLayerIndex, loadLayerElements } from './maps-api.utils';
 
-import symbolDef from '../../../assets/map-libs/symbol.def';
-import dro32Lib from '../../../assets/map-libs/dro32.smb';
-import gridsLib from '../../../assets/map-libs/grids.smb';
-import litLib from '../../../assets/map-libs/lit.smb';
-import regionalLib from '../../../assets/map-libs/regional.smb';
+import symbolDef from 'assets/map-libs/symbol.def';
+import dro32Lib from 'assets/map-libs/dro32.smb';
+import gridsLib from 'assets/map-libs/grids.smb';
+import litLib from 'assets/map-libs/lit.smb';
+import regionalLib from 'assets/map-libs/regional.smb';
 
 
 export class MapsAPI {
-  private static libsDict = {
+  private static readonly libsDict = {
     'dro32_': dro32Lib,
     'grids': gridsLib,
     'lit': litLib,
     'regional': regionalLib
   };
 
-  constructor(private readonly requester: BaseAPI) {}
-
-  private async request<Expected>(req: WRequest) {
-    return this.requester.request<Expected>(req);
-  }
+  constructor(private readonly baseAPI: BaseAPI) {}
 
   /** Загрузка файла с описаниями построения точечных элементов. */
   public async getSymbolsLib(): Promise<Uint8Array> {
@@ -40,29 +36,30 @@ export class MapsAPI {
   }
 
   /** Загрузка легенды карты. */
-  public async getMapLegend(): Promise<Res<any>> {
-    const query = {sessionId: this.requester.sessionID};
-    return await this.request<any>({path: 'mapLegends', query});
+  public async getMapLegend() {
+    const query = {sessionId: this.baseAPI.sessionID};
+    return await this.baseAPI.request<any>({path: 'mapLegends', query});
   }
 
   /** Запрос на сохранение карты. */
   public async saveMap(formID: FormID, mapID: MapID, mapData: any, owner: MapOwner) {
-    const sessionId = this.requester.sessionID;
+    const sessionId = this.baseAPI.sessionID;
     const data = {sessionId, formId: formID, mapId: mapID, mapData, owner};
     const body = converter.encode(JSON.stringify(data));
-    return await this.request<any>({method: 'POST', path: 'saveMap', body});
+    return await this.baseAPI.request<any>({method: 'POST', path: 'saveMap', body});
   }
 
   /** Загрузка общих данных карты. */
-  public async getMap(mapID: MapID, formID: FormID): Promise<Res<MapDataRaw>> {
-    const query = {sessionId: this.requester.sessionID, mapId: mapID, formId: formID};
-    return await this.request<MapDataRaw>({path: 'getMap', query});
+  public async getMap(mapID: MapID, formID: FormID) {
+    const query = {sessionId: this.baseAPI.sessionID, mapId: mapID, formId: formID};
+    return await this.baseAPI.request<MapDataRaw>({path: 'getMap', query});
   }
 
   /** Загрузка контейнера карты. */
-  public async getMapContainer(containerName: string, owner: MapOwner, index?: string): Promise<ParsedContainer | string> {
-    const query = {sessionId: this.requester.sessionID, owner, containerName, index};
-    const response = await this.request<ArrayBuffer>({path: 'getContainer', query, mapper: 'buffer'});
+  public async getMapContainer(containerName: string, owner: MapOwner, index?: string) {
+    const query = {sessionId: this.baseAPI.sessionID, owner, containerName, index};
+    const req: WRequest = {path: 'getContainer', query, mapper: 'buffer'};
+    const response = await this.baseAPI.request<ArrayBuffer>(req);
     if (response.ok === false) return response.data;
     return converter.parse(response.data);
   }

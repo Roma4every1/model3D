@@ -29,7 +29,7 @@ export const CreateElement = ({mapState, formID, creatingType, showPropertiesWin
     });
   }, [mapState.drawer]);
 
-  const createElement = useCallback((type: MapElementType, point: ClientPoint) => {
+  const createElement = useCallback((type: MapElementType, point: Point) => {
     let defaultElement;
     if (type === 'sign') defaultElement = getDefaultSign(point, defaultSignImage, signProto);
     if (type === 'label') defaultElement = getDefaultLabel(point, 'текст');

@@ -5,13 +5,13 @@ import { getNearestPointIndex, getNearestSegment, PIXEL_PER_METER } from '../../
 
 export interface MouseDownEditAction {
   mode: MapModes,
-  point: ClientPoint,
+  point: Point,
   pIndex?: number,
   scale?: MapScale,
 }
 export interface MouseMoveEditAction {
   mode: MapModes,
-  point: ClientPoint,
+  point: Point,
   pIndex?: number,
 }
 
@@ -52,7 +52,7 @@ const applyMouseMoveActionToLabel = (element: MapLabel, action: MouseMoveEditAct
     element.x = action.point.x;
     element.y = action.point.y;
   } else if (action.mode === MapModes.ROTATE) {
-    const centerPoint: ClientPoint = {
+    const centerPoint: Point = {
       x: element.x + (element.xoffset || 0) * 0.001 * PIXEL_PER_METER,
       y: element.y - (element.yoffset || 0) * 0.001 * PIXEL_PER_METER
     };

@@ -26,7 +26,7 @@ export const getMultiMapChildrenCanvases = (multi: FormDict<MultiMapState>, sing
 }
 
 /** Возвращает точку с координатами клика мыши. */
-export const clientPoint = (event: MouseEvent): ClientPoint => {
+export const clientPoint = (event: MouseEvent): Point => {
   return {x: event.offsetX, y: event.offsetY};
 };
 
@@ -36,7 +36,7 @@ export const getPointToMap = (canvas: HTMLCanvasElement, cx: number, cy: number,
   const canvasCX = canvas.clientWidth / 2;
   const canvasCY = canvas.clientHeight / 2;
 
-  return (point: ClientPoint): ClientPoint => ({
+  return (point: Point): Point => ({
     x: cx + (point.x - canvasCX) * sc,
     y: cy + (point.y - canvasCY) * sc
   });
@@ -58,7 +58,7 @@ export const getBoundsByPoints = (points: any[]): Bounds => {
 
 const SELECTION_RADIUS = 0.015;
 
-export const getNearestPointIndex = (point: ClientPoint, scale: MapScale, polyline: MapPolyline): number => {
+export const getNearestPointIndex = (point: Point, scale: MapScale, polyline: MapPolyline): number => {
   let minRadius, nearestIndex: number | null = null;
   const points = chunk<number>(polyline.arcs[0].path, 2);
 
@@ -116,7 +116,7 @@ export const squaredDistanceBetweenPointAndSegment = (segment, point) => {
   return isNaN(distance) ? Infinity : distance;
 };
 
-/** Определяет состояние карты, чтобы она полностью влазила в экран. */
+/** Определяет вьюпорт карты, чтобы все элементы влазили в экран. */
 export const getFullViewport = (layers: MapLayer[], canvas: HTMLCanvasElement) => {
   const allVisibleBounds = layers.filter(l => l.visible).map(l => l.bounds);
 

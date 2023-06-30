@@ -22,7 +22,7 @@ export class CurveManager {
     return res.ok ? res.data.data : null;
   }
 
-  private static parseCurvePath(source: string): ClientPoint[] {
+  private static parseCurvePath(source: string): Point[] {
     const items = source.split('L');
     items[0] = items[0].substring(1);
     return items.map((item) => {

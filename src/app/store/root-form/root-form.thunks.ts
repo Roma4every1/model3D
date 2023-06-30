@@ -1,6 +1,5 @@
 import { Dispatch } from 'redux';
-import { Thunk } from 'shared/lib';
-import { formsAPI } from 'widgets/presentation/lib/forms.api';
+import { Thunk, StateGetter } from 'shared/lib';
 import { fillChannels } from 'entities/channels';
 import { createLeftLayout } from 'widgets/left-panel';
 import { createClientChannels } from 'widgets/presentation/lib/initialization';
@@ -9,14 +8,16 @@ import { setParamDict } from 'entities/parameters';
 import { tableRowToString } from 'entities/parameters/lib/table-row';
 import { setChannels } from 'entities/channels';
 import { fetchSessionStart, fetchSessionEnd, fetchSessionError } from 'entities/fetch-state';
+import { createObjects, setObjects } from 'entities/objects';
 import { setRootFormState } from './root-form.actions';
 import { setSessionID } from '../app-state/app.actions';
+import { formsAPI } from 'widgets/presentation/lib/forms.api';
 import { sessionManager } from '../index';
 
 
 /** Инициализация новой сессии. */
 export const startSession = (isDefault: boolean): Thunk => {
-  return async (dispatch: Dispatch) => {
+  return async (dispatch: Dispatch, getState: StateGetter) => {
     dispatch(fetchSessionStart());
 
     const resSessionID = await sessionManager.startSession(isDefault);
@@ -37,7 +38,11 @@ export const startSession = (isDefault: boolean): Thunk => {
     const channels = await createClientChannels(new Set(names), paramDict, []);
     applyChannelsDeps(channels, paramDict);
     await checkParamValues(channels, paramDict);
-    fillChannels(channels, paramDict).then();
+
+    fillChannels(channels, paramDict).then(() => {
+      const objects = createObjects(getState());
+      dispatch(setObjects(objects));
+    });
 
     dispatch(setParamDict(paramDict));
     dispatch(setChannels(channels));

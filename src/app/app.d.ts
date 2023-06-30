@@ -1,4 +1,4 @@
-/** Well Manager React State. */
+/** Well Manager State. */
 interface WState {
   /** Данные общего характера. */
   appState: AppState,
@@ -10,6 +10,8 @@ interface WState {
   forms: FormsState,
   /** Параметры форм. */
   parameters: ParamDict,
+  /** Активные объекты. */
+  objects: ObjectsState,
   /** Данные каналов. */
   channels: ChannelDict,
   /** Хранилище данных таблиц. */
@@ -24,8 +26,6 @@ interface WState {
   windowData: any,
   /** Состояние серверных запросов. */
   fetches: FetchesState,
-  /** Хранилище трасс. */
-  traces: TracesState,
 }
 
 /* --- --- --- */

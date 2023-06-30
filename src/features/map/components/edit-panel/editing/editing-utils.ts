@@ -4,7 +4,7 @@ import { getBoundsByPoints } from '../../../lib/map-utils';
 
 
 /** Линия со стандартными свойствами. */
-const getDefaultPolyline = (point: ClientPoint): MapPolyline => {
+const getDefaultPolyline = (point: Point): MapPolyline => {
   const path = [point.x, point.y];
   return {
     type: 'polyline',
@@ -19,7 +19,7 @@ const getDefaultPolyline = (point: ClientPoint): MapPolyline => {
 }
 
 /** Подпись со стандартными свойствами. */
-export const getDefaultLabel = (point: ClientPoint, text: string): MapLabel => {
+export const getDefaultLabel = (point: Point, text: string): MapLabel => {
   return {
     type: 'label', text, color: '#000000',
     fontname: 'Arial', fontsize: 12,
@@ -30,7 +30,7 @@ export const getDefaultLabel = (point: ClientPoint, text: string): MapLabel => {
   };
 }
 
-export const getDefaultSign = (point: ClientPoint, img: HTMLImageElement, proto: SignImageProto): MapSign => {
+export const getDefaultSign = (point: Point, img: HTMLImageElement, proto: SignImageProto): MapSign => {
   return {
     type: 'sign',
     color: proto.color, fontname: proto.fontName,
@@ -39,7 +39,7 @@ export const getDefaultSign = (point: ClientPoint, img: HTMLImageElement, proto:
   };
 }
 
-export const polylineByLegends = (point: ClientPoint, legends: any, layerName: string): MapPolyline => {
+export const polylineByLegends = (point: Point, legends: any, layerName: string): MapPolyline => {
   const polyline = getDefaultPolyline(point);
   const sublayerSettings = legends?.sublayers?.find(sub => sub.name === layerName);
   if (!sublayerSettings) return polyline;
@@ -95,7 +95,7 @@ export const polylineByLegends = (point: ClientPoint, legends: any, layerName: s
 }
 
 /** Находит новый угол поворота элемента. */
-export const getAngle = (centerPoint: ClientPoint, currentPoint: ClientPoint): number => {
+export const getAngle = (centerPoint: Point, currentPoint: Point): number => {
   currentPoint.x -= centerPoint.x; currentPoint.y -= centerPoint.y;
   currentPoint.x /= distance(0, 0, currentPoint.x, currentPoint.y);
   return Math.sign(-currentPoint.y) * Math.acos(currentPoint.x) * 180 / Math.PI;

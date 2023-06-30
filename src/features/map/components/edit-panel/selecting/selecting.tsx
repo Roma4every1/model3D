@@ -8,7 +8,7 @@ import { checkDistance, checkDistancePoints, getNearestElements } from './select
 import { selectElement, unselectElement } from './selecting-utils';
 import { setSelectedElement, clearMapSelect, setEditMode, cancelMapEditing } from '../../../store/maps.actions';
 import selectingIcon from 'assets/images/map/selecting-mode.png';
-import { traceStateSelector } from '../../../../../entities/traces/store/traces.selectors';
+import { traceStateSelector } from 'entities/objects';
 
 
 interface SelectingProps {
@@ -20,8 +20,7 @@ interface SelectingProps {
 
 export const Selecting = ({mapState, formID, t}: SelectingProps) => {
   const dispatch = useDispatch();
-
-  const tracesState = useSelector(traceStateSelector);
+  const trace = useSelector(traceStateSelector);
 
   const { canvas, utils, activeLayer, mapData } = mapState;
   const { element: selectedElement, selecting: selectState } = mapState;
@@ -151,7 +150,7 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
       <div className={'map-panel-main'}>
         <div>
           <button
-            disabled={!mapState?.isLoadSuccessfully || mapState?.isElementCreating || tracesState.isTraceEditing}
+            disabled={!mapState?.isLoadSuccessfully || mapState?.isElementCreating || trace.editing}
             className={'map-panel-button' + (isInSelectingMode ? ' active' : '')}
             onClick={toggleSelecting} title={t('map.selecting.button-hint')}
           >
