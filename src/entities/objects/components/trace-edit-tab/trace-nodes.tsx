@@ -1,19 +1,14 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { setCurrentTrace } from '../../index';
+import { setCurrentTrace } from '../../store/objects.actions';
 
 import './traces-edit-tab.scss';
 import { Button } from '@progress/kendo-react-buttons';
 import { TraceListItem } from './trace-list-item';
 
 
-interface TracePointsListProps {
-  model: TraceModel,
-}
-
-
-export const TracePointsList = ({model}: TracePointsListProps) => {
+export const TraceNodes = ({model}: {model: TraceModel}) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 

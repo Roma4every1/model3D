@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { MapModes } from '../../../lib/enums';
 import { clientPoint, listenerOptions } from '../../../lib/map-utils';
 import { polylineByLegends, getDefaultSign, getDefaultLabel } from './editing-utils';
-import { createMapElement, startMapEditing, acceptCreatingElement } from '../../../store/maps.actions';
+import { createMapElement, startMapEditing, acceptCreatingElement } from '../../../store/map.actions';
 
 const creatingElementTypes: MapElementType[] = ['polyline', 'sign', 'label'];
 const hasPropertiesWindow: MapElementType[] = ['polyline', 'label'];

@@ -1,4 +1,4 @@
-export { TracesEditTab } from './components/trace-edit-tab/traces-edit-tab';
+export { TraceEditor } from './components/trace-edit-tab/trace-editor';
 export { TracePanel } from './components/trace-panel/trace-panel';
 
 export { createObjects, createObjectModels } from './lib/initialization';

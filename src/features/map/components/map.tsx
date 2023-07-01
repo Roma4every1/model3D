@@ -7,8 +7,8 @@ import { updateParam, currentPlastCodeSelector} from 'entities/parameters';
 import { tableRowToString } from 'entities/parameters/lib/table-row';
 
 import { Scroller } from '../drawer/scroller';
-import { mapsStateSelector, mapStateSelector } from '../store/maps.selectors';
-import { fetchMapData } from '../store/maps.thunks';
+import { mapsStateSelector, mapStateSelector } from '../store/map.selectors';
+import { fetchMapData } from '../store/map.thunks';
 import { CircularProgressBar } from 'shared/ui';
 import { MapNotFound, MapLoadError } from '../../multi-map/multi-map-item';
 
@@ -16,7 +16,7 @@ import {
   setMapField, loadMapSuccess, loadMapError,
   addMapLayer, setActiveLayer, startCreatingElement,
   createMapElement, acceptMapEditing, clearMapSelect, setOnDrawEnd,
-} from '../store/maps.actions';
+} from '../store/map.actions';
 
 import {
   clientPoint, getPointToMap, getFullViewport, getMultiMapChildrenCanvases,

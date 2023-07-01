@@ -7,8 +7,8 @@ import { Export } from './export';
 import { Selecting } from './selecting/selecting';
 import { Editing } from './editing/editing';
 import { SaveMap } from './save-map';
-import { multiMapStateSelector, mapStateSelector } from '../../store/maps.selectors';
-import { setMapField } from '../../store/maps.actions';
+import { multiMapStateSelector, mapStateSelector } from '../../store/map.selectors';
+import { setMapField } from '../../store/map.actions';
 import { mapsAPI } from 'features/map/lib/maps.api';
 import './map-edit-panel.scss';
 

@@ -1,18 +1,18 @@
 /* --- Action Types --- */
 
 export enum ObjectActions {
-  SetObjects = 'objects/set',
-  SetTrace = 'objects/trace',
+  SET_OBJECTS = 'objects/set',
+  SET_TRACE = 'objects/trace',
 }
 
 /* --- Action Interfaces --- */
 
 interface ActionSetObjects {
-  type: ObjectActions.SetObjects,
+  type: ObjectActions.SET_OBJECTS,
   payload: ObjectsState,
 }
 interface ActionSetTrace {
-  type: ObjectActions.SetTrace,
+  type: ObjectActions.SET_TRACE,
   payload: {model?: TraceModel, editing?: boolean, creating?: boolean},
 }
 
@@ -29,7 +29,7 @@ const init: ObjectsState = {
 export function objectsReducer(state: ObjectsState = init, action: ObjectsAction): ObjectsState {
   switch (action.type) {
 
-    case ObjectActions.SetTrace: {
+    case ObjectActions.SET_TRACE: {
       const traceState = state.trace;
       let { model, editing, creating } = action.payload;
 
@@ -40,7 +40,7 @@ export function objectsReducer(state: ObjectsState = init, action: ObjectsAction
       return {...state, trace: {...state.trace, model, creating, editing}};
     }
 
-    case ObjectActions.SetObjects: {
+    case ObjectActions.SET_OBJECTS: {
       return action.payload;
     }
 

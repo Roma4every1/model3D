@@ -3,4 +3,4 @@ export { TableEditPanel } from './components/edit-panel/table-edit-panel';
 
 export type { TableFormSettings } from './lib/types';
 export { tableStateToFormSettings } from './lib/table-settings';
-export { createTableState } from './store/tables.actions';
+export { createTableState } from './store/table.actions';

@@ -1,12 +1,14 @@
-export const mapsStateSelector = (state: WState) => {
+/** Состояние карт. */
+export function mapsStateSelector(state: WState): MapsState {
   return state.maps;
-};
+}
 
+/** Состояние мультикарты. */
 export function multiMapStateSelector(this: FormID, state: WState): MultiMapState {
   return state.maps.multi[this];
 }
 
-/** Хранилище состояния карты. */
+/** Состояние карты. */
 export function mapStateSelector(this: FormID, state: WState): MapState {
   return state.maps.single[this];
 }

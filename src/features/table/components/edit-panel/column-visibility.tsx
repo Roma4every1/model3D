@@ -4,7 +4,7 @@ import { TreeView } from '@progress/kendo-react-treeview';
 import { TreeViewExpandChangeEvent, TreeViewCheckChangeEvent } from '@progress/kendo-react-treeview';
 import { BigButton } from 'shared/ui';
 import { EditPanelItemProps } from '../../lib/types';
-import { setTableColumnTree, setTableActiveCell } from '../../store/tables.actions';
+import { setTableColumnTree, setTableActiveCell } from '../../store/table.actions';
 import { toggleTreeItemVisibility, findGroupItems } from '../../lib/column-tree-actions';
 import columnVisibilityIcon from 'assets/images/dataset/columns-visibility.png';
 

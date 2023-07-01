@@ -5,7 +5,7 @@ import { ButtonIconStock } from 'shared/ui';
 import { SelectionNavigation } from './selection-navigation';
 import { EditButtons } from './edit-buttons';
 import { ReloadButton } from './reload-button';
-import { exportTableToExcel } from '../../store/tables.thunks';
+import { exportTableToExcel } from '../../store/table.thunks';
 import './table-toolbar.scss';
 
 

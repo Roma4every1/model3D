@@ -1,4 +1,4 @@
-import { TracesEditTab } from 'entities/objects';
+import { TraceEditor } from 'entities/objects';
 import { MapLayerTree } from 'features/map';
 
 
@@ -19,6 +19,6 @@ export const RightTab = ({panelID, presentation}: RightTabProps) => {
     : presentation.children.find(child => child.type === 'map').id;
 
   return panelID === 'right-trace'
-    ? <TracesEditTab formID={formID}/>
+    ? <TraceEditor formID={formID}/>
     : <MapLayerTree formID={formID}/>;
 };

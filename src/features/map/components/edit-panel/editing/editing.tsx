@@ -13,8 +13,8 @@ import { getHeaderText } from './editing-utils';
 import { applyMouseDownActionToPolyline, applyMouseMoveActionToElement, applyRotateToLabel } from './edit-element-utils';
 import { clientPoint, getNearestPointIndex, listenerOptions } from '../../../lib/map-utils';
 import { setOpenedWindow } from 'entities/windows';
-import { setEditMode, acceptMapEditing, cancelMapEditing, setMapField } from '../../../store/maps.actions';
-import { startCreatingElement, cancelCreatingElement } from '../../../store/maps.actions';
+import { setEditMode, acceptMapEditing, cancelMapEditing, setMapField } from '../../../store/map.actions';
+import { startCreatingElement, cancelCreatingElement } from '../../../store/map.actions';
 
 
 interface EditingProps {

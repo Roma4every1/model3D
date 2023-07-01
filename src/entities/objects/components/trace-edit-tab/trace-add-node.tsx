@@ -1,20 +1,20 @@
 import { useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { mapStateSelector } from 'features/map/store/map.selectors';
 import { setCurrentTrace } from '../../store/objects.actions';
 
 import { Button } from '@progress/kendo-react-buttons';
 import { ComboBox, ComboBoxChangeEvent } from '@progress/kendo-react-dropdowns';
-import { mapStateSelector } from '../../../../features/map/store/maps.selectors';
 
 
-interface TraceAddPointProps {
+interface TraceAddNodeProps {
   formID: FormID,
   model: TraceModel,
 }
 
 
-export const TraceAddPoint = ({formID, model}: TraceAddPointProps) => {
+export const TraceAddNode = ({formID, model}: TraceAddNodeProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 

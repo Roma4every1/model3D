@@ -4,12 +4,12 @@ import { traceStateSelector, setCurrentTrace } from '../../index';
 
 import './traces-edit-tab.scss';
 import { TraceChangeName } from './trace-change-name';
-import { TracePointsList } from './trace-points-list';
-import { TraceAddPoint } from './trace-add-point';
+import { TraceNodes } from './trace-nodes';
+import { TraceAddNode } from './trace-add-node';
 
 
 /** Правая панель редактирования трассы. */
-export const TracesEditTab = ({formID}: PropsFormID) => {
+export const TraceEditor = ({formID}: PropsFormID) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
@@ -32,8 +32,8 @@ export const TracesEditTab = ({formID}: PropsFormID) => {
       </div>
       <div className='trace-edit-tab__body'>
         <TraceChangeName model={model}/>
-        <TracePointsList model={model}/>
-        <TraceAddPoint formID={formID} model={model}/>
+        <TraceNodes model={model}/>
+        <TraceAddNode model={model} formID={formID}/>
       </div>
     </section>
   );

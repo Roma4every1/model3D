@@ -7,9 +7,9 @@ import { channelDictSelector } from 'entities/channels';
 import { TextInfo } from 'shared/ui';
 
 import './carat.scss';
-import { caratStateSelector } from '../store/carats.selectors';
-import { setCaratData } from '../store/carats.thunks';
-import { setCaratActiveCurve, setCaratActiveGroup, setCaratCanvas } from '../store/carats.actions';
+import { caratStateSelector } from '../store/carat.selectors';
+import { setCaratData } from '../store/carat.thunks';
+import { setCaratActiveCurve, setCaratActiveGroup, setCaratCanvas } from '../store/carat.actions';
 
 
 /** Каротажная диаграмма. */

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@progress/kendo-react-buttons';
 import { Window, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { callBackWithNotices, setOpenedWindow, setWindowNotification } from 'entities/windows';
-import { deleteTableRecords } from '../../store/tables.thunks';
+import { deleteTableRecords } from '../../store/table.thunks';
 
 
 interface DeleteRecordsDialogProps {

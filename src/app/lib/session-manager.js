@@ -9,7 +9,7 @@ import { clearForms } from '../../widgets/presentation/store/forms.actions';
 import { clearParams } from '../../entities/parameters';
 import { clearChannels } from '../../entities/channels';
 import { clearReports } from '../../entities/reports';
-import { clearTables } from '../../features/table/store/tables.actions';
+import { clearTables } from '../../features/table/store/table.actions';
 import { setWindowWarning, showNotice } from '../../entities/windows';
 
 

@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { BigButton, BigButtonToggle } from 'shared/ui';
 import { NumericTextBox } from '@progress/kendo-react-inputs';
-import { setOnDrawEnd, setMultiMapSync } from '../../store/maps.actions';
+import { setOnDrawEnd, setMultiMapSync } from '../../store/map.actions';
 import { getFullViewport, getPointToMap } from '../../lib/map-utils';
 
 import xIcon from 'assets/images/map/x.png';

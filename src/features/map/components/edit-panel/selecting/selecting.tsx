@@ -6,7 +6,7 @@ import { MapModes } from '../../../lib/enums';
 import { clientPoint, listenerOptions } from '../../../lib/map-utils';
 import { checkDistance, checkDistancePoints, getNearestElements } from './selecting-utils';
 import { selectElement, unselectElement } from './selecting-utils';
-import { setSelectedElement, clearMapSelect, setEditMode, cancelMapEditing } from '../../../store/maps.actions';
+import { setSelectedElement, clearMapSelect, setEditMode, cancelMapEditing } from '../../../store/map.actions';
 import selectingIcon from 'assets/images/map/selecting-mode.png';
 import { traceStateSelector } from 'entities/objects';
 

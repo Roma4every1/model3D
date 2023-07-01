@@ -1,6 +1,6 @@
 import { EditPanelItemProps } from '../../lib/types';
 import { BigButton } from 'shared/ui';
-import { exportTableToExcel } from '../../store/tables.thunks';
+import { exportTableToExcel } from '../../store/table.thunks';
 import exportToExcelIcon from 'assets/images/dataset/export-to-excel.png';
 
 

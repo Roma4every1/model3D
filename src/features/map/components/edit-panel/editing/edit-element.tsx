@@ -1,7 +1,7 @@
 import { useDispatch } from 'react-redux';
 import { TFunction, useTranslation } from 'react-i18next';
 import { MapModes } from '../../../lib/enums';
-import { startMapEditing, setEditMode } from '../../../store/maps.actions';
+import { startMapEditing, setEditMode } from '../../../store/map.actions';
 
 import addBetween from 'assets/images/map/add-between.png';
 import handIcon from 'assets/images/map/hand.png';

@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { MenuSection, BigButton, ButtonStock } from 'shared/ui';
 import { getColumnWidth } from '../../lib/common';
 import { findGroupItems, moveColumn } from '../../lib/column-tree-actions';
-import { setTableColumns, setTableColumnTree } from '../../store/tables.actions';
+import { setTableColumns, setTableColumnTree } from '../../store/table.actions';
 import autoWidthIcon from 'assets/images/dataset/auto-width.png';
 
 

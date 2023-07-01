@@ -11,8 +11,8 @@ import { setOpenedWindow } from 'entities/windows';
 
 import './curve-selection-window.scss';
 import { CurveManager } from '../../lib/curve-manager';
-import { caratStateSelector } from '../../store/carats.selectors';
-import { setCaratData } from '../../store/carats.thunks';
+import { caratStateSelector } from '../../store/carat.selectors';
+import { setCaratData } from '../../store/carat.thunks';
 import {CaratCurveModel} from "../../lib/types";
 
 

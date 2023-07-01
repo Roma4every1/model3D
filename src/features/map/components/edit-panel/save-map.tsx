@@ -1,7 +1,7 @@
 import { TFunction } from 'react-i18next'
 import { useDispatch } from 'react-redux';
 import { MenuSection, BigButton } from 'shared/ui';
-import { setMapField } from '../../store/maps.actions';
+import { setMapField } from '../../store/map.actions';
 import { mapsAPI } from '../../lib/maps.api';
 import { setWindowNotification, callBackWithNotices } from 'entities/windows';
 import saveMapIcon from 'assets/images/map/save-map.png';
