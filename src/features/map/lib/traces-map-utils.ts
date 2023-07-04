@@ -1,14 +1,13 @@
 import { chunk } from 'lodash';
 import { getBoundsByPoints, PIXEL_PER_METER } from './map-utils';
-import { checkDistance, getNearestElements } from '../components/edit-panel/selecting/selecting-utils';
+import { checkDistancePoints } from '../components/edit-panel/selecting/selecting-utils';
 
 
 /** Прототип объекта слоя трассы. */
-export const traceLayerProto : MapLayer = {
-  bounds: {min: {x: -10000000, y: -10000000}, max: {x: 10000000, y: 10000000}},
+export const traceLayerProto: MapLayer = {
+  bounds: {min: {x: 0, y: 0}, max: {x: 0, y: 0}},
   container: 'null',
   elements: [],
-  elementsData: Promise.resolve([]),
   group: 'Трассы',
   highscale: 'INF',
   lowscale: 0,
@@ -17,14 +16,18 @@ export const traceLayerProto : MapLayer = {
   version: '1.0',
   visible: true,
   temporary: true,
-}
+};
 
-/** Возвращает прототип объекта элемента трассы для карты с указанной в параметрах дугой. */
-export function getTraceMapElementProto(traceArc: PolylineArc): MapPolyline {
+/** Возвращает элемент карты polyline для отрисовки трассы */
+export function getTraceMapElement(model: TraceModel): MapPolyline {
+  const path: PolylineArcPath = [];
+  model.nodes.forEach((node) => { path.push(node.x, node.y); });
+  const arc: PolylineArc = {path, closed: false};
+
   return {
     type: 'polyline',
-    arcs: [traceArc],
-    bounds: getBoundsByPoints(chunk(traceArc.path, 2) as [number, number][]),
+    arcs: [arc],
+    bounds: getBoundsByPoints(chunk(path, 2) as [number, number][]),
     borderstyle: 0,
     fillbkcolor: '#0000ff', fillcolor: '#0000ff',
     bordercolor: '#0000ff', borderwidth: 1.25,
@@ -32,54 +35,37 @@ export function getTraceMapElementProto(traceArc: PolylineArc): MapPolyline {
   };
 }
 
-/** Возвращает элемент карты polyline для отрисовки трассы */
-export function getCurrentTraceMapElement(points: MapPoint[], model: TraceModel) {
-  if (!model?.nodes) return;
-  const path: PolylineArcPath = [];
-
-  for (const node of model.nodes) {
-    const id = node.id.toString();
-    const point = points.find(p => p.UWID === id);
-    if (point) path.push(point.x, point.y);
-  }
-  const closed = path[0] === path[path.length - 2] && path[1] === path[path.length - 1];
-  return getTraceMapElementProto({path, closed});
-}
-
-/** Получает ближайший элемент типа 'sign' на карте к указанной точке. */
-export function getNearestSignMapElement(point, canvas, scale, layers): Point | null {
-  const getTextWidth = (text) => canvas.getContext('2d').measureText(text).width;
-  const filterFn = (element) => {
-    if (element.type !== 'sign') return false;
-    return checkDistance(element, point, scale, getTextWidth);
-  };
-
-  const nearestElements: MapSign[] = getNearestElements(layers, null, scale, filterFn);
-  const sign = nearestElements[0];
-  return sign ? {x: sign.x, y: sign.y} : null;
-}
-
-/** Поиск точки из данных карты по коррдинатам. */
-export function findMapPoint(point: Point, mapPoints: MapPoint[]): MapPoint | null {
-  if (!point || !mapPoints || !point.x || !point.y) return null;
-  return mapPoints.find(p => (p.x === point.x) && (p.y === point.y)) ?? null;
-}
-
 /** Определяет вьюпорт карты, чтобы трасса целиком влазила в экран. */
-export function getFullTraceViewport(element: MapPolyline, canvas: HTMLCanvasElement): MapViewport {
-  if (!canvas?.width || !canvas?.height || !element) return null;
-  if (element) {
-    const { bounds: { min, max } } = element;
-    const centerX = (min.x + max.y) / 2;
-    const centerY = (min.y + max.y) / 2;
+export function getFullTraceViewport(element: MapPolyline, canvas: MapCanvas): MapViewport {
+  if (!canvas) return undefined;
+  const { bounds: { min, max } } = element;
 
-    // размеры прямоугольника, описывающего трассу
-    const sizeX = Math.abs(Math.abs(max.x) - Math.abs(min.x));
-    const sizeY = Math.abs(Math.abs(max.y) - Math.abs(min.y));
+  const centerX = (min.x + max.x) / 2;
+  const centerY = (min.y + max.y) / 2;
 
-    const kScale = Math.max(sizeX / canvas.width, sizeY / canvas.height);
-    if (!isFinite(centerX) || !isFinite(centerY) || !isFinite(kScale)) return null;
-    return {centerX, centerY, scale: kScale * PIXEL_PER_METER * 1.4};
+  const sizeX = Math.abs(max.x - min.x);
+  const sizeY = Math.abs(max.y - min.y);
+
+  const kScale = 1.2 * Math.max(sizeX / canvas.clientWidth, sizeY / canvas.clientHeight);
+  return {centerX, centerY, scale: kScale * PIXEL_PER_METER};
+}
+
+/** Обновляет узлы трассы после клика по карте. */
+export function handleClick(model: TraceModel, eventPoint: Point, mapData: MapData): boolean {
+  const nearestPoint = mapData.points.find(p => checkDistancePoints(eventPoint, p, mapData.scale));
+  if (!nearestPoint) return false;
+
+  const nodes = model.nodes;
+  const nodeID = parseInt(nearestPoint.UWID);
+
+  if (nodes.some(node => node.id === nodeID)) {
+    model.nodes = nodes.filter(node => node.id !== nodeID);
+  } else {
+    const newNode: TraceNode = {
+      id: nodeID, name: nearestPoint.name,
+      x: nearestPoint.x, y: nearestPoint.y,
+    };
+    model.nodes = [...nodes, newNode];
   }
-  return null;
+  return true;
 }

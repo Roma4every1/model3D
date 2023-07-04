@@ -59,7 +59,7 @@ interface MapState {
 type MapCanvas = HTMLCanvasElement & {selectingMode: boolean, blocked: boolean, events: any};
 
 interface MapUtils {
-  updateCanvas(cs?: {centerX: number, centerY: number, scale: MapScale}, context?: any): void,
+  updateCanvas(cs?: MapViewport, context?: any): void,
   pointToMap(point: Point): Point,
 }
 
@@ -122,7 +122,7 @@ interface ParsedContainer {
 interface MapViewport {
   centerX: number,
   centerY: number,
-  scale: number,
+  scale: MapScale,
 }
 
 interface MapData {
@@ -162,7 +162,6 @@ interface MapLayer {
   bounds: Bounds,
   container: string,
   elements: MapElement[],
-  elementsData: Promise<MapElement[]>,
   group: string,
   highscale: LayerHighScale,
   lowscale: LayerLowScale,

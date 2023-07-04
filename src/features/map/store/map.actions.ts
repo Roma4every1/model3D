@@ -96,7 +96,7 @@ export function cancelCreatingElement(formID: FormID): MapsAction {
   return {type: MapsActions.CANCEL_CREATING, formID};
 }
 
-/** Добавить слой на карту. */
-export function addMapLayer(formID: FormID, layer: MapLayer): MapsAction {
-  return {type: MapsActions.ADD_LAYER, formID, payload: layer};
+/** Добавить в состояние карты трассу и отрисовать. */
+export function applyTraceToMap(formID: FormID, model: TraceModel, updateViewport: boolean): MapsAction {
+  return {type: MapsActions.SET_TRACE, formID, model, updateViewport};
 }

@@ -11,29 +11,22 @@ import { mapsStateSelector, mapStateSelector } from '../store/map.selectors';
 import { fetchMapData } from '../store/map.thunks';
 import { CircularProgressBar } from 'shared/ui';
 import { MapNotFound, MapLoadError } from '../../multi-map/multi-map-item';
+import { setMapField, loadMapSuccess, loadMapError, applyTraceToMap } from '../store/map.actions';
+import { handleClick } from '../lib/traces-map-utils';
 
 import {
-  setMapField, loadMapSuccess, loadMapError,
-  addMapLayer, setActiveLayer, startCreatingElement,
-  createMapElement, acceptMapEditing, clearMapSelect, setOnDrawEnd,
-} from '../store/map.actions';
-
-import {
-  clientPoint, getPointToMap, getFullViewport, getMultiMapChildrenCanvases,
+  clientPoint, getFullViewport, getMultiMapChildrenCanvases, getPointToMap,
   listenerOptions,
 } from '../lib/map-utils';
-
-import {
-  getCurrentTraceMapElement, getNearestSignMapElement, findMapPoint, getFullTraceViewport,
-  traceLayerProto,
-} from '../lib/traces-map-utils';
 
 
 export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const { model: { id: currentWellID } } = useSelector(wellStateSelector);
+  const { model: currentWell } = useSelector(wellStateSelector);
+  const trace = useSelector(traceStateSelector);
+
   const mapsState = useSelector(mapsStateSelector);
   const mapState: MapState = useSelector(mapStateSelector.bind(id));
 
@@ -115,12 +108,12 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
     mapDrawnData.current = mapState.drawer.showMap(canvas, map, data);
   }, [mapState?.drawer]);
 
-  const updateCanvas = useCallback((newCS, context) => {
+  const updateCanvas = useCallback((viewport: MapViewport, context?) => {
     if (!mapData) return;
     let x,y, scale;
-    if (newCS) {
-      x = newCS.centerX; y = newCS.centerY;
-      scale = newCS.scale;
+    if (viewport) {
+      x = viewport.centerX; y = viewport.centerY;
+      scale = viewport.scale;
     } else {
       x = mapData.x; y = mapData.y;
       scale = mapData.scale;
@@ -135,7 +128,7 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
 
   const getWellCS = useCallback((wellID, maxScale) => {
     if (!mapData) return;
-    let pointsData;
+    let pointsData: MapPoint[];
     if (isPartOfDynamicMultiMap) {
       const currentMapID = parent + ',' + mapsState.multi[parent].configs
         .find(c => c.data.plastCode === currentPlastCode)?.id
@@ -151,7 +144,7 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
       pointsData = mapData.points
     }
 
-    const point = pointsData.find(p => p.name === wellID);
+    const point = pointsData.find(p => parseInt(p.UWID) === wellID);
     if (point && scroller.current) {
       const scale = mapData.scale < maxScale ? mapData.scale : maxScale;
       return {centerX: point.x, centerY: point.y, scale};
@@ -163,20 +156,15 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
   ]);
 
   const wellsMaxScale = useMemo(() => {
-    const layers = mapData?.layers;
-    if (!layers) return 50_000;
-    for (const { elements, highscale } of layers) {
-      if (elements.length && elements[0].type === 'sign') return highscale;
-    }
-    return 50_000;
+    return mapData?.layers?.find(l => l.elementType === 'sign')?.highscale ?? 50_000;
   }, [mapData?.layers]);
 
   // подстраивание карты под выбранную скважину
   useEffect(() => {
-    if (!currentWellID) return;
-    const cs = getWellCS(currentWellID, wellsMaxScale);
-    if (cs) updateCanvas(cs, canvasRef.current);
-  }, [currentWellID, getWellCS, wellsMaxScale, updateCanvas]);
+    if (!currentWell?.id) return;
+    const cs = getWellCS(currentWell.id, wellsMaxScale);
+    if (cs) updateCanvas(cs);
+  }, [currentWell?.id, getWellCS, wellsMaxScale, updateCanvas]);
 
   // закрепление ссылки на холст
   useLayoutEffect(() => {
@@ -189,93 +177,32 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
       if (!mapState.scroller) dispatch(setMapField(id, 'scroller', scroller.current));
 
       const cs =
-        getWellCS(currentWellID, wellsMaxScale) ||
+        getWellCS(currentWell?.id, wellsMaxScale) ||
         getFullViewport(mapData.layers, canvasRef.current);
+
+      // случай, когда вкладка карт не была открыта и приосходит редактирование трассы
+      if (!mapData.onDrawEnd) mapData.onDrawEnd = (canvas, x, y, scale) => {
+        utils.pointToMap = getPointToMap(canvas, x, y, scale);
+      };
       updateCanvas(cs, canvasRef.current);
     }
   });
 
-  // создание слоя для трасс
+  // отрисовка текущей трассы
   useEffect( () => {
-    // проверка на существование слоя для трасс
-    if (!mapState?.isLoadSuccessfully ||
-      mapData.layers.find(layer => layer.uid==='{TRACES-LAYER}')) return;
-
-    // создание слоя
-    dispatch(addMapLayer(id, traceLayerProto));
-  }, [id, mapState?.isLoadSuccessfully, dispatch, mapData?.layers]);
-
-  const trace = useSelector(traceStateSelector);
-  const traceLayer = mapData?.layers?.find(layer => layer.uid==='{TRACES-LAYER}');
-
-  // создание и отрисовка текущей трассы
-  useEffect( () => {
-    // если данные карты не загружены
-    if (!mapState?.isLoadSuccessfully || !mapData?.points) return;
-
-    if (!traceLayer) return;
-    traceLayer.elements = [];
-
-    if (!trace?.model?.nodes) {
-      mapState?.utils.updateCanvas();
-      return;
-    }
-
-    // получение элемента трассы для карты
-    const traceElement = getCurrentTraceMapElement(mapData?.points, trace?.model);
-    if (!traceElement) return;
-
-    dispatch(setActiveLayer(id, traceLayerProto));
-
-    // отрисовка трассы на карте
-    dispatch(startCreatingElement(id));
-    dispatch(createMapElement(id, traceElement));
-    dispatch(acceptMapEditing(id));
-    dispatch(clearMapSelect(id));
-    dispatch(setActiveLayer(id, null));
-
-    // подстраивание карты под выбранную трассу после окончания редактирования
-    // и при изменении в параметрах
-    if (!trace.editing) {
-      const cs = getFullTraceViewport(traceElement, canvas);
-      if (cs) updateCanvas(cs, canvasRef.current);
-    }
-  }, [ // eslint-disable-line
-    id, mapState?.isLoadSuccessfully, mapData?.points, trace?.model, dispatch,
-    trace?.editing, trace?.creating, mapState?.utils, traceLayer,
-    updateCanvas
-  ]); // canvas не включён специально
+    if (!mapState?.isLoadSuccessfully) return;
+    dispatch(applyTraceToMap(id, trace.model, !trace.creating && !trace.editing));
+  }, [mapState?.isLoadSuccessfully, trace, id, dispatch]);
 
   // добавление/удаление точек к текущей трассе через клик по карте
   const mouseDown = useCallback((event: MouseEvent) => {
-    if (!trace || !(trace.creating || trace.editing)) return;
-    const { canvas, utils, mapData } = mapState;
+    if (!trace.model || !(trace.creating || trace.editing)) return;
     if (!mapData || !mapState.isLoadSuccessfully) return;
-    const point = utils.pointToMap(clientPoint(event));
 
-    // получение элемента скважины на карте
-    const newPoint = getNearestSignMapElement(point, canvas, mapData.scale, mapData.layers);
-    if (!newPoint) return;
-    // получение точки из MapData.points соответсвующей выбраному элементу на карте
-    const newDataPoint: MapPoint = findMapPoint(newPoint, mapData.points)
-    if (!newDataPoint?.UWID || !newDataPoint?.name) return;
-
-    const wellID = parseInt(newDataPoint.UWID);
-    const nodes = trace?.model?.nodes || [];
-
-    let newNodes;
-    if (nodes.some(node => node.id === wellID)) {
-      newNodes = nodes.filter(node => node.id !== wellID);
-    } else {
-      const newNode: TraceNode = {
-        id: wellID, name: newDataPoint.name,
-        x: newDataPoint.x, y: newDataPoint.y,
-      };
-      newNodes = [...nodes, newNode];
-    }
-
-    if (newDataPoint) dispatch(setCurrentTrace({...trace.model, nodes: newNodes}));
-  }, [mapState, trace, dispatch]);
+    const eventPoint = utils.pointToMap(clientPoint(event));
+    const changed = handleClick(trace.model, eventPoint, mapData);
+    if (changed) dispatch(setCurrentTrace({...trace.model}));
+  }, [mapState?.isLoadSuccessfully, mapData, utils, trace, dispatch]);
 
   // добавление слушателей событий для добавления/удаления точек трассы через клик по скважинам
   useEffect(() => {
@@ -288,20 +215,18 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
     return () => canvas.removeEventListener('mousedown', mouseDown);
   }, [trace?.editing, mouseDown, canvas]);
 
-  const onDrawEnd = useCallback((canvas, x, y, scale) => {
-    if(!mapState) return;
-    mapState.utils.pointToMap = getPointToMap(canvas, x, y, scale);
-  }, [mapState]);
-
-  // переопределение метода pointToMap при обновлении карты для получения корректных координат точек
-  useEffect(() => {
-    if (mapState?.mapData) dispatch(setOnDrawEnd(id, onDrawEnd));
-  }, [mapState, onDrawEnd, dispatch, id]);
-
-  if (!mapState) return null;
-  if (!isMapExist) return <MapNotFound t={t}/>;
-  if (mapState.isLoadSuccessfully === undefined) return <CircularProgressBar percentage={progress} size={100}/>;
-  if (mapState.isLoadSuccessfully === false) return <MapLoadError t={t}/>;
+  if (!mapState) {
+    return null;
+  }
+  if (!isMapExist) {
+    return <MapNotFound t={t}/>;
+  }
+  if (mapState.isLoadSuccessfully === undefined) {
+    return <CircularProgressBar percentage={progress} size={100}/>;
+  }
+  if (mapState.isLoadSuccessfully === false) {
+    return <MapLoadError t={t}/>;
+  }
 
   return (
     <div className={'map-container'}>

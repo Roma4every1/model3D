@@ -39,52 +39,44 @@ export const Dimensions = ({mapState, sync, formID, parentID, t}: DimensionsProp
   const [y, setY] = useState(null);
   const [scale, setScale] = useState(null);
 
-  const setDimensions = useCallback((x: number, y: number, scale: number) => {
-    setX(x); setY(y); setScale(scale);
-  }, [setX, setY, setScale]);
-
   const onDrawEnd = useCallback((canvas, x, y, scale) => {
-    setDimensions(x, y, scale);
+    setX(x); setY(y); setScale(scale);
     utils.pointToMap = getPointToMap(canvas, x, y, scale);
-  }, [setDimensions, utils]);
+  }, [utils]);
 
   useEffect(() => {
     if (mapData) dispatch(setOnDrawEnd(formID, onDrawEnd));
   }, [mapData, onDrawEnd, dispatch, formID]);
 
   /** Центрировать карту. */
-  const toFullViewPort = useCallback(() => {
+  const toFullViewPort = () => {
     if (!canvas || !layers) return;
     canvas.events.emit('sync', getFullViewport(layers, canvas));
-  }, [canvas, layers]);
+  };
 
   /** Включить или отключить синхронизацию систем координат карт. */
-  const toggleSync = useCallback(() => {
+  const toggleSync = () => {
     dispatch(setMultiMapSync(parentID, !sync));
     canvas.events.emit('sync', {centerX: mapData.x, centerY: mapData.y, scale: mapData.scale});
-  }, [sync, canvas, mapData, parentID, dispatch]);
+  };
 
-  const updateCanvas = useCallback((x, y, scale) => {
-    if (utils) utils.updateCanvas({centerX: x, centerY: y, scale});
-  }, [utils]);
-
-  const xChanged = useCallback((event: NumericTextBoxChangeEvent) => {
-    const newX = event.value === null ? 0 : Math.round(+event.value);
-    updateCanvas(newX, mapData.y, mapData.scale);
+  const xChanged = (event: NumericTextBoxChangeEvent) => {
+    const newX = event.value === null ? 0 : Math.round(event.value);
+    utils?.updateCanvas({centerX: newX, centerY: mapData.y, scale: mapData.scale});
     setX(newX);
-  }, [updateCanvas, mapData]);
+  };
 
-  const yChanged = useCallback((event: NumericTextBoxChangeEvent) => {
-    const newY = event.value === null ? 0 : Math.round(+event.value);
-    updateCanvas(mapData.x, newY, mapData.scale);
+  const yChanged = (event: NumericTextBoxChangeEvent) => {
+    const newY = event.value === null ? 0 : Math.round(event.value);
+    utils?.updateCanvas({centerX: mapData.x, centerY: newY, scale: mapData.scale});
     setY(newY);
-  }, [updateCanvas, mapData]);
+  };
 
-  const scaleChanged = useCallback((event: NumericTextBoxChangeEvent) => {
+  const scaleChanged = (event: NumericTextBoxChangeEvent) => {
     const newScale = event.value >= 1 ? event.value : 1;
-    updateCanvas(mapData.x, mapData.y, newScale);
+    utils?.updateCanvas({centerX: mapData.x, centerY: mapData.y, scale: newScale});
     setScale(newScale);
-  }, [updateCanvas, mapData]);
+  };
 
   return (
     <section className={'map-dimensions'}>
@@ -117,4 +109,4 @@ export const Dimensions = ({mapState, sync, formID, parentID, t}: DimensionsProp
       </div>
     </section>
   );
-}
+};

@@ -2,6 +2,7 @@ import { MapModes } from '../lib/enums';
 import { chunk } from 'lodash';
 import { createMapsDrawer } from '../drawer';
 import { getBoundsByPoints, getMultiMapChildrenCanvases } from '../lib/map-utils';
+import { traceLayerProto, getTraceMapElement, getFullTraceViewport } from '../lib/traces-map-utils';
 
 /* --- Action Types --- */
 
@@ -23,7 +24,7 @@ export enum MapsActions {
   CREATE_ELEMENT = 'maps/createEl',
   ACCEPT_CREATING = 'maps/acceptCreate',
   CANCEL_CREATING = 'maps/cancelCreate',
-  ADD_LAYER = 'maps/addLayer',
+  SET_TRACE = 'maps/trace',
 }
 
 /* --- Action Interfaces --- */
@@ -96,10 +97,9 @@ interface ActionAcceptCreating extends MapAction {
 interface ActionCancelCreating extends MapAction {
   type: MapsActions.CANCEL_CREATING,
 }
-
-interface ActionAddLayer extends MapAction {
-  type: MapsActions.ADD_LAYER,
-  payload: MapLayer,
+interface ActionSetTrace extends MapAction {
+  type: MapsActions.SET_TRACE,
+  model: TraceModel, updateViewport: boolean,
 }
 
 
@@ -107,13 +107,10 @@ export type MapsAction = ActionAddMulti | ActionSetSync | ActionAdd |
   ActionStartLoad | ActionLoadSuccess | ActionLoadError |
   ActionSetMode | ActionSetDimensions | ActionSetField | ActionClearSelect |
   ActionStartEditing | ActionAcceptEditing | ActionCancelEditing |
-  ActionStartCreating | ActionCreateElement | ActionCancelCreating | ActionAcceptCreating | ActionAddLayer;
+  ActionStartCreating | ActionCreateElement | ActionCancelCreating | ActionAcceptCreating |
+  ActionSetTrace;
 
 /* --- Reducer Utils --- */
-
-const getDefaultSelecting = (): MapSelectingState => {
-  return {nearestElements: [], activeIndex: 0, lastPoint: null}
-};
 
 const clearOldData = (mapState: MapState): void => {
   mapState.oldData.x = null;
@@ -152,7 +149,7 @@ const initMapState: MapState = {
   isElementEditing: false,
   isElementCreating: false,
   oldData: {x: null, y: null, arc: null, ange: null},
-  selecting: getDefaultSelecting(),
+  selecting: {nearestElements: [], activeIndex: 0, lastPoint: null},
   isModified: false,
   cursor: 'auto',
   childOf: null, scroller: null,
@@ -216,13 +213,8 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
 
     case MapsActions.LOAD_SUCCESS: {
       const { formID, mapData } = action;
-      if (!mapData.onDrawEnd) mapData.onDrawEnd = () => {};
-
-      // задание типов элементов для слоев
-      const newLayers = mapData.layers.map(l => ({...l, elementType: l.elements[0].type}));
-      const newData = {...mapData, layers: newLayers}
-
-      state.single[formID] = {...state.single[formID], mapData: newData, isLoadSuccessfully: true};
+      mapData.layers.forEach(l => l.elementType = l.elements[0]?.type ?? 'sign');
+      state.single[formID] = {...state.single[formID], mapData, isLoadSuccessfully: true};
       return {...state};
     }
 
@@ -441,11 +433,32 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
       return {...state};
     }
 
-    case MapsActions.ADD_LAYER: {
-      const { formID, payload } = action;
-      const mapData = state.single[formID].mapData
-      const newLayers = [...mapData.layers, payload]
-      state.single[formID] = {...state.single[formID], mapData: {...mapData, layers: newLayers}};
+    case MapsActions.SET_TRACE: {
+      const { formID, model, updateViewport } = action;
+      const mapState = state.single[formID];
+      const layers = mapState?.mapData.layers;
+      if (!layers) return;
+
+      let traceElement: MapPolyline;
+      let traceLayer = layers.find(layer => layer.uid === '{TRACES-LAYER}');
+
+      if (!traceLayer) {
+        traceLayer = structuredClone(traceLayerProto);
+        mapState.mapData.layers = [...layers, traceLayer];
+      }
+
+      if (!model) {
+        traceLayer.elements = [];
+      } else {
+        traceElement = getTraceMapElement(model);
+        traceLayer.elements = [traceElement];
+        traceLayer.bounds = traceElement.bounds;
+      }
+
+      const viewport = traceElement && updateViewport
+        ? getFullTraceViewport(traceElement, mapState.canvas)
+        : undefined;
+      mapState.utils.updateCanvas(viewport);
       return {...state};
     }
 
