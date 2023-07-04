@@ -25,7 +25,7 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
   const dispatch = useDispatch();
 
   const { model: currentWell } = useSelector(wellStateSelector);
-  const trace = useSelector(traceStateSelector);
+  const { model: currentTrace, editing: traceEditing } = useSelector(traceStateSelector);
 
   const mapsState = useSelector(mapsStateSelector);
   const mapState: MapState = useSelector(mapStateSelector.bind(id));
@@ -188,35 +188,41 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
     }
   });
 
+  const traceRef = useRef<{id: TraceID, editing: boolean}>(null);
+
   // отрисовка текущей трассы
   useEffect( () => {
     if (!mapState?.isLoadSuccessfully) return;
-    dispatch(applyTraceToMap(id, trace.model, !trace.creating && !trace.editing));
-  }, [mapState?.isLoadSuccessfully, trace, id, dispatch]);
+    const updateViewport =
+      currentTrace?.id !== traceRef.current?.id ||           // изменилась активная трасса
+      (traceEditing && traceRef.current?.editing === false); // вошли в режим режактирования
+    dispatch(applyTraceToMap(id, currentTrace, updateViewport));
+    traceRef.current = {id: currentTrace?.id, editing: traceEditing};
+  }, [mapState?.isLoadSuccessfully, currentTrace, traceEditing, id, dispatch]);
 
   // добавление/удаление точек к текущей трассе через клик по карте
   const mouseDown = useCallback((event: MouseEvent) => {
-    if (!trace.model || !(trace.creating || trace.editing)) return;
+    if (!currentTrace || !traceEditing) return;
     if (!mapData || !mapState.isLoadSuccessfully) return;
 
     const eventPoint = utils.pointToMap(clientPoint(event));
-    const changed = handleClick(trace.model, eventPoint, mapData);
-    if (changed) dispatch(setCurrentTrace({...trace.model}));
-  }, [mapState?.isLoadSuccessfully, mapData, utils, trace, dispatch]);
+    const changed = handleClick(currentTrace, eventPoint, mapData);
+    if (changed) dispatch(setCurrentTrace({...currentTrace}));
+  }, [mapState?.isLoadSuccessfully, mapData, utils, currentTrace, traceEditing, dispatch]);
 
   // добавление слушателей событий для добавления/удаления точек трассы через клик по скважинам
   useEffect(() => {
     if (!canvas) return;
-    if (trace?.editing) {
+    if (traceEditing) {
       canvas.addEventListener('mousedown', mouseDown, listenerOptions);
     } else {
       canvas.removeEventListener('mousedown', mouseDown);
     }
     return () => canvas.removeEventListener('mousedown', mouseDown);
-  }, [trace?.editing, mouseDown, canvas]);
+  }, [traceEditing, mouseDown, canvas]);
 
   if (!mapState) {
-    return null;
+    return <div/>;
   }
   if (!isMapExist) {
     return <MapNotFound t={t}/>;

@@ -37,7 +37,7 @@ export function objectsReducer(state: ObjectsState = init, action: ObjectsAction
       if (creating === undefined) creating = traceState.creating;
       if (editing === undefined) editing = traceState.editing;
 
-      if (editing) state.trace.oldModel = creating ? null : structuredClone(model);
+      state.trace.oldModel = editing && !creating ? structuredClone(model) : null;
       return {...state, trace: {...state.trace, model, creating, editing}};
     }
 
