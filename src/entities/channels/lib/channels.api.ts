@@ -88,8 +88,8 @@ export class ChannelsAPI {
   /** Запрос на удаление записей из таблицы. */
   public async removeRows(tableID: TableID, indexes: number[] | 'all') {
     const sessionId = this.baseAPI.sessionID;
-    const rows = indexes === 'all' ? '' : indexes.join(',');
-    const query = {sessionId, tableId: tableID, rows, removeAll: String(indexes === 'all')};
+    const rows = Array.isArray(indexes) ? indexes.join(',') : indexes;
+    const query = {sessionId, tableId: tableID, rows};
     return await this.baseAPI.request<ReportStatus>({path: 'removeRows', query});
   }
 }

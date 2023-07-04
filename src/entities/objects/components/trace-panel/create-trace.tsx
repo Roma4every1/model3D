@@ -20,8 +20,7 @@ export const CreateTrace = ({trace}: CreateTraceProps) => {
   const disabled = trace.editing || trace.creating || !placeID;
 
   const action = () => {
-    const model: TraceModel = {id: null, place: placeID, name: 'Без имени', nodes: []};
-    dispatch(createTrace(model));
+    dispatch(createTrace({id: null, place: placeID, name: 'Без имени', nodes: []}));
   };
 
   return (

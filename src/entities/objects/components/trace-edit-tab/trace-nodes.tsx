@@ -19,13 +19,20 @@ export const TraceNodes = ({model}: {model: TraceModel}) => {
     if (!node) return;
     const idx = nodes.findIndex(n => n === node);
 
-    if (direction === 'up' && idx > 0) {
-      nodes[idx] = nodes[idx - 1];
-      nodes[idx - 1] = node;
-    }
-    if (direction === 'down' && idx < nodes.length - 1) {
-      nodes[idx] = nodes[idx + 1];
-      nodes[idx + 1] = node;
+    if (direction === 'up') {
+      if (idx > 0) {
+        nodes[idx] = nodes[idx - 1];
+        nodes[idx - 1] = node;
+      } else {
+        nodes.push(nodes.shift());
+      }
+    } else {
+      if (idx < nodes.length - 1) {
+        nodes[idx] = nodes[idx + 1];
+        nodes[idx + 1] = node;
+      } else {
+        nodes.unshift(nodes.pop());
+      }
     }
     dispatch(setCurrentTrace({...model, nodes: [...nodes]}));
   };
@@ -73,7 +80,7 @@ export const TraceNodes = ({model}: {model: TraceModel}) => {
           onClick={() => moveNode(activeNode, 'down')}
         />
       </div>
-      <div className='items'>
+      <div className={'items'}>
         {nodes.map(itemToTraceListItem)}
       </div>
     </div>

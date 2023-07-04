@@ -27,7 +27,7 @@ export function createTrace(model: TraceModel): Thunk {
 
     const rowString = tableRowToString(traceChannel, newRow);
     await updateParamDeep(state.root.id, parameterID, rowString)(dispatch, getState);
-    dispatch(setCurrentTrace(undefined, true, true));
+    dispatch(setCurrentTrace(model, true, true));
   };
 }
 
@@ -90,6 +90,7 @@ export function deleteTrace(): Thunk {
 
     await updateTables([traceTableID, nodesTableID])(dispatch, getState);
     await updateParamDeep(state.root.id, traceState.parameterID, null)(dispatch, getState);
+    dispatch(setCurrentTrace(undefined, false, false));
   };
 }
 

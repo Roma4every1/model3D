@@ -447,7 +447,7 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
         mapState.mapData.layers = [...layers, traceLayer];
       }
 
-      if (!model) {
+      if (!model || !model.nodes.length) {
         traceLayer.elements = [];
       } else {
         traceElement = getTraceMapElement(model);

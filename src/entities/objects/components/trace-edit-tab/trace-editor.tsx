@@ -1,6 +1,9 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { traceStateSelector, setCurrentTrace } from '../../index';
+import { mapStateSelector } from 'features/map/store/map.selectors';
+import { traceStateSelector } from '../../store/objects.selectors';
+import { setCurrentTrace } from '../../store/objects.actions';
+import { deleteTrace } from '../../store/objects.thunks';
 
 import './traces-edit-tab.scss';
 import { TraceChangeName } from './trace-change-name';
@@ -13,11 +16,29 @@ export const TraceEditor = ({formID}: PropsFormID) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const { model, oldModel } = useSelector(traceStateSelector);
-  if (!model) return <div/>;
+  const { model, oldModel, creating } = useSelector(traceStateSelector);
+  const mapState: MapState = useSelector(mapStateSelector.bind(formID));
+  const mapPoints = mapState?.mapData?.points;
+
+  // задание недостающих координат и имён
+  if (mapPoints) {
+    for (const node of model.nodes) {
+      if (node.name !== null && node.x !== null && node.y !== null) continue;
+      const point = mapPoints.find(p => parseInt(p.UWID) === node.id);
+      if (!point) continue;
+
+      if (node.x === null) node.x = point.x;
+      if (node.y === null) node.y = point.y;
+      if (node.name === null) node.name = point.name;
+    }
+  }
 
   const onClick = () => {
-    dispatch(setCurrentTrace(oldModel, undefined, false));
+    if (creating) {
+      dispatch(deleteTrace());
+    } else {
+      dispatch(setCurrentTrace(oldModel, false, false));
+    }
   };
 
   return (
@@ -33,7 +54,7 @@ export const TraceEditor = ({formID}: PropsFormID) => {
       <div className='trace-edit-tab__body'>
         <TraceChangeName model={model}/>
         <TraceNodes model={model}/>
-        <TraceAddNode model={model} formID={formID}/>
+        <TraceAddNode model={model} mapPoints={mapPoints}/>
       </div>
     </section>
   );

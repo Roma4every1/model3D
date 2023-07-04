@@ -68,24 +68,35 @@ function createPlaceState(state: WState, traceState: TraceState): PlaceState {
   return {channelName: placeChannel.name, parameterID: placeParameterID, model: null};
 }
 
-export function createObjectModels(state: WState) {
+export function createObjectModels(state: WState): ObjectsState {
   const { objects, parameters, channels } = state;
-  const { place, well, trace } = objects;
+  let { place, well, trace } = objects;
   const rootParameters = parameters[state.root.id];
 
   const placeChannel = channels[place.channelName];
   const placeParameter = rootParameters.find(p => p.id === place.parameterID);
   const placeRowString = placeParameter.value as ParamValueTableRow;
-  if (placeRowString) place.model = createPlaceModel(placeRowString, placeChannel.info.columns);
+  if (placeRowString) {
+    const model = createPlaceModel(placeRowString, placeChannel.info.columns);
+    place = {...place, model};
+  }
 
   const wellChannel = channels[well.channelName];
   const wellParameter = rootParameters.find(p => p.id === well.parameterID);
   const wellRowString = wellParameter.value as ParamValueTableRow;
-  if (wellRowString) well.model = createWellModel(wellRowString, wellChannel.info.columns);
+  if (wellRowString) {
+    const model = createWellModel(wellRowString, wellChannel.info.columns);
+    well = {...well, model};
+  }
 
   const traceChannel = channels[trace.channelName];
   const nodeChannel = channels[trace.nodeChannelName];
   const traceParameter = rootParameters.find(p => p.id === trace.parameterID);
   const traceRowString = traceParameter.value as ParamValueTableRow;
-  if (traceRowString) trace.model = createTraceModel(traceRowString, traceChannel, nodeChannel, wellChannel);
+  if (traceRowString) {
+    const model = createTraceModel(traceRowString, traceChannel, nodeChannel, wellChannel);
+    trace = {...trace, model};
+  }
+
+  return {place, well, trace};
 }

@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { mapStateSelector } from 'features/map/store/map.selectors';
 import { setCurrentTrace } from '../../store/objects.actions';
 
 import { Button } from '@progress/kendo-react-buttons';
@@ -9,17 +8,14 @@ import { ComboBox, ComboBoxChangeEvent } from '@progress/kendo-react-dropdowns';
 
 
 interface TraceAddNodeProps {
-  formID: FormID,
   model: TraceModel,
+  mapPoints: MapPoint[] | undefined,
 }
 
 
-export const TraceAddNode = ({formID, model}: TraceAddNodeProps) => {
+export const TraceAddNode = ({model, mapPoints}: TraceAddNodeProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-
-  const mapState: MapState = useSelector(mapStateSelector.bind(formID));
-  const allPoints = mapState?.mapData?.points;
   const [addedPoint, setAddedPoint] = useState<MapPoint>(null);
 
   const traceNodeIDs = useMemo(() => {
@@ -27,8 +23,8 @@ export const TraceAddNode = ({formID, model}: TraceAddNodeProps) => {
   }, [model.nodes]);
 
   const data = useMemo(() => {
-    return allPoints?.filter(p => !traceNodeIDs.has(parseInt(p.UWID))) ?? [];
-  }, [allPoints, traceNodeIDs]);
+    return mapPoints?.filter(p => !traceNodeIDs.has(parseInt(p.UWID))) ?? [];
+  }, [mapPoints, traceNodeIDs]);
 
   const onChange = (event: ComboBoxChangeEvent) => {
     setAddedPoint(event.target.value);

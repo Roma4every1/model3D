@@ -15,12 +15,10 @@ export const DenyTraceChanges = ({trace}: DenyTraceChangesProps) => {
   const dispatch = useDispatch();
 
   const action = () => {
-    if (trace.editing) {
-      dispatch(setCurrentTrace(trace.oldModel, undefined, false));
-    }
-    else if (trace.creating) {
+    if (trace.creating) {
       dispatch(deleteTrace());
-      dispatch(setCurrentTrace(null, false, false));
+    } else {
+      dispatch(setCurrentTrace(trace.oldModel, false, false));
     }
   };
 

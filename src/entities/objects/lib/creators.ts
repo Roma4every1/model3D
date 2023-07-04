@@ -27,7 +27,7 @@ export function createTraceModel(
   const nodeRows = nodeChannel.data?.rows;
   const wellRows = wellChannel.data?.rows;
 
-  if (nodeRows && wellRows) {
+  if (nodeRows) {
     const wellInfo = wellChannel.info.columns;
     const wellIDIndex = wellInfo.id.index;
     const wellNameIndex = wellInfo.name.index;
@@ -39,12 +39,10 @@ export function createTraceModel(
     const yIndex = nodeInfo.y.index;
 
     for (const { Cells: cells } of nodeRows) {
-      const idCell = cells[idIndex];
       if (cells[traceIDIndex] !== traceID) continue;
-      const nodeID = parseInt(idCell);
-
-      const wellRow = wellRows.find(row => row.Cells[wellIDIndex] === nodeID);
-      const name = wellRow?.Cells[wellNameIndex] ?? idCell;
+      const nodeID = parseInt(cells[idIndex]);
+      const wellRow = wellRows?.find(row => row.Cells[wellIDIndex] === nodeID);
+      const name = wellRow?.Cells[wellNameIndex] ?? null;
       nodes.push({id: nodeID, name: name, x: cells[xIndex], y: cells[yIndex]});
     }
   }
