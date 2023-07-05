@@ -21,9 +21,25 @@ export type ObjectsAction = ActionSetObjects | ActionSetTrace;
 /* --- Init State & Reducer --- */
 
 const init: ObjectsState = {
-  place: null,
-  well: null,
-  trace: null,
+  place: {
+    channelName: null,
+    parameterID: null,
+    model: null,
+  },
+  well: {
+    channelName: null,
+    parameterID: null,
+    model: null,
+  },
+  trace: {
+    channelName: null,
+    nodeChannelName: null,
+    parameterID: null,
+    model: null,
+    oldModel: null,
+    editing: false,
+    creating: false,
+  },
 };
 
 export function objectsReducer(state: ObjectsState = init, action: ObjectsAction): ObjectsState {
@@ -37,7 +53,9 @@ export function objectsReducer(state: ObjectsState = init, action: ObjectsAction
       if (creating === undefined) creating = traceState.creating;
       if (editing === undefined) editing = traceState.editing;
 
-      state.trace.oldModel = editing && !creating ? structuredClone(model) : null;
+      if (editing && !traceState.editing) {
+        traceState.oldModel = creating ? null : structuredClone(model);
+      }
       return {...state, trace: {...state.trace, model, creating, editing}};
     }
 

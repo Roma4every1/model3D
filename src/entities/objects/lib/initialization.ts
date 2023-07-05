@@ -60,9 +60,10 @@ function createTraceState(state: WState): TraceState {
 function createPlaceState(state: WState, traceState: TraceState): PlaceState {
   const rootParameters = state.parameters[state.root.id];
   const traceParameter = rootParameters.find(p => p.id === traceState.parameterID);
-  const placeParameterID = traceParameter.dependsOn[0];
-  const placeParameter = rootParameters.find(p => p.id === placeParameterID);
+  const placeParameterID = traceParameter?.dependsOn[0];
+  if (!placeParameterID) return {channelName: null, parameterID: null, model: null};
 
+  const placeParameter = rootParameters.find(p => p.id === placeParameterID);
   const placeChannel = state.channels[placeParameter.externalChannelName];
   placeChannel.info.columns = createColumnInfo(placeChannel, placeCriterion);
   return {channelName: placeChannel.name, parameterID: placeParameterID, model: null};
@@ -73,12 +74,14 @@ export function createObjectModels(state: WState): ObjectsState {
   let { place, well, trace } = objects;
   const rootParameters = parameters[state.root.id];
 
-  const placeChannel = channels[place.channelName];
-  const placeParameter = rootParameters.find(p => p.id === place.parameterID);
-  const placeRowString = placeParameter.value as ParamValueTableRow;
-  if (placeRowString) {
-    const model = createPlaceModel(placeRowString, placeChannel.info.columns);
-    place = {...place, model};
+  if (place.channelName && place.parameterID) {
+    const placeChannel = channels[place.channelName];
+    const placeParameter = rootParameters.find(p => p.id === place.parameterID);
+    const placeRowString = placeParameter.value as ParamValueTableRow;
+    if (placeRowString) {
+      const model = createPlaceModel(placeRowString, placeChannel.info.columns);
+      place = {...place, model};
+    }
   }
 
   const wellChannel = channels[well.channelName];
@@ -89,13 +92,15 @@ export function createObjectModels(state: WState): ObjectsState {
     well = {...well, model};
   }
 
-  const traceChannel = channels[trace.channelName];
-  const nodeChannel = channels[trace.nodeChannelName];
-  const traceParameter = rootParameters.find(p => p.id === trace.parameterID);
-  const traceRowString = traceParameter.value as ParamValueTableRow;
-  if (traceRowString) {
-    const model = createTraceModel(traceRowString, traceChannel, nodeChannel, wellChannel);
-    trace = {...trace, model};
+  if (trace.channelName && trace.parameterID) {
+    const traceChannel = channels[trace.channelName];
+    const nodeChannel = channels[trace.nodeChannelName];
+    const traceParameter = rootParameters.find(p => p.id === trace.parameterID);
+    const traceRowString = traceParameter.value as ParamValueTableRow;
+    if (traceRowString) {
+      const model = createTraceModel(traceRowString, traceChannel, nodeChannel, wellChannel);
+      trace = {...trace, model};
+    }
   }
 
   return {place, well, trace};

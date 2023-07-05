@@ -12,6 +12,18 @@ export function applyModelToRow(channel: Channel, proto: ChannelRow, model: Trac
   cells[info.name.index] = model.name;
 }
 
+/** Проверяет, равны ли узлы трассы. */
+export function isNodesEqual(oldNodes: TraceNode[], newNodes: TraceNode[]): boolean {
+  if (oldNodes.length !== newNodes.length) return false;
+  for (let i = 0; i < oldNodes.length; i++) {
+    const oldNode = oldNodes[i], newNode = newNodes[i];
+    if (oldNode.id !== newNode.id || oldNode.x !== newNode.x || oldNode.y !== newNode.y) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /** Преобразует узлы трассы в массив записей канала. */
 export function traceToNodeChannelRows(nodeChannel: Channel, model: TraceModel): ChannelRow[] {
   const info = nodeChannel.info.columns;

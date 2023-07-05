@@ -126,7 +126,7 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
     if (utils) utils.updateCanvas = updateCanvas;
   }, [utils, updateCanvas]);
 
-  const getWellCS = useCallback((wellID, maxScale) => {
+  const getWellViewport = useCallback((wellID, maxScale) => {
     if (!mapData) return;
     let pointsData: MapPoint[];
     if (isPartOfDynamicMultiMap) {
@@ -159,13 +159,6 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
     return mapData?.layers?.find(l => l.elementType === 'sign')?.highscale ?? 50_000;
   }, [mapData?.layers]);
 
-  // подстраивание карты под выбранную скважину
-  useEffect(() => {
-    if (!currentWell?.id) return;
-    const cs = getWellCS(currentWell.id, wellsMaxScale);
-    if (cs) updateCanvas(cs);
-  }, [currentWell?.id, getWellCS, wellsMaxScale, updateCanvas]);
-
   // закрепление ссылки на холст
   useLayoutEffect(() => {
     if (canvasRef.current && canvasRef.current !== canvas && mapData) {
@@ -176,19 +169,32 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
         : scroller.current = new Scroller(canvasRef.current);
       if (!mapState.scroller) dispatch(setMapField(id, 'scroller', scroller.current));
 
-      const cs =
-        getWellCS(currentWell?.id, wellsMaxScale) ||
+      const viewport =
+        getWellViewport(currentWell?.id, wellsMaxScale) ||
         getFullViewport(mapData.layers, canvasRef.current);
 
       // случай, когда вкладка карт не была открыта и приосходит редактирование трассы
       if (!mapData.onDrawEnd) mapData.onDrawEnd = (canvas, x, y, scale) => {
         utils.pointToMap = getPointToMap(canvas, x, y, scale);
       };
-      updateCanvas(cs, canvasRef.current);
+      updateCanvas(viewport, canvasRef.current);
     }
   });
 
-  const traceRef = useRef<{id: TraceID, editing: boolean}>(null);
+  /* --- --- */
+
+  const currentWellID = currentWell?.id;
+  const wellRef = useRef<WellID>();
+  const traceRef = useRef<{id: TraceID, editing: boolean}>();
+
+  // подстраивание карты под выбранную скважину
+  useEffect(() => {
+    if (currentWellID && currentWellID !== wellRef.current) {
+      const viewport = getWellViewport(currentWellID, wellsMaxScale);
+      if (viewport) updateCanvas(viewport);
+    }
+    wellRef.current = currentWellID;
+  }, [currentWellID, getWellViewport, wellsMaxScale, updateCanvas]);
 
   // отрисовка текущей трассы
   useEffect( () => {
@@ -199,6 +205,8 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
     dispatch(applyTraceToMap(id, currentTrace, updateViewport));
     traceRef.current = {id: currentTrace?.id, editing: traceEditing};
   }, [mapState?.isLoadSuccessfully, currentTrace, traceEditing, id, dispatch]);
+
+  /* --- --- */
 
   // добавление/удаление точек к текущей трассе через клик по карте
   const mouseDown = useCallback((event: MouseEvent) => {
@@ -220,6 +228,8 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
     }
     return () => canvas.removeEventListener('mousedown', mouseDown);
   }, [traceEditing, mouseDown, canvas]);
+
+  /* --- --- */
 
   if (!mapState) {
     return <div/>;

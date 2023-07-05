@@ -15,7 +15,7 @@ export const ApplyTraceChanges = ({trace}: ApplyTraceChangesProps) => {
   const dispatch = useDispatch();
 
   const action = () => {
-    if (trace.editing) dispatch(saveTrace(true));
+    if (trace.editing) dispatch(saveTrace());
   };
 
   return (
