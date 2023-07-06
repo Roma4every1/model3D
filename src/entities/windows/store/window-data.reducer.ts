@@ -6,9 +6,7 @@ export enum WindowDataActions {
   SET_INFO = 'windowData/setInfo',
   SET_WARNING = 'windowData/setWarning',
   SET_OPENED_WINDOW = 'windowData/setOpenedWindow',
-  CLOSE = 'windowData/close',
-  SET_NOTIFICATION = 'windowData/setNotification',
-  CLOSE_NOTIFICATION = 'windowData/closeNotification',
+  CLOSE = 'windowData/close'
 }
 
 /* --- Action Interfaces --- */
@@ -37,16 +35,9 @@ interface ActionSetOpenedWindow {
 interface ActionClose {
   type: WindowDataActions.CLOSE,
 }
-interface ActionSetNotification {
-  type: WindowDataActions.SET_NOTIFICATION,
-  text: any,
-}
-interface ActionCloseNotification {
-  type: WindowDataActions.CLOSE_NOTIFICATION,
-}
 
 export type WindowDataAction = ActionSetInfo | ActionSetWarning | ActionSetOpenedWindow |
-  ActionClose | ActionSetNotification | ActionCloseNotification;
+  ActionClose;
 
 /* --- Init State & Reducer --- */
 
@@ -92,16 +83,6 @@ export function windowDataReducer(state = init, action: WindowDataAction) {
 
     case WindowDataActions.CLOSE: {
       newState.messageWindow = {opened: false};
-      return newState;
-    }
-
-    case WindowDataActions.SET_NOTIFICATION: {
-      newState.Notification = {opened: true, text: action.text};
-      return newState;
-    }
-
-    case WindowDataActions.CLOSE_NOTIFICATION: {
-      newState.Notification = {opened: false};
       return newState;
     }
 

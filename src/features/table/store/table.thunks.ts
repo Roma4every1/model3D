@@ -9,28 +9,28 @@ import { tableStateToFormSettings } from '../lib/table-settings';
 import { watchReport } from 'entities/reports';
 import { reloadChannel } from 'entities/channels';
 import { fillParamValues } from 'entities/parameters';
-import { setWindowWarning, showNotice } from 'entities/windows';
-import { setWindowNotification, closeWindowNotification } from 'entities/windows';
+import { setWindowWarning } from 'entities/windows';
+import { showNotification } from 'entities/notifications';
 import { channelsAPI } from 'entities/channels/lib/channels.api';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
 
 
 /** Перезагрузка данных канала таблицы. */
 export function reloadTable(id: FormID): Thunk {
-  return async (dispatch: Dispatch, getState: StateGetter) => {
+  return async (dispatch: Dispatch<any>, getState: StateGetter) => {
     const state = getState();
     const channelName = state.tables[id]?.channelName;
     if (!channelName) return;
 
     await reloadChannel(channelName)(dispatch, () => state);
-    showNotice(dispatch, t('table.reload.end-ok'));
+    dispatch(showNotification(t('table.reload.end-ok')));
   };
 }
 
 /** Сохранение состояния строк таблицы в базу данных. */
 export function saveTableRecord({type, formID, row}: SaveTableMetadata): Thunk {
-  return async (dispatch: Dispatch, getState: StateGetter) => {
-    dispatch(setWindowNotification(t('table.save.start')));
+  return async (dispatch: Dispatch<any>, getState: StateGetter) => {
+    dispatch(showNotification(t('table.save.start')));
     const state = getState();
     const tableID = state.tables[formID].tableID;
     let res: Res<ReportStatus>, wrongResult: boolean, error: string;
@@ -43,7 +43,6 @@ export function saveTableRecord({type, formID, row}: SaveTableMetadata): Thunk {
 
     if (res.ok === false) {
       dispatch(setWindowWarning(res.data));
-      dispatch(closeWindowNotification());
     } else {
       wrongResult = res.data.WrongResult;
       error = res.data.Error;
@@ -51,14 +50,14 @@ export function saveTableRecord({type, formID, row}: SaveTableMetadata): Thunk {
 
     if (wrongResult && error) {
       dispatch(setWindowWarning(error));
-      dispatch(closeWindowNotification());
     }
 
     const tables = [tableID];
     if (res.ok) tables.push(...res.data.ModifiedTables?.ModifiedTables);
 
     await updateTables(tables)(dispatch, () => state);
-    showNotice(dispatch, t('table.save.' + (!res.ok || wrongResult ? 'end-error' : 'end-ok')));
+    const text = t('table.save.' + (!res.ok || wrongResult ? 'end-error' : 'end-ok'));
+    dispatch(showNotification(text));
   };
 }
 

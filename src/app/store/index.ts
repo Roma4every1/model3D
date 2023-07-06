@@ -14,6 +14,7 @@ import { objectsReducer } from 'entities/objects/store/objects.reducer';
 import { channelsReducer } from 'entities/channels/store/channels.reducer';
 import { reportsReducer } from 'entities/reports/store/reports.reducer';
 import { windowDataReducer } from 'entities/windows/store/window-data.reducer';
+import { notificationsReducer } from 'entities/notifications/store/notifications.reducer';
 import { fetchStateReducer } from 'entities/fetch-state/store/fetch-state.reducer';
 
 
@@ -31,6 +32,7 @@ const rootReducer: Reducer<WState, any> = combineReducers({
   maps: mapsReducer,
   reports: reportsReducer,
   windowData: windowDataReducer,
+  notifications: notificationsReducer,
   fetches: fetchStateReducer,
 });
 

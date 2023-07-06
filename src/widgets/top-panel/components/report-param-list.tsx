@@ -4,7 +4,8 @@ import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Button } from '@progress/kendo-react-buttons';
 import { ParameterList } from 'entities/parameters';
 import { updateTables } from 'entities/channels';
-import { showNotice, setWindowInfo, setWindowWarning } from 'entities/windows';
+import { showNotification } from 'entities/notifications';
+import { setWindowInfo, setWindowWarning } from 'entities/windows';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
 import { watchReport, updateReportParam, updateReportParameter } from 'entities/reports';
 
@@ -40,7 +41,7 @@ export const ReportParamList = ({id, report, close}: ReportParamListProps) => {
       }
     });
     if (data.OperationId) {
-      showNotice(dispatch, t('report.inProgress', {programName: report.displayName}));
+      dispatch(showNotification(t('report.inProgress', {programName: report.displayName})));
       await watchReport(report, data.OperationId, dispatch);
     }
   };

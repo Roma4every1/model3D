@@ -4,7 +4,7 @@ import { Dispatch } from 'redux';
 /** Функция, возвращающая текущее состояние приложения. */
 export type StateGetter = () => WState;
 /** @see https://en.wikipedia.org/wiki/Thunk */
-export type Thunk<Result = void> = (dispatch: Dispatch, getState?: StateGetter) => Promise<Result>;
+export type Thunk<Result = void> = (dispatch: Dispatch<any>, getState?: StateGetter) => Promise<Result>;
 
 
 export * from './common';

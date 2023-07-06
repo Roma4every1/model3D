@@ -24,6 +24,8 @@ interface WState {
   reports: Reports,
   /** Окна и диалоги. */
   windowData: any,
+  /** Уведомления. */
+  notifications: Notifications,
   /** Состояние серверных запросов. */
   fetches: FetchesState,
 }

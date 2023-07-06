@@ -1,7 +1,7 @@
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { saveAs } from '@progress/kendo-file-saver';
-import { showNotice } from 'entities/windows';
+import { showNotification } from 'entities/notifications';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
 import { fileExtensionDict, extensions } from '../lib/file-extension-dict';
 import defaultFileIcon from 'assets/images/reports/default.png';
@@ -30,7 +30,7 @@ export const ActiveOperationStatus = ({status}: {status: OperationStatus}) => {
       if (res.ok) {
         saveAs(res.data, file.name);
       } else {
-        showNotice(dispatch, 'Ошибка при скачивании файла');
+        dispatch(showNotification('Ошибка при скачивании файла'));
       }
     });
   } : undefined;

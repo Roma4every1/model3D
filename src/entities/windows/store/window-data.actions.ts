@@ -16,11 +16,3 @@ export function setOpenedWindow(name: string, windowVisible: boolean, window, po
 export function closeWindow(): WindowDataAction {
   return {type: WindowDataActions.CLOSE};
 }
-
-export function setWindowNotification(text: any): WindowDataAction {
-  return {type: WindowDataActions.SET_NOTIFICATION, text};
-}
-
-export function closeWindowNotification(): WindowDataAction {
-  return {type: WindowDataActions.CLOSE_NOTIFICATION};
-}

@@ -3,7 +3,8 @@ import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@progress/kendo-react-buttons';
 import { Window, DialogActionsBar } from '@progress/kendo-react-dialogs';
-import { callBackWithNotices, setOpenedWindow, setWindowNotification } from 'entities/windows';
+import { setOpenedWindow } from 'entities/windows';
+import { callbackWithNotices } from 'entities/notifications';
 import { deleteTableRecords } from '../../store/table.thunks';
 
 
@@ -24,9 +25,8 @@ export const DeleteRecordsDialog = ({id, ids}: DeleteRecordsDialogProps) => {
 
   const onApply = () => {
     onClose();
-    dispatch(setWindowNotification(t('table.delete-dialog.delete-wait')));
     const promise = dispatch(deleteTableRecords(id, ids));
-    callBackWithNotices(promise, dispatch, t('table.delete-dialog.delete-ok', {n: ids.length}));
+    callbackWithNotices(promise, dispatch, t('table.delete-dialog.delete-ok', {n: ids.length}));
   };
 
   return (
