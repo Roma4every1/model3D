@@ -51,7 +51,7 @@ export function createLookupList(rows: ChannelRow[], columnsInfo: LookupColumns)
 
   const list = rows.map((row: ChannelRow): LookupListItem => {
     const cells = row.Cells;
-    const id = cells[idIndex], value = cells[valueIndex];
+    const id = cells[idIndex], value = cells[valueIndex] ?? '';
     dict[id] = value;
     return {id, value};
   });
@@ -67,7 +67,7 @@ export function createLookupTree(rows: ChannelRow[], columnsInfo: LookupColumns)
 
   const allNodes: LookupTreeNode[] = rows.map((row) => {
     const cells = row.Cells;
-    const id = cells[idIndex], value = cells[valueIndex];
+    const id = cells[idIndex], value = cells[valueIndex] ?? '';
     dict[id] = value;
     return {id, value, parent: cells[parentIndex]};
   });
