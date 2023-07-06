@@ -11,7 +11,7 @@ import { formsAPI } from 'widgets/presentation/lib/forms.api';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
 
 
-export const initializeActiveReport = (id: FormID, reportID: ReportID): Thunk => {
+export function initializeActiveReport(id: FormID, reportID: ReportID): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const [parameters, hiddenParameters] = await Promise.all([
       formsAPI.getFormParameters(reportID),
@@ -50,9 +50,9 @@ export const initializeActiveReport = (id: FormID, reportID: ReportID): Thunk =>
     };
     dispatch(initializeReport(id, reportID, initData));
   };
-};
+}
 
-export const updateReportParameter = (id: FormID, reportID: ReportID, paramID: ParameterID, value: any): Thunk => {
+export function updateReportParameter(id: FormID, reportID: ReportID, paramID: ParameterID, value: any): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const { root, reports, parameters } = getState();
 
@@ -80,10 +80,10 @@ export const updateReportParameter = (id: FormID, reportID: ReportID, paramID: P
     const canRun = await reportsAPI.getCanRunReport(reportID, report.parameters);
     dispatch(setCanRunReport(id, reportID, canRun));
   };
-};
+}
 
 /** Обновляет видимость программ по набору идентификаторов. */
-export const updateReportsVisibility = (ids: ReportID[]): Thunk => {
+export function updateReportsVisibility(ids: ReportID[]): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const state = getState();
     const { parameters, reports: { models }, root: { id: rootID } } = state;
@@ -109,4 +109,4 @@ export const updateReportsVisibility = (ids: ReportID[]): Thunk => {
       dispatch(setReportModels(clientID, [...models[clientID]]));
     }
   };
-};
+}

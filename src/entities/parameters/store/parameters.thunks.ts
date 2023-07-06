@@ -13,7 +13,7 @@ import { updateParam, updateParams } from './parameters.actions';
  * + зависимые каналы
  * + зависимые программы отчёты
  * */
-export const updateParamDeep = (clientID: FormID, id: ParameterID, newValue: any): Thunk => {
+export function updateParamDeep(clientID: FormID, id: ParameterID, newValue: any): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const clientParameters = getState().parameters[clientID];
     const parameter = clientParameters?.find(p => p.id === id);
@@ -67,7 +67,7 @@ export const updateParamDeep = (clientID: FormID, id: ParameterID, newValue: any
       updateReportsVisibility([...reportsToUpdate])(dispatch, getState).then();
     }
   };
-};
+}
 
 function getCurrentRowParams(names: ChannelName[], paramDict: ParamDict, channelDict: ChannelDict) {
   const ids: ParameterID[] = [];

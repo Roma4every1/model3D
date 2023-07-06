@@ -7,7 +7,7 @@ import { setChannelSortOrder, setChannelMaxRowCount } from './channels.actions';
 
 
 /** Перезагрузить данные каналов. */
-export const reloadChannels = (names: ChannelName[]): Thunk => {
+export function reloadChannels(names: ChannelName[]): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const dict: ChannelDict = {};
     const { channels, parameters } = getState();
@@ -18,39 +18,39 @@ export const reloadChannels = (names: ChannelName[]): Thunk => {
     const entries: ChannelDataEntries = names.map((name) => [name, channels[name].data]);
     dispatch(setChannelsData(entries));
   };
-};
+}
 
 /** Перезагрузить данные канала. */
-export const reloadChannel = (name: ChannelName): Thunk => {
+export function reloadChannel(channelName: ChannelName): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const { channels, parameters } = getState();
-    await fillChannel(channels[name], parameters);
-    const { data, tableID } = channels[name];
-    dispatch(setChannelData(name, data, tableID));
+    await fillChannel(channels[channelName], parameters);
+    const { data, tableID } = channels[channelName];
+    dispatch(setChannelData(channelName, data, tableID));
   };
-};
+}
 
 /** Обновляет порядок сортировки и перезагружает канал. */
-export const updateSortOrder = (name: ChannelName, order: SortOrder): Thunk => {
+export function updateSortOrder(channelName: ChannelName, order: SortOrder): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
-    dispatch(setChannelSortOrder(name, order));
-    await reloadChannel(name)(dispatch, getState);
+    dispatch(setChannelSortOrder(channelName, order));
+    await reloadChannel(channelName)(dispatch, getState);
   };
-};
+}
 
 /** Обновляет ограничитель количества строк и перезагружает канал. */
-export const updateMaxRowCount = (name: ChannelName, count: number): Thunk => {
+export function updateMaxRowCount(channelName: ChannelName, count: number): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
-    dispatch(setChannelMaxRowCount(name, count));
-    await reloadChannel(name)(dispatch, getState);
+    dispatch(setChannelMaxRowCount(channelName, count));
+    await reloadChannel(channelName)(dispatch, getState);
   };
-};
+}
 
 /** Перезагрузить данные каналов по ID таблиц. */
-export const updateTables = (tables: TableID[]) => {
+export function updateTables(tables: TableID[]) {
   return async (dispatch: Dispatch<any>, getState: StateGetter) => {
     const state = getState();
     const channelNames = findChannelsByTables(tables, state.channels);
     await reloadChannels(channelNames)(dispatch, () => state);
   };
-};
+}

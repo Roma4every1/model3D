@@ -1,11 +1,11 @@
-export const windowsSelector = (state: WState) => {
+export function windowsSelector(state: WState) {
   return state.windowData?.windows;
-};
+}
 
-export const notificationSelector = (state: WState) => {
+export function notificationSelector(state: WState) {
   return state.windowData?.Notification;
-};
+}
 
-export const messageWindowSelector = (state: WState) => {
+export function messageWindowSelector(state: WState) {
   return state.windowData?.messageWindow;
-};
+}

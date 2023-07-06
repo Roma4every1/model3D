@@ -47,7 +47,7 @@ export type ChannelsAction = ActionSetChannel | ActionSetChannels | ActionSetCha
 
 const init: ChannelDict = {};
 
-export const channelsReducer = (state: ChannelDict = init, action: ChannelsAction): ChannelDict => {
+export function channelsReducer(state: ChannelDict = init, action: ChannelsAction): ChannelDict {
   switch (action.type) {
 
     case ChannelsActions.SET_CHANNEL: {
@@ -90,4 +90,4 @@ export const channelsReducer = (state: ChannelDict = init, action: ChannelsActio
 
     default: return state;
   }
-};
+}
