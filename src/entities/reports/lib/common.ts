@@ -3,7 +3,7 @@ import { t } from 'shared/locales';
 import { reportsAPI } from './reports.api';
 import { setOperationStatus } from '../store/reports.actions';
 import { fillParamValues } from 'entities/parameters';
-import { updateTables } from '../../channels';
+import { updateTables, fillChannels } from '../../channels';
 import { setWindowInfo } from '../../windows';
 
 
@@ -39,6 +39,30 @@ function convertOperationStatus(raw: ReportStatus): OperationStatus {
     queueNumber: raw.Ord, progress: raw.Progress, timestamp: new Date(raw.Dt),
     file, description: raw.Comment, defaultResult: raw.DefaultResult, error: raw.Error,
   };
+}
+
+/* --- --- */
+
+/** Обновляет у отчёта указанные каналы.
+ * @param report модель отчёта
+ * @param names названия каналов, которые нужно обновить
+ * @param rootID ID главной формы
+ * @param clientID ID презентации с отчётом
+ * @param parameters текущее состояние параметров приложения
+ * */
+export async function updateReportChannelData(
+  report: ReportModel, names: Iterable<ChannelName>,
+  rootID: FormID, clientID: FormID, parameters: ParamDict
+): Promise<void> {
+  const dict: ChannelDict = {};
+  for (const name of names) dict[name] = report.channels[name];
+
+  const paramDict: ParamDict = {
+    [report.id]: report.parameters,
+    [rootID]: parameters[rootID],
+    [clientID]: parameters[clientID],
+  };
+  await fillChannels(dict, paramDict);
 }
 
 /* --- --- */

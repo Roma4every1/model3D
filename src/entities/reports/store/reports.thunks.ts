@@ -6,7 +6,7 @@ import { applyChannelsDeps } from 'widgets/presentation/lib/utils';
 import { createClientChannels } from 'widgets/presentation/lib/initialization';
 import { initializeReport, updateReportParam } from './reports.actions';
 import { setReportModels, setCanRunReport, setReportChannels } from './reports.actions';
-import { applyReportVisibility } from '../lib/common';
+import { applyReportVisibility, updateReportChannelData } from '../lib/common';
 import { formsAPI } from 'widgets/presentation/lib/forms.api';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
 
@@ -36,8 +36,21 @@ export function initializeActiveReport(id: FormID, reportID: ReportID): Thunk {
     applyChannelsDeps(channels, paramDict);
 
     for (const name in channels) {
-      const clients = channels[name].info.clients;
-      clients.add(rootID); clients.add(id);
+      const info = channels[name].info;
+      info.clients.add(rootID); info.clients.add(id);
+
+      for (const paramID of info.parameters) {
+        if (parameters.some(p => p.id === paramID)) continue;
+        const param = parametersState[rootID].find(p => p.id === paramID);
+        if (!param) continue;
+
+        let relatedChannels = param.relatedReportChannels.find(item => item.reportID === reportID);
+        if (!relatedChannels) {
+          relatedChannels = {clientID: id, reportID, channels: []};
+          param.relatedReportChannels.push(relatedChannels);
+        }
+        relatedChannels.channels.push(name);
+      }
     }
 
     paramDict[rootID] = parametersState[rootID];
@@ -65,20 +78,28 @@ export function updateReportParameter(id: FormID, reportID: ReportID, paramID: P
     dispatch(updateReportParam(id, reportID, paramID, value));
 
     if (param.relatedChannels) {
-      const dict = {};
-      param.relatedChannels.forEach((name) => dict[name] = report.channels[name]);
-
-      const paramDict: ParamDict = {
-        [reportID]: report.parameters,
-        [root.id]: parameters[root.id],
-        [id]: parameters[id],
-      };
-      await fillChannels(dict, paramDict);
+      await updateReportChannelData(report, param.relatedChannels, root.id, id, parameters);
       dispatch(setReportChannels(id, reportID, {...report.channels}));
     }
 
     const canRun = await reportsAPI.getCanRunReport(reportID, report.parameters);
     dispatch(setCanRunReport(id, reportID, canRun));
+  };
+}
+
+/** Обновляет связанные каналы отчётов. */
+export function reloadReportChannels(entries: RelatedReportChannels[]): Thunk {
+  return async (dispatch: Dispatch, getState: StateGetter) => {
+    const promises: Promise<void>[] = [];
+    const { reports, root, parameters } = getState();
+
+    for (const { clientID, reportID, channels } of entries) {
+      const report = reports.models[clientID]?.find(r => r.id === reportID);
+      if (report) {
+        promises.push(updateReportChannelData(report, channels, root.id, clientID, parameters));
+      }
+    }
+    await Promise.all(promises);
   };
 }
 

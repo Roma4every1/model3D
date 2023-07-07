@@ -44,7 +44,9 @@ export async function createPresentationState(id: FormID): Promise<PresentationS
  * @param dict параметры клиента
  * @param existing список уже существующих каналов
  * */
-export async function createClientChannels(set: Set<ChannelName>, dict: ParamDict, existing: ChannelName[]) {
+export async function createClientChannels(
+  set: Set<ChannelName>, dict: ParamDict, existing: ChannelName[]
+): Promise<ChannelDict> {
   const clientParams: Parameter[] = [];
   Object.values(dict).forEach((params) => { clientParams.push(...params); });
   const externalSet = getExternalChannels(clientParams);

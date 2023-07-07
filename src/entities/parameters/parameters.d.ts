@@ -149,6 +149,8 @@ interface FormParamProto<Type extends ParameterType, Value> {
   dependsOn?: ParameterID[],
   /** Каналы, которые зависят от данного параметра. */
   relatedChannels?: ChannelName[],
+  /** Каналы отчётов, которые зависят от данного параметра. */
+  relatedReportChannels?: RelatedReportChannels[],
   /** Программы, видимость которых зависят от данного параметра. */
   relatedReports?: ReportID[],
 

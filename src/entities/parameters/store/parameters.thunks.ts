@@ -1,7 +1,7 @@
 import { Dispatch } from 'redux';
 import { Thunk, StateGetter } from 'shared/lib';
 import { reloadChannels } from '../../channels';
-import { updateReportsVisibility } from '../../reports';
+import { reloadReportChannels, updateReportsVisibility } from '../../reports';
 import { updateObjects } from '../../objects';
 import { findDependentParameters } from '../lib/utils';
 import { tableRowToString } from '../lib/table-row';
@@ -19,13 +19,20 @@ export function updateParamDeep(clientID: FormID, id: ParameterID, newValue: any
     const parameter = clientParameters?.find(p => p.id === id);
 
     if (!parameter) return;
-    const { relatedChannels, relatedReports } = parameter;
+    const { relatedChannels, relatedReportChannels, relatedReports } = parameter;
     dispatch(updateParam(clientID, id, newValue));
-    if (relatedChannels.length) await reloadChannels(relatedChannels)(dispatch, getState);
+
+    if (relatedChannels.length) {
+      await reloadChannels(relatedChannels)(dispatch, getState);
+    }
+    if (relatedReportChannels.length) {
+      await reloadReportChannels(relatedReportChannels)(dispatch, getState);
+    }
     updateObjects([{clientID, id, value: newValue}], dispatch, getState());
 
     const { parameters, channels } = getState();
     const entries: UpdateParamData[] = [];
+    const reportEntries: RelatedReportChannels[] = [];
     const channelsToUpdate = new Set<ChannelName>();
     const reportsToUpdate = new Set(relatedReports);
 
@@ -54,11 +61,18 @@ export function updateParamDeep(clientID: FormID, id: ParameterID, newValue: any
       entries.push(updateData);
       updatedParam.relatedChannels?.forEach((channelName) => channelsToUpdate.add(channelName));
       updatedParam.relatedReports?.forEach((reportID) => reportsToUpdate.add(reportID));
+
+      if (updatedParam.relatedReportChannels.length) {
+        reportEntries.push(...updatedParam.relatedReportChannels);
+      }
     }
 
     if (entries.length) {
       dispatch(updateParams(entries));
       updateObjects(entries, dispatch, getState());
+    }
+    if (reportEntries.length) {
+      reloadReportChannels(reportEntries)(dispatch, getState).then();
     }
     if (channelsToUpdate.size) {
       reloadChannels([...channelsToUpdate])(dispatch, getState).then();

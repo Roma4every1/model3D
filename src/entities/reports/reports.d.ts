@@ -81,6 +81,16 @@ type OperationID = string;
 /** Данные для инициализации списка параметров отчёта/программы. */
 type ReportInitData = Pick<ReportModel, 'parameters' | 'channels' | 'canRun'>;
 
+/** Список связанных каналов отчёта. */
+interface RelatedReportChannels {
+  /** ID клиента, в котором находится отчёт. */
+  clientID: FormID,
+  /** ID отчёта. */
+  reportID: ReportID,
+  /** Названия связанных каналов. */
+  channels: ChannelName[],
+}
+
 /* --- Server API --- */
 
 interface NewOperationData {
