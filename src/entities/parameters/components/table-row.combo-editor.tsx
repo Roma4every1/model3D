@@ -38,6 +38,7 @@ export const TableRowComboEditor = ({parameter, update, channel}: EditorProps<Pa
   const [value, data, nullDisplayValue] = getValueToShow(channel, parameter);
 
   const onChange = (event: ComboBoxChangeEvent) => {
+    if (event.syntheticEvent.type === 'blur') return;
     let newValue = event.value?.value ?? null;
     if (newValue !== null && typeof newValue !== 'string')
       newValue = tableRowToString(channel, newValue);

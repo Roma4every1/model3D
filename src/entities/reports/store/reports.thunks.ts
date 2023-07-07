@@ -83,7 +83,7 @@ export function updateReportParameter(id: FormID, reportID: ReportID, paramID: P
     param.value = value;
     dispatch(updateReportParam(id, reportID, paramID, value));
 
-    if (param.relatedChannels) {
+    if (param.relatedChannels.length) {
       await updateReportChannelData(report, param.relatedChannels, root.id, id, parameters);
       dispatch(setReportChannels(id, reportID, {...report.channels}));
     }
