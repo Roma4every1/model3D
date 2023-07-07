@@ -23,11 +23,17 @@ export function initializeActiveReport(id: FormID, reportID: ReportID): Thunk {
     const parametersState = state.parameters;
 
     for (const paramID in hiddenParameters) {
-      let param = parametersState[rootID].find(p => p.id === paramID);
-      if (!param) param = parametersState[id].find(p => p.id === paramID);
-      if (param) parameters.push(structuredClone(param));
+      let param = parameters.find(p => p.id === paramID);
+      if (!param) {
+        param =
+          parametersState[rootID].find(p => p.id === paramID) ??
+          parametersState[id].find(p => p.id === paramID);
 
-      param = parameters.find(p => p.id === paramID);
+        if (param) {
+          param = structuredClone(param);
+          parameters.push(param);
+        }
+      }
       if (param && hiddenParameters[paramID] === true) param.editorType = null;
     }
 
