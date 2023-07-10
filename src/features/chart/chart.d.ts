@@ -1,20 +1,35 @@
-/** Настройки формы **Chart**.
+/** Начальные настройки графика (запрос `/getFormSettings`). */
+interface ChartFormSettings {
+  /** Настройки внешнего вида. */
+  seriesSettings: ChartSeriesSettings,
+}
+
+/** Состояние графиков. */
+type ChartsState = Record<FormID, ChartState>;
+
+/** Состояние формы графика.
  * + `tooltip: boolean`
  * + `dateStep`: {@link ChartDateStep}
  * + `seriesSettings`: {@link ChartSeriesSettings}
+ * + `downloadChart: () => Promise`
  * */
-interface ChartFormSettings {
+interface ChartState {
   /** Нужно ли показывать окно со значениями. */
   tooltip: boolean,
   /** Шаг по времени. */
   dateStep: ChartDateStep,
   /** Настройки внешнего вида. */
   seriesSettings: ChartSeriesSettings,
-  /** Колбэк для сохранения графика в png */
+  /** Функция для сохранения графика в png */
   downloadChart?: () => Promise<string>
 }
 
+/** Шаг по времени на графике. */
 type ChartDateStep = 'month' | 'year';
+
+/* --- --- */
+
+/** Настройки внешнего вида графика. */
 type ChartSeriesSettings = Record<ChannelName, ChannelSeriesSettings>;
 
 /** Настройки для отображения каждого канала. */

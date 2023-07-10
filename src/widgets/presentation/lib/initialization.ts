@@ -109,23 +109,11 @@ export async function createFormStates(
 }
 
 async function createFormSettings({id, type}: FormDataWMR): Promise<FormSettings> {
-  if (type === 'dataSet' || type === 'carat') {
+  if (type === 'dataSet' || type === 'carat' || type === 'chart') {
     const res = await formsAPI.getFormSettings(id);
     if (type === 'carat') await fillPatterns.initialize();
     if (!res.ok) return {};
     return res.data;
-  }
-
-  if (type === 'chart') {
-    const res: Res<ChartFormSettings> = await formsAPI.getFormSettings(id);
-    if (!res.ok) return {};
-    const settings = res.data;
-
-    const seriesSettingsKeys = Object.keys(settings.seriesSettings);
-    const firstSeries = settings.seriesSettings[seriesSettingsKeys[0]];
-    settings.dateStep = firstSeries?.dateStep === 'Month' ? 'month' : 'year';
-    settings.tooltip = false;
-    return settings;
   }
   return {};
 }
