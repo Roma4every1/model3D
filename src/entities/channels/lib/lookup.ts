@@ -41,20 +41,6 @@ export function createLookupColumnNames(properties: ChannelProperty[]): LookupCo
   };
 }
 
-/** Находит индексы колонок для списка смежностей дерева. */
-export function findLookupColumnIndexes(columns: ChannelColumn[], editorColumns: LookupColumns) {
-  const codeName = editorColumns.id.name;
-  const valueName = editorColumns.value.name;
-  const parentName = editorColumns.parent.name;
-
-  columns.forEach((column, i) => {
-    const name = column.Name;
-    if (name === codeName) return editorColumns.id.index = i;
-    if (name === valueName) return editorColumns.value.index = i;
-    if (name === parentName) return editorColumns.parent.index = i;
-  });
-}
-
 /* --- Lookup Data --- */
 
 /** Создаёт список возможных значений и словарь данных канала-справочника. */

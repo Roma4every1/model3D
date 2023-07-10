@@ -11,13 +11,3 @@ export * from './common';
 export * from './math';
 export * from './layout';
 export { API, BaseAPI } from './api';
-
-export const getParentFormId = (formID: FormID): FormID => {
-  const index1 = formID.lastIndexOf(':');
-  const index2 = formID.lastIndexOf(',');
-
-  let index = index1;
-  if (index === -1 || index2 > index1) index = index2;
-
-  return (index === -1) ? '' : formID.substring(0, index);
-}

@@ -2,44 +2,49 @@ import { IJsonTabNode } from 'flexlayout-react/declarations/model/IJsonModel';
 
 
 /** Список всех возможных вкладок сверху. */
-const allTopTabs: IJsonTabNode[] = [
-  { // вкладка "Главная"
+const allTopTabs = {
+  'menu': { // вкладка "Главная"
     type: 'tab', enableDrag: false,
     id: 'menu', name: 'Главная',
   },
-  { // вкладка с программами
+  'reports': { // вкладка с программами
     type: 'tab', enableDrag: false,
     id: 'reports', name: 'Программы',
   },
-  { // редактор таблицы
+  'traces': { // панель настроек трассы, относится к карте
+    type: 'tab', enableDrag: false,
+    id: 'top-traces', name: 'Трасса',
+  },
+  'table': { // редактор таблицы
     type: 'tab', enableDrag: false,
     id: 'top-dataset', name: 'Таблица',
   },
-  { // панель настроек графика
+  'chart': { // панель настроек графика
     type: 'tab', enableDrag: false,
     id: 'top-chart', name: 'График',
   },
-  { // редактор карты
+  'map': { // редактор карты
     type: 'tab', enableDrag: false,
     id: 'top-map', name: 'Карта',
   },
-  { // панель настроек трека, относится к каротажу
+  'track': { // панель настроек трека, относится к каротажу
     type: 'tab', enableDrag: false,
     id: 'top-tracks', name: 'Трек',
   },
-  { // настройки непосредственно каротажа
+  'carat': { // настройки непосредственно каротажа
     type: 'tab', enableDrag: false,
     id: 'top-carat', name: 'Каротаж',
   },
-];
+};
 
-export function getTopPanelTabs(types?: Set<FormType>): IJsonTabNode[] {
-  const tabs: IJsonTabNode[] = [allTopTabs[0], allTopTabs[1]];
+export function getTopPanelTabs(types?: Set<FormType>, needTracePanel?: boolean): IJsonTabNode[] {
+  const tabs: IJsonTabNode[] = [allTopTabs.menu, allTopTabs.reports];
   if (!types) return tabs;
 
-  if (types.has('dataSet')) tabs.push(allTopTabs[2]);
-  if (types.has('chart')) tabs.push(allTopTabs[3]);
-  if (types.has('map')) tabs.push(allTopTabs[4]);
-  if (types.has('carat')) tabs.push(allTopTabs[5], allTopTabs[6]);
+  if (needTracePanel) tabs.push(allTopTabs.traces);
+  if (types.has('dataSet')) tabs.push(allTopTabs.table);
+  if (types.has('chart')) tabs.push(allTopTabs.chart);
+  if (types.has('map')) tabs.push(allTopTabs.map);
+  if (types.has('carat')) tabs.push(allTopTabs.track, allTopTabs.carat);
   return tabs;
 }

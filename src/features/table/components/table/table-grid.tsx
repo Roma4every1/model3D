@@ -13,9 +13,9 @@ import { ToolbarActions, CellActions, SaveTableMetadata, SetRecords } from '../.
 import { scrollCellIntoView } from '../../lib/common';
 import { rollbackRecord, applyRecordEdit, validateRecord } from '../../lib/records';
 import { applyColumnsWidth } from '../../lib/column-tree-actions';
-import { setTableColumns, setTableSelection } from '../../store/tables.actions';
-import { setTableActiveCell, startTableEditing, endTableEditing } from '../../store/tables.actions';
-import { getNewRow, saveTableRecord } from '../../store/tables.thunks';
+import { setTableColumns, setTableSelection } from '../../store/table.actions';
+import { setTableActiveCell, startTableEditing, endTableEditing } from '../../store/table.actions';
+import { getNewRow, saveTableRecord } from '../../store/table.thunks';
 
 import { CustomCell } from '../cells/custom-cell';
 import { TableToolbar } from '../toolbar/table-toolbar';

@@ -23,6 +23,36 @@ export function findChannelsByTables(ids: TableID[], channels: ChannelDict): Cha
 
 /* --- --- */
 
+export function createColumnInfo<Fields extends string = string>(
+  channel: Channel,
+  criterion: ChannelCriterion<Fields>,
+): ChannelColumnInfo<Fields> {
+  const properties = channel.info.properties;
+  const propertyNames = properties.map((property) => property.name.toUpperCase());
+
+  const info = {} as ChannelColumnInfo<Fields>;
+  for (const field in criterion) {
+    const criterionName = criterion[field];
+    const index = propertyNames.findIndex((name) => name === criterionName);
+
+    if (index === -1) return null;
+    info[field] = {name: properties[index].fromColumn, index: -1};
+  }
+  return info;
+}
+
+export function findColumnIndexes(columns: ChannelColumn[], info: ChannelColumnInfo | LookupColumns) {
+  for (const field in info) {
+    const propertyInfo = info[field];
+    for (let i = 0; i < columns.length; i++) {
+      const name = columns[i].Name;
+      if (propertyInfo.name === name) { propertyInfo.index = i; break; }
+    }
+  }
+}
+
+/* --- --- */
+
 /** Находит и возвращает список привязанных каналов. */
 export function getLinkedChannels(dict: ChannelDict): Set<ChannelName> {
   const linkedChannels = new Set<ChannelName>();

@@ -1,6 +1,5 @@
 import { Dispatch } from 'redux';
-import { Thunk } from 'shared/lib';
-import { formsAPI } from 'widgets/presentation/lib/forms.api';
+import { Thunk, StateGetter } from 'shared/lib';
 import { fillChannels } from 'entities/channels';
 import { createLeftLayout } from 'widgets/left-panel';
 import { createClientChannels } from 'widgets/presentation/lib/initialization';
@@ -9,14 +8,16 @@ import { setParamDict } from 'entities/parameters';
 import { tableRowToString } from 'entities/parameters/lib/table-row';
 import { setChannels } from 'entities/channels';
 import { fetchSessionStart, fetchSessionEnd, fetchSessionError } from 'entities/fetch-state';
+import { createObjects, createObjectModels, setObjects } from 'entities/objects';
 import { setRootFormState } from './root-form.actions';
 import { setSessionID } from '../app-state/app.actions';
+import { formsAPI } from 'widgets/presentation/lib/forms.api';
 import { sessionManager } from '../index';
 
 
 /** Инициализация новой сессии. */
 export const startSession = (isDefault: boolean): Thunk => {
-  return async (dispatch: Dispatch) => {
+  return async (dispatch: Dispatch, getState: StateGetter) => {
     dispatch(fetchSessionStart());
 
     const resSessionID = await sessionManager.startSession(isDefault);
@@ -37,13 +38,16 @@ export const startSession = (isDefault: boolean): Thunk => {
     const channels = await createClientChannels(new Set(names), paramDict, []);
     applyChannelsDeps(channels, paramDict);
     await checkParamValues(channels, paramDict);
-    fillChannels(channels, paramDict).then();
 
     dispatch(setParamDict(paramDict));
     dispatch(setChannels(channels));
     dispatch(setRootFormState(root));
+    dispatch(setObjects(createObjects(getState())));
     dispatch(setSessionID(resSessionID.data));
     dispatch(fetchSessionEnd());
+
+    await fillChannels(channels, paramDict);
+    dispatch(setObjects(createObjectModels(getState())));
   };
 };
 
@@ -64,7 +68,7 @@ async function checkParamValues(channelDict: ChannelDict, paramDict: ParamDict) 
   for (const parameter of paramsToFill) {
     const channel = channelsToFill[parameter.externalChannelName];
     const rows = channel?.data?.rows;
-    if (rows?.length) parameter.value = tableRowToString(channel, rows[0])?.value ?? null;
+    if (rows?.length) parameter.value = tableRowToString(channel, rows[0]) ?? null;
   }
 }
 

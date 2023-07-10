@@ -13,8 +13,8 @@ import {
   setEditMode,
   acceptCreatingElement,
   cancelCreatingElement
-} from '../../../store/maps.actions';
-import { mapStateSelector } from '../../../store/maps.selectors';
+} from '../../../store/map.actions';
+import { mapStateSelector } from '../../../store/map.selectors';
 import { createLabelInit, createPolylineInit, rollbackLabel, rollbackPolyline } from './properties-utils';
 
 

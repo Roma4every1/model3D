@@ -1,6 +1,6 @@
 import { EditPanelItemProps } from '../../lib/types';
 import { BigButton } from 'shared/ui';
-import { setTableSelection } from '../../store/tables.actions';
+import { setTableSelection } from '../../store/table.actions';
 import selectAllIcon from 'assets/images/dataset/select-all.png';
 
 

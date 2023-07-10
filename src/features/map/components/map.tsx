@@ -1,23 +1,32 @@
 import { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Scroller } from '../drawer/scroller';
-import { MapNotFound, MapLoadError} from '../../multi-map/multi-map-item';
-import { getFullViewport, getMultiMapChildrenCanvases } from '../lib/map-utils';
-import { mapsStateSelector, mapStateSelector } from '../store/maps.selectors';
-import { setMapField, loadMapSuccess, loadMapError } from '../store/maps.actions';
-import { fetchMapData } from '../store/maps.thunks';
-import { tableRowToString } from 'entities/parameters/lib/table-row';
-import { updateParam, currentWellIDSelector, currentPlastCodeSelector} from 'entities/parameters';
 import { channelSelector } from 'entities/channels';
+import { traceStateSelector, wellStateSelector, setCurrentTrace } from 'entities/objects';
+import { updateParam, currentPlastCodeSelector} from 'entities/parameters';
+import { tableRowToString } from 'entities/parameters/lib/table-row';
+
+import { Scroller } from '../drawer/scroller';
+import { mapsStateSelector, mapStateSelector } from '../store/map.selectors';
+import { fetchMapData } from '../store/map.thunks';
 import { CircularProgressBar } from 'shared/ui';
+import { MapNotFound, MapLoadError } from '../../multi-map/multi-map-item';
+import { setMapField, loadMapSuccess, loadMapError, applyTraceToMap } from '../store/map.actions';
+import { handleClick } from '../lib/traces-map-utils';
+
+import {
+  clientPoint, getFullViewport, getMultiMapChildrenCanvases, getPointToMap,
+  listenerOptions,
+} from '../lib/map-utils';
 
 
 export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const currentWellID = useSelector(currentWellIDSelector);
+  const { model: currentWell } = useSelector(wellStateSelector);
+  const { model: currentTrace, editing: traceEditing } = useSelector(traceStateSelector);
+
   const mapsState = useSelector(mapsStateSelector);
   const mapState: MapState = useSelector(mapStateSelector.bind(id));
 
@@ -40,9 +49,9 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
 
   // обновление списка связанных карт
   useEffect(() => {
-    const canvases = getMultiMapChildrenCanvases(mapsState.multi, mapsState.single, id);
+    const canvases = getMultiMapChildrenCanvases(mapsState.multi, mapsState.single, id, parent);
     if (scroller.current) scroller.current.setList(canvases);
-  }, [mapsState, mapState, id]);
+  }, [mapsState, mapState, id, parent]);
 
   useEffect(() => {
     if (!mapState || !isPartOfDynamicMultiMap) return;
@@ -79,7 +88,7 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
     const objectName = activeChannel.info.currentRowObjectName;
 
     if (objectName && (changeOwner || changeMapID)) {
-      const value = tableRowToString(activeChannel, mapInfo)?.value;
+      const value = tableRowToString(activeChannel, mapInfo)
       dispatch(updateParam(parent, objectName, value));
     }
     if (changeOwner) {
@@ -99,12 +108,12 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
     mapDrawnData.current = mapState.drawer.showMap(canvas, map, data);
   }, [mapState?.drawer]);
 
-  const updateCanvas = useCallback((newCS, context) => {
+  const updateCanvas = useCallback((viewport: MapViewport, context?) => {
     if (!mapData) return;
     let x,y, scale;
-    if (newCS) {
-      x = newCS.centerX; y = newCS.centerY;
-      scale = newCS.scale;
+    if (viewport) {
+      x = viewport.centerX; y = viewport.centerY;
+      scale = viewport.scale;
     } else {
       x = mapData.x; y = mapData.y;
       scale = mapData.scale;
@@ -117,9 +126,9 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
     if (utils) utils.updateCanvas = updateCanvas;
   }, [utils, updateCanvas]);
 
-  const getWellCS = useCallback((wellID, maxScale) => {
+  const getWellViewport = useCallback((wellID, maxScale) => {
     if (!mapData) return;
-    let pointsData;
+    let pointsData: MapPoint[];
     if (isPartOfDynamicMultiMap) {
       const currentMapID = parent + ',' + mapsState.multi[parent].configs
         .find(c => c.data.plastCode === currentPlastCode)?.id
@@ -135,7 +144,7 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
       pointsData = mapData.points
     }
 
-    const point = pointsData.find(p => p.name === wellID);
+    const point = pointsData.find(p => parseInt(p.UWID) === wellID);
     if (point && scroller.current) {
       const scale = mapData.scale < maxScale ? mapData.scale : maxScale;
       return {centerX: point.x, centerY: point.y, scale};
@@ -147,19 +156,8 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
   ]);
 
   const wellsMaxScale = useMemo(() => {
-    const layers = mapData?.layers;
-    if (!layers) return 50_000;
-    for (const { elements, highscale } of layers) {
-      if (elements.length && elements[0].type === 'sign') return highscale;
-    }
-    return 50_000;
+    return mapData?.layers?.find(l => l.elementType === 'sign')?.highscale ?? 50_000;
   }, [mapData?.layers]);
-
-  // подстраивание карты под выбранную скважину
-  useEffect(() => {
-    const cs = getWellCS(currentWellID, wellsMaxScale);
-    if (cs) updateCanvas(cs, canvasRef.current);
-  }, [currentWellID, getWellCS, wellsMaxScale, updateCanvas]);
 
   // закрепление ссылки на холст
   useLayoutEffect(() => {
@@ -171,15 +169,70 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
         : scroller.current = new Scroller(canvasRef.current);
       if (!mapState.scroller) dispatch(setMapField(id, 'scroller', scroller.current));
 
-      const cs =
-        getWellCS(currentWellID, wellsMaxScale) ||
+      const viewport =
+        getWellViewport(currentWell?.id, wellsMaxScale) ||
         getFullViewport(mapData.layers, canvasRef.current);
-      updateCanvas(cs, canvasRef.current);
+
+      // случай, когда вкладка карт не была открыта и приосходит редактирование трассы
+      if (!mapData.onDrawEnd) mapData.onDrawEnd = (canvas, x, y, scale) => {
+        utils.pointToMap = getPointToMap(canvas, x, y, scale);
+      };
+      updateCanvas(viewport, canvasRef.current);
     }
   });
 
+  /* --- --- */
+
+  const currentWellID = currentWell?.id;
+  const wellRef = useRef<WellID>();
+  const traceRef = useRef<{id: TraceID, editing: boolean}>();
+
+  // подстраивание карты под выбранную скважину
+  useEffect(() => {
+    if (currentWellID && currentWellID !== wellRef.current) {
+      const viewport = getWellViewport(currentWellID, wellsMaxScale);
+      if (viewport) updateCanvas(viewport);
+    }
+    wellRef.current = currentWellID;
+  }, [currentWellID, getWellViewport, wellsMaxScale, updateCanvas]);
+
+  // отрисовка текущей трассы
+  useEffect( () => {
+    if (!mapState?.isLoadSuccessfully) return;
+    const updateViewport =
+      currentTrace?.id !== traceRef.current?.id ||           // изменилась активная трасса
+      (traceEditing && traceRef.current?.editing === false); // вошли в режим режактирования
+    dispatch(applyTraceToMap(id, currentTrace, updateViewport));
+    traceRef.current = {id: currentTrace?.id, editing: traceEditing};
+  }, [mapState?.isLoadSuccessfully, currentTrace, traceEditing, id, dispatch]);
+
+  /* --- --- */
+
+  // добавление/удаление точек к текущей трассе через клик по карте
+  const mouseDown = useCallback((event: MouseEvent) => {
+    if (!currentTrace || !traceEditing) return;
+    if (!mapData || !mapState.isLoadSuccessfully) return;
+
+    const eventPoint = utils.pointToMap(clientPoint(event));
+    const changed = handleClick(currentTrace, eventPoint, mapData);
+    if (changed) dispatch(setCurrentTrace({...currentTrace}));
+  }, [mapState?.isLoadSuccessfully, mapData, utils, currentTrace, traceEditing, dispatch]);
+
+  // добавление слушателей событий для добавления/удаления точек трассы через клик по скважинам
+  useEffect(() => {
+    if (!canvas) return;
+    if (traceEditing) {
+      canvas.addEventListener('mousedown', mouseDown, listenerOptions);
+    } else {
+      canvas.removeEventListener('mousedown', mouseDown);
+    }
+    return () => canvas.removeEventListener('mousedown', mouseDown);
+  }, [traceEditing, mouseDown, canvas]);
+
+  /* --- --- */
+
   if (!mapState) {
-    return null;
+    return <div/>;
   }
   if (!isMapExist) {
     return <MapNotFound t={t}/>;

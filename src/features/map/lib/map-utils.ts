@@ -1,5 +1,4 @@
-import { chunk, min, max } from 'lodash';
-import { getParentFormId } from '../../../shared/lib';
+import { chunk } from 'lodash';
 
 
 /** Настройки для метода `addEventListener`. */
@@ -9,14 +8,16 @@ export const listenerOptions = {passive: true};
 export const PIXEL_PER_METER: number = 100 * 96 / 2.54;
 
 /** Возвращает список холстов привязанных карт в рамках одной мультикарты. */
-export const getMultiMapChildrenCanvases = (multi: FormDict<MultiMapState>, single: FormDict<MapState>, formID: FormID) => {
+export function getMultiMapChildrenCanvases(
+  multi: FormDict<MultiMapState>, single: FormDict<MapState>,
+  formID: FormID, parentID: FormID,
+): MapCanvas[] {
   const childrenUtils: MapCanvas[] = [];
-  const parentFormID: FormID = getParentFormId(formID);
+  const multiMapState = multi[parentID];
 
-  const multiMapState = multi[parentFormID];
-  if (!multiMapState || !multiMapState.sync || multiMapState.children.length < 1)
+  if (!multiMapState || !multiMapState.sync || multiMapState.children.length < 1) {
     return childrenUtils;
-
+  }
   for (const childFormID of multiMapState.children) {
     if (childFormID === formID) continue;
     const mapState = single[childFormID];
@@ -26,39 +27,43 @@ export const getMultiMapChildrenCanvases = (multi: FormDict<MultiMapState>, sing
 }
 
 /** Возвращает точку с координатами клика мыши. */
-export const clientPoint = (event: MouseEvent): ClientPoint => {
+export function clientPoint(event: MouseEvent): Point {
   return {x: event.offsetX, y: event.offsetY};
-};
+}
 
 /** Возвращает функцию для перевода точки клика из СК холста в СК карты. */
-export const getPointToMap = (canvas: HTMLCanvasElement, cx: number, cy: number, scale: MapScale) => {
+export function getPointToMap(canvas: HTMLCanvasElement, cx: number, cy: number, scale: MapScale) {
   const sc = 1 / PIXEL_PER_METER * scale;
   const canvasCX = canvas.clientWidth / 2;
   const canvasCY = canvas.clientHeight / 2;
 
-  return (point: ClientPoint): ClientPoint => ({
+  return (point: Point): Point => ({
     x: cx + (point.x - canvasCX) * sc,
     y: cy + (point.y - canvasCY) * sc
   });
-};
+}
 
 /** Евклидово расстояние между двумя точками по их координатам.
  *
  * `√ (x1 - x2)^2 + (y1 - y2)^2`
  * */
-export const distance = (x1: number, y1: number, x2: number, y2: number) => {
+export function distance(x1: number, y1: number, x2: number, y2: number): number {
   return Math.sqrt((x1 * x1 + x2 * x2) + (y1 * y1 + y2 * y2) - 2 * (x1 * x2 + y1 * y2));
 }
 
-export const getBoundsByPoints = (points: any[]): Bounds => {
+export function getBoundsByPoints(points: [number, number][]): Bounds {
   const xValues = points.map(p => p[0]);
   const yValues = points.map(p => p[1]);
-  return {min: {x: min(xValues), y: min(yValues)}, max: {x: max(xValues), y: max(yValues)}};
+
+  return {
+    min: {x: Math.min(...xValues), y: Math.min(...yValues)},
+    max: {x: Math.max(...xValues), y: Math.max(...yValues)}
+  };
 }
 
 const SELECTION_RADIUS = 0.015;
 
-export const getNearestPointIndex = (point: ClientPoint, scale: MapScale, polyline: MapPolyline): number => {
+export function getNearestPointIndex(point: Point, scale: MapScale, polyline: MapPolyline): number {
   let minRadius, nearestIndex: number | null = null;
   const points = chunk<number>(polyline.arcs[0].path, 2);
 
@@ -71,9 +76,9 @@ export const getNearestPointIndex = (point: ClientPoint, scale: MapScale, polyli
     }
   });
   return nearestIndex;
-};
+}
 
-export const getNearestSegment = (point, polyline: MapPolyline) => {
+export function getNearestSegment(point, polyline: MapPolyline) {
   let nearestNp = 0;
   let points = chunk<number>(polyline.arcs[0].path, 2);
   if (polyline.arcs[0].closed) {
@@ -101,7 +106,7 @@ export const getNearestSegment = (point, polyline: MapPolyline) => {
   return nearestNp;
 }
 
-export const squaredDistanceBetweenPointAndSegment = (segment, point) => {
+export function squaredDistanceBetweenPointAndSegment(segment, point) {
   if (segment[0][0] === segment[1][0] && segment[0][1] === segment[1][1]) return Infinity;
 
   const aSquared = Math.pow(segment[0][0] - point.x, 2) + Math.pow(segment[0][1] - point.y, 2);
@@ -114,10 +119,10 @@ export const squaredDistanceBetweenPointAndSegment = (segment, point) => {
   const doubleSquare = Math.abs((segment[0][0] - point.x) * (segment[1][1] - point.y) - (segment[1][0] - point.x) * (segment[0][1] - point.y));
   const distance = doubleSquare * doubleSquare / cSquared;
   return isNaN(distance) ? Infinity : distance;
-};
+}
 
-/** Определяет состояние карты, чтобы она полностью влазила в экран. */
-export const getFullViewport = (layers: MapLayer[], canvas: HTMLCanvasElement) => {
+/** Определяет вьюпорт карты, чтобы все элементы влазили в экран. */
+export function getFullViewport(layers: MapLayer[], canvas: HTMLCanvasElement): MapViewport {
   const allVisibleBounds = layers.filter(l => l.visible).map(l => l.bounds);
 
   const minX = Math.min(...allVisibleBounds.map(b => b.min.x));
@@ -130,4 +135,4 @@ export const getFullViewport = (layers: MapLayer[], canvas: HTMLCanvasElement) =
   const scale: MapScale = Math.max(scaleX, scaleY);
 
   return {centerX: (minX + maxX) / 2, centerY: (minY + maxY) / 2, scale};
-};
+}

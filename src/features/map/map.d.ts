@@ -59,8 +59,8 @@ interface MapState {
 type MapCanvas = HTMLCanvasElement & {selectingMode: boolean, blocked: boolean, events: any};
 
 interface MapUtils {
-  updateCanvas(cs?: {centerX: number, centerY: number, scale: MapScale}, context?: any): void,
-  pointToMap(point: ClientPoint): ClientPoint,
+  updateCanvas(cs?: MapViewport, context?: any): void,
+  pointToMap(point: Point): Point,
 }
 
 /** ## Состояние выделения карты.
@@ -72,7 +72,7 @@ interface MapUtils {
 interface MapSelectingState {
   nearestElements: any[],
   activeIndex: number,
-  lastPoint: ClientPoint,
+  lastPoint: Point,
 }
 
 /* --- Загрузка карты --- */
@@ -119,6 +119,12 @@ interface ParsedContainer {
 
 /* --- --- */
 
+interface MapViewport {
+  centerX: number,
+  centerY: number,
+  scale: MapScale,
+}
+
 interface MapData {
   date: string,
   eTag: string,
@@ -156,7 +162,6 @@ interface MapLayer {
   bounds: Bounds,
   container: string,
   elements: MapElement[],
-  elementsData: Promise<MapElement[]>,
   group: string,
   highscale: LayerHighScale,
   lowscale: LayerLowScale,
@@ -165,8 +170,9 @@ interface MapLayer {
   index?: any,
   version: any,
   visible?: boolean,
-  modified?: boolean,
   elementType?: MapElementType
+  modified?: boolean,
+  temporary?: boolean
 }
 
 /** Максимальный масштаб карты, при котором данный слой будет отрисовываться. */
@@ -176,16 +182,16 @@ type LayerHighScale = number | 'INF';
 type LayerLowScale = number | 'INF';
 
 /** Границы объекта (слоя, элемента) карты.
- * + `max`: {@link ClientPoint}
- * + `min`: {@link ClientPoint}
+ * + `max`: {@link Point}
+ * + `min`: {@link Point}
  * + `top?: number` — верхняя граница
  * + `bottom?: number` — нижняя граница
  * + `left?: number` — левая граница
  * + `right?: number` — правая граница
  * */
 interface Bounds {
-  max: ClientPoint,
-  min: ClientPoint,
+  max: Point,
+  min: Point,
   top?: number,
   bottom?: number,
   left?: number,
@@ -246,6 +252,7 @@ interface MapPolyline extends MapElementProto {
   legend?: any,
   img?: any,
   style?: PolylineBorderStyle,
+  isTrace?: boolean
 }
 
 /** ### Дуга линии.

@@ -1,12 +1,12 @@
 import * as _ from 'lodash';
-import {rects} from './geom';
+import { rects } from './geom';
 import * as parseColor from 'parse-color';
-import {loadImageData} from './html-helper';
+import { loadImageData } from './html-helper';
 import startThread from './start-thread';
 import parseSMB from './parse-smb';
 import pngMono from './png-mono';
-import {provider} from './index';
-import {mapsAPI} from '../lib/maps.api';
+import { provider } from './index';
+import { mapsAPI } from '../lib/maps.api';
 import linesDefStub from './lines.def.stub.json';
 import {getLabelTextNumberArray} from "./label-text-parser";
 
@@ -690,6 +690,11 @@ var polyline = declareType('polyline', {
       i.style = currentLineConfig[0];
     }
 
+    if (i.isTrace) {
+        context.lineCap = 'round';
+        context.lineJoin = 'round';
+    }
+
     polyline.path(i, options);
     context.strokeStyle = i.bordercolor || i.fillcolor || i.fillbkcolor || "#000000";
     context.lineWidth = (i.borderwidth || defaultLineWidth) * 0.001 * options.dotsPerMeter;
@@ -739,6 +744,10 @@ var polyline = declareType('polyline', {
     }
     const pathNeeded = _.once(() => polyline.path(i, options));
 
+    if (i.isTrace) {
+        context.lineCap = 'round';
+        context.lineJoin = 'round';
+    }
     if ((!i.edited) && i.selected) {
       context.lineCap = 'round';
       context.lineJoin = 'round';

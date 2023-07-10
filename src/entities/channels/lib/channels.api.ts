@@ -24,12 +24,9 @@ interface ChannelDataDTO {
 }
 
 
+/** Запросы связанные с каналами. */
 export class ChannelsAPI {
   constructor(private readonly baseAPI: BaseAPI) {}
-
-  private async request<Expected>(req: WRequest) {
-    return this.baseAPI.request<Expected>(req);
-  }
 
   /** Запрос статических данных канала. */
   public async getChannelInfo(channelName: ChannelName): Promise<Res<ChannelInfo>> {
@@ -45,7 +42,7 @@ export class ChannelsAPI {
     const body = JSON.stringify({sessionId: sessionID, channelName: name, paramValues});
 
     const req: WRequest = {method: 'POST', path: 'channelData', body};
-    const res = await this.request<ChannelDTO>(req);
+    const res = await this.baseAPI.request<ChannelDTO>(req);
     if (res.ok === false) return res as Res<ChannelDataDTO>;
     const data = res.data.data;
 
@@ -64,36 +61,36 @@ export class ChannelsAPI {
   /** Запрос статистики по колонке. */
   public async getStatistics(tableID: TableID, columnName: string): Promise<Res<any>> {
     const query = {sessionId: this.baseAPI.sessionID, tableId: tableID, columnName};
-    return await this.request<any>({path: 'getStatistics', query})
+    return await this.baseAPI.request<any>({path: 'getStatistics', query})
   }
 
   /** Запрос новой записи со стандартными значениями. */
   public async getNewRow(tableID: TableID) {
     const query = {sessionId: this.baseAPI.sessionID, tableId: tableID};
-    return await this.request<ChannelRow>({path: 'getNewRow', query});
+    return await this.baseAPI.request<ChannelRow>({path: 'getNewRow', query});
   }
 
   /** Запрос на добавление записи в таблицу. */
   public async insertRows(tableID: TableID, newRows: ChannelRow[]) {
     const rowData = JSON.stringify(newRows);
     const query = {sessionId: this.baseAPI.sessionID, tableId: tableID, rowData};
-    return await this.request<ReportStatus>({path: 'insertRow', query});
+    return await this.baseAPI.request<ReportStatus>({path: 'insertRow', query});
   }
 
   /** Запрос обновления записи в таблице. */
-  public async updateRows(tableID: TableID, ids: number[], newRowData: ChannelRow[]) {
+  public async updateRows(tableID: TableID, indexes: number[], newRowData: ChannelRow[]) {
     const sessionId = this.baseAPI.sessionID;
-    const rowsIndices = ids.join(',');
+    const rowsIndices = indexes.join(',');
     const body = JSON.stringify({sessionId, tableId: tableID, rowsIndices, newRowData});
-    return await this.request<ReportStatus>({method: 'POST', path: 'updateRow', body});
+    return await this.baseAPI.request<ReportStatus>({method: 'POST', path: 'updateRow', body});
   }
 
   /** Запрос на удаление записей из таблицы. */
-  public async removeRows(tableID: TableID, ids: number[] | 'all') {
+  public async removeRows(tableID: TableID, indexes: number[] | 'all') {
     const sessionId = this.baseAPI.sessionID;
-    const rows = ids === 'all' ? '' : ids.join(',');
-    const query = {sessionId, tableId: tableID, rows, removeAll: String(ids === 'all')};
-    return await this.request<ReportStatus>({path: 'removeRows', query});
+    const rows = Array.isArray(indexes) ? indexes.join(',') : indexes;
+    const query = {sessionId, tableId: tableID, rows};
+    return await this.baseAPI.request<ReportStatus>({path: 'removeRows', query});
   }
 }
 

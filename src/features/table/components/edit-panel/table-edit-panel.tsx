@@ -2,7 +2,7 @@ import { EditPanelItemProps } from '../../lib/types';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { MenuSection, MenuSkeleton } from 'shared/ui';
-import { tableStateSelector } from '../../store/tables.selectors';
+import { tableStateSelector } from '../../store/table.selectors';
 
 import { ExcelExport } from './excel-export';
 import { ColumnStatistics } from './column-statistics';

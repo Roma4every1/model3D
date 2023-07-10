@@ -1,13 +1,12 @@
 import { Dispatch } from 'redux';
 import { Thunk, StateGetter } from 'shared/lib';
-import { setCaratActiveCurve, setCaratChannelData } from './carats.actions';
+import { setCaratActiveCurve, setCaratChannelData } from './carat.actions';
 
 
 /** Обновляет данные каротажной диаграммы. */
-export const setCaratData = (id: FormID, data?: ChannelDict): Thunk => {
+export function setCaratData(id: FormID, data?: ChannelDict): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
-    const state = getState();
-    const caratState = state.carats[id];
+    const caratState = getState().carats[id];
     const stage = caratState.stage;
 
     if (data) {
@@ -20,4 +19,4 @@ export const setCaratData = (id: FormID, data?: ChannelDict): Thunk => {
     if (data) dispatch(setCaratChannelData(id, data));
     stage.render();
   };
-};
+}

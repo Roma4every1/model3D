@@ -3,7 +3,7 @@ import { ThunkDispatch } from 'redux-thunk';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { ButtonIconStock } from 'shared/ui';
-import { reloadTable } from '../../store/tables.thunks';
+import { reloadTable } from '../../store/table.thunks';
 
 
 interface ReloadButtonProps {

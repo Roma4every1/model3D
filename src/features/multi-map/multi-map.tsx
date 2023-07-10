@@ -9,9 +9,9 @@ import { stateNeedFetch, formFetchStateSelector } from 'entities/fetch-state';
 import { setPresentationChildren, setActiveForm } from 'widgets/presentation';
 import { getMultiMapLayout } from './multi-map-utils';
 import { MultiMapItem, MapNotFound } from './multi-map-item';
-import { addMultiMap } from '../map/store/maps.actions';
-import { fetchMultiMapData } from '../map/store/maps.thunks';
-import { multiMapStateSelector } from '../map/store/maps.selectors';
+import { addMultiMap } from '../map/store/map.actions';
+import { fetchMultiMapData } from '../map/store/map.thunks';
+import { multiMapStateSelector } from '../map/store/map.selectors';
 
 
 interface MultiMapProps {

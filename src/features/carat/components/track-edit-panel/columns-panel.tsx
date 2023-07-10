@@ -1,6 +1,6 @@
 import { useDispatch } from 'react-redux';
 import { MenuSection, ButtonIcon } from 'shared/ui';
-import { setCaratActiveGroup } from '../../store/carats.actions';
+import { setCaratActiveGroup } from '../../store/carat.actions';
 
 import moveLeftIcon from 'assets/images/carat/move-left.svg';
 import moveRightIcon from 'assets/images/carat/move-right.svg';

@@ -4,7 +4,7 @@ import { SaveTableMetadata, SetRecords } from '../lib/types';
 import { t } from 'shared/locales';
 import { updateTables } from 'entities/channels';
 import { createRecord } from '../lib/records';
-import { startTableEditing } from './tables.actions';
+import { startTableEditing } from './table.actions';
 import { tableStateToFormSettings } from '../lib/table-settings';
 import { watchReport } from 'entities/reports';
 import { reloadChannel } from 'entities/channels';
@@ -16,7 +16,7 @@ import { reportsAPI } from 'entities/reports/lib/reports.api';
 
 
 /** Перезагрузка данных канала таблицы. */
-export const reloadTable = (id: FormID): Thunk => {
+export function reloadTable(id: FormID): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const state = getState();
     const channelName = state.tables[id]?.channelName;
@@ -25,10 +25,10 @@ export const reloadTable = (id: FormID): Thunk => {
     await reloadChannel(channelName)(dispatch, () => state);
     showNotice(dispatch, t('table.reload.end-ok'));
   };
-};
+}
 
 /** Сохранение состояния строк таблицы в базу данных. */
-export const saveTableRecord = ({type, formID, row}: SaveTableMetadata): Thunk => {
+export function saveTableRecord({type, formID, row}: SaveTableMetadata): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     dispatch(setWindowNotification(t('table.save.start')));
     const state = getState();
@@ -60,10 +60,10 @@ export const saveTableRecord = ({type, formID, row}: SaveTableMetadata): Thunk =
     await updateTables(tables)(dispatch, () => state);
     showNotice(dispatch, t('table.save.' + (!res.ok || wrongResult ? 'end-error' : 'end-ok')));
   };
-};
+}
 
 /** Удаление строк таблицы. */
-export const deleteTableRecords = (formID: FormID, ids: number[] | 'all'): Thunk<boolean> => {
+export function deleteTableRecords(formID: FormID, ids: number[] | 'all'): Thunk<boolean> {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     if (Array.isArray(ids) && ids.length === 0) return;
 
@@ -86,12 +86,12 @@ export const deleteTableRecords = (formID: FormID, ids: number[] | 'all'): Thunk
     await updateTables(tables)(dispatch, () => state);
     return ok;
   };
-};
+}
 
-export const getNewRow = (
+export function getNewRow (
   id: FormID, state: TableState, setRecords: SetRecords,
   copy: boolean, index?: number
-): Thunk => {
+): Thunk {
   return async (dispatch: Dispatch) => {
     const res = !copy && await channelsAPI.getNewRow(state.tableID);
     if (!copy && res.ok === false) { dispatch(setWindowWarning(res.data)); return; }
@@ -112,9 +112,9 @@ export const getNewRow = (
     const editColumnID = state.activeCell.columnID ?? state.columnTreeFlatten[0];
     dispatch(startTableEditing(id, editColumnID, newID, true));
   };
-};
+}
 
-export const exportTableToExcel = (id: FormID): Thunk => {
+export function exportTableToExcel(id: FormID): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const state = getState();
     const tableState = state.tables[id];
@@ -134,4 +134,4 @@ export const exportTableToExcel = (id: FormID): Thunk => {
     const res = await reportsAPI.exportToExcel(exportData);
     if (res.ok && res.data.OperationId) watchReport(null, res.data.OperationId, dispatch);
   };
-};
+}

@@ -1,11 +1,11 @@
 import { Dispatch } from 'redux';
 import { Thunk, StateGetter } from 'shared/lib';
 import { fetchFormsStart, fetchFormsEnd } from 'entities/fetch-state';
-import { loadMapError, loadMapSuccess, startMapLoad } from './maps.actions';
+import { loadMapError, loadMapSuccess, startMapLoad } from './map.actions';
 import { mapsAPI } from '../lib/maps.api';
 
 
-export const fetchMapData = (formID: FormID, mapID: MapID, owner: MapOwner, setProgress: Function) => {
+export function fetchMapData(formID: FormID, mapID: MapID, owner: MapOwner, setProgress: Function): Thunk {
   return async (dispatch: Dispatch) => {
     dispatch(startMapLoad(formID));
     const mapData = await mapsAPI.loadMap(mapID, owner, setProgress, formID);
@@ -17,9 +17,9 @@ export const fetchMapData = (formID: FormID, mapID: MapID, owner: MapOwner, setP
       dispatch(loadMapSuccess(formID, mapData));
     }
   }
-};
+}
 
-export const fetchMultiMapData = (id: FormID): Thunk => {
+export function fetchMultiMapData(id: FormID): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const multiMapState = getState().maps.multi[id];
     if (!multiMapState) return;
@@ -41,4 +41,4 @@ export const fetchMultiMapData = (id: FormID): Thunk => {
     }
     dispatch(fetchFormsEnd([id + '_map']));
   };
-};
+}

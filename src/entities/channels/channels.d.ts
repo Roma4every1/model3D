@@ -65,7 +65,9 @@ interface ChannelColumn {
  * + `currentRowObjectName`: {@link ParameterID}
  * + `clients`: {@link Set} of {@link FormID}
  * + `lookupChannels`: {@link ChannelName}[]
+ * + `columns`: {@link ChannelColumnInfo}
  * + `lookupColumns`: {@link LookupColumns}
+ * + `columnApplied: boolean`
  * */
 interface ChannelInfo {
   /** Название для отображения на интерфейсе. */
@@ -80,8 +82,12 @@ interface ChannelInfo {
   clients?: Set<FormID>,
   /** Список каналов справочников. */
   lookupChannels?: ChannelName[],
-  /** Названия колонок, необходимых для редакторов параметров. */
+  /** Информация о названиях и индексах колонок. */
+  columns?: ChannelColumnInfo,
+  /** Названия колонок, необходимых для справочников. */
   lookupColumns?: LookupColumns,
+  /** Были ли полученны данные о колонках канала. */
+  columnApplied?: boolean,
 }
 
 /** Дополнительные свойства колонки. */
@@ -100,7 +106,7 @@ interface ChannelProperty {
   secondLevelChannelName: string | null,
 }
 
-/** Информация о колонках, необходимых для редакторов параметров.
+/** Информация о колонках, необходимых для справочников.
  * + `id`: {@link LookupColumnInfo}
  * + `value`: {@link LookupColumnInfo}
  * + `parent`: {@link LookupColumnInfo}
@@ -114,13 +120,18 @@ interface LookupColumns {
   parent: LookupColumnInfo,
 }
 
-/** Информация о колонке канала необходимой для редакторов параметров. */
+/** Информация о названиях и индексах колонок канала. */
+type ChannelColumnInfo<Fields = string> = Record<Fields, LookupColumnInfo>;
+
+/** Информация о названии и индексе колонки. */
 interface LookupColumnInfo {
   /** Название колонки. */
   name: string,
   /** Порядковый номер. */
   index: number,
 }
+
+type ChannelCriterion<Fields extends string = string> = Record<Fields, string>;
 
 /** Настройки запроса данных. */
 interface ChannelQuerySettings {
@@ -176,8 +187,9 @@ interface LookupListItem {
 type LookupTree = LookupTreeNode[];
 
 /** Элемент дерева значений канала-справочника.
- * + `id: any`
+ * + `id`: {@link LookupItemID}
  * + `value: any`
+ * + `parent?`: {@link LookupItemID}
  * + `children?`: {@link LookupTreeNode}[]
  * */
 interface LookupTreeNode {

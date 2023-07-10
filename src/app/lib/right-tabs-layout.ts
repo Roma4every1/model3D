@@ -12,7 +12,7 @@ const allRightTabs: IJsonTabNode[] = [
   },
 ];
 
-export function getRightPanelTabs(types?: Set<FormType>): IJsonTabNode[] {
+export function getRightPanelTabs(types: Set<FormType> | undefined) {
   const tabs: IJsonTabNode[] = [allRightTabs[0]];
   if (types && types.has('map')) tabs.push(allRightTabs[1]);
   return tabs;

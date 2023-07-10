@@ -8,8 +8,8 @@ import { Input } from '@progress/kendo-react-inputs';
 
 import { toPairs } from 'lodash';
 import { setOpenedWindow } from 'entities/windows';
-import { setMapField } from '../../../store/maps.actions';
-import { mapStateSelector } from '../../../store/maps.selectors';
+import { setMapField } from '../../../store/map.actions';
+import { mapStateSelector } from '../../../store/map.selectors';
 
 
 interface AttrTableWindowProps {

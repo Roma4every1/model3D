@@ -2,6 +2,7 @@ import { Dispatch } from 'redux';
 import { Thunk, StateGetter } from 'shared/lib';
 import { reloadChannels } from '../../channels';
 import { updateReportsVisibility } from '../../reports';
+import { updateObjects } from '../../objects';
 import { findDependentParameters } from '../lib/utils';
 import { tableRowToString } from '../lib/table-row';
 import { updateParam, updateParams } from './parameters.actions';
@@ -21,6 +22,7 @@ export const updateParamDeep = (clientID: FormID, id: ParameterID, newValue: any
     const { relatedChannels, relatedReports } = parameter;
     dispatch(updateParam(clientID, id, newValue));
     if (relatedChannels.length) await reloadChannels(relatedChannels)(dispatch, getState);
+    updateObjects([{clientID, id, value: newValue}], dispatch, getState());
 
     const { parameters, channels } = getState();
     const entries: UpdateParamData[] = [];
@@ -46,7 +48,7 @@ export const updateParamDeep = (clientID: FormID, id: ParameterID, newValue: any
       }
       if (channel) {
         const rows = channel?.data?.rows;
-        if (rows?.length) updateData.value = tableRowToString(channel, rows[0])?.value ?? null;
+        if (rows?.length) updateData.value = tableRowToString(channel, rows[0]) ?? null;
       }
 
       entries.push(updateData);
@@ -54,12 +56,16 @@ export const updateParamDeep = (clientID: FormID, id: ParameterID, newValue: any
       updatedParam.relatedReports?.forEach((reportID) => reportsToUpdate.add(reportID));
     }
 
-    if (entries.length)
+    if (entries.length) {
       dispatch(updateParams(entries));
-    if (channelsToUpdate.size)
+      updateObjects(entries, dispatch, getState());
+    }
+    if (channelsToUpdate.size) {
       reloadChannels([...channelsToUpdate])(dispatch, getState).then();
-    if (reportsToUpdate.size)
+    }
+    if (reportsToUpdate.size) {
       updateReportsVisibility([...reportsToUpdate])(dispatch, getState).then();
+    }
   };
 };
 

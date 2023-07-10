@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { LayersTreeElement } from './layers-tree-element';
-import { mapStateSelector } from '../../store/maps.selectors';
+import { mapStateSelector } from '../../store/map.selectors';
 import './layers-tree.scss';
 
 

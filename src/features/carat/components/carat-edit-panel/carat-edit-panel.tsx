@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { caratStateSelector } from '../../store/carats.selectors';
+import { caratStateSelector } from '../../store/carat.selectors';
 import { MenuSkeleton } from 'shared/ui';
 import { LocalizationProvider, IntlProvider } from '@progress/kendo-react-intl';
 

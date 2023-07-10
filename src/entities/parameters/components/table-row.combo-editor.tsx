@@ -40,7 +40,7 @@ export const TableRowComboEditor = ({parameter, update, channel}: EditorProps<Pa
   const onChange = (event: ComboBoxChangeEvent) => {
     let newValue = event.value?.value ?? null;
     if (newValue !== null && typeof newValue !== 'string')
-      newValue = tableRowToString(channel, newValue).value;
+      newValue = tableRowToString(channel, newValue);
     update(newValue);
   };
 

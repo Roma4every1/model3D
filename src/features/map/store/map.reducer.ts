@@ -2,6 +2,7 @@ import { MapModes } from '../lib/enums';
 import { chunk } from 'lodash';
 import { createMapsDrawer } from '../drawer';
 import { getBoundsByPoints, getMultiMapChildrenCanvases } from '../lib/map-utils';
+import { traceLayerProto, getTraceMapElement, getFullTraceViewport } from '../lib/traces-map-utils';
 
 /* --- Action Types --- */
 
@@ -22,7 +23,8 @@ export enum MapsActions {
   START_CREATING = 'maps/startCreate',
   CREATE_ELEMENT = 'maps/createEl',
   ACCEPT_CREATING = 'maps/acceptCreate',
-  CANCEL_CREATING = 'maps/cancelCreate'
+  CANCEL_CREATING = 'maps/cancelCreate',
+  SET_TRACE = 'maps/trace',
 }
 
 /* --- Action Interfaces --- */
@@ -95,18 +97,20 @@ interface ActionAcceptCreating extends MapAction {
 interface ActionCancelCreating extends MapAction {
   type: MapsActions.CANCEL_CREATING,
 }
+interface ActionSetTrace extends MapAction {
+  type: MapsActions.SET_TRACE,
+  model: TraceModel, updateViewport: boolean,
+}
+
 
 export type MapsAction = ActionAddMulti | ActionSetSync | ActionAdd |
   ActionStartLoad | ActionLoadSuccess | ActionLoadError |
   ActionSetMode | ActionSetDimensions | ActionSetField | ActionClearSelect |
   ActionStartEditing | ActionAcceptEditing | ActionCancelEditing |
-  ActionStartCreating | ActionCreateElement | ActionCancelCreating | ActionAcceptCreating;
+  ActionStartCreating | ActionCreateElement | ActionCancelCreating | ActionAcceptCreating |
+  ActionSetTrace;
 
 /* --- Reducer Utils --- */
-
-const getDefaultSelecting = (): MapSelectingState => {
-  return {nearestElements: [], activeIndex: 0, lastPoint: null}
-};
 
 const clearOldData = (mapState: MapState): void => {
   mapState.oldData.x = null;
@@ -145,7 +149,7 @@ const initMapState: MapState = {
   isElementEditing: false,
   isElementCreating: false,
   oldData: {x: null, y: null, arc: null, ange: null},
-  selecting: getDefaultSelecting(),
+  selecting: {nearestElements: [], activeIndex: 0, lastPoint: null},
   isModified: false,
   cursor: 'auto',
   childOf: null, scroller: null,
@@ -174,14 +178,18 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
     }
 
     case MapsActions.SET_SYNC: {
-      state.multi[action.formID] = {...state.multi[action.formID], sync: action.payload};
-      const children = state.multi[action.formID].children;
-      if (action.payload === false) {
-        children.forEach((formID: FormID) => { state.single[formID]?.scroller?.setList([]); });
+      const { formID: parentID, payload: sync } = action;
+      state.multi[parentID] = {...state.multi[parentID], sync};
+      const children = state.multi[parentID].children;
+
+      if (sync === false) {
+        children.forEach((childID: FormID) => {
+          state.single[childID]?.scroller?.setList([]);
+        });
       } else {
-        children.forEach((formID: FormID) => {
-          const canvases = getMultiMapChildrenCanvases(state.multi, state.single, formID);
-          state.single[formID]?.scroller?.setList(canvases);
+        children.forEach((childID: FormID) => {
+          const canvases = getMultiMapChildrenCanvases(state.multi, state.single, childID, parentID);
+          state.single[childID]?.scroller?.setList(canvases);
         });
       }
       return {...state};
@@ -205,13 +213,8 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
 
     case MapsActions.LOAD_SUCCESS: {
       const { formID, mapData } = action;
-      if (!mapData.onDrawEnd) mapData.onDrawEnd = () => {};
-
-      // задание типов элементов для слоев
-      const newLayers = mapData.layers.map(l => ({...l, elementType: l.elements[0].type}));
-      const newData = {...mapData, layers: newLayers}
-
-      state.single[formID] = {...state.single[formID], mapData: newData, isLoadSuccessfully: true};
+      mapData.layers.forEach(l => l.elementType = l.elements[0]?.type ?? 'sign');
+      state.single[formID] = {...state.single[formID], mapData, isLoadSuccessfully: true};
       return {...state};
     }
 
@@ -308,12 +311,17 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
         : newMapState.canvas.blocked = false;
 
       if (element.type === 'polyline') {
-        element.bounds = getBoundsByPoints(chunk(element.arcs[0].path, 2));
+        element.bounds = getBoundsByPoints(chunk(element.arcs[0].path, 2) as [number, number][]);
       }
       const modifiedLayer = newMapState.mapData.layers?.find(l => l.elements?.includes(element));
       if (modifiedLayer) {
         modifiedLayer.modified = true;
         newMapState.isModified = true;
+      }
+
+      if (element.type === 'polyline') {
+        element.bounds = getBoundsByPoints(chunk(element.arcs[0].path, 2) as [number, number][]);
+        newMapState.isModified = !(element as MapPolyline)?.isTrace;
       }
 
       newMapState.utils.updateCanvas();
@@ -378,6 +386,7 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
       const isPolyline = newMapState.element.type === 'polyline';
       newMapState.mode = isPolyline ? MapModes.ADD_END : MapModes.MOVE_MAP;
       newMapState.canvas.blocked = isPolyline;
+      newMapState.isModified = !(isPolyline && (newMapState.element as MapPolyline)?.isTrace);
 
       newMapState.cursor = 'auto';
       newMapState.utils.updateCanvas();
@@ -418,8 +427,38 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
         ? setMultiMapBlocked(state, newMapState.childOf, false)
         : newMapState.canvas.blocked = false;
       newMapState.mode = MapModes.NONE;
+      newMapState.cursor = 'auto';
       newMapState.utils.updateCanvas();
       state.single[action.formID] = newMapState;
+      return {...state};
+    }
+
+    case MapsActions.SET_TRACE: {
+      const { formID, model, updateViewport } = action;
+      const mapState = state.single[formID];
+      const layers = mapState?.mapData.layers;
+      if (!layers) return;
+
+      let traceElement: MapPolyline;
+      let traceLayer = layers.find(layer => layer.uid === '{TRACES-LAYER}');
+
+      if (!traceLayer) {
+        traceLayer = structuredClone(traceLayerProto);
+        mapState.mapData.layers = [...layers, traceLayer];
+      }
+
+      if (!model || !model.nodes.length) {
+        traceLayer.elements = [];
+      } else {
+        traceElement = getTraceMapElement(model);
+        traceLayer.elements = [traceElement];
+        traceLayer.bounds = traceElement.bounds;
+      }
+
+      const viewport = traceElement && updateViewport
+        ? getFullTraceViewport(traceElement, mapState.canvas)
+        : undefined;
+      mapState.utils.updateCanvas(viewport);
       return {...state};
     }
 

@@ -1,0 +1,92 @@
+.trace-edit-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  line-height: 14.4px;
+
+  &__header {
+    padding-right: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0cdcd;
+  }
+
+  &__header .title {
+    margin: 4px 0;
+    display: flex;
+    align-items: center;
+    font-size: var(--font-size);
+    font-family: var(--font-family);
+    line-height: 1.5;
+    padding: 3px 8px;
+  }
+
+  &__header .title div {
+    display: flex;
+    align-items: center;
+    height: 17.6px;
+  }
+
+  &__header .title div {
+    display: flex;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  }
+
+  &__body {
+    padding: 4px 8px;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 20px;
+  }
+
+  &__inner-block {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  &__title-text {
+    line-height: 18px;
+  }
+
+  &__splitter {
+    background-color: var(--color-1);
+  }
+}
+
+.trace-edit-tab .items {
+  max-height: 300px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.trace-item {
+  padding: 6px;
+  width: 100%;
+  border: none !important;
+  justify-content: space-between !important;
+}
+
+.trace-item:hover {
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #424242;
+  background-color: #f5f5f5;
+}
+
+.trace-item.selected {
+  background: rgba(248, 179, 174, 0.5);
+  border: 1px solid #f8b3ae;
+}
+
+.trace-item .k-i-x {
+  color: #424242;
+}
+
+.change-order-buttons {
+  display: flex;
+  gap: 4px;
+}

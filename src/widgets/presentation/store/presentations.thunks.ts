@@ -10,8 +10,8 @@ import { setParamDict } from 'entities/parameters';
 import { fetchFormsStart, fetchFormsEnd, fetchFormError } from 'entities/fetch-state';
 import { setPresentationState } from './presentations.actions';
 import { createTableState } from 'features/table';
-import { createMapState } from 'features/map/store/maps.actions';
-import { createCaratState } from 'features/carat/store/carats.actions';
+import { createMapState } from 'features/map/store/map.actions';
+import { createCaratState } from 'features/carat/store/carat.actions';
 import { setFormsState } from 'widgets/presentation/store/forms.actions';
 
 

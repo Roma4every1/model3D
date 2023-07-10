@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux';
 import { MenuSkeleton } from 'shared/ui';
-import { caratStateSelector } from '../../store/carats.selectors';
+import { caratStateSelector } from '../../store/carat.selectors';
 
 import './track-edit-panel.scss';
 import { CaratNavigationPanel } from './navigation-panel';

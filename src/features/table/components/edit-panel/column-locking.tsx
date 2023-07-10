@@ -1,6 +1,6 @@
 import { EditPanelItemProps } from '../../lib/types';
 import { BigButtonToggle } from 'shared/ui';
-import { setTableColumnsSettings, setTableColumns } from '../../store/tables.actions';
+import { setTableColumnsSettings, setTableColumns } from '../../store/table.actions';
 import columnsLockingIcon from 'assets/images/dataset/columns-locking.png';
 
 
