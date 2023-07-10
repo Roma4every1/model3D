@@ -94,7 +94,8 @@ const transform = xmlTransform({
 				bounds: [0, bounds],
 				arcs: ['arc', arcPlain],
 			},
-			regular2dfield_: {
+			regular2dfield: {
+        type: 'field',
 				data: xmlTransform.string,
 				sizex: xmlTransform.number,
 				sizey: xmlTransform.number,
@@ -102,10 +103,10 @@ const transform = xmlTransform({
 				stepy: xmlTransform.number,
 				x: xmlTransform.number,
 				y: xmlTransform.number,
-				elements: [/./, xmlTransform({
+				palette: [/./, xmlTransform({
 					palette: {
 						interpolated: xmlTransform.string,
-						elements: [/./, xmlTransform({
+						level: [/./, xmlTransform({
 							level: {
 								color: xmlTransform.string,
 								value: xmlTransform.string,
@@ -113,6 +114,7 @@ const transform = xmlTransform({
 						})],
 					}
 				})],
+        bounds: [0, bounds],
 			},
 		})],
 	}, makeSublayers],

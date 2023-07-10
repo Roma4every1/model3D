@@ -101,90 +101,296 @@ declareType('sign', {
   },
 });
 
-// var field = declareType('field', {
-// 	sourceRenderDataMatrix: null,
-// 	deltasPalette: null,
-// 	lastUsedScale: undefined,
-// 	lastUsedRenderDataMatrix: null,
-// 	lastUsedImageData: null,
-// 	calculationTimer: null,
-//
-// 	bound: (p) => {
-// 		return {
-// 			min: {x: p.x, y: p.y - p.sizey * p.stepy},
-// 			max: {x: p.x + p.sizex * p.stepx, y: p.y},
-// 		};
-// 	},
-// 	loaded: (i) => {
-// 		i.sourceRenderDataMatrix = _.chunk(field._parseSourceRenderData(i.data), i.sizex).reverse(); //reverse 'cause the source array isn't oriented right
-// 		i.deltasPalette = field._getDeltasPalette(field._getRgbPaletteFromHex(i.palette[0].level));
-// 		i.calculationTimer = {
-// 			isActive: false,
-// 			mainTimer: null,
-// 			innerTimers: [],
-// 			reset: () => {
-// 				i.calculationTimer.innerTimers.forEach((cancellable) => cancellable.cancel());
-// 				i.calculationTimer.innerTimers.length = 0;
-// 				clearTimeout(i.calculationTimer.mainTimer);
-// 				i.calculationTimer.isActive = false;
-// 			}
-// 		};
-// 	},
-// 	draw: () => {},
-//
-// 	_parseSourceRenderData: (stringData) => {
-// 		// parse string "n*50 123.123 132.323 ..." to an array (n*50 is equal to repeating null 50 times)
-// 		let data = stringData.split(" ");
-// 		let ret = [];
-// 		for (let i = 0; i < data.length; i++) {
-// 			let val = data[i];
-// 			let starIndex = val.indexOf("*");
-// 			if (starIndex === -1) {
-// 				ret.push(+val);
-// 			} else {
-// 				let arr = val.split("*");
-// 				let valToPush = (arr[0] === "n") ? null : (+arr[0]); //toNumber
-// 				let counter = arr[1];
-// 				for (let j = counter; j > 0; j--) {
-// 					ret.push(valToPush);
-// 				}
-// 			}
-// 		}
-// 		return ret;
-// 	},
-// 	_getRgbPaletteFromHex: (hexPalette) => {
-// 		return hexPalette.map((item) => {
-// 			let hexColorsArr = _.chunk(item.color.slice(1).split(''), 2).map((i) => i.join(""));
-// 			return {
-// 				hexColor: item.color,
-// 				value: item.value,
-// 				red: parseInt(hexColorsArr[0], 16),
-// 				green: parseInt(hexColorsArr[1], 16),
-// 				blue: parseInt(hexColorsArr[2], 16)
-// 			};
-// 		});
-// 	},
-// 	_getDeltasPalette: (palette) => {
-// 		return palette
-// 			.sort((a, b) => (a.value - b.value))
-// 			.reduce((acc, item, index, arr) => {
-// 				if (index !== arr.length - 1) {
-// 					return acc.concat({
-// 						min: item.value,
-// 						max: arr[index + 1].value,
-// 						delta: arr[index + 1].value - item.value,
-// 						redStart: item.red,
-// 						greenStart: item.green,
-// 						blueStart: item.blue,
-// 						redDelta: arr[index + 1].red - item.red,
-// 						greenDelta: arr[index + 1].green - item.green,
-// 						blueDelta: arr[index + 1].blue - item.blue
-// 					});
-// 				}
-// 				return acc;
-// 			}, []);
-// 	},
-// });
+var field = declareType('field', {
+  sourceRenderDataMatrix: null,
+  deltasPalette: null,
+  sX: null,
+  sY: null,
+  preCalculatedSpectre: null,
+
+  bound: (p) => {
+    return {
+      min: {x: p.x, y: p.y - p.sizey * p.stepy},
+      max: {x: p.x + p.sizex * p.stepx, y: p.y},
+    };
+  },
+
+  loaded: (i) => {
+    i.sourceRenderDataMatrix = _.chunk(field._parseSourceRenderData(i.data), i.sizex).reverse(); //reverse 'cause the source array isn't oriented right
+    i.deltasPalette = field._getDeltasPalette(field._getRgbPaletteFromHex(i.palette[0].level));
+    i.sX = 1 / i.stepx;
+    i.sY = 1 / i.stepy;
+    i.preCalculatedSpectre = field._getDeltasPreCalculatedPalettes(i.deltasPalette);
+  },
+
+  _getInterpolatedArrayValues: (i, arrayX, y) => {
+    const resultArray = [];
+
+    if (y === undefined || Number.isNaN(y)) {
+      return [...Array(arrayX.length).fill(null)];
+    }
+
+    const maxY = i.y;
+    const minY = maxY - (i.sizey - 1) * i.stepy;
+
+    if (y < minY || maxY < y) {
+      return [...Array(arrayX.length).fill(null)];
+    }
+
+    const sY = i.sY;
+    const sX = i.sX;
+
+    const relativeToFieldY = y - minY;
+    const relativeToCellY = ((relativeToFieldY % i.stepy) * sY); // 1*
+
+    const i1 = Math.floor(relativeToFieldY * sY); // 1*
+
+    if (i1 >= i.sizey || i1 < 0) return [...Array(arrayX.length).fill(null)];
+
+    for (let x of arrayX) {
+      const minX = i.x;
+      const maxX = minX + (i.sizex - 1) * i.stepx;
+
+      if (x < minX || maxX < x) {
+        resultArray.push(null);
+        continue;
+      }
+
+      const relativeToFieldX = x - minX;
+      const j1 = Math.floor(relativeToFieldX * sX); // 1*
+
+      if (j1 >= i.sizex || j1 < 0) {
+        resultArray.push(null);
+        continue;
+      }
+
+      const f00 = i.sourceRenderDataMatrix[i1][j1]
+      const f10 = i1+1 === i.sizey ? null : i.sourceRenderDataMatrix[i1 + 1][j1];
+      const f01 = j1+1 === i.sizex ? null : i.sourceRenderDataMatrix[i1][j1 + 1]
+      const f11 = (i1+1 === i.sizex) && (j1+1 === i.sizey) ? null : i.sourceRenderDataMatrix[i1 + 1][j1 + 1]
+
+      let s = 0;
+      if (f00 != null) {
+        s++;
+      }
+      if (f10 != null) {
+        s++;
+      }
+      if (f01 != null) {
+        s++;
+      }
+      if (f11 != null) {
+        s++;
+      }
+
+      if (s <= 2) {
+        resultArray.push(null);
+        continue;
+      }
+
+      const relativeToCellX = ((relativeToFieldX % i.stepx) * sX); // 1*
+      const compositionXY = relativeToCellX * relativeToCellY; // 1*
+
+      if (s === 3) {
+        if (f00 == null) {
+          let a = 1 - relativeToCellX;
+          let b = 1 - relativeToCellY;
+          let c = 1 - a - b;
+          if (c < 0) {
+            resultArray.push(null);
+            continue;
+          }
+          resultArray.push(a * f10 + b * f01 + c * f11);
+          continue;
+        }
+
+        if (f01 == null) {
+          let a = relativeToCellX;
+          let b = 1 - relativeToCellY;
+          let c = 1 - a - b;
+          if (c < 0) {
+            resultArray.push(null);
+            continue;
+          }
+          resultArray.push(a * f11 + b * f00 + c * f10);
+          continue;
+        }
+
+        if (f10 == null) {
+          let a = (1 - relativeToCellX);
+          let b = relativeToCellY;
+          let c = 1 - a - b;
+          if (c < 0) {
+            resultArray.push(null);
+            continue;
+          }
+          resultArray.push(a * f00 + b * f11 + c * f01);
+          continue;
+        }
+
+        if (f11 == null) {
+          let a = relativeToCellX;
+          let b = relativeToCellY;
+          let c = 1 - a - b;
+          if (c < 0) {
+            resultArray.push(null);
+            continue;
+          }
+          resultArray.push(a * f01 + b * f10 + c * f00);
+          continue;
+        }
+      }
+
+      // f(x) == f[0][0] * (1-x)(1-y) + f[1][0] * x(1-y) + f[0][1] * (1-x)y + f[1][1] * (1-x)(1-y)
+      const comp1 = 1 - relativeToCellX - relativeToCellY + compositionXY; // (1-x)(1-y) == 1-x-y+xy // 0*
+      const comp2 = relativeToCellX - compositionXY; // x(1-y) = x-xy // 0*
+      const comp3 = relativeToCellY - compositionXY; // y(1-x) = y-xy // 0*
+
+      resultArray.push((f00 * comp1 + // 1*
+        f01 * comp2 +
+        f10 * comp3 +
+        f11 * compositionXY) || null);
+    }
+
+    return resultArray;
+  },
+
+  _getDeltasPreCalculatedPalettes: (palettes, spectreArrayLength = 10000) => {
+    const spectreArray = [];
+
+    const absoluteMin = +palettes[0].min;
+    const absoluteMax = +palettes[palettes.length - 1].max;
+    const absoluteDelta = absoluteMax - absoluteMin;
+    const step = absoluteDelta / spectreArrayLength;
+
+    let value = absoluteMin;
+    for (let i = 0; i < spectreArrayLength; i++) {
+      value += step;
+      for (let j = 0; j < palettes.length; j++) {
+        const currentPalette = palettes[j];
+        if (value >= currentPalette.min && value < currentPalette.max) {
+          const valueDelta = value - currentPalette.min;
+          const deltaCoefficient = valueDelta / currentPalette.delta;
+
+          const r = currentPalette.redStart + Math.round(currentPalette.redDelta * deltaCoefficient);
+          const g = currentPalette.greenStart + Math.round(currentPalette.greenDelta * deltaCoefficient);
+          const b = currentPalette.blueStart + Math.round(currentPalette.blueDelta * deltaCoefficient);
+
+          spectreArray.push({r, g, b});
+        }
+      }
+    }
+    const absoluteMinValue = spectreArray[0];
+    const absoluteMaxValue = spectreArray[spectreArrayLength - 1];
+    return {
+      spectreArray,
+      absoluteMin,
+      absoluteMinValue,
+      absoluteMax,
+      absoluteMaxValue,
+      deltaCoefficient: spectreArrayLength / absoluteDelta,
+    }
+  },
+
+  _getPixelColor: (value, i) => {
+    if (value === null) return {r: 255, g: 255, b: 255};
+    if (value <= i.preCalculatedSpectre.absoluteMin) return i.preCalculatedSpectre.absoluteMinValue;
+    if (value >= i.preCalculatedSpectre.absoluteMax) return i.preCalculatedSpectre.absoluteMaxValue;
+    const valueDelta = value - i.preCalculatedSpectre.absoluteMin;
+    const spectreIndex = Math.floor(valueDelta * i.preCalculatedSpectre.deltaCoefficient);
+    return i.preCalculatedSpectre.spectreArray[spectreIndex];
+  },
+
+  draw: function* drawThread(i, options) {
+    /** @type CanvasRenderingContext2D */
+    const context = options.context;
+    const canvas = options.canvas;
+
+    const width = canvas.width;
+    const height = canvas.height;
+    const imageData = context.createImageData(width, height);
+
+    let pixelIndex = 0;
+    for (let dy = 0; dy < height; dy++) {
+      const {y} = options.pointToMap({x: 0, y: dy})
+
+      const arrayX = [];
+      for (let dx = 0; dx < width; dx++) {
+        const {x} = options.pointToMap({x: dx,y: 0});
+        arrayX.push(x);
+      }
+
+      const valuesArray = field._getInterpolatedArrayValues(i, arrayX, y);
+      for (let value of valuesArray) {
+        if (value === null || value === undefined || Number.isNaN(value)) {
+          pixelIndex += 4;
+          continue;
+        }
+        const pixelColor = field._getPixelColor(value, i);
+        imageData.data[pixelIndex++] = pixelColor.r;
+        imageData.data[pixelIndex++] = pixelColor.g;
+        imageData.data[pixelIndex++] = pixelColor.b;
+        imageData.data[pixelIndex++] = 255;
+      }
+    }
+    context.putImageData(imageData, 0, 0);
+  },
+
+  _parseSourceRenderData: (stringData) => {
+    // parse string "n*50 123.123 132.323 ..." to an array (n*50 is equal to repeating null 50 times)
+    let data = stringData.split(" ");
+    let ret = [];
+    for (let i = 0; i < data.length; i++) {
+      let val = data[i];
+      let starIndex = val.indexOf("*");
+      if (starIndex === -1) {
+        ret.push(+val);
+      } else {
+        let arr = val.split("*");
+        let valToPush = (arr[0] === "n") ? null : (+arr[0]);
+        let counter = arr[1];
+        for (let j = counter; j > 0; j--) {
+          ret.push(valToPush);
+        }
+      }
+    }
+    return ret;
+  },
+
+  _getRgbPaletteFromHex: (hexPalette) => {
+    return hexPalette.map((item) => {
+      let hexColorsArr = _.chunk(item.color.slice(1).split(''), 2).map((i) => i.join(""));
+      return {
+        hexColor: item.color,
+        value: item.value,
+        red: parseInt(hexColorsArr[0], 16),
+        green: parseInt(hexColorsArr[1], 16),
+        blue: parseInt(hexColorsArr[2], 16)
+      };
+    });
+  },
+
+  _getDeltasPalette: (palette) => {
+  return palette
+    .sort((a, b) => (a.value - b.value))
+    .reduce((acc, item, index, arr) => {
+      if (index !== arr.length - 1) {
+        return acc.concat({
+          min: item.value,
+          max: arr[index + 1].value,
+          delta: arr[index + 1].value - item.value,
+          redStart: item.red,
+          greenStart: item.green,
+          blueStart: item.blue,
+          redDelta: arr[index + 1].red - item.red,
+          greenDelta: arr[index + 1].green - item.green,
+          blueDelta: arr[index + 1].blue - item.blue
+        });
+      }
+      return acc;
+    }, []);
+  }
+});
 
 var polyline = declareType('polyline', {
   borderStyles: ['Solid', 'Dash', 'Dot', 'DashDot', 'DashDotDot', 'Clear'],
@@ -216,7 +422,7 @@ var polyline = declareType('polyline', {
   },
 
   bkcolor: function (i) {
-    let color = i.fillbkcolor === 'background' ? '#ffffff' : i.fillbkcolor ;
+    let color = i.fillbkcolor === 'background' ? '#ffffff' : i.fillbkcolor;
     if (i.selected) {
       const [red, green, blue] = parseColor(color).rgb;
       const stepValue = 50;
@@ -900,6 +1106,8 @@ export function startPaint(canvas, map, options) {
     provider: provider,
     selected: options.selected,
     pointToControl: coords.pointToControl,
+    pointToMap: coords.pointToMap,
+    canvas,
     context,
     dotsPerMeter,
     pixelRatio,
