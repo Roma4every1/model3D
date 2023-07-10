@@ -41,7 +41,7 @@ export const ReportParamList = ({id, report, close}: ReportParamListProps) => {
       }
     });
     if (data.OperationId) {
-      dispatch(showNotification(t('report.inProgress', {programName: report.displayName})));
+      dispatch(showNotification(t('report.start', {programName: report.displayName})));
       await watchReport(report, data.OperationId, dispatch);
     }
   };
@@ -51,7 +51,7 @@ export const ReportParamList = ({id, report, close}: ReportParamListProps) => {
   };
 
   return (
-    <Dialog title={t('report.params')} onClose={close} style={{zIndex: 99}}>
+    <Dialog title={t(`report.${report.type}-parameters`)} onClose={close} style={{zIndex: 99}}>
       <ParameterList params={parameters} channels={channels} onChange={onParamChange}/>
       <DialogActionsBar>
         <Button onClick={() => { runReport(); close(); }} disabled={!canRun}>

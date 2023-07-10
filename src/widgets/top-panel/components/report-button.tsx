@@ -5,7 +5,7 @@ import { Loader } from '@progress/kendo-react-indicators';
 import { ReportParamList } from './report-param-list';
 import { initializeActiveReport } from 'entities/reports';
 import reportIcon from 'assets/images/reports/report.svg';
-// import programIcon from 'assets/images/reports/program.svg';
+import programIcon from 'assets/images/reports/program.svg';
 
 
 interface ReportButtonProps {
@@ -35,13 +35,10 @@ export const ReportButton = ({id, report}: ReportButtonProps) => {
       <div onClick={createReport}>
         {processing
           ? <Loader size={'medium'} type={'pulsing'} />
-          : <img src={reportIcon} alt={'run'}/>}
+          : <img src={report.type === 'report' ? reportIcon : programIcon} alt={'run'}/>}
         <div>{report.displayName}</div>
       </div>
-      {opened && <ReportParamList
-        id={id} report={report}
-        close={() => setOpened(false)}
-      />}
+      {opened && <ReportParamList id={id} report={report} close={() => setOpened(false)}/>}
     </>
   );
 };

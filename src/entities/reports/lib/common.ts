@@ -77,7 +77,8 @@ export async function createReportModels(params: ParamDict, rootID: FormID, id: 
   const changedReports: Promise<void>[] = [];
 
   for (const report of reportModels) {
-    if (!report.needCheckVisibility) { report.visible = true; continue; }
+    if (!report.type) report.type = 'report';
+    if (!report.paramsForCheckVisibility) { report.visible = true; continue; }
     const parameters = fillParamValues(report.paramsForCheckVisibility, params, clients);
 
     for (const parameter of parameters) {
