@@ -22,7 +22,7 @@ export const FileEditor = ({parameter, update}: EditorProps<ParamString>) => {
     reader.onload = async () => {
       const { ok, data } = await reportsAPI.uploadFile(file.name, reader.result);
       if (ok && data.endsWith(file.name)) return update(data);
-      dispatch(showNotification(t('editors.file-upload-error')));
+      await showNotification(t('editors.file-upload-error'))(dispatch);
       update(t('base.error'))
     }
     reader.readAsArrayBuffer(file);

@@ -59,7 +59,7 @@ export function createSessionManager(store) {
   const saveSession = async () => {
     const res = await save();
     if (res.ok && res.data) {
-      store.dispatch(showNotification(t('messages.session-save-ok')));
+      showNotification(t('messages.session-save-ok'))(store.dispatch);
     } else {
       store.dispatch(setWindowWarning(t('messages.session-save-error')));
     }

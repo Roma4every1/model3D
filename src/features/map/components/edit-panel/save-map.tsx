@@ -21,7 +21,7 @@ export const SaveMap = ({mapState, formID, t}: SaveMapProps) => {
   const saveMap = () => {
     if (!mapData || !owner || !mapID) return;
     dispatch(setMapField(formID, 'isModified', false));
-    dispatch(showNotification(t('map.notices.save-start')));
+    showNotification(t('map.notices.save-start'))(dispatch).then();
 
     const data = {...mapData,
       x: undefined,

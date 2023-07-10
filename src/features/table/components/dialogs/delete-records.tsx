@@ -1,32 +1,29 @@
-import { ThunkDispatch } from 'redux-thunk';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@progress/kendo-react-buttons';
 import { Window, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { setOpenedWindow } from 'entities/windows';
-import { callbackWithNotices } from 'entities/notifications';
 import { deleteTableRecords } from '../../store/table.thunks';
 
 
 interface DeleteRecordsDialogProps {
   id: FormID,
-  ids: TableRecordID[],
+  indexes: TableRecordID[],
 }
 
 
 /** Диалог с подтверждением при удалении строк. */
-export const DeleteRecordsDialog = ({id, ids}: DeleteRecordsDialogProps) => {
+export const DeleteRecordsDialog = ({id, indexes}: DeleteRecordsDialogProps) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch<ThunkDispatch<WState, any, any>>();
+  const dispatch = useDispatch();
 
   const onClose = () => {
     dispatch(setOpenedWindow('delete-records', false, null));
   };
 
   const onApply = () => {
+    dispatch(deleteTableRecords(id, indexes));
     onClose();
-    const promise = dispatch(deleteTableRecords(id, ids));
-    callbackWithNotices(promise, dispatch, t('table.delete-dialog.delete-ok', {n: ids.length}));
   };
 
   return (
@@ -35,7 +32,7 @@ export const DeleteRecordsDialog = ({id, ids}: DeleteRecordsDialogProps) => {
       height={180} resizable={false} onClose={onClose}
     >
       <p style={{margin: 10, textAlign: 'center'}}>
-        {t('table.delete-dialog.details', {n: ids.length})}
+        {t('table.delete-dialog.details', {n: indexes.length})}
       </p>
       <DialogActionsBar>
         <Button onClick={onApply}>

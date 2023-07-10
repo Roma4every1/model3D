@@ -30,7 +30,7 @@ export const ActiveOperationStatus = ({status}: {status: OperationStatus}) => {
       if (res.ok) {
         saveAs(res.data, file.name);
       } else {
-        dispatch(showNotification('Ошибка при скачивании файла'));
+        showNotification('Ошибка при скачивании файла')(dispatch).then();
       }
     });
   } : undefined;

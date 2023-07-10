@@ -41,7 +41,7 @@ export const ReportParamList = ({id, report, close}: ReportParamListProps) => {
       }
     });
     if (data.OperationId) {
-      dispatch(showNotification(t('report.start', {programName: report.displayName})));
+      showNotification(t('report.start', {programName: report.displayName}))(dispatch).then();
       await watchReport(report, data.OperationId, dispatch);
     }
   };

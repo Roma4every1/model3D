@@ -105,7 +105,7 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
 
   const deleteRecords = () => {
     const windowID = 'delete-records';
-    const window = <DeleteRecordsDialog key={windowID} id={id} ids={selectedRecords}/>;
+    const window = <DeleteRecordsDialog key={windowID} id={id} indexes={selectedRecords}/>;
     dispatch(setOpenedWindow(windowID, true, window));
   };
 
