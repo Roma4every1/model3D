@@ -1,27 +1,30 @@
 import { useEffect, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { ResponsiveContainer, ComposedChart, CartesianGrid, Legend, Tooltip, XAxis } from 'recharts';
-import { TextInfo } from 'shared/ui';
 import { useCurrentPng } from 'recharts-to-png';
 import { saveAs } from '@progress/kendo-file-saver';
+import { TextInfo } from 'shared/ui';
 import { compareObjects, compareArrays } from 'shared/lib';
 import { channelsSelector, channelDictSelector } from 'entities/channels';
-import { setSettingsField } from 'widgets/presentation';
+
+import './chart.scss';
 import { ChartProto, getChartProto } from '../lib/chart-proto';
 import { getChartLookups, applyLookupToMarks } from '../lib/lookup';
 import { propsToYAxis, propsToDiagram, markToReferenceLine } from '../lib/chart-mappers';
-import './chart.scss';
+import { chartStateSelector } from '../store/chart.selectors';
+import { setChartDownloadFn } from '../store/chart.actions';
 
 
 const chartStyle = {overflow: 'hidden'}; // for correct tooltip display
 const chartMargin = {top: 2, left: 0, bottom: 0, right: 0};
 
-export const Chart = ({id, channels, settings}: FormState) => {
+export const Chart = ({id, channels}: FormState) => {
   const dispatch = useDispatch();
   const [getPng, { ref }] = useCurrentPng();
 
   const channelsData: Channel[] = useSelector(channelsSelector.bind(channels), compareArrays);
-  const { seriesSettings, dateStep, tooltip} = settings as ChartFormSettings;
+  const state: ChartState = useSelector(chartStateSelector.bind(id));
+  const { seriesSettings, dateStep, tooltip } = state;
 
   const { data, diagrams, axes, marks, legend } = useMemo<ChartProto>(() => {
     return getChartProto(channelsData, seriesSettings, dateStep);
@@ -38,10 +41,12 @@ export const Chart = ({id, channels, settings}: FormState) => {
     if (png) saveAs(png, 'chart.png');
   }, [getPng]);
 
+  // обновление функции для сохранения графика в PNG
   useEffect(() => {
-    dispatch(setSettingsField(id, 'downloadChart', handleDownload))
+    dispatch(setChartDownloadFn(id, handleDownload));
   }, [id, handleDownload, dispatch]);
 
+  // задание текста для вертикальных пометок
   useEffect(() => {
     if (marks.length) applyLookupToMarks(marks, lookupData);
   }, [marks, lookupData]);

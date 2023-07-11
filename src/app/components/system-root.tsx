@@ -9,6 +9,7 @@ import { stateNeedFetch, stateNotLoaded, sessionFetchStateSelector } from 'entit
 import { Dock } from './dock';
 import { LoadingStatus } from './loading-status';
 import { WindowHandler } from 'entities/windows/window-handler';
+import { Notifications } from 'entities/notifications';
 
 
 /** Корень системы. Route: `/systems/:systemID`. */
@@ -40,9 +41,17 @@ export const SystemRoot = () => {
     }
   }, [isNeedStartSession, searchParams, setSearchParams, dispatch]);
 
-  if (fetchState?.ok) return <><Dock config={config}/><WindowHandler/></>;
-  if (config === null) return <LoadingStatus loadingType={'systems'}/>;
+  if (fetchState?.ok) {
+    return (
+      <>
+        <Dock config={config}/>
+        <WindowHandler/>
+        <Notifications/>
+      </>
+    );
+  }
 
+  if (config === null) return <LoadingStatus loadingType={'systems'}/>;
   if (!systemList) return <LoadingStatus loadingType={'systems'} success={false}/>;
   if (!isSystemExist) return <Navigate to={config.root} replace={true}/>;
 

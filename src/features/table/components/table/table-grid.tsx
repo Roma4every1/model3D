@@ -85,12 +85,14 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
   };
 
   const saveRecord = (record: TableRecord) => {
-    const rowErrors = validateRecord(record, columnsState);
-    if (rowErrors.length) {
-      const windowID = 'record-validation';
-      const window = <ValidationDialog key={windowID} errors={rowErrors} columns={columnsState}/>;
-      dispatch(setOpenedWindow(windowID, true, window));
-      return false;
+    if (!edit.isNew) {
+      const rowErrors = validateRecord(record, columnsState);
+      if (rowErrors.length) {
+        const windowID = 'record-validation';
+        const window = <ValidationDialog key={windowID} errors={rowErrors} columns={columnsState}/>;
+        dispatch(setOpenedWindow(windowID, true, window));
+        return false;
+      }
     }
     applyRecordEdit(record, columnsState);
 
@@ -103,7 +105,7 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
 
   const deleteRecords = () => {
     const windowID = 'delete-records';
-    const window = <DeleteRecordsDialog key={windowID} id={id} ids={selectedRecords}/>;
+    const window = <DeleteRecordsDialog key={windowID} id={id} indexes={selectedRecords}/>;
     dispatch(setOpenedWindow(windowID, true, window));
   };
 

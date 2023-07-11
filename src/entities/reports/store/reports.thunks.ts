@@ -6,12 +6,12 @@ import { applyChannelsDeps } from 'widgets/presentation/lib/utils';
 import { createClientChannels } from 'widgets/presentation/lib/initialization';
 import { initializeReport, updateReportParam } from './reports.actions';
 import { setReportModels, setCanRunReport, setReportChannels } from './reports.actions';
-import { applyReportVisibility } from '../lib/common';
+import { applyReportVisibility, updateReportChannelData } from '../lib/common';
 import { formsAPI } from 'widgets/presentation/lib/forms.api';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
 
 
-export const initializeActiveReport = (id: FormID, reportID: ReportID): Thunk => {
+export function initializeActiveReport(id: FormID, reportID: ReportID): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const [parameters, hiddenParameters] = await Promise.all([
       formsAPI.getFormParameters(reportID),
@@ -23,11 +23,17 @@ export const initializeActiveReport = (id: FormID, reportID: ReportID): Thunk =>
     const parametersState = state.parameters;
 
     for (const paramID in hiddenParameters) {
-      let param = parametersState[rootID].find(p => p.id === paramID);
-      if (!param) param = parametersState[id].find(p => p.id === paramID);
-      if (param) parameters.push(structuredClone(param));
+      let param = parameters.find(p => p.id === paramID);
+      if (!param) {
+        param =
+          parametersState[rootID].find(p => p.id === paramID) ??
+          parametersState[id].find(p => p.id === paramID);
 
-      param = parameters.find(p => p.id === paramID);
+        if (param) {
+          param = structuredClone(param);
+          parameters.push(param);
+        }
+      }
       if (param && hiddenParameters[paramID] === true) param.editorType = null;
     }
 
@@ -36,8 +42,21 @@ export const initializeActiveReport = (id: FormID, reportID: ReportID): Thunk =>
     applyChannelsDeps(channels, paramDict);
 
     for (const name in channels) {
-      const clients = channels[name].info.clients;
-      clients.add(rootID); clients.add(id);
+      const info = channels[name].info;
+      info.clients.add(rootID); info.clients.add(id);
+
+      for (const paramID of info.parameters) {
+        if (parameters.some(p => p.id === paramID)) continue;
+        const param = parametersState[rootID].find(p => p.id === paramID);
+        if (!param) continue;
+
+        let relatedChannels = param.relatedReportChannels.find(item => item.reportID === reportID);
+        if (!relatedChannels) {
+          relatedChannels = {clientID: id, reportID, channels: []};
+          param.relatedReportChannels.push(relatedChannels);
+        }
+        relatedChannels.channels.push(name);
+      }
     }
 
     paramDict[rootID] = parametersState[rootID];
@@ -50,9 +69,9 @@ export const initializeActiveReport = (id: FormID, reportID: ReportID): Thunk =>
     };
     dispatch(initializeReport(id, reportID, initData));
   };
-};
+}
 
-export const updateReportParameter = (id: FormID, reportID: ReportID, paramID: ParameterID, value: any): Thunk => {
+export function updateReportParameter(id: FormID, reportID: ReportID, paramID: ParameterID, value: any): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const { root, reports, parameters } = getState();
 
@@ -64,26 +83,34 @@ export const updateReportParameter = (id: FormID, reportID: ReportID, paramID: P
     param.value = value;
     dispatch(updateReportParam(id, reportID, paramID, value));
 
-    if (param.relatedChannels) {
-      const dict = {};
-      param.relatedChannels.forEach((name) => dict[name] = report.channels[name]);
-
-      const paramDict: ParamDict = {
-        [reportID]: report.parameters,
-        [root.id]: parameters[root.id],
-        [id]: parameters[id],
-      };
-      await fillChannels(dict, paramDict);
+    if (param.relatedChannels.length) {
+      await updateReportChannelData(report, param.relatedChannels, root.id, id, parameters);
       dispatch(setReportChannels(id, reportID, {...report.channels}));
     }
 
     const canRun = await reportsAPI.getCanRunReport(reportID, report.parameters);
     dispatch(setCanRunReport(id, reportID, canRun));
   };
-};
+}
+
+/** Обновляет связанные каналы отчётов. */
+export function reloadReportChannels(entries: RelatedReportChannels[]): Thunk {
+  return async (dispatch: Dispatch, getState: StateGetter) => {
+    const promises: Promise<void>[] = [];
+    const { reports, root, parameters } = getState();
+
+    for (const { clientID, reportID, channels } of entries) {
+      const report = reports.models[clientID]?.find(r => r.id === reportID);
+      if (report) {
+        promises.push(updateReportChannelData(report, channels, root.id, clientID, parameters));
+      }
+    }
+    await Promise.all(promises);
+  };
+}
 
 /** Обновляет видимость программ по набору идентификаторов. */
-export const updateReportsVisibility = (ids: ReportID[]): Thunk => {
+export function updateReportsVisibility(ids: ReportID[]): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const state = getState();
     const { parameters, reports: { models }, root: { id: rootID } } = state;
@@ -109,4 +136,4 @@ export const updateReportsVisibility = (ids: ReportID[]): Thunk => {
       dispatch(setReportModels(clientID, [...models[clientID]]));
     }
   };
-};
+}

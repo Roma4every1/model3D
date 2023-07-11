@@ -27,12 +27,13 @@ export const ColumnStatistics = ({state, dispatch, t}: EditPanelItemProps) => {
   const activeColumnID = state.activeCell.columnID;
 
   const getStat = async () => {
-    const { ok, data } = await channelsAPI.getStatistics(state.tableID, activeColumnID);
+    const columnState = state.columns[activeColumnID];
+    const { ok, data } = await channelsAPI.getStatistics(state.tableID, columnState.colName);
     if (!ok) { dispatch(setWindowWarning(data)); return; }
     if (typeof data !== 'object' || !data.Values) return;
 
     const info = <ColumnStatisticsList stat={data.Values} t={t}/>;
-    const windowTitle = t('table.stat.window-title', {column: state.columns[activeColumnID].title});
+    const windowTitle = t('table.stat.window-title', {column: columnState.title});
     dispatch(setWindowInfo(info, null, windowTitle));
   };
 

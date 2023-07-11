@@ -1,0 +1,11 @@
+.notifications {
+  right: 4px;
+  bottom: 4px;
+  z-index: 80;
+
+  .k-notification-wrap {
+    width: 240px;
+    align-items: center;
+    gap: 4px;
+  }
+}

@@ -3,7 +3,7 @@ import { t } from 'shared/locales';
 import { reportsAPI } from './reports.api';
 import { setOperationStatus } from '../store/reports.actions';
 import { fillParamValues } from 'entities/parameters';
-import { updateTables } from '../../channels';
+import { updateTables, fillChannels } from '../../channels';
 import { setWindowInfo } from '../../windows';
 
 
@@ -43,6 +43,30 @@ function convertOperationStatus(raw: ReportStatus): OperationStatus {
 
 /* --- --- */
 
+/** Обновляет у отчёта указанные каналы.
+ * @param report модель отчёта
+ * @param names названия каналов, которые нужно обновить
+ * @param rootID ID главной формы
+ * @param clientID ID презентации с отчётом
+ * @param parameters текущее состояние параметров приложения
+ * */
+export async function updateReportChannelData(
+  report: ReportModel, names: Iterable<ChannelName>,
+  rootID: FormID, clientID: FormID, parameters: ParamDict
+): Promise<void> {
+  const dict: ChannelDict = {};
+  for (const name of names) dict[name] = report.channels[name];
+
+  const paramDict: ParamDict = {
+    [report.id]: report.parameters,
+    [rootID]: parameters[rootID],
+    [clientID]: parameters[clientID],
+  };
+  await fillChannels(dict, paramDict);
+}
+
+/* --- --- */
+
 /** Создаёт список программ/отчётов для презентации. */
 export async function createReportModels(params: ParamDict, rootID: FormID, id: FormID) {
   const res = await reportsAPI.getPresentationReports(id);
@@ -53,7 +77,8 @@ export async function createReportModels(params: ParamDict, rootID: FormID, id: 
   const changedReports: Promise<void>[] = [];
 
   for (const report of reportModels) {
-    if (!report.needCheckVisibility) { report.visible = true; continue; }
+    if (!report.type) report.type = 'report';
+    if (!report.paramsForCheckVisibility) { report.visible = true; continue; }
     const parameters = fillParamValues(report.paramsForCheckVisibility, params, clients);
 
     for (const parameter of parameters) {

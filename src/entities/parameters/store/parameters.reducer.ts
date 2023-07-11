@@ -32,7 +32,7 @@ export type ParametersAction = ActionSetDict | ActionUpdate | ActionUpdateMultip
 
 const init: ParamDict = {};
 
-export const parametersReducer = (state: ParamDict = init, action: ParametersAction): ParamDict => {
+export function parametersReducer(state: ParamDict = init, action: ParametersAction): ParamDict {
   switch (action.type) {
 
     case ParametersActions.SET: {
@@ -71,4 +71,4 @@ export const parametersReducer = (state: ParamDict = init, action: ParametersAct
 
     default: return state;
   }
-};
+}

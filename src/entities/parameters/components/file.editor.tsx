@@ -3,7 +3,7 @@ import { ChangeEvent, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@progress/kendo-react-buttons';
-import { showNotice } from 'entities/windows';
+import { showNotification } from 'entities/notifications';
 import { reportsAPI } from '../../reports/lib/reports.api';
 
 
@@ -22,7 +22,7 @@ export const FileEditor = ({parameter, update}: EditorProps<ParamString>) => {
     reader.onload = async () => {
       const { ok, data } = await reportsAPI.uploadFile(file.name, reader.result);
       if (ok && data.endsWith(file.name)) return update(data);
-      showNotice(dispatch, t('editors.file-upload-error'));
+      await showNotification(t('editors.file-upload-error'))(dispatch);
       update(t('base.error'))
     }
     reader.readAsArrayBuffer(file);

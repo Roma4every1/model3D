@@ -18,12 +18,16 @@ interface WState {
   tables: TablesState,
   /** Хранилище каротажных диаграмм. */
   carats: CaratsState,
+  /** Хранилище графиков. */
+  charts: ChartsState,
   /** Хранилище карт. */
   maps: MapsState,
   /** Состояние отчётов и SQL-программ. */
   reports: Reports,
   /** Окна и диалоги. */
   windowData: any,
+  /** Уведомления. */
+  notifications: Notifications,
   /** Состояние серверных запросов. */
   fetches: FetchesState,
 }

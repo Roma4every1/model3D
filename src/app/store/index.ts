@@ -8,12 +8,14 @@ import { presentationsReducer } from 'widgets/presentation/store/presentations.r
 import { formsReducer } from 'widgets/presentation/store/forms.reducer';
 import { tablesReducer } from 'features/table/store/table.reducer';
 import { caratsReducer } from 'features/carat/store/carat.reducer';
+import { chartsReducer } from 'features/chart/store/chart.reducer';
 import { mapsReducer } from 'features/map/store/map.reducer';
 import { parametersReducer } from 'entities/parameters/store/parameters.reducer';
 import { objectsReducer } from 'entities/objects/store/objects.reducer';
 import { channelsReducer } from 'entities/channels/store/channels.reducer';
 import { reportsReducer } from 'entities/reports/store/reports.reducer';
 import { windowDataReducer } from 'entities/windows/store/window-data.reducer';
+import { notificationsReducer } from 'entities/notifications/store/notifications.reducer';
 import { fetchStateReducer } from 'entities/fetch-state/store/fetch-state.reducer';
 
 
@@ -28,9 +30,11 @@ const rootReducer: Reducer<WState, any> = combineReducers({
   channels: channelsReducer,
   tables: tablesReducer,
   carats: caratsReducer,
+  charts: chartsReducer,
   maps: mapsReducer,
   reports: reportsReducer,
   windowData: windowDataReducer,
+  notifications: notificationsReducer,
   fetches: fetchStateReducer,
 });
 

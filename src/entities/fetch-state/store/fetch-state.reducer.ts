@@ -30,7 +30,7 @@ const init: FetchesState = {
   forms: {},
 };
 
-export const fetchStateReducer = (state: FetchesState = init, action: FetchStateAction): FetchesState => {
+export function fetchStateReducer(state: FetchesState = init, action: FetchStateAction): FetchesState {
   switch (action.type) {
 
     case FetchStateActions.FETCH_START: {
@@ -64,4 +64,4 @@ export const fetchStateReducer = (state: FetchesState = init, action: FetchState
 
     default: return state;
   }
-};
+}

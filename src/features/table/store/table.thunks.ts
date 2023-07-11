@@ -9,30 +9,27 @@ import { tableStateToFormSettings } from '../lib/table-settings';
 import { watchReport } from 'entities/reports';
 import { reloadChannel } from 'entities/channels';
 import { fillParamValues } from 'entities/parameters';
-import { setWindowWarning, showNotice } from 'entities/windows';
-import { setWindowNotification, closeWindowNotification } from 'entities/windows';
+import { setWindowWarning } from 'entities/windows';
+import { showNotification } from 'entities/notifications';
 import { channelsAPI } from 'entities/channels/lib/channels.api';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
 
 
 /** Перезагрузка данных канала таблицы. */
 export function reloadTable(id: FormID): Thunk {
-  return async (dispatch: Dispatch, getState: StateGetter) => {
-    const state = getState();
-    const channelName = state.tables[id]?.channelName;
+  return async (dispatch: Dispatch<any>, getState: StateGetter) => {
+    const channelName = getState().tables[id]?.channelName;
     if (!channelName) return;
-
-    await reloadChannel(channelName)(dispatch, () => state);
-    showNotice(dispatch, t('table.reload.end-ok'));
+    await reloadChannel(channelName)(dispatch, getState);
+    await showNotification(t('table.reload.end-ok'))(dispatch);
   };
 }
 
 /** Сохранение состояния строк таблицы в базу данных. */
 export function saveTableRecord({type, formID, row}: SaveTableMetadata): Thunk {
-  return async (dispatch: Dispatch, getState: StateGetter) => {
-    dispatch(setWindowNotification(t('table.save.start')));
-    const state = getState();
-    const tableID = state.tables[formID].tableID;
+  return async (dispatch: Dispatch<any>, getState: StateGetter) => {
+    showNotification(t('table.save.start'))(dispatch).then();
+    const tableID = getState().tables[formID].tableID;
     let res: Res<ReportStatus>, wrongResult: boolean, error: string;
 
     if (type === 'insert') {
@@ -43,7 +40,6 @@ export function saveTableRecord({type, formID, row}: SaveTableMetadata): Thunk {
 
     if (res.ok === false) {
       dispatch(setWindowWarning(res.data));
-      dispatch(closeWindowNotification());
     } else {
       wrongResult = res.data.WrongResult;
       error = res.data.Error;
@@ -51,40 +47,39 @@ export function saveTableRecord({type, formID, row}: SaveTableMetadata): Thunk {
 
     if (wrongResult && error) {
       dispatch(setWindowWarning(error));
-      dispatch(closeWindowNotification());
     }
 
     const tables = [tableID];
     if (res.ok) tables.push(...res.data.ModifiedTables?.ModifiedTables);
 
-    await updateTables(tables)(dispatch, () => state);
-    showNotice(dispatch, t('table.save.' + (!res.ok || wrongResult ? 'end-error' : 'end-ok')));
+    await updateTables(tables)(dispatch, getState);
+    const text = t('table.save.' + (!res.ok || wrongResult ? 'end-error' : 'end-ok'));
+    await showNotification(text)(dispatch);
   };
 }
 
 /** Удаление строк таблицы. */
-export function deleteTableRecords(formID: FormID, ids: number[] | 'all'): Thunk<boolean> {
+export function deleteTableRecords(formID: FormID, indexes: number[] | 'all'): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
-    if (Array.isArray(ids) && ids.length === 0) return;
+    if (Array.isArray(indexes) && indexes.length === 0) return;
+    const tableState = getState().tables[formID];
+    const res = await channelsAPI.removeRows(tableState.tableID, indexes);
 
-    const state = getState();
-    const tableState = state.tables[formID];
-    const res = await channelsAPI.removeRows(tableState.tableID, ids);
-
-    if (res.ok === false) { dispatch(setWindowWarning(res.data)); return false; }
+    if (res.ok === false) { dispatch(setWindowWarning(res.data)); return; }
     const ok = !res.data.WrongResult;
-    if (!ok && res.data.Error) { dispatch(setWindowWarning(res.data.Error)); return false; }
+    if (!ok && res.data.Error) { dispatch(setWindowWarning(res.data.Error)); return; }
 
     const activeCell = tableState.activeCell;
-    if (activeCell.recordID && (ids === 'all' || ids.includes(activeCell.recordID))) {
+    if (activeCell.recordID && (indexes === 'all' || indexes.includes(activeCell.recordID))) {
       if (activeCell.edited) tableState.edit = {isNew: false, modified: false};
       tableState.activeCell = {columnID: null, recordID: null, edited: false};
     }
     tableState.selection = {};
 
     const tables = [tableState.tableID, ...res.data.ModifiedTables?.ModifiedTables];
-    await updateTables(tables)(dispatch, () => state);
-    return ok;
+    await updateTables(tables)(dispatch, getState);
+    const text = t('table.delete-dialog.delete-ok', {n: indexes.length});
+    await showNotification(text)(dispatch);
   };
 }
 

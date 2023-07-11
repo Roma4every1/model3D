@@ -5,13 +5,9 @@ import { GridLayout, GridLayoutItem } from '@progress/kendo-react-layout';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Button } from '@progress/kendo-react-buttons';
 import { saveAs } from '@progress/kendo-file-saver';
-import { Notification, NotificationGroup } from '@progress/kendo-react-notification';
-import { windowsSelector, notificationSelector, messageWindowSelector } from './store/window-data.selectors';
+import { windowsSelector, messageWindowSelector } from './store/window-data.selectors';
 import { closeWindow } from './store/window-data.actions';
 
-
-const blobOptions = {type: 'text/plain;charset=utf-8'};
-const notificationGroupStyle = {width: 250, right: 0, bottom: 0, zIndex: 30, position: 'fixed'};
 
 export const WindowHandler = () => {
   const { t } = useTranslation();
@@ -19,7 +15,6 @@ export const WindowHandler = () => {
 
   const windowData = useSelector(messageWindowSelector);
   const windows = useSelector(windowsSelector);
-  const windowNotification = useSelector(notificationSelector);
 
   const [stackTraceVisible, setStackTraceVisible] = useState(false);
 
@@ -27,6 +22,7 @@ export const WindowHandler = () => {
   const handleClose = () => { dispatch(closeWindow()); };
 
   const handleSave = () => {
+    const blobOptions = {type: 'text/plain;charset=utf-8'};
     const blob = new Blob([windowData.text.replaceAll('\n', '\r\n')], blobOptions);
     saveAs(blob, windowData.fileToSaveName);
   };
@@ -70,11 +66,6 @@ export const WindowHandler = () => {
           </div>}
         </DialogActionsBar>
       </Dialog>}
-      {windowNotification?.opened && <NotificationGroup style={notificationGroupStyle}>
-        <Notification type={{style: 'info', icon: true}}>
-          <span>{windowNotification.text}</span>
-        </Notification>
-      </NotificationGroup>}
     </div>
   );
 };

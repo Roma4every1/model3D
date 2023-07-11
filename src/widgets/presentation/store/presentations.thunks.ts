@@ -10,8 +10,9 @@ import { setParamDict } from 'entities/parameters';
 import { fetchFormsStart, fetchFormsEnd, fetchFormError } from 'entities/fetch-state';
 import { setPresentationState } from './presentations.actions';
 import { createTableState } from 'features/table';
-import { createMapState } from 'features/map/store/map.actions';
-import { createCaratState } from 'features/carat/store/carat.actions';
+import { createCaratState } from 'features/carat';
+import { createChartState } from 'features/chart';
+import { createMapState } from 'features/map';
 import { setFormsState } from 'widgets/presentation/store/forms.actions';
 
 
@@ -61,15 +62,17 @@ export const fetchPresentationState = (id: FormID): Thunk => {
   };
 };
 
-function createFormState(id: FormID, state: FormState, channelDict: ChannelDict, dispatch: Dispatch) {
+function createFormState(id: FormID, state: FormState, channels: ChannelDict, dispatch: Dispatch): void {
   const type = state.type;
 
   if (type === 'dataSet') {
-    const channel = channelDict[state.channels[0]];
+    const channel = channels[state.channels[0]];
     dispatch(createTableState(id, channel, state.settings));
+  } else if (type === 'carat') {
+    dispatch(createCaratState(id, channels, state));
+  } else if (type === 'chart') {
+    dispatch(createChartState(id, state.settings));
   } else if (type === 'map') {
     dispatch(createMapState(id, state.parent));
-  } else if (type === 'carat') {
-    dispatch(createCaratState(id, channelDict, state));
   }
 }

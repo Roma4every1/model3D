@@ -48,7 +48,7 @@ export type ReportsAction = ActionSet | ActionInitializeReport | ActionSetField 
 
 const init: Reports = {models: {}, operations: []};
 
-export const reportsReducer = (state: Reports = init, action: ReportsAction): Reports => {
+export function reportsReducer(state: Reports = init, action: ReportsAction): Reports {
   switch (action.type) {
 
     case ReportsActions.SET: {
@@ -111,4 +111,4 @@ export const reportsReducer = (state: Reports = init, action: ReportsAction): Re
 
     default: return state;
   }
-};
+}

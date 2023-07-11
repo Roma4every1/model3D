@@ -13,6 +13,7 @@ export function applyChannelsDeps(channelDict: ChannelDict, paramDict: ParamDict
   for (const clientID in paramDict) {
     for (const param of paramDict[clientID]) {
       param.relatedChannels = [];
+      param.relatedReportChannels = [];
       for (const [name, info] of channelParams) {
         if (info.parameters.includes(param.id)) {
           info.clients.add(clientID);

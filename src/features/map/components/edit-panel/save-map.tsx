@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { MenuSection, BigButton } from 'shared/ui';
 import { setMapField } from '../../store/map.actions';
 import { mapsAPI } from '../../lib/maps.api';
-import { setWindowNotification, callBackWithNotices } from 'entities/windows';
+import { showNotification, callbackWithNotices } from 'entities/notifications';
 import saveMapIcon from 'assets/images/map/save-map.png';
 
 
@@ -21,7 +21,7 @@ export const SaveMap = ({mapState, formID, t}: SaveMapProps) => {
   const saveMap = () => {
     if (!mapData || !owner || !mapID) return;
     dispatch(setMapField(formID, 'isModified', false));
-    dispatch(setWindowNotification(t('map.notices.save-start')));
+    showNotification(t('map.notices.save-start'))(dispatch).then();
 
     const data = {...mapData,
       x: undefined,
@@ -32,7 +32,7 @@ export const SaveMap = ({mapState, formID, t}: SaveMapProps) => {
     };
 
     const promise = mapsAPI.saveMap(formID, mapID, data, owner);
-    callBackWithNotices(promise, dispatch, t('map.notices.save-end'));
+    callbackWithNotices(promise, dispatch, t('map.notices.save-end'));
   };
 
   return (

@@ -14,32 +14,35 @@ type ReportDict = Record<FormID, ReportModel[]>;
 
 /** Модель программы/отчёта.
  * + `id`: {@link ReportID}
+ * + `type`: {@link ReportType}
  * + `displayName`: {@link DisplayName}
  * + `parameters`: {@link Parameter}[]
  * + `channels`: {@link ChannelDict}
  * + `canRun: boolean`
- * + `needCheckVisibility: boolean`
  * + `paramsForCheckVisibility`: {@link ParameterID}[]
  * + `visible: boolean`
  * */
 interface ReportModel {
   /** ID программы */
   id: ReportID,
-  /** Название программы. */
+  /** Тип: программа или отчёт. */
+  type: ReportType,
+  /** Название программы/отчёта. */
   displayName: DisplayName,
-  /** Список параметров отчёта. */
+  /** Список параметров программы/отчёта. */
   parameters: Parameter[] | undefined,
   /** Каналы, необходимые для параметров. */
   channels: ChannelDict | undefined,
-  /** Можно ли запустить отчёт при текущих параметрах. */
+  /** Можно ли запустить программу/отчёт при текущих параметрах. */
   canRun: boolean,
-  /** Необходимо ли проверять видимость программы. */
-  needCheckVisibility: boolean,
   /** Список параметров для проверки видимости. */
   paramsForCheckVisibility: ParameterID[],
-  /** Показывать ли программу на интерфейсе. */
+  /** Показывать ли программу/отчёт на интерфейсе. */
   visible: boolean,
 }
+
+/** Тип удалённой процедуры: программа или отчёт. */
+type ReportType = 'program' | 'report';
 
 /** Статус операции, выполняемой на сервере. */
 interface OperationStatus {
@@ -80,6 +83,16 @@ type OperationID = string;
 
 /** Данные для инициализации списка параметров отчёта/программы. */
 type ReportInitData = Pick<ReportModel, 'parameters' | 'channels' | 'canRun'>;
+
+/** Список связанных каналов отчёта. */
+interface RelatedReportChannels {
+  /** ID клиента, в котором находится отчёт. */
+  clientID: FormID,
+  /** ID отчёта. */
+  reportID: ReportID,
+  /** Названия связанных каналов. */
+  channels: ChannelName[],
+}
 
 /* --- Server API --- */
 

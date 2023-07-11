@@ -1,15 +1,12 @@
-import { t } from '../../../shared/locales';
+import { t } from 'shared/locales';
 
 /* --- Action Types --- */
 
 export enum WindowDataActions {
   SET_INFO = 'windowData/setInfo',
   SET_WARNING = 'windowData/setWarning',
-  SET_ERROR = 'windowData/setError',
   SET_OPENED_WINDOW = 'windowData/setOpenedWindow',
-  CLOSE = 'windowData/close',
-  SET_NOTIFICATION = 'windowData/setNotification',
-  CLOSE_NOTIFICATION = 'windowData/closeNotification',
+  CLOSE = 'windowData/close'
 }
 
 /* --- Action Interfaces --- */
@@ -28,13 +25,6 @@ interface ActionSetWarning {
   stackTrace: any,
   fileToSaveName: any,
 }
-interface ActionSetError {
-  type: WindowDataActions.SET_ERROR,
-  header: any,
-  text: any,
-  stackTrace: any,
-  fileToSaveName: any,
-}
 interface ActionSetOpenedWindow {
   type: WindowDataActions.SET_OPENED_WINDOW,
   windowName: any,
@@ -45,22 +35,15 @@ interface ActionSetOpenedWindow {
 interface ActionClose {
   type: WindowDataActions.CLOSE,
 }
-interface ActionSetNotification {
-  type: WindowDataActions.SET_NOTIFICATION,
-  text: any,
-}
-interface ActionCloseNotification {
-  type: WindowDataActions.CLOSE_NOTIFICATION,
-}
 
-export type WindowDataAction = ActionSetInfo | ActionSetWarning | ActionSetError |
-  ActionSetOpenedWindow | ActionClose | ActionSetNotification | ActionCloseNotification;
+export type WindowDataAction = ActionSetInfo | ActionSetWarning | ActionSetOpenedWindow |
+  ActionClose;
 
 /* --- Init State & Reducer --- */
 
 const init = null;
 
-export const windowDataReducer = (state = init, action: WindowDataAction) => {
+export function windowDataReducer(state = init, action: WindowDataAction) {
   let newState = {...state};
   switch (action.type) {
 
@@ -88,18 +71,6 @@ export const windowDataReducer = (state = init, action: WindowDataAction) => {
       return newState;
     }
 
-    case WindowDataActions.SET_ERROR: {
-      newState.messageWindow = {
-        opened: true,
-        header: action.header || t('base.error'),
-        text: action.text,
-        stackTrace: action.stackTrace,
-        fileToSaveName: action.fileToSaveName,
-        type: 'error'
-      }
-      return newState;
-    }
-
     case WindowDataActions.SET_OPENED_WINDOW: {
       newState.windows = { ...newState.windows };
       newState.windows[action.windowName] = {
@@ -115,16 +86,6 @@ export const windowDataReducer = (state = init, action: WindowDataAction) => {
       return newState;
     }
 
-    case WindowDataActions.SET_NOTIFICATION: {
-      newState.Notification = {opened: true, text: action.text};
-      return newState;
-    }
-
-    case WindowDataActions.CLOSE_NOTIFICATION: {
-      newState.Notification = {opened: false};
-      return newState;
-    }
-
     default: return state;
   }
-};
+}

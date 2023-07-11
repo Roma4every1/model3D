@@ -10,7 +10,8 @@ import { clearParams } from '../../entities/parameters';
 import { clearChannels } from '../../entities/channels';
 import { clearReports } from '../../entities/reports';
 import { clearTables } from '../../features/table/store/table.actions';
-import { setWindowWarning, showNotice } from '../../entities/windows';
+import { setWindowWarning } from '../../entities/windows';
+import { showNotification } from "../../entities/notifications";
 
 
 /** @return SessionManager */
@@ -58,7 +59,7 @@ export function createSessionManager(store) {
   const saveSession = async () => {
     const res = await save();
     if (res.ok && res.data) {
-      showNotice(store.dispatch, t('messages.session-save-ok'));
+      showNotification(t('messages.session-save-ok'))(store.dispatch);
     } else {
       store.dispatch(setWindowWarning(t('messages.session-save-error')));
     }
