@@ -436,8 +436,8 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
     case MapsActions.SET_TRACE: {
       const { formID, model, updateViewport } = action;
       const mapState = state.single[formID];
-      const layers = mapState?.mapData.layers;
-      if (!layers) return;
+      const layers = mapState?.mapData?.layers;
+      if (!layers) return state;
 
       let traceElement: MapPolyline;
       let traceLayer = layers.find(layer => layer.uid === '{TRACES-LAYER}');
