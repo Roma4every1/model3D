@@ -12,20 +12,21 @@ export const FileEditor = ({parameter, update}: EditorProps<ParamString>) => {
   const dispatch = useDispatch();
 
   let value = parameter.value;
-  if (value) value = value.substring(value.lastIndexOf('\\') + 1)
+  if (value) value = value.substring(value.lastIndexOf('\\') + 1);
 
-  const onChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const onChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const { ok, data } = await reportsAPI.uploadFile(file.name, reader.result);
-      if (ok && data.endsWith(file.name)) return update(data);
+    const fileData = await file.arrayBuffer();
+    const { ok, data: resourceID } = await reportsAPI.uploadFile(file.name, fileData);
+
+    if (ok && resourceID.endsWith(file.name)) {
+      update(resourceID);
+    } else {
       await showNotification(t('editors.file-upload-error'))(dispatch);
-      update(t('base.error'))
+      update(t('base.error'));
     }
-    reader.readAsArrayBuffer(file);
   };
 
   const inputRef = useRef<HTMLInputElement>();
