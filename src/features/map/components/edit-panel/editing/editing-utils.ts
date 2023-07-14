@@ -103,7 +103,7 @@ export function getAngle(centerPoint: Point, currentPoint: Point): number {
 
 /* --- --- --- */
 
-type SelectedType = 'polyline' | 'label' | 'sign' | undefined;
+type SelectedType = 'polyline' | 'label' | 'sign' | 'field' | undefined;
 
 export function getHeaderText(isCreating: boolean, type: SelectedType, layerName: string, t: TFunction): string {
   return isCreating ? getHeaderCreating(layerName) : getHeaderEditing(type, t);

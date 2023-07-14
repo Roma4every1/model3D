@@ -25,7 +25,7 @@ interface EditingProps {
 
 const mouseMoveNeedModes: MapModes[] = [MapModes.MOVE, MapModes.MOVE_POINT, MapModes.ROTATE];
 const creatingElementTypes: MapElementType[] = ['polyline', 'sign', 'label'];
-const hasPropertiesWindow: MapElementType[] = ['polyline', 'label'];
+const hasPropertiesWindow: MapElementType[] = ['polyline', 'label', 'field'];
 
 export const Editing = ({mapState, formID}: EditingProps) => {
   const { t } = useTranslation();

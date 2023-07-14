@@ -109,7 +109,7 @@ const transform = xmlTransform({
 						level: [/./, xmlTransform({
 							level: {
 								color: xmlTransform.string,
-								value: xmlTransform.string,
+								value: xmlTransform.number,
 							}
 						})],
 					}

@@ -232,10 +232,10 @@ type MapOwner = string;
 /* --- Map Elements Types --- */
 
 /** Элемент карты. */
-type MapElement = MapPolyline | MapLabel | MapSign;
+type MapElement = MapPolyline | MapLabel | MapSign | MapField;
 
 /** Тип элемента карты. */
-type MapElementType = 'polyline' | 'label' | 'sign';
+type MapElementType = 'polyline' | 'label' | 'sign' | 'field';
 
 /* -- Polyline -- */
 
@@ -408,4 +408,39 @@ interface MapElementProto {
   selected?: boolean,
   /** Редактируется ли элемент в текущий момент. */
   edited?: boolean,
+}
+
+/* -- Field -- */
+
+/** ## Точечный объект.
+ * + `x, y` — координаты
+ * + `sizeX` — количество ячеек по X
+ * + `sizeY` — количество ячеек по Y
+ * + `stepX` — размер шага ячейки в координатах карты по X
+ * + `stepY` — размер шага ячейки в координатах карты по Y
+ * + `palette` — палитра поля
+ * + `sourceRenderDataMatrix` — матрица значений поля
+ * @see MapElement
+ * @see MapElementProto
+ * */
+interface MapField extends MapElementProto {
+  type: 'field',
+  x: number,
+  y: number,
+  sizex: number,
+  sizey: number,
+  stepx: number,
+  stepy: number,
+  palette: MapFieldPalette,
+  sourceRenderDataMatrix: number[][],
+}
+
+interface MapFieldPalette {
+  interpolated: '-1' | '0',
+  level: MapFieldPaletteLevel[],
+}
+
+interface MapFieldPaletteLevel {
+  color: string,
+  value: number,
 }

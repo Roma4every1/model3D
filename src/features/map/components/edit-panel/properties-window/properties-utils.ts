@@ -30,6 +30,16 @@ export interface InitPolylineState {
   fillBackColor: string,
 }
 
+export interface InitFieldState {
+  x: number,
+  y: number,
+  sizex: number,
+  sizey: number,
+  stepx: number,
+  stepy: number,
+  palette: MapFieldPalette,
+}
+
 /* --- Polyline Templates --- */
 
 type StyleData = {key: number | string, style?: PolylineBorderStyle, borderStyle?: number};
@@ -208,4 +218,44 @@ export const paletteSettings: ColorPickerPaletteSettings = {
     "#400040",
     "#ffffff",
   ],
+};
+
+/* --- Field Properties --- */
+
+/** Создание начального состояния поля. */
+export const createFieldInit = (field: MapField): InitFieldState => {
+  return {
+    x: field.x,
+    y: field.y,
+    sizex: field.sizex,
+    sizey: field.sizey,
+    stepx: field.stepx,
+    stepy: field.stepy,
+    palette: field.palette,
+  };
+};
+
+/** Откат изменённой поля в начальное состояние. */
+export const rollbackField = (field: MapField, init: InitFieldState) => {
+  field.x = init.x;
+  field.y = init.y;
+  field.sizex = init.sizex;
+  field.sizey = init.sizey;
+  field.stepx = init.stepx;
+  field.stepy = init.stepy;
+  field.palette = init.palette;
+};
+
+/** Создание начального состояния палитры поля. */
+export const createFieldPaletteInit = (palette: MapFieldPalette): MapFieldPalette => {
+  return {
+    interpolated: palette.interpolated,
+    level: [...palette.level.map(level => Object.assign({}, level) )],
+  };
+};
+
+/** Откат изменённой палитры поля в начальное состояние. */
+export const rollbackFieldPalette = (palette: MapFieldPalette, init: MapFieldPalette) => {
+  palette.interpolated = init.interpolated;
+  palette.level = init.level;
 };

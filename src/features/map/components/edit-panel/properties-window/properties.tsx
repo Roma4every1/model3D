@@ -15,12 +15,20 @@ import {
   cancelCreatingElement
 } from '../../../store/map.actions';
 import { mapStateSelector } from '../../../store/map.selectors';
-import { createLabelInit, createPolylineInit, rollbackLabel, rollbackPolyline } from './properties-utils';
+import {
+  createFieldInit,
+  createLabelInit,
+  createPolylineInit, rollbackField,
+  rollbackLabel,
+  rollbackPolyline
+} from './properties-utils';
+import {FieldProperties} from "./field/field-properties";
 
 
-const windowSizeDict: Record<'polyline' | 'label', [number, number]> = {
+const windowSizeDict: Record<'polyline' | 'label' | 'field', [number, number]> = {
   polyline: [320, 260],
   label: [350, 205],
+  field: [320, 260],
 };
 
 interface PropertiesWindowProps {
@@ -70,6 +78,7 @@ export const PropertiesWindow = ({formID, setPropertiesWindowOpen}: PropertiesWi
   const init = useMemo<any>(() => {
     if (element.type === 'polyline') return createPolylineInit(element);
     if (element.type === 'label') return createLabelInit(element);
+    if (element.type === 'field') return createFieldInit(element);
   }, [element]);
 
   const cancel = useCallback(() => {
@@ -83,6 +92,10 @@ export const PropertiesWindow = ({formID, setPropertiesWindowOpen}: PropertiesWi
     if (element.type === 'label') {
       if (mode === MapModes.MOVE_MAP && element.edited) element.edited = false;
       rollbackLabel(element, init);
+      update(); close();
+    }
+    if (element.type === 'field') {
+      rollbackField(element, init);
       update(); close();
     }
   }, [element, mode, init, update, close, setPropertiesWindowOpen, isElementCreating]); // eslint-disable-line
@@ -110,6 +123,13 @@ export const PropertiesWindow = ({formID, setPropertiesWindowOpen}: PropertiesWi
     if (element.type === 'label')
       return (
         <LabelProperties
+          element={element} init={init}
+          apply={apply} update={update} cancel={cancel} t={t} isElementCreating={isElementCreating}
+        />
+      );
+    if (element.type === 'field')
+      return (
+        <FieldProperties
           element={element} init={init}
           apply={apply} update={update} cancel={cancel} t={t} isElementCreating={isElementCreating}
         />

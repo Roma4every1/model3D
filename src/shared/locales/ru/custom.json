@@ -162,6 +162,7 @@
     "pieslice": "Круг",
     "points": "Точки",
     "polyline": "Линия",
+    "field": "Поле",
     "properties-edit": "Свойства элемента ({{elementType}})",
     "revertInitialValues": "Восстановить исходные значения",
     "sectors": "Сектора",

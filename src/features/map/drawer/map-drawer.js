@@ -118,9 +118,10 @@ var field = declareType('field', {
   loaded: (i) => {
     i.sourceRenderDataMatrix = _.chunk(field._parseSourceRenderData(i.data), i.sizex).reverse(); //reverse 'cause the source array isn't oriented right
     i.deltasPalette = field._getDeltasPalette(field._getRgbPaletteFromHex(i.palette[0].level));
+    i.preCalculatedSpectre = field._getDeltasPreCalculatedPalettes(i.deltasPalette);
+    i.lastUsedPalette = _.cloneDeep(i.palette);
     i.sX = 1 / i.stepx;
     i.sY = 1 / i.stepy;
-    i.preCalculatedSpectre = field._getDeltasPreCalculatedPalettes(i.deltasPalette);
   },
 
   _getInterpolatedArrayValues: (i, arrayX, y) => {
@@ -294,6 +295,31 @@ var field = declareType('field', {
 
   _getPixelColor: (value, i) => {
     if (value === null) return {r: 255, g: 255, b: 255};
+    if (value <= i.deltasPalette[0].min) return {
+      r: i.deltasPalette[0].redStart,
+      g: i.deltasPalette[0].greenStart,
+      b: i.deltasPalette[0].blueStart
+    };
+    const lastDeltasPalette = i.deltasPalette[i.deltasPalette.length - 1];
+    if (value >= lastDeltasPalette.max) return {
+      r: lastDeltasPalette.redStart + lastDeltasPalette.redDelta,
+      g: lastDeltasPalette.greenStart + lastDeltasPalette.greenDelta,
+      b: lastDeltasPalette.blueStart + lastDeltasPalette.blueDelta
+    };
+    for (let delta of i.deltasPalette) {
+      if (value >= delta.min && value < delta.max) {
+        return {
+          r: delta.redStart,
+          g: delta.greenStart,
+          b: delta.blueStart
+        }
+      }
+    }
+    return {r: 255, g: 255, b: 255};
+  },
+
+  _getPixelColorInterpolated: (value, i) => {
+    if (value === null) return {r: 255, g: 255, b: 255};
     if (value <= i.preCalculatedSpectre.absoluteMin) return i.preCalculatedSpectre.absoluteMinValue;
     if (value >= i.preCalculatedSpectre.absoluteMax) return i.preCalculatedSpectre.absoluteMaxValue;
     const valueDelta = value - i.preCalculatedSpectre.absoluteMin;
@@ -305,6 +331,13 @@ var field = declareType('field', {
     /** @type CanvasRenderingContext2D */
     const context = options.context;
     const canvas = options.canvas;
+
+    if (!_.isEqual(i.palette[0].level, i.lastUsedPalette[0].level)) {
+      i.deltasPalette = field._getDeltasPalette(field._getRgbPaletteFromHex(i.palette[0].level));
+      i.preCalculatedSpectre = field._getDeltasPreCalculatedPalettes(i.deltasPalette);
+    }
+
+    i.lastUsedPalette = _.cloneDeep(i.palette);
 
     const width = canvas.width;
     const height = canvas.height;
@@ -326,7 +359,10 @@ var field = declareType('field', {
           pixelIndex += 4;
           continue;
         }
-        const pixelColor = field._getPixelColor(value, i);
+        const pixelColor = i.palette[0].interpolated === '-1' ?
+          field._getPixelColorInterpolated(value, i) :
+          field._getPixelColor(value, i);
+
         imageData.data[pixelIndex++] = pixelColor.r;
         imageData.data[pixelIndex++] = pixelColor.g;
         imageData.data[pixelIndex++] = pixelColor.b;
