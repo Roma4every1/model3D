@@ -86,7 +86,9 @@ async function createRootFormState(): Promise<RootFormState | string> {
   ]);
 
   if (!resPresentations.ok) return 'Ошибка при получении списка презентаций';
-  const presentationsTree = resPresentations.data.items;
+  const presentationTree = Array.isArray(resPresentations.data)
+    ? resPresentations.data
+    : resPresentations.data.items;
 
   if (!resChildren.ok) return 'Ошибка при получении данных презентаций';
   const { children, activeChildren: [activeChildID] } = resChildren.data;
@@ -96,7 +98,7 @@ async function createRootFormState(): Promise<RootFormState | string> {
   const settings: DockSettings = {dateChanging, parameterGroups: null};
 
   const layout = createDockLayout(resLayout);
-  return {id, settings, layout, presentationTree: presentationsTree, children, activeChildID};
+  return {id, settings, layout, presentationTree, children, activeChildID};
 }
 
 function createDockLayout(res: Res<any>): DockLayout {

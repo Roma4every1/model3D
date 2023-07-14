@@ -10,7 +10,7 @@ const defaultErrorNotice = 'Ошибка при выполнении запро�
  * @param proto прототип или текст уведомления
  * @param duration длительность показа уведомления в секундах
  * */
-export function showNotification(proto: NotificationProto | NotificationContent, duration = 3): Thunk {
+export function showNotification(proto: NotificationProto | NotificationContent, duration = 4): Thunk {
   return async (dispatch: Dispatch) => {
     if (typeof proto === 'string') proto = {content: proto};
     const id = ++counter;
