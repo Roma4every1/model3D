@@ -46,7 +46,7 @@ export function saveTrace(): Thunk {
     await channelsAPI.updateRows(traceChannel.tableID, [index], [row]);
     await reloadChannel(traceChannel.name)(dispatch, getState);
 
-    if (!isNodesEqual(oldModel.nodes, model.nodes)) {
+    if (!isNodesEqual(oldModel?.nodes ?? [], model.nodes)) {
       const { objects, channels } = getState();
       const nodeChannel = channels[objects.trace.nodeChannelName];
       const tableID = nodeChannel.tableID;
