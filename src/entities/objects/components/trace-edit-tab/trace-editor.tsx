@@ -18,6 +18,8 @@ export const TraceEditor = ({formID}: PropsFormID) => {
 
   const { model, oldModel, creating } = useSelector(traceStateSelector);
   const mapState: MapState = useSelector(mapStateSelector.bind(formID));
+
+  if (!model) return <div/>;
   const mapPoints = mapState?.mapData?.points;
 
   // задание недостающих координат и имён
@@ -42,16 +44,16 @@ export const TraceEditor = ({formID}: PropsFormID) => {
   };
 
   return (
-    <section className='trace-edit-tab'>
-      <div className='trace-edit-tab__header'>
-        <div className='title'>
+    <section className={'trace-edit-tab'}>
+      <div className={'trace-edit-tab__header'}>
+        <div className={'title'}>
           <div>{t('trace.edit-panel')}</div>
         </div>
-        <span className='k-clear-value'>
+        <span className={'k-clear-value'}>
         <span className={'k-icon k-i-close'} onClick={onClick}/>
       </span>
       </div>
-      <div className='trace-edit-tab__body'>
+      <div className={'trace-edit-tab__body'}>
         <TraceChangeName model={model}/>
         <TraceNodes model={model}/>
         <TraceAddNode model={model} mapPoints={mapPoints}/>

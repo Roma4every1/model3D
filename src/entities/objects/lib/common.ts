@@ -45,7 +45,7 @@ export function traceToNodeChannelRows(nodeChannel: Channel, model: TraceModel):
 /** По данным обновления параметров обновляет активные объекты. */
 export function updateObjects(updates: UpdateParamData[], dispatch: Dispatch, state: WState) {
   const { channels, objects } = state;
-  const { place, well, trace } = objects;
+  let { place, well, trace } = objects;
 
   const placeParameterID = place.parameterID;
   const wellParameterID = well.parameterID;
@@ -65,7 +65,8 @@ export function updateObjects(updates: UpdateParamData[], dispatch: Dispatch, st
       well.model = value ? createWellModel(value, wellChannel.info.columns) : null;
       changeFlags.well = true;
     } else if (id === traceParameterID) {
-      trace.model = value ? createTraceModel(value, traceChannel, nodeChannel, wellChannel) : null;
+      const model = value ? createTraceModel(value, traceChannel, nodeChannel, wellChannel) : null;
+      trace = {...trace, model, oldModel: null, editing: false, creating: false};
       changeFlags.trace = true;
     }
   }
@@ -74,7 +75,6 @@ export function updateObjects(updates: UpdateParamData[], dispatch: Dispatch, st
     const newObjects: ObjectsState = {place, well, trace};
     if (changeFlags.place) newObjects.place = {...place};
     if (changeFlags.well) newObjects.well = {...well};
-    if (changeFlags.trace) newObjects.trace = {...trace};
     dispatch(setObjects(newObjects));
   }
 }

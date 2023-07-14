@@ -24,8 +24,8 @@ export const TraceChangeName = ({model}: {model: TraceModel}) => {
   };
 
   return (
-    <div className='trace-edit-tab__inner-block'>
-      <div className='menu-header trace-edit-tab__title-text'>
+    <div className={'trace-edit-tab__inner-block'}>
+      <div className={'menu-header trace-edit-tab__title-text'}>
         {t('trace.change-name-title')}
       </div>
       <input
