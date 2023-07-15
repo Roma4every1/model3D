@@ -1,7 +1,7 @@
 import { Dispatch } from 'redux';
 import { Thunk, StateGetter } from 'shared/lib';
 import { fillChannels } from 'entities/channels';
-import { createLeftLayout } from 'widgets/left-panel';
+import { createLeftLayout, handlePresentationTree } from 'widgets/left-panel';
 import { createClientChannels } from 'widgets/presentation/lib/initialization';
 import { applyChannelsDeps } from 'widgets/presentation/lib/utils';
 import { setParamDict } from 'entities/parameters';
@@ -38,6 +38,7 @@ export const startSession = (isDefault: boolean): Thunk => {
     const channels = await createClientChannels(new Set(names), paramDict, []);
     applyChannelsDeps(channels, paramDict);
     await checkParamValues(channels, paramDict);
+    handlePresentationTree(root.presentationTree, parameters);
 
     dispatch(setParamDict(paramDict));
     dispatch(setChannels(channels));

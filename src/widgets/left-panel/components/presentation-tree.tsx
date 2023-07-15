@@ -1,27 +1,49 @@
-import { TreeViewExpandChangeEvent, TreeViewItemClickEvent } from '@progress/kendo-react-treeview';
-import { TreeView } from '@progress/kendo-react-treeview';
+import { useMemo } from 'react';
 import { useDispatch } from 'react-redux';
-import { selectPresentation } from '../../../app/store/root-form/root-form.actions';
+import { TreeView } from '@progress/kendo-react-treeview';
+import { TreeViewExpandChangeEvent, TreeViewItemClickEvent } from '@progress/kendo-react-treeview';
+import { forEachTreeLeaf, findInTree } from 'shared/lib';
+import { selectPresentation } from 'app/store/root-form/root-form.actions';
 
-
-const onExpandChange = (event: TreeViewExpandChangeEvent) => {
-  event.item.expanded = !event.item.expanded;
-};
 
 export const PresentationTreeView = ({tree}: {tree: PresentationTree}) => {
   const dispatch = useDispatch();
 
+  const visibleNodes = useMemo(() => {
+    return getVisibleNodes(tree);
+  }, [tree]);
+
+  const onExpandChange = ({item}: TreeViewExpandChangeEvent) => {
+    const id = item.id;
+    const treeItem = findInTree(tree, i => i.id === id, 'items');
+    const newExpanded = !item.expanded;
+    item.expanded = newExpanded;
+    treeItem.expanded = newExpanded;
+  };
+
   const onItemClick = (event: TreeViewItemClickEvent) => {
-    const item = event.item;
-    if (item.items) return onExpandChange(event);
-    dispatch(selectPresentation(item));
+    const { id, items } = event.item;
+    if (items) return onExpandChange(event);
+    const callback = (i: PresentationTreeItem) => { i.selected = i.id === id; };
+    forEachTreeLeaf(tree, callback, 'items');
+    forEachTreeLeaf(visibleNodes, callback, 'items');
+    dispatch(selectPresentation(id));
   };
 
   return (
     <TreeView
-      className={'treeview'} data={tree}
+      className={'treeview'} data={visibleNodes}
       expandIcons={true} aria-multiselectable={false}
       onExpandChange={onExpandChange} onItemClick={onItemClick}
     />
   );
 };
+
+function getVisibleNodes(tree: PresentationTree): PresentationTree {
+  return tree.map((item: PresentationTreeItem): PresentationTreeItem => {
+    let items = item.items;
+    if (!items) return {...item};
+    items = getVisibleNodes(items);
+    return {...item, items, visible: !items.every(i => i.visible === false)};
+  }).filter(item => item.visible !== false);
+}

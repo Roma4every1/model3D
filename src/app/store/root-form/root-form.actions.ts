@@ -1,17 +1,22 @@
-import { RootFormAction, RootFormActions } from './root-form.reducer';
+import { RootFormAction, RootFormActionType } from './root-form.reducer';
 
 
 /** Установить состояние главной формы. */
-export const setRootFormState = (state: RootFormState): RootFormAction => {
-  return {type: RootFormActions.SET, payload: state};
+export function setRootFormState(state: RootFormState): RootFormAction {
+  return {type: RootFormActionType.SET, payload: state};
 }
 
 /** Выбор презентации из списка. */
-export const selectPresentation = (item: PresentationTreeItem): RootFormAction => {
-  return {type: RootFormActions.SELECT_PRESENTATION, payload: item};
-};
+export function selectPresentation(id: FormID): RootFormAction {
+  return {type: RootFormActionType.SET_ACTIVE_CHILD_ID, payload: id};
+}
+
+/** Установить дерево презентаций. */
+export function setPresentationTree(tree: PresentationTree): RootFormAction {
+  return {type: RootFormActionType.SET_PRESENTATION_TREE, payload: tree};
+}
 
 /** Установить принудительную высоту влкадки в левой панели. */
-export const setLeftLayout = (layout: LeftPanelLayout): RootFormAction => {
-  return {type: RootFormActions.SET_LEFT_LAYOUT, payload: layout};
-};
+export function setLeftLayout(layout: LeftPanelLayout): RootFormAction {
+  return {type: RootFormActionType.SET_LEFT_LAYOUT, payload: layout};
+}

@@ -33,6 +33,60 @@ export function compareObjects(a: Record<any, any>, b: Record<any, any>): boolea
   return true;
 }
 
+/* --- Dates --- */
+
+/** Сериализует дату в строку в форате `YYYY-MM-DD` без учёта временных зон.
+ * @example
+ * stringifyLocalDate(new Date(2023, 6, 14)) => "2023-07-14"
+ * */
+export function stringifyLocalDate(date: Date): string {
+  const month = date.getMonth() + 1;
+  const monthString = month > 9 ? month : '0' + month;
+  const day = date.getDate();
+  const dayString = day > 9 ? day : '0' + day;
+  return `${date.getFullYear()}-${monthString}-${dayString}`;
+}
+
+/* --- Trees --- */
+
+/** Находит в дереве элемент. */
+export function findInTree<T>(
+  tree: T[], callback: (node: T) => boolean,
+  childrenField: string = 'children',
+): T | undefined {
+  for (const node of tree) {
+    if (callback(node)) return node;
+    const children = node[childrenField];
+    if (Array.isArray(children)) {
+      const item = findInTree(children, callback, childrenField);
+      if (item !== undefined) return item;
+    }
+  }
+}
+
+/**
+ * Применяет функцию ко всем листьям дерева.
+ *
+ * Элемент считается листом, если его `childrenField` не является массивом.
+ * */
+export function forEachTreeLeaf<T>(
+  tree: T[], callback: (leaf: T, i?: number) => void,
+  childrenField: string = 'children',
+): void {
+  let i = 0;
+  const visit = (treeItems: T[]) => {
+    for (const item of treeItems) {
+      const children = item[childrenField];
+      if (Array.isArray(children)) {
+        visit(children);
+      } else {
+        callback(item, i++);
+      }
+    }
+  };
+  visit(tree);
+}
+
 /* --- Sets --- */
 
 /** Возвращает объединение двух множеств.
@@ -45,11 +99,25 @@ export function setUnion<Type>(a: Set<Type>, b: Set<Type>): Set<Type> {
   return new Set([...a, ...b]);
 }
 
+/** Возвращает пересечение двух множеств.
+ * @example
+ * const a = new Set([1, 2, 3]);
+ * const b = new Set([2, 3, 4]);
+ * const c = setIntersection(a, b); // Set {2, 3}
+ * */
+export function setIntersection<Type>(a: Set<Type>, b: Iterable<Type>): Set<Type> {
+  const result = new Set<Type>();
+  for (const element of b) {
+    if (a.has(element)) result.add(element);
+  }
+  return result;
+}
+
 /** Возвращает множество элементов, которые входят в `a`, но НЕ входят в `b`. */
 export function leftAntiJoin<Type>(a: Set<Type>, b: Iterable<Type>): Set<Type> {
   const result = new Set(a);
-  for (const item of b) {
-    if (result.has(item)) result.delete(item);
+  for (const element of b) {
+    if (result.has(element)) result.delete(element);
   }
   return result;
 }
