@@ -27,34 +27,18 @@ export function onElementSize(element, proc) {
 	}
 }
 
-export function loadImage(url) {
-	return new Promise((resolve, reject) => {
-		const image = new Image();
-		image.src = url;
-		image.onload = () => {resolve(image)};
-		image.onerror = reject;
-	});
-}
-
-
-export function makeDataUrl(data, contentType) {
-	if (data instanceof Array) data = new Uint8Array(data);
-	return URL.createObjectURL(new Blob([data], {type: contentType}));
-}
-
-export function deleteDataUrl(url) {
-	URL.revokeObjectURL(url);
-}
-
-export function withDataUrl(data, contentType, fun) {
-	const url = makeDataUrl(data, contentType);
-	const fin = () => {deleteDataUrl(url)};
-
-	const ret = fun(url);
-	ret.then(fin).catch(fin);
-	return ret;
-}
-
 export function loadImageData(data, contentType) {
-	return withDataUrl(data, contentType, loadImage);
+  if (data instanceof Array) data = new Uint8Array(data);
+  const url = URL.createObjectURL(new Blob([data], {type: contentType}))
+  const fin = () => { URL.revokeObjectURL(url); };
+
+  const ret = new Promise((resolve, reject) => {
+    const image = new Image();
+    image.src = url;
+    image.onload = () => { resolve(image); };
+    image.onerror = reject;
+  });
+
+  ret.then(fin).catch(fin);
+  return ret;
 }

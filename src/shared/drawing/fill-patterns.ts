@@ -67,10 +67,22 @@ export class FillPatterns implements IFillPatterns {
   }
 
   /** Создаёт паттерн заливки по типу и двум цветам. */
-  public createFillStyle(name: string, color: ColorHEX, background: ColorHEX) {
+  public createFillStyle(name: string, color: ColorHEX, background: ColorHEX): CanvasPattern | string {
+    if (!name) return '#ffffff';
+    if (background === 'none') background = '#ffffff';
+
     try {
-      const [, libName, index] = name.match(/^(.+)-(\d+)$/);
-      const lib = this.libs[libName.toLowerCase()];
+      let [, libName, index] = name.match(/^(.+)-(\d+)$/);
+      libName = libName.toLowerCase();
+
+      if (libName === 'halftone') {
+        const c = parseColor(color).rgb;
+        const b = parseColor(background).rgb;
+        const t = parseInt(index) / 64;
+        return `rgb(${b.map((bi, i) => Math.round(bi + (c[i] - bi) * t))})`;
+      }
+
+      const lib = this.libs[libName];
       if (!lib) return background;
 
       this.fill(lib[index], color, background);

@@ -1,6 +1,8 @@
 import { BaseAPI, API } from 'shared/lib';
+import { types } from '../drawer/map-drawer';
+import { provider } from '../drawer';
 import { converter } from './maps-api.utils';
-import { handleLayerScales, checkLayerIndex, loadLayerElements } from './maps-api.utils';
+import { handleLayerScales, checkLayerIndex } from './maps-api.utils';
 
 import symbolDef from 'assets/map-libs/symbol.def';
 import dro32Lib from 'assets/map-libs/dro32.smb';
@@ -118,7 +120,10 @@ export class MapsAPI {
         if (newLayer != null) elements = newLayer.elements;
       }
 
-      await loadLayerElements(elements);
+      for (const element of elements) {
+        const t = types[element.type];
+        if (t && t.loaded) await t.loaded(element, provider);
+      }
     } finally {
       // @ts-ignore
       layer.elements = elements;

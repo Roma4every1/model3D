@@ -1,7 +1,5 @@
 import { inflate, deflate } from 'pako';
 import { readXml } from '../drawer/gs-transform';
-import { types } from '../drawer/map-drawer';
-import { provider } from '../drawer';
 
 
 /* --- Map Data --- */
@@ -41,14 +39,6 @@ export function checkLayerIndex(mapData: MapDataRaw, layer: MapLayerRaw) {
   }
   if (indexName) layer.index = indexName;
   return indexName;
-}
-
-/** Задание изображений для элементов (для `sign`, `polyline` и `field`). */
-export async function loadLayerElements(elements: MapElement[]) {
-  for (const element of elements) {
-    const t = types[element.type];
-    if (t && t.loaded) await t.loaded(element, provider);
-  }
 }
 
 /* --- Map Containers --- */
