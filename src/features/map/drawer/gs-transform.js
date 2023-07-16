@@ -205,24 +205,3 @@ export function readXml(text) {
 	const converted = xml2js(text, {compact: false}).elements[0];
 	return transform(xmlLite(converted));
 }
-
-export function readTable(text) {
-	let fields;
-	const table = [];
-	const array = JSON.parse(text);
-
-	for (let a of array) {
-		if (!fields) { fields = a; continue; }
-		if (a === 'lastRow') break;
-
-		const r = {};
-		for (let i = 0; i < fields.length; ++i) {
-			let s = a[i];
-			const n = fields[i];
-			if (n === 'PATH') s = s.replace(/\\/g, '/').replace(/\.xml$/, '.json');
-			r[n] = s;
-		}
-		table.push(r);
-	}
-	return table;
-}

@@ -58,11 +58,3 @@ export function withDataUrl(data, contentType, fun) {
 export function loadImageData(data, contentType) {
 	return withDataUrl(data, contentType, loadImage);
 }
-
-export function copyImage(image) {
-	const canvas = document.createElement('canvas');
-	canvas.width = image.width;
-	canvas.height = image.height;
-	canvas.getContext('2d').drawImage(image, 0, 0);
-	return canvas;
-}
