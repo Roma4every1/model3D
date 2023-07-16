@@ -1,5 +1,5 @@
 /** Функция переводящая точку из одной системы координат в другую. */
-type PointTranslator = (point: ClientPoint) => ClientPoint;
+type PointTranslator = (point: Point) => Point;
 
 /** ## Translator.
  * Объект для работы с координатами и масштабом.
@@ -12,18 +12,18 @@ type PointTranslator = (point: ClientPoint) => ClientPoint;
 export interface Translator {
 	mscale: number,
 	cscale: number,
-	pointToControl(point: ClientPoint): ClientPoint,
-	pointToMap(point: ClientPoint): ClientPoint,
+	pointToControl(point: Point): Point,
+	pointToMap(point: Point): Point,
 	scaleVisible(layer: MapLayer): boolean,
-	zoom(scaleIn, cPoint: ClientPoint, mPoint: ClientPoint): Translator,
-	setScale(scale: number, cPoint: ClientPoint | null, mPoint: ClientPoint | null): Translator,
+	zoom(scaleIn, cPoint: Point, mPoint: Point): Translator,
+	setScale(scale: number, cPoint: Point | null, mPoint: Point | null): Translator,
 	changeResolution(multiplier: number): Translator,
 }
 
 interface Rects {
 	join(...rects: Bounds[]): Bounds
 	intersects(a: Bounds, b: Bounds): boolean
-	joinPoints(...points: ClientPoint[]): Bounds
+	joinPoints(...points: Point[]): Bounds
 	inflate(r: Bounds, d: number): Bounds
 	middleRect(...rects: Bounds[]): Bounds
 }
@@ -51,7 +51,7 @@ export const rects: Rects = {
 		&& (b.min.x < a.max.x)
 		&& (a.min.y < b.max.y)
 		&& (b.min.y < a.max.y),
-	joinPoints: (...points: ClientPoint[]) => rects.join(...points.map(p => ({ min: p, max: p }))),
+	joinPoints: (...points: Point[]) => rects.join(...points.map(p => ({ min: p, max: p }))),
 	inflate: (r: Bounds, d: number): Bounds => ({
 		min: { x: r.min.x - d, y: r.min.y - d },
 		max: { x: r.max.x + d, y: r.max.y + d },
@@ -64,18 +64,18 @@ export const rects: Rects = {
 	},
 }
 
-function translate(scale1: number, p1: ClientPoint, scale2: number, p2: ClientPoint): PointTranslator {
+function translate(scale1: number, p1: Point, scale2: number, p2: Point): PointTranslator {
 	const sc = 1 / scale1 * scale2;
-	return (point: ClientPoint) => ({x: p2.x + (point.x - p1.x) * sc, y: p2.y + (point.y - p1.y) * sc});
+	return (point: Point): Point => ({x: p2.x + (point.x - p1.x) * sc, y: p2.y + (point.y - p1.y) * sc});
 }
 
 /** Возвращает {@link Translator} — объект для перевода координат и прочего.
- * @param mScale _"MapScale"_
- * @param mCenter _"MapCenter"_
- * @param cScale _"CanvasScale"_
- * @param cCenter _"CanvasCenter"_
+ * @param mScale "MapScale"
+ * @param mCenter "MapCenter"
+ * @param cScale "CanvasScale"
+ * @param cCenter "CanvasCenter"
  * */
-export function getTranslator(mScale: number, mCenter: ClientPoint, cScale: number, cCenter: ClientPoint): Translator {
+export function getTranslator(mScale: number, mCenter: Point, cScale: number, cCenter: Point): Translator {
 	let ret: Translator;
 	return ret = {
 		mscale: mScale, cscale: cScale,
@@ -106,5 +106,5 @@ export function getTranslator(mScale: number, mCenter: ClientPoint, cScale: numb
 			if (mul === 1) return ret;
 			return getTranslator(mScale, ret.pointToMap({ x: 0, y: 0 }), cScale * mul, { x: 0, y: 0 })
 		},
-	}
+	};
 }

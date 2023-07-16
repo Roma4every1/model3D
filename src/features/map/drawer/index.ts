@@ -1,7 +1,7 @@
 import symbols from './symbols';
 import patterns from './patterns';
 import cache from './cache';
-import Maps from './maps';
+import { showMap } from './maps';
 import { mapsAPI } from '../lib/maps.api';
 import lines from './lines.json';
 
@@ -17,7 +17,7 @@ const drawOptions = {
 };
 
 function createProvider() {
-  let provider = {
+  let provider: any = {
     drawOptions,
     getSymbolsLib: cache(() => mapsAPI.getSymbolsLib()),
     getPatternLib: cache((libName) => mapsAPI.getPatternLib(libName)),
@@ -31,10 +31,9 @@ function createProvider() {
 
 export const provider = createProvider();
 
-export function createMapsDrawer() {
-  // @ts-ignore
-  const mapsDrawer: MapsDrawer = new Maps();
-  // @ts-ignore
-  mapsDrawer.getSignImage = provider.getSignImage;
-  return mapsDrawer;
+export function createMapDrawer(): MapDrawer {
+  return {
+    showMap: showMap,
+    getSignImage: provider.getSignImage,
+  };
 }

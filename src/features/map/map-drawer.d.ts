@@ -1,16 +1,7 @@
 /** Отрисовщик карты. */
-interface MapsDrawer {
-  showMap(canvas: HTMLCanvasElement, map, data: ShowMapData = {}): any
+interface MapDrawer {
+  showMap(canvas: HTMLCanvasElement, mapData: MapData, viewport: MapViewport): any
   getSignImage(fontName: string, symbolCode: number, color: string): Promise<HTMLImageElement>
-}
-
-interface ShowMapData {
-  scale: MapScale,
-  centerx: number,
-  centery: number,
-  idle?: any,
-  plainDrawing?: any,
-  selected?: any,
 }
 
 /** ## Типы отрисовщика:

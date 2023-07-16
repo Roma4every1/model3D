@@ -6,9 +6,9 @@ import { clientPoint, listenerOptions } from '../lib/map-utils';
 interface ScrollerAction {
 	stop?: any,
 	moved?: boolean,
-	movePoint: ClientPoint,
-	mapMovePoint?: ClientPoint,
-	oldPoint?: ClientPoint,
+	movePoint: Point,
+	mapMovePoint?: Point,
+	oldPoint?: Point,
 	initialCoords?: any,
 }
 interface IScroller {
@@ -50,7 +50,7 @@ export class Scroller implements IScroller {
 		this.list = list;
 	}
 
-	private emit(eventName: string, arg: ClientPoint | boolean | object) {
+	private emit(eventName: string, arg: Point | boolean | object) {
 		this.canvas.events.emit(eventName, arg);
 		for (const canvas of this.list) {
 			canvas.events.emit(eventName, arg);
@@ -69,7 +69,7 @@ export class Scroller implements IScroller {
 		this.action = null;
 	}
 
-	private updateView = (screenPoint: ClientPoint, scaleMultiplier: number) => {
+	private updateView = (screenPoint: Point, scaleMultiplier: number) => {
 		const coords = this.action.initialCoords.zoom(scaleMultiplier, screenPoint, this.action.mapMovePoint);
 		const args = {control: this.canvas, coords};
 

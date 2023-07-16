@@ -123,12 +123,18 @@ export function squaredDistanceBetweenPointAndSegment(segment, point) {
 
 /** Определяет вьюпорт карты, чтобы все элементы влазили в экран. */
 export function getFullViewport(layers: MapLayer[], canvas: HTMLCanvasElement): MapViewport {
-  const allVisibleBounds = layers.filter(l => l.visible).map(l => l.bounds);
+  let minX = Infinity, minY = Infinity;
+  let maxX = -Infinity, maxY = -Infinity;
 
-  const minX = Math.min(...allVisibleBounds.map(b => b.min.x));
-  const minY = Math.min(...allVisibleBounds.map(b => b.min.y));
-  const maxX = Math.max(...allVisibleBounds.map(b => b.max.x));
-  const maxY = Math.max(...allVisibleBounds.map(b => b.max.y));
+  for (const layer of layers) {
+    if (!layer.visible || layer.temporary) continue;
+    const { min, max } = layer.bounds;
+
+    if (min.x < minX) minX = min.x;
+    if (min.y < minY) minY = min.y;
+    if (max.x > maxX) maxX = max.x;
+    if (max.y > maxY) maxY = max.y;
+  }
 
   const scaleX = 1.2 * (maxX - minX) * PIXEL_PER_METER / canvas.clientWidth;
   const scaleY = 1.2 * (maxY - minY) * PIXEL_PER_METER / canvas.clientHeight;

@@ -2,7 +2,6 @@ import { extend } from 'lodash';
 import { parseDef } from './symbol2svg';
 import { loadImageData } from './html-helper';
 import cache from './cache';
-import startThread from './start-thread';
 
 
 export default function symbols(provider) {
@@ -12,12 +11,10 @@ export default function symbols(provider) {
 		return parseDef(def2json(toUnicode(text)));
 	}));
 
-	ret.getSignImage = cache((name, index, color) => {
-		return startThread(function* () {
-			const lib = yield ret.getSymbolsLib();
-			const template = lib[`${name.toUpperCase()} (${index})`] || lib['PNT.CHR (0)'];
-			return yield loadImageData(template(color), 'image/svg+xml');
-		});
+	ret.getSignImage = cache(async (name, index, color) => {
+    const lib = await ret.getSymbolsLib();
+    const template = lib[`${name.toUpperCase()} (${index})`] || lib['PNT.CHR (0)'];
+    return await loadImageData(template(color), 'image/svg+xml');
 	});
 
 	return ret;

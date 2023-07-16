@@ -39,7 +39,6 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
 
   const canvas = mapState?.canvas;
   const mapData = mapState?.mapData;
-  const selectedElement = mapState?.element;
   const utils = mapState?.utils;
 
   const isPartOfDynamicMultiMap = data !== undefined;
@@ -101,25 +100,12 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
     }
   }, [mapState, activeChannel, id, parent, isPartOfDynamicMultiMap, dispatch]); // eslint-disable-line
 
-  const draw = useCallback((canvas, map, scale, x, y, selected) => {
-    if (!mapState?.drawer || !canvas) return;
+  const updateCanvas = useCallback((viewport?: MapViewport) => {
+    if (!mapData || !canvasRef.current || !mapState?.drawer) return;
+    if (!viewport) viewport = {centerX: mapData.x, centerY: mapData.y, scale: mapData.scale};
     if (mapDrawnData.current) mapDrawnData.current.emit('detach');
-    const data = {centerx: x, centery: y, scale, selected};
-    mapDrawnData.current = mapState.drawer.showMap(canvas, map, data);
-  }, [mapState?.drawer]);
-
-  const updateCanvas = useCallback((viewport: MapViewport, context?) => {
-    if (!mapData) return;
-    let x,y, scale;
-    if (viewport) {
-      x = viewport.centerX; y = viewport.centerY;
-      scale = viewport.scale;
-    } else {
-      x = mapData.x; y = mapData.y;
-      scale = mapData.scale;
-    }
-    draw(context || canvasRef.current, mapData, scale, x, y, selectedElement);
-  }, [draw, mapData, selectedElement]);
+    mapDrawnData.current = mapState.drawer.showMap(canvasRef.current, mapData, viewport);
+  }, [mapData, mapState?.drawer]);
 
   // переопределение функции updateCanvas
   useEffect(() => {
@@ -177,7 +163,7 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
       if (!mapData.onDrawEnd) mapData.onDrawEnd = (canvas, x, y, scale) => {
         utils.pointToMap = getPointToMap(canvas, x, y, scale);
       };
-      updateCanvas(viewport, canvasRef.current);
+      updateCanvas(viewport);
     }
   });
 

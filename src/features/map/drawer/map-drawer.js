@@ -1,11 +1,10 @@
 import * as _ from 'lodash';
-import { rects } from './geom';
-import * as parseColor from 'parse-color';
-import { loadImageData } from './html-helper';
-import startThread from './start-thread';
+import parseColor from 'parse-color';
 import parseSMB from './parse-smb';
 import pngMono from './png-mono';
+import { loadImageData } from './html-helper';
 import { getLabelTextNumberArray } from './label-text-parser';
+import { rects } from './geom';
 import { provider } from './index';
 import { mapsAPI } from '../lib/maps.api';
 import linesDefStub from './lines.def.stub.json';
@@ -49,10 +48,10 @@ function setElementImage(i, imgData) {
   return i.imgData;
 }
 
-function* getElementImage(i, options) {
+async function getElementImage(i, options) {
   if (!i.img) {
     const r = options.onDataWaiting(i.imgData);
-    if (r) yield r;
+    if (r) await r;
   }
 }
 
@@ -87,8 +86,9 @@ declareType('sign', {
     setElementImage(i, provider.getSignImage(i.fontname, i.symbolcode, i.color))
   },
 
-  draw: function* drawThread(i, options) {
-    const img = i.img || ((yield* getElementImage(i, options)), i.img);
+  draw: async (i, options) => {
+    if (!i.img) await getElementImage(i, options);
+    const img = i.img;
     if (!img || !options.context.setLineDash) return;
 
     const point = options.pointToControl(i);
@@ -329,8 +329,7 @@ var field = declareType('field', {
     return i.preCalculatedSpectre.spectreArray[spectreIndex];
   },
 
-  // eslint-disable-next-line require-yield
-  draw: function* drawThread(i, options) {
+  draw: (i, options) => {
     /** @type CanvasRenderingContext2D */
     const context = options.context;
     const canvas = options.canvas;
@@ -729,8 +728,8 @@ var polyline = declareType('polyline', {
     }
 
     if (i.isTrace) {
-        context.lineCap = 'round';
-        context.lineJoin = 'round';
+      context.lineCap = 'round';
+      context.lineJoin = 'round';
     }
 
     polyline.path(i, options);
@@ -763,7 +762,7 @@ var polyline = declareType('polyline', {
     if (i.arcs[0].path.length === 2) polyline.points(i, options);
   },
 
-  draw: function* drawThread(i, options) {
+  draw: async (i, options) => {
     // Thickness coefficient for all lines defined in lines.json/xml
     const configThicknessCoefficient = options.pixelRatio;
     /** @type CanvasRenderingContext2D */
@@ -783,8 +782,8 @@ var polyline = declareType('polyline', {
     const pathNeeded = _.once(() => polyline.path(i, options));
 
     if (i.isTrace) {
-        context.lineCap = 'round';
-        context.lineJoin = 'round';
+      context.lineCap = 'round';
+      context.lineJoin = 'round';
     }
     if ((!i.edited) && i.selected) {
       context.lineCap = 'round';
@@ -797,12 +796,12 @@ var polyline = declareType('polyline', {
       context.lineWidth = ((i.borderwidth || defaultLineWidth) + 3 / 96.0 * 25.4) * 0.001 * options.dotsPerMeter;
       context.stroke();
       context.lineCap = 'butt';
-      context.lineJoin = 'butt';
     }
 
     if (i.fillname) {
       pathNeeded();
-      var img = i.img || ((yield* getElementImage(i, options)), i.img);
+      if (!i.img) await getElementImage(i, options);
+      let img = i.img;
       if (img) {
         if (typeof img === 'string') {
           if (i.transparent) {
@@ -931,7 +930,7 @@ var label = declareType('label', {
     }
   },
 
-  draw: function* drawThread(i, options) { // eslint-disable-line
+  draw: (i, options) => {
     // pt -> meters -> pixels
     const fontsize = (i.fontsize + (i.selected ? 2 : 0)) * (1 / 72 * 0.0254) * options.dotsPerMeter;
     const font = fontsize + 'px ' + i.fontname;
@@ -1094,7 +1093,7 @@ var label = declareType('label', {
 
 declareType('pieslice', {
   bound: pointBounds,
-  draw: function* drawThread(i, options) { // eslint-disable-line
+  draw: (i, options) => {
     const context = options.context;
     const maxRadius = 16;
     const minRadius = 2;
@@ -1122,22 +1121,18 @@ declareType('pieslice', {
   },
 });
 
-const Value = (value, whenNull) => value == null ? whenNull() : value;
-const nullGetter = () => null;
-const getNullGetter = () => nullGetter;
-const isLayerVisible = (layer) => layer.visible;
-
-export function startPaint(canvas, map, options) {
+/**
+ * @param canvas {MapCanvas}
+ * @param map {MapData}
+ * @param options {any}
+ * */
+export async function startPaint(canvas, map, options) {
   // to stop painting set the options.check callback and
   // throw an exception inside it.
   // options.check may return a Promise ( or Thenable ) to pause drawing
 
-  const pixelRatio = options.pixelRatio || 1;
   const coords = options.coords;
-  const scale = coords.mscale;
-  const dotsPerMeter = coords.cscale;
-  const onCheckExecution = Value(options.onCheckExecution, () => null);
-  const onDataWaiting = Value(options.onDataWaiting, getNullGetter);
+  const onCheckExecution = options.onCheckExecution;
 
   const exactBounds = rects.joinPoints(
     coords.pointToMap({x: 0, y: 0}),
@@ -1148,97 +1143,54 @@ export function startPaint(canvas, map, options) {
     exactBounds.max.y - exactBounds.min.y
   ));
 
-  const context = canvas.getContext ? canvas.getContext('2d') : canvas;
+  const ctx = canvas.getContext('2d');
   const drawOptions = {
     provider: provider,
-    selected: options.selected,
     pointToControl: coords.pointToControl,
     pointToMap: coords.pointToMap,
-    canvas,
-    context,
-    dotsPerMeter,
-    pixelRatio,
-    map,
-    onDataWaiting,
-    scale,
+    canvas: canvas,
+    context: ctx,
+    dotsPerMeter: coords.cscale,
+    pixelRatio: options.pixelRatio,
+    map: map,
+    onDataWaiting: options.onDataWaiting,
+    scale: coords.mscale,
     drawBounds: exactBounds,
     events: options.events
   };
 
-  return startThread(function* paintThread() {
-    try {
-      for (const layer of map.layers) {
-        if (!isLayerVisible(layer, map)) continue;
-        if (!coords.scaleVisible(layer)) continue;
-        if (!rects.intersects(drawBounds, layer.bounds)) continue;
+  try {
+    for (const layer of map.layers) {
+      if (!layer.visible) continue;
+      if (!coords.scaleVisible(layer)) continue;
+      if (!rects.intersects(drawBounds, layer.bounds)) continue;
 
-        let c = onCheckExecution();
-        c && (yield c);
+      let c = onCheckExecution();
+      c && (await c);
 
-        if (!layer.elements) {
-          let r = onDataWaiting(layer.elementsData);
-          if (r) yield r;
-        }
+      if (!layer.elements || layer.elements.length === 0) continue;
 
-        if (!layer.elements || layer.elements.length === 0) continue;
+      // отрисовка всех элементов
+      for (const element of layer.elements) {
+        let D = types[element.type];
+        if (!rects.intersects(drawBounds, D.bound(element))) continue;
 
-        // отрисовка всех элементов
-        for (let element of layer.elements) {
-          let D = types[element.type];
-          if (!rects.intersects(drawBounds, D.bound(element))) continue;
+        c = onCheckExecution();
+        c && (await c);
 
-          c = onCheckExecution();
-          c && (yield c);
-
-          if (D.draw && !options.draftDrawing) {
-            yield* D.draw(element, drawOptions);
-          } else if (D.draft) {
-            D.draft(element, drawOptions);
-          }
-        }
-
-        // отрисовка обводки многоугольников
-        for (let i of layer.elements) {
-          if (!i.edited && i.selected && i.type === 'polyline' && i.fillbkcolor && !i.transparent && !options.draftDrawing) {
-            context.lineCap = 'round';
-            context.lineJoin = 'round';
-            polyline.path(i, drawOptions)
-            context.strokeStyle = "#000000";
-            context.lineWidth = ((i.borderwidth || defaultLineWidth) + 4.5 / 96.0 * 25.4) * 0.001 * options.dotsPerMeter;
-            context.stroke();
-            context.strokeStyle = "#ffffff";
-            context.lineWidth = ((i.borderwidth || defaultLineWidth) + 3 / 96.0 * 25.4) * 0.001 * options.dotsPerMeter;
-            context.stroke();
-            context.lineCap = 'butt';
-            context.lineJoin = 'butt';
-          }
+        if (D.draw && !options.draftDrawing) {
+          await D.draw(element, drawOptions);
+        } else if (D.draft) {
+          D.draft(element, drawOptions);
         }
       }
-
-      if (map.type !== 'profile' && !map.points) {
-        let r = onDataWaiting(map.pointsData);
-        if (r) yield r;
-      }
-      if (map.points && drawOptions.selected && drawOptions.selected.indexOf) {
-        let D = types['namedpoint'];
-        if (D) for (let element of map.points) {
-          if (!rects.intersects(drawBounds, D.bound(element))) continue;
-          if (drawOptions.selected.indexOf(element.name) >= 0 ||
-            drawOptions.selected.indexOf(element.uwid || element.UWID) >= 0
-          ) {
-            if (D.draw && !options.draftDrawing)
-              yield* D.draw(element, drawOptions);
-            else if (D.draft)
-              D.draft(element, drawOptions);
-          }
-        }
-      }
-
-      map.x = options.events.centerx;
-      map.y = options.events.centery;
-      map.scale = options.events.scale;
-      map.onDrawEnd(canvas, map.x, map.y, map.scale);
-    } catch {
     }
-  });
+
+    map.x = options.events.centerx;
+    map.y = options.events.centery;
+    map.scale = options.events.scale;
+    map.onDrawEnd(canvas, map.x, map.y, map.scale);
+  } catch {
+    // ...
+  }
 }

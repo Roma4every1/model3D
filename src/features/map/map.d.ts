@@ -41,7 +41,7 @@ interface MapState {
   activeLayer: MapLayer,
   isLoadSuccessfully: boolean | undefined,
   canvas: MapCanvas,
-  drawer: MapsDrawer,
+  drawer: MapDrawer,
   owner: MapOwner,
   mapID: MapID,
   element: MapElement,
@@ -59,7 +59,7 @@ interface MapState {
 type MapCanvas = HTMLCanvasElement & {selectingMode: boolean, blocked: boolean, events: any};
 
 interface MapUtils {
-  updateCanvas(cs?: MapViewport, context?: any): void,
+  updateCanvas(cs?: MapViewport): void,
   pointToMap(point: Point): Point,
 }
 
@@ -140,7 +140,6 @@ interface MapData {
   owner: MapOwner | null,
   plastCode: string,
   plastName: string,
-  pointsData: Promise<any[]>,
   points: MapPoint[],
 
   x: number,
@@ -203,19 +202,9 @@ type MapPoint = {
   y: number,
   name: string,
   UWID: string,
-  attrTable: PointAttrTable,
+  attrTable: Record<string, any>,
   selected?: boolean,
 };
-
-interface PointAttrTable {
-  Project: string,
-  SumDebit: string,
-  SumNeft: string,
-  SumObv: string,
-  WORKPLAST: string,
-}
-
-type ClientPoint = {x: number, y: number};
 
 /** Масштаб карты. */
 type MapScale = number;
@@ -227,7 +216,6 @@ type MapID = string;
  * "Common", "706\\VIN"
  * */
 type MapOwner = string;
-
 
 /* --- Map Elements Types --- */
 
