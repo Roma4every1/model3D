@@ -31,14 +31,14 @@ interface MapTypes {
 interface NamedPointType {
   name: 'namedpoint';
 
-  bound(point: ClientPoint): Bounds
+  bound(point: Point): Bounds
   draft(i, options): void
 }
 
 interface SignType {
   name: 'sign';
 
-  bound(point: ClientPoint): Bounds
+  bound(point: Point): Bounds
   loaded(i: MapSign, provider): void
   draw(i: MapSign, options): any
 }
@@ -68,13 +68,13 @@ interface LabelType {
   alVerCenter: number;
   alVerTop: number;
 
-  bound(point: ClientPoint): Bounds
+  bound(point: Point): Bounds
   draw(i: MapLabel, options): Generator
 }
 
 interface PieSliceType {
   name: 'pieslice';
 
-  bound(point: ClientPoint): Bounds
+  bound(point: Point): Bounds
   draw(i, options): Generator
 }

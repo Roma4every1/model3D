@@ -5,31 +5,11 @@ import { loadImageData } from './html-helper';
 import startThread from './start-thread';
 import parseSMB from './parse-smb';
 import pngMono from './png-mono';
+import { getLabelTextNumberArray } from './label-text-parser';
 import { provider } from './index';
 import { mapsAPI } from '../lib/maps.api';
 import linesDefStub from './lines.def.stub.json';
-import {getLabelTextNumberArray} from "./label-text-parser";
 
-
-const twoPi = 2 * Math.PI;
-const pointBounds = (point) => {
-  return {min: point, max: point}
-};
-const namedPointDraft = (i, options) => {
-  const p = options.pointToControl(i);
-  const context = options.context;
-  const drawOptions = options.provider.drawOptions;
-  context.strokeStyle = drawOptions.selectedColor || '#0000ff';
-  context.lineWidth = (drawOptions.selectedWidth || 0.75) * 0.001 * options.dotsPerMeter;
-  const s = (drawOptions.selectedSize || 5) * 0.001 * options.dotsPerMeter;
-  context.strokeRect(p.x - s / 2, p.y - s / 2, s, s);
-};
-
-const namedPointType = {
-  name: 'namedpoint',
-  bound: pointBounds,
-  draft: namedPointDraft,
-}
 
 /** ## Типы отрисовщика:
  * + `'namedpoint'`
@@ -40,15 +20,17 @@ const namedPointType = {
  * + `'pieslice'`
  * @see MapTypes
  * */
-export const types = {
-  namedpoint: namedPointType,
-};
+export const types = {};
 
-const declareType = (name, data) => {
-  data.name = name;
-  types[name] = data;
-  return data;
-};
+/* --- Utils --- */
+
+const twoPi = 2 * Math.PI;
+const defaultLineWidth = 0.23;
+
+/** @return Bounds */
+function pointBounds(point) {
+  return {min: point, max: point}
+}
 
 function checkBoundX(bounds, x) {
   if (bounds.max.x === undefined || x > bounds.max.x) bounds.max.x = x;
@@ -74,7 +56,27 @@ function* getElementImage(i, options) {
   }
 }
 
-const defaultLineWidth = 0.23;
+function declareType(name, data) {
+  data.name = name;
+  types[name] = data;
+  return data;
+}
+
+/* --- Types Declaration --- */
+
+declareType('namedpoint', {
+  bound: pointBounds,
+
+  draft: (i, options) => {
+    const p = options.pointToControl(i);
+    const context = options.context;
+    const drawOptions = options.provider.drawOptions;
+    context.strokeStyle = drawOptions.selectedColor || '#0000ff';
+    context.lineWidth = (drawOptions.selectedWidth || 0.75) * 0.001 * options.dotsPerMeter;
+    const s = (drawOptions.selectedSize || 5) * 0.001 * options.dotsPerMeter;
+    context.strokeRect(p.x - s / 2, p.y - s / 2, s, s);
+  },
+});
 
 declareType('sign', {
   bound: pointBounds,
@@ -327,6 +329,7 @@ var field = declareType('field', {
     return i.preCalculatedSpectre.spectreArray[spectreIndex];
   },
 
+  // eslint-disable-next-line require-yield
   draw: function* drawThread(i, options) {
     /** @type CanvasRenderingContext2D */
     const context = options.context;
@@ -336,7 +339,6 @@ var field = declareType('field', {
       i.deltasPalette = field._getDeltasPalette(field._getRgbPaletteFromHex(i.palette[0].level));
       i.preCalculatedSpectre = field._getDeltasPreCalculatedPalettes(i.deltasPalette);
     }
-
     i.lastUsedPalette = _.cloneDeep(i.palette);
 
     const width = canvas.width;
@@ -345,23 +347,23 @@ var field = declareType('field', {
 
     let pixelIndex = 0;
     for (let dy = 0; dy < height; dy++) {
-      const {y} = options.pointToMap({x: 0, y: dy})
-
       const arrayX = [];
+      const y = options.pointToMap({x: 0, y: dy}).y;
+
       for (let dx = 0; dx < width; dx++) {
-        const {x} = options.pointToMap({x: dx,y: 0});
+        const x = options.pointToMap({x: dx,y: 0}).x;
         arrayX.push(x);
       }
 
       const valuesArray = field._getInterpolatedArrayValues(i, arrayX, y);
       for (let value of valuesArray) {
-        if (value === null || value === undefined || Number.isNaN(value)) {
+        if (value === null || value === undefined || isNaN(value)) {
           pixelIndex += 4;
           continue;
         }
-        const pixelColor = i.palette[0].interpolated === '-1' ?
-          field._getPixelColorInterpolated(value, i) :
-          field._getPixelColor(value, i);
+        const pixelColor = i.palette[0].interpolated === '-1'
+          ? field._getPixelColorInterpolated(value, i)
+          : field._getPixelColor(value, i);
 
         imageData.data[pixelIndex++] = pixelColor.r;
         imageData.data[pixelIndex++] = pixelColor.g;
@@ -788,10 +790,10 @@ var polyline = declareType('polyline', {
       context.lineCap = 'round';
       context.lineJoin = 'round';
       pathNeeded();
-      context.strokeStyle = "#000000";
+      context.strokeStyle = '#000000';
       context.lineWidth = ((i.borderwidth || defaultLineWidth) + 4.5 / 96.0 * 25.4) * 0.001 * options.dotsPerMeter;
       context.stroke();
-      context.strokeStyle = "#ffffff";
+      context.strokeStyle = '#ffffff';
       context.lineWidth = ((i.borderwidth || defaultLineWidth) + 3 / 96.0 * 25.4) * 0.001 * options.dotsPerMeter;
       context.stroke();
       context.lineCap = 'butt';

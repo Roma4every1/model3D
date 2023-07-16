@@ -1,14 +1,12 @@
-import {createFieldPaletteInit, InitFieldState} from "../properties-utils";
-import {TFunction} from "react-i18next";
-import {useCallback, useState} from "react";
-import {
-  NumericTextBox,
-  NumericTextBoxChangeEvent
-} from "@progress/kendo-react-inputs";
-import {Button} from "@progress/kendo-react-buttons";
-import {setOpenedWindow} from "../../../../../../entities/windows";
-import {useDispatch} from "react-redux";
-import {FieldPalettePropertiesWindow} from "./field-palette-properties";
+import { TFunction } from 'react-i18next';
+import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { setOpenedWindow } from 'entities/windows';
+import { createFieldPaletteInit, InitFieldState } from '../properties-utils';
+import { Button } from '@progress/kendo-react-buttons';
+import { NumericTextBox, NumericTextBoxChangeEvent } from '@progress/kendo-react-inputs';
+import { FieldPalettePropertiesWindow } from './field-palette-properties';
+
 
 interface FieldPropertiesProps {
   element: MapField,
@@ -25,11 +23,6 @@ export const FieldProperties = ({element: field, init, apply, update, cancel, t,
   const dispatch = useDispatch();
   const [changed, setChanged] = useState(false);
 
-  const onChange = useCallback(() => {
-    setChanged(true);
-    update();
-  }, [update]);
-
   /* --- Field Properties State --- */
 
   const [boundX, setBoundX] = useState(init.x);
@@ -41,44 +34,43 @@ export const FieldProperties = ({element: field, init, apply, update, cancel, t,
   const [stepX, setStepX] = useState(init.stepx);
   const [stepY, setStepY] = useState(init.stepy);
 
-
   /* --- Properties Handlers --- */
 
-  const onBoundXChange = useCallback((e: NumericTextBoxChangeEvent) => {
+  const onBoundXChange = (e: NumericTextBoxChangeEvent) => {
     field.x = e.value;
     setBoundX(field.x);
-    onChange();
-  }, [field, onChange]);
+    setChanged(true); update();
+  };
 
-  const onBoundYChange = useCallback((e: NumericTextBoxChangeEvent) => {
+  const onBoundYChange = (e: NumericTextBoxChangeEvent) => {
     field.y = e.value;
     setBoundY(field.y);
-    onChange();
-  }, [field, onChange]);
+    setChanged(true); update();
+  };
 
-  const onSizeXChange = useCallback((e: NumericTextBoxChangeEvent) => {
+  const onSizeXChange = (e: NumericTextBoxChangeEvent) => {
     field.sizex = e.value;
     setSizeX(field.sizex);
-    onChange();
-  }, [field, onChange]);
+    setChanged(true); update();
+  };
 
-  const onSizeYChange = useCallback((e: NumericTextBoxChangeEvent) => {
+  const onSizeYChange = (e: NumericTextBoxChangeEvent) => {
     field.sizey = e.value;
     setSizeY(field.sizey);
-    onChange();
-  }, [field, onChange]);
+    setChanged(true); update();
+  };
 
-  const onStepXChange = useCallback((e: NumericTextBoxChangeEvent) => {
+  const onStepXChange = (e: NumericTextBoxChangeEvent) => {
     field.stepx = e.value;
     setStepX(field.stepx);
-    onChange();
-  }, [field, onChange]);
+    setChanged(true); update();
+  };
 
-  const onStepYChange = useCallback((e: NumericTextBoxChangeEvent) => {
+  const onStepYChange = (e: NumericTextBoxChangeEvent) => {
     field.stepy = e.value;
     setStepY(field.stepy);
-    onChange();
-  }, [field, onChange]);
+    setChanged(true); update();
+  };
 
   const openPaletteWindow = () => {
     const name = 'mapAdditionalPropertiesWindow';
@@ -134,4 +126,4 @@ export const FieldProperties = ({element: field, init, apply, update, cancel, t,
       </div>
     </div>
   );
-}
+};

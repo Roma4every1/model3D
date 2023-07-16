@@ -1,14 +1,14 @@
-import { CheckboxChangeEvent } from '@progress/kendo-react-inputs';
-import {useState, useCallback, useRef} from 'react';
-import { Checkbox } from '@progress/kendo-react-inputs';
+import { TFunction } from 'react-i18next';
+import { useState, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { setOpenedWindow, windowsSelector } from 'entities/windows';
+import { rollbackFieldPalette } from '../properties-utils';
+
+import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
+import { Window } from '@progress/kendo-react-dialogs';
 import { Button } from '@progress/kendo-react-buttons';
-import {TFunction} from "react-i18next";
-import {IntlProvider, LocalizationProvider} from "@progress/kendo-react-intl";
-import {Window} from "@progress/kendo-react-dialogs";
-import {useDispatch, useSelector} from "react-redux";
-import {setOpenedWindow, windowsSelector} from "../../../../../../entities/windows";
-import {PaletteLevelChange} from "./palette-level-change";
-import {rollbackFieldPalette} from "../properties-utils";
+import { Checkbox, CheckboxChangeEvent } from '@progress/kendo-react-inputs';
+import { PaletteLevelChange } from './palette-level-change';
 
 
 interface FieldPalettePropertiesProps {
@@ -18,24 +18,37 @@ interface FieldPalettePropertiesProps {
   t: TFunction,
 }
 
-const fieldPalettePropertiesWindowSize = [320, 260];
 
-export const FieldPalettePropertiesWindow = ({element: palette, init, update, t}: FieldPalettePropertiesProps) => {
+export const FieldPalettePropertiesWindow = (props: FieldPalettePropertiesProps) => {
   const dispatch = useDispatch();
-
+  const { element: palette, init, update, t } = props;
   const [changed, setChanged] = useState(false);
-
-  const [width, height] = fieldPalettePropertiesWindowSize;
-  const title = 'Свойства палитры';
 
   const windowName = 'mapAdditionalPropertiesWindow';
   const windows = useSelector(windowsSelector);
   const windowRef = useRef(null);
 
-  const onChange = useCallback(() => {
+  const onChange = () => {
     setChanged(true);
     update();
-  }, [update]);
+  };
+
+  const close = () => {
+    let position;
+    if (windowRef.current) position = {top: windowRef.current.top, left: windowRef.current.left};
+    dispatch(setOpenedWindow(windowName, false, null, position));
+  };
+
+  const cancel = () => {
+    rollbackFieldPalette(palette, init);
+    update();
+    close();
+  };
+
+  const apply = () => {
+    update();
+    close();
+  };
 
   /* --- FieldPalette Properties State --- */
 
@@ -43,45 +56,26 @@ export const FieldPalettePropertiesWindow = ({element: palette, init, update, t}
 
   /* --- Properties Handlers --- */
 
-  const close = useCallback(() => {
-    let position;
-    if (windowRef.current) position = {top: windowRef.current.top, left: windowRef.current.left};
-    dispatch(setOpenedWindow(windowName, false, null, position));
-  }, [dispatch]);
-
-  const cancel = () => {
-    rollbackFieldPalette(palette, init);
-    update();
-    close();
-  }
-
-  const apply = () => {
-    console.log('apply');
-    update();
-    close();
-  }
-
-  const onInterpolatedChange = useCallback((e: CheckboxChangeEvent) => {
+  const onInterpolatedChange =(e: CheckboxChangeEvent) => {
     palette.interpolated = e.value ? '-1' : '0';
     setInterpolated(palette.interpolated);
     onChange();
-  }, [palette, onChange]);
+  };
 
   /* --- View --- */
 
-  const colorsChangeElements = palette?.level?.length ?
-    palette?.level?.map(
-      (level, index) =>
-    <PaletteLevelChange level={level} onChange={onChange} key={index}/>
-  ) : <div />;
+  const colorsChangeElements = palette?.level?.length
+    ? palette.level.map((level, index) => {
+      return <PaletteLevelChange level={level} onChange={onChange} key={index}/>;
+    }) : <div/>;
 
   return (
     <LocalizationProvider language={'ru-RU'}>
       <IntlProvider locale={'ru'}>
         <Window
           ref={windowRef} className={'propertiesWindow'}
-          resizable={false} title={title}
-          width={width} height={height}
+          resizable={false} title={'Свойства палитры'}
+          width={320} height={260}
           initialLeft={windows[windowName]?.position?.left}
           initialTop={windows[windowName]?.position?.top}
           style={{zIndex: 99}} onClose={cancel} key={windowName}
@@ -90,14 +84,17 @@ export const FieldPalettePropertiesWindow = ({element: palette, init, update, t}
             <fieldset>
               <div>
                 <span>Сглаживание:</span>
-                <Checkbox checked={interpolated === '-1'} style={{marginLeft: 5, height: 16}} onChange={onInterpolatedChange}/>
+                <Checkbox
+                  style={{marginLeft: 5, height: 16}}
+                  checked={interpolated === '-1'} onChange={onInterpolatedChange}
+                />
               </div>
               <div className={'colors'}>
                 {colorsChangeElements}
               </div>
             </fieldset>
             <div>
-              <Button disabled={ !changed } onClick={apply}>{t('base.apply')}</Button>
+              <Button disabled={!changed} onClick={apply}>{t('base.apply')}</Button>
               <Button onClick={cancel}>{t('base.cancel')}</Button>
             </div>
           </div>
@@ -105,5 +102,4 @@ export const FieldPalettePropertiesWindow = ({element: palette, init, update, t}
       </IntlProvider>
     </LocalizationProvider>
   );
-}
-
+};
