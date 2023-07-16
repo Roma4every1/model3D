@@ -1,4 +1,5 @@
 import { RowErrors } from './types';
+import { stringifyLocalDate } from 'shared/lib';
 import { createLookupList, createLookupTree } from 'entities/channels';
 
 
@@ -52,18 +53,9 @@ export function applyRecordEdit(record: TableRecord, columns: TableColumnsState)
   for (const column of Object.values(columns)) {
     if (column.colIndex === -1) continue;
     let value = record[column.field];
-    if (column.type === 'date' && value) value = stringifyDate(value);
+    if (column.type === 'date' && value) value = stringifyLocalDate(value) + 'T00:00:00';
     cells[column.colIndex] = value;
   }
-}
-
-/** Заглушка пока сервер не умеет работать с часовыми поясами. */
-function stringifyDate(date: Date): string {
-  const month = date.getMonth() + 1;
-  const monthString = month > 9 ? month : '0' + month;
-  const day = date.getDate();
-  const dayString = day > 9 ? day : '0' + day;
-  return `${date.getFullYear()}-${monthString}-${dayString}T00:00:00`;
 }
 
 /** Проверяет содержимое записи на корректность. */

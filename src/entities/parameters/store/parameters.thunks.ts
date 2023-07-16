@@ -6,6 +6,7 @@ import { updateObjects } from '../../objects';
 import { findDependentParameters } from '../lib/utils';
 import { tableRowToString } from '../lib/table-row';
 import { updateParam, updateParams } from './parameters.actions';
+import { updatePresentationTreeVisibility } from 'widgets/left-panel/store/left-panel.thunks';
 
 
 /** Обновление параметра и всех его зависимостей.
@@ -28,7 +29,6 @@ export function updateParamDeep(clientID: FormID, id: ParameterID, newValue: any
     if (relatedReportChannels.length) {
       await reloadReportChannels(relatedReportChannels)(dispatch, getState);
     }
-    updateObjects([{clientID, id, value: newValue}], dispatch, getState());
 
     const { parameters, channels } = getState();
     const entries: UpdateParamData[] = [];
@@ -67,9 +67,13 @@ export function updateParamDeep(clientID: FormID, id: ParameterID, newValue: any
       }
     }
 
+    const fullUpdateList = [{clientID, id, value: newValue}, ...entries];
+    const fullUpdateIDs = fullUpdateList.map(item => item.id);
+    updateObjects(fullUpdateList, dispatch, getState());
+    updatePresentationTreeVisibility(fullUpdateIDs)(dispatch, getState).then();
+
     if (entries.length) {
       dispatch(updateParams(entries));
-      updateObjects(entries, dispatch, getState());
     }
     if (reportEntries.length) {
       reloadReportChannels(reportEntries)(dispatch, getState).then();

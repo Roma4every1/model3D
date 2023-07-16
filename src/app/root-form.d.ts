@@ -26,12 +26,25 @@ type PresentationTree = PresentationTreeItem[];
 
 /** Элемент дерева презентаций. */
 interface PresentationTreeItem {
-  id: string | null,
-  nodeId: string | null,
-  text: string | null,
-  items: PresentationTreeItem[] | null,
+  /** ID презентации, есть только у листьев. */
+  id: FormID,
+  /** Название презентации в дереве. */
+  text: DisplayName,
+  /** Дочерние элементы: группы или презентации. */
+  items?: PresentationTreeItem[],
+  /** Выбрана ли текущая презентация. */
   selected?: boolean,
+  /** Раскрыта ли группа. */
   expanded?: boolean,
+
+  /** Виден ли узел дерева в данный момент. */
+  visible: boolean,
+  /** Строка видимости презентации. */
+  visibilityString?: string,
+  /** Параметры, необходимые для расчёта видимости. */
+  visibilityParameters?: Set<ParameterID>,
+  /** Обработчик видимости презентации.. */
+  visibilityHandler?: (parameters: Parameter[]) => boolean,
 }
 
 /* --- Dock Layout --- */

@@ -1,5 +1,5 @@
 import { TableFormSettings, InitAttachedProperties, DataSetColumnSettings } from './types';
-import { forEachLeaf } from './column-tree';
+import { forEachTreeLeaf } from 'shared/lib';
 
 
 /** Функция, возвращающая исходные настройки по состоянию таблицы. */
@@ -7,7 +7,7 @@ export function tableStateToFormSettings (id: FormID, state: TableState): TableF
   const { columnsSettings, columns } = state;
   const columnSettings: DataSetColumnSettings[] = [];
 
-  forEachLeaf(state.columnTree, (item, i) => {
+  forEachTreeLeaf(state.columnTree, (item, i) => {
     const columnState = columns[item.field];
     columnSettings.push({
       channelPropertyName: item.field,

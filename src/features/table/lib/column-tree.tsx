@@ -1,4 +1,5 @@
 import { DataSetColumnDict } from './types';
+import { forEachTreeLeaf } from 'shared/lib';
 import { GridColumn } from '@progress/kendo-react-grid';
 import { HeaderCell, GroupHeaderCell } from '../components/cells/header';
 
@@ -73,26 +74,10 @@ function getColumnGroup(
   );
 }
 
-/* --- --- */
-
-/** Вызывает указанную функцию для каждого листа дерева колонок. */
-export function forEachLeaf(tree: ColumnTree, fn: (item: ColumnTreeItem, i?: number) => void) {
-  let i = 0;
-  const iterate = (treeItems: ColumnTreeItem[]) => {
-    for (const item of treeItems) {
-      if (item.children) {
-        iterate(item.children)
-      } else {
-        fn(item, i); i++;
-      }
-    }
-  };
-  iterate(tree);
-}
-
 /** Возвращает упорядоченный массив ID колонок с учётом их видимости. */
 export function getFlatten(tree: ColumnTree): TableColumnID[] {
   const result: TableColumnID[] = [];
-  forEachLeaf(tree, (item) => { if (item.visible) result.push(item.field); });
+  const callback = (item: ColumnTreeItem) => { if (item.visible) result.push(item.field); }
+  forEachTreeLeaf(tree, callback);
   return result;
 }

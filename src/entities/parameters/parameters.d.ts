@@ -28,6 +28,21 @@ type SerializedParameter = {
   value: string | null
 };
 
+interface ParameterTypeMap {
+  'bool': ParamBool,
+  'integer': ParamInteger,
+  'integerArray': ParamIntegerArray,
+  'string': ParamString,
+  'stringArray': ParamStringArray,
+  'double': ParamDouble,
+  'doubleInterval': ParamDoubleInterval,
+  'date': ParamDate,
+  'dateInterval': ParamDateInterval,
+  'tableRow': ParamTableRow,
+  'tableCell': ParamTableCell,
+  'tableCellsArray': ParamCellsArray,
+}
+
 /** ### Параметр, хранящий булево значение.
  * Редакторы: `boolTextEditor`.
  * @example
