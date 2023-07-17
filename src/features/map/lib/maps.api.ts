@@ -10,10 +10,9 @@ export class MapsAPI {
   constructor(private readonly baseAPI: BaseAPI) {}
 
   /** Загрузка файла с описаниями построения точечных элементов. */
-  public async getSymbolsLib(): Promise<Uint8Array> {
+  public async getSymbolsLib(): Promise<ArrayBuffer> {
     const response = await fetch(symbolDef, {credentials: 'include'});
-    const buffer = await response.arrayBuffer();
-    return new Uint8Array(buffer);
+    return response.arrayBuffer();
   }
 
   /** Загрузка легенды карты. */

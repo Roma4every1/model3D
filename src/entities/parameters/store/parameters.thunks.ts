@@ -22,6 +22,7 @@ export function updateParamDeep(clientID: FormID, id: ParameterID, newValue: any
     if (!parameter) return;
     const { relatedChannels, relatedReportChannels, relatedReports } = parameter;
     dispatch(updateParam(clientID, id, newValue));
+    updateObjects([{clientID, id, value: newValue}], dispatch, getState());
 
     if (relatedChannels.length) {
       await reloadChannels(relatedChannels)(dispatch, getState);
@@ -67,13 +68,12 @@ export function updateParamDeep(clientID: FormID, id: ParameterID, newValue: any
       }
     }
 
-    const fullUpdateList = [{clientID, id, value: newValue}, ...entries];
-    const fullUpdateIDs = fullUpdateList.map(item => item.id);
-    updateObjects(fullUpdateList, dispatch, getState());
+    const fullUpdateIDs = [id, ...entries.map(item => item.id)];
     updatePresentationTreeVisibility(fullUpdateIDs)(dispatch, getState).then();
 
     if (entries.length) {
       dispatch(updateParams(entries));
+      updateObjects(entries, dispatch, getState());
     }
     if (reportEntries.length) {
       reloadReportChannels(reportEntries)(dispatch, getState).then();

@@ -16,7 +16,7 @@ import { setCaratActiveCurve, setCaratActiveGroup, setCaratCanvas } from '../sto
 export const Carat = ({id, channels}: FormState) => {
   const dispatch = useDispatch();
 
-  const { model: { id: wellID } } = useSelector(wellStateSelector);
+  const { model: currentWell } = useSelector(wellStateSelector);
   const { stage, canvas, lookupNames }: CaratState = useSelector(caratStateSelector.bind(id));
 
   const channelData: ChannelDict = useSelector(channelDictSelector.bind(channels), compareObjects);
@@ -33,7 +33,7 @@ export const Carat = ({id, channels}: FormState) => {
 
   // обновление данных каналов и активной скважины
   useEffect(() => {
-    stage.setWell(wellID?.toString());
+    stage.setWell(currentWell?.name ?? currentWell?.id?.toString());
     dispatch(setCaratData(id, channelData));
   }, [channelData]); // eslint-disable-line
 
@@ -43,7 +43,7 @@ export const Carat = ({id, channels}: FormState) => {
     dispatch(setCaratCanvas(id, canvasRef.current));
   });
 
-  if (wellID === null) {
+  if (!currentWell?.id) {
     return <TextInfo text={'carat.empty'}/>;
   }
 

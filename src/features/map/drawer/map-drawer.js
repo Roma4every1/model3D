@@ -676,7 +676,7 @@ var polyline = declareType('polyline', {
     /** @type CanvasRenderingContext2D */
     const context = options.context;
     const configThicknessCoefficient = options.pixelRatio;
-    const linesConfig = options.provider.linesConfigJson.data.BorderStyles[0].Element;
+    const linesConfig = options.provider.lineConfig.BorderStyles[0].Element;
 
     let currentLineConfig = [];
     if (i.borderstyleid) {
@@ -727,7 +727,7 @@ var polyline = declareType('polyline', {
     const configThicknessCoefficient = options.pixelRatio;
     /** @type CanvasRenderingContext2D */
     const context = options.context;
-    const linesConfig = options.provider.linesConfigJson.data.BorderStyles[0].Element;
+    const linesConfig = options.provider.lineConfig.BorderStyles[0].Element;
 
     let currentLineConfig = [];
     if (i.borderstyleid) {

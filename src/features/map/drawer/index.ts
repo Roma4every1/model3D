@@ -15,7 +15,7 @@ class MapProvider {
     piesliceBorderWidth: 0.2,
     piesliceAlpha: 0.7,
   };
-  public linesConfigJson = { data: lines };
+  public lineConfig = lines;
 
   private initialized: boolean = false;
   private lib: any = null;
