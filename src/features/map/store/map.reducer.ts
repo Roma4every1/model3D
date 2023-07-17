@@ -1,6 +1,5 @@
 import { MapModes } from '../lib/enums';
 import { chunk } from 'lodash';
-import { createMapDrawer } from '../drawer';
 import { getBoundsByPoints, getMultiMapChildrenCanvases } from '../lib/map-utils';
 import { traceLayerProto, getTraceMapElement, getFullTraceViewport } from '../lib/traces-map-utils';
 
@@ -142,7 +141,6 @@ const initMapState: MapState = {
   activeLayer: null,
   isLoadSuccessfully: undefined,
   canvas: null,
-  drawer: null,
   owner: null,
   mapID: null,
   element: null,
@@ -172,7 +170,7 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
 
       for (const { formID } of configs) {
         const utils = { updateCanvas: () => {}, pointToMap: (point) => point };
-        state.single[formID] = {...initMapState, utils, childOf: id, drawer: createMapDrawer()};
+        state.single[formID] = {...initMapState, utils, childOf: id};
       }
       return {...state};
     }
@@ -201,7 +199,7 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
       const { id, parentID } = action.payload;
       const childOf = state.multi[parentID] ? parentID : null;
       const utils = { updateCanvas: () => {}, pointToMap: (point) => point };
-      state.single[id] = {...initMapState, utils, childOf, drawer: createMapDrawer()};
+      state.single[id] = {...initMapState, utils, childOf};
       return {...state, single: {...state.single}};
     }
 

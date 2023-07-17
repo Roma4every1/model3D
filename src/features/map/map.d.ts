@@ -22,16 +22,18 @@ interface MapItemConfig {
 }
 
 /** ## Состояние карты.
+ * + `mode`: {@link MapModes} — режим карты
  * + `mapData`: {@link MapData} — данные для отрисовки
+ * + `activeLayer`: {@link MapLayer} — активный слой
  * + `isLoadSuccessfully` — состояние загрузки
  * + `canvas` — HTML элемент `<canvas>`
- * + `drawer` — объект отрисовщика карты
  * + `owner`: {@link MapOwner} — владелец
  * + `mapID`: {@link MapID} — ID карты
  * + `selecting`: {@link MapSelectingState}
  * + `isModified` — изменена ли карта
  * + `cursor` — стиль курсора
- * + `utils?` — вспомогательные функции
+ * + `childOf`: {@link FormID}
+ * + `utils`: {@link MapUtils} — вспомогательные функции
  * @see MapsState
  * */
 interface MapState {
@@ -41,7 +43,6 @@ interface MapState {
   activeLayer: MapLayer,
   isLoadSuccessfully: boolean | undefined,
   canvas: MapCanvas,
-  drawer: MapDrawer,
   owner: MapOwner,
   mapID: MapID,
   element: MapElement,

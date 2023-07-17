@@ -1,9 +1,3 @@
-/** Отрисовщик карты. */
-interface MapDrawer {
-  showMap(canvas: HTMLCanvasElement, mapData: MapData, viewport: MapViewport): any
-  getSignImage(fontName: string, symbolCode: number, color: string): Promise<HTMLImageElement>
-}
-
 /** ## Типы отрисовщика:
  * + `namedpoint`: {@link NamedPointType}
  * + `sign`: {@link SignType}

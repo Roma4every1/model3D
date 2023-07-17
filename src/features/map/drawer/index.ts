@@ -1,7 +1,6 @@
 import symbols from './symbols';
 import patterns from './patterns';
 import cache from './cache';
-import { showMap } from './maps';
 import { mapsAPI } from '../lib/maps.api';
 import lines from './lines.json';
 
@@ -30,10 +29,3 @@ function createProvider() {
 }
 
 export const provider = createProvider();
-
-export function createMapDrawer(): MapDrawer {
-  return {
-    showMap: showMap,
-    getSignImage: provider.getSignImage,
-  };
-}

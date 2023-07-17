@@ -7,6 +7,7 @@ import { updateParam, currentPlastCodeSelector} from 'entities/parameters';
 import { tableRowToString } from 'entities/parameters/lib/table-row';
 
 import { Scroller } from '../drawer/scroller';
+import { showMap } from '../drawer/maps';
 import { mapsStateSelector, mapStateSelector } from '../store/map.selectors';
 import { fetchMapData } from '../store/map.thunks';
 import { CircularProgressBar } from 'shared/ui';
@@ -101,11 +102,11 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
   }, [mapState, activeChannel, id, parent, isPartOfDynamicMultiMap, dispatch]); // eslint-disable-line
 
   const updateCanvas = useCallback((viewport?: MapViewport) => {
-    if (!mapData || !canvasRef.current || !mapState?.drawer) return;
+    if (!mapData || !canvasRef.current) return;
     if (!viewport) viewport = {centerX: mapData.x, centerY: mapData.y, scale: mapData.scale};
     if (mapDrawnData.current) mapDrawnData.current.emit('detach');
-    mapDrawnData.current = mapState.drawer.showMap(canvasRef.current, mapData, viewport);
-  }, [mapData, mapState?.drawer]);
+    mapDrawnData.current = showMap(canvasRef.current, mapData, viewport);
+  }, [mapData]);
 
   // переопределение функции updateCanvas
   useEffect(() => {

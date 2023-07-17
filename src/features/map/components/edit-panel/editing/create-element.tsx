@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { MapModes } from '../../../lib/enums';
+import { provider } from '../../../drawer';
 import { clientPoint, listenerOptions } from '../../../lib/map-utils';
 import { polylineByLegends, getDefaultSign, getDefaultLabel } from './editing-utils';
 import { createMapElement, startMapEditing, acceptCreatingElement } from '../../../store/map.actions';
@@ -24,10 +25,10 @@ export const CreateElement = ({mapState, formID, creatingType, showPropertiesWin
 
   useEffect(() => {
     const { fontName, symbolCode, color } = signProto;
-    mapState.drawer.getSignImage(fontName, symbolCode, color).then((img) => {
+    provider.getSignImage(fontName, symbolCode, color).then((img) => {
       setDefaultSignImage(img);
     });
-  }, [mapState.drawer]);
+  }, []);
 
   const createElement = useCallback((type: MapElementType, point: Point) => {
     let defaultElement;
