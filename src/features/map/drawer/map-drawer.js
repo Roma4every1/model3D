@@ -1,12 +1,9 @@
 import * as _ from 'lodash';
 import parseColor from 'parse-color';
-import parseSMB from './parse-smb';
-import pngMono from './png-mono';
-import { loadImageData } from './html-helper';
 import { getLabelTextNumberArray } from './label-text-parser';
+import { fillPatterns } from '../../../shared/drawing';
 import { rects } from './geom';
 import { provider } from './index';
-import { mapsAPI } from '../lib/maps.api';
 import linesDefStub from './lines.def.stub.json';
 
 
@@ -41,20 +38,6 @@ function checkBoundY(bounds, y) {
   if (bounds.min.y === undefined || y < bounds.min.y) bounds.min.y = y;
 }
 
-function setElementImage(i, imgData) {
-  i.img = null;
-  i.imgData = imgData;
-  i.imgData.then(img => i.img = img);
-  return i.imgData;
-}
-
-async function getElementImage(i, options) {
-  if (!i.img) {
-    const r = options.onDataWaiting(i.imgData);
-    if (r) await r;
-  }
-}
-
 function declareType(name, data) {
   data.name = name;
   types[name] = data;
@@ -80,16 +63,13 @@ declareType('namedpoint', {
 declareType('sign', {
   bound: pointBounds,
 
-  defaultImage: null,
-
-  loaded: (i, provider) => {
-    setElementImage(i, provider.getSignImage(i.fontname, i.symbolcode, i.color))
+  loaded: async (i) => {
+    i.img = await provider.getSignImage(i.fontname, i.symbolcode, i.color);
   },
 
-  draw: async (i, options) => {
-    if (!i.img) await getElementImage(i, options);
+  draw: (i, options) => {
     const img = i.img;
-    if (!img || !options.context.setLineDash) return;
+    if (!img) return;
 
     const point = options.pointToControl(i);
     let width = img.width * i.size * options.pixelRatio;
@@ -441,23 +421,6 @@ var polyline = declareType('polyline', {
     Clear: [],
   },
 
-  getPattern: async (name, color, backColor) => {
-    const [, libName, index] = name.match(/^(.+)-(\d+)$/);
-    if (libName.toLowerCase() === 'halftone') {
-      const c = parseColor(color).rgb;
-      const b = (backColor === 'none') ? parseColor("#ffffff").rgb : parseColor(backColor).rgb;
-      const t = index / 64;
-      return `rgba(${b.map((bi, i) => Math.round(bi + (c[i] - bi) * t))}, 1)`;
-    }
-    const lib = parseSMB(await mapsAPI.getPatternLib(libName));
-    if (index >= lib.length) {
-      const c = parseColor(color).rgb;
-      return `rgba(${c.map((i) => i)}, 1)`;
-    }
-    const png = pngMono(lib[index], color, backColor);
-    return await loadImageData(png, 'image/png');
-  },
-
   bkcolor: function (i) {
     let color = i.fillbkcolor === 'background' ? '#ffffff' : i.fillbkcolor;
     if (i.selected) {
@@ -496,11 +459,10 @@ var polyline = declareType('polyline', {
     return bounds;
   },
 
-  loaded: (i, provider) => {
+  loaded: (i) => {
     if (i.fillname) {
       const backColor = i.transparent ? 'none' : polyline.bkcolor(i);
-      const pattern = provider.getPatternImage(i.fillname, i.fillcolor, backColor);
-      setElementImage(i, pattern);
+      i.fillStyle = fillPatterns.createFillStyle(i.fillname, i.fillcolor, backColor);
     }
     if (i.borderstyleid) i.style = linesDefStub[i.borderstyleid];
   },
@@ -714,10 +676,7 @@ var polyline = declareType('polyline', {
     /** @type CanvasRenderingContext2D */
     const context = options.context;
     const configThicknessCoefficient = options.pixelRatio;
-
-    let linesConfig = [];
-    if (options.provider.linesConfigJson)
-      linesConfig = options.provider.linesConfigJson.data.BorderStyles[0].Element;
+    const linesConfig = options.provider.linesConfigJson.data.BorderStyles[0].Element;
 
     let currentLineConfig = [];
     if (i.borderstyleid) {
@@ -735,6 +694,7 @@ var polyline = declareType('polyline', {
     polyline.path(i, options);
     context.strokeStyle = i.bordercolor || i.fillcolor || i.fillbkcolor || "#000000";
     context.lineWidth = (i.borderwidth || defaultLineWidth) * 0.001 * options.dotsPerMeter;
+
     // if a default style is present, set dash
     if (i.borderstyle !== undefined && i.borderstyle != null) {
       var baseThicknessCoefficient = Math.round(i.borderwidth / defaultLineWidth);
@@ -767,10 +727,7 @@ var polyline = declareType('polyline', {
     const configThicknessCoefficient = options.pixelRatio;
     /** @type CanvasRenderingContext2D */
     const context = options.context;
-
-    let linesConfig = [];
-    if (options.provider.linesConfigJson)
-      linesConfig = options.provider.linesConfigJson.data.BorderStyles[0].Element;
+    const linesConfig = options.provider.linesConfigJson.data.BorderStyles[0].Element;
 
     let currentLineConfig = [];
     if (i.borderstyleid) {
@@ -798,22 +755,10 @@ var polyline = declareType('polyline', {
       context.lineCap = 'butt';
     }
 
-    if (i.fillname) {
+    if (i.fillStyle) {
       pathNeeded();
-      if (!i.img) await getElementImage(i, options);
-      let img = i.img;
-      if (img) {
-        if (typeof img === 'string') {
-          if (i.transparent) {
-            img = img.substring(0, img.length - 2);
-            img += '0.3)';
-          }
-          context.fillStyle = img;
-        } else {
-          context.fillStyle = context.createPattern(img, 'repeat');
-        }
-        context.fill();
-      }
+      context.fillStyle = i.fillStyle;
+      context.fill();
     } else if (!i.transparent) {
       pathNeeded();
       context.fillStyle = polyline.bkcolor(i);

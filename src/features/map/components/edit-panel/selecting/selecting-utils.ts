@@ -1,4 +1,5 @@
 import { chunk } from 'lodash';
+import { fillPatterns } from 'shared/drawing';
 import { types } from '../../../drawer/map-drawer';
 import { PIXEL_PER_METER } from '../../../lib/map-utils';
 
@@ -11,31 +12,23 @@ export const SELECTION_RADIUS = 0.005;
 
 export const polylineType: PolylineType = types['polyline'];
 
-/** Есть ли у элемента какой-либо паттерн закраски. */
-const hasPattern = (element: MapPolyline): boolean => {
-  return element.fillname && !element.transparent;
-}
-
-/** Получить паттерн по элементу. */
-export const getPattern = async (element: MapPolyline) => {
-  return await polylineType.getPattern(element.fillname, element.fillcolor, polylineType.bkcolor(element));
-}
-
 /** Снимает выделение с элемента карты. */
-export const unselectElement = async (element: MapElement): Promise<void> => {
+export function unselectElement(element: MapElement): void {
   element.selected = false;
 
-  if (element.type === 'polyline' && hasPattern(element)) {
-    element.img = await getPattern(element);
+  if (element.type === 'polyline' && element.fillname && !element.transparent) {
+    const back = polylineType.bkcolor(element);
+    element.fillStyle = fillPatterns.createFillStyle(element.fillname, element.fillcolor, back);
   }
 }
 
 /** Выделяет элемент карты. */
-export const selectElement = async (element: MapElement): Promise<void> => {
+export function selectElement(element: MapElement): void {
   element.selected = true;
 
-  if (element.type === 'polyline' && hasPattern(element)) {
-    element.img = await getPattern(element);
+  if (element.type === 'polyline' && element.fillname && !element.transparent) {
+    const back = polylineType.bkcolor(element);
+    element.fillStyle = fillPatterns.createFillStyle(element.fillname, element.fillcolor, back);
   }
 }
 

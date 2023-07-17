@@ -3,36 +3,15 @@ import { types } from '../drawer/map-drawer';
 import { provider } from '../drawer';
 import { converter } from './maps-api.utils';
 import { handleLayerScales, checkLayerIndex } from './maps-api.utils';
-
 import symbolDef from 'assets/map-libs/symbol.def';
-import dro32Lib from 'assets/map-libs/dro32.smb';
-import gridsLib from 'assets/map-libs/grids.smb';
-import litLib from 'assets/map-libs/lit.smb';
-import regionalLib from 'assets/map-libs/regional.smb';
 
 
 export class MapsAPI {
-  private static readonly libsDict = {
-    'dro32_': dro32Lib,
-    'grids': gridsLib,
-    'lit': litLib,
-    'regional': regionalLib
-  };
-
   constructor(private readonly baseAPI: BaseAPI) {}
 
   /** Загрузка файла с описаниями построения точечных элементов. */
   public async getSymbolsLib(): Promise<Uint8Array> {
     const response = await fetch(symbolDef, {credentials: 'include'});
-    const buffer = await response.arrayBuffer();
-    return new Uint8Array(buffer);
-  }
-
-  /** Загрузка файлов с описаниями паттернов линий для отрисовки карт. */
-  public async getPatternLib(libraryID: string): Promise<Uint8Array> {
-    const libName = MapsAPI.libsDict[libraryID.toLowerCase()];
-    if (!libName) throw new Error(`unknown library "${libraryID}"`);
-    const response = await fetch(libName, {credentials: 'include'});
     const buffer = await response.arrayBuffer();
     return new Uint8Array(buffer);
   }
@@ -122,7 +101,7 @@ export class MapsAPI {
 
       for (const element of elements) {
         const t = types[element.type];
-        if (t && t.loaded) await t.loaded(element, provider);
+        if (t && t.loaded) await t.loaded(element);
       }
     } finally {
       // @ts-ignore
@@ -137,6 +116,7 @@ export class MapsAPI {
     const mapData = response.data;
     mapData.mapErrors = [];
 
+    await provider.initialize();
     await this.setNamedPoints(mapData, owner);
 
     let i = 1;

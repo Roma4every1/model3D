@@ -115,5 +115,6 @@ async function createFormSettings({id, type}: FormDataWMR): Promise<FormSettings
     if (!res.ok) return {};
     return res.data;
   }
+  if (type === 'map') await fillPatterns.initialize();
   return {};
 }

@@ -9,8 +9,8 @@ export const FillNameTemplate = ({fillName, fillColor, bkColor, transparent}) =>
     const background = transparent ? 'none' : (bkColor ?? 'none');
     const ctx = canvasRef.current.getContext('2d');
     ctx.fillStyle = fillPatterns.createFillStyle(fillName, fillColor, background);
-    ctx.fillRect(0, 0, 40, 20);
+    ctx.fillRect(0, 0, 50, 20);
   });
 
-  return <canvas ref={canvasRef} width={40} height={20}/>;
+  return <canvas ref={canvasRef} width={50} height={20}/>;
 }

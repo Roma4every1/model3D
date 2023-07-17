@@ -2,13 +2,16 @@ import { TFunction } from 'react-i18next';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Checkbox } from '@progress/kendo-react-inputs';
+import { traceStateSelector } from 'entities/objects';
 import { MapModes } from '../../../lib/enums';
 import { clientPoint, listenerOptions } from '../../../lib/map-utils';
-import { checkDistance, checkDistancePoints, getNearestElements } from './selecting-utils';
-import { selectElement, unselectElement } from './selecting-utils';
 import { setSelectedElement, clearMapSelect, setEditMode, cancelMapEditing } from '../../../store/map.actions';
 import selectingIcon from 'assets/images/map/selecting-mode.png';
-import { traceStateSelector } from 'entities/objects';
+
+import {
+  selectElement, unselectElement,
+  checkDistance, checkDistancePoints, getNearestElements,
+} from './selecting-utils';
 
 
 interface SelectingProps {
@@ -50,19 +53,17 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
     if (checkDistancePoints(selectState.lastPoint, point, scale)) {
       if (selectState.nearestElements.length === 0) return;
       selectState.activeIndex++;
-      const setActive = async () => {
-        if (selectedElement) await unselectElement(selectedElement);
+      if (selectedElement) unselectElement(selectedElement);
 
-        if (selectState.activeIndex < selectState.nearestElements.length) {
-          let newElement = selectState.nearestElements[selectState.activeIndex];
-          await selectElement(newElement);
-          dispatch(setSelectedElement(formID, newElement));
-        } else {
-          selectState.activeIndex = -1;
-          dispatch(clearMapSelect(formID));
-        }
+      if (selectState.activeIndex < selectState.nearestElements.length) {
+        let newElement = selectState.nearestElements[selectState.activeIndex];
+        selectElement(newElement);
+        dispatch(setSelectedElement(formID, newElement));
+      } else {
+        selectState.activeIndex = -1;
+        dispatch(clearMapSelect(formID));
       }
-      setActive().then(() => utils.updateCanvas());
+      utils.updateCanvas();
     } else {
       const getTextWidth = (text) => canvas.getContext('2d').measureText(text).width;
       const filterFn = (element) => {
@@ -74,19 +75,15 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
       const nearestElements = getNearestElements(filteredLayers, activeLayer_, scale, filterFn);
 
       if (nearestElements.length === 0) return selectState.lastPoint = null;
-
-      const setActive = async () => {
-        if (selectedElement) await unselectElement(selectedElement);
-
-        let activeIndex = 0;
-        let newElement = nearestElements[activeIndex];
-        await selectElement(newElement);
-        selectState.activeIndex = 0;
-        selectState.nearestElements = nearestElements;
-        selectState.lastPoint = point;
-        dispatch(setSelectedElement(formID, newElement));
-      }
-      setActive().then(() => utils.updateCanvas());
+      if (selectedElement) unselectElement(selectedElement);
+      let activeIndex = 0;
+      let newElement = nearestElements[activeIndex];
+      selectElement(newElement);
+      selectState.activeIndex = 0;
+      selectState.nearestElements = nearestElements;
+      selectState.lastPoint = point;
+      dispatch(setSelectedElement(formID, newElement));
+      utils.updateCanvas();
     }
   }, [
     allowedTypes, selectedElement, dispatch, formID, isInSelectingMode, isOnlyActiveLayer,
@@ -113,7 +110,8 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
   const toggleSelecting = useCallback(() => {
     if (isInSelectingMode && selectedElement) {
       dispatch(clearMapSelect(formID, false));
-      unselectElement(selectedElement).then(() => utils.updateCanvas());
+      unselectElement(selectedElement);
+      utils.updateCanvas();
     }
     if (!isInSelectingMode && mapState.isElementEditing) dispatch(cancelMapEditing(formID));
     dispatch(setEditMode(formID, isInSelectingMode ? MapModes.NONE : MapModes.SELECTING));

@@ -239,9 +239,9 @@ interface MapPolyline extends MapElementProto {
   bordercolor: string,
   borderwidth: number,
   legend?: any,
-  img?: any,
   style?: PolylineBorderStyle,
-  isTrace?: boolean
+  fillStyle?: CanvasPattern | string,
+  isTrace?: boolean,
 }
 
 /** ### Дуга линии.

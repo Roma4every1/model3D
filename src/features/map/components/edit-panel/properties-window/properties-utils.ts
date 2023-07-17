@@ -1,5 +1,6 @@
 import lines from '../../../drawer/lines.json';
 import parseColor from 'parse-color';
+import { fillPatterns } from 'shared/drawing';
 import { polylineType } from '../selecting/selecting-utils';
 import { ColorPickerPaletteSettings, ColorPickerGradientSettings } from '@progress/kendo-react-inputs';
 
@@ -80,13 +81,13 @@ export const rollbackLabel = (label: MapLabel, init: InitLabelState): void => {
 
 /* --- Polyline Properties --- */
 
-export const updateImg = async (polyline: MapPolyline) => {
+export function updateImg(polyline: MapPolyline): void {
   if (!polyline.fillname || !polyline.fillcolor) return;
-  const backColor = polyline.transparent || !polyline.fillbkcolor
+  const back = polyline.transparent || !polyline.fillbkcolor
     ? 'none'
     : polylineType.bkcolor(polyline);
-  polyline.img = await polylineType.getPattern(polyline.fillname, polyline.fillcolor, backColor)
-};
+  polyline.fillStyle = fillPatterns.createFillStyle(polyline.fillname, polyline.fillcolor, back);
+}
 
 /** Создание начального состояния линии. */
 export const createPolylineInit = (polyline: MapPolyline): InitPolylineState => {
@@ -94,7 +95,7 @@ export const createPolylineInit = (polyline: MapPolyline): InitPolylineState => 
     legend: polyline.legend,
     closed: polyline.arcs[0].closed,
     transparent: polyline.transparent,
-    style: polyline.style ? JSON.parse(JSON.stringify(polyline.style)): undefined,
+    style: polyline.style ? structuredClone(polyline.style) : undefined,
     borderWidth: polyline.borderwidth,
     borderStyle: polyline.borderstyle,
     borderStyleID: polyline.borderstyleid,
@@ -164,59 +165,23 @@ export const paletteSettings: ColorPickerPaletteSettings = {
   columns: 8,
   tileSize: { width: 32, height: 16 },
   palette: [
-    "#ff8080",
-    "#ffff80",
-    "#80ff80",
-    "#00ff80",
-    "#80ffff",
-    "#0080ff",
-    "#ff80c0",
-    "#ff80ff",
+    '#ff8080', '#ffff80', '#80ff80', '#00ff80',
+    '#80ffff', '#0080ff', '#ff80c0', '#ff80ff',
 
-    "#ff0000",
-    "#ffff00",
-    "#80ff00",
-    "#00ff40",
-    "#00ffff",
-    "#0080c0",
-    "#8080c0",
-    "#ff00ff",
+    '#ff0000', '#ffff00', '#80ff00', '#00ff40',
+    '#00ffff', '#0080c0', '#8080c0', '#ff00ff',
 
-    "#804040",
-    "#ff8040",
-    "#00ff00",
-    "#008080",
-    "#004080",
-    "#8080ff",
-    "#800040",
-    "#ff0080",
+    '#804040', '#ff8040', '#00ff00', '#008080',
+    '#004080', '#8080ff', '#800040', '#ff0080',
 
-    "#800000",
-    "#ff8000",
-    "#008000",
-    "#008040",
-    "#0000ff",
-    "#0000a0",
-    "#800080",
-    "#8000ff",
+    '#800000', '#ff8000', '#008000', '#008040',
+    '#0000ff', '#0000a0', '#800080', '#8000ff',
 
-    "#400000",
-    "#804000",
-    "#004000",
-    "#004040",
-    "#000080",
-    "#000040",
-    "#400040",
-    "#400080",
+    '#400000', '#804000', '#004000', '#004040',
+    '#000080', '#000040', '#400040', '#400080',
 
-    "#000000",
-    "#808000",
-    "#808040",
-    "#808080",
-    "#408080",
-    "#c0c0c0",
-    "#400040",
-    "#ffffff",
+    '#000000', '#808000', '#808040', '#808080',
+    '#408080', '#c0c0c0', '#400040', '#ffffff',
   ],
 };
 

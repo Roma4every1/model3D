@@ -1,5 +1,5 @@
 import { TFunction } from 'react-i18next';
-import { useState, useEffect, useCallback, cloneElement } from 'react';
+import { useState, useEffect, cloneElement } from 'react';
 import { Button } from '@progress/kendo-react-buttons';
 import { Label } from '@progress/kendo-react-labels';
 import { DropDownList, DropDownListChangeEvent } from '@progress/kendo-react-dropdowns';
@@ -29,11 +29,6 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
   const legendsData: any[] = legends?.sublayerSettings || [];
   const [changed, setChanged] = useState(false);
 
-  const onChange = useCallback(() => {
-    setChanged(true);
-    update();
-  }, [update]);
-
   /* --- Polyline Properties State --- */
 
   const [legend, setLegend] = useState(init.legend);
@@ -51,32 +46,32 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
 
   /* --- Properties Handlers --- */
 
-  const onLegendChange = useCallback((event) => {
+  const onLegendChange = (event) => {
     polyline.legend = event.value;
     setLegend(polyline.legend);
     applyLegend(polyline, event.value);
-    onChange();
-  }, [polyline, onChange]);
+    setChanged(true); update();
+  };
 
-  const onChangeClosed = useCallback(() => {
+  const onChangeClosed = () => {
     polyline.arcs[0].closed = !polyline.arcs[0].closed;
     setClosed(polyline.arcs[0].closed);
-    onChange();
-  }, [polyline, onChange]);
+    setChanged(true); update();
+  };
 
-  const onTransparentChange = useCallback(() => {
+  const onTransparentChange = () => {
     polyline.transparent = !polyline.transparent;
     setTransparent(polyline.transparent);
-    updateImg(polyline).then(onChange);
-  }, [polyline, onChange]);
+    updateImg(polyline); setChanged(true); update();
+  };
 
-  const onBorderWidthChange = useCallback((event) => {
+  const onBorderWidthChange = (event) => {
     polyline.borderwidth = event.value;
     setBorderWidth(polyline.borderwidth);
-    onChange();
-  }, [polyline, onChange]);
+    setChanged(true); update();
+  };
 
-  const onBorderStyleChange = useCallback((event: DropDownListChangeEvent) => {
+  const onBorderStyleChange = (event: DropDownListChangeEvent) => {
     polyline.borderstyle = event.value.borderStyle;
     polyline.borderstyleid = event.value.style?.guid._value;
     if (typeof polyline.borderstyle === 'number') {
@@ -85,32 +80,32 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
     }
     setBorderStyle(polyline.borderstyle);
     setBorderStyleID(polyline.borderstyleid);
-    onChange();
-  }, [polyline, onChange]);
+    setChanged(true); update();
+  };
 
-  const onBorderColorChange = useCallback((event) => {
+  const onBorderColorChange = (event) => {
     polyline.bordercolor = parseColor(event.value).hex;
     setBorderColor(polyline.bordercolor);
-    onChange();
-  }, [polyline, onChange]);
+    setChanged(true); update();
+  };
 
-  const onFillNameChange = useCallback(async (event: DropDownListChangeEvent) => {
+  const onFillNameChange = (event: DropDownListChangeEvent) => {
     polyline.fillname = event.value;
     setFillName(polyline.fillname);
-    updateImg(polyline).then(onChange);
-  }, [polyline, onChange]);
+    updateImg(polyline); setChanged(true); update();
+  };
 
-  const onFillColorChange = useCallback(async (event) => {
+  const onFillColorChange = (event) => {
     polyline.fillcolor = parseColor(event.value).hex;
     setFillColor(polyline.fillcolor);
-    updateImg(polyline).then(onChange);
-  }, [polyline, onChange]);
+    updateImg(polyline); setChanged(true); update();
+  };
 
-  const onFillBackColorChange = useCallback(async (event) => {
+  const onFillBackColorChange = (event) => {
     polyline.fillbkcolor = parseColor(event.value).hex;
     setFillBackColor(polyline.fillbkcolor);
-    updateImg(polyline).then(onChange);
-  }, [polyline, onChange]);
+    updateImg(polyline); setChanged(true); update();
+  };
 
   /* --- --- --- */
 
