@@ -1,27 +1,10 @@
 import EventEmitter from 'events';
 import nextTick from 'async/nextTick';
-import { once, identity } from 'lodash';
 import { startPaint } from './map-drawer';
 import { getTranslator, rects } from './geom';
 import { onElementSize } from './html-helper';
 import { PIXEL_PER_METER } from '../lib/map-utils';
 
-
-export function updateCanvasSize(canvas) {
-	let ret = false;
-	const width = canvas.clientWidth * window.devicePixelRatio;
-	const height = canvas.clientHeight * window.devicePixelRatio;
-
-	if (canvas.width !== width) {
-		canvas.width = width;
-		ret = true;
-	}
-	if (canvas.height !== height) {
-		canvas.height = height;
-		ret = true;
-	}
-	return ret;
-}
 
 /**
  * @param canvas {MapCanvas}
@@ -30,7 +13,6 @@ export function updateCanvasSize(canvas) {
  * */
 export function showMap(canvas, map, viewport) {
   let { centerX, centerY, scale } = viewport;
-  const updateOnce = once(() => update(canvas));
 
   let coords;
   let uiMode;
@@ -102,13 +84,17 @@ export function showMap(canvas, map, viewport) {
         return new Promise(resolve => setTimeout(resolve, 0));
       }
     };
-    events.emit('update.begin', canvas, map);
 
     const c = onCheckExecution();
     c && (await c);
-    updateCanvasSize(canvas);
+
+    const width = canvas.clientWidth * window.devicePixelRatio;
+    const height = canvas.clientHeight * window.devicePixelRatio;
+    if (canvas.width !== width) canvas.width = width;
+    if (canvas.height !== height) canvas.height = height;
+
     if (!coords) {
-      let dotsPerMeter = canvas.width / (canvas.clientWidth / PIXEL_PER_METER);
+      let dotsPerMeter = width / (canvas.clientWidth / PIXEL_PER_METER);
       if (isNaN(dotsPerMeter)) dotsPerMeter = 3780;
 
       if (centerX == null) {
@@ -120,8 +106,8 @@ export function showMap(canvas, map, viewport) {
         } else {
           if (!scale) {
             scale = 1.05 * Math.max(
-              (bounds.max.x - bounds.min.x) / (canvas.width / dotsPerMeter),
-              (bounds.max.y - bounds.min.y) / (canvas.height / dotsPerMeter)
+              (bounds.max.x - bounds.min.x) / (width / dotsPerMeter),
+              (bounds.max.y - bounds.min.y) / (height / dotsPerMeter)
             );
           }
           centerX = (bounds.min.x + bounds.max.x) / 2;
@@ -130,37 +116,31 @@ export function showMap(canvas, map, viewport) {
       }
 
       coords = getTranslator(scale, {x: centerX, y: centerY}, dotsPerMeter, {
-        x: canvas.width / 2,
-        y: canvas.height / 2
+        x: width / 2,
+        y: height / 2
       });
     }
 
-    const p = coords.pointToMap({x: canvas.width / 2, y: canvas.height / 2});
+    const p = coords.pointToMap({x: width / 2, y: height / 2});
     events.scale = coords.mscale;
     events.centerx = p.x;
     events.centery = p.y;
 
     canvasEvents && canvasEvents.emit('init', coords.changeResolution(1 / window.devicePixelRatio));
 
-    const onDataWaiting = map.mapErrors.length > 0
-      ? identity
-      : (promise) => promise.then(updateOnce);
-
     const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, width, height);
 
-    const _startPaint = (draftDrawing) => startPaint(canvas, map, {
-      events, onDataWaiting, onCheckExecution,
-      coords, pixelRatio: window.devicePixelRatio, draftDrawing,
+    const startPaintFn = (draftDrawing) => startPaint(canvas, map, {
+      events, onCheckExecution, coords,
+      pixelRatio: window.devicePixelRatio, draftDrawing,
     });
 
     if (uiMode) {
-      await _startPaint(true);
+      await startPaintFn(true);
       // sleep for 400ms
       await new Promise((resolve) => setTimeout(resolve, 400));
     }
-
-    await _startPaint(false);
-    events.emit('update.end', canvas);
+    await startPaintFn(false);
   }
 }

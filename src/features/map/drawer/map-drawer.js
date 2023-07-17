@@ -1088,20 +1088,14 @@ export async function startPaint(canvas, map, options) {
     exactBounds.max.y - exactBounds.min.y
   ));
 
-  const ctx = canvas.getContext('2d');
   const drawOptions = {
+    canvas: canvas,
+    context: canvas.getContext('2d'),
     provider: provider,
     pointToControl: coords.pointToControl,
     pointToMap: coords.pointToMap,
-    canvas: canvas,
-    context: ctx,
     dotsPerMeter: coords.cscale,
     pixelRatio: options.pixelRatio,
-    map: map,
-    onDataWaiting: options.onDataWaiting,
-    scale: coords.mscale,
-    drawBounds: exactBounds,
-    events: options.events
   };
 
   try {

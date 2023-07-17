@@ -6,25 +6,25 @@ import { createColumnTree, getFlatten } from './column-tree';
 
 /** Модифицирует состояние колонок, после появления информации о типах. */
 export function applyColumnTypes(state: TableState, channelColumns: ChannelColumn[]) {
-  const properties = state.properties.list;
+  const propertyList = state.properties.list;
 
   channelColumns.forEach(({ Name, NetType, AllowDBNull }, i) => {
-    const property = properties.find(p => p.fromColumn === Name);
-    if (!property) return;
-    const columnState = state.columns[property.name];
+    for (const property of propertyList.filter(p => p.fromColumn === Name)) {
+      const columnState = state.columns[property.name];
 
-    if (columnState.lookupChannel) {
-      if (!columnState.type) columnState.type = 'list';
-    } else {
-      const type = getColumnType(NetType);
-      columnState.type = type;
-      if (type === 'real') columnState.format = '{0:#.####}';
-      else if (type === 'date') columnState.format = '{0:d}';
+      if (columnState.lookupChannel) {
+        if (!columnState.type) columnState.type = 'list';
+      } else {
+        const type = getColumnType(NetType);
+        columnState.type = type;
+        if (type === 'real') columnState.format = '{0:#.####}';
+        else if (type === 'date') columnState.format = '{0:d}';
+      }
+
+      columnState.colName = Name;
+      columnState.colIndex = i;
+      columnState.allowNull = AllowDBNull;
     }
-
-    columnState.colName = Name;
-    columnState.colIndex = i;
-    columnState.allowNull = AllowDBNull;
   });
   state.columns = {...state.columns};
   state.properties.typesApplied = true;
