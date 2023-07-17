@@ -1,5 +1,5 @@
 import { Dispatch } from 'redux';
-import { Thunk, StateGetter, forEachTreeLeaf, setIntersection } from 'shared/lib';
+import { forEachTreeLeaf, setIntersection, StateGetter, Thunk } from 'shared/lib';
 import { setPresentationTree } from 'app/store/root-form/root-form.actions';
 
 
@@ -22,9 +22,7 @@ export function updatePresentationTreeVisibility(updateIDs: ParameterID[]): Thun
 
     if (treeItemsToUpdate.length) {
       for (const item of treeItemsToUpdate) {
-        const newVisible = item.visibilityHandler(globalParameters);
-        if (item.visible !== newVisible) console.log(newVisible, item);
-        item.visible = newVisible;
+        item.visible = item.visibilityHandler(globalParameters);
       }
       dispatch(setPresentationTree([...tree]));
     }
