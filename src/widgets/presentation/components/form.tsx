@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { FormSkeleton, FormFetchError } from './plugs';
 import { formStateSelector } from '../store/forms.selectors';
 import { stateNotLoaded, formFetchStateSelector } from 'entities/fetch-state';
+import { NotSupportedForm } from './plugs';
 import { formDict } from './form-dict';
 
 
@@ -22,7 +23,7 @@ export const Form = ({id, type}: FormProps) => {
 
   return (
     <div className={'form-container'}>
-      {createElement(formDict[type], formState)}
+      {createElement(formDict[type] ?? NotSupportedForm, formState)}
     </div>
   );
 };

@@ -119,7 +119,7 @@ export class MapsAPI {
     await this.setNamedPoints(mapData, owner);
 
     let i = 1;
-    const step = Math.ceil(100 / mapData.layers.length);
+    const step = 100 / mapData.layers.length;
 
     for (const layer of mapData.layers) {
       handleLayerScales(layer);
@@ -130,7 +130,7 @@ export class MapsAPI {
         const errors = mapData.mapErrors.join('\n');
         return 'More than 3 errors while load map:\n' + errors;
       }
-      setProgress(i * step); i++;
+      setProgress(Math.round(i * step)); i++;
     }
     return mapData as any as MapData;
   }
