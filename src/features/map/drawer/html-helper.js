@@ -1,30 +1,29 @@
-export function onElementSize(element, proc) {
-	let width, height, timeout;
+/** Каждые 100 мс проверяет размеры элемента. */
+export function onElementSize(canvas, callback) {
+	let width, height, timerID;
 	let canRun = true;
 
 	function run() {
-		timeout = setTimeout(check, 100)
+		timerID = setTimeout(check, 100);
 	}
 	function check() {
-		timeout = null
-		const newWidth = element.clientWidth;
-		const newHeight = element.clientHeight;
+		timerID = null;
+		const newWidth = canvas.clientWidth;
+		const newHeight = canvas.clientHeight;
 
 		if (width !== newWidth || height !== newHeight) {
-			proc(element, newWidth, newHeight, width, height);
+			callback(canvas);
 			width = newWidth;
 			height = newHeight;
 		}
 		if (canRun) run();
 	}
-	check()
+	check();
 
-	return {
-		stop: () => {
-			timeout && clearTimeout(timeout);
-			canRun = false;
-		}
-	}
+	return () => {
+    timerID && clearTimeout(timerID);
+    canRun = false;
+  };
 }
 
 export function loadImageData(data, contentType) {

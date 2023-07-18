@@ -68,8 +68,8 @@ export class FillPatterns implements IFillPatterns {
 
   /** Создаёт паттерн заливки по типу и двум цветам. */
   public createFillStyle(name: string, color: ColorHEX, background: ColorHEX): CanvasPattern | string {
-    if (!name) return '#ffffff';
     if (!background || background === 'none') background = 'rgba(0,0,0,0)';
+    if (!name) return background;
 
     try {
       let [, libName, index] = name.match(/^(.+)-(\d+)$/);

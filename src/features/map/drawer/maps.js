@@ -1,5 +1,4 @@
 import EventEmitter from 'events';
-import nextTick from 'async/nextTick';
 import { startPaint } from './map-drawer';
 import { getTranslator, rects } from './geom';
 import { onElementSize } from './html-helper';
@@ -21,14 +20,11 @@ export function showMap(canvas, map, viewport) {
   const canvasEvents = canvas.events;
   if (!canvas.events) update(canvas);
 
-  const fin = [];
+  const fin = [onElementSize(canvas, update)];
   function detach() {
     fin.reverse().forEach(f => f());
     fin.length = 0;
   }
-
-  const resizer = onElementSize(canvas, canvas => nextTick(() => update(canvas)));
-  fin.push(() => resizer.stop());
 
   events.on('update', () => update(canvas));
   events.on('detach', detach);
@@ -75,6 +71,7 @@ export function showMap(canvas, map, viewport) {
     if (!checkCanvas()) return;
     const drawFlag = canvas.showMapFlag.mapDrawCycle = {};
     let count = 0;
+
     const onCheckExecution = () => {
       if (!checkCanvas()) throw new Error('map drawer is detached');
       if (drawFlag !== canvas.showMapFlag.mapDrawCycle) throw new Error('stop');

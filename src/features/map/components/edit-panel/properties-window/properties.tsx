@@ -87,17 +87,16 @@ export const PropertiesWindow = ({formID, setPropertiesWindowOpen}: PropertiesWi
       return;
     }
     if (element.type === 'polyline') {
-      rollbackPolyline(element, init).then(update).then(close);
+      rollbackPolyline(element, init);
     }
-    if (element.type === 'label') {
+    else if (element.type === 'label') {
       if (mode === MapModes.MOVE_MAP && element.edited) element.edited = false;
       rollbackLabel(element, init);
-      update(); close();
     }
-    if (element.type === 'field') {
+    else if (element.type === 'field') {
       rollbackField(element, init);
-      update(); close();
     }
+    update(); close();
   }, [element, mode, init, update, close, setPropertiesWindowOpen, isElementCreating]); // eslint-disable-line
 
   const acceptCreating = () => {

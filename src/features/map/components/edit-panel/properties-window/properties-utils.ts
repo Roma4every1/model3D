@@ -57,17 +57,17 @@ export const templatesData: string[] = ['', ...gridTemplates, ...litTemplates, .
 /* --- Label Properties --- */
 
 /** Создание начального состояния подписи. */
-export const createLabelInit = (label: MapLabel): InitLabelState => {
+export function createLabelInit(label: MapLabel): InitLabelState {
   return {
     text: label.text, color: label.color, fontSize: label.fontsize,
     xOffset: label.xoffset, yOffset: label.yoffset,
     hAlignment: label.halignment, vAlignment: label.valignment,
     angle: label.angle, transparent: label.transparent,
   };
-};
+}
 
 /** Откат изменённой подписи в начальное состояние. */
-export const rollbackLabel = (label: MapLabel, init: InitLabelState): void => {
+export function rollbackLabel(label: MapLabel, init: InitLabelState): void {
   label.text = init.text;
   label.color = init.color;
   label.fontsize = init.fontSize;
@@ -77,12 +77,11 @@ export const rollbackLabel = (label: MapLabel, init: InitLabelState): void => {
   label.valignment = init.vAlignment;
   label.angle = init.angle;
   label.transparent = init.transparent;
-};
+}
 
 /* --- Polyline Properties --- */
 
 export function updateImg(polyline: MapPolyline): void {
-  if (!polyline.fillname || !polyline.fillcolor) return;
   const back = polyline.transparent || !polyline.fillbkcolor
     ? 'none'
     : polylineType.bkcolor(polyline);
@@ -90,7 +89,7 @@ export function updateImg(polyline: MapPolyline): void {
 }
 
 /** Создание начального состояния линии. */
-export const createPolylineInit = (polyline: MapPolyline): InitPolylineState => {
+export function createPolylineInit(polyline: MapPolyline): InitPolylineState {
   return {
     legend: polyline.legend,
     closed: polyline.arcs[0].closed,
@@ -104,10 +103,10 @@ export const createPolylineInit = (polyline: MapPolyline): InitPolylineState => 
     fillColor: polyline.fillcolor,
     fillBackColor: polyline.fillbkcolor,
   };
-};
+}
 
 /** Откат изменённой линии в начальное состояние. */
-export const rollbackPolyline = async (polyline: MapPolyline, init: InitPolylineState) => {
+export function rollbackPolyline(polyline: MapPolyline, init: InitPolylineState): void {
   polyline.arcs[0].closed = init.closed;
   polyline.transparent = init.transparent;
   polyline.borderwidth = init.borderWidth;
@@ -119,10 +118,10 @@ export const rollbackPolyline = async (polyline: MapPolyline, init: InitPolyline
   polyline.fillbkcolor = init.fillBackColor;
   polyline.legend = init.legend;
   polyline.style = init.style;
-  await updateImg(polyline);
-};
+  updateImg(polyline);
+}
 
-export const applyLegend = (polyline: MapPolyline, legend: any): void => {
+export function applyLegend(polyline: MapPolyline, legend: any): void {
   legend.properties.forEach(p => {
     switch (p.name) {
       case "BorderStyle":

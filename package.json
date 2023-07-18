@@ -27,7 +27,6 @@
     "@progress/kendo-react-progressbars": "5.9.0",
     "@progress/kendo-react-treeview": "5.9.0",
     "@progress/kendo-theme-default": "5.9.0",
-    "async": "3.2.4",
     "bootstrap": "4.6.1",
     "buffer": "6.0.3",
     "cldr-core": "41.0.0",
@@ -54,7 +53,6 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "7.21.11",
-    "@types/async": "3.2.15",
     "@types/jest": "27.5.2",
     "@types/lodash": "4.14.184",
     "@types/node": "20.2.1",
