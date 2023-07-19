@@ -203,11 +203,11 @@ export class CurveManager {
     if (activeCurve) activeCurve.active = true;
   }
 
-  public setStyleData(lookupData: ChannelDict) {
+  public setStyleData(lookupData: ChannelDataDict) {
     this.styleDict.clear();
     const curveColorChannel = lookupData[this.curveSetChannel.curveColorLookup];
 
-    curveColorChannel?.data?.rows?.forEach((row) => {
+    curveColorChannel?.rows?.forEach((row) => {
       let [type, color] = row.Cells as [string, string];
       this.styleDict.set(type, {color: fixHEX(color), thickness: 2});
     });

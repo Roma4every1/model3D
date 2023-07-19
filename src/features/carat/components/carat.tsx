@@ -2,13 +2,13 @@ import { KeyboardEvent, MouseEvent, WheelEvent } from 'react';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { compareObjects } from 'shared/lib';
-import { wellStateSelector } from '../../../entities/objects';
-import { channelDictSelector } from 'entities/channels';
+import { wellStateSelector, traceStateSelector } from 'entities/objects';
+import { channelDataDictSelector } from 'entities/channels';
 import { TextInfo } from 'shared/ui';
 
 import './carat.scss';
 import { caratStateSelector } from '../store/carat.selectors';
-import { setCaratData } from '../store/carat.thunks';
+import { setCaratData, setCaratTrace } from '../store/carat.thunks';
 import { setCaratActiveCurve, setCaratActiveGroup, setCaratCanvas } from '../store/carat.actions';
 
 
@@ -17,10 +17,11 @@ export const Carat = ({id, channels}: FormState) => {
   const dispatch = useDispatch();
 
   const { model: currentWell } = useSelector(wellStateSelector);
+  const { model: currentTrace } = useSelector(traceStateSelector);
   const { stage, canvas, lookupNames }: CaratState = useSelector(caratStateSelector.bind(id));
 
-  const channelData: ChannelDict = useSelector(channelDictSelector.bind(channels), compareObjects);
-  const lookupData: ChannelDict = useSelector(channelDictSelector.bind(lookupNames), compareObjects);
+  const channelData: ChannelDataDict = useSelector(channelDataDictSelector.bind(channels), compareObjects);
+  const lookupData: ChannelDataDict = useSelector(channelDataDictSelector.bind(lookupNames), compareObjects);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isOnMoveRef = useRef<boolean>(false);
@@ -30,6 +31,10 @@ export const Carat = ({id, channels}: FormState) => {
     stage.setLookupData(lookupData);
     stage.render();
   }, [lookupData, stage]);
+
+  useEffect(() => {
+    if (currentTrace) dispatch(setCaratTrace(id, currentTrace));
+  }, [currentTrace, id, dispatch]);
 
   // обновление данных каналов и активной скважины
   useEffect(() => {

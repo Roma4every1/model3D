@@ -2,8 +2,9 @@
 type CaratsState = FormDict<CaratState>;
 
 /** Состояние каротажной формы.
- * + `stage`: {@link ICaratStage}
  * + `canvas`: {@link HTMLCanvasElement}
+ * + `stage`: {@link ICaratStage}
+ * + `traceLoader`: {@link ICaratTraceLoader}
  * + `observer`: {@link ResizeObserver}
  * + `activeGroup`: {@link ICaratColumnGroup}
  * + `curveGroup`: {@link ICaratColumnGroup}
@@ -12,10 +13,12 @@ type CaratsState = FormDict<CaratState>;
  * + `lastData`: {@link ChannelDict}
  * */
 interface CaratState {
-  /** Экземпляр класса сцены. */
-  stage: ICaratStage;
   /** Ссылка на холст. */
   canvas: HTMLCanvasElement,
+  /** Экземпляр класса сцены. */
+  stage: ICaratStage,
+  /** Класс, реализующий загрузку данных для построения каротажа по трассе. */
+  traceLoader: ICaratTraceLoader,
   /** Класс для отслеживания изменения размеров холста. */
   observer: ResizeObserver,
   /** Активная колонка. */
@@ -27,7 +30,15 @@ interface CaratState {
   /** Список всех названий каналов-справочников. */
   lookupNames: ChannelName[],
   /** Последние установленные данные. */
-  lastData: ChannelDict,
+  lastData: ChannelDataDict,
+}
+
+/** Данные для построения каротажа по трассе. */
+type CaratTraceData = Record<WellID, ChannelDataDict>;
+
+/** Загрузчик данных для построения каротажа по трассе. */
+interface ICaratTraceLoader {
+  getCaratTraceData(state: WState, model: TraceModel): Promise<CaratTraceData>
 }
 
 /** Сцена каротажной диаграммы. */
@@ -44,9 +55,9 @@ interface ICaratStage {
   setWell(well: string): void
   setScale(scale: number): void
 
-  setChannelData(channelData: ChannelDict): void
-  setCurveData(channelData: ChannelDict): Promise<any>
-  setLookupData(lookupData: ChannelDict): void
+  setChannelData(channelData: ChannelDataDict): void
+  setCurveData(channelData: ChannelDataDict): Promise<any>
+  setLookupData(lookupData: ChannelDataDict): void
 
   handleKeyDown(key: string): boolean
   handleMouseMove(by: number): void

@@ -1,8 +1,10 @@
 /** Идентификатор канала с данными. */
 type ChannelName = string;
 
-/** Данные каналов. */
+/** Словарь каналов. */
 type ChannelDict = Record<ChannelName, Channel>;
+/** Данные каналов. */
+type ChannelDataDict = Record<ChannelName, ChannelData>;
 
 /** Модель канала данных.
  * + `tableID`: {@link TableID}

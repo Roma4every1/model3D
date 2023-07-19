@@ -204,7 +204,7 @@ export class CaratTrack implements ICaratTrack {
     }
   }
 
-  public setChannelData(channelData: ChannelDict) {
+  public setChannelData(channelData: ChannelDataDict) {
     const viewport = this.viewport;
     this.backgroundGroup.setChannelData(channelData);
     [viewport.min, viewport.max] = this.backgroundGroup.getElementsRange();
@@ -250,8 +250,8 @@ export class CaratTrack implements ICaratTrack {
     this.backgroundGroup.setWidth(this.rect.width);
   }
 
-  public async setCurveData(channelData: ChannelDict) {
-    const changes = await Promise.all(this.groups.map((group) => group.setCurveData(channelData)));
+  public async setCurveData(channelData: ChannelDataDict): Promise<CaratCurveModel> {
+    const changes = await Promise.all(this.groups.map(group => group.setCurveData(channelData)));
     this.rebuildRects(changes);
     this.rebuildHeaders();
     if (this.inclinometry) this.inclinometry.updateMarks(this.viewport);
@@ -265,7 +265,7 @@ export class CaratTrack implements ICaratTrack {
     return this.activeCurve;
   }
 
-  public setLookupData(lookupData: ChannelDict) {
+  public setLookupData(lookupData: ChannelDataDict) {
     this.backgroundGroup.setLookupData(lookupData);
     for (const group of this.groups) group.setLookupData(lookupData);
   }

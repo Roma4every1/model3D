@@ -141,18 +141,18 @@ export class CaratColumn implements ICaratColumn {
     }
   }
 
-  public setLookupData(lookupData: ChannelDict) {
+  public setLookupData(lookupData: ChannelDataDict) {
     for (const { color: colorLookup, text: textLookup } of this.channel.styles) {
-      const colorChannel = lookupData[colorLookup.name];
-      const colorRows = colorChannel?.data?.rows;
+      const colorChannelData = lookupData[colorLookup.name];
+      const colorRows = colorChannelData?.rows;
       colorLookup.dict = {};
 
-      const textChannel = lookupData[textLookup.name];
-      const textRows = textChannel?.data?.rows;
+      const textChannelData = lookupData[textLookup.name];
+      const textRows = textChannelData?.rows;
       textLookup.dict = {};
 
       if (colorRows) {
-        if (!colorLookup.applied) applyInfoIndexes(colorLookup, colorChannel.data.columns);
+        if (!colorLookup.applied) applyInfoIndexes(colorLookup, colorChannelData.columns);
         const info = colorLookup.info;
 
         for (const row of colorRows) {
@@ -164,7 +164,7 @@ export class CaratColumn implements ICaratColumn {
         }
       }
       if (textRows) {
-        if (!textLookup.applied) applyInfoIndexes(textLookup, textChannel.data.columns);
+        if (!textLookup.applied) applyInfoIndexes(textLookup, textChannelData.columns);
         const info = textLookup.info;
 
         for (const row of textRows) {

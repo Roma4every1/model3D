@@ -225,9 +225,9 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     return minDistance < 5 ? nearestCurve : null;
   }
 
-  public setChannelData(channelData: ChannelDict) {
+  public setChannelData(channelData: ChannelDataDict) {
     for (const column of this.columns) {
-      const data = channelData[column.channel.name]?.data;
+      const data = channelData[column.channel.name];
       column.setChannelData(data);
     }
     if (this.curveColumn) this.curveColumn.setCurveData([], this.zones);
@@ -249,16 +249,16 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   }
 
   /** Задаёт новый список кривых, возвращает изменение ширины. */
-  public async setCurveData(channelData: ChannelDict): Promise<number> {
+  public async setCurveData(channelData: ChannelDataDict): Promise<number> {
     if (!this.curveColumn) return 0;
-    const curveSet = channelData[this.curveColumn.curveSetChannel.name];
-    this.curveManager.setCurveChannelData(curveSet.data);
+    const curveSetData = channelData[this.curveColumn.curveSetChannel.name];
+    this.curveManager.setCurveChannelData(curveSetData);
     const curves = this.curveManager.getVisibleCurves();
     await this.curveManager.loadCurveData(curves.map(curve => curve.id));
     return this.groupCurves(curves);
   }
 
-  public setLookupData(lookupData: ChannelDict) {
+  public setLookupData(lookupData: ChannelDataDict) {
     for (const column of this.columns) column.setLookupData(lookupData);
     if (this.curveColumn) this.curveManager.setStyleData(lookupData);
   }

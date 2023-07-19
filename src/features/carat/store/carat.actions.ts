@@ -17,7 +17,7 @@ export function setCaratActiveCurve(id: FormID, curve: any): CaratsAction {
 }
 
 /** Обновляет данные каналов. */
-export function setCaratChannelData(id: FormID, data: ChannelDict): CaratsAction {
+export function setCaratChannelData(id: FormID, data: ChannelDataDict): CaratsAction {
   return {type: CaratsActions.SET_DATA, payload: {id, data}};
 }
 

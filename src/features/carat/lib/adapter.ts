@@ -1,4 +1,5 @@
 import { CaratStage } from '../rendering/stage';
+import { CaratTraceLoader } from './trace-loader';
 import { identifyCaratChannel, applyStyle, createInfo } from './channels';
 import { drawerConfig, criterionProperties, inclinometryDataProperties } from './constants';
 
@@ -40,6 +41,7 @@ export function settingsToState(formState: FormState, channelDict: ChannelDict):
   for (const name of channels) lookupNames.push(...channelDict[name].info.lookupChannels);
 
   const stage = new CaratStage(init, drawerConfig);
+  const traceLoader = new CaratTraceLoader(formState.id);
   const observer = new ResizeObserver(() => { stage.resize(); stage.render(); });
 
   const track = stage.getActiveTrack();
@@ -50,7 +52,7 @@ export function settingsToState(formState: FormState, channelDict: ChannelDict):
     : track.getGroups().find((group) => group.hasCurveColumn());
 
   return {
-    stage, canvas: undefined, observer,
+    canvas: undefined, stage, traceLoader, observer,
     activeGroup, curveGroup, activeCurve: null,
     lookupNames, lastData: {},
   };

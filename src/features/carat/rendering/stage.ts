@@ -70,18 +70,18 @@ export class CaratStage implements ICaratStage {
     this.trackList[0].setWell(well ?? '');
   }
 
-  public setChannelData(channelData: ChannelDict) {
+  public setChannelData(channelData: ChannelDataDict) {
     this.trackList[0].setChannelData(channelData);
     this.resize();
   }
 
-  public async setCurveData(channelData: ChannelDict) {
+  public async setCurveData(channelData: ChannelDataDict) {
     const activeCurve = await this.trackList[0].setCurveData(channelData);
     this.resize();
     return activeCurve;
   }
 
-  public setLookupData(lookupData: ChannelDict) {
+  public setLookupData(lookupData: ChannelDataDict) {
     this.trackList[0].setLookupData(lookupData);
   }
 
