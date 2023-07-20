@@ -5,7 +5,7 @@ import { applyInfoIndexes, createInfoRecord } from './channels';
 /** Класс для управления инклинометрией. */
 export class CaratInclinometry implements ICaratInclinometry {
   /** Даннные канала инклинометрии. */
-  private readonly channel: CaratAttachedLookup;
+  public readonly channel: CaratAttachedLookup;
   /** Данные инклинометрии для интерполяции. */
   private interpolationData: InclinometryMark[];
 

@@ -54,7 +54,7 @@ export function settingsToState(formState: FormState, channelDict: ChannelDict):
   return {
     canvas: undefined, stage, traceLoader, observer,
     activeGroup, curveGroup, activeCurve: null,
-    lookupNames, lastData: {},
+    lookupNames, lastData: [],
   };
 }
 
@@ -62,5 +62,6 @@ export function settingsToState(formState: FormState, channelDict: ChannelDict):
 export function caratStateToSettings(id: FormID, state: CaratState): CaratFormSettings {
   const settings = state.stage.getCaratSettings();
   const columns = state.stage.getActiveTrack().getInitColumns();
+  columns.push(state.stage.correlationInit);
   return {id, settings, columns};
 }

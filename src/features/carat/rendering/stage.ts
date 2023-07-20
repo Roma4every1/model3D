@@ -15,17 +15,27 @@ export class CaratStage implements ICaratStage {
   private canvas: HTMLCanvasElement;
 
   /** Список треков. */
-  private readonly trackList: CaratTrack[];
-  private zones: CaratZone[];
+  private trackList: CaratTrack[];
+  /** Список ID скважин треков. */
+  public wellIDs: WellID[];
+  /** Находится ли сцена в режиме показа каротажа по трассе. */
+  public traceMode: boolean;
 
-  public readonly useStaticScale: boolean;
-  public readonly strataChannelName: ChannelName;
+  /** Модель разбиения кривых по зонам. */
+  private zones: CaratZone[];
+  private readonly useStaticScale: boolean;
+  private readonly strataChannelName: ChannelName;
+  /** Настройки корреляций. */
+  public readonly correlationInit: CaratColumnInit;
 
   constructor(init: CaratFormSettings, drawerConfig: CaratDrawerConfig) {
+    this.traceMode = false;
+    this.wellIDs = [];
     this.zones = init.settings.zones;
     this.drawer = new CaratDrawer(drawerConfig);
     this.useStaticScale = init.settings.useStaticScale;
     this.strataChannelName = init.settings.strataChannelName;
+    this.correlationInit = init.columns.find(c => c.settings.type === 'external');
 
     const trackWidth = calculateTrackWidth(init.columns);
     const trackMargin = this.drawer.trackBodySettings.margin;
@@ -55,6 +65,7 @@ export class CaratStage implements ICaratStage {
   public setZones(zones: CaratZone[]) {
     this.zones = zones;
     for (const track of this.trackList) track.setZones(zones);
+    this.setTrackLefts();
     this.resize();
   }
 
@@ -66,23 +77,55 @@ export class CaratStage implements ICaratStage {
     }
   }
 
-  public setWell(well: string) {
-    this.trackList[0].setWell(well ?? '');
+  /** Установить режим показа каротажа по заданной скважине. */
+  public setWellMode(well: WellModel) {
+    const wellName = well.name ?? well.id.toString() ?? '';
+    if (!this.traceMode) {
+      this.trackList[0].setWellName(wellName);
+    } else {
+      this.updateTrackList([wellName]);
+    }
+    this.wellIDs = [well.id];
+    this.traceMode = false;
   }
 
-  public setChannelData(channelData: ChannelDataDict) {
-    this.trackList[0].setChannelData(channelData);
+  /** Установить режим показа каротажа по заданной трассе. */
+  public setTraceMode(trace: TraceModel) {
+    const wellNames = trace.nodes.map(n => n.name ?? n.id?.toString() ?? '');
+    this.updateTrackList(wellNames);
+    this.wellIDs = trace.nodes.map(n => n.id);
+    this.traceMode = true;
+  }
+
+  private updateTrackList(wellNames: WellName[]) {
+    const activeTrack = this.getActiveTrack();
+    const rect = activeTrack.rect;
+    this.trackList = [];
+
+    for (const wellName of wellNames) {
+      const track = activeTrack.cloneFor({...rect}, wellName);
+      this.trackList.push(track);
+      rect.left += rect.width + 50;
+    }
+  }
+
+  public setChannelData(data: ChannelDataDict[]) {
+    for (let i = 0; i < data.length; i++) {
+      this.trackList[i].setChannelData(data[i]);
+    }
     this.resize();
   }
 
-  public async setCurveData(channelData: ChannelDataDict) {
-    const activeCurve = await this.trackList[0].setCurveData(channelData);
-    this.resize();
-    return activeCurve;
+  public async setCurveData(data: ChannelDataDict[]) {
+    for (let i = 0; i < data.length; i++) {
+      await this.trackList[i].setCurveData(data[i]);
+      this.setTrackLefts();
+      this.resize();
+    }
   }
 
   public setLookupData(lookupData: ChannelDataDict) {
-    this.trackList[0].setLookupData(lookupData);
+    for (const track of this.trackList) track.setLookupData(lookupData);
   }
 
   public setScale(scale: number) {
@@ -98,8 +141,7 @@ export class CaratStage implements ICaratStage {
         direction = 1;
       }
       if (direction) {
-        const viewport = this.trackList[0].viewport;
-        moveSmoothly(viewport, this, direction)
+        moveSmoothly(this.getActiveTrack(), direction)
       }
     }
     return false;
@@ -114,17 +156,27 @@ export class CaratStage implements ICaratStage {
 
   public handleMouseWheel(point: Point, direction: 1 | -1) {
     const track = this.trackList.find((t) => isRectInnerPoint(point, t.rect));
-    if (track) moveSmoothly(track.viewport, this, direction);
+    if (track) moveSmoothly(track, direction);
   }
 
   public handleMouseMove(by: number) {
-    const viewport = this.trackList[0].viewport;
+    const track = this.getActiveTrack();
+    const viewport = track.viewport;
     let newY = viewport.y - by / (viewport.scale * window.devicePixelRatio);
 
     if (newY > viewport.max) newY = viewport.max;
     else if (newY < viewport.min) newY = viewport.min;
 
-    if (viewport.y !== newY) { viewport.y = newY; this.lazyRender(); }
+    if (viewport.y !== newY) { viewport.y = newY; track.lazyRender(); }
+  }
+
+  /** Обновляет горизонтальное положение треков. */
+  private setTrackLefts() {
+    let left = this.trackList[0].rect.left;
+    for (const track of this.trackList) {
+      track.rect.left = left;
+      left += track.rect.width + 50;
+    }
   }
 
   public resize() {
@@ -133,7 +185,10 @@ export class CaratStage implements ICaratStage {
     const trackMargin = this.drawer.trackBodySettings.margin;
     const trackHeaderHeight = this.drawer.trackHeaderSettings.height;
 
-    const neededWidth = track.rect.width + 2 * trackMargin;
+    let neededWidth = (this.trackList.length - 1) * 50;
+    for (const track of this.trackList) {
+      neededWidth += track.rect.width + 2 * trackMargin;
+    }
     const neededHeight = track.rect.top + trackHeaderHeight + track.maxGroupHeaderHeight + 20;
     const resultHeight = Math.max(this.canvas.clientHeight, neededHeight);
 
@@ -150,10 +205,5 @@ export class CaratStage implements ICaratStage {
     if (!this.canvas) return;
     this.drawer.clear();
     for (const track of this.trackList) track.render();
-  }
-
-  public lazyRender() {
-    if (!this.canvas) return;
-    this.trackList[0].lazyRender();
   }
 }

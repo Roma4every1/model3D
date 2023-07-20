@@ -1,32 +1,31 @@
 import { Dispatch } from 'redux';
 import { Thunk, StateGetter } from 'shared/lib';
-import { setCaratActiveCurve, setCaratChannelData } from './carat.actions';
+import { setCaratChannelData } from './carat.actions';
 
 
 /** Обновляет данные каротажной диаграммы. */
-export function setCaratData(id: FormID, data?: ChannelDataDict): Thunk {
+export function setCaratData(id: FormID, data: ChannelDataDict): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
-    const caratState = getState().carats[id];
-    const stage = caratState.stage;
+    const state = getState();
+    const { stage, traceLoader } = state.carats[id];
 
-    if (data) {
-      stage.setChannelData(data);
-      stage.render();
-    }
+    const dataList: ChannelDataDict[] = stage.traceMode
+      ? await traceLoader.getData(state, stage.wellIDs, data)
+      : [data];
 
-    const activeCurve = await stage.setCurveData(data ?? caratState.lastData);
-    dispatch(setCaratActiveCurve(id, activeCurve));
-    if (data) dispatch(setCaratChannelData(id, data));
+    stage.setChannelData(dataList);
+    stage.render();
+
+    await stage.setCurveData(dataList);
+    dispatch(setCaratChannelData(id, dataList));
     stage.render();
   };
 }
 
-/** Задать для каротажной формы показ указанной трассы. */
-export function setCaratTrace(id: FormID, model: TraceModel): Thunk {
+export function updateCaratData(id: FormID): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
-    const state = getState();
-    const caratState = state.carats[id];
-    const caratTraceData = await caratState.traceLoader.getCaratTraceData(state, model);
-    console.log(caratTraceData);
+    const { stage, lastData } = getState().carats[id];
+    await stage.setCurveData(lastData);
+    stage.render();
   };
 }

@@ -8,7 +8,7 @@ import { TextInfo } from 'shared/ui';
 
 import './carat.scss';
 import { caratStateSelector } from '../store/carat.selectors';
-import { setCaratData, setCaratTrace } from '../store/carat.thunks';
+import { setCaratData } from '../store/carat.thunks';
 import { setCaratActiveCurve, setCaratActiveGroup, setCaratCanvas } from '../store/carat.actions';
 
 
@@ -32,13 +32,29 @@ export const Carat = ({id, channels}: FormState) => {
     stage.render();
   }, [lookupData, stage]);
 
+  // обработка изменения параметра трассы
   useEffect(() => {
-    if (currentTrace) dispatch(setCaratTrace(id, currentTrace));
-  }, [currentTrace, id, dispatch]);
+    if (currentTrace) {
+      if (currentTrace.nodes.length) {
+        stage.setTraceMode(currentTrace);
+        dispatch(setCaratData(id, channelData));
+      }
+    } else if (currentWell) {
+      stage.setWellMode(currentWell);
+      dispatch(setCaratData(id, channelData));
+    }
+  }, [currentTrace]); // eslint-disable-line
 
-  // обновление данных каналов и активной скважины
+  // обработка изменения параметра скважины
   useEffect(() => {
-    stage.setWell(currentWell?.name ?? currentWell?.id?.toString());
+    if (!currentTrace && currentWell) {
+      stage.setWellMode(currentWell);
+      dispatch(setCaratData(id, channelData));
+    }
+  }, [currentWell]); // eslint-disable-line
+
+  // обновление данных каналов
+  useEffect(() => {
     dispatch(setCaratData(id, channelData));
   }, [channelData]); // eslint-disable-line
 
@@ -48,8 +64,11 @@ export const Carat = ({id, channels}: FormState) => {
     dispatch(setCaratCanvas(id, canvasRef.current));
   });
 
-  if (!currentWell?.id) {
-    return <TextInfo text={'carat.empty'}/>;
+  if (!currentWell && !currentTrace) {
+    return <TextInfo text={'carat.no-data'}/>;
+  }
+  if (currentTrace && currentTrace.nodes.length === 0) {
+    return <TextInfo text={'carat.no-nodes'}/>;
   }
 
   const onKeyDown = (e: KeyboardEvent) => {

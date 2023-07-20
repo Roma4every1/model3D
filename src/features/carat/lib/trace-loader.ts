@@ -16,17 +16,21 @@ export class CaratTraceLoader implements ICaratTraceLoader {
   private paramChannelDict: Record<ChannelName, Parameter[]>;
   /** Моковый параметер скважины. */
   private mockWellParameter: Parameter;
+  private data: ChannelDataDict;
 
   constructor(id: FormID) {
     this.formID = id;
   }
 
-  public async getCaratTraceData(state: WState, model: TraceModel): Promise<CaratTraceData> {
+  public async getData(state: WState, ids: WellID[], data: ChannelDataDict): Promise<ChannelDataDict[]> {
     const { parent: parentID, channels: channelNames } = state.forms[this.formID];
-    const channels = channelNames.map(c => state.channels[c]);
-    const wellParameterID = state.objects.well.parameterID;
+    const channels = channelNames.map(name => state.channels[name]);
 
-    this.mockWellParameter = {...state.parameters[state.root.id].find(p => p.id === wellParameterID)};
+    const wellParameterID = state.objects.well.parameterID;
+    const globalParameters = state.parameters[state.root.id];
+
+    this.data = data;
+    this.mockWellParameter = {...globalParameters.find(p => p.id === wellParameterID)};
     this.wellDependentChannels = channels.filter(c => c.info.parameters.includes(wellParameterID));
     this.wellChannel = state.channels[state.objects.well.channelName];
 
@@ -38,19 +42,18 @@ export class CaratTraceLoader implements ICaratTraceLoader {
       this.paramChannelDict[channel.name] = fillParamValues(ids, state.parameters, clients);
     }
 
-    const traceCaratData: CaratTraceData = {};
-    for (const node of model.nodes) {
-      traceCaratData[node.id] = await this.getNodeData(node);
+    const traceCaratData = [];
+    for (const wellID of ids) {
+      const wellData = await this.getWellData(wellID);
+      traceCaratData.push(wellData);
     }
     return traceCaratData;
   }
 
-  private async getNodeData(node: TraceNode): Promise<ChannelDataDict> {
-    const dict: ChannelDataDict = {};
-
+  private async getWellData(wellID: WellID): Promise<ChannelDataDict> {
     const idIndex = this.wellChannel.info.lookupColumns.id.index;
-    const row = this.wellChannel.data.rows.find(row => row.Cells[idIndex] === node.id);
-    if (!row) return dict;
+    const row = this.wellChannel.data.rows.find(row => row.Cells[idIndex] === wellID);
+    if (!row) return null;
 
     const responses: Promise<Res<any>>[] = [];
     this.mockWellParameter.value = tableRowToString(this.wellChannel, row);
@@ -62,7 +65,9 @@ export class CaratTraceLoader implements ICaratTraceLoader {
       parameters.pop();
     }
 
+    const dict: ChannelDataDict = {...this.data};
     const data = await Promise.all(responses);
+
     this.wellDependentChannels.forEach((channel, i) => {
       dict[channel.name] = data[i].data?.data ?? null;
     });

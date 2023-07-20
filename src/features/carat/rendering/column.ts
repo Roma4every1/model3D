@@ -25,9 +25,6 @@ export class CaratColumn implements ICaratColumn {
 
   /** Словарь свойств внешнего вида пластов. */
   private styleDict: CaratIntervalStyleDict;
-  /** Словарь подписей пластов. */
-  private textDict: Record<number | string, string>;
-
   /** Стиль гистограмм. */
   private barStyle: CaratBarPropertySettings | null;
   /** Стиль подписей. */
@@ -45,9 +42,16 @@ export class CaratColumn implements ICaratColumn {
     this.intervals = [];
     this.bars = [];
     this.styleDict = {};
-    this.textDict = {};
     this.barStyle = null;
     this.textStyle = null;
+  }
+
+  public copy(): CaratColumn {
+    const copy = new CaratColumn(this.rect, this.drawer, this.channel, this.properties);
+    copy.styleDict = this.styleDict;
+    copy.barStyle = this.barStyle;
+    copy.textStyle = this.textStyle;
+    return copy;
   }
 
   public getElements(): any[] {

@@ -27,6 +27,13 @@ export class CaratCurveColumn implements ICaratColumn {
     this.dividingLines = [];
   }
 
+  public copy(): CaratCurveColumn {
+    const { drawer, curveSetChannel, curveDataChannel } = this;
+    const copy = new CaratCurveColumn(null, drawer, curveSetChannel, curveDataChannel);
+    copy.groups = this.groups.map(g => ({rect: g.rect, elements: []}));
+    return copy;
+  }
+
   public getRange(): [number, number] {
     let min = Infinity;
     let max = -Infinity;

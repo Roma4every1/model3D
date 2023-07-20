@@ -47,7 +47,9 @@ export const startSession = (isDefault: boolean): Thunk => {
     dispatch(setSessionID(resSessionID.data));
     dispatch(fetchSessionEnd());
 
+    for (const name in channels) channels[name] = {...channels[name]};
     await fillChannels(channels, paramDict);
+    dispatch(setChannels(channels));
     dispatch(setObjects(createObjectModels(getState())));
   };
 };

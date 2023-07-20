@@ -16,7 +16,7 @@ interface CurveTreeGroup {
 
 
 export class CurveManager {
-  private static async loadCurveChannelData(name: ChannelName, ids: any[]) {
+  private static async loadCurveChannelData(name: ChannelName, ids: any[]): Promise<ChannelData> {
     const parameter: Parameter = {id: 'currentCurveIds', type: 'stringArray', value: ids} as Parameter;
     const res = await channelsAPI.getChannelData(name, [parameter], {order: []} as any);
     return res.ok ? res.data.data : null;
@@ -47,7 +47,7 @@ export class CurveManager {
   /** Граничные значения шкал кривых. */
   public readonly measures: Record<CaratCurveType, CaratCurveMeasure>;
   /** Словарь свойств внешнего вида кривых. */
-  public readonly styleDict: CaratCurveStyleDict;
+  public styleDict: CaratCurveStyleDict;
 
   /** Подключённый канал со списком кривых. */
   public curveSetChannel: CaratAttachedChannel;
@@ -71,7 +71,7 @@ export class CurveManager {
     this.styleDict = new Map();
 
     this.measures = {};
-    initMeasures.forEach((measure) => { this.measures[measure.type] = measure; });
+    initMeasures.forEach(measure => { this.measures[measure.type] = measure; });
 
     const popularTypes = initSelection?.types ?? [];
     const start = initSelection?.start ?? 'now';
@@ -79,6 +79,14 @@ export class CurveManager {
     this.popularTypes = popularTypes;
     this.start = start === 'now' ? new Date() : new Date(start);
     this.end = end === 'now' ? new Date() : new Date(end);
+  }
+
+  public copy(): CurveManager {
+    const copy = new CurveManager(this.getInitSelection(), this.getInitMeasures());
+    copy.curveSetChannel = this.curveSetChannel;
+    copy.curveDataChannel = this.curveDataChannel;
+    copy.styleDict = this.styleDict;
+    return copy;
   }
 
   public setChannels(curveSet: CaratAttachedChannel, curveData: CaratAttachedChannel) {

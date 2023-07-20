@@ -10,7 +10,7 @@ type CaratsState = FormDict<CaratState>;
  * + `curveGroup`: {@link ICaratColumnGroup}
  * + `activeCurve: CaratCurveModel`
  * + `lookupNames`: {@link ChannelName}[]
- * + `lastData`: {@link ChannelDict}
+ * + `lastData`: {@link ChannelDict}[]
  * */
 interface CaratState {
   /** Ссылка на холст. */
@@ -30,33 +30,33 @@ interface CaratState {
   /** Список всех названий каналов-справочников. */
   lookupNames: ChannelName[],
   /** Последние установленные данные. */
-  lastData: ChannelDataDict,
+  lastData: ChannelDataDict[],
 }
-
-/** Данные для построения каротажа по трассе. */
-type CaratTraceData = Record<WellID, ChannelDataDict>;
 
 /** Загрузчик данных для построения каротажа по трассе. */
 interface ICaratTraceLoader {
-  getCaratTraceData(state: WState, model: TraceModel): Promise<CaratTraceData>
+  getData(state: WState, ids: WellID[], data: ChannelDataDict): Promise<ChannelDataDict[]>
 }
 
 /** Сцена каротажной диаграммы. */
 interface ICaratStage {
-  readonly useStaticScale: boolean;
-  readonly strataChannelName: ChannelName;
+  wellIDs: WellID[];
+  traceMode: boolean;
+  readonly correlationInit: CaratColumnInit
 
   getZones(): CaratZone[]
   getCaratSettings(): CaratSettings
   getActiveTrack(): ICaratTrack
 
-  setZones(zones: CaratZone[]): void
-  setCanvas(canvas: HTMLCanvasElement): void
-  setWell(well: string): void
-  setScale(scale: number): void
+  setWellMode(well: WellModel): void
+  setTraceMode(trace: TraceModel): void
 
-  setChannelData(channelData: ChannelDataDict): void
-  setCurveData(channelData: ChannelDataDict): Promise<any>
+  setCanvas(canvas: HTMLCanvasElement): void
+  setScale(scale: number): void
+  setZones(zones: CaratZone[]): void
+
+  setChannelData(data: ChannelDataDict[]): void
+  setCurveData(data: ChannelDataDict[]): Promise<void>
   setLookupData(lookupData: ChannelDataDict): void
 
   handleKeyDown(key: string): boolean
@@ -66,7 +66,6 @@ interface ICaratStage {
 
   resize(): void
   render(): void
-  lazyRender(): void
 }
 
 /** Трек каротажной диаграммы. */
@@ -81,7 +80,7 @@ interface ICaratTrack {
   getActiveGroup(): ICaratColumnGroup | null
   getActiveIndex(): number
 
-  setWell(well: string): void
+  setWellName(wellName: WellName): void
   setScale(scale: number): void
   setActiveGroup(idx: number): void
   setActiveCurve(curve: any): void
@@ -91,6 +90,9 @@ interface ICaratTrack {
 
   moveGroup(idx: number, to: 'left' | 'right'): void
   handleMouseDown(point: Point): any
+
+  render(): void
+  lazyRender(): void
 }
 
 /** Инклинометрия скважины. */

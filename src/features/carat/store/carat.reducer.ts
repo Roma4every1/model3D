@@ -26,7 +26,7 @@ interface ActionSetActiveCurve {
 }
 interface ActionSetData {
   type: CaratsActions.SET_DATA,
-  payload: {id: FormID, data: ChannelDataDict},
+  payload: {id: FormID, data: ChannelDataDict[]},
 }
 interface ActionSetCanvas {
   type: CaratsActions.SET_CANVAS,

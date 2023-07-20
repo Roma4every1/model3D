@@ -14,11 +14,9 @@ export class CaratTrack implements ICaratTrack {
   private readonly groups: CaratColumnGroup[];
   /** Колонка типа `background`. */
   private readonly backgroundGroup: CaratColumnGroup;
-  /** Настройки корреляций. */
-  private readonly externalInit: CaratColumnInit;
 
-  /** Номер скважины трека. */
-  private well: string;
+  /** Название скважины трека. */
+  private wellName: WellName;
   /** Подпись трека. */
   private label: string;
   /** Высота заголовков групп колонок. */
@@ -68,15 +66,40 @@ export class CaratTrack implements ICaratTrack {
       } else if (type === 'background') {
         const groupRect = {top, left: 0, height, width: rect.width};
         this.backgroundGroup = new CaratColumnGroup(groupRect, drawer, column);
-      } else {
-        this.externalInit = column;
       }
     }
   }
 
+  public cloneFor(rect: Rectangle, wellName: WellName): CaratTrack {
+    const groups = this.groups.map(g => g.cloneFor(rect));
+    groups.forEach(g => g.active = false);
+    groups[0].active = true;
+
+    const scroll = {queue: [], direction: 0, step: this.viewport.scroll.step, id: null};
+    const viewport = {y: 0, height: 0, min: 0, max: 0, scale: this.viewport.scale, scroll};
+
+    const copy: CaratTrack = {
+      drawer: this.drawer,
+      groups: groups,
+      backgroundGroup: this.backgroundGroup.cloneFor(rect),
+      wellName: wellName,
+      label: wellName,
+      maxGroupHeaderHeight: 0,
+      activeIndex: 0,
+      activeCurve: null,
+      rect: rect,
+      viewport: viewport,
+      inclinometry: new CaratInclinometry(this.inclinometry.channel),
+    } as any;
+
+    Object.setPrototypeOf(copy, CaratTrack.prototype);
+    copy.rebuildHeaders();
+    return copy;
+  }
+
   public getInitColumns(): CaratColumnInit[] {
     const init = this.groups.map(g => g.getInit());
-    init.push(this.backgroundGroup.getInit(), this.externalInit);
+    init.push(this.backgroundGroup.getInit());
     return init;
   }
 
@@ -102,14 +125,14 @@ export class CaratTrack implements ICaratTrack {
     if (curve) {
       const top = Math.floor(curve.top);
       const bottom = Math.ceil(curve.bottom);
-      this.label = `${this.well} ${curve.type} (${top} - ${bottom})`;
+      this.label = `${this.wellName} ${curve.type} (${top} - ${bottom})`;
     } else {
-      this.label = this.well;
+      this.label = this.wellName;
     }
   }
 
-  public setWell(well: string) {
-    this.well = well;
+  public setWellName(wellName: WellName) {
+    this.wellName = wellName;
     this.updateLabel();
   }
 
@@ -117,7 +140,7 @@ export class CaratTrack implements ICaratTrack {
     const viewport = this.viewport;
     viewport.scale = scale;
 
-    const elementsHeight = this.backgroundGroup.getElementsRect().height;
+    const elementsHeight = this.backgroundGroup.getDataRect().height;
     viewport.height = elementsHeight / (scale * window.devicePixelRatio);
 
     if (viewport.y + viewport.height > viewport.max) {
@@ -136,7 +159,7 @@ export class CaratTrack implements ICaratTrack {
     const activeGroup = this.groups[this.activeIndex];
     if (!activeGroup) return;
 
-    const oldWidth = activeGroup.getElementsRect().width;
+    const oldWidth = activeGroup.getDataRect().width;
     const newWidth = activeGroup.setWidth(width);
     const delta = newWidth - oldWidth;
 
@@ -162,9 +185,10 @@ export class CaratTrack implements ICaratTrack {
     this.viewport.scroll.step = groupWithYAxis?.yAxis.step ?? defaultSettings.yAxisStep;
   }
 
-  public setActiveCurve(curve: CaratCurveModel) {
+  public setActiveCurve(curve: CaratCurveModel | null) {
     this.activeCurve = curve;
-    this.groups.forEach((group) => { group.setActiveCurve(curve.id); });
+    const id = curve?.id;
+    this.groups.forEach(group => group.setActiveCurve(id));
     this.updateLabel();
   }
 
@@ -181,9 +205,9 @@ export class CaratTrack implements ICaratTrack {
     const relatedGroup = this.groups[relatedIndex];
 
     movedGroup.settings.index = relatedIndex;
-    movedGroup.shift(k * relatedGroup.getElementsRect().width);
+    movedGroup.shift(k * relatedGroup.getDataRect().width);
     relatedGroup.settings.index = idx;
-    relatedGroup.shift(-k * movedGroup.getElementsRect().width);
+    relatedGroup.shift(-k * movedGroup.getDataRect().width);
 
     this.groups[idx] = relatedGroup;
     this.groups[relatedIndex] = movedGroup;
@@ -194,7 +218,7 @@ export class CaratTrack implements ICaratTrack {
     point.x -= this.rect.left;
     point.y -= this.rect.top;
 
-    const findFn = (group) => isRectInnerPoint(point, group.getElementsRect())
+    const findFn = (group) => isRectInnerPoint(point, group.getDataRect())
     const newActiveIndex = this.groups.findIndex(findFn);
     if (newActiveIndex !== -1) this.setActiveGroup(newActiveIndex);
 
@@ -228,7 +252,7 @@ export class CaratTrack implements ICaratTrack {
   }
 
   private rebuildHeaders() {
-    const maxHeight = Math.max(...this.groups.map((g) => g.header.getContentHeight()));
+    const maxHeight = Math.max(...this.groups.map(g => g.header.getContentHeight()));
     for (const group of this.groups) group.setHeaderHeight(maxHeight);
     this.backgroundGroup.setHeaderHeight(maxHeight);
     this.maxGroupHeaderHeight = maxHeight;
@@ -250,19 +274,12 @@ export class CaratTrack implements ICaratTrack {
     this.backgroundGroup.setWidth(this.rect.width);
   }
 
-  public async setCurveData(channelData: ChannelDataDict): Promise<CaratCurveModel> {
+  public async setCurveData(channelData: ChannelDataDict): Promise<void> {
+    this.setActiveCurve(null);
     const changes = await Promise.all(this.groups.map(group => group.setCurveData(channelData)));
     this.rebuildRects(changes);
     this.rebuildHeaders();
     if (this.inclinometry) this.inclinometry.updateMarks(this.viewport);
-
-    for (const group of this.groups) {
-      const curve = group.getFirstCurve();
-      if (curve) { this.setActiveCurve(curve); break; }
-    }
-    const activeCurveID = this.activeCurve?.id;
-    this.groups.forEach((group) => { group.setActiveCurve(activeCurveID); });
-    return this.activeCurve;
   }
 
   public setLookupData(lookupData: ChannelDataDict) {

@@ -20,15 +20,14 @@ export function fixHEX(hex: string) {
 
 /* --- Smooth Scroll ---*/
 
-/** Плавно переместит порт просмотра.
- * @param viewport порт просмотра
- * @param stage экземпляр сцены
+/** Плавно переместит вьюпорт трека.
+ * @param track изменяемый трек
  * @param direction в какую сторону
  * */
-export function moveSmoothly(viewport: CaratViewport, stage: ICaratStage, direction: 1 | -1) {
+export function moveSmoothly(track: ICaratTrack, direction: 1 | -1) {
   const duration = 250; // 0.25 second
   const frameTime = 16; // 60 FPS => 1000ms / 60
-  const scroll = viewport.scroll;
+  const scroll = track.viewport.scroll;
 
   if (scroll.direction !== direction) {
     scroll.direction = direction;
@@ -55,12 +54,14 @@ export function moveSmoothly(viewport: CaratViewport, stage: ICaratStage, direct
   }
 
   if (scroll.id === null) {
-    scroll.id = window.setInterval(moveView, frameTime, viewport, stage);
+    scroll.id = window.setInterval(moveView, frameTime, track);
   }
 }
 
-function moveView(viewport: CaratViewport, stage: ICaratStage) {
+function moveView(track: ICaratTrack) {
+  const viewport = track.viewport;
   const scroll = viewport.scroll;
+
   if (scroll.queue.length === 0) {
     clearInterval(scroll.id);
     return scroll.id = null;
@@ -72,7 +73,7 @@ function moveView(viewport: CaratViewport, stage: ICaratStage) {
 
   if (viewport.y !== y) {
     viewport.y = y;
-    stage.lazyRender();
+    track.lazyRender();
   }
 }
 
