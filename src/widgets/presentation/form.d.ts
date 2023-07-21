@@ -1,5 +1,5 @@
 /** Хранилище данных форм. */
-type FormsState = FormDict<FormState>;
+type FormStates = FormDict<FormState>;
 
 /** Идентификатор формы. */
 type FormID = string;
@@ -17,6 +17,9 @@ type FormEditPanelProps = {id: FormID, parentID: FormID};
 type FormType = 'carat' | 'chart' | 'dataSet' | 'dock' | 'files' | 'filesList' |
   'grid' | 'image' | 'map' | 'multiMap' | 'model3D' | 'profile' |
   'slide' | 'spreadsheet' | 'spreadsheetUnite' | 'transferForm';
+
+/** Поддерживаемые типы форм. */
+type SupportedFormType = 'dataSet' | 'carat' | 'chart' | 'map';
 
 /** Данные формы.
  * + `id`: {@link FormID} — идентификатор
@@ -53,6 +56,23 @@ interface FormChildrenState {
 }
 
 /* --- Form State --- */
+
+/** Объект с данными для создания новой формы.
+ * + `state`: {@link FormState}
+ * + `settings`: {@link FormSettings}
+ * + `objects`: {@link ObjectsState}
+ * + `channels`: {@link ChannelDict}
+ * */
+interface FormStatePayload {
+  /** Базовая информация о форме. */
+  state: FormState,
+  /** Настройки формы. */
+  settings: FormSettings,
+  /** Состояние активных объектов. */
+  objects: ObjectsState,
+  /** Существующие каналы на момент создания. */
+  channels: ChannelDict,
+}
 
 /** Состояние формы.
  * + `id`: {@link FormID}

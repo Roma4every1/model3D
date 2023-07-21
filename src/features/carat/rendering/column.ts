@@ -54,6 +54,15 @@ export class CaratColumn implements ICaratColumn {
     return copy;
   }
 
+  public getLookupNames(): ChannelName[] {
+    const names: ChannelName[] = [];
+    for (const { color, text } of this.channel.styles) {
+      if (color.name) names.push(color.name);
+      if (text.name) names.push(text.name);
+    }
+    return names;
+  }
+
   public getElements(): any[] {
     return this.intervals;
   }

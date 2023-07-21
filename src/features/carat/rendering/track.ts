@@ -103,6 +103,25 @@ export class CaratTrack implements ICaratTrack {
     return init;
   }
 
+  /** Возвращает список названий необходимых каналов. */
+  public getChannelNames(): ChannelName[] {
+    const names: ChannelName[] = [];
+    for (const group of this.groups) {
+      names.push(...group.getChannelNames());
+    }
+    if (this.inclinometry) names.push(this.inclinometry.channel.name);
+    return [...new Set(names)];
+  }
+
+  /** Возвращает список справочников, необходимых для отрисовки. */
+  public getLookupNames(): ChannelName[] {
+    const names: ChannelName[] = [];
+    for (const group of this.groups) {
+      names.push(...group.getLookupNames());
+    }
+    return [...new Set(names)];
+  }
+
   public getGroups(): CaratColumnGroup[] {
     return this.groups;
   }

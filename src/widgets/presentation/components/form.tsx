@@ -1,10 +1,10 @@
 import { createElement } from 'react';
 import { useSelector } from 'react-redux';
 import { FormSkeleton, FormFetchError } from './plugs';
-import { formStateSelector } from '../store/forms.selectors';
+import { formStateSelector } from '../store/form.selectors';
 import { stateNotLoaded, formFetchStateSelector } from 'entities/fetch-state';
 import { NotSupportedForm } from './plugs';
-import { formDict } from './form-dict';
+import { formDict } from '../lib/form-dict';
 
 
 export interface FormProps {

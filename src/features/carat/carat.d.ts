@@ -1,10 +1,10 @@
 /** Хранилище каротажных диаграмм. */
-type CaratsState = FormDict<CaratState>;
+type CaratStates = FormDict<CaratState>;
 
 /** Состояние каротажной формы.
  * + `canvas`: {@link HTMLCanvasElement}
  * + `stage`: {@link ICaratStage}
- * + `traceLoader`: {@link ICaratTraceLoader}
+ * + `loader`: {@link ICaratLoader}
  * + `observer`: {@link ResizeObserver}
  * + `activeGroup`: {@link ICaratColumnGroup}
  * + `curveGroup`: {@link ICaratColumnGroup}
@@ -18,7 +18,7 @@ interface CaratState {
   /** Экземпляр класса сцены. */
   stage: ICaratStage,
   /** Класс, реализующий загрузку данных для построения каротажа по трассе. */
-  traceLoader: ICaratTraceLoader,
+  loader: ICaratLoader,
   /** Класс для отслеживания изменения размеров холста. */
   observer: ResizeObserver,
   /** Активная колонка. */
@@ -34,8 +34,10 @@ interface CaratState {
 }
 
 /** Загрузчик данных для построения каротажа по трассе. */
-interface ICaratTraceLoader {
-  getData(state: WState, ids: WellID[], data: ChannelDataDict): Promise<ChannelDataDict[]>
+interface ICaratLoader {
+  getFlag(): number
+  loadCurveData(ids: CaratCurveID[]): Promise<ChannelData>
+  loadWellData(state: WState, ids: WellID[], data: ChannelDataDict): Promise<ChannelDataDict[]>
 }
 
 /** Сцена каротажной диаграммы. */

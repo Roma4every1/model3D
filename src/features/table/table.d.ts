@@ -14,7 +14,7 @@ type TableColumnID = string;
 type TableRecord = Record<TableColumnID, any>;
 
 /** Хранилище состояний таблиц. */
-type TablesState = Record<FormID, TableState>;
+type TableStates = Record<FormID, TableState>;
 
 /** Состояние табличной формы. (dataset). */
 interface TableState {

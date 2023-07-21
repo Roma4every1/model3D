@@ -70,7 +70,7 @@ function presentationStateToChildren(state: PresentationState): FormChildrenStat
 
 /* --- Settings --- */
 
-function getSettingsToSave(tableStates: TablesState, caratsState: CaratsState): SessionSettings {
+function getSettingsToSave(tableStates: TableStates, caratsState: CaratStates): SessionSettings {
   const tables: TableFormSettings[] = [];
   const carats: CaratFormSettings[] = [];
 

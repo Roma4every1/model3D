@@ -45,7 +45,7 @@ interface ActionSetSync extends MapAction {
 
 interface ActionAdd {
   type: MapsActions.ADD,
-  payload: {id: FormID, parentID: FormID},
+  payload: FormStatePayload,
 }
 interface ActionLoadSuccess extends MapAction {
   type: MapsActions.LOAD_SUCCESS,
@@ -196,8 +196,8 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
     /* --- single --- */
 
     case MapsActions.ADD: {
-      const { id, parentID } = action.payload;
-      const childOf = state.multi[parentID] ? parentID : null;
+      const { id, parent } = action.payload.state;
+      const childOf = state.multi[parent] ? parent : null;
       const utils = { updateCanvas: () => {}, pointToMap: (point) => point };
       state.single[id] = {...initMapState, utils, childOf};
       return {...state, single: {...state.single}};

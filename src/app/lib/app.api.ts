@@ -6,7 +6,7 @@ export class AppAPI {
   constructor(private readonly baseAPI: BaseAPI) {}
 
   /** Запрос списка доступных систем. */
-  public async getSystemList(): Promise<SystemWMR[] | null> {
+  public async getSystemList(): Promise<WellManagerSystem[] | null> {
     const { ok, data } = await this.baseAPI.request<any[]>({path: 'systemList'});
     return ok && Array.isArray(data)
       ? data.map((rawSystem) => ({id: rawSystem['Name'], ...rawSystem['Attributes']}))

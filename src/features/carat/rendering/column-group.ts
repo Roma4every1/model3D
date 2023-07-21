@@ -137,6 +137,23 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     };
   }
 
+  /** Возвращает список названий необходимых каналов. */
+  public getChannelNames(): ChannelName[] {
+    const names: ChannelName[] = [];
+    for (const column of this.columns) names.push(column.channel.name);
+    if (this.curveColumn) names.push(this.curveColumn.curveSetChannel.name);
+    return names;
+  }
+
+  /** Возвращает список названий справочников, необходимых для отрисовки. */
+  public getLookupNames(): ChannelName[] {
+    const names: ChannelName[] = [];
+    for (const column of this.columns) names.push(...column.getLookupNames());
+    const curveSetChannel = this.curveManager.curveSetChannel;
+    if (curveSetChannel) names.push(curveSetChannel.curveColorLookup);
+    return names;
+  }
+
   public getColumns(): ICaratColumn[] {
     return this.columns;
   }

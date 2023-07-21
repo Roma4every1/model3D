@@ -1,14 +1,16 @@
 import { CaratStage } from '../rendering/stage';
-import { CaratTraceLoader } from './trace-loader';
+import { CaratLoader } from './loader';
 import { identifyCaratChannel, applyStyle, createInfo } from './channels';
 import { drawerConfig, criterionProperties, inclinometryDataProperties } from './constants';
 
 
 /** Создаёт состояние каротажа по её начальным настройкам. */
-export function settingsToState(formState: FormState, channelDict: ChannelDict): CaratState {
-  const channels = formState.channels;
+export function settingsToCaratState(payload: FormStatePayload): CaratState {
+  const { state: formState, channels: channelDict } = payload;
   const init: CaratFormSettings = formState.settings;
+
   init.columns.sort((a, b) => a.settings.index - b.settings.index);
+  let curveDataChannel: ChannelName;
 
   for (const column of init.columns) {
     for (const attachedChannel of column.channels) {
@@ -16,9 +18,7 @@ export function settingsToState(formState: FormState, channelDict: ChannelDict):
       identifyCaratChannel(attachedChannel, channel);
 
       if (attachedChannel.type === 'curve-data') {
-        const name = attachedChannel.name;
-        const idx = channels.findIndex(c => c === name);
-        channels.splice(idx, 1);
+        curveDataChannel = attachedChannel.name;
       } if (attachedChannel.type === 'inclinometry') {
         const propertyName = criterionProperties.inclinometry.inclinometry;
         const property = channel.info.properties.find(p => p.name === propertyName);
@@ -27,7 +27,6 @@ export function settingsToState(formState: FormState, channelDict: ChannelDict):
         if (inclinometryChannel) {
           const info = createInfo(channelDict[inclinometryChannel], inclinometryDataProperties);
           attachedChannel.inclinometry = {name: inclinometryChannel, info, applied: false, dict: null};
-          if (!channels.includes(inclinometryChannel)) channels.push(inclinometryChannel);
         } else {
           delete attachedChannel.type;
         }
@@ -37,22 +36,22 @@ export function settingsToState(formState: FormState, channelDict: ChannelDict):
     }
   }
 
-  const lookupNames: ChannelName[] = [];
-  for (const name of channels) lookupNames.push(...channelDict[name].info.lookupChannels);
-
   const stage = new CaratStage(init, drawerConfig);
-  const traceLoader = new CaratTraceLoader(formState.id);
   const observer = new ResizeObserver(() => { stage.resize(); stage.render(); });
 
   const track = stage.getActiveTrack();
   const activeGroup = track.getActiveGroup();
+  const lookupNames = track.getLookupNames();
+
+  formState.channels = track.getChannelNames();
+  const loader = new CaratLoader(formState, curveDataChannel);
 
   const curveGroup = activeGroup?.hasCurveColumn()
     ? activeGroup
     : track.getGroups().find((group) => group.hasCurveColumn());
 
   return {
-    canvas: undefined, stage, traceLoader, observer,
+    canvas: undefined, stage, loader, observer,
     activeGroup, curveGroup, activeCurve: null,
     lookupNames, lastData: [],
   };

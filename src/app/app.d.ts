@@ -7,7 +7,7 @@ interface WState {
   /** Состояния презентаций. */
   presentations: PresentationDict,
   /** Состояния форм. */
-  forms: FormsState,
+  forms: FormStates,
   /** Параметры форм. */
   parameters: ParamDict,
   /** Активные объекты. */
@@ -15,11 +15,11 @@ interface WState {
   /** Данные каналов. */
   channels: ChannelDict,
   /** Хранилище данных таблиц. */
-  tables: TablesState,
+  tables: TableStates,
   /** Хранилище каротажных диаграмм. */
-  carats: CaratsState,
+  carats: CaratStates,
   /** Хранилище графиков. */
-  charts: ChartsState,
+  charts: ChartStates,
   /** Хранилище карт. */
   maps: MapsState,
   /** Состояние отчётов и SQL-программ. */
@@ -34,7 +34,7 @@ interface WState {
 
 /* --- --- --- */
 
-/** Данные общего характера.
+/** Общие данные приложения.
  * + `config`: {@link ClientConfiguration}
  * + `systemList`: {@link SystemList}
  * + `sessionID`: {@link SessionID}
@@ -55,16 +55,23 @@ interface AppState {
 type ClientConfiguration = {webServicesURL: string, root?: string};
 
 /** Список информационных систем. */
-type SystemList = SystemWMR[];
+type SystemList = WellManagerSystem[];
 
-/** Информация о системе. */
-interface SystemWMR {
+/** Информационная система Well Manager.
+ * + `id`: {@link SystemID}
+ * + `displayName`: {@link DisplayName}
+ * + `description: string`
+ * */
+interface WellManagerSystem {
+  /** Идентификатор системы. */
   id: SystemID,
-  displayName: string,
+  /** Название системы */
+  displayName: DisplayName,
+  /** Описание системы. */
   description: string,
 }
 
-/** ID системы. */
+/** Идентификатор системы. */
 type SystemID = string;
 
 /* --- Session Manager --- */

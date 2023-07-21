@@ -12,8 +12,8 @@ export function setMultiMapSync(formID: FormID, sync: boolean): MapsAction {
 }
 
 /** Добавляет в хранилище состояний карт новую карту. */
-export function createMapState(id: FormID, parentID: FormID): MapsAction {
-  return {type: MapsActions.ADD, payload: {id, parentID}};
+export function createMapState(payload: FormStatePayload): MapsAction {
+  return {type: MapsActions.ADD, payload};
 }
 
 /** Начало загрузки карты. */

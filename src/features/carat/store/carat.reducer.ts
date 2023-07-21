@@ -1,8 +1,8 @@
-import { settingsToState } from '../lib/adapter';
+import { settingsToCaratState } from '../lib/adapter';
 
 /* --- Action Types --- */
 
-export enum CaratsActions {
+export enum CaratActionType {
   CREATE = 'carat/create',
   SET_ACTIVE_GROUP = 'carat/group',
   SET_ACTIVE_CURVE = 'carat/curve',
@@ -13,42 +13,42 @@ export enum CaratsActions {
 /* --- Action Interfaces --- */
 
 interface ActionCreate {
-  type: CaratsActions.CREATE,
-  payload: {id: FormID, channels: ChannelDict, formState: FormState},
+  type: CaratActionType.CREATE,
+  payload: FormStatePayload,
 }
 interface ActionSetActiveGroup {
-  type: CaratsActions.SET_ACTIVE_GROUP,
+  type: CaratActionType.SET_ACTIVE_GROUP,
   payload: {id: FormID, group: ICaratColumnGroup},
 }
 interface ActionSetActiveCurve {
-  type: CaratsActions.SET_ACTIVE_CURVE,
+  type: CaratActionType.SET_ACTIVE_CURVE,
   payload: {id: FormID, curve: any},
 }
 interface ActionSetData {
-  type: CaratsActions.SET_DATA,
+  type: CaratActionType.SET_DATA,
   payload: {id: FormID, data: ChannelDataDict[]},
 }
 interface ActionSetCanvas {
-  type: CaratsActions.SET_CANVAS,
+  type: CaratActionType.SET_CANVAS,
   payload: {id: FormID, canvas: HTMLCanvasElement},
 }
 
-export type CaratsAction = ActionCreate | ActionSetActiveGroup | ActionSetActiveCurve |
+export type CaratAction = ActionCreate | ActionSetActiveGroup | ActionSetActiveCurve |
   ActionSetData | ActionSetCanvas;
 
 /* --- Init State & Reducer --- */
 
-const init: CaratsState = {};
+const init: CaratStates = {};
 
-export const caratsReducer = (state: CaratsState = init, action: CaratsAction): CaratsState => {
+export const caratsReducer = (state: CaratStates = init, action: CaratAction): CaratStates => {
   switch (action.type) {
 
-    case CaratsActions.CREATE: {
-      const { id, channels, formState } = action.payload;
-      return {...state, [id]: settingsToState(formState, channels)};
+    case CaratActionType.CREATE: {
+      const id = action.payload.state.id;
+      return {...state, [id]: settingsToCaratState(action.payload)};
     }
 
-    case CaratsActions.SET_ACTIVE_GROUP: {
+    case CaratActionType.SET_ACTIVE_GROUP: {
       const { id, group } = action.payload;
       const track = state[id].stage.getActiveTrack();
 
@@ -59,19 +59,19 @@ export const caratsReducer = (state: CaratsState = init, action: CaratsAction): 
       return {...state, [id]: {...state[id], activeGroup: group, curveGroup}};
     }
 
-    case CaratsActions.SET_ACTIVE_CURVE: {
+    case CaratActionType.SET_ACTIVE_CURVE: {
       const { id, curve } = action.payload;
       const caratState = state[id];
       if (curve === caratState.activeCurve) return state;
       return {...state, [id]: {...caratState, activeCurve: curve}};
     }
 
-    case CaratsActions.SET_DATA: {
+    case CaratActionType.SET_DATA: {
       const { id, data } = action.payload;
       return {...state, [id]: {...state[id], lastData: data}};
     }
 
-    case CaratsActions.SET_CANVAS: {
+    case CaratActionType.SET_CANVAS: {
       const { id, canvas } = action.payload;
       const { stage, observer, canvas: oldCanvas } = state[id];
 

@@ -5,15 +5,12 @@ import { fillChannels, setChannels } from 'entities/channels';
 import { getPresentationParams, getPresentationChannels } from '../lib/initialization';
 import { createPresentationState, createClientChannels, createFormStates } from '../lib/initialization';
 import { applyChannelsDeps } from '../lib/utils';
+import { createFormDict } from '../lib/form-dict';
 
 import { setParamDict } from 'entities/parameters';
 import { fetchFormsStart, fetchFormsEnd, fetchFormError } from 'entities/fetch-state';
-import { setPresentationState } from './presentations.actions';
-import { createTableState } from 'features/table';
-import { createCaratState } from 'features/carat';
-import { createChartState } from 'features/chart';
-import { createMapState } from 'features/map';
-import { setFormsState } from 'widgets/presentation/store/forms.actions';
+import { setPresentationState } from './presentation.actions';
+import { setFormsState } from 'widgets/presentation/store/form.actions';
 
 
 /** Инициализация презентации. */
@@ -27,8 +24,7 @@ export const fetchPresentationState = (id: FormID): Thunk => {
       return;
     }
 
-    const children = presentation.children;
-    const childrenID = children.map(child => child.id);
+    const childrenID = presentation.children.map(child => child.id);
     const paramDict = await getPresentationParams(id, childrenID);
     dispatch(setParamDict(paramDict));
 
@@ -44,35 +40,32 @@ export const fetchPresentationState = (id: FormID): Thunk => {
     dispatch(fetchFormsEnd([id]));
 
     const [baseChannels, childrenChannelNames] = await getPresentationChannels(id, childrenID);
-    const formsState = await createFormStates(id, children, childrenChannelNames);
+    const formsState = await createFormStates(id, presentation.children, childrenChannelNames);
 
     const existingChannels = Object.keys(state.channels);
     const channels = await createClientChannels(baseChannels, paramDict, existingChannels);
 
     const allChannels = {...state.channels, ...channels};
-    for (const id of childrenID) createFormState(id, formsState[id], allChannels, dispatch);
-
     paramDict[rootID] = state.parameters[rootID];
     applyChannelsDeps(allChannels, paramDict);
-    await fillChannels(channels, paramDict);
 
+    for (const id of childrenID) {
+      const formState = formsState[id];
+      const creator = createFormDict[formState.type];
+      if (!creator) continue;
+
+      const payload: FormStatePayload = {
+        state: formsState[id],
+        settings: formsState[id].settings,
+        channels: allChannels,
+        objects: state.objects,
+      };
+      dispatch(creator(payload));
+    }
+
+    await fillChannels(channels, paramDict);
     dispatch(setChannels(channels));
     dispatch(setFormsState(formsState));
     dispatch(fetchFormsEnd(childrenID));
   };
 };
-
-function createFormState(id: FormID, state: FormState, channels: ChannelDict, dispatch: Dispatch): void {
-  const type = state.type;
-
-  if (type === 'dataSet') {
-    const channel = channels[state.channels[0]];
-    dispatch(createTableState(id, channel, state.settings));
-  } else if (type === 'carat') {
-    dispatch(createCaratState(id, channels, state));
-  } else if (type === 'chart') {
-    dispatch(createChartState(id, state.settings));
-  } else if (type === 'map') {
-    dispatch(createMapState(id, state.parent));
-  }
-}
