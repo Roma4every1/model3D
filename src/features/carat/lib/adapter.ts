@@ -1,6 +1,7 @@
 import { CaratStage } from '../rendering/stage';
 import { CaratLoader } from './loader';
-import { identifyCaratChannel, applyStyle, createInfo } from './channels';
+import { createColumnInfo } from 'entities/channels';
+import { identifyCaratChannel, applyStyle } from './channels';
 import { drawerConfig, criterionProperties, inclinometryDataProperties } from './constants';
 
 
@@ -8,9 +9,11 @@ import { drawerConfig, criterionProperties, inclinometryDataProperties } from '.
 export function settingsToCaratState(payload: FormStatePayload): CaratState {
   const { state: formState, channels: channelDict } = payload;
   const init: CaratFormSettings = formState.settings;
-
   init.columns.sort((a, b) => a.settings.index - b.settings.index);
-  let curveDataChannel: ChannelName;
+
+  let curveDataChannel: CaratAttachedChannel;
+  const usedChannels = new Set<ChannelName>();
+  const attachments: CaratAttachedChannel[] = [];
 
   for (const column of init.columns) {
     for (const attachedChannel of column.channels) {
@@ -18,20 +21,26 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
       identifyCaratChannel(attachedChannel, channel);
 
       if (attachedChannel.type === 'curve-data') {
-        curveDataChannel = attachedChannel.name;
+        curveDataChannel = attachedChannel;
       } if (attachedChannel.type === 'inclinometry') {
         const propertyName = criterionProperties.inclinometry.inclinometry;
         const property = channel.info.properties.find(p => p.name === propertyName);
         const inclinometryChannel = property?.secondLevelChannelName;
 
         if (inclinometryChannel) {
-          const info = createInfo(channelDict[inclinometryChannel], inclinometryDataProperties);
+          const info = createColumnInfo(channelDict[inclinometryChannel], inclinometryDataProperties);
           attachedChannel.inclinometry = {name: inclinometryChannel, info, applied: false, dict: null};
-        } else {
-          delete attachedChannel.type;
+          usedChannels.add(inclinometryChannel);
+          attachments.push(attachedChannel.inclinometry as any);
         }
+        delete attachedChannel.type;
       } else {
         applyStyle(attachedChannel, channel, channelDict);
+      }
+
+      if (attachedChannel.type && attachedChannel.type !== 'curve-data') {
+        usedChannels.add(attachedChannel.name);
+        attachments.push(attachedChannel);
       }
     }
   }
@@ -43,8 +52,8 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
   const activeGroup = track.getActiveGroup();
   const lookupNames = track.getLookupNames();
 
-  formState.channels = track.getChannelNames();
-  const loader = new CaratLoader(formState, curveDataChannel);
+  formState.channels = [...usedChannels];
+  const loader = new CaratLoader(attachments, curveDataChannel);
 
   const curveGroup = activeGroup?.hasCurveColumn()
     ? activeGroup
@@ -53,7 +62,7 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
   return {
     canvas: undefined, stage, loader, observer,
     activeGroup, curveGroup, activeCurve: null,
-    lookupNames, lastData: [],
+    lookupNames, loading: false,
   };
 }
 

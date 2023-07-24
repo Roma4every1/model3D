@@ -27,16 +27,29 @@ export function createColumnInfo<Fields extends string = string>(
   channel: Channel,
   criterion: ChannelCriterion<Fields>,
 ): ChannelColumnInfo<Fields> {
-  const properties = channel.info.properties;
-  const propertyNames = properties.map((property) => property.name.toUpperCase());
-
   const info = {} as ChannelColumnInfo<Fields>;
-  for (const field in criterion) {
-    const criterionName = criterion[field];
-    const index = propertyNames.findIndex((name) => name === criterionName);
+  const properties = channel.info.properties;
+  const propertyNames = properties.map(property => property.name.toUpperCase());
 
-    if (index === -1) return null;
-    info[field] = {name: properties[index].fromColumn, index: -1};
+  for (const field in criterion) {
+    let propertyName: string, optional: boolean;
+    const criterionItem: ChannelColumnCriterion = criterion[field];
+
+    if (typeof criterionItem === 'string') {
+      propertyName = criterionItem;
+      optional = false;
+    } else {
+      propertyName = criterionItem.name;
+      optional = criterionItem.optional;
+    }
+    const index = propertyNames.findIndex(name => name === propertyName);
+
+    if (index === -1) {
+      if (!optional) return null;
+      info[field] = {name: propertyName, index: -1};
+    } else {
+      info[field] = {name: properties[index].fromColumn, index: -1};
+    }
   }
   return info;
 }

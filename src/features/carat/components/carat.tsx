@@ -18,7 +18,7 @@ export const Carat = ({id, channels}: FormState) => {
 
   const { model: currentWell } = useSelector(wellStateSelector);
   const { model: currentTrace } = useSelector(traceStateSelector);
-  const { stage, canvas, lookupNames }: CaratState = useSelector(caratStateSelector.bind(id));
+  const { stage, canvas, lookupNames, loading }: CaratState = useSelector(caratStateSelector.bind(id));
 
   const channelData: ChannelDataDict = useSelector(channelDataDictSelector.bind(channels), compareObjects);
   const lookupData: ChannelDataDict = useSelector(channelDataDictSelector.bind(lookupNames), compareObjects);
@@ -35,13 +35,9 @@ export const Carat = ({id, channels}: FormState) => {
   // обработка изменения параметра трассы
   useEffect(() => {
     if (currentTrace) {
-      if (currentTrace.nodes.length) {
-        stage.setTraceMode(currentTrace);
-        dispatch(setCaratData(id, channelData));
-      }
+      if (currentTrace.nodes.length) stage.setTraceMode(currentTrace);
     } else if (currentWell) {
       stage.setWellMode(currentWell);
-      dispatch(setCaratData(id, channelData));
     }
   }, [currentTrace]); // eslint-disable-line
 
@@ -49,7 +45,6 @@ export const Carat = ({id, channels}: FormState) => {
   useEffect(() => {
     if (!currentTrace && currentWell) {
       stage.setWellMode(currentWell);
-      dispatch(setCaratData(id, channelData));
     }
   }, [currentWell]); // eslint-disable-line
 
@@ -64,6 +59,9 @@ export const Carat = ({id, channels}: FormState) => {
     dispatch(setCaratCanvas(id, canvasRef.current));
   });
 
+  if (loading) {
+    return <TextInfo text={'carat.loading'}/>;
+  }
   if (!currentWell && !currentTrace) {
     return <TextInfo text={'carat.no-data'}/>;
   }

@@ -17,8 +17,8 @@ export function setCaratActiveCurve(id: FormID, curve: any): CaratAction {
 }
 
 /** Обновляет данные каналов. */
-export function setCaratChannelData(id: FormID, data: ChannelDataDict[]): CaratAction {
-  return {type: CaratActionType.SET_DATA, payload: {id, data}};
+export function setCaratLoading(id: FormID, loading: boolean): CaratAction {
+  return {type: CaratActionType.SET_LOADING, payload: {id, loading}};
 }
 
 /** Установить элемент холста. */

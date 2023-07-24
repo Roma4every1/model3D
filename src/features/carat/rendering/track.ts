@@ -89,7 +89,7 @@ export class CaratTrack implements ICaratTrack {
       activeCurve: null,
       rect: rect,
       viewport: viewport,
-      inclinometry: new CaratInclinometry(this.inclinometry.channel),
+      inclinometry: this.inclinometry ? new CaratInclinometry(this.inclinometry.channel) : null,
     } as any;
 
     Object.setPrototypeOf(copy, CaratTrack.prototype);
@@ -101,16 +101,6 @@ export class CaratTrack implements ICaratTrack {
     const init = this.groups.map(g => g.getInit());
     init.push(this.backgroundGroup.getInit());
     return init;
-  }
-
-  /** Возвращает список названий необходимых каналов. */
-  public getChannelNames(): ChannelName[] {
-    const names: ChannelName[] = [];
-    for (const group of this.groups) {
-      names.push(...group.getChannelNames());
-    }
-    if (this.inclinometry) names.push(this.inclinometry.channel.name);
-    return [...new Set(names)];
   }
 
   /** Возвращает список справочников, необходимых для отрисовки. */
@@ -247,25 +237,30 @@ export class CaratTrack implements ICaratTrack {
     }
   }
 
-  public setChannelData(channelData: ChannelDataDict) {
+  public setData(data: CaratTrackData, cache: CurveDataCache) {
     const viewport = this.viewport;
-    this.backgroundGroup.setChannelData(channelData);
-    [viewport.min, viewport.max] = this.backgroundGroup.getElementsRange();
+    this.backgroundGroup.setData(data, cache);
+    [viewport.min, viewport.max] = this.backgroundGroup.getRange();
     viewport.y = viewport.min;
+    this.setActiveCurve(null);
 
-    for (const group of this.groups) {
-      group.setChannelData(channelData);
-      const [groupMin, groupMax] = group.getElementsRange();
+    const changes = this.groups.map(group => {
+      const widthChange = group.setData(data, cache);
+      const [groupMin, groupMax] = group.getRange();
       if (groupMin < viewport.min) viewport.min = groupMin;
       if (groupMax > viewport.max) viewport.max = groupMax;
-    }
+      return widthChange;
+    });
+
+    this.rebuildRects(changes);
+    this.rebuildHeaders();
 
     if (viewport.min === Infinity) viewport.min = 0;
     if (viewport.max === -Infinity) viewport.max = 0;
     if (viewport.y === Infinity) viewport.y = viewport.min;
 
     if (this.inclinometry) {
-      this.inclinometry.setChannelData(channelData);
+      this.inclinometry.setChannelData(data);
       this.inclinometry.updateMarks(viewport);
     }
   }
@@ -291,14 +286,6 @@ export class CaratTrack implements ICaratTrack {
       if (groupMax > this.viewport.max) this.viewport.max = groupMax;
     }
     this.backgroundGroup.setWidth(this.rect.width);
-  }
-
-  public async setCurveData(channelData: ChannelDataDict): Promise<void> {
-    this.setActiveCurve(null);
-    const changes = await Promise.all(this.groups.map(group => group.setCurveData(channelData)));
-    this.rebuildRects(changes);
-    this.rebuildHeaders();
-    if (this.inclinometry) this.inclinometry.updateMarks(this.viewport);
   }
 
   public setLookupData(lookupData: ChannelDataDict) {

@@ -1,44 +1,29 @@
 import { Dispatch } from 'redux';
 import { Thunk, StateGetter } from 'shared/lib';
-import { setCaratChannelData } from './carat.actions';
+import { setCaratLoading } from './carat.actions';
 
-
-/*
-Загрузка данных трека:
-1. загрузка данных литологии и т.п.
-2. загрузка данных кривых (без точек)
-3. загрузка точек кривых по умолчанию
-*/
 
 /** Обновляет данные каротажной диаграммы. */
 export function setCaratData(id: FormID, data: ChannelDataDict): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
-    const state = getState();
-    const { stage, loader } = state.carats[id];
+    const state = getState().carats[id];
+    const { stage, loader, loading } = state;
+    if (!loading) dispatch(setCaratLoading(id, true));
 
-    let dataList: ChannelDataDict[];
-    if (stage.traceMode) {
-      const dataPromise = loader.loadWellData(state, stage.wellIDs, data);
-      const flag = loader.getFlag();
-      dataList = await dataPromise;
-      if (flag !== loader.getFlag()) return;
-    } else {
-      dataList = [data];
-    }
+    const flag = loader.flag + 1;
+    const caratData = await loader.getCaratData(stage.wellIDs, data);
+    console.log(caratData);
+    if (flag !== loader.flag) return;
 
-    stage.setChannelData(dataList);
+    stage.setData(caratData, loader.cache);
     stage.render();
-
-    await stage.setCurveData(dataList);
-    dispatch(setCaratChannelData(id, dataList));
-    stage.render();
+    dispatch(setCaratLoading(id, false));
   };
 }
 
 export function updateCaratData(id: FormID): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
-    const { stage, lastData } = getState().carats[id];
-    await stage.setCurveData(lastData);
+    const { stage } = getState().carats[id];
     stage.render();
   };
 }

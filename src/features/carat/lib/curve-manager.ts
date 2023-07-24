@@ -1,8 +1,6 @@
 import { CaratCurveModel, CaratCurveStyleDict } from './types';
-import { channelsAPI } from 'entities/channels/lib/channels.api';
 import { getPragmaticMax } from 'shared/lib';
 import { fixHEX } from './utils';
-import { applyInfoIndexes } from './channels';
 import { defaultSettings } from './constants';
 
 
@@ -16,21 +14,6 @@ interface CurveTreeGroup {
 
 
 export class CurveManager {
-  private static async loadCurveChannelData(name: ChannelName, ids: any[]): Promise<ChannelData> {
-    const parameter: Parameter = {id: 'currentCurveIds', type: 'stringArray', value: ids} as Parameter;
-    const res = await channelsAPI.getChannelData(name, [parameter], {order: []} as any);
-    return res.ok ? res.data.data : null;
-  }
-
-  private static parseCurvePath(source: string): Point[] {
-    const items = source.split('L');
-    items[0] = items[0].substring(1);
-    return items.map((item) => {
-      const [x, y] = item.split(',');
-      return {x: parseFloat(x), y: parseFloat(y)};
-    });
-  }
-
   /** Список кривых. */
   private curves: CaratCurveModel[];
   /** Словарь кривых. */
@@ -48,11 +31,8 @@ export class CurveManager {
   public readonly measures: Record<CaratCurveType, CaratCurveMeasure>;
   /** Словарь свойств внешнего вида кривых. */
   public styleDict: CaratCurveStyleDict;
-
   /** Подключённый канал со списком кривых. */
   public curveSetChannel: CaratAttachedChannel;
-  /** Подключённый канал с данными кривых. */
-  public curveDataChannel: CaratAttachedChannel;
 
   /** Типы кривых. */
   public readonly popularTypes: CaratCurveSelector[];
@@ -84,14 +64,12 @@ export class CurveManager {
   public copy(): CurveManager {
     const copy = new CurveManager(this.getInitSelection(), this.getInitMeasures());
     copy.curveSetChannel = this.curveSetChannel;
-    copy.curveDataChannel = this.curveDataChannel;
     copy.styleDict = this.styleDict;
     return copy;
   }
 
-  public setChannels(curveSet: CaratAttachedChannel, curveData: CaratAttachedChannel) {
+  public setChannel(curveSet: CaratAttachedChannel) {
     this.curveSetChannel = curveSet;
-    this.curveDataChannel = curveData;
   }
 
   private validateRows(rows: ChannelRow[]): ChannelRow[] {
@@ -102,23 +80,24 @@ export class CurveManager {
     });
   }
 
-  private createCurveModel(row: ChannelRow): CaratCurveModel {
+  private createCurveModel(row: ChannelRow, cache: CurveDataCache): CaratCurveModel {
     const cells = row.Cells;
     const info = this.curveSetChannel.info as CaratCurveSetInfo;
 
     const dateString = cells[info.date.index];
     const curveType = cells[info.type.index];
     const description = cells[info.description.index] ?? '';
-    const top = cells[info.top.index], bottom = cells[info.bottom.index];
     const style = this.styleDict.get(curveType) ?? defaultSettings.curveStyle;
+
+    const id = cells[info.id.index];
+    const cacheData = cache[id];
 
     return {
       id: cells[info.id.index], type: curveType, description,
       date: dateString ? new Date(dateString) : null,
-      top, bottom, min: 0, max: 0, axisMin: 0, axisMax: 0,
+      axisMin: 0, axisMax: 0,
       defaultLoading: Boolean(cells[info.defaultLoading.index]),
-      path: new Path2D(), points: null,
-      style, active: false,
+      style, active: false, ...cacheData,
     };
   }
 
@@ -180,22 +159,15 @@ export class CurveManager {
     }
   }
 
-  public setCurveChannelData(data: ChannelData) {
-    if (data === this.lastData) return;
-    this.lastData = data;
+  public setCurveChannelData(rows: ChannelRow[], cache: CurveDataCache) {
     this.curveDict = {};
-    const rows = data?.rows;
 
-    if (!rows) {
+    if (rows.length === 0) {
       this.curves = [];
       this.curveTypes = [];
     } else {
-      if (!this.curveSetChannel.applied) {
-        this.curveSetChannel.info.description = {name: 'MNEMONIC_DESCR', index: -1};
-        applyInfoIndexes(this.curveSetChannel, data.columns);
-      }
       const validatedRows = this.validateRows(rows);
-      this.curves = validatedRows.map(this.createCurveModel, this);
+      this.curves = validatedRows.map(row => this.createCurveModel(row, cache));
       this.curves.forEach((curve) => { this.curveDict[curve.id] = curve; });
       this.curveTypes = [...new Set(this.curves.map(curve => curve.type))];
     }
@@ -274,33 +246,6 @@ export class CurveManager {
     const measure = this.measures[model.type];
     model.axisMin = measure?.min ?? 0;
     model.axisMax = measure?.max ?? getPragmaticMax(model.max);
-  }
-
-  public async loadCurveData(ids: CaratCurveID[]): Promise<boolean> {
-    const idsToLoad: CaratCurveID[] = ids.filter(id => !this.curveDict[id].points);
-    if (idsToLoad.length === 0) return true;
-
-    const lastData = this.lastData;
-    const data = await CurveManager.loadCurveChannelData(this.curveDataChannel.name, idsToLoad);
-    if (!data || lastData !== this.lastData) return false;
-
-    if (!this.curveDataChannel.applied) applyInfoIndexes(this.curveDataChannel, data.columns);
-    const info = this.curveDataChannel.info as CaratCurveDataInfo;
-
-    for (const { Cells: cells } of data.rows) {
-      const model = this.curveDict[cells[info.id.index]];
-      const pathSource = window.atob(cells[info.data.index]);
-
-      model.path = new Path2D(pathSource);
-      model.points = CurveManager.parseCurvePath(pathSource);
-
-      model.top = cells[info.top.index];
-      model.bottom = cells[info.bottom.index];
-      model.min = cells[info.min.index];
-      model.max = cells[info.max.index];
-      this.applyCurveAxisRange(model);
-    }
-    return true;
   }
 
   public getInitSelection(): CaratDataSelection {

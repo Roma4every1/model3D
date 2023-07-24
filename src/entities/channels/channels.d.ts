@@ -133,7 +133,8 @@ interface LookupColumnInfo {
   index: number,
 }
 
-type ChannelCriterion<Fields extends string = string> = Record<Fields, string>;
+type ChannelCriterion<Fields extends string = string> = Record<Fields, ChannelColumnCriterion>;
+type ChannelColumnCriterion = string | {name: string, optional: boolean};
 
 /** Настройки запроса данных. */
 interface ChannelQuerySettings {

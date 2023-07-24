@@ -29,21 +29,40 @@ interface CaratState {
   activeCurve: any,
   /** Список всех названий каналов-справочников. */
   lookupNames: ChannelName[],
-  /** Последние установленные данные. */
-  lastData: ChannelDataDict[],
+  /** Находится ли форма в состоянии загрузки. */
+  loading: boolean,
+}
+
+type CaratData = CaratTrackData[];
+type CaratTrackData = Record<ChannelName, ChannelRow[]>;
+
+/** Кеш точек кривых. */
+type CurveDataCache = Record<CaratCurveID, CaratCurveData>;
+
+interface CaratCurveData {
+  path: Path2D,
+  points: Point[],
+  top: number,
+  bottom: number,
+  min: number,
+  max: number,
 }
 
 /** Загрузчик данных для построения каротажа по трассе. */
 interface ICaratLoader {
-  getFlag(): number
-  loadCurveData(ids: CaratCurveID[]): Promise<ChannelData>
-  loadWellData(state: WState, ids: WellID[], data: ChannelDataDict): Promise<ChannelDataDict[]>
+  /** Флаг для преждевременной остановки загрузки. */
+  flag: number;
+  /** Кеш точек кривых. */
+  cache: CurveDataCache;
+
+  getCaratData(ids: WellID[], channelData: ChannelDataDict): Promise<CaratData>
 }
+
+/* --- --- */
 
 /** Сцена каротажной диаграммы. */
 interface ICaratStage {
   wellIDs: WellID[];
-  traceMode: boolean;
   readonly correlationInit: CaratColumnInit
 
   getZones(): CaratZone[]
@@ -57,8 +76,7 @@ interface ICaratStage {
   setScale(scale: number): void
   setZones(zones: CaratZone[]): void
 
-  setChannelData(data: ChannelDataDict[]): void
-  setCurveData(data: ChannelDataDict[]): Promise<void>
+  setData(data: CaratData, cache: CurveDataCache): void
   setLookupData(lookupData: ChannelDataDict): void
 
   handleKeyDown(key: string): boolean
@@ -111,7 +129,7 @@ interface ICaratColumnGroup {
 
   getWidth(): number
   getColumns(): ICaratColumn[]
-  getElementsRange(): [number, number]
+  getRange(): [number, number]
   getCurvesRange(): [number, number]
   hasCurveColumn(): boolean
 }
@@ -161,4 +179,4 @@ type CaratChannelType = 'lithology' | 'perforations' | 'curve-set' | 'curve-data
 type CaratCurveSetInfo = CaratChannelInfo<'id' | 'type' | 'date' | 'top' | 'bottom' | 'defaultLoading' | 'description'>;
 type CaratCurveDataInfo = CaratChannelInfo<'id' | 'data' | 'top' | 'bottom' | 'min' | 'max'>;
 type CaratLithologyInfo = CaratChannelInfo<'top' | 'bottom' | 'stratumID'>;
-type CaratChannelInfo<Fields = string> = Record<Fields | 'bar', LookupColumnInfo>;
+type CaratChannelInfo<Fields = string> = ChannelColumnInfo<Fields | 'well' | 'bar'>;

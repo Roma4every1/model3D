@@ -109,16 +109,9 @@ export class CaratStage implements ICaratStage {
     }
   }
 
-  public setChannelData(data: ChannelDataDict[]) {
+  public setData(data: CaratData, cache: CurveDataCache) {
     for (let i = 0; i < data.length; i++) {
-      this.trackList[i].setChannelData(data[i]);
-    }
-    this.resize();
-  }
-
-  public async setCurveData(data: ChannelDataDict[]) {
-    for (let i = 0; i < data.length; i++) {
-      await this.trackList[i].setCurveData(data[i]);
+      this.trackList[i].setData(data[i], cache);
       this.setTrackLefts();
       this.resize();
     }

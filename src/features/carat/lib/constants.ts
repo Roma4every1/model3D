@@ -19,19 +19,22 @@ export const constraints = {
 };
 
 /** Свойства для идентификации каналов. */
-export const criterionProperties: Record<CaratChannelType, Record<string, string>> = {
+export const criterionProperties: Record<CaratChannelType, ChannelCriterion> = {
   'lithology': {
-    stratumID: 'STRATUM ID',
+    well: 'WELL ID', stratumID: 'STRATUM ID',
     top: 'TOP', bottom: 'BASE',
   },
   'perforations': {
+    well: 'WELL ID',
     type: 'TYPE', date: 'DATE',
     top: 'TOP', bottom: 'BASE',
   },
   'curve-set': {
-    id: 'CURVE ID', type: 'CURVE TYPE', date: 'DATE',
+    well: 'WELL ID', id: 'CURVE ID',
+    type: 'CURVE TYPE', date: 'DATE',
     top: 'DEPTH START', bottom: 'DEPTH END',
     defaultLoading: 'LOAD BY DEFAULT',
+    description: {name: 'MNEMONIC_DESCR', optional: true},
   },
   'curve-data': {
     id: 'CURVE ID', data: 'CURVE DATA',
@@ -39,19 +42,20 @@ export const criterionProperties: Record<CaratChannelType, Record<string, string
     min: 'MIN VALUE', max: 'MAX VALUE',
   },
   'inclinometry': {
-    id: 'WELL ID',
+    well: 'WELL ID',
     inclinometry: 'INCLINOMETRY',
   },
 };
 
 /** Свойства для идентификации канала с данными инклинометрии. */
-export const inclinometryDataProperties = {
+export const inclinometryDataProperties: ChannelCriterion = {
+  well: 'WELL ID',
   depth: 'DEPTH',
   absMark: 'ABSMARK',
 };
 
 /** Свойства для идентификации канала с цветами пластов. */
-export const styleCriterionProperties = {
+export const styleCriterionProperties: ChannelCriterion = {
   id: 'LOOKUPCODE',
   color: 'COLOR',
   borderColor: 'BORDER COLOR',
@@ -61,7 +65,7 @@ export const styleCriterionProperties = {
 };
 
 /** Свойства для идентификации канала с подписями пластов. */
-export const labelCriterionProperties = {
+export const labelCriterionProperties: ChannelCriterion = {
   id: 'LOOKUPCODE',
   value: 'LOOKUPVALUE',
 };

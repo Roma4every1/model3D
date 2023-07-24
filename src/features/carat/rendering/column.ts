@@ -78,7 +78,7 @@ export class CaratColumn implements ICaratColumn {
     return [min, max];
   }
 
-  public setChannelData(data: ChannelData) {
+  public setChannelData(rows: ChannelRow[]) {
     const info = this.channel.info as CaratLithologyInfo;
     const barProperty = this.channel.properties.find(p => this.properties[p.name]?.showBar);
 
@@ -107,17 +107,6 @@ export class CaratColumn implements ICaratColumn {
 
     this.intervals = [];
     this.bars = [];
-    const rows = data?.rows ?? [];
-
-    if (data?.columns && !this.channel.applied) {
-      applyInfoIndexes(this.channel, data.columns);
-      data.columns.forEach(({ Name: name }, i) => {
-        for (const style of this.channel.styles) {
-          if (style.columnName === name) style.columnIndex = i;
-        }
-      });
-      this.channel.styles = this.channel.styles.filter((style) => style.columnIndex >= 0);
-    }
 
     const topIndex = info.top.index;
     const bottomIndex = info.bottom.index;

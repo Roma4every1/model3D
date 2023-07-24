@@ -1,99 +1,124 @@
-import { fillParamValues } from 'entities/parameters';
-import { tableRowToString } from 'entities/parameters/lib/table-row';
+import { applyInfoIndexes } from './channels';
 import { channelsAPI } from 'entities/channels/lib/channels.api';
 
 
 /** Класс, реализующий загрузку данных для построения каротажа по трассе. */
 export class CaratLoader implements ICaratLoader {
-  /** ID каротажной формы. */
-  private readonly formID: FormID;
-  /** ID презентации с формой. */
-  private readonly parentID: FormID;
+  /** Флаг для преждевременной остановки загрузки. */
+  public flag: number;
+  /** Кеш точек кривых. */
+  public readonly cache: CurveDataCache;
 
   /** Названия каналов, необходимых для каждого трека. */
-  private readonly wellDataChannelNames: ChannelName[];
+  private readonly attachedChannels: CaratAttachedChannel[];
   /** Название канала с точками привых. */
-  private readonly curveDataChannelName: ChannelName;
+  private readonly curveDataChannel: CaratAttachedChannel;
 
-  /** Флаг для преждевременной остановки загрузки. */
-  private flag: number;
-  /** Канал со скважинами. */
-  private wellChannel: Channel;
-  /** Каналы, зависимые от параметра скважины. */
-  private wellDataChannels: Channel[];
-  private paramChannelDict: Record<ChannelName, Parameter[]>;
-  /** Моковый параметер скважины. */
-  private mockWellParameter: Parameter;
-  private data: ChannelDataDict;
-
-  constructor(formState: FormState, curveChannel: ChannelName) {
+  constructor(channels: CaratAttachedChannel[], curveDataChannel: CaratAttachedChannel) {
     this.flag = 0;
-    this.formID = formState.id;
-    this.parentID = formState.parent;
-    this.wellDataChannelNames = formState.channels;
-    this.curveDataChannelName = curveChannel;
+    this.cache = {};
+    this.attachedChannels = channels;
+    this.curveDataChannel = curveDataChannel;
   }
 
-  public getFlag(): number {
-    return this.flag;
+  public async getCaratData(ids: WellID[], channelData: ChannelDataDict): Promise<CaratData> {
+    this.flag++;
+    const curveIDs: CaratCurveID[] = [];
+    const caratData: CaratData = [];
+
+    for (const id of ids) {
+      const [trackData, newCurveIDs] = this.getTrackData(id, channelData);
+      caratData.push(trackData);
+      curveIDs.push(...newCurveIDs);
+    }
+
+    await this.loadCurveData([...new Set(curveIDs)]);
+    return caratData;
   }
 
-  public async loadCurveData(ids: CaratCurveID[]): Promise<ChannelData> {
-    const value = ids.map(String);
+  private getTrackData(id: WellID, channelData: ChannelDataDict): [CaratTrackData, CaratCurveID[]] {
+    const dict: CaratTrackData = {};
+    const curveIDs: CaratCurveID[] = [];
+
+    for (const attachment of this.attachedChannels) {
+      const data = channelData[attachment.name];
+      if (!data) { dict[attachment.name] = []; continue; }
+
+      if (!attachment.applied) {
+        applyInfoIndexes(attachment, data.columns);
+        if (attachment.styles) {
+          data.columns.forEach(({ Name: name }, i) => {
+            for (const style of attachment.styles) {
+              if (style.columnName === name) style.columnIndex = i;
+            }
+          });
+          attachment.styles = attachment.styles.filter(style => style.columnIndex >= 0);
+        }
+      }
+
+      const wellIndex = attachment.info.well.index;
+      const rows = data.rows.length && wellIndex !== -1
+        ? data.rows.filter(row => row.Cells[wellIndex] === id)
+        : [];
+
+      if (attachment.type === 'curve-set') {
+        const idIndex = attachment.info.id.index;
+        const loadingIndex = attachment.info.defaultLoading.index;
+        const defaultCurves = rows.filter(row => Boolean(row.Cells[loadingIndex]));
+        curveIDs.push(...defaultCurves.map(row => row.Cells[idIndex]));
+      }
+      dict[attachment.name] = rows;
+    }
+    return [dict, curveIDs] as [CaratTrackData, CaratCurveID[]];
+  }
+
+  /** Дозагружает данные точек кривых. */
+  private async loadCurveData(ids: CaratCurveID[]) {
+    const idsToLoad: CaratCurveID[] = ids.filter(id => !this.cache[id]);
+    if (idsToLoad.length === 0) return;
+
+    const value = idsToLoad.map(String);
     const parameters = [{id: 'currentCurveIds', type: 'stringArray', value} as Parameter];
     const query = {order: []} as any;
-    const res = await channelsAPI.getChannelData(this.curveDataChannelName, parameters, query);
-    return res.ok ? res.data.data : null;
+
+    const flag = this.flag;
+    const res = await channelsAPI.getChannelData(this.curveDataChannel.name, parameters, query);
+    if (flag !== this.flag) return;
+
+    const data = res.ok ? res.data.data : null;
+    if (!data) return;
+
+    if (!this.curveDataChannel.applied) applyInfoIndexes(this.curveDataChannel, data.columns);
+    const idIndex = this.curveDataChannel.info.id.index;
+
+    for (const row of data.rows) {
+      const cells = row.Cells;
+      this.cache[cells[idIndex]] = this.createCurveData(cells);
+    }
   }
 
-  public async loadWellData(state: WState, ids: WellID[], data: ChannelDataDict): Promise<ChannelDataDict[]> {
-    const currentFlag = ++this.flag;
-    const wellParameterID = state.objects.well.parameterID;
-    const globalParameters = state.parameters[state.root.id];
+  /** Создаёт модель данных кривой. */
+  private createCurveData(cells: any[]): CaratCurveData {
+    const info = this.curveDataChannel.info;
+    const pathSource = window.atob(cells[info.data.index]);
 
-    this.data = data;
-    this.mockWellParameter = {...globalParameters.find(p => p.id === wellParameterID)};
-    this.wellDataChannels = this.wellDataChannelNames.map(name => state.channels[name]);
-    this.wellChannel = state.channels[state.objects.well.channelName];
-
-    this.paramChannelDict = {};
-    const clients: FormID[] = [state.root.id, this.parentID, this.formID];
-
-    for (const channel of this.wellDataChannels) {
-      const ids = channel.info.parameters.filter(pID => pID !== wellParameterID);
-      this.paramChannelDict[channel.name] = fillParamValues(ids, state.parameters, clients);
-    }
-
-    const traceCaratData = [];
-    for (const wellID of ids) {
-      const wellData = await this.getWellData(wellID);
-      if (currentFlag !== this.flag) return [];
-      traceCaratData.push(wellData);
-    }
-    return traceCaratData;
+    return {
+      path: new Path2D(pathSource),
+      points: this.parseCurvePath(pathSource),
+      top: cells[info.top.index],
+      bottom: cells[info.bottom.index],
+      min: cells[info.min.index],
+      max: cells[info.max.index],
+    };
   }
 
-  private async getWellData(wellID: WellID): Promise<ChannelDataDict> {
-    const idIndex = this.wellChannel.info.lookupColumns.id.index;
-    const row = this.wellChannel.data.rows.find(row => row.Cells[idIndex] === wellID);
-    if (!row) return null;
-
-    const responses: Promise<Res<any>>[] = [];
-    this.mockWellParameter.value = tableRowToString(this.wellChannel, row);
-
-    for (const channel of this.wellDataChannels) {
-      const parameters = this.paramChannelDict[channel.name];
-      parameters.push(this.mockWellParameter);
-      responses.push(channelsAPI.getChannelData(channel.name, parameters, channel.query));
-      parameters.pop();
-    }
-
-    const dict: ChannelDataDict = {...this.data};
-    const data = await Promise.all(responses);
-
-    this.wellDataChannels.forEach((channel, i) => {
-      dict[channel.name] = data[i].data?.data ?? null;
+  /** Парсинг SVG-пути кривой. */
+  private parseCurvePath(source: string): Point[] {
+    const items = source.split('L');
+    items[0] = items[0].substring(1);
+    return items.map((item) => {
+      const [x, y] = item.split(',');
+      return {x: parseFloat(x), y: parseFloat(y)};
     });
-    return dict;
   }
 }

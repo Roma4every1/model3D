@@ -1,10 +1,15 @@
-import { criterionProperties, styleCriterionProperties, labelCriterionProperties } from './constants';
+import { createColumnInfo } from 'entities/channels';
+
+import {
+  criterionProperties,
+  styleCriterionProperties, labelCriterionProperties
+} from './constants';
 
 
 export function identifyCaratChannel(attachment: CaratAttachedChannel, channel: Channel) {
   attachment.properties = getAttachedProperties(attachment, channel);
   for (const channelType in criterionProperties) {
-    const info = createInfo(channel, criterionProperties[channelType]);
+    const info = createColumnInfo(channel, criterionProperties[channelType]);
     if (info) {
       attachment.type = channelType as CaratChannelType;
       attachment.info = info as any;
@@ -29,11 +34,11 @@ export function applyStyle(attachment: CaratAttachedChannel, channel: Channel, d
 
       for (const lookup of lookups) {
         if (!styleInfo) {
-          styleInfo = createInfo(lookup, styleCriterionProperties);
+          styleInfo = createColumnInfo(lookup, styleCriterionProperties);
           if (styleInfo) styleChannel = lookup.name;
         }
         if (!textInfo) {
-          textInfo = createInfo(lookup, labelCriterionProperties);
+          textInfo = createColumnInfo(lookup, labelCriterionProperties);
           if (textInfo) textChannel = lookup.name;
         }
       }
@@ -59,21 +64,6 @@ export function getAttachedProperties(attachment: CaratAttachedChannel, channel:
     ? (property) => !exclude.includes(property.name)
     : (property) => exclude.includes(property.name);
   return allProperties.filter(checker);
-}
-
-export function createInfo(channel: Channel, criterion: Record<string, string>): CaratChannelInfo {
-  const properties = channel.info.properties;
-  const propertyNames = properties.map((property) => property.name.toUpperCase());
-
-  const info: CaratChannelInfo = {};
-  for (const field in criterion) {
-    const criterionName = criterion[field];
-    const index = propertyNames.findIndex((name) => name === criterionName);
-
-    if (index === -1) return null;
-    info[field] = {name: properties[index].fromColumn, index: -1};
-  }
-  return info;
 }
 
 export function applyInfoIndexes(attachment: CaratAttachedChannel | CaratAttachedLookup, columns: ChannelColumn[]) {

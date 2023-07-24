@@ -85,7 +85,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     if (curveSetChannel && curveDataChannel) {
       const columnRect = {top: 0, left: 0, width: rect.width, height};
       this.curveColumn = new CaratCurveColumn(columnRect, drawer, curveSetChannel, curveDataChannel);
-      this.curveManager.setChannels(curveSetChannel, curveDataChannel);
+      this.curveManager.setChannel(curveSetChannel);
     }
   }
 
@@ -137,14 +137,6 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     };
   }
 
-  /** Возвращает список названий необходимых каналов. */
-  public getChannelNames(): ChannelName[] {
-    const names: ChannelName[] = [];
-    for (const column of this.columns) names.push(column.channel.name);
-    if (this.curveColumn) names.push(this.curveColumn.curveSetChannel.name);
-    return names;
-  }
-
   /** Возвращает список названий справочников, необходимых для отрисовки. */
   public getLookupNames(): ChannelName[] {
     const names: ChannelName[] = [];
@@ -170,7 +162,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     }
   }
 
-  public getElementsRange(): [number, number] {
+  public getRange(): [number, number] {
     let min = Infinity;
     let max = -Infinity;
 
@@ -265,12 +257,17 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     return minDistance < 5 ? nearestCurve : null;
   }
 
-  public setChannelData(channelData: ChannelDataDict) {
+  /** Задаёт новый список элементов и кривых, возвращает изменение ширины. */
+  public setData(data: CaratTrackData, cache: CurveDataCache): number {
     for (const column of this.columns) {
-      const data = channelData[column.channel.name];
-      column.setChannelData(data);
+      const rows = data[column.channel.name];
+      column.setChannelData(rows);
     }
-    if (this.curveColumn) this.curveColumn.setCurveData([], this.zones);
+
+    if (!this.curveColumn) return 0;
+    const curveSetData = data[this.curveColumn.curveSetChannel.name];
+    this.curveManager.setCurveChannelData(curveSetData, cache);
+    return this.groupCurves(this.curveManager.getVisibleCurves());
   }
 
   /** Группирует кривые по зонам, возвращает изменение ширины. */
@@ -286,16 +283,6 @@ export class CaratColumnGroup implements ICaratColumnGroup {
       for (const column of this.columns) column.rect.width = newWidth;
     }
     return newWidth - oldWidth;
-  }
-
-  /** Задаёт новый список кривых, возвращает изменение ширины. */
-  public async setCurveData(channelData: ChannelDataDict): Promise<number> {
-    if (!this.curveColumn) return 0;
-    const curveSetData = channelData[this.curveColumn.curveSetChannel.name];
-    this.curveManager.setCurveChannelData(curveSetData);
-    const curves = this.curveManager.getVisibleCurves();
-    await this.curveManager.loadCurveData(curves.map(curve => curve.id));
-    return this.groupCurves(curves);
   }
 
   public setLookupData(lookupData: ChannelDataDict) {
