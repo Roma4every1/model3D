@@ -1,5 +1,6 @@
-import { applyInfoIndexes } from './channels';
+import { cellsToRecords } from 'entities/channels';
 import { channelsAPI } from 'entities/channels/lib/channels.api';
+import { channelDataDictToRecords } from './channels';
 
 
 /** Класс, реализующий загрузку данных для построения каротажа по трассе. */
@@ -21,13 +22,14 @@ export class CaratLoader implements ICaratLoader {
     this.curveDataChannel = curveDataChannel;
   }
 
-  public async getCaratData(ids: WellID[], channelData: ChannelDataDict): Promise<CaratData> {
-    this.flag++;
+  public async getCaratData(ids: WellID[], channelData: ChannelDataDict): Promise<ChannelRecordDict[]> {
     const curveIDs: CaratCurveID[] = [];
-    const caratData: CaratData = [];
+    const caratData: ChannelRecordDict[] = [];
+    const needFilter = ids.length > 1;
+    const data = channelDataDictToRecords(channelData);
 
     for (const id of ids) {
-      const [trackData, newCurveIDs] = this.getTrackData(id, channelData);
+      const [trackData, newCurveIDs] = this.getTrackData(id, data, needFilter);
       caratData.push(trackData);
       curveIDs.push(...newCurveIDs);
     }
@@ -36,40 +38,28 @@ export class CaratLoader implements ICaratLoader {
     return caratData;
   }
 
-  private getTrackData(id: WellID, channelData: ChannelDataDict): [CaratTrackData, CaratCurveID[]] {
-    const dict: CaratTrackData = {};
+  private getTrackData(id: WellID, data: ChannelRecordDict, needFilter: boolean): [ChannelRecordDict, CaratCurveID[]] {
+    const dict: ChannelRecordDict = {};
     const curveIDs: CaratCurveID[] = [];
 
     for (const attachment of this.attachedChannels) {
-      const data = channelData[attachment.name];
-      if (!data) { dict[attachment.name] = []; continue; }
+      let records = data[attachment.name];
+      if (!records) { dict[attachment.name] = []; continue; }
 
-      if (!attachment.applied) {
-        applyInfoIndexes(attachment, data.columns);
-        if (attachment.styles) {
-          data.columns.forEach(({ Name: name }, i) => {
-            for (const style of attachment.styles) {
-              if (style.columnName === name) style.columnIndex = i;
-            }
-          });
-          attachment.styles = attachment.styles.filter(style => style.columnIndex >= 0);
-        }
+      if (needFilter && records.length) {
+        const wellColumnName = attachment.info.well.name;
+        records = records.filter(row => row[wellColumnName] === id);
       }
-
-      const wellIndex = attachment.info.well.index;
-      const rows = data.rows.length && wellIndex !== -1
-        ? data.rows.filter(row => row.Cells[wellIndex] === id)
-        : [];
 
       if (attachment.type === 'curve-set') {
-        const idIndex = attachment.info.id.index;
-        const loadingIndex = attachment.info.defaultLoading.index;
-        const defaultCurves = rows.filter(row => Boolean(row.Cells[loadingIndex]));
-        curveIDs.push(...defaultCurves.map(row => row.Cells[idIndex]));
+        const idName = attachment.info.id.name;
+        const loadingName = attachment.info.defaultLoading.name;
+        const defaultCurves = records.filter(record => Boolean(record[loadingName]));
+        curveIDs.push(...defaultCurves.map(record => record[idName]));
       }
-      dict[attachment.name] = rows;
+      dict[attachment.name] = records;
     }
-    return [dict, curveIDs] as [CaratTrackData, CaratCurveID[]];
+    return [dict, curveIDs] as [ChannelRecordDict, CaratCurveID[]];
   }
 
   /** Дозагружает данные точек кривых. */
@@ -87,28 +77,26 @@ export class CaratLoader implements ICaratLoader {
 
     const data = res.ok ? res.data.data : null;
     if (!data) return;
+    const records = cellsToRecords(data);
+    const idColumnName = this.curveDataChannel.info.id.name;
 
-    if (!this.curveDataChannel.applied) applyInfoIndexes(this.curveDataChannel, data.columns);
-    const idIndex = this.curveDataChannel.info.id.index;
-
-    for (const row of data.rows) {
-      const cells = row.Cells;
-      this.cache[cells[idIndex]] = this.createCurveData(cells);
+    for (const record of records) {
+      this.cache[record[idColumnName]] = this.createCurveData(record);
     }
   }
 
   /** Создаёт модель данных кривой. */
-  private createCurveData(cells: any[]): CaratCurveData {
+  private createCurveData(record: ChannelRecord): CaratCurveData {
     const info = this.curveDataChannel.info;
-    const pathSource = window.atob(cells[info.data.index]);
+    const pathSource = window.atob(record[info.data.name]);
 
     return {
       path: new Path2D(pathSource),
       points: this.parseCurvePath(pathSource),
-      top: cells[info.top.index],
-      bottom: cells[info.bottom.index],
-      min: cells[info.min.index],
-      max: cells[info.max.index],
+      top: record[info.top.name],
+      bottom: record[info.bottom.name],
+      min: record[info.min.name],
+      max: record[info.max.name],
     };
   }
 

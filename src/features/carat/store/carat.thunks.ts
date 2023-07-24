@@ -6,13 +6,21 @@ import { setCaratLoading } from './carat.actions';
 /** Обновляет данные каротажной диаграммы. */
 export function setCaratData(id: FormID, data: ChannelDataDict): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
-    const state = getState().carats[id];
-    const { stage, loader, loading } = state;
+    const { objects, carats } = getState();
+    const { stage, loader, loading } = carats[id];
+    const { well: { model: currentWell }, trace: { model: currentTrace } } = objects;
     if (!loading) dispatch(setCaratLoading(id, true));
 
-    const flag = loader.flag + 1;
+    if (currentTrace) {
+      if (currentTrace.nodes.length) stage.setTrackList(currentTrace.nodes);
+    } else if (currentWell) {
+      stage.setTrackList([currentWell]);
+    } else {
+      return;
+    }
+
+    const flag = ++loader.flag;
     const caratData = await loader.getCaratData(stage.wellIDs, data);
-    console.log(caratData);
     if (flag !== loader.flag) return;
 
     stage.setData(caratData, loader.cache);

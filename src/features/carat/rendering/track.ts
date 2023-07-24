@@ -237,7 +237,7 @@ export class CaratTrack implements ICaratTrack {
     }
   }
 
-  public setData(data: CaratTrackData, cache: CurveDataCache) {
+  public setData(data: ChannelRecordDict, cache: CurveDataCache) {
     const viewport = this.viewport;
     this.backgroundGroup.setData(data, cache);
     [viewport.min, viewport.max] = this.backgroundGroup.getRange();
@@ -260,7 +260,7 @@ export class CaratTrack implements ICaratTrack {
     if (viewport.y === Infinity) viewport.y = viewport.min;
 
     if (this.inclinometry) {
-      this.inclinometry.setChannelData(data);
+      this.inclinometry.setData(data);
       this.inclinometry.updateMarks(viewport);
     }
   }
@@ -288,7 +288,7 @@ export class CaratTrack implements ICaratTrack {
     this.backgroundGroup.setWidth(this.rect.width);
   }
 
-  public setLookupData(lookupData: ChannelDataDict) {
+  public setLookupData(lookupData: ChannelRecordDict) {
     this.backgroundGroup.setLookupData(lookupData);
     for (const group of this.groups) group.setLookupData(lookupData);
   }

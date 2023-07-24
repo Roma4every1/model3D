@@ -6,6 +6,9 @@ type ChannelDict = Record<ChannelName, Channel>;
 /** Данные каналов. */
 type ChannelDataDict = Record<ChannelName, ChannelData>;
 
+type ChannelRecordDict = Record<ChannelName, ChannelRecord[]>;
+type ChannelRecord = Record<string, any>;
+
 /** Модель канала данных.
  * + `tableID`: {@link TableID}
  * + `data`: {@link ChannelData}

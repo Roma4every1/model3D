@@ -1,5 +1,4 @@
 import { InclinometryMark, InclinometryMap } from './types';
-import { createInfoRecord } from './channels';
 
 
 /** Класс для управления инклинометрией. */
@@ -41,11 +40,14 @@ export class CaratInclinometry implements ICaratInclinometry {
   }
 
   /** Обновление данных интерполяции. */
-  public setChannelData(channelData: CaratTrackData) {
+  public setData(channelData: ChannelRecordDict) {
     const rows = channelData[this.channel.name];
     if (rows.length) {
       const info = this.channel.info as CaratChannelInfo<'depth' | 'absMark'>;
-      this.interpolationData = rows.map((row) => createInfoRecord(row, info));
+      this.interpolationData = rows.map((record: ChannelRecord): InclinometryMark => ({
+        depth: record[info.depth.name],
+        absMark: record[info.absMark.name],
+      }));
     } else {
       this.interpolationData = [];
     }

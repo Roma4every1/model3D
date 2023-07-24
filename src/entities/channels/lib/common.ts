@@ -64,6 +64,21 @@ export function findColumnIndexes(columns: ChannelColumn[], info: ChannelColumnI
   }
 }
 
+/** Конвертирует строки канала из массивов ячеек в словари по названиям колонок. */
+export function cellsToRecords(data: ChannelData): ChannelRecord[] {
+  if (!data) return null;
+  const create = (row: ChannelRow) => {
+    const cells = row.Cells;
+    const record: ChannelRecord = {};
+
+    data.columns.forEach((column, i) => {
+      record[column.Name] = cells[i];
+    });
+    return record;
+  };
+  return data.rows.map(create);
+}
+
 /* --- --- */
 
 /** Находит и возвращает список привязанных каналов. */

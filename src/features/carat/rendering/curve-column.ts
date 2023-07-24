@@ -8,28 +8,22 @@ export class CaratCurveColumn implements ICaratColumn {
   private readonly drawer: CaratDrawer;
   /** Подключённый канал со списком кривых. */
   public readonly curveSetChannel: CaratAttachedChannel;
-  /** Подключённый канал с данными кривых. */
-  public readonly curveDataChannel: CaratAttachedChannel;
 
   /** Группы кривых по зонам. */
   private groups: CurveGroupState[];
   /** Координаты по X разделительных линий зон. */
   private dividingLines: number[];
 
-  constructor(
-    rect: Rectangle, drawer: CaratDrawer,
-    curveSetChannel: CaratAttachedChannel, curveDataChannel: CaratAttachedChannel
-  ) {
+  constructor(rect: Rectangle, drawer: CaratDrawer, curveSetChannel: CaratAttachedChannel) {
     this.drawer = drawer;
     this.curveSetChannel = curveSetChannel;
-    this.curveDataChannel = curveDataChannel;
     this.groups = [{rect, elements: []}];
     this.dividingLines = [];
   }
 
   public copy(): CaratCurveColumn {
-    const { drawer, curveSetChannel, curveDataChannel } = this;
-    const copy = new CaratCurveColumn(null, drawer, curveSetChannel, curveDataChannel);
+    const { drawer, curveSetChannel } = this;
+    const copy = new CaratCurveColumn(null, drawer, curveSetChannel);
     copy.groups = this.groups.map(g => ({rect: g.rect, elements: []}));
     return copy;
   }

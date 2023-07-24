@@ -29,13 +29,13 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
 
         if (inclinometryChannel) {
           const info = createColumnInfo(channelDict[inclinometryChannel], inclinometryDataProperties);
-          attachedChannel.inclinometry = {name: inclinometryChannel, info, applied: false, dict: null};
+          attachedChannel.inclinometry = {name: inclinometryChannel, info, dict: null};
           usedChannels.add(inclinometryChannel);
           attachments.push(attachedChannel.inclinometry as any);
         }
         delete attachedChannel.type;
       } else {
-        applyStyle(attachedChannel, channel, channelDict);
+        applyStyle(attachedChannel, column.properties[attachedChannel.name], channel, channelDict);
       }
 
       if (attachedChannel.type && attachedChannel.type !== 'curve-data') {

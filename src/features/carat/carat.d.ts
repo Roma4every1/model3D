@@ -33,9 +33,6 @@ interface CaratState {
   loading: boolean,
 }
 
-type CaratData = CaratTrackData[];
-type CaratTrackData = Record<ChannelName, ChannelRow[]>;
-
 /** Кеш точек кривых. */
 type CurveDataCache = Record<CaratCurveID, CaratCurveData>;
 
@@ -55,7 +52,7 @@ interface ICaratLoader {
   /** Кеш точек кривых. */
   cache: CurveDataCache;
 
-  getCaratData(ids: WellID[], channelData: ChannelDataDict): Promise<CaratData>
+  getCaratData(ids: WellID[], channelData: ChannelDataDict): Promise<ChannelRecordDict[]>
 }
 
 /* --- --- */
@@ -69,15 +66,13 @@ interface ICaratStage {
   getCaratSettings(): CaratSettings
   getActiveTrack(): ICaratTrack
 
-  setWellMode(well: WellModel): void
-  setTraceMode(trace: TraceModel): void
-
+  setTrackList(wells: WellModel[]): void
   setCanvas(canvas: HTMLCanvasElement): void
   setScale(scale: number): void
   setZones(zones: CaratZone[]): void
 
-  setData(data: CaratData, cache: CurveDataCache): void
-  setLookupData(lookupData: ChannelDataDict): void
+  setData(data: ChannelRecordDict[], cache: CurveDataCache): void
+  setLookupData(lookupData: ChannelRecordDict): void
 
   handleKeyDown(key: string): boolean
   handleMouseMove(by: number): void
@@ -177,6 +172,5 @@ type CaratCurveType = string;
 type CaratChannelType = 'lithology' | 'perforations' | 'curve-set' | 'curve-data' | 'inclinometry';
 
 type CaratCurveSetInfo = CaratChannelInfo<'id' | 'type' | 'date' | 'top' | 'bottom' | 'defaultLoading' | 'description'>;
-type CaratCurveDataInfo = CaratChannelInfo<'id' | 'data' | 'top' | 'bottom' | 'min' | 'max'>;
 type CaratLithologyInfo = CaratChannelInfo<'top' | 'bottom' | 'stratumID'>;
 type CaratChannelInfo<Fields = string> = ChannelColumnInfo<Fields | 'well' | 'bar'>;

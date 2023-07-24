@@ -18,8 +18,6 @@ export class CaratStage implements ICaratStage {
   private trackList: CaratTrack[];
   /** Список ID скважин треков. */
   public wellIDs: WellID[];
-  /** Находится ли сцена в режиме показа каротажа по трассе. */
-  public traceMode: boolean;
 
   /** Модель разбиения кривых по зонам. */
   private zones: CaratZone[];
@@ -29,7 +27,6 @@ export class CaratStage implements ICaratStage {
   public readonly correlationInit: CaratColumnInit;
 
   constructor(init: CaratFormSettings, drawerConfig: CaratDrawerConfig) {
-    this.traceMode = false;
     this.wellIDs = [];
     this.zones = init.settings.zones;
     this.drawer = new CaratDrawer(drawerConfig);
@@ -77,27 +74,11 @@ export class CaratStage implements ICaratStage {
     }
   }
 
-  /** Установить режим показа каротажа по заданной скважине. */
-  public setWellMode(well: WellModel) {
-    const wellName = well.name ?? well.id.toString() ?? '';
-    if (!this.traceMode) {
-      this.trackList[0].setWellName(wellName);
-    } else {
-      this.updateTrackList([wellName]);
-    }
-    this.wellIDs = [well.id];
-    this.traceMode = false;
-  }
+  /** Установить режим показа треков по указанным скважинам. */
+  public setTrackList(wells: WellModel[]): void {
+    this.wellIDs = wells.map(well => well.id);
+    const wellNames = wells.map(well => well.name ?? well.id?.toString() ?? '');
 
-  /** Установить режим показа каротажа по заданной трассе. */
-  public setTraceMode(trace: TraceModel) {
-    const wellNames = trace.nodes.map(n => n.name ?? n.id?.toString() ?? '');
-    this.updateTrackList(wellNames);
-    this.wellIDs = trace.nodes.map(n => n.id);
-    this.traceMode = true;
-  }
-
-  private updateTrackList(wellNames: WellName[]) {
     const activeTrack = this.getActiveTrack();
     const rect = activeTrack.rect;
     this.trackList = [];
@@ -109,7 +90,7 @@ export class CaratStage implements ICaratStage {
     }
   }
 
-  public setData(data: CaratData, cache: CurveDataCache) {
+  public setData(data: ChannelRecordDict[], cache: CurveDataCache) {
     for (let i = 0; i < data.length; i++) {
       this.trackList[i].setData(data[i], cache);
       this.setTrackLefts();
@@ -117,7 +98,7 @@ export class CaratStage implements ICaratStage {
     }
   }
 
-  public setLookupData(lookupData: ChannelDataDict) {
+  public setLookupData(lookupData: ChannelRecordDict) {
     for (const track of this.trackList) track.setLookupData(lookupData);
   }
 

@@ -84,7 +84,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
 
     if (curveSetChannel && curveDataChannel) {
       const columnRect = {top: 0, left: 0, width: rect.width, height};
-      this.curveColumn = new CaratCurveColumn(columnRect, drawer, curveSetChannel, curveDataChannel);
+      this.curveColumn = new CaratCurveColumn(columnRect, drawer, curveSetChannel);
       this.curveManager.setChannel(curveSetChannel);
     }
   }
@@ -258,7 +258,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   }
 
   /** Задаёт новый список элементов и кривых, возвращает изменение ширины. */
-  public setData(data: CaratTrackData, cache: CurveDataCache): number {
+  public setData(data: ChannelRecordDict, cache: CurveDataCache): number {
     for (const column of this.columns) {
       const rows = data[column.channel.name];
       column.setChannelData(rows);
@@ -285,7 +285,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     return newWidth - oldWidth;
   }
 
-  public setLookupData(lookupData: ChannelDataDict) {
+  public setLookupData(lookupData: ChannelRecordDict) {
     for (const column of this.columns) column.setLookupData(lookupData);
     if (this.curveColumn) this.curveManager.setStyleData(lookupData);
   }

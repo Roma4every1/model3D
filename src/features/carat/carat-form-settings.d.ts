@@ -128,9 +128,7 @@ interface CaratAttachedChannel {
   /** Тип подключённого канала. */
   type?: CaratChannelType,
   /** Список подключённых свойств. */
-  properties?: ChannelProperty[]
-  /** Найдены ли индексы колонок. */
-  applied?: boolean,
+  properties?: ChannelProperty[],
   /** Индексы колонок. */
   info?: CaratChannelInfo,
   /** Название канала с инклинометрией. */
@@ -146,7 +144,6 @@ interface CaratAttachedChannel {
 /** Информация о справочнике цветов и текста пропластков. */
 interface CaratStyleLookup {
   columnName: string,
-  columnIndex: number,
   color: CaratAttachedLookup,
   text: CaratAttachedLookup,
 }
@@ -155,7 +152,6 @@ interface CaratStyleLookup {
 interface CaratAttachedLookup {
   name: ChannelName,
   info: CaratChannelInfo,
-  applied: boolean,
   dict: Record<number, any>,
 }
 

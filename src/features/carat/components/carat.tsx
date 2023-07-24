@@ -7,6 +7,7 @@ import { channelDataDictSelector } from 'entities/channels';
 import { TextInfo } from 'shared/ui';
 
 import './carat.scss';
+import { channelDataDictToRecords } from '../lib/channels';
 import { caratStateSelector } from '../store/carat.selectors';
 import { setCaratData } from '../store/carat.thunks';
 import { setCaratActiveCurve, setCaratActiveGroup, setCaratCanvas } from '../store/carat.actions';
@@ -28,30 +29,14 @@ export const Carat = ({id, channels}: FormState) => {
 
   // обновление данных каналов-справочников
   useEffect(() => {
-    stage.setLookupData(lookupData);
+    stage.setLookupData(channelDataDictToRecords(lookupData));
     stage.render();
   }, [lookupData, stage]);
-
-  // обработка изменения параметра трассы
-  useEffect(() => {
-    if (currentTrace) {
-      if (currentTrace.nodes.length) stage.setTraceMode(currentTrace);
-    } else if (currentWell) {
-      stage.setWellMode(currentWell);
-    }
-  }, [currentTrace]); // eslint-disable-line
-
-  // обработка изменения параметра скважины
-  useEffect(() => {
-    if (!currentTrace && currentWell) {
-      stage.setWellMode(currentWell);
-    }
-  }, [currentWell]); // eslint-disable-line
 
   // обновление данных каналов
   useEffect(() => {
     dispatch(setCaratData(id, channelData));
-  }, [channelData]); // eslint-disable-line
+  }, [channelData, id, dispatch]);
 
   // обновление ссылки на холст
   useLayoutEffect(() => {

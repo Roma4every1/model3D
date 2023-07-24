@@ -1,4 +1,4 @@
-import { createColumnInfo } from 'entities/channels';
+import { cellsToRecords, createColumnInfo } from 'entities/channels';
 
 import {
   criterionProperties,
@@ -13,13 +13,15 @@ export function identifyCaratChannel(attachment: CaratAttachedChannel, channel: 
     if (info) {
       attachment.type = channelType as CaratChannelType;
       attachment.info = info as any;
-      attachment.applied = false;
       break;
     }
   }
 }
 
-export function applyStyle(attachment: CaratAttachedChannel, channel: Channel, dict: ChannelDict) {
+export function applyStyle(
+  attachment: CaratAttachedChannel, properties: CaratColumnProperties,
+  channel: Channel, dict: ChannelDict,
+) {
   if (attachment.type === 'curve-set') {
     const colorPropertyName = attachment.info.type.name;
     const colorProperty = channel.info.properties.find(p => p.fromColumn === colorPropertyName);
@@ -43,9 +45,9 @@ export function applyStyle(attachment: CaratAttachedChannel, channel: Channel, d
         }
       }
       if (styleChannel || textChannel) attachment.styles.push({
-        columnName: property.fromColumn, columnIndex: -1,
-        color: {name: styleChannel, info: styleInfo, applied: false, dict: {}},
-        text: {name: textChannel, info: textInfo, applied: false, dict: {}},
+        columnName: property.fromColumn,
+        color: {name: styleChannel, info: styleInfo, dict: {}},
+        text: {name: textChannel, info: textInfo, dict: {}},
       });
     }
     for (const property of channel.info.properties) {
@@ -53,10 +55,13 @@ export function applyStyle(attachment: CaratAttachedChannel, channel: Channel, d
         attachment.namesChannel = property.lookupChannels[0];
       }
     }
+
+    const barProperty = attachment.properties.find(p => properties[p.name]?.showBar);
+    if (barProperty) attachment.info.bar = {name: barProperty.fromColumn, index: -1};
   }
 }
 
-export function getAttachedProperties(attachment: CaratAttachedChannel, channel: Channel) {
+function getAttachedProperties(attachment: CaratAttachedChannel, channel: Channel) {
   const allProperties = channel.info.properties;
   const { attachOption, exclude } = attachment;
 
@@ -66,24 +71,10 @@ export function getAttachedProperties(attachment: CaratAttachedChannel, channel:
   return allProperties.filter(checker);
 }
 
-export function applyInfoIndexes(attachment: CaratAttachedChannel | CaratAttachedLookup, columns: ChannelColumn[]) {
-  for (const field in attachment.info) {
-    const propertyInfo = attachment.info[field];
-    for (let i = 0; i < columns.length; i++) {
-      const name = columns[i].Name;
-      if (propertyInfo.name === name) { propertyInfo.index = i; break; }
-    }
+export function channelDataDictToRecords(dict: ChannelDataDict): ChannelRecordDict {
+  const result: ChannelRecordDict = {};
+  for (const channelName in dict) {
+    result[channelName] = cellsToRecords(dict[channelName]);
   }
-  attachment.applied = true;
-}
-
-export function createInfoRecord<Fields extends string>(row: ChannelRow, info: CaratChannelInfo<Fields>) {
-  const cells = row.Cells;
-  const record: Record<Fields, any> = {} as any;
-
-  for (const field in info) {
-    const index = info[field].index;
-    record[field] = cells[index];
-  }
-  return record;
+  return result;
 }
