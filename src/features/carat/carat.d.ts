@@ -60,7 +60,8 @@ interface ICaratLoader {
 /** Сцена каротажной диаграммы. */
 interface ICaratStage {
   wellIDs: WellID[];
-  readonly correlationInit: CaratColumnInit
+  trackList: ICaratTrack[];
+  correlations: ICaratCorrelations;
 
   getZones(): CaratZone[]
   getCaratSettings(): CaratSettings
@@ -75,12 +76,19 @@ interface ICaratStage {
   setLookupData(lookupData: ChannelRecordDict): void
 
   handleKeyDown(key: string): boolean
-  handleMouseMove(by: number): void
+  handleMouseMove(point: Point, by: number): void
   handleMouseDown(point: Point): any
   handleMouseWheel(point: Point, direction: 1 | -1): void
 
   resize(): void
   render(): void
+  lazyRender(index: number): void
+}
+
+interface ICaratCorrelations {
+  getInit(): CaratColumnInit
+  getWidth(): number
+  render(index?: number): void
 }
 
 /** Трек каротажной диаграммы. */
@@ -122,9 +130,11 @@ interface ICaratColumnGroup {
   readonly xAxis: CaratColumnXAxis,
   readonly yAxis: CaratColumnYAxis,
 
+  getDataRect(): Rectangle
   getWidth(): number
   getColumns(): ICaratColumn[]
   getRange(): [number, number]
+  getIntervals(): any[]
   hasCurveColumn(): boolean
 }
 

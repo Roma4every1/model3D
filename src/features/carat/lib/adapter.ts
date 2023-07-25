@@ -71,6 +71,6 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
 export function caratStateToSettings(id: FormID, state: CaratState): CaratFormSettings {
   const settings = state.stage.getCaratSettings();
   const columns = state.stage.getActiveTrack().getInitColumns();
-  columns.push(state.stage.correlationInit);
+  columns.push(state.stage.correlations.getInit());
   return {id, settings, columns};
 }

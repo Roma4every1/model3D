@@ -1,7 +1,7 @@
 import { CaratDrawer } from './drawer';
 import { CaratColumn } from './column';
 import { CaratCurveColumn } from './curve-column';
-import { CaratCurveModel } from '../lib/types';
+import { CaratCurveModel, CaratIntervalModel } from '../lib/types';
 import { CaratColumnHeader } from './column-header';
 import { CurveManager } from '../lib/curve-manager';
 import { distanceFromCaratCurve } from '../lib/utils';
@@ -152,6 +152,11 @@ export class CaratColumnGroup implements ICaratColumnGroup {
 
   public getDataRect(): Rectangle {
     return this.dataRect;
+  }
+
+  public getIntervals(): CaratIntervalModel[] {
+    const lithologyColumn = this.columns.find(c => c.channel.type === 'lithology');
+    return lithologyColumn ? lithologyColumn.getElements() : [];
   }
 
   public getWidth(): number {

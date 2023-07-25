@@ -2,6 +2,8 @@
 export interface CaratDrawerConfig {
   /** Глобальные настройки. */
   stage: {
+    /** Величина отступов вокруг треков. */
+    padding: number,
     /** Глобальные настройки шрифта сцены. */
     font: CSSFont,
   },
@@ -9,8 +11,6 @@ export interface CaratDrawerConfig {
   track: {
     /** Настройки тела трека. */
     body: {
-      /** Величина отступов вокруг трека. */
-      margin: number,
       /** Цвет и толщина рамки вокруг трека. */
       border: {color: ColorHEX, thickness: number},
     },
@@ -68,12 +68,15 @@ export interface CaratDrawerConfig {
       },
     },
   },
+  correlation: {
+    thickness: number,
+  },
 }
 
 /** Настройки отрисовки тела трека. */
 export interface CaratTrackBodyDrawSettings {
-  /** Величина отступов вокруг трека. */
-  readonly margin: number,
+  /** Величина отступов вокруг треков. */
+  readonly padding: number,
   /** Цвет рамки всего трека. */
   readonly borderColor: ColorHEX,
   /** Толщина рамки всего трека. */
@@ -144,10 +147,18 @@ export interface CaratColumnXAxesDrawSettings {
   readonly gridLineDash: number[],
 }
 
+/** Настройки отрисовки корреляций. */
+export interface CaratCorrelationDrawSettings {
+  /** Толщина обводки. */
+  readonly thickness: number,
+}
+
+
 /** Создаёт настройки отрисовки трека по конфигу. */
 export function createTrackBodyDrawSettings(config: CaratDrawerConfig): CaratTrackBodyDrawSettings {
-  const { margin, border } = config.track.body;
-  return {margin, borderColor: border.color, borderThickness: border.thickness};
+  const padding = config.stage.padding;
+  const { border } = config.track.body;
+  return {padding, borderColor: border.color, borderThickness: border.thickness};
 }
 
 /** Создаёт настройки отрисовки трека по конфигу. */
@@ -194,6 +205,11 @@ export function createColumnXAxesDrawSettings(config: CaratDrawerConfig): CaratC
     thickness, markSize, gap, axisHeight,
     gridThickness: grid.thickness, gridLineDash: grid.lineDash
   };
+}
+
+/** Создаёт настройки отрисовки корреляций по конфигу. */
+export function createCorrelationDrawSettings(config: CaratDrawerConfig): CaratCorrelationDrawSettings {
+  return {thickness: config.correlation.thickness};
 }
 
 /** Преобразует модель шрифта в `canvas.font`. */

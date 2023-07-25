@@ -74,7 +74,8 @@ export const Carat = ({id, channels}: FormState) => {
 
   const onMouseMove = (e: MouseEvent) => {
     if (!isOnMoveRef.current) return;
-    stage.handleMouseMove(e.nativeEvent.movementY);
+    const { offsetX: x, offsetY: y } = e.nativeEvent;
+    stage.handleMouseMove({x, y}, e.nativeEvent.movementY);
   };
 
   const onWheel = (e: WheelEvent) => {

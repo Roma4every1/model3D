@@ -62,7 +62,7 @@ export class CaratColumn implements ICaratColumn {
     return names;
   }
 
-  public getElements(): any[] {
+  public getElements(): CaratIntervalModel[] {
     return this.intervals;
   }
 

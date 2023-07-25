@@ -79,11 +79,11 @@ export const curveColorCriterion: ChannelCriterion = {
 /** Настройки отрисовки. */
 export const drawerConfig: CaratDrawerConfig = {
   stage: {
+    padding: 4,
     font: {size: 14, style: 'normal', family: '"Segoe UI", Roboto, sans-serif'}
   },
   track: {
     body: {
-      margin: 4,
       border: {color: '#111111', thickness: 1},
     },
     header: {
@@ -116,5 +116,8 @@ export const drawerConfig: CaratDrawerConfig = {
         grid: {thickness: 1, lineDash: [5, 4]},
       },
     },
+  },
+  correlation: {
+    thickness: 1,
   },
 };
