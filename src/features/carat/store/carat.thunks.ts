@@ -9,7 +9,6 @@ export function setCaratData(id: FormID, data: ChannelDataDict): Thunk {
     const { objects, carats } = getState();
     const { stage, loader, loading } = carats[id];
     const { well: { model: currentWell }, trace: { model: currentTrace } } = objects;
-    if (!loading) dispatch(setCaratLoading(id, true));
 
     if (currentTrace) {
       if (currentTrace.nodes.length) stage.setTrackList(currentTrace.nodes);
@@ -19,6 +18,7 @@ export function setCaratData(id: FormID, data: ChannelDataDict): Thunk {
       return;
     }
 
+    if (!loading) dispatch(setCaratLoading(id, true));
     const flag = ++loader.flag;
     const caratData = await loader.getCaratData(stage.wellIDs, data);
     if (flag !== loader.flag) return;

@@ -32,8 +32,9 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
           attachedChannel.inclinometry = {name: inclinometryChannel, info, dict: null};
           usedChannels.add(inclinometryChannel);
           attachments.push(attachedChannel.inclinometry as any);
+        } else {
+          delete attachedChannel.type;
         }
-        delete attachedChannel.type;
       } else {
         applyStyle(attachedChannel, column.properties[attachedChannel.name], channel, channelDict);
       }

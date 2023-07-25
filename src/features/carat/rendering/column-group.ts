@@ -171,12 +171,12 @@ export class CaratColumnGroup implements ICaratColumnGroup {
       if (colMin < min) min = colMin;
       if (colMax > max) max = colMax;
     }
+    if (this.curveColumn) {
+      const [curveMin, curveMax] = this.curveColumn.getRange();
+      if (curveMin < min) min = curveMin;
+      if (curveMax > max) max = curveMax;
+    }
     return [min, max];
-  }
-
-  public getCurvesRange(): [number, number] {
-    if (this.curveColumn) return this.curveColumn.getRange();
-    return [Infinity, -Infinity];
   }
 
   public hasCurveColumn(): boolean {

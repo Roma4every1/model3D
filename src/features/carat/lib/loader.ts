@@ -42,9 +42,10 @@ export class CaratLoader implements ICaratLoader {
     const dict: ChannelRecordDict = {};
     const curveIDs: CaratCurveID[] = [];
 
-    for (const attachment of this.attachedChannels) {
-      let records = data[attachment.name];
-      if (!records) { dict[attachment.name] = []; continue; }
+    for (const channelName in data) {
+      const attachment = this.attachedChannels.find(a => a.name === channelName);
+      let records = data[channelName];
+      if (!records) { dict[channelName] = []; continue; }
 
       if (needFilter && records.length) {
         const wellColumnName = attachment.info.well.name;
@@ -57,7 +58,7 @@ export class CaratLoader implements ICaratLoader {
         const defaultCurves = records.filter(record => Boolean(record[loadingName]));
         curveIDs.push(...defaultCurves.map(record => record[idName]));
       }
-      dict[attachment.name] = records;
+      dict[channelName] = records;
     }
     return [dict, curveIDs] as [ChannelRecordDict, CaratCurveID[]];
   }

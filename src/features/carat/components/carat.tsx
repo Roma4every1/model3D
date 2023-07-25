@@ -36,7 +36,7 @@ export const Carat = ({id, channels}: FormState) => {
   // обновление данных каналов
   useEffect(() => {
     dispatch(setCaratData(id, channelData));
-  }, [channelData, id, dispatch]);
+  }, [channelData, currentWell, currentTrace, id, dispatch]);
 
   // обновление ссылки на холст
   useLayoutEffect(() => {

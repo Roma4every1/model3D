@@ -281,9 +281,6 @@ export class CaratTrack implements ICaratTrack {
         }
         this.rect.width += widthDelta;
       }
-      const [groupMin, groupMax] = this.groups[i].getCurvesRange();
-      if (groupMin < this.viewport.min) this.viewport.min = groupMin;
-      if (groupMax > this.viewport.max) this.viewport.max = groupMax;
     }
     this.backgroundGroup.setWidth(this.rect.width);
   }

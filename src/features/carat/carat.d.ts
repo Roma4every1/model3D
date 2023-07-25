@@ -125,7 +125,6 @@ interface ICaratColumnGroup {
   getWidth(): number
   getColumns(): ICaratColumn[]
   getRange(): [number, number]
-  getCurvesRange(): [number, number]
   hasCurveColumn(): boolean
 }
 
