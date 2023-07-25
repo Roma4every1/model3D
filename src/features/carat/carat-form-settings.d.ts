@@ -134,7 +134,7 @@ interface CaratAttachedChannel {
   /** Название канала с инклинометрией. */
   inclinometry?: CaratAttachedLookup,
   /** Название справочника цветов кривых. */
-  curveColorLookup?: ChannelName,
+  curveColorLookup?: CaratAttachedLookup,
   /** Информация о справочниках цветов и текста пропластков. */
   styles?: CaratStyleLookup[],
   /** Справочник с названиями пластов. */

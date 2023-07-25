@@ -176,11 +176,12 @@ export class CurveManager {
 
   public setStyleData(lookupData: ChannelRecordDict) {
     this.styleDict.clear();
-    const curveColorChannel = lookupData[this.curveSetChannel.curveColorLookup];
+    if (!this.curveSetChannel.curveColorLookup) return;
+    const { name, info } = this.curveSetChannel.curveColorLookup;
 
-    curveColorChannel?.forEach((record) => {
-      // TODO: добавить info
-      let [type, color] = Object.values(record) as [string, string];
+    lookupData[name]?.forEach((record) => {
+      const type = record[info.type.name];
+      const color = record[info.color.name];
       this.styleDict.set(type, {color: fixHEX(color), thickness: 2});
     });
   }

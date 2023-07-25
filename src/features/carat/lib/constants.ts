@@ -19,7 +19,7 @@ export const constraints = {
 };
 
 /** Свойства для идентификации каналов. */
-export const criterionProperties: Record<CaratChannelType, ChannelCriterion> = {
+export const caratChannelCriterionDict: Record<CaratChannelType, ChannelCriterion> = {
   'lithology': {
     well: 'WELL ID', stratumID: 'STRATUM ID',
     top: 'TOP', bottom: 'BASE',
@@ -48,14 +48,14 @@ export const criterionProperties: Record<CaratChannelType, ChannelCriterion> = {
 };
 
 /** Свойства для идентификации канала с данными инклинометрии. */
-export const inclinometryDataProperties: ChannelCriterion = {
+export const inclinometryCriterion: ChannelCriterion = {
   well: 'WELL ID',
   depth: 'DEPTH',
   absMark: 'ABSMARK',
 };
 
 /** Свойства для идентификации канала с цветами пластов. */
-export const styleCriterionProperties: ChannelCriterion = {
+export const lithologyStyleCriterion: ChannelCriterion = {
   id: 'LOOKUPCODE',
   color: 'COLOR',
   borderColor: 'BORDER COLOR',
@@ -65,9 +65,15 @@ export const styleCriterionProperties: ChannelCriterion = {
 };
 
 /** Свойства для идентификации канала с подписями пластов. */
-export const labelCriterionProperties: ChannelCriterion = {
+export const lithologyLabelCriterion: ChannelCriterion = {
   id: 'LOOKUPCODE',
   value: 'LOOKUPVALUE',
+};
+
+/** Свойства для идентификации справочника с цветами кривых. */
+export const curveColorCriterion: ChannelCriterion = {
+  type: 'LOOKUPCODE',
+  color: 'COLOR',
 };
 
 /** Настройки отрисовки. */

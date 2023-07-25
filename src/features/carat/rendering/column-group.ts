@@ -142,7 +142,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     const names: ChannelName[] = [];
     for (const column of this.columns) names.push(...column.getLookupNames());
     const curveSetChannel = this.curveManager.curveSetChannel;
-    if (curveSetChannel) names.push(curveSetChannel.curveColorLookup);
+    if (curveSetChannel?.curveColorLookup) names.push(curveSetChannel.curveColorLookup.name);
     return names;
   }
 

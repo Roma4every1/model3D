@@ -2,7 +2,7 @@ import { CaratStage } from '../rendering/stage';
 import { CaratLoader } from './loader';
 import { createColumnInfo } from 'entities/channels';
 import { identifyCaratChannel, applyStyle } from './channels';
-import { drawerConfig, criterionProperties, inclinometryDataProperties } from './constants';
+import { drawerConfig, caratChannelCriterionDict, inclinometryCriterion } from './constants';
 
 
 /** Создаёт состояние каротажа по её начальным настройкам. */
@@ -23,12 +23,12 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
       if (attachedChannel.type === 'curve-data') {
         curveDataChannel = attachedChannel;
       } if (attachedChannel.type === 'inclinometry') {
-        const propertyName = criterionProperties.inclinometry.inclinometry;
+        const propertyName = caratChannelCriterionDict.inclinometry.inclinometry;
         const property = channel.info.properties.find(p => p.name === propertyName);
         const inclinometryChannel = property?.secondLevelChannelName;
 
         if (inclinometryChannel) {
-          const info = createColumnInfo(channelDict[inclinometryChannel], inclinometryDataProperties);
+          const info = createColumnInfo(channelDict[inclinometryChannel], inclinometryCriterion);
           attachedChannel.inclinometry = {name: inclinometryChannel, info, dict: null};
           usedChannels.add(inclinometryChannel);
           attachments.push(attachedChannel.inclinometry as any);

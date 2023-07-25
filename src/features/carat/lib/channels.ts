@@ -1,15 +1,15 @@
 import { cellsToRecords, createColumnInfo } from 'entities/channels';
 
 import {
-  criterionProperties,
-  styleCriterionProperties, labelCriterionProperties
+  caratChannelCriterionDict, curveColorCriterion,
+  lithologyStyleCriterion, lithologyLabelCriterion
 } from './constants';
 
 
 export function identifyCaratChannel(attachment: CaratAttachedChannel, channel: Channel) {
   attachment.properties = getAttachedProperties(attachment, channel);
-  for (const channelType in criterionProperties) {
-    const info = createColumnInfo(channel, criterionProperties[channelType]);
+  for (const channelType in caratChannelCriterionDict) {
+    const info = createColumnInfo(channel, caratChannelCriterionDict[channelType]);
     if (info) {
       attachment.type = channelType as CaratChannelType;
       attachment.info = info as any;
@@ -25,7 +25,9 @@ export function applyStyle(
   if (attachment.type === 'curve-set') {
     const colorPropertyName = attachment.info.type.name;
     const colorProperty = channel.info.properties.find(p => p.fromColumn === colorPropertyName);
-    attachment.curveColorLookup = colorProperty?.lookupChannels?.at(0);
+    const lookupName = colorProperty?.lookupChannels?.at(0);
+    const info = createColumnInfo(dict[lookupName], curveColorCriterion);
+    if (info) attachment.curveColorLookup = {name: lookupName, info, dict: null};
   }
   else if (attachment.type === 'lithology' || attachment.type === 'perforations') {
     attachment.styles = [];
@@ -36,11 +38,11 @@ export function applyStyle(
 
       for (const lookup of lookups) {
         if (!styleInfo) {
-          styleInfo = createColumnInfo(lookup, styleCriterionProperties);
+          styleInfo = createColumnInfo(lookup, lithologyStyleCriterion);
           if (styleInfo) styleChannel = lookup.name;
         }
         if (!textInfo) {
-          textInfo = createColumnInfo(lookup, labelCriterionProperties);
+          textInfo = createColumnInfo(lookup, lithologyLabelCriterion);
           if (textInfo) textChannel = lookup.name;
         }
       }
@@ -51,7 +53,7 @@ export function applyStyle(
       });
     }
     for (const property of channel.info.properties) {
-      if (property.name === criterionProperties.lithology.stratumID) {
+      if (property.name === caratChannelCriterionDict.lithology.stratumID) {
         attachment.namesChannel = property.lookupChannels[0];
       }
     }
