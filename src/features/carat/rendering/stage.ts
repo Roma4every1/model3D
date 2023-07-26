@@ -94,6 +94,37 @@ export class CaratStage implements ICaratStage {
     }
   }
 
+  public edit(action: StageEditAction): void {
+    switch (action.type) {
+      case 'scale': { // изменение масштаба
+        for (const track of this.trackList) track.setScale(action.payload);
+        return;
+      }
+      case 'move': { // изменении порядка колонок
+        const { idx, to } = action.payload;
+        for (const track of this.trackList) track.moveGroup(idx, to);
+        return;
+      }
+      case 'group-width': { // изменение ширины колонки
+        const { idx, width } = action.payload;
+        for (const track of this.trackList) track.setGroupWidth(idx, width);
+        this.setTrackLefts();
+        return;
+      }
+      case 'group-label': { // изменение подписи колонки
+        const { idx, label } = action.payload;
+        for (const track of this.trackList) track.setGroupLabel(idx, label);
+        return;
+      }
+      case 'group-y-step': { // изменение шага по оси Y
+        const { idx, step } = action.payload;
+        for (const track of this.trackList) track.setGroupYAxisStep(idx, step);
+        return;
+      }
+      default: {}
+    }
+  }
+
   public setData(data: ChannelRecordDict[], cache: CurveDataCache) {
     for (let i = 0; i < data.length; i++) {
       this.trackList[i].setData(data[i], cache);
@@ -105,10 +136,6 @@ export class CaratStage implements ICaratStage {
 
   public setLookupData(lookupData: ChannelRecordDict) {
     for (const track of this.trackList) track.setLookupData(lookupData);
-  }
-
-  public setScale(scale: number) {
-    for (const track of this.trackList) track.setScale(scale);
   }
 
   public handleKeyDown(key: string): boolean {

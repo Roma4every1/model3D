@@ -164,12 +164,12 @@ export class CaratTrack implements ICaratTrack {
     this.activeIndex = idx;
   }
 
-  public setActiveGroupWidth(width: number) {
-    const activeGroup = this.groups[this.activeIndex];
-    if (!activeGroup) return;
+  public setGroupWidth(idx: number, width: number) {
+    const group = this.groups[idx];
+    if (!group) return;
 
-    const oldWidth = activeGroup.getDataRect().width;
-    const newWidth = activeGroup.setWidth(width);
+    const oldWidth = group.getDataRect().width;
+    const newWidth = group.setWidth(width);
     const delta = newWidth - oldWidth;
 
     for (let i = this.activeIndex + 1; i < this.groups.length; i++) {
@@ -179,18 +179,18 @@ export class CaratTrack implements ICaratTrack {
     this.backgroundGroup.setWidth(this.rect.width);
   }
 
-  public setActiveGroupLabel(label: string) {
-    const activeGroup = this.groups[this.activeIndex];
-    if (!activeGroup) return;
-    activeGroup.setLabel(label);
+  public setGroupLabel(idx: number, label: string) {
+    const group = this.groups[idx];
+    if (!group) return;
+    group.setLabel(label);
     this.rebuildHeaders();
   }
 
-  public setActiveGroupYAxisStep(step: number) {
-    const activeGroup = this.groups[this.activeIndex];
-    if (!activeGroup) return;
-    activeGroup.yAxis.step = step;
-    const groupWithYAxis = this.groups.find((group) => group.yAxis?.show);
+  public setGroupYAxisStep(idx: number, step: number) {
+    const group = this.groups[idx];
+    if (!group) return;
+    group.yAxis.step = step;
+    const groupWithYAxis = this.groups.find(group => group.yAxis?.show);
     this.viewport.scroll.step = groupWithYAxis?.yAxis.step ?? defaultSettings.yAxisStep;
   }
 

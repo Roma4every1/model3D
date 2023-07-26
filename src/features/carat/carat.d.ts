@@ -69,8 +69,8 @@ interface ICaratStage {
 
   setTrackList(wells: WellModel[]): void
   setCanvas(canvas: HTMLCanvasElement): void
-  setScale(scale: number): void
   setZones(zones: CaratZone[]): void
+  edit(action: StageEditAction): void
 
   setData(data: ChannelRecordDict[], cache: CurveDataCache): void
   setLookupData(lookupData: ChannelRecordDict): void
@@ -84,6 +84,13 @@ interface ICaratStage {
   render(): void
   lazyRender(index: number): void
 }
+
+type StageEditAction =
+  PayloadAction<'scale', number> |
+  PayloadAction<'move', {idx: number, to: 'left' | 'right'}> |
+  PayloadAction<'group-width', {idx: number, width: number}> |
+  PayloadAction<'group-label', {idx: number, label: string}> |
+  PayloadAction<'group-y-step', {idx: number, step: number}>;
 
 interface ICaratCorrelations {
   getInit(): CaratColumnInit
@@ -103,15 +110,9 @@ interface ICaratTrack {
   getActiveGroup(): ICaratColumnGroup | null
   getActiveIndex(): number
 
-  setWellName(wellName: WellName): void
-  setScale(scale: number): void
   setActiveGroup(idx: number): void
   setActiveCurve(curve: any): void
-  setActiveGroupWidth(width: number): void
-  setActiveGroupLabel(label: string): void
-  setActiveGroupYAxisStep(step: number): void
 
-  moveGroup(idx: number, to: 'left' | 'right'): void
   handleMouseDown(point: Point): any
 
   render(): void

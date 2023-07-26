@@ -34,6 +34,7 @@ export const CaratActiveGroupPanel = ({stage, track, activeGroup, signal}: Carat
 };
 
 const GroupCommonSettings = ({stage, track, activeGroup, signal}: CaratActiveGroupPanelProps) => {
+  const activeIndex = track.getActiveIndex();
   const maxLabelLength = constraints.groupLabel.max;
   const { min: minStep, max: maxStep } = constraints.groupStep;
   const { min: minWidth, max: maxWidth } = constraints.groupWidth;
@@ -52,21 +53,21 @@ const GroupCommonSettings = ({stage, track, activeGroup, signal}: CaratActiveGro
   const onLabelChange = ({value}: TextBoxChangeEvent) => {
     if (typeof value !== 'string') return;
     setLabel(value); signal();
-    track.setActiveGroupLabel(value);
+    stage.edit({type: 'group-label', payload: {idx: activeIndex, label: value}});
     stage.render();
   };
 
   const onWidthChange = ({value}: NumericTextBoxChangeEvent) => {
     setWidth(value);
     if (value === null || value < minWidth || value > maxWidth) return;
-    track.setActiveGroupWidth(value);
+    stage.edit({type: 'group-width', payload: {idx: activeIndex, width: value}});
     stage.resize(); stage.render();
   };
 
   const onStepChange = ({value}: NumericTextBoxChangeEvent) => {
     setStep(value);
     if (!value || value < minStep || value > maxStep) return;
-    track.setActiveGroupYAxisStep(value);
+    stage.edit({type: 'group-y-step', payload: {idx: activeIndex, step: value}});
     stage.render();
   };
 
