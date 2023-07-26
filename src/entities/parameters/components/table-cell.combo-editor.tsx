@@ -31,13 +31,17 @@ function getValueToShow(channel: Channel, parameter: ParamTableCell) {
   const value = parameter.value;
   const nullDisplayValue = parameter.nullDisplayValue ?? 'Нет значения';
 
-  const comboBoxItems = getComboBoxItems(channel);
-  if (comboBoxItems) data = comboBoxItems;
-  if (parameter.showNullValue) data.push({id: null, name: nullDisplayValue, value: null});
+  if (channel) {
+    const comboBoxItems = getComboBoxItems(channel);
+    if (comboBoxItems) data = comboBoxItems;
+    if (parameter.showNullValue) data.push({id: null, name: nullDisplayValue, value: null});
 
-  if (value) {
-    const dataID = value.substring(0, value.indexOf('#'));
-    initValue = data.find(item => String(item.id) === dataID) ?? null;
+    if (value) {
+      const dataID = value.substring(0, value.indexOf('#'));
+      initValue = data.find(item => String(item.id) === dataID) ?? null;
+    } else if (parameter.showNullValue) {
+      initValue = {id: value, name: nullDisplayValue, value};
+    }
   } else if (parameter.showNullValue) {
     initValue = {id: value, name: nullDisplayValue, value};
   }
