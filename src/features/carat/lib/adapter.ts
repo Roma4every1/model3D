@@ -12,6 +12,7 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
   init.columns.sort((a, b) => a.settings.index - b.settings.index);
 
   let curveDataChannel: CaratAttachedChannel;
+  let inclinometryChannel: CaratAttachedChannel;
   const usedChannels = new Set<ChannelName>();
   const attachments: CaratAttachedChannel[] = [];
 
@@ -25,12 +26,15 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
       } if (attachedChannel.type === 'inclinometry') {
         const propertyName = caratChannelCriterionDict.inclinometry.inclinometry;
         const property = channel.info.properties.find(p => p.name === propertyName);
-        const inclinometryChannel = property?.secondLevelChannelName;
+        const inclinometryDataChannel = property?.secondLevelChannelName;
 
-        if (inclinometryChannel) {
-          const info = createColumnInfo(channelDict[inclinometryChannel], inclinometryCriterion);
-          attachedChannel.inclinometry = {name: inclinometryChannel, info, dict: null};
-          usedChannels.add(inclinometryChannel);
+        if (inclinometryDataChannel) {
+          const info = createColumnInfo(channelDict[inclinometryDataChannel], inclinometryCriterion);
+          attachedChannel.inclinometry = {name: inclinometryDataChannel, info, dict: null};
+
+          inclinometryChannel = attachedChannel;
+          usedChannels.add(attachedChannel.name);
+          usedChannels.add(inclinometryDataChannel);
           attachments.push(attachedChannel.inclinometry as any);
         } else {
           delete attachedChannel.type;
@@ -54,7 +58,7 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
   const lookupNames = track.getLookupNames();
 
   formState.channels = [...usedChannels];
-  const loader = new CaratLoader(attachments, curveDataChannel);
+  const loader = new CaratLoader(attachments, curveDataChannel, inclinometryChannel);
 
   const curveGroup = activeGroup?.hasCurveColumn()
     ? activeGroup
