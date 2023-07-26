@@ -1,9 +1,3 @@
-const addParam = (column: ChannelColumn, rowValue: any, propName: string) => {
-  return rowValue !== null
-    ? propName + '#' + rowValue + '#' + column.NetType
-    : propName + '##System.DBNull';
-};
-
 export function tableRowToString(channel: Channel, row: ChannelRow): string {
   if (!row) return null;
 
@@ -24,6 +18,21 @@ export function tableRowToString(channel: Channel, row: ChannelRow): string {
     return addParamRow(channel.info.properties, column, row, i);
   });
   return valueString.join('');
+}
+
+function addParam(column: ChannelColumn, rowValue: any, propName: string): string {
+  return rowValue !== null
+    ? propName + '#' + rowValue + '#' + column.NetType
+    : propName + '##System.DBNull';
+}
+
+/* --- --- */
+
+export function tableCellToString(channel: Channel, row: ChannelRow): string {
+  const idIndex = channel.info.lookupColumns.id.index;
+  const value = row.Cells[idIndex];
+  if (value === null) return '#System.DBNull';
+  return String(value) + '#' + channel.data.columns[idIndex].NetType;
 }
 
 export function stringToTableCell(rowString: string, columnName: string): string {

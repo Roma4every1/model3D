@@ -6,7 +6,7 @@ import { FileEditor } from './file.editor';
 import { IntegerEditor } from './integer.editor';
 import { StringComboEditor } from './string.combo-editor';
 import { StringEditor } from './string.editor';
-// import { TableCellComboEditor } from './table-cell.combo-editor';
+import { TableCellComboEditor } from './table-cell.combo-editor';
 import { TableRowComboEditor } from './table-row.combo-editor';
 
 
@@ -27,7 +27,7 @@ const editorsDict: Record<string, FunctionComponent<EditorProps>> = {
   integerTextEditor: IntegerEditor,
   stringComboEditor: StringComboEditor,
   stringTextEditor: StringEditor,
-  tableCellComboEditor: TableRowComboEditor,
+  tableCellComboEditor: TableCellComboEditor,
   tableRowComboEditor: TableRowComboEditor,
   tableRowComboListEditor: TableRowComboEditor,
   tableRowTreeMultiEditor: TableRowComboEditor,
