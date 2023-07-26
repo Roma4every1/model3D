@@ -1,6 +1,10 @@
 import { Dispatch } from 'redux';
-import { createPlaceModel, createWellModel, createTraceModel } from './creators';
 import { setObjects } from '../store/objects.actions';
+
+import {
+  createPlaceModel, createStratumModel,
+  createWellModel, createTraceModel,
+} from './creators';
 
 
 /** Преобразует модель трассы в запись канала. */
@@ -45,35 +49,42 @@ export function traceToNodeChannelRows(nodeChannel: Channel, model: TraceModel):
 /** По данным обновления параметров обновляет активные объекты. */
 export function updateObjects(updates: UpdateParamData[], dispatch: Dispatch, state: WState) {
   const { channels, objects } = state;
-  let { place, well, trace } = objects;
+  let { place, stratum, well, trace } = objects;
 
   const placeParameterID = place.parameterID;
+  const stratumParameterID = stratum.parameterID;
   const wellParameterID = well.parameterID;
   const traceParameterID = trace.parameterID;
-
-  const placeChannel = channels[place.channelName];
   const wellChannel = channels[well.channelName];
-  const traceChannel = channels[trace.channelName];
-  const nodeChannel = channels[trace.nodeChannelName];
 
-  const changeFlags = {place: false, well: false, trace: false};
+  const changeFlags = {place: false, stratum: false, well: false, trace: false};
   for (const { id, value } of updates) {
     if (id === placeParameterID) {
+      const placeChannel = channels[place.channelName];
       place.model = value ? createPlaceModel(value, placeChannel.info.columns) : null;
       changeFlags.place = true;
-    } else if (id === wellParameterID) {
+    }
+    else if (id === stratumParameterID) {
+      const stratumChannel = channels[stratum.channelName];
+      stratum.model = value ? createStratumModel(value, stratumChannel.info.columns) : null;
+    }
+    else if (id === wellParameterID) {
       well.model = value ? createWellModel(value, wellChannel.info.columns) : null;
       changeFlags.well = true;
-    } else if (id === traceParameterID) {
+    }
+    else if (id === traceParameterID) {
+      const traceChannel = channels[trace.channelName];
+      const nodeChannel = channels[trace.nodeChannelName];
       const model = value ? createTraceModel(value, traceChannel, nodeChannel, wellChannel) : null;
       trace = {...trace, model, oldModel: null, editing: false, creating: false};
       changeFlags.trace = true;
     }
   }
 
-  if (changeFlags.place || changeFlags.well || changeFlags.trace) {
-    const newObjects: ObjectsState = {place, well, trace};
+  if (changeFlags.place || changeFlags.stratum || changeFlags.well || changeFlags.trace) {
+    const newObjects: ObjectsState = {place, stratum, well, trace};
     if (changeFlags.place) newObjects.place = {...place};
+    if (changeFlags.stratum) newObjects.stratum = {...stratum};
     if (changeFlags.well) newObjects.well = {...well};
     dispatch(setObjects(newObjects));
   }

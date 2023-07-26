@@ -1,9 +1,13 @@
-import { createColumnInfo } from '../../channels/lib/common';
-import { createPlaceModel, createTraceModel, createWellModel } from './creators';
+import { createColumnInfo } from '../../channels';
 
 import {
-  traceChannelName,
-  traceCriterion, traceNodeCriterion, wellCriterion, placeCriterion,
+  createPlaceModel, createStratumModel,
+  createWellModel, createTraceModel,
+} from './creators';
+
+import {
+  placeCriterion, stratumCriterion, wellCriterion,
+  traceCriterion, traceNodeCriterion, traceChannelName,
 } from './constants';
 
 
@@ -11,21 +15,46 @@ export function createObjects(state: WState): ObjectsState {
   const well = createWellState(state);
   const trace = createTraceState(state);
   const place = createPlaceState(state, trace);
-  return {place, well, trace};
+  const stratum = createStratumState(state);
+  return {place, stratum, well, trace};
+}
+
+function createStratumState(state: WState): StratumState {
+  let channelName: ChannelName = null, parameterID: ParameterID = null;
+  const rootParameters = state.parameters[state.root.id];
+  const stratumParameter = rootParameters.find(p => p.id === 'currentPlast');
+
+  if (stratumParameter) {
+    channelName = stratumParameter.externalChannelName;
+    parameterID = stratumParameter.id;
+
+    const stratumChannel = state.channels[channelName];
+    if (stratumChannel) {
+      stratumChannel.info.columns = createColumnInfo(stratumChannel, stratumCriterion);
+    } else {
+      channelName = null;
+    }
+  }
+  return {channelName, parameterID, model: null};
 }
 
 function createWellState(state: WState): WellState {
+  let channelName: ChannelName = null, parameterID: ParameterID = null;
   const rootParameters = state.parameters[state.root.id];
   const wellParameter = rootParameters.find(p => p.id === 'wellCurrent' || p.id === 'currentWell');
 
-  const wellChannelName = wellParameter.externalChannelName;
-  const wellChannel = state.channels[wellChannelName];
-  if (wellChannel) wellChannel.info.columns = createColumnInfo(wellChannel, wellCriterion);
+  if (wellParameter) {
+    channelName = wellParameter.externalChannelName;
+    parameterID = wellParameter.id;
 
-  return {
-    channelName: wellParameter.externalChannelName,
-    parameterID: wellParameter.id, model: null,
-  };
+    const wellChannel = state.channels[channelName];
+    if (wellChannel) {
+      wellChannel.info.columns = createColumnInfo(wellChannel, wellCriterion);
+    } else {
+      channelName = null;
+    }
+  }
+  return {channelName, parameterID, model: null};
 }
 
 function createTraceState(state: WState): TraceState {
@@ -71,7 +100,7 @@ function createPlaceState(state: WState, traceState: TraceState): PlaceState {
 
 export function createObjectModels(state: WState): ObjectsState {
   const { objects, parameters, channels } = state;
-  let { place, well, trace } = objects;
+  let { place, stratum, well, trace } = objects;
   const rootParameters = parameters[state.root.id];
 
   if (place.channelName && place.parameterID) {
@@ -81,6 +110,16 @@ export function createObjectModels(state: WState): ObjectsState {
     if (placeRowString) {
       const model = createPlaceModel(placeRowString, placeChannel.info.columns);
       place = {...place, model};
+    }
+  }
+
+  if (stratum.channelName && stratum.parameterID) {
+    const stratumChannel = channels[stratum.channelName];
+    const stratumParameter = rootParameters.find(p => p.id === stratum.parameterID);
+    const stratumRowString = stratumParameter.value as ParamValueTableRow;
+    if (stratumRowString) {
+      const model = createStratumModel(stratumRowString, stratumChannel.info.columns);
+      stratum = {...stratum, model};
     }
   }
 
@@ -103,5 +142,5 @@ export function createObjectModels(state: WState): ObjectsState {
     }
   }
 
-  return {place, well, trace};
+  return {place, stratum, well, trace};
 }

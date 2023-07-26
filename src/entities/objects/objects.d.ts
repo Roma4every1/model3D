@@ -1,15 +1,18 @@
 /** Активные объекты.
- * + `place`: {@link PlaceState} — месторождения
- * + `well`: {@link WellState} — скважины
- * + `trace`: {@link TraceState} — трассы
+ * + `place`: {@link PlaceState} — месторождение
+ * + `stratum`: {@link StratumState} — пласт
+ * + `well`: {@link WellState} — скважина
+ * + `trace`: {@link TraceState} — трасса
  * */
 interface ObjectsState {
-  /** Месторождения. */
-  place: PlaceState,
-  /** Скважины. */
-  well: WellState,
-  /** Трассы. */
-  trace: TraceState,
+  /** Месторождение. */
+  place: PlaceState;
+  /** Пласт. */
+  stratum: StratumState;
+  /** Скважин. */
+  well: WellState;
+  /** Трасса. */
+  trace: TraceState;
 }
 
 /* --- Place --- */
@@ -17,15 +20,15 @@ interface ObjectsState {
 /** Состояние активного месторождения.
  * + `channelName`: {@link ChannelName}
  * + `parameterID`: {@link ParameterID}
- * + `current`: {@link PlaceModel}
+ * + `model`: {@link PlaceModel}
  * */
 interface PlaceState {
   /** Название канала с месторождениями. */
-  channelName: ChannelName,
+  channelName: ChannelName | null;
   /** Идентификатор параметра месторождения. */
-  parameterID: ParameterID | null,
+  parameterID: ParameterID | null;
   /** Текущее активное месторождение. */
-  model: PlaceModel | null,
+  model: PlaceModel | null;
 }
 
 /** Модель месторождения.
@@ -34,9 +37,9 @@ interface PlaceState {
  * */
 interface PlaceModel {
   /** Идентификатор месторождения. */
-  id: PlaceID,
+  id: PlaceID;
   /** Название месторождения. */
-  name: PlaceName,
+  name: PlaceName;
 }
 
 /** Идентификатор месторождения. */
@@ -44,20 +47,52 @@ type PlaceID = number;
 /** Название месторождения. */
 type PlaceName = string;
 
+/* --- Stratum --- */
+
+/** Состояние активного пласта.
+ * + `channelName`: {@link ChannelName}
+ * + `parameterID`: {@link ParameterID}
+ * + `current`: {@link StratumModel}
+ * */
+interface StratumState {
+  /** Название канала с пластами. */
+  channelName: ChannelName | null;
+  /** Идентификатор параметра пласта. */
+  parameterID: ParameterID | null;
+  /** Текущий активный пласт. */
+  model: StratumModel | null;
+}
+
+/** Модель пласта.
+ * + `id`: {@link StratumID} — идентификатор
+ * + `name`: {@link StratumName} — название
+ * */
+interface StratumModel {
+  /** Идентификатор пласта. */
+  id: StratumID;
+  /** Название пласта. */
+  name: StratumName;
+}
+
+/** Идентификатор пласта. */
+type StratumID = number;
+/** Название пласта. */
+type StratumName = string;
+
 /* --- Well --- */
 
 /** Состояние активной скважины.
  * + `channelName`: {@link ChannelName}
  * + `parameterID`: {@link ParameterID}
- * + `current`: {@link WellModel}
+ * + `model`: {@link WellModel}
  * */
 interface WellState {
   /** Название канала со скважинами. */
-  channelName: ChannelName,
+  channelName: ChannelName | null;
   /** Идентификатор параметра скважины. */
-  parameterID: ParameterID | null,
+  parameterID: ParameterID | null;
   /** Текущая активная скважина. */
-  model: WellModel | null,
+  model: WellModel | null;
 }
 
 /** Модель скважины.
@@ -66,9 +101,9 @@ interface WellState {
  * */
 interface WellModel {
   /** Идентификатор скважины. */
-  id: WellID,
+  id: WellID;
   /** Название скважины. */
-  name: WellName,
+  name: WellName;
 }
 
 /** Идентификатор скважины (`UWID`). */
@@ -82,25 +117,26 @@ type WellName = string;
  * + `channelName`: {@link ChannelName}
  * + `nodeChannelName`: {@link ChannelName}
  * + `parameterID`: {@link ParameterID}
- * + `current`: {@link TraceModel}
+ * + `model`: {@link TraceModel}
+ * + `oldModel`: {@link TraceModel}
  * + `creating: boolean`
  * + `editing: boolean`
  * */
 interface TraceState {
   /** Название канала с трассами. */
-  channelName: ChannelName,
+  channelName: ChannelName | null;
   /** Название канала с узлами трасс. */
-  nodeChannelName: ChannelName,
+  nodeChannelName: ChannelName | null;
   /** Идентификатор параметра с трассами. */
-  parameterID: ParameterID | null,
+  parameterID: ParameterID | null;
   /** Текущая активная трасса. */
-  model: TraceModel | null,
+  model: TraceModel | null;
   /** Модель трассы до внесения изменений. */
-  oldModel: TraceModel,
+  oldModel: TraceModel | null;
   /** Создаётся ли трасса. */
-  creating: boolean,
+  creating: boolean;
   /** Является ли активная трасса редактируемой. */
-  editing: boolean,
+  editing: boolean;
 }
 
 /** Модель трассы.
@@ -111,25 +147,25 @@ interface TraceState {
  * */
 interface TraceModel {
   /** Идентификатор трассы. */
-  id: TraceID,
+  id: TraceID;
   /** Идентификатор месторождения. */
-  place: PlaceID,
+  place: PlaceID;
   /** Название трассы. */
-  name: TraceName,
+  name: TraceName;
   /** Список узлов трассы. */
-  nodes: TraceNode[],
+  nodes: TraceNode[];
 }
 
 /** Узел трассы. */
 interface TraceNode {
   /** Идентификатор узла. */
-  id: WellID,
+  id: WellID;
   /** Название узла. */
-  name: WellName,
+  name: WellName;
   /** Координата узла по X. */
-  x: number,
+  x: number;
   /** Координата узла по Y. */
-  y: number,
+  y: number;
 }
 
 /** Идентификатор трассы. */
