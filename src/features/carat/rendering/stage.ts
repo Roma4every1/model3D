@@ -4,7 +4,8 @@ import { CaratCorrelations } from './correlations';
 import { CaratDrawerConfig } from './drawer-settings';
 import { CaratCurveModel } from '../lib/types';
 import { isRectInnerPoint } from 'shared/lib';
-import { moveSmoothly, calculateTrackWidth } from '../lib/utils';
+import { calculateTrackWidth } from '../lib/utils';
+import { moveSmoothly } from '../lib/smooth-scroll';
 import { defaultSettings } from '../lib/constants';
 
 
@@ -65,7 +66,7 @@ export class CaratStage implements ICaratStage {
   public setZones(zones: CaratZone[]) {
     this.zones = zones;
     for (const track of this.trackList) track.setZones(zones);
-    this.setTrackLefts();
+    this.updateTrackRects();
     this.resize();
   }
 
@@ -108,7 +109,7 @@ export class CaratStage implements ICaratStage {
       case 'group-width': { // изменение ширины колонки
         const { idx, width } = action.payload;
         for (const track of this.trackList) track.setGroupWidth(idx, width);
-        this.setTrackLefts();
+        this.updateTrackRects();
         return;
       }
       case 'group-label': { // изменение подписи колонки
@@ -129,7 +130,7 @@ export class CaratStage implements ICaratStage {
     for (let i = 0; i < data.length; i++) {
       this.trackList[i].setData(data[i], cache);
     }
-    this.setTrackLefts();
+    this.updateTrackRects();
     this.resize();
     this.correlations.setData(this.trackList);
   }
@@ -147,7 +148,7 @@ export class CaratStage implements ICaratStage {
         direction = 1;
       }
       if (direction) {
-        moveSmoothly(this, 0, direction)
+        moveSmoothly(this, -1, direction)
       }
     }
     return false;
@@ -166,20 +167,26 @@ export class CaratStage implements ICaratStage {
   }
 
   public handleMouseMove(point: Point, by: number) {
+    const move = (idx: number) => {
+      const viewport = this.trackList[idx].viewport;
+      let newY = viewport.y - by / (viewport.scale * window.devicePixelRatio);
+
+      if (newY > viewport.max) newY = viewport.max;
+      else if (newY < viewport.min) newY = viewport.min;
+
+      if (viewport.y !== newY) { viewport.y = newY; this.lazyRender(idx); }
+    };
+
     const index = this.trackList.findIndex(t => isRectInnerPoint(point, t.rect));
-    if (index === -1) return;
-
-    const viewport = this.trackList[index].viewport;
-    let newY = viewport.y - by / (viewport.scale * window.devicePixelRatio);
-
-    if (newY > viewport.max) newY = viewport.max;
-    else if (newY < viewport.min) newY = viewport.min;
-
-    if (viewport.y !== newY) { viewport.y = newY; this.lazyRender(index); }
+    if (index === -1) {
+      for (let i = 0; i < this.trackList.length; i++) move(i);
+    } else {
+      move(index);
+    }
   }
 
   /** Обновляет горизонтальное положение треков. */
-  private setTrackLefts() {
+  private updateTrackRects() {
     let left = this.trackList[0].rect.left;
     const correlationWidth = this.correlations.getWidth();
 

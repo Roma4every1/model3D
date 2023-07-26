@@ -1,0 +1,79 @@
+/** Плавно переместит вьюпорт трека.
+ * @param stage сцена диаграммы
+ * @param index индекс изменяемеого трека, если -1, то все
+ * @param direction в какую сторону
+ * */
+export function moveSmoothly(stage: ICaratStage, index: number, direction: 1 | -1) {
+  const frameTime = 16; // 60 FPS => 1000ms / 60
+
+  if (index === -1) {
+    stage.trackList.forEach((track, i) => {
+      const scroll = track.viewport.scroll;
+      fillQueue(track, direction, frameTime);
+
+      if (scroll.id === null) {
+        scroll.id = window.setInterval(moveView, frameTime, stage, track.viewport, i);
+      }
+    });
+  } else {
+    const track = stage.trackList[index];
+    const scroll = track.viewport.scroll;
+    fillQueue(track, direction, frameTime);
+
+    if (scroll.id === null) {
+      scroll.id = window.setInterval(moveView, frameTime, stage, track.viewport, index);
+    }
+  }
+}
+
+function fillQueue(track: ICaratTrack, direction: 1 | -1, frameTime: number) {
+  const duration = 250; // 0.25 second
+  const scroll = track.viewport.scroll;
+
+  if (scroll.direction !== direction) {
+    scroll.direction = direction;
+    scroll.queue = [];
+  }
+
+  const by = direction * scroll.step;
+  const queue = scroll.queue;
+  let time = 0, prevY = 0, step = 0;
+
+  while (time < duration) {
+    const currentY = by * cubicBezierEaseInOut(time / duration);
+    const delta = currentY - prevY;
+
+    if (queue[step] === undefined) {
+      queue.push(delta);
+    } else {
+      queue[step] += delta;
+    }
+
+    step += 1;
+    prevY = currentY;
+    time += frameTime;
+  }
+}
+
+/** Аналог CSS timing function `ease-in-out`. */
+function cubicBezierEaseInOut(t) {
+  return t * t * (3 - 2 * t);
+}
+
+function moveView(stage: ICaratStage, viewport: CaratViewport, i: number) {
+  const scroll = viewport.scroll;
+
+  if (scroll.queue.length === 0) {
+    clearInterval(scroll.id);
+    return scroll.id = null;
+  }
+
+  let y = viewport.y + scroll.queue.shift();
+  if (y + viewport.height > viewport.max) y = viewport.max - viewport.height;
+  else if (y < viewport.min) y = viewport.min;
+
+  if (viewport.y !== y) {
+    viewport.y = y;
+    stage.lazyRender(i);
+  }
+}

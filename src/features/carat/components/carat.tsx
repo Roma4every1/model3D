@@ -60,12 +60,15 @@ export const Carat = ({id, channels}: FormState) => {
   };
 
   const onMouseDown = (e: MouseEvent) => {
+    isOnMoveRef.current = true;
     const { offsetX: x, offsetY: y } = e.nativeEvent;
+
     const result = stage.handleMouseDown({x, y});
-    if (!result) return;
-    isOnMoveRef.current = true; stage.render();
-    dispatch(setCaratActiveGroup(id, stage.getActiveTrack().getActiveGroup()));
-    if (typeof result === 'object') dispatch(setCaratActiveCurve(id, result));
+    if (result) {
+      stage.render();
+      dispatch(setCaratActiveGroup(id, stage.getActiveTrack().getActiveGroup()));
+      if (typeof result === 'object') dispatch(setCaratActiveCurve(id, result));
+    }
   };
 
   const onMouseUp = () => {

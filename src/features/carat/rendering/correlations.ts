@@ -66,10 +66,10 @@ export class CaratCorrelations implements ICaratCorrelations {
       const rightTopValues = rightStrata.map(s => s.top);
       const rightBottomValues = rightStrata.map(s => s.bottom);
 
-      const leftTop = Math.max(...leftTopValues);
-      const leftBottom = Math.min(...leftBottomValues);
-      const rightTop = Math.max(...rightTopValues);
-      const rightBottom = Math.min(...rightBottomValues);
+      const leftTop = Math.min(...leftTopValues);
+      const leftBottom = Math.max(...leftBottomValues);
+      const rightTop = Math.min(...rightTopValues);
+      const rightBottom = Math.max(...rightBottomValues);
       result.push({leftTop, leftBottom, rightTop, rightBottom});
     }
     return result;
