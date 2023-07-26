@@ -44,7 +44,9 @@ export const CustomCell = ({td, props, state, actions}: CustomCellProps) => {
 
   if (isActiveCell && activeCell.edited) {
     const value = dataItem[columnID];
-    const update = (value: any) => actions.setValue(columnID, recordID, value);
+    const update = column.type
+      ? (value: any) => actions.setValue(columnID, recordID, value)
+      : () => {};
     cell = <BaseEditCell column={column} value={value} actions={actions} update={update}/>;
   } else {
     if (column.lookupChannel) {

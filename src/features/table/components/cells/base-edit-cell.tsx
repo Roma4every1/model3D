@@ -33,5 +33,5 @@ const cellsDict: Record<TableColumnType, FunctionComponent<EditCellProps>> = {
 };
 
 export const BaseEditCell = (props: EditCellProps) => {
-  return createElement(cellsDict[props.column.type], props);
+  return createElement(cellsDict[props.column.type ?? 'text'], props);
 };
