@@ -8,6 +8,7 @@ import { StringComboEditor } from './string.combo-editor';
 import { StringEditor } from './string.editor';
 import { TableCellComboEditor } from './table-cell.combo-editor';
 import { TableRowComboEditor } from './table-row.combo-editor';
+import './parameters.scss';
 
 
 export interface EditorProps<Param extends Parameter = Parameter> {

@@ -84,8 +84,8 @@ html {
 }
 
 .trace-edit-panel-open {
-    display: grid;
-    grid-template-columns: 1fr 3fr;
+  display: grid;
+  grid-template-columns: 1fr 3fr;
 }
 
 .map-container > canvas {
@@ -239,44 +239,6 @@ html {
   padding-block: 0;
 }
 
-.parameter {
-  display: grid;
-  grid-template-columns: 110px calc(100% - 112px);
-  grid-gap: 2px;
-  align-items: center;
-
-  min-width: 200px;
-  padding: 2px;
-  border-top: 1px solid #f5f5f5;
-}
-.parameter > :first-child {
-  width: 110px;
-  font-size: 12px;
-  line-height: 1.2;
-}
-.parameter > :last-child {
-  font-size: 12px;
-  height: 20px;
-}
-
-.file-text-editor {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.file-text-editor > input {
-  display: none;
-}
-.file-text-editor > span {
-  font-size: 1.1em;
-  font-weight: bold;
-  padding-left: 4px;
-}
-.file-text-editor button {
-  padding: 0 4px 2px 6px;
-  height: 20px;
-}
-
 .k-clear-value, .k-combobox .k-input, .k-dropdown-wrap {
   height: 100%;
 }
@@ -317,5 +279,5 @@ html {
 }
 
 .no-user-select {
-    user-select: none;
+  user-select: none;
 }
