@@ -18,10 +18,12 @@ export class CaratStage implements ICaratStage {
 
   /** Модель корреляций. */
   public readonly correlations: CaratCorrelations;
-  /** Список треков. */
-  public trackList: CaratTrack[];
   /** Список ID скважин треков. */
   public wellIDs: WellID[];
+  /** Список треков. */
+  public trackList: CaratTrack[];
+  /** Индекс активного трека. */
+  private activeIndex: number;
 
   /** Модель разбиения кривых по зонам. */
   private zones: CaratZone[];
@@ -44,6 +46,7 @@ export class CaratStage implements ICaratStage {
     const scale = CaratDrawer.pixelPerMeter / (init.settings.scale ?? defaultSettings.scale);
     const track = new CaratTrack(rect, init.columns, scale, this.drawer);
     this.trackList = [track];
+    this.activeIndex = 0;
     if (this.zones.length) track.setZones(this.zones);
   }
 
@@ -56,7 +59,7 @@ export class CaratStage implements ICaratStage {
   }
 
   public getActiveTrack(): CaratTrack {
-    return this.trackList[0];
+    return this.trackList[this.activeIndex];
   }
 
   public getZones(): CaratZone[] {
@@ -93,6 +96,15 @@ export class CaratStage implements ICaratStage {
       this.trackList.push(track);
       rect.left += rect.width + correlationWidth;
     }
+    this.setActiveTrack(0);
+  }
+
+  public setActiveTrack(idx: number): void {
+    if (this.wellIDs.length > 1) {
+      this.trackList[this.activeIndex].active = false;
+      this.trackList[idx].active = true;
+    }
+    this.activeIndex = idx;
   }
 
   public edit(action: StageEditAction): void {
@@ -155,9 +167,10 @@ export class CaratStage implements ICaratStage {
   }
 
   public handleMouseDown(point: Point): CaratCurveModel | boolean {
-    const track = this.trackList.find(t => isRectInnerPoint(point, t.rect));
-    if (!track) return false;
-    const activeCurve = track.handleMouseDown(point);
+    const index = this.trackList.findIndex(t => isRectInnerPoint(point, t.rect));
+    if (index === -1) return false;
+    this.setActiveTrack(index);
+    const activeCurve = this.trackList[index].handleMouseDown(point);
     return activeCurve ?? true;
   }
 

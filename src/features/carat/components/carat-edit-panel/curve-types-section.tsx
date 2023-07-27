@@ -32,6 +32,7 @@ interface TypeSettingsModel {
 
 
 export const CurveTypesSection = ({stage, group, curve}: CurveTypesSectionProps) => {
+  const wellName = stage.getActiveTrack().wellName;
   const curveManager: CurveManager = group?.curveManager;
   const curveTypes = curveManager.getCurveTypes();
 
@@ -67,7 +68,7 @@ export const CurveTypesSection = ({stage, group, curve}: CurveTypesSectionProps)
 
   return (
     <>
-      <MenuSection header={'Типы кривых'}>
+      <MenuSection header={'Типы кривых' + (wellName ? ` (${wellName})` : '')}>
         <div className={'carat-tracks'} style={{width: 450}}>
           {models.map(modelToSettings)}
         </div>

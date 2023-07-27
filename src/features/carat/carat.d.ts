@@ -80,8 +80,9 @@ interface ICaratStage {
   getCaratSettings(): CaratSettings
   getActiveTrack(): ICaratTrack
 
-  setTrackList(wells: WellModel[]): void
   setCanvas(canvas: HTMLCanvasElement): void
+  setTrackList(wells: WellModel[]): void
+  setActiveTrack(idx: number): void
   setZones(zones: CaratZone[]): void
   edit(action: StageEditAction): void
 
@@ -115,6 +116,7 @@ interface ICaratCorrelations {
 
 /** Трек каротажной диаграммы. */
 interface ICaratTrack {
+  wellName: WellName;
   readonly rect: BoundingRect;
   readonly viewport: CaratViewport;
   readonly inclinometry: ICaratInclinometry;

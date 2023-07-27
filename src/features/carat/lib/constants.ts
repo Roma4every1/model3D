@@ -84,6 +84,7 @@ export const drawerConfig: CaratDrawerConfig = {
   },
   track: {
     body: {
+      activeColor: '#ffeeee',
       border: {color: '#111111', thickness: 1},
     },
     header: {

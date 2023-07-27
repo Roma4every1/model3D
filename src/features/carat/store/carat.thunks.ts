@@ -35,7 +35,7 @@ export function loadCaratCurves(id: FormID, group: ICaratColumnGroup): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const { stage, loader } = getState().carats[id];
     const curveManager: CurveManager = group.curveManager;
-    const track = stage.trackList.find(t => t.getGroups().includes(group));
+    const track = stage.getActiveTrack();
 
     const visibleCurves = curveManager.getVisibleCurves();
     const widthChange = group.groupCurves(visibleCurves);
@@ -43,8 +43,7 @@ export function loadCaratCurves(id: FormID, group: ICaratColumnGroup): Thunk {
     curveManager.setCurvePointData(loadedIDs, loader.cache);
 
     const changes = new Array(track.getGroups().length).fill(0);
-    const groupIndex = track.getGroups().findIndex(g => g === group);
-    changes[groupIndex] = widthChange;
+    changes[track.getGroups().findIndex(g => g === group)] = widthChange;
     track.rebuildRects(changes);
 
     stage.updateTrackRects();

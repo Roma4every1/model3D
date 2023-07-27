@@ -10,13 +10,22 @@ import { defaultSettings } from '../lib/constants';
 export class CaratTrack implements ICaratTrack {
   /** Отрисовщик. */
   private readonly drawer: CaratDrawer;
+  /** Ограничивающий прямоугольник. */
+  public readonly rect: Rectangle;
+  /** Порт просмотра трека. */
+  public readonly viewport: CaratViewport;
+  /** Инклинометрия скважины. */
+  public readonly inclinometry: CaratInclinometry;
+
+  /** Является ли трек активным. */
+  public active: boolean;
   /** Список колонок. */
   private readonly groups: CaratColumnGroup[];
   /** Колонка типа `background`. */
   private readonly backgroundGroup: CaratColumnGroup;
 
   /** Название скважины трека. */
-  private wellName: WellName;
+  public wellName: WellName;
   /** Подпись трека. */
   private label: string;
   /** Высота заголовков групп колонок. */
@@ -26,14 +35,8 @@ export class CaratTrack implements ICaratTrack {
   /** Активная кривая. */
   private activeCurve: CaratCurveModel | null;
 
-  /** Ограничивающий прямоугольник. */
-  public readonly rect: Rectangle;
-  /** Порт просмотра трека. */
-  public readonly viewport: CaratViewport;
-  /** Инклинометрия скважины. */
-  public readonly inclinometry: CaratInclinometry;
-
   constructor(rect: Rectangle, columns: CaratColumnInit[], scale: number, drawer: CaratDrawer) {
+    this.active = false;
     this.rect = rect;
     this.drawer = drawer;
     this.label = '';
@@ -310,7 +313,7 @@ export class CaratTrack implements ICaratTrack {
         group.renderContent();
       }
     }
-    this.drawer.drawTrackBody(this.label);
+    this.drawer.drawTrackBody(this.label, this.active);
   }
 
   public lazyRender() {

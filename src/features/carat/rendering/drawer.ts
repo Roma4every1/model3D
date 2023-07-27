@@ -187,13 +187,18 @@ export class CaratDrawer {
     this.ctx.clearRect(0, headerHeight + this.trackHeaderSettings.height, width, height);
   }
 
-  public drawTrackBody(label: string) {
+  public drawTrackBody(label: string, active: boolean) {
     const { top, left, width, height } = this.trackRect;
     const { font, color, height: headerHeight } = this.trackHeaderSettings;
-    const { borderColor, borderThickness } = this.trackBodySettings;
+    const { borderColor, borderThickness, activeColor } = this.trackBodySettings;
     const half = borderThickness / 2;
 
     this.setTranslate(left, top);
+    if (active) {
+      this.ctx.fillStyle = activeColor;
+      this.ctx.fillRect(-half, -half, width + half, headerHeight);
+    }
+
     this.setTextSettings(font, color, 'center', 'middle');
     this.ctx.fillText(label, width / 2, headerHeight / 2, width);
 
