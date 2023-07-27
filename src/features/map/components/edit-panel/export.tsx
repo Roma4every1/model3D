@@ -18,8 +18,8 @@ export const Export = ({mapState, t}: ActionsProps) => {
     const doc = new jsPDF({unit: 'px', orientation: 'l', format});
     const mapName = mapData?.mapName || 'Map', date = mapData?.date || '';
 
-    const imgData = canvas.toDataURL('image/jpeg', 1.0);
-    doc.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+    const imgData = canvas.toDataURL('image/png', 1.0);
+    doc.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
     doc.text(date, 5, 15);
     doc.save(mapName + '.pdf')
   };
