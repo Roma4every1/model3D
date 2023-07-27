@@ -98,12 +98,12 @@ var field = declareType('field', {
   },
 
   loaded: (i) => {
-    i.sourceRenderDataMatrix = _.chunk(field._parseSourceRenderData(i.data), i.sizex).reverse(); //reverse 'cause the source array isn't oriented right
+    i.sourceRenderDataMatrix = _.chunk(field._parseSourceRenderData(i.data), i.sizex); //reverse 'cause the source array isn't oriented right
     i.deltasPalette = field._getDeltasPalette(field._getRgbPaletteFromHex(i.palette[0].level));
     i.preCalculatedSpectre = field._getDeltasPreCalculatedPalettes(i.deltasPalette);
     i.lastUsedPalette = _.cloneDeep(i.palette);
-    i.sX = 1 / i.stepx;
-    i.sY = 1 / i.stepy;
+    // i.sX = 1 / i.stepx;
+    // i.sY = 1 / i.stepy;
   },
 
   _getInterpolatedArrayValues: (i, arrayX, y) => {
@@ -120,15 +120,16 @@ var field = declareType('field', {
       return [...Array(arrayX.length).fill(null)];
     }
 
-    const sY = i.sY;
-    const sX = i.sX;
+    const sY = 1 / i.stepy;
+    const sX = 1 / i.stepx;
 
-    const relativeToFieldY = y - minY;
+    const relativeToFieldY = maxY - y;
     const relativeToCellY = ((relativeToFieldY % i.stepy) * sY); // 1*
 
     const i1 = Math.floor(relativeToFieldY * sY); // 1*
 
-    if (i1 >= i.sizey || i1 < 0) return [...Array(arrayX.length).fill(null)];
+    if (i1 >= i.sizey || i1 < 0 || i1 >= (i.sourceRenderDataMatrix.length-1))
+      return [...Array(arrayX.length).fill(null)];
 
     for (let x of arrayX) {
       const minX = i.x;
@@ -142,7 +143,7 @@ var field = declareType('field', {
       const relativeToFieldX = x - minX;
       const j1 = Math.floor(relativeToFieldX * sX); // 1*
 
-      if (j1 >= i.sizex || j1 < 0) {
+      if (j1 >= i.sizex || j1 < 0 || j1 >= i.sourceRenderDataMatrix[0].length) {
         resultArray.push(null);
         continue;
       }
@@ -150,7 +151,9 @@ var field = declareType('field', {
       const f00 = i.sourceRenderDataMatrix[i1][j1]
       const f10 = i1+1 === i.sizey ? null : i.sourceRenderDataMatrix[i1 + 1][j1];
       const f01 = j1+1 === i.sizex ? null : i.sourceRenderDataMatrix[i1][j1 + 1]
-      const f11 = (i1+1 === i.sizex) && (j1+1 === i.sizey) ? null : i.sourceRenderDataMatrix[i1 + 1][j1 + 1]
+      const f11 = (i1+1 === i.sizex) && (j1+1 === i.sizey)
+        ? null
+        : i.sourceRenderDataMatrix[i1 + 1][j1 + 1]
 
       let s = 0;
       if (f00 != null) {
@@ -225,11 +228,11 @@ var field = declareType('field', {
       }
 
       // f(x) == f[0][0] * (1-x)(1-y) + f[1][0] * x(1-y) + f[0][1] * (1-x)y + f[1][1] * (1-x)(1-y)
-      const comp1 = 1 - relativeToCellX - relativeToCellY + compositionXY; // (1-x)(1-y) == 1-x-y+xy // 0*
-      const comp2 = relativeToCellX - compositionXY; // x(1-y) = x-xy // 0*
-      const comp3 = relativeToCellY - compositionXY; // y(1-x) = y-xy // 0*
+      const comp1 = 1 - relativeToCellX - relativeToCellY + compositionXY;
+      const comp2 = relativeToCellX - compositionXY;
+      const comp3 = relativeToCellY - compositionXY;
 
-      resultArray.push((f00 * comp1 + // 1*
+      resultArray.push((f00 * comp1 +
         f01 * comp2 +
         f10 * comp3 +
         f11 * compositionXY) || null);

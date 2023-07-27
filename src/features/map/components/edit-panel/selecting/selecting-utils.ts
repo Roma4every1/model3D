@@ -158,12 +158,15 @@ const getInterpolatedFieldValue = (field: MapField, point: Point) => {
   const sY = 1 / field.stepy;
 
   const relativeToFieldX = x - minX;
-  const relativeToFieldY = y - minY;
+  const relativeToFieldY = Math.abs(maxY - y);
 
-  const j1 = Math.floor(relativeToFieldX * sX); // 1*
-  const i1 = Math.floor(relativeToFieldY * sY); // 1*
+  const j1 = Math.floor(relativeToFieldX * sX);
+  const i1 = Math.floor(relativeToFieldY * sY);
 
-  if (i1 >= field.sizey || j1 >= field.sizex || i1 < 0 || j1 < 0) return null;
+  if (i1 >= field.sizey || j1 >= field.sizex
+    || i1 < 0 || j1 < 0
+    || i1 >= (field.sourceRenderDataMatrix.length-1))
+    return null;
 
   const f00 = field.sourceRenderDataMatrix[i1][j1]
   const f10 = i1+1 === field.sizey ? null : field.sourceRenderDataMatrix[i1 + 1][j1];
