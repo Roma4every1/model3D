@@ -102,8 +102,7 @@ var field = declareType('field', {
     i.deltasPalette = field._getDeltasPalette(field._getRgbPaletteFromHex(i.palette[0].level));
     i.preCalculatedSpectre = field._getDeltasPreCalculatedPalettes(i.deltasPalette);
     i.lastUsedPalette = _.cloneDeep(i.palette);
-    // i.sX = 1 / i.stepx;
-    // i.sY = 1 / i.stepy;
+    i.bounds = field.bound(i);
   },
 
   _getInterpolatedArrayValues: (i, arrayX, y) => {
