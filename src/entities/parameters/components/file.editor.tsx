@@ -36,7 +36,7 @@ export const FileEditor = ({parameter, update}: EditorProps<ParamString>) => {
   return (
     <div className={'file-text-editor'}>
       <input type={'file'} value={value ? undefined : ''} onChange={onChange} ref={inputRef}/>
-      <span>{value || t('editors.file-not-selected')}</span>
+      <span title={value}>{value || t('editors.file-not-selected')}</span>
       <div>
         <Button onClick={clearFile} style={{paddingLeft: 4}}>
           <span className={'k-icon k-i-close'}/>

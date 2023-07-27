@@ -1,0 +1,44 @@
+.parameter {
+  display: grid;
+  grid-template-columns: 110px calc(100% - 112px);
+  grid-gap: 2px;
+  align-items: center;
+
+  min-width: 200px;
+  padding: 2px;
+  border-top: 1px solid #f5f5f5;
+
+  > :first-child {
+    width: 110px;
+    font-size: 12px;
+    line-height: 1.2;
+  }
+  > :last-child {
+    font-size: 12px;
+    height: 20px;
+  }
+}
+
+.file-text-editor {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  > input {
+    display: none;
+  }
+  > span {
+    font-size: 1.1em;
+    font-weight: bold;
+    padding-left: 4px;
+
+    max-width: 160px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  button {
+    padding: 0 4px 2px 6px;
+    height: 20px;
+  }
+}
