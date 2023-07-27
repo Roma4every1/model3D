@@ -76,16 +76,20 @@ export class CurveManager {
     const curveType = record[info.type.name];
     const description = record[info.description.name] ?? '';
     const style = this.styleDict.get(curveType) ?? defaultSettings.curveStyle;
+    const top = record[info.top.name], bottom = record[info.bottom.name];
 
     const id = record[info.id.name];
-    const cacheData = cache[id];
+    const cacheData: CaratCurveData = cache[id] ?? ({} as any);
 
     return {
       id, type: curveType, description,
       date: dateString ? new Date(dateString) : null,
+      top: cacheData.top ?? top, bottom: cacheData.bottom ?? bottom,
+      min: cacheData.min ?? 0, max: cacheData.max ?? 0,
       axisMin: 0, axisMax: 0,
+      path: cacheData.path, points: cacheData.points,
       defaultLoading: Boolean(record[info.defaultLoading.name]),
-      style, active: false, ...cacheData,
+      style, active: false,
     };
   }
 
@@ -166,6 +170,21 @@ export class CurveManager {
     this.resetTree();
     this.resetTypeSelection();
     this.resetDates();
+  }
+
+  public setCurvePointData(ids: CaratCurveID[], cache: CurveDataCache): void {
+    for (const id of ids) {
+      const pointData = cache[id];
+      const curve = this.curves.find(c => c.id === id);
+
+      curve.path = pointData.path;
+      curve.points = pointData.points;
+      curve.top = pointData.top;
+      curve.bottom = pointData.bottom;
+      curve.min = pointData.min;
+      curve.max = pointData.max;
+      this.applyCurveAxisRange(curve);
+    }
   }
 
   public setActiveCurve(id?: CaratCurveID) {

@@ -485,7 +485,7 @@ export class CaratDrawer {
   public drawCorrelation(correlations: CaratCorrelation) {
     const { rect, leftTop, rightTop, leftViewport, rightViewport } = correlations;
     this.setTranslate(0, rect.top);
-    this.ctx.clearRect(rect.left, -rect.top, rect.width, rect.height);
+    this.ctx.clearRect(rect.left, -rect.top, rect.width, rect.height + 2 * rect.top);
     this.setLineSettings(this.correlationSettings.thickness, '#888888');
     this.ctx.fillStyle = '#e8e8e8';
 

@@ -13,7 +13,7 @@ import './curve-selection-window.scss';
 import { CaratCurveModel } from '../../lib/types';
 import { CurveManager } from '../../lib/curve-manager';
 import { caratStateSelector } from '../../store/carat.selectors';
-import { updateCaratData } from '../../store/carat.thunks';
+import { loadCaratCurves } from '../../store/carat.thunks';
 
 
 interface CurveSelectionWindowProps {
@@ -71,7 +71,7 @@ export const CurveSelectionWindow = ({id}: CurveSelectionWindowProps) => {
 
   const onSubmit = () => {
     onClose();
-    dispatch(updateCaratData(id));
+    dispatch(loadCaratCurves(id, curveGroup));
   };
 
   return (
@@ -89,7 +89,7 @@ export const CurveSelectionWindow = ({id}: CurveSelectionWindowProps) => {
                   expandIcons={true} onExpandChange={onExpandChange}
                   checkboxes={true} onCheckChange={onCheckChange}
                  />
-              : <TextInfo text={'carat.empty'}/>
+              : <TextInfo text={'carat.no-data'}/>
             }
           </section>
           <section>

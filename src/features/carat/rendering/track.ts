@@ -140,11 +140,6 @@ export class CaratTrack implements ICaratTrack {
     }
   }
 
-  public setWellName(wellName: WellName) {
-    this.wellName = wellName;
-    this.updateLabel();
-  }
-
   public setScale(scale: number) {
     const viewport = this.viewport;
     viewport.scale = scale;
@@ -272,7 +267,7 @@ export class CaratTrack implements ICaratTrack {
     this.maxGroupHeaderHeight = maxHeight;
   }
 
-  private rebuildRects(changes: number[]) {
+  public rebuildRects(changes: number[]): void {
     for (let i = 0; i < changes.length; i++) {
       const widthDelta = changes[i];
       if (widthDelta !== 0) {

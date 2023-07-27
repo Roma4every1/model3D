@@ -1,5 +1,6 @@
 import { Dispatch } from 'redux';
 import { Thunk, StateGetter } from 'shared/lib';
+import { CurveManager } from '../lib/curve-manager';
 import { setCaratLoading } from './carat.actions';
 
 
@@ -29,9 +30,24 @@ export function setCaratData(id: FormID, data: ChannelDataDict): Thunk {
   };
 }
 
-export function updateCaratData(id: FormID): Thunk {
+/** Дозагрузить каротажные кривые. */
+export function loadCaratCurves(id: FormID, group: ICaratColumnGroup): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
-    const { stage } = getState().carats[id];
+    const { stage, loader } = getState().carats[id];
+    const curveManager: CurveManager = group.curveManager;
+    const track = stage.trackList.find(t => t.getGroups().includes(group));
+
+    const visibleCurves = curveManager.getVisibleCurves();
+    const widthChange = group.groupCurves(visibleCurves);
+    const loadedIDs = await loader.loadCurveData(visibleCurves.map(curve => curve.id));
+    curveManager.setCurvePointData(loadedIDs, loader.cache);
+
+    const changes = new Array(track.getGroups().length).fill(0);
+    const groupIndex = track.getGroups().findIndex(g => g === group);
+    changes[groupIndex] = widthChange;
+    track.rebuildRects(changes);
+
+    stage.updateTrackRects();
     stage.render();
   };
 }

@@ -30,6 +30,7 @@ export class CaratLoader implements ICaratLoader {
   }
 
   public async getCaratData(ids: WellID[], channelData: ChannelDataDict): Promise<ChannelRecordDict[]> {
+    const flag = this.flag;
     const curveIDs: CaratCurveID[] = [];
     const caratData: ChannelRecordDict[] = [];
     const isTrace = ids.length > 1;
@@ -58,7 +59,8 @@ export class CaratLoader implements ICaratLoader {
         }
       }
     }
-    await this.loadCurveData([...new Set(curveIDs)]);
+
+    if (flag === this.flag) await this.loadCurveData([...new Set(curveIDs)]);
     return caratData;
   }
 
@@ -99,9 +101,9 @@ export class CaratLoader implements ICaratLoader {
   }
 
   /** Дозагружает данные точек кривых. */
-  private async loadCurveData(ids: CaratCurveID[]) {
+  public async loadCurveData(ids: CaratCurveID[]): Promise<CaratCurveID[]> {
     const idsToLoad: CaratCurveID[] = ids.filter(id => !this.cache[id]);
-    if (idsToLoad.length === 0) return;
+    if (idsToLoad.length === 0) return idsToLoad;
 
     const value = idsToLoad.map(String);
     const parameters = [{id: 'currentCurveIds', type: 'stringArray', value} as Parameter];
@@ -117,6 +119,7 @@ export class CaratLoader implements ICaratLoader {
     for (const record of records) {
       this.cache[record[idColumnName]] = this.createCurveData(record);
     }
+    return idsToLoad;
   }
 
   /** Создаёт модель данных кривой. */

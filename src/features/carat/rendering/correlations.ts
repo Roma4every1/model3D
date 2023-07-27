@@ -30,6 +30,20 @@ export class CaratCorrelations implements ICaratCorrelations {
     return this.width;
   }
 
+  public updateRects(trackList: CaratTrack[]): void {
+    for (let i = 0; i < this.correlations.length; i++) {
+      const rect = trackList[i].rect;
+      const left = rect.left + rect.width + 1;
+      this.correlations[i].rect = {...rect, left, width: this.width - 2};
+    }
+  }
+
+  public setHeight(height: number): void {
+    for (const correlation of this.correlations) {
+      correlation.rect.height = height;
+    }
+  }
+
   public setData(trackList: CaratTrack[]): void {
     this.correlations = [];
     for (let i = 0; i < trackList.length - 1; i++) {

@@ -276,7 +276,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   }
 
   /** Группирует кривые по зонам, возвращает изменение ширины. */
-  private groupCurves(curves: CaratCurveModel[]): number {
+  public groupCurves(curves: CaratCurveModel[]): number {
     this.curveColumn.setCurveData(curves, this.zones);
     this.header.setAxes(this.curveColumn.getGroups());
 

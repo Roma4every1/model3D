@@ -14,45 +14,58 @@ type CaratStates = FormDict<CaratState>;
  * */
 interface CaratState {
   /** Ссылка на холст. */
-  canvas: HTMLCanvasElement,
+  canvas: HTMLCanvasElement;
   /** Экземпляр класса сцены. */
-  stage: ICaratStage,
+  stage: ICaratStage;
   /** Класс, реализующий загрузку данных для построения каротажа по трассе. */
-  loader: ICaratLoader,
+  loader: ICaratLoader;
   /** Класс для отслеживания изменения размеров холста. */
-  observer: ResizeObserver,
+  observer: ResizeObserver;
   /** Активная колонка. */
-  activeGroup: ICaratColumnGroup | null,
+  activeGroup: ICaratColumnGroup | null;
   /** Колонка с кривыми (активная или первая с кривыми). */
-  curveGroup: ICaratColumnGroup | null,
+  curveGroup: ICaratColumnGroup | null;
   /** Активная кривая. */
-  activeCurve: any,
+  activeCurve: any;
   /** Список всех названий каналов-справочников. */
-  lookupNames: ChannelName[],
+  lookupNames: ChannelName[];
   /** Находится ли форма в состоянии загрузки. */
-  loading: boolean,
+  loading: boolean;
 }
 
 /** Кеш точек кривых. */
 type CurveDataCache = Record<CaratCurveID, CaratCurveData>;
 
+/** Данные точек кривых.
+ * + `path`: {@link Path2D}
+ * + `points`: {@link Point}[]
+ * + `top: number`
+ * + `bottom: number`
+ * + `min: number`
+ * + `max: number`
+ * */
 interface CaratCurveData {
-  path: Path2D,
-  points: Point[],
-  top: number,
-  bottom: number,
-  min: number,
-  max: number,
+  /** Путь кривой. */
+  path: Path2D;
+  /** Набор точек кривой. */
+  points: Point[];
+  /** Начальная отметка глубины. */
+  top: number;
+  /** Конечная отметка глубины. */
+  bottom: number;
+  /** Минимальное значение кривой. */
+  min: number;
+  /** Максимальное значение кривой. */
+  max: number;
 }
 
 /** Загрузчик данных для построения каротажа по трассе. */
 interface ICaratLoader {
-  /** Флаг для преждевременной остановки загрузки. */
   flag: number;
-  /** Кеш точек кривых. */
   cache: CurveDataCache;
 
   getCaratData(ids: WellID[], channelData: ChannelDataDict): Promise<ChannelRecordDict[]>
+  loadCurveData(ids: CaratCurveID[]): Promise<CaratCurveID[]>
 }
 
 /* --- --- */
@@ -80,7 +93,9 @@ interface ICaratStage {
   handleMouseDown(point: Point): any
   handleMouseWheel(point: Point, direction: 1 | -1): void
 
+  updateTrackRects(): void
   resize(): void
+
   render(): void
   lazyRender(index: number): void
 }
@@ -100,8 +115,8 @@ interface ICaratCorrelations {
 
 /** Трек каротажной диаграммы. */
 interface ICaratTrack {
-  readonly rect: BoundingRect,
-  readonly viewport: CaratViewport,
+  readonly rect: BoundingRect;
+  readonly viewport: CaratViewport;
   readonly inclinometry: ICaratInclinometry;
 
   getGroups(): ICaratColumnGroup[]
@@ -114,6 +129,7 @@ interface ICaratTrack {
   setActiveCurve(curve: any): void
 
   handleMouseDown(point: Point): any
+  rebuildRects(changes: number[]): void
 
   render(): void
   lazyRender(): void
@@ -137,6 +153,7 @@ interface ICaratColumnGroup {
   getRange(): [number, number]
   getIntervals(): any[]
   hasCurveColumn(): boolean
+  groupCurves(curves: any[]): number
 }
 
 interface ICaratColumn {
@@ -148,29 +165,29 @@ interface ICaratColumn {
 /** Порт просмотра. */
 interface CaratViewport {
   /** Текущая координата по Y. */
-  y: number,
+  y: number;
   /** Высота области просмотра. */
-  height: number,
+  height: number;
   /** Минимально возможная координата по Y. */
-  min: number,
+  min: number;
   /** Максимально возможная координата по Y. */
-  max: number,
+  max: number;
   /** Масштаб: количество пикселей в метре. */
-  scale: number,
+  scale: number;
   /** Состояние прокрутки. */
-  scroll: CaratViewportScroll,
+  scroll: CaratViewportScroll;
 }
 
 /** Состояние прокрутки. */
 interface CaratViewportScroll {
   /** Очередь движений. */
-  queue: number[],
+  queue: number[];
   /** Направление движения. */
-  direction: number,
+  direction: number;
   /** Шаг смещения за единицу прокрутки. */
-  step: number,
+  step: number;
   /** ID из `setInterval`. */
-  id: number | null,
+  id: number | null;
 }
 
 /** Идентификатор каротажной кривой. */

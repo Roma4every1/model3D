@@ -185,8 +185,8 @@ export class CaratStage implements ICaratStage {
     }
   }
 
-  /** Обновляет горизонтальное положение треков. */
-  private updateTrackRects() {
+  /** Обновляет горизонтальное положение треков и корреляций. */
+  public updateTrackRects(): void {
     let left = this.trackList[0].rect.left;
     const correlationWidth = this.correlations.getWidth();
 
@@ -194,6 +194,7 @@ export class CaratStage implements ICaratStage {
       track.rect.left = left;
       left += track.rect.width + correlationWidth;
     }
+    this.correlations.updateRects(this.trackList);
   }
 
   public resize() {
@@ -216,6 +217,7 @@ export class CaratStage implements ICaratStage {
 
     const trackHeight = resultHeight - 2 * padding;
     for (const track of this.trackList) track.setHeight(trackHeight);
+    this.correlations.setHeight(trackHeight);
   }
 
   /* --- Rendering --- */
