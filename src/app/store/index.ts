@@ -10,6 +10,8 @@ import { tablesReducer } from 'features/table/store/table.reducer';
 import { caratsReducer } from 'features/carat/store/carat.reducer';
 import { chartsReducer } from 'features/chart/store/chart.reducer';
 import { mapsReducer } from 'features/map/store/map.reducer';
+import { fileViewReducer } from 'features/file/store/file-view.reducer';
+import { fileListReducer } from 'features/file-list/store/file-list.reducer';
 import { parametersReducer } from 'entities/parameters/store/parameters.reducer';
 import { objectsReducer } from 'entities/objects/store/objects.reducer';
 import { channelsReducer } from 'entities/channels/store/channels.reducer';
@@ -32,6 +34,8 @@ const rootReducer: Reducer<WState, any> = combineReducers({
   carats: caratsReducer,
   charts: chartsReducer,
   maps: mapsReducer,
+  fileViews: fileViewReducer,
+  fileLists: fileListReducer,
   reports: reportsReducer,
   windowData: windowDataReducer,
   notifications: notificationsReducer,

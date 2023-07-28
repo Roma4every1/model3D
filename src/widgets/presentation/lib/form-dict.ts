@@ -5,6 +5,8 @@ import { Table, createTableState } from 'features/table';
 import { Chart, createChartState } from 'features/chart';
 import { Map, createMapState } from 'features/map';
 import { Carat, createCaratState } from 'features/carat';
+import { FileView, createFileViewState } from 'features/file';
+import { FileListView, createFileListState } from 'features/file-list';
 
 
 type SupportedFormDict<T> = Record<SupportedFormType, T>;
@@ -17,6 +19,8 @@ export const formDict: SupportedFormDict<FunctionComponent<FormState>> = {
   'carat': Carat,
   'chart': Chart,
   'map': Map,
+  'files': FileView,
+  'filesList': FileListView,
 };
 
 /** Словарь функций-экшенов для создания состояния форм. */
@@ -25,4 +29,6 @@ export const createFormDict: SupportedFormDict<FormStateCreator> = {
   'carat': createCaratState,
   'chart': createChartState,
   'map': createMapState,
+  'files': createFileViewState,
+  'filesList': createFileListState,
 };

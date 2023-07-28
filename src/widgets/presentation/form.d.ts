@@ -19,7 +19,7 @@ type FormType = 'carat' | 'chart' | 'dataSet' | 'dock' | 'files' | 'filesList' |
   'slide' | 'spreadsheet' | 'spreadsheetUnite' | 'transferForm';
 
 /** Поддерживаемые типы форм. */
-type SupportedFormType = 'dataSet' | 'carat' | 'chart' | 'map';
+type SupportedFormType = 'dataSet' | 'carat' | 'chart' | 'map' | 'files' | 'filesList';
 
 /** Данные формы.
  * + `id`: {@link FormID} — идентификатор

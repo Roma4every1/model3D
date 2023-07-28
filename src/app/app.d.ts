@@ -22,6 +22,10 @@ interface WState {
   charts: ChartStates,
   /** Хранилище карт. */
   maps: MapsState,
+  /** Хранилище форм просмотра файлов. */
+  fileViews: FileViewStates,
+  /** Хранилище форм списков файлов. */
+  fileLists: FileListStates,
   /** Состояние отчётов и SQL-программ. */
   reports: Reports,
   /** Окна и диалоги. */
