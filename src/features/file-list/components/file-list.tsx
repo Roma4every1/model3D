@@ -1,6 +1,7 @@
 import { useSelector } from 'react-redux';
 import { channelSelector } from 'entities/channels';
 import { fileListStateSelector } from '../store/file-list.selectors';
+import {FileListItem} from "./file-list-item";
 
 
 export const FileListView = ({id, channels}: FormState) => {
@@ -9,5 +10,10 @@ export const FileListView = ({id, channels}: FormState) => {
 
   console.log(state);
   const files = channel.data?.rows ?? [];
-  return <ul>{files.map((row, i) => <li key={i}>{row.Cells[0]}</li>)}</ul>;
+
+  const filesItemsComponents = files.map((row, i) =>
+    <FileListItem formId={id} filename={row.Cells[0]} key={i}/>
+  );
+
+  return <ul>{filesItemsComponents}</ul>;
 };

@@ -2,6 +2,7 @@
 
 export enum FileListActionType {
   CREATE = 'fileList/create',
+  SET_ACTIVE_FILE = 'fileList/setActive'
 }
 
 /* --- Action Interfaces --- */
@@ -11,7 +12,13 @@ interface ActionCreate {
   payload: FormStatePayload,
 }
 
-export type FileListAction = ActionCreate;
+interface ActionSetActiveFile {
+  type: FileListActionType.SET_ACTIVE_FILE,
+  id: FormID,
+  payload: string,
+}
+
+export type FileListAction = ActionCreate | ActionSetActiveFile;
 
 /* --- Init State & Reducer --- */
 
@@ -23,6 +30,12 @@ export function fileListReducer(state: FileListStates = init, action: FileListAc
     case FileListActionType.CREATE: {
       const id = action.payload.state.id;
       return {...state, [id]: {activeFile: ''}};
+    }
+
+    case FileListActionType.SET_ACTIVE_FILE: {
+      const id = action.id;
+      const payload = action.payload;
+      return {...state, [id]: {activeFile: payload}};
     }
 
     default: return state;
