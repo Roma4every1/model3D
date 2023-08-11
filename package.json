@@ -4,6 +4,7 @@
   "private": true,
   "homepage": "/id3x/client/",
   "dependencies": {
+    "@cyntler/react-doc-viewer": "^1.13.0",
     "@progress/kendo-data-query": "1.6.0",
     "@progress/kendo-drawing": "1.17.4",
     "@progress/kendo-file-saver": "1.1.1",
@@ -32,6 +33,8 @@
     "cldr-core": "41.0.0",
     "cldr-dates-full": "41.0.0",
     "cldr-numbers-full": "41.0.0",
+    "docx-preview": "^0.1.18",
+    "excel-viewer": "^1.0.1",
     "flexlayout-react": "0.5.21",
     "i18next": "21.8.11",
     "jspdf": "2.5.1",
