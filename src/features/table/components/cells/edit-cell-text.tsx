@@ -68,5 +68,18 @@ function handeEditKeyboardEvent(key: string, target: HTMLInputElement, actions: 
     } else if (key.endsWith('Right') && selectionEnd === target.value.length) {
       update(); actions.moveCellHorizontal(1);
     }
+  } else if (key === 'Home') {
+    if (target.selectionStart === 0) {
+      update(); actions.moveCellHorizontal(undefined, 0);
+    } else {
+      target.setSelectionRange(0, 0);
+    }
+  } else if (key === 'End') {
+    const valueLength = target.value.length;
+    if (target.selectionEnd === valueLength) {
+      update(); actions.moveCellHorizontal(undefined, -1);
+    } else {
+      target.setSelectionRange(valueLength, valueLength);
+    }
   }
 }

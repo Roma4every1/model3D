@@ -65,7 +65,7 @@ export interface CellActions {
   setActiveCell(cell: TableActiveCell): void
   setValue(columnID: TableColumnID, recordID: TableRecordID, value: any): void
   startEdit(columnID: TableColumnID, recordID: TableRecordID): void
-  moveCellHorizontal(by: number): void
+  moveCellHorizontal(by: number, to?: number): void
   openLinkedTable(columnID: TableColumnID): void
 }
 
