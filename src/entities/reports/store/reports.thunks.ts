@@ -137,3 +137,12 @@ export function updateReportsVisibility(ids: ReportID[]): Thunk {
     }
   };
 }
+
+/** Обновляет состояние отчёта: перезагружает данные всех каналов. */
+export function refreshReport(clientID: FormID, report: ReportModel): Thunk {
+  return async (dispatch: Dispatch, getState: StateGetter) => {
+    const { root, parameters } = getState();
+    const names = Object.values(report.channels).map(c => c.name);
+    if (names.length) await updateReportChannelData(report, names, root.id, clientID, parameters);
+  };
+}

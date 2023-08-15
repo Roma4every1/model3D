@@ -3,14 +3,17 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Loader } from '@progress/kendo-react-indicators';
 import { ReportParamList } from './report-param-list';
-import { initializeActiveReport } from 'entities/reports';
+import { initializeActiveReport, refreshReport } from 'entities/reports';
+
 import reportIcon from 'assets/images/reports/report.svg';
 import programIcon from 'assets/images/reports/program.svg';
 
 
 interface ReportButtonProps {
-  id: FormID,
-  report: ReportModel,
+  /** ID презентации. */
+  id: FormID;
+  /** Модель отчёта. */
+  report: ReportModel;
 }
 
 
@@ -20,19 +23,21 @@ export const ReportButton = ({id, report}: ReportButtonProps) => {
   const [opened, setOpened] = useState(false);
   const [processing, setProcessing] = useState(false);
 
-  const createReport = processing ? undefined : () => {
+  const onClick = processing ? undefined : () => {
+    if (opened) return;
+    setProcessing(true);
+
+    const onLoad = () => { setProcessing(false); setOpened(true); };
     if (report.parameters) {
-      setOpened(true);
+      dispatch(refreshReport(id, report)).then(onLoad);
     } else {
-      setProcessing(true);
-      const onLoad = () => { setProcessing(false); setOpened(true); };
       dispatch(initializeActiveReport(id, report.id)).then(onLoad);
     }
   };
 
   return (
     <>
-      <div onClick={createReport}>
+      <div onClick={onClick}>
         {processing
           ? <Loader size={'medium'} type={'pulsing'} />
           : <img src={report.type === 'report' ? reportIcon : programIcon} alt={'run'}/>}
