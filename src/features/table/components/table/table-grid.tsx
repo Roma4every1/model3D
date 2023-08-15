@@ -2,7 +2,7 @@ import { ReactElement, KeyboardEvent } from 'react';
 import { useState, useLayoutEffect, useMemo, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
-import { Grid, GridProps, GridCellProps } from '@progress/kendo-react-grid';
+import { Grid, GridCellProps } from '@progress/kendo-react-grid';
 import { GridColumnResizeEvent, GridPageChangeEvent } from '@progress/kendo-react-grid';
 import { GridSelectionChangeEvent, getSelectedState } from '@progress/kendo-react-grid';
 import { compareObjects } from 'shared/lib';
@@ -328,20 +328,11 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
     return <CustomCell td={td} props={props} state={state} actions={cellActions}/>;
   };
 
-  // если данных много, то использовать виртуальную прокрутку
-  const scrollProps: Partial<GridProps> = total > 99 ? {
-    scrollable: 'virtual',
-    data: data.slice(skip, skip + pageSize),
-    skip, total, pageSize,
-    onPageChange: (event: GridPageChangeEvent) => {
-      const newSkip = event.page.skip; setSkip(newSkip);
-      if (newSkip + pageSize > total && total === query.maxRowCount) {
-        dispatch(updateMaxRowCount(state.channelName, total + 2 * pageSize));
-      }
-    },
-  } : {
-    scrollable: 'scrollable',
-    data: data,
+  const onPageChange = (event: GridPageChangeEvent) => {
+    const newSkip = event.page.skip; setSkip(newSkip);
+    if (newSkip + pageSize > total && total === query.maxRowCount) {
+      dispatch(updateMaxRowCount(state.channelName, total + 2 * pageSize));
+    }
   };
 
   return (
@@ -353,10 +344,12 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
       <LocalizationProvider language={'ru-RU'}>
         <IntlProvider locale={'ru'}>
           <Grid
-            style={{height: '100%'}}
-            {...scrollProps} fixedScroll={true} rowHeight={28}
+            data={data.slice(skip, skip + pageSize)}
             dataItemKey={'id'} selectedField={'selected'}
+            style={{height: '100%'}} rowHeight={28} total={total}
+            scrollable={'virtual'} fixedScroll={true}
             groupable={false} reorderable={false} navigatable={false}
+            skip={skip} pageSize={pageSize} onPageChange={onPageChange}
             resizable={true} onColumnResize={onColumnResize}
             selectable={{drag: !isEditing}} onSelectionChange={onSelectionChange}
             cellRender={cellRender}
