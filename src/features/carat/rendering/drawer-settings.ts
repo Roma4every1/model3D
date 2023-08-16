@@ -2,6 +2,8 @@
 export interface CaratDrawerConfig {
   /** Глобальные настройки. */
   stage: {
+    /** Величина отступов вокруг треков. */
+    padding: number,
     /** Глобальные настройки шрифта сцены. */
     font: CSSFont,
   },
@@ -9,8 +11,8 @@ export interface CaratDrawerConfig {
   track: {
     /** Настройки тела трека. */
     body: {
-      /** Величина отступов вокруг трека. */
-      margin: number,
+      /** Цвет шапки активного трека. */
+      activeColor: ColorHEX,
       /** Цвет и толщина рамки вокруг трека. */
       border: {color: ColorHEX, thickness: number},
     },
@@ -68,86 +70,99 @@ export interface CaratDrawerConfig {
       },
     },
   },
+  correlation: {
+    thickness: number,
+  },
 }
 
 /** Настройки отрисовки тела трека. */
 export interface CaratTrackBodyDrawSettings {
-  /** Величина отступов вокруг трека. */
-  readonly margin: number,
+  /** Величина отступов вокруг треков. */
+  readonly padding: number;
   /** Цвет рамки всего трека. */
-  readonly borderColor: ColorHEX,
+  readonly borderColor: ColorHEX;
   /** Толщина рамки всего трека. */
-  readonly borderThickness: number,
+  readonly borderThickness: number;
+  /** Цвет шапки активного трека. */
+  readonly activeColor: ColorHEX;
 }
 
 /** Настройки отрисовки трека. */
 export interface CaratTrackHeaderDrawSettings {
   /** Высота шапки. */
-  readonly height: number,
+  readonly height: number;
   /** Величина внутренних отступов шапки. */
-  readonly padding: number,
+  readonly padding: number;
   /** Шрифт подписи шапки. */
-  readonly font: string,
+  readonly font: string;
   /** Цвет подписи шапки. */
-  readonly color: ColorHEX,
+  readonly color: ColorHEX;
 }
 
 /** Настройки тела колонки. */
 export interface CaratColumnBodyDrawSettings {
   /** Боковые внутренние отступы элементов. */
-  readonly padding: number,
+  readonly padding: number;
   /** Толщина рамки колонки. */
-  readonly borderThickness: number,
+  readonly borderThickness: number;
   /** Цвет рамки активной колонки. */
-  readonly activeBorderColor: ColorHEX,
+  readonly activeBorderColor: ColorHEX;
 }
 
 /** Настройки отрисовки подписи колонки. */
 export interface CaratColumnLabelDrawSettings {
   /** Шрифт подписи. */
-  readonly font: string,
+  readonly font: string;
   /** Цвет подписи. */
-  readonly color: ColorHEX,
+  readonly color: ColorHEX;
   /** Высота подписи. */
-  readonly height: number,
+  readonly height: number;
 }
 
 /** Настройки отрисовки вертикальной оси колонки. */
 export interface CaratColumnYAxisDrawSettings {
   /** Шрифт подписей. */
-  readonly font: string,
+  readonly font: string;
   /** Цвет подписей. */
-  readonly color: ColorHEX,
+  readonly color: ColorHEX;
   /** Размер горизонтальной черты. */
-  readonly markSize: number,
+  readonly markSize: number;
   /** Толщина линий сетки. */
-  readonly gridThickness: number,
+  readonly gridThickness: number;
   /** Штриховка линий сетки. */
-  readonly gridLineDash: number[],
+  readonly gridLineDash: number[];
 }
 
 /** Настройки отрисовки горизонтальных осей колонки. */
 export interface CaratColumnXAxesDrawSettings {
   /** Шрифт подписей. */
-  readonly font: string,
+  readonly font: string;
   /** Толщина оси. */
-  readonly thickness: number,
+  readonly thickness: number;
   /** Размер горизонтальной черты. */
-  readonly markSize: number,
+  readonly markSize: number;
   /** Расстояние между осями по вертикали. */
-  readonly gap: number,
+  readonly gap: number;
   /** Высота оси. */
-  readonly axisHeight: number,
+  readonly axisHeight: number;
   /** Толщина линий сетки. */
-  readonly gridThickness: number,
+  readonly gridThickness: number;
   /** Штриховка линий сетки. */
-  readonly gridLineDash: number[],
+  readonly gridLineDash: number[];
 }
+
+/** Настройки отрисовки корреляций. */
+export interface CaratCorrelationDrawSettings {
+  /** Толщина обводки. */
+  readonly thickness: number;
+}
+
 
 /** Создаёт настройки отрисовки трека по конфигу. */
 export function createTrackBodyDrawSettings(config: CaratDrawerConfig): CaratTrackBodyDrawSettings {
-  const { margin, border } = config.track.body;
-  return {margin, borderColor: border.color, borderThickness: border.thickness};
+  const padding = config.stage.padding;
+  const { border, activeColor } = config.track.body;
+  return {padding, borderColor: border.color, borderThickness: border.thickness, activeColor};
 }
 
 /** Создаёт настройки отрисовки трека по конфигу. */
@@ -194,6 +209,11 @@ export function createColumnXAxesDrawSettings(config: CaratDrawerConfig): CaratC
     thickness, markSize, gap, axisHeight,
     gridThickness: grid.thickness, gridLineDash: grid.lineDash
   };
+}
+
+/** Создаёт настройки отрисовки корреляций по конфигу. */
+export function createCorrelationDrawSettings(config: CaratDrawerConfig): CaratCorrelationDrawSettings {
+  return {thickness: config.correlation.thickness};
 }
 
 /** Преобразует модель шрифта в `canvas.font`. */

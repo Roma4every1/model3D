@@ -1,3 +1,8 @@
+/** Текущее месторождение. */
+export function stratumStateSelector(state: WState): StratumState {
+  return state.objects.stratum;
+}
+
 /** Состояние скважины. */
 export function wellStateSelector(state: WState): WellState {
   return state.objects.well;

@@ -1,27 +1,27 @@
-import { CaratsAction, CaratsActions } from './carat.reducer';
+import { CaratAction, CaratActionType } from './carat.reducer';
 
 
 /** Добавляет в хранилище состояний каротажа новую каротажную форму. */
-export function createCaratState(id: FormID, channels: ChannelDict, formState: FormState): CaratsAction {
-  return {type: CaratsActions.CREATE, payload: {id, channels, formState}};
+export function createCaratState(payload: FormStatePayload): CaratAction {
+  return {type: CaratActionType.CREATE, payload};
 }
 
 /** Устанавливает активную колонку. */
-export function setCaratActiveGroup(id: FormID, group: ICaratColumnGroup): CaratsAction {
-  return {type: CaratsActions.SET_ACTIVE_GROUP, payload: {id, group}};
+export function setCaratActiveGroup(id: FormID, group: ICaratColumnGroup): CaratAction {
+  return {type: CaratActionType.SET_ACTIVE_GROUP, payload: {id, group}};
 }
 
 /** Устанавливает активную кривую. */
-export function setCaratActiveCurve(id: FormID, curve: any): CaratsAction {
-  return {type: CaratsActions.SET_ACTIVE_CURVE, payload: {id, curve}};
+export function setCaratActiveCurve(id: FormID, curve: any): CaratAction {
+  return {type: CaratActionType.SET_ACTIVE_CURVE, payload: {id, curve}};
 }
 
 /** Обновляет данные каналов. */
-export function setCaratChannelData(id: FormID, data: ChannelDict): CaratsAction {
-  return {type: CaratsActions.SET_DATA, payload: {id, data}};
+export function setCaratLoading(id: FormID, loading: boolean): CaratAction {
+  return {type: CaratActionType.SET_LOADING, payload: {id, loading}};
 }
 
 /** Установить элемент холста. */
-export function setCaratCanvas(id: FormID, canvas: HTMLCanvasElement): CaratsAction {
-  return {type: CaratsActions.SET_CANVAS, payload: {id, canvas}};
+export function setCaratCanvas(id: FormID, canvas: HTMLCanvasElement): CaratAction {
+  return {type: CaratActionType.SET_CANVAS, payload: {id, canvas}};
 }

@@ -22,7 +22,6 @@ export function updateParamDeep(clientID: FormID, id: ParameterID, newValue: any
     if (!parameter) return;
     const { relatedChannels, relatedReportChannels, relatedReports } = parameter;
     dispatch(updateParam(clientID, id, newValue));
-    updateObjects([{clientID, id, value: newValue}], dispatch, getState());
 
     if (relatedChannels.length) {
       await reloadChannels(relatedChannels)(dispatch, getState);
@@ -30,6 +29,7 @@ export function updateParamDeep(clientID: FormID, id: ParameterID, newValue: any
     if (relatedReportChannels.length) {
       await reloadReportChannels(relatedReportChannels)(dispatch, getState);
     }
+    updateObjects([{clientID, id, value: newValue}], dispatch, getState());
 
     const { parameters, channels } = getState();
     const entries: UpdateParamData[] = [];

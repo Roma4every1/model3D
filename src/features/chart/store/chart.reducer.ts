@@ -3,15 +3,15 @@ import { settingsToChartState } from '../lib/initialization';
 /* --- Action Types --- */
 
 export enum ChartsActionType {
-  SET = 'charts/set',
+  CREATE = 'charts/set',
   SET_FIELD = 'charts/field',
 }
 
 /* --- Action Interfaces --- */
 
 interface ActionSet {
-  type: ChartsActionType.SET,
-  payload: {id: FormID, settings: ChartFormSettings},
+  type: ChartsActionType.CREATE,
+  payload: FormStatePayload,
 }
 interface ActionSetField {
   type: ChartsActionType.SET_FIELD,
@@ -22,14 +22,14 @@ export type ChartsAction = ActionSet | ActionSetField;
 
 /* --- Init State & Reducer --- */
 
-const init: ChartsState = {};
+const init: ChartStates = {};
 
-export function chartsReducer(state: ChartsState = init, action: ChartsAction): ChartsState {
+export function chartsReducer(state: ChartStates = init, action: ChartsAction): ChartStates {
   switch (action.type) {
 
-    case ChartsActionType.SET: {
-      const { id, settings } = action.payload;
-      return {...state, [id]: settingsToChartState(settings)};
+    case ChartsActionType.CREATE: {
+      const { state: formState, settings } = action.payload;
+      return {...state, [formState.id]: settingsToChartState(settings)};
     }
 
     case ChartsActionType.SET_FIELD: {

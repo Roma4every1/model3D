@@ -99,7 +99,7 @@ export async function createFormStates(
   parent: FormID, data: FormDataWMR[],
   channels: Record<FormID, ChannelName[]>
 ) {
-  const states: FormsState = {};
+  const states: FormStates = {};
   const settingsArray = await Promise.all(data.map(createFormSettings));
 
   data.forEach(({id, type}, i) => {

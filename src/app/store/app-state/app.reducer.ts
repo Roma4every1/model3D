@@ -1,6 +1,6 @@
 /* --- Action Types --- */
 
-export enum AppStateActions {
+export enum AppStateActionType {
   INIT_RESULT = 'app/init',
   SET_SESSION_ID = 'app/session',
   SET_SYSTEM_ID = 'app/systemName',
@@ -10,18 +10,18 @@ export enum AppStateActions {
 /* --- Action Interfaces --- */
 
 interface ActionInitResult {
-  type: AppStateActions.INIT_RESULT,
+  type: AppStateActionType.INIT_RESULT,
   payload: {config: ClientConfiguration, systemList: SystemList | null},
 }
 interface ActionSetSessionID {
-  type: AppStateActions.SET_SESSION_ID,
+  type: AppStateActionType.SET_SESSION_ID,
   payload: SessionID,
 }
 interface ActionClearSessionID {
-  type: AppStateActions.CLEAR_SESSION_ID,
+  type: AppStateActionType.CLEAR_SESSION_ID,
 }
 interface ActionSetSystemName {
-  type: AppStateActions.SET_SYSTEM_ID,
+  type: AppStateActionType.SET_SYSTEM_ID,
   payload: SystemID,
 }
 
@@ -37,26 +37,26 @@ const init: AppState = {
   sessionID: null,
 };
 
-export const appReducer = (state: AppState = init, action: AppStateAction): AppState => {
+export function appReducer(state: AppState = init, action: AppStateAction): AppState {
   switch (action.type) {
 
-    case AppStateActions.INIT_RESULT: {
+    case AppStateActionType.INIT_RESULT: {
       const { config, systemList } = action.payload
       return {...state, config, systemList};
     }
 
-    case AppStateActions.SET_SYSTEM_ID: {
+    case AppStateActionType.SET_SYSTEM_ID: {
       return {...state, systemID: action.payload};
     }
 
-    case AppStateActions.SET_SESSION_ID: {
+    case AppStateActionType.SET_SESSION_ID: {
       return {...state, sessionID: action.payload};
     }
 
-    case AppStateActions.CLEAR_SESSION_ID: {
+    case AppStateActionType.CLEAR_SESSION_ID: {
       return {...state, sessionID: null};
     }
 
     default: return state;
   }
-};
+}

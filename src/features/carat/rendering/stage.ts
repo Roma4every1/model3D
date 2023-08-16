@@ -1,9 +1,11 @@
 import { CaratTrack } from './track';
 import { CaratDrawer } from './drawer';
+import { CaratCorrelations } from './correlations';
 import { CaratDrawerConfig } from './drawer-settings';
 import { CaratCurveModel } from '../lib/types';
 import { isRectInnerPoint } from 'shared/lib';
-import { moveSmoothly, calculateTrackWidth } from '../lib/utils';
+import { calculateTrackWidth } from '../lib/utils';
+import { moveSmoothly } from '../lib/smooth-scroll';
 import { defaultSettings } from '../lib/constants';
 
 
@@ -14,25 +16,37 @@ export class CaratStage implements ICaratStage {
   /** Ссылка на элемент холста. */
   private canvas: HTMLCanvasElement;
 
+  /** Модель корреляций. */
+  public readonly correlations: CaratCorrelations;
+  /** Список ID скважин треков. */
+  public wellIDs: WellID[];
   /** Список треков. */
-  private readonly trackList: CaratTrack[];
-  private zones: CaratZone[];
+  public trackList: CaratTrack[];
+  /** Индекс активного трека. */
+  private activeIndex: number;
 
-  public readonly useStaticScale: boolean;
-  public readonly strataChannelName: ChannelName;
+  /** Модель разбиения кривых по зонам. */
+  private zones: CaratZone[];
+  private readonly useStaticScale: boolean;
+  private readonly strataChannelName: ChannelName;
 
   constructor(init: CaratFormSettings, drawerConfig: CaratDrawerConfig) {
+    this.wellIDs = [];
     this.zones = init.settings.zones;
     this.drawer = new CaratDrawer(drawerConfig);
     this.useStaticScale = init.settings.useStaticScale;
     this.strataChannelName = init.settings.strataChannelName;
 
+    const correlationsInit = init.columns.find(c => c.settings.type === 'external');
+    this.correlations = new CaratCorrelations(correlationsInit, this.drawer);
+
     const trackWidth = calculateTrackWidth(init.columns);
-    const trackMargin = this.drawer.trackBodySettings.margin;
-    const rect: Rectangle = {top: trackMargin, left: trackMargin, width: trackWidth, height: 0};
+    const padding = this.drawer.trackBodySettings.padding;
+    const rect: Rectangle = {top: padding, left: padding, width: trackWidth, height: 0};
     const scale = CaratDrawer.pixelPerMeter / (init.settings.scale ?? defaultSettings.scale);
     const track = new CaratTrack(rect, init.columns, scale, this.drawer);
     this.trackList = [track];
+    this.activeIndex = 0;
     if (this.zones.length) track.setZones(this.zones);
   }
 
@@ -45,7 +59,7 @@ export class CaratStage implements ICaratStage {
   }
 
   public getActiveTrack(): CaratTrack {
-    return this.trackList[0];
+    return this.trackList[this.activeIndex];
   }
 
   public getZones(): CaratZone[] {
@@ -55,6 +69,7 @@ export class CaratStage implements ICaratStage {
   public setZones(zones: CaratZone[]) {
     this.zones = zones;
     for (const track of this.trackList) track.setZones(zones);
+    this.updateTrackRects();
     this.resize();
   }
 
@@ -66,27 +81,74 @@ export class CaratStage implements ICaratStage {
     }
   }
 
-  public setWell(well: string) {
-    this.trackList[0].setWell(well ?? '');
+  /** Установить режим показа треков по указанным скважинам. */
+  public setTrackList(wells: WellModel[]): void {
+    this.wellIDs = wells.map(well => well.id);
+    const wellNames = wells.map(well => well.name ?? well.id?.toString() ?? '');
+
+    const correlationWidth = this.correlations.getWidth();
+    const activeTrack = this.getActiveTrack();
+    const rect = activeTrack.rect;
+    this.trackList = [];
+
+    for (const wellName of wellNames) {
+      const track = activeTrack.cloneFor({...rect}, wellName);
+      this.trackList.push(track);
+      rect.left += rect.width + correlationWidth;
+    }
+    this.setActiveTrack(0);
   }
 
-  public setChannelData(channelData: ChannelDict) {
-    this.trackList[0].setChannelData(channelData);
+  public setActiveTrack(idx: number): void {
+    if (this.wellIDs.length > 1) {
+      this.trackList[this.activeIndex].active = false;
+      this.trackList[idx].active = true;
+    }
+    this.activeIndex = idx;
+  }
+
+  public edit(action: StageEditAction): void {
+    switch (action.type) {
+      case 'scale': { // изменение масштаба
+        for (const track of this.trackList) track.setScale(action.payload);
+        return;
+      }
+      case 'move': { // изменении порядка колонок
+        const { idx, to } = action.payload;
+        for (const track of this.trackList) track.moveGroup(idx, to);
+        return;
+      }
+      case 'group-width': { // изменение ширины колонки
+        const { idx, width } = action.payload;
+        for (const track of this.trackList) track.setGroupWidth(idx, width);
+        this.updateTrackRects();
+        return;
+      }
+      case 'group-label': { // изменение подписи колонки
+        const { idx, label } = action.payload;
+        for (const track of this.trackList) track.setGroupLabel(idx, label);
+        return;
+      }
+      case 'group-y-step': { // изменение шага по оси Y
+        const { idx, step } = action.payload;
+        for (const track of this.trackList) track.setGroupYAxisStep(idx, step);
+        return;
+      }
+      default: {}
+    }
+  }
+
+  public setData(data: ChannelRecordDict[], cache: CurveDataCache) {
+    for (let i = 0; i < data.length; i++) {
+      this.trackList[i].setData(data[i], cache);
+    }
+    this.updateTrackRects();
     this.resize();
+    this.correlations.setData(this.trackList);
   }
 
-  public async setCurveData(channelData: ChannelDict) {
-    const activeCurve = await this.trackList[0].setCurveData(channelData);
-    this.resize();
-    return activeCurve;
-  }
-
-  public setLookupData(lookupData: ChannelDict) {
-    this.trackList[0].setLookupData(lookupData);
-  }
-
-  public setScale(scale: number) {
-    for (const track of this.trackList) track.setScale(scale);
+  public setLookupData(lookupData: ChannelRecordDict) {
+    for (const track of this.trackList) track.setLookupData(lookupData);
   }
 
   public handleKeyDown(key: string): boolean {
@@ -98,42 +160,66 @@ export class CaratStage implements ICaratStage {
         direction = 1;
       }
       if (direction) {
-        const viewport = this.trackList[0].viewport;
-        moveSmoothly(viewport, this, direction)
+        moveSmoothly(this, -1, direction)
       }
     }
     return false;
   }
 
   public handleMouseDown(point: Point): CaratCurveModel | boolean {
-    const track = this.trackList.find((t) => isRectInnerPoint(point, t.rect));
-    if (!track) return false;
-    const activeCurve = track.handleMouseDown(point);
+    const index = this.trackList.findIndex(t => isRectInnerPoint(point, t.rect));
+    if (index === -1) return false;
+    this.setActiveTrack(index);
+    const activeCurve = this.trackList[index].handleMouseDown(point);
     return activeCurve ?? true;
   }
 
   public handleMouseWheel(point: Point, direction: 1 | -1) {
-    const track = this.trackList.find((t) => isRectInnerPoint(point, t.rect));
-    if (track) moveSmoothly(track.viewport, this, direction);
+    const index = this.trackList.findIndex(t => isRectInnerPoint(point, t.rect));
+    moveSmoothly(this, index, direction);
   }
 
-  public handleMouseMove(by: number) {
-    const viewport = this.trackList[0].viewport;
-    let newY = viewport.y - by / (viewport.scale * window.devicePixelRatio);
+  public handleMouseMove(point: Point, by: number) {
+    const move = (idx: number) => {
+      const viewport = this.trackList[idx].viewport;
+      let newY = viewport.y - by / (viewport.scale * window.devicePixelRatio);
 
-    if (newY > viewport.max) newY = viewport.max;
-    else if (newY < viewport.min) newY = viewport.min;
+      if (newY > viewport.max) newY = viewport.max;
+      else if (newY < viewport.min) newY = viewport.min;
 
-    if (viewport.y !== newY) { viewport.y = newY; this.lazyRender(); }
+      if (viewport.y !== newY) { viewport.y = newY; this.lazyRender(idx); }
+    };
+
+    const index = this.trackList.findIndex(t => isRectInnerPoint(point, t.rect));
+    if (index === -1) {
+      for (let i = 0; i < this.trackList.length; i++) move(i);
+    } else {
+      move(index);
+    }
+  }
+
+  /** Обновляет горизонтальное положение треков и корреляций. */
+  public updateTrackRects(): void {
+    let left = this.trackList[0].rect.left;
+    const correlationWidth = this.correlations.getWidth();
+
+    for (const track of this.trackList) {
+      track.rect.left = left;
+      left += track.rect.width + correlationWidth;
+    }
+    this.correlations.updateRects(this.trackList);
   }
 
   public resize() {
     if (!this.canvas) return;
     const track = this.trackList[0];
-    const trackMargin = this.drawer.trackBodySettings.margin;
+    const padding = this.drawer.trackBodySettings.padding;
     const trackHeaderHeight = this.drawer.trackHeaderSettings.height;
 
-    const neededWidth = track.rect.width + 2 * trackMargin;
+    const correlationWidth = this.correlations.getWidth();
+    let neededWidth = (this.trackList.length - 1) * correlationWidth + 2 * padding;
+    for (const track of this.trackList) neededWidth += track.rect.width;
+
     const neededHeight = track.rect.top + trackHeaderHeight + track.maxGroupHeaderHeight + 20;
     const resultHeight = Math.max(this.canvas.clientHeight, neededHeight);
 
@@ -142,18 +228,23 @@ export class CaratStage implements ICaratStage {
     this.canvas.style.width = neededWidth + 'px';
     this.canvas.style.minHeight = neededHeight + 'px';
 
-    const trackHeight = resultHeight - 2 * trackMargin;
+    const trackHeight = resultHeight - 2 * padding;
     for (const track of this.trackList) track.setHeight(trackHeight);
+    this.correlations.setHeight(trackHeight);
   }
 
-  public render() {
+  /* --- Rendering --- */
+
+  public render(): void {
     if (!this.canvas) return;
     this.drawer.clear();
+    this.correlations.render();
     for (const track of this.trackList) track.render();
   }
 
-  public lazyRender() {
-    if (!this.canvas) return;
-    this.trackList[0].lazyRender();
+  public lazyRender(index: number): void {
+    this.correlations.render(index);
+    if (index > 0) this.correlations.render(index - 1);
+    this.trackList[index].lazyRender();
   }
 }

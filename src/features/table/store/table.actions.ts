@@ -1,10 +1,9 @@
-import { TableFormSettings } from '../lib/types';
 import { TableActions, TablesAction } from './table.reducer';
 
 
 /** Добавить новую таблицу в хранилище состояний. */
-export function createTableState(id: FormID, channel: Channel, settings: TableFormSettings): TablesAction {
-  return {type: TableActions.CREATE, payload: {id, channel, settings}};
+export function createTableState(payload: FormStatePayload): TablesAction {
+  return {type: TableActions.CREATE, payload};
 }
 
 /** Установить состояние колонок таблицы. */

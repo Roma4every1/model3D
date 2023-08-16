@@ -1,4 +1,3 @@
-import { TableFormSettings } from '../lib/types';
 import { getFlatten } from '../lib/column-tree';
 import { settingsToState, applyColumnTypes } from '../lib/initialization';
 
@@ -21,7 +20,7 @@ export enum TableActions {
 
 interface ActionCreate {
   type: TableActions.CREATE,
-  payload: {id: FormID, channel: Channel, settings: TableFormSettings},
+  payload: FormStatePayload,
 }
 interface ActionSetColumns {
   type: TableActions.SET_COLUMNS,
@@ -65,14 +64,15 @@ export type TablesAction = ActionCreate | ActionSetColumns | ActionSetColumnTree
 
 /* --- Init State & Reducer --- */
 
-const init: TablesState = {};
+const init: TableStates = {};
 
-export const tablesReducer = (state: TablesState = init, action: TablesAction): TablesState => {
+export const tablesReducer = (state: TableStates = init, action: TablesAction): TableStates => {
   switch (action.type) {
 
     case TableActions.CREATE: {
-      const { id, channel, settings } = action.payload;
-      return {...state, [id]: settingsToState(channel, settings)};
+      const { state: formState, channels, settings } = action.payload;
+      const channel = channels[formState.channels[0]];
+      return {...state, [formState.id]: settingsToState(channel, settings)};
     }
 
     case TableActions.SET_COLUMNS: {

@@ -18,69 +18,6 @@ export function fixHEX(hex: string) {
   return hex;
 }
 
-/* --- Smooth Scroll ---*/
-
-/** Плавно переместит порт просмотра.
- * @param viewport порт просмотра
- * @param stage экземпляр сцены
- * @param direction в какую сторону
- * */
-export function moveSmoothly(viewport: CaratViewport, stage: ICaratStage, direction: 1 | -1) {
-  const duration = 250; // 0.25 second
-  const frameTime = 16; // 60 FPS => 1000ms / 60
-  const scroll = viewport.scroll;
-
-  if (scroll.direction !== direction) {
-    scroll.direction = direction;
-    scroll.queue = [];
-  }
-
-  const by = direction * scroll.step;
-  const queue = scroll.queue;
-  let time = 0, prevY = 0, step = 0;
-
-  while (time < duration) {
-    const currentY = by * cubicBezierEaseInOut(time / duration);
-    const delta = currentY - prevY;
-
-    if (queue[step] === undefined) {
-      queue.push(delta);
-    } else {
-      queue[step] += delta;
-    }
-
-    step += 1;
-    prevY = currentY;
-    time += frameTime;
-  }
-
-  if (scroll.id === null) {
-    scroll.id = window.setInterval(moveView, frameTime, viewport, stage);
-  }
-}
-
-function moveView(viewport: CaratViewport, stage: ICaratStage) {
-  const scroll = viewport.scroll;
-  if (scroll.queue.length === 0) {
-    clearInterval(scroll.id);
-    return scroll.id = null;
-  }
-
-  let y = viewport.y + scroll.queue.shift();
-  if (y + viewport.height > viewport.max) y = viewport.max - viewport.height;
-  else if (y < viewport.min) y = viewport.min;
-
-  if (viewport.y !== y) {
-    viewport.y = y;
-    stage.lazyRender();
-  }
-}
-
-/** Аналог CSS timing function `ease-in-out`. */
-function cubicBezierEaseInOut(t) {
-  return t * t * (3 - 2 * t);
-}
-
 /* --- Geometry --- */
 
 /** Расстояние до кривой в пикселях. */

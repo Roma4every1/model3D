@@ -1,20 +1,23 @@
-/** Фиксированное название канала с трассами. */
-export const traceChannelName: ChannelName = 'traces';
-
 /** Набор свойств канала с месторождениями. */
-export const placeCriterion: ChannelCriterion<'id' | 'name'> = {
+export const placeCriterion: ChannelCriterion<keyof PlaceModel> = {
+  id: 'LOOKUPCODE',    // number
+  name: 'LOOKUPVALUE', // string
+};
+
+/** Набор свойств канала с пластами. */
+export const stratumCriterion: ChannelCriterion<keyof StratumModel> = {
   id: 'LOOKUPCODE',    // number
   name: 'LOOKUPVALUE', // string
 };
 
 /** Набор свойств канала со скважинами. */
-export const wellCriterion: ChannelCriterion<'id' | 'name'> = {
+export const wellCriterion: ChannelCriterion<keyof WellModel> = {
   id: 'LOOKUPCODE',    // number
   name: 'LOOKUPVALUE', // string
 };
 
 /** Набор свойств канала с трассами. */
-export const traceCriterion: ChannelCriterion<'id' | 'place' | 'name'  | 'nodes'> = {
+export const traceCriterion: ChannelCriterion<keyof TraceModel> = {
   id: 'LOOKUPCODE',    // number
   place: 'STRATUM',    // string
   name: 'LOOKUPVALUE', // string
@@ -28,3 +31,6 @@ export const traceNodeCriterion: ChannelCriterion = {
   y: 'Y',              // number
   order: 'SORTORDER',  // number
 };
+
+/** Фиксированное название канала с трассами. */
+export const traceChannelName: ChannelName = 'traces';

@@ -1,13 +1,20 @@
 import { CaratStage } from '../rendering/stage';
-import { identifyCaratChannel, applyStyle, createInfo } from './channels';
-import { drawerConfig, criterionProperties, inclinometryDataProperties } from './constants';
+import { CaratLoader } from './loader';
+import { createColumnInfo } from 'entities/channels';
+import { identifyCaratChannel, applyStyle } from './channels';
+import { drawerConfig, caratChannelCriterionDict, inclinometryCriterion } from './constants';
 
 
 /** Создаёт состояние каротажа по её начальным настройкам. */
-export function settingsToState(formState: FormState, channelDict: ChannelDict): CaratState {
-  const channels = formState.channels;
+export function settingsToCaratState(payload: FormStatePayload): CaratState {
+  const { state: formState, channels: channelDict } = payload;
   const init: CaratFormSettings = formState.settings;
   init.columns.sort((a, b) => a.settings.index - b.settings.index);
+
+  let curveDataChannel: CaratAttachedChannel;
+  let inclinometryChannel: CaratAttachedChannel;
+  const usedChannels = new Set<ChannelName>();
+  const attachments: CaratAttachedChannel[] = [];
 
   for (const column of init.columns) {
     for (const attachedChannel of column.channels) {
@@ -15,44 +22,52 @@ export function settingsToState(formState: FormState, channelDict: ChannelDict):
       identifyCaratChannel(attachedChannel, channel);
 
       if (attachedChannel.type === 'curve-data') {
-        const name = attachedChannel.name;
-        const idx = channels.findIndex(c => c === name);
-        channels.splice(idx, 1);
+        curveDataChannel = attachedChannel;
       } if (attachedChannel.type === 'inclinometry') {
-        const propertyName = criterionProperties.inclinometry.inclinometry;
+        const propertyName = caratChannelCriterionDict.inclinometry.inclinometry;
         const property = channel.info.properties.find(p => p.name === propertyName);
-        const inclinometryChannel = property?.secondLevelChannelName;
+        const inclinometryDataChannel = property?.secondLevelChannelName;
 
-        if (inclinometryChannel) {
-          const info = createInfo(channelDict[inclinometryChannel], inclinometryDataProperties);
-          attachedChannel.inclinometry = {name: inclinometryChannel, info, applied: false, dict: null};
-          if (!channels.includes(inclinometryChannel)) channels.push(inclinometryChannel);
+        if (inclinometryDataChannel) {
+          const info = createColumnInfo(channelDict[inclinometryDataChannel], inclinometryCriterion);
+          attachedChannel.inclinometry = {name: inclinometryDataChannel, info, dict: null};
+
+          inclinometryChannel = attachedChannel;
+          usedChannels.add(attachedChannel.name);
+          usedChannels.add(inclinometryDataChannel);
+          attachments.push(attachedChannel.inclinometry as any);
         } else {
           delete attachedChannel.type;
         }
       } else {
-        applyStyle(attachedChannel, channel, channelDict);
+        applyStyle(attachedChannel, column.properties[attachedChannel.name], channel, channelDict);
+      }
+
+      if (attachedChannel.type && attachedChannel.type !== 'curve-data') {
+        usedChannels.add(attachedChannel.name);
+        attachments.push(attachedChannel);
       }
     }
   }
-
-  const lookupNames: ChannelName[] = [];
-  for (const name of channels) lookupNames.push(...channelDict[name].info.lookupChannels);
 
   const stage = new CaratStage(init, drawerConfig);
   const observer = new ResizeObserver(() => { stage.resize(); stage.render(); });
 
   const track = stage.getActiveTrack();
   const activeGroup = track.getActiveGroup();
+  const lookupNames = track.getLookupNames();
+
+  formState.channels = [...usedChannels];
+  const loader = new CaratLoader(attachments, curveDataChannel, inclinometryChannel);
 
   const curveGroup = activeGroup?.hasCurveColumn()
     ? activeGroup
     : track.getGroups().find((group) => group.hasCurveColumn());
 
   return {
-    stage, canvas: undefined, observer,
+    canvas: undefined, stage, loader, observer,
     activeGroup, curveGroup, activeCurve: null,
-    lookupNames, lastData: {},
+    lookupNames, loading: false,
   };
 }
 
@@ -60,5 +75,6 @@ export function settingsToState(formState: FormState, channelDict: ChannelDict):
 export function caratStateToSettings(id: FormID, state: CaratState): CaratFormSettings {
   const settings = state.stage.getCaratSettings();
   const columns = state.stage.getActiveTrack().getInitColumns();
+  columns.push(state.stage.correlations.getInit());
   return {id, settings, columns};
 }

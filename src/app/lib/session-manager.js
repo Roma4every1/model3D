@@ -5,7 +5,7 @@ import { getSessionToSave } from './session-save';
 import { clearSession } from '../store/app-state/app.actions';
 import { startSession as startSessionThunk } from '../store/root-form/root-form.thunks';
 import { clearPresentations } from '../../widgets/presentation';
-import { clearForms } from '../../widgets/presentation/store/forms.actions';
+import { clearForms } from '../../widgets/presentation/store/form.actions';
 import { clearParams } from '../../entities/parameters';
 import { clearChannels } from '../../entities/channels';
 import { clearReports } from '../../entities/reports';

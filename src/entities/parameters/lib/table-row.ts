@@ -26,6 +26,21 @@ function addParam(column: ChannelColumn, rowValue: any, propName: string): strin
     : propName + '##System.DBNull';
 }
 
+export function channelRowToString(row: ChannelRow, columns: ChannelColumn[]): string {
+  const cells = row.Cells;
+  const parts: string[] = [];
+
+  for (let i = 0; i < columns.length; i++) {
+    const cell = cells[i], column = columns[i];
+    if (cell === null) {
+      parts.push(`${column.Name}##System.DBNull`);
+    } else {
+      parts.push(`${column.Name}#${cell}#${column.NetType}`);
+    }
+  }
+  return parts.join('|');
+}
+
 /* --- --- */
 
 export function tableCellToString(channel: Channel, row: ChannelRow): string {

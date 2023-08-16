@@ -4,8 +4,8 @@ import { createSessionManager } from '../lib/session-manager';
 
 import { appReducer } from './app-state/app.reducer';
 import { rootFormReducer } from 'app/store/root-form/root-form.reducer';
-import { presentationsReducer } from 'widgets/presentation/store/presentations.reducer';
-import { formsReducer } from 'widgets/presentation/store/forms.reducer';
+import { presentationsReducer } from 'widgets/presentation/store/presentation.reducer';
+import { formsReducer } from 'widgets/presentation/store/form.reducer';
 import { tablesReducer } from 'features/table/store/table.reducer';
 import { caratsReducer } from 'features/carat/store/carat.reducer';
 import { chartsReducer } from 'features/chart/store/chart.reducer';

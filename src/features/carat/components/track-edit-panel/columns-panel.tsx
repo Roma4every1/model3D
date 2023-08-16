@@ -25,12 +25,12 @@ export const CaratColumnsPanel = ({id, stage, track, signal}: CaratColumnsPanelP
   };
 
   const moveLeft = () => {
-    track.moveGroup(activeIndex, 'left');
+    stage.edit({type: 'move', payload: {idx: activeIndex, to: 'left'}});
     stage.render(); signal();
   };
 
   const moveRight = () => {
-    track.moveGroup(activeIndex,'right');
+    stage.edit({type: 'move', payload: {idx: activeIndex, to: 'right'}});
     stage.render(); signal();
   };
 

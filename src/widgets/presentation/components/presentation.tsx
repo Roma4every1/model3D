@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchPresentationState } from '../store/presentations.thunks';
+import { fetchPresentationState } from '../store/presentation.thunks';
 import { stateNeedFetch, stateNotLoaded, formFetchStateSelector } from 'entities/fetch-state';
 
 import { Grid } from './grid';

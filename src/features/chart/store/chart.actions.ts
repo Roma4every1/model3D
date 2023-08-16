@@ -2,8 +2,8 @@ import { ChartsAction, ChartsActionType } from './chart.reducer';
 
 
 /** Добавить новое состояние графика. */
-export function createChartState(id: FormID, settings: ChartFormSettings): ChartsAction {
-  return {type: ChartsActionType.SET, payload: {id, settings}};
+export function createChartState(payload: FormStatePayload): ChartsAction {
+  return {type: ChartsActionType.CREATE, payload};
 }
 
 /** Установить шаг по времени для графика. */

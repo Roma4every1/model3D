@@ -39,6 +39,10 @@ interface CSSFont {
   family: string,
 }
 
+type PayloadAction<Type extends string = string, Payload = never> = Payload extends never
+  ? {type: Type}
+  : {type: Type, payload: Payload};
+
 /* --- Geometry --- */
 
 /** Точка на плоскости: `x` и `y`. */

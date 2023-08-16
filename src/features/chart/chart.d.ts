@@ -5,7 +5,7 @@ interface ChartFormSettings {
 }
 
 /** Состояние графиков. */
-type ChartsState = Record<FormID, ChartState>;
+type ChartStates = Record<FormID, ChartState>;
 
 /** Состояние формы графика.
  * + `tooltip: boolean`

@@ -1,9 +1,4 @@
 /** Общее состояние приложения. */
-export const appStateSelector = (state: WState) => {
+export function appStateSelector(state: WState) {
   return state.appState;
-};
-
-/** Клиентская конфигурация. */
-export const configSelector = (state: WState) => {
-  return state.appState.config;
-};
+}

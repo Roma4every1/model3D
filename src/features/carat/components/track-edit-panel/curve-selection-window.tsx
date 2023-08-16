@@ -1,19 +1,19 @@
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { round } from 'shared/lib';
+import { setOpenedWindow } from 'entities/windows';
 import { Window } from '@progress/kendo-react-dialogs';
 import { Button } from '@progress/kendo-react-buttons';
 import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
 import { DateRangePicker, DateRangePickerChangeEvent } from '@progress/kendo-react-dateinputs';
 import { TreeView, TreeViewCheckChangeEvent, TreeViewExpandChangeEvent } from '@progress/kendo-react-treeview';
 import { TextInfo } from 'shared/ui';
-import { round } from 'shared/lib';
-import { setOpenedWindow } from 'entities/windows';
 
 import './curve-selection-window.scss';
+import { CaratCurveModel } from '../../lib/types';
 import { CurveManager } from '../../lib/curve-manager';
 import { caratStateSelector } from '../../store/carat.selectors';
-import { setCaratData } from '../../store/carat.thunks';
-import {CaratCurveModel} from "../../lib/types";
+import { loadCaratCurves } from '../../store/carat.thunks';
 
 
 interface CurveSelectionWindowProps {
@@ -71,7 +71,7 @@ export const CurveSelectionWindow = ({id}: CurveSelectionWindowProps) => {
 
   const onSubmit = () => {
     onClose();
-    dispatch(setCaratData(id));
+    dispatch(loadCaratCurves(id, curveGroup));
   };
 
   return (
@@ -89,7 +89,7 @@ export const CurveSelectionWindow = ({id}: CurveSelectionWindowProps) => {
                   expandIcons={true} onExpandChange={onExpandChange}
                   checkboxes={true} onCheckChange={onCheckChange}
                  />
-              : <TextInfo text={'carat.empty'}/>
+              : <TextInfo text={'carat.no-data'}/>
             }
           </section>
           <section>

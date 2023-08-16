@@ -2,7 +2,7 @@ import { IJsonModel, Model, Layout, Action, Actions } from 'flexlayout-react';
 import { useState, useEffect, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { i18nMapper } from 'shared/locales';
-import { setActiveForm, setPresentationLayout } from '../store/presentations.actions';
+import { setActiveForm, setPresentationLayout } from '../store/presentation.actions';
 
 
 interface GridProps {

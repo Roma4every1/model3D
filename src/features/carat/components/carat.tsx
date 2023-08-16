@@ -2,11 +2,12 @@ import { KeyboardEvent, MouseEvent, WheelEvent } from 'react';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { compareObjects } from 'shared/lib';
-import { wellStateSelector } from '../../../entities/objects';
-import { channelDictSelector } from 'entities/channels';
+import { wellStateSelector, traceStateSelector } from 'entities/objects';
+import { channelDataDictSelector } from 'entities/channels';
 import { TextInfo } from 'shared/ui';
 
 import './carat.scss';
+import { channelDataDictToRecords } from '../lib/channels';
 import { caratStateSelector } from '../store/carat.selectors';
 import { setCaratData } from '../store/carat.thunks';
 import { setCaratActiveCurve, setCaratActiveGroup, setCaratCanvas } from '../store/carat.actions';
@@ -17,25 +18,25 @@ export const Carat = ({id, channels}: FormState) => {
   const dispatch = useDispatch();
 
   const { model: currentWell } = useSelector(wellStateSelector);
-  const { stage, canvas, lookupNames }: CaratState = useSelector(caratStateSelector.bind(id));
+  const { model: currentTrace } = useSelector(traceStateSelector);
+  const { stage, canvas, lookupNames, loading }: CaratState = useSelector(caratStateSelector.bind(id));
 
-  const channelData: ChannelDict = useSelector(channelDictSelector.bind(channels), compareObjects);
-  const lookupData: ChannelDict = useSelector(channelDictSelector.bind(lookupNames), compareObjects);
+  const channelData: ChannelDataDict = useSelector(channelDataDictSelector.bind(channels), compareObjects);
+  const lookupData: ChannelDataDict = useSelector(channelDataDictSelector.bind(lookupNames), compareObjects);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isOnMoveRef = useRef<boolean>(false);
 
   // обновление данных каналов-справочников
   useEffect(() => {
-    stage.setLookupData(lookupData);
+    stage.setLookupData(channelDataDictToRecords(lookupData));
     stage.render();
   }, [lookupData, stage]);
 
-  // обновление данных каналов и активной скважины
+  // обновление данных каналов
   useEffect(() => {
-    stage.setWell(currentWell?.name ?? currentWell?.id?.toString());
     dispatch(setCaratData(id, channelData));
-  }, [channelData]); // eslint-disable-line
+  }, [channelData, currentWell, currentTrace, id, dispatch]);
 
   // обновление ссылки на холст
   useLayoutEffect(() => {
@@ -43,8 +44,14 @@ export const Carat = ({id, channels}: FormState) => {
     dispatch(setCaratCanvas(id, canvasRef.current));
   });
 
-  if (!currentWell?.id) {
-    return <TextInfo text={'carat.empty'}/>;
+  if (loading) {
+    return <TextInfo text={'carat.loading'}/>;
+  }
+  if (!currentWell && !currentTrace) {
+    return <TextInfo text={'carat.no-data'}/>;
+  }
+  if (currentTrace && currentTrace.nodes.length === 0) {
+    return <TextInfo text={'carat.no-nodes'}/>;
   }
 
   const onKeyDown = (e: KeyboardEvent) => {
@@ -53,12 +60,15 @@ export const Carat = ({id, channels}: FormState) => {
   };
 
   const onMouseDown = (e: MouseEvent) => {
+    isOnMoveRef.current = true;
     const { offsetX: x, offsetY: y } = e.nativeEvent;
+
     const result = stage.handleMouseDown({x, y});
-    if (!result) return;
-    isOnMoveRef.current = true; stage.render();
-    dispatch(setCaratActiveGroup(id, stage.getActiveTrack().getActiveGroup()));
-    if (typeof result === 'object') dispatch(setCaratActiveCurve(id, result));
+    if (result) {
+      stage.render();
+      dispatch(setCaratActiveGroup(id, stage.getActiveTrack().getActiveGroup()));
+      if (typeof result === 'object') dispatch(setCaratActiveCurve(id, result));
+    }
   };
 
   const onMouseUp = () => {
@@ -67,7 +77,8 @@ export const Carat = ({id, channels}: FormState) => {
 
   const onMouseMove = (e: MouseEvent) => {
     if (!isOnMoveRef.current) return;
-    stage.handleMouseMove(e.nativeEvent.movementY);
+    const { offsetX: x, offsetY: y } = e.nativeEvent;
+    stage.handleMouseMove({x, y}, e.nativeEvent.movementY);
   };
 
   const onWheel = (e: WheelEvent) => {

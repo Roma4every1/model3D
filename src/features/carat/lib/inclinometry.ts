@@ -1,11 +1,10 @@
 import { InclinometryMark, InclinometryMap } from './types';
-import { applyInfoIndexes, createInfoRecord } from './channels';
 
 
 /** Класс для управления инклинометрией. */
 export class CaratInclinometry implements ICaratInclinometry {
   /** Даннные канала инклинометрии. */
-  private readonly channel: CaratAttachedLookup;
+  public readonly channel: CaratAttachedLookup;
   /** Данные инклинометрии для интерполяции. */
   private interpolationData: InclinometryMark[];
 
@@ -41,13 +40,14 @@ export class CaratInclinometry implements ICaratInclinometry {
   }
 
   /** Обновление данных интерполяции. */
-  public setChannelData(channelData: ChannelDict) {
-    const data = channelData[this.channel.name]?.data;
-    if (data) {
+  public setData(channelData: ChannelRecordDict) {
+    const rows = channelData[this.channel.name];
+    if (rows.length) {
       const info = this.channel.info as CaratChannelInfo<'depth' | 'absMark'>;
-      const { rows, columns } = data;
-      if (!this.channel.applied) applyInfoIndexes(this.channel, columns);
-      this.interpolationData = rows.map((row) => createInfoRecord(row, info));
+      this.interpolationData = rows.map((record: ChannelRecord): InclinometryMark => ({
+        depth: record[info.depth.name],
+        absMark: record[info.absMark.name],
+      }));
     } else {
       this.interpolationData = [];
     }

@@ -2,16 +2,26 @@ import { stringToTableCell } from '../../parameters/lib/table-row';
 
 
 /** По значение `TableRow` параметра создаёт модель месторождения. */
-export function createPlaceModel(rowString: ParamValueTableRow, info: ChannelColumnInfo): PlaceModel {
-  const id = parseInt(stringToTableCell(rowString, info.id.name));
-  const name = stringToTableCell(rowString, info.name.name);
+export function createPlaceModel(value: ParamValueTableRow, info: ChannelColumnInfo): PlaceModel {
+  const id = parseInt(stringToTableCell(value, info.id.name));
+  if (isNaN(id)) return null;
+  const name = stringToTableCell(value, info.name.name);
+  return {id, name};
+}
+
+/** По значение `TableRow` параметра создаёт модель пласта. */
+export function createStratumModel(value: ParamValueTableRow, info: ChannelColumnInfo): StratumModel {
+  const id = parseInt(stringToTableCell(value, info.id.name));
+  if (isNaN(id)) return null;
+  const name = stringToTableCell(value, info.name.name);
   return {id, name};
 }
 
 /** По значение `TableRow` параметра создаёт модель скважины. */
-export function createWellModel(rowString: ParamValueTableRow, info: ChannelColumnInfo): WellModel {
-  const id = parseInt(stringToTableCell(rowString, info.id.name));
-  const name = stringToTableCell(rowString, info.name.name);
+export function createWellModel(value: ParamValueTableRow, info: ChannelColumnInfo): WellModel {
+  const id = parseInt(stringToTableCell(value, info.id.name));
+  if (isNaN(id)) return null;
+  const name = stringToTableCell(value, info.name.name);
   return {id, name};
 }
 

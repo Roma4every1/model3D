@@ -1,16 +1,22 @@
-import { CaratIntervalModel, CaratBarModel, CaratCurveModel, CurveAxisGroup } from '../lib/types';
 import { round } from 'shared/lib';
 
 import {
-  CaratDrawerConfig, CaratTrackBodyDrawSettings, CaratTrackHeaderDrawSettings,
-  CaratColumnBodyDrawSettings, CaratColumnLabelDrawSettings,
-  CaratColumnYAxisDrawSettings, CaratColumnXAxesDrawSettings,
+  CaratIntervalModel, CaratBarModel,
+  CaratCurveModel, CurveAxisGroup, CaratCorrelation,
+} from '../lib/types';
+
+import {
+  CaratDrawerConfig, CaratTrackBodyDrawSettings,
+  CaratTrackHeaderDrawSettings, CaratColumnBodyDrawSettings,
+  CaratColumnLabelDrawSettings, CaratColumnYAxisDrawSettings,
+  CaratColumnXAxesDrawSettings, CaratCorrelationDrawSettings,
 } from './drawer-settings';
 
 import {
   createTrackBodyDrawSettings, createTrackHeaderDrawSettings,
   createColumnBodyDrawSettings, createColumnLabelDrawSettings,
   createColumnYAxisDrawSettings, createColumnXAxesDrawSettings,
+  createCorrelationDrawSettings,
 } from './drawer-settings';
 
 
@@ -38,6 +44,8 @@ export class CaratDrawer {
   public readonly columnYAxisSettings: CaratColumnYAxisDrawSettings;
   /** Настройки отрисовки горизонтальных осей. колонки. */
   public readonly columnXAxesSettings: CaratColumnXAxesDrawSettings;
+  /** Настройки отрисовки корреляций. */
+  public readonly correlationSettings: CaratCorrelationDrawSettings;
   /** Используемое по умолчанию семейство шрифтов. */
   public readonly fontFamily: string;
 
@@ -73,6 +81,7 @@ export class CaratDrawer {
     this.columnLabelSettings = createColumnLabelDrawSettings(config);
     this.columnYAxisSettings = createColumnYAxisDrawSettings(config);
     this.columnXAxesSettings = createColumnXAxesDrawSettings(config);
+    this.correlationSettings = createCorrelationDrawSettings(config);
     this.fontFamily = config.stage.font.family;
   }
 
@@ -178,13 +187,18 @@ export class CaratDrawer {
     this.ctx.clearRect(0, headerHeight + this.trackHeaderSettings.height, width, height);
   }
 
-  public drawTrackBody(label: string) {
+  public drawTrackBody(label: string, active: boolean) {
     const { top, left, width, height } = this.trackRect;
     const { font, color, height: headerHeight } = this.trackHeaderSettings;
-    const { borderColor, borderThickness } = this.trackBodySettings;
+    const { borderColor, borderThickness, activeColor } = this.trackBodySettings;
     const half = borderThickness / 2;
 
     this.setTranslate(left, top);
+    if (active) {
+      this.ctx.fillStyle = activeColor;
+      this.ctx.fillRect(-half, -half, width + half, headerHeight);
+    }
+
     this.setTextSettings(font, color, 'center', 'middle');
     this.ctx.fillText(label, width / 2, headerHeight / 2, width);
 
@@ -471,5 +485,29 @@ export class CaratDrawer {
       this.ctx.stroke(path);
     }
     this.ctx.restore();
+  }
+
+  public drawCorrelation(correlations: CaratCorrelation) {
+    const { rect, leftTop, rightTop, leftViewport, rightViewport } = correlations;
+    this.setTranslate(0, rect.top);
+    this.ctx.clearRect(rect.left, -rect.top, rect.width, rect.height + 2 * rect.top);
+    this.setLineSettings(this.correlationSettings.thickness, '#888888');
+    this.ctx.fillStyle = '#e8e8e8';
+
+    const left = rect.left;
+    const right = rect.left + rect.width;
+    const leftScaleY = window.devicePixelRatio * leftViewport.scale;
+    const rightScaleY = window.devicePixelRatio * rightViewport.scale;
+
+    for (const correlation of correlations.data) {
+      this.ctx.beginPath();
+      this.ctx.moveTo(left, leftTop + leftScaleY * (correlation.leftBottom - leftViewport.y));
+      this.ctx.lineTo(left, leftTop + leftScaleY * (correlation.leftTop - leftViewport.y));
+      this.ctx.lineTo(right, rightTop + rightScaleY * (correlation.rightTop - rightViewport.y));
+      this.ctx.lineTo(right, rightTop + rightScaleY * (correlation.rightBottom - rightViewport.y));
+      this.ctx.closePath();
+      this.ctx.fill();
+      this.ctx.stroke();
+    }
   }
 }

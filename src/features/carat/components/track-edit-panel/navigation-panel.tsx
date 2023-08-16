@@ -47,7 +47,7 @@ const ScaleSection = ({stage, track}: CaratScalePanelProps) => {
   const changeScale = (newScale: number) => {
     setScale(newScale);
     if (newScale < 1) newScale = 1;
-    stage.setScale(CaratDrawer.pixelPerMeter / newScale);
+    stage.edit({type: 'scale', payload: CaratDrawer.pixelPerMeter / newScale});
     stage.render();
   };
 
@@ -81,7 +81,7 @@ const ScaleSection = ({stage, track}: CaratScalePanelProps) => {
         action={scaleDown} disabled={scale <= 0}
       />
       <div>
-        <img src={scaleIcon} alt="scale" width={16} height={16}/>
+        <img src={scaleIcon} alt={'scale'} width={16} height={16}/>
         <span style={{whiteSpace: 'pre'}}>1 / </span>
         <NumericTextBox
           ref={ref} title={t('carat.navigation.scale')}

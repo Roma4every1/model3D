@@ -1,67 +1,124 @@
 /** Хранилище каротажных диаграмм. */
-type CaratsState = FormDict<CaratState>;
+type CaratStates = FormDict<CaratState>;
 
 /** Состояние каротажной формы.
- * + `stage`: {@link ICaratStage}
  * + `canvas`: {@link HTMLCanvasElement}
+ * + `stage`: {@link ICaratStage}
+ * + `loader`: {@link ICaratLoader}
  * + `observer`: {@link ResizeObserver}
  * + `activeGroup`: {@link ICaratColumnGroup}
  * + `curveGroup`: {@link ICaratColumnGroup}
  * + `activeCurve: CaratCurveModel`
  * + `lookupNames`: {@link ChannelName}[]
- * + `lastData`: {@link ChannelDict}
+ * + `lastData`: {@link ChannelDict}[]
  * */
 interface CaratState {
+  /** Ссылка на холст. */
+  canvas: HTMLCanvasElement;
   /** Экземпляр класса сцены. */
   stage: ICaratStage;
-  /** Ссылка на холст. */
-  canvas: HTMLCanvasElement,
+  /** Класс, реализующий загрузку данных для построения каротажа по трассе. */
+  loader: ICaratLoader;
   /** Класс для отслеживания изменения размеров холста. */
-  observer: ResizeObserver,
+  observer: ResizeObserver;
   /** Активная колонка. */
-  activeGroup: ICaratColumnGroup | null,
+  activeGroup: ICaratColumnGroup | null;
   /** Колонка с кривыми (активная или первая с кривыми). */
-  curveGroup: ICaratColumnGroup | null,
+  curveGroup: ICaratColumnGroup | null;
   /** Активная кривая. */
-  activeCurve: any,
+  activeCurve: any;
   /** Список всех названий каналов-справочников. */
-  lookupNames: ChannelName[],
-  /** Последние установленные данные. */
-  lastData: ChannelDict,
+  lookupNames: ChannelName[];
+  /** Находится ли форма в состоянии загрузки. */
+  loading: boolean;
 }
+
+/** Кеш точек кривых. */
+type CurveDataCache = Record<CaratCurveID, CaratCurveData>;
+
+/** Данные точек кривых.
+ * + `path`: {@link Path2D}
+ * + `points`: {@link Point}[]
+ * + `top: number`
+ * + `bottom: number`
+ * + `min: number`
+ * + `max: number`
+ * */
+interface CaratCurveData {
+  /** Путь кривой. */
+  path: Path2D;
+  /** Набор точек кривой. */
+  points: Point[];
+  /** Начальная отметка глубины. */
+  top: number;
+  /** Конечная отметка глубины. */
+  bottom: number;
+  /** Минимальное значение кривой. */
+  min: number;
+  /** Максимальное значение кривой. */
+  max: number;
+}
+
+/** Загрузчик данных для построения каротажа по трассе. */
+interface ICaratLoader {
+  flag: number;
+  cache: CurveDataCache;
+
+  getCaratData(ids: WellID[], channelData: ChannelDataDict): Promise<ChannelRecordDict[]>
+  loadCurveData(ids: CaratCurveID[]): Promise<CaratCurveID[]>
+}
+
+/* --- --- */
 
 /** Сцена каротажной диаграммы. */
 interface ICaratStage {
-  readonly useStaticScale: boolean;
-  readonly strataChannelName: ChannelName;
+  wellIDs: WellID[];
+  trackList: ICaratTrack[];
+  correlations: ICaratCorrelations;
 
   getZones(): CaratZone[]
   getCaratSettings(): CaratSettings
   getActiveTrack(): ICaratTrack
 
-  setZones(zones: CaratZone[]): void
   setCanvas(canvas: HTMLCanvasElement): void
-  setWell(well: string): void
-  setScale(scale: number): void
+  setTrackList(wells: WellModel[]): void
+  setActiveTrack(idx: number): void
+  setZones(zones: CaratZone[]): void
+  edit(action: StageEditAction): void
 
-  setChannelData(channelData: ChannelDict): void
-  setCurveData(channelData: ChannelDict): Promise<any>
-  setLookupData(lookupData: ChannelDict): void
+  setData(data: ChannelRecordDict[], cache: CurveDataCache): void
+  setLookupData(lookupData: ChannelRecordDict): void
 
   handleKeyDown(key: string): boolean
-  handleMouseMove(by: number): void
+  handleMouseMove(point: Point, by: number): void
   handleMouseDown(point: Point): any
   handleMouseWheel(point: Point, direction: 1 | -1): void
 
+  updateTrackRects(): void
   resize(): void
+
   render(): void
-  lazyRender(): void
+  lazyRender(index: number): void
+}
+
+type StageEditAction =
+  PayloadAction<'scale', number> |
+  PayloadAction<'move', {idx: number, to: 'left' | 'right'}> |
+  PayloadAction<'group-width', {idx: number, width: number}> |
+  PayloadAction<'group-label', {idx: number, label: string}> |
+  PayloadAction<'group-y-step', {idx: number, step: number}>;
+
+interface ICaratCorrelations {
+  getInit(): CaratColumnInit
+  getWidth(): number
+  render(index?: number): void
 }
 
 /** Трек каротажной диаграммы. */
 interface ICaratTrack {
-  readonly rect: BoundingRect,
-  readonly viewport: CaratViewport,
+  wellName: WellName;
+  readonly rect: BoundingRect;
+  readonly viewport: CaratViewport;
   readonly inclinometry: ICaratInclinometry;
 
   getGroups(): ICaratColumnGroup[]
@@ -70,16 +127,14 @@ interface ICaratTrack {
   getActiveGroup(): ICaratColumnGroup | null
   getActiveIndex(): number
 
-  setWell(well: string): void
-  setScale(scale: number): void
   setActiveGroup(idx: number): void
   setActiveCurve(curve: any): void
-  setActiveGroupWidth(width: number): void
-  setActiveGroupLabel(label: string): void
-  setActiveGroupYAxisStep(step: number): void
 
-  moveGroup(idx: number, to: 'left' | 'right'): void
   handleMouseDown(point: Point): any
+  rebuildRects(changes: number[]): void
+
+  render(): void
+  lazyRender(): void
 }
 
 /** Инклинометрия скважины. */
@@ -94,11 +149,13 @@ interface ICaratColumnGroup {
   readonly xAxis: CaratColumnXAxis,
   readonly yAxis: CaratColumnYAxis,
 
+  getDataRect(): Rectangle
   getWidth(): number
   getColumns(): ICaratColumn[]
-  getElementsRange(): [number, number]
-  getCurvesRange(): [number, number]
+  getRange(): [number, number]
+  getIntervals(): any[]
   hasCurveColumn(): boolean
+  groupCurves(curves: any[]): number
 }
 
 interface ICaratColumn {
@@ -110,29 +167,29 @@ interface ICaratColumn {
 /** Порт просмотра. */
 interface CaratViewport {
   /** Текущая координата по Y. */
-  y: number,
+  y: number;
   /** Высота области просмотра. */
-  height: number,
+  height: number;
   /** Минимально возможная координата по Y. */
-  min: number,
+  min: number;
   /** Максимально возможная координата по Y. */
-  max: number,
+  max: number;
   /** Масштаб: количество пикселей в метре. */
-  scale: number,
+  scale: number;
   /** Состояние прокрутки. */
-  scroll: CaratViewportScroll,
+  scroll: CaratViewportScroll;
 }
 
 /** Состояние прокрутки. */
 interface CaratViewportScroll {
   /** Очередь движений. */
-  queue: number[],
+  queue: number[];
   /** Направление движения. */
-  direction: number,
+  direction: number;
   /** Шаг смещения за единицу прокрутки. */
-  step: number,
+  step: number;
   /** ID из `setInterval`. */
-  id: number | null,
+  id: number | null;
 }
 
 /** Идентификатор каротажной кривой. */
@@ -144,6 +201,5 @@ type CaratCurveType = string;
 type CaratChannelType = 'lithology' | 'perforations' | 'curve-set' | 'curve-data' | 'inclinometry';
 
 type CaratCurveSetInfo = CaratChannelInfo<'id' | 'type' | 'date' | 'top' | 'bottom' | 'defaultLoading' | 'description'>;
-type CaratCurveDataInfo = CaratChannelInfo<'id' | 'data' | 'top' | 'bottom' | 'min' | 'max'>;
 type CaratLithologyInfo = CaratChannelInfo<'top' | 'bottom' | 'stratumID'>;
-type CaratChannelInfo<Fields = string> = Record<Fields | 'bar', LookupColumnInfo>;
+type CaratChannelInfo<Fields = string> = ChannelColumnInfo<Fields | 'well' | 'bar'>;

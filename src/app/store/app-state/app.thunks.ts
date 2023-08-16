@@ -23,7 +23,7 @@ async function getClientConfig(): Promise<unknown> {
     const res = await fetch(configLocation, {credentials: 'include'});
     return await res.json();
   }
-  catch (e) {
+  catch {
     return null;
   }
 }

@@ -1,8 +1,13 @@
 /** Идентификатор канала с данными. */
 type ChannelName = string;
 
-/** Данные каналов. */
+/** Словарь каналов. */
 type ChannelDict = Record<ChannelName, Channel>;
+/** Данные каналов. */
+type ChannelDataDict = Record<ChannelName, ChannelData>;
+
+type ChannelRecordDict = Record<ChannelName, ChannelRecord[]>;
+type ChannelRecord = Record<string, any>;
 
 /** Модель канала данных.
  * + `tableID`: {@link TableID}
@@ -131,7 +136,8 @@ interface LookupColumnInfo {
   index: number,
 }
 
-type ChannelCriterion<Fields extends string = string> = Record<Fields, string>;
+type ChannelCriterion<Fields extends string = string> = Record<Fields, ChannelColumnCriterion>;
+type ChannelColumnCriterion = string | {name: string, optional: boolean};
 
 /** Настройки запроса данных. */
 interface ChannelQuerySettings {
