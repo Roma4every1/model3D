@@ -1,14 +1,15 @@
 import { Dispatch } from 'redux';
-import { API } from 'shared/lib';
+import { StateGetter, API } from 'shared/lib';
 import { appAPI } from '../../lib/app.api';
 import { createClientConfig, getAppLocation } from '../../lib/initialization';
 import { setInitResult } from './app.actions';
 
 
-export async function initialize(dispatch: Dispatch) {
+export async function initialize(dispatch: Dispatch, getState: StateGetter) {
   const resConfig = await getClientConfig();
   const config = createClientConfig(resConfig);
 
+  if (config.devMode) initializeDevTools(dispatch, getState);
   API.setBase(config.webServicesURL);
   API.setRoot(config.root);
 
@@ -26,4 +27,9 @@ async function getClientConfig(): Promise<unknown> {
   catch {
     return null;
   }
+}
+
+/** Инициализация инструментов разработчика. */
+function initializeDevTools(dispatch: Dispatch, getState: StateGetter): void {
+  window['store'] = {dispatch, getState};
 }

@@ -1,35 +1,35 @@
 /** Well Manager State. */
 interface WState {
   /** Данные общего характера. */
-  appState: AppState,
+  appState: AppState;
   /** Состояние корневой формы. */
-  root: RootFormState,
+  root: RootFormState;
   /** Состояния презентаций. */
-  presentations: PresentationDict,
+  presentations: PresentationDict;
   /** Состояния форм. */
-  forms: FormStates,
+  forms: FormStates;
   /** Параметры форм. */
-  parameters: ParamDict,
+  parameters: ParamDict;
   /** Активные объекты. */
-  objects: ObjectsState,
+  objects: ObjectsState;
   /** Данные каналов. */
-  channels: ChannelDict,
+  channels: ChannelDict;
   /** Хранилище данных таблиц. */
-  tables: TableStates,
+  tables: TableStates;
   /** Хранилище каротажных диаграмм. */
-  carats: CaratStates,
+  carats: CaratStates;
   /** Хранилище графиков. */
-  charts: ChartStates,
+  charts: ChartStates;
   /** Хранилище карт. */
-  maps: MapsState,
+  maps: MapsState;
   /** Состояние отчётов и SQL-программ. */
-  reports: Reports,
+  reports: Reports;
   /** Окна и диалоги. */
-  windowData: any,
+  windowData: any;
   /** Уведомления. */
-  notifications: Notifications,
+  notifications: Notifications;
   /** Состояние серверных запросов. */
-  fetches: FetchesState,
+  fetches: FetchesState;
 }
 
 /* --- --- --- */
@@ -42,17 +42,28 @@ interface WState {
  * */
 interface AppState {
   /** Клиентская конфигурация. */
-  config: ClientConfiguration,
+  config: ClientConfiguration;
   /** Список систем. */
-  systemList: SystemList,
+  systemList: SystemList;
   /** Состояние сессии. */
-  sessionID: SessionID,
+  sessionID: SessionID;
   /** ID текущей системы. */
-  systemID: SystemID,
+  systemID: SystemID;
 }
 
-/** Клиентская конфигурация WMR. */
-type ClientConfiguration = {webServicesURL: string, root?: string};
+/** Клиентская конфигурация Well Manager.
+ * + `devMode?: boolean`
+ * + `webServicesURL: string`
+ * + `root?: string`
+ * */
+interface ClientConfiguration {
+  /** Режим разработчика. */
+  devMode?: boolean;
+  /** Префикс API серверной части. */
+  webServicesURL: string;
+  /** Расположение корневой папки клиента. */
+  root?: string;
+}
 
 /** Список информационных систем. */
 type SystemList = WellManagerSystem[];
@@ -64,11 +75,11 @@ type SystemList = WellManagerSystem[];
  * */
 interface WellManagerSystem {
   /** Идентификатор системы. */
-  id: SystemID,
+  id: SystemID;
   /** Название системы */
-  displayName: DisplayName,
+  displayName: DisplayName;
   /** Описание системы. */
-  description: string,
+  description: string;
 }
 
 /** Идентификатор системы. */
@@ -77,7 +88,7 @@ type SystemID = string;
 /* --- Session Manager --- */
 
 interface SessionManager {
-  startSession(isDefault?: boolean): Promise<Res<SessionID>>
-  saveSession(): Promise<void>
-  loadSessionByDefault(): Promise<void>
+  startSession(isDefault?: boolean): Promise<Res<SessionID>>;
+  saveSession(): Promise<void>;
+  loadSessionByDefault(): Promise<void>;
 }

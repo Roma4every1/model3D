@@ -17,12 +17,12 @@ import defaultSessionIcon from 'assets/images/menu/default-session.png';
 
 
 export interface MainMenuProps {
-  leftLayout: LeftPanelLayout,
-  config: ClientConfiguration,
+  leftLayout: LeftPanelLayout;
+  config: ClientConfiguration;
 }
 interface AboutProgramWindowProps {
-  config: ClientConfiguration,
-  onClose: () => void,
+  config: ClientConfiguration;
+  onClose: () => void;
 }
 
 
@@ -67,11 +67,9 @@ export const MainMenu = ({leftLayout, config}: MainMenuProps) => {
 const AboutProgramWindow = ({config, onClose}: AboutProgramWindowProps) => {
   return (
     <Dialog key={'about'} title={'О программе'} onClose={onClose} width={400}>
-      <h3>Well Manager React</h3>
-      <ul style={{paddingLeft: '12px', margin: 0}}>
-        <li>Версия: <b>{PACKAGE['version']}</b></li>
-        <li>Сервер: <b>{config.webServicesURL}</b></li>
-      </ul>
+      <h3>Well Manager <b>{PACKAGE['version']}</b></h3>
+      {config.devMode && <div style={{color: 'red'}}>Активен режим разработчика</div>}
+      <div>API: <b>{config.webServicesURL}</b></div>
       <DialogActionsBar>
         <Button onClick={onClose}>Ок</Button>
       </DialogActionsBar>

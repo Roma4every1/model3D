@@ -13,4 +13,3 @@ import 'shared/locales';
 
 const root = document.getElementById('root');
 ReactDOM.render(<Provider store={store}><App/></Provider>, root);
-window['store'] = store;
