@@ -28,7 +28,7 @@ export const SaveMap = ({mapState, formID, t}: SaveMapProps) => {
       y: undefined,
       scale: undefined,
       onDrawEnd: undefined,
-      layers: mapData.layers.filter(layer => !layer.temporary)
+      layers: mapData.layers.filter(layer => !layer.temporary && layer.elementType !== 'field')
     };
 
     const promise = mapsAPI.saveMap(formID, mapID, data, owner);

@@ -32,7 +32,7 @@ const coordsFormat: NumberFormatOptions = {
 
 export const Dimensions = ({mapState, sync, formID, parentID, t}: DimensionsProps) => {
   const dispatch = useDispatch();
-  const { mapData, utils, canvas } = mapState;
+  const { mapData, utils, canvas, isLoadSuccessfully } = mapState;
   const layers = mapData?.layers;
 
   const [x, setX] = useState(null);
@@ -85,15 +85,32 @@ export const Dimensions = ({mapState, sync, formID, parentID, t}: DimensionsProp
         <div className={'map-dimensions-viewer'}>
           <div>
             <span title={t('map.dimensions.x')}><img src={xIcon} alt={'x'}/> x:</span>
-            <NumericTextBox value={Math.round(x)} onChange={xChanged} format={coordsFormat}/>
+            <NumericTextBox
+              disabled={!isLoadSuccessfully}
+              value={Math.round(x)}
+              onChange={xChanged}
+              format={coordsFormat}
+            />
           </div>
           <div>
             <span title={t('map.dimensions.y')}><img src={yIcon} alt={'y'}/> y:</span>
-            <NumericTextBox value={Math.round(y)} onChange={yChanged} format={coordsFormat}/>
+            <NumericTextBox
+              disabled={!isLoadSuccessfully}
+              value={Math.round(y)}
+              onChange={yChanged}
+              format={coordsFormat}
+            />
           </div>
           <div>
             <span title={t('map.dimensions.scale')}><img src={scaleIcon} alt={'scale'}/> 1/</span>
-            <NumericTextBox defaultValue={1} value={scale < 1 ? 1 : scale} min={1} onChange={scaleChanged} format={'#'}/>
+            <NumericTextBox
+              disabled={!isLoadSuccessfully}
+              defaultValue={1}
+              value={scale < 1 ? 1 : scale}
+              min={1}
+              onChange={scaleChanged}
+              format={'#'}
+            />
           </div>
         </div>
         <div className={'map-actions'}>
