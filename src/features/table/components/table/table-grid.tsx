@@ -15,13 +15,12 @@ import { rollbackRecord, applyRecordEdit, validateRecord } from '../../lib/recor
 import { applyColumnsWidth } from '../../lib/column-tree-actions';
 import { setTableColumns, setTableSelection } from '../../store/table.actions';
 import { setTableActiveCell, startTableEditing, endTableEditing } from '../../store/table.actions';
-import { getNewRow, saveTableRecord } from '../../store/table.thunks';
+import { getNewRow, saveTableRecord, showLinkedTable } from '../../store/table.thunks';
 
 import { CustomCell } from '../cells/custom-cell';
 import { TableToolbar } from '../toolbar/table-toolbar';
 import { ValidationDialog } from '../dialogs/validation';
 import { DeleteRecordsDialog } from '../dialogs/delete-records';
-import { LinkedTable } from './linked-table';
 
 
 interface TableGridProps {
@@ -308,10 +307,7 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
   };
 
   const openLinkedTable = (columnID: TableColumnID) => {
-    const linkedTableID = id + columnID;
-    const onClose = () => dispatch(setOpenedWindow(linkedTableID, false, null));
-    const window = <LinkedTable key={linkedTableID} id={linkedTableID} onClose={onClose}/>;
-    dispatch(setOpenedWindow(linkedTableID, true, window));
+    dispatch(showLinkedTable(id, columnID));
   };
 
   const cellActions: CellActions = {
