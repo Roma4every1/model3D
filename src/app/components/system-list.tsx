@@ -3,18 +3,18 @@ import { Link } from 'react-router-dom';
 import { Skeleton } from '@progress/kendo-react-indicators';
 
 import './system-list.scss';
-import systemIcon from '../../assets/images/start-page/system.svg';
-import loadDefaultIcon from '../../assets/images/start-page/load-default.svg';
+import systemIcon from 'assets/images/start-page/system.svg';
+import loadDefaultIcon from 'assets/images/start-page/load-default.svg';
 
 
 interface SystemListProps {
-  config: ClientConfiguration,
-  list: SystemList,
+  config: ClientConfiguration;
+  list: SystemList;
 }
 interface SystemItemProps {
-  root: string,
-  system: WellManagerSystem,
-  t: TFunction,
+  root: string;
+  system: WellManagerSystem;
+  t: TFunction;
 }
 
 
@@ -36,7 +36,7 @@ export const SystemList = ({config, list}: SystemListProps) => {
 
   return (
     <>
-      <h1 id={'program-name'}>Well Manager React</h1>
+      <h1 id={'program-name'}>Well Manager</h1>
       <nav id={'system-list'}>
         <h2>{t('systems.list') + ':'}</h2>
         {mainContent}

@@ -45,8 +45,11 @@ function getColumnType(netType: string): TableColumnType {
 /* --- --- --- */
 
 /** Функция, создающая состояние таблицы по её начальным настройкам. */
-export function settingsToState(channel: Channel, settings: TableFormSettings): TableState {
-  const channelName = channel?.name;
+export function settingsToTableState(payload: FormStatePayload): TableState {
+  const settings: TableFormSettings = payload.settings;
+  const channelName = payload.state.channels[0];
+  const channel = payload.channels[channelName];
+
   const allProperties = channel?.info.properties ?? [];
   if (channel) channel.query.maxRowCount = 100;
 
@@ -87,8 +90,26 @@ export function settingsToState(channel: Channel, settings: TableFormSettings): 
   const columnTree = createColumnTree(properties, settingsDict);
   const columnTreeFlatten = getFlatten(columnTree);
 
+  let activeRecordParameter: ActiveRecordParameter = null;
+  const currentRowObjectName = channel?.info.currentRowObjectName;
+
+  if (currentRowObjectName) {
+    for (const clientID in payload.parameters) {
+      const paramList = payload.parameters[clientID];
+      const parameter = paramList.find(p => p.id === currentRowObjectName);
+
+      if (parameter) {
+        if (parameter.type === 'tableRow') {
+          activeRecordParameter = {id: currentRowObjectName, clientID};
+        }
+        break;
+      }
+    }
+  }
+
   return {
-    editable: false, tableID: null, headerSetterRules: settings.headerSetterRules ?? [],
+    tableID: null, editable: false, activeRecordParameter,
+    headerSetterRules: settings.headerSetterRules ?? [],
     channelName, columnsSettings, columns: columnsState, columnTree, columnTreeFlatten,
     properties: {...attachedProperties, list: properties, typesApplied: false},
     activeCell: {columnID: null, recordID: null, edited: false},

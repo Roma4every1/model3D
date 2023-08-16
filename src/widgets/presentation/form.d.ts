@@ -3,15 +3,17 @@ type FormStates = FormDict<FormState>;
 
 /** Идентификатор формы. */
 type FormID = string;
+/** Идентификатор презентации или формы. */
+type ClientID = string;
 
 /** Словарь типа `{ [formID]: data }`. */
-type FormDict<Type = any> = Record<FormID, Type>;
+type FormDict<Type = any> = Record<ClientID, Type>;
 
 /** Пропс с единственным полем `formID`. */
 type PropsFormID = {formID: FormID};
 
 /** Пропс для панелей редактирования. */
-type FormEditPanelProps = {id: FormID, parentID: FormID};
+type FormEditPanelProps = {id: FormID, parentID: ClientID};
 
 /** Тип формы. */
 type FormType = 'carat' | 'chart' | 'dataSet' | 'dock' | 'files' | 'filesList' |
@@ -22,37 +24,39 @@ type FormType = 'carat' | 'chart' | 'dataSet' | 'dock' | 'files' | 'filesList' |
 type SupportedFormType = 'dataSet' | 'carat' | 'chart' | 'map';
 
 /** Данные формы.
- * + `id`: {@link FormID} — идентификатор
- * + `type`: {@link FormType} — тип
- * + `displayName: string` — заголовок
- * + `displayNameString: string` — паттерн заголовка
- * @example
- * { id: "...", type: "map", displayName: "Карта" }
+ * + `id`: {@link FormID}
+ * + `type`: {@link FormType}
+ * + `displayName`: {@link DisplayName}
+ * + `displayNameString: string`
  * */
-interface FormDataWMR {
-  id: FormID,
-  type: FormType,
-  displayName: string,
-  displayNameString?: string,
-  displayNamePattern?: any,
+interface FormDataWM {
+  /** Идентификатор формы. */
+  id: FormID;
+  /** Тип формы. */
+  type: FormType;
+  /** Имя, отображаемое на уровне интерфейса. */
+  displayName: DisplayName;
+  /** Шаблон динамического имени формы. */
+  displayNameString?: string;
+  /** Паттерн динамического имени формы. */
+  displayNamePattern?: any;
 }
 
-/** ### Состояние дочерних форм.
- * + `id`: {@link FormID} — ID родителя
- * + `children`: {@link FormDataWMR}[] — данные дочерних форм
- * + `openedChildren`: {@link FormID}[] — открытые формы
- * + `activeChildren`: {@link FormID}[] — активные формы
- * @example
- * {
- *   id: "1234", children: [{...}, {...}, {...}],
- *   openedChildren: ["1234,5678"], activeChildren: ["1234,5678"],
- * }
+/** Состояние дочерних форм.
+ * + `id`: {@link ClientID}
+ * + `children`: {@link FormDataWM}[]
+ * + `openedChildren`: {@link FormID}[]
+ * + `activeChildren`: {@link FormID}[]
  * */
 interface FormChildrenState {
-  id: FormID,
-  children: FormDataWMR[],
-  openedChildren: FormID[],
-  activeChildren: FormID[],
+  /** ID родителя (презентации). */
+  id: ClientID;
+  /** Данные дочерних форм. */
+  children: FormDataWM[];
+  /** Отображаемые дочерние формы. */
+  openedChildren: FormID[];
+  /** Активные дочерние формы. */
+  activeChildren: FormID[];
 }
 
 /* --- Form State --- */
@@ -61,17 +65,20 @@ interface FormChildrenState {
  * + `state`: {@link FormState}
  * + `settings`: {@link FormSettings}
  * + `objects`: {@link ObjectsState}
+ * + `parameters`: {@link ParamDict}
  * + `channels`: {@link ChannelDict}
  * */
 interface FormStatePayload {
   /** Базовая информация о форме. */
-  state: FormState,
+  state: FormState;
   /** Настройки формы. */
-  settings: FormSettings,
+  settings: FormSettings;
   /** Состояние активных объектов. */
-  objects: ObjectsState,
+  objects: ObjectsState;
+  /** Существующие наборы параметров на момент создания. */
+  parameters: ParamDict;
   /** Существующие каналы на момент создания. */
-  channels: ChannelDict,
+  channels: ChannelDict;
 }
 
 /** Состояние формы.
@@ -83,15 +90,15 @@ interface FormStatePayload {
  * */
 interface FormState {
   /** ID формы. */
-  id: FormID,
+  id: FormID;
   /** ID родителя. */
-  parent: FormID,
+  parent: FormID;
   /** Тип формы. */
-  type: FormType,
+  type: FormType;
   /** Настройки формы. */
-  settings: FormSettings,
+  settings: FormSettings;
   /** Список ID каналов формы. */
-  channels: ChannelName[],
+  channels: ChannelName[];
 }
 
 /** Настройки формы. */

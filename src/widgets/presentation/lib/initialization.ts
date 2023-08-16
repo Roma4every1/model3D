@@ -9,7 +9,7 @@ import { formsAPI } from 'widgets/presentation/lib/forms.api';
 
 
 /** Создаёт состояние презентации. */
-export async function createPresentationState(id: FormID): Promise<PresentationState> {
+export async function createPresentationState(id: ClientID): Promise<PresentationState> {
   const [resSettings, resChildren, resLayout] = await Promise.all([
     formsAPI.getFormSettings(id),
     formsAPI.getFormChildren(id),
@@ -67,21 +67,11 @@ export async function createClientChannels(
   return {...baseChannels, ...linkedChannels, ...lookupChannels};
 }
 
-/** Запрашивает параметры презентации и всех дочерних форм. */
-export async function getPresentationParams(id: FormID, ids: FormID[]): Promise<ParamDict> {
-  const params = await formsAPI.getFormParameters(id);
-  const childrenParams = await Promise.all(ids.map((id) => formsAPI.getFormParameters(id)));
-
-  const result = {[id]: params};
-  childrenParams.forEach((childParams, i) => { result[ids[i]] = childParams; });
-  return result;
-}
-
 /**
  * Запрашивает каналы презентации и всех дочерних форм.
  * Возвращает полный список всех каналов без повторений и словарь по формам.
  * */
-export async function getPresentationChannels(id: FormID, ids: FormID[]) {
+export async function getPresentationChannels(id: ClientID, ids: FormID[]) {
   const parentNames = await formsAPI.getFormChannelsList(id);
   const childrenNames = await Promise.all(ids.map((id) => formsAPI.getFormChannelsList(id)));
 
@@ -96,7 +86,7 @@ export async function getPresentationChannels(id: FormID, ids: FormID[]) {
 }
 
 export async function createFormStates(
-  parent: FormID, data: FormDataWMR[],
+  parent: ClientID, data: FormDataWM[],
   channels: Record<FormID, ChannelName[]>
 ) {
   const states: FormStates = {};
@@ -108,7 +98,7 @@ export async function createFormStates(
   return states;
 }
 
-async function createFormSettings({id, type}: FormDataWMR): Promise<FormSettings> {
+async function createFormSettings({id, type}: FormDataWM): Promise<FormSettings> {
   if (type === 'dataSet' || type === 'carat' || type === 'chart') {
     const res = await formsAPI.getFormSettings(id);
     if (type === 'carat') await fillPatterns.initialize();

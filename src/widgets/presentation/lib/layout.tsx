@@ -18,7 +18,7 @@ const gridLayoutGlobalAttrs: IGlobalAttributes = {
   splitterSize: 6,
 };
 
-export function handleLayout(res: Res<IJsonModel>, children: FormDataWMR[], activeID: FormID): IJsonModel {
+export function handleLayout(res: Res<IJsonModel>, children: FormDataWM[], activeID: FormID): IJsonModel {
   let formLayout: IJsonModel;
   if (res.ok && res.data?.layout?.children) {
     formLayout = res.data;
@@ -30,7 +30,7 @@ export function handleLayout(res: Res<IJsonModel>, children: FormDataWMR[], acti
   return formLayout;
 }
 
-function fillLayout(layout: LayoutArg, forms: FormDataWMR[], active: FormID) {
+function fillLayout(layout: LayoutArg, forms: FormDataWM[], active: FormID) {
   if (layout.type === 'tabset') {
     // @ts-ignore
     layout.active = layout.children.some(child => child.id === active);
@@ -42,7 +42,7 @@ function fillLayout(layout: LayoutArg, forms: FormDataWMR[], active: FormID) {
   layout.children?.forEach(child => fillLayout(child, forms, active));
 }
 
-function fillTabNode(node: IJsonTabNode, form: FormDataWMR) {
+function fillTabNode(node: IJsonTabNode, form: FormDataWM) {
   const displayNamePattern = form.displayNamePattern;
   if (displayNamePattern) {
     const { pattern, params } = displayNamePattern;
@@ -55,7 +55,7 @@ function fillTabNode(node: IJsonTabNode, form: FormDataWMR) {
 
 /* --- --- */
 
-function createLayout(forms: FormDataWMR[], active: FormID): IJsonModel {
+function createLayout(forms: FormDataWM[], active: FormID): IJsonModel {
   const children = forms.map(form => createTabSetNode(form, active));
   return {
     global: gridLayoutGlobalAttrs,
@@ -63,7 +63,7 @@ function createLayout(forms: FormDataWMR[], active: FormID): IJsonModel {
   };
 }
 
-function createTabSetNode(form: FormDataWMR, active: FormID): IJsonTabSetNode {
+function createTabSetNode(form: FormDataWM, active: FormID): IJsonTabSetNode {
   return {
     id: form.id,
     type: 'tabset', selected: 0, active: form.id === active,

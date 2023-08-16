@@ -8,7 +8,7 @@ export function setPresentationState(state: PresentationState): PresentationActi
 }
 
 /** Установить список дочерних форм. */
-export function setPresentationChildren(id: FormID, children: FormDataWMR[]): PresentationAction {
+export function setPresentationChildren(id: FormID, children: FormDataWM[]): PresentationAction {
   return {type: PresentationActionType.SET_CHILDREN, payload: {id, children}};
 }
 

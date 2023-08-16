@@ -15,7 +15,7 @@ import { rollbackRecord, applyRecordEdit, validateRecord } from '../../lib/recor
 import { applyColumnsWidth } from '../../lib/column-tree-actions';
 import { setTableColumns, setTableSelection } from '../../store/table.actions';
 import { setTableActiveCell, startTableEditing, endTableEditing } from '../../store/table.actions';
-import { getNewRow, saveTableRecord, showLinkedTable } from '../../store/table.thunks';
+import { getNewRow, saveTableRecord, showLinkedTable, updateActiveRecord } from '../../store/table.thunks';
 
 import { CustomCell } from '../cells/custom-cell';
 import { TableToolbar } from '../toolbar/table-toolbar';
@@ -144,6 +144,7 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
 
   const setSelection = (newSelection: TableSelection) => {
     dispatch(setTableSelection(id, newSelection));
+    if (state.activeRecordParameter) dispatch(updateActiveRecord(id, newSelection, records));
   };
 
   const setActiveCell = (cell: TableActiveCell) => {

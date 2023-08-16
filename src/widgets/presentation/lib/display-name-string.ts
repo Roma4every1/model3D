@@ -36,7 +36,7 @@ function patternItemToString(this: ParamValuesDict, item: PossibleDisplayValues 
 /* --- --- --- */
 
 /** Добавляет паттерн динамического заголовка в данные формы. */
-export function applyDisplayNamePattern(formData: FormDataWMR): void {
+export function applyDisplayNamePattern(formData: FormDataWM): void {
   const str = formData.displayNameString;
   if (str) formData.displayNamePattern = createPatternFromString(str);
 }

@@ -36,7 +36,7 @@ export const MultiMap = ({id, channelName}: MultiMapProps) => {
 
   useEffect(() => {
     if (compareArrays(state?.children ?? [], children)) return;
-    const newChildren: FormDataWMR[] = children.map(id => ({id, type: 'map', displayName: ''}));
+    const newChildren: FormDataWM[] = children.map(id => ({id, type: 'map', displayName: ''}));
     dispatch(setPresentationChildren(id, newChildren));
     dispatch(addMultiMap(id, configs));
     if (fetchState) { fetchState.ok = undefined; fetchState.loading = false; }
