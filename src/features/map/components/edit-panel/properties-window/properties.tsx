@@ -2,27 +2,25 @@ import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
 import { useEffect, useCallback, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Window } from '@progress/kendo-react-dialogs';
 
 import { MapModes } from '../../../lib/enums';
+import { windowsSelector, setOpenedWindow } from 'entities/windows';
+import { mapStateSelector } from '../../../store/map.selectors';
+
+import {
+  setMapField, setEditMode,
+  acceptCreatingElement, cancelCreatingElement,
+} from '../../../store/map.actions';
+
+import {
+  createFieldInit, createLabelInit, createPolylineInit,
+  rollbackField, rollbackLabel, rollbackPolyline,
+} from './properties-utils';
+
+import { Window } from '@progress/kendo-react-dialogs';
 import { PolylineProperties } from './polyline/polyline-properties';
 import { LabelProperties } from './label/label-properties';
-import { windowsSelector, setOpenedWindow } from 'entities/windows';
-import {
-  setMapField,
-  setEditMode,
-  acceptCreatingElement,
-  cancelCreatingElement
-} from '../../../store/map.actions';
-import { mapStateSelector } from '../../../store/map.selectors';
-import {
-  createFieldInit,
-  createLabelInit,
-  createPolylineInit, rollbackField,
-  rollbackLabel,
-  rollbackPolyline
-} from './properties-utils';
-import {FieldProperties} from "./field/field-properties";
+import { FieldProperties } from './field/field-properties';
 
 
 const windowSizeDict: Record<'polyline' | 'label' | 'field', [number, number]> = {
@@ -63,16 +61,12 @@ export const PropertiesWindow = ({formID, setPropertiesWindowOpen}: PropertiesWi
   }, [utils]);
 
   const apply = () => {
-    if (isElementCreating) {
-      acceptCreating()
-      return;
-    }
+    if (isElementCreating) { acceptCreating(); return; }
     const modifiedLayer = mapState.mapData.layers.find(l => l.elements?.includes(element));
     modifiedLayer.modified = true;
     dispatch(setMapField(formID, 'isModified', true));
-    dispatch(setEditMode(formID, MapModes.SELECTING))
-    update();
-    close();
+    dispatch(setEditMode(formID, MapModes.SELECTING));
+    update(); close();
   };
 
   const init = useMemo<any>(() => {
@@ -134,17 +128,17 @@ export const PropertiesWindow = ({formID, setPropertiesWindowOpen}: PropertiesWi
         />
       );
     return <div>{t('map.selecting.no-selected')}</div>;
-  }
+  };
 
   const initElement = useRef(element);
 
   useEffect(() => {
-    if (element !== initElement.current) cancel();
+    if (element.type === 'sign' || element !== initElement.current) cancel();
     if (element.type === 'label' && !element.edited) { element.edited = true; update(); }
   }, [element, initElement, update, cancel]);
 
   const title = t('map.properties-edit', {elementType: t('map.' + element.type)});
-  const [width, height] = windowSizeDict[element.type];
+  const [width, height] = windowSizeDict[element.type] ?? [];
 
   return (
     <LocalizationProvider language={'ru-RU'}>
