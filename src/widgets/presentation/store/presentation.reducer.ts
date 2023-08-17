@@ -23,7 +23,7 @@ interface ActionSetLayout {
 }
 interface ActionSetChildren {
   type: PresentationActionType.SET_CHILDREN,
-  payload: {id: FormID, children: FormDataWMR[]},
+  payload: {id: FormID, children: FormDataWM[]},
 }
 interface ActionSetActiveForm {
   type: PresentationActionType.SET_ACTIVE_FORM,

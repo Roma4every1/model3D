@@ -2,7 +2,7 @@ import { ReactElement, KeyboardEvent } from 'react';
 import { useState, useLayoutEffect, useMemo, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
-import { Grid, GridProps, GridCellProps } from '@progress/kendo-react-grid';
+import { Grid, GridCellProps } from '@progress/kendo-react-grid';
 import { GridColumnResizeEvent, GridPageChangeEvent } from '@progress/kendo-react-grid';
 import { GridSelectionChangeEvent, getSelectedState } from '@progress/kendo-react-grid';
 import { compareObjects } from 'shared/lib';
@@ -15,13 +15,12 @@ import { rollbackRecord, applyRecordEdit, validateRecord } from '../../lib/recor
 import { applyColumnsWidth } from '../../lib/column-tree-actions';
 import { setTableColumns, setTableSelection } from '../../store/table.actions';
 import { setTableActiveCell, startTableEditing, endTableEditing } from '../../store/table.actions';
-import { getNewRow, saveTableRecord } from '../../store/table.thunks';
+import { getNewRow, saveTableRecord, showLinkedTable, updateActiveRecord } from '../../store/table.thunks';
 
 import { CustomCell } from '../cells/custom-cell';
 import { TableToolbar } from '../toolbar/table-toolbar';
 import { ValidationDialog } from '../dialogs/validation';
 import { DeleteRecordsDialog } from '../dialogs/delete-records';
-import { LinkedTable } from './linked-table';
 
 
 interface TableGridProps {
@@ -145,6 +144,7 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
 
   const setSelection = (newSelection: TableSelection) => {
     dispatch(setTableSelection(id, newSelection));
+    if (state.activeRecordParameter) dispatch(updateActiveRecord(id, newSelection, records));
   };
 
   const setActiveCell = (cell: TableActiveCell) => {
@@ -156,13 +156,27 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
     dispatch(setTableActiveCell(id, cell));
   };
 
+  const setValue = (columnID: string, recordID: TableRecordID, value: any) => {
+    const record = records.find(rec => rec.id === recordID);
+    if (record[columnID] === value) return;
+    edit.modified = true;
+    record[columnID] = value;
+    setRecords(records);
+  };
+
   /** Двигает активную ячейку горизотально; если `by > 0`, то вправо. */
-  const moveCellHorizontal = (by: number) => {
+  const moveCellHorizontal = (by: number, to?: number) => {
     if (!activeColumnID) return;
+    let newIndex;
     const flatten = state.columnTreeFlatten;
-    const oldIndex = flatten.findIndex(id => id === activeColumnID);
-    const newIndex = oldIndex + by;
-    if (newIndex < 0 || newIndex >= flatten.length) return;
+
+    if (to !== undefined) {
+      newIndex = to < 0 ? flatten.length + to : to;
+    } else {
+      const oldIndex = flatten.findIndex(id => id === activeColumnID);
+      newIndex = oldIndex + by;
+      if (newIndex < 0 || newIndex >= flatten.length) return;
+    }
     setActiveCell({...activeCell, columnID: flatten[newIndex]});
   };
 
@@ -217,10 +231,12 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
         break;
       }
       case 'Insert': {
-        addRecord(event.ctrlKey); break;
+        addRecord(event.ctrlKey);
+        break;
       }
       case 'Delete': {
-        if (selectedRecords.length && !edit.isNew) deleteRecords(); break;
+        if (selectedRecords.length && !edit.isNew && !isEditing) deleteRecords();
+        break;
       }
       case 'ArrowUp':
       case 'PageUp': {
@@ -236,16 +252,41 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
         if (isBottomCell) addRecord(event.ctrlKey, state.total); break;
       }
       case 'ArrowLeft': {
-        if (!isEditing) moveCellHorizontal(-1); break;
+        if (!isEditing) moveCellHorizontal(-1);
+        break;
       }
       case 'ArrowRight': {
-        if (!isEditing) moveCellHorizontal(1); break;
+        if (!isEditing) moveCellHorizontal(1);
+        break;
       }
       case 'Home': {
-        toStart(); break;
+        if (isEditing) {
+          event.preventDefault();
+        } else {
+          moveCellHorizontal(undefined, 0);
+        }
+        break;
       }
       case 'End': {
-        toEnd(); break;
+        if (isEditing) {
+          event.preventDefault();
+        } else {
+          moveCellHorizontal(undefined, -1);
+        }
+        break;
+      }
+      case 'Tab': {
+        if (activeColumnID === null) return;
+        event.preventDefault();
+        const currentIndex = state.columnTreeFlatten.findIndex(id => id === activeColumnID);
+
+        if (currentIndex === state.columnTreeFlatten.length - 1) {
+          activeCell.columnID = state.columnTreeFlatten[0];
+          moveCellVertical(1);
+        } else {
+          moveCellHorizontal(1);
+        }
+        break;
       }
       case 'a':
       case 'A':
@@ -266,19 +307,8 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
     dispatch(setTableColumns(id, {...columnsState}));
   };
 
-  const setValue = (columnID: string, recordID: TableRecordID, value: any) => {
-    const record = records.find(rec => rec.id === recordID);
-    if (record[columnID] === value) return;
-    edit.modified = true;
-    record[columnID] = value;
-    setRecords(records);
-  };
-
   const openLinkedTable = (columnID: TableColumnID) => {
-    const linkedTableID = id + columnID;
-    const onClose = () => dispatch(setOpenedWindow(linkedTableID, false, null));
-    const window = <LinkedTable key={linkedTableID} id={linkedTableID} onClose={onClose}/>;
-    dispatch(setOpenedWindow(linkedTableID, true, window));
+    dispatch(showLinkedTable(id, columnID));
   };
 
   const cellActions: CellActions = {
@@ -295,20 +325,11 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
     return <CustomCell td={td} props={props} state={state} actions={cellActions}/>;
   };
 
-  // если данных много, то использовать виртуальную прокрутку
-  const scrollProps: Partial<GridProps> = total > 99 ? {
-    scrollable: 'virtual',
-    data: data.slice(skip, skip + pageSize),
-    skip, total, pageSize,
-    onPageChange: (event: GridPageChangeEvent) => {
-      const newSkip = event.page.skip; setSkip(newSkip);
-      if (newSkip + pageSize > total && total === query.maxRowCount) {
-        dispatch(updateMaxRowCount(state.channelName, total + 2 * pageSize));
-      }
-    },
-  } : {
-    scrollable: 'scrollable',
-    data: data,
+  const onPageChange = (event: GridPageChangeEvent) => {
+    const newSkip = event.page.skip; setSkip(newSkip);
+    if (newSkip + pageSize > total && total === query.maxRowCount) {
+      dispatch(updateMaxRowCount(state.channelName, total + 2 * pageSize));
+    }
   };
 
   return (
@@ -320,10 +341,12 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
       <LocalizationProvider language={'ru-RU'}>
         <IntlProvider locale={'ru'}>
           <Grid
-            style={{height: '100%'}}
-            {...scrollProps} fixedScroll={true} rowHeight={28}
+            data={data.slice(skip, skip + pageSize)}
             dataItemKey={'id'} selectedField={'selected'}
+            style={{height: '100%'}} rowHeight={28} total={total}
+            scrollable={'virtual'} fixedScroll={true}
             groupable={false} reorderable={false} navigatable={false}
+            skip={skip} pageSize={pageSize} onPageChange={onPageChange}
             resizable={true} onColumnResize={onColumnResize}
             selectable={{drag: !isEditing}} onSelectionChange={onSelectionChange}
             cellRender={cellRender}

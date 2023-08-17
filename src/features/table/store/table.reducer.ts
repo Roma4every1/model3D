@@ -1,5 +1,5 @@
 import { getFlatten } from '../lib/column-tree';
-import { settingsToState, applyColumnTypes } from '../lib/initialization';
+import { settingsToTableState, applyColumnTypes } from '../lib/initialization';
 
 /* --- Action Types --- */
 
@@ -70,9 +70,8 @@ export const tablesReducer = (state: TableStates = init, action: TablesAction): 
   switch (action.type) {
 
     case TableActions.CREATE: {
-      const { state: formState, channels, settings } = action.payload;
-      const channel = channels[formState.channels[0]];
-      return {...state, [formState.id]: settingsToState(channel, settings)};
+      const id = action.payload.state.id;
+      return {...state, [id]: settingsToTableState(action.payload)};
     }
 
     case TableActions.SET_COLUMNS: {

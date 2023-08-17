@@ -1,10 +1,15 @@
 /** По конфигу устанавливает значение для ссылки на службу запросов. */
 export function createClientConfig(data: unknown): ClientConfiguration {
-  const config: ClientConfiguration = {webServicesURL: '', root: getAppLocation()};
+  const config: ClientConfiguration = {
+    devMode: false, webServicesURL: '',
+    root: getAppLocation(),
+  };
 
   if (data instanceof Object) {
     const configURL = data['webServicesURL'];
     if (typeof configURL === 'string') config.webServicesURL = configURL;
+    const devMode = data['devMode'];
+    if (typeof devMode === 'boolean') config.devMode = devMode;
   }
 
   if (config.webServicesURL.length === 0) {
@@ -21,7 +26,7 @@ export function createClientConfig(data: unknown): ClientConfiguration {
   return config;
 }
 
-export function getAppLocation() {
+export function getAppLocation(): string {
   let location = window.location.pathname;
   if (location.includes('/systems/')) {
     location = location.slice(0, location.indexOf('systems/'))

@@ -114,7 +114,6 @@ const transform = xmlTransform({
 						})],
 					}
 				})],
-        bounds: [0, bounds],
 			},
 		})],
 	}, makeSublayers],

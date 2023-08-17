@@ -3,18 +3,18 @@ import { Link } from 'react-router-dom';
 import { Skeleton } from '@progress/kendo-react-indicators';
 
 import './system-list.scss';
-import systemIcon from '../../assets/images/start-page/system.svg';
-import loadDefaultIcon from '../../assets/images/start-page/load-default.svg';
+import systemIcon from 'assets/images/start-page/system.svg';
+import loadDefaultIcon from 'assets/images/start-page/load-default.svg';
 
 
 interface SystemListProps {
-  config: ClientConfiguration,
-  list: SystemList,
+  config: ClientConfiguration;
+  list: SystemList;
 }
 interface SystemItemProps {
-  root: string,
-  system: WellManagerSystem,
-  t: TFunction,
+  config: ClientConfiguration;
+  system: WellManagerSystem;
+  t: TFunction;
 }
 
 
@@ -27,7 +27,7 @@ export const SystemList = ({config, list}: SystemListProps) => {
     mainContent = <SystemListSkeleton/>;
   } else if (list) {
     const systemToListItem = (system: WellManagerSystem, i: number) => {
-      return <SystemItem key={i} root={config.root} system={system} t={t}/>;
+      return <SystemItem key={i} system={system} config={config} t={t}/>;
     };
     mainContent = <div>{list.map(systemToListItem)}</div>;
   } else {
@@ -36,7 +36,7 @@ export const SystemList = ({config, list}: SystemListProps) => {
 
   return (
     <>
-      <h1 id={'program-name'}>Well Manager React</h1>
+      <h1 id={'program-name'}>Well Manager</h1>
       <nav id={'system-list'}>
         <h2>{t('systems.list') + ':'}</h2>
         {mainContent}
@@ -46,23 +46,23 @@ export const SystemList = ({config, list}: SystemListProps) => {
 }
 
 /** Элемент списка системы. */
-const SystemItem = ({root, system, t}: SystemItemProps) => {
+const SystemItem = ({system, config, t}: SystemItemProps) => {
   const id = system.id;
   const title = t('systems.load-by-default-title')
 
   return (
     <section>
-      <Link to={root + 'systems/' + id}>
+      <Link to={config.root + 'systems/' + id}>
         <img src={systemIcon} alt={'system'}/>
         <div>
           <div>
             <span className={'system-name'}>{system.displayName}</span>
-            <span className={'system-id'}>{`(${id})`}</span>
+            {config.devMode && <span className={'system-id'}>{`(${id})`}</span>}
           </div>
           <div>{system.description}</div>
         </div>
       </Link>
-      <Link to={root + 'systems/' + id + '?defaultSession=true'} title={title}>
+      <Link to={config.root + 'systems/' + id + '?defaultSession=true'} title={title}>
         <img src={loadDefaultIcon} alt={'load-default'}/>
       </Link>
     </section>
@@ -87,8 +87,8 @@ const SystemSkeleton = () => {
       <div>
         <Skeleton shape={'rectangle'} animation={{type: 'wave'}}/>
         <div>
-          <Skeleton shape={'text'} style={{width: '250px', height: '24px'}} animation={{type: 'wave'}}/>
-          <Skeleton shape={'text'} style={{width: '500px', height: '20px'}} animation={{type: 'wave'}}/>
+          <Skeleton shape={'text'} style={{width: 250, height: 24}} animation={{type: 'wave'}}/>
+          <Skeleton shape={'text'} style={{width: 500, height: 20}} animation={{type: 'wave'}}/>
         </div>
       </div>
       <div><Skeleton shape={'rectangle'} animation={{type: 'wave'}}/></div>

@@ -12,7 +12,7 @@ export class FormsAPI {
   /** Запрос корневой формы. */
   public getRootForm() {
     const query = {sessionId: this.baseAPI.sessionID};
-    return this.baseAPI.request<FormDataWMR>({path: 'getRootForm', query});
+    return this.baseAPI.request<FormDataWM>({path: 'getRootForm', query});
   }
 
   public getPresentationsList(rootFormID: FormID) {

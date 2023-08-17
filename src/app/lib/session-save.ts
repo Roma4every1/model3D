@@ -1,6 +1,6 @@
 import { IJsonModel } from 'flexlayout-react';
 import { serializeParameter } from 'entities/parameters';
-import { TableFormSettings, tableStateToFormSettings } from 'features/table';
+import { TableFormSettings, tableStateToSettings } from 'features/table';
 import { caratStateToSettings } from 'features/carat';
 
 
@@ -76,7 +76,7 @@ function getSettingsToSave(tableStates: TableStates, caratsState: CaratStates): 
 
   for (const id in tableStates) {
     const tableState = tableStates[id];
-    tables.push(tableStateToFormSettings(id, tableState));
+    tables.push(tableStateToSettings(id, tableState));
   }
   for (const id in caratsState) {
     const caratState = caratsState[id];

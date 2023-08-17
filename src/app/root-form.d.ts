@@ -1,22 +1,22 @@
 /** Состояние главной формы.
- * + `id`: {@link FormID}
+ * + `id`: {@link ClientID}
  * + `layout`: {@link DockLayout}
  * + `settings`: {@link DockSettings}
- * + `children`: {@link FormDataWMR}[]
- * + `activeChildID`: {@link FormID}
+ * + `children`: {@link FormDataWM}[]
+ * + `activeChildID`: {@link ClientID}
  * + `presentationsTree`: {@link PresentationTree}
  * */
 interface RootFormState {
   /** ID главной формы. */
-  id: FormID,
+  id: ClientID,
   /** Базовая разметка приложения. */
   layout: DockLayout,
   /** Настройки главной формы. */
   settings: DockSettings,
   /** Список презентаций. */
-  children: FormDataWMR[],
+  children: FormDataWM[],
   /** ID активной презентации. */
-  activeChildID: FormID,
+  activeChildID: ClientID,
   /** Дерево презентаций. */
   presentationTree: PresentationTree,
 }
@@ -27,24 +27,24 @@ type PresentationTree = PresentationTreeItem[];
 /** Элемент дерева презентаций. */
 interface PresentationTreeItem {
   /** ID презентации, есть только у листьев. */
-  id: FormID,
+  id: ClientID;
   /** Название презентации в дереве. */
-  text: DisplayName,
+  text: DisplayName;
   /** Дочерние элементы: группы или презентации. */
-  items?: PresentationTreeItem[],
+  items?: PresentationTreeItem[];
   /** Выбрана ли текущая презентация. */
-  selected?: boolean,
+  selected?: boolean;
   /** Раскрыта ли группа. */
-  expanded?: boolean,
+  expanded?: boolean;
 
   /** Виден ли узел дерева в данный момент. */
-  visible: boolean,
+  visible: boolean;
   /** Строка видимости презентации. */
-  visibilityString?: string,
+  visibilityString?: string;
   /** Параметры, необходимые для расчёта видимости. */
-  visibilityParameters?: Set<ParameterID>,
+  visibilityParameters?: Set<ParameterID>;
   /** Обработчик видимости презентации.. */
-  visibilityHandler?: (parameters: Parameter[]) => boolean,
+  visibilityHandler?: (parameters: Parameter[]) => boolean;
 }
 
 /* --- Dock Layout --- */
@@ -55,9 +55,9 @@ interface PresentationTreeItem {
  * */
 interface DockLayout {
   /** Разметка главной формы. */
-  common: CommonLayout,
+  common: CommonLayout;
   /** Разметка левой панели. */
-  left: LeftPanelLayout,
+  left: LeftPanelLayout;
 }
 
 /** Разметка главной формы.
@@ -70,15 +70,15 @@ interface DockLayout {
  * */
 interface CommonLayout {
   /** Индекс активной верхней вкладки. */
-  selectedTopTab: number,
+  selectedTopTab: number;
   /** Индекс активной вкладки справа */
-  selectedRightTab: number,
+  selectedRightTab: number;
   /** Высота тела верхней панели. */
-  topPanelHeight: number,
+  topPanelHeight: number;
   /** Ширина левой панели с параметрами. */
-  leftPanelWidth: number,
+  leftPanelWidth: number;
   /** Ширина правой панели. */
-  rightPanelWidth: number,
+  rightPanelWidth: number;
 }
 
 /** Разметка левой панели с параметрами.
@@ -89,27 +89,27 @@ interface CommonLayout {
  * */
 interface LeftPanelLayout {
   /** Model из `flex-layout-react`. */
-  model: any, // Model
+  model: any; // Model
   /** Панель глобальных параметров. */
-  global: LeftTabInfo,
+  global: LeftTabInfo;
   /** Панель параметров презентации. */
-  presentation: LeftTabInfo,
+  presentation: LeftTabInfo;
   /** Дерево презентаций. */
-  tree: LeftTabInfo,
+  tree: LeftTabInfo;
 }
 
 /** Информация о вкладке. */
 interface LeftTabInfo {
   /** Показывать ли вкладку. */
-  show: boolean,
+  show: boolean;
   /** Название вкладки. */
-  displayName: DisplayName,
+  displayName: DisplayName;
   /** ID родителя. */
-  parent?: string,
+  parent?: string;
   /** Индекс вкладки в группе. */
-  index?: number,
+  index?: number;
   /** Запрещено ли менять видимость вкладки. */
-  disabled?: boolean,
+  disabled?: boolean;
 }
 
 /** Типы поддерживаемых вкладок левой панели. */
@@ -123,17 +123,17 @@ type LeftTabType = 'global' | 'presentation' | 'tree';
  * */
 interface DockSettings {
   /** Плагин, добавляющий связь между параметром года и интервалом дат. */
-  dateChanging: DateChangingPlugin | null,
+  dateChanging: DateChangingPlugin | null;
   /** Группы параметров для разбиения списка на вкладки. */
-  parameterGroups: ParameterGroup[] | null,
+  parameterGroups: ParameterGroup[] | null;
 }
 
 /** Добавляет связь между параметром года и интервалом дат. */
 interface DateChangingPlugin {
   /** ID параметра года */
-  year: ParameterID,
+  year: ParameterID;
   /** ID параметра интервала дат. */
-  dateInterval: ParameterID,
+  dateInterval: ParameterID;
   /** Колонка со значением, в случае, если параметр года типа `TableRow`. */
-  columnName: string | null,
+  columnName: string | null;
 }

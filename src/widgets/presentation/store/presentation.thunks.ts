@@ -2,10 +2,11 @@ import { Dispatch } from 'redux';
 import { StateGetter, Thunk } from 'shared/lib';
 import { createReportModels, setReportModels } from 'entities/reports';
 import { fillChannels, setChannels } from 'entities/channels';
-import { getPresentationParams, getPresentationChannels } from '../lib/initialization';
+import { getPresentationChannels } from '../lib/initialization';
 import { createPresentationState, createClientChannels, createFormStates } from '../lib/initialization';
 import { applyChannelsDeps } from '../lib/utils';
 import { createFormDict } from '../lib/form-dict';
+import { formsAPI } from '../lib/forms.api';
 
 import { setParamDict } from 'entities/parameters';
 import { fetchFormsStart, fetchFormsEnd, fetchFormError } from 'entities/fetch-state';
@@ -14,7 +15,7 @@ import { setFormsState } from 'widgets/presentation/store/form.actions';
 
 
 /** Инициализация презентации. */
-export const fetchPresentationState = (id: FormID): Thunk => {
+export const fetchPresentationState = (id: ClientID): Thunk => {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     dispatch(fetchFormsStart([id]));
 
@@ -25,13 +26,14 @@ export const fetchPresentationState = (id: FormID): Thunk => {
     }
 
     const childrenID = presentation.children.map(child => child.id);
-    const paramDict = await getPresentationParams(id, childrenID);
+    const presentationParameters = await formsAPI.getFormParameters(id);
+    const paramDict = {[id]: presentationParameters};
     dispatch(setParamDict(paramDict));
 
     const state = getState();
     const rootID = state.root.id;
 
-    const reportParamDict = {[rootID]: state.parameters[rootID], [id]: paramDict[id]};
+    const reportParamDict = {[rootID]: state.parameters[rootID], [id]: presentationParameters};
     const reportModels = await createReportModels(reportParamDict, rootID, id);
 
     dispatch(fetchFormsStart(childrenID));
@@ -57,8 +59,9 @@ export const fetchPresentationState = (id: FormID): Thunk => {
       const payload: FormStatePayload = {
         state: formsState[id],
         settings: formsState[id].settings,
-        channels: allChannels,
         objects: state.objects,
+        parameters: {...state.parameters, ...paramDict},
+        channels: allChannels,
       };
       dispatch(creator(payload));
     }

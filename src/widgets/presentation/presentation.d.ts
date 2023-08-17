@@ -5,7 +5,7 @@ type PresentationDict = Record<FormID, PresentationState>;
  * + `id`: {@link FormID}
  * + `layout: IJsonModel`
  * + `settings`: {@link GridFormSettings}
- * + `children`: {@link FormDataWMR}[]
+ * + `children`: {@link FormDataWM}[]
  * + `childrenTypes`: {@link FormType}[]
  * + `activeChildID`: {@link FormID}
  * */
@@ -17,7 +17,7 @@ interface PresentationState {
   /** Настройки презентации. */
   settings: GridFormSettings,
   /** Дочерние формы. */
-  children: FormDataWMR[],
+  children: FormDataWM[],
   /** Список всех типов форм внутри презентации. */
   childrenTypes: Set<FormType>,
   /** Отображаемые дочерние формы. */

@@ -3,7 +3,7 @@ import { forEachTreeLeaf } from 'shared/lib';
 
 
 /** Функция, возвращающая исходные настройки по состоянию таблицы. */
-export function tableStateToFormSettings (id: FormID, state: TableState): TableFormSettings {
+export function tableStateToSettings (id: FormID, state: TableState): TableFormSettings {
   const { columnsSettings, columns } = state;
   const columnSettings: DataSetColumnSettings[] = [];
 

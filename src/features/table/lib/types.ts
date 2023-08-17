@@ -4,10 +4,10 @@ import { TFunction } from 'react-i18next';
 
 /** Серверный формат настроек формы **DataSet**. */
 export interface TableFormSettings {
-  id: FormID,
-  columns: DataSetColumnsSettings,
-  attachedProperties: InitAttachedProperties,
-  headerSetterRules: HeaderSetterRule[],
+  id: FormID;
+  columns: DataSetColumnsSettings;
+  attachedProperties: InitAttachedProperties;
+  headerSetterRules: HeaderSetterRule[];
 }
 
 /** Настройки отображаемых свойств канала.
@@ -17,29 +17,29 @@ export interface TableFormSettings {
 export type InitAttachedProperties = Omit<AttachedProperties, 'list' | 'typesApplied'>;
 
 interface DataSetColumnsSettings {
-  columnsSettings: DataSetColumnSettings[],
-  frozenColumnCount: number,
-  canUserFreezeColumns: boolean,
-  isTableMode: boolean,
-  alternate: boolean,
-  alternateRowBackground: any
+  columnsSettings: DataSetColumnSettings[];
+  frozenColumnCount: number;
+  canUserFreezeColumns: boolean;
+  isTableMode: boolean;
+  alternate: boolean;
+  alternateRowBackground: any;
 }
 
 export interface DataSetColumnSettings {
-  channelPropertyName: string,
-  displayName: string,
-  headerBackground: string,
-  headerForeground: string,
-  background: string,
-  foreground: string,
-  typeFormat: any,
-  width: number,
-  isReadOnly: boolean,
-  isHeaderRotated: boolean,
-  hideIfEmpty: boolean,
-  displayIndex: number,
-  isVisible: boolean,
-  isContainsSearchMode: boolean,
+  channelPropertyName: string;
+  displayName: string;
+  headerBackground: string;
+  headerForeground: string;
+  background: string;
+  foreground: string;
+  typeFormat: any;
+  width: number;
+  isReadOnly: boolean;
+  isHeaderRotated: boolean;
+  hideIfEmpty: boolean;
+  displayIndex: number;
+  isVisible: boolean;
+  isContainsSearchMode: boolean;
 }
 
 export type DataSetColumnDict = Record<TableColumnID, DataSetColumnSettings>;
@@ -51,22 +51,22 @@ export type SetRecords = (value: TableRecord[] | ((prev: TableRecord[]) => Table
 
 /** Объект с функциями-контролами состояния для рендера тулбара. */
 export interface ToolbarActions {
-  acceptEdit(): void
-  cancelEdit(): void
-  addRecord(copy: boolean): void
-  deleteRecords(): void
-  toStart(): void
-  toEnd(): void
-  moveCellVertical(by: number): void
+  acceptEdit(): void;
+  cancelEdit(): void;
+  addRecord(copy: boolean): void;
+  deleteRecords(): void;
+  toStart(): void;
+  toEnd(): void;
+  moveCellVertical(by: number): void;
 }
 
 /** Объект с функциями-контролами состояния для рендера ячеек. */
 export interface CellActions {
-  setActiveCell(cell: TableActiveCell): void
-  setValue(columnID: TableColumnID, recordID: TableRecordID, value: any): void
-  startEdit(columnID: TableColumnID, recordID: TableRecordID): void
-  moveCellHorizontal(by: number): void
-  openLinkedTable(columnID: TableColumnID): void
+  setActiveCell(cell: TableActiveCell): void;
+  setValue(columnID: TableColumnID, recordID: TableRecordID, value: any): void;
+  startEdit(columnID: TableColumnID, recordID: TableRecordID): void;
+  moveCellHorizontal(by: number, to?: number): void;
+  openLinkedTable(columnID: TableColumnID): void;
 }
 
 /* --- Table Editing --- */
@@ -78,8 +78,8 @@ export type RowErrors = RowValidationError[];
  * + `null-value` — отсутствует обязательное значение
  * */
 export interface RowValidationError {
-  type: 'null-value',
-  columnID: TableColumnID,
+  type: 'null-value';
+  columnID: TableColumnID;
 }
 
 /** Объект с типом и данными обновления таблицы. */
@@ -87,24 +87,24 @@ export type SaveTableMetadata = InsertRowMetadata | UpdateRowMetadata;
 
 /** Данные о добавлении новой записи в таблицу. */
 interface InsertRowMetadata {
-  type: 'insert',
-  formID: FormID,
-  row: ChannelRow,
+  type: 'insert';
+  formID: FormID;
+  row: ChannelRow;
 }
 
 /** Данные об обновлении записи в таблицы. */
 interface UpdateRowMetadata {
-  type: 'update',
-  formID: FormID,
-  row: ChannelRow,
+  type: 'update';
+  formID: FormID;
+  row: ChannelRow;
 }
 
 /* --- Edit Panel --- */
 
 /** Пропс для компонентов панели таблицы. */
 export interface EditPanelItemProps {
-  id: FormID,
-  state: TableState,
-  dispatch: Dispatch<any>,
-  t: TFunction,
+  id: FormID;
+  state: TableState;
+  dispatch: Dispatch<any>;
+  t: TFunction;
 }
