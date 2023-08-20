@@ -1,16 +1,7 @@
-/** Число для сортировки каких-либо элементов. */
-type Order = number;
-
 /** Строка для отображения названия сущности на интерфейсе. */
 type DisplayName = string;
 
-/** Словарь изображений. */
-type ImageDict<Items = string> = Record<Items, ImagePath>;
-
-/** Путь к изображению. */
-type ImagePath = string;
-
-/** Двумерная матрица чисел. */
+/** Двумерный массив чисел. */
 type Matrix = number[][];
 
 /** HEX цвета.
@@ -32,11 +23,11 @@ type ColorModelRGBA = [number, number, number, number];
  * */
 interface CSSFont {
   /** Размер шрифта в пикселях. */
-  size: number,
+  size: number;
   /** Стиль: обычный, жирный, курсив и т.п. */
-  style: string,
+  style: string;
   /** Семейство шрифтов. */
-  family: string,
+  family: string;
 }
 
 type PayloadAction<Type extends string = string, Payload = never> = Payload extends never
@@ -48,9 +39,9 @@ type PayloadAction<Type extends string = string, Payload = never> = Payload exte
 /** Точка на плоскости: `x` и `y`. */
 interface Point {
   /** Координата по X. */
-  x: number,
+  x: number;
   /** Координата по Y. */
-  y: number
+  y: number;
 }
 
 /** Прямоугольник по опорной точке и размерам:
@@ -58,11 +49,11 @@ interface Point {
  * */
 interface Rectangle {
   /** Верхняя координата. */
-  top: number,
+  top: number;
   /** Левая координата. */
-  left: number,
+  left: number;
   /** Ширина координата. */
-  width: number,
+  width: number;
   /** Высота координата. */
-  height: number,
+  height: number;
 }

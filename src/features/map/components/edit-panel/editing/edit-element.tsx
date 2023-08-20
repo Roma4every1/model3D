@@ -13,20 +13,20 @@ import rotateIcon from 'assets/images/map/rotate.png';
 
 
 interface EditElementProps {
-  type: string,
-  mode: MapModes,
-  formID: FormID,
+  type: string;
+  mode: MapModes;
+  formID: FormID;
 }
 interface EditItemProps {
-  ownMode: MapModes,
-  selected: boolean,
-  t: TFunction,
-  action: () => void,
+  ownMode: MapModes;
+  selected: boolean;
+  t: TFunction;
+  action: () => void;
 }
 
 
 /** Иконки режимов редактирования. */
-const mapEditIconsDict: Record<number, ImagePath> = {
+const mapEditIconsDict: Record<number, string> = {
   10: handIcon,    // MapModes.MOVE_MAP
   11: moveIcon,    // MapModes.MOVE
   12: rotateIcon,  // MapModes.ROTATE

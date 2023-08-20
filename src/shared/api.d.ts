@@ -1,23 +1,26 @@
 /** Идентификатор сессии. */
 type SessionID = string;
 
-/* --- Well Manager Custom Request --- */
+/* --- Request --- */
 
-/** ## Well Manager API Request.
- *
- * Кастомный объект запроса.
- * + `method?`: {@link ReqMethod} — метод запроса
- * + `path`: {@link ReqPath} — относительный путь
- * + `query?`: {@link ReqQuery} — параметры
- * + `body?`: {@link ReqBody} — тело запроса
- * + `mapper?`: {@link ReqMapper} — тип обработчика
+/** Кастомный объект запроса Well Manager.
+ * + `method?`: {@link ReqMethod}
+ * + `path`: {@link ReqPath}
+ * + `query?`: {@link ReqQuery}
+ * + `body?`: {@link ReqBody}
+ * + `mapper?`: {@link ReqMapper}
  * */
 interface WRequest {
-  method?: ReqMethod,
-  path: ReqPath,
-  query?: ReqQuery,
-  body?: ReqBody,
-  mapper?: ReqMapper
+  /** HTTP метод запроса. */
+  method?: ReqMethod;
+  /** Относительный путь. */
+  path: ReqPath;
+  /** Параметры запроса. */
+  query?: ReqQuery | null;
+  /** Тело запроса. */
+  body?: ReqBody | null;
+  /** Тип обработчика ответа. */
+  mapper?: ReqMapper;
 }
 
 /** Метод HTTP запроса. */
@@ -44,25 +47,29 @@ type ReqBody = string | ArrayBuffer;
  * */
 type ReqMapper = 'text' | 'json' | 'blob' | 'buffer';
 
-/* --- Well Manager Custom Response --- */
+/* --- Response --- */
 
 /** Кастомный ответ. */
 type Res<Expected> = WResponse<Expected> | WErrorResponse;
 
 /** ## Well Manager Response.
- * + `ok: true` — флажок
- * + `data: <Data>` — запрашиваемые данные
+ * + `ok: true`
+ * + `data: <Data>`
  * */
 interface WResponse<Data> {
-  ok: true,
-  data: Data,
+  /** Флажок. */
+  ok: true;
+  /** Запрашиваемые данные. */
+  data: Data;
 }
 
 /** Объект ответа, в случае, если произошла ошибка.
- * + `ok: false` — флажок
- * + `data: string` — сообщение ошибки
+ * + `ok: false`
+ * + `data: string`
  * */
 interface WErrorResponse {
-  ok: false,
-  data: string,
+  /** Флажок. */
+  ok: false;
+  /** Сообщиение ошибки. */
+  data: string;
 }

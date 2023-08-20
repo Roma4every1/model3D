@@ -1,6 +1,6 @@
 interface FetchesState {
-  session: FetchState,
-  forms: Record<FormID, FetchState>,
+  session: FetchState;
+  forms: Record<ClientID, FetchState>;
 }
 
 /** Состояние загружаемых данных.
@@ -17,24 +17,24 @@ type FetchState = FetchStateSuccess | FetchStateError | FetchStateWait;
 
 /** Состояние успешной загрузки. */
 interface FetchStateSuccess {
-  ok: true,
-  loading: false,
-  details: any,
-  progress?: number,
+  ok: true;
+  loading: false;
+  details: any;
+  progress?: number;
 }
 
 /** Состояние неудачной загрузки. */
 interface FetchStateError {
-  ok: false,
-  loading: false,
-  details: any,
-  progress?: number,
+  ok: false;
+  loading: false;
+  details: any;
+  progress?: number;
 }
 
 /** Состояние перед загрузкой. */
 interface FetchStateWait {
-  ok: undefined,
-  loading: boolean,
-  details: null,
-  progress?: number,
+  ok: undefined;
+  loading: boolean;
+  details: null;
+  progress?: number;
 }

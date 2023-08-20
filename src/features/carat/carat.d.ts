@@ -64,8 +64,8 @@ interface ICaratLoader {
   flag: number;
   cache: CurveDataCache;
 
-  getCaratData(ids: WellID[], channelData: ChannelDataDict): Promise<ChannelRecordDict[]>
-  loadCurveData(ids: CaratCurveID[]): Promise<CaratCurveID[]>
+  getCaratData(ids: WellID[], channelData: ChannelDataDict): Promise<ChannelRecordDict[]>;
+  loadCurveData(ids: CaratCurveID[]): Promise<CaratCurveID[]>;
 }
 
 /* --- --- */
@@ -76,29 +76,29 @@ interface ICaratStage {
   trackList: ICaratTrack[];
   correlations: ICaratCorrelations;
 
-  getZones(): CaratZone[]
-  getCaratSettings(): CaratSettings
-  getActiveTrack(): ICaratTrack
+  getZones(): CaratZone[];
+  getCaratSettings(): CaratSettings;
+  getActiveTrack(): ICaratTrack;
 
-  setCanvas(canvas: HTMLCanvasElement): void
-  setTrackList(wells: WellModel[]): void
-  setActiveTrack(idx: number): void
-  setZones(zones: CaratZone[]): void
-  edit(action: StageEditAction): void
+  setCanvas(canvas: HTMLCanvasElement): void;
+  setTrackList(wells: WellModel[]): void;
+  setActiveTrack(idx: number): void;
+  setZones(zones: CaratZone[]): void;
+  edit(action: StageEditAction): void;
 
-  setData(data: ChannelRecordDict[], cache: CurveDataCache): void
-  setLookupData(lookupData: ChannelRecordDict): void
+  setData(data: ChannelRecordDict[], cache: CurveDataCache): void;
+  setLookupData(lookupData: ChannelRecordDict): void;
 
-  handleKeyDown(key: string): boolean
-  handleMouseMove(point: Point, by: number): void
-  handleMouseDown(point: Point): any
-  handleMouseWheel(point: Point, direction: 1 | -1): void
+  handleKeyDown(key: string): boolean;
+  handleMouseMove(point: Point, by: number): void;
+  handleMouseDown(point: Point): any;
+  handleMouseWheel(point: Point, direction: 1 | -1): void;
 
-  updateTrackRects(): void
-  resize(): void
+  updateTrackRects(): void;
+  resize(): void;
 
-  render(): void
-  lazyRender(index: number): void
+  render(): void;
+  lazyRender(index: number): void;
 }
 
 type StageEditAction =
@@ -109,9 +109,9 @@ type StageEditAction =
   PayloadAction<'group-y-step', {idx: number, step: number}>;
 
 interface ICaratCorrelations {
-  getInit(): CaratColumnInit
-  getWidth(): number
-  render(index?: number): void
+  getInit(): CaratColumnInit;
+  getWidth(): number;
+  render(index?: number): void;
 }
 
 /** Трек каротажной диаграммы. */
@@ -121,47 +121,47 @@ interface ICaratTrack {
   readonly viewport: CaratViewport;
   readonly inclinometry: ICaratInclinometry;
 
-  getGroups(): ICaratColumnGroup[]
-  getBackgroundGroup(): ICaratColumnGroup
-  getInitColumns(): CaratColumnInit[]
-  getActiveGroup(): ICaratColumnGroup | null
-  getActiveIndex(): number
+  getGroups(): ICaratColumnGroup[];
+  getBackgroundGroup(): ICaratColumnGroup;
+  getInitColumns(): CaratColumnInit[];
+  getActiveGroup(): ICaratColumnGroup | null;
+  getActiveIndex(): number;
 
-  setActiveGroup(idx: number): void
-  setActiveCurve(curve: any): void
+  setActiveGroup(idx: number): void;
+  setActiveCurve(curve: any): void;
 
-  handleMouseDown(point: Point): any
-  rebuildRects(changes: number[]): void
+  handleMouseDown(point: Point): any;
+  rebuildRects(changes: number[]): void;
 
-  render(): void
-  lazyRender(): void
+  render(): void;
+  lazyRender(): void;
 }
 
 /** Инклинометрия скважины. */
 interface ICaratInclinometry {
-  getAbsMark(depth: number): number
+  getAbsMark(depth: number): number;
 }
 
 interface ICaratColumnGroup {
-  readonly id: string,
-  readonly settings: CaratColumnSettings,
-  readonly curveManager: any,
-  readonly xAxis: CaratColumnXAxis,
-  readonly yAxis: CaratColumnYAxis,
+  readonly id: string;
+  readonly settings: CaratColumnSettings;
+  readonly curveManager: any;
+  readonly xAxis: CaratColumnXAxis;
+  readonly yAxis: CaratColumnYAxis;
 
-  getDataRect(): Rectangle
-  getWidth(): number
-  getColumns(): ICaratColumn[]
-  getRange(): [number, number]
-  getIntervals(): any[]
-  hasCurveColumn(): boolean
-  groupCurves(curves: any[]): number
+  getDataRect(): Rectangle;
+  getWidth(): number;
+  getColumns(): ICaratColumn[];
+  getRange(): [number, number];
+  getIntervals(): any[];
+  hasCurveColumn(): boolean;
+  groupCurves(curves: any[]): number;
 }
 
 interface ICaratColumn {
   channel?: CaratAttachedChannel;
-  getElements?(): any[]
-  getRange(): [number, number]
+  getElements?(): any[];
+  getRange(): [number, number];
 }
 
 /** Порт просмотра. */

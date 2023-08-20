@@ -8,7 +8,7 @@ import xlsxmFileIcon from 'assets/images/reports/xlsxm.png';
 import zipFileIcon from 'assets/images/reports/zip.png';
 
 
-export const fileExtensionDict: ImageDict = {
+export const fileExtensionDict: Record<string, string> = {
   'csv': csvFileIcon,
   'doc': docFileIcon,
   'docx': docxFileIcon,

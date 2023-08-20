@@ -1,31 +1,31 @@
 /** Инициализирующие настройки для каротажной формы. */
 interface CaratFormSettings {
   /** Идентификатор формы. */
-  id: FormID,
+  id: FormID;
   /** Глобальные настройки диаграммы. */
-  settings: CaratSettings,
+  settings: CaratSettings;
   /** Список колонок диаграммы. */
-  columns: CaratColumnInit[],
+  columns: CaratColumnInit[];
 }
 
 /** Глобальные настройки каротажной диаграммы. */
 interface CaratSettings {
   /** Масштабирование колонок. */
-  scale: number,
+  scale: number;
   /** Использовать статический масштаб или нет. */
-  useStaticScale: boolean,
+  useStaticScale: boolean;
   /** Название канала с пластами для выравнивания по активному пласту. */
-  strataChannelName: ChannelName | null,
+  strataChannelName: ChannelName | null;
   /** Зоны распределения каротажных кривых. */
-  zones: CaratZone[],
+  zones: CaratZone[];
 }
 
 /** Зона распределения каротажных кривых. */
 interface CaratZone {
   /** Относительная ширина зоны. */
-  relativeWidth: number | null,
+  relativeWidth: number | null;
   /** Типы кривых. */
-  types: CaratCurveType[],
+  types: CaratCurveType[];
 }
 
 /* --- Carat Column --- */
@@ -33,37 +33,37 @@ interface CaratZone {
 /** Модель колонки каротажной диаграммы. */
 interface CaratColumnInit {
   /** Идентификатор колонки. */
-  id: string,
+  id: string;
   /** Базовые настройки. */
-  settings: CaratColumnSettings,
+  settings: CaratColumnSettings;
   /** Настройки горизонтальных осей для кривых. */
-  xAxis: CaratColumnXAxis | null,
+  xAxis: CaratColumnXAxis | null;
   /** Настройки вертикальной оси колонки. */
-  yAxis: CaratColumnYAxis | null,
+  yAxis: CaratColumnYAxis | null;
   /** Подключённые каналы. */
-  channels: CaratAttachedChannel[],
+  channels: CaratAttachedChannel[];
   /** Выборки кривых. */
-  selection: CaratDataSelection | null,
+  selection: CaratDataSelection | null;
   /** Граничные значения шкал кривых. */
-  measures: CaratCurveMeasure[] | null,
+  measures: CaratCurveMeasure[] | null;
   /** Настройки внешнего вида для отдельных свойств каналов. */
-  properties: Record<ChannelName, CaratColumnProperties>,
+  properties: Record<ChannelName, CaratColumnProperties>;
   /** Является ли колонка активной. */
-  active: boolean,
+  active: boolean;
 }
 
 /** Базовые настройки колонки. */
 interface CaratColumnSettings {
   /** Тип колонки. */
-  type: CaratColumnType,
+  type: CaratColumnType;
   /** Название колонки. */
-  label: DisplayName,
+  label: DisplayName;
   /** Ширина колонки в пикселях. */
-  width: number,
+  width: number;
   /** Порядковый номер колонки. */
-  index: number,
+  index: number;
   /** Цвет обводки колонки. */
-  borderColor: string,
+  borderColor: string;
 }
 
 /** Тип колонки: `background` для трека, `external` для корреляций, `normal` для всего остального. */
@@ -72,87 +72,87 @@ type CaratColumnType = 'normal' | 'background' | 'external';
 /** Настройки горизонтальных осей для кривых. */
 interface CaratColumnXAxis {
   /** Показывать ли вертикальную сетку. */
-  grid: boolean,
+  grid: boolean;
   /** Количество делений на оси. */
-  numberOfMarks: number,
+  numberOfMarks: number;
 }
 
 /** Настройки вертикальной оси колонки. */
 interface CaratColumnYAxis {
   /** Показывать ли ось. */
-  show: boolean,
+  show: boolean;
   /** Шаг по оси. */
-  step: number,
+  step: number;
   /** Показывать ли горизонтальную сетку. */
-  grid: boolean,
+  grid: boolean;
   /** Показывать ли значение абсолютной отметки. */
-  absMarks: boolean,
+  absMarks: boolean;
   /** Показывать ли значение глубины. */
-  depthMarks: boolean,
+  depthMarks: boolean;
 }
 
 /** Выборка каротажных кривых для колонки. */
 interface CaratDataSelection {
   /** Типы кривых. */
-  types: CaratCurveSelector[]
+  types: CaratCurveSelector[];
   /** Начальная дата. */
-  start: string,
+  start: string;
   /** Конечная дата. */
-  end: string,
+  end: string;
 }
 
 interface CaratCurveSelector {
-  expression: string,
-  isSelected: boolean,
+  expression: string;
+  isSelected: boolean;
 }
 
 /** Граничные значения шкалы для кривой. */
 interface CaratCurveMeasure {
   /** Тип кривой. */
-  type: string,
+  type: string;
   /** Максимальное значение кривой. */
-  min: number | null,
+  min: number | null;
   /** Максимальное значение кривой. */
-  max: number | null,
+  max: number | null;
 }
 
 /** Подключённый к колонке канал. */
 interface CaratAttachedChannel {
   /** Название канала. */
-  name: ChannelName,
+  name: ChannelName;
   /** Тип присоединения. */
-  attachOption: AttachOptionType,
+  attachOption: AttachOptionType;
   /** Список исключений для свойств. */
-  exclude: string[] | null,
+  exclude: string[] | null;
 
   /** Тип подключённого канала. */
-  type?: CaratChannelType,
+  type?: CaratChannelType;
   /** Список подключённых свойств. */
-  properties?: ChannelProperty[],
+  properties?: ChannelProperty[];
   /** Индексы колонок. */
-  info?: CaratChannelInfo,
+  info?: CaratChannelInfo;
   /** Название канала с инклинометрией. */
-  inclinometry?: CaratAttachedLookup,
+  inclinometry?: CaratAttachedLookup;
   /** Название справочника цветов кривых. */
-  curveColorLookup?: CaratAttachedLookup,
+  curveColorLookup?: CaratAttachedLookup;
   /** Информация о справочниках цветов и текста пропластков. */
-  styles?: CaratStyleLookup[],
+  styles?: CaratStyleLookup[];
   /** Справочник с названиями пластов. */
-  namesChannel?: ChannelName,
+  namesChannel?: ChannelName;
 }
 
 /** Информация о справочнике цветов и текста пропластков. */
 interface CaratStyleLookup {
-  columnName: string,
-  color: CaratAttachedLookup,
-  text: CaratAttachedLookup,
+  columnName: string;
+  color: CaratAttachedLookup;
+  text: CaratAttachedLookup;
 }
 
 /** Справочник, подключённый к каналу каротажной колонки. */
 interface CaratAttachedLookup {
-  name: ChannelName,
-  info: CaratChannelInfo,
-  dict: Record<number, any>,
+  name: ChannelName;
+  info: CaratChannelInfo;
+  dict: Record<number, any>;
 }
 
 /** Словарь настроек отображения свойств канала. */
@@ -161,43 +161,43 @@ type CaratColumnProperties = Record<string, CaratPropertySettings>;
 /** Настройки отображения свойства канала в колонке. */
 interface CaratPropertySettings {
   /** Настройки отображения подписей. */
-  text: CaratTextPropertySettings | null,
+  text: CaratTextPropertySettings | null;
   /** Показывать ли текст. */
-  showText: boolean,
+  showText: boolean;
   /** Настройки отображения гистограммы. */
-  bar: CaratBarPropertySettings | null,
+  bar: CaratBarPropertySettings | null;
   /** Показывать ли гистограмму. */
-  showBar: boolean,
+  showBar: boolean;
 }
 
 /** Настройки отображения подписей для свойства канала. */
 interface CaratTextPropertySettings {
   /** Цвет текста. */
-  color: ColorHEX,
+  color: ColorHEX;
   /** Фон текста. */
-  backgroundColor: ColorHEX,
+  backgroundColor: ColorHEX;
   /** Размер шрифта текста. */
-  fontSize: number,
+  fontSize: number;
   /** Угол поворота текста. */
-  angle: number,
+  angle: number;
 }
 
 /** Настройки отображения гистограммы для свойства канала. */
 interface CaratBarPropertySettings {
   /** Выравнивание гистограммы. */
-  align: 'left' | 'right' | 'center',
+  align: 'left' | 'right' | 'center';
   /** Цвет элементов во внутренней области. */
-  color: string,
+  color: string;
   /** Цвет фона внутренней области. */
-  backgroundColor: string,
+  backgroundColor: string;
   /** Цвет внутренней границы. */
-  borderColor: string,
+  borderColor: string;
   /** Толщина внутренней границы. */
-  thickness: number,
+  thickness: number;
   /** Цвет элементов во внешней области. */
-  externalColor: string,
+  externalColor: string;
   /** Цвет внешней границы. */
-  externalBorderColor: ColorHEX | null,
+  externalBorderColor: ColorHEX | null;
   /** Толщина внешней границы. */
-  externalThickness: number,
+  externalThickness: number;
 }
