@@ -1,6 +1,6 @@
 {
-  "name": "Well Manager React",
-  "short_name": "WMR",
+  "name": "Well Manager",
+  "short_name": "WM",
   "icons": [
     {
       "src": "favicon.ico",

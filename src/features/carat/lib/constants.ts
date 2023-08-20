@@ -34,7 +34,7 @@ export const caratChannelCriterionDict: Record<CaratChannelType, ChannelCriterio
     type: 'CURVE TYPE', date: 'DATE',
     top: 'DEPTH START', bottom: 'DEPTH END',
     defaultLoading: 'LOAD BY DEFAULT',
-    description: {name: 'MNEMONIC_DESCR', optional: true},
+    description: {name: 'DESCRIPTION', optional: true},
   },
   'curve-data': {
     id: 'CURVE ID', data: 'CURVE DATA',

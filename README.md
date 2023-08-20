@@ -1,4 +1,4 @@
-# Well Manager React
+# Well Manager
 
 ### Архитектура
 За основу взят архитектурный паттерн [FSD](https://feature-sliced.design).
@@ -12,7 +12,7 @@ src/
 |    ├── left-panel/        #   Левая панель
 |    └── right-panel/       #   Правая панель
 ├── features/               #
-|    ├── dataset/           #   Таблица
+|    ├── table/             #   Таблица
 |    ├── chart/             #   График
 |    ├── carat/             #   Каротажная диаграмма
 |    ├── map/               #   Карта
