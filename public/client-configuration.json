@@ -1,4 +1,4 @@
 {
   "devMode": true,
-  "webServicesURL": "http://kmn-wmw:8080/id3x13/WebRequests.svc/"
+  "webServicesURL": "http://js-wmw-dev/id3x13/WebRequests.svc/"
 }
