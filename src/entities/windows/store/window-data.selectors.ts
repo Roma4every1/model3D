@@ -2,6 +2,6 @@ export function windowsSelector(state: WState) {
   return state.windowData?.windows;
 }
 
-export function messageWindowSelector(state: WState) {
-  return state.windowData?.messageWindow;
+export function windowDataSelector(state: WState) {
+  return state.windowData;
 }

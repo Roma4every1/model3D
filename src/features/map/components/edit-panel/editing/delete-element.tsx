@@ -48,16 +48,8 @@ export const DeleteElementWindow = ({mapState, formID}: DeleteElementWindowProps
         <li><b>Тип элемента: </b><span>{t('map.' + selectedElement.type)}</span></li>
       </ul>
       <DialogActionsBar>
-        <div className={'windowButtonContainer'}>
-          <Button className={'windowButton'} onClick={handleDelete}>
-            {t('base.yes')}
-          </Button>
-        </div>
-        <div className={'windowButtonContainer'}>
-          <Button className={'windowButton'} onClick={closeDeleteWindow}>
-            {t('base.no')}
-          </Button>
-        </div>
+        <Button onClick={handleDelete}>{t('base.yes')}</Button>
+        <Button onClick={closeDeleteWindow}>{t('base.no')}</Button>
       </DialogActionsBar>
     </Dialog>
   );

@@ -3,7 +3,6 @@ import { t } from 'shared/locales';
 /* --- Action Types --- */
 
 export enum WindowDataActions {
-  SET_INFO = 'windowData/setInfo',
   SET_WARNING = 'windowData/setWarning',
   SET_OPENED_WINDOW = 'windowData/setOpenedWindow',
   CLOSE = 'windowData/close'
@@ -11,19 +10,9 @@ export enum WindowDataActions {
 
 /* --- Action Interfaces --- */
 
-interface ActionSetInfo {
-  type: WindowDataActions.SET_INFO,
-  header: any,
-  text: any,
-  stackTrace: any,
-  fileToSaveName: any,
-}
 interface ActionSetWarning {
   type: WindowDataActions.SET_WARNING,
-  header: any,
   text: any,
-  stackTrace: any,
-  fileToSaveName: any,
 }
 interface ActionSetOpenedWindow {
   type: WindowDataActions.SET_OPENED_WINDOW,
@@ -36,36 +25,24 @@ interface ActionClose {
   type: WindowDataActions.CLOSE,
 }
 
-export type WindowDataAction = ActionSetInfo | ActionSetWarning | ActionSetOpenedWindow |
-  ActionClose;
+export type WindowDataAction = ActionSetWarning | ActionSetOpenedWindow | ActionClose;
 
 /* --- Init State & Reducer --- */
 
-const init = null;
+const init: any = {
+  windows: null,
+  messageWindow: null,
+};
 
 export function windowDataReducer(state = init, action: WindowDataAction) {
   let newState = {...state};
   switch (action.type) {
 
-    case WindowDataActions.SET_INFO: {
-      newState.messageWindow = {
-        opened: true,
-        header: action.header || t('base.info'),
-        text: action.text,
-        stackTrace: action.stackTrace,
-        fileToSaveName: action.fileToSaveName,
-        type: 'info'
-      }
-      return newState;
-    }
-
     case WindowDataActions.SET_WARNING: {
       newState.messageWindow = {
         opened: true,
-        header: action.header || t('base.warning'),
+        header: t('base.warning'),
         text: action.text,
-        stackTrace: action.stackTrace,
-        fileToSaveName: action.fileToSaveName,
         type: 'warning'
       }
       return newState;

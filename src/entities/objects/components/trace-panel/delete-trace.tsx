@@ -55,8 +55,8 @@ const DeleteTraceDialog = ({model}: DeleteTraceWindowProps) => {
         <li>Узлов: <b>{model.nodes.length}</b></li>
       </ul>
       <DialogActionsBar>
-        <Button className={'windowButton'} onClick={onApply}>{t('base.yes')}</Button>
-        <Button className={'windowButton'} onClick={onClose}>{t('base.no')}</Button>
+        <Button onClick={onApply}>{t('base.yes')}</Button>
+        <Button onClick={onClose}>{t('base.no')}</Button>
       </DialogActionsBar>
     </Dialog>
   );

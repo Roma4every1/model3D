@@ -5,7 +5,7 @@ import { Button } from '@progress/kendo-react-buttons';
 import { ParameterList } from 'entities/parameters';
 import { updateTables } from 'entities/channels';
 import { showNotification } from 'entities/notifications';
-import { setWindowInfo, setWindowWarning } from 'entities/windows';
+import { setWindowWarning } from 'entities/windows';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
 import { watchReport, updateReportParam, updateReportParameter } from 'entities/reports';
 
@@ -30,11 +30,6 @@ export const ReportParamList = ({id, report, close}: ReportParamListProps) => {
     const modifiedTables = data?.ModifiedTables?.ModifiedTables;
     if (modifiedTables) dispatch(updateTables(modifiedTables));
 
-    if (data?.ReportResult) {
-      const text = data.ReportResult;
-      const fileName = report.displayName + '.log';
-      dispatch(setWindowInfo(text, null, t('report.result'), fileName));
-    }
     parameters.forEach(param => {
       if (param.editorType === 'fileTextEditor') {
         dispatch(updateReportParam(id, report.id, param.id, null));
