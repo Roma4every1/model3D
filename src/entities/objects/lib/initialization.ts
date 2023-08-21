@@ -104,21 +104,19 @@ export function createObjectModels(state: WState): ObjectsState {
   const rootParameters = parameters[state.root.id];
 
   if (place.channelName && place.parameterID) {
-    const placeChannel = channels[place.channelName];
     const placeParameter = rootParameters.find(p => p.id === place.parameterID);
     const placeRowString = placeParameter.value as ParamValueTableRow;
     if (placeRowString) {
-      const model = createPlaceModel(placeRowString, placeChannel.info.columns);
+      const model = createPlaceModel(placeRowString);
       place = {...place, model};
     }
   }
 
   if (stratum.channelName && stratum.parameterID) {
-    const stratumChannel = channels[stratum.channelName];
     const stratumParameter = rootParameters.find(p => p.id === stratum.parameterID);
     const stratumRowString = stratumParameter.value as ParamValueTableRow;
     if (stratumRowString) {
-      const model = createStratumModel(stratumRowString, stratumChannel.info.columns);
+      const model = createStratumModel(stratumRowString);
       stratum = {...stratum, model};
     }
   }
@@ -127,17 +125,16 @@ export function createObjectModels(state: WState): ObjectsState {
   const wellParameter = rootParameters.find(p => p.id === well.parameterID);
   const wellRowString = wellParameter.value as ParamValueTableRow;
   if (wellRowString) {
-    const model = createWellModel(wellRowString, wellChannel.info.columns);
+    const model = createWellModel(wellRowString);
     well = {...well, model};
   }
 
   if (trace.channelName && trace.parameterID) {
-    const traceChannel = channels[trace.channelName];
     const nodeChannel = channels[trace.nodeChannelName];
     const traceParameter = rootParameters.find(p => p.id === trace.parameterID);
     const traceRowString = traceParameter.value as ParamValueTableRow;
     if (traceRowString) {
-      const model = createTraceModel(traceRowString, traceChannel, nodeChannel, wellChannel);
+      const model = createTraceModel(traceRowString, nodeChannel, wellChannel);
       trace = {...trace, model};
     }
   }

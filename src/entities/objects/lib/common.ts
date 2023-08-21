@@ -60,22 +60,19 @@ export function updateObjects(updates: UpdateParamData[], dispatch: Dispatch, st
   const changeFlags = {place: false, stratum: false, well: false, trace: false};
   for (const { id, value } of updates) {
     if (id === placeParameterID) {
-      const placeChannel = channels[place.channelName];
-      place.model = value ? createPlaceModel(value, placeChannel.info.columns) : null;
+      place.model = value ? createPlaceModel(value) : null;
       changeFlags.place = true;
     }
     else if (id === stratumParameterID) {
-      const stratumChannel = channels[stratum.channelName];
-      stratum.model = value ? createStratumModel(value, stratumChannel.info.columns) : null;
+      stratum.model = value ? createStratumModel(value) : null;
     }
     else if (id === wellParameterID) {
-      well.model = value ? createWellModel(value, wellChannel.info.columns) : null;
+      well.model = value ? createWellModel(value) : null;
       changeFlags.well = true;
     }
     else if (id === traceParameterID) {
-      const traceChannel = channels[trace.channelName];
       const nodeChannel = channels[trace.nodeChannelName];
-      const model = value ? createTraceModel(value, traceChannel, nodeChannel, wellChannel) : null;
+      const model = value ? createTraceModel(value, nodeChannel, wellChannel) : null;
       trace = {...trace, model, oldModel: null, editing: false, creating: false};
       changeFlags.trace = true;
     }
