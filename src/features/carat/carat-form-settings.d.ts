@@ -132,19 +132,13 @@ interface CaratAttachedChannel {
   /** Индексы колонок. */
   info?: CaratChannelInfo;
   /** Информация о канале с инклинометрией. */
-  inclinometry?: CaratInclinometryInfo;
+  inclinometry?: CaratAttachedLookup;
   /** Название справочника цветов кривых. */
   curveColorLookup?: CaratAttachedLookup;
   /** Информация о справочниках цветов и текста пропластков. */
   styles?: CaratStyleLookup[];
   /** Справочник с названиями пластов. */
   namesChannel?: ChannelName;
-}
-
-interface CaratInclinometryInfo {
-  name: ChannelName;
-  info: CaratChannelInfo;
-  properties: ChannelProperty[];
 }
 
 /** Информация о справочнике цветов и текста пропластков. */

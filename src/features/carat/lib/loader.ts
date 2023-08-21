@@ -42,11 +42,12 @@ export class CaratLoader implements ICaratLoader {
       curveIDs.push(...newCurveIDs);
     }
 
-    if (isTrace && this.inclinometryChannel) {
+    if (this.inclinometryChannel) {
       const inclinometryWellData = channelData[this.inclinometryChannel.name];
       if (inclinometryWellData) {
         const inclinometryInfo = this.inclinometryChannel.inclinometry;
-        const mapper = (record) => this.loadInclinometry(record, inclinometryInfo.properties);
+        const properties = this.inclinometryChannel.properties;
+        const mapper = (record) => this.loadInclinometry(record, properties);
         const recordList = await Promise.all(cellsToRecords(inclinometryWellData).map(mapper));
 
         const inclinometryDataName = inclinometryInfo.name;
@@ -61,7 +62,6 @@ export class CaratLoader implements ICaratLoader {
       }
     }
 
-    console.log(caratData);
     if (flag === this.flag) await this.loadCurveData([...new Set(curveIDs)]);
     return caratData;
   }
@@ -92,7 +92,6 @@ export class CaratLoader implements ICaratLoader {
   }
 
   private async loadInclinometry(record: ChannelRecord, properties: ChannelProperty[]): Promise<ChannelRecord[]> {
-    console.log(record, properties)
     const channelName = this.inclinometryChannel.inclinometry.name;
     const value = serializeChannelRecord(record, properties);
     const parameters = [{id: 'currentWellGeom', type: 'tableRow', value} as Parameter];
