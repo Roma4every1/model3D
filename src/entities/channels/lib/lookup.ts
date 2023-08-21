@@ -18,10 +18,10 @@ export function createLookupColumnNames(properties: ChannelProperty[]): LookupCo
 
   let codePropertyColumnName, valuePropertyColumnName, parentPropertyColumnName;
   for (const property of properties) {
-    const upper = property.name.toUpperCase();
-    if (upper === idColumnName) codePropertyColumnName = property;
-    else if (upper === valueColumnName) valuePropertyColumnName = property;
-    else if (upper === parentColumnName) parentPropertyColumnName = property;
+    const name = property.name;
+    if (name === idColumnName) codePropertyColumnName = property;
+    else if (name === valueColumnName) valuePropertyColumnName = property;
+    else if (name === parentColumnName) parentPropertyColumnName = property;
   }
 
   if (codePropertyColumnName) {

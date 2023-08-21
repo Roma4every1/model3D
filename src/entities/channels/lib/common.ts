@@ -54,14 +54,28 @@ export function createColumnInfo<Fields extends string = string>(
   return info;
 }
 
-export function findColumnIndexes(columns: ChannelColumn[], info: ChannelColumnInfo | LookupColumns) {
-  for (const field in info) {
-    const propertyInfo = info[field];
-    for (let i = 0; i < columns.length; i++) {
-      const name = columns[i].Name;
-      if (propertyInfo.name === name) { propertyInfo.index = i; break; }
+/** Добавляет в конфиг канала данные о колонках. */
+export function findColumnIndexes(columns: ChannelColumn[], channelInfo: ChannelInfo): void {
+  columns.forEach((column: ChannelColumn, i: number) => {
+    for (const property of channelInfo.properties) {
+      if (property.fromColumn === column.Name) {
+        property.type = column.NetType;
+      }
     }
-  }
+    for (const field in channelInfo.lookupColumns) {
+      const propertyInfo = channelInfo.lookupColumns[field];
+      if (propertyInfo.name === column.Name) {
+        propertyInfo.index = i;
+      }
+    }
+    if (channelInfo.columns) for (const field in channelInfo.columns) {
+      const propertyInfo = channelInfo.columns[field];
+      if (propertyInfo.name === column.Name) {
+        propertyInfo.index = i;
+      }
+    }
+  });
+  channelInfo.columnApplied = true;
 }
 
 /** Конвертирует строки канала из массивов ячеек в словари по названиям колонок. */

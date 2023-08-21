@@ -4,7 +4,7 @@ import { InclinometryMark, InclinometryMap } from './types';
 /** Класс для управления инклинометрией. */
 export class CaratInclinometry implements ICaratInclinometry {
   /** Даннные канала инклинометрии. */
-  public readonly channel: CaratAttachedLookup;
+  public readonly channel: CaratInclinometryInfo;
   /** Данные инклинометрии для интерполяции. */
   private interpolationData: InclinometryMark[];
 
@@ -15,7 +15,7 @@ export class CaratInclinometry implements ICaratInclinometry {
   /** Данные инклинометрии. */
   public data: InclinometryMap | null;
 
-  constructor(channel: CaratAttachedLookup) {
+  constructor(channel: CaratInclinometryInfo) {
     this.channel = channel;
     this.interpolationData = [];
     this.min = null;
