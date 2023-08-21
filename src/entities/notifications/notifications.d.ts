@@ -9,23 +9,23 @@ type Notifications = NotificationItem[];
  * */
 interface NotificationItem {
   /** Идентификатор уведомления (autoincrement). */
-  id: NotificationID,
+  id: NotificationID;
   /** Тип уведомления. */
-  type: NotificationType,
+  type: NotificationType;
   /** Текст уведомления. */
-  content: NotificationContent,
+  content: NotificationContent;
   /** Нужно ли показывать иконку. */
-  icon: boolean,
+  icon: boolean;
 }
 
 /** Прототип уведомления. */
 interface NotificationProto {
   /** Тип уведомления. */
-  type?: NotificationType,
+  type?: NotificationType;
   /** Текст уведомления. */
-  content: NotificationContent,
+  content: NotificationContent;
   /** Нужно ли показывать иконку. */
-  icon?: boolean,
+  icon?: boolean;
 }
 
 /** Идентификатор уведомления. */

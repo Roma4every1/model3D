@@ -1,0 +1,6 @@
+.message-dialog-content {
+  display: grid;
+  grid-template-columns: 36px calc(100% - 50px);
+  gap: 14px;
+  align-items: center;
+}

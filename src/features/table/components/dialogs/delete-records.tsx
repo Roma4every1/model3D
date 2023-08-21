@@ -1,25 +1,21 @@
 import { useDispatch } from 'react-redux';
-import { useTranslation } from 'react-i18next';
+import { TFunction } from 'react-i18next';
 import { Button } from '@progress/kendo-react-buttons';
-import { Window, DialogActionsBar } from '@progress/kendo-react-dialogs';
-import { setOpenedWindow } from 'entities/windows';
+import { DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { deleteTableRecords } from '../../store/table.thunks';
 
 
 interface DeleteRecordsDialogProps {
-  id: FormID,
-  indexes: TableRecordID[],
+  id: FormID;
+  indexes: TableRecordID[];
+  t: TFunction;
+  onClose: () => void;
 }
 
 
 /** Диалог с подтверждением при удалении строк. */
-export const DeleteRecordsDialog = ({id, indexes}: DeleteRecordsDialogProps) => {
-  const { t } = useTranslation();
+export const DeleteRecordsDialog = ({id, indexes, t, onClose}: DeleteRecordsDialogProps) => {
   const dispatch = useDispatch();
-
-  const onClose = () => {
-    dispatch(setOpenedWindow('delete-records', false, null));
-  };
 
   const onApply = () => {
     dispatch(deleteTableRecords(id, indexes));
@@ -27,10 +23,7 @@ export const DeleteRecordsDialog = ({id, indexes}: DeleteRecordsDialogProps) => 
   };
 
   return (
-    <Window
-      title={t('table.delete-dialog.header')}
-      height={180} resizable={false} onClose={onClose}
-    >
+    <>
       <p style={{margin: 10, textAlign: 'center'}}>
         {t('table.delete-dialog.details', {n: indexes.length})}
       </p>
@@ -42,6 +35,6 @@ export const DeleteRecordsDialog = ({id, indexes}: DeleteRecordsDialogProps) => 
           {t('base.cancel')}
         </Button>
       </DialogActionsBar>
-    </Window>
+    </>
   );
 };

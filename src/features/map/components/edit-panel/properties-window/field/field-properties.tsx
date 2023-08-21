@@ -1,7 +1,7 @@
 import { TFunction } from 'react-i18next';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { setOpenedWindow } from 'entities/windows';
+import { showWindow, closeWindow } from 'entities/window';
 import { createFieldPaletteInit, InitFieldState } from '../properties-utils';
 import { Button } from '@progress/kendo-react-buttons';
 import { NumericTextBox, NumericTextBoxChangeEvent } from '@progress/kendo-react-inputs';
@@ -73,12 +73,18 @@ export const FieldProperties = ({element: field, init, apply, update, cancel, t,
   };
 
   const openPaletteWindow = () => {
-    const name = 'mapAdditionalPropertiesWindow';
-    const init = createFieldPaletteInit(field.palette[0]);
-    const window = <FieldPalettePropertiesWindow
-      element={field.palette[0]} update={update} t={t} init={init}
+    const windowID = 'mapAdditionalPropertiesWindow';
+    const onClose = () => dispatch(closeWindow(windowID));
+
+    const content = <FieldPalettePropertiesWindow
+      onClose={onClose} element={field.palette[0]} update={update} t={t}
+      init={createFieldPaletteInit(field.palette[0])}
     />;
-    dispatch(setOpenedWindow(name, true, window));
+    const windowProps = {
+      title: 'Свойства палитры', className: 'propertiesWindow',
+      resizable: false, width: 320, height: 260, style: {zIndex: 99}, onClose,
+    };
+    dispatch(showWindow(windowID, windowProps, content));
   };
 
   /* --- View --- */

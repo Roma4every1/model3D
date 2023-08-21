@@ -26,16 +26,16 @@ function addParam(column: ChannelColumn, rowValue: any, propName: string): strin
     : propName + '##System.DBNull';
 }
 
-export function channelRowToString(row: ChannelRow, columns: ChannelColumn[]): string {
-  const cells = row.Cells;
+export function serializeChannelRecord(record: ChannelRecord, properties: ChannelProperty[]): string {
   const parts: string[] = [];
+  for (const property of properties) {
+    const cell = record[property.fromColumn];
+    if (cell === undefined) continue;
 
-  for (let i = 0; i < columns.length; i++) {
-    const cell = cells[i], column = columns[i];
     if (cell === null) {
-      parts.push(`${column.Name}##System.DBNull`);
+      parts.push(`${property.name}##System.DBNull`);
     } else {
-      parts.push(`${column.Name}#${cell}#${column.NetType}`);
+      parts.push(`${property.name}#${cell}#${property.type}`);
     }
   }
   return parts.join('|');

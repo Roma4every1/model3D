@@ -1,24 +1,30 @@
 /* --- Maps State --- */
 
-/** Хранилище состояний карт. */
-type MapsState = { multi: FormDict<MultiMapState>, single: FormDict<MapState> };
+/** Хранилище состояний карт.
+ * + `multi`: {@link FormDict} of {@link MultiMapState}
+ * + `single`: {@link FormDict} of {@link MapState}
+ * */
+interface MapsState {
+  multi: FormDict<MultiMapState>;
+  single: FormDict<MapState>;
+}
 
 /** ## Состояние мультикарты.
  * + `sync: boolean` — синхронизация СК
  * + `children`: {@link FormID}[] — карты
  * */
 interface MultiMapState {
-  sync: boolean,
-  children: FormID[],
-  configs: MapItemConfig[],
+  sync: boolean;
+  children: FormID[];
+  configs: MapItemConfig[];
 }
 
 interface MapItemConfig {
-  id: MapID,
-  data: any,
-  formID: FormID,
-  progress: number,
-  setProgress?: Function,
+  id: MapID;
+  data: any;
+  formID: FormID;
+  progress: number;
+  setProgress?: Function;
 }
 
 /** ## Состояние карты.
@@ -38,30 +44,30 @@ interface MapItemConfig {
  * */
 interface MapState {
   mode: number, // MapModes
-  mapData: MapData,
-  legends: any,
-  activeLayer: MapLayer,
-  isLoadSuccessfully: boolean | undefined,
-  canvas: MapCanvas,
-  owner: MapOwner,
-  mapID: MapID,
-  element: MapElement,
-  isElementEditing: boolean,
-  isElementCreating?: boolean,
-  selecting: MapSelectingState,
-  oldData: {x: number | null, y: number | null, arc: PolylineArc | null, ange: number | null}
-  isModified: boolean,
-  cursor: string,
-  childOf: FormID,
-  scroller: { setList(list: MapCanvas[]) } | null,
-  utils: MapUtils,
+  mapData: MapData;
+  legends: any;
+  activeLayer: MapLayer;
+  isLoadSuccessfully: boolean | undefined;
+  canvas: MapCanvas;
+  owner: MapOwner;
+  mapID: MapID;
+  element: MapElement;
+  isElementEditing: boolean;
+  isElementCreating?: boolean;
+  selecting: MapSelectingState;
+  oldData: {x: number | null, y: number | null, arc: PolylineArc | null, ange: number | null};
+  isModified: boolean;
+  cursor: string;
+  childOf: ClientID;
+  scroller: { setList(list: MapCanvas[]) } | null;
+  utils: MapUtils;
 }
 
 type MapCanvas = HTMLCanvasElement & {selectingMode: boolean, blocked: boolean, events: any};
 
 interface MapUtils {
-  updateCanvas(cs?: MapViewport): void,
-  pointToMap(point: Point): Point,
+  updateCanvas(cs?: MapViewport): void;
+  pointToMap(point: Point): Point;
 }
 
 /** ## Состояние выделения карты.
@@ -71,108 +77,108 @@ interface MapUtils {
  * @see MapState
  * */
 interface MapSelectingState {
-  nearestElements: any[],
-  activeIndex: number,
-  lastPoint: Point,
+  nearestElements: any[];
+  activeIndex: number;
+  lastPoint: Point;
 }
 
 /* --- Загрузка карты --- */
 
 interface MapDataRaw {
   // ответ сервера:
-  date: string,
-  eTag: string,
-  layers: MapLayerRaw[],
-  mapCode: string,
-  mapName: string,
-  namedpoints: string,
-  objectCode: string,
-  objectName: string,
-  organization: string,
-  owner: string | null,
-  plastCode: string,
-  plastName: string,
-  indexes?: any[],
+  date: string;
+  eTag: string;
+  layers: MapLayerRaw[];
+  mapCode: string;
+  mapName: string;
+  namedpoints: string;
+  objectCode: string;
+  objectName: string;
+  organization: string;
+  owner: string | null;
+  plastCode: string;
+  plastName: string;
+  indexes?: any[];
 
   // добавляемые поля после обратоки:
-  mapErrors: any[],
-  points: any,
+  mapErrors: any[];
+  points: any;
 }
 
 interface MapLayerRaw {
-  bounds: Bounds,
-  container: string,
-  group: string,
-  highscale: string | number,
-  lowscale: string | number,
-  name: string,
-  uid: string,
-  visible: boolean,
-  index?: any,
-  version?: any,
+  bounds: Bounds;
+  container: string;
+  group: string;
+  highscale: string | number;
+  lowscale: string | number;
+  name: string;
+  uid: string;
+  visible: boolean;
+  index?: any;
+  version?: any;
 }
 
 
 interface ParsedContainer {
   layers: Record<string, any>;
-  namedpoints: MapPoint[],
+  namedpoints: MapPoint[];
 }
 
 /* --- --- */
 
 interface MapViewport {
-  centerX: number,
-  centerY: number,
-  scale: MapScale,
+  centerX: number;
+  centerY: number;
+  scale: MapScale;
 }
 
 interface MapData {
-  date: string,
-  eTag: string,
-  layers: MapLayer[],
-  mapCode: string,
-  mapData: any,
-  mapErrors: any[],
-  mapName: string,
-  namedPoints: string,
-  objectCode: string,
-  objectName: string,
-  organization: string,
-  owner: MapOwner | null,
-  plastCode: string,
-  plastName: string,
-  points: MapPoint[],
+  date: string;
+  eTag: string;
+  layers: MapLayer[];
+  mapCode: string;
+  mapData: any;
+  mapErrors: any[];
+  mapName: string;
+  namedPoints: string;
+  objectCode: string;
+  objectName: string;
+  organization: string;
+  owner: MapOwner | null;
+  plastCode: string;
+  plastName: string;
+  points: MapPoint[];
 
-  x: number,
-  y: number,
-  scale: number,
-  onDrawEnd: (canvas: MapCanvas, x: number, y: number, scale: number) => void,
+  x: number;
+  y: number;
+  scale: number;
+  onDrawEnd: (canvas: MapCanvas, x: number, y: number, scale: number) => void;
 }
 
 interface LayerTreeItem {
-  id: string,
-  text: string,
-  sublayer: MapLayer,
-  visible: boolean,
-  items?: LayerTreeItem[],
+  id: string;
+  text: string;
+  sublayer: MapLayer;
+  visible: boolean;
+  items?: LayerTreeItem[];
 }
 
 /** Слой карты. */
 interface MapLayer {
-  bounds: Bounds,
-  container: string,
-  elements: MapElement[],
-  group: string,
-  highscale: LayerHighScale,
-  lowscale: LayerLowScale,
-  name: string,
-  uid: string,
-  index?: any,
-  version: any,
-  visible?: boolean,
-  elementType?: MapElementType
-  modified?: boolean,
-  temporary?: boolean
+  bounds: Bounds;
+  container: string;
+  elements: MapElement[];
+  group: string;
+  highscale: LayerHighScale;
+  lowscale: LayerLowScale;
+  name: string;
+  uid: string;
+  index?: any;
+  version: any;
+  visible?: boolean;
+  elementType?: MapElementType;
+  modified?: boolean;
+  temporary?: boolean;
 }
 
 /** Максимальный масштаб карты, при котором данный слой будет отрисовываться. */
@@ -190,22 +196,22 @@ type LayerLowScale = number | 'INF';
  * + `right?: number` — правая граница
  * */
 interface Bounds {
-  max: Point,
-  min: Point,
-  top?: number,
-  bottom?: number,
-  left?: number,
-  right?: number,
+  max: Point;
+  min: Point;
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
 }
 
-type MapPoint = {
-  x: number,
-  y: number,
-  name: string,
-  UWID: string,
-  attrTable: Record<string, any>,
-  selected?: boolean,
-};
+interface MapPoint {
+  x: number;
+  y: number;
+  name: string;
+  UWID: string;
+  attrTable: Record<string, any>;
+  selected?: boolean;
+}
 
 /** Масштаб карты. */
 type MapScale = number;
@@ -229,19 +235,19 @@ type MapElementType = 'polyline' | 'label' | 'sign' | 'field';
 /* -- Polyline -- */
 
 interface MapPolyline extends MapElementProto {
-  type: 'polyline',
-  arcs: PolylineArc[],
-  borderstyle: number,
-  borderstyleid?: any,
-  fillbkcolor: string,
-  fillcolor: string,
-  fillname?: any,
-  bordercolor: string,
-  borderwidth: number,
-  legend?: any,
-  style?: PolylineBorderStyle,
-  fillStyle?: CanvasPattern | string,
-  isTrace?: boolean,
+  type: 'polyline';
+  arcs: PolylineArc[];
+  borderstyle: number;
+  borderstyleid?: any;
+  fillbkcolor: string;
+  fillcolor: string;
+  fillname?: any;
+  bordercolor: string;
+  borderwidth: number;
+  legend?: any;
+  style?: PolylineBorderStyle;
+  fillStyle?: CanvasPattern | string;
+  isTrace?: boolean;
 }
 
 /** ### Дуга линии.
@@ -251,8 +257,8 @@ interface MapPolyline extends MapElementProto {
  * { path: [12, 15, 42, 48, 11, 10], closed: false }
  * */
 interface PolylineArc {
-  path: PolylineArcPath,
-  closed: IsArcClosed,
+  path: PolylineArcPath;
+  closed: IsArcClosed;
 }
 
 /** Путь дуги линии. Набор пар координат точек: `[x1, y1, x2, y2, ...]`. */
@@ -262,38 +268,35 @@ type PolylineArcPath = number[];
 type IsArcClosed = boolean;
 
 interface PolylineBorderStyle {
-  guid: {_value: string},
-  name: {_value: string},
-  baseColor?: {_value: string},
-  baseThickness?: {_value: number},
-  Decoration?: BorderStyleDecoration[],
-  StrokeDashArrays?: {StrokeDashArray: StrokeDashArray[]}[],
+  guid: {_value: string};
+  name: {_value: string};
+  baseColor?: {_value: string};
+  baseThickness?: {_value: number};
+  Decoration?: BorderStyleDecoration[];
+  StrokeDashArrays?: {StrokeDashArray: StrokeDashArray[]}[];
 }
 
 interface BorderStyleDecoration {
-  initialInterval: {_value: number},
-  interval: {_value: number},
-  offsetX: {_value: number},
-  offsetY: {_value: number},
-  thickness?: {_value: number}
-  Shape: {
-    Line?: ShapeLine[],
-    Polyline?: any[],
-  }[],
+  initialInterval: {_value: number};
+  interval: {_value: number};
+  offsetX: {_value: number};
+  offsetY: {_value: number};
+  thickness?: {_value: number};
+  Shape: {Line?: ShapeLine[], Polyline?: any[]}[];
 }
 
 interface StrokeDashArray {
-  data: {_value: string},
-  onBase: {_value: boolean},
-  color?: {_value: string},
-  _text: any[]
+  data: {_value: string};
+  onBase: {_value: boolean};
+  color?: {_value: string};
+  _text: any[];
 }
 
 interface ShapeLine {
-  x1: {_value: number},
-  x2: {_value: number},
-  y1: {_value: number},
-  y2: {_value: number},
+  x1: {_value: number};
+  x2: {_value: number};
+  y1: {_value: number};
+  y2: {_value: number};
 }
 
 /* -- Label -- */
@@ -315,18 +318,18 @@ interface ShapeLine {
  * @see MapElementProto
  * */
 interface MapLabel extends MapElementProto {
-  type: 'label',
-  x: number,
-  y: number,
-  xoffset: MapLabelOffset,
-  yoffset: MapLabelOffset,
-  halignment: MapLabelAlignment,
-  valignment: MapLabelAlignment,
-  text: string,
-  color: string,
-  fontname: string,
-  fontsize: number,
-  angle: MapLabelAngle,
+  type: 'label';
+  x: number;
+  y: number;
+  xoffset: MapLabelOffset;
+  yoffset: MapLabelOffset;
+  halignment: MapLabelAlignment;
+  valignment: MapLabelAlignment;
+  text: string;
+  color: string;
+  fontname: string;
+  fontsize: number;
+  angle: MapLabelAngle;
 }
 
 /** ### Выравнивание подписи.
@@ -361,20 +364,20 @@ type MapLabelAngle = number;
  * @see MapElementProto
  * */
 interface MapSign extends MapElementProto {
-  type: 'sign',
-  x: number,
-  y: number,
-  size: number,
-  color: string,
-  fontname: string,
-  symbolcode: number,
-  img: HTMLImageElement,
+  type: 'sign';
+  x: number;
+  y: number;
+  size: number;
+  color: string;
+  fontname: string;
+  symbolcode: number;
+  img: HTMLImageElement;
 }
 
 interface SignImageProto {
-  fontName: string,
-  symbolCode: number,
-  color: string,
+  fontName: string;
+  symbolCode: number;
+  color: string;
 }
 
 /* -- Map Element Prototype -- */
@@ -389,14 +392,15 @@ interface SignImageProto {
  * */
 interface MapElementProto {
   /** Bounding Box элемента (границы). */
-  bounds?: Bounds,
-  attrTable?: any,
+  bounds?: Bounds;
+  /** Аттрибутивная таблица. */
+  attrTable?: any;
   /** Является ли элемент или его часть прозрачной. */
-  transparent?: boolean,
+  transparent?: boolean;
   /** Выбран ли элемент в текущий момент. */
-  selected?: boolean,
+  selected?: boolean;
   /** Редактируется ли элемент в текущий момент. */
-  edited?: boolean,
+  edited?: boolean;
 }
 
 /* -- Field -- */
@@ -413,23 +417,23 @@ interface MapElementProto {
  * @see MapElementProto
  * */
 interface MapField extends MapElementProto {
-  type: 'field',
-  x: number,
-  y: number,
-  sizex: number,
-  sizey: number,
-  stepx: number,
-  stepy: number,
-  palette: MapFieldPalette,
-  sourceRenderDataMatrix: number[][],
+  type: 'field';
+  x: number;
+  y: number;
+  sizex: number;
+  sizey: number;
+  stepx: number;
+  stepy: number;
+  palette: MapFieldPalette;
+  sourceRenderDataMatrix: Matrix;
 }
 
 interface MapFieldPalette {
-  interpolated: '-1' | '0',
-  level: MapFieldPaletteLevel[],
+  interpolated: '-1' | '0';
+  level: MapFieldPaletteLevel[];
 }
 
 interface MapFieldPaletteLevel {
-  color: string,
-  value: number,
+  color: string;
+  value: number;
 }

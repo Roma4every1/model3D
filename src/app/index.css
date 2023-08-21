@@ -44,26 +44,6 @@ html {
   padding: 2px 5px 2px 5px;
 }
 
-.grid-layout-container-true {
-  max-width: 800px;
-}
-
-.grid-layout-container-false {
-  max-width: 400px;
-}
-
-.windowhandler-text {
-  margin: 5px;
-  max-height: 60vh;
-  white-space: pre-wrap;
-}
-
-.windowhandler-stacktrace {
-  margin: 5px;
-  max-height: 60vh;
-  white-space: pre-wrap;
-}
-
 .k-expander-header {
   padding: 4px;
 }
@@ -183,33 +163,6 @@ html {
   height: 20px;
 }
 
-.horizontalHeader {
-  white-space: nowrap;
-}
-
-.horizontalFixed {
-  width: 25px;
-  display: inline-block;
-  vertical-align: middle;
-  margin: 5px;
-  white-space: normal;
-}
-
-.horizontal {
-  width: 85%;
-  display: inline-block;
-  vertical-align: middle;
-  margin: 5px;
-  white-space: normal;
-}
-
-.windowButtonContainer {
-  text-align: center;
-}
-.windowButton {
-  width: 200px;
-}
-
 .treeview {
   font-size: 12px;
 }
@@ -225,20 +178,6 @@ html {
   height: 12px;
 }
 
-.blockheader {
-  width: 100%;
-  align-content: center;
-  display: table-cell;
-  vertical-align: middle;
-}
-
-.blockheadertoolbar {
-  height: 30px;
-  padding: 0;
-  padding-inline: 0;
-  padding-block: 0;
-}
-
 .k-clear-value, .k-combobox .k-input, .k-dropdown-wrap {
   height: 100%;
 }
@@ -250,7 +189,8 @@ html {
   overflow: auto;
 }
 
-.k-textbox, .k-dropdown .k-input, .k-dropdowntree .k-input, .k-datepicker, .k-dateinput, .k-numerictextbox .k-input {
+.k-textbox, .k-dropdown .k-input, .k-dropdowntree .k-input,
+.k-datepicker, .k-dateinput, .k-numerictextbox .k-input {
   height: 20px;
 }
 

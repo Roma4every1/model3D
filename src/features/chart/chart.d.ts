@@ -1,7 +1,7 @@
 /** Начальные настройки графика (запрос `/getFormSettings`). */
 interface ChartFormSettings {
   /** Настройки внешнего вида. */
-  seriesSettings: ChartSeriesSettings,
+  seriesSettings: ChartSeriesSettings;
 }
 
 /** Состояние графиков. */
@@ -15,13 +15,13 @@ type ChartStates = Record<FormID, ChartState>;
  * */
 interface ChartState {
   /** Нужно ли показывать окно со значениями. */
-  tooltip: boolean,
+  tooltip: boolean;
   /** Шаг по времени. */
-  dateStep: ChartDateStep,
+  dateStep: ChartDateStep;
   /** Настройки внешнего вида. */
-  seriesSettings: ChartSeriesSettings,
+  seriesSettings: ChartSeriesSettings;
   /** Функция для сохранения графика в png */
-  downloadChart?: () => Promise<string>
+  downloadChart?: () => Promise<string>;
 }
 
 /** Шаг по времени на графике. */
@@ -34,48 +34,48 @@ type ChartSeriesSettings = Record<ChannelName, ChannelSeriesSettings>;
 
 /** Настройки для отображения каждого канала. */
 interface ChannelSeriesSettings {
-  seriesSettings: SeriesSettings,
-  axesSettings: AxesSettings,
-  dateStep: string,
-  gridStep: string,
-  labelInterval: number,
-  tickOrigin: string,
-  xAxisFieldName: string,
-  xAxisType: string,
+  seriesSettings: SeriesSettings;
+  axesSettings: AxesSettings;
+  dateStep: string;
+  gridStep: string;
+  labelInterval: number;
+  tickOrigin: string;
+  xAxisFieldName: string;
+  xAxisType: string;
 }
 
 type SeriesSettings = Record<string, SeriesSettingsItem>;
 type AxesSettings = Record<string, AxisSettings>;
 
 interface SeriesSettingsItem {
-  yAxisId: string,
-  typeCode: ChartTypeCode,
-  color: string,
-  showLabels: boolean,
-  showLine: boolean,
-  showPoint: boolean,
-  pointFigureIndex: string,
-  lineStyleIndex: string,
-  sizeMultiplier: number,
-  zIndex: number,
+  yAxisId: string;
+  typeCode: ChartTypeCode;
+  color: string;
+  showLabels: boolean;
+  showLine: boolean;
+  showPoint: boolean;
+  pointFigureIndex: string;
+  lineStyleIndex: string;
+  sizeMultiplier: number;
+  zIndex: number;
 }
 
 /** Настройки оси графика. */
 interface AxisSettings {
   /** Расположение оси слева или справа. */
-  location: string,
+  location: string;
   /** Цвет оси. */
-  color: string,
+  color: string;
   /** Минимальное значение. */
-  min: number | null,
+  min: number | null;
   /** Максимальное значение. */
-  max: number | null,
+  max: number | null;
   /** Количество засечек. */
-  tickCount: number,
+  tickCount: number;
   /** Прямое или обратное направление оси. */
-  inverse: boolean,
+  inverse: boolean;
   /** Подпись к оси. */
-  displayName: string,
+  displayName: string;
 }
 
 /** ## Типы отображения значений на графике.

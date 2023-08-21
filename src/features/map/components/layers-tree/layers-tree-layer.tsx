@@ -1,19 +1,15 @@
-import { MouseEvent, useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { InputChangeEvent, Input, Checkbox } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
-import { Popup } from '@progress/kendo-react-popup';
-import { MenuSelectEvent, Menu, MenuItem } from '@progress/kendo-react-layout';
-import { LayerStatisticsWindow } from './layer-stat-window';
-import { setOpenedWindow } from 'entities/windows';
 import { setActiveLayer } from '../../store/map.actions';
 
 
 interface LayersTreeLayerProps {
-  layer: MapLayer,
-  mapState: MapState,
-  formID: FormID,
+  layer: MapLayer;
+  mapState: MapState;
+  formID: FormID;
 }
 
 
@@ -33,10 +29,6 @@ export const LayersTreeLayer = ({layer, mapState, formID}: LayersTreeLayerProps)
 
   const [selected, setSelected] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [offset, setOffset] = useState({ left: 0, top: 0 });
-
-  const menuWrapperRef = useRef(null);
 
   // обновление активного слоя
   useEffect(() => {
@@ -66,9 +58,6 @@ export const LayersTreeLayer = ({layer, mapState, formID}: LayersTreeLayerProps)
   };
   const setInfinity = () => {
     setHighScale(t('base.infinitySign'))
-  };
-  const onPopupOpen = () => {
-    menuWrapperRef.current.querySelector("[tabindex]").focus()
   };
 
   const onChecked = () => {
@@ -114,35 +103,14 @@ export const LayersTreeLayer = ({layer, mapState, formID}: LayersTreeLayerProps)
     utils.updateCanvas();
   };
 
-  const onMenuSelect = (e: MenuSelectEvent) => {
-    if (e.item.text === t('base.statistics')) {
-      const window = <LayerStatisticsWindow header={layer.name} key={'layerStatWindow'} layer={layer}/>;
-      dispatch(setOpenedWindow('layerStatWindow', true, window));
-    }
-    setMenuOpen(false);
-  };
-
-  const onContextMenu = (e: MouseEvent) => {
-    setOffset({ left: e.clientX, top: e.clientY });
-    setMenuOpen(true);
-    e.preventDefault();
-  };
-
   return (
     <div className={'map-layer'}>
-      <div className={'map-layer-header' + (selected ? ' selected' : '')} onContextMenu={onContextMenu}>
+      <div className={'map-layer-header' + (selected ? ' selected' : '')}>
         <Checkbox value={checked} onChange={onChecked} />
         <span onClick={setSelectedState}>{layer.name}</span>
         <button className={'k-button k-button-clear'} onClick={setExpandedState} title={t('map.layerVisibilityControl')}>
           <span className={'k-icon k-i-gear'}/>
         </button>
-        <Popup popupClass={'popup-content'} offset={offset} show={menuOpen} onOpen={onPopupOpen}>
-          <div ref={menuWrapperRef} onBlur={() => setMenuOpen(false)}>
-            <Menu vertical={true} style={{display: 'inline-block'}} onSelect={onMenuSelect}>
-              <MenuItem text={t('base.statistics')} />
-            </Menu>
-          </div>
-        </Popup>
       </div>
       {expanded &&
         <div className={'map-layer-toolbar'}>

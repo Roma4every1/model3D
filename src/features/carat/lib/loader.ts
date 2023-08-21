@@ -1,6 +1,6 @@
 import { cellsToRecords } from 'entities/channels';
 import { channelDataDictToRecords } from './channels';
-import { channelRowToString } from 'entities/parameters/lib/table-row';
+import { serializeChannelRecord } from 'entities/parameters/lib/table-row';
 import { channelsAPI } from 'entities/channels/lib/channels.api';
 
 
@@ -42,14 +42,16 @@ export class CaratLoader implements ICaratLoader {
       curveIDs.push(...newCurveIDs);
     }
 
-    if (isTrace && this.inclinometryChannel) {
+    if (this.inclinometryChannel) {
       const inclinometryWellData = channelData[this.inclinometryChannel.name];
       if (inclinometryWellData) {
-        const mapper = (row) => this.loadInclinometry(row, inclinometryWellData.columns);
-        const recordList = await Promise.all(inclinometryWellData.rows.map(mapper));
+        const inclinometryInfo = this.inclinometryChannel.inclinometry;
+        const properties = this.inclinometryChannel.properties;
+        const mapper = (record) => this.loadInclinometry(record, properties);
+        const recordList = await Promise.all(cellsToRecords(inclinometryWellData).map(mapper));
 
-        const wellColumnName = this.inclinometryChannel.inclinometry.info.well.name;
-        const inclinometryDataName = this.inclinometryChannel.inclinometry.name;
+        const inclinometryDataName = inclinometryInfo.name;
+        const wellColumnName = inclinometryInfo.info.well.name;
 
         for (const records of recordList) {
           if (records.length === 0) continue;
@@ -89,9 +91,9 @@ export class CaratLoader implements ICaratLoader {
     return [dict, curveIDs] as [ChannelRecordDict, CaratCurveID[]];
   }
 
-  private async loadInclinometry(row: ChannelRow, columns: ChannelColumn[]): Promise<ChannelRecord[]> {
+  private async loadInclinometry(record: ChannelRecord, properties: ChannelProperty[]): Promise<ChannelRecord[]> {
     const channelName = this.inclinometryChannel.inclinometry.name;
-    const value = channelRowToString(row, columns);
+    const value = serializeChannelRecord(record, properties);
     const parameters = [{id: 'currentWellGeom', type: 'tableRow', value} as Parameter];
     const query = {order: []} as any;
 

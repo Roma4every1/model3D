@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { round } from 'shared/lib';
-import { setOpenedWindow } from 'entities/windows';
-import { Window } from '@progress/kendo-react-dialogs';
 import { Button } from '@progress/kendo-react-buttons';
 import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
 import { DateRangePicker, DateRangePickerChangeEvent } from '@progress/kendo-react-dateinputs';
@@ -17,15 +15,16 @@ import { loadCaratCurves } from '../../store/carat.thunks';
 
 
 interface CurveSelectionWindowProps {
-  id: FormID,
+  id: FormID;
+  onClose: () => void;
 }
 interface CurveFiltersProps {
-  manager: CurveManager,
-  signal: () => void
+  manager: CurveManager;
+  signal: () => void;
 }
 
 
-export const CurveSelectionWindow = ({id}: CurveSelectionWindowProps) => {
+export const CurveSelectionWindow = ({id, onClose}: CurveSelectionWindowProps) => {
   const dispatch = useDispatch();
   const state: CaratState = useSelector(caratStateSelector.bind(id));
 
@@ -65,44 +64,35 @@ export const CurveSelectionWindow = ({id}: CurveSelectionWindowProps) => {
     signal();
   };
 
-  const onClose = () => {
-    dispatch(setOpenedWindow('curve-selection', false, null));
-  };
-
   const onSubmit = () => {
     onClose();
     dispatch(loadCaratCurves(id, curveGroup));
   };
 
   return (
-    <Window
-      title={'Выбор каротажных кривых'} maximizeButton={() => null}
-      width={720} height={480} resizable={false} style={{zIndex: 99}} onClose={onClose}
-    >
-      <div className={'curve-selection-window'}>
-        <div>
-          <section>
-            <h5>Кривые</h5>
-            {tree.length
-              ? <TreeView
-                  data={tree} childrenField={'children'} item={CurveTreeItem}
-                  expandIcons={true} onExpandChange={onExpandChange}
-                  checkboxes={true} onCheckChange={onCheckChange}
-                 />
-              : <TextInfo text={'carat.no-data'}/>
-            }
-          </section>
-          <section>
-            <h5>Фильтры</h5>
-            <CurveFilters manager={curveManager} signal={signal}/>
-          </section>
-        </div>
-        <div>
-          <Button onClick={onSetDefault}>По умолчанию</Button>
-          <Button style={{width: 50}} onClick={onSubmit}>Ок</Button>
-        </div>
+    <div className={'curve-selection-window'}>
+      <div>
+        <section>
+          <h5>Кривые</h5>
+          {tree.length
+            ? <TreeView
+                data={tree} childrenField={'children'} item={CurveTreeItem}
+                expandIcons={true} onExpandChange={onExpandChange}
+                checkboxes={true} onCheckChange={onCheckChange}
+               />
+            : <TextInfo text={'carat.no-data'}/>
+          }
+        </section>
+        <section>
+          <h5>Фильтры</h5>
+          <CurveFilters manager={curveManager} signal={signal}/>
+        </section>
       </div>
-    </Window>
+      <div>
+        <Button onClick={onSetDefault}>По умолчанию</Button>
+        <Button style={{width: 50}} onClick={onSubmit}>Ок</Button>
+      </div>
+    </div>
   );
 };
 

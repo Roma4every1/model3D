@@ -8,7 +8,7 @@ import { stateNeedFetch, stateNotLoaded, sessionFetchStateSelector } from 'entit
 
 import { Dock } from './dock';
 import { LoadingStatus } from './loading-status';
-import { WindowHandler } from 'entities/windows/window-handler';
+import { WindowHandler } from 'entities/window/components/windows';
 import { Notifications } from 'entities/notifications';
 
 

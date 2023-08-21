@@ -1,25 +1,34 @@
 import { TFunction } from 'react-i18next';
 import { EditPanelItemProps } from '../../lib/types';
+import { DialogActionsBar } from '@progress/kendo-react-dialogs';
+import { Button } from '@progress/kendo-react-buttons';
 import { BigButton } from 'shared/ui';
 import { channelsAPI } from 'entities/channels/lib/channels.api';
-import { setWindowInfo, setWindowWarning } from 'entities/windows';
+import { showWarningMessage, showDialog, closeWindow } from 'entities/window';
 import statisticsIcon from 'assets/images/dataset/statistics.png';
 
+
+interface StatDialogProps {
+  title: string;
+  stat: ColumnStat;
+  t: TFunction;
+  onClose: () => void;
+}
 
 /** Статистика по колонке из таблицы в БД. */
 interface ColumnStat {
   /** Минимальное значение. */
-  MIN?: string,
+  MIN?: string;
   /** Максимальное значение. */
-  MAX?: string,
+  MAX?: string;
   /** Среднее значение. */
-  AVG?: string,
+  AVG?: string;
   /** Сумма всех значений. */
-  SUM?: string,
+  SUM?: string;
   /** Количество значений. */
-  COUNT?: string,
+  COUNT?: string;
   /** Количество уникальных значений. */
-  UNIQ?: string,
+  UNIQ?: string;
 }
 
 
@@ -29,12 +38,13 @@ export const ColumnStatistics = ({state, dispatch, t}: EditPanelItemProps) => {
   const getStat = async () => {
     const columnState = state.columns[activeColumnID];
     const { ok, data } = await channelsAPI.getStatistics(state.tableID, columnState.colName);
-    if (!ok) { dispatch(setWindowWarning(data)); return; }
+    if (!ok) { dispatch(showWarningMessage(data)); return; }
     if (typeof data !== 'object' || !data.Values) return;
 
-    const info = <ColumnStatisticsList stat={data.Values} t={t}/>;
-    const windowTitle = t('table.stat.window-title', {column: columnState.title});
-    dispatch(setWindowInfo(info, null, windowTitle));
+    const title = t('table.stat.window-title', {column: columnState.title});
+    const onClose = () => dispatch(closeWindow('stat'));
+    const content = <StatDialogContent title={title} stat={data.Values} t={t} onClose={onClose}/>;
+    dispatch(showDialog('stat', {title, width: 300, onClose}, content))
   };
 
   return (
@@ -45,15 +55,20 @@ export const ColumnStatistics = ({state, dispatch, t}: EditPanelItemProps) => {
   );
 };
 
-const ColumnStatisticsList = ({stat, t}: {stat: ColumnStat, t: TFunction}) => {
+const StatDialogContent = ({stat, t, onClose}: StatDialogProps) => {
   return (
-    <ul>
-      {stat.MIN && <li>{t('table.stat.min', {value: stat.MIN})}</li>}
-      {stat.MAX && <li>{t('table.stat.max', {value: stat.MAX})}</li>}
-      {stat.AVG && <li>{t('table.stat.avg', {value: stat.AVG})}</li>}
-      {stat.SUM && <li>{t('table.stat.sum', {value: stat.SUM})}</li>}
-      {stat.COUNT && <li>{t('table.stat.count', {value: stat.COUNT})}</li>}
-      {stat.UNIQ && <li>{t('table.stat.unique', {value: stat.UNIQ})}</li>}
-    </ul>
+    <>
+      <ul style={{margin: 0, paddingLeft: '2em'}}>
+        {stat.MIN && <li>{t('table.stat.min', {value: stat.MIN})}</li>}
+        {stat.MAX && <li>{t('table.stat.max', {value: stat.MAX})}</li>}
+        {stat.AVG && <li>{t('table.stat.avg', {value: stat.AVG})}</li>}
+        {stat.SUM && <li>{t('table.stat.sum', {value: stat.SUM})}</li>}
+        {stat.COUNT && <li>{t('table.stat.count', {value: stat.COUNT})}</li>}
+        {stat.UNIQ && <li>{t('table.stat.unique', {value: stat.UNIQ})}</li>}
+      </ul>
+      <DialogActionsBar>
+        <Button onClick={onClose}>{t('base.ok')}</Button>
+      </DialogActionsBar>
+    </>
   );
 };

@@ -1,29 +1,25 @@
-import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@progress/kendo-react-buttons';
-import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
-import { setOpenedWindow } from 'entities/windows';
+import { DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { clearMapSelect } from '../../../store/map.actions';
 
 
 interface DeleteElementWindowProps {
-  mapState: MapState,
-  formID: FormID,
+  mapState: MapState;
+  formID: FormID;
+  onClose: () => void;
 }
 
-export const DeleteElementWindow = ({mapState, formID}: DeleteElementWindowProps) => {
+
+export const DeleteElementWindow = ({mapState, formID, onClose}: DeleteElementWindowProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
   const selectedElement = mapState.element;
   const modifiedLayer = mapState.mapData?.layers?.find(l => l.elements?.includes(selectedElement));
 
-  const closeDeleteWindow = useCallback(() => {
-    dispatch(setOpenedWindow('mapDeleteWindow', false, null));
-  }, [dispatch]);
-
-  const handleDelete = useCallback(() => {
+  const deleteElement = () => {
     if (!mapState || !selectedElement || !mapState.utils.updateCanvas) return;
 
     let index = modifiedLayer.elements.indexOf(selectedElement);
@@ -33,32 +29,20 @@ export const DeleteElementWindow = ({mapState, formID}: DeleteElementWindowProps
 
     dispatch(clearMapSelect(formID));
     mapState.utils.updateCanvas();
-    closeDeleteWindow();
-  }, [mapState, selectedElement, modifiedLayer, closeDeleteWindow, dispatch, formID]);
+    onClose();
+  };
 
   return (
-    <Dialog
-      key={'deleteMapElementWindow'}
-      title={t('map.delete-element')}
-      onClose={closeDeleteWindow}
-    >
+    <>
       <div>{t('map.areYouSureToDelete')}</div>
       <ul style={{paddingLeft: '16px'}}>
         <li><b>Подслой: </b><span>{modifiedLayer?.name}</span></li>
         <li><b>Тип элемента: </b><span>{t('map.' + selectedElement.type)}</span></li>
       </ul>
       <DialogActionsBar>
-        <div className={'windowButtonContainer'}>
-          <Button className={'windowButton'} onClick={handleDelete}>
-            {t('base.yes')}
-          </Button>
-        </div>
-        <div className={'windowButtonContainer'}>
-          <Button className={'windowButton'} onClick={closeDeleteWindow}>
-            {t('base.no')}
-          </Button>
-        </div>
+        <Button onClick={deleteElement}>{t('base.yes')}</Button>
+        <Button onClick={onClose}>{t('base.no')}</Button>
       </DialogActionsBar>
-    </Dialog>
+    </>
   );
 };

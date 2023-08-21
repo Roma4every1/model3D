@@ -29,12 +29,18 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
         const inclinometryDataChannel = property?.secondLevelChannelName;
 
         if (inclinometryDataChannel) {
-          const info = createColumnInfo(channelDict[inclinometryDataChannel], inclinometryCriterion);
-          attachedChannel.inclinometry = {name: inclinometryDataChannel, info, dict: null};
+          const n = attachedChannel.info.well.name;
+          const p = channel.info.properties.find(p => p.fromColumn === n);
+          if (!attachedChannel.properties.includes(p)) attachedChannel.properties.push(p);
+
+          attachedChannel.inclinometry = {
+            name: inclinometryDataChannel,
+            info: createColumnInfo(channelDict[inclinometryDataChannel], inclinometryCriterion),
+            dict: null,
+          };
 
           inclinometryChannel = attachedChannel;
           usedChannels.add(attachedChannel.name);
-          usedChannels.add(inclinometryDataChannel);
           attachments.push(attachedChannel.inclinometry as any);
         } else {
           delete attachedChannel.type;

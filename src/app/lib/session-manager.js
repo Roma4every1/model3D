@@ -10,7 +10,7 @@ import { clearParams } from '../../entities/parameters';
 import { clearChannels } from '../../entities/channels';
 import { clearReports } from '../../entities/reports';
 import { clearTables } from '../../features/table/store/table.actions';
-import { setWindowWarning } from '../../entities/windows';
+import { showWarningMessage } from '../../entities/window';
 import { showNotification } from "../../entities/notifications";
 
 
@@ -22,7 +22,7 @@ export function createSessionManager(store) {
     const res = await appAPI.extendSession();
     if (res.ok && res.data) return;
     clearInterval(timerID);
-    store.dispatch(setWindowWarning(t('messages.session-lost')));
+    store.dispatch(showWarningMessage(t('messages.session-lost')));
   };
 
   const save = () => {
@@ -51,7 +51,7 @@ export function createSessionManager(store) {
       timerID = setInterval(extendSession, 2 * 60 * 1000);
       API.setSessionID(res.data);
     } else {
-      store.dispatch(setWindowWarning(res.data));
+      store.dispatch(showWarningMessage(res.data));
     }
     return res;
   };
@@ -61,7 +61,7 @@ export function createSessionManager(store) {
     if (res.ok && res.data) {
       showNotification(t('messages.session-save-ok'))(store.dispatch);
     } else {
-      store.dispatch(setWindowWarning(t('messages.session-save-error')));
+      store.dispatch(showWarningMessage(t('messages.session-save-error')));
     }
   };
 

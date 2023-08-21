@@ -29,7 +29,7 @@ interface WState {
   /** Состояние отчётов и SQL-программ. */
   reports: Reports;
   /** Окна и диалоги. */
-  windowData: any;
+  windows: WindowStates;
   /** Уведомления. */
   notifications: Notifications;
   /** Состояние серверных запросов. */

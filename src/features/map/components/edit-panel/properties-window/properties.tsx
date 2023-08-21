@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import { MapModes } from '../../../lib/enums';
-import { windowsSelector, setOpenedWindow } from 'entities/windows';
+import { updateWindow, closeWindow } from 'entities/window';
 import { mapStateSelector } from '../../../store/map.selectors';
 
 import {
@@ -17,7 +17,6 @@ import {
   rollbackField, rollbackLabel, rollbackPolyline,
 } from './properties-utils';
 
-import { Window } from '@progress/kendo-react-dialogs';
 import { PolylineProperties } from './polyline/polyline-properties';
 import { LabelProperties } from './label/label-properties';
 import { FieldProperties } from './field/field-properties';
@@ -30,30 +29,25 @@ const windowSizeDict: Record<'polyline' | 'label' | 'field', [number, number]> =
 };
 
 interface PropertiesWindowProps {
-  formID: FormID,
-  setPropertiesWindowOpen?,
+  formID: FormID;
+  setOpen?;
 }
 
-export const PropertiesWindow = ({formID, setPropertiesWindowOpen}: PropertiesWindowProps) => {
+export const PropertiesWindow = ({formID, setOpen}: PropertiesWindowProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const windowName = 'mapPropertiesWindow';
-  const windows = useSelector(windowsSelector);
+  const windowID = 'mapPropertiesWindow';
   const mapState: MapState = useSelector(mapStateSelector.bind(formID))
   const { element, utils, legends, mode, isElementCreating } = mapState;
 
-  const windowRef = useRef(null);
-
   useEffect(() => {
-    setPropertiesWindowOpen(true);
-    return () => setPropertiesWindowOpen(false);
+    setOpen(true);
+    return () => setOpen(false);
   }, []); // eslint-disable-line
 
   const close = useCallback(() => {
-    let position;
-    if (windowRef.current) position = {top: windowRef.current.top, left: windowRef.current.left};
-    dispatch(setOpenedWindow(windowName, false, null, position));
+    dispatch(closeWindow(windowID));
   }, [dispatch]);
 
   const update = useCallback(() => {
@@ -91,7 +85,7 @@ export const PropertiesWindow = ({formID, setPropertiesWindowOpen}: PropertiesWi
       rollbackField(element, init);
     }
     update(); close();
-  }, [element, mode, init, update, close, setPropertiesWindowOpen, isElementCreating]); // eslint-disable-line
+  }, [element, mode, init, update, close, setOpen, isElementCreating]); // eslint-disable-line
 
   const acceptCreating = () => {
     if (!element) return;
@@ -137,22 +131,16 @@ export const PropertiesWindow = ({formID, setPropertiesWindowOpen}: PropertiesWi
     if (element.type === 'label' && !element.edited) { element.edited = true; update(); }
   }, [element, initElement, update, cancel]);
 
-  const title = t('map.properties-edit', {elementType: t('map.' + element.type)});
-  const [width, height] = windowSizeDict[element.type] ?? [];
+  useEffect(() => {
+    const title = t('map.properties-edit', {elementType: t('map.' + element.type)});
+    const [width, height] = windowSizeDict[element.type] ?? [];
+    dispatch(updateWindow(windowID, {title, width, height}))
+  }, [element.type, t, dispatch]);
 
   return (
     <LocalizationProvider language={'ru-RU'}>
       <IntlProvider locale={'ru'}>
-        <Window
-          ref={windowRef} className={'propertiesWindow'}
-          resizable={false} title={title}
-          width={width} height={height}
-          initialLeft={windows[windowName]?.position?.left}
-          initialTop={windows[windowName]?.position?.top}
-          style={{zIndex: 99}} onClose={cancel}
-        >
-          <ElementProperties/>
-        </Window>
+        <ElementProperties/>
       </IntlProvider>
     </LocalizationProvider>
   );

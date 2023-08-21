@@ -6,7 +6,7 @@ import { Grid, GridCellProps } from '@progress/kendo-react-grid';
 import { GridColumnResizeEvent, GridPageChangeEvent } from '@progress/kendo-react-grid';
 import { GridSelectionChangeEvent, getSelectedState } from '@progress/kendo-react-grid';
 import { compareObjects } from 'shared/lib';
-import { setOpenedWindow } from 'entities/windows';
+import { showWindow, closeWindow } from 'entities/window';
 import { updateMaxRowCount } from 'entities/channels';
 
 import { ToolbarActions, CellActions, SaveTableMetadata, SetRecords } from '../../lib/types';
@@ -21,6 +21,7 @@ import { CustomCell } from '../cells/custom-cell';
 import { TableToolbar } from '../toolbar/table-toolbar';
 import { ValidationDialog } from '../dialogs/validation';
 import { DeleteRecordsDialog } from '../dialogs/delete-records';
+import { useTranslation } from 'react-i18next';
 
 
 interface TableGridProps {
@@ -35,6 +36,8 @@ interface TableGridProps {
 
 export const TableGrid = ({id, state, query, records, setRecords, children}: TableGridProps) => {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
+
   const [skip, setSkip] = useState(0);
   const pageSize = 50;
 
@@ -85,11 +88,17 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
 
   const saveRecord = (record: TableRecord) => {
     if (!edit.isNew) {
-      const rowErrors = validateRecord(record, columnsState);
-      if (rowErrors.length) {
+      const errors = validateRecord(record, columnsState);
+      if (errors.length) {
         const windowID = 'record-validation';
-        const window = <ValidationDialog key={windowID} errors={rowErrors} columns={columnsState}/>;
-        dispatch(setOpenedWindow(windowID, true, window));
+        const onClose = () => dispatch(closeWindow(windowID));
+
+        const windowProps = {
+          title: t('table.validation-dialog.header'),
+          width: 500, height: 250, resizable: false, onClose,
+        };
+        const content = <ValidationDialog errors={errors} columns={columnsState} t={t} onClose={onClose}/>;
+        dispatch(showWindow(windowID, windowProps, content));
         return false;
       }
     }
@@ -104,8 +113,14 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
 
   const deleteRecords = () => {
     const windowID = 'delete-records';
-    const window = <DeleteRecordsDialog key={windowID} id={id} indexes={selectedRecords}/>;
-    dispatch(setOpenedWindow(windowID, true, window));
+    const onClose = () => dispatch(closeWindow(windowID));
+
+    const windowProps = {
+      title: t('table.delete-dialog.header'),
+      height: 180, resizable: false, onClose,
+    };
+    const content = <DeleteRecordsDialog id={id} indexes={selectedRecords} t={t} onClose={onClose}/>;
+    dispatch(showWindow(windowID, windowProps, content));
   };
 
   const startEdit = (columnID: string, recordID: TableRecordID) => {

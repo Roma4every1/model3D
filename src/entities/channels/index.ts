@@ -3,7 +3,7 @@ export { createLookupList, createLookupTree } from './lib/lookup';
 
 export {
   getExternalChannels, getLinkedChannels, getLookupChannels,
-  createColumnInfo, findColumnIndexes, cellsToRecords,
+  createColumnInfo, cellsToRecords,
 } from './lib/common';
 
 export * from './store/channels.actions';

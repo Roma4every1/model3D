@@ -1,19 +1,20 @@
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { setOpenedWindow } from '../../../windows';
+import { showWindow, closeWindow } from '../../../window';
 import { deleteTrace } from '../../store/objects.thunks';
 
 import { BigButton } from 'shared/ui';
 import { Button } from '@progress/kendo-react-buttons';
-import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
+import { DialogActionsBar } from '@progress/kendo-react-dialogs';
 import deleteTraceIcon from 'assets/images/trace/detele-trace.png';
 
 
 interface DeleteTraceProps {
-  trace: TraceState,
+  trace: TraceState;
 }
 interface DeleteTraceWindowProps {
-  model: TraceModel,
+  model: TraceModel;
+  onClose: () => void;
 }
 
 
@@ -22,8 +23,11 @@ export const DeleteTrace = ({trace}: DeleteTraceProps) => {
   const dispatch = useDispatch();
 
   const openDialog = () => {
-    const window = <DeleteTraceDialog key={'trace-delete-window'} model={trace.model}/>;
-    dispatch(setOpenedWindow('trace-delete-window', true, window));
+    const windowID = 'trace-delete-window';
+    const onClose = () => dispatch(closeWindow(windowID));
+    const dialogProps = {title: t('trace.delete-dialog'), onClose};
+    const content = <DeleteTraceDialog model={trace.model} onClose={onClose}/>;
+    dispatch(showWindow(windowID, dialogProps, content));
   };
 
   return (
@@ -34,13 +38,9 @@ export const DeleteTrace = ({trace}: DeleteTraceProps) => {
   );
 };
 
-const DeleteTraceDialog = ({model}: DeleteTraceWindowProps) => {
+const DeleteTraceDialog = ({model, onClose}: DeleteTraceWindowProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-
-  const onClose = () => {
-    dispatch(setOpenedWindow('trace-delete-window', false, null));
-  };
 
   const onApply = () => {
     dispatch(deleteTrace());
@@ -48,16 +48,16 @@ const DeleteTraceDialog = ({model}: DeleteTraceWindowProps) => {
   };
 
   return (
-    <Dialog title={t('trace.delete-dialog')} onClose={onClose}>
+    <>
       <div>{t('trace.delete-dialog-label')}</div>
       <ul style={{margin: 0, padding: '0.5em 1.5em'}}>
         <li>Название: <b>{model.name}</b></li>
         <li>Узлов: <b>{model.nodes.length}</b></li>
       </ul>
       <DialogActionsBar>
-        <Button className={'windowButton'} onClick={onApply}>{t('base.yes')}</Button>
-        <Button className={'windowButton'} onClick={onClose}>{t('base.no')}</Button>
+        <Button onClick={onApply}>{t('base.yes')}</Button>
+        <Button onClick={onClose}>{t('base.no')}</Button>
       </DialogActionsBar>
-    </Dialog>
+    </>
   );
 };

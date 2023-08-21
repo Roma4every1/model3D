@@ -22,12 +22,7 @@ export async function fillChannel(channel: Channel, paramDict: ParamDict) {
 
   const columns = data?.columns;
   const info = channel.info;
-
-  if (columns && !info.columnApplied) {
-    info.columnApplied = true;
-    if (info.columns) findColumnIndexes(columns, info.columns);
-    findColumnIndexes(columns, info.lookupColumns);
-  }
+  if (columns && !info.columnApplied) findColumnIndexes(columns, info);
 }
 
 
@@ -45,7 +40,11 @@ async function createChannel(name: ChannelName): Promise<[ChannelName, Channel]>
   const properties = info.properties;
 
   for (const property of properties) {
-    if (!property.name) property.name = property.fromColumn;
+    if (property.name) {
+      property.name = property.name.toUpperCase();
+    } else {
+      property.name = property.fromColumn?.toUpperCase();
+    }
   }
   info.lookupChannels = createLookupChannels(properties);
   info.lookupColumns = createLookupColumnNames(properties);

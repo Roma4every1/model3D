@@ -11,9 +11,9 @@ type ParameterType = 'bool' | 'integer' | 'integerArray' | 'string' | 'stringArr
 /** Группа параметров. */
 interface ParameterGroup {
   /** ID который содержат параметры в поле `group`. */
-  code: string,
+  code: string;
   /** Название группы. */
-  displayName: DisplayName,
+  displayName: DisplayName;
 }
 
 /** Параметр формы. */
@@ -21,26 +21,33 @@ type Parameter = ParamBool | ParamInteger | ParamIntegerArray | ParamString |
   ParamStringArray | ParamDouble | ParamDoubleInterval | ParamDate | ParamDateInterval |
   ParamTableRow | ParamTableCell | ParamCellsArray;
 
-/** Необходимые свойства параметра для получения данных канала. */
-type SerializedParameter = {
-  id: ParameterID,
-  type: ParameterType | 'sortOrder',
-  value: string | null
-};
+/** Необходимые свойства параметра для получения данных канала.
+ * + `id`: {@link ParameterID}
+ * + `type`: {@link ParameterType}
+ * + `value: string`
+ * */
+interface SerializedParameter {
+  /** ID параметра. */
+  id: ParameterID;
+  /** Тип параметра. */
+  type: ParameterType | 'sortOrder';
+  /** Сериализованное значение параметра. */
+  value: string | null;
+}
 
 interface ParameterTypeMap {
-  'bool': ParamBool,
-  'integer': ParamInteger,
-  'integerArray': ParamIntegerArray,
-  'string': ParamString,
-  'stringArray': ParamStringArray,
-  'double': ParamDouble,
-  'doubleInterval': ParamDoubleInterval,
-  'date': ParamDate,
-  'dateInterval': ParamDateInterval,
-  'tableRow': ParamTableRow,
-  'tableCell': ParamTableCell,
-  'tableCellsArray': ParamCellsArray,
+  'bool': ParamBool;
+  'integer': ParamInteger;
+  'integerArray': ParamIntegerArray;
+  'string': ParamString;
+  'stringArray': ParamStringArray;
+  'double': ParamDouble;
+  'doubleInterval': ParamDoubleInterval;
+  'date': ParamDate;
+  'dateInterval': ParamDateInterval;
+  'tableRow': ParamTableRow;
+  'tableCell': ParamTableCell;
+  'tableCellsArray': ParamCellsArray;
 }
 
 /** ### Параметр, хранящий булево значение.
@@ -152,26 +159,26 @@ type ParamTableRow = FormParamProto<'tableRow', ParamValueTableRow>;
 type ParamValueTableRow = string;
 
 interface FormParamProto<Type extends ParameterType, Value> {
-  id: ParameterID,
-  type: Type,
-  value: Value,
-  canBeNull?: boolean,
-  displayName?: string,
-  editorType?: ParameterEditorType,
-  editorDisplayOrder?: Order,
+  id: ParameterID;
+  type: Type;
+  value: Value;
+  canBeNull?: boolean;
+  displayName?: string;
+  editorType?: ParameterEditorType;
+  editorDisplayOrder?: number;
 
   /** Параметры, смена значений которых приводит к сбросу значения. */
-  dependsOn?: ParameterID[],
+  dependsOn?: ParameterID[];
   /** Каналы, которые зависят от данного параметра. */
-  relatedChannels?: ChannelName[],
+  relatedChannels?: ChannelName[];
   /** Каналы отчётов, которые зависят от данного параметра. */
-  relatedReportChannels?: RelatedReportChannels[],
+  relatedReportChannels?: RelatedReportChannels[];
   /** Программы, видимость которых зависят от данного параметра. */
-  relatedReports?: ReportID[],
+  relatedReports?: ReportID[];
 
-  externalChannelName: ChannelName,
-  showNullValue: boolean,
-  nullDisplayValue: string,
+  externalChannelName: ChannelName;
+  showNullValue: boolean;
+  nullDisplayValue: string;
 }
 
 /** Тип редактора для данного параметра. */

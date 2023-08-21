@@ -1,10 +1,8 @@
 import { Dispatch } from 'redux';
-import { t } from 'shared/locales';
 import { reportsAPI } from './reports.api';
 import { setOperationStatus } from '../store/reports.actions';
 import { fillParamValues } from 'entities/parameters';
 import { updateTables, fillChannels } from '../../channels';
-import { setWindowInfo } from '../../windows';
 
 
 export function watchReport(report: ReportModel, operationID: OperationID, dispatch: Dispatch<any>) {
@@ -14,12 +12,6 @@ export function watchReport(report: ReportModel, operationID: OperationID, dispa
 
     const modifiedTables = data?.report?.ModifiedTables?.ModifiedTables ?? [];
     if (modifiedTables.length) dispatch(updateTables(modifiedTables));
-
-    if (data?.reportLog && report) {
-      const text = data.reportLog;
-      const fileName = report.displayName + '.log';
-      dispatch(setWindowInfo(text, null, t('report.result'), fileName));
-    }
 
     dispatch(setOperationStatus(convertOperationStatus(data.report)));
     if (data.isReady === false) setTimeout(tick, 1000);

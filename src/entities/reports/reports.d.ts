@@ -4,9 +4,9 @@
  * */
 interface Reports {
   /** Модели отчётов и программ по презентациям. */
-  models: ReportDict,
+  models: ReportDict;
   /** Активные операции. */
-  operations: OperationStatus[],
+  operations: OperationStatus[];
 }
 
 /** Хранилище отчётов и программ по презентациям. */
@@ -23,22 +23,22 @@ type ReportDict = Record<FormID, ReportModel[]>;
  * + `visible: boolean`
  * */
 interface ReportModel {
-  /** ID программы */
-  id: ReportID,
+  /** ID процедуры. */
+  id: ReportID;
   /** Тип: программа или отчёт. */
-  type: ReportType,
-  /** Название программы/отчёта. */
-  displayName: DisplayName,
-  /** Список параметров программы/отчёта. */
-  parameters: Parameter[] | undefined,
+  type: ReportType;
+  /** Название процедуры. */
+  displayName: DisplayName;
+  /** Список параметров процедуры. */
+  parameters: Parameter[] | undefined;
   /** Каналы, необходимые для параметров. */
-  channels: ChannelDict | undefined,
-  /** Можно ли запустить программу/отчёт при текущих параметрах. */
-  canRun: boolean,
+  channels: ChannelDict | undefined;
+  /** Можно ли запустить процедуру при текущих параметрах. */
+  canRun: boolean;
   /** Список параметров для проверки видимости. */
-  paramsForCheckVisibility: ParameterID[],
-  /** Показывать ли программу/отчёт на интерфейсе. */
-  visible: boolean,
+  paramsForCheckVisibility: ParameterID[];
+  /** Показывать ли процедуру на интерфейсе. */
+  visible: boolean;
 }
 
 /** Тип удалённой процедуры: программа или отчёт. */
@@ -47,36 +47,36 @@ type ReportType = 'program' | 'report';
 /** Статус операции, выполняемой на сервере. */
 interface OperationStatus {
   /** Идентификатор операции. */
-  id: OperationID,
+  id: OperationID;
   /** ID клиента (форма/презентация). */
-  clientID: FormID,
+  clientID: ClientID;
   /** Номер операции в очереди. */
-  queueNumber: string,
+  queueNumber: string;
   /** Прогресс выполнения операции в процентах. */
-  progress: number,
+  progress: number;
   /** Временная метка начала обработки. */
-  timestamp: Date,
+  timestamp: Date;
   /** Информация о файле активного отчёта. */
-  file: OperationFile | null,
+  file: OperationFile | null;
   /** Дополнительный комментарий. */
-  description: string,
+  description: string;
   /** Стандартный текст для отображения на интерфейсе. */
-  defaultResult: string,
+  defaultResult: string;
   /** Сообщение об ошибке. */
-  error: string,
+  error: string;
 }
 
 /** Информация о файле активного отчёта. */
 interface OperationFile {
   /** Название файла. */
-  name: string,
+  name: string;
   /** Полный путь файла (для API). */
-  path: string,
+  path: string;
   /** Расширение файла. */
-  extension: string,
+  extension: string;
 }
 
-/** Идентификатор отчёта. */
+/** Идентификатор процедуры. */
 type ReportID = string;
 /** Идентификатор операции. */
 type OperationID = string;
@@ -87,55 +87,55 @@ type ReportInitData = Pick<ReportModel, 'parameters' | 'channels' | 'canRun'>;
 /** Список связанных каналов отчёта. */
 interface RelatedReportChannels {
   /** ID клиента, в котором находится отчёт. */
-  clientID: FormID,
+  clientID: ClientID;
   /** ID отчёта. */
-  reportID: ReportID,
+  reportID: ReportID;
   /** Названия связанных каналов. */
-  channels: ChannelName[],
+  channels: ChannelName[];
 }
 
 /* --- Server API --- */
 
 interface NewOperationData {
-  ReportResult: string,
-  OperationId: OperationID,
-  Pages: any,
-  CurrentPage: any,
-  WrongResult: boolean,
-  IsReady: boolean,
-  SessionId: string,
-  ModifiedTables: any
+  ReportResult: string;
+  OperationId: OperationID;
+  Pages: any;
+  CurrentPage: any;
+  WrongResult: boolean;
+  IsReady: boolean;
+  SessionId: string;
+  ModifiedTables: any;
 }
 
 interface ReportStatus {
-  Comment: string,
-  Cur_page: any,
-  ReportResult: any,
-  DefaultResult: string,
-  DisplayType: number,
+  Comment: string;
+  Cur_page: any;
+  ReportResult: any;
+  DefaultResult: string;
+  DisplayType: number;
   /** Timestamp завершения работы. */
-  Dt: string,
-  Error: string,
-  ErrorType: any,
-  Hash: string,
+  Dt: string;
+  Error: string;
+  ErrorType: any;
+  Hash: string;
   /** ID презентации. */
-  ID_PR: FormID,
-  Id: OperationID,
-  IsReport: string, // "1" => true
+  ID_PR: ClientID;
+  Id: OperationID;
+  IsReport: string; // "1" => true
   /** ID таблиц, в которые были внесены изменения. */
-  ModifiedTables: any,
-  Ord: string,
-  Pages: any,
-  Path: string,
-  Progress: number,
-  SessionId: SessionID,
-  SystemName: SystemID,
-  Usr: string,
-  WrongResult: boolean,
+  ModifiedTables: any;
+  Ord: string;
+  Pages: any;
+  Path: string;
+  Progress: number;
+  SessionId: SessionID;
+  SystemName: SystemID;
+  Usr: string;
+  WrongResult: boolean;
 }
 
 interface OperationResult {
-  isReady: boolean,
-  report: ReportStatus,
-  reportLog: any,
+  isReady: boolean;
+  report: ReportStatus;
+  reportLog: any;
 }

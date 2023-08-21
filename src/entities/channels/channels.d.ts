@@ -98,17 +98,19 @@ interface ChannelInfo {
 /** Дополнительные свойства колонки. */
 interface ChannelProperty {
   /** Название свойства. */
-  name: string,
+  name: string;
   /** Какой колонке относится. */
-  fromColumn: string,
+  fromColumn: string;
+  /** `NetType` связанной колонки. */
+  type?: string;
   /** Название для отображения на интерфейсе. */
-  displayName: string,
+  displayName: string;
   /** Группировка относительно других колонок. */
-  treePath: string[],
+  treePath: string[];
   /** Канал-справочник. */
-  lookupChannels: string[],
+  lookupChannels: string[];
   /** Название канала для привязанной таблицы. */
-  secondLevelChannelName: string | null,
+  secondLevelChannelName: string | null;
 }
 
 /** Информация о колонках, необходимых для справочников.
@@ -118,11 +120,11 @@ interface ChannelProperty {
  * */
 interface LookupColumns {
   /** Название и индекс колонки с идентификаторами. */
-  id: LookupColumnInfo,
+  id: LookupColumnInfo;
   /** Название и индекс колонки со значениями. */
-  value: LookupColumnInfo,
+  value: LookupColumnInfo;
   /** Название и индекс колонки с ID родителей. */
-  parent: LookupColumnInfo,
+  parent: LookupColumnInfo;
 }
 
 /** Информация о названиях и индексах колонок канала. */
@@ -131,9 +133,9 @@ type ChannelColumnInfo<Fields = string> = Record<Fields, LookupColumnInfo>;
 /** Информация о названии и индексе колонки. */
 interface LookupColumnInfo {
   /** Название колонки. */
-  name: string,
+  name: string;
   /** Порядковый номер. */
-  index: number,
+  index: number;
 }
 
 type ChannelCriterion<Fields extends string = string> = Record<Fields, ChannelColumnCriterion>;
@@ -142,11 +144,11 @@ type ChannelColumnCriterion = string | {name: string, optional: boolean};
 /** Настройки запроса данных. */
 interface ChannelQuerySettings {
   /** Ограничение по количеству строк. */
-  maxRowCount: number | null,
+  maxRowCount: number | null;
   /** Порядок сортировки строк. */
-  order: SortOrder,
+  order: SortOrder;
   /** Фильтры. */
-  filters: any[] | null,
+  filters: any[] | null;
 }
 
 /** Порядок сортировки. */
@@ -158,9 +160,9 @@ type SortOrder = SortOrderItem[];
  * */
 interface SortOrderItem {
   /** ID колонки. */
-  column: string,
+  column: string;
   /** Направление сортировки. */
-  direction: SortOrderDirection,
+  direction: SortOrderDirection;
 }
 
 /** Направление порядка.
@@ -184,9 +186,9 @@ type LookupList = LookupListItem[];
  * */
 interface LookupListItem {
   /** Идентификатор; обычно число. */
-  id: LookupItemID,
+  id: LookupItemID;
   /** Значение; обычно строка. */
-  value: any,
+  value: any;
 }
 
 /** Дерево возможных значений из канала-справочника. */
@@ -200,13 +202,13 @@ type LookupTree = LookupTreeNode[];
  * */
 interface LookupTreeNode {
   /** Идентификатор; обычно число. */
-  id: LookupItemID,
+  id: LookupItemID;
   /** Значение; обычно строка. */
-  value: any,
+  value: any;
   /** Идентификатор родителя. */
-  parent?: LookupItemID,
+  parent?: LookupItemID;
   /** Дочерние элементы. */
-  children?: LookupTreeNode[],
+  children?: LookupTreeNode[];
 }
 
 /** Словарь данных канала-справочника. */

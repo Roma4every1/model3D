@@ -1,37 +1,37 @@
 import { stringToTableCell } from '../../parameters/lib/table-row';
+import { placeCriterion, stratumCriterion, wellCriterion, traceCriterion } from './constants';
 
 
 /** По значение `TableRow` параметра создаёт модель месторождения. */
-export function createPlaceModel(value: ParamValueTableRow, info: ChannelColumnInfo): PlaceModel {
-  const id = parseInt(stringToTableCell(value, info.id.name));
+export function createPlaceModel(value: ParamValueTableRow): PlaceModel {
+  const id = parseInt(stringToTableCell(value, placeCriterion.id as string));
   if (isNaN(id)) return null;
-  const name = stringToTableCell(value, info.name.name);
+  const name = stringToTableCell(value, placeCriterion.name as string);
   return {id, name};
 }
 
 /** По значение `TableRow` параметра создаёт модель пласта. */
-export function createStratumModel(value: ParamValueTableRow, info: ChannelColumnInfo): StratumModel {
-  const id = parseInt(stringToTableCell(value, info.id.name));
+export function createStratumModel(value: ParamValueTableRow): StratumModel {
+  const id = parseInt(stringToTableCell(value, stratumCriterion.id as string));
   if (isNaN(id)) return null;
-  const name = stringToTableCell(value, info.name.name);
+  const name = stringToTableCell(value, stratumCriterion.name as string);
   return {id, name};
 }
 
 /** По значение `TableRow` параметра создаёт модель скважины. */
-export function createWellModel(value: ParamValueTableRow, info: ChannelColumnInfo): WellModel {
-  const id = parseInt(stringToTableCell(value, info.id.name));
+export function createWellModel(value: ParamValueTableRow): WellModel {
+  const id = parseInt(stringToTableCell(value, wellCriterion.id as string));
   if (isNaN(id)) return null;
-  const name = stringToTableCell(value, info.name.name);
+  const name = stringToTableCell(value, wellCriterion.name as string);
   return {id, name};
 }
 
 /** По значение `TableRow` параметра создаёт модель трассы. */
 export function createTraceModel(
   rowString: ParamValueTableRow,
-  traceChannel: Channel, nodeChannel: Channel, wellChannel: Channel,
+  nodeChannel: Channel, wellChannel: Channel,
 ): TraceModel {
-  const traceInfo = traceChannel.info.columns;
-  const traceID = parseInt(stringToTableCell(rowString, traceInfo.id.name));
+  const traceID = parseInt(stringToTableCell(rowString, traceCriterion.id as string));
 
   const nodes: TraceNode[] = [];
   const nodeRows = nodeChannel.data?.rows;
@@ -59,8 +59,8 @@ export function createTraceModel(
 
   return {
     id: traceID,
-    name: stringToTableCell(rowString, traceInfo.name.name),
-    place: parseInt(stringToTableCell(rowString, traceInfo.place.name)),
+    name: stringToTableCell(rowString, traceCriterion.name as string),
+    place: parseInt(stringToTableCell(rowString, traceCriterion.place as string)),
     nodes,
   };
 }
