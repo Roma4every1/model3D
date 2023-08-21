@@ -1,7 +1,7 @@
 import { TFunction } from 'react-i18next';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { setOpenedWindow } from 'entities/windows';
+import { setOpenedWindow } from 'entities/window';
 import { createFieldPaletteInit, InitFieldState } from '../properties-utils';
 import { Button } from '@progress/kendo-react-buttons';
 import { NumericTextBox, NumericTextBoxChangeEvent } from '@progress/kendo-react-inputs';

@@ -6,7 +6,7 @@ import { Button } from '@progress/kendo-react-buttons';
 import { Popup } from '@progress/kendo-react-popup';
 import { MenuSelectEvent, Menu, MenuItem } from '@progress/kendo-react-layout';
 import { LayerStatisticsWindow } from './layer-stat-window';
-import { setOpenedWindow } from 'entities/windows';
+import { setOpenedWindow } from 'entities/window';
 import { setActiveLayer } from '../../store/map.actions';
 
 

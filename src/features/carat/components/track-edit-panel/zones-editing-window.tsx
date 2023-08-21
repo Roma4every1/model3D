@@ -7,7 +7,7 @@ import { Button } from '@progress/kendo-react-buttons';
 import { ListBox, ListBoxToolbar, processListBoxData } from '@progress/kendo-react-listbox';
 import { ListBoxItemClickEvent, ListBoxToolbarClickEvent } from '@progress/kendo-react-listbox';
 import { TextInfo } from 'shared/ui';
-import { setOpenedWindow } from 'entities/windows';
+import { setOpenedWindow } from 'entities/window';
 import './zones-editing-window.scss';
 
 

@@ -6,7 +6,7 @@ import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { MenuSection, ButtonIcon } from 'shared/ui';
 import { PanelsVisibility } from './panels-visibility';
 import { sessionManager } from '../../../app/store';
-import { setOpenedWindow } from 'entities/windows';
+import { setOpenedWindow } from 'entities/window';
 
 import './main-menu.scss';
 import PACKAGE from '../../../../package.json';

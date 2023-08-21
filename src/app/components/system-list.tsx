@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { Skeleton } from '@progress/kendo-react-indicators';
 
 import './system-list.scss';
-import systemIcon from 'assets/images/start-page/system.svg';
-import loadDefaultIcon from 'assets/images/start-page/load-default.svg';
+import systemIcon from 'assets/images/common/system.svg';
+import loadDefaultIcon from 'assets/images/common/load-default.svg';
 
 
 interface SystemListProps {

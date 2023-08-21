@@ -6,7 +6,7 @@ import { Grid, GridCellProps } from '@progress/kendo-react-grid';
 import { GridColumnResizeEvent, GridPageChangeEvent } from '@progress/kendo-react-grid';
 import { GridSelectionChangeEvent, getSelectedState } from '@progress/kendo-react-grid';
 import { compareObjects } from 'shared/lib';
-import { setOpenedWindow } from 'entities/windows';
+import { setOpenedWindow } from 'entities/window';
 import { updateMaxRowCount } from 'entities/channels';
 
 import { ToolbarActions, CellActions, SaveTableMetadata, SetRecords } from '../../lib/types';

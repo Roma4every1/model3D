@@ -1,6 +1,6 @@
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { setOpenedWindow } from '../../../windows';
+import { setOpenedWindow } from '../../../window';
 import { deleteTrace } from '../../store/objects.thunks';
 
 import { BigButton } from 'shared/ui';

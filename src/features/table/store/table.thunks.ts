@@ -7,7 +7,7 @@ import { watchReport } from 'entities/reports';
 import { fillParamValues, updateParamDeep } from 'entities/parameters';
 import { tableRowToString } from '../../../entities/parameters/lib/table-row';
 import { updateTables, reloadChannel } from 'entities/channels';
-import { setOpenedWindow, setWindowWarning } from 'entities/windows';
+import { setOpenedWindow, setWindowWarning } from 'entities/window';
 import { showNotification } from 'entities/notifications';
 import { channelsAPI } from 'entities/channels/lib/channels.api';
 import { reportsAPI } from 'entities/reports/lib/reports.api';

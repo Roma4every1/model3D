@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import { MapModes } from '../../../lib/enums';
-import { windowsSelector, setOpenedWindow } from 'entities/windows';
+import { windowsSelector, setOpenedWindow } from 'entities/window';
 import { mapStateSelector } from '../../../store/map.selectors';
 
 import {

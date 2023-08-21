@@ -4,7 +4,7 @@ import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Button } from '@progress/kendo-react-buttons';
 import { BigButton } from 'shared/ui';
 import { channelsAPI } from 'entities/channels/lib/channels.api';
-import { setOpenedWindow, setWindowWarning } from 'entities/windows';
+import { setOpenedWindow, setWindowWarning } from 'entities/window';
 import statisticsIcon from 'assets/images/dataset/statistics.png';
 
 

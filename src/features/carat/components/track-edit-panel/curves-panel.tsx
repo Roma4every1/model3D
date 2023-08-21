@@ -1,6 +1,6 @@
 import { useDispatch } from 'react-redux';
 import { MenuSection, BigButton } from 'shared/ui';
-import { setOpenedWindow } from 'entities/windows';
+import { setOpenedWindow } from 'entities/window';
 
 import { CurveSelectionWindow } from './curve-selection-window';
 import { ZonesEditingWindow } from './zones-editing-window';

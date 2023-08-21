@@ -5,7 +5,7 @@ import { Button } from '@progress/kendo-react-buttons';
 import { ParameterList } from 'entities/parameters';
 import { updateTables } from 'entities/channels';
 import { showNotification } from 'entities/notifications';
-import { setWindowWarning } from 'entities/windows';
+import { setWindowWarning } from 'entities/window';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
 import { watchReport, updateReportParam, updateReportParameter } from 'entities/reports';
 

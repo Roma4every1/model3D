@@ -10,7 +10,7 @@ import { clearParams } from '../../entities/parameters';
 import { clearChannels } from '../../entities/channels';
 import { clearReports } from '../../entities/reports';
 import { clearTables } from '../../features/table/store/table.actions';
-import { setWindowWarning } from '../../entities/windows';
+import { setWindowWarning } from '../../entities/window';
 import { showNotification } from "../../entities/notifications";
 
 

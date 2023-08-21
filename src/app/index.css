@@ -44,18 +44,6 @@ html {
   padding: 2px 5px 2px 5px;
 }
 
-.windowhandler-text {
-  margin: 5px;
-  max-height: 60vh;
-  white-space: pre-wrap;
-}
-
-.windowhandler-stacktrace {
-  margin: 5px;
-  max-height: 60vh;
-  white-space: pre-wrap;
-}
-
 .k-expander-header {
   padding: 4px;
 }
@@ -173,14 +161,6 @@ html {
 .attrTableEditor {
   width: 45%;
   height: 20px;
-}
-
-.horizontal {
-  width: 85%;
-  display: inline-block;
-  vertical-align: middle;
-  margin: 5px;
-  white-space: normal;
 }
 
 .treeview {

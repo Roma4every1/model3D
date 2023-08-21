@@ -12,7 +12,7 @@ import { MapModes } from '../../../lib/enums';
 import { getHeaderText } from './editing-utils';
 import { applyMouseDownActionToPolyline, applyMouseMoveActionToElement, applyRotateToLabel } from './edit-element-utils';
 import { clientPoint, getNearestPointIndex, listenerOptions } from '../../../lib/map-utils';
-import { setOpenedWindow } from 'entities/windows';
+import { setOpenedWindow } from 'entities/window';
 import { setEditMode, acceptMapEditing, cancelMapEditing, setMapField } from '../../../store/map.actions';
 import { startCreatingElement, cancelCreatingElement } from '../../../store/map.actions';
 

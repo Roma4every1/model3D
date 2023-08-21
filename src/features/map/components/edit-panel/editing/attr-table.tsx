@@ -7,7 +7,7 @@ import { Window } from '@progress/kendo-react-dialogs';
 import { Input } from '@progress/kendo-react-inputs';
 
 import { toPairs } from 'lodash';
-import { setOpenedWindow } from 'entities/windows';
+import { setOpenedWindow } from 'entities/window';
 import { setMapField } from '../../../store/map.actions';
 import { mapStateSelector } from '../../../store/map.selectors';
 

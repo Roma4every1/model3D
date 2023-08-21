@@ -3,7 +3,7 @@ import { TFunction, useTranslation } from 'react-i18next';
 import { RowErrors, RowValidationError } from '../../lib/types';
 import { Window, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Button } from '@progress/kendo-react-buttons';
-import { setOpenedWindow } from 'entities/windows';
+import { setOpenedWindow } from 'entities/window';
 
 
 interface ValidationDialogProps {

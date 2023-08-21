@@ -1,7 +1,7 @@
 import { TFunction } from 'react-i18next';
 import { useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { setOpenedWindow, windowsSelector } from 'entities/windows';
+import { setOpenedWindow, windowsSelector } from 'entities/window';
 import { rollbackFieldPalette } from '../properties-utils';
 
 import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
