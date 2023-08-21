@@ -7,7 +7,7 @@ import { watchReport } from 'entities/reports';
 import { fillParamValues, updateParamDeep } from 'entities/parameters';
 import { tableRowToString } from '../../../entities/parameters/lib/table-row';
 import { updateTables, reloadChannel } from 'entities/channels';
-import { setOpenedWindow, setWindowWarning } from 'entities/window';
+import { showWarningMessage, showWindow, closeWindow } from 'entities/window';
 import { showNotification } from 'entities/notifications';
 import { channelsAPI } from 'entities/channels/lib/channels.api';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
@@ -62,14 +62,14 @@ export function saveTableRecord({type, formID, row}: SaveTableMetadata): Thunk {
     }
 
     if (res.ok === false) {
-      dispatch(setWindowWarning(res.data));
+      dispatch(showWarningMessage(res.data));
     } else {
       wrongResult = res.data.WrongResult;
       error = res.data.Error;
     }
 
     if (wrongResult && error) {
-      dispatch(setWindowWarning(error));
+      dispatch(showWarningMessage(error));
     }
 
     const tables = [tableID];
@@ -88,9 +88,9 @@ export function deleteTableRecords(formID: FormID, indexes: number[] | 'all'): T
     const tableState = getState().tables[formID];
     const res = await channelsAPI.removeRows(tableState.tableID, indexes);
 
-    if (res.ok === false) { dispatch(setWindowWarning(res.data)); return; }
+    if (res.ok === false) { dispatch(showWarningMessage(res.data)); return; }
     const ok = !res.data.WrongResult;
-    if (!ok && res.data.Error) { dispatch(setWindowWarning(res.data.Error)); return; }
+    if (!ok && res.data.Error) { dispatch(showWarningMessage(res.data.Error)); return; }
 
     const activeCell = tableState.activeCell;
     if (activeCell.recordID && (indexes === 'all' || indexes.includes(activeCell.recordID))) {
@@ -112,7 +112,7 @@ export function getNewRow (
 ): Thunk {
   return async (dispatch: Dispatch) => {
     const res = !copy && await channelsAPI.getNewRow(state.tableID);
-    if (!copy && res.ok === false) { dispatch(setWindowWarning(res.data)); return; }
+    if (!copy && res.ok === false) { dispatch(showWarningMessage(res.data)); return; }
 
     const newID = state.total;
     const activeRecordID = state.activeCell.recordID;
@@ -197,9 +197,12 @@ export function showLinkedTable(formID: FormID, columnID: TableColumnID): Thunk 
       dispatch(createTableState(payload));
     }
 
-    const onClose = () => dispatch(setOpenedWindow(linkedTableID, false, null));
-    const props = {key: linkedTableID, id: linkedTableID, onClose};
-    const window = createElement(LinkedTable, props);
-    dispatch(setOpenedWindow(linkedTableID, true, window));
+    const onClose = () => dispatch(closeWindow(linkedTableID));
+    const windowProps = {
+      className: 'linked-table-window', style: {zIndex: 99}, width: 400, height: 300,
+      resizable: false, title: channel.info.displayName, onClose,
+    };
+    const content = createElement(LinkedTable, {id: linkedTableID, onClose});
+    dispatch(showWindow(linkedTableID, windowProps, content));
   };
 }

@@ -12,7 +12,7 @@ import { MapModes } from '../../../lib/enums';
 import { getHeaderText } from './editing-utils';
 import { applyMouseDownActionToPolyline, applyMouseMoveActionToElement, applyRotateToLabel } from './edit-element-utils';
 import { clientPoint, getNearestPointIndex, listenerOptions } from '../../../lib/map-utils';
-import { setOpenedWindow } from 'entities/window';
+import { showDialog, showWindow, closeWindow } from 'entities/window';
 import { setEditMode, acceptMapEditing, cancelMapEditing, setMapField } from '../../../store/map.actions';
 import { startCreatingElement, cancelCreatingElement } from '../../../store/map.actions';
 
@@ -125,30 +125,29 @@ export const Editing = ({mapState, formID}: EditingProps) => {
   };
 
   const showDeleteWindow = () => {
-    const name = 'mapDeleteWindow';
-    const window = <DeleteElementWindow key={name} mapState={mapState} formID={formID}/>;
-    dispatch(setOpenedWindow(name, true, window));
+    const windowID = 'mapDeleteWindow';
+    const onClose = () => dispatch(closeWindow(windowID));
+    const content = <DeleteElementWindow mapState={mapState} formID={formID} onClose={onClose}/>;
+    dispatch(showDialog(windowID, {title: t('map.delete-element'), onClose}, content));
   };
 
   const showPropertiesWindow = () => {
-    const name = 'mapPropertiesWindow';
-    const window = <PropertiesWindow
-      key={name}
-      formID={formID}
-      setPropertiesWindowOpen={setPropertiesWindowOpen}
-    />;
+    const content = <PropertiesWindow formID={formID} setOpen={setPropertiesWindowOpen}/>;
     if (mapState.mode < MapModes.MOVE_MAP) dispatch(setEditMode(formID, MapModes.MOVE_MAP));
-    dispatch(setOpenedWindow(name, true, window));
+
+    const windowProps = {
+      className: 'propertiesWindow', resizable: false,
+      style: {zIndex: 99},
+    };
+    dispatch(showWindow('mapPropertiesWindow', windowProps, content));
   };
 
   const showAttrTableWindow = () => {
-    const name = 'mapAttrTableWindow';
-    const window = <AttrTableWindow
-      key={name}
-      formID={formID}
-      setAttrTableOpen={setAttrTableOpen}
-    />;
-    dispatch(setOpenedWindow(name, true, window));
+    const windowID = 'mapAttrTableWindow';
+    const onClose = () => dispatch(closeWindow(windowID));
+    const content = <AttrTableWindow formID={formID} setOpen={setAttrTableOpen} onClose={onClose}/>;
+    const windowProps = {title: t('map.attr-table'), width: 300, height: 300, onClose};
+    dispatch(showWindow(windowID, windowProps, content));
   };
 
   const headerText = useMemo(() => {

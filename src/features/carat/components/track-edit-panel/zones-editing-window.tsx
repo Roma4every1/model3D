@@ -1,27 +1,25 @@
 import { FunctionComponent, KeyboardEvent, useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Window } from '@progress/kendo-react-dialogs';
 import { TextBox, TextBoxChangeEvent } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
 import { ListBox, ListBoxToolbar, processListBoxData } from '@progress/kendo-react-listbox';
 import { ListBoxItemClickEvent, ListBoxToolbarClickEvent } from '@progress/kendo-react-listbox';
 import { TextInfo } from 'shared/ui';
-import { setOpenedWindow } from 'entities/window';
 import './zones-editing-window.scss';
 
 
 interface ZonesEditingWindowProps {
-  stage: ICaratStage,
+  stage: ICaratStage;
+  onClose: () => void;
 }
 interface ZoneEditorProps {
-  i: number,
-  data: ZoneListItem[],
-  toolbar: FunctionComponent,
-  onItemClick: any,
-  allTypes: Set<CaratCurveType>,
-  addItem: (newType: CaratCurveType, index: number) => void,
-  deleteZone: (index: number) => void,
+  i: number;
+  data: ZoneListItem[];
+  toolbar: FunctionComponent;
+  onItemClick: any;
+  allTypes: Set<CaratCurveType>;
+  addItem: (newType: CaratCurveType, index: number) => void;
+  deleteZone: (index: number) => void;
 }
 
 type ZoneListItem = {type: CaratCurveType, selected: boolean};
@@ -31,8 +29,7 @@ type ZoneList = ZoneListItem[][];
 const singleZoneTools = ['remove'];
 const pluralZoneTools = ['transferTo', 'transferFrom', 'transferAllTo', 'transferAllFrom', 'remove'];
 
-export const ZonesEditingWindow = ({stage}: ZonesEditingWindowProps) => {
-  const dispatch = useDispatch();
+export const ZonesEditingWindow = ({stage, onClose}: ZonesEditingWindowProps) => {
   const { t } = useTranslation();
 
   const [state, setState] = useState<ZoneList>([]);
@@ -82,10 +79,6 @@ export const ZonesEditingWindow = ({stage}: ZonesEditingWindowProps) => {
     setState([...state]);
   };
 
-  const onClose = () => {
-    dispatch(setOpenedWindow('curve-zones', false, null));
-  };
-
   const onSubmit = () => {
     stage.setZones(stateToZones(state));
     stage.render(); onClose();
@@ -97,22 +90,17 @@ export const ZonesEditingWindow = ({stage}: ZonesEditingWindowProps) => {
   };
 
   return (
-    <Window
-      title={t('carat.zones.window-title')} maximizeButton={() => null}
-      width={720} height={480} resizable={false} style={{zIndex: 99}} onClose={onClose}
-    >
-      <div className={'zones-editing-window'}>
-        {state.length
-          ? <div style={{gridTemplateColumns: '1fr '.repeat(state.length)}}>
-              {state.map(listToEditor, metaData)}
-            </div>
-          : <TextInfo text={'carat.zones.no-zones'}/>}
-        <div>
-          <Button onClick={addZone}>{t('carat.zones.add')}</Button>
-          <Button onClick={onSubmit} style={{width: 50}}>{t('base.ok')}</Button>
-        </div>
+    <div className={'zones-editing-window'}>
+      {state.length
+        ? <div style={{gridTemplateColumns: '1fr '.repeat(state.length)}}>
+            {state.map(listToEditor, metaData)}
+          </div>
+        : <TextInfo text={'carat.zones.no-zones'}/>}
+      <div>
+        <Button onClick={addZone}>{t('carat.zones.add')}</Button>
+        <Button onClick={onSubmit} style={{width: 50}}>{t('base.ok')}</Button>
       </div>
-    </Window>
+    </div>
   );
 };
 

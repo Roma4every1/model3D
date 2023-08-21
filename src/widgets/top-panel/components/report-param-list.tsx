@@ -5,15 +5,15 @@ import { Button } from '@progress/kendo-react-buttons';
 import { ParameterList } from 'entities/parameters';
 import { updateTables } from 'entities/channels';
 import { showNotification } from 'entities/notifications';
-import { setWindowWarning } from 'entities/window';
+import { showWarningMessage } from 'entities/window';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
 import { watchReport, updateReportParam, updateReportParameter } from 'entities/reports';
 
 
 interface ReportParamListProps {
-  id: FormID,
-  report: ReportModel,
-  close: () => void,
+  id: FormID;
+  report: ReportModel;
+  close: () => void;
 }
 
 
@@ -25,7 +25,7 @@ export const ReportParamList = ({id, report, close}: ReportParamListProps) => {
 
   const runReport = async () => {
     const { data } = await reportsAPI.runReport(report.id, id, parameters);
-    if (typeof data === 'string') { dispatch(setWindowWarning(data)); return; }
+    if (typeof data === 'string') { dispatch(showWarningMessage(data)); return; }
 
     const modifiedTables = data?.ModifiedTables?.ModifiedTables;
     if (modifiedTables) dispatch(updateTables(modifiedTables));

@@ -1,71 +1,51 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Label } from '@progress/kendo-react-labels';
 import { Button } from '@progress/kendo-react-buttons';
-import { Window } from '@progress/kendo-react-dialogs';
 import { Input } from '@progress/kendo-react-inputs';
 
 import { toPairs } from 'lodash';
-import { setOpenedWindow } from 'entities/window';
 import { setMapField } from '../../../store/map.actions';
 import { mapStateSelector } from '../../../store/map.selectors';
 
 
 interface AttrTableWindowProps {
-  formID: FormID,
-  setAttrTableOpen,
+  formID: FormID;
+  setOpen;
+  onClose: () => void;
 }
 
 
-const windowsSelector = (state: WState) => state.windowData.windows;
-
-export const AttrTableWindow = ({formID, setAttrTableOpen}: AttrTableWindowProps) => {
+export const AttrTableWindow = ({formID, setOpen, onClose}: AttrTableWindowProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const windows = useSelector(windowsSelector);
-  const mapState : MapState = useSelector(mapStateSelector.bind(formID));
+  const mapState: MapState = useSelector(mapStateSelector.bind(formID));
   const selectedObject = mapState.element;
   const modifiedLayer = mapState.mapData?.layers?.find(l => l.elements?.includes(selectedObject));
 
   const [readyForApply, setReadyForApply] = useState(false);
   const [attrTable, setAttrTable] = useState(null);
 
-  const windowRef = useRef(null);
-
   useEffect(() => {
-    setAttrTableOpen(true);
-    return () => setAttrTableOpen(false);
+    setOpen(true);
+    return () => setOpen(false);
   }, []); // eslint-disable-line
 
   useEffect(() => {
     setAttrTable({ ...selectedObject?.attrTable });
   }, [selectedObject]);
 
-  const close = () => {
-    let position;
-    if (windowRef.current) position = {top: windowRef.current.top, left: windowRef.current.left};
-    dispatch(setOpenedWindow('mapAttrTableWindow', false, null, position));
-  };
-
   const apply = () => {
     modifiedLayer.modified = true;
     selectedObject.attrTable = attrTable;
     dispatch(setMapField(formID, 'isModified', true));
-    close();
+    onClose();
   };
 
   return (
-    <Window
-      ref={windowRef}
-      title={t('map.attr-table')}
-      onClose={close}
-      initialLeft={windows['mapAttrTableWindow']?.position?.left}
-      initialTop={windows['mapAttrTableWindow']?.position?.top}
-      width={300}
-      height={300}
-    >
+    <>
       {toPairs<any>(attrTable).map(value => {
           return (
             <div className={'attrTableBlock'}>
@@ -88,9 +68,9 @@ export const AttrTableWindow = ({formID, setAttrTableOpen}: AttrTableWindowProps
       <Button disabled={!readyForApply} onClick={apply}>
         {t('base.apply')}
       </Button>
-      <Button disabled={!readyForApply} onClick={close}>
+      <Button disabled={!readyForApply} onClick={onClose}>
         {t('base.cancel')}
       </Button>
-    </Window>
+    </>
   );
 }

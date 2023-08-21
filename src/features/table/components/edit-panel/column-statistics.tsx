@@ -1,10 +1,10 @@
 import { TFunction } from 'react-i18next';
 import { EditPanelItemProps } from '../../lib/types';
-import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
+import { DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Button } from '@progress/kendo-react-buttons';
 import { BigButton } from 'shared/ui';
 import { channelsAPI } from 'entities/channels/lib/channels.api';
-import { setOpenedWindow, setWindowWarning } from 'entities/window';
+import { showWarningMessage, showDialog, closeWindow } from 'entities/window';
 import statisticsIcon from 'assets/images/dataset/statistics.png';
 
 
@@ -38,13 +38,13 @@ export const ColumnStatistics = ({state, dispatch, t}: EditPanelItemProps) => {
   const getStat = async () => {
     const columnState = state.columns[activeColumnID];
     const { ok, data } = await channelsAPI.getStatistics(state.tableID, columnState.colName);
-    if (!ok) { dispatch(setWindowWarning(data)); return; }
+    if (!ok) { dispatch(showWarningMessage(data)); return; }
     if (typeof data !== 'object' || !data.Values) return;
 
     const title = t('table.stat.window-title', {column: columnState.title});
-    const onClose = () => dispatch(setOpenedWindow('stat', false, null));
-    const window = <StatDialog key={'stat'} title={title} stat={data.Values} t={t} onClose={onClose}/>;
-    dispatch(setOpenedWindow('stat', true, window));
+    const onClose = () => dispatch(closeWindow('stat'));
+    const content = <StatDialogContent title={title} stat={data.Values} t={t} onClose={onClose}/>;
+    dispatch(showDialog('stat', {title, width: 300, onClose}, content))
   };
 
   return (
@@ -55,9 +55,9 @@ export const ColumnStatistics = ({state, dispatch, t}: EditPanelItemProps) => {
   );
 };
 
-const StatDialog = ({title, stat, t, onClose}: StatDialogProps) => {
+const StatDialogContent = ({stat, t, onClose}: StatDialogProps) => {
   return (
-    <Dialog title={title} onClose={onClose} width={300}>
+    <>
       <ul style={{margin: 0, paddingLeft: '2em'}}>
         {stat.MIN && <li>{t('table.stat.min', {value: stat.MIN})}</li>}
         {stat.MAX && <li>{t('table.stat.max', {value: stat.MAX})}</li>}
@@ -69,6 +69,6 @@ const StatDialog = ({title, stat, t, onClose}: StatDialogProps) => {
       <DialogActionsBar>
         <Button onClick={onClose}>{t('base.ok')}</Button>
       </DialogActionsBar>
-    </Dialog>
+    </>
   );
 };

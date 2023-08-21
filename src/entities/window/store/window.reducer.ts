@@ -8,6 +8,7 @@ export enum WindowActionType {
   SHOW_DIALOG = 'window/dialog',
   SHOW_WINDOW = 'window/window',
   CLOSE_WINDOW = 'window/close',
+  UPDATE_WINDOW = 'window/update',
 }
 
 /* --- Action Interfaces --- */
@@ -18,7 +19,7 @@ interface ActionShowMessage {
 }
 interface ActionShowDialog {
   type: WindowActionType.SHOW_DIALOG;
-  payload: {props: DialogProps, content: ReactNode};
+  payload: {id: WindowID, props: DialogProps, content: ReactNode};
 }
 interface ActionShowWindow {
   type: WindowActionType.SHOW_WINDOW;
@@ -28,9 +29,13 @@ interface ActionCloseWindow {
   type: WindowActionType.CLOSE_WINDOW;
   payload: WindowID;
 }
+interface ActionUpdateWindow {
+  type: WindowActionType.UPDATE_WINDOW;
+  payload: {id: WindowID, props: WindowProps | DialogProps};
+}
 
 export type WindowAction = ActionShowMessage | ActionShowDialog |
-  ActionShowWindow | ActionCloseWindow;
+  ActionShowWindow | ActionCloseWindow | ActionUpdateWindow;
 
 /* --- Init State & Reducer --- */
 
@@ -48,19 +53,26 @@ export function windowReducer(state: WindowStates = init, action: WindowAction):
     }
 
     case WindowActionType.SHOW_DIALOG: {
-      const { props, content } = action.payload;
-      return {...state, [++counter]: {type: 'dialog', props, content}};
+      const { id, props, content } = action.payload;
+      return {...state, [id]: {id, type: 'dialog', props, content}};
     }
 
     case WindowActionType.SHOW_WINDOW: {
-      const { props, content } = action.payload;
+      const { id, props, content } = action.payload;
       for (const id in state) state[id].active = false;
-      return {...state, [++counter]: {type: 'window', props, content, active: true}};
+      return {...state, [id]: {id, type: 'window', props, content, active: true}};
     }
 
     case WindowActionType.CLOSE_WINDOW: {
       delete state[action.payload];
       return {...state};
+    }
+
+    case WindowActionType.UPDATE_WINDOW: {
+      const { id, props } = action.payload;
+      const windowState = state[id];
+      if (!windowState) return state;
+      return {...state, [id]: {...windowState, props: {...windowState.props, ...props}}};
     }
 
     default: return state;

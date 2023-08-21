@@ -19,8 +19,8 @@ export function showErrorMessage(text: string, title?: string): WindowAction {
 }
 
 /** Показать диалог. */
-export function showDialog(props: DialogProps, content: ReactNode): WindowAction {
-  return {type: WindowActionType.SHOW_DIALOG, payload: {props, content}};
+export function showDialog(id: WindowID, props: DialogProps, content: ReactNode): WindowAction {
+  return {type: WindowActionType.SHOW_DIALOG, payload: {id, props, content}};
 }
 
 /** Показать окно. */
@@ -31,4 +31,9 @@ export function showWindow(id: WindowID, props: WindowProps, content: ReactNode)
 /** Закрыть указанное окно. */
 export function closeWindow(id: WindowID): WindowAction {
   return {type: WindowActionType.CLOSE_WINDOW, payload: id};
+}
+
+/** Обновить свойства окна или диалога. */
+export function updateWindow(id: WindowID, props: WindowProps | DialogProps): WindowAction {
+  return {type: WindowActionType.UPDATE_WINDOW, payload: {id, props}};
 }
