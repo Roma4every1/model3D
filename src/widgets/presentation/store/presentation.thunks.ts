@@ -26,7 +26,7 @@ export const fetchPresentationState = (id: ClientID): Thunk => {
     }
 
     const childrenID = presentation.children.map(child => child.id);
-    const presentationParameters = await formsAPI.getFormParameters(id);
+    const presentationParameters = await formsAPI.getClientParameters(id);
     const paramDict = {[id]: presentationParameters};
     dispatch(setParamDict(paramDict));
 
@@ -42,7 +42,7 @@ export const fetchPresentationState = (id: ClientID): Thunk => {
     dispatch(fetchFormsEnd([id]));
 
     const [baseChannels, childrenChannelNames] = await getPresentationChannels(id, childrenID);
-    const formsState = await createFormStates(id, presentation.children, childrenChannelNames);
+    const formStates = await createFormStates(id, presentation.children, childrenChannelNames);
 
     const existingChannels = Object.keys(state.channels);
     const channels = await createClientChannels(baseChannels, paramDict, existingChannels);
@@ -52,13 +52,13 @@ export const fetchPresentationState = (id: ClientID): Thunk => {
     applyChannelsDeps(allChannels, paramDict);
 
     for (const id of childrenID) {
-      const formState = formsState[id];
+      const formState = formStates[id];
       const creator = createFormDict[formState.type];
       if (!creator) continue;
 
       const payload: FormStatePayload = {
-        state: formsState[id],
-        settings: formsState[id].settings,
+        state: formStates[id],
+        settings: formStates[id].settings,
         objects: state.objects,
         parameters: {...state.parameters, ...paramDict},
         channels: allChannels,
@@ -68,7 +68,7 @@ export const fetchPresentationState = (id: ClientID): Thunk => {
 
     await fillChannels(channels, paramDict);
     dispatch(setChannels(channels));
-    dispatch(setFormsState(formsState));
+    dispatch(setFormsState(formStates));
     dispatch(fetchFormsEnd(childrenID));
   };
 };

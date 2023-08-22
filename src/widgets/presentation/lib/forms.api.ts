@@ -15,26 +15,26 @@ export class FormsAPI {
     return this.baseAPI.request<FormDataWM>({path: 'getRootForm', query});
   }
 
-  public getPresentationsList(rootFormID: FormID) {
+  public getPresentationTree(rootFormID: ClientID) {
     const query = {sessionId: this.baseAPI.sessionID, formId: rootFormID};
     return this.baseAPI.request<PresentationTreeItem>({path: 'presentationList', query});
   }
 
   /** Запрос разметки формы. */
-  public getFormLayout(formID: FormID) {
-    const query = {sessionId: this.baseAPI.sessionID, formId: formID};
+  public getPresentationLayout(id: ClientID) {
+    const query = {sessionId: this.baseAPI.sessionID, formId: id};
     return this.baseAPI.request<IJsonModel>({path: 'getFormLayout', query});
   }
 
   /** Запрос настроек формы. */
-  public getFormSettings(formID: FormID) {
-    const query = {sessionId: this.baseAPI.sessionID, formId: formID};
+  public getFormSettings(id: FormID) {
+    const query = {sessionId: this.baseAPI.sessionID, formId: id};
     return this.baseAPI.request<FormSettingsDTO>({path: 'getFormSettings', query});
   }
 
   /** Запрос параметров формы. */
-  public async getFormParameters(formID: FormID) {
-    const query = {sessionId: this.baseAPI.sessionID, formId: formID};
+  public async getClientParameters(id: ClientID) {
+    const query = {sessionId: this.baseAPI.sessionID, formId: id};
     const res = await this.baseAPI.request<Parameter[]>({path: 'getFormParameters', query});
 
     if (res.ok) {
@@ -46,23 +46,17 @@ export class FormsAPI {
   }
 
   /** Запрос дочерних форм. */
-  public getFormChildren(formID: FormID) {
-    const query = {sessionId: this.baseAPI.sessionID, formId: formID};
+  public getClientChildren(id: ClientID) {
+    const query = {sessionId: this.baseAPI.sessionID, formId: id};
     return this.baseAPI.request<FormChildrenState>({path: 'getChildrenForms', query});
   }
 
   /** Запрос списка каналов формы. */
-  public async getFormChannelsList(formID: FormID) {
-    const query = {sessionId: this.baseAPI.sessionID, formId: formID};
+  public async getClientAttachedChannels(id: ClientID): Promise<AttachedChannel[]> {
+    const query = {sessionId: this.baseAPI.sessionID, formId: id};
     const res = await this.baseAPI.request<ChannelName[]>({path: 'getChannelsForForm', query});
-    return res.ok ? res.data : [];
+    return res.ok ? res.data.map(c => ({name: c, attachOption: 'AttachAll', exclude: []})) : [];
   }
-
-  // /** Запрос дополнительных данных о форме (плагинов). */
-  // public getPluginData(formID: FormID, pluginName: string) {
-  //   const query = {sessionId: this.baseAPI.sessionID, formId: formID, pluginName};
-  //   return this.baseAPI.request<any>({path: 'pluginData', query});
-  // }
 }
 
 export const formsAPI = new FormsAPI(API);

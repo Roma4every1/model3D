@@ -115,6 +115,8 @@ interface ChannelProperty {
   lookupChannels: string[];
   /** Название канала для привязанной таблицы. */
   secondLevelChannelName: string | null;
+  /** Информация для свойства связанного с файлами. */
+  file: {fileName: string, fromResources: boolean} | null;
 }
 
 /** Информация о колонках, необходимых для справочников.

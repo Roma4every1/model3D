@@ -43,7 +43,7 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
   const utils = mapState?.utils;
 
   const isPartOfDynamicMultiMap = data !== undefined;
-  const activeChannelName = isPartOfDynamicMultiMap ? null : channels[0];
+  const activeChannelName = isPartOfDynamicMultiMap ? null : channels[0].name;
   const activeChannel: Channel = useSelector(channelSelector.bind(activeChannelName));
   const currentPlastCode = useSelector(currentPlastCodeSelector);
 

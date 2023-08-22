@@ -75,12 +75,6 @@ interface ActiveRecordParameter {
   clientID: ClientID;
 }
 
-/** Опция присоединения свойств колонок таблицы.
- * + `AttachAll` — все, кроме указанных в `exclude`
- * + `AttachNothing` — только те, что указанны в `exclude`
- * */
-type AttachOptionType = 'AttachAll' | 'AttachNothing';
-
 /** Глобальные настройки колонок таблицы. */
 interface TableColumnsSettings {
   /** Количество закреплённых колонок. */

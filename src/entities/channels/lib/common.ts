@@ -93,6 +93,17 @@ export function cellsToRecords(data: ChannelData): ChannelRecord[] {
   return data.rows.map(create);
 }
 
+/** Конвертирует строку канала из ячеек в словарь по названиям колонок. */
+export function channelRowToRecord(row: ChannelRow, columns: ChannelColumn[]): ChannelRecord {
+  const cells = row.Cells;
+  const record: ChannelRecord = {};
+
+  columns.forEach((column, i) => {
+    record[column.Name] = cells[i];
+  });
+  return record;
+}
+
 /* --- --- */
 
 /** Находит и возвращает список привязанных каналов. */

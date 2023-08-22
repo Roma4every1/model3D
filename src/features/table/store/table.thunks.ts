@@ -177,7 +177,7 @@ export function showLinkedTable(formID: FormID, columnID: TableColumnID): Thunk 
       const formState: FormState = {
         id: linkedTableID, parent: formID,
         type: 'dataSet', settings: null,
-        channels: [channel.name],
+        channels: [{name: channel.name, attachOption: 'AttachAll', exclude: []}],
       };
       presentation.children.push(formData);
       state.forms[linkedTableID] = formState;

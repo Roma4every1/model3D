@@ -14,15 +14,18 @@ import { setCaratActiveCurve, setCaratActiveGroup, setCaratCanvas } from '../sto
 
 
 /** Каротажная диаграмма. */
-export const Carat = ({id, channels}: FormState) => {
+export const Carat = ({id}: FormState) => {
   const dispatch = useDispatch();
-
   const { model: currentWell } = useSelector(wellStateSelector);
   const { model: currentTrace } = useSelector(traceStateSelector);
-  const { stage, canvas, lookupNames, loading }: CaratState = useSelector(caratStateSelector.bind(id));
 
-  const channelData: ChannelDataDict = useSelector(channelDataDictSelector.bind(channels), compareObjects);
-  const lookupData: ChannelDataDict = useSelector(channelDataDictSelector.bind(lookupNames), compareObjects);
+  const caratState: CaratState = useSelector(caratStateSelector.bind(id));
+  const { stage, canvas, channelNames, lookupNames, loading } = caratState;
+
+  const channelData: ChannelDataDict =
+    useSelector(channelDataDictSelector.bind(channelNames), compareObjects);
+  const lookupData: ChannelDataDict =
+    useSelector(channelDataDictSelector.bind(lookupNames), compareObjects);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isOnMoveRef = useRef<boolean>(false);

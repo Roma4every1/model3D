@@ -97,9 +97,32 @@ interface FormState {
   type: FormType;
   /** Настройки формы. */
   settings: FormSettings;
-  /** Список ID каналов формы. */
-  channels: ChannelName[];
+  /** Список прикреплённых каналов формы. */
+  channels: AttachedChannel[];
 }
+
+/** Модель прикреплённого канала.
+ * + `name`: {@link ChannelName}
+ * + `attachOption`: {@link AttachOptionType}
+ * + `exclude: string[]`
+ * + `columnInfo`: {@link ChannelColumnInfo}
+ * */
+interface AttachedChannel {
+  /** Название канала. */
+  name: ChannelName;
+  /** Тип присоединения свойств канала.  */
+  attachOption: AttachOptionType;
+  /** Список исключений присоединения. */
+  exclude: string[];
+  /** Дополнительная информация о колонках. */
+  columnInfo?: ChannelColumnInfo;
+}
+
+/** Опция присоединения свойств колонок таблицы.
+ * + `AttachAll` — все, кроме указанных в `exclude`
+ * + `AttachNothing` — только те, что указанны в `exclude`
+ * */
+type AttachOptionType = 'AttachAll' | 'AttachNothing';
 
 /** Настройки формы. */
 type FormSettings = any | ChartFormSettings | {};

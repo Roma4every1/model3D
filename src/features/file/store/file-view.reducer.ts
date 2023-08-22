@@ -1,9 +1,10 @@
-import { createColumnInfo } from 'entities/channels';
+import { toFileViewState } from '../lib/adapter';
 
 /* --- Action Types --- */
 
 export enum FileViewActionType {
   CREATE = 'file/create',
+  SET_MODEL = 'file/model',
 }
 
 /* --- Action Interfaces --- */
@@ -12,8 +13,12 @@ interface ActionCreate {
   type: FileViewActionType.CREATE;
   payload: FormStatePayload;
 }
+interface ActionSetModel {
+  type: FileViewActionType.SET_MODEL;
+  payload: {id: FormID, model: FileViewModel};
+}
 
-export type FileViewAction = ActionCreate;
+export type FileViewAction = ActionCreate | ActionSetModel;
 
 /* --- Init State & Reducer --- */
 
@@ -23,16 +28,13 @@ export function fileViewReducer(state: FileViewStates = init, action: FileViewAc
   switch (action.type) {
 
     case FileViewActionType.CREATE: {
-      const { state: formState, channels } = action.payload;
-      let info: ChannelColumnInfo = null;
-      const criterion: ChannelCriterion = {fileName: 'FILE', filePath: 'PATH'};
+      const id = action.payload.state.id;
+      return {...state, [id]: toFileViewState(action.payload)};
+    }
 
-      for (const name of formState.channels) {
-        const channel = channels[name];
-        info = createColumnInfo(channel, criterion);
-        if (info) { channel.info.columns = info; break; }
-      }
-      return {...state, [formState.id]: {info}};
+    case FileViewActionType.SET_MODEL: {
+      const { id, model } = action.payload;
+      return {...state, [id]: {...state[id], model}}
     }
 
     default: return state;

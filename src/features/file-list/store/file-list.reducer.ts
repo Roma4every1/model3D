@@ -1,8 +1,10 @@
 /* --- Action Types --- */
 
+import { createColumnInfo } from '../../../entities/channels';
+
+
 export enum FileListActionType {
   CREATE = 'fileList/create',
-  SET_ACTIVE_FILE = 'fileList/setActive'
 }
 
 /* --- Action Interfaces --- */
@@ -12,12 +14,7 @@ interface ActionCreate {
   payload: FormStatePayload;
 }
 
-interface ActionSetActiveFile {
-  type: FileListActionType.SET_ACTIVE_FILE;
-  payload: {id: FormID, file: string};
-}
-
-export type FileListAction = ActionCreate | ActionSetActiveFile;
+export type FileListAction = ActionCreate;
 
 /* --- Init State & Reducer --- */
 
@@ -27,13 +24,16 @@ export function fileListReducer(state: FileListStates = init, action: FileListAc
   switch (action.type) {
 
     case FileListActionType.CREATE: {
-      const id = action.payload.state.id;
-      return {...state, [id]: {activeFile: null}};
-    }
+      const { state: formState, channels } = action.payload;
+      let info: ChannelColumnInfo = null;
+      const criterion: ChannelCriterion = {fileName: 'FILE', filePath: 'PATH'};
 
-    case FileListActionType.SET_ACTIVE_FILE: {
-      const { id, file } = action.payload;
-      return {...state, [id]: {activeFile: file}};
+      for (const attachedChannel of formState.channels) {
+        const channel = channels[attachedChannel.name];
+        info = createColumnInfo(channel, criterion);
+        if (info) { attachedChannel.columnInfo = info; break; }
+      }
+      return {...state, [formState.id]: {activeFile: null}};
     }
 
     default: return state;

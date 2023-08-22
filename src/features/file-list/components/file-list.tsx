@@ -9,7 +9,7 @@ import { FileListItem } from './file-list-item';
 /** Список файлов. */
 export const FileListView = ({channels}: FormState) => {
   const dispatch = useDispatch();
-  const channel: Channel = useSelector(channelSelector.bind(channels[0]));
+  const channel: Channel = useSelector(channelSelector.bind(channels[0].name));
 
   const rows = channel.data?.rows ?? [];
   const activeRow = channel.data?.activeRow;

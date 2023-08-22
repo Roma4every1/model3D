@@ -47,7 +47,7 @@ function getColumnType(netType: string): TableColumnType {
 /** Функция, создающая состояние таблицы по её начальным настройкам. */
 export function settingsToTableState(payload: FormStatePayload): TableState {
   const settings: TableFormSettings = payload.settings;
-  const channelName = payload.state.channels[0];
+  const channelName = payload.state.channels[0].name;
   const channel = payload.channels[channelName];
 
   const allProperties = channel?.info.properties ?? [];

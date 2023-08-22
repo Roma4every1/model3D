@@ -14,7 +14,7 @@ import { reportsAPI } from 'entities/reports/lib/reports.api';
 export function initializeActiveReport(id: FormID, reportID: ReportID): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const [parameters, hiddenParameters] = await Promise.all([
-      formsAPI.getFormParameters(reportID),
+      formsAPI.getClientParameters(reportID),
       reportsAPI.getReportParametersHidden(reportID),
     ]);
 

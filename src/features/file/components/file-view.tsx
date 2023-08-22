@@ -1,24 +1,27 @@
-import { useSelector } from 'react-redux';
+import { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { channelSelector } from 'entities/channels';
 import { fileViewStateSelector } from '../store/file-view.selectors';
+import { updateFileViewModel } from '../store/file-view.thunks';
 
+import './file-view.scss';
 import { TextInfo } from 'shared/ui';
-import DocViewer, { IConfig, IDocument } from '@cyntler/react-doc-viewer';
-// import { ExcelRenderer } from './renderers/excel-renderer';
-// import { MSWordRenderer } from './renderers/ms-word-renderer';
+import { UnsupportedFile } from './unsupported-file';
+import { docViewerConfig, supportedExtensions } from '../lib/constants';
+import DocViewer from '@cyntler/react-doc-viewer';
 
-const config: IConfig = {
-  header: {disableHeader: true},
-};
-const doc: IDocument = {uri: require('assets/sample.pdf')};
-const documents = [doc];
 
+/** Форма просмотра файла. */
 export const FileView = ({id, channels}: FormState) => {
-  const { info }: FileViewState = useSelector(fileViewStateSelector.bind(id));
-  const channel: Channel = useSelector(channelSelector.bind(channels[0]));
-  const activeRow = channel.data?.activeRow;
+  const dispatch = useDispatch();
+  const { model, memo }: FileViewState = useSelector(fileViewStateSelector.bind(id));
+  const { data }: Channel = useSelector(channelSelector.bind(channels[0].name));
 
-  if (!activeRow) return <TextInfo text={'Файл не выбран'}/>;
-  console.log(activeRow.Cells[info.filePath.index]);
-  return <DocViewer config={config} documents={documents} activeDocument={doc}/>;
+  useEffect(() => {
+    dispatch(updateFileViewModel(id, data));
+  }, [data, id, dispatch]);
+
+  if (!model) return <TextInfo text={'Файл не выбран'}/>;
+  if (!supportedExtensions.has(model.fileType)) return <UnsupportedFile model={model}/>;
+  return <DocViewer config={docViewerConfig} documents={memo} activeDocument={model}/>;
 };

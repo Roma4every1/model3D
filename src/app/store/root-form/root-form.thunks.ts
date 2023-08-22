@@ -31,10 +31,10 @@ export const startSession = (isDefault: boolean): Thunk => {
     }
 
     const id = root.id;
-    const parameters = await formsAPI.getFormParameters(id);
+    const parameters = await formsAPI.getClientParameters(id);
     const paramDict = {[id]: parameters};
 
-    const names = await formsAPI.getFormChannelsList(id);
+    const names = (await formsAPI.getClientAttachedChannels(id)).map(c => c.name);
     const channels = await createClientChannels(new Set(names), paramDict, []);
     applyChannelsDeps(channels, paramDict);
     await checkParamValues(channels, paramDict);
@@ -82,10 +82,10 @@ async function createRootFormState(): Promise<RootFormState | string> {
   const id = resRootForm.data.id;
 
   const [resPresentations, resChildren, resSettings, resLayout] = await Promise.all([
-    formsAPI.getPresentationsList(id),
-    formsAPI.getFormChildren(id),
+    formsAPI.getPresentationTree(id),
+    formsAPI.getClientChildren(id),
     formsAPI.getFormSettings(id),
-    formsAPI.getFormLayout(id),
+    formsAPI.getPresentationLayout(id),
   ]);
 
   if (!resPresentations.ok) return 'Ошибка при получении списка презентаций';

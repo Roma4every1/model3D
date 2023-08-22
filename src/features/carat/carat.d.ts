@@ -27,6 +27,8 @@ interface CaratState {
   curveGroup: ICaratColumnGroup | null;
   /** Активная кривая. */
   activeCurve: any;
+  /** Список всех используемых каналов. */
+  channelNames: ChannelName[];
   /** Список всех названий каналов-справочников. */
   lookupNames: ChannelName[];
   /** Находится ли форма в состоянии загрузки. */

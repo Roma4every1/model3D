@@ -12,8 +12,8 @@ import { formsAPI } from 'widgets/presentation/lib/forms.api';
 export async function createPresentationState(id: ClientID): Promise<PresentationState> {
   const [resSettings, resChildren, resLayout] = await Promise.all([
     formsAPI.getFormSettings(id),
-    formsAPI.getFormChildren(id),
-    formsAPI.getFormLayout(id),
+    formsAPI.getClientChildren(id),
+    formsAPI.getPresentationLayout(id),
   ]);
 
   if (!resChildren.ok) return;
@@ -72,22 +72,22 @@ export async function createClientChannels(
  * Возвращает полный список всех каналов без повторений и словарь по формам.
  * */
 export async function getPresentationChannels(id: ClientID, ids: FormID[]) {
-  const parentNames = await formsAPI.getFormChannelsList(id);
-  const childrenNames = await Promise.all(ids.map((id) => formsAPI.getFormChannelsList(id)));
+  const parentNames = await formsAPI.getClientAttachedChannels(id);
+  const attachments = await Promise.all(ids.map((id) => formsAPI.getClientAttachedChannels(id)));
 
   const dict = {};
-  const all = new Set(parentNames);
+  const all = new Set(parentNames.map(c => c.name));
 
-  childrenNames.forEach((childNames, i) => {
-    dict[ids[i]] = childNames;
-    for (const name of childNames) all.add(name);
+  attachments.forEach((attachedChannels, i) => {
+    dict[ids[i]] = attachedChannels;
+    for (const name of attachedChannels) all.add(name.name);
   });
-  return [all, dict] as [Set<ChannelName>, Record<FormID, ChannelName[]>];
+  return [all, dict] as [Set<ChannelName>, Record<FormID, AttachedChannel[]>];
 }
 
 export async function createFormStates(
   parent: ClientID, data: FormDataWM[],
-  channels: Record<FormID, ChannelName[]>
+  channels: Record<FormID, AttachedChannel[]>
 ) {
   const states: FormStates = {};
   const settingsArray = await Promise.all(data.map(createFormSettings));

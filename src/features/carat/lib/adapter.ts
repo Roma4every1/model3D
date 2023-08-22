@@ -58,13 +58,11 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
 
   const stage = new CaratStage(init, drawerConfig);
   const observer = new ResizeObserver(() => { stage.resize(); stage.render(); });
+  const loader = new CaratLoader(attachments, curveDataChannel, inclinometryChannel);
 
   const track = stage.getActiveTrack();
   const activeGroup = track.getActiveGroup();
   const lookupNames = track.getLookupNames();
-
-  formState.channels = [...usedChannels];
-  const loader = new CaratLoader(attachments, curveDataChannel, inclinometryChannel);
 
   const curveGroup = activeGroup?.hasCurveColumn()
     ? activeGroup
@@ -73,7 +71,7 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
   return {
     canvas: undefined, stage, loader, observer,
     activeGroup, curveGroup, activeCurve: null,
-    lookupNames, loading: false,
+    lookupNames, channelNames: [...usedChannels], loading: false,
   };
 }
 

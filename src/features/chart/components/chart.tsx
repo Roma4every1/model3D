@@ -22,7 +22,8 @@ export const Chart = ({id, channels}: FormState) => {
   const dispatch = useDispatch();
   const [getPng, { ref }] = useCurrentPng();
 
-  const channelsData: Channel[] = useSelector(channelsSelector.bind(channels), compareArrays);
+  const names = channels.map(c => c.name);
+  const channelsData: Channel[] = useSelector(channelsSelector.bind(names), compareArrays);
   const state: ChartState = useSelector(chartStateSelector.bind(id));
   const { seriesSettings, dateStep, tooltip } = state;
 
