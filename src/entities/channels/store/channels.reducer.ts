@@ -1,90 +1,93 @@
 /* --- Action Types --- */
 
-export enum ChannelsActions {
-  SET_CHANNEL = 'channels/set',
-  SET_CHANNELS = 'channels/sets',
-  SET_CHANNEL_DATA = 'channels/datum',
-  SET_CHANNELS_DATA = 'channels/data',
-  SET_SORT_ORDER = 'channels/order',
-  SET_MAX_ROW_COUNT = 'channels/count',
-  CLEAR = 'channels/clear',
+export enum ChannelActionType {
+  SET_CHANNELS = 'channel/sets',
+  SET_CHANNEL_DATA = 'channel/datum',
+  SET_CHANNELS_DATA = 'channel/data',
+  SET_SORT_ORDER = 'channel/order',
+  SET_MAX_ROW_COUNT = 'channel/count',
+  SET_ACTIVE_ROW = 'channel/active',
+  CLEAR = 'channel/clear',
 }
 
 /* --- Action Interfaces --- */
 
-interface ActionSetChannel {
-  type: ChannelsActions.SET_CHANNEL,
-  payload: {name: ChannelName, channel: Channel};
-}
 interface ActionSetChannels {
-  type: ChannelsActions.SET_CHANNELS,
-  payload: ChannelDict,
+  type: ChannelActionType.SET_CHANNELS;
+  payload: ChannelDict;
 }
 interface ActionSetChannelData {
-  type: ChannelsActions.SET_CHANNEL_DATA,
-  payload: {name: ChannelName, data: ChannelData, tableID: TableID},
+  type: ChannelActionType.SET_CHANNEL_DATA;
+  payload: {name: ChannelName, data: ChannelData, tableID: TableID};
 }
 interface ActionSetChannelsData {
-  type: ChannelsActions.SET_CHANNELS_DATA,
-  payload: ChannelDataEntries,
+  type: ChannelActionType.SET_CHANNELS_DATA;
+  payload: ChannelDataEntries;
 }
 interface ActionSetSortOrder {
-  type: ChannelsActions.SET_SORT_ORDER,
-  payload: {name: ChannelName, order: SortOrder},
+  type: ChannelActionType.SET_SORT_ORDER;
+  payload: {name: ChannelName, order: SortOrder};
 }
 interface ActionSetMaxRowCount {
-  type: ChannelsActions.SET_MAX_ROW_COUNT,
-  payload: {name: ChannelName, count: number | null}
+  type: ChannelActionType.SET_MAX_ROW_COUNT;
+  payload: {name: ChannelName, count: number | null};
+}
+interface ActionSetActiveRow {
+  type: ChannelActionType.SET_ACTIVE_ROW;
+  payload: {name: ChannelName, row: ChannelRow};
 }
 interface ActionClear {
-  type: ChannelsActions.CLEAR,
+  type: ChannelActionType.CLEAR;
 }
 
-export type ChannelsAction = ActionSetChannel | ActionSetChannels | ActionSetChannelData |
-  ActionSetChannelsData | ActionSetSortOrder | ActionSetMaxRowCount | ActionClear;
+export type ChannelAction = ActionSetChannels | ActionSetChannelData | ActionSetChannelsData |
+  ActionSetSortOrder | ActionSetMaxRowCount | ActionSetActiveRow | ActionClear;
 
 /* --- Init State & Reducer --- */
 
 const init: ChannelDict = {};
 
-export function channelsReducer(state: ChannelDict = init, action: ChannelsAction): ChannelDict {
+export function channelsReducer(state: ChannelDict = init, action: ChannelAction): ChannelDict {
   switch (action.type) {
 
-    case ChannelsActions.SET_CHANNEL: {
-      const { name, channel } = action.payload;
-      return {...state, [name]: channel};
-    }
-
-    case ChannelsActions.SET_CHANNELS: {
+    case ChannelActionType.SET_CHANNELS: {
       return {...state, ...action.payload};
     }
 
-    case ChannelsActions.SET_CHANNEL_DATA: {
+    case ChannelActionType.SET_CHANNEL_DATA: {
       const { name, data, tableID } = action.payload;
       return {...state, [name]: {...state[name], data, tableID}};
     }
 
-    case ChannelsActions.SET_CHANNELS_DATA: {
+    case ChannelActionType.SET_CHANNELS_DATA: {
       for (const [name, data] of action.payload) {
         state[name] = {...state[name], data}
       }
       return {...state};
     }
 
-    case ChannelsActions.SET_SORT_ORDER: {
+    case ChannelActionType.SET_SORT_ORDER: {
       const { name, order } = action.payload;
       const channel = state[name];
       return {...state, [name]: {...channel, query: {...channel.query, order}}};
     }
 
-    case ChannelsActions.SET_MAX_ROW_COUNT: {
+    case ChannelActionType.SET_MAX_ROW_COUNT: {
       const { name, count } = action.payload;
       const channel = state[name];
       const query: ChannelQuerySettings = {...channel.query, maxRowCount: count};
       return {...state, [name]: {...channel, query}}
     }
 
-    case ChannelsActions.CLEAR: {
+    case ChannelActionType.SET_ACTIVE_ROW: {
+      const { name, row } = action.payload;
+      const channelData = state[name]?.data;
+      if (!channelData) return state;
+      const channel = {...state[name], data: {...channelData, activeRow: row}};
+      return {...state, [name]: channel};
+    }
+
+    case ChannelActionType.CLEAR: {
       return {};
     }
 

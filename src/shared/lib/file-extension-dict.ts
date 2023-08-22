@@ -6,6 +6,7 @@ import xlsmFileIcon from 'assets/images/reports/xlsm.png';
 import xlsxFileIcon from 'assets/images/reports/xlsx.png';
 import xlsxmFileIcon from 'assets/images/reports/xlsxm.png';
 import zipFileIcon from 'assets/images/reports/zip.png';
+import defaultFileIcon from 'assets/images/reports/default.png';
 
 
 export const fileExtensionDict: Record<string, string> = {
@@ -21,5 +22,7 @@ export const fileExtensionDict: Record<string, string> = {
 
 export const extensions = [
   'csv', 'doc', 'docx', 'xls', 'xlsx', 'xlsm', 'xlsmx',
-  'zip', 'ppt', 'pptx', 'txt', 'html', 'pdf'
+  'zip', 'ppt', 'pptx', 'txt', 'html', 'pdf',
 ];
+
+export { defaultFileIcon };

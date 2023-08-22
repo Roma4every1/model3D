@@ -1,19 +1,28 @@
-import { useSelector } from 'react-redux';
-import { channelSelector } from 'entities/channels';
-import { fileListStateSelector } from '../store/file-list.selectors';
-import {FileListItem} from "./file-list-item";
+import { useDispatch, useSelector } from 'react-redux';
+import { channelSelector, setChannelActiveRow } from 'entities/channels';
+
+import './file-list.scss';
+import { TextInfo } from 'shared/ui';
+import { FileListItem } from './file-list-item';
 
 
-export const FileListView = ({id, channels}: FormState) => {
-  const state: FileListState = useSelector(fileListStateSelector.bind(id));
+/** Список файлов. */
+export const FileListView = ({channels}: FormState) => {
+  const dispatch = useDispatch();
   const channel: Channel = useSelector(channelSelector.bind(channels[0]));
 
-  console.log(state);
-  const files = channel.data?.rows ?? [];
+  const rows = channel.data?.rows ?? [];
+  const activeRow = channel.data?.activeRow;
+  if (rows.length === 0) return <TextInfo text={'Файлы отсутствуют'}/>;
 
-  const filesItemsComponents = files.map((row, i) =>
-    <FileListItem formId={id} filename={row.Cells[0]} key={i}/>
-  );
+  const rowToItem = (row: ChannelRow, i: number) => {
+    const fileName = row.Cells[0];
+    const active = row === activeRow;
 
-  return <ul>{filesItemsComponents}</ul>;
+    const onClick = () => {
+      dispatch(setChannelActiveRow(channel.name, row));
+    }
+    return <FileListItem key={i} fileName={fileName} active={active} onClick={onClick}/>;
+  };
+  return <div className={'file-list'}>{rows.map(rowToItem)}</div>;
 };

@@ -8,14 +8,13 @@ export enum FileListActionType {
 /* --- Action Interfaces --- */
 
 interface ActionCreate {
-  type: FileListActionType.CREATE,
-  payload: FormStatePayload,
+  type: FileListActionType.CREATE;
+  payload: FormStatePayload;
 }
 
 interface ActionSetActiveFile {
-  type: FileListActionType.SET_ACTIVE_FILE,
-  id: FormID,
-  payload: string,
+  type: FileListActionType.SET_ACTIVE_FILE;
+  payload: {id: FormID, file: string};
 }
 
 export type FileListAction = ActionCreate | ActionSetActiveFile;
@@ -29,13 +28,12 @@ export function fileListReducer(state: FileListStates = init, action: FileListAc
 
     case FileListActionType.CREATE: {
       const id = action.payload.state.id;
-      return {...state, [id]: {activeFile: ''}};
+      return {...state, [id]: {activeFile: null}};
     }
 
     case FileListActionType.SET_ACTIVE_FILE: {
-      const id = action.id;
-      const payload = action.payload;
-      return {...state, [id]: {activeFile: payload}};
+      const { id, file } = action.payload;
+      return {...state, [id]: {activeFile: file}};
     }
 
     default: return state;

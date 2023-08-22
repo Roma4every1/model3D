@@ -1,37 +1,37 @@
-import { ChannelsAction, ChannelsActions } from './channels.reducer';
+import { ChannelActionType, ChannelAction } from './channels.reducer';
 
-
-/** Добавляет канал в хранилище. */
-export function setChannel(name: ChannelName, channel: Channel): ChannelsAction {
-  return {type: ChannelsActions.SET_CHANNEL, payload: {name, channel}};
-}
 
 /** Добавляет несколько каналов в хранилище. */
-export function setChannels(channels: ChannelDict): ChannelsAction {
-  return {type: ChannelsActions.SET_CHANNELS, payload: channels};
+export function setChannels(channels: ChannelDict): ChannelAction {
+  return {type: ChannelActionType.SET_CHANNELS, payload: channels};
 }
 
 /** Перезаписывает данные канала. */
-export function setChannelData(name: ChannelName, data: ChannelData, tableID: TableID): ChannelsAction {
-  return {type: ChannelsActions.SET_CHANNEL_DATA, payload: {name, data, tableID}};
+export function setChannelData(name: ChannelName, data: ChannelData, tableID: TableID): ChannelAction {
+  return {type: ChannelActionType.SET_CHANNEL_DATA, payload: {name, data, tableID}};
 }
 
 /** Перезаписывает данные нескольких каналов. */
-export function setChannelsData(payload: ChannelDataEntries): ChannelsAction {
-  return {type: ChannelsActions.SET_CHANNELS_DATA, payload};
+export function setChannelsData(payload: ChannelDataEntries): ChannelAction {
+  return {type: ChannelActionType.SET_CHANNELS_DATA, payload};
 }
 
 /** Добавляет или перезаписывает данные о порядке строк. */
-export function setChannelSortOrder(name: ChannelName, order: SortOrder): ChannelsAction {
-  return {type: ChannelsActions.SET_SORT_ORDER, payload: {name, order}};
+export function setChannelSortOrder(name: ChannelName, order: SortOrder): ChannelAction {
+  return {type: ChannelActionType.SET_SORT_ORDER, payload: {name, order}};
 }
 
 /** Перезаписывает ограничитель количества строк. */
-export function setChannelMaxRowCount(name: ChannelName, count: number | null): ChannelsAction {
-  return {type: ChannelsActions.SET_MAX_ROW_COUNT, payload: {name, count}};
+export function setChannelMaxRowCount(name: ChannelName, count: number | null): ChannelAction {
+  return {type: ChannelActionType.SET_MAX_ROW_COUNT, payload: {name, count}};
+}
+
+/** Задаёт активную запись канала. */
+export function setChannelActiveRow(name: ChannelName, row: ChannelRow): ChannelAction {
+  return {type: ChannelActionType.SET_ACTIVE_ROW, payload: {name, row}};
 }
 
 /** Очищает данные всех каналов. */
-export function clearChannels(): ChannelsAction {
-  return {type: ChannelsActions.CLEAR};
+export function clearChannels(): ChannelAction {
+  return {type: ChannelActionType.CLEAR};
 }

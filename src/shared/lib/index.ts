@@ -10,4 +10,5 @@ export type Thunk<Result = void> = (dispatch: Dispatch<any>, getState?: StateGet
 export * from './common';
 export * from './math';
 export * from './layout';
+export * from './file-extension-dict';
 export { API, BaseAPI } from './api';

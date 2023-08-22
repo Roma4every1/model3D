@@ -1,0 +1,34 @@
+.file-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: 2px;
+  padding: 2px;
+}
+
+.file-list-item {
+  display: grid;
+  grid-template-columns: 40px 100px;
+  align-items: center;
+  gap: 4px;
+
+  padding: 4px 8px;
+  width: 160px;
+
+  border-radius: 2px;
+  background-color: #f8f8f8;
+  transition: background-color 0.2s;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #fadad8;
+  }
+  &.active {
+    background-color: #fccbc7;
+  }
+
+  span {
+    word-break: break-all;
+  }
+}

@@ -1,3 +1,5 @@
+import { createColumnInfo } from 'entities/channels';
+
 /* --- Action Types --- */
 
 export enum FileViewActionType {
@@ -7,8 +9,8 @@ export enum FileViewActionType {
 /* --- Action Interfaces --- */
 
 interface ActionCreate {
-  type: FileViewActionType.CREATE,
-  payload: FormStatePayload,
+  type: FileViewActionType.CREATE;
+  payload: FormStatePayload;
 }
 
 export type FileViewAction = ActionCreate;
@@ -21,8 +23,16 @@ export function fileViewReducer(state: FileViewStates = init, action: FileViewAc
   switch (action.type) {
 
     case FileViewActionType.CREATE: {
-      const id = action.payload.state.id;
-      return {...state, [id]: {data: ''}};
+      const { state: formState, channels } = action.payload;
+      let info: ChannelColumnInfo = null;
+      const criterion: ChannelCriterion = {fileName: 'FILE', filePath: 'PATH'};
+
+      for (const name of formState.channels) {
+        const channel = channels[name];
+        info = createColumnInfo(channel, criterion);
+        if (info) { channel.info.columns = info; break; }
+      }
+      return {...state, [formState.id]: {info}};
     }
 
     default: return state;

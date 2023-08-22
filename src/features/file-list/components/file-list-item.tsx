@@ -1,21 +1,25 @@
-import {useDispatch} from "react-redux";
-import {setActiveFile} from "../store/file-list.actions";
+import { fileExtensionDict, defaultFileIcon } from 'shared/lib';
+
 
 interface FileListItemProps {
-  formId: FormID,
-  filename: string,
+  /** Название файла. */
+  fileName: string;
+  /** Является ли файл активным. */
+  active: boolean;
+  /** Обработчик клика. */
+  onClick: () => void;
 }
 
-export const FileListItem = ({formId, filename}: FileListItemProps) => {
-  const dispatch = useDispatch();
 
-  const onClick = () => {
-    dispatch(setActiveFile(formId, filename));
-  }
+export const FileListItem = ({fileName, active, onClick}: FileListItemProps) => {
+  const extension = fileName.substring(fileName.lastIndexOf('.') + 1);
+  const icon = fileExtensionDict[extension] || defaultFileIcon;
+  const className = 'file-list-item' + (active ? ' active' : '');
 
   return (
-    <button disabled={false} onClick={onClick}>
-      <span>{filename}</span>
-    </button>
+    <div className={className} title={fileName} onClick={onClick}>
+      <img src={icon} alt={extension}/>
+      <span>{fileName}</span>
+    </div>
   );
 };

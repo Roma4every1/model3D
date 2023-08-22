@@ -2,9 +2,8 @@ import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { saveAs } from '@progress/kendo-file-saver';
 import { showNotification } from 'entities/notifications';
+import { fileExtensionDict, extensions, defaultFileIcon } from 'shared/lib';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
-import { fileExtensionDict, extensions } from '../lib/file-extension-dict';
-import defaultFileIcon from 'assets/images/reports/default.png';
 
 
 /** Форматирование даты. */

@@ -3,11 +3,10 @@ type ChannelName = string;
 
 /** Словарь каналов. */
 type ChannelDict = Record<ChannelName, Channel>;
-/** Данные каналов. */
+/** Словарь данных каналов. */
 type ChannelDataDict = Record<ChannelName, ChannelData>;
-
+/** Словарь записей каналов. */
 type ChannelRecordDict = Record<ChannelName, ChannelRecord[]>;
-type ChannelRecord = Record<string, any>;
 
 /** Модель канала данных.
  * + `tableID`: {@link TableID}
@@ -16,15 +15,15 @@ type ChannelRecord = Record<string, any>;
  * + `query`: {@link ChannelQuerySettings}
  * */
 interface Channel {
-  name: ChannelName,
+  name: ChannelName;
   /** ID для API редактирования записей. */
-  tableID: TableID,
+  tableID: TableID;
   /** Данные из базы. */
-  data: ChannelData | null,
+  data: ChannelData | null;
   /** Информация о канале. */
-  info: ChannelInfo,
+  info: ChannelInfo;
   /** Настройки запроса данных. */
-  query: ChannelQuerySettings,
+  query: ChannelQuerySettings;
 }
 
 /** ID для API редактирования записей. */
@@ -38,30 +37,35 @@ type TableID = string;
  * */
 interface ChannelData {
   /** Список колонок. */
-  columns: ChannelColumn[],
+  columns: ChannelColumn[];
   /** Список записей. */
-  rows: ChannelRow[],
+  rows: ChannelRow[];
   /** Выданы ли все данные. */
-  dataPart: boolean,
+  dataPart: boolean;
   /** Являются ли данные редактируемыми. */
-  editable: boolean,
-}
-
-/** Запись из данных канала. */
-interface ChannelRow {
-  ID: number | null,
-  Cells: any[],
+  editable: boolean;
+  /** Активная строка. */
+  activeRow?: ChannelRow;
 }
 
 /** Информация о столбце в SQL-таблице. */
 interface ChannelColumn {
   /** Название колонки. */
-  Name: string,
+  Name: string;
   /** Тип данных. */
-  NetType: string,
+  NetType: string;
   /** Разрешён ли `NULL` в качестве значения. */
-  AllowDBNull: boolean
+  AllowDBNull: boolean;
 }
+
+/** Запись из данных канала. */
+interface ChannelRow {
+  ID: number | null;
+  Cells: any[];
+}
+
+/** Словарь значений по названиям **колонок**. */
+type ChannelRecord = Record<string, any>;
 
 /** Информация о канале, не меняющаяся в течение сессии.
  * + `displayName`: {@link DisplayName}
@@ -76,23 +80,23 @@ interface ChannelColumn {
  * */
 interface ChannelInfo {
   /** Название для отображения на интерфейсе. */
-  displayName: DisplayName,
+  displayName: DisplayName;
   /** Параметры канала. */
-  parameters: ParameterID[],
+  parameters: ParameterID[];
   /** Свойства канала. */
-  properties: ChannelProperty[],
+  properties: ChannelProperty[];
   /** ID параметра, к которому привязан канал. */
-  currentRowObjectName: ParameterID,
+  currentRowObjectName: ParameterID;
   /** ID форм, в которых лежат необходимые параметры. */
-  clients?: Set<FormID>,
+  clients?: Set<ClientID>;
   /** Список каналов справочников. */
-  lookupChannels?: ChannelName[],
+  lookupChannels?: ChannelName[];
   /** Информация о названиях и индексах колонок. */
-  columns?: ChannelColumnInfo,
+  columns?: ChannelColumnInfo;
   /** Названия колонок, необходимых для справочников. */
-  lookupColumns?: LookupColumns,
+  lookupColumns?: LookupColumns;
   /** Были ли полученны данные о колонках канала. */
-  columnApplied?: boolean,
+  columnApplied?: boolean;
 }
 
 /** Дополнительные свойства колонки. */
