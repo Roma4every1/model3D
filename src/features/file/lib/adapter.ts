@@ -8,8 +8,8 @@ export function toFileViewState(payload: FormStatePayload): FileViewState {
     const property = properties.find(p => p.file);
     if (!property) continue;
 
-    useResources = true; //property.file.fromResources;
-    const nameFrom = property.file.fileName;
+    useResources = property.file.fromResources;
+    const nameFrom = property.file.nameFrom;
     const nameProperty = properties.find(p => p.name === nameFrom);
 
     attachedChannel.columnInfo = {

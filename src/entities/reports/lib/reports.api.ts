@@ -57,7 +57,7 @@ export class ReportsAPI {
   }
 
   public downloadFile(path: string) {
-    const query = {sessionId: this.baseAPI.sessionID, resourceName: path};
+    const query = {sessionId: this.baseAPI.sessionID, path};
     return this.baseAPI.request<Blob>({path: 'downloadResource', query, mapper: 'blob'});
   }
 
