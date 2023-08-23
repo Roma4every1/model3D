@@ -1,6 +1,7 @@
 import { Dispatch } from 'redux';
-import { Thunk, StateGetter } from 'shared/lib';
+import { Thunk, StateGetter, base64toBlob } from 'shared/lib';
 import { channelRowToRecord } from 'entities/channels';
+import { showWarningMessage } from 'entities/window';
 import { setFileViewModel } from './file-view.actions';
 import { mimeTypeDict } from '../lib/constants';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
@@ -28,7 +29,10 @@ export function updateFileViewModel(id: FormID, data: ChannelData): Thunk {
 
       if (useResources) {
         const res = await reportsAPI.downloadFile(descriptor);
-        if (!res.ok) return; // TODO: варнинг
+        if (!res.ok) {
+          const message = 'Не удалось загрузить файл ' + fileName;
+          dispatch(showWarningMessage(message)); return;
+        }
         blob = res.data.slice(0, res.data.size, contentType)
       } else {
         blob = base64toBlob(descriptor, contentType);
@@ -41,22 +45,4 @@ export function updateFileViewModel(id: FormID, data: ChannelData): Thunk {
     }
     dispatch(setFileViewModel(id, model));
   };
-}
-
-function base64toBlob(data: string, contentType: string = '', sliceSize: number = 512): Blob {
-  const byteCharacters = atob(data);
-  const byteArrays = [];
-
-  for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-    const slice = byteCharacters.slice(offset, offset + sliceSize);
-
-    const byteNumbers = new Array(slice.length);
-    for (let i = 0; i < slice.length; i++) {
-      byteNumbers[i] = slice.charCodeAt(i);
-    }
-
-    const byteArray = new Uint8Array(byteNumbers);
-    byteArrays.push(byteArray);
-  }
-  return new Blob(byteArrays, {type: contentType});
 }

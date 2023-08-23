@@ -1,8 +1,5 @@
 /* --- Action Types --- */
 
-import { createColumnInfo } from '../../../entities/channels';
-
-
 export enum FileListActionType {
   CREATE = 'fileList/create',
 }
@@ -25,15 +22,23 @@ export function fileListReducer(state: FileListStates = init, action: FileListAc
 
     case FileListActionType.CREATE: {
       const { state: formState, channels } = action.payload;
-      let info: ChannelColumnInfo = null;
-      const criterion: ChannelCriterion = {fileName: 'FILE', filePath: 'PATH'};
 
       for (const attachedChannel of formState.channels) {
-        const channel = channels[attachedChannel.name];
-        info = createColumnInfo(channel, criterion);
-        if (info) { attachedChannel.columnInfo = info; break; }
+        const properties = channels[attachedChannel.name].info.properties;
+        const property = properties.find(p => p.file);
+        if (!property) continue;
+
+        const nameFrom = property.file.fileName;
+        const nameProperty = properties.find(p => p.name === nameFrom);
+
+        attachedChannel.columnInfo = {
+          fileName: {name: nameProperty.fromColumn, index: -1}, // name
+          descriptor: {name: property.fromColumn, index: -1},   // data or path
+        };
+        formState.channels = [attachedChannel];
+        break;
       }
-      return {...state, [formState.id]: {activeFile: null}};
+      return {...state, [formState.id]: {}};
     }
 
     default: return state;

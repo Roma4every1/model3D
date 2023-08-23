@@ -1,4 +1,4 @@
-import { fileExtensionDict, defaultFileIcon } from 'shared/lib';
+import { fileExtensionIconDict, defaultFileIcon } from 'shared/lib';
 
 
 interface FileListItemProps {
@@ -13,7 +13,7 @@ interface FileListItemProps {
 
 export const FileListItem = ({fileName, active, onClick}: FileListItemProps) => {
   const extension = fileName.substring(fileName.lastIndexOf('.') + 1);
-  const icon = fileExtensionDict[extension] || defaultFileIcon;
+  const icon = fileExtensionIconDict[extension] || defaultFileIcon;
   const className = 'file-list-item' + (active ? ' active' : '');
 
   return (

@@ -129,3 +129,24 @@ export function leftAntiJoin<Type>(a: Set<Type>, b: Iterable<Type>): Set<Type> {
 export function cartesianProduct(...values: any[][]): any[][] {
   return values.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
 }
+
+/* --- Binary Operations --- */
+
+/** Преобразует строку в формате `base64` к бинарному виду. */
+export function base64toBlob(data: string, contentType: string = '', sliceSize: number = 512): Blob {
+  const byteCharacters = atob(data);
+  const byteArrays = [];
+
+  for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+    const slice = byteCharacters.slice(offset, offset + sliceSize);
+
+    const byteNumbers = new Array(slice.length);
+    for (let i = 0; i < slice.length; i++) {
+      byteNumbers[i] = slice.charCodeAt(i);
+    }
+
+    const byteArray = new Uint8Array(byteNumbers);
+    byteArrays.push(byteArray);
+  }
+  return new Blob(byteArrays, {type: contentType});
+}

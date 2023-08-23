@@ -15,7 +15,9 @@ import DocViewer from '@cyntler/react-doc-viewer';
 export const FileView = ({id, channels}: FormState) => {
   const dispatch = useDispatch();
   const { model, memo }: FileViewState = useSelector(fileViewStateSelector.bind(id));
-  const { data }: Channel = useSelector(channelSelector.bind(channels[0].name));
+
+  const channel: Channel = useSelector(channelSelector.bind(channels[0]?.name));
+  const data = channel?.data;
 
   useEffect(() => {
     dispatch(updateFileViewModel(id, data));

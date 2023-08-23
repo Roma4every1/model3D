@@ -56,8 +56,8 @@ export class ReportsAPI {
     return this.baseAPI.request<string>({method: 'POST', path: 'uploadFile', query, body});
   }
 
-  public downloadFile(resourceName: string) {
-    const query = {sessionId: this.baseAPI.sessionID, resourceName};
+  public downloadFile(path: string) {
+    const query = {sessionId: this.baseAPI.sessionID, resourceName: path};
     return this.baseAPI.request<Blob>({path: 'downloadResource', query, mapper: 'blob'});
   }
 

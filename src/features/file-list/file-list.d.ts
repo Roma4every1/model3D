@@ -3,6 +3,6 @@ type FileListStates = FormDict<FileListState>;
 
 /** Состояние формы списка файлов. */
 interface FileListState {
-  /** Имя активного файла. */
-  activeFile: string | null;
+  // Состояние формы не требуется.
+  // Используется для совместимости с обобщённой моделью формы.
 }

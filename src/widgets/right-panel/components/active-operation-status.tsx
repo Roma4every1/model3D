@@ -2,7 +2,7 @@ import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { saveAs } from '@progress/kendo-file-saver';
 import { showNotification } from 'entities/notifications';
-import { fileExtensionDict, extensions, defaultFileIcon } from 'shared/lib';
+import { fileExtensionIconDict, defaultFileIcon } from 'shared/lib';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
 
 
@@ -15,13 +15,13 @@ export const ActiveOperationStatus = ({status}: {status: OperationStatus}) => {
   const dispatch = useDispatch();
 
   const file = status.file;
-  const hasFile = file?.extension && extensions.includes(file.extension);
+  const hasFile = file?.extension;
 
   const date = formatter.format(status.timestamp);
   const progressStringData = {order: status.queueNumber, progress: status.progress};
 
   const fileImage = hasFile
-    ? fileExtensionDict[file.extension] || defaultFileIcon
+    ? fileExtensionIconDict[file.extension] || defaultFileIcon
     : defaultFileIcon;
 
   const download = hasFile ? () => {

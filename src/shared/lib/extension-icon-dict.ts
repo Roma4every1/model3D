@@ -9,7 +9,8 @@ import zipFileIcon from 'assets/images/reports/zip.png';
 import defaultFileIcon from 'assets/images/reports/default.png';
 
 
-export const fileExtensionDict: Record<string, string> = {
+/** Словарь иконок для различных расширений файлов. */
+export const fileExtensionIconDict: Record<string, string> = {
   'csv': csvFileIcon,
   'doc': docFileIcon,
   'docx': docxFileIcon,
@@ -19,10 +20,5 @@ export const fileExtensionDict: Record<string, string> = {
   'xlsxm': xlsxmFileIcon,
   'zip': zipFileIcon,
 };
-
-export const extensions = [
-  'csv', 'doc', 'docx', 'xls', 'xlsx', 'xlsm', 'xlsmx',
-  'zip', 'ppt', 'pptx', 'txt', 'html', 'pdf',
-];
 
 export { defaultFileIcon };
