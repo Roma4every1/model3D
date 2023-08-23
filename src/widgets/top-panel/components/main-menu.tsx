@@ -34,7 +34,8 @@ export const MainMenu = ({leftLayout, config}: MainMenuProps) => {
   const showAboutWindow = () => {
     const onClose = () => dispatch(closeWindow('about'));
     const content = <AboutProgramWindow config={config} onClose={onClose}/>;
-    showDialog('about', {title: 'О программе', width: 400, onClose}, content);
+    const props = {title: 'О программе', width: 400, onClose, contentStyle: {padding: 0}};
+    dispatch(showDialog('about', props, content));
   };
 
   return (
@@ -65,9 +66,11 @@ export const MainMenu = ({leftLayout, config}: MainMenuProps) => {
 const AboutProgramWindow = ({config, onClose}: AboutProgramWindowProps) => {
   return (
     <>
-      <h3>Well Manager <b>{PACKAGE['version']}</b></h3>
-      {config.devMode && <div style={{color: 'red'}}>Активен режим разработчика</div>}
-      <div>API: <b>{config.webServicesURL}</b></div>
+      <div style={{padding: '12px 16px'}}>
+        <h3>Well Manager <b>{PACKAGE['version']}</b></h3>
+        {config.devMode && <div style={{color: 'red'}}>Активен режим разработчика</div>}
+        <div>API: <b>{config.webServicesURL}</b></div>
+      </div>
       <DialogActionsBar>
         <Button onClick={onClose}>Ок</Button>
       </DialogActionsBar>

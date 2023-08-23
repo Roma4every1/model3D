@@ -17,19 +17,26 @@ export function createClientConfig(data: unknown): ClientConfiguration {
     if (pathName.includes('/')) {
       pathName = pathName.slice(0, pathName.indexOf('/'));
     }
-    const webServicesURL = window.location.origin + '/' + pathName + '/WebRequests.svc/';
-    console.warn('use default URL for web requests: ' + webServicesURL);
-    console.warn('invalid config:\n', data);
-    config.webServicesURL = webServicesURL;
+    config.webServicesURL = window.location.origin + '/' + pathName + '/WebRequests.svc/';
   }
 
   return config;
 }
 
+/** Определяет расположение клиента относительно корневого пути.
+ * @example
+ * "/" => "/"
+ * "/id3x/client/index.html" => "/id3x/client/"
+ * "/id3x/client/systems/" => "/id3x/client/"
+ * "/id3x/client/systems/SYSTEM/" => "/id3x/client/"
+ * */
 export function getAppLocation(): string {
   let location = window.location.pathname;
+  if (location.endsWith('index.html')) {
+    location = location.substring(0, location.length - 10);
+  }
   if (location.includes('/systems/')) {
-    location = location.slice(0, location.indexOf('systems/'))
+    location = location.substring(0, location.indexOf('systems/'))
   }
   if (!location.endsWith('/')) location += '/';
   return location;

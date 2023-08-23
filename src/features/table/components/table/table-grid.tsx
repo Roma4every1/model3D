@@ -25,12 +25,12 @@ import { useTranslation } from 'react-i18next';
 
 
 interface TableGridProps {
-  id: FormID,
-  state: TableState,
-  query: ChannelQuerySettings,
-  records: TableRecord[],
-  setRecords: SetRecords,
-  children: JSX.Element[],
+  id: FormID;
+  state: TableState;
+  query: ChannelQuerySettings;
+  records: TableRecord[];
+  setRecords: SetRecords;
+  children: JSX.Element[];
 }
 
 
@@ -159,14 +159,16 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
 
   const setSelection = (newSelection: TableSelection) => {
     dispatch(setTableSelection(id, newSelection));
-    if (state.activeRecordParameter) dispatch(updateActiveRecord(id, newSelection, records));
   };
 
   const setActiveCell = (cell: TableActiveCell) => {
-    if (cell.recordID !== activeRecordID && edit.modified) {
-      const activeRecord = records.find(rec => rec.id === activeRecordID);
-      const isSave = saveRecord(activeRecord);
-      if (isSave === false) return;
+    if (cell.recordID !== activeRecordID) {
+      if (edit.modified) {
+        const activeRecord = records.find(rec => rec.id === activeRecordID);
+        const isSave = saveRecord(activeRecord);
+        if (isSave === false) return;
+      }
+      dispatch(updateActiveRecord(id, cell.recordID));
     }
     dispatch(setTableActiveCell(id, cell));
   };

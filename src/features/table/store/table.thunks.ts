@@ -5,8 +5,8 @@ import { t } from 'shared/locales';
 import { createElement } from 'react';
 import { watchReport } from 'entities/reports';
 import { fillParamValues, updateParamDeep } from 'entities/parameters';
-import { tableRowToString } from '../../../entities/parameters/lib/table-row';
-import { updateTables, reloadChannel } from 'entities/channels';
+import { tableRowToString } from 'entities/parameters/lib/table-row';
+import { updateTables, reloadChannel, setChannelActiveRow } from 'entities/channels';
 import { showWarningMessage, showWindow, closeWindow } from 'entities/window';
 import { showNotification } from 'entities/notifications';
 import { channelsAPI } from 'entities/channels/lib/channels.api';
@@ -28,23 +28,20 @@ export function reloadTable(id: FormID): Thunk {
 }
 
 /** Обновляет параметр активной строки. */
-export function updateActiveRecord(
-  id: FormID, selection: TableSelection,
-  records: TableRecord[],
-): Thunk {
+export function updateActiveRecord(id: FormID, recordID: TableRecordID): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const state = getState();
     const tableState = state.tables[id];
 
-    const activeIDs = Object.keys(selection);
-    if (activeIDs.length !== 1) return;
-    const activeID = parseInt(activeIDs[0]);
+    const channel = state.channels[tableState.channelName];
+    const row = channel.data.rows[recordID];
+    dispatch(setChannelActiveRow(channel.name, row));
 
-    const { id: parameterID, clientID } = tableState.activeRecordParameter;
-    const record = records.find(r => r.id === activeID);
-    const row: ChannelRow = {ID: null, Cells: record.cells};
-    const newValue = tableRowToString(state.channels[tableState.channelName], row);
-    await updateParamDeep(clientID, parameterID, newValue)(dispatch, getState);
+    if (tableState.activeRecordParameter) {
+      const { id: parameterID, clientID } = tableState.activeRecordParameter;
+      const newValue = tableRowToString(channel, row);
+      await updateParamDeep(clientID, parameterID, newValue)(dispatch, getState);
+    }
   };
 }
 
