@@ -1,4 +1,5 @@
 import { saveAs } from '@progress/kendo-file-saver';
+import { useTranslation } from 'react-i18next';
 
 
 interface UnsupportedFileProps {
@@ -9,18 +10,17 @@ interface UnsupportedFileProps {
 
 /** Заглушка для неподдерживаемого расширения файла. */
 export const UnsupportedFile = ({model}: UnsupportedFileProps) => {
-  const onClick = () => {
-    saveAs(model.data, model.fileName);
-  };
+  const { t } = useTranslation();
+  const onClick = () => saveAs(model.data, model.fileName);
 
   return (
     <div className={'wm-text-info file-view-unsupported'}>
       <div>
-        <span>Предпросмотр файла </span>
+        <span>{t('file-view.unsupported-1')}</span>
         <strong>{model.fileName}</strong>
-        <span> недоступен</span>
+        <span>{t('file-view.unsupported-2')}</span>
       </div>
-      <button onClick={onClick}>Загрузить</button>
+      <button onClick={onClick}>{t('file-view.download')}</button>
     </div>
   );
 };

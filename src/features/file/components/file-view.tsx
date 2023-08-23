@@ -23,7 +23,7 @@ export const FileView = ({id, channels}: FormState) => {
     dispatch(updateFileViewModel(id, data));
   }, [data, id, dispatch]);
 
-  if (!model) return <TextInfo text={'Файл не выбран'}/>;
+  if (!model) return <TextInfo text={'file-view.no-file'}/>;
   if (!supportedExtensions.has(model.fileType)) return <UnsupportedFile model={model}/>;
   return <DocViewer config={docViewerConfig} documents={memo} activeDocument={model}/>;
 };

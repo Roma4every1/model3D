@@ -3,6 +3,7 @@ import { Thunk, StateGetter, base64toBlob } from 'shared/lib';
 import { channelRowToRecord } from 'entities/channels';
 import { showWarningMessage } from 'entities/window';
 import { setFileViewModel } from './file-view.actions';
+import { t } from 'shared/locales';
 import { mimeTypeDict } from '../lib/constants';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
 
@@ -30,7 +31,7 @@ export function updateFileViewModel(id: FormID, data: ChannelData): Thunk {
       if (useResources) {
         const res = await reportsAPI.downloadFile(descriptor);
         if (!res.ok) {
-          const message = 'Не удалось загрузить файл ' + fileName;
+          const message = t('file-view.download-error', {fileName});
           dispatch(showWarningMessage(message)); return;
         }
         blob = res.data.slice(0, res.data.size, contentType)
