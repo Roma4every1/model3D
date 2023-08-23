@@ -1,3 +1,8 @@
+import txtFileIcon from 'assets/images/reports/txt.png';
+import pngFileIcon from 'assets/images/reports/png.png';
+import binFileIcon from 'assets/images/reports/bin.png';
+import jpgFileIcon from 'assets/images/reports/jpg.png';
+import pdfFileIcon from 'assets/images/reports/pdf.png';
 import csvFileIcon from 'assets/images/reports/csv.png';
 import docFileIcon from 'assets/images/reports/doc.png';
 import docxFileIcon from 'assets/images/reports/docx.png';
@@ -11,6 +16,12 @@ import defaultFileIcon from 'assets/images/reports/default.png';
 
 /** Словарь иконок для различных расширений файлов. */
 export const fileExtensionIconDict: Record<string, string> = {
+  'txt': txtFileIcon,
+  'png': pngFileIcon,
+  'bmp': binFileIcon,
+  'jpg': jpgFileIcon,
+  'jpeg': jpgFileIcon,
+  'pdf': pdfFileIcon,
   'csv': csvFileIcon,
   'doc': docFileIcon,
   'docx': docxFileIcon,
