@@ -1,6 +1,3 @@
-/** Идентификатор канала с данными. */
-type ChannelName = string;
-
 /** Словарь каналов. */
 type ChannelDict = Record<ChannelName, Channel>;
 /** Словарь данных каналов. */
@@ -26,6 +23,8 @@ interface Channel {
   query: ChannelQuerySettings;
 }
 
+/** Идентификатор канала с данными. */
+type ChannelName = string;
 /** ID для API редактирования записей. */
 type TableID = string;
 
@@ -51,10 +50,10 @@ interface ChannelData {
 /** Информация о столбце в SQL-таблице. */
 interface ChannelColumn {
   /** Название колонки. */
-  Name: string;
+  Name: ColumnName;
   /** Тип данных. */
-  NetType: string;
-  /** Разрешён ли `NULL` в качестве значения. */
+  NetType: ColumnType;
+  /** Разрешён ли `null` в качестве значения. */
   AllowDBNull: boolean;
 }
 
@@ -65,7 +64,18 @@ interface ChannelRow {
 }
 
 /** Словарь значений по названиям **колонок**. */
-type ChannelRecord = Record<string, any>;
+type ChannelRecord = Record<ColumnName, any>;
+/** Название колонки канала; всегда имеет верхний регистр. */
+type ColumnName = string;
+
+/** Тип данных колонки канала.
+ * @example
+ * "System.Int32"
+ * "System.Decimal"
+ * "System.String"
+ * "System.Byte[]"
+ * */
+type ColumnType = string;
 
 /** Информация о канале, не меняющаяся в течение сессии.
  * + `displayName`: {@link DisplayName}
@@ -104,17 +114,17 @@ interface ChannelProperty {
   /** Название свойства. */
   name: string;
   /** Какой колонке относится. */
-  fromColumn: string;
-  /** `NetType` связанной колонки. */
-  type?: string;
+  fromColumn: ColumnName;
+  /** Тип данных связанной колонки. */
+  type?: ColumnType;
   /** Название для отображения на интерфейсе. */
-  displayName: string;
+  displayName: DisplayName;
   /** Группировка относительно других колонок. */
   treePath: string[];
   /** Канал-справочник. */
-  lookupChannels: string[];
+  lookupChannels: ChannelName[];
   /** Название канала для привязанной таблицы. */
-  secondLevelChannelName: string | null;
+  secondLevelChannelName: ChannelName | null;
   /** Информация для свойства связанного с файлами. */
   file: {nameFrom: string, fromResources: boolean} | null;
 }
@@ -139,7 +149,7 @@ type ChannelColumnInfo<Fields = string> = Record<Fields, LookupColumnInfo>;
 /** Информация о названии и индексе колонки. */
 interface LookupColumnInfo {
   /** Название колонки. */
-  name: string;
+  name: ColumnName;
   /** Порядковый номер. */
   index: number;
 }
@@ -161,12 +171,12 @@ interface ChannelQuerySettings {
 type SortOrder = SortOrderItem[];
 
 /** Элемент порядка сортировки.
- * + `column: string`
+ * + `column`: {@link ColumnName}
  * + `direction`: {@link SortOrderDirection}
  * */
 interface SortOrderItem {
-  /** ID колонки. */
-  column: string;
+  /** Название колонки. */
+  column: ColumnName;
   /** Направление сортировки. */
   direction: SortOrderDirection;
 }

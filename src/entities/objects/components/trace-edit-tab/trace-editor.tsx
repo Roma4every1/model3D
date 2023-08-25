@@ -11,13 +11,19 @@ import { TraceNodes } from './trace-nodes';
 import { TraceAddNode } from './trace-add-node';
 
 
+interface TraceEditorProps {
+  /** ID формы карты. */
+  id: FormID;
+}
+
+
 /** Правая панель редактирования трассы. */
-export const TraceEditor = ({formID}: PropsFormID) => {
+export const TraceEditor = ({id}: TraceEditorProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
   const { model, oldModel, creating } = useSelector(traceStateSelector);
-  const mapState: MapState = useSelector(mapStateSelector.bind(formID));
+  const mapState: MapState = useSelector(mapStateSelector.bind(id));
 
   if (!model) return <div/>;
   const mapPoints = mapState?.mapData?.points;
