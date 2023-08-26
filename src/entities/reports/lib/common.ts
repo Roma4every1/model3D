@@ -1,8 +1,10 @@
 import { Dispatch } from 'redux';
-import { reportsAPI } from './reports.api';
-import { setOperationStatus } from '../store/reports.actions';
 import { fillParamValues } from 'entities/parameters';
-import { updateTables, fillChannels } from '../../channels';
+import { updateTables, fillChannels } from 'entities/channels';
+import { showInfoMessage } from 'entities/window';
+import { setOperationStatus } from '../store/reports.actions';
+import { t } from 'shared/locales';
+import { reportsAPI } from './reports.api';
 
 
 export function watchReport(report: ReportModel, operationID: OperationID, dispatch: Dispatch<any>) {
@@ -12,6 +14,11 @@ export function watchReport(report: ReportModel, operationID: OperationID, dispa
 
     const modifiedTables = data?.report?.ModifiedTables?.ModifiedTables ?? [];
     if (modifiedTables.length) dispatch(updateTables(modifiedTables));
+
+    if (data?.reportLog && report) {
+      const title = t(`report.${report.type}-result`);
+      dispatch(showInfoMessage(data.reportLog, title));
+    }
 
     dispatch(setOperationStatus(convertOperationStatus(data.report)));
     if (data.isReady === false) setTimeout(tick, 1000);

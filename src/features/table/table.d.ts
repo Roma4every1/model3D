@@ -123,7 +123,7 @@ interface TableColumnState {
   /** Формат записи. */
   format?: string;
   /** Имя колонки **в данных канала**. */
-  colName?: string;
+  colName?: ColumnName;
   /** Индекс колонки **в данных канала**. */
   colIndex?: number;
   /** Может ли ячейка быть пустой. */

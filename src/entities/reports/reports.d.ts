@@ -44,7 +44,17 @@ interface ReportModel {
 /** Тип удалённой процедуры: программа или отчёт. */
 type ReportType = 'program' | 'report';
 
-/** Статус операции, выполняемой на сервере. */
+/** Статус операции, выполняемой на сервере.
+ * + `id`: {@link OperationID}
+ * + `clientID`: {@link ClientID}
+ * + `queueNumber: number`
+ * + `progress: number`
+ * + `timestamp`: {@link Date}
+ * + `file`: {@link OperationFile}
+ * + `description: string`
+ * + `defaultResult: string`
+ * + `error: string`
+ * */
 interface OperationStatus {
   /** Идентификатор операции. */
   id: OperationID;
@@ -66,7 +76,11 @@ interface OperationStatus {
   error: string;
 }
 
-/** Информация о файле активного отчёта. */
+/** Информация о файле активного отчёта.
+ * + `name: string`
+ * + `path: string`
+ * + `extension: string`
+ * */
 interface OperationFile {
   /** Название файла. */
   name: string;
@@ -84,7 +98,11 @@ type OperationID = string;
 /** Данные для инициализации списка параметров отчёта/программы. */
 type ReportInitData = Pick<ReportModel, 'parameters' | 'channels' | 'canRun'>;
 
-/** Список связанных каналов отчёта. */
+/** Список связанных каналов отчёта.
+ * + `clientID`: {@link ClientID}
+ * + `reportID`: {@link ReportID}
+ * + `channels`: {@link ChannelName}[]
+ * */
 interface RelatedReportChannels {
   /** ID клиента, в котором находится отчёт. */
   clientID: ClientID;
@@ -110,7 +128,7 @@ interface NewOperationData {
 interface ReportStatus {
   Comment: string;
   Cur_page: any;
-  ReportResult: any;
+  ReportResult: string;
   DefaultResult: string;
   DisplayType: number;
   /** Timestamp завершения работы. */
@@ -137,5 +155,5 @@ interface ReportStatus {
 interface OperationResult {
   isReady: boolean;
   report: ReportStatus;
-  reportLog: any;
+  reportLog: string;
 }
