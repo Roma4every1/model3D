@@ -24,7 +24,7 @@ export class CaratCurveColumn implements ICaratColumn {
   public copy(): CaratCurveColumn {
     const { drawer, curveSetChannel } = this;
     const copy = new CaratCurveColumn(null, drawer, curveSetChannel);
-    copy.groups = this.groups.map(g => ({rect: g.rect, elements: []}));
+    copy.groups = this.groups.map(g => ({rect: {...g.rect}, elements: []}));
     return copy;
   }
 
@@ -41,15 +41,15 @@ export class CaratCurveColumn implements ICaratColumn {
     return [min, max];
   }
 
-  public getGroups() {
+  public getGroups(): CurveGroupState[] {
     return this.groups;
   }
 
-  public getGroupWidth() {
+  public getGroupWidth(): number {
     return this.groups[0].rect.width;
   }
 
-  public getTotalWidth() {
+  public getTotalWidth(): number {
     return this.groups[0].rect.width * this.groups.length;
   }
 
@@ -102,6 +102,8 @@ export class CaratCurveColumn implements ICaratColumn {
       this.drawer.drawCurves(curveGroup.elements);
       this.drawer.restore();
     }
-    if (this.dividingLines.length) this.drawer.drawZoneDividingLines(this.dividingLines);
+    if (this.dividingLines.length) {
+      this.drawer.drawZoneDividingLines(this.dividingLines);
+    }
   }
 }

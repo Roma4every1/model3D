@@ -103,7 +103,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
       drawer: this.drawer,
       dataRect: dataRect,
       id: this.id,
-      settings: {...this.settings},
+      settings: structuredClone(this.settings),
       header: new CaratColumnHeader(this.drawer, this.settings.label),
       curveManager: this.curveManager.copy(),
       zones: this.zones,
@@ -188,7 +188,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     return Boolean(this.curveColumn);
   }
 
-  public setLabel(label: string) {
+  public setLabel(label: string): void {
     this.header.setLabel(label);
     this.settings.label = label;
   }
@@ -206,14 +206,14 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     return width;
   }
 
-  public setHeight(height: number) {
+  public setHeight(height: number): void {
     const columnHeight = height - this.header.getHeight();
     this.dataRect.height = columnHeight;
     for (const column of this.columns) column.rect.height = columnHeight;
     if (this.curveColumn) this.curveColumn.setHeight(columnHeight);
   }
 
-  public setHeaderHeight(height: number) {
+  public setHeaderHeight(height: number): void {
     const delta = height - this.header.getHeight();
     this.header.setHeight(height);
     this.dataRect.top += delta;
@@ -224,19 +224,18 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     if (this.curveColumn) this.curveColumn.setHeight(elementsHeight);
   }
 
-  public shift(by: number) {
+  public shift(by: number): void {
     this.dataRect.left += by;
   }
 
   /** Делает перестроение зон, возвращает изменение ширины. */
-  public setZones(zones: CaratZone[]): number {
+  public setZones(zones: CaratZone[]): void {
     this.zones = zones;
-    if (!this.curveColumn) return 0;
-    const curves = this.curveManager.getVisibleCurves();
-    return this.groupCurves(curves);
+    if (!this.curveColumn) return;
+    this.groupCurves(this.curveManager.getVisibleCurves());
   }
 
-  public setActiveCurve(id?: CaratCurveID) {
+  public setActiveCurve(id?: CaratCurveID): void {
     if (!this.curveColumn) return;
     this.curveManager.setActiveCurve(id);
   }
@@ -247,7 +246,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     p.x -= this.dataRect.left;
     p.y -= this.dataRect.top;
 
-    const group = this.curveColumn.getGroups().find((g) => isRectInnerPoint(p, g.rect));
+    const group = this.curveColumn.getGroups().find(g => isRectInnerPoint(p, g.rect));
     if (!group) return null;
     const { rect, elements } = group;
 
@@ -263,20 +262,20 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   }
 
   /** Задаёт новый список элементов и кривых, возвращает изменение ширины. */
-  public setData(data: ChannelRecordDict, cache: CurveDataCache): number {
+  public setData(data: ChannelRecordDict, cache: CurveDataCache): void {
     for (const column of this.columns) {
       const rows = data[column.channel.name];
       column.setChannelData(rows);
     }
 
-    if (!this.curveColumn) return 0;
+    if (!this.curveColumn) return;
     const curveSetData = data[this.curveColumn.curveSetChannel.name];
     this.curveManager.setCurveChannelData(curveSetData, cache);
-    return this.groupCurves(this.curveManager.getVisibleCurves());
+    this.groupCurves(this.curveManager.getVisibleCurves());
   }
 
   /** Группирует кривые по зонам, возвращает изменение ширины. */
-  public groupCurves(curves: CaratCurveModel[]): number {
+  public groupCurves(curves: CaratCurveModel[]): void {
     this.curveColumn.setCurveData(curves, this.zones);
     this.header.setAxes(this.curveColumn.getGroups());
 
@@ -287,20 +286,21 @@ export class CaratColumnGroup implements ICaratColumnGroup {
       this.dataRect.width = newWidth;
       for (const column of this.columns) column.rect.width = newWidth;
     }
-    return newWidth - oldWidth;
   }
 
-  public setLookupData(lookupData: ChannelRecordDict) {
+  public setLookupData(lookupData: ChannelRecordDict): void {
     for (const column of this.columns) column.setLookupData(lookupData);
     if (this.curveColumn) this.curveManager.setStyleData(lookupData);
   }
 
-  public renderHeader() {
+  /* --- Rendering --- */
+
+  public renderHeader(): void {
     this.drawer.setCurrentGroup(this.dataRect, this.settings);
     this.header.render(this.xAxis);
   }
 
-  public renderContent() {
+  public renderContent(): void {
     this.drawer.setCurrentGroup(this.dataRect, this.settings);
     for (const column of this.columns) column.render();
 

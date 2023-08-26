@@ -47,7 +47,9 @@ export class CaratStage implements ICaratStage {
     const track = new CaratTrack(rect, init.columns, scale, this.drawer);
     this.trackList = [track];
     this.activeIndex = 0;
-    if (this.zones.length) track.setZones(this.zones);
+    if (this.zones.length) {
+      track.getGroups().forEach(g => g.setZones(this.zones));
+    }
   }
 
   public getCaratSettings(): CaratSettings {
@@ -66,14 +68,17 @@ export class CaratStage implements ICaratStage {
     return this.zones;
   }
 
-  public setZones(zones: CaratZone[]) {
-    this.zones = zones;
-    for (const track of this.trackList) track.setZones(zones);
+  public setZones(zones: CaratZone[]): void {
+    for (const track of this.trackList) {
+      track.getGroups().forEach(g => g.setZones(zones));
+      track.updateGroupRects();
+    }
     this.updateTrackRects();
     this.resize();
+    this.zones = zones;
   }
 
-  public setCanvas(canvas: HTMLCanvasElement) {
+  public setCanvas(canvas: HTMLCanvasElement): void {
     this.canvas = canvas;
     if (canvas) {
       this.drawer.setContext(canvas.getContext('2d'));
@@ -127,6 +132,7 @@ export class CaratStage implements ICaratStage {
       case 'group-label': { // изменение подписи колонки
         const { idx, label } = action.payload;
         for (const track of this.trackList) track.setGroupLabel(idx, label);
+        this.updateTrackRects();
         return;
       }
       case 'group-y-step': { // изменение шага по оси Y
@@ -138,7 +144,7 @@ export class CaratStage implements ICaratStage {
     }
   }
 
-  public setData(data: ChannelRecordDict[], cache: CurveDataCache) {
+  public setData(data: ChannelRecordDict[], cache: CurveDataCache): void {
     for (let i = 0; i < data.length; i++) {
       this.trackList[i].setData(data[i], cache);
     }
@@ -147,7 +153,7 @@ export class CaratStage implements ICaratStage {
     this.correlations.setData(this.trackList);
   }
 
-  public setLookupData(lookupData: ChannelRecordDict) {
+  public setLookupData(lookupData: ChannelRecordDict): void {
     for (const track of this.trackList) track.setLookupData(lookupData);
   }
 
@@ -174,12 +180,12 @@ export class CaratStage implements ICaratStage {
     return activeCurve ?? true;
   }
 
-  public handleMouseWheel(point: Point, direction: 1 | -1) {
+  public handleMouseWheel(point: Point, direction: 1 | -1): void {
     const index = this.trackList.findIndex(t => isRectInnerPoint(point, t.rect));
     moveSmoothly(this, index, direction);
   }
 
-  public handleMouseMove(point: Point, by: number) {
+  public handleMouseMove(point: Point, by: number): void {
     const move = (idx: number) => {
       const viewport = this.trackList[idx].viewport;
       let newY = viewport.y - by / (viewport.scale * window.devicePixelRatio);
@@ -200,17 +206,23 @@ export class CaratStage implements ICaratStage {
 
   /** Обновляет горизонтальное положение треков и корреляций. */
   public updateTrackRects(): void {
-    let left = this.trackList[0].rect.left;
+    let left = this.drawer.trackBodySettings.padding;
+    let maxHeaderHeight = 0;
     const correlationWidth = this.correlations.getWidth();
 
     for (const track of this.trackList) {
       track.rect.left = left;
       left += track.rect.width + correlationWidth;
+
+      const heights = track.getGroups().map(g => g.header.getContentHeight());
+      const trackHeaderHeight = Math.max(...heights);
+      if (maxHeaderHeight < trackHeaderHeight) maxHeaderHeight = trackHeaderHeight;
     }
+    this.trackList.forEach(t => t.setHeaderHeight(maxHeaderHeight));
     this.correlations.updateRects(this.trackList);
   }
 
-  public resize() {
+  public resize(): void {
     if (!this.canvas) return;
     const track = this.trackList[0];
     const padding = this.drawer.trackBodySettings.padding;
@@ -230,7 +242,7 @@ export class CaratStage implements ICaratStage {
 
     const trackHeight = resultHeight - 2 * padding;
     for (const track of this.trackList) track.setHeight(trackHeight);
-    this.correlations.setHeight(trackHeight);
+    this.correlations.updateRects(this.trackList);
   }
 
   /* --- Rendering --- */

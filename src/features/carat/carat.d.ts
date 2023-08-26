@@ -133,7 +133,7 @@ interface ICaratTrack {
   setActiveCurve(curve: any): void;
 
   handleMouseDown(point: Point): any;
-  rebuildRects(changes: number[]): void;
+  updateGroupRects(): void;
 
   render(): void;
   lazyRender(): void;
@@ -157,7 +157,7 @@ interface ICaratColumnGroup {
   getRange(): [number, number];
   getIntervals(): any[];
   hasCurveColumn(): boolean;
-  groupCurves(curves: any[]): number;
+  groupCurves(curves: any[]): void;
 }
 
 interface ICaratColumn {

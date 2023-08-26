@@ -71,7 +71,14 @@ export interface CaratIntervalStyle {
 
 /* --- Correlations --- */
 
-/** Корреляции пластов между двумя треками. */
+/** Корреляции пластов между двумя треками.
+ * + `rect`: {@link Rectangle}
+ * + `leftTop: number`
+ * + `rightTop: number`
+ * + `leftViewport`: {@link CaratViewport}
+ * + `rightViewport`: {@link CaratViewport}
+ * + `data`: {@link StratumCorrelation}[]
+ * */
 export interface CaratCorrelation {
   /** Ограничивающий прямоугольник. */
   rect: Rectangle;
@@ -87,7 +94,12 @@ export interface CaratCorrelation {
   data: StratumCorrelation[];
 }
 
-/** Корреляция пласта между двумя треками. */
+/** Корреляция пласта между двумя треками.
+ * + `leftTop: number`
+ * + `leftBottom: number`
+ * + `rightTop: number`
+ * + `rightBottom: number`
+ * */
 export interface StratumCorrelation {
   /** Глубина кровли пласта в треке слева. */
   leftTop: number;
@@ -104,7 +116,10 @@ export interface StratumCorrelation {
 /** Отображение "глубина => абс. отметка". */
 export type InclinometryMap = Map<number, number>;
 
-/** Опорная точка инклинометрии. */
+/** Опорная точка инклинометрии.
+ * + `depth: number`
+ * + `absMark: number`
+ * */
 export interface InclinometryMark {
   /** Значение глубины. */
   depth: number;

@@ -69,7 +69,10 @@ interface CaratColumnSettings {
 /** Тип колонки: `background` для трека, `external` для корреляций, `normal` для всего остального. */
 type CaratColumnType = 'normal' | 'background' | 'external';
 
-/** Настройки горизонтальных осей для кривых. */
+/** Настройки горизонтальных осей для кривых.
+ * + `grid: boolean`
+ * + `numberOfMarks: number`
+ * */
 interface CaratColumnXAxis {
   /** Показывать ли вертикальную сетку. */
   grid: boolean;
@@ -77,7 +80,13 @@ interface CaratColumnXAxis {
   numberOfMarks: number;
 }
 
-/** Настройки вертикальной оси колонки. */
+/** Настройки вертикальной оси колонки.
+ * + `show: boolean`
+ * + `step: number`
+ * + `grid: boolean`
+ * + `absMarks: boolean`
+ * + `depthMarks: boolean`
+ * */
 interface CaratColumnYAxis {
   /** Показывать ли ось. */
   show: boolean;
@@ -106,10 +115,14 @@ interface CaratCurveSelector {
   isSelected: boolean;
 }
 
-/** Граничные значения шкалы для кривой. */
+/** Граничные значения шкалы для кривой.
+ * + `type`: {@link CaratCurveType}
+ * + `min: number | null`
+ * + `max: number | null`
+ * */
 interface CaratCurveMeasure {
   /** Тип кривой. */
-  type: string;
+  type: CaratCurveType;
   /** Максимальное значение кривой. */
   min: number | null;
   /** Максимальное значение кривой. */

@@ -38,14 +38,11 @@ export function loadCaratCurves(id: FormID, group: ICaratColumnGroup): Thunk {
     const track = stage.getActiveTrack();
 
     const visibleCurves = curveManager.getVisibleCurves();
-    const widthChange = group.groupCurves(visibleCurves);
+    group.groupCurves(visibleCurves);
     const loadedIDs = await loader.loadCurveData(visibleCurves.map(curve => curve.id));
     curveManager.setCurvePointData(loadedIDs, loader.cache);
 
-    const changes = new Array(track.getGroups().length).fill(0);
-    changes[track.getGroups().findIndex(g => g === group)] = widthChange;
-    track.rebuildRects(changes);
-
+    track.updateGroupRects();
     stage.updateTrackRects();
     stage.render();
   };

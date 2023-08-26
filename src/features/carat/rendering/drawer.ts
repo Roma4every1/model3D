@@ -85,7 +85,7 @@ export class CaratDrawer {
     this.fontFamily = config.stage.font.family;
   }
 
-  public setContext(context: CanvasRenderingContext2D) {
+  public setContext(context: CanvasRenderingContext2D): void {
     this.ctx = context;
     this.ctx.font = this.columnYAxisSettings.font;
     this.minusWidth = context.measureText('-').width;
@@ -119,31 +119,31 @@ export class CaratDrawer {
 
   /* --- Rendering --- */
 
-  private setLineSettings(width: number, color: ColorHEX | CanvasPattern) {
+  private setLineSettings(width: number, color: ColorHEX | CanvasPattern): void {
     this.ctx.lineWidth = width;
     this.ctx.strokeStyle = color;
   }
 
-  private setTextSettings(font: string, color: ColorHEX, align: CanvasTextAlign, baseline: CanvasTextBaseline) {
+  private setTextSettings(font: string, color: ColorHEX, align: CanvasTextAlign, baseline: CanvasTextBaseline): void {
     this.ctx.font = font;
     this.ctx.fillStyle = color;
     this.ctx.textAlign = align;
     this.ctx.textBaseline = baseline
   }
 
-  private setTranslate(x: number, y: number) {
+  private setTranslate(x: number, y: number): void {
     const ratio = CaratDrawer.ratio;
     this.ctx.setTransform(ratio, 0, 0, ratio, ratio * x, ratio * y);
   }
 
-  public setCurrentTrack(rect: Rectangle, viewport: CaratViewport, inclinometry: ICaratInclinometry) {
+  public setCurrentTrack(rect: Rectangle, viewport: CaratViewport, inclinometry: ICaratInclinometry): void {
     this.trackRect = rect;
     this.yMin = viewport.y;
     this.scale = viewport.scale;
     this.inclinometry = inclinometry;
   }
 
-  public setCurrentGroup(rect: Rectangle, settings: CaratColumnSettings) {
+  public setCurrentGroup(rect: Rectangle, settings: CaratColumnSettings): void {
     this.groupSettings = settings;
     this.groupElementRect = rect;
     this.yMax = this.yMin + rect.height / this.scale;
@@ -154,7 +154,7 @@ export class CaratDrawer {
   public setCurrentColumn(
     rect: Rectangle,
     barStyle?: CaratBarPropertySettings, textStyle?: CaratTextPropertySettings,
-  ) {
+  ): void {
     this.columnRect = rect;
     this.barStyle = barStyle;
     this.textStyle = textStyle;
@@ -171,23 +171,23 @@ export class CaratDrawer {
     this.ctx.clip();
   }
 
-  public restore() {
+  public restore(): void {
     this.ctx.restore();
   }
 
-  public clear() {
+  public clear(): void {
     const { width, height } = this.ctx.canvas;
     this.ctx.resetTransform();
     this.ctx.clearRect(0, 0, width, height);
   }
 
-  public clearTrackElementRect(headerHeight: number) {
+  public clearTrackElementRect(headerHeight: number): void {
     const { top, left, width, height } = this.trackRect;
     this.setTranslate(left, top);
     this.ctx.clearRect(0, headerHeight + this.trackHeaderSettings.height, width, height);
   }
 
-  public drawTrackBody(label: string, active: boolean) {
+  public drawTrackBody(label: string, active: boolean): void {
     const { top, left, width, height } = this.trackRect;
     const { font, color, height: headerHeight } = this.trackHeaderSettings;
     const { borderColor, borderThickness, activeColor } = this.trackBodySettings;
@@ -210,7 +210,7 @@ export class CaratDrawer {
     this.ctx.stroke();
   }
 
-  public drawGroupLabel(labelTop: number) {
+  public drawGroupLabel(labelTop: number): void {
     const width = this.groupElementRect.width;
     const { font, color, height } = this.columnLabelSettings;
 
@@ -219,7 +219,7 @@ export class CaratDrawer {
     this.ctx.fillText(this.groupSettings.label, width / 2, labelTop + height, width);
   }
 
-  public drawGroupXAxes(settings: CaratColumnXAxis, groups: CurveAxisGroup[]) {
+  public drawGroupXAxes(settings: CaratColumnXAxis, groups: CurveAxisGroup[]): void {
     this.setTranslate(this.groupTranslateX, this.trackRect.top + this.columnLabelSettings.height);
     const { thickness, gap, axisHeight, markSize, font } = this.columnXAxesSettings;
     const yStep = axisHeight + gap;
@@ -279,7 +279,7 @@ export class CaratDrawer {
     }
   }
 
-  public drawVerticalGrid(settings: CaratColumnXAxis, groups: CurveAxisGroup[]) {
+  public drawVerticalGrid(settings: CaratColumnXAxis, groups: CurveAxisGroup[]): void {
     const height = this.groupElementRect.height;
     const { gridThickness, gridLineDash } = this.columnXAxesSettings;
     const segmentsCount = settings.numberOfMarks - 1;
@@ -305,7 +305,7 @@ export class CaratDrawer {
     this.ctx.lineDashOffset = 0;
   }
 
-  public drawGroupBody(active: boolean) {
+  public drawGroupBody(active: boolean): void {
     const { width, height } = this.groupElementRect;
     const borderThickness = this.columnBodySettings.borderThickness;
 
@@ -318,7 +318,7 @@ export class CaratDrawer {
     this.ctx.strokeRect(0, 0, width, height);
   }
 
-  public drawZoneDividingLines(coordinates: number[]) {
+  public drawZoneDividingLines(coordinates: number[]): void {
     this.setTranslate(this.groupTranslateX, this.groupTranslateY);
     this.setLineSettings(this.columnBodySettings.borderThickness, this.groupSettings.borderColor);
 
@@ -332,7 +332,7 @@ export class CaratDrawer {
     this.ctx.stroke();
   }
 
-  public drawGroupYAxis(settings: CaratColumnYAxis) {
+  public drawGroupYAxis(settings: CaratColumnYAxis): void {
     const scaleY = window.devicePixelRatio * this.scale;
     this.setTranslate(this.groupTranslateX, this.groupTranslateY - scaleY * this.yMin);
 
@@ -377,7 +377,7 @@ export class CaratDrawer {
     this.ctx.restore();
   }
 
-  private drawIntervalText(text: string, xCenter: number, yCenter: number, maxWidth: number) {
+  private drawIntervalText(text: string, xCenter: number, yCenter: number, maxWidth: number): void {
     const { color, backgroundColor, fontSize: height, angle } = this.textStyle;
     this.ctx.font = `normal ${height}px ${this.fontFamily}`;
     this.ctx.textAlign = 'center';
@@ -402,7 +402,7 @@ export class CaratDrawer {
     this.ctx.restore();
   }
 
-  public drawIntervals(elements: CaratIntervalModel[]) {
+  public drawIntervals(elements: CaratIntervalModel[]): void {
     const scaleY = window.devicePixelRatio * this.scale;
     this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
 
@@ -426,7 +426,7 @@ export class CaratDrawer {
     }
   }
 
-  public drawBars(elements: CaratBarModel[]) {
+  public drawBars(elements: CaratBarModel[]): void {
     const scaleY = window.devicePixelRatio * this.scale;
     this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
 
@@ -462,7 +462,7 @@ export class CaratDrawer {
     }
   }
 
-  public drawCurves(elements: CaratCurveModel[]) {
+  public drawCurves(elements: CaratCurveModel[]): void {
     const ratio = CaratDrawer.ratio;
     const scaleY = window.devicePixelRatio * this.scale;
 
@@ -487,10 +487,9 @@ export class CaratDrawer {
     this.ctx.restore();
   }
 
-  public drawCorrelation(correlations: CaratCorrelation) {
+  public drawCorrelation(trackTop: number, correlations: CaratCorrelation): void {
     const { rect, leftTop, rightTop, leftViewport, rightViewport } = correlations;
-    this.setTranslate(0, rect.top);
-    this.ctx.clearRect(rect.left, -rect.top, rect.width, rect.height + 2 * rect.top);
+    this.setTranslate(0, trackTop);
     this.setLineSettings(this.correlationSettings.thickness, '#888888');
     this.ctx.fillStyle = '#e8e8e8';
 
@@ -498,6 +497,11 @@ export class CaratDrawer {
     const right = rect.left + rect.width;
     const leftScaleY = window.devicePixelRatio * leftViewport.scale;
     const rightScaleY = window.devicePixelRatio * rightViewport.scale;
+
+    this.ctx.clearRect(rect.left, rect.top, rect.width, rect.height);
+    this.ctx.save();
+    this.ctx.rect(rect.left, rect.top, rect.width, rect.height);
+    this.ctx.clip();
 
     for (const correlation of correlations.data) {
       this.ctx.beginPath();
@@ -509,5 +513,6 @@ export class CaratDrawer {
       this.ctx.fill();
       this.ctx.stroke();
     }
+    this.ctx.restore();
   }
 }

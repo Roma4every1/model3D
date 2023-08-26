@@ -12,6 +12,8 @@ export class CaratCorrelations implements ICaratCorrelations {
   /** Ширина корреляций. */
   private readonly width: number;
 
+  /** Верхняя координата треков. */
+  private trackTop: number;
   /** Данные колонок корреляций. */
   private correlations: CaratCorrelation[];
 
@@ -19,6 +21,7 @@ export class CaratCorrelations implements ICaratCorrelations {
     this.init = init;
     this.drawer = drawer;
     this.width = init.settings.width;
+    this.trackTop = 0;
     this.correlations = [];
   }
 
@@ -31,17 +34,16 @@ export class CaratCorrelations implements ICaratCorrelations {
   }
 
   public updateRects(trackList: CaratTrack[]): void {
+    const maxHeaderHeight = Math.max(...trackList.map(t => t.maxGroupHeaderHeight));
+    const top = this.drawer.trackHeaderSettings.height + maxHeaderHeight;
+    const height = trackList[0].rect.height - top;
+
     for (let i = 0; i < this.correlations.length; i++) {
       const rect = trackList[i].rect;
       const left = rect.left + rect.width + 1;
-      this.correlations[i].rect = {...rect, left, width: this.width - 2};
+      this.correlations[i].rect = {top, left, width: this.width - 2, height};
     }
-  }
-
-  public setHeight(height: number): void {
-    for (const correlation of this.correlations) {
-      correlation.rect.height = height;
-    }
+    this.trackTop = trackList[0].rect.top;
   }
 
   public setData(trackList: CaratTrack[]): void {
@@ -92,10 +94,10 @@ export class CaratCorrelations implements ICaratCorrelations {
   public render(index?: number): void {
     if (index !== undefined) {
       const correlation = this.correlations[index];
-      if (correlation) this.drawer.drawCorrelation(correlation);
+      if (correlation) this.drawer.drawCorrelation(this.trackTop, correlation);
     } else {
       for (const correlation of this.correlations) {
-        this.drawer.drawCorrelation(correlation);
+        this.drawer.drawCorrelation(this.trackTop, correlation);
       }
     }
   }

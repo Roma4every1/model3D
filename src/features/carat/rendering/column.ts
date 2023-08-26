@@ -46,7 +46,7 @@ export class CaratColumn implements ICaratColumn {
   }
 
   public copy(): CaratColumn {
-    const copy = new CaratColumn(this.rect, this.drawer, this.channel, this.properties);
+    const copy = new CaratColumn({...this.rect}, this.drawer, this.channel, this.properties);
     copy.styleDict = this.styleDict;
     copy.barStyle = this.barStyle;
     copy.textStyle = this.textStyle;

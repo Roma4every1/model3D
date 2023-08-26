@@ -96,7 +96,6 @@ export class CaratTrack implements ICaratTrack {
     } as any;
 
     Object.setPrototypeOf(copy, CaratTrack.prototype);
-    copy.rebuildHeaders();
     return copy;
   }
 
@@ -132,7 +131,7 @@ export class CaratTrack implements ICaratTrack {
     return this.activeIndex;
   }
 
-  private updateLabel() {
+  private updateLabel(): void {
     const curve = this.activeCurve;
     if (curve) {
       const top = Math.floor(curve.top);
@@ -143,7 +142,7 @@ export class CaratTrack implements ICaratTrack {
     }
   }
 
-  public setScale(scale: number) {
+  public setScale(scale: number): void {
     const viewport = this.viewport;
     viewport.scale = scale;
 
@@ -155,14 +154,14 @@ export class CaratTrack implements ICaratTrack {
     }
   }
 
-  public setActiveGroup(idx: number) {
+  public setActiveGroup(idx: number): void {
     if (idx < 0 && idx >= this.groups.length) return;
     this.groups.forEach((group) => { group.active = false; });
     this.groups[idx].active = true;
     this.activeIndex = idx;
   }
 
-  public setGroupWidth(idx: number, width: number) {
+  public setGroupWidth(idx: number, width: number): void {
     const group = this.groups[idx];
     if (!group) return;
 
@@ -177,14 +176,11 @@ export class CaratTrack implements ICaratTrack {
     this.backgroundGroup.setWidth(this.rect.width);
   }
 
-  public setGroupLabel(idx: number, label: string) {
-    const group = this.groups[idx];
-    if (!group) return;
-    group.setLabel(label);
-    this.rebuildHeaders();
+  public setGroupLabel(idx: number, label: string): void {
+    this.groups[idx]?.setLabel(label);
   }
 
-  public setGroupYAxisStep(idx: number, step: number) {
+  public setGroupYAxisStep(idx: number, step: number): void {
     const group = this.groups[idx];
     if (!group) return;
     group.yAxis.step = step;
@@ -192,20 +188,14 @@ export class CaratTrack implements ICaratTrack {
     this.viewport.scroll.step = groupWithYAxis?.yAxis.step ?? defaultSettings.yAxisStep;
   }
 
-  public setActiveCurve(curve: CaratCurveModel | null) {
+  public setActiveCurve(curve: CaratCurveModel | null): void {
     this.activeCurve = curve;
     const id = curve?.id;
     this.groups.forEach(group => group.setActiveCurve(id));
     this.updateLabel();
   }
 
-  public setZones(zones: CaratZone[]) {
-    const changes = this.groups.map((group) => group.setZones(zones));
-    this.rebuildRects(changes);
-    this.rebuildHeaders();
-  }
-
-  public moveGroup(idx: number, to: 'left' | 'right') {
+  public moveGroup(idx: number, to: 'left' | 'right'): void {
     const k = to === 'left' ? -1 : 1;
     const relatedIndex = idx + k;
     const movedGroup = this.groups[idx];
@@ -235,23 +225,21 @@ export class CaratTrack implements ICaratTrack {
     }
   }
 
-  public setData(data: ChannelRecordDict, cache: CurveDataCache) {
+  public setData(data: ChannelRecordDict, cache: CurveDataCache): void {
     const viewport = this.viewport;
     this.backgroundGroup.setData(data, cache);
     [viewport.min, viewport.max] = this.backgroundGroup.getRange();
     viewport.y = viewport.min;
-    this.setActiveCurve(null);
 
-    const changes = this.groups.map(group => {
-      const widthChange = group.setData(data, cache);
+    for (const group of this.groups) {
+      group.setData(data, cache);
       const [groupMin, groupMax] = group.getRange();
       if (groupMin < viewport.min) viewport.min = groupMin;
       if (groupMax > viewport.max) viewport.max = groupMax;
-      return widthChange;
-    });
+    }
 
-    this.rebuildRects(changes);
-    this.rebuildHeaders();
+    this.setActiveCurve(null);
+    this.updateGroupRects();
 
     if (viewport.min === Infinity) viewport.min = 0;
     if (viewport.max === -Infinity) viewport.max = 0;
@@ -263,32 +251,28 @@ export class CaratTrack implements ICaratTrack {
     }
   }
 
-  private rebuildHeaders() {
-    const maxHeight = Math.max(...this.groups.map(g => g.header.getContentHeight()));
-    for (const group of this.groups) group.setHeaderHeight(maxHeight);
-    this.backgroundGroup.setHeaderHeight(maxHeight);
-    this.maxGroupHeaderHeight = maxHeight;
-  }
+  /** Обновляет положение групп и ширину трека. */
+  public updateGroupRects(): void {
+    if (!this.groups.length) return;
+    let totalWidth = 0;
+    let left = this.groups[0].getDataRect().left;
 
-  public rebuildRects(changes: number[]): void {
-    for (let i = 0; i < changes.length; i++) {
-      const widthDelta = changes[i];
-      if (widthDelta !== 0) {
-        for (let j = i + 1; j < this.groups.length; j++) {
-          this.groups[j].shift(widthDelta);
-        }
-        this.rect.width += widthDelta;
-      }
+    for (const group of this.groups) {
+      const width = group.getDataRect().width;
+      group.getDataRect().left = left;
+      left += width;
+      totalWidth += width;
     }
-    this.backgroundGroup.setWidth(this.rect.width);
+    this.rect.width = totalWidth;
+    this.backgroundGroup.setWidth(totalWidth);
   }
 
-  public setLookupData(lookupData: ChannelRecordDict) {
+  public setLookupData(lookupData: ChannelRecordDict): void {
     this.backgroundGroup.setLookupData(lookupData);
     for (const group of this.groups) group.setLookupData(lookupData);
   }
 
-  public setHeight(height: number) {
+  public setHeight(height: number): void {
     this.rect.height = height;
     const groupHeight = height - this.drawer.trackHeaderSettings.height;
     for (const group of this.groups) group.setHeight(groupHeight);
@@ -296,7 +280,15 @@ export class CaratTrack implements ICaratTrack {
     this.setScale(this.viewport.scale);
   }
 
-  public render() {
+  public setHeaderHeight(height: number): void {
+    for (const group of this.groups) group.setHeaderHeight(height);
+    this.backgroundGroup.setHeaderHeight(height);
+    this.maxGroupHeaderHeight = height;
+  }
+
+  /* --- Rendering --- */
+
+  public render(): void {
     if (this.rect.width <= 0) return;
     this.drawer.setCurrentTrack(this.rect, this.viewport, this.inclinometry);
     this.backgroundGroup.renderContent();
@@ -316,7 +308,7 @@ export class CaratTrack implements ICaratTrack {
     this.drawer.drawTrackBody(this.label, this.active);
   }
 
-  public lazyRender() {
+  public lazyRender(): void {
     if (this.rect.width <= 0) return;
     this.drawer.setCurrentTrack(this.rect, this.viewport, this.inclinometry);
     this.drawer.clearTrackElementRect(this.maxGroupHeaderHeight);
