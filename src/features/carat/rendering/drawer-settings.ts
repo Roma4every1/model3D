@@ -70,7 +70,9 @@ export interface CaratDrawerConfig {
       },
     },
   },
+  /** Настройки отрисовки корреляций между треками. */
   correlation: {
+    /** Толщина обводки корреляции. */
     thickness: number,
   },
 }

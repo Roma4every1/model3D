@@ -187,6 +187,8 @@ export class CaratDrawer {
     this.ctx.clearRect(0, headerHeight + this.trackHeaderSettings.height, width, height);
   }
 
+  /* --- Rendering --- */
+
   public drawTrackBody(label: string, active: boolean): void {
     const { top, left, width, height } = this.trackRect;
     const { font, color, height: headerHeight } = this.trackHeaderSettings;
@@ -490,8 +492,7 @@ export class CaratDrawer {
   public drawCorrelation(trackTop: number, correlations: CaratCorrelation): void {
     const { rect, leftTop, rightTop, leftViewport, rightViewport } = correlations;
     this.setTranslate(0, trackTop);
-    this.setLineSettings(this.correlationSettings.thickness, '#888888');
-    this.ctx.fillStyle = '#e8e8e8';
+    this.ctx.lineWidth = this.correlationSettings.thickness;
 
     const left = rect.left;
     const right = rect.left + rect.width;
@@ -510,8 +511,10 @@ export class CaratDrawer {
       this.ctx.lineTo(right, rightTop + rightScaleY * (correlation.rightTop - rightViewport.y));
       this.ctx.lineTo(right, rightTop + rightScaleY * (correlation.rightBottom - rightViewport.y));
       this.ctx.closePath();
-      this.ctx.fill();
-      this.ctx.stroke();
+
+      this.ctx.fillStyle = correlation.style.fill;
+      this.ctx.strokeStyle = correlation.style.stroke;
+      this.ctx.fill(); this.ctx.stroke();
     }
     this.ctx.restore();
   }

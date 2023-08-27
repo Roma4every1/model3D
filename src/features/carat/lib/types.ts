@@ -109,6 +109,8 @@ export interface StratumCorrelation {
   rightTop: number;
   /** Глубина подошвы пласта в треке справа. */
   rightBottom: number;
+  /** Заливка и обводка корреляции. */
+  style: CaratIntervalStyle;
 }
 
 /* --- Inclinometry --- */

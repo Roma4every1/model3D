@@ -1,6 +1,7 @@
 import { CaratDrawer } from './drawer';
 import { CaratTrack } from './track';
 import { CaratCorrelation, StratumCorrelation, CaratIntervalModel } from '../lib/types';
+import { defaultSettings } from '../lib/constants';
 
 
 /** Модель корреляций. */
@@ -86,7 +87,12 @@ export class CaratCorrelations implements ICaratCorrelations {
       const leftBottom = Math.max(...leftBottomValues);
       const rightTop = Math.min(...rightTopValues);
       const rightBottom = Math.max(...rightBottomValues);
-      result.push({leftTop, leftBottom, rightTop, rightBottom});
+
+      const style =
+        leftStrata.find(s => s.style)?.style ??
+        rightStrata.find(s => s.style)?.style ??
+        defaultSettings.intervalStyle;
+      result.push({leftTop, leftBottom, rightTop, rightBottom, style});
     }
     return result;
   }
