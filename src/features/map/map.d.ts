@@ -170,7 +170,7 @@ interface MapLayer {
   elements: MapElement[];
   group: string;
   highscale: LayerHighScale;
-  lowscale: LayerLowScale;
+  lowscale: number;
   name: string;
   uid: string;
   index?: any;
@@ -183,9 +183,6 @@ interface MapLayer {
 
 /** Максимальный масштаб карты, при котором данный слой будет отрисовываться. */
 type LayerHighScale = number | 'INF';
-
-/** Минимальный масштаб карты, при котором данный слой будет отрисовываться. */
-type LayerLowScale = number | 'INF';
 
 /** Границы объекта (слоя, элемента) карты.
  * + `max`: {@link Point}

@@ -85,9 +85,7 @@ export function getTranslator(mScale: number, mCenter: Point, cScale: number, cC
 		scaleVisible: (layer: MapLayer) => {
 			const lowScale = layer.lowscale, highScale = layer.highscale;
 			if ((!lowScale && lowScale !== 0) || (!highScale && highScale !== 0)) return true;
-			const isLowScaleInfinity = typeof lowScale === 'string' && lowScale.includes('INF');
-			const isHighScaleInfinity = typeof highScale === 'string' && highScale.includes('INF');
-			return (isLowScaleInfinity || lowScale <= mScale) && (isHighScaleInfinity || mScale <= highScale);
+			return lowScale <= mScale && (typeof highScale === 'string' || mScale <= highScale);
 		},
 
 		zoom: (scaleIn, cPoint, mPoint) => ret.setScale(mScale * scaleIn, cPoint, mPoint),
