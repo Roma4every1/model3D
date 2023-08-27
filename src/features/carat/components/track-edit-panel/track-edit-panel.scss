@@ -18,8 +18,18 @@
   > div {
     padding: 4px;
     border-radius: 2px;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #e1e1e1;
+    }
+  }
+
+  span, .active-stratum {
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
     cursor: pointer;
-    transition: 0.2s;
 
     &:hover {
       background-color: #fccbc7;

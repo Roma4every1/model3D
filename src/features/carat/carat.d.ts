@@ -87,6 +87,7 @@ interface ICaratStage {
   setActiveTrack(idx: number): void;
   setZones(zones: CaratZone[]): void;
   edit(action: StageEditAction): void;
+  alignByStratum(id: StratumID, byTop: boolean): void;
 
   setData(data: ChannelRecordDict[], cache: CurveDataCache): void;
   setLookupData(lookupData: ChannelRecordDict): void;
@@ -142,6 +143,7 @@ interface ICaratTrack {
 /** Инклинометрия скважины. */
 interface ICaratInclinometry {
   getAbsMark(depth: number): number;
+  getDepth(absMark: number): number;
 }
 
 interface ICaratColumnGroup {

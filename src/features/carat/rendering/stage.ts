@@ -2,7 +2,7 @@ import { CaratTrack } from './track';
 import { CaratDrawer } from './drawer';
 import { CaratCorrelations } from './correlations';
 import { CaratDrawerConfig } from './drawer-settings';
-import { CaratCurveModel } from '../lib/types';
+import { CaratCurveModel, CaratIntervalModel } from '../lib/types';
 import { isRectInnerPoint } from 'shared/lib';
 import { calculateTrackWidth } from '../lib/utils';
 import { moveSmoothly } from '../lib/smooth-scroll';
@@ -110,6 +110,40 @@ export class CaratStage implements ICaratStage {
       this.trackList[idx].active = true;
     }
     this.activeIndex = idx;
+  }
+
+  /** Выравнивает вьюпорт треков по активному пласту. */
+  public alignByStratum(id: StratumID, byTop: boolean): void {
+    const reduceStrata: (strata: any[]) => number = byTop
+      ? (strata) => Math.min(...strata.map(s => s.top))
+      : (strata) => Math.max(...strata.map(s => s.bottom));
+    let extremum = byTop ? Infinity : -Infinity;
+
+    for (const track of this.trackList) {
+      if (!track.inclinometry) continue;
+      const group = track.getBackgroundGroup();
+      const column = group.getColumns().find(c => c.channel.type === 'lithology');
+      let strata: CaratIntervalModel[] = column?.getElements() ?? [];
+      strata = strata.filter(s => s.stratumID === id);
+      if (strata.length === 0) continue;
+
+      const absMark = track.inclinometry.getAbsMark(Math.round(reduceStrata(strata)));
+      if (byTop) {
+        if (absMark < extremum) extremum = absMark;
+      } else {
+        if (absMark > extremum) extremum = absMark;
+      }
+    }
+    if (Math.abs(extremum) === Infinity) return;
+
+    for (const track of this.trackList) {
+      const depth = track.inclinometry?.getDepth(extremum) ?? -extremum;
+      if (byTop) {
+        track.viewport.y = depth;
+      } else {
+        track.viewport.y = depth - track.viewport.height;
+      }
+    }
   }
 
   public edit(action: StageEditAction): void {

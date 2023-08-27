@@ -12,7 +12,7 @@ export class CaratInclinometry implements ICaratInclinometry {
   private min: number | null;
   /** Максимальная посчитанная отметка глубины. */
   private max: number | null;
-  /** Данные инклинометрии. */
+  /** Данные инклинометрии (глубина => абс. отметка). */
   public data: InclinometryMap | null;
 
   constructor(channel: CaratAttachedLookup) {
@@ -39,8 +39,19 @@ export class CaratInclinometry implements ICaratInclinometry {
     return this.data.get(depth);
   }
 
+  /** Возвращает значение глубины для указанной абсолютной отметки. */
+  public getDepth(absMark: number): number {
+    if (this.data === null) {
+      return -absMark;
+    }
+    for (const pair of this.data) {
+      if (absMark === pair[1]) return pair[0];
+    }
+    return -absMark;
+  }
+
   /** Обновление данных интерполяции. */
-  public setData(channelData: ChannelRecordDict) {
+  public setData(channelData: ChannelRecordDict): void {
     const rows = channelData[this.channel.name];
     if (rows?.length) {
       const info = this.channel.info as CaratChannelInfo<'depth' | 'absMark'>;
@@ -55,7 +66,7 @@ export class CaratInclinometry implements ICaratInclinometry {
   }
 
   /** Обновление данных инклинометрии под указанный вьюпорт. */
-  public updateMarks(viewport: CaratViewport) {
+  public updateMarks(viewport: CaratViewport): void {
     let minDepth = viewport.min - viewport.scroll.step;
     let maxDepth = viewport.max + viewport.scroll.step;
 
@@ -80,7 +91,7 @@ export class CaratInclinometry implements ICaratInclinometry {
   }
 
   /** Строит интервал глубин и абсолютных отметок. */
-  private addMarks(from: number, to: number) {
+  private addMarks(from: number, to: number): void {
     from = Math.floor(from);
     to = Math.ceil(to);
 
@@ -111,7 +122,7 @@ export class CaratInclinometry implements ICaratInclinometry {
   }
 
   /** Бинарным поиском находит индекс отметки, ближайшей по Y. */
-  private findNearestMark(depth: number) {
+  private findNearestMark(depth: number): number {
     let start = 0;
     let end = this.interpolationData.length - 1;
     if (depth >= this.interpolationData[end].depth) return end;
@@ -130,14 +141,14 @@ export class CaratInclinometry implements ICaratInclinometry {
   }
 
   /** Линейная интерполяция абсолютной отметки по двум опорным точкам. */
-  private interpolate(p1: InclinometryMark, p2: InclinometryMark, depth: number) {
+  private interpolate(p1: InclinometryMark, p2: InclinometryMark, depth: number): number {
     const { depth: x0, absMark: y0 } = p1;
     const { depth: x1, absMark: y1 } = p2;
     return Math.round(((depth - x0) / (x1 - x0)) * (y1 - y0) + y0);
   }
 
   /** Очищает данные. */
-  private clear() {
+  private clear(): void {
     this.min = null;
     this.max = null;
     this.data = null;

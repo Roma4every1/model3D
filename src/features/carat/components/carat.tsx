@@ -2,8 +2,8 @@ import { KeyboardEvent, MouseEvent, WheelEvent } from 'react';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { compareObjects } from 'shared/lib';
-import { wellStateSelector, traceStateSelector } from 'entities/objects';
 import { channelDataDictSelector } from 'entities/channels';
+import { wellStateSelector, traceStateSelector, stratumStateSelector } from 'entities/objects';
 import { TextInfo } from 'shared/ui';
 
 import './carat.scss';
@@ -18,6 +18,7 @@ export const Carat = ({id}: FormState) => {
   const dispatch = useDispatch();
   const { model: currentWell } = useSelector(wellStateSelector);
   const { model: currentTrace } = useSelector(traceStateSelector);
+  const { model: currentStratum } = useSelector(stratumStateSelector);
 
   const caratState: CaratState = useSelector(caratStateSelector.bind(id));
   const { stage, canvas, channelNames, lookupNames, loading } = caratState;
@@ -40,6 +41,12 @@ export const Carat = ({id}: FormState) => {
   useEffect(() => {
     dispatch(setCaratData(id, channelData));
   }, [channelData, currentWell, currentTrace, id, dispatch]);
+
+  useEffect(() => {
+    if (loading || !currentStratum) return;
+    stage.alignByStratum(currentStratum.id, true);
+    stage.render();
+  }, [currentStratum, loading, stage]);
 
   // обновление ссылки на холст
   useLayoutEffect(() => {

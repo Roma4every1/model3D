@@ -1,6 +1,7 @@
 import { MouseEvent, useState, useMemo, useRef, useLayoutEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { stratumStateSelector } from 'entities/objects';
 import { channelSelector, createLookupList } from 'entities/channels';
 import { MenuSection, MenuSectionItem, ButtonIcon, BigButton } from 'shared/ui';
 import { Popup } from '@progress/kendo-react-popup';
@@ -15,13 +16,8 @@ import goToStratumIcon from 'assets/images/carat/go-to-stratum.svg';
 
 
 interface CaratScalePanelProps {
-  stage: ICaratStage,
-  track: ICaratTrack,
-}
-interface StrataListElementProps {
-  name: string,
-  element: CaratIntervalModel,
-  onClick: () => void,
+  stage: ICaratStage;
+  track: ICaratTrack;
 }
 
 
@@ -95,11 +91,14 @@ const ScaleSection = ({stage, track}: CaratScalePanelProps) => {
 
 const NavigationSection = ({stage, track}: CaratScalePanelProps) => {
   const { t } = useTranslation();
+  const { model: currentStratum } = useSelector(stratumStateSelector);
+
   const [isOpen, setIsOpen] = useState(false);
   const [anchor, setAnchor] = useState(null);
 
+  const inclinometry = track.inclinometry;
   const backgroundColumns = track.getBackgroundGroup().getColumns();
-  const strataColumn = backgroundColumns.find((column) => column.channel.type === 'lithology');
+  const strataColumn = backgroundColumns.find(c => c.channel.type === 'lithology');
   const strata: CaratIntervalModel[] = strataColumn?.getElements() ?? [];
 
   const lookupName = strataColumn?.channel.namesChannel;
@@ -117,15 +116,33 @@ const NavigationSection = ({stage, track}: CaratScalePanelProps) => {
     setIsOpen(!isOpen);
   };
 
-  const setViewportY = (y: number) => {
-    track.viewport.y = y;
-    stage.render();
+  const toTop = (id: StratumID) => {
+    stage.alignByStratum(id, true);
+    stage.render(); setIsOpen(false);
+  };
+  const toBottom = (id: StratumID) => {
+    stage.alignByStratum(id, false);
+    stage.render(); setIsOpen(false);
   };
 
   const elementToListItem = (element: CaratIntervalModel, i: number) => {
     const name = nameDict[element.stratumID];
-    const onClick = () => { setViewportY(element.top); setIsOpen(false); };
-    return <StrataListElement key={i} name={name} element={element} onClick={onClick}/>;
+    if (name === undefined) return null;
+
+    const top = Math.round(inclinometry?.getAbsMark(element.top) ?? -element.top);
+    const bottom = Math.round(inclinometry?.getAbsMark(element.bottom) ?? -element.bottom);
+
+    const onClickTop = () => toTop(element.stratumID);
+    const onClickBottom = () => toBottom(element.stratumID);
+
+    return (
+      <div key={i}>
+        <strong>{name + ' '}</strong>
+        <span onClick={onClickTop} title={t('carat.navigation.top-abs-mark')}>{top}</span>
+        {' 🠖 '}
+        <span onClick={onClickBottom} title={t('carat.navigation.bottom-abs-mark')}>{bottom}</span>
+      </div>
+    );
   };
 
   return (
@@ -137,18 +154,17 @@ const NavigationSection = ({stage, track}: CaratScalePanelProps) => {
         />
       </MenuSectionItem>
       <Popup className={'dropdown-popup'} show={isOpen} anchor={anchor}>
+        {currentStratum && <div className={'strata-list'}>
+          <div className={'active-stratum'} onClick={() => toTop(currentStratum.id)}>
+            {t('carat.navigation.active-top')}</div>
+          <div className={'active-stratum'} onClick={() => toBottom(currentStratum.id)}>
+            {t('carat.navigation.active-bottom')}
+          </div>
+        </div>}
         <div className={'strata-list'}>
           {strata.map(elementToListItem)}
         </div>
       </Popup>
     </>
-  );
-};
-
-const StrataListElement = ({name, element, onClick}: StrataListElementProps) => {
-  return (
-    <div onClick={onClick}>
-      {name + ' ' + element.top + ' - ' + element.bottom}
-    </div>
   );
 };

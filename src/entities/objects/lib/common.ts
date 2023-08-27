@@ -65,6 +65,7 @@ export function updateObjects(updates: UpdateParamData[], dispatch: Dispatch, st
     }
     else if (id === stratumParameterID) {
       stratum.model = value ? createStratumModel(value) : null;
+      changeFlags.stratum = true;
     }
     else if (id === wellParameterID) {
       well.model = value ? createWellModel(value) : null;
