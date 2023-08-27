@@ -28,7 +28,7 @@ export const CaratCurvesPanel = ({id, stage, curveGroup}: CaratCurvesPanelProps)
     const content = <CurveSelectionWindow id={id} onClose={onClose}/>;
 
     const windowProps: WindowProps = {
-      title: 'Выбор каротажных кривых', maximizeButton: () => null,
+      title: t('carat.selection.window-title'), maximizeButton: () => null,
       width: 720, height: 480, resizable: false, style: {zIndex: 99}, onClose,
     };
     dispatch(showWindow(windowID, windowProps, content));
@@ -47,13 +47,13 @@ export const CaratCurvesPanel = ({id, stage, curveGroup}: CaratCurvesPanelProps)
   };
 
   return (
-    <MenuSection header={'Управление кривыми'} className={'big-buttons'}>
+    <MenuSection header={t('carat.curve-manage')} className={'big-buttons'}>
       <BigButton
-        text={'Выбор кривых'} icon={curvesIcon}
+        text={t('carat.selection.button')} icon={curvesIcon}
         action={openCurveSelectionWindow} disabled={!curveGroup}
       />
       <BigButton
-        text={'Зоны кривых'} icon={curveZonesIcon}
+        text={t('carat.zones.button')} icon={curveZonesIcon}
         action={openZonesEditingWindow}
       />
     </MenuSection>

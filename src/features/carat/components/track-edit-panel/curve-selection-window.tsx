@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
 import { round } from 'shared/lib';
+import { updateWindow } from 'entities/window';
+
 import { Button } from '@progress/kendo-react-buttons';
 import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
 import { DateRangePicker, DateRangePickerChangeEvent } from '@progress/kendo-react-dateinputs';
@@ -25,15 +28,22 @@ interface CurveFiltersProps {
 
 
 export const CurveSelectionWindow = ({id, onClose}: CurveSelectionWindowProps) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const state: CaratState = useSelector(caratStateSelector.bind(id));
 
+  const track = state.stage.getActiveTrack();
   const curveGroup = state?.curveGroup;
   const curveManager: CurveManager = curveGroup?.curveManager;
   const tree = curveManager?.getCurveTree() ?? [];
 
   const [_signal, setSignal] = useState(false);
   const signal = () => setSignal(!_signal);
+
+  useEffect(() => {
+    const title = t('carat.selection.window-title') + ` (${track.wellName})`
+    dispatch(updateWindow('curve-selection', {title}));
+  }, [track.wellName, t, dispatch]);
 
   const onExpandChange = (event: TreeViewExpandChangeEvent) => {
     event.item.expanded = !event.item.expanded;
@@ -73,7 +83,7 @@ export const CurveSelectionWindow = ({id, onClose}: CurveSelectionWindowProps) =
     <div className={'curve-selection-window'}>
       <div>
         <section>
-          <h5>Кривые</h5>
+          <h5>{t('carat.selection.curves')}</h5>
           {tree.length
             ? <TreeView
                 data={tree} childrenField={'children'} item={CurveTreeItem}
@@ -89,8 +99,8 @@ export const CurveSelectionWindow = ({id, onClose}: CurveSelectionWindowProps) =
         </section>
       </div>
       <div>
-        <Button onClick={onSetDefault}>По умолчанию</Button>
-        <Button style={{width: 50}} onClick={onSubmit}>Ок</Button>
+        <Button onClick={onSetDefault}>{t('carat.selection.default')}</Button>
+        <Button style={{width: 50}} onClick={onSubmit}>{t('base.ok')}</Button>
       </div>
     </div>
   );
