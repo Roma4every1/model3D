@@ -62,7 +62,7 @@ export class CaratCorrelations implements ICaratCorrelations {
         rightTop: rightGroup.getDataRect().top,
         leftViewport: leftTrack.viewport,
         rightViewport: rightTrack.viewport,
-        data: this.findCorrelations(leftGroup.getIntervals(), rightGroup.getIntervals()),
+        data: this.findCorrelations(leftGroup.getStrata(), rightGroup.getStrata()),
       };
       this.correlations.push(correlation);
     }

@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { channelSelector, setChannelActiveRow } from 'entities/channels';
 
@@ -9,18 +10,20 @@ import { FileListItem } from './file-list-item';
 
 /** Список файлов. */
 export const FileListView = ({channels}: FormState) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const nameIndexRef = useRef(-1);
 
   const channelName = channels[0]?.name;
+  const info = channels[0]?.columnInfo;
   const channel: Channel = useSelector(channelSelector.bind(channelName));
   const channelData = channel?.data;
 
   const rows = channelData?.rows ?? [];
-  if (rows.length === 0) return <TextInfo text={'Файлы отсутствуют'}/>;
+  if (rows.length === 0 || !info) return <TextInfo text={t('file-view.no-files')}/>;
 
   if (nameIndexRef.current === -1) {
-    const columnName = channels[0].columnInfo.fileName.name;
+    const columnName = info.fileName.name;
     nameIndexRef.current = channel.data.columns.findIndex(c => c.Name === columnName);
   }
 

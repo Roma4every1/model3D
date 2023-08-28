@@ -121,10 +121,7 @@ export class CaratStage implements ICaratStage {
 
     for (const track of this.trackList) {
       if (!track.inclinometry) continue;
-      const group = track.getBackgroundGroup();
-      const column = group.getColumns().find(c => c.channel.type === 'lithology');
-      let strata: CaratIntervalModel[] = column?.getElements() ?? [];
-      strata = strata.filter(s => s.stratumID === id);
+      const strata: CaratIntervalModel[] = track.getBackgroundGroup().getStrata(id);
       if (strata.length === 0) continue;
 
       const absMark = track.inclinometry.getAbsMark(Math.round(reduceStrata(strata)));
@@ -143,6 +140,14 @@ export class CaratStage implements ICaratStage {
       } else {
         track.viewport.y = depth - track.viewport.height;
       }
+    }
+  }
+
+  public gotoStratum(id: StratumID): void {
+    for (const track of this.trackList) {
+      const strata: CaratIntervalModel[] = track.getBackgroundGroup().getStrata(id);
+      if (strata.length === 0) continue;
+      track.viewport.y = Math.min(...strata.map(s => s.top));
     }
   }
 

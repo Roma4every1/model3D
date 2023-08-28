@@ -30,6 +30,7 @@ export function fileListReducer(state: FileListStates = init, action: FileListAc
 
         const nameFrom = property.file.nameFrom;
         const nameProperty = properties.find(p => p.name === nameFrom);
+        if (!nameProperty) continue;
 
         attachedChannel.columnInfo = {
           fileName: {name: nameProperty.fromColumn, index: -1}, // name

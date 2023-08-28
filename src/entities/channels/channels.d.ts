@@ -228,7 +228,7 @@ interface LookupTreeNode {
 }
 
 /** Словарь данных канала-справочника. */
-type LookupDict = Record<LookupItemID, any>;
+type LookupDict<T = any> = Record<LookupItemID, T>;
 
 /** Идентификатор значения из канала-справочника. */
 type LookupItemID = number | string;

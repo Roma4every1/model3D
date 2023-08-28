@@ -13,6 +13,7 @@ import scaleIcon from 'assets/images/carat/scale.svg';
 import scaleUpIcon from 'assets/images/carat/scale-up.svg';
 import scaleDownIcon from 'assets/images/carat/scale-down.svg';
 import goToStratumIcon from 'assets/images/carat/go-to-stratum.svg';
+import alignByStratumIcon from 'assets/images/carat/align-by-stratum.svg';
 
 
 interface CaratScalePanelProps {
@@ -104,7 +105,7 @@ const NavigationSection = ({stage, track}: CaratScalePanelProps) => {
   const lookupName = strataColumn?.channel.namesChannel;
   const lookupData: Channel = useSelector(channelSelector.bind(lookupName));
 
-  const nameDict = useMemo(() => {
+  const nameDict: LookupDict<string> = useMemo(() => {
     const rows = lookupData?.data?.rows;
     if (!rows) return {};
     return createLookupList(rows, lookupData.info.lookupColumns)[1];
@@ -114,6 +115,11 @@ const NavigationSection = ({stage, track}: CaratScalePanelProps) => {
     const target = event.currentTarget;
     if (anchor !== target) setAnchor(target);
     setIsOpen(!isOpen);
+  };
+
+  const align = () => {
+    stage.gotoStratum(currentStratum.id);
+    stage.render();
   };
 
   const toTop = (id: StratumID) => {
@@ -151,6 +157,10 @@ const NavigationSection = ({stage, track}: CaratScalePanelProps) => {
         <BigButton
           text={t('carat.navigation.goto')} icon={goToStratumIcon}
           action={showStrata} disabled={strata.length === 0}
+        />
+        <BigButton
+          text={t('carat.navigation.align')} icon={alignByStratumIcon}
+          action={align} disabled={!currentStratum}
         />
       </MenuSectionItem>
       <Popup className={'dropdown-popup'} show={isOpen} anchor={anchor}>

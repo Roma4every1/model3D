@@ -154,9 +154,11 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     return this.dataRect;
   }
 
-  public getIntervals(): CaratIntervalModel[] {
-    const lithologyColumn = this.columns.find(c => c.channel.type === 'lithology');
-    return lithologyColumn ? lithologyColumn.getElements() : [];
+  public getStrata(id?: StratumID): CaratIntervalModel[] {
+    const column = this.columns.find(c => c.channel.type === 'lithology');
+    let strata = column?.getElements() ?? [];
+    if (id !== undefined) strata = strata.filter(s => s.stratumID === id);
+    return strata;
   }
 
   public getWidth(): number {

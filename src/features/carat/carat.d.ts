@@ -87,7 +87,9 @@ interface ICaratStage {
   setActiveTrack(idx: number): void;
   setZones(zones: CaratZone[]): void;
   edit(action: StageEditAction): void;
+
   alignByStratum(id: StratumID, byTop: boolean): void;
+  gotoStratum(id: StratumID): void;
 
   setData(data: ChannelRecordDict[], cache: CurveDataCache): void;
   setLookupData(lookupData: ChannelRecordDict): void;
@@ -157,7 +159,7 @@ interface ICaratColumnGroup {
   getWidth(): number;
   getColumns(): ICaratColumn[];
   getRange(): [number, number];
-  getIntervals(): any[];
+  getStrata(id?: StratumID): any[];
   hasCurveColumn(): boolean;
   groupCurves(curves: any[]): void;
 }

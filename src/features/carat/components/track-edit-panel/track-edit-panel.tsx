@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { MenuSkeleton } from 'shared/ui';
 import { caratStateSelector } from '../../store/carat.selectors';
@@ -7,7 +8,6 @@ import { CaratNavigationPanel } from './navigation-panel';
 import { CaratColumnsPanel } from './columns-panel';
 import { CaratActiveGroupPanel } from './active-group-panel';
 import { CaratCurvesPanel } from './curves-panel';
-import {useState} from "react";
 
 
 /** Панель редактирования трека каротажной диаграммы. */
@@ -16,7 +16,7 @@ export const TrackEditPanel = ({id}: FormEditPanelProps) => {
   const signal = () => setSignal(!_signal);
 
   const state: CaratState = useSelector(caratStateSelector.bind(id));
-  if (!state) return <MenuSkeleton template={['224px', '382px', '309px', '180px']}/>;
+  if (!state) return <MenuSkeleton template={['291px', '382px', '309px', '180px']}/>;
 
   const { stage, activeGroup, curveGroup } = state;
   const track = stage.getActiveTrack();
