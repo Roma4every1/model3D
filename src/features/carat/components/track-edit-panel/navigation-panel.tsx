@@ -1,8 +1,10 @@
-import { MouseEvent, useState, useMemo, useRef, useLayoutEffect } from 'react';
+import { MouseEvent, useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { stratumStateSelector } from 'entities/objects';
 import { channelSelector, createLookupList } from 'entities/channels';
+import { validateCaratScale } from '../../lib/utils';
+import { constraints } from '../../lib/constants';
 import { MenuSection, MenuSectionItem, ButtonIcon, BigButton } from 'shared/ui';
 import { Popup } from '@progress/kendo-react-popup';
 import { NumericTextBox, NumericTextBoxChangeEvent, NumericTextBoxHandle } from '@progress/kendo-react-inputs';
@@ -34,7 +36,14 @@ export const CaratNavigationPanel = (props: CaratScalePanelProps) => {
 const ScaleSection = ({stage, track}: CaratScalePanelProps) => {
   const { t } = useTranslation();
   const ref = useRef<NumericTextBoxHandle>();
+
+  const { min: minScale, max: maxScale } = constraints.scale;
   const [scale, setScale] = useState(CaratDrawer.pixelPerMeter / track.viewport.scale);
+
+  // подписка на изменение масштаба сцены
+  useEffect(() => {
+    stage.listeners.scaleChange = (newScale: number) => setScale(newScale);
+  }, [stage]);
 
   // чтобы работало изменение 1 -> 10 вместо 11
   useLayoutEffect(() => {
@@ -42,9 +51,7 @@ const ScaleSection = ({stage, track}: CaratScalePanelProps) => {
   }, [scale]);
 
   const changeScale = (newScale: number) => {
-    setScale(newScale);
-    if (newScale < 1) newScale = 1;
-    stage.edit({type: 'scale', payload: CaratDrawer.pixelPerMeter / newScale});
+    stage.edit({type: 'scale', payload: validateCaratScale(newScale)});
     stage.render();
   };
 
@@ -55,27 +62,18 @@ const ScaleSection = ({stage, track}: CaratScalePanelProps) => {
     changeScale(newScale);
   };
 
-  const scaleUp = () => {
-    let newScale = scale === 1 ? 50 : scale + 50;
-    if (newScale > 25_000) newScale = 25_000;
-    changeScale(newScale);
-  };
-
-  const scaleDown = () => {
-    let newScale = scale - 50;
-    if (newScale < 1) newScale = 1;
-    changeScale(newScale);
-  };
+  const scaleUp = () => changeScale(scale === 1 ? 50 : scale + 50);
+  const scaleDown = () => changeScale(scale - 50);
 
   return (
     <MenuSectionItem className={'menu-list carat-scale'}>
       <ButtonIcon
         text={t('carat.navigation.up')} icon={scaleUpIcon}
-        action={scaleUp} disabled={scale >= 25_000}
+        action={scaleUp} disabled={scale >= maxScale}
       />
       <ButtonIcon
         text={t('carat.navigation.down')} icon={scaleDownIcon}
-        action={scaleDown} disabled={scale <= 0}
+        action={scaleDown} disabled={scale <= minScale}
       />
       <div>
         <img src={scaleIcon} alt={'scale'} width={16} height={16}/>
@@ -83,7 +81,7 @@ const ScaleSection = ({stage, track}: CaratScalePanelProps) => {
         <NumericTextBox
           ref={ref} title={t('carat.navigation.scale')}
           width={100} style={{height: '20px'}} format={'#'}
-          value={scale} step={10} min={1} max={25_000} onChange={onScaleChange}
+          value={scale} step={10} min={minScale} max={maxScale} onChange={onScaleChange}
         />
       </div>
     </MenuSectionItem>

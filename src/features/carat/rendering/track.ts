@@ -211,7 +211,7 @@ export class CaratTrack implements ICaratTrack {
     if (idx === this.activeIndex) this.activeIndex = relatedIndex;
   }
 
-  public handleMouseDown(point: Point): CaratCurveModel | undefined {
+  public handleMouseDown(point: Point): CaratCurveModel | null {
     point.x -= this.rect.left;
     point.y -= this.rect.top;
 
@@ -223,6 +223,7 @@ export class CaratTrack implements ICaratTrack {
       const nearCurve = group.getNearCurve(point, this.viewport);
       if (nearCurve) { this.setActiveCurve(nearCurve); return nearCurve; }
     }
+    return null;
   }
 
   public setData(data: ChannelRecordDict, cache: CurveDataCache): void {

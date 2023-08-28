@@ -77,6 +77,7 @@ interface ICaratStage {
   wellIDs: WellID[];
   trackList: ICaratTrack[];
   correlations: ICaratCorrelations;
+  listeners: CaratStageListeners;
 
   getZones(): CaratZone[];
   getCaratSettings(): CaratSettings;
@@ -97,7 +98,7 @@ interface ICaratStage {
   handleKeyDown(key: string): boolean;
   handleMouseMove(point: Point, by: number): void;
   handleMouseDown(point: Point): any;
-  handleMouseWheel(point: Point, direction: 1 | -1): void;
+  handleMouseWheel(point: Point, direction: 1 | -1, ctrlKey: boolean): void;
 
   updateTrackRects(): void;
   resize(): void;
@@ -117,6 +118,12 @@ interface ICaratCorrelations {
   getInit(): CaratColumnInit;
   getWidth(): number;
   render(index?: number): void;
+}
+
+/** Слушатели событий сцены. */
+interface CaratStageListeners {
+  /** Изменение масштаба. */
+  scaleChange(newScale: number): void;
 }
 
 /** Трек каротажной диаграммы. */

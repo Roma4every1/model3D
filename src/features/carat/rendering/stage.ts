@@ -4,7 +4,7 @@ import { CaratCorrelations } from './correlations';
 import { CaratDrawerConfig } from './drawer-settings';
 import { CaratCurveModel, CaratIntervalModel } from '../lib/types';
 import { isRectInnerPoint } from 'shared/lib';
-import { calculateTrackWidth } from '../lib/utils';
+import { calculateTrackWidth, validateCaratScale } from '../lib/utils';
 import { moveSmoothly } from '../lib/smooth-scroll';
 import { defaultSettings } from '../lib/constants';
 
@@ -13,6 +13,8 @@ import { defaultSettings } from '../lib/constants';
 export class CaratStage implements ICaratStage {
   /** Отрисовщик. */
   private readonly drawer: CaratDrawer;
+  /** Слушатели событий сцены. */
+  public readonly listeners: CaratStageListeners;
   /** Ссылка на элемент холста. */
   private canvas: HTMLCanvasElement;
 
@@ -34,6 +36,7 @@ export class CaratStage implements ICaratStage {
     this.wellIDs = [];
     this.zones = init.settings.zones;
     this.drawer = new CaratDrawer(drawerConfig);
+    this.listeners = {scaleChange: () => {}};
     this.useStaticScale = init.settings.useStaticScale;
     this.strataChannelName = init.settings.strataChannelName;
 
@@ -154,8 +157,9 @@ export class CaratStage implements ICaratStage {
   public edit(action: StageEditAction): void {
     switch (action.type) {
       case 'scale': { // изменение масштаба
-        for (const track of this.trackList) track.setScale(action.payload);
-        return;
+        const scale = CaratDrawer.pixelPerMeter / action.payload;
+        for (const track of this.trackList) track.setScale(scale);
+        return this.listeners.scaleChange(action.payload);
       }
       case 'move': { // изменении порядка колонок
         const { idx, to } = action.payload;
@@ -216,12 +220,23 @@ export class CaratStage implements ICaratStage {
     if (index === -1) return false;
     this.setActiveTrack(index);
     const activeCurve = this.trackList[index].handleMouseDown(point);
+    this.render();
     return activeCurve ?? true;
   }
 
-  public handleMouseWheel(point: Point, direction: 1 | -1): void {
-    const index = this.trackList.findIndex(t => isRectInnerPoint(point, t.rect));
-    moveSmoothly(this, index, direction);
+  public handleMouseWheel(point: Point, direction: 1 | -1, ctrlKey: boolean): void {
+    if (ctrlKey) {
+      const scale = CaratDrawer.pixelPerMeter / this.getActiveTrack().viewport.scale;
+      let newScale = validateCaratScale(scale + 10 * direction);
+      if (scale === 1 && newScale === 11) newScale = 10;
+      if (newScale === scale) return;
+
+      this.edit({type: 'scale', payload: newScale});
+      this.render();
+    } else {
+      const index = this.trackList.findIndex(t => isRectInnerPoint(point, t.rect));
+      moveSmoothly(this, index, direction);
+    }
   }
 
   public handleMouseMove(point: Point, by: number): void {

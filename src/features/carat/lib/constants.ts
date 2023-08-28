@@ -16,6 +16,7 @@ export const constraints = {
   groupLabel: {max: 100}, // length,
   groupStep: {min: 1, max: 100},
   groupWidth: {min: 0, max: 1000},
+  scale: {min: 1, max: 25_000},
 };
 
 /** Свойства для идентификации каналов. */

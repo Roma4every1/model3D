@@ -1,5 +1,5 @@
-import { KeyboardEvent, MouseEvent, WheelEvent } from 'react';
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { KeyboardEvent, MouseEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { compareObjects } from 'shared/lib';
 import { channelDataDictSelector } from 'entities/channels';
@@ -42,6 +42,7 @@ export const Carat = ({id}: FormState) => {
     dispatch(setCaratData(id, channelData));
   }, [channelData, currentWell, currentTrace, id, dispatch]);
 
+  // выравнивание по активному пласту
   useEffect(() => {
     if (loading || !currentStratum) return;
     stage.alignByStratum(currentStratum.id, true);
@@ -53,6 +54,19 @@ export const Carat = ({id}: FormState) => {
     if (canvasRef.current === canvas) return;
     dispatch(setCaratCanvas(id, canvasRef.current));
   });
+
+  const onWheel = useCallback((e: WheelEvent) => {
+    if (e.ctrlKey) e.preventDefault();
+    const direction = e.deltaY > 0 ? 1 : -1;
+    const { offsetX: x, offsetY: y } = e;
+    stage.handleMouseWheel({x, y}, direction, e.ctrlKey);
+  }, [stage]);
+
+  // через ReactElement.onWheel нельзя из-за passive: true
+  useEffect(() => {
+    canvas?.addEventListener('wheel', onWheel, {passive: false});
+    return () => canvas?.removeEventListener('wheel', onWheel);
+  }, [canvas, onWheel]);
 
   if (loading) {
     return <TextInfo text={'carat.loading'}/>;
@@ -75,7 +89,6 @@ export const Carat = ({id}: FormState) => {
 
     const result = stage.handleMouseDown({x, y});
     if (result) {
-      stage.render();
       dispatch(setCaratActiveGroup(id, stage.getActiveTrack().getActiveGroup()));
       if (typeof result === 'object') dispatch(setCaratActiveCurve(id, result));
     }
@@ -91,19 +104,11 @@ export const Carat = ({id}: FormState) => {
     stage.handleMouseMove({x, y}, e.nativeEvent.movementY);
   };
 
-  const onWheel = (e: WheelEvent) => {
-    if (e.ctrlKey) return;
-    const direction = e.deltaY > 0 ? 1 : -1;
-    const { offsetX: x, offsetY: y } = e.nativeEvent;
-    stage.handleMouseWheel({x, y}, direction);
-  };
-
   return (
     <div className={'carat-container'}>
       <canvas
         ref={canvasRef} tabIndex={0} onKeyDown={onKeyDown}
-        onMouseDown={onMouseDown} onMouseUp={onMouseUp}
-        onMouseMove={onMouseMove} onWheel={onWheel}
+        onMouseDown={onMouseDown} onMouseUp={onMouseUp} onMouseMove={onMouseMove}
       />
     </div>
   );
