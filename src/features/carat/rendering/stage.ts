@@ -120,9 +120,27 @@ export class CaratStage implements ICaratStage {
 
   /** Обновляет данные диаграммы. */
   public setData(data: ChannelRecordDict[], cache: CurveDataCache): void {
-    for (let i = 0; i < data.length; i++) {
-      this.trackList[i].setData(data[i], cache);
-    }
+    let yMin = Infinity;
+    let yMax = -Infinity;
+
+    this.trackList.forEach((track, i) => {
+      track.setData(data[i], cache);
+      const { min, max } = track.viewport;
+      if (min < yMin) yMin = min;
+      if (max > yMax) yMax = max;
+    });
+    this.trackList.forEach((track, i) => {
+      const { viewport, inclinometry } = track;
+      viewport.min = yMin;
+      viewport.max = yMax;
+      if (viewport.y === Infinity) viewport.y = viewport.min;
+
+      if (inclinometry) {
+        inclinometry.setData(data[i]);
+        inclinometry.updateMarks(viewport);
+      }
+    });
+
     this.updateTrackRects();
     this.resize();
     this.correlations.setData(this.trackList);

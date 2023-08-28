@@ -159,13 +159,7 @@ export class CaratTrack implements ICaratTrack {
     this.updateGroupRects();
 
     if (viewport.min === Infinity) viewport.min = 0;
-    if (viewport.max === -Infinity) viewport.max = 0;
-    if (viewport.y === Infinity) viewport.y = viewport.min;
-
-    if (this.inclinometry) {
-      this.inclinometry.setData(data);
-      this.inclinometry.updateMarks(viewport);
-    }
+    if (viewport.max === -Infinity) viewport.max = viewport.min + viewport.height;
   }
 
   /** Обновление данных справочников. */
