@@ -7,10 +7,10 @@ import moveRightIcon from 'assets/images/carat/move-right.svg';
 
 
 interface CaratColumnsPanelProps {
-  id: FormID,
-  stage: ICaratStage,
-  track: ICaratTrack,
-  signal: () => void,
+  id: FormID;
+  stage: ICaratStage;
+  track: ICaratTrack;
+  signal: () => void;
 }
 
 
@@ -20,7 +20,8 @@ export const CaratColumnsPanel = ({id, stage, track, signal}: CaratColumnsPanelP
   const activeIndex = track.getActiveIndex();
 
   const setActiveGroup = (idx: number) => {
-    track.setActiveGroup(idx); stage.render();
+    stage.edit({type: 'active-group', payload: idx});
+    stage.render();
     dispatch(setCaratActiveGroup(id, groups[idx]));
   };
 

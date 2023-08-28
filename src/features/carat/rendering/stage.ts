@@ -3,7 +3,7 @@ import { CaratDrawer } from './drawer';
 import { CaratCorrelations } from './correlations';
 import { CaratDrawerConfig } from './drawer-settings';
 import { CaratCurveModel, CaratIntervalModel } from '../lib/types';
-import { isRectInnerPoint } from 'shared/lib';
+import { isRectInnerPoint, compareArrays } from 'shared/lib';
 import { calculateTrackWidth, validateCaratScale } from '../lib/utils';
 import { moveSmoothly } from '../lib/smooth-scroll';
 import { defaultSettings } from '../lib/constants';
@@ -91,7 +91,9 @@ export class CaratStage implements ICaratStage {
 
   /** Установить режим показа треков по указанным скважинам. */
   public setTrackList(wells: WellModel[]): void {
-    this.wellIDs = wells.map(well => well.id);
+    const newWellIDs = wells.map(well => well.id);
+    if (compareArrays(this.wellIDs, newWellIDs)) return;
+    this.wellIDs = newWellIDs;
     const wellNames = wells.map(well => well.name ?? well.id?.toString() ?? '');
 
     const correlationWidth = this.correlations.getWidth();
@@ -104,7 +106,8 @@ export class CaratStage implements ICaratStage {
       this.trackList.push(track);
       rect.left += rect.width + correlationWidth;
     }
-    this.setActiveTrack(0);
+    this.activeIndex = 0;
+    this.trackList[0].active = true;
   }
 
   public setActiveTrack(idx: number): void {
@@ -166,6 +169,11 @@ export class CaratStage implements ICaratStage {
         for (const track of this.trackList) track.moveGroup(idx, to);
         return;
       }
+      case 'active-group': { // изменение номера активной группы
+        const idx = action.payload;
+        for (const track of this.trackList) track.setActiveGroup(idx);
+        return;
+      }
       case 'group-width': { // изменение ширины колонки
         const { idx, width } = action.payload;
         for (const track of this.trackList) track.setGroupWidth(idx, width);
@@ -181,6 +189,11 @@ export class CaratStage implements ICaratStage {
       case 'group-y-step': { // изменение шага по оси Y
         const { idx, step } = action.payload;
         for (const track of this.trackList) track.setGroupYAxisStep(idx, step);
+        return;
+      }
+      case 'group-y-axis': { // настройки оси Y для группы
+        const { idx, settings } = action.payload;
+        for (const track of this.trackList) track.setGroupYAxisSettings(idx, settings);
         return;
       }
       default: {}

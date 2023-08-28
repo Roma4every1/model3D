@@ -162,18 +162,8 @@ export class CaratTrack implements ICaratTrack {
   }
 
   public setGroupWidth(idx: number, width: number): void {
-    const group = this.groups[idx];
-    if (!group) return;
-
-    const oldWidth = group.getDataRect().width;
-    const newWidth = group.setWidth(width);
-    const delta = newWidth - oldWidth;
-
-    for (let i = this.activeIndex + 1; i < this.groups.length; i++) {
-      this.groups[i].shift(delta);
-    }
-    this.rect.width += delta;
-    this.backgroundGroup.setWidth(this.rect.width);
+    this.groups[idx]?.setWidth(width);
+    this.updateGroupRects();
   }
 
   public setGroupLabel(idx: number, label: string): void {
@@ -186,6 +176,15 @@ export class CaratTrack implements ICaratTrack {
     group.yAxis.step = step;
     const groupWithYAxis = this.groups.find(group => group.yAxis?.show);
     this.viewport.scroll.step = groupWithYAxis?.yAxis.step ?? defaultSettings.yAxisStep;
+  }
+
+  public setGroupYAxisSettings(idx: number, newSettings: CaratColumnYAxis): void {
+    const settings = this.groups[idx]?.yAxis;
+    if (!settings) return;
+    settings.show = newSettings.show;
+    settings.grid = newSettings.grid;
+    settings.absMarks = newSettings.absMarks;
+    settings.depthMarks = newSettings.depthMarks;
   }
 
   public setActiveCurve(curve: CaratCurveModel | null): void {
@@ -256,12 +255,10 @@ export class CaratTrack implements ICaratTrack {
   public updateGroupRects(): void {
     if (!this.groups.length) return;
     let totalWidth = 0;
-    let left = this.groups[0].getDataRect().left;
 
     for (const group of this.groups) {
       const width = group.getDataRect().width;
-      group.getDataRect().left = left;
-      left += width;
+      group.getDataRect().left = totalWidth;
       totalWidth += width;
     }
     this.rect.width = totalWidth;

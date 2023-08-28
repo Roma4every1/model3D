@@ -111,28 +111,34 @@ const GroupYAxisSettings = ({stage, track, settings}: GroupYAxisSettingsProps) =
     setShowGrid(settings.grid);
   }, [settings]);
 
+  const onChange = () => {
+    const idx = track.getActiveIndex();
+    stage.edit({type: 'group-y-axis', payload: {idx, settings}});
+    stage.render();
+  };
+
   const onShowChange = () => {
     setShow(!show);
     settings.show = !show;
-    stage.render();
+    onChange();
   };
 
   const onShowAbsMarksChange = () => {
     setShowAbsMarks(!showAbsMarks);
     settings.absMarks = !showAbsMarks;
-    stage.render();
+    onChange();
   };
 
   const onShowDepthMarksChange = () => {
     setShowDepthMarks(!showDepthMarks);
     settings.depthMarks = !showDepthMarks;
-    stage.render();
+    onChange();
   };
 
   const onShowGridChange = () => {
     setShowGrid(!showGrid);
     settings.grid = !showGrid;
-    stage.render();
+    onChange();
   };
 
   return (
