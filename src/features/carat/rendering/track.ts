@@ -73,6 +73,9 @@ export class CaratTrack implements ICaratTrack {
     }
   }
 
+  /* --- Getters --- */
+
+  /** Копия трека под заданные место и скважину. */
   public cloneFor(rect: Rectangle, wellName: WellName): CaratTrack {
     const groups = this.groups.map(g => g.cloneFor(rect));
     groups.forEach(g => g.active = false);
@@ -99,13 +102,28 @@ export class CaratTrack implements ICaratTrack {
     return copy;
   }
 
-  public getInitColumns(): CaratColumnInit[] {
-    const init = this.groups.map(g => g.getInit());
-    init.push(this.backgroundGroup.getInit());
-    return init;
+  /** Колонки трека. */
+  public getGroups(): CaratColumnGroup[] {
+    return this.groups;
   }
 
-  /** Возвращает список справочников, необходимых для отрисовки. */
+  /** Фоновая колонка. */
+  public getBackgroundGroup(): ICaratColumnGroup {
+    return this.backgroundGroup;
+  }
+
+  /** Текущая активная колонка. */
+  public getActiveGroup(): ICaratColumnGroup | null {
+    if (this.activeIndex === -1) return null;
+    return this.groups[this.activeIndex];
+  }
+
+  /** Индекс текущей активной колонки. */
+  public getActiveIndex(): number {
+    return this.activeIndex;
+  }
+
+  /** Список справочников, необходимых для отрисовки. */
   public getLookupNames(): ChannelName[] {
     const names: ChannelName[] = [];
     for (const group of this.groups) {
@@ -114,124 +132,16 @@ export class CaratTrack implements ICaratTrack {
     return [...new Set(names)];
   }
 
-  public getGroups(): CaratColumnGroup[] {
-    return this.groups;
+  /** Исходные настройки колонок. */
+  public getInitColumns(): CaratColumnInit[] {
+    const init = this.groups.map(g => g.getInit());
+    init.push(this.backgroundGroup.getInit());
+    return init;
   }
 
-  public getBackgroundGroup(): ICaratColumnGroup {
-    return this.backgroundGroup;
-  }
+  /* --- Setters --- */
 
-  public getActiveGroup(): ICaratColumnGroup | null {
-    if (this.activeIndex === -1) return null;
-    return this.groups[this.activeIndex];
-  }
-
-  public getActiveIndex(): number {
-    return this.activeIndex;
-  }
-
-  private updateLabel(): void {
-    const curve = this.activeCurve;
-    if (curve) {
-      const top = Math.floor(curve.top);
-      const bottom = Math.ceil(curve.bottom);
-      this.label = `${this.wellName} ${curve.type} (${top} - ${bottom})`;
-    } else {
-      this.label = this.wellName;
-    }
-  }
-
-  public setScale(scale: number): void {
-    const viewport = this.viewport;
-    viewport.scale = scale;
-
-    const elementsHeight = this.backgroundGroup.getDataRect().height;
-    viewport.height = elementsHeight / (scale * window.devicePixelRatio);
-
-    if (viewport.y + viewport.height > viewport.max) {
-      viewport.y = viewport.max - viewport.height;
-    }
-  }
-
-  public setActiveGroup(idx: number): void {
-    if (idx < 0 && idx >= this.groups.length) return;
-    this.groups.forEach((group) => { group.active = false; });
-    this.groups[idx].active = true;
-    this.activeIndex = idx;
-  }
-
-  public setGroupWidth(idx: number, width: number): void {
-    this.groups[idx]?.setWidth(width);
-    this.updateGroupRects();
-  }
-
-  public setGroupLabel(idx: number, label: string): void {
-    this.groups[idx]?.setLabel(label);
-  }
-
-  public setGroupXAxisSettings(idx: number, newSettings: CaratColumnXAxis): void {
-    const settings = this.groups[idx]?.xAxis;
-    if (!settings) return;
-    settings.grid = newSettings.grid;
-    settings.numberOfMarks = newSettings.numberOfMarks;
-  }
-
-  public setGroupYAxisSettings(idx: number, newSettings: CaratColumnYAxis): void {
-    const settings = this.groups[idx]?.yAxis;
-    if (!settings) return;
-    settings.show = newSettings.show;
-    settings.grid = newSettings.grid;
-    settings.absMarks = newSettings.absMarks;
-    settings.depthMarks = newSettings.depthMarks;
-  }
-
-  public setGroupYAxisStep(idx: number, step: number): void {
-    const group = this.groups[idx];
-    if (!group) return;
-    group.yAxis.step = step;
-    const groupWithYAxis = this.groups.find(group => group.yAxis?.show);
-    this.viewport.scroll.step = groupWithYAxis?.yAxis.step ?? defaultSettings.yAxisStep;
-  }
-
-  public setActiveCurve(curve: CaratCurveModel | null): void {
-    this.activeCurve = curve;
-    const id = curve?.id;
-    this.groups.forEach(group => group.setActiveCurve(id));
-    this.updateLabel();
-  }
-
-  public moveGroup(idx: number, to: 'left' | 'right'): void {
-    const k = to === 'left' ? -1 : 1;
-    const relatedIndex = idx + k;
-    const movedGroup = this.groups[idx];
-    const relatedGroup = this.groups[relatedIndex];
-
-    movedGroup.settings.index = relatedIndex;
-    movedGroup.shift(k * relatedGroup.getDataRect().width);
-    relatedGroup.settings.index = idx;
-    relatedGroup.shift(-k * movedGroup.getDataRect().width);
-
-    this.groups[idx] = relatedGroup;
-    this.groups[relatedIndex] = movedGroup;
-    if (idx === this.activeIndex) this.activeIndex = relatedIndex;
-  }
-
-  public handleMouseDown(point: Point): CaratCurveModel | null {
-    point.x -= this.rect.left;
-    point.y -= this.rect.top;
-
-    const findFn = (group) => isRectInnerPoint(point, group.getDataRect())
-    const newActiveIndex = this.groups.findIndex(findFn);
-    if (newActiveIndex !== -1) this.setActiveGroup(newActiveIndex);
-
-    for (const group of this.groups) {
-      const nearCurve = group.getNearCurve(point, this.viewport);
-      if (nearCurve) { this.setActiveCurve(nearCurve); return nearCurve; }
-    }
-    return null;
-  }
-
+  /** Обновляет данные трека. */
   public setData(data: ChannelRecordDict, cache: CurveDataCache): void {
     const viewport = this.viewport;
     this.backgroundGroup.setData(data, cache);
@@ -258,25 +168,26 @@ export class CaratTrack implements ICaratTrack {
     }
   }
 
-  /** Обновляет положение групп и ширину трека. */
-  public updateGroupRects(): void {
-    if (!this.groups.length) return;
-    let totalWidth = 0;
-
-    for (const group of this.groups) {
-      const width = group.getDataRect().width;
-      group.getDataRect().left = totalWidth;
-      totalWidth += width;
-    }
-    this.rect.width = totalWidth;
-    this.backgroundGroup.setWidth(totalWidth);
-  }
-
+  /** Обновление данных справочников. */
   public setLookupData(lookupData: ChannelRecordDict): void {
     this.backgroundGroup.setLookupData(lookupData);
     for (const group of this.groups) group.setLookupData(lookupData);
   }
 
+  /** Обновляет масштаб трека. */
+  public setScale(scale: number): void {
+    const viewport = this.viewport;
+    viewport.scale = scale;
+
+    const elementsHeight = this.backgroundGroup.getDataRect().height;
+    viewport.height = elementsHeight / (scale * window.devicePixelRatio);
+
+    if (viewport.y + viewport.height > viewport.max) {
+      viewport.y = viewport.max - viewport.height;
+    }
+  }
+
+  /** Обновляет общую высоту трека. */
   public setHeight(height: number): void {
     this.rect.height = height;
     const groupHeight = height - this.drawer.trackHeaderSettings.height;
@@ -285,14 +196,135 @@ export class CaratTrack implements ICaratTrack {
     this.setScale(this.viewport.scale);
   }
 
+  /** Обновляет высоту шапки трека. */
   public setHeaderHeight(height: number): void {
     for (const group of this.groups) group.setHeaderHeight(height);
     this.backgroundGroup.setHeaderHeight(height);
     this.maxGroupHeaderHeight = height;
   }
 
+  /** Обновляет активную кривую трека. */
+  public setActiveCurve(curve: CaratCurveModel | null): void {
+    this.activeCurve = curve;
+    const id = curve?.id;
+    this.groups.forEach(group => group.setActiveCurve(id));
+    this.updateLabel();
+  }
+
+  /** Задаёт новую активную колонку по индексу. */
+  public setActiveGroup(idx: number): void {
+    if (idx < 0 && idx >= this.groups.length) return;
+    this.groups.forEach(g => { g.active = false; });
+    this.groups[idx].active = true;
+    this.activeIndex = idx;
+  }
+
+  /** Задаёт новую ширину для колонки по индексу. */
+  public setGroupWidth(idx: number, width: number): void {
+    this.groups[idx]?.setWidth(width);
+    this.updateGroupRects();
+  }
+
+  /** Задаёт новую подпись для колонки по индексу. */
+  public setGroupLabel(idx: number, label: string): void {
+    this.groups[idx]?.setLabel(label);
+  }
+
+  /** Задаёт новые настройки оси X для колонки по индексу. */
+  public setGroupXAxisSettings(idx: number, newSettings: CaratColumnXAxis): void {
+    const settings = this.groups[idx]?.xAxis;
+    if (!settings) return;
+    settings.grid = newSettings.grid;
+    settings.numberOfMarks = newSettings.numberOfMarks;
+  }
+
+  /** Задаёт новые настройки оси Y для колонки по индексу. */
+  public setGroupYAxisSettings(idx: number, newSettings: CaratColumnYAxis): void {
+    const settings = this.groups[idx]?.yAxis;
+    if (!settings) return;
+    settings.show = newSettings.show;
+    settings.grid = newSettings.grid;
+    settings.absMarks = newSettings.absMarks;
+    settings.depthMarks = newSettings.depthMarks;
+  }
+
+  /** Задаёт шаг по оси Y для колонки по индексу. */
+  public setGroupYAxisStep(idx: number, step: number): void {
+    const group = this.groups[idx];
+    if (!group) return;
+    group.yAxis.step = step;
+    const groupWithYAxis = this.groups.find(group => group.yAxis?.show);
+    this.viewport.scroll.step = groupWithYAxis?.yAxis.step ?? defaultSettings.yAxisStep;
+  }
+
+  /* --- App Logic Actions --- */
+
+  /** Перемещает колонку влево или вправо. */
+  public moveGroup(idx: number, to: 'left' | 'right'): void {
+    const k = to === 'left' ? -1 : 1;
+    const relatedIndex = idx + k;
+    const movedGroup = this.groups[idx];
+    const relatedGroup = this.groups[relatedIndex];
+
+    movedGroup.settings.index = relatedIndex;
+    movedGroup.shift(k * relatedGroup.getDataRect().width);
+    relatedGroup.settings.index = idx;
+    relatedGroup.shift(-k * movedGroup.getDataRect().width);
+
+    this.groups[idx] = relatedGroup;
+    this.groups[relatedIndex] = movedGroup;
+    if (idx === this.activeIndex) this.activeIndex = relatedIndex;
+  }
+
+  /* --- Event Handlers --- */
+
+  /** Обрабатывает событие нажатия ПКМ. */
+  public handleMouseDown(point: Point): CaratCurveModel | null {
+    point.x -= this.rect.left;
+    point.y -= this.rect.top;
+
+    const findFn = (group) => isRectInnerPoint(point, group.getDataRect())
+    const newActiveIndex = this.groups.findIndex(findFn);
+    if (newActiveIndex !== -1) this.setActiveGroup(newActiveIndex);
+
+    for (const group of this.groups) {
+      const nearCurve = group.getNearCurve(point, this.viewport);
+      if (nearCurve) { this.setActiveCurve(nearCurve); return nearCurve; }
+    }
+    return null;
+  }
+
+  /* --- Technical Methods --- */
+
+  /** Обновляет заголовка трека под текущее состояние. */
+  private updateLabel(): void {
+    const curve = this.activeCurve;
+    if (curve) {
+      const top = Math.floor(curve.top);
+      const bottom = Math.ceil(curve.bottom);
+      this.label = `${this.wellName} ${curve.type} (${top} - ${bottom})`;
+    } else {
+      this.label = this.wellName;
+    }
+  }
+
+  /** Обновляет положение групп и ширину трека. */
+  public updateGroupRects(): void {
+    if (!this.groups.length) return;
+    let x = 0;
+
+    for (const group of this.groups) {
+      const width = group.getDataRect().width;
+      group.getDataRect().left = x;
+      x += width;
+    }
+    this.rect.width = x;
+    this.backgroundGroup.setWidth(x);
+  }
+
   /* --- Rendering --- */
 
+  /** Полный рендер всего трека. */
   public render(): void {
     if (this.rect.width <= 0) return;
     this.drawer.setCurrentTrack(this.rect, this.viewport, this.inclinometry);
@@ -313,6 +345,7 @@ export class CaratTrack implements ICaratTrack {
     this.drawer.drawTrackBody(this.label, this.active);
   }
 
+  /** Частичный рендер трека: только элементы колонок. */
   public lazyRender(): void {
     if (this.rect.width <= 0) return;
     this.drawer.setCurrentTrack(this.rect, this.viewport, this.inclinometry);

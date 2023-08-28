@@ -20,6 +20,9 @@ export class CaratStage implements ICaratStage {
 
   /** Модель корреляций. */
   public readonly correlations: CaratCorrelations;
+  /** Модель разбиения кривых по зонам. */
+  private zones: CaratZone[];
+
   /** Список ID скважин треков. */
   public wellIDs: WellID[];
   /** Список треков. */
@@ -27,8 +30,6 @@ export class CaratStage implements ICaratStage {
   /** Индекс активного трека. */
   private activeIndex: number;
 
-  /** Модель разбиения кривых по зонам. */
-  private zones: CaratZone[];
   private readonly useStaticScale: boolean;
   private readonly strataChannelName: ChannelName;
 
@@ -55,6 +56,19 @@ export class CaratStage implements ICaratStage {
     }
   }
 
+  /* --- Getters --- */
+
+  /** Текущий активный трек. */
+  public getActiveTrack(): CaratTrack {
+    return this.trackList[this.activeIndex];
+  }
+
+  /** Правила распределения кривых по зонам. */
+  public getZones(): CaratZone[] {
+    return this.zones;
+  }
+
+  /** Исходные общие настройки диаграммы. */
   public getCaratSettings(): CaratSettings {
     const scale = this.trackList[0].viewport.scale;
     return {
@@ -63,24 +77,9 @@ export class CaratStage implements ICaratStage {
     };
   }
 
-  public getActiveTrack(): CaratTrack {
-    return this.trackList[this.activeIndex];
-  }
+  /* --- Setters --- */
 
-  public getZones(): CaratZone[] {
-    return this.zones;
-  }
-
-  public setZones(zones: CaratZone[]): void {
-    for (const track of this.trackList) {
-      track.getGroups().forEach(g => g.setZones(zones));
-      track.updateGroupRects();
-    }
-    this.updateTrackRects();
-    this.resize();
-    this.zones = zones;
-  }
-
+  /** Обновляет ссылку на холст. */
   public setCanvas(canvas: HTMLCanvasElement): void {
     this.canvas = canvas;
     if (canvas) {
@@ -89,7 +88,7 @@ export class CaratStage implements ICaratStage {
     }
   }
 
-  /** Установить режим показа треков по указанным скважинам. */
+  /** Устанавливает режим показа треков по указанным скважинам. */
   public setTrackList(wells: WellModel[]): void {
     const newWellIDs = wells.map(well => well.id);
     if (compareArrays(this.wellIDs, newWellIDs)) return;
@@ -110,6 +109,7 @@ export class CaratStage implements ICaratStage {
     this.trackList[0].active = true;
   }
 
+  /** Обновляет активный трек по индексу. */
   public setActiveTrack(idx: number): void {
     if (this.wellIDs.length > 1) {
       this.trackList[this.activeIndex].active = false;
@@ -118,6 +118,7 @@ export class CaratStage implements ICaratStage {
     this.activeIndex = idx;
   }
 
+  /** Обновляет данные диаграммы. */
   public setData(data: ChannelRecordDict[], cache: CurveDataCache): void {
     for (let i = 0; i < data.length; i++) {
       this.trackList[i].setData(data[i], cache);
@@ -127,11 +128,25 @@ export class CaratStage implements ICaratStage {
     this.correlations.setData(this.trackList);
   }
 
+  /** Обновляет данные справочников. */
   public setLookupData(lookupData: ChannelRecordDict): void {
     for (const track of this.trackList) track.setLookupData(lookupData);
   }
 
-  /** Выравнивает вьюпорт треков по активному пласту. */
+  /** Обновляет правила разбиения кривых по зонам. */
+  public setZones(zones: CaratZone[]): void {
+    for (const track of this.trackList) {
+      track.getGroups().forEach(g => g.setZones(zones));
+      track.updateGroupRects();
+    }
+    this.updateTrackRects();
+    this.resize();
+    this.zones = zones;
+  }
+
+  /* --- App Logic Actions --- */
+
+  /** Выравнивает вьюпорт треков по абсолютой отметке указанного пласта. */
   public alignByStratum(id: StratumID, byTop: boolean): void {
     const reduceStrata: (strata: any[]) => number = byTop
       ? (strata) => Math.min(...strata.map(s => s.top))
@@ -162,6 +177,7 @@ export class CaratStage implements ICaratStage {
     }
   }
 
+  /** Выравнивает вьюпорт по глубинам указанного пласта в треках. */
   public gotoStratum(id: StratumID): void {
     for (const track of this.trackList) {
       const strata: CaratIntervalModel[] = track.getBackgroundGroup().getStrata(id);
@@ -170,6 +186,7 @@ export class CaratStage implements ICaratStage {
     }
   }
 
+  /** Обрабатывает действие редактирования сцены. */
   public edit(action: StageEditAction): void {
     switch (action.type) {
       case 'scale': { // изменение масштаба
@@ -218,6 +235,9 @@ export class CaratStage implements ICaratStage {
     }
   }
 
+  /* --- Event Handlers --- */
+
+  /** Обрабатывает событие нажатия клавиши. */
   public handleKeyDown(key: string): boolean {
     if (key.startsWith('Arrow')) {
       let direction: 1 | -1;
@@ -233,6 +253,7 @@ export class CaratStage implements ICaratStage {
     return false;
   }
 
+  /** Обрабатывает событие нажатия ПКМ. */
   public handleMouseDown(point: Point): CaratCurveModel | boolean {
     const index = this.trackList.findIndex(t => isRectInnerPoint(point, t.rect));
     if (index === -1) return false;
@@ -242,6 +263,7 @@ export class CaratStage implements ICaratStage {
     return activeCurve ?? true;
   }
 
+  /** Обрабатывает событие прокрутки колеса мыши. */
   public handleMouseWheel(point: Point, direction: 1 | -1, ctrlKey: boolean): void {
     if (ctrlKey) {
       const scale = CaratDrawer.pixelPerMeter / this.getActiveTrack().viewport.scale;
@@ -257,6 +279,7 @@ export class CaratStage implements ICaratStage {
     }
   }
 
+  /** Обрабатывает событие движения мыши. */
   public handleMouseMove(point: Point, by: number): void {
     const move = (idx: number) => {
       const viewport = this.trackList[idx].viewport;
@@ -276,6 +299,8 @@ export class CaratStage implements ICaratStage {
     }
   }
 
+  /* --- Technical Methods --- */
+
   /** Обновляет горизонтальное положение треков и корреляций. */
   public updateTrackRects(): void {
     let left = this.drawer.trackBodySettings.padding;
@@ -294,6 +319,7 @@ export class CaratStage implements ICaratStage {
     this.correlations.updateRects(this.trackList);
   }
 
+  /** Обновляет вид в соответствии с текущими размерами холста. */
   public resize(): void {
     if (!this.canvas) return;
     const track = this.trackList[0];
@@ -319,6 +345,7 @@ export class CaratStage implements ICaratStage {
 
   /* --- Rendering --- */
 
+  /** Полный рендер всей диаграммы. */
   public render(): void {
     if (!this.canvas) return;
     this.drawer.clear();
@@ -326,6 +353,7 @@ export class CaratStage implements ICaratStage {
     for (const track of this.trackList) track.render();
   }
 
+  /** Рендер активного трека и корреляций вокруг него. */
   public lazyRender(index: number): void {
     this.correlations.render(index);
     if (index > 0) this.correlations.render(index - 1);
