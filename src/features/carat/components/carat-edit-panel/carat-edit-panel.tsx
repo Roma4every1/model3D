@@ -12,13 +12,15 @@ import { CurveTypesSection } from './curve-types-section';
 export const CaratEditPanel = ({id}: FormEditPanelProps) => {
   const state: CaratState = useSelector(caratStateSelector.bind(id));
   if (!state) return <MenuSkeleton template={['205px', '458px', '301px']}/>;
+
   const { stage, curveGroup } = state;
+  const idx = stage.getActiveTrack().getGroups().findIndex(g => g.hasCurveColumn());
 
   return (
     <LocalizationProvider language={'ru-RU'}>
       <IntlProvider locale={'ru'}>
         <div className={'menu'}>
-          <XAxisSection stage={stage} group={curveGroup}/>
+          <XAxisSection stage={stage} idx={idx} group={curveGroup}/>
           <CurveTypesSection stage={stage} group={curveGroup} curve={state.activeCurve}/>
         </div>
       </IntlProvider>

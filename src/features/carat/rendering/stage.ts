@@ -118,6 +118,19 @@ export class CaratStage implements ICaratStage {
     this.activeIndex = idx;
   }
 
+  public setData(data: ChannelRecordDict[], cache: CurveDataCache): void {
+    for (let i = 0; i < data.length; i++) {
+      this.trackList[i].setData(data[i], cache);
+    }
+    this.updateTrackRects();
+    this.resize();
+    this.correlations.setData(this.trackList);
+  }
+
+  public setLookupData(lookupData: ChannelRecordDict): void {
+    for (const track of this.trackList) track.setLookupData(lookupData);
+  }
+
   /** Выравнивает вьюпорт треков по активному пласту. */
   public alignByStratum(id: StratumID, byTop: boolean): void {
     const reduceStrata: (strata: any[]) => number = byTop
@@ -186,9 +199,9 @@ export class CaratStage implements ICaratStage {
         this.updateTrackRects();
         return;
       }
-      case 'group-y-step': { // изменение шага по оси Y
-        const { idx, step } = action.payload;
-        for (const track of this.trackList) track.setGroupYAxisStep(idx, step);
+      case 'group-x-axis': {
+        const { idx, settings } = action.payload;
+        for (const track of this.trackList) track.setGroupXAxisSettings(idx, settings);
         return;
       }
       case 'group-y-axis': { // настройки оси Y для группы
@@ -196,21 +209,13 @@ export class CaratStage implements ICaratStage {
         for (const track of this.trackList) track.setGroupYAxisSettings(idx, settings);
         return;
       }
+      case 'group-y-step': { // изменение шага по оси Y
+        const { idx, step } = action.payload;
+        for (const track of this.trackList) track.setGroupYAxisStep(idx, step);
+        return;
+      }
       default: {}
     }
-  }
-
-  public setData(data: ChannelRecordDict[], cache: CurveDataCache): void {
-    for (let i = 0; i < data.length; i++) {
-      this.trackList[i].setData(data[i], cache);
-    }
-    this.updateTrackRects();
-    this.resize();
-    this.correlations.setData(this.trackList);
-  }
-
-  public setLookupData(lookupData: ChannelRecordDict): void {
-    for (const track of this.trackList) track.setLookupData(lookupData);
   }
 
   public handleKeyDown(key: string): boolean {

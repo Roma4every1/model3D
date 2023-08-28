@@ -6,22 +6,24 @@ import xAxisGridIcon from 'assets/images/carat/x-axis-grid.svg';
 
 
 interface XAxisSectionProps {
-  stage: ICaratStage,
-  group: ICaratColumnGroup,
+  stage: ICaratStage;
+  idx: number;
+  group: ICaratColumnGroup;
 }
 
 
-export const XAxisSection = ({stage, group}: XAxisSectionProps) => {
-  const axisSettings = group?.xAxis;
+export const XAxisSection = ({stage, idx, group}: XAxisSectionProps) => {
+  const settings = group?.xAxis;
   const { min: minMarks, max: maxMarks } = constraints.yAxisMarks;
 
-  const [showGrid, setShowGrid] = useState(axisSettings.grid);
-  const [marksCount, setMarksCount] = useState(axisSettings.numberOfMarks);
+  const [showGrid, setShowGrid] = useState(settings.grid);
+  const [marksCount, setMarksCount] = useState(settings.numberOfMarks);
   const [marksCountValid, setMarksCountValid] = useState(true);
 
   const onShowGridChange = () => {
     setShowGrid(!showGrid);
-    axisSettings.grid = !showGrid;
+    settings.grid = !showGrid;
+    stage.edit({type: 'group-x-axis', payload: {idx, settings}});
     stage.render();
   };
 
@@ -29,7 +31,8 @@ export const XAxisSection = ({stage, group}: XAxisSectionProps) => {
     if (Number.isInteger(value) && value >= minMarks && value <= maxMarks) {
       setMarksCount(value);
       setMarksCountValid(true);
-      axisSettings.numberOfMarks = value;
+      settings.numberOfMarks = value;
+      stage.edit({type: 'group-x-axis', payload: {idx, settings}})
       stage.render();
     } else {
       setMarksCount(value);

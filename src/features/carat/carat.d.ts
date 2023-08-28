@@ -113,8 +113,9 @@ type StageEditAction =
   PayloadAction<'active-group', number> |
   PayloadAction<'group-width', {idx: number, width: number}> |
   PayloadAction<'group-label', {idx: number, label: string}> |
-  PayloadAction<'group-y-step', {idx: number, step: number}> |
-  PayloadAction<'group-y-axis', {idx: number, settings: CaratColumnYAxis}>;
+  PayloadAction<'group-x-axis', {idx: number, settings: CaratColumnXAxis}> |
+  PayloadAction<'group-y-axis', {idx: number, settings: CaratColumnYAxis}> |
+  PayloadAction<'group-y-step', {idx: number, step: number}>;
 
 interface ICaratCorrelations {
   getInit(): CaratColumnInit;

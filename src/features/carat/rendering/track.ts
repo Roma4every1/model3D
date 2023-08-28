@@ -170,12 +170,11 @@ export class CaratTrack implements ICaratTrack {
     this.groups[idx]?.setLabel(label);
   }
 
-  public setGroupYAxisStep(idx: number, step: number): void {
-    const group = this.groups[idx];
-    if (!group) return;
-    group.yAxis.step = step;
-    const groupWithYAxis = this.groups.find(group => group.yAxis?.show);
-    this.viewport.scroll.step = groupWithYAxis?.yAxis.step ?? defaultSettings.yAxisStep;
+  public setGroupXAxisSettings(idx: number, newSettings: CaratColumnXAxis): void {
+    const settings = this.groups[idx]?.xAxis;
+    if (!settings) return;
+    settings.grid = newSettings.grid;
+    settings.numberOfMarks = newSettings.numberOfMarks;
   }
 
   public setGroupYAxisSettings(idx: number, newSettings: CaratColumnYAxis): void {
@@ -185,6 +184,14 @@ export class CaratTrack implements ICaratTrack {
     settings.grid = newSettings.grid;
     settings.absMarks = newSettings.absMarks;
     settings.depthMarks = newSettings.depthMarks;
+  }
+
+  public setGroupYAxisStep(idx: number, step: number): void {
+    const group = this.groups[idx];
+    if (!group) return;
+    group.yAxis.step = step;
+    const groupWithYAxis = this.groups.find(group => group.yAxis?.show);
+    this.viewport.scroll.step = groupWithYAxis?.yAxis.step ?? defaultSettings.yAxisStep;
   }
 
   public setActiveCurve(curve: CaratCurveModel | null): void {
