@@ -89,8 +89,8 @@ interface ICaratStage {
   setZones(zones: CaratZone[]): void;
   edit(action: StageEditAction): void;
 
-  alignByStratum(id: StratumID, byTop: boolean): void;
-  gotoStratum(id: StratumID): void;
+  alignByStratum(id: StratumID): void;
+  gotoStratum(id: StratumID, toTop: boolean): void;
 
   setData(data: ChannelRecordDict[], cache: CurveDataCache): void;
   setLookupData(lookupData: ChannelRecordDict): void;

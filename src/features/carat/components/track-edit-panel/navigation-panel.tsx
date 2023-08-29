@@ -95,7 +95,6 @@ const NavigationSection = ({stage, track}: CaratScalePanelProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [anchor, setAnchor] = useState(null);
 
-  const inclinometry = track.inclinometry;
   const backgroundColumns = track.getBackgroundGroup().getColumns();
   const strataColumn = backgroundColumns.find(c => c.channel.type === 'lithology');
   const strata: CaratIntervalModel[] = strataColumn?.getElements() ?? [];
@@ -116,35 +115,35 @@ const NavigationSection = ({stage, track}: CaratScalePanelProps) => {
   };
 
   const align = () => {
-    stage.gotoStratum(currentStratum.id);
+    stage.alignByStratum(currentStratum.id);
     stage.render();
   };
 
   const toTop = (id: StratumID) => {
-    stage.alignByStratum(id, true);
+    stage.gotoStratum(id, true);
     stage.render(); setIsOpen(false);
   };
   const toBottom = (id: StratumID) => {
-    stage.alignByStratum(id, false);
+    stage.gotoStratum(id, false);
     stage.render(); setIsOpen(false);
   };
 
   const elementToListItem = (element: CaratIntervalModel, i: number) => {
     const name = nameDict[element.stratumID];
     if (name === undefined) return null;
-
-    const top = Math.round(inclinometry?.getAbsMark(element.top) ?? -element.top);
-    const bottom = Math.round(inclinometry?.getAbsMark(element.bottom) ?? -element.bottom);
-
     const onClickTop = () => toTop(element.stratumID);
     const onClickBottom = () => toBottom(element.stratumID);
 
     return (
       <div key={i}>
         <strong>{name + ' '}</strong>
-        <span onClick={onClickTop} title={t('carat.navigation.top-abs-mark')}>{top}</span>
+        <span onClick={onClickTop} title={t('carat.navigation.top-depth')}>
+          {Math.round(element.top)}
+        </span>
         {' 🠖 '}
-        <span onClick={onClickBottom} title={t('carat.navigation.bottom-abs-mark')}>{bottom}</span>
+        <span onClick={onClickBottom} title={t('carat.navigation.bottom-depth')}>
+          {Math.round(element.bottom)}
+        </span>
       </div>
     );
   };

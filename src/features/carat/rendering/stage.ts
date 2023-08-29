@@ -3,7 +3,7 @@ import { CaratDrawer } from './drawer';
 import { CaratCorrelations } from './correlations';
 import { CaratDrawerConfig } from './drawer-settings';
 import { CaratCurveModel, CaratIntervalModel } from '../lib/types';
-import { isRectInnerPoint, compareArrays } from 'shared/lib';
+import { compareArrays, isRectInnerPoint } from 'shared/lib';
 import { calculateTrackWidth, validateCaratScale } from '../lib/utils';
 import { moveSmoothly } from '../lib/smooth-scroll';
 import { defaultSettings } from '../lib/constants';
@@ -165,42 +165,36 @@ export class CaratStage implements ICaratStage {
   /* --- App Logic Actions --- */
 
   /** Выравнивает вьюпорт треков по абсолютой отметке указанного пласта. */
-  public alignByStratum(id: StratumID, byTop: boolean): void {
-    const reduceStrata: (strata: any[]) => number = byTop
-      ? (strata) => Math.min(...strata.map(s => s.top))
-      : (strata) => Math.max(...strata.map(s => s.bottom));
-    let extremum = byTop ? Infinity : -Infinity;
-
+  public alignByStratum(id: StratumID): void {
+    let extremum = Infinity;
     for (const track of this.trackList) {
       if (!track.inclinometry) continue;
       const strata: CaratIntervalModel[] = track.getBackgroundGroup().getStrata(id);
       if (strata.length === 0) continue;
 
-      const absMark = track.inclinometry.getAbsMark(Math.round(reduceStrata(strata)));
-      if (byTop) {
-        if (absMark < extremum) extremum = absMark;
-      } else {
-        if (absMark > extremum) extremum = absMark;
-      }
+      const depth = Math.round(Math.min(...strata.map(s => s.top)));
+      const absMark = track.inclinometry.getAbsMark(depth);
+      if (absMark < extremum) extremum = absMark;
     }
-    if (Math.abs(extremum) === Infinity) return;
 
+    if (Math.abs(extremum) === Infinity) return;
     for (const track of this.trackList) {
-      const depth = track.inclinometry?.getDepth(extremum) ?? -extremum;
-      if (byTop) {
-        track.viewport.y = depth;
-      } else {
-        track.viewport.y = depth - track.viewport.height;
-      }
+      track.viewport.y = track.inclinometry?.getDepth(extremum) ?? -extremum;
     }
   }
 
   /** Выравнивает вьюпорт по глубинам указанного пласта в треках. */
-  public gotoStratum(id: StratumID): void {
+  public gotoStratum(id: StratumID, toTop: boolean): void {
     for (const track of this.trackList) {
       const strata: CaratIntervalModel[] = track.getBackgroundGroup().getStrata(id);
       if (strata.length === 0) continue;
-      track.viewport.y = Math.min(...strata.map(s => s.top));
+
+      if (toTop) {
+        track.viewport.y = Math.min(...strata.map(s => s.top));
+      } else {
+        const depth = Math.max(...strata.map(s => s.bottom));
+        track.viewport.y = depth - track.viewport.height;
+      }
     }
   }
 

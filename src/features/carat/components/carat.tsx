@@ -45,7 +45,7 @@ export const Carat = ({id}: FormState) => {
   // выравнивание по активному пласту
   useEffect(() => {
     if (loading || !currentStratum) return;
-    stage.alignByStratum(currentStratum.id, true);
+    stage.alignByStratum(currentStratum.id);
     stage.render();
   }, [currentStratum, loading, stage]);
 
