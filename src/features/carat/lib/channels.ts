@@ -73,10 +73,10 @@ function getAttachedProperties(attachment: CaratAttachedChannel, channel: Channe
   return allProperties.filter(checker);
 }
 
-export function channelDataDictToRecords(dict: ChannelDataDict): ChannelRecordDict {
+export function channelDictToRecords(dict: ChannelDict): ChannelRecordDict {
   const result: ChannelRecordDict = {};
   for (const channelName in dict) {
-    result[channelName] = cellsToRecords(dict[channelName]);
+    result[channelName] = cellsToRecords(dict[channelName]?.data);
   }
   return result;
 }

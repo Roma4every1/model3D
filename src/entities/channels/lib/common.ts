@@ -80,7 +80,7 @@ export function findColumnIndexes(columns: ChannelColumn[], channelInfo: Channel
 
 /** Конвертирует строки канала из массивов ячеек в словари по названиям колонок. */
 export function cellsToRecords(data: ChannelData): ChannelRecord[] {
-  if (!data) return null;
+  if (!data) return [];
   const create = (row: ChannelRow) => {
     const cells = row.Cells;
     const record: ChannelRecord = {};

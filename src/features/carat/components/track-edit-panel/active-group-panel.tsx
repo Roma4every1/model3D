@@ -59,9 +59,10 @@ const GroupCommonSettings = ({stage, track, activeGroup, signal}: CaratActiveGro
 
   const onWidthChange = ({value}: NumericTextBoxChangeEvent) => {
     setWidth(value);
-    if (value === null || value < minWidth || value > maxWidth) return;
+    if (value === null) value = 0;
+    if (value < minWidth || value > maxWidth) return;
     stage.edit({type: 'group-width', payload: {idx: activeIndex, width: value}});
-    stage.resize(); stage.render();
+    stage.render();
   };
 
   const onStepChange = ({value}: NumericTextBoxChangeEvent) => {

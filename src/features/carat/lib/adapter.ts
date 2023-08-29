@@ -29,10 +29,6 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
         const inclinometryDataChannel = property?.secondLevelChannelName;
 
         if (inclinometryDataChannel) {
-          const n = attachedChannel.info.well.name;
-          const p = channel.info.properties.find(p => p.fromColumn === n);
-          if (!attachedChannel.properties.includes(p)) attachedChannel.properties.push(p);
-
           attachedChannel.inclinometry = {
             name: inclinometryDataChannel,
             info: createColumnInfo(channelDict[inclinometryDataChannel], inclinometryCriterion),

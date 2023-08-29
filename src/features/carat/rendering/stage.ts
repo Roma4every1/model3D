@@ -226,6 +226,7 @@ export class CaratStage implements ICaratStage {
         const { idx, width } = action.payload;
         for (const track of this.trackList) track.setGroupWidth(idx, width);
         this.updateTrackRects();
+        this.resize();
         return;
       }
       case 'group-label': { // изменение подписи колонки

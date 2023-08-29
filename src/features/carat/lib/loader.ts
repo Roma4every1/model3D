@@ -1,6 +1,6 @@
 import { cellsToRecords } from 'entities/channels';
-import { channelDataDictToRecords } from './channels';
-import { serializeChannelRecord } from 'entities/parameters/lib/table-row';
+import { channelDictToRecords } from './channels';
+import { tableRowToString } from 'entities/parameters/lib/table-row';
 import { channelsAPI } from 'entities/channels/lib/channels.api';
 
 
@@ -29,12 +29,12 @@ export class CaratLoader implements ICaratLoader {
     this.inclinometryChannel = inclinometryChannel;
   }
 
-  public async getCaratData(ids: WellID[], channelData: ChannelDataDict): Promise<ChannelRecordDict[]> {
+  public async getCaratData(ids: WellID[], channelData: ChannelDict): Promise<ChannelRecordDict[]> {
     const flag = this.flag;
     const curveIDs: CaratCurveID[] = [];
     const caratData: ChannelRecordDict[] = [];
     const isTrace = ids.length > 1;
-    const data = channelDataDictToRecords(channelData);
+    const data = channelDictToRecords(channelData);
 
     for (const id of ids) {
       const [trackData, newCurveIDs] = this.getTrackData(id, data, isTrace);
@@ -43,21 +43,24 @@ export class CaratLoader implements ICaratLoader {
     }
 
     if (this.inclinometryChannel) {
-      const inclinometryWellData = channelData[this.inclinometryChannel.name];
-      if (inclinometryWellData) {
+      const inclinometryChannel = channelData[this.inclinometryChannel.name];
+      if (inclinometryChannel?.data) {
         const inclinometryInfo = this.inclinometryChannel.inclinometry;
-        const properties = this.inclinometryChannel.properties;
-        const mapper = (record) => this.loadInclinometry(record, properties);
-        const recordList = await Promise.all(cellsToRecords(inclinometryWellData).map(mapper));
+        const mapper = (row) => this.loadInclinometry(row, inclinometryChannel);
+        const recordList = await Promise.all(inclinometryChannel.data.rows.map(mapper));
 
         const inclinometryDataName = inclinometryInfo.name;
         const wellColumnName = inclinometryInfo.info.well.name;
 
-        for (const records of recordList) {
-          if (records.length === 0) continue;
-          const wellID = records[0][wellColumnName];
-          const idx = ids.findIndex(i => i === wellID);
-          if (idx !== -1) caratData[idx][inclinometryDataName] = records;
+        if (ids.length > 1) {
+          for (const records of recordList) {
+            if (records.length === 0) continue;
+            const wellID = records[0][wellColumnName];
+            const idx = ids.findIndex(i => i === wellID);
+            if (idx !== -1) caratData[idx][inclinometryDataName] = records;
+          }
+        } else {
+          caratData[0][inclinometryDataName] = recordList[0];
         }
       }
     }
@@ -91,9 +94,9 @@ export class CaratLoader implements ICaratLoader {
     return [dict, curveIDs] as [ChannelRecordDict, CaratCurveID[]];
   }
 
-  private async loadInclinometry(record: ChannelRecord, properties: ChannelProperty[]): Promise<ChannelRecord[]> {
+  private async loadInclinometry(row: ChannelRow, channel: Channel): Promise<ChannelRecord[]> {
     const channelName = this.inclinometryChannel.inclinometry.name;
-    const value = serializeChannelRecord(record, properties);
+    const value = tableRowToString(channel, row);
     const parameters = [{id: 'currentWellGeom', type: 'tableRow', value} as Parameter];
     const query = {order: []} as any;
 

@@ -16,10 +16,10 @@ export function channelDictSelector(this: ChannelName[], state: WState): Channel
   return result;
 }
 
-/** Данные каналов в виде словаря; **обязательно использование функции сравнения**. */
-export function channelDataDictSelector(this: ChannelName[], state: WState): ChannelDataDict {
-  const result: ChannelDataDict = {};
-  const channels = state.channels;
-  for (const name of this) result[name] = channels[name]?.data ?? null;
-  return result;
-}
+// /** Данные каналов в виде словаря; **обязательно использование функции сравнения**. */
+// export function channelDataDictSelector(this: ChannelName[], state: WState): ChannelDataDict {
+//   const result: ChannelDataDict = {};
+//   const channels = state.channels;
+//   for (const name of this) result[name] = channels[name]?.data ?? null;
+//   return result;
+// }

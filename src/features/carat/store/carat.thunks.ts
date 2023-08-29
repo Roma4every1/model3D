@@ -5,7 +5,7 @@ import { setCaratLoading } from './carat.actions';
 
 
 /** Обновляет данные каротажной диаграммы. */
-export function setCaratData(id: FormID, data: ChannelDataDict): Thunk {
+export function setCaratData(id: FormID, data: ChannelDict): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const { objects, carats } = getState();
     const { stage, loader, loading } = carats[id];

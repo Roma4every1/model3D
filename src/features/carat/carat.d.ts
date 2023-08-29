@@ -66,7 +66,7 @@ interface ICaratLoader {
   flag: number;
   cache: CurveDataCache;
 
-  getCaratData(ids: WellID[], channelData: ChannelDataDict): Promise<ChannelRecordDict[]>;
+  getCaratData(ids: WellID[], channelData: ChannelDict): Promise<ChannelRecordDict[]>;
   loadCurveData(ids: CaratCurveID[]): Promise<CaratCurveID[]>;
 }
 

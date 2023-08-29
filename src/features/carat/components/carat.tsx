@@ -2,12 +2,12 @@ import { KeyboardEvent, MouseEvent } from 'react';
 import { useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { compareObjects } from 'shared/lib';
-import { channelDataDictSelector } from 'entities/channels';
+import { channelDictSelector } from 'entities/channels';
 import { wellStateSelector, traceStateSelector, stratumStateSelector } from 'entities/objects';
 import { TextInfo } from 'shared/ui';
 
 import './carat.scss';
-import { channelDataDictToRecords } from '../lib/channels';
+import { channelDictToRecords } from '../lib/channels';
 import { caratStateSelector } from '../store/carat.selectors';
 import { setCaratData } from '../store/carat.thunks';
 import { setCaratActiveCurve, setCaratActiveGroup, setCaratCanvas } from '../store/carat.actions';
@@ -23,17 +23,17 @@ export const Carat = ({id}: FormState) => {
   const caratState: CaratState = useSelector(caratStateSelector.bind(id));
   const { stage, canvas, channelNames, lookupNames, loading } = caratState;
 
-  const channelData: ChannelDataDict =
-    useSelector(channelDataDictSelector.bind(channelNames), compareObjects);
-  const lookupData: ChannelDataDict =
-    useSelector(channelDataDictSelector.bind(lookupNames), compareObjects);
+  const channelData: ChannelDict =
+    useSelector(channelDictSelector.bind(channelNames), compareObjects);
+  const lookupData: ChannelDict =
+    useSelector(channelDictSelector.bind(lookupNames), compareObjects);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isOnMoveRef = useRef<boolean>(false);
 
   // обновление данных каналов-справочников
   useEffect(() => {
-    stage.setLookupData(channelDataDictToRecords(lookupData));
+    stage.setLookupData(channelDictToRecords(lookupData));
     stage.render();
   }, [lookupData, stage]);
 

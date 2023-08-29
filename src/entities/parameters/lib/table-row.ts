@@ -26,21 +26,6 @@ function addParam(column: ChannelColumn, rowValue: any, propName: string): strin
     : propName + '##System.DBNull';
 }
 
-export function serializeChannelRecord(record: ChannelRecord, properties: ChannelProperty[]): string {
-  const parts: string[] = [];
-  for (const property of properties) {
-    const cell = record[property.fromColumn];
-    if (cell === undefined) continue;
-
-    if (cell === null) {
-      parts.push(`${property.name}##System.DBNull`);
-    } else {
-      parts.push(`${property.name}#${cell}#${property.type}`);
-    }
-  }
-  return parts.join('|');
-}
-
 /* --- --- */
 
 export function tableCellToString(channel: Channel, row: ChannelRow): string {
