@@ -1,9 +1,13 @@
 [Vector Symbol Definition]
 
+
+  ; Добавлены номера 194 - Нагн. действ., закачка ПДВ от СВН, пласт перф., 
+                    ;195 - Нагн., закачка ПДВ от СВН на др. гор., пласт залит
+                    ;196 - Нагн., закачка ПДВ от СВН на др. гор.,пласт неперф
   ; Length unity is millimeter
   ; Angle unity is degree clockwise from upward vertical
   ; Coordinate origin is symbol center
-
+  
   ; !!! WARNING - KEYWORDS ARE CASE-SENSITIVE
 
   ; Element definition:
@@ -131,6 +135,25 @@
     [/1]
   [/Rectangle]
 
+  [BigRectangle]
+    [1]
+      Type = Polyline
+      [Points]
+        x1=-1.5
+        y1=-1.5
+        x2=-1.5
+        y2=1.5
+        x3=1.5
+        y3=1.5
+        x4=1.5
+        y4=-1.5
+        x5=-1.5
+        y5=-1.5
+      [/Points]
+    [/1]
+  [/BigRectangle]
+
+
   [Triangle]
     [1]
       Type = Polyline
@@ -172,6 +195,32 @@
       Style = Empty
     [/2]
   [/0.8mm Outline]
+
+  [0.6mm Outline]
+    [1]
+      Type = Pen
+      Color = ForeColor
+      Width = 0.6
+      Style = Solid
+    [/1]
+    [2]
+      Type = Brush
+      Style = Empty
+    [/2]
+  [/0.6mm Outline]
+
+  [0.5mm Outline]
+    [1]
+      Type = Pen
+      Color = ForeColor
+      Width = 0.5
+      Style = Solid
+    [/1]
+    [2]
+      Type = Brush
+      Style = Empty
+    [/2]
+  [/0.5mm Outline]
 
   [Fill]
     [1]
@@ -311,7 +360,22 @@
     [/3]
   [/DiagCross Symbol]
 
+  [Red Fill]
+    [1]
+      Type = Pen
+      Color = LightRed16
+      Width = Default
+      Style = Solid
+    [/1]
+    [2]
+      Type = Brush
+      Color = LightRed16
+      Style = Solid
+    [/2]
+  [/Red Fill]
+
 ; Well symbols
+
 
   [Basic Circle]
     [1]
@@ -565,6 +629,96 @@
       [/Points]
     [/11]
   [/ThinCross]
+
+  [LT short line]
+    [1]
+      Type = Reference
+      Ref = Outline
+    [/1]
+    [2]
+      Type = Polyline
+      [Points]
+        x1=-0.54
+        y1=0.54
+        x2=-1
+        y2=1
+      [/Points]
+    [/2]
+  [/LT short line]
+
+  [RT short line]
+    [1]
+      Type = Reference
+      Ref = Outline
+    [/1]
+    [2]
+      Type = Polyline
+      [Points]
+        x1=0.54
+        y1=0.54
+        x2=1
+        y2=1
+      [/Points]
+    [/2]
+  [/RT short line]
+
+  [RB short line]
+    [1]
+      Type = Reference
+      Ref = Outline
+    [/1]
+    [2]
+      Type = Polyline
+      [Points]
+        x1=0.54
+        y1=-0.54
+        x2=1
+        y2=-1
+      [/Points]
+    [/2]
+  [/RB short line]
+
+  [LB short line]
+    [1]
+      Type = Reference
+      Ref = Outline
+    [/1]
+    [2]
+      Type = Polyline
+      [Points]
+        x1=-0.54
+        y1=-0.54
+        x2=-1
+        y2=-1
+      [/Points]
+    [/2]
+  [/LB short line]
+
+  [Empty Rectangle Symbol]
+    [1]
+      Type = Reference
+      Ref = Outline
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Rectangle
+    [/2]
+  [/Empty Rectangle Symbol]
+
+  [Empty Big Rectangle Symbol]
+    [1]
+      Type = Reference
+      Ref = Outline
+    [/1]
+    [2]
+      Type = Reference
+      Ref = BigRectangle
+    [/2]
+  [/Empty Big Rectangle Symbol]
+
+
+
+
   
   [Скв в освоении]
     [1]
@@ -813,6 +967,93 @@
       [/Points]
     [/2]
   [/Фонтан]
+
+  [Горизонт Верх]
+    [1]
+      Type = Pen
+      Style = Solid
+      Color = ForeColor
+      Width = Default
+    [/1]
+   [4]
+      Type = Brush
+      Color = ForeColor
+      Style = Solid
+    [/4]
+    [2]
+      Type = Polyline
+      [Points]
+        x1=0
+        y1=0.77
+        x2=0
+        y2=2.4
+      [/Points]
+    [/2]
+    [3]
+      Type = Polyline
+      [Points]
+        x1=0
+        y1=2.4
+        x2=-1.85
+        y2=2.4
+      [/Points]
+    [/3]
+    [5]
+      Type = Polyline
+      [Points]
+        x1=-1.85
+        y1=2.65
+        x2=-1.85
+        y2=2.15
+        x3=-2.4
+        y3=2.4
+      [/Points]
+    [/5]
+  [/Горизонт Верх]
+
+  [Горизонт Вниз]
+    [1]
+      Type = Pen
+      Style = Solid
+      Color = ForeColor
+      Width = Default
+    [/1]
+   [4]
+      Type = Brush
+      Color = ForeColor
+      Style = Solid
+    [/4]
+    [2]
+      Type = Polyline
+      [Points]
+        x1=0
+        y1=-0.77
+        x2=0
+        y2=-2.4
+      [/Points]
+    [/2]
+    [3]
+      Type = Polyline
+      [Points]
+        x1=0
+        y1=-2.4
+        x2=1.85
+        y2=-2.4
+      [/Points]
+    [/3]
+    [5]
+      Type = Polyline
+      [Points]
+        x1=1.85
+        y1=-2.65
+        x2=1.85
+        y2=-2.15
+        x3=2.4
+        y3=-2.4
+      [/Points]
+    [/5]
+  [/Горизонт Вниз]
+
 
   [ЭЦН]
     [1]
@@ -1173,7 +1414,7 @@
       Color = LightRed16
     [/2]
     [3]
-      Type = Reference
+      Type = Reference                                                                                    
       Ref = Basic Circle
     [/3]
     [4]
@@ -1192,6 +1433,53 @@
       Ref = Three arrows
     [/2]
   [/Скв проект нагн]
+
+  [Скв проект след. лет]
+    [1]
+      Type = Pen
+      Color = LightRed16
+      Width = Default
+      Style = Solid
+    [/1]
+    [2]
+      Type = Brush
+      Style = Solid
+      Color = LightRed16
+    [/2]
+    [3]
+      Type = Reference                                                                                    
+      Ref = Rectangle
+    [/3]
+    [4]
+      Type = Reference
+      Ref = Empty Rectangle Symbol
+    [/4]
+  [/Скв проект след. лет]
+
+  [Забой]
+    [1]
+      Type = Reference
+      Ref = 0.5mm Outline
+    [/1]
+    [2]
+      Type = Polyline
+      [Points]
+        x1=1
+        y1=1
+        x2=-1
+        y2=-1
+      [/Points]
+    [/2]
+    [3]
+      Type = Polyline
+      [Points]
+        x1=-1
+        y1=1
+        x2=1
+        y2=-1
+      [/Points]
+    [/3]
+  [/Забой]
 
   [Скв нагн в осв]
     [1]
@@ -1916,6 +2204,42 @@
     [/2]
   [/Подпись ВДЗ 2]
 
+  [Подпись СВН]
+    [1]
+      Type = Font
+      Color = ForeColor
+      BkColor = None
+      TypeFace = Tahoma
+      Size = 5
+    [/1]
+    [2]
+      Type = Text
+      Text = СВН
+      OriginX = -0.9
+      OriginY = 0.5
+      AnchorX = Right
+      AnchorY = Bottom
+    [/2]
+  [/Подпись СВН]
+
+  [Подпись ПДВ]
+    [1]
+      Type = Font
+      Color = ForeColor
+      BkColor = None
+      TypeFace = Tahoma
+      Size = 5
+    [/1]
+    [2]
+      Type = Text
+      Text = ПДВ
+      OriginX = -0.9
+      OriginY = -0.6
+      AnchorX = Right
+      AnchorY = Top
+    [/2]
+  [/Подпись ПДВ]
+
   [Подпись A]
     [1]
       Type = Font
@@ -2059,7 +2383,7 @@
     [/1]
     [2]
       Type = Reference
-      Ref = Подпись A
+      Ref = Подпись СЭ
     [/2]
   [/Скв тип 29]
 
@@ -2389,7 +2713,7 @@
     [3]
       Type = Reference
       Ref = Bottom Arrow
-    [/3]
+    [/3]      
   [/Скв тип 57]
 
   [Скв тип 67]
@@ -2842,7 +3166,7 @@
     [/1]
     [2]
       Type = Reference
-      Ref = Бездействие 2
+      Ref = Бездействие
     [/2]
   [/Скв тип 109]
 
@@ -2889,6 +3213,52 @@
       Ref = Top Arrow
     [/2]
   [/Скв тип 113]
+
+  [Скв тип 114]
+    [1]
+      Type = Reference
+      Ref = Outline
+    [/1]
+    [2]
+      Type = Polyline
+      [Points]
+        x1=0.41
+        y1=1.6
+        x2=-0.12
+        y2=0.46
+        x3=-0.98
+        y3=1.25
+        x4=-0.7
+        y4=0.45
+        x5=-1.84
+        y5=0.46
+        x6=-0.69
+        y6=-0.13
+        x7=-1.56
+        y7=-0.67
+        x8=-0.42
+        y8=-0.4
+        x9=-0.42
+        y9=-1.54
+        x10=0.12
+        y10=-0.74
+        x11=0.7
+        y11=-0.98
+        x12=0.43
+        y12=-0.44
+        x13=1.87
+        y13=-0.72
+        x14=0.67
+        y14=-0.12
+        x15=1.87
+        y15=0.73
+        x16=0.42
+        y16=0.48
+        x17=0.41
+        y17=1.6
+      [/Points]
+    [/2]
+  [/Скв тип 114]
 
   [Скв тип 116]
     [1]
@@ -3074,7 +3444,7 @@
     [/1]
     [2]
       Type = Reference
-      Ref = Бездействие 2
+      Ref = Бездействие
     [/2]
   [/Скв тип 134]
 
@@ -3096,7 +3466,7 @@
     [/1]
     [2]
       Type = Reference
-      Ref = Бездействие 2
+      Ref = Бездействие
     [/2]
   [/Скв тип 131]
 
@@ -3107,7 +3477,7 @@
     [/1]
     [2]
       Type = Reference
-      Ref = Бездействие 2
+      Ref = Бездействие
     [/2]
   [/Скв тип 132]
 
@@ -3216,6 +3586,83 @@
       Ref = Подпись ПОГ
     [/3]
   [/Скв тип 143]
+
+  [Скв тип 144]
+    [1]
+      Type = Reference
+      Ref = Four arrows
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Скв развед
+    [/2]
+    [3]
+      Type = Polyline
+      [Points]
+        x1=0.54
+        y1=-0.54
+        x2=-0.54
+        y2=0.54
+      [/Points]
+    [/3]
+    [4]
+      Type = Polyline
+      [Points]
+        x1=-0.54
+        y1=-0.54
+        x2=0.54
+        y2=0.54
+      [/Points]
+    [/4]
+    [5]
+      Type = Reference
+      Ref = ThinCross
+    [/5]
+    [6]
+      Type = Reference
+      Ref = LT short line
+    [/6]
+    [7]
+      Type = Reference
+      Ref = RT short line
+    [/7]
+    [8]
+      Type = Reference
+      Ref = RB short line
+    [/8]
+    [9]
+      Type = Reference
+      Ref = LB short line
+    [/9]
+  [/Скв тип 144]
+
+  [Скв тип 145]
+    [1]
+      Type = Reference
+      Ref = Скв нагн неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Скв развед
+    [/2]
+    [3]
+      Type = Reference
+      Ref = LT short line
+    [/3]
+    [4]
+      Type = Reference
+      Ref = RT short line
+    [/4]
+    [5]
+      Type = Reference
+      Ref = RB short line
+    [/5]
+    [6]
+      Type = Reference
+      Ref = LB short line
+    [/6]
+  [/Скв тип 145]
+
 
   [Пъезометр, нагнет., перфорир.]
     [1]
@@ -3502,6 +3949,1149 @@
     [/6]
   [/Скв тип 171]
 
+  [Скв тип 172 ОРЭ]
+    [1]
+      Type = Reference
+      Ref = Red Fill
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Triangle
+    [/2]
+  [/Скв тип 172 ОРЭ]
+
+  [Скв тип 173 АОРЭ]
+    [1]
+      Type = Reference
+      Ref = Скв тип 172 ОРЭ
+    [/1]
+    [2]
+      Type = Font
+      Color = LightRed16
+      BkColor = None
+      TypeFace = Tahoma
+      Size = 5
+    [/2]
+    [3]
+      Type = Text
+      Text = A
+      OriginX = -0.7
+      OriginY = 0
+      AnchorX = Right
+      AnchorY = Bottom
+    [/3]
+  [/Скв тип 173 АОРЭ]
+
+  [скв тип 175]
+    [1]
+      Type = Reference
+      Ref = Скв доб ликв
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Top arrow
+    [/2]
+  [/скв тип 175]
+
+  [скв тип 176]
+    [1]
+      Type = Reference
+      Ref = Скв доб ликв неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Top arrow
+    [/2]
+  [/скв тип 176]
+
+  [скв тип 177]
+    [1]
+      Type = Reference
+      Ref = Скв доб ликв
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Bottom arrow
+    [/2]
+  [/скв тип 177]
+
+  [скв тип 178]
+    [1]
+      Type = Reference
+      Ref = Скв доб ликв неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Bottom arrow
+    [/2]
+  [/скв тип 178]
+  
+  [скв тип 179]
+    [1]
+      Type = Reference
+      Ref = Скв пл залит
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Top arrow
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Подпись ВДЗ
+    [/3]
+  [/скв тип 179]
+  
+  [скв тип 180]
+    [1]
+      Type = Reference
+      Ref = Empty Circle
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Top arrow
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Подпись ВДЗ
+    [/3]
+  [/скв тип 180]
+ 
+  [скв тип 181]
+    [1]
+      Type = Reference
+      Ref = Скв пл залит
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Bottom arrow
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Подпись ВДЗ
+    [/3]
+  [/скв тип 181]
+
+  [скв тип 182]
+    [1]
+      Type = Reference
+      Ref = Empty Circle
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Bottom arrow
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Подпись ВДЗ
+    [/3]
+  [/скв тип 182]
+
+  [скв тип 194]
+    [1]
+      Type = Reference
+      Ref = Скв нагн
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Подпись СВН
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Подпись ПДВ
+    [/3]
+  [/скв тип 194]
+
+  [скв тип 195]
+    [1]
+      Type = Reference
+      Ref = Скв нагн пл залит
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Подпись СВН
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Подпись ПДВ
+    [/3]
+  [/скв тип 195]
+
+  [скв тип 196]
+    [1]
+      Type = Reference
+      Ref = Скв нагн неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Подпись СВН
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Подпись ПДВ
+    [/3]
+  [/скв тип 196]
+
+  [Скв тип 197]
+    [1]
+      Type = Reference
+      Ref = Filled Circle
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Four Arrows
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Подпись ПОГ
+    [/3]
+  [/Скв тип 197]
+
+  [Скв тип 200]
+    [3]
+      Type = Pen
+      Color = LightRed16
+      Width = Default
+      Style = Solid
+    [/3]
+    [4]
+      Type = Brush
+      Style = Solid
+      Color = LightRed16
+    [/4]
+    [5]
+      Type = Polyline
+      [Points]
+        x1=0
+        y1=1.5
+        x2=1.25
+        y2=-0.5
+        x3=-1.25
+        y3=-0.5
+        x4=0
+        y4=1.5
+      [/Points]
+    [/5]
+    [1]
+      Type = Reference
+      Ref = Outline
+    [/1]
+    [2]
+      Type = Polyline
+      [Points]
+        x1=0
+        y1=1.5
+        x2=1.25
+        y2=-0.5
+        x3=-1.25
+        y3=-0.5
+        x4=0
+        y4=1.5
+      [/Points]
+    [/2]
+  [/Скв тип 200]
+
+  [Скв тип 201]
+    [1]
+      Type = Reference
+      Ref = Outline
+    [/1]
+    [2]
+      Type = Polyline
+      [Points]
+        x1=0
+        y1=1.5
+        x2=1.25
+        y2=-0.5
+        x3=-1.25
+        y3=-0.5
+        x4=0
+        y4=1.5
+      [/Points]
+    [/2]
+  [/Скв тип 201]
+
+  [Скв тип 202]
+    [1]
+      Type = Reference
+      Ref = Outline
+    [/1]
+    [2]
+      Type = Polyline
+      [Points]
+        x1=0
+        y1=1.5
+        x2=1.25
+        y2=-0.5
+        x3=-1.25
+        y3=-0.5
+        x4=0
+        y4=1.5
+      [/Points]
+    [/2]
+    [3]
+      Type = Polyline
+      [Points]
+        x1=-1.25
+        y1=-0.5
+        x2=0.61
+        y2=0.53
+      [/Points]
+    [/3]
+    [4]
+      Type = Polyline
+      [Points]
+        x1=1.25
+        y1=-0.5
+        x2=-0.61
+        y2=0.53
+      [/Points]
+    [/4]
+  [/Скв тип 202]
+
+  [Скв тип 203]
+    [1]
+      Type = Reference
+      Ref = Fill
+    [/1]
+    [2]
+      Type = Circle
+      CenterX = 0
+      CenterY = 0
+      Radius = 1.1
+    [/2]
+    [3]
+      Type = Pen
+      Color = LightBlue16
+      Width = Default
+      Style = Solid
+    [/3]
+    [4]
+      Type = Brush
+      Style = Solid
+      Color = LightBlue16
+    [/4]
+    [5]
+      Type = Polyline
+      [Points]
+        x1=-0.87
+        y1=-0.49
+        x2=0
+        y2=1
+        x3=0.87
+        y3=-0.49
+        x4=-0.87
+        y4=-0.49
+      [/Points]
+    [/5]
+    [6]
+      Type = Reference
+      Ref = Outline
+    [/6]
+    [7]
+      Type = Circle
+      CenterX = 0
+      CenterY = 0
+      Radius = 1.1
+    [/7]
+  [/Скв тип 203]
+
+  [Скв тип 204]
+    [3]
+      Type = Pen
+      Color = LightBlue16
+      Width = Default
+      Style = Solid
+    [/3]
+    [4]
+      Type = Brush
+      Style = Solid
+      Color = LightBlue16
+    [/4]
+    [5]
+      Type = Polyline
+      [Points]
+        x1=-0.87
+        y1=-0.49
+        x2=0
+        y2=1
+        x3=0.87
+        y3=-0.49
+        x4=-0.87
+        y4=-0.49
+      [/Points]
+    [/5]
+    [1]
+      Type = Reference
+      Ref = Outline
+    [/1]
+    [2]
+      Type = Circle
+      CenterX = 0
+      CenterY = 0
+      Radius = 1.1
+    [/2]
+  [/Скв тип 204]
+
+  [Скв тип 205]
+    [5]
+      Type = Pen
+      Color = LightBlue16
+      Width = Default
+      Style = Solid
+    [/5]
+    [6]
+      Type = Brush
+      Style = Solid
+      Color = LightBlue16
+    [/6]
+    [7]
+      Type = Polyline
+      [Points]
+        x1=-0.87
+        y1=-0.49
+        x2=0
+        y2=1
+        x3=0.87
+        y3=-0.49
+        x4=-0.87
+        y4=-0.49
+      [/Points]
+    [/7]
+    [1]
+      Type = Reference
+      Ref = Outline
+    [/1]
+    [2]
+      Type = Circle
+      CenterX = 0
+      CenterY = 0
+      Radius = 1.1
+    [/2]
+    [3]
+      Type = Polyline
+      [Points]
+        x1=0.78
+        y1=-0.78
+        x2=-0.78
+        y2=0.78
+      [/Points]
+    [/3]
+    [4]
+      Type = Polyline
+      [Points]
+        x1=-0.78
+        y1=-0.78
+        x2=0.78
+        y2=0.78
+      [/Points]
+    [/4]
+  [/Скв тип 205]
+
+  [Скв тип 206]
+    [1]
+      Type = Reference
+      Ref = Filled Circle
+    [/1]
+    [2]
+      Type = Reference
+      Ref = ЭЦН
+    [/2]
+    [3]
+      Type = Reference
+      Ref = ШГН
+    [/3]
+  [/Скв тип 206]
+
+  [Скв тип 207]
+    [1]
+      Type = Reference
+      Ref = Empty Circle
+    [/1]
+    [2]
+      Type = Reference
+      Ref = ЭЦН
+    [/2]
+    [3]
+      Type = Reference
+      Ref = ШГН
+    [/3]
+  [/Скв тип 207]
+
+  [Скв тип 208]
+    [1]
+      Type = Reference
+      Ref = Empty Circle
+    [/1]
+    [2]
+      Type = Reference
+      Ref = ЭЦН
+    [/2]
+    [3]
+      Type = Reference
+      Ref = ШГН
+    [/3]
+    [4]
+      Type = Polyline
+      [Points]
+        x1=0.54
+        y1=-0.54
+        x2=-0.54
+        y2=0.54
+      [/Points]
+    [/4]
+    [5]
+      Type = Polyline
+      [Points]
+        x1=-0.54
+        y1=-0.54
+        x2=0.54
+        y2=0.54
+      [/Points]
+    [/5]
+  [/Скв тип 208]
+
+
+  [скв тип 230]
+    [1]
+      Type = Reference
+      Ref = Скв доб ЭЦН
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+  [/скв тип 230]
+
+  [скв тип 231]
+    [1]
+      Type = Reference
+      Ref = Скв доб ЭЦН
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/2]
+  [/скв тип 231]
+
+  [скв тип 232]
+    [1]
+      Type = Reference
+      Ref = Скв доб ШГН
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+  [/скв тип 232]
+
+  [скв тип 233]
+    [1]
+      Type = Reference
+      Ref = Скв доб ШГН
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/2]
+  [/скв тип 233]
+
+  [скв тип 234]
+    [1]
+      Type = Reference
+      Ref = Скв тип 90
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+  [/скв тип 234]
+
+  [скв тип 235]
+    [1]
+      Type = Reference
+      Ref = Скв тип 90
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/2]
+  [/скв тип 235]
+
+  [скв тип 236]
+    [1]
+      Type = Reference
+      Ref = Скв тип 89
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+  [/скв тип 236]
+
+  [скв тип 237]
+    [1]
+      Type = Reference
+      Ref = Скв тип 89
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/2]
+  [/скв тип 237]
+
+  [скв тип 238]
+    [1]
+      Type = Reference
+      Ref = Скв доб ЭЦН неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+  [/скв тип 238]
+
+  [скв тип 239]
+    [1]
+      Type = Reference
+      Ref = Скв доб ЭЦН неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/2]
+  [/скв тип 239]
+
+  [скв тип 240]
+    [1]
+      Type = Reference
+      Ref = Скв доб ШГН неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+  [/скв тип 240]
+
+  [скв тип 241]
+    [1]
+      Type = Reference
+      Ref = Скв доб ШГН неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/2]
+  [/скв тип 241]
+
+  [скв тип 242]
+    [1]
+      Type = Reference
+      Ref = Скв доб ЭЦН неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Скв доб безд неперф
+    [/3]
+  [/скв тип 242]
+
+  [скв тип 243]
+    [1]
+      Type = Reference
+      Ref = Скв доб ЭЦН неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Скв доб безд неперф
+    [/3]
+  [/скв тип 243]
+
+
+  [скв тип 244]
+    [1]
+      Type = Reference
+      Ref = Скв доб ШГН неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Скв доб безд неперф
+    [/3]
+  [/скв тип 244]
+
+  [скв тип 245]
+    [1]
+      Type = Reference
+      Ref = Скв доб ШГН неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Скв доб безд неперф
+    [/3]
+  [/скв тип 245]
+
+  [скв тип 246]
+    [1]
+      Type = Reference
+      Ref = Скв пл залит
+    [/1]
+    [2]
+      Type = Reference
+      Ref = ЭЦН
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/3]
+  [/скв тип 246]
+
+  [скв тип 247]
+    [1]
+      Type = Reference
+      Ref = Скв пл залит
+    [/1]
+    [2]
+      Type = Reference
+      Ref = ЭЦН
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/3]
+  [/скв тип 247]
+
+  [скв тип 248]
+    [1]
+      Type = Reference
+      Ref = Скв пл залит
+    [/1]
+    [2]
+      Type = Reference
+      Ref = ШГН
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/3]
+  [/скв тип 248]
+
+  [скв тип 249]
+   [1]
+      Type = Reference
+      Ref = Скв пл залит
+    [/1]
+    [2]
+      Type = Reference
+      Ref = ШГН
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/3]
+  [/скв тип 249]
+
+  [скв тип 250]
+    [1]
+      Type = Reference
+      Ref = Скв доб ЭЦН неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Скв доб безд пл залит
+    [/3]
+    [4]
+      Type = Reference
+      Ref = Скв доб безд неперф
+    [/4]
+  [/скв тип 250]
+
+  [скв тип 251]
+    [1]
+      Type = Reference
+      Ref = Скв доб ЭЦН неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Скв доб безд пл залит
+    [/3]
+    [4]
+      Type = Reference
+      Ref = Скв доб безд неперф
+    [/4]
+  [/скв тип 251]
+
+  [скв тип 252]
+    [1]
+      Type = Reference
+      Ref = Скв доб ШГН неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Скв доб безд пл залит
+    [/3]
+    [4]
+      Type = Reference
+      Ref = Скв доб безд неперф
+    [/4]
+  [/скв тип 252]
+
+  [скв тип 253]
+    [1]
+      Type = Reference
+      Ref = Скв доб ШГН неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Скв доб безд пл залит
+    [/3]
+    [4]
+      Type = Reference
+      Ref = Скв доб безд неперф
+    [/4]
+  [/скв тип 253]
+
+  [скв тип 254]
+    [1]
+      Type = Reference
+      Ref = Скв нагн
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+  [/скв тип 254]
+
+  [скв тип 255]
+    [1]
+      Type = Reference
+      Ref = Скв нагн
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/2]
+  [/скв тип 255]
+
+  [скв тип 210]
+    [1]
+      Type = Reference
+      Ref = Скв нагн безд
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+  [/скв тип 210]
+
+  [скв тип 211]
+    [1]
+      Type = Reference
+      Ref = Скв нагн безд
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/3]
+  [/скв тип 211]
+
+  [скв тип 212]
+    [1]
+      Type = Reference
+      Ref = Скв нагн неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/3]
+  [/скв тип 212]
+
+  [скв тип 213]
+    [1]
+      Type = Reference
+      Ref = Скв нагн безд неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/3]
+  [/скв тип 213]
+
+  [скв тип 214]
+    [1]
+      Type = Reference
+      Ref = Скв нагн пл залит
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/3]
+  [/скв тип 214]
+
+  [скв тип 215]
+    [1]
+      Type = Reference
+      Ref = Скв нагн безд пл залит
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/3]
+  [/скв тип 215]
+
+  [скв тип 216]
+    [1]
+      Type = Reference
+      Ref = Скв нагн
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+    [3]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/3]
+  [/скв тип 216]
+
+  [скв тип 217]
+    [1]
+      Type = Reference
+      Ref = Скв нагн безд
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/2]
+  [/скв тип 217]
+
+  [скв тип 218]
+    [1]
+      Type = Reference
+      Ref = Скв нагн неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+  [/скв тип 218]
+
+  [скв тип 219]
+    [1]
+      Type = Reference
+      Ref = Скв нагн неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/2]
+  [/скв тип 219]
+
+  [скв тип 224]
+    [1]
+      Type = Reference
+      Ref = Скв нагн безд неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+  [/скв тип 224]
+
+  [скв тип 225]
+    [1]
+      Type = Reference
+      Ref = Скв нагн безд неперф
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/2]
+  [/скв тип 225]
+
+  [скв тип 226]
+    [1]
+      Type = Reference
+      Ref = Скв нагн пл залит
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+  [/скв тип 226]
+
+  [скв тип 227]
+    [1]
+      Type = Reference
+      Ref = Скв нагн пл залит
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/2]
+  [/скв тип 227]
+
+  [скв тип 228]
+    [1]
+      Type = Reference
+      Ref = Скв нагн безд пл залит
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Верх
+    [/2]
+  [/скв тип 228]
+
+  [скв тип 229]
+    [1]
+      Type = Reference
+      Ref = Скв нагн безд пл залит
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Горизонт Вниз
+    [/2]
+  [/скв тип 229]
+
+
+  [Скв проект ВДЗ]
+    [1]
+      Type = Reference
+      Ref = Скв проект
+    [/1]
+    [2]
+      Type = Reference
+      Ref = Подпись ВДЗ
+    [/2]
+  [/Скв проект ВДЗ]
+
+  [Интервал негерметичности]
+    [1]
+      Type = Reference
+      Ref = 0.6mm Outline
+    [/1]
+    [2]
+      Type = Polyline
+      [Points]
+       x1 = -1.7
+       y1 = 2.0
+       x2 = -1.7
+       y2 = 2.5
+       x3 = -1.5
+       y3 = 3.0
+       x4 = 1.5
+       y4 = 3.0
+       x5 = 1.7
+       y5 = 2.5
+       x6 = 1.7
+       y6 = 2.0
+       x7 = 1.7
+       y7 = 2.0
+      [/Points]
+    [/2]
+  [/Интервал негерметичности]
+
+  [Перетоки]
+    [1]
+      Type = Reference
+      Ref = 0.6mm Outline
+    [/1]
+    [2]
+      Type = Polyline
+      [Points]
+       x1 = -2.0
+       y1 = -1.7
+       x2 = -2.5
+       y2 = -1.7
+       x3 = -3.0
+       y3 = -1.5
+       x4 = -3.0
+       y4 = 1.5
+       x5 = -2.5
+       y5 = 1.7
+       x6 = -2.0
+       y6 = 1.7
+       x7 = -2.0
+       y7 = 1.7
+      [/Points]
+    [/2]
+  [/Перетоки]
+
+  [Оттоки]
+    [1]
+      Type = Reference
+      Ref = 0.6mm Outline
+    [/1]
+    [2]
+      Type = Polyline
+      [Points]
+       x1 = 2.0
+       y1 = -1.7
+       x2 = 2.5
+       y2 = -1.7
+       x3 = 3.0
+       y3 = -1.5
+       x4 = 3.0
+       y4 = 1.5
+       x5 = 2.5
+       y5 = 1.7
+       x6 = 2.0
+       y6 = 1.7
+       x7 = 2.0
+       y7 = 1.7
+      [/Points]
+    [/2]
+  [/Оттоки]
+
 ; OPA System specific
 
   [OPA System Mark]
@@ -3738,470 +5328,283 @@
     [/1]
   [/Водоограничение 3]
 
-;<< for GEOLOG (from SSI)
-  [ГДЯ]
+  [Big Triangle]
     [1]
-      Type = Reference
-      Ref = Красный крест
-    [/1]
-    [2]
       Type = Reference
       Ref = Outline
-    [/2]
-    [3]
-      Type = Reference
-      Ref = Red circle little
-    [/3]
-  [/ГДЯ]
-
-  [Мульда с выбросом]
-    [1]
-      Type = Reference
-      Ref = Зеленый крест
-    [/1]
-    [2]
-      Type = Reference
-      Ref = Outline
-    [/2]
-    [3]
-      Type = Reference
-      Ref = Red circle little
-    [/3]
-  [/Мульда с выбросом]
-
-  [Мульда без выброса]
-    [1]
-      Type = Reference
-      Ref = Greenline
-    [/1]
-    [2]
-      Type = Reference
-      Ref = Outline
-    [/2]
-    [3]
-      Type = Reference
-      Ref = Red circle little
-    [/3]
-  [/Мульда без выброса]
-
-  [Мульда в целике]
-    [1]
-      Type = Pen
-      Color = Red
-      Width = Default
-      Style = Solid
-    [/1]
-    [2]
-      Type = Brush
-      Color = Yellow
-      Style = Solid
-    [/2]
-    [3]
-      Type = Reference
-      Ref = Circle
-    [/3]
-  [/Мульда в целике]
-; for GEOLOG (from SSI) >>
-
-
-;--ПЛА-----------------------------
-
-  [Redline]
-    [1]
-      Type = Pen
-      Color = Red
-      Width = Default
-      Style = Solid
-    [/1]
-    [2]
-      Type = Brush
-      Style = Empty
-    [/2]
-  [/Redline]
-
-  [Blackline]
-    [1]
-      Type = Pen
-      Color = Black
-      Width = Default
-      Style = Solid
-    [/1]
-    [2]
-      Type = Brush
-      Style = Empty
-    [/2]
-  [/Blackline]
-
-  [Буква П]
-    [1]
-      Type = Font
-      Color = Red
-      BkColor = None
-      TypeFace = Tahoma
-      Size = 5
-    [/1]
-    [2]
-      Type = Text
-      Text = П
-      OriginX = 0
-      OriginY = 0
-      AnchorX = Center
-      AnchorY = Center
-    [/2]
-  [/Буква П]
-
-  [Буква Т]
-    [1]
-      Type = Font
-      Color = Red
-      BkColor = None
-      TypeFace = Tahoma
-      Size = 7
-    [/1]
-    [2]
-      Type = Text
-      Text = Т
-      OriginX = 0.2
-      OriginY = 0
-      AnchorX = Center
-      AnchorY = Center
-    [/2]
-  [/Буква Т]
-
-  [Буква О]
-    [1]
-      Type = Font
-      Color = Red
-      BkColor = None
-      TypeFace = Verdana
-      Size = 7
-    [/1]
-    [2]
-      Type = Text
-      Text = 0
-      OriginX = 0
-      OriginY = 0
-      AnchorX = Center
-      AnchorY = Center
-    [/2]
-  [/Буква О]
-
-  [Буква Б]
-    [1]
-      Type = Font
-      Color = Red
-      BkColor = None
-      TypeFace = Tahoma
-      Size = 7
-    [/1]
-    [2]
-      Type = Text
-      Text = Б
-      OriginX = 0.2
-      OriginY = 0
-      AnchorX = Center
-      AnchorY = Center
-    [/2]
-  [/Буква Б]
-
-  [Красный крест]
-    [1]
-      Type = Reference
-      Ref = Redline
     [/1]
     [2]
       Type = Polyline
       [Points]
-        x1 = -1
-        y1 = 0
-        x2 = 1
-        y2 = 0
+        x1=0
+        y1=2.4
+        x2=2.078
+        y2=-1.2
+        x3=-2.078
+        y3=-1.2
+        x4=0
+        y4=2.4
       [/Points]
     [/2]
-    [3]
-      Type = Polyline
-      [Points]
-        x1 = 0
-        y1 = -1
-        x2 = 0
-        y2 = 1
-      [/Points]
-    [/3]
-  [/Красный крест]
+  [/Big Triangle]
 
-  [Red circle]
+  [Six-pointed star]
     [1]
-      Type = Pen
-      Color = Red
-      Width = Default
-      Style = Solid
-    [/1]
-    [2]
-      Type = Brush
-      Style = Empty
-    [/2]
-    [3]
-      Type = Circle
-      CenterX = 0
-      CenterY = 0
-      Radius = 1.5
-    [/3]
-  [/Red circle]
-
-  [Red circle little]
-    [1]
-      Type = Pen
-      Color = Red
-      Width = Default
-      Style = Solid
-    [/1]
-    [2]
-      Type = Brush
-      Style = Empty
-    [/2]
-    [3]
-      Type = Circle
-      CenterX = 0
-      CenterY = 0
-      Radius = 0.9
-    [/3]
-  [/Red circle little]
-
-  [Кам хран ПП материалов]
-   [1]
       Type = Reference
       Ref = Outline
-   [/1]
-   [2]
-     Type = Reference
-     Ref = Буква П
-   [/2]
-   [3]
-     Type = Circle
-     CenterX = 0
-     CenterY = 0
-     Radius = 1.1
-   [/3]
-  [/Кам хран ПП материалов]
-
-  [Медпункт]
-    [1]
-      Type = Reference
-      Ref = Красный крест
-    [/1]
-    [2]
-      Type = Reference
-      Ref = Outline
-    [/2]
-    [3]
-      Type = Circle
-      CenterX = 0
-      CenterY = 0
-      Radius = 1.1
-    [/3]
-  [/Медпункт]
-
-  [Телефон]
-    [1]
-      Type = Reference
-      Ref = Red circle
-    [/1]
-   [2]
-     Type = Reference
-     Ref = Буква Т
-   [/2]
-  [/Телефон]
-
-  [Огнетушитель]
-    [1]
-      Type = Reference
-      Ref = Red circle
-    [/1]
-   [2]
-     Type = Reference
-     Ref = Буква О
-   [/2]
-  [/Огнетушитель]
-
-  [Место стоянки ПП ]
-    [1]
-      Type = Reference
-      Ref = Redline
     [/1]
     [2]
       Type = Polyline
       [Points]
-        x1 = -2.2
-        y1 = 1.3
-        x2 = -2.2
-        y2 = -1.3
-        x3 = 2.2
-        y3 = -1.3
-        x4 = 2.2
-        y4 = 1.3
-        x5 = -2.2
-        y5 = 1.3
-        x6 = 2.2
-        y6 = -1.3
-        x7 = 2.2
-        y7 = 1.3
-        x8 = -2.2
-        y8 = -1.3
+        x1=0
+        y1=2.4
+        x2=0.693
+        y2=1.2
+        x3=2.078
+        y3=1.2
+        x4=1.386
+        y4=0
+        x5=2.078
+        y5=-1.2
+        x6=0.693
+        y6=-1.2
+        x7=0
+        y7=-2.4
+        x8=-0.693
+        y8=-1.2
+        x9=-2.078
+        y9=-1.2
+        x10=-1.386
+        y10=0
+        x11=-2.078
+        y11=1.2
+        x12=-0.693
+        y12=1.2
+        x13=0
+        y13=2.4
       [/Points]
     [/2]
-  [/Место стоянки ПП ]
+  [/Six-pointed star]
 
-  [Буран]
+  [Big Star]
     [1]
       Type = Reference
-      Ref = Red circle
+      Ref = Outline
     [/1]
     [2]
-      Type = Reference
-      Ref = Буква Б
+      Type = Polyline
+      [Points]
+        x1=0
+        y1=2.4
+        x2=1.411
+        y2=-1.942
+        x3=-2.283
+        y3=0.742
+        x4=2.283
+        y4=0.742
+        x5=-1.411
+        y5=-1.942
+        x6=0
+        y6=2.4
+      [/Points]
     [/2]
-  [/Буран]
+  [/Big Star]
 
- [Сухотруб трубопровод]
-   [1]
-     Type = Reference
-     Ref = Redline
-   [/1]
-   [2]
-     Type = PieSlice
-     CenterX = 0
-     CenterY = 0
-     Radius = 1.5
-     StartAngle = 270
-     EndAngle = 90
-   [/2]
-   [3]
-     Type = Polyline
-     [Points]
-       x1 = -1.5
-       y1 = -1.5
-       x2 = 0
-       y2 = 0
-       x3 = 1.5
-       y3 = -1.5
-     [/Points]
-   [/3]
-   [4]
-     Type = Polyline
-     [Points]
-       x1 = 0
-       y1 = 0
-       x2 = 0
-       y2 = -1.5
-     [/Points]
-   [/4]
-  [/Сухотруб трубопровод]
+  [Star]
+    [1]
+      Type = Polyline
+      [Points]
+        x1=0
+        y1=3.5
+        x2=1
+        y2=1
+        x3=3.5
+        y3=1
+        x4=1.3
+        y4=-0.7
+        x5=2.2
+        y5=-3.5
+        x6=0
+        y6=-1.5
+	x7=-2.2
+	y7=-3.5
+	x8=-1.3
+	y8=-0.7
+	x9=-3.5
+	y9=0.9
+	x10=-1
+	y10=1
+	x11=0
+	y11=3.5
+      [/Points]
+    [/1]
+  [/Star]
 
-  [Кольцев трубопровод]
+  [Big Сircle]
     [1]
       Type = Reference
-      Ref = Red circle
+      Ref = Outline
     [/1]
-    [2]
-      Type = Reference
-      Ref = Red circle little
-    [/2]
-
-  [/Кольцев трубопровод]
-
-  [Пункт радиосвязи]
-    [1]
-     Type = Reference
-     Ref = BlackLine
-    [/1]
-    [2]
-      Type = Circle
-      CenterX = 0
-      CenterY = 0
-      Radius = 1.1
-    [/2]
-    [3]
-     Type = Reference
-     Ref = RedLine
-    [/3]
     [4]
-      Type = Polyline
-      [Points]
-        x1 = 1.8
-        y1 = -1.6
-        x2 = 0.4
-        y2 = 1.4
-        x3 = 0.15
-        y3 = 0.2
-        x4 = -0.7
-        y4 = 1.85
-        x5 = -0.7
-        y5 = 1
-        x6 = -0.7
-        y6 = 1.85
-        x7 = 0
-        y7 = 1.25
-      [/Points]
+      Type = Circle
+      CenterX = 0
+      CenterY = 0
+      Radius = 1.41
     [/4]
-  [/Пункт радиосвязи]
+  [/Big Сircle]
 
-  [Место разворота]
+  [Rhombus]
     [1]
-      Type = Pen
-      Color = Red
-      Width = Default
-      Style = Solid
+      Type = Reference
+      Ref = Outline
     [/1]
     [2]
-      Type = Brush
-      Color = Lime
-      Style = Solid
-    [/2]
-    [3]
       Type = Polyline
       [Points]
-        x1 = -1.5
-        y1 = -1.5
-        x2 = -1.5
-        y2 = 1.5
-        x3 = 1.5
-        y3 = 1.5
-        x4 = 1.5
-        y4 = -1.5
+        x1=0
+        y1=2.4
+        x2=1.5
+        y2=0
+        x3=0
+        y3=-2.4
+        x4=-1.5
+        y4=0
+        x5=0
+        y5=2.4
       [/Points]
+    [/2]
+  [/Rhombus]
+
+  [Rhombus horizontal]
+    [1]
+      Type = Reference
+      Ref = Outline
+    [/1]
+    [2]
+      Type = Polyline
+      [Points]
+        x1=2.4
+        y1=0
+        x2=0
+        y2=1.5
+        x3=-2.4
+        y3=0
+        x4=0
+        y4=-1.5
+        x5=2.4
+        y5=0
+      [/Points]
+    [/2]
+  [/Rhombus horizontal]
+
+  [Flower]
+    [1]
+      Type = Reference
+      Ref = Fill
+    [/1]
+    [2]
+      Type = Polyline
+      [Points]
+        x1=-1.5
+        y1=1.5
+        x2=0
+        y2=2
+        x3=1.5
+        y3=1.5
+        x4=0
+        y4=1.2
+        x5=-1.5
+        y5=1.5
+        x6=-2
+        y6=0
+        x7=-1.5
+        y7=-1.5
+        x8=0
+        y8=-2
+        x9=1.5
+        y9=-1.5
+        x10=2
+        y10=0
+        x11=1.5
+        y11=1.5
+        x12=1.2
+        y12=0
+        x13=1.5
+        y13=-1.5
+        x14=0
+        y14=-1.2
+        x15=-1.5
+        y15=-1.5
+        x16=-1.2
+        y16=0
+        x17=-1.5
+        y17=1.5
+      [/Points]
+    [/2]
+    [3]
+      Type = Pen
+      Color = ForeColor
+      Width = 0.5
+      Style = Solid
     [/3]
     [4]
-      Type = Reference
-      Ref = Redline
+      Type = Brush
+      Color = ForeColor
+      Style = Empty
     [/4]
     [5]
+      Type = Circle
+      CenterX = 0
+      CenterY = 0
+      Radius = 2.00
+    [/5]
+  [/Flower]
+
+  [Big Rectangle Symbol with Empty rombus]
+    [1]
+      Type = Reference
+      Ref = Fill
+    [/1]
+    [2]
       Type = Polyline
       [Points]
-        x1 = -0.75
-        y1 = -1
-        x2 = -0.75
-        y2 = 0.5
-        x3 = -0.5
-        y3 = 0.75
-        x4 = 0
-        y4 = 1.12
-        x5 = 0.5
-        y5 = 0.75
-        x6 = 0.75
-        y6 = 0.5
-        x7 = 0.75
-        y7 = -0.5
-        x8 = 0.5
-        y8 = 0.25
-        x9 = 1
-        y9 = 0.25
-        x10= 0.75
-        y10= -0.5
+        x1=-2.5
+        y1=-2.5
+        x2=-2.5
+        y2=2.5
+        x3=-2.2
+        y3=2.2
+        x4=-1.5
+        y4=-1.5
+        x5=2.2
+        y5=-2.2
+        x6=2.5
+        y6=-2.5
       [/Points]
-    [/5]
-  [/Место разворота]
+    [/2]
+    [3]
+      Type = Polyline
+      [Points]
+        x1=2.5
+        y1=-2.5
+        x2=2.2
+        y2=-2.2
+        x3=1.5
+        y3=1.5
+        x4=-2.2
+        y4=2.2
+        x5=-2.5
+        y5=2.5
+        x6=2.5
+        y6=2.5
+      [/Points]
+    [/3]
+  [/Big Rectangle Symbol with Empty rombus]
 
-;-ПЛА----------------------------------------------
+
+
+
+
 
 
 [/Vector Symbol Definition]
@@ -4364,9 +5767,12 @@
   PNT.CHR (141)=Empty Circle
   PNT.CHR (142)=Скв тип 142
   PNT.CHR (143)=Скв тип 143
+  PNT.CHR (144)=Скв тип 144
+  PNT.CHR (145)=Скв тип 145
   PNT.CHR (147)=Пъезометр, нагнет., перфорир.
   PNT.CHR (148)=Скв тип 148
   PNT.CHR (149)=Скв тип 149
+
   PNT.CHR (150)=Скв тип 150
   PNT.CHR (151)=Скв тип 151
   PNT.CHR (152)=Скв тип 152
@@ -4374,42 +5780,102 @@
   PNT.CHR (154)=Скв тип 154
   PNT.CHR (155)=Скв тип 155
   PNT.CHR (156)=Скв доб ликв на др.горизонте
+  PNT.CHR (157)=Скв проект ВДЗ
 
-  ;PNT.CHR (164)=Скв тип 164
-   ;; Разведочные
   PNT.CHR (161)=Скв параметрич
   PNT.CHR (162)=Скв параметрич ликв
   PNT.CHR (163)=Скв развед ликв
-
   PNT.CHR (164)=Dn Half Filled Circle
   PNT.CHR (165)=Up Half Filled Circle
   PNT.CHR (166)=Скв тип 166
   PNT.CHR (167)=Скв тип 167
   PNT.CHR (168)=Скв тип 168
   PNT.CHR (169)=Скв тип 169
+
   PNT.CHR (170)=Скв тип 170
   PNT.CHR (171)=Скв тип 171
+  PNT.CHR (172)=Скв тип 172 ОРЭ
+  PNT.CHR (173)=Скв тип 173 АОРЭ
+  PNT.CHR (175)=Скв тип 175
+  PNT.CHR (176)=Скв тип 176
+  PNT.CHR (177)=Скв тип 177
+  PNT.CHR (178)=Скв тип 178
+  PNT.CHR (179)=Скв тип 179
 
-;<< for GEOLOG (from SSI)
-  PNT.CHR (144)=ГДЯ
-  PNT.CHR (145)=Мульда с выбросом
-  PNT.CHR (146)=Мульда без выброса
-  PNT.CHR (147)=Мульда в целике
-; GEOLOG (from SSI)  >>
+  PNT.CHR (180)=Скв тип 180
+  PNT.CHR (181)=Скв тип 181
+  PNT.CHR (182)=Скв тип 182  
 
-;-ПЛА--------------------------------------------
 
-  PLA.CHR (6)=Кам хран ПП материалов
-  PLA.CHR (7)=Медпункт
-  PLA.CHR (8)=Телефон
-  PLA.CHR (9)=Огнетушитель
-  PLA.CHR (10)=Пункт радиосвязи
-  PLA.CHR (11)=Место разворота
-  PLA.CHR (12)=Кольцев трубопровод
-  PLA.CHR (13)=Сухотруб трубопровод
-  PLA.CHR (14)=Буран
+  PNT.CHR (191)=Интервал негерметичности
+  PNT.CHR (192)=Перетоки
+  PNT.CHR (193)=Оттоки
+  PNT.CHR (194)=Скв тип 194
+  PNT.CHR (195)=Скв тип 195
+  PNT.CHR (196)=Скв тип 196
+  PNT.CHR (197)=Скв тип 197		
+  PNT.CHR (198)=Скв проект след. лет	
+  PNT.CHR (199)=Забой
 
-;--/ПЛА--------------------------------------------
+  PNT.CHR (200)=Скв тип 200
+  PNT.CHR (201)=Скв тип 201
+  PNT.CHR (202)=Скв тип 202
+  PNT.CHR (203)=Скв тип 203
+  PNT.CHR (204)=Скв тип 204
+  PNT.CHR (205)=Скв тип 205
+  PNT.CHR (206)=Скв тип 206
+  PNT.CHR (207)=Скв тип 207
+  PNT.CHR (208)=Скв тип 208
+
+  PNT.CHR (210)=Скв тип 210
+
+  PNT.CHR (211)=Скв тип 211
+  PNT.CHR (212)=Скв тип 212
+  PNT.CHR (213)=Скв тип 213
+  PNT.CHR (214)=Скв тип 214
+  PNT.CHR (215)=Скв тип 215
+  PNT.CHR (216)=Скв тип 216
+
+
+  PNT.CHR (217)=Скв тип 217
+  PNT.CHR (218)=Скв тип 218
+  PNT.CHR (219)=Скв тип 219
+
+  PNT.CHR (224)=Скв тип 224
+  PNT.CHR (225)=Скв тип 225
+  PNT.CHR (226)=Скв тип 226
+  PNT.CHR (227)=Скв тип 227
+  PNT.CHR (228)=Скв тип 228
+  PNT.CHR (229)=Скв тип 229
+
+  PNT.CHR (230)=Скв тип 230
+  PNT.CHR (231)=Скв тип 231
+  PNT.CHR (232)=Скв тип 232
+  PNT.CHR (233)=Скв тип 233
+  PNT.CHR (234)=Скв тип 234
+  PNT.CHR (235)=Скв тип 235
+  PNT.CHR (236)=Скв тип 236
+  PNT.CHR (237)=Скв тип 237
+  PNT.CHR (238)=Скв тип 238
+  PNT.CHR (239)=Скв тип 239
+
+  PNT.CHR (240)=Скв тип 240
+  PNT.CHR (241)=Скв тип 241
+  PNT.CHR (242)=Скв тип 242
+  PNT.CHR (243)=Скв тип 243
+  PNT.CHR (244)=Скв тип 244
+  PNT.CHR (245)=Скв тип 245
+  PNT.CHR (246)=Скв тип 246
+  PNT.CHR (247)=Скв тип 247
+  PNT.CHR (248)=Скв тип 248
+  PNT.CHR (249)=Скв тип 249
+
+  PNT.CHR (250)=Скв тип 250
+  PNT.CHR (251)=Скв тип 251
+  PNT.CHR (252)=Скв тип 252
+  PNT.CHR (253)=Скв тип 253
+  PNT.CHR (254)=Скв тип 254
+  PNT.CHR (255)=Скв тип 255
 
   SYMBOLS (0)=Empty Circle Symbol
   SYMBOLS (1)=Filled Circle Symbol
@@ -4440,4 +5906,120 @@
   KRS (9)=Водоограничение 1
   KRS (10)=Водоограничение 2
   KRS (11)=Водоограничение 3
+
+;--- Элементы ---------------------------------
+
+  PARTS (0)=Empty Circle
+  PARTS (1)=Filled Circle
+  PARTS (2)=BkFilled Circle
+  PARTS (3)=Empty Rectangle Symbol
+  PARTS (4)=Big Сircle
+
+  PARTS (10)=Left Arrow
+  PARTS (11)=Right Arrow
+  PARTS (12)=Top Arrow
+  PARTS (13)=Bottom Arrow
+  PARTS (14)=Top Arrow 2
+  PARTS (15)=Bottom Arrow 2
+  PARTS (16)=RT Arrow
+  PARTS (17)=LT Arrow
+  PARTS (18)=RB Arrow
+  PARTS (19)=LB Arrow
+
+  PARTS (30)=Left line
+  PARTS (31)=LT line
+  PARTS (32)=Top line
+  PARTS (33)=RT line
+  PARTS (34)=Right line
+  PARTS (35)=RB line
+  PARTS (36)=Bottom line
+  PARTS (37)=LB line
+  PARTS (38)=Left short line
+  PARTS (39)=LT short line
+  PARTS (40)=Top short line
+  PARTS (41)=RT short line
+  PARTS (42)=Right short line
+  PARTS (43)=RB short line
+  PARTS (44)=Bottom short line
+  PARTS (45)=LB short line
+  PARTS (46)=Overline
+  PARTS (47)=Underline
+  PARTS (48)=Leftline
+  PARTS (49)=Rightline
+
+  PARTS (50)=Бездействие
+  PARTS (51)=Бездействие 2
+  PARTS (52)=Бездействие 3
+  PARTS (54)=Бездействие 4
+  PARTS (55)=Up angle
+  PARTS (56)=Down angle
+
+  PARTS (58)=LongLeftline
+  PARTS (59)=LongRightline
+
+  PARTS (70)=Inner H line
+  PARTS (71)=Inner V line
+  PARTS (72)=Inner LT-RB line
+  PARTS (73)=Inner LB-RT line
+  PARTS (74)=Quarter Filled
+  PARTS (75)=Quarter Filled 2
+  PARTS (76)=Quarter Filled 3
+  PARTS (77)=Quarter Filled 4
+  PARTS (78)=Quarter Filled 45
+  PARTS (79)=Quarter Filled 45 2
+  PARTS (80)=Quarter Filled 45 3
+  PARTS (81)=Quarter Filled 45 4
+
+  PARTS (90)=ThinCross
+  PARTS (91)=Буква Н в центре
+  PARTS (92)=Скв тип 99
+  PARTS (93)=Inner hatch
+  PARTS (94)=Inner Q hatch
+  PARTS (95)=Double square
+  PARTS (96)=Top wave line
+  PARTS (97)=Inner H hatch
+
+  PARTS (109)=Rotate Big Triangle
+  PARTS (110)=Big Triangle
+  PARTS (111)=Big Star
+  PARTS (112)=Буква Е в центре
+  PARTS (113)=Буква п LB
+  PARTS (114)=Буква т в центре
+  PARTS (115)=Буквы кн RB
+  PARTS (116)=Буква п в центре
+  PARTS (117)=Буква в в центре
+  PARTS (118)=Скв транзитные
+  PARTS (119)=Скв транзитные перевернутые
+
+  PARTS (120)=Добывающая проектная категория
+  PARTS (121)=Нагнетательная проектная категория
+  PARTS (122)=Резведочная проектная категория
+
+  PARTS (123)=Filled Big Star
+
+  PARTS (130)=Bold circle
+  PARTS (131)=Чёрточка LB
+  PARTS (132)=Буквы кн RB
+  PARTS (133)=Буквы пз LB
+  PARTS (134)=Big Star without inside
+  PARTS (135)=Big Star without inside Bold
+  PARTS (136)=Rhombus
+  PARTS (137)=Filled Square 45
+  PARTS (138)=Rhombus horizontal
+  PARTS (139)=Very Big Thick Сircle
+  PARTS (140)=Big Square with grid
+  PARTS (141)=Flower
+  PARTS (142)=Very Big Сircle
+  PARTS (143)=Empty Big Rectangle Symbol
+  PARTS (144)=Big Rectangle Symbol with Empty rombus
+  PARTS (145)=Подпись ВДЗ
+  PARTS (146)=Подпись ОЖ
+  PARTS (147)=Square 45
+  PARTS (148)=Подпись ТМС
+  PARTS (149)=Six-pointed star
+  
+  PARTS (150)=UpHorns
+  PARTS (151)=DownHorns
+  PARTS (152)=Big Square
+
 [/CHR Substitution]
