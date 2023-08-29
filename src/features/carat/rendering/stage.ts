@@ -166,7 +166,7 @@ export class CaratStage implements ICaratStage {
 
   /** Выравнивает вьюпорт треков по абсолютой отметке указанного пласта. */
   public alignByStratum(id: StratumID): void {
-    let extremum = Infinity;
+    let extremum = -Infinity;
     for (const track of this.trackList) {
       if (!track.inclinometry) continue;
       const strata: CaratIntervalModel[] = track.getBackgroundGroup().getStrata(id);
@@ -174,10 +174,10 @@ export class CaratStage implements ICaratStage {
 
       const depth = Math.round(Math.min(...strata.map(s => s.top)));
       const absMark = track.inclinometry.getAbsMark(depth);
-      if (absMark < extremum) extremum = absMark;
+      if (absMark > extremum) extremum = absMark;
     }
 
-    if (Math.abs(extremum) === Infinity) return;
+    if (extremum === -Infinity) return;
     for (const track of this.trackList) {
       track.viewport.y = track.inclinometry?.getDepth(extremum) ?? -extremum;
     }
