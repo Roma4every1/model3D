@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { round } from 'shared/lib';
 import { updateWindow } from 'entities/window';
 
@@ -13,12 +13,12 @@ import { TextInfo } from 'shared/ui';
 import './curve-selection-window.scss';
 import { CaratCurveModel } from '../../lib/types';
 import { CurveManager } from '../../lib/curve-manager';
-import { caratStateSelector } from '../../store/carat.selectors';
 import { loadCaratCurves } from '../../store/carat.thunks';
 
 
 interface CurveSelectionWindowProps {
   id: FormID;
+  stage: ICaratStage;
   onClose: () => void;
 }
 interface CurveFiltersProps {
@@ -27,19 +27,25 @@ interface CurveFiltersProps {
 }
 
 
-export const CurveSelectionWindow = ({id, onClose}: CurveSelectionWindowProps) => {
+export const CurveSelectionWindow = ({id, stage, onClose}: CurveSelectionWindowProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const state: CaratState = useSelector(caratStateSelector.bind(id));
 
-  const track = state.stage.getActiveTrack();
-  const curveGroup = state?.curveGroup;
+  const track = stage.getActiveTrack();
+  const curveGroup = track.getCurveGroup();
   const curveManager: CurveManager = curveGroup?.curveManager;
   const tree = curveManager?.getCurveTree() ?? [];
 
   const [_signal, setSignal] = useState(false);
   const signal = () => setSignal(!_signal);
 
+  // подписка на события изменения сцены
+  useEffect(() => {
+    stage.listeners.curveWindowChange = () => setSignal(true);
+    return () => { stage.listeners.curveWindowChange = () => {}; };
+  }, [stage]);
+
+  // обновление заголовка окна при смене активного трека
   useEffect(() => {
     const title = t('carat.selection.window-title') + ` (${track.wellName})`
     dispatch(updateWindow('curve-selection', {title}));

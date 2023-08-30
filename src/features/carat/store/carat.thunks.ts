@@ -12,7 +12,11 @@ export function setCaratData(id: FormID, data: ChannelDict): Thunk {
     const { well: { model: currentWell }, trace: { model: currentTrace } } = objects;
 
     if (currentTrace) {
-      if (currentTrace.nodes.length) stage.setTrackList(currentTrace.nodes);
+      if (currentTrace.nodes.length) {
+        stage.setTrackList(currentTrace.nodes);
+      } else {
+        return;
+      }
     } else if (currentWell) {
       stage.setTrackList([currentWell]);
     } else {

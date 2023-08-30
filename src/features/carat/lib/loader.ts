@@ -121,8 +121,14 @@ export class CaratLoader implements ICaratLoader {
     const records = cellsToRecords(data);
     const idColumnName = this.curveDataChannel.info.id.name;
 
-    for (const record of records) {
-      this.cache[record[idColumnName]] = this.createCurveData(record);
+    for (const id of idsToLoad) {
+      const record = records.find(r => r[idColumnName] === id);
+      if (record) {
+        this.cache[id] = this.createCurveData(record);
+      } else {
+        const path = new Path2D();
+        this.cache[id] = {path, points: [], top: null, bottom: null, min: null, max: null};
+      }
     }
     return idsToLoad;
   }

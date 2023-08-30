@@ -25,7 +25,7 @@ export const CaratCurvesPanel = ({id, stage, curveGroup}: CaratCurvesPanelProps)
   const openCurveSelectionWindow = () => {
     const windowID = 'curve-selection';
     const onClose = () => dispatch(closeWindow(windowID));
-    const content = <CurveSelectionWindow id={id} onClose={onClose}/>;
+    const content = <CurveSelectionWindow id={id} stage={stage} onClose={onClose}/>;
 
     const windowProps: WindowProps = {
       title: t('carat.selection.window-title'), maximizeButton: () => null,

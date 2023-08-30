@@ -10,7 +10,7 @@ import './carat.scss';
 import { channelDictToRecords } from '../lib/channels';
 import { caratStateSelector } from '../store/carat.selectors';
 import { setCaratData } from '../store/carat.thunks';
-import { setCaratActiveCurve, setCaratActiveGroup, setCaratCanvas } from '../store/carat.actions';
+import { setCaratCanvas } from '../store/carat.actions';
 
 
 /** Каротажная диаграмма. */
@@ -86,12 +86,7 @@ export const Carat = ({id}: FormState) => {
   const onMouseDown = (e: MouseEvent) => {
     isOnMoveRef.current = true;
     const { offsetX: x, offsetY: y } = e.nativeEvent;
-
-    const result = stage.handleMouseDown({x, y});
-    if (result) {
-      dispatch(setCaratActiveGroup(id, stage.getActiveTrack().getActiveGroup()));
-      if (typeof result === 'object') dispatch(setCaratActiveCurve(id, result));
-    }
+    stage.handleMouseDown({x, y});
   };
 
   const onMouseUp = () => {

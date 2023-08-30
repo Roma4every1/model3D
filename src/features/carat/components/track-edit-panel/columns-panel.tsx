@@ -1,38 +1,31 @@
-import { useDispatch } from 'react-redux';
 import { MenuSection, ButtonIcon } from 'shared/ui';
-import { setCaratActiveGroup } from '../../store/carat.actions';
-
 import moveLeftIcon from 'assets/images/carat/move-left.svg';
 import moveRightIcon from 'assets/images/carat/move-right.svg';
 
 
 interface CaratColumnsPanelProps {
-  id: FormID;
   stage: ICaratStage;
   track: ICaratTrack;
-  signal: () => void;
 }
 
 
-export const CaratColumnsPanel = ({id, stage, track, signal}: CaratColumnsPanelProps) => {
-  const dispatch = useDispatch();
+export const CaratColumnsPanel = ({stage, track}: CaratColumnsPanelProps) => {
   const groups = track.getGroups();
   const activeIndex = track.getActiveIndex();
 
   const setActiveGroup = (idx: number) => {
     stage.edit({type: 'active-group', payload: idx});
     stage.render();
-    dispatch(setCaratActiveGroup(id, groups[idx]));
   };
 
   const moveLeft = () => {
     stage.edit({type: 'move', payload: {idx: activeIndex, to: 'left'}});
-    stage.render(); signal();
+    stage.render();
   };
 
   const moveRight = () => {
     stage.edit({type: 'move', payload: {idx: activeIndex, to: 'right'}});
-    stage.render(); signal();
+    stage.render();
   };
 
   const columnToLabel = (column: ICaratColumnGroup, i: number) => {

@@ -11,29 +11,28 @@ import yAxisGridIcon from 'assets/images/carat/y-axis-grid.svg';
 
 
 interface CaratActiveGroupPanelProps {
-  stage: ICaratStage,
-  track: ICaratTrack,
-  activeGroup: ICaratColumnGroup,
-  signal: () => void,
+  stage: ICaratStage;
+  track: ICaratTrack;
+  activeGroup: ICaratColumnGroup;
 }
 interface GroupYAxisSettingsProps {
-  stage: ICaratStage,
-  track: ICaratTrack,
-  settings: CaratColumnYAxis,
+  stage: ICaratStage;
+  track: ICaratTrack;
+  settings: CaratColumnYAxis;
 }
 
 
 /** Панель настроек активной группы колонок. */
-export const CaratActiveGroupPanel = ({stage, track, activeGroup, signal}: CaratActiveGroupPanelProps) => {
+export const CaratActiveGroupPanel = ({stage, track, activeGroup}: CaratActiveGroupPanelProps) => {
   return (
     <MenuSection header={'Настройки активной колонки'} className={'carat-active-column'}>
-      <GroupCommonSettings stage={stage} track={track} activeGroup={activeGroup} signal={signal}/>
+      <GroupCommonSettings stage={stage} track={track} activeGroup={activeGroup}/>
       <GroupYAxisSettings stage={stage} track={track} settings={activeGroup.yAxis}/>
     </MenuSection>
   );
 };
 
-const GroupCommonSettings = ({stage, track, activeGroup, signal}: CaratActiveGroupPanelProps) => {
+const GroupCommonSettings = ({stage, track, activeGroup}: CaratActiveGroupPanelProps) => {
   const activeIndex = track.getActiveIndex();
   const maxLabelLength = constraints.groupLabel.max;
   const { min: minStep, max: maxStep } = constraints.groupStep;
@@ -52,7 +51,7 @@ const GroupCommonSettings = ({stage, track, activeGroup, signal}: CaratActiveGro
 
   const onLabelChange = ({value}: TextBoxChangeEvent) => {
     if (typeof value !== 'string') return;
-    setLabel(value); signal();
+    setLabel(value);
     stage.edit({type: 'group-label', payload: {idx: activeIndex, label: value}});
     stage.render();
   };

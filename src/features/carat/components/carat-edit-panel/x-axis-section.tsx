@@ -7,14 +7,14 @@ import xAxisGridIcon from 'assets/images/carat/x-axis-grid.svg';
 
 interface XAxisSectionProps {
   stage: ICaratStage;
-  idx: number;
   group: ICaratColumnGroup;
 }
 
 
-export const XAxisSection = ({stage, idx, group}: XAxisSectionProps) => {
+export const XAxisSection = ({stage, group}: XAxisSectionProps) => {
   const settings = group?.xAxis;
   const { min: minMarks, max: maxMarks } = constraints.yAxisMarks;
+  const idx = stage.getActiveTrack().getGroups().findIndex(g => g === group);
 
   const [showGrid, setShowGrid] = useState(settings.grid);
   const [marksCount, setMarksCount] = useState(settings.numberOfMarks);

@@ -2,7 +2,7 @@ import { CaratTrack } from './track';
 import { CaratDrawer } from './drawer';
 import { CaratCorrelations } from './correlations';
 import { CaratDrawerConfig } from './drawer-settings';
-import { CaratCurveModel, CaratIntervalModel } from '../lib/types';
+import { CaratIntervalModel } from '../lib/types';
 import { compareArrays, isRectInnerPoint } from 'shared/lib';
 import { calculateTrackWidth, validateCaratScale } from '../lib/utils';
 import { moveSmoothly } from '../lib/smooth-scroll';
@@ -37,7 +37,6 @@ export class CaratStage implements ICaratStage {
     this.wellIDs = [];
     this.zones = init.settings.zones;
     this.drawer = new CaratDrawer(drawerConfig);
-    this.listeners = {scaleChange: () => {}};
     this.useStaticScale = init.settings.useStaticScale;
     this.strataChannelName = init.settings.strataChannelName;
 
@@ -51,9 +50,14 @@ export class CaratStage implements ICaratStage {
     const track = new CaratTrack(rect, init.columns, scale, this.drawer);
     this.trackList = [track];
     this.activeIndex = 0;
+
     if (this.zones.length) {
       track.getGroups().forEach(g => g.setZones(this.zones));
     }
+    this.listeners = {
+      scaleChange: () => {}, trackPanelChange: () => {},
+      caratPanelChange: () => {}, curveWindowChange: () => {},
+    };
   }
 
   /* --- Getters --- */
@@ -209,11 +213,15 @@ export class CaratStage implements ICaratStage {
       case 'move': { // изменении порядка колонок
         const { idx, to } = action.payload;
         for (const track of this.trackList) track.moveGroup(idx, to);
+        this.listeners.trackPanelChange();
         return;
       }
       case 'active-group': { // изменение номера активной группы
         const idx = action.payload;
         for (const track of this.trackList) track.setActiveGroup(idx);
+        this.listeners.trackPanelChange();
+        this.listeners.caratPanelChange();
+        this.listeners.curveWindowChange();
         return;
       }
       case 'group-width': { // изменение ширины колонки
@@ -227,6 +235,7 @@ export class CaratStage implements ICaratStage {
         const { idx, label } = action.payload;
         for (const track of this.trackList) track.setGroupLabel(idx, label);
         this.updateTrackRects();
+        this.listeners.trackPanelChange();
         return;
       }
       case 'group-x-axis': {
@@ -267,13 +276,16 @@ export class CaratStage implements ICaratStage {
   }
 
   /** Обрабатывает событие нажатия ПКМ. */
-  public handleMouseDown(point: Point): CaratCurveModel | boolean {
+  public handleMouseDown(point: Point): void {
     const index = this.trackList.findIndex(t => isRectInnerPoint(point, t.rect));
-    if (index === -1) return false;
+    if (index === -1) return;
     this.setActiveTrack(index);
-    const activeCurve = this.trackList[index].handleMouseDown(point);
+    this.trackList[index].handleMouseDown(point);
+
+    this.listeners.trackPanelChange();
+    this.listeners.caratPanelChange();
+    this.listeners.curveWindowChange();
     this.render();
-    return activeCurve ?? true;
   }
 
   /** Обрабатывает событие прокрутки колеса мыши. */

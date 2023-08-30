@@ -6,9 +6,6 @@ type CaratStates = FormDict<CaratState>;
  * + `stage`: {@link ICaratStage}
  * + `loader`: {@link ICaratLoader}
  * + `observer`: {@link ResizeObserver}
- * + `activeGroup`: {@link ICaratColumnGroup}
- * + `curveGroup`: {@link ICaratColumnGroup}
- * + `activeCurve: CaratCurveModel`
  * + `lookupNames`: {@link ChannelName}[]
  * + `lastData`: {@link ChannelDict}[]
  * */
@@ -21,12 +18,6 @@ interface CaratState {
   loader: ICaratLoader;
   /** Класс для отслеживания изменения размеров холста. */
   observer: ResizeObserver;
-  /** Активная колонка. */
-  activeGroup: ICaratColumnGroup | null;
-  /** Колонка с кривыми (активная или первая с кривыми). */
-  curveGroup: ICaratColumnGroup | null;
-  /** Активная кривая. */
-  activeCurve: any;
   /** Список всех используемых каналов. */
   channelNames: ChannelName[];
   /** Список всех названий каналов-справочников. */
@@ -97,7 +88,7 @@ interface ICaratStage {
 
   handleKeyDown(key: string): boolean;
   handleMouseMove(point: Point, by: number): void;
-  handleMouseDown(point: Point): any;
+  handleMouseDown(point: Point): void;
   handleMouseWheel(point: Point, direction: 1 | -1, ctrlKey: boolean): void;
 
   updateTrackRects(): void;
@@ -126,7 +117,13 @@ interface ICaratCorrelations {
 /** Слушатели событий сцены. */
 interface CaratStageListeners {
   /** Изменение масштаба. */
-  scaleChange(newScale: number): void;
+  scaleChange(scale: number): void;
+  /** Изменение колонки с кривыми. */
+  trackPanelChange(): void;
+  /** Изменение активной колонки. */
+  caratPanelChange(): void;
+  /** Обновление окна выбора кривых. */
+  curveWindowChange(): void;
 }
 
 /** Трек каротажной диаграммы. */
@@ -137,10 +134,12 @@ interface ICaratTrack {
   readonly inclinometry: ICaratInclinometry;
 
   getGroups(): ICaratColumnGroup[];
-  getBackgroundGroup(): ICaratColumnGroup;
-  getInitColumns(): CaratColumnInit[];
   getActiveGroup(): ICaratColumnGroup | null;
+  getCurveGroup(): ICaratColumnGroup | null;
+  getBackgroundGroup(): ICaratColumnGroup;
   getActiveIndex(): number;
+  getActiveCurve(): any;
+  getInitColumns(): CaratColumnInit[];
 
   setActiveGroup(idx: number): void;
   setActiveCurve(curve: any): void;

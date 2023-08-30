@@ -107,20 +107,32 @@ export class CaratTrack implements ICaratTrack {
     return this.groups;
   }
 
-  /** Фоновая колонка. */
-  public getBackgroundGroup(): ICaratColumnGroup {
-    return this.backgroundGroup;
-  }
-
   /** Текущая активная колонка. */
-  public getActiveGroup(): ICaratColumnGroup | null {
+  public getActiveGroup(): CaratColumnGroup | null {
     if (this.activeIndex === -1) return null;
     return this.groups[this.activeIndex];
+  }
+
+  /** Колонка с кривыми (активная или первая подходящая). */
+  public getCurveGroup(): CaratColumnGroup | null {
+    const activeGroup = this.groups[this.activeIndex];
+    if (activeGroup?.hasCurveColumn()) return activeGroup;
+    return this.groups.find(g => g.hasCurveColumn()) ?? null;
+  }
+
+  /** Фоновая колонка. */
+  public getBackgroundGroup(): CaratColumnGroup {
+    return this.backgroundGroup;
   }
 
   /** Индекс текущей активной колонки. */
   public getActiveIndex(): number {
     return this.activeIndex;
+  }
+
+  /** Активная кривая. */
+  public getActiveCurve(): CaratCurveModel | null {
+    return this.activeCurve;
   }
 
   /** Список справочников, необходимых для отрисовки. */
@@ -199,8 +211,8 @@ export class CaratTrack implements ICaratTrack {
 
   /** Обновляет активную кривую трека. */
   public setActiveCurve(curve: CaratCurveModel | null): void {
-    this.activeCurve = curve;
-    const id = curve?.id;
+    this.activeCurve = curve === this.activeCurve ? null : curve;
+    const id = this.activeCurve?.id;
     this.groups.forEach(group => group.setActiveCurve(id));
     this.updateLabel();
   }
@@ -273,7 +285,7 @@ export class CaratTrack implements ICaratTrack {
   /* --- Event Handlers --- */
 
   /** Обрабатывает событие нажатия ПКМ. */
-  public handleMouseDown(point: Point): CaratCurveModel | null {
+  public handleMouseDown(point: Point): void {
     point.x -= this.rect.left;
     point.y -= this.rect.top;
 
@@ -283,9 +295,8 @@ export class CaratTrack implements ICaratTrack {
 
     for (const group of this.groups) {
       const nearCurve = group.getNearCurve(point, this.viewport);
-      if (nearCurve) { this.setActiveCurve(nearCurve); return nearCurve; }
+      if (nearCurve) { this.setActiveCurve(nearCurve); return; }
     }
-    return null;
   }
 
   /* --- Technical Methods --- */
