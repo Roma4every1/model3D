@@ -2,6 +2,9 @@
 node_modules
 package-lock.json
 
+# Build utils
+build-utils/systems.json
+
 # Output directories
 build
 dist
@@ -10,6 +13,3 @@ dist
 .vs
 .vscode
 .idea
-
-# App
-build-config/systems.json

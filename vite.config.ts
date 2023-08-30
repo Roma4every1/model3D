@@ -1,6 +1,6 @@
 import { ConfigEnv, UserConfig, defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import wellManagerSystemPlugin from './build-config/wm-system-plugin.js';
+import wellManagerSystemPlugin from './build-utils/wm-system-plugin.js';
 
 
 // https://vitejs.dev/config/
