@@ -1,9 +1,8 @@
 import parseColor from 'parse-color';
-
-import dro32Lib from 'assets/map-libs/dro32.smb';
-import gridsLib from 'assets/map-libs/grids.smb';
-import litLib from 'assets/map-libs/lit.smb';
-import regionalLib from 'assets/map-libs/regional.smb';
+import dro32Lib from 'assets/map-libs/dro32.bin';
+import gridsLib from 'assets/map-libs/grids.bin';
+import litLib from 'assets/map-libs/lit.bin';
+import regionalLib from 'assets/map-libs/regional.bin';
 
 
 interface IFillPatterns {

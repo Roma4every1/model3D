@@ -1,3 +1,4 @@
+import 'stream'; // for xml-js
 import { xml2js } from 'xml-js';
 import { toPairs, fromPairs } from 'lodash';
 import xmlTransform from './xml-transform';

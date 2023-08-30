@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from 'shared/lib';
 import { channelSelector } from 'entities/channels';
 import { fileViewStateSelector } from '../store/file-view.selectors';
 import { updateFileViewModel } from '../store/file-view.thunks';

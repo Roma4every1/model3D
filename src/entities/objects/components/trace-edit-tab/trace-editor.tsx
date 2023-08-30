@@ -1,4 +1,4 @@
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from 'shared/lib';
 import { useTranslation } from 'react-i18next';
 import { mapStateSelector } from 'features/map/store/map.selectors';
 import { traceStateSelector } from '../../store/objects.selectors';

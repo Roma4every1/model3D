@@ -253,7 +253,7 @@ export class CaratStage implements ICaratStage {
         for (const track of this.trackList) track.setGroupYAxisStep(idx, step);
         return;
       }
-      default: {}
+      default: { /* no other action types */ }
     }
   }
 

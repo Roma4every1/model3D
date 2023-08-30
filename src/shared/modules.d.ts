@@ -2,14 +2,13 @@
 
 declare module '*.json' {
   const content: string;
-  export default content;
 }
 
 /* --- Images --- */
 
 declare module '*.svg' {
-  const src: string;
-  export default src;
+  const content: string;
+  export default content;
 }
 
 declare module '*.jpg' {
@@ -24,7 +23,7 @@ declare module '*.png' {
 
 /* --- Map Assets --- */
 
-declare module '*.smb' {
+declare module '*.bin' {
   const content: string;
   export default content;
 }

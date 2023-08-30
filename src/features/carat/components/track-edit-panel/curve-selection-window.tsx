@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
-import { round } from 'shared/lib';
+import { useDispatch, round } from 'shared/lib';
 import { updateWindow } from 'entities/window';
 
 import { Button } from '@progress/kendo-react-buttons';

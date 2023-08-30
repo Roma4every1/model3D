@@ -1,4 +1,4 @@
-import { useDispatch } from 'react-redux';
+import { useDispatch } from 'shared/lib';
 import { TFunction } from 'react-i18next';
 import { Button } from '@progress/kendo-react-buttons';
 import { DialogActionsBar } from '@progress/kendo-react-dialogs';

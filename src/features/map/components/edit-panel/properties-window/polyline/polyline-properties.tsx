@@ -250,7 +250,7 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
             valueRender={templateValueRender}
             itemRender={templatesRender}
             onChange={onFillNameChange}
-            disabled={!Boolean(fillColor)}
+            disabled={!fillColor}
           />
         </div>
         <div className={'item'}>
@@ -293,7 +293,7 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
             valueRender={styleValueRender}
             itemRender={stylesRender}
             onChange={onBorderStyleChange}
-            disabled={!Boolean(borderColor)}
+            disabled={!borderColor}
           />
         </div>
         <div className={'item-checkbox'}>

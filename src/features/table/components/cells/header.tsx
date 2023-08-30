@@ -1,5 +1,5 @@
 import { GridHeaderCellProps } from '@progress/kendo-react-grid';
-import { useDispatch } from 'react-redux';
+import { useDispatch } from 'shared/lib';
 import { updateSortOrder } from 'entities/channels';
 
 

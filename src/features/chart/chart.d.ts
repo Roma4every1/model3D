@@ -21,7 +21,7 @@ interface ChartState {
   /** Настройки внешнего вида. */
   seriesSettings: ChartSeriesSettings;
   /** Функция для сохранения графика в png */
-  downloadChart?: () => Promise<string>;
+  downloadChart?: () => Promise<void>;
 }
 
 /** Шаг по времени на графике. */

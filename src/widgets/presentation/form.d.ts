@@ -24,7 +24,7 @@ interface FormState {
 }
 
 /** Настройки формы. */
-type FormSettings = any | ChartFormSettings | {};
+type FormSettings = any | ChartFormSettings | Record<string, never>;
 
 /** Модель прикреплённого канала.
  * + `name`: {@link ChannelName}

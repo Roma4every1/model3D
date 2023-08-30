@@ -1,5 +1,4 @@
-import { Dispatch } from 'redux';
-import { Thunk } from 'shared/lib';
+import { Thunk, AppDispatch } from 'shared/lib';
 import { pushNotification, closeNotification } from './notifications.actions';
 
 
@@ -11,7 +10,7 @@ const defaultErrorNotice = 'Ошибка при выполнении запро�
  * @param duration длительность показа уведомления в секундах
  * */
 export function showNotification(proto: NotificationProto | NotificationContent, duration = 4): Thunk {
-  return async (dispatch: Dispatch) => {
+  return async (dispatch: AppDispatch) => {
     if (typeof proto === 'string') proto = {content: proto};
     const id = ++counter;
 
@@ -34,7 +33,7 @@ export function showNotification(proto: NotificationProto | NotificationContent,
  * @param duration сколько секунд будет показываться уведомление
  * */
 export function callbackWithNotices(
-  promise: Promise<any>, dispatch: Dispatch,
+  promise: Promise<any>, dispatch: AppDispatch,
   successText: string, errorText = defaultErrorNotice, duration = 3,
 ) {
   promise.then(() => {

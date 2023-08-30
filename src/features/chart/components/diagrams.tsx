@@ -48,7 +48,7 @@ export const getDiagramProto = (dataKey: string, name: string, settings: SeriesS
     case 'point': { props.stroke = 'none'; break; }
     case 'graphSpline': { props.type = 'monotone'; break; }
     case 'graphDiscr': { props.type = 'step'; break; }
-    default: {}
+    default: { /* no other types */ }
   }
   return {component, props, child, zIndex: settings.zIndex};
 };

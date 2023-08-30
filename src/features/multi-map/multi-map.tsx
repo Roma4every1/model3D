@@ -1,8 +1,7 @@
 import { Layout, TabNode, Action, Actions } from 'flexlayout-react';
 import { useEffect, useMemo } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch, compareArrays } from 'shared/lib';
 import { useTranslation } from 'react-i18next';
-import { compareArrays } from 'shared/lib';
 import { i18nMapper } from 'shared/locales';
 import { channelSelector } from 'entities/channels';
 import { stateNeedFetch, formFetchStateSelector } from 'entities/fetch-state';

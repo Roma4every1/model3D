@@ -1,7 +1,6 @@
 import { KeyboardEvent, MouseEvent } from 'react';
 import { useEffect, useLayoutEffect, useRef, useCallback } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { compareObjects } from 'shared/lib';
+import { useSelector, useDispatch, compareObjects } from 'shared/lib';
 import { channelDictSelector } from 'entities/channels';
 import { wellStateSelector, traceStateSelector, stratumStateSelector } from 'entities/objects';
 import { TextInfo } from 'shared/ui';

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'shared/lib';
 import { fetchPresentationState } from '../store/presentation.thunks';
 import { stateNeedFetch, stateNotLoaded, formFetchStateSelector } from 'entities/fetch-state';
 

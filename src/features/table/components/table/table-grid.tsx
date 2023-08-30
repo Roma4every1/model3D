@@ -1,11 +1,10 @@
 import { ReactElement, KeyboardEvent } from 'react';
 import { useState, useLayoutEffect, useMemo, useRef } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, compareObjects } from 'shared/lib';
 import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
 import { Grid, GridCellProps } from '@progress/kendo-react-grid';
 import { GridColumnResizeEvent, GridPageChangeEvent } from '@progress/kendo-react-grid';
 import { GridSelectionChangeEvent, getSelectedState } from '@progress/kendo-react-grid';
-import { compareObjects } from 'shared/lib';
 import { showWindow, closeWindow } from 'entities/window';
 import { updateMaxRowCount } from 'entities/channels';
 

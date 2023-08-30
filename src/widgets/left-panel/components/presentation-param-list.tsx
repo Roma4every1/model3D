@@ -1,7 +1,6 @@
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch, compareObjects } from 'shared/lib';
 import { ParameterList, updateParamDeep } from 'entities/parameters';
 import { channelDictSelector, getExternalChannels } from 'entities/channels';
-import { compareObjects } from 'shared/lib';
 
 
 interface PresentationParamListProps {

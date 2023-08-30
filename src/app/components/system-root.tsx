@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'shared/lib';
 import { setSystemName } from '../store/app-state/app.actions';
 import { appStateSelector } from '../store/app-state/app.selectors';
 import { startSession } from '../store/root-form/root-form.thunks';

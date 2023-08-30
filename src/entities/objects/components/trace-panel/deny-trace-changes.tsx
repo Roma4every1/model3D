@@ -1,4 +1,4 @@
-import { useDispatch } from 'react-redux';
+import { useDispatch } from 'shared/lib';
 import { useTranslation } from 'react-i18next';
 import { deleteTrace, setCurrentTrace } from '../../index';
 import { BigButton } from 'shared/ui';

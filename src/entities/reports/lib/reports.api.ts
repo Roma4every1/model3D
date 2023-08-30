@@ -24,7 +24,7 @@ export class ReportsAPI {
     const query = {sessionId: this.baseAPI.sessionID, formId: reportID};
     const res = await this.baseAPI.request<any>({path: 'getAllNeedParametersForForm', query});
     return res.ok ? res.data : {};
-  };
+  }
 
   public async getCanRunReport(reportId: ReportID, parameters: Parameter[]) {
     const sessionId = this.baseAPI.sessionID;

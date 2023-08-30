@@ -70,7 +70,7 @@ export function saveTableRecord({type, formID, row}: SaveTableMetadata): Thunk {
     }
 
     const tables = [tableID];
-    if (res.ok) tables.push(...res.data.ModifiedTables?.ModifiedTables);
+    if (res.ok && res.data.ModifiedTables) tables.push(...res.data.ModifiedTables.ModifiedTables);
 
     await updateTables(tables)(dispatch, getState);
     const text = t('table.save.' + (!res.ok || wrongResult ? 'end-error' : 'end-ok'));
@@ -96,7 +96,7 @@ export function deleteTableRecords(formID: FormID, indexes: number[] | 'all'): T
     }
     tableState.selection = {};
 
-    const tables = [tableState.tableID, ...res.data.ModifiedTables?.ModifiedTables];
+    const tables = [tableState.tableID, ...res.data.ModifiedTables?.ModifiedTables ?? []];
     await updateTables(tables)(dispatch, getState);
     const text = t('table.delete-dialog.delete-ok', {n: indexes.length});
     await showNotification(text)(dispatch);

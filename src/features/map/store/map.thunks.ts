@@ -5,7 +5,7 @@ import { loadMapError, loadMapSuccess, startMapLoad } from './map.actions';
 import { mapsAPI } from '../lib/maps.api';
 
 
-export function fetchMapData(formID: FormID, mapID: MapID, owner: MapOwner, setProgress: Function): Thunk {
+export function fetchMapData(formID: FormID, mapID: MapID, owner: MapOwner, setProgress: (p: number) => void): Thunk {
   return async (dispatch: Dispatch) => {
     dispatch(startMapLoad(formID));
     const mapData = await mapsAPI.loadMap(mapID, owner, setProgress, formID);

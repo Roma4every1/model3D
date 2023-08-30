@@ -1,5 +1,5 @@
 import { ToolbarActions } from '../../lib/types';
-import { useDispatch } from 'react-redux';
+import { useDispatch } from 'shared/lib';
 import { useTranslation } from 'react-i18next';
 import { ButtonIconStock } from 'shared/ui';
 import { SelectionNavigation } from './selection-navigation';

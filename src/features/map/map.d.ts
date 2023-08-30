@@ -24,7 +24,7 @@ interface MapItemConfig {
   data: any;
   formID: FormID;
   progress: number;
-  setProgress?: Function;
+  setProgress?: (process: number) => void;
 }
 
 /** ## Состояние карты.

@@ -1,4 +1,4 @@
-import { Dispatch } from 'redux';
+import { AppDispatch } from '../../../shared/lib';
 import { fillParamValues } from 'entities/parameters';
 import { updateTables, fillChannels } from 'entities/channels';
 import { showInfoMessage } from 'entities/window';
@@ -7,7 +7,7 @@ import { t } from 'shared/locales';
 import { reportsAPI } from './reports.api';
 
 
-export function watchReport(report: ReportModel, operationID: OperationID, dispatch: Dispatch<any>) {
+export function watchReport(report: ReportModel, operationID: OperationID, dispatch: AppDispatch) {
   async function tick() {
     const { ok, data } = await reportsAPI.getOperationResult(operationID);
     if (!ok || !data) return;

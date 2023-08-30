@@ -1,4 +1,4 @@
-import { useDispatch } from 'react-redux';
+import { useDispatch } from 'shared/lib';
 import { useTranslation } from 'react-i18next';
 import { saveTrace } from '../../store/objects.thunks';
 import { BigButton } from 'shared/ui';
@@ -8,7 +8,6 @@ import applyTraceChangesIcon from 'assets/images/trace/accept.png';
 interface ApplyTraceChangesProps {
   trace: TraceState,
 }
-
 
 export const ApplyTraceChanges = ({trace}: ApplyTraceChangesProps) => {
   const { t } = useTranslation();

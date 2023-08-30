@@ -1,4 +1,4 @@
-import { useDispatch } from 'react-redux';
+import { useDispatch } from 'shared/lib';
 import { useTranslation } from 'react-i18next';
 import { showWindow, closeWindow } from '../../../window';
 import { deleteTrace } from '../../store/objects.thunks';

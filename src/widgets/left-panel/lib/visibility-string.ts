@@ -42,7 +42,7 @@ function handleItem(item: PresentationTreeItem, parameters: Parameter[]): void {
     const resultString = pattern.replaceAll(/\$\([^)]+\)/g, replacer);
 
     try {
-      return Boolean(eval(resultString)); // eslint-disable-line no-eval
+      return Boolean(eval(resultString));
     } catch {
       return false;
     }

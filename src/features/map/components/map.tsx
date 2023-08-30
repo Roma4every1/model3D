@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'shared/lib';
 import { useTranslation } from 'react-i18next';
 import { channelSelector } from 'entities/channels';
 import { traceStateSelector, wellStateSelector, setCurrentTrace } from 'entities/objects';

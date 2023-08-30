@@ -5,7 +5,7 @@ export function tableStateSelector(this: FormID, state: WState): TableState {
 
 /** Параметров, необходимые для установки заголовков колонок. */
 export function headerSetterParamsSelector(this: HeaderSetterRule[], state: WState): Parameter[] {
-  if (!this.length) return;
+  if (!this.length) return [];
   const globalParams = state.parameters[state.root.id];
 
   const values: Parameter[] = [];

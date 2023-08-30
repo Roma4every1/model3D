@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'shared/lib';
 import { getAppLocation } from './lib/initialization';
 import { appStateSelector } from './store/app-state/app.selectors';
 import { initialize } from './store/app-state/app.thunks';

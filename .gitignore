@@ -10,3 +10,6 @@ dist
 .vs
 .vscode
 .idea
+
+# App
+build-config/systems.json

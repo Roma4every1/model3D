@@ -1,6 +1,4 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-
+import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { App, store } from 'app';
 
@@ -11,5 +9,5 @@ import 'app/index.css';
 
 import 'shared/locales';
 
-const root = document.getElementById('root');
-ReactDOM.render(<Provider store={store}><App/></Provider>, root);
+const root = createRoot(document.getElementById('root'));
+root.render(<Provider store={store}><App/></Provider>);

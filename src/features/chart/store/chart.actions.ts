@@ -17,6 +17,6 @@ export function setChartTooltipVisibility(id: FormID, visibility: boolean): Char
 }
 
 /** Установить функцию для сохранения графика в PNG. */
-export function setChartDownloadFn(id: FormID, fn: Function): ChartsAction {
+export function setChartDownloadFn(id: FormID, fn: () => Promise<void>): ChartsAction {
   return {type: ChartsActionType.SET_FIELD, payload: {id, field: 'downloadChart', value: fn}};
 }

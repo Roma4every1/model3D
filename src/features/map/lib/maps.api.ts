@@ -109,7 +109,7 @@ export class MapsAPI {
   }
 
   /** Загрузка карты. */
-  public async loadMap(mapID: MapID, owner: MapOwner, setProgress: Function, formID: FormID): Promise<MapData | string> {
+  public async loadMap(mapID: MapID, owner: MapOwner, setProgress: (p: number) => void, formID: FormID): Promise<MapData | string> {
     const response = await this.getMap(mapID, formID);
     if (!response.ok) return response.data as string;
     const mapData = response.data;
