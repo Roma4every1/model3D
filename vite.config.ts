@@ -1,10 +1,10 @@
-import { ConfigEnv, defineConfig } from 'vite';
+import { ConfigEnv, UserConfig, defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import wellManagerSystemPlugin from './build-config/wm-system-plugin.js';
 
 
 // https://vitejs.dev/config/
-export default defineConfig(({command}: ConfigEnv) => ({
+export default defineConfig(({command}: ConfigEnv): UserConfig => ({
   base: './',
   plugins: [
     react(),
@@ -16,7 +16,11 @@ export default defineConfig(({command}: ConfigEnv) => ({
   build: {
     outDir: './build',
     sourcemap: true,
-    assetsInlineLimit: 0,
+    assetsInlineLimit: 512,
+  },
+  esbuild: {
+    // IIS по умолчанию не поддерживает UTF-8
+    charset: 'ascii',
   },
   resolve: {
     alias: [
