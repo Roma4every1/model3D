@@ -30,8 +30,3 @@ export function setChannelMaxRowCount(name: ChannelName, count: number | null): 
 export function setChannelActiveRow(name: ChannelName, row: ChannelRow): ChannelAction {
   return {type: ChannelActionType.SET_ACTIVE_ROW, payload: {name, row}};
 }
-
-/** Очищает данные всех каналов. */
-export function clearChannels(): ChannelAction {
-  return {type: ChannelActionType.CLEAR};
-}

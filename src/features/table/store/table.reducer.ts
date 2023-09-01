@@ -3,7 +3,7 @@ import { settingsToTableState, applyColumnTypes } from '../lib/initialization';
 
 /* --- Action Types --- */
 
-export enum TableActions {
+export enum TableActionType {
   CREATE = 'tables/create',
   SET_COLUMNS = 'tables/columns',
   SET_COLUMN_TREE = 'tables/tree',
@@ -13,54 +13,50 @@ export enum TableActions {
   START_EDITING = 'tables/start',
   END_EDITING = 'tables/end',
   RESET = 'tables/reset',
-  CLEAR = 'tables/clear',
 }
 
 /* --- Action Interfaces --- */
 
 interface ActionCreate {
-  type: TableActions.CREATE,
-  payload: FormStatePayload,
+  type: TableActionType.CREATE;
+  payload: FormStatePayload;
 }
 interface ActionSetColumns {
-  type: TableActions.SET_COLUMNS,
-  payload: {id: FormID, columns: TableColumnsState},
+  type: TableActionType.SET_COLUMNS;
+  payload: {id: FormID, columns: TableColumnsState};
 }
 interface ActionSetColumnTree {
-  type: TableActions.SET_COLUMN_TREE,
-  payload: {id: FormID, tree: ColumnTree},
+  type: TableActionType.SET_COLUMN_TREE;
+  payload: {id: FormID, tree: ColumnTree};
 }
 interface ActionSetColumnSettings {
-  type: TableActions.SET_COLUMNS_SETTINGS,
-  payload: {id: FormID, settings: TableColumnsSettings},
+  type: TableActionType.SET_COLUMNS_SETTINGS;
+  payload: {id: FormID, settings: TableColumnsSettings};
 }
 interface ActionSetSelection {
-  type: TableActions.SET_SELECTION,
-  payload: {id: FormID, selection: TableSelection},
+  type: TableActionType.SET_SELECTION;
+  payload: {id: FormID, selection: TableSelection};
 }
 interface ActionSetActiveCell {
-  type: TableActions.SET_ACTIVE_CELL,
-  payload: {id: FormID, cell: TableActiveCell},
+  type: TableActionType.SET_ACTIVE_CELL;
+  payload: {id: FormID, cell: TableActiveCell};
 }
 interface ActionStartEditing {
-  type: TableActions.START_EDITING,
-  payload: {id: FormID, columnID: TableColumnID, recordID: TableRecordID, isNew: boolean},
+  type: TableActionType.START_EDITING;
+  payload: {id: FormID, columnID: TableColumnID, recordID: TableRecordID, isNew: boolean};
 }
 interface ActionEndEditing {
-  type: TableActions.END_EDITING,
-  payload: FormID,
+  type: TableActionType.END_EDITING;
+  payload: FormID;
 }
 interface ActionReset {
-  type: TableActions.RESET,
-  payload: {id: FormID, tableID: TableID, channelData: ChannelData},
-}
-interface ActionClear {
-  type: TableActions.CLEAR,
+  type: TableActionType.RESET;
+  payload: {id: FormID, tableID: TableID, channelData: ChannelData};
 }
 
 export type TablesAction = ActionCreate | ActionSetColumns | ActionSetColumnTree |
   ActionSetColumnSettings | ActionSetSelection | ActionSetActiveCell |
-  ActionStartEditing | ActionEndEditing | ActionReset | ActionClear;
+  ActionStartEditing | ActionEndEditing | ActionReset;
 
 /* --- Init State & Reducer --- */
 
@@ -69,28 +65,28 @@ const init: TableStates = {};
 export const tablesReducer = (state: TableStates = init, action: TablesAction): TableStates => {
   switch (action.type) {
 
-    case TableActions.CREATE: {
+    case TableActionType.CREATE: {
       const id = action.payload.state.id;
       return {...state, [id]: settingsToTableState(action.payload)};
     }
 
-    case TableActions.SET_COLUMNS: {
+    case TableActionType.SET_COLUMNS: {
       const { id, columns } = action.payload;
       return {...state, [id]: {...state[id], columns}};
     }
 
-    case TableActions.SET_COLUMN_TREE: {
+    case TableActionType.SET_COLUMN_TREE: {
       const { id, tree } = action.payload;
       const columnTreeFlatten = getFlatten(tree);
       return {...state, [id]: {...state[id], columnTree: tree, columnTreeFlatten}};
     }
 
-    case TableActions.SET_COLUMNS_SETTINGS: {
+    case TableActionType.SET_COLUMNS_SETTINGS: {
       const { id, settings } = action.payload;
       return {...state, [id]: {...state[id], columnsSettings: settings}};
     }
 
-    case TableActions.SET_SELECTION: {
+    case TableActionType.SET_SELECTION: {
       const { id, selection } = action.payload;
       const tableState = state[id];
 
@@ -104,7 +100,7 @@ export const tablesReducer = (state: TableStates = init, action: TablesAction): 
       return {...state, [id]: {...tableState, selection}};
     }
 
-    case TableActions.SET_ACTIVE_CELL: {
+    case TableActionType.SET_ACTIVE_CELL: {
       const { id, cell } = action.payload;
       const tableState = state[id], recordID = cell.recordID;
 
@@ -113,7 +109,7 @@ export const tablesReducer = (state: TableStates = init, action: TablesAction): 
       return {...state, [id]: {...tableState, activeCell: cell}};
     }
 
-    case TableActions.START_EDITING: {
+    case TableActionType.START_EDITING: {
       const { id, columnID, recordID, isNew } = action.payload;
 
       const selection: TableSelection = {[recordID]: true};
@@ -123,7 +119,7 @@ export const tablesReducer = (state: TableStates = init, action: TablesAction): 
       return {...state, [id]: {...state[id], selection, activeCell, edit}};
     }
 
-    case TableActions.END_EDITING: {
+    case TableActionType.END_EDITING: {
       const id = action.payload;
       const tableState = state[id];
 
@@ -136,7 +132,7 @@ export const tablesReducer = (state: TableStates = init, action: TablesAction): 
       return {...state, [id]: {...tableState, edit, activeCell}}
     }
 
-    case TableActions.RESET: {
+    case TableActionType.RESET: {
       const { id, tableID, channelData } = action.payload;
       const tableState = state[id];
       const total = channelData?.rows.length ?? 0;
@@ -154,10 +150,6 @@ export const tablesReducer = (state: TableStates = init, action: TablesAction): 
 
       const edit = {modified: false, isNew: false};
       return {...state, [id]: {...tableState, tableID, editable, edit}};
-    }
-
-    case TableActions.CLEAR: {
-      return {};
     }
 
     default: return state;

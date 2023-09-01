@@ -2,20 +2,16 @@
 
 export enum FormActionType {
   SET = 'forms/dict',
-  CLEAR = 'forms/clear',
 }
 
 /* --- Action Interfaces --- */
 
 interface ActionSetDict {
-  type: FormActionType.SET,
-  payload: FormStates,
-}
-interface ActionClear {
-  type: FormActionType.CLEAR,
+  type: FormActionType.SET;
+  payload: FormStates;
 }
 
-export type FormAction = ActionSetDict | ActionClear;
+export type FormAction = ActionSetDict;
 
 /* --- Init State & Reducer --- */
 
@@ -26,10 +22,6 @@ export function formsReducer(state: FormStates = init, action: FormAction): Form
 
     case FormActionType.SET: {
       return {...state, ...action.payload};
-    }
-
-    case FormActionType.CLEAR: {
-      return {};
     }
 
     default: return state;

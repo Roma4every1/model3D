@@ -8,33 +8,29 @@ export enum PresentationActionType {
   SET_LAYOUT = 'presentations/layout',
   SET_CHILDREN = 'presentations/children',
   SET_ACTIVE_FORM = 'presentations/active',
-  CLEAR = 'presentations/clear',
 }
 
 /* --- Action Interfaces --- */
 
 interface ActionSet {
-  type: PresentationActionType.SET,
-  payload: PresentationState,
+  type: PresentationActionType.SET;
+  payload: PresentationState;
 }
 interface ActionSetLayout {
-  type: PresentationActionType.SET_LAYOUT,
-  payload: {id: FormID, layout: IJsonModel},
+  type: PresentationActionType.SET_LAYOUT;
+  payload: {id: FormID, layout: IJsonModel};
 }
 interface ActionSetChildren {
-  type: PresentationActionType.SET_CHILDREN,
-  payload: {id: FormID, children: FormDataWM[]},
+  type: PresentationActionType.SET_CHILDREN;
+  payload: {id: FormID, children: FormDataWM[]};
 }
 interface ActionSetActiveForm {
-  type: PresentationActionType.SET_ACTIVE_FORM,
-  payload: {id: FormID, activeChildID: FormID},
-}
-interface ActionClear {
-  type: PresentationActionType.CLEAR,
+  type: PresentationActionType.SET_ACTIVE_FORM;
+  payload: {id: FormID, activeChildID: FormID};
 }
 
 export type PresentationAction = ActionSet | ActionSetLayout |
-  ActionSetChildren | ActionSetActiveForm | ActionClear;
+  ActionSetChildren | ActionSetActiveForm;
 
 /* --- Init State & Reducer --- */
 
@@ -63,10 +59,6 @@ export function presentationsReducer(state: PresentationDict = init, action: Pre
     case PresentationActionType.SET_ACTIVE_FORM: {
       const { id, activeChildID } = action.payload;
       return {...state, [id]: {...state[id], activeChildID}};
-    }
-
-    case PresentationActionType.CLEAR: {
-      return {};
     }
 
     default: return state;

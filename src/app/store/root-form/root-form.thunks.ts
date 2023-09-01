@@ -1,5 +1,4 @@
-import { Dispatch } from 'redux';
-import { Thunk, StateGetter } from 'shared/lib';
+import { Thunk, StateGetter, AppDispatch } from 'shared/lib';
 import { fillChannels } from 'entities/channels';
 import { createLeftLayout, handlePresentationTree } from 'widgets/left-panel';
 import { createClientChannels } from 'widgets/presentation/lib/initialization';
@@ -7,20 +6,37 @@ import { applyChannelsDeps } from 'widgets/presentation/lib/utils';
 import { setParamDict } from 'entities/parameters';
 import { tableRowToString } from 'entities/parameters/lib/table-row';
 import { setChannels } from 'entities/channels';
+import { showNotification } from 'entities/notifications';
+import { showWarningMessage } from 'entities/window';
 import { fetchSessionStart, fetchSessionEnd, fetchSessionError } from 'entities/fetch-state';
 import { createObjects, createObjectModels, setObjects } from 'entities/objects';
 import { setRootFormState } from './root-form.actions';
 import { setSessionID } from '../app-state/app.actions';
+import { getSessionToSave } from '../../lib/session-save.ts';
+import { startNewSession } from '../../lib/session-utils.ts';
+import { t } from 'shared/locales';
 import { formsAPI } from 'widgets/presentation/lib/forms.api';
-import { sessionManager } from '../index';
+import { appAPI } from '../../lib/app.api.ts';
 
+
+/** Сохранение текущей сессии. */
+export function saveSession(): Thunk {
+  return async (dispatch: AppDispatch, getState: StateGetter) => {
+    const res = await appAPI.saveSession(getSessionToSave(getState()));
+    if (res.ok && res.data) {
+      showNotification(t('messages.session-save-ok'))(dispatch).then();
+    } else {
+      dispatch(showWarningMessage(t('messages.session-save-error')));
+    }
+  };
+}
 
 /** Инициализация новой сессии. */
-export const startSession = (isDefault: boolean): Thunk => {
-  return async (dispatch: Dispatch, getState: StateGetter) => {
+export function startSession(isDefault: boolean): Thunk {
+  return async (dispatch: AppDispatch, getState: StateGetter) => {
     dispatch(fetchSessionStart());
 
-    const resSessionID = await sessionManager.startSession(isDefault);
+    const resSessionID = await startNewSession(dispatch, getState, isDefault);
     if (resSessionID.ok === false) {
       dispatch(fetchSessionError(resSessionID.data)); return;
     }
@@ -52,7 +68,7 @@ export const startSession = (isDefault: boolean): Thunk => {
     dispatch(setChannels(channels));
     dispatch(setObjects(createObjectModels(getState())));
   };
-};
+}
 
 /** Проверяет, чтобы у всех параметров было корректное значение. */
 async function checkParamValues(channelDict: ChannelDict, paramDict: ParamDict) {

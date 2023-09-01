@@ -1,23 +1,21 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useDispatch, useSelector } from 'shared/lib';
-import { getAppLocation } from './lib/initialization';
-import { appStateSelector } from './store/app-state/app.selectors';
-import { initialize } from './store/app-state/app.thunks';
+import { getAppLocation } from '../lib/initialization';
+import { appStateSelector } from '../store/app-state/app.selectors';
+import { initialize } from '../store/app-state/app.thunks';
 
-import { SystemList } from './components/system-list';
-import { SystemRoot } from './components/system-root';
-import { UnknownRoute } from './components/unknown-route';
+import { SystemList } from './system-list';
+import { SystemRoot } from './system-root';
+import { UnknownRoute } from './unknown-route';
 
-
-export { store } from './store/index';
 
 /** Корень приложения. */
 export const App = () => {
   const dispatch = useDispatch();
   const { config, systemList } = useSelector(appStateSelector);
 
-  // Загрузка клиенсткой конфигурации и списка систем
+  // загрузка клиенсткой конфигурации и списка систем
   useEffect(() => {
     if (config === null) dispatch(initialize);
   }, [config, dispatch]);

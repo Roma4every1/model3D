@@ -7,7 +7,6 @@ export enum ChannelActionType {
   SET_SORT_ORDER = 'channel/order',
   SET_MAX_ROW_COUNT = 'channel/count',
   SET_ACTIVE_ROW = 'channel/active',
-  CLEAR = 'channel/clear',
 }
 
 /* --- Action Interfaces --- */
@@ -36,12 +35,9 @@ interface ActionSetActiveRow {
   type: ChannelActionType.SET_ACTIVE_ROW;
   payload: {name: ChannelName, row: ChannelRow};
 }
-interface ActionClear {
-  type: ChannelActionType.CLEAR;
-}
 
 export type ChannelAction = ActionSetChannels | ActionSetChannelData | ActionSetChannelsData |
-  ActionSetSortOrder | ActionSetMaxRowCount | ActionSetActiveRow | ActionClear;
+  ActionSetSortOrder | ActionSetMaxRowCount | ActionSetActiveRow;
 
 /* --- Init State & Reducer --- */
 
@@ -85,10 +81,6 @@ export function channelsReducer(state: ChannelDict = init, action: ChannelAction
       if (!channelData) return state;
       const channel = {...state[name], data: {...channelData, activeRow: row}};
       return {...state, [name]: channel};
-    }
-
-    case ChannelActionType.CLEAR: {
-      return {};
     }
 
     default: return state;

@@ -6,22 +6,33 @@ import { caratStateToSettings } from 'features/carat';
 
 /** Модель, используемая в серверных запросах для сохранения сессии. */
 export interface SessionToSave {
-  sessionId: SessionID,
-  parameters: FormParamsArray,
-  children: FormChildrenState[],
-  layout: FormLayoutArray,
-  settings: SessionSettings,
+  /** ID сохраняемой сессии. */
+  sessionId: SessionID;
+  /** Параметры главной формы и презентаций. */
+  parameters: ParametersToSave;
+  /** Состояние дочерних форм презентаций. */
+  children: FormChildrenState[];
+  /** Разметка презентаций. */
+  layout: LayoutsToSave;
+  /** Настройки форм по типам. */
+  settings: SessionSettings;
 }
 
+/** Хранилище настроек форм по типам. */
 interface SessionSettings {
-  tables: TableFormSettings[],
-  carats: CaratFormSettings[],
+  /** Настройки таблиц (тип `dataSet`). */
+  tables: TableFormSettings[];
+  /** Настройки каротажных диаграмм (тип `carat`). */
+  carats: CaratFormSettings[];
 }
 
-type FormParamsArray = {id: FormID, value: SerializedParameter[]}[];
-type FormLayoutArray = ({id: FormID} & IJsonModel)[];
+/** Массив с данными о параметрах главной формы и презентаций. */
+type ParametersToSave = {id: ClientID, value: SerializedParameter[]}[];
+/** Массив с данными о разметке презентаций. */
+type LayoutsToSave = ({id: ClientID} & IJsonModel)[];
 
 
+/** Конвертирует состояние приложения в модель сохраняемой сессии. */
 export function getSessionToSave(state: WState): SessionToSave {
   return {
     sessionId: state.appState.sessionID,
@@ -34,13 +45,13 @@ export function getSessionToSave(state: WState): SessionToSave {
 
 /* --- Parameters --- */
 
-function getParametersToSave(formParams: ParamDict): FormParamsArray {
-  const paramsArray: FormParamsArray  = [];
+function getParametersToSave(formParams: ParamDict): ParametersToSave {
+  const parameters: ParametersToSave = [];
   for (const id in formParams) {
     const value = formParams[id].map(serializeParameter);
-    paramsArray.push({id, value});
+    parameters.push({id, value});
   }
-  return paramsArray;
+  return parameters;
 }
 
 /* --- Children --- */
@@ -87,8 +98,8 @@ function getSettingsToSave(tableStates: TableStates, caratsState: CaratStates): 
 
 /* --- Layout --- */
 
-function getLayoutsToSave(root: RootFormState, presentations: PresentationDict): FormLayoutArray {
-  const layoutArray: FormLayoutArray = [getRootLayout(root)];
+function getLayoutsToSave(root: RootFormState, presentations: PresentationDict): LayoutsToSave {
+  const layoutArray: LayoutsToSave = [getRootLayout(root)];
   for (const id in presentations) layoutArray.push({...presentations[id].layout, id});
   return layoutArray;
 }

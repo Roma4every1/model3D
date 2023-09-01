@@ -49,10 +49,12 @@ interface AppState {
   config: ClientConfiguration;
   /** Список систем. */
   systemList: SystemList;
-  /** Состояние сессии. */
-  sessionID: SessionID;
   /** ID текущей системы. */
   systemID: SystemID;
+  /** Состояние сессии. */
+  sessionID: SessionID;
+  /** ID из `setInterval` для запроса `extendSession`. */
+  sessionIntervalID: number;
 }
 
 /** Клиентская конфигурация Well Manager.
@@ -88,11 +90,3 @@ interface WellManagerSystem {
 
 /** Идентификатор системы. */
 type SystemID = string;
-
-/* --- Session Manager --- */
-
-interface SessionManager {
-  startSession(isDefault?: boolean): Promise<Res<SessionID>>;
-  saveSession(): Promise<void>;
-  loadSessionByDefault(): Promise<void>;
-}

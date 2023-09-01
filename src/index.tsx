@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
-import { App, store } from 'app';
+import { App, getBeforeunloadCallback, store } from 'app';
 
 import 'flexlayout-react/style/light.css';
 import 'bootstrap/dist/css/bootstrap.css';
@@ -11,3 +11,4 @@ import 'shared/locales';
 
 const root = createRoot(document.getElementById('root'));
 root.render(<Provider store={store}><App/></Provider>);
+window.addEventListener('beforeunload', getBeforeunloadCallback(store.getState));

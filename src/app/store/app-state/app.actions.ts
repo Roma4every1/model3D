@@ -15,8 +15,3 @@ export function setSystemName(systemName: SystemID): AppStateAction {
 export function setSessionID(sessionID: SessionID): AppStateAction {
   return {type: AppStateActionType.SET_SESSION_ID, payload: sessionID};
 }
-
-/** Очистить хранилище сесиии. */
-export function clearSession(): AppStateAction {
-  return {type: AppStateActionType.CLEAR_SESSION_ID};
-}

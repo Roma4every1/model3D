@@ -1,6 +1,5 @@
 import thunk from 'redux-thunk';
 import { Reducer, combineReducers, createStore, applyMiddleware } from 'redux';
-import { createSessionManager } from '../lib/session-manager';
 
 import { appReducer } from './app-state/app.reducer';
 import { rootFormReducer } from 'app/store/root-form/root-form.reducer';
@@ -44,5 +43,3 @@ const rootReducer: Reducer<WState, any> = combineReducers({
 
 /** Well Manager Store. */
 export const store = createStore(rootReducer, applyMiddleware(thunk));
-/** Менеджер сессии. */
-export const sessionManager: SessionManager = createSessionManager(store);

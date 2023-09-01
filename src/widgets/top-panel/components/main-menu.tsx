@@ -1,12 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
+import { useDispatch } from 'shared/lib';
 import { Link } from 'react-router-dom';
 import { Button } from '@progress/kendo-react-buttons';
 import { DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { MenuSection, ButtonIcon } from 'shared/ui';
 import { PanelsVisibility } from './panels-visibility';
-import { sessionManager } from '../../../app/store';
 import { showDialog, closeWindow } from 'entities/window';
+import { startSession, saveSession } from 'app/store/root-form/root-form.thunks';
 
 import './main-menu.scss';
 import PACKAGE from '../../../../package.json';
@@ -38,6 +38,10 @@ export const MainMenu = ({leftLayout, config}: MainMenuProps) => {
     dispatch(showDialog('about', props, content));
   };
 
+  const loadSessionByDefault = () => {
+    dispatch(startSession(true));
+  };
+
   return (
     <div className={'menu'}>
       <MenuSection header={'Главная'}>
@@ -50,11 +54,11 @@ export const MainMenu = ({leftLayout, config}: MainMenuProps) => {
       <MenuSection header={'Сессия'}>
         <ButtonIcon
           text={t('menu.save-session')} icon={saveSessionIcon}
-          action={sessionManager.saveSession}
+          action={saveSession}
         />
         <ButtonIcon
           text={t('menu.load-default-session')} icon={defaultSessionIcon}
-          action={sessionManager.loadSessionByDefault}
+          action={loadSessionByDefault}
         />
       </MenuSection>
       <PanelsVisibility leftLayout={leftLayout}/>
