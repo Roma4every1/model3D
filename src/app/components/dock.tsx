@@ -4,11 +4,11 @@ import { useSelector } from 'react-redux';
 import { i18nMapper } from 'shared/locales';
 import { getDockLayout } from '../lib/dock-layout';
 import { rootStateSelector, presentationSelector } from '../store/root-form/root-form.selectors';
-import { TracePanel, needTraceTopTabSelector, needTraceRightTabSelector } from 'entities/objects';
+import { needTraceTopTabSelector, needTraceRightTabSelector } from 'entities/objects';
 import { Presentation } from 'widgets/presentation';
 import { LeftPanel } from 'widgets/left-panel';
 import { ActiveOperations, RightTab } from 'widgets/right-panel';
-import { MainMenu, PresentationReports, FormPanel } from 'widgets/top-panel';
+import { MainMenu, PresentationReports, TopPanel } from 'widgets/top-panel';
 
 
 // вкладка для редактирования трассы
@@ -61,8 +61,7 @@ export const Dock = ({config}: {config: ClientConfiguration}) => {
 
     if (id === 'menu') return <MainMenu leftLayout={leftLayout} config={config}/>;
     if (id === 'reports') return <PresentationReports id={activeID}/>;
-    if (id === 'top-traces') return <TracePanel/>
-    if (id.startsWith('top')) return <FormPanel panelID={id} presentation={presentation}/>;
+    if (id.startsWith('top')) return <TopPanel panelID={id} presentation={presentation}/>;
 
     if (id === 'right-dock') return <ActiveOperations activeID={activeID}/>;
     if (id.startsWith('right')) return <RightTab panelID={id} presentation={presentation}/>;

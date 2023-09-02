@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { KeyboardEvent, useState, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { setCurrentTrace } from '../../store/objects.actions';
@@ -8,8 +8,10 @@ import { ComboBox, ComboBoxChangeEvent } from '@progress/kendo-react-dropdowns';
 
 
 interface TraceAddNodeProps {
-  model: TraceModel,
-  mapPoints: MapPoint[] | undefined,
+  /** Модель трассы. */
+  model: TraceModel;
+  /** Именованные точки карты. */
+  mapPoints: MapPoint[] | undefined;
 }
 
 
@@ -40,9 +42,13 @@ export const TraceAddNode = ({model, mapPoints}: TraceAddNodeProps) => {
     dispatch(setCurrentTrace({...model}));
   };
 
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (e.nativeEvent.key === 'Enter' && addedPoint) addPoint();
+  };
+
   return (
-    <div className='trace-edit-tab__inner-block'>
-      <div className='menu-header trace-edit-tab__title-text'>
+    <div className={'trace-edit-tab__inner-block'} tabIndex={0} onKeyDown={onKeyDown}>
+      <div className={'menu-header trace-edit-tab__title-text'}>
         {t('trace.add-point-title')}
       </div>
       <ComboBox

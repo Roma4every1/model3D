@@ -10,17 +10,23 @@ import { ApplyTraceChanges } from './apply-trace-changes';
 import { DenyTraceChanges } from './deny-trace-changes';
 
 
+interface TracePanelProps {
+  /** Есть ли на активной презентации карта. */
+  hasMap: boolean;
+}
+
+
 /** Верхняя панель трасс. */
-export const TracePanel = () => {
+export const TracePanel = ({hasMap}: TracePanelProps) => {
   const { t } = useTranslation();
   const trace = useSelector(traceStateSelector);
 
   return (
     <div className={'menu'}>
       <MenuSection header={t('trace.controls-section')} className={'big-buttons'}>
-        <CreateTrace trace={trace}/>
+        <CreateTrace trace={trace} hasMap={hasMap}/>
         <DeleteTrace trace={trace}/>
-        <EditTrace trace={trace}/>
+        <EditTrace trace={trace} hasMap={hasMap}/>
       </MenuSection>
       <MenuSection header={t('trace.edit-section')} className={'big-buttons'}>
         <ApplyTraceChanges trace={trace}/>

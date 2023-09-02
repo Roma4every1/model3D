@@ -1,16 +1,19 @@
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { setCurrentTrace } from '../../index';
+import { setCurrentTrace } from '../../store/objects.actions.ts';
 import { BigButton } from 'shared/ui';
-import editTraceIcon from 'assets/images/trace/edit-trace.png'
+import editTraceIcon from 'assets/images/trace/edit-trace.png';
 
 
 interface EditTraceProps {
-  trace: TraceState,
+  /** Состояние трасс. */
+  trace: TraceState;
+  /** Есть ли на активной презентации карта. */
+  hasMap: boolean;
 }
 
 
-export const EditTrace = ({trace}: EditTraceProps) => {
+export const EditTrace = ({trace, hasMap}: EditTraceProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
@@ -21,7 +24,7 @@ export const EditTrace = ({trace}: EditTraceProps) => {
   return (
     <BigButton
       text={t('trace.edit')} icon={editTraceIcon}
-      action={action} disabled={!trace.model || trace.editing || trace.creating}
+      action={action} disabled={!trace.model || trace.editing || trace.creating || !hasMap}
     />
   );
 };

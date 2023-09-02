@@ -6,21 +6,22 @@ import createTraceIcon from 'assets/images/trace/create-trace.png';
 
 
 interface CreateTraceProps {
-  trace: TraceState,
+  trace: TraceState;
+  hasMap: boolean;
 }
 
 
 /** Кнопка создания трассы. */
-export const CreateTrace = ({trace}: CreateTraceProps) => {
+export const CreateTrace = ({trace, hasMap}: CreateTraceProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
   const currentPlace = useSelector(currentPlaceSelector);
   const placeID = currentPlace?.id;
-  const disabled = trace.editing || trace.creating || !placeID;
+  const disabled = trace.editing || trace.creating || !placeID || !hasMap;
 
   const action = () => {
-    dispatch(createTrace({id: null, place: placeID, name: 'Без имени', nodes: []}));
+    dispatch(createTrace({id: null, place: placeID, name: '', nodes: []}));
   };
 
   return (

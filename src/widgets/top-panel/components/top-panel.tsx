@@ -1,14 +1,17 @@
 import { FunctionComponent } from 'react';
+import { TracePanel } from 'entities/objects';
 import { TableEditPanel } from 'features/table';
 import { ChartEditPanel } from 'features/chart';
 import { MapEditPanel } from 'features/map';
 import { TrackEditPanel } from 'features/carat';
 import { CaratEditPanel } from 'features/carat';
 
-export interface FormPanelProps {
-  panelID: string,
-  presentation: PresentationState,
+
+export interface TopPanelProps {
+  panelID: string;
+  presentation: PresentationState;
 }
+
 
 /** Словарь всех компонентов верхней панели. */
 const editPanelDict: Record<string, [FunctionComponent<FormEditPanelProps>, FormType]> = {
@@ -20,7 +23,11 @@ const editPanelDict: Record<string, [FunctionComponent<FormEditPanelProps>, Form
 };
 
 /** Панель редактирования формы. */
-export const FormPanel = ({panelID, presentation}: FormPanelProps) => {
+export const TopPanel = ({panelID, presentation}: TopPanelProps) => {
+  if (panelID.endsWith('traces')) {
+    const hasMap = presentation?.childrenTypes.has('map') ?? false;
+    return <TracePanel hasMap={hasMap}/>;
+  }
   const activeChildID = presentation?.activeChildID;
   if (!activeChildID) return null;
 
