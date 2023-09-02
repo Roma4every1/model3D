@@ -188,6 +188,9 @@ export class CaratTrack implements ICaratTrack {
     const elementsHeight = this.backgroundGroup.getDataRect().height;
     viewport.height = elementsHeight / (scale * window.devicePixelRatio);
 
+    if (viewport.max - viewport.min < viewport.height) {
+      viewport.max = viewport.min + viewport.height;
+    }
     if (viewport.y + viewport.height > viewport.max) {
       viewport.y = viewport.max - viewport.height;
     }

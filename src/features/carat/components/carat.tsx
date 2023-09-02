@@ -55,6 +55,7 @@ export const Carat = ({id}: FormState) => {
   });
 
   const onWheel = useCallback((e: WheelEvent) => {
+    if (e.shiftKey) return; // горизонтальный скрол
     if (e.ctrlKey) e.preventDefault();
     const direction = e.deltaY > 0 ? 1 : -1;
     const { offsetX: x, offsetY: y } = e;

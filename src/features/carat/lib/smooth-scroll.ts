@@ -68,12 +68,15 @@ function moveView(stage: ICaratStage, viewport: CaratViewport, i: number) {
     return scroll.id = null;
   }
 
-  let y = viewport.y + scroll.queue.shift();
-  if (y + viewport.height > viewport.max) y = viewport.max - viewport.height;
-  else if (y < viewport.min) y = viewport.min;
+  let newY = viewport.y + scroll.queue.shift();
 
-  if (viewport.y !== y) {
-    viewport.y = y;
+  if (newY + viewport.height > viewport.max) {
+    newY = viewport.max - viewport.height;
+  } else if (newY < viewport.min) {
+    newY = viewport.min;
+  }
+  if (viewport.y !== newY) {
+    viewport.y = newY;
     stage.lazyRender(i);
   }
 }

@@ -137,7 +137,7 @@ export class CaratStage implements ICaratStage {
       const { viewport, inclinometry } = track;
       viewport.min = yMin;
       viewport.max = yMax;
-      if (viewport.y === Infinity) viewport.y = viewport.min;
+      if (viewport.y === Infinity) viewport.y = yMin;
 
       if (inclinometry) {
         inclinometry.setData(data[i]);
@@ -145,9 +145,9 @@ export class CaratStage implements ICaratStage {
       }
     });
 
+    this.correlations.setData(this.trackList);
     this.updateTrackRects();
     this.resize();
-    this.correlations.setData(this.trackList);
   }
 
   /** Обновляет данные справочников. */
@@ -310,10 +310,15 @@ export class CaratStage implements ICaratStage {
       const viewport = this.trackList[idx].viewport;
       let newY = viewport.y - by / (viewport.scale * window.devicePixelRatio);
 
-      if (newY > viewport.max) newY = viewport.max;
-      else if (newY < viewport.min) newY = viewport.min;
-
-      if (viewport.y !== newY) { viewport.y = newY; this.lazyRender(idx); }
+      if (newY + viewport.height > viewport.max) {
+        newY = viewport.max - viewport.height;
+      } else if (newY < viewport.min) {
+        newY = viewport.min;
+      }
+      if (viewport.y !== newY) {
+        viewport.y = newY;
+        this.lazyRender(idx);
+      }
     };
 
     const index = this.trackList.findIndex(t => isRectInnerPoint(point, t.rect));

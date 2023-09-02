@@ -1,5 +1,5 @@
 import { CaratCurveModel, CaratCurveStyleDict } from './types';
-import { getPragmaticMax } from 'shared/lib';
+import { getPragmaticMax, stringifyLocalDate } from 'shared/lib';
 import { fixHEX } from './utils';
 import { defaultSettings } from './constants';
 
@@ -112,7 +112,7 @@ export class CurveManager {
   private resetTree() {
     const map: Map<string, CaratCurveModel[]> = new Map();
     for (const curve of this.curves) {
-      const date = curve.date.toJSON().slice(0, 10);
+      const date = stringifyLocalDate(curve.date);
       if (!map.has(date)) map.set(date, []);
       map.get(date).push(curve);
     }
@@ -261,8 +261,8 @@ export class CurveManager {
   }
 
   public getInitSelection(): CaratDataSelection {
-    const start = this.start.toJSON().substring(0, 10);
-    const end = this.end.toJSON().substring(0, 10);
+    const start = stringifyLocalDate(this.start);
+    const end = stringifyLocalDate(this.end);
     return {types: this.popularTypes, start, end};
   }
 

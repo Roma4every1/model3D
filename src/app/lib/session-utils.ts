@@ -23,7 +23,7 @@ export async function startNewSession(dispatch: AppDispatch, getState: StateGett
       if (intervalID !== null) clearInterval(intervalID);
       dispatch(showWarningMessage(t('messages.session-lost')));
     };
-    state.appState.sessionIntervalID = setInterval(extendSession, 2 * 60 * 1000) as any;
+    state.appState.sessionIntervalID = window.setInterval(extendSession, 2 * 60 * 1000);
     API.setSessionID(res.data);
   } else {
     dispatch(showWarningMessage(res.data));
