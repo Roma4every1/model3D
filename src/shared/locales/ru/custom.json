@@ -127,7 +127,7 @@
   "carat": {
     "selection": {
       "button": "Выбор кривых",
-      "window-title": "Выбор каротажных кривых",
+      "window-title": "Выбор каротажных кривых ({{well}})",
       "curves": "Кривые",
       "default": "По умолчанию"
     },

@@ -28,8 +28,9 @@ export const CaratCurvesPanel = ({id, stage, curveGroup}: CaratCurvesPanelProps)
     const content = <CurveSelectionWindow id={id} stage={stage} onClose={onClose}/>;
 
     const windowProps: WindowProps = {
-      title: t('carat.selection.window-title'), maximizeButton: () => null,
-      width: 720, height: 480, resizable: false, style: {zIndex: 99}, onClose,
+      title: t('carat.selection.window-title', {well: stage.getActiveTrack().wellName}),
+      width: 720, height: 480, resizable: false, style: {zIndex: 99},
+      onClose, maximizeButton: () => null,
     };
     dispatch(showWindow(windowID, windowProps, content));
   };

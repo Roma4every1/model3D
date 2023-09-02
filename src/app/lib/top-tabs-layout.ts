@@ -41,10 +41,10 @@ export function getTopPanelTabs(types?: Set<FormType>, needTracePanel?: boolean)
   const tabs: IJsonTabNode[] = [allTopTabs.menu, allTopTabs.reports];
   if (!types) return tabs;
 
-  if (needTracePanel) tabs.push(allTopTabs.traces);
   if (types.has('dataSet')) tabs.push(allTopTabs.table);
   if (types.has('chart')) tabs.push(allTopTabs.chart);
   if (types.has('map')) tabs.push(allTopTabs.map);
   if (types.has('carat')) tabs.push(allTopTabs.track, allTopTabs.carat);
+  if (needTracePanel) tabs.push(allTopTabs.traces);
   return tabs;
 }

@@ -35,18 +35,18 @@ export const CurveSelectionWindow = ({id, stage, onClose}: CurveSelectionWindowP
   const curveManager: CurveManager = curveGroup?.curveManager;
   const tree = curveManager?.getCurveTree() ?? [];
 
-  const [_signal, setSignal] = useState(false);
-  const signal = () => setSignal(!_signal);
+  const [, setSignal] = useState(false);
+  const signal = () => setSignal(value => !value);
 
   // подписка на события изменения сцены
   useEffect(() => {
-    stage.listeners.curveWindowChange = () => setSignal(true);
+    stage.listeners.curveWindowChange = () => setSignal(value => !value);
     return () => { stage.listeners.curveWindowChange = () => {}; };
   }, [stage]);
 
   // обновление заголовка окна при смене активного трека
   useEffect(() => {
-    const title = t('carat.selection.window-title') + ` (${track.wellName})`
+    const title = t('carat.selection.window-title', {well: track.wellName});
     dispatch(updateWindow('curve-selection', {title}));
   }, [track.wellName, t, dispatch]);
 
