@@ -73,8 +73,6 @@ export interface CaratIntervalStyle {
 
 /** Корреляции пластов между двумя треками.
  * + `rect`: {@link Rectangle}
- * + `leftTop: number`
- * + `rightTop: number`
  * + `leftViewport`: {@link CaratViewport}
  * + `rightViewport`: {@link CaratViewport}
  * + `data`: {@link StratumCorrelation}[]
@@ -82,10 +80,6 @@ export interface CaratIntervalStyle {
 export interface CaratCorrelation {
   /** Ограничивающий прямоугольник. */
   rect: Rectangle;
-  /** Верхняя точка прямоугольника элементов левой группы. */
-  leftTop: number;
-  /** Верхняя точка прямоугольника элементов правой группы. */
-  rightTop: number;
   /** Ссылка на вьюпорт трека слева. */
   leftViewport: CaratViewport;
   /** Ссылка на вьюпорт трека справа. */

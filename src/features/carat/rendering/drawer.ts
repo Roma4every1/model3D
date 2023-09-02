@@ -223,11 +223,10 @@ export class CaratDrawer {
 
   public drawGroupXAxes(settings: CaratColumnXAxis, groups: CurveAxisGroup[]): void {
     this.setTranslate(this.groupTranslateX, this.trackRect.top + this.columnLabelSettings.height);
-    const { thickness, gap, axisHeight, markSize, font } = this.columnXAxesSettings;
+    const { thickness, gap, axisHeight, markSize, font, activeFont } = this.columnXAxesSettings;
     const yStep = axisHeight + gap;
     const segmentsCount = settings.numberOfMarks - 1;
 
-    this.ctx.font = font;
     this.ctx.textBaseline = 'bottom';
     this.ctx.lineWidth = thickness;
 
@@ -238,13 +237,14 @@ export class CaratDrawer {
       const xStart = rect.left + thickness, xEnd = rect.left + rect.width - thickness;
       const xCenter = (xStart + xEnd) / 2;
 
-      for (const { type, axisMin, axisMax, style: { color } } of axes) {
+      for (const { type, axisMin, axisMax, style: { color }, active } of axes) {
         const delta = axisMax - axisMin;
         const markStep = delta / segmentsCount;
         const digits = markStep > 1 ? 0 : (markStep < 0.1 ? 2 : 1);
 
         this.ctx.strokeStyle = color;
         this.ctx.fillStyle = color;
+        this.ctx.font = active ? activeFont : font;
 
         const markTop = y - markSize;
         this.ctx.beginPath();
@@ -457,9 +457,9 @@ export class CaratDrawer {
       this.ctx.fill(); this.ctx.stroke();
 
       if (text !== undefined) {
-        const xCenter = barStart + barWidth / 2;
+        const xCenter = this.columnWidth / 2;
         const yCenter = canvasTop + canvasHeight / 2;
-        this.drawIntervalText(text, xCenter, yCenter, barWidth);
+        this.drawIntervalText(text, xCenter, yCenter, this.columnWidth);
       }
     }
   }
@@ -489,27 +489,26 @@ export class CaratDrawer {
     this.ctx.restore();
   }
 
-  public drawCorrelation(trackTop: number, correlations: CaratCorrelation): void {
-    const { rect, leftTop, rightTop, leftViewport, rightViewport } = correlations;
-    this.setTranslate(0, trackTop);
+  public drawCorrelations(correlations: CaratCorrelation): void {
+    const { rect, leftViewport, rightViewport } = correlations;
+    this.setTranslate(rect.left, rect.top);
     this.ctx.lineWidth = this.correlationSettings.thickness;
 
-    const left = rect.left;
-    const right = rect.left + rect.width;
+    const width = rect.width;
     const leftScaleY = window.devicePixelRatio * leftViewport.scale;
     const rightScaleY = window.devicePixelRatio * rightViewport.scale;
 
-    this.ctx.clearRect(rect.left, rect.top, rect.width, rect.height);
+    this.ctx.clearRect(0, 0, width, rect.height);
     this.ctx.save();
-    this.ctx.rect(rect.left, rect.top, rect.width, rect.height);
+    this.ctx.rect(0, 0, width, rect.height);
     this.ctx.clip();
 
     for (const correlation of correlations.data) {
       this.ctx.beginPath();
-      this.ctx.moveTo(left, leftTop + leftScaleY * (correlation.leftBottom - leftViewport.y));
-      this.ctx.lineTo(left, leftTop + leftScaleY * (correlation.leftTop - leftViewport.y));
-      this.ctx.lineTo(right, rightTop + rightScaleY * (correlation.rightTop - rightViewport.y));
-      this.ctx.lineTo(right, rightTop + rightScaleY * (correlation.rightBottom - rightViewport.y));
+      this.ctx.moveTo(0, leftScaleY * (correlation.leftBottom - leftViewport.y));
+      this.ctx.lineTo(0, leftScaleY * (correlation.leftTop - leftViewport.y));
+      this.ctx.lineTo(width, rightScaleY * (correlation.rightTop - rightViewport.y));
+      this.ctx.lineTo(width, rightScaleY * (correlation.rightBottom - rightViewport.y));
       this.ctx.closePath();
 
       this.ctx.fillStyle = correlation.style.fill;

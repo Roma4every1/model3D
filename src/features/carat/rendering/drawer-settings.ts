@@ -59,6 +59,8 @@ export interface CaratDrawerConfig {
       horizontal: {
         /** {@link CSSFont} подписей. */
         font: Partial<CSSFont>,
+        /** {@link CSSFont} подписи активной кривой. */
+        activeFont: Partial<CSSFont>,
         /** Толщина оси. */
         thickness: number,
         /** Размер вертикальной пометки. */
@@ -139,6 +141,8 @@ export interface CaratColumnYAxisDrawSettings {
 export interface CaratColumnXAxesDrawSettings {
   /** Шрифт подписей. */
   readonly font: string;
+  /** Шрифт подпики для активной кривой. */
+  readonly activeFont: string;
   /** Толщина оси. */
   readonly thickness: number;
   /** Размер горизонтальной черты. */
@@ -203,11 +207,12 @@ export function createColumnYAxisDrawSettings(config: CaratDrawerConfig): CaratC
 
 /** Создаёт настройки отрисовки горизонтальных осей колонки по конфигу. */
 export function createColumnXAxesDrawSettings(config: CaratDrawerConfig): CaratColumnXAxesDrawSettings {
-  const { font, thickness, markSize, gap, grid } = config.column.axis.horizontal;
+  const { font, activeFont, thickness, markSize, gap, grid } = config.column.axis.horizontal;
   const axisHeight = font.size + 3 * thickness;
 
   return {
     font: getFont(font, config.stage.font),
+    activeFont: getFont(activeFont, config.stage.font),
     thickness, markSize, gap, axisHeight,
     gridThickness: grid.thickness, gridLineDash: grid.lineDash
   };

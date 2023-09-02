@@ -13,8 +13,6 @@ export class CaratCorrelations implements ICaratCorrelations {
   /** Ширина корреляций. */
   private readonly width: number;
 
-  /** Верхняя координата треков. */
-  private trackTop: number;
   /** Данные колонок корреляций. */
   private correlations: CaratCorrelation[];
 
@@ -22,7 +20,6 @@ export class CaratCorrelations implements ICaratCorrelations {
     this.init = init;
     this.drawer = drawer;
     this.width = init.settings.width;
-    this.trackTop = 0;
     this.correlations = [];
   }
 
@@ -35,34 +32,31 @@ export class CaratCorrelations implements ICaratCorrelations {
   }
 
   public updateRects(trackList: CaratTrack[]): void {
-    const maxHeaderHeight = Math.max(...trackList.map(t => t.maxGroupHeaderHeight));
-    const top = this.drawer.trackHeaderSettings.height + maxHeaderHeight;
-    const height = trackList[0].rect.height - top;
+    const dataRect = trackList[0].getBackgroundGroup().getDataRect();
+    const top = trackList[0].rect.top + dataRect.top;
+    const height = dataRect.height;
 
     for (let i = 0; i < this.correlations.length; i++) {
       const rect = trackList[i].rect;
       const left = rect.left + rect.width + 1;
       this.correlations[i].rect = {top, left, width: this.width - 2, height};
     }
-    this.trackTop = trackList[0].rect.top;
   }
 
   public setData(trackList: CaratTrack[]): void {
     this.correlations = [];
     for (let i = 0; i < trackList.length - 1; i++) {
       const leftTrack = trackList[i];
-      const leftGroup = leftTrack.getBackgroundGroup();
       const rightTrack = trackList[i + 1];
-      const rightGroup = rightTrack.getBackgroundGroup();
+      const leftStrata = leftTrack.getBackgroundGroup().getStrata();
+      const rightStrata = rightTrack.getBackgroundGroup().getStrata();
 
       const trackRect = leftTrack.rect;
       const correlation: CaratCorrelation = {
         rect: {...trackRect, left: trackRect.left + trackRect.width + 1, width: this.width - 2},
-        leftTop: leftGroup.getDataRect().top,
-        rightTop: rightGroup.getDataRect().top,
         leftViewport: leftTrack.viewport,
         rightViewport: rightTrack.viewport,
-        data: this.findCorrelations(leftGroup.getStrata(), rightGroup.getStrata()),
+        data: this.findCorrelations(leftStrata, rightStrata),
       };
       this.correlations.push(correlation);
     }
@@ -99,11 +93,11 @@ export class CaratCorrelations implements ICaratCorrelations {
 
   public render(index?: number): void {
     if (index !== undefined) {
-      const correlation = this.correlations[index];
-      if (correlation) this.drawer.drawCorrelation(this.trackTop, correlation);
+      const correlations = this.correlations[index];
+      if (correlations) this.drawer.drawCorrelations(correlations);
     } else {
-      for (const correlation of this.correlations) {
-        this.drawer.drawCorrelation(this.trackTop, correlation);
+      for (const correlations of this.correlations) {
+        this.drawer.drawCorrelations(correlations);
       }
     }
   }

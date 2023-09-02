@@ -112,6 +112,7 @@ export const drawerConfig: CaratDrawerConfig = {
       },
       horizontal: {
         font: {size: 13},
+        activeFont: {size: 13, style: 'bold'},
         thickness: 1.5,
         markSize: 8,
         gap: 2,
