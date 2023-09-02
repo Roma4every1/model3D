@@ -48,6 +48,7 @@ interface ICaratLoader {
 
   loadCaratData(ids: WellID[], channelData: ChannelDict): Promise<ChannelRecordDict[]>;
   loadCurveData(ids: CaratCurveID[], bySteps: boolean): Promise<CaratCurveID[]>;
+  checkCacheSize(): void;
 }
 
 /** Кеш точек кривых. */
@@ -74,6 +75,8 @@ interface CaratCurveData {
   min: number;
   /** Максимальное значение кривой. */
   max: number;
+  /** Порядок добавления в кеш (техническое поле). */
+  order: number;
 }
 
 /* --- --- */

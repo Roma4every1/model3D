@@ -68,14 +68,14 @@ export const Carat = ({id}: FormState) => {
     return () => canvas?.removeEventListener('wheel', onWheel);
   }, [canvas, onWheel]);
 
-  if (loading.percentage < 100) {
-    return <LoadingStatus {...loading}/>;
-  }
   if (!currentWell && !currentTrace) {
     return <TextInfo text={'carat.no-data'}/>;
   }
   if (currentTrace && currentTrace.nodes.length === 0) {
     return <TextInfo text={'carat.no-nodes'}/>;
+  }
+  if (loading.percentage < 100) {
+    return <LoadingStatus {...loading}/>;
   }
 
   const onKeyDown = (e: KeyboardEvent) => {

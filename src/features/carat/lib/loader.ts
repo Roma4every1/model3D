@@ -6,15 +6,22 @@ import { channelsAPI } from 'entities/channels/lib/channels.api';
 
 /** Класс, реализующий загрузку данных для построения каротажа по трассе. */
 export class CaratLoader implements ICaratLoader {
+  /** Фиксированное название параметра для загрузки точек кривых. */
   private static readonly curveDataParameterID = 'currentCurveIds';
+  /** Фиксированное название параметра для загрузки инклинометрии. */
   private static readonly inclinometryParameterID = 'currentWellGeom';
+  /** Максимальное количество кривых в кеше. */
+  private static readonly maxCacheCurveCount = 20;
 
   /** Флаг для преждевременной остановки загрузки. */
   public flag: number;
-  /** Кеш точек кривых. */
-  public readonly cache: CurveDataCache;
   /** Функция для обновления состояния загрузки на уровне интерфейса. */
   public setLoading: (l: Partial<CaratLoading>) => void;
+
+  /** Кеш точек кривых. */
+  public readonly cache: CurveDataCache;
+  /** Счётчик добавления кривых. */
+  private curveCounter: number;
 
   /** Каналы, необходимых для каждого трека. */
   private readonly attachedChannels: CaratAttachedChannel[];
@@ -28,6 +35,7 @@ export class CaratLoader implements ICaratLoader {
     curveDataChannel: CaratAttachedChannel, inclinometryChannel: CaratAttachedChannel,
   ) {
     this.flag = 0;
+    this.curveCounter = 0;
     this.cache = {};
     this.attachedChannels = channels;
     this.curveDataChannel = curveDataChannel;
@@ -51,7 +59,7 @@ export class CaratLoader implements ICaratLoader {
       await this.loadCurveData(curveIDs, true);
     }
     if (flag === this.flag && this.inclinometryChannel) {
-      this.setLoading({status: 'inclinometry'});
+      this.setLoading({status: 'inclinometry', statusOptions: null});
       const inclinometryChannel = channelData[this.inclinometryChannel.name];
 
       if (inclinometryChannel?.data) {
@@ -144,20 +152,22 @@ export class CaratLoader implements ICaratLoader {
       const records = cellsToRecords(data);
       const idColumnName = this.curveDataChannel.info.id.name;
 
-      if (bySteps) {
-        const count = i + slice.length;
-        const percentage = count / (total + 1) * 100;
-        this.setLoading({percentage, statusOptions: {count, total}});
-      }
-
       for (const id of idsToLoad) {
         const record = records.find(r => r[idColumnName] === id);
         if (record) {
           this.cache[id] = this.createCurveData(record);
         } else {
-          const path = new Path2D();
-          this.cache[id] = {path, points: [], top: null, bottom: null, min: null, max: null};
+          this.cache[id] = {
+            path: new Path2D(), points: [],
+            top: null, bottom: null, min: null, max: null,
+            order: ++this.curveCounter,
+          };
         }
+      }
+      if (bySteps) {
+        const count = i + slice.length;
+        const percentage = count / (total + 1) * 100;
+        this.setLoading({percentage, statusOptions: {count, total}});
       }
     }
     return idsToLoad;
@@ -175,6 +185,7 @@ export class CaratLoader implements ICaratLoader {
       bottom: record[info.bottom.name],
       min: record[info.min.name],
       max: record[info.max.name],
+      order: ++this.curveCounter,
     };
   }
 
@@ -186,5 +197,18 @@ export class CaratLoader implements ICaratLoader {
       const [x, y] = item.split(',');
       return {x: parseFloat(x), y: parseFloat(y)};
     });
+  }
+
+  /** Проверяет количество кривых в кеше и удаляет лишние кривые. */
+  public checkCacheSize(): void {
+    let entries = Object.entries(this.cache);
+    if (entries.length <= CaratLoader.maxCacheCurveCount) return;
+
+    entries.sort((a, b) => a[1].order - b[1].order);
+    const idsToDelete = entries.map(entry => entry[0]).slice(CaratLoader.maxCacheCurveCount);
+
+    for (const id of idsToDelete) {
+      delete this.cache[id];
+    }
   }
 }

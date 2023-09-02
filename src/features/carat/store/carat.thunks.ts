@@ -8,7 +8,7 @@ import { setCaratLoading } from './carat.actions';
 export function setCaratData(id: FormID, data: ChannelDict): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const { objects, carats } = getState();
-    const { stage, loader, loading } = carats[id];
+    const { stage, loader } = carats[id];
     const { well: { model: currentWell }, trace: { model: currentTrace } } = objects;
 
     if (currentTrace) {
@@ -33,7 +33,8 @@ export function setCaratData(id: FormID, data: ChannelDict): Thunk {
     if (flag !== loader.flag) return;
 
     stage.setData(caratData, loader.cache);
-    if (loading.percentage < 100) loader.setLoading({percentage: 100});
+    loader.checkCacheSize();
+    loader.setLoading({percentage: 100});
     stage.render();
   };
 }
