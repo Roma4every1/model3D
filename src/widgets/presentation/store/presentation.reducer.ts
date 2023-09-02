@@ -1,11 +1,9 @@
-import { IJsonModel } from 'flexlayout-react';
 import { getChildrenTypes } from '../lib/utils';
 
 /* --- Action Types --- */
 
 export enum PresentationActionType {
   SET = 'presentations/set',
-  SET_LAYOUT = 'presentations/layout',
   SET_CHILDREN = 'presentations/children',
   SET_ACTIVE_FORM = 'presentations/active',
 }
@@ -16,21 +14,16 @@ interface ActionSet {
   type: PresentationActionType.SET;
   payload: PresentationState;
 }
-interface ActionSetLayout {
-  type: PresentationActionType.SET_LAYOUT;
-  payload: {id: FormID, layout: IJsonModel};
-}
 interface ActionSetChildren {
   type: PresentationActionType.SET_CHILDREN;
-  payload: {id: FormID, children: FormDataWM[]};
+  payload: {id: ClientID, children: FormDataWM[]};
 }
 interface ActionSetActiveForm {
   type: PresentationActionType.SET_ACTIVE_FORM;
-  payload: {id: FormID, activeChildID: FormID};
+  payload: {id: ClientID, activeChildID: FormID};
 }
 
-export type PresentationAction = ActionSet | ActionSetLayout |
-  ActionSetChildren | ActionSetActiveForm;
+export type PresentationAction = ActionSet | ActionSetChildren | ActionSetActiveForm;
 
 /* --- Init State & Reducer --- */
 
@@ -43,14 +36,9 @@ export function presentationsReducer(state: PresentationDict = init, action: Pre
       return {...state, [action.payload.id]: action.payload};
     }
 
-    case PresentationActionType.SET_LAYOUT: {
-      const { id, layout } = action.payload;
-      return {...state, [id]: {...state[id], layout}};
-    }
-
     case PresentationActionType.SET_CHILDREN: {
       const { id, children } = action.payload;
-      const openedChildren = children.map((child) => child.id);
+      const openedChildren = children.map(child => child.id);
       const childrenTypes = getChildrenTypes(children, openedChildren);
       const activeChildID = children[0]?.id;
       return {...state, [id]: {...state[id], children, openedChildren, activeChildID, childrenTypes}};

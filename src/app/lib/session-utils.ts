@@ -50,8 +50,8 @@ function clearSessionData(state: WState): void {
 }
 
 /**
- * Возвращает функцию, которая будет выполнятся при закрытии вкладки
- * или перезагрузке строницы. Происходит сохранение сессии.
+ * Возвращает функцию, которая будет выполнятся при закрытии или перезагрузке
+ * вкладки браузера. Происходит сохранение сессии.
  * */
 export function getBeforeunloadCallback(getState: StateGetter): () => void {
   return () => { appAPI.stopSession(getSessionToSave(getState())).then(); };

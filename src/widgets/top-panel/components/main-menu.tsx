@@ -38,10 +38,6 @@ export const MainMenu = ({leftLayout, config}: MainMenuProps) => {
     dispatch(showDialog('about', props, content));
   };
 
-  const loadSessionByDefault = () => {
-    dispatch(startSession(true));
-  };
-
   return (
     <div className={'menu'}>
       <MenuSection header={'Главная'}>
@@ -54,11 +50,11 @@ export const MainMenu = ({leftLayout, config}: MainMenuProps) => {
       <MenuSection header={'Сессия'}>
         <ButtonIcon
           text={t('menu.save-session')} icon={saveSessionIcon}
-          action={saveSession}
+          action={() => dispatch(saveSession())}
         />
         <ButtonIcon
           text={t('menu.load-default-session')} icon={defaultSessionIcon}
-          action={loadSessionByDefault}
+          action={() => dispatch(startSession(true))}
         />
       </MenuSection>
       <PanelsVisibility leftLayout={leftLayout}/>

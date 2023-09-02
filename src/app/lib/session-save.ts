@@ -100,7 +100,10 @@ function getSettingsToSave(tableStates: TableStates, caratsState: CaratStates): 
 
 function getLayoutsToSave(root: RootFormState, presentations: PresentationDict): LayoutsToSave {
   const layoutArray: LayoutsToSave = [getRootLayout(root)];
-  for (const id in presentations) layoutArray.push({...presentations[id].layout, id});
+  for (const id in presentations) {
+    const layout = presentations[id].layout.toJson();
+    layoutArray.push({...layout, id});
+  }
   return layoutArray;
 }
 

@@ -9,8 +9,10 @@ import { PresentationSkeleton, PresentationFetchError } from './plugs';
 
 
 export interface PresentationProps {
-  id: FormID,
-  state: PresentationState | undefined,
+  /** ID презентации. */
+  id: ClientID;
+  /** Состояние презентации. */
+  state: PresentationState | undefined;
 }
 
 
@@ -29,5 +31,5 @@ export const Presentation = ({id, state}: PresentationProps) => {
   const multiMapChannel = state.settings.multiMapChannel;
   if (multiMapChannel) return <MultiMap id={id} channelName={multiMapChannel}/>;
 
-  return <Grid id={id} layout={state.layout}/>;
+  return <Grid id={id} model={state.layout}/>;
 };

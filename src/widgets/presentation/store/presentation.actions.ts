@@ -1,4 +1,3 @@
-import { IJsonModel } from 'flexlayout-react';
 import { PresentationAction, PresentationActionType } from './presentation.reducer';
 
 
@@ -10,11 +9,6 @@ export function setPresentationState(state: PresentationState): PresentationActi
 /** Установить список дочерних форм. */
 export function setPresentationChildren(id: FormID, children: FormDataWM[]): PresentationAction {
   return {type: PresentationActionType.SET_CHILDREN, payload: {id, children}};
-}
-
-/** Установить разметку презентации. */
-export function setPresentationLayout(id: FormID, layout: IJsonModel): PresentationAction {
-  return {type: PresentationActionType.SET_LAYOUT, payload: {id, layout}};
 }
 
 /** Установить активную форму для презентации. */

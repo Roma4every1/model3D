@@ -1,9 +1,9 @@
 /** Состояние презентаций. */
-type PresentationDict = Record<FormID, PresentationState>;
+type PresentationDict = Record<ClientID, PresentationState>;
 
 /** Состояние презентации.
- * + `id`: {@link FormID}
- * + `layout: IJsonModel`
+ * + `id`: {@link ClientID}
+ * + `layout: Model`
  * + `settings`: {@link GridFormSettings}
  * + `children`: {@link FormDataWM}[]
  * + `childrenTypes`: {@link FormType}[]
@@ -11,27 +11,28 @@ type PresentationDict = Record<FormID, PresentationState>;
  * */
 interface PresentationState {
   /** ID презентации. */
-  id: FormID,
+  id: ClientID;
   /** Разметка */
-  layout: any, // IJsonModel из 'flex-layout-react' (нельзя добавить в .d.ts)
+  layout: any; // Model из 'flex-layout-react'
   /** Настройки презентации. */
-  settings: GridFormSettings,
+  settings: GridFormSettings;
   /** Дочерние формы. */
-  children: FormDataWM[],
+  children: FormDataWM[];
   /** Список всех типов форм внутри презентации. */
-  childrenTypes: Set<FormType>,
+  childrenTypes: Set<FormType>;
   /** Отображаемые дочерние формы. */
-  openedChildren: FormID[],
+  openedChildren: FormID[];
   /** Активная формы */
-  activeChildID: FormID,
+  activeChildID: FormID;
 }
 
 /** Настройки формы **Grid**.
  * + `multiMapChannel: string | null`
+ * + `parameterGroups`: {@link ParameterGroup}[] | null
  * */
 interface GridFormSettings {
   /** Название канала с картами, в случае если презентация это мультикарта. */
-  multiMapChannel: string | null,
+  multiMapChannel: string | null;
   /** Группы параметров для разбиения списка на вкладки. */
-  parametersGroups?: ParameterGroup[] | null,
+  parameterGroups?: ParameterGroup[] | null;
 }

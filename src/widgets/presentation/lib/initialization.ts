@@ -1,3 +1,4 @@
+import { Model } from 'flexlayout-react';
 import { setUnion, leftAntiJoin } from 'shared/lib';
 import { createChannels } from 'entities/channels';
 import { getExternalChannels, getLinkedChannels, getLookupChannels } from 'entities/channels';
@@ -26,7 +27,7 @@ export async function createPresentationState(id: ClientID): Promise<Presentatio
   const layout = handleLayout(resLayout, children, activeChildren[0]);
 
   return {
-    id, settings, layout, children,
+    id, settings, layout: Model.fromJson(layout), children,
     openedChildren, activeChildID: activeChildren[0],
     childrenTypes: getChildrenTypes(children, openedChildren),
   };
