@@ -1,11 +1,11 @@
-import { ReactElement, KeyboardEvent } from 'react';
+import { ReactElement, ReactNode, KeyboardEvent } from 'react';
 import { useState, useLayoutEffect, useMemo, useRef } from 'react';
 import { useDispatch, compareObjects } from 'shared/lib';
 import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
 import { Grid, GridCellProps } from '@progress/kendo-react-grid';
 import { GridColumnResizeEvent, GridPageChangeEvent } from '@progress/kendo-react-grid';
 import { GridSelectionChangeEvent, getSelectedState } from '@progress/kendo-react-grid';
-import { showWindow, closeWindow } from 'entities/window';
+import { showDialog, closeWindow } from 'entities/window';
 import { updateMaxRowCount } from 'entities/channels';
 
 import { ToolbarActions, CellActions, SaveTableMetadata, SetRecords } from '../../lib/types';
@@ -29,7 +29,7 @@ interface TableGridProps {
   query: ChannelQuerySettings;
   records: TableRecord[];
   setRecords: SetRecords;
-  children: JSX.Element[];
+  children: ReactNode;
 }
 
 
@@ -97,7 +97,7 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
           width: 500, height: 250, resizable: false, onClose,
         };
         const content = <ValidationDialog errors={errors} columns={columnsState} t={t} onClose={onClose}/>;
-        dispatch(showWindow(windowID, windowProps, content));
+        dispatch(showDialog(windowID, windowProps, content));
         return false;
       }
     }
@@ -114,12 +114,9 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
     const windowID = 'delete-records';
     const onClose = () => dispatch(closeWindow(windowID));
 
-    const windowProps = {
-      title: t('table.delete-dialog.header'),
-      height: 180, resizable: false, onClose,
-    };
+    const windowProps = {title: t('table.delete-dialog.header'), resizable: false, onClose};
     const content = <DeleteRecordsDialog id={id} indexes={selectedRecords} t={t} onClose={onClose}/>;
-    dispatch(showWindow(windowID, windowProps, content));
+    dispatch(showDialog(windowID, windowProps, content));
   };
 
   const startEdit = (columnID: string, recordID: TableRecordID) => {

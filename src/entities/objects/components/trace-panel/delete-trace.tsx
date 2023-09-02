@@ -1,11 +1,10 @@
 import { useDispatch } from 'shared/lib';
 import { useTranslation } from 'react-i18next';
-import { showWindow, closeWindow } from '../../../window';
+import { closeWindow, showDialog } from 'entities/window';
 import { deleteTrace } from '../../store/objects.thunks';
 
 import { BigButton } from 'shared/ui';
 import { Button } from '@progress/kendo-react-buttons';
-import { DialogActionsBar } from '@progress/kendo-react-dialogs';
 import deleteTraceIcon from 'assets/images/trace/detele-trace.png';
 
 
@@ -27,7 +26,7 @@ export const DeleteTrace = ({trace}: DeleteTraceProps) => {
     const onClose = () => dispatch(closeWindow(windowID));
     const dialogProps = {title: t('trace.delete-dialog'), onClose};
     const content = <DeleteTraceDialog model={trace.model} onClose={onClose}/>;
-    dispatch(showWindow(windowID, dialogProps, content));
+    dispatch(showDialog(windowID, dialogProps, content));
   };
 
   return (
@@ -54,10 +53,10 @@ const DeleteTraceDialog = ({model, onClose}: DeleteTraceWindowProps) => {
         <li>Название: <b>{model.name}</b></li>
         <li>Узлов: <b>{model.nodes.length}</b></li>
       </ul>
-      <DialogActionsBar>
+      <div className={'wm-dialog-actions'}>
         <Button onClick={onApply}>{t('base.yes')}</Button>
         <Button onClick={onClose}>{t('base.no')}</Button>
-      </DialogActionsBar>
+      </div>
     </>
   );
 };

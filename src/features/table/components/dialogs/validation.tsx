@@ -1,6 +1,5 @@
 import { TFunction } from 'react-i18next';
 import { RowErrors, RowValidationError } from '../../lib/types';
-import { DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Button } from '@progress/kendo-react-buttons';
 
 
@@ -27,11 +26,9 @@ export const ValidationDialog = ({errors, columns, t, onClose}: ValidationDialog
   return (
     <>
       <ul style={{overflow: 'auto', maxHeight: 115}}>{errors.map(errorToListItem)}</ul>
-      <DialogActionsBar>
-        <Button onClick={onClose}>
-          {t('base.ok')}
-        </Button>
-      </DialogActionsBar>
+      <div className={'wm-dialog-actions'} style={{gridTemplateColumns: '1fr'}}>
+        <Button onClick={onClose}>{t('base.ok')}</Button>
+      </div>
     </>
   );
 };

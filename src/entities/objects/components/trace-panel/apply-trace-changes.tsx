@@ -9,12 +9,16 @@ interface ApplyTraceChangesProps {
   trace: TraceState,
 }
 
+
 export const ApplyTraceChanges = ({trace}: ApplyTraceChangesProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
   const action = () => {
-    if (trace.editing) dispatch(saveTrace());
+    if (!trace.editing) return;
+    const model = trace.model;
+    if (!model.name) model.name = model.nodes.map(n => n.name).join(',');
+    dispatch(saveTrace());
   };
 
   return (

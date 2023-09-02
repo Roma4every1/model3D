@@ -1,6 +1,5 @@
 import { TFunction } from 'react-i18next';
 import { EditPanelItemProps } from '../../lib/types';
-import { DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Button } from '@progress/kendo-react-buttons';
 import { BigButton } from 'shared/ui';
 import { channelsAPI } from 'entities/channels/lib/channels.api';
@@ -58,7 +57,7 @@ export const ColumnStatistics = ({state, dispatch, t}: EditPanelItemProps) => {
 const StatDialogContent = ({stat, t, onClose}: StatDialogProps) => {
   return (
     <>
-      <ul style={{margin: 0, paddingLeft: '2em'}}>
+      <ul style={{margin: 0, padding: '0 0 0.75em 2em'}}>
         {stat.MIN && <li>{t('table.stat.min', {value: stat.MIN})}</li>}
         {stat.MAX && <li>{t('table.stat.max', {value: stat.MAX})}</li>}
         {stat.AVG && <li>{t('table.stat.avg', {value: stat.AVG})}</li>}
@@ -66,9 +65,9 @@ const StatDialogContent = ({stat, t, onClose}: StatDialogProps) => {
         {stat.COUNT && <li>{t('table.stat.count', {value: stat.COUNT})}</li>}
         {stat.UNIQ && <li>{t('table.stat.unique', {value: stat.UNIQ})}</li>}
       </ul>
-      <DialogActionsBar>
+      <div className={'wm-dialog-actions'} style={{gridTemplateColumns: '1fr'}}>
         <Button onClick={onClose}>{t('base.ok')}</Button>
-      </DialogActionsBar>
+      </div>
     </>
   );
 };

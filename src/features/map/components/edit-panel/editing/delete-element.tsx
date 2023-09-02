@@ -1,7 +1,6 @@
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@progress/kendo-react-buttons';
-import { DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { clearMapSelect } from '../../../store/map.actions';
 
 
@@ -39,10 +38,10 @@ export const DeleteElementWindow = ({mapState, formID, onClose}: DeleteElementWi
         <li><b>Подслой: </b><span>{modifiedLayer?.name}</span></li>
         <li><b>Тип элемента: </b><span>{t('map.' + selectedElement.type)}</span></li>
       </ul>
-      <DialogActionsBar>
+      <div className={'wm-dialog-actions'}>
         <Button onClick={deleteElement}>{t('base.yes')}</Button>
         <Button onClick={onClose}>{t('base.no')}</Button>
-      </DialogActionsBar>
+      </div>
     </>
   );
 };

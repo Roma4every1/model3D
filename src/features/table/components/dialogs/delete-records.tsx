@@ -1,7 +1,6 @@
 import { useDispatch } from 'shared/lib';
 import { TFunction } from 'react-i18next';
 import { Button } from '@progress/kendo-react-buttons';
-import { DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { deleteTableRecords } from '../../store/table.thunks';
 
 
@@ -27,14 +26,10 @@ export const DeleteRecordsDialog = ({id, indexes, t, onClose}: DeleteRecordsDial
       <p style={{margin: 10, textAlign: 'center'}}>
         {t('table.delete-dialog.details', {n: indexes.length})}
       </p>
-      <DialogActionsBar>
-        <Button onClick={onApply}>
-          {t('base.ok')}
-        </Button>
-        <Button onClick={onClose}>
-          {t('base.cancel')}
-        </Button>
-      </DialogActionsBar>
+      <div className={'wm-dialog-actions'}>
+        <Button onClick={onApply}>{t('base.ok')}</Button>
+        <Button onClick={onClose}>{t('base.cancel')}</Button>
+      </div>
     </>
   );
 };

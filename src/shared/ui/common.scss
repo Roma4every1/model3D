@@ -1,3 +1,13 @@
+.wm-dialog-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 0.75em;
+
+  border-top: 1px solid #e1e1e1;
+  padding-top: 0.75em;
+}
+
 .wm-text-info {
   font-size: 1.5rem;
   text-align: center;
