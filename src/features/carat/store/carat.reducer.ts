@@ -16,7 +16,7 @@ interface ActionCreate {
 }
 interface ActionSetLoading {
   type: CaratActionType.SET_LOADING;
-  payload: {id: FormID, loading: boolean};
+  payload: {id: FormID, loading: Partial<CaratLoading>};
 }
 interface ActionSetCanvas {
   type: CaratActionType.SET_CANVAS;
@@ -39,7 +39,8 @@ export const caratsReducer = (state: CaratStates = init, action: CaratAction): C
 
     case CaratActionType.SET_LOADING: {
       const { id, loading } = action.payload;
-      return {...state, [id]: {...state[id], loading}};
+      const newLoading = {...state[id].loading, ...loading};
+      return {...state, [id]: {...state[id], loading: newLoading}};
     }
 
     case CaratActionType.SET_CANVAS: {

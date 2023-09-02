@@ -7,7 +7,7 @@ export function createCaratState(payload: FormStatePayload): CaratAction {
 }
 
 /** Обновляет данные каналов. */
-export function setCaratLoading(id: FormID, loading: boolean): CaratAction {
+export function setCaratLoading(id: FormID, loading: Partial<CaratLoading>): CaratAction {
   return {type: CaratActionType.SET_LOADING, payload: {id, loading}};
 }
 

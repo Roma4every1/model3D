@@ -23,7 +23,31 @@ interface CaratState {
   /** Список всех названий каналов-справочников. */
   lookupNames: ChannelName[];
   /** Находится ли форма в состоянии загрузки. */
-  loading: boolean;
+  loading: CaratLoading;
+}
+
+/** Состояние загрузки данных каротажной диаграммы.
+ * + `percentage: number`
+ * + `status: string`
+ * + `statusOptions?`: {@link I18nOptions}
+ * */
+interface CaratLoading {
+  /** Процент загрузки. */
+  percentage: number;
+  /** Статус загрузки. */
+  status: string;
+  /** Аргументы шаблона локали. */
+  statusOptions?: I18nOptions;
+}
+
+/** Загрузчик данных для построения каротажа по трассе. */
+interface ICaratLoader {
+  flag: number;
+  cache: CurveDataCache;
+  setLoading: (l: Partial<CaratLoading>) => void;
+
+  loadCaratData(ids: WellID[], channelData: ChannelDict): Promise<ChannelRecordDict[]>;
+  loadCurveData(ids: CaratCurveID[], bySteps: boolean): Promise<CaratCurveID[]>;
 }
 
 /** Кеш точек кривых. */
@@ -50,15 +74,6 @@ interface CaratCurveData {
   min: number;
   /** Максимальное значение кривой. */
   max: number;
-}
-
-/** Загрузчик данных для построения каротажа по трассе. */
-interface ICaratLoader {
-  flag: number;
-  cache: CurveDataCache;
-
-  getCaratData(ids: WellID[], channelData: ChannelDict): Promise<ChannelRecordDict[]>;
-  loadCurveData(ids: CaratCurveID[]): Promise<CaratCurveID[]>;
 }
 
 /* --- --- */

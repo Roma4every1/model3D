@@ -1,9 +1,8 @@
-import './circular-progress-bar.scss';
-
-
 interface CircularProgressBarProps {
-  size: number
-  percentage: number,
+  /** Размер круга в пикселях. */
+  size: number;
+  /** Процент загрузки: число от 0 до 100. */
+  percentage: number;
 }
 
 
@@ -26,7 +25,7 @@ export const CircularProgressBar = ({percentage, size}: CircularProgressBarProps
           style={{strokeDasharray: dashArray, strokeDashoffset: dashOffset}}
         />
         <text className={'circle-text'} x={'50%'} y={'50%'} dy={'.3em'}>
-          {percentage + '%'}
+          {Math.round(percentage) + '%'}
         </text>
       </svg>
     </div>

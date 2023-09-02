@@ -35,7 +35,10 @@ export class ChannelsAPI {
   }
 
   /** Запрос данных канала. */
-  public async getChannelData(name: ChannelName, parameters: Parameter[], query: ChannelQuerySettings) {
+  public async getChannelData(
+    name: ChannelName, parameters: Partial<Parameter>[],
+    query: ChannelQuerySettings
+  ): Promise<Res<ChannelDataDTO>> {
     const sessionID = this.baseAPI.sessionID;
     const paramValues = parameters.map(serializeParameter);
     applyQuerySettings(paramValues, query);

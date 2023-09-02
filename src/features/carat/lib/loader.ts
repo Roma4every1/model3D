@@ -6,10 +6,15 @@ import { channelsAPI } from 'entities/channels/lib/channels.api';
 
 /** Класс, реализующий загрузку данных для построения каротажа по трассе. */
 export class CaratLoader implements ICaratLoader {
+  private static readonly curveDataParameterID = 'currentCurveIds';
+  private static readonly inclinometryParameterID = 'currentWellGeom';
+
   /** Флаг для преждевременной остановки загрузки. */
   public flag: number;
   /** Кеш точек кривых. */
   public readonly cache: CurveDataCache;
+  /** Функция для обновления состояния загрузки на уровне интерфейса. */
+  public setLoading: (l: Partial<CaratLoading>) => void;
 
   /** Каналы, необходимых для каждого трека. */
   private readonly attachedChannels: CaratAttachedChannel[];
@@ -29,7 +34,7 @@ export class CaratLoader implements ICaratLoader {
     this.inclinometryChannel = inclinometryChannel;
   }
 
-  public async getCaratData(ids: WellID[], channelData: ChannelDict): Promise<ChannelRecordDict[]> {
+  public async loadCaratData(ids: WellID[], channelData: ChannelDict): Promise<ChannelRecordDict[]> {
     const flag = this.flag;
     const curveIDs: CaratCurveID[] = [];
     const caratData: ChannelRecordDict[] = [];
@@ -42,8 +47,13 @@ export class CaratLoader implements ICaratLoader {
       curveIDs.push(...newCurveIDs);
     }
 
-    if (this.inclinometryChannel) {
+    if (flag === this.flag) {
+      await this.loadCurveData(curveIDs, true);
+    }
+    if (flag === this.flag && this.inclinometryChannel) {
+      this.setLoading({status: 'inclinometry'});
       const inclinometryChannel = channelData[this.inclinometryChannel.name];
+
       if (inclinometryChannel?.data) {
         const inclinometryInfo = this.inclinometryChannel.inclinometry;
         const mapper = (row) => this.loadInclinometry(row, inclinometryChannel);
@@ -64,8 +74,6 @@ export class CaratLoader implements ICaratLoader {
         }
       }
     }
-
-    if (flag === this.flag) await this.loadCurveData([...new Set(curveIDs)]);
     return caratData;
   }
 
@@ -94,40 +102,62 @@ export class CaratLoader implements ICaratLoader {
     return [dict, curveIDs] as [ChannelRecordDict, CaratCurveID[]];
   }
 
+  /** Загружает данные инклинометрии по скважине. */
   private async loadInclinometry(row: ChannelRow, channel: Channel): Promise<ChannelRecord[]> {
     const channelName = this.inclinometryChannel.inclinometry.name;
-    const value = tableRowToString(channel, row);
-    const parameters = [{id: 'currentWellGeom', type: 'tableRow', value} as Parameter];
-    const query = {order: []} as any;
+    const query: ChannelQuerySettings = {order: [], maxRowCount: null, filters: null};
 
-    const res = await channelsAPI.getChannelData(channelName, parameters, query);
+    const parameter: Partial<Parameter> = {
+      id: CaratLoader.inclinometryParameterID, type: 'tableRow',
+      value: tableRowToString(channel, row),
+    };
+
+    const res = await channelsAPI.getChannelData(channelName, [parameter], query);
     const data = res.ok ? res.data.data : null;
     return data ? cellsToRecords(data) : [];
   }
 
   /** Дозагружает данные точек кривых. */
-  public async loadCurveData(ids: CaratCurveID[]): Promise<CaratCurveID[]> {
-    const idsToLoad: CaratCurveID[] = ids.filter(id => !this.cache[id]);
-    if (idsToLoad.length === 0) return idsToLoad;
+  public async loadCurveData(ids: CaratCurveID[], bySteps: boolean): Promise<CaratCurveID[]> {
+    const idsToLoad: CaratCurveID[] = [...new Set(ids)].filter(id => !this.cache[id]);
+    const total = idsToLoad.length;
+    if (total === 0) return idsToLoad;
 
-    const value = idsToLoad.map(String);
-    const parameters = [{id: 'currentCurveIds', type: 'stringArray', value} as Parameter];
-    const query = {order: []} as any;
+    const step = bySteps ? 5 : total;
+    if (bySteps) {
+      this.setLoading({percentage: 0, status: 'curves', statusOptions: {count: 0, total}});
+    }
 
-    const res = await channelsAPI.getChannelData(this.curveDataChannel.name, parameters, query);
-    const data = res.ok ? res.data.data : null;
-    if (!data) return;
+    const channelName = this.curveDataChannel.name;
+    const query: ChannelQuerySettings = {order: [], maxRowCount: null, filters: null};
 
-    const records = cellsToRecords(data);
-    const idColumnName = this.curveDataChannel.info.id.name;
+    for (let i = 0; i < total; i += step) {
+      const slice = idsToLoad.slice(i, i + step);
 
-    for (const id of idsToLoad) {
-      const record = records.find(r => r[idColumnName] === id);
-      if (record) {
-        this.cache[id] = this.createCurveData(record);
-      } else {
-        const path = new Path2D();
-        this.cache[id] = {path, points: [], top: null, bottom: null, min: null, max: null};
+      const parameter: Partial<Parameter> = {
+        id: CaratLoader.curveDataParameterID, type: 'stringArray',
+        value: slice.map(String),
+      };
+
+      const res = await channelsAPI.getChannelData(channelName, [parameter], query);
+      const data = res.ok ? res.data.data : null;
+      const records = cellsToRecords(data);
+      const idColumnName = this.curveDataChannel.info.id.name;
+
+      if (bySteps) {
+        const count = i + slice.length;
+        const percentage = count / (total + 1) * 100;
+        this.setLoading({percentage, statusOptions: {count, total}});
+      }
+
+      for (const id of idsToLoad) {
+        const record = records.find(r => r[idColumnName] === id);
+        if (record) {
+          this.cache[id] = this.createCurveData(record);
+        } else {
+          const path = new Path2D();
+          this.cache[id] = {path, points: [], top: null, bottom: null, min: null, max: null};
+        }
       }
     }
     return idsToLoad;

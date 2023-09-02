@@ -15,7 +15,9 @@ export const CaratEditPanel = ({id}: FormEditPanelProps) => {
   const signal = () => setSignal(!_signal);
 
   const state: CaratState = useSelector(caratStateSelector.bind(id));
-  if (!state || state.loading) return <MenuSkeleton template={['205px', '458px', '301px']}/>;
+  if (!state || state.loading.percentage < 100) {
+    return <MenuSkeleton template={['205px', '458px', '301px']}/>;
+  }
 
   const stage = state.stage;
   stage.listeners.caratPanelChange = signal;

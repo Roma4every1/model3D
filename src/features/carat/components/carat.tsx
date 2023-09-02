@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useSelector, useDispatch, compareObjects } from 'shared/lib';
 import { channelDictSelector } from 'entities/channels';
 import { wellStateSelector, traceStateSelector, stratumStateSelector } from 'entities/objects';
-import { TextInfo } from 'shared/ui';
+import { TextInfo, LoadingStatus } from 'shared/ui';
 
 import './carat.scss';
 import { channelDictToRecords } from '../lib/channels';
@@ -68,8 +68,8 @@ export const Carat = ({id}: FormState) => {
     return () => canvas?.removeEventListener('wheel', onWheel);
   }, [canvas, onWheel]);
 
-  if (loading) {
-    return <TextInfo text={'carat.loading'}/>;
+  if (loading.percentage < 100) {
+    return <LoadingStatus {...loading}/>;
   }
   if (!currentWell && !currentTrace) {
     return <TextInfo text={'carat.no-data'}/>;

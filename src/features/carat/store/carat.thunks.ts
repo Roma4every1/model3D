@@ -23,14 +23,18 @@ export function setCaratData(id: FormID, data: ChannelDict): Thunk {
       return;
     }
 
-    if (!loading) dispatch(setCaratLoading(id, true));
+    loader.setLoading = (loading: Partial<CaratLoading>) => {
+      if (loading.status) loading.status = 'carat.loading.' + loading.status;
+      dispatch(setCaratLoading(id, loading));
+    };
+
     const flag = ++loader.flag;
-    const caratData = await loader.getCaratData(stage.wellIDs, data);
+    const caratData = await loader.loadCaratData(stage.wellIDs, data);
     if (flag !== loader.flag) return;
 
     stage.setData(caratData, loader.cache);
+    if (loading.percentage < 100) loader.setLoading({percentage: 100});
     stage.render();
-    dispatch(setCaratLoading(id, false));
   };
 }
 
@@ -43,7 +47,7 @@ export function loadCaratCurves(id: FormID, group: ICaratColumnGroup): Thunk {
 
     const visibleCurves = curveManager.getVisibleCurves();
     group.groupCurves(visibleCurves);
-    const loadedIDs = await loader.loadCurveData(visibleCurves.map(curve => curve.id));
+    const loadedIDs = await loader.loadCurveData(visibleCurves.map(curve => curve.id), false);
     curveManager.setCurvePointData(loadedIDs, loader.cache);
 
     track.updateGroupRects();

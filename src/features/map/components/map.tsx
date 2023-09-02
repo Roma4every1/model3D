@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'shared/lib';
-import { useTranslation } from 'react-i18next';
+import { LoadingStatus, TextInfo } from 'shared/ui';
 import { channelSelector } from 'entities/channels';
 import { traceStateSelector, wellStateSelector, setCurrentTrace } from 'entities/objects';
 import { updateParam, currentPlastCodeSelector} from 'entities/parameters';
@@ -10,8 +10,6 @@ import { Scroller } from '../drawer/scroller';
 import { showMap } from '../drawer/maps';
 import { mapsStateSelector, mapStateSelector } from '../store/map.selectors';
 import { fetchMapData } from '../store/map.thunks';
-import { CircularProgressBar } from 'shared/ui';
-import { MapNotFound, MapLoadError } from '../../multi-map/multi-map-item';
 import { setMapField, loadMapSuccess, loadMapError, applyTraceToMap } from '../store/map.actions';
 import { handleClick } from '../lib/traces-map-utils';
 
@@ -22,9 +20,7 @@ import {
 
 
 export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) => {
-  const { t } = useTranslation();
   const dispatch = useDispatch();
-
   const { model: currentWell } = useSelector(wellStateSelector);
   const { model: currentTrace, editing: traceEditing } = useSelector(traceStateSelector);
 
@@ -218,18 +214,10 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
 
   /* --- --- */
 
-  if (!mapState) {
-    return <div/>;
-  }
-  if (!isMapExist) {
-    return <MapNotFound t={t}/>;
-  }
-  if (mapState.isLoadSuccessfully === undefined) {
-    return <CircularProgressBar percentage={progress} size={100}/>;
-  }
-  if (mapState.isLoadSuccessfully === false) {
-    return <MapLoadError t={t}/>;
-  }
+  if (!mapState) return <div/>;
+  if (!isMapExist) return <TextInfo text={'map.not-found'}/>;
+  if (mapState.isLoadSuccessfully === undefined) return <LoadingStatus percentage={progress}/>;
+  if (mapState.isLoadSuccessfully === false) return <TextInfo text={'map.not-loaded'}/>;
 
   return (
     <div className={'map-container'}>

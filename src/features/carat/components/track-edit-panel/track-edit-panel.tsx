@@ -16,7 +16,9 @@ export const TrackEditPanel = ({id}: FormEditPanelProps) => {
   const signal = () => setSignal(!_signal);
 
   const state: CaratState = useSelector(caratStateSelector.bind(id));
-  if (!state || state.loading) return <MenuSkeleton template={['291px', '382px', '309px', '180px']}/>;
+  if (!state || state.loading.percentage < 100) {
+    return <MenuSkeleton template={['291px', '382px', '309px', '180px']}/>;
+  }
 
   const stage = state.stage;
   stage.listeners.trackPanelChange = signal;

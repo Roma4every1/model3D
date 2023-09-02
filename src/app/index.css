@@ -78,11 +78,6 @@ html {
   align-items: center;
   justify-content: center;
 }
-.map-not-found {
-  font-size: 1.5rem;
-  text-align: center;
-  padding: 2rem;
-}
 
 .mapEditWindow .k-window-titlebar {
   padding: 5px;

@@ -86,8 +86,8 @@ async function checkParamValues(channelDict: ChannelDict, paramDict: ParamDict) 
 
   for (const parameter of paramsToFill) {
     const channel = channelsToFill[parameter.externalChannelName];
-    const rows = channel?.data?.rows;
-    if (rows?.length) parameter.value = tableRowToString(channel, rows[0]) ?? null;
+    const row = channel?.data?.rows?.at(0);
+    if (row) parameter.value = tableRowToString(channel, row) ?? null;
   }
 }
 

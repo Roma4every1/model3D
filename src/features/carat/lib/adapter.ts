@@ -59,7 +59,8 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
 
   return {
     canvas: undefined, stage, loader, observer,
-    lookupNames, channelNames: [...usedChannels], loading: false,
+    lookupNames, channelNames: [...usedChannels],
+    loading: {status: 'carat.loading.default', percentage: 0},
   };
 }
 

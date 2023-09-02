@@ -1,8 +1,7 @@
 /** Строка для отображения названия сущности на интерфейсе. */
 type DisplayName = string;
 
-/** Двумерный массив чисел. */
-type Matrix = number[][];
+type I18nOptions = Record<string, string | number>;
 
 /** HEX цвета.
  * @example
@@ -33,6 +32,9 @@ interface CSSFont {
 type PayloadAction<Type extends string = string, Payload = never> = Payload extends never
   ? {type: Type}
   : {type: Type, payload: Payload};
+
+/** Двумерный массив чисел. */
+type Matrix = number[][];
 
 /* --- Geometry --- */
 

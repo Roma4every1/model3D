@@ -1,26 +1,26 @@
 import { Layout, TabNode, Action, Actions } from 'flexlayout-react';
 import { useEffect, useMemo } from 'react';
 import { useSelector, useDispatch, compareArrays } from 'shared/lib';
-import { useTranslation } from 'react-i18next';
 import { i18nMapper } from 'shared/locales';
+import { TextInfo } from 'shared/ui';
 import { channelSelector } from 'entities/channels';
 import { stateNeedFetch, formFetchStateSelector } from 'entities/fetch-state';
 import { setPresentationChildren, setActiveForm } from 'widgets/presentation';
+
 import { getMultiMapLayout } from './multi-map-utils';
-import { MultiMapItem, MapNotFound } from './multi-map-item';
+import { MultiMapItem } from './multi-map-item';
 import { addMultiMap } from '../map/store/map.actions';
 import { fetchMultiMapData } from '../map/store/map.thunks';
 import { multiMapStateSelector } from '../map/store/map.selectors';
 
 
 interface MultiMapProps {
-  id: FormID,
-  channelName: ChannelName,
+  id: ClientID;
+  channelName: ChannelName;
 }
 
 
 export const MultiMap = ({id, channelName}: MultiMapProps) => {
-  const { t } = useTranslation();
   const dispatch = useDispatch();
 
   const channelData: Channel = useSelector(channelSelector.bind(channelName));
@@ -63,11 +63,6 @@ export const MultiMap = ({id, channelName}: MultiMapProps) => {
     return action;
   };
 
-  if (!children.length) return <MapNotFound t={t}/>;
-  return (
-    <Layout
-      model={model} factory={factory}
-      onAction={onAction} i18nMapper={i18nMapper}
-    />
-  );
+  if (!children.length) return <TextInfo text={'map.not-found'}/>;
+  return <Layout model={model} factory={factory} onAction={onAction} i18nMapper={i18nMapper}/>;
 };
