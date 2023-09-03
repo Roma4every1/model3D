@@ -1,5 +1,5 @@
 import { Dispatch } from 'redux';
-import { Thunk, StateGetter, base64toBlob } from 'shared/lib';
+import { Thunk, StateGetter, base64toBlob, getFileExtension } from 'shared/lib';
 import { channelRowToRecord } from 'entities/channels';
 import { showWarningMessage } from 'entities/window';
 import { setFileViewModel } from './file-view.actions';
@@ -25,7 +25,7 @@ export function updateFileViewModel(id: FormID, data: ChannelData): Thunk {
     if (model === undefined) {
       let blob: Blob;
       const descriptor = record[info.descriptor.name];
-      const fileType = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+      const fileType = getFileExtension(fileName);
       const contentType = mimeTypeDict[fileType] ?? '';
 
       if (useResources) {

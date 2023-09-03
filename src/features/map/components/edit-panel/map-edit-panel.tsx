@@ -48,7 +48,7 @@ export const MapEditPanel = ({id, parentID}: FormEditPanelProps) => {
       <Export mapState={mapState} t={t}/>
       <Selecting mapState={mapState} formID={id} t={t}/>
       <Editing mapState={mapState} formID={id}/>
-      <SaveMap mapState={mapState} formID={id} t={t}/>
+      <SaveMap id={id} state={mapState} t={t}/>
     </div>
   );
 };

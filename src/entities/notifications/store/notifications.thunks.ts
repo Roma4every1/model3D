@@ -3,7 +3,6 @@ import { pushNotification, closeNotification } from './notifications.actions';
 
 
 let counter = 0;
-const defaultErrorNotice = 'Ошибка при выполнении запроса';
 
 /** Вывести уведомление.
  * @param proto прототип или текст уведомления
@@ -23,26 +22,4 @@ export function showNotification(proto: NotificationProto | NotificationContent,
     dispatch(pushNotification(notification));
     setTimeout(() => { dispatch(closeNotification(id)); }, duration * 1000);
   };
-}
-
-/** Принимает {@link Promise}, при его завершении выведется уведомление.
- * @param promise промис
- * @param dispatch функция из `useDispatch`
- * @param successText текст уведомления
- * @param errorText текст уведомления в случае ошибки
- * @param duration сколько секунд будет показываться уведомление
- * */
-export function callbackWithNotices(
-  promise: Promise<any>, dispatch: AppDispatch,
-  successText: string, errorText = defaultErrorNotice, duration = 3,
-) {
-  promise.then(() => {
-    const id = ++counter;
-    dispatch(pushNotification({id: id, type: 'info', icon: true, content: successText}));
-    setTimeout(() => { dispatch(closeNotification(id)); }, duration * 1000);
-  }).catch(() => {
-    const id = ++counter;
-    dispatch(pushNotification({id: id, type: 'info', icon: true, content: errorText}));
-    setTimeout(() => { dispatch(closeNotification(id)); }, duration * 1000);
-  });
 }

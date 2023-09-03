@@ -31,14 +31,14 @@ export const SystemList = ({config, list}: SystemListProps) => {
     };
     mainContent = <div>{list.map(systemToListItem)}</div>;
   } else {
-    mainContent = <div className={'not-loaded'}>{t('systems.loadingError')}</div>;
+    mainContent = <div className={'not-loaded'}>{t('systems.loading-error')}</div>;
   }
 
   return (
     <>
       <h1 id={'program-name'}>Well Manager</h1>
       <nav id={'system-list'}>
-        <h2>{t('systems.list') + ':'}</h2>
+        <h2>{t('systems.list')}</h2>
         {mainContent}
       </nav>
     </>

@@ -1,7 +1,9 @@
 import { Dispatch } from 'redux';
 import { Thunk, StateGetter } from 'shared/lib';
+import { showNotification } from 'entities/notifications';
 import { fetchFormsStart, fetchFormsEnd } from 'entities/fetch-state';
-import { loadMapError, loadMapSuccess, startMapLoad } from './map.actions';
+import { loadMapError, loadMapSuccess, setMapField, startMapLoad } from './map.actions';
+import { t } from 'shared/locales';
 import { mapsAPI } from '../lib/maps.api';
 
 
@@ -40,5 +42,27 @@ export function fetchMultiMapData(id: FormID): Thunk {
       }
     }
     dispatch(fetchFormsEnd([id + '_map']));
+  };
+}
+
+/** Сохранение отредактированной карты. */
+export function saveMap(id: FormID): Thunk {
+  return async (dispatch: Dispatch, getState: StateGetter) => {
+    const { mapData, owner, mapID } = getState().maps.single[id];
+    showNotification(t('map.saving.save-start'))(dispatch).then();
+
+    const data = {
+      ...mapData,
+      x: undefined, y: undefined, scale: undefined, onDrawEnd: undefined,
+      layers: mapData.layers.filter(layer => !layer.temporary && layer.elementType !== 'field')
+    };
+    const res = await mapsAPI.saveMap(id, mapID, data, owner);
+
+    const notice: NotificationProto = res.ok
+      ? {type: 'info', content: t('map.saving.save-end-ok')}
+      : {type: 'warning', content: t('map.saving.save-end-error')};
+
+    showNotification(notice)(dispatch).then();
+    dispatch(setMapField(id, 'isModified', !res.ok));
   };
 }

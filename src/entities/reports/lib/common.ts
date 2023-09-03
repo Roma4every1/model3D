@@ -1,4 +1,4 @@
-import { AppDispatch } from '../../../shared/lib';
+import { AppDispatch, getFileExtension } from 'shared/lib';
 import { fillParamValues } from 'entities/parameters';
 import { updateTables, fillChannels } from 'entities/channels';
 import { showInfoMessage } from 'entities/window';
@@ -31,7 +31,7 @@ function convertOperationStatus(raw: ReportStatus): OperationStatus {
   let file: OperationFile | null = null;
   if (raw.Path) {
     const name = raw.Path?.split('\\').pop().split('/').pop()
-    file = {name, path: raw.Path, extension: name.split('.').pop()};
+    file = {name, path: raw.Path, extension: getFileExtension(name)};
   }
   return {
     id: raw.Id, clientID: raw.ID_PR,

@@ -10,7 +10,7 @@ export const UnknownRoute = ({root}: {root: string}) => {
 
   return (
     <div id={'unknown-route'}>
-      <div>{t('session.unknownPath', {unresolvedPath})}</div>
+      <div>{t('session.unknown-path', {unresolvedPath})}</div>
       <ul>
         <li>
           <Link to={root}>

@@ -1,43 +1,28 @@
 import { TFunction } from 'react-i18next'
-import { useDispatch } from 'react-redux';
+import { useDispatch } from 'shared/lib';
 import { MenuSection, BigButton } from 'shared/ui';
-import { setMapField } from '../../store/map.actions';
-import { mapsAPI } from '../../lib/maps.api';
-import { showNotification, callbackWithNotices } from 'entities/notifications';
+import { saveMap } from '../../store/map.thunks.ts';
 import saveMapIcon from 'assets/images/map/save-map.png';
 
 
 interface SaveMapProps {
-  mapState: MapState,
-  formID: FormID,
-  t: TFunction
+  id: FormID;
+  state: MapState;
+  t: TFunction;
 }
 
 
-export const SaveMap = ({mapState, formID, t}: SaveMapProps) => {
+export const SaveMap = ({id, state, t}: SaveMapProps) => {
   const dispatch = useDispatch();
-  const { mapData, owner, mapID, isModified } = mapState;
-
-  const saveMap = () => {
-    if (!mapData || !owner || !mapID) return;
-    dispatch(setMapField(formID, 'isModified', false));
-    showNotification(t('map.notices.save-start'))(dispatch).then();
-
-    const data = {...mapData,
-      x: undefined,
-      y: undefined,
-      scale: undefined,
-      onDrawEnd: undefined,
-      layers: mapData.layers.filter(layer => !layer.temporary && layer.elementType !== 'field')
-    };
-
-    const promise = mapsAPI.saveMap(formID, mapID, data, owner);
-    callbackWithNotices(promise, dispatch, t('map.notices.save-end'));
-  };
+  const disabled = !state.isModified;
+  const action = () => dispatch(saveMap(id));
 
   return (
-    <MenuSection header={'Хранение'} className={'map-actions'}>
-      <BigButton text={'Сохранить карту'} icon={saveMapIcon} action={saveMap} disabled={!isModified}/>
+    <MenuSection header={t('map.saving.header')} className={'big-buttons'}>
+      <BigButton
+        text={t('map.saving.save-map')} icon={saveMapIcon}
+        action={action} disabled={disabled}
+      />
     </MenuSection>
   );
 };
