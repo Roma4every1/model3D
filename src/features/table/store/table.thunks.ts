@@ -6,10 +6,9 @@ import { createElement } from 'react';
 import { watchReport } from 'entities/reports';
 import { fillParamValues, updateParamDeep } from 'entities/parameters';
 import { tableRowToString } from 'entities/parameters/lib/table-row';
-import { updateTables, reloadChannel, setChannelActiveRow } from 'entities/channels';
+import { updateTables, reloadChannel, setChannelActiveRow, channelAPI } from 'entities/channels';
 import { showWarningMessage, showWindow, closeWindow } from 'entities/window';
 import { showNotification } from 'entities/notifications';
-import { channelsAPI } from 'entities/channels/lib/channels.api';
 import { reportsAPI } from 'entities/reports/lib/reports.api';
 import { createRecord } from '../lib/records';
 import { createTableState, startTableEditing } from './table.actions';
@@ -53,9 +52,9 @@ export function saveTableRecord({type, formID, row}: SaveTableMetadata): Thunk {
     let res: Res<ReportStatus>, wrongResult: boolean, error: string;
 
     if (type === 'insert') {
-      res = await channelsAPI.insertRows(tableID, [row]);
+      res = await channelAPI.insertRows(tableID, [row]);
     } else {
-      res = await channelsAPI.updateRows(tableID, [row.ID], [row]);
+      res = await channelAPI.updateRows(tableID, [row.ID], [row]);
     }
 
     if (res.ok === false) {
@@ -83,7 +82,7 @@ export function deleteTableRecords(formID: FormID, indexes: number[] | 'all'): T
   return async (dispatch: Dispatch, getState: StateGetter) => {
     if (Array.isArray(indexes) && indexes.length === 0) return;
     const tableState = getState().tables[formID];
-    const res = await channelsAPI.removeRows(tableState.tableID, indexes);
+    const res = await channelAPI.removeRows(tableState.tableID, indexes);
 
     if (res.ok === false) { dispatch(showWarningMessage(res.data)); return; }
     const ok = !res.data.WrongResult;
@@ -108,7 +107,7 @@ export function getNewRow (
   copy: boolean, index?: number,
 ): Thunk {
   return async (dispatch: Dispatch) => {
-    const res = !copy && await channelsAPI.getNewRow(state.tableID);
+    const res = !copy && await channelAPI.getNewRow(state.tableID);
     if (!copy && res.ok === false) { dispatch(showWarningMessage(res.data)); return; }
 
     const newID = state.total;

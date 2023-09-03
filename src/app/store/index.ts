@@ -13,7 +13,7 @@ import { fileViewReducer } from 'features/file/store/file-view.reducer';
 import { fileListReducer } from 'features/file-list/store/file-list.reducer';
 import { parametersReducer } from 'entities/parameters/store/parameters.reducer';
 import { objectsReducer } from 'entities/objects/store/objects.reducer';
-import { channelsReducer } from 'entities/channels/store/channels.reducer';
+import { channelReducer } from 'entities/channels/store/channel.reducer.ts';
 import { reportsReducer } from 'entities/reports/store/reports.reducer';
 import { windowReducer } from 'entities/window/store/window.reducer';
 import { notificationsReducer } from 'entities/notifications/store/notifications.reducer';
@@ -28,7 +28,7 @@ const rootReducer: Reducer<WState, any> = combineReducers({
   forms: formsReducer,
   parameters: parametersReducer,
   objects: objectsReducer,
-  channels: channelsReducer,
+  channels: channelReducer,
   tables: tablesReducer,
   carats: caratsReducer,
   charts: chartsReducer,

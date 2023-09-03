@@ -1,4 +1,4 @@
-import { channelsAPI } from './channels.api';
+import { channelAPI } from './channel.api.ts';
 import { fillParamValues } from 'entities/parameters';
 import { findColumnIndexes } from './common';
 import { createLookupChannels, createLookupColumnNames } from './lookup';
@@ -13,7 +13,7 @@ export function fillChannels(channelDict: ChannelDict, paramDict: ParamDict) {
 /** Наполняет канал данными. */
 export async function fillChannel(channel: Channel, paramDict: ParamDict) {
   const paramValues = fillParamValues(channel.info.parameters, paramDict, channel.info.clients);
-  const resData = await channelsAPI.getChannelData(channel.name, paramValues, channel.query);
+  const resData = await channelAPI.getChannelData(channel.name, paramValues, channel.query);
   if (!resData.ok) return;
 
   const { data, tableID } = resData.data;
@@ -33,7 +33,7 @@ export function createChannels(names: ChannelName[]): Promise<ChannelDict> {
 
 /** Создаёт объект нового канала; не заполняет данными. */
 async function createChannel(name: ChannelName): Promise<[ChannelName, Channel]> {
-  const resInfo = await channelsAPI.getChannelInfo(name);
+  const resInfo = await channelAPI.getChannelInfo(name);
   if (!resInfo.ok) return;
 
   const info = resInfo.data;

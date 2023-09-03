@@ -1,4 +1,4 @@
-import { ChannelActionType, ChannelAction } from './channels.reducer';
+import { ChannelActionType, ChannelAction } from './channel.reducer.ts';
 
 
 /** Добавляет несколько каналов в хранилище. */

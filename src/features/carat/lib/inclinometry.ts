@@ -5,22 +5,23 @@ import { InclinometryMark, InclinometryMap } from './types';
 export class CaratInclinometry implements ICaratInclinometry {
   /** Даннные канала инклинометрии. */
   public readonly channel: CaratAttachedLookup;
+  /** Данные инклинометрии (глубина => абс. отметка). */
+  public data: InclinometryMap | null;
+
   /** Данные инклинометрии для интерполяции. */
   private interpolationData: InclinometryMark[];
-
   /** Минимальная посчитанная отметка глубины. */
   private min: number | null;
   /** Максимальная посчитанная отметка глубины. */
   private max: number | null;
-  /** Данные инклинометрии (глубина => абс. отметка). */
-  public data: InclinometryMap | null;
 
   constructor(channel: CaratAttachedLookup) {
     this.channel = channel;
+    this.data = null;
+
     this.interpolationData = [];
     this.min = null;
     this.max = null;
-    this.data = null;
   }
 
   /** Возвращает значение абсолютной отметки для указанной глубины. */

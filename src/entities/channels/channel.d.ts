@@ -1,7 +1,5 @@
 /** Словарь каналов. */
 type ChannelDict = Record<ChannelName, Channel>;
-/** Словарь данных каналов. */
-type ChannelDataDict = Record<ChannelName, ChannelData>;
 /** Словарь записей каналов. */
 type ChannelRecordDict = Record<ChannelName, ChannelRecord[]>;
 

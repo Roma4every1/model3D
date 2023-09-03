@@ -15,7 +15,9 @@
 *.svg  text eol=lf
 
 # binary
+*.bin -text
 *.jpg -text
 *.png -text
 *.ico -text
+*.def -text
 *.smb -text

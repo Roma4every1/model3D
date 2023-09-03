@@ -2,8 +2,8 @@ import { Dispatch } from 'redux';
 import { Thunk, StateGetter } from 'shared/lib';
 import { fillChannel, fillChannels } from '../lib/utils';
 import { findChannelsByTables } from '../lib/common';
-import { setChannelData, setChannelsData } from './channels.actions';
-import { setChannelSortOrder, setChannelMaxRowCount } from './channels.actions';
+import { setChannelData, setChannelsData } from './channel.actions.ts';
+import { setChannelSortOrder, setChannelMaxRowCount } from './channel.actions.ts';
 
 
 /** Перезагрузить данные каналов. */

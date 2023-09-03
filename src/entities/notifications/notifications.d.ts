@@ -18,7 +18,11 @@ interface NotificationItem {
   icon: boolean;
 }
 
-/** Прототип уведомления. */
+/** Прототип уведомления.
+ * + `type?`: {@link NotificationType}
+ * + `content`: {@link NotificationContent}
+ * + `icon?: boolean`
+ * */
 interface NotificationProto {
   /** Тип уведомления. */
   type?: NotificationType;

@@ -25,7 +25,7 @@ interface ChannelDataDTO {
 
 
 /** Запросы связанные с каналами. */
-export class ChannelsAPI {
+export class ChannelAPI {
   constructor(private readonly baseAPI: BaseAPI) {}
 
   /** Запрос статических данных канала. */
@@ -97,4 +97,5 @@ export class ChannelsAPI {
   }
 }
 
-export const channelsAPI = new ChannelsAPI(API);
+/** Запросы связанные с каналами. */
+export const channelAPI = new ChannelAPI(API);

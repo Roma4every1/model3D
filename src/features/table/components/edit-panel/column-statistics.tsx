@@ -2,7 +2,7 @@ import { TFunction } from 'react-i18next';
 import { EditPanelItemProps } from '../../lib/types';
 import { Button } from '@progress/kendo-react-buttons';
 import { BigButton } from 'shared/ui';
-import { channelsAPI } from 'entities/channels/lib/channels.api';
+import { channelAPI } from 'entities/channels/lib/channel.api.ts';
 import { showWarningMessage, showDialog, closeWindow } from 'entities/window';
 import statisticsIcon from 'assets/images/dataset/statistics.png';
 
@@ -36,7 +36,7 @@ export const ColumnStatistics = ({state, dispatch, t}: EditPanelItemProps) => {
 
   const getStat = async () => {
     const columnState = state.columns[activeColumnID];
-    const { ok, data } = await channelsAPI.getStatistics(state.tableID, columnState.colName);
+    const { ok, data } = await channelAPI.getStatistics(state.tableID, columnState.colName);
     if (!ok) { dispatch(showWarningMessage(data)); return; }
     if (typeof data !== 'object' || !data.Values) return;
 

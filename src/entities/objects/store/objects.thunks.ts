@@ -1,7 +1,6 @@
 import { Dispatch } from 'redux';
 import { Thunk, StateGetter } from 'shared/lib';
-import { reloadChannel, updateTables } from '../../channels';
-import { channelsAPI } from '../../channels/lib/channels.api';
+import { reloadChannel, updateTables, channelAPI } from 'entities/channels';
 import { applyModelToRow, isNodesEqual, traceToNodeChannelRows } from '../lib/common';
 import { setCurrentTrace } from './objects.actions';
 import { updateParamDeep } from '../../parameters';
@@ -15,14 +14,14 @@ export function createTrace(model: TraceModel): Thunk {
     const { channelName, parameterID } = state.objects.trace;
 
     const traceChannel = state.channels[channelName];
-    const resNewRow = await channelsAPI.getNewRow(traceChannel.tableID);
+    const resNewRow = await channelAPI.getNewRow(traceChannel.tableID);
     if (resNewRow.ok === false) return;
 
     const newRow = resNewRow.data; // id новой трассы берётся из newRow
     model.id = newRow.Cells[traceChannel.info.columns.id.index];
     applyModelToRow(traceChannel, newRow, model);
 
-    await channelsAPI.insertRows(traceChannel.tableID, [newRow]).then();
+    await channelAPI.insertRows(traceChannel.tableID, [newRow]).then();
     await reloadChannel(traceChannel.name)(dispatch, getState);
 
     const rowString = tableRowToString(traceChannel, newRow);
@@ -43,7 +42,7 @@ export function saveTrace(): Thunk {
     const row = traceChannel.data.rows[index];
     applyModelToRow(traceChannel, row, model);
 
-    await channelsAPI.updateRows(traceChannel.tableID, [index], [row]);
+    await channelAPI.updateRows(traceChannel.tableID, [index], [row]);
     await reloadChannel(traceChannel.name)(dispatch, getState);
 
     if (!isNodesEqual(oldModel?.nodes ?? [], model.nodes)) {
@@ -52,8 +51,8 @@ export function saveTrace(): Thunk {
       const tableID = nodeChannel.tableID;
 
       const nodeRows = traceToNodeChannelRows(nodeChannel, objects.trace.model);
-      await channelsAPI.removeRows(tableID, 'all');
-      await channelsAPI.insertRows(tableID, nodeRows).then();
+      await channelAPI.removeRows(tableID, 'all');
+      await channelAPI.insertRows(tableID, nodeRows).then();
       await reloadChannel(nodeChannel.name)(dispatch, getState);
     }
 
@@ -77,8 +76,8 @@ export function deleteTrace(): Thunk {
     if (rowIndex === -1) return;
 
     await Promise.all([
-      channelsAPI.removeRows(traceTableID, [rowIndex]).then(),
-      channelsAPI.removeRows(nodesTableID, 'all').then(),
+      channelAPI.removeRows(traceTableID, [rowIndex]).then(),
+      channelAPI.removeRows(nodesTableID, 'all').then(),
     ]);
 
     await updateTables([traceTableID, nodesTableID])(dispatch, getState);
