@@ -99,7 +99,7 @@ export const CurveSelectionWindow = ({id, stage, onClose}: CurveSelectionWindowP
           }
         </section>
         <section>
-          <h5>Фильтры</h5>
+          <h5>{t('carat.selection.filters')}</h5>
           <CurveFilters manager={curveManager} signal={signal}/>
         </section>
       </div>
@@ -150,7 +150,7 @@ const CurveTreeItem = ({item}) => {
   return (
     <>
       <span>{curve.type}</span>
-      <span>{`${round(curve.top, 2)} - ${round(curve.bottom, 2)}`}</span>
+      <span>{`${round(curve.top, 1)} - ${round(curve.bottom, 1)}`}</span>
       <span title={curve.description}>{curve.description}</span>
     </>
   );

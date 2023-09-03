@@ -11,7 +11,7 @@ export class CaratLoader implements ICaratLoader {
   /** Фиксированное название параметра для загрузки инклинометрии. */
   private static readonly inclinometryParameterID = 'currentWellGeom';
   /** Максимальное количество кривых в кеше. */
-  private static readonly maxCacheCurveCount = 20;
+  private static readonly maxCacheCurveCount = 50;
 
   /** Флаг для преждевременной остановки загрузки. */
   public flag: number;
@@ -152,7 +152,7 @@ export class CaratLoader implements ICaratLoader {
       const records = cellsToRecords(data);
       const idColumnName = this.curveDataChannel.info.id.name;
 
-      for (const id of idsToLoad) {
+      for (const id of slice) {
         const record = records.find(r => r[idColumnName] === id);
         if (record) {
           this.cache[id] = this.createCurveData(record);

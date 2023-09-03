@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MenuSection, BigButtonToggle } from 'shared/ui';
 import { NumericTextBox, NumericTextBoxChangeEvent } from '@progress/kendo-react-inputs';
 import { constraints } from '../../lib/constants';
@@ -12,6 +13,7 @@ interface XAxisSectionProps {
 
 
 export const XAxisSection = ({stage, group}: XAxisSectionProps) => {
+  const { t } = useTranslation();
   const settings = group?.xAxis;
   const { min: minMarks, max: maxMarks } = constraints.yAxisMarks;
   const idx = stage.getActiveTrack().getGroups().findIndex(g => g === group);
@@ -41,13 +43,13 @@ export const XAxisSection = ({stage, group}: XAxisSectionProps) => {
   };
 
   return (
-    <MenuSection header={'Шкала'} className={'big-buttons'} style={{gap: 4}}>
+    <MenuSection header={t('carat.x-axis.header')} className={'big-buttons'} style={{gap: 4}}>
       <BigButtonToggle
-        text={'Показать сетку'} icon={xAxisGridIcon}
+        text={t('carat.x-axis.show-grid')} icon={xAxisGridIcon}
         action={onShowGridChange} active={showGrid}
       />
       <div>
-        <div>Делений:</div>
+        <div>{t('carat.x-axis.marks-count')}</div>
         <NumericTextBox
           style={{width: 100, height: 24}}
           min={minMarks} max={maxMarks} step={1} format={'#'}

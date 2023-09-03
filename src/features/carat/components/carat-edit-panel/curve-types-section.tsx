@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { TFunction, useTranslation } from 'react-i18next';
 import { MenuSection, MenuSectionItem, BigButtonToggle } from 'shared/ui';
 import { NumericTextBox, NumericTextBoxChangeEvent } from '@progress/kendo-react-inputs';
 import { CurveManager } from '../../lib/curve-manager';
@@ -8,30 +9,32 @@ import autoSettingIcon from 'assets/images/carat/column-width.svg';
 
 
 interface CurveTypesSectionProps {
-  stage: ICaratStage,
-  group: ICaratColumnGroup,
-  curve: CaratCurveModel | null,
+  stage: ICaratStage;
+  group: ICaratColumnGroup;
+  curve: CaratCurveModel | null;
 }
 interface CurveTypeSettingsProps {
-  settings: TypeSettingsModel,
-  onClick: () => void,
+  settings: TypeSettingsModel;
+  onClick: () => void;
 }
 interface ActiveTypeSettingsProps {
-  stage: ICaratStage,
-  manager: CurveManager,
-  settings: TypeSettingsModel,
-  onChange: () => void,
+  stage: ICaratStage;
+  manager: CurveManager;
+  settings: TypeSettingsModel;
+  onChange: () => void;
+  t: TFunction;
 }
 
 interface TypeSettingsModel {
-  type: CaratCurveType,
-  color: ColorHEX,
-  measure: CaratCurveMeasure,
-  active: boolean,
+  type: CaratCurveType;
+  color: ColorHEX;
+  measure: CaratCurveMeasure;
+  active: boolean;
 }
 
 
 export const CurveTypesSection = ({stage, group, curve}: CurveTypesSectionProps) => {
+  const { t } = useTranslation();
   const wellName = stage.getActiveTrack().wellName;
   const curveManager: CurveManager = group?.curveManager;
   const curveTypes = curveManager.getCurveTypes();
@@ -68,12 +71,15 @@ export const CurveTypesSection = ({stage, group, curve}: CurveTypesSectionProps)
 
   return (
     <>
-      <MenuSection header={'Типы кривых' + (wellName ? ` (${wellName})` : '')}>
-        <div className={'carat-tracks'} style={{width: 450}}>
+      <MenuSection header={t('carat.types.header', {well: wellName})}>
+        <div className={'carat-column-groups'} style={{width: 450}}>
           {models.map(modelToSettings)}
         </div>
       </MenuSection>
-      <ActiveTypeSettings stage={stage} manager={curveManager} settings={settings} onChange={signal}/>
+      <ActiveTypeSettings
+        stage={stage} manager={curveManager}
+        settings={settings} onChange={signal} t={t}
+      />
     </>
   );
 };
@@ -95,13 +101,12 @@ const CurveTypeSettings = ({settings, onClick}: CurveTypeSettingsProps) => {
   );
 };
 
-const ActiveTypeSettings = ({stage, manager, settings, onChange}: ActiveTypeSettingsProps) => {
+const ActiveTypeSettings = ({stage, manager, settings, onChange, t}: ActiveTypeSettingsProps) => {
   const [min, setMin] = useState(null);
   const [max, setMax] = useState(null);
 
   const [auto, setAuto] = useState(false);
   const [valid, setValid] = useState(true);
-  const sectionHeader = settings ? `Настройки типа (${settings.type})` : 'Настройки типа';
 
   useEffect(() => {
     const min = settings?.measure?.min ?? null;
@@ -138,22 +143,25 @@ const ActiveTypeSettings = ({stage, manager, settings, onChange}: ActiveTypeSett
     setAuto(!auto);
   };
 
+  let sectionHeader = t('carat.types.type-settings');
+  if (settings) sectionHeader += ` (${settings.type})`;
+
   return (
     <MenuSection header={sectionHeader} className={'big-buttons'}>
       <MenuSectionItem className={'measure-settings'}>
-        <span>Минимум:</span>
+        <span>{t('carat.types.min')}</span>
         <NumericTextBox
           style={{height: 24}} format={'#.###'}
           value={min} valid={valid} onChange={onMinChange}
         />
-        <span>Максимум:</span>
+        <span>{t('carat.types.max')}</span>
         <NumericTextBox
           style={{height: 24}} format={'#.###'}
           value={max} valid={valid} onChange={onMaxChange}
         />
       </MenuSectionItem>
       <BigButtonToggle
-        text={'Автонастройка'} icon={autoSettingIcon}
+        text={t('carat.types.auto')} icon={autoSettingIcon}
         action={reset} active={auto} disabled={settings === undefined}
       />
     </MenuSection>

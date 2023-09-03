@@ -57,7 +57,7 @@ export const LayersTreeLayer = ({layer, mapState, formID}: LayersTreeLayerProps)
     setExpanded(!expanded)
   };
   const setInfinity = () => {
-    setHighScale(t('base.infinitySign'))
+    setHighScale('∞')
   };
 
   const onChecked = () => {
@@ -82,7 +82,7 @@ export const LayersTreeLayer = ({layer, mapState, formID}: LayersTreeLayerProps)
 
   const applyLayerScales = () => {
     const newLowScale = parseInt(lowScale);
-    const newHighScale = highScale === t('base.infinitySign') ? 'INF' : parseInt(highScale);
+    const newHighScale = highScale === '∞' ? 'INF' : parseInt(highScale);
 
     if (!isNaN(newLowScale)) {
       layer.lowscale = newLowScale;
@@ -99,7 +99,7 @@ export const LayersTreeLayer = ({layer, mapState, formID}: LayersTreeLayerProps)
     layer.lowscale = initLowScale;
     layer.highscale = initHighScale;
     setLowScale(initLowScale.toString());
-    setHighScale(initHighScale === 'INF' ? t('base.infinitySign') : initHighScale.toString());
+    setHighScale(initHighScale === 'INF' ? '∞' : initHighScale.toString());
     utils.updateCanvas();
   };
 
@@ -125,7 +125,7 @@ export const LayersTreeLayer = ({layer, mapState, formID}: LayersTreeLayerProps)
             <div>{t('map.layers-tree.max-scale')}</div>
             <div>
               <Input value={highScale} onChange={onHighScaleChange}/>
-              <Button onClick={setInfinity}>{t('base.infinitySign')}</Button>
+              <Button onClick={setInfinity}>{'∞'}</Button>
             </div>
           </fieldset>
           <div className={'map-layer-bottom'}>

@@ -5,7 +5,7 @@ import { caratStateSelector } from '../../store/carat.selectors';
 
 import './track-edit-panel.scss';
 import { CaratNavigationPanel } from './navigation-panel';
-import { CaratColumnsPanel } from './columns-panel';
+import { CaratColumnPanel } from './column-panel.tsx';
 import { CaratActiveGroupPanel } from './active-group-panel';
 import { CaratCurvesPanel } from './curves-panel';
 
@@ -30,7 +30,7 @@ export const TrackEditPanel = ({id}: FormEditPanelProps) => {
   return (
     <div className={'menu'}>
       <CaratNavigationPanel stage={stage} track={track}/>
-      <CaratColumnsPanel stage={stage} track={track}/>
+      <CaratColumnPanel stage={stage} track={track}/>
       <CaratActiveGroupPanel stage={stage} track={track} activeGroup={activeGroup}/>
       <CaratCurvesPanel id={id} stage={stage} curveGroup={curveGroup}/>
     </div>
