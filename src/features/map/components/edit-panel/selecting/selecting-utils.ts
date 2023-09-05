@@ -38,7 +38,7 @@ export const isPolygon = (element: MapPolyline) => element.fillbkcolor && !eleme
 /** Проверяет подслой карты на видимость и соответствие масштабов. */
 const checkLayer = (layer, scale: MapScale) => {
   const { visible, highscale: highScale, lowscale: lowScale } = layer;
-  const condition = (typeof highScale === 'string' && highScale.includes('INF')) || scale < highScale;
+  const condition = (typeof highScale === 'string' && highScale.includes('INF')) || scale <= highScale;
   return visible && lowScale <= scale && condition;
 }
 
