@@ -245,6 +245,22 @@ var field = declareType('field', {
 
     const absoluteMin = +palettes[0].min;
     const absoluteMax = +palettes[palettes.length - 1].max;
+
+    const absoluteMinPalette = palettes[0];
+    const absoluteMaxPalette = palettes[palettes.length - 1];
+
+    const absoluteMinValue = {
+      r: absoluteMinPalette.redStart,
+      g: absoluteMinPalette.greenStart,
+      b: absoluteMinPalette.blueStart
+    }
+
+    const absoluteMaxValue = {
+      r: absoluteMaxPalette.redStart + absoluteMaxPalette.redDelta,
+      g: absoluteMaxPalette.greenStart + absoluteMaxPalette.greenDelta,
+      b: absoluteMaxPalette.blueStart + absoluteMaxPalette.blueDelta
+    }
+
     const absoluteDelta = absoluteMax - absoluteMin;
     const step = absoluteDelta / spectreArrayLength;
 
@@ -262,11 +278,13 @@ var field = declareType('field', {
           const b = currentPalette.blueStart + Math.round(currentPalette.blueDelta * deltaCoefficient);
 
           spectreArray.push({r, g, b});
+          continue;
         }
+        if (value >= absoluteMax) spectreArray.push(absoluteMaxValue);
+        if (value < absoluteMin) spectreArray.push(absoluteMinValue);
       }
     }
-    const absoluteMinValue = spectreArray[0];
-    const absoluteMaxValue = spectreArray[spectreArrayLength - 1];
+
     return {
       spectreArray,
       absoluteMin,
