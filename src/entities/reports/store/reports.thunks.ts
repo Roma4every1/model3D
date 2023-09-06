@@ -1,28 +1,30 @@
 import { Dispatch } from 'redux';
 import { Thunk, StateGetter } from 'shared/lib';
-import { fillChannels } from 'entities/channels';
-import { fillParamValues } from '../../parameters';
+import { fillChannels, updateTables } from 'entities/channels';
+import { fillParamValues } from 'entities/parameters';
+import { showInfoMessage, showWarningMessage } from 'entities/window';
+import { showNotification } from 'entities/notifications';
 import { applyChannelsDeps } from 'widgets/presentation/lib/utils';
 import { createClientChannels } from 'widgets/presentation/lib/initialization';
 import { initializeReport, updateReportParam } from './reports.actions';
 import { setReportModels, setCanRunReport, setReportChannels } from './reports.actions';
-import { applyReportVisibility, updateReportChannelData } from '../lib/common';
-import { formsAPI } from 'widgets/presentation/lib/forms.api';
-import { reportsAPI } from 'entities/reports/lib/reports.api';
+import { applyReportVisibility, updateReportChannelData, watchReport } from '../lib/common';
+import { reportsAPI } from 'entities/reports/lib/report.api.ts';
+import { t } from 'shared/locales';
 
 
-export function initializeActiveReport(id: FormID, reportID: ReportID): Thunk {
+export function initializeActiveReport(id: ClientID, reportID: ReportID): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
-    const [parameters, hiddenParameters] = await Promise.all([
-      formsAPI.getClientParameters(reportID),
-      reportsAPI.getReportParametersHidden(reportID),
-    ]);
+    const res = await reportsAPI.getReportData(reportID);
+    if (res.ok === false) return;
+
+    const { parameters, replaces, linkedPropertyCount } = res.data;
 
     const state = getState();
     const rootID = state.root.id;
     const parametersState = state.parameters;
 
-    for (const paramID in hiddenParameters) {
+    for (const paramID in replaces) {
       let param = parameters.find(p => p.id === paramID);
       if (!param) {
         param =
@@ -34,7 +36,7 @@ export function initializeActiveReport(id: FormID, reportID: ReportID): Thunk {
           parameters.push(param);
         }
       }
-      if (param && hiddenParameters[paramID] === true) param.editorType = null;
+      if (param && replaces[paramID] === true) param.editorType = null;
     }
 
     const paramDict = {[reportID]: parameters};
@@ -64,10 +66,39 @@ export function initializeActiveReport(id: FormID, reportID: ReportID): Thunk {
     await fillChannels(channels, paramDict);
 
     const initData: ReportInitData = {
-      parameters, channels,
+      parameters, channels, linkedPropertyCount,
       canRun: await reportsAPI.getCanRunReport(reportID, parameters),
     };
     dispatch(initializeReport(id, reportID, initData));
+  };
+}
+
+export function runReport(report: ReportModel): Thunk {
+  return async (dispatch: Dispatch, getState: StateGetter) => {
+    const { id, parameters, linkedPropertyCount } = report;
+
+    for (let i = 0; i < linkedPropertyCount; i++) {
+      const { data } = await reportsAPI.executeReportProperty(id, i, parameters);
+      if (typeof data === 'string') { dispatch(showWarningMessage(data)); return; }
+
+      const modifiedTables = data.modifiedTables;
+      if (modifiedTables.length) updateTables(modifiedTables)(dispatch, getState).then();
+
+      if (data.result) {
+        const title = t(`report.${report.type}-result`);
+        dispatch(showInfoMessage(data.result, title));
+      }
+      parameters.forEach(param => {
+        if (param.editorType === 'fileTextEditor') {
+          dispatch(updateReportParam(id, report.id, param.id, null));
+        }
+      });
+
+      if (data.operationID) {
+        showNotification(t('report.start', {programName: report.displayName}))(dispatch).then();
+        await watchReport(report, data.operationID, dispatch, getState);
+      }
+    }
   };
 }
 

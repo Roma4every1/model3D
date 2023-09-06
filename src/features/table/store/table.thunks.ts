@@ -9,7 +9,7 @@ import { tableRowToString } from 'entities/parameters/lib/table-row';
 import { updateTables, reloadChannel, setChannelActiveRow, channelAPI } from 'entities/channels';
 import { showWarningMessage, showWindow, closeWindow } from 'entities/window';
 import { showNotification } from 'entities/notifications';
-import { reportsAPI } from 'entities/reports/lib/reports.api';
+import { reportsAPI } from 'entities/reports/lib/report.api.ts';
 import { createRecord } from '../lib/records';
 import { createTableState, startTableEditing } from './table.actions';
 import { tableStateToSettings } from '../lib/table-settings';

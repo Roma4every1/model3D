@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { saveAs } from '@progress/kendo-file-saver';
 import { showNotification } from 'entities/notifications';
 import { fileExtensionIconDict, defaultFileIcon } from 'shared/lib';
-import { reportsAPI } from 'entities/reports/lib/reports.api';
+import { reportsAPI } from 'entities/reports/lib/report.api.ts';
 
 
 /** Форматирование даты. */
@@ -55,9 +55,9 @@ export const ActiveOperationStatus = ({status}: {status: OperationStatus}) => {
         <div>
           {t('downloadFiles.date', {date})}
         </div>
-        {status.description &&
+        {status.comment &&
           <div className={'operation-description'}>
-            {t('downloadFiles.comment', {comment: status.description})}
+            {t('downloadFiles.comment', {comment: status.comment})}
           </div>}
         {status.error &&
           <div className={'operation-error'}>

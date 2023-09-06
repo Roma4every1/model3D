@@ -5,13 +5,13 @@ import { Checkbox } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
 import { ActiveOperationStatus } from './active-operation-status';
 import { operationsSelector, clearOperations } from 'entities/reports';
-import { reportsAPI } from 'entities/reports/lib/reports.api';
+import { reportsAPI } from 'entities/reports/lib/report.api.ts';
 import reportDeleteIcon from 'assets/images/reports/report_delete.png';
 import './active-operations.scss';
 
 
 export interface ActiveReportsProps {
-  activeID: FormID,
+  activeID: FormID;
 }
 
 
@@ -52,6 +52,6 @@ export const ActiveOperations = ({activeID}: ActiveReportsProps) => {
   );
 };
 
-const mapReports = (status: OperationStatus, i: number) => {
+function mapReports(status: OperationStatus, i: number) {
   return <ActiveOperationStatus key={i} status={status}/>;
-};
+}

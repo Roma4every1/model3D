@@ -1,43 +1,34 @@
-import { AppDispatch, getFileExtension } from 'shared/lib';
+import { Dispatch } from 'redux';
+import { StateGetter } from 'shared/lib';
 import { fillParamValues } from 'entities/parameters';
 import { updateTables, fillChannels } from 'entities/channels';
 import { showInfoMessage } from 'entities/window';
 import { setOperationStatus } from '../store/reports.actions';
 import { t } from 'shared/locales';
-import { reportsAPI } from './reports.api';
+import { reportsAPI } from './report.api.ts';
 
 
-export function watchReport(report: ReportModel, operationID: OperationID, dispatch: AppDispatch) {
-  async function tick() {
-    const { ok, data } = await reportsAPI.getOperationResult(operationID);
-    if (!ok || !data) return;
+export async function watchReport(
+  report: ReportModel, operationID: OperationID,
+  dispatch: Dispatch, getState: StateGetter,
+) {
+  let ready = false;
+  while (!ready) {
+    const status = await reportsAPI.getOperationStatus(operationID);
+    if (!status) return;
+    ready = status.ready
 
-    const modifiedTables = data?.report?.ModifiedTables?.ModifiedTables ?? [];
-    if (modifiedTables.length) dispatch(updateTables(modifiedTables));
+    const { modifiedTables, log } = status;
+    if (modifiedTables.length) updateTables(modifiedTables)(dispatch, getState).then();
 
-    if (data?.reportLog && report) {
+    if (log && report) {
       const title = t(`report.${report.type}-result`);
-      dispatch(showInfoMessage(data.reportLog, title));
+      dispatch(showInfoMessage(log, title));
     }
 
-    dispatch(setOperationStatus(convertOperationStatus(data.report)));
-    if (data.isReady === false) setTimeout(tick, 1000);
+    dispatch(setOperationStatus(status));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
-  tick();
-}
-
-/** Конвертирует ответ сервера в подготовленный вид. */
-function convertOperationStatus(raw: ReportStatus): OperationStatus {
-  let file: OperationFile | null = null;
-  if (raw.Path) {
-    const name = raw.Path?.split('\\').pop().split('/').pop()
-    file = {name, path: raw.Path, extension: getFileExtension(name)};
-  }
-  return {
-    id: raw.Id, clientID: raw.ID_PR,
-    queueNumber: raw.Ord, progress: raw.Progress, timestamp: new Date(raw.Dt),
-    file, description: raw.Comment, defaultResult: raw.DefaultResult, error: raw.Error,
-  };
 }
 
 /* --- --- */

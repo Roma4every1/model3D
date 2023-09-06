@@ -39,56 +39,12 @@ interface ReportModel {
   paramsForCheckVisibility: ParameterID[];
   /** Показывать ли процедуру на интерфейсе. */
   visible: boolean;
+  /** Количество исполняемых блоков процедуры. */
+  linkedPropertyCount: number;
 }
 
 /** Тип удалённой процедуры: программа или отчёт. */
 type ReportType = 'program' | 'report';
-
-/** Статус операции, выполняемой на сервере.
- * + `id`: {@link OperationID}
- * + `clientID`: {@link ClientID}
- * + `queueNumber: number`
- * + `progress: number`
- * + `timestamp`: {@link Date}
- * + `file`: {@link OperationFile}
- * + `description: string`
- * + `defaultResult: string`
- * + `error: string`
- * */
-interface OperationStatus {
-  /** Идентификатор операции. */
-  id: OperationID;
-  /** ID клиента (форма/презентация). */
-  clientID: ClientID;
-  /** Номер операции в очереди. */
-  queueNumber: string;
-  /** Прогресс выполнения операции в процентах. */
-  progress: number;
-  /** Временная метка начала обработки. */
-  timestamp: Date;
-  /** Информация о файле активного отчёта. */
-  file: OperationFile | null;
-  /** Дополнительный комментарий. */
-  description: string;
-  /** Стандартный текст для отображения на интерфейсе. */
-  defaultResult: string;
-  /** Сообщение об ошибке. */
-  error: string;
-}
-
-/** Информация о файле активного отчёта.
- * + `name: string`
- * + `path: string`
- * + `extension: string`
- * */
-interface OperationFile {
-  /** Название файла. */
-  name: string;
-  /** Полный путь файла (для API). */
-  path: string;
-  /** Расширение файла. */
-  extension: string;
-}
 
 /** Идентификатор процедуры. */
 type ReportID = string;
@@ -96,7 +52,7 @@ type ReportID = string;
 type OperationID = string;
 
 /** Данные для инициализации списка параметров отчёта/программы. */
-type ReportInitData = Pick<ReportModel, 'parameters' | 'channels' | 'canRun'>;
+type ReportInitData = Pick<ReportModel, 'parameters' | 'channels' | 'canRun' | 'linkedPropertyCount'>;
 
 /** Список связанных каналов отчёта.
  * + `clientID`: {@link ClientID}
@@ -114,46 +70,94 @@ interface RelatedReportChannels {
 
 /* --- Server API --- */
 
-interface NewOperationData {
-  ReportResult: string;
-  OperationId: OperationID;
-  Pages: any;
-  CurrentPage: any;
-  WrongResult: boolean;
-  IsReady: boolean;
-  SessionId: string;
-  ModifiedTables: any;
+/** Данные о параметрах и составных частях отчёта.
+ * + `parameters`: {@link Parameter}[]
+ * + `replaces`: {@link Record} of {@link ParameterID}
+ * + `linkedPropertyCount: number`
+ * */
+interface ReportData {
+  /** Кастомные параметры процедуры. */
+  parameters: Parameter[];
+  /** Все необходимые параметры для процедуры (для `reportString` и `queryString` false). */
+  replaces: Record<ParameterID, boolean>;
+  /** Количество исполняемых блоков процедуры. */
+  linkedPropertyCount: number;
 }
 
-interface ReportStatus {
-  Comment: string;
-  Cur_page: any;
-  ReportResult: string;
-  DefaultResult: string;
-  DisplayType: number;
-  /** Timestamp завершения работы. */
-  Dt: string;
-  Error: string;
-  ErrorType: any;
-  Hash: string;
-  /** ID презентации. */
-  ID_PR: ClientID;
-  Id: OperationID;
-  IsReport: string; // "1" => true
-  /** ID таблиц, в которые были внесены изменения. */
-  ModifiedTables: any;
-  Ord: string;
-  Pages: any;
-  Path: string;
-  Progress: number;
-  SessionId: SessionID;
-  SystemName: SystemID;
-  Usr: string;
-  WrongResult: boolean;
+/** Данные о выполнении удалённой операции на сервере.
+ * + `operationID`: {@link OperationID}
+ * + `result: string`
+ * + `wrongResult: boolean`
+ * + `ready: boolean`
+ * + `modifiedTables`: {@link TableID}[]
+ * */
+interface OperationData {
+  /** ID операции для `reportString`, иначе `null`. */
+  operationID: OperationID | null;
+  /** Результат выполнения. */
+  result: string | null;
+  /** Флаг ошибки. */
+  wrongResult: boolean;
+  /** Является ли операция завершённой. */
+  ready: boolean;
+  /** Список таблиц, которые нужно обновить. */
+  modifiedTables: TableID[];
 }
 
-interface OperationResult {
-  isReady: boolean;
-  report: ReportStatus;
-  reportLog: string;
+/** Статус операции, выполняемой на сервере.
+ * + `id`: {@link OperationID}
+ * + `clientID`: {@link ClientID}
+ * + `ready: boolean`
+ * + `progress: number`
+ * + `queueNumber: string`
+ * + `timestamp: Date`
+ * + `file`: {@link OperationFile}
+ * + `comment: string`
+ * + `defaultResult: stinrg`
+ * + `error: string`
+ * + `modifiedTables`: {@link TableID}[]
+ * + `log: string`
+ * */
+interface OperationStatus {
+  /** ID операции. */
+  id: OperationID;
+  /** ID презентации, в рамках которой выполняется операция. */
+  clientID: ClientID;
+  /** Завершилась ли операция. */
+  ready: boolean;
+  /** Прогресс выполнения операции в процентах. */
+  progress: number;
+  /** Номер операции в очереди. */
+  queueNumber: string;
+  /** Временная метка начала обработки. */
+  timestamp: Date;
+  /** Информация о файле активного отчёта. */
+  file: OperationFile | null;
+  /** Дополнительный комментарий. */
+  comment: string | null;
+  /** Стандартный текст для отображения на интерфейсе. */
+  defaultResult: string;
+  /** Сообщение об ошибке. */
+  error: string | null;
+  /** Список таблиц, которые нужно обновить. */
+  modifiedTables: TableID[];
+  /** Лог выполнения. */
+  log: string | null;
+}
+
+/** Информация о файле активного отчёта.
+ * + `name: string`
+ * + `extension: string`
+ * + `type: string`
+ * + `path: string`
+ * */
+interface OperationFile {
+  /** Название файла. */
+  name: string;
+  /** Расширение файла. */
+  extension: string;
+  /** Метаданные файла. */
+  type: string;
+  /** Полный путь файла (для API). */
+  path: string;
 }

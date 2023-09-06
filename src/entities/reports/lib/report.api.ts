@@ -1,13 +1,18 @@
-import { BaseAPI, API } from 'shared/lib';
+import { BaseAPI, API, getFileExtension } from 'shared/lib';
 import { serializeParameter } from 'entities/parameters';
 
 
-export class ReportsAPI {
+export class ReportAPI {
   constructor(private readonly baseAPI: BaseAPI) {}
 
-  public getPresentationReports(id: FormID) {
+  public getPresentationReports(id: ClientID) {
     const query = {sessionId: this.baseAPI.sessionID, formId: id};
     return this.baseAPI.request<ReportModel[]>({path: 'programsList', query});
+  }
+
+  public getReportData(id: ReportID) {
+    const query = {sessionId: this.baseAPI.sessionID, reportId: id};
+    return this.baseAPI.request<ReportData>({path: 'reportData', query});
   }
 
   public async getProgramVisibility(reportID: ReportID, parameters: Parameter[]) {
@@ -19,13 +24,6 @@ export class ReportsAPI {
     return res.ok && res.data === 'true';
   }
 
-  /** Словарь: для параметров `QueryString` и `ReportString` false, для всех остальных true. */
-  public async getReportParametersHidden(reportID: ReportID): Promise<Record<ParameterID, boolean>> {
-    const query = {sessionId: this.baseAPI.sessionID, formId: reportID};
-    const res = await this.baseAPI.request<any>({path: 'getAllNeedParametersForForm', query});
-    return res.ok ? res.data : {};
-  }
-
   public async getCanRunReport(reportId: ReportID, parameters: Parameter[]) {
     const sessionId = this.baseAPI.sessionID;
     const paramValues = parameters.map(serializeParameter);
@@ -34,16 +32,24 @@ export class ReportsAPI {
     return res.ok && res.data;
   }
 
-  public runReport(reportId: ReportID, presentationId: FormID, params: Parameter[]) {
+  public executeReportProperty(id: ReportID, index: number, params: Parameter[]) {
     const sessionId = this.baseAPI.sessionID;
-    const paramValues = params.map(serializeParameter);
-    const body = JSON.stringify({sessionId, reportId, presentationId, paramValues});
-    return this.baseAPI.request<NewOperationData>({method: 'POST', path: 'runReport', body});
+    const parameters = params.map(serializeParameter);
+    const body = JSON.stringify({sessionId, reportId: id, parameters, index});
+    const req: WRequest = {method: 'POST', path: 'executeReportProperty', body};
+    return this.baseAPI.request<OperationData>(req);
   }
 
-  public getOperationResult(id: OperationID, wait = false) {
-    const query = {sessionId: this.baseAPI.sessionID, operationId: id, waitResult: String(wait)};
-    return this.baseAPI.request<OperationResult>({path: 'getOperationResult', query});
+  public async getOperationStatus(id: OperationID): Promise<OperationStatus | null> {
+    const query = {sessionId: this.baseAPI.sessionID, operationId: id};
+    const res = await this.baseAPI.request<OperationStatus>({path: 'operationStatus', query});
+    if (res.ok === false || !res.data) return null;
+
+    const status = res.data;
+    status.id = id;
+    status.timestamp = new Date(status.timestamp);
+    if (status.file) status.file.extension = getFileExtension(status.file.name);
+    return status;
   }
 
   public clearReports(clientID: FormID) {
@@ -65,8 +71,8 @@ export class ReportsAPI {
     data.sessionId = this.baseAPI.sessionID;
     data.paramValues = data.paramValues.map(serializeParameter);
     const body = JSON.stringify(data);
-    return this.baseAPI.request<NewOperationData>({method: 'POST', path: 'exportToExcel', body});
+    return this.baseAPI.request<OperationData>({method: 'POST', path: 'exportToExcel', body});
   }
 }
 
-export const reportsAPI = new ReportsAPI(API);
+export const reportsAPI = new ReportAPI(API);
