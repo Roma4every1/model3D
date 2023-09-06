@@ -37,7 +37,6 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
 
           inclinometryChannel = attachedChannel;
           usedChannels.add(attachedChannel.name);
-          attachments.push(attachedChannel.inclinometry as any);
         } else {
           delete attachedChannel.type;
         }

@@ -30,13 +30,22 @@ export function fillParamValues(ids: ParameterID[], storage: ParamDict, clientsI
 }
 
 /** Рекурсивно находит параметры, которые зависят от данного. */
-export function findDependentParameters(id: ParameterID, list: Parameter[], updated: Parameter[]) {
-  for (const parameter of list) {
-    if (parameter.dependsOn.includes(id) && !updated.includes(parameter)) {
-      updated.push(parameter);
-      findDependentParameters(parameter.id, list, updated);
+export function findDependentParameters(id: ParameterID, parameters: ParamDict): ParamDict {
+  const dependencies: ParamDict = {};
+
+  const find = (id: ParameterID, clientID: ClientID, clientParameters: Parameter[]) => {
+    for (const parameter of clientParameters) {
+      if (!parameter.dependsOn.includes(id)) continue;
+      if (dependencies[clientID]?.includes(parameter)) continue;
+      if (!dependencies[clientID]) dependencies[clientID] = [];
+      dependencies[clientID].push(parameter);
+      find(parameter.id, clientID, clientParameters);
     }
+  };
+  for (const clientID in parameters) {
+    find(id, clientID, parameters[clientID]);
   }
+  return dependencies;
 }
 
 /* --- --- */

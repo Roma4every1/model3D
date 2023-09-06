@@ -56,10 +56,8 @@ export class CaratLoader implements ICaratLoader {
       caratData.push(trackData);
       curveIDs.push(...newCurveIDs);
     }
+    await this.loadCurveData(curveIDs, true);
 
-    if (flag === this.flag) {
-      await this.loadCurveData(curveIDs, true);
-    }
     if (flag === this.flag && this.inclinometryChannel) {
       this.setLoading({status: 'inclinometry', statusOptions: null});
       const inclinometryChannel = channelData[this.inclinometryChannel.name];
@@ -89,6 +87,7 @@ export class CaratLoader implements ICaratLoader {
 
   /** Загружает данные точек кривых и кладёт их в кеш. */
   public async loadCurveData(ids: CaratCurveID[], bySteps: boolean): Promise<CaratCurveID[]> {
+    const flag = this.flag;
     const idsToLoad: CaratCurveID[] = [...new Set(ids)].filter(id => !this.cache[id]);
     const total = idsToLoad.length;
     if (total === 0) return idsToLoad;
@@ -110,6 +109,8 @@ export class CaratLoader implements ICaratLoader {
       };
 
       const res = await channelAPI.getChannelData(channelName, [parameter], query);
+      if (flag !== this.flag) return;
+
       const data = res.ok ? res.data.data : null;
       const records = cellsToRecords(data);
       const idColumnName = this.curveDataChannel.info.id.name;
