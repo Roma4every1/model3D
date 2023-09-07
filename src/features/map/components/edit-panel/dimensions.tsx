@@ -67,7 +67,7 @@ export const Dimensions = ({mapState, sync, formID, parentID, t}: DimensionsProp
   };
 
   const yChanged = (event: NumericTextBoxChangeEvent) => {
-    const newY = event.value === null ? 0 : Math.round(event.value);
+    const newY = event.value === null ? 0 : Math.round(-event.value);
     utils?.updateCanvas({centerX: mapData.x, centerY: newY, scale: mapData.scale});
     setY(newY);
   };
@@ -96,7 +96,7 @@ export const Dimensions = ({mapState, sync, formID, parentID, t}: DimensionsProp
             <span title={t('map.dimensions.y')}><img src={yIcon} alt={'y'}/> y:</span>
             <NumericTextBox
               disabled={!isLoadSuccessfully}
-              value={Math.round(y)}
+              value={Math.round(-y)}
               onChange={yChanged}
               format={coordsFormat}
             />
