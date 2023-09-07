@@ -87,9 +87,7 @@ interface ReportData {
 /** Данные о выполнении удалённой операции на сервере.
  * + `operationID`: {@link OperationID}
  * + `result: string`
- * + `wrongResult: boolean`
  * + `error: string`
- * + `ready: boolean`
  * + `modifiedTables`: {@link TableID}[]
  * */
 interface OperationData {

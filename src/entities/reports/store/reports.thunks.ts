@@ -73,36 +73,36 @@ export function initializeActiveReport(id: ClientID, reportID: ReportID): Thunk 
   };
 }
 
-export function runReport(report: ReportModel): Thunk {
+export function runReport(clientID: ClientID, report: ReportModel): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
-    const { id, parameters, linkedPropertyCount } = report;
+    const reportID = report.id;
+    const parameters = report.parameters;
 
-    for (let i = 0; i < linkedPropertyCount; i++) {
-      const { data } = await reportsAPI.executeReportProperty(id, i, parameters);
-      if (typeof data === 'string') { dispatch(showWarningMessage(data)); return; }
+    for (let i = 0; i < report.linkedPropertyCount; i++) {
+      const res = await reportsAPI.executeReportProperty(reportID, parameters, i);
+      if (res.ok === false) { dispatch(showWarningMessage(res.data)); continue; }
+      if (res.data.error) { dispatch(showWarningMessage(res.data.error)); continue; }
 
-      const modifiedTables = data.modifiedTables;
+      const { operationID, result, modifiedTables } = res.data;
       if (modifiedTables.length) updateTables(modifiedTables)(dispatch, getState).then();
 
-      if (data.result) {
+      if (result) {
         const title = t(`report.${report.type}-result`);
-        dispatch(showInfoMessage(data.result, title));
+        dispatch(showInfoMessage(result, title));
       }
-      parameters.forEach(param => {
-        if (param.editorType === 'fileTextEditor') {
-          dispatch(updateReportParam(id, report.id, param.id, null));
-        }
-      });
-
-      if (data.operationID) {
+      if (operationID) {
         showNotification(t('report.start', {programName: report.displayName}))(dispatch).then();
-        await watchOperation(report, data.operationID, dispatch, getState);
+        await watchOperation(report, operationID, dispatch, getState);
       }
+    }
+    for (const parameter of parameters) {
+      if (parameter.editorType !== 'fileTextEditor') continue;
+      dispatch(updateReportParam(clientID, reportID, parameter.id, null));
     }
   };
 }
 
-export function updateReportParameter(id: FormID, reportID: ReportID, paramID: ParameterID, value: any): Thunk {
+export function updateReportParameter(id: ClientID, reportID: ReportID, paramID: ParameterID, value: any): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const { root, reports, parameters } = getState();
 

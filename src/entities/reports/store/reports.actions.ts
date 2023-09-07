@@ -17,21 +17,21 @@ export function setOperationStatus(operationStatus: OperationStatus): ReportsAct
 }
 
 /** Установить возможность запуска отчёта/программы. */
-export function setCanRunReport(clientID: FormID, id: ReportID, canRun: boolean): ReportsAction {
+export function setCanRunReport(clientID: ClientID, id: ReportID, canRun: boolean): ReportsAction {
   return {type: ReportActionType.SET_FIELD, payload: {clientID, id, field: 'canRun', value: canRun}};
 }
 
 /** Перезаписать каналы запуска отчёта/программы. */
-export function setReportChannels(clientID: FormID, id: ReportID, channels: ChannelDict): ReportsAction {
+export function setReportChannels(clientID: ClientID, id: ReportID, channels: ChannelDict): ReportsAction {
   return {type: ReportActionType.SET_FIELD, payload: {clientID, id, field: 'channels', value: channels}};
 }
 
 /** Обновить параметр отчёта/программы */
-export function updateReportParam(clientID: FormID, id: ReportID, paramID: ParameterID, value: any): ReportsAction {
+export function updateReportParam(clientID: ClientID, id: ReportID, paramID: ParameterID, value: any): ReportsAction {
   return {type: ReportActionType.UPDATE_PARAM, payload: {clientID, id, paramID, value}};
 }
 
 /** Очистить активные операции для презентации или целиком. */
-export function clearOperations(clientID: FormID | null): ReportsAction {
+export function clearOperations(clientID: ClientID | null): ReportsAction {
   return {type: ReportActionType.CLEAR_OPERATIONS, payload: clientID};
 }

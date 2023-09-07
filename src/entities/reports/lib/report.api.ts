@@ -32,7 +32,7 @@ export class ReportAPI {
     return res.ok && res.data;
   }
 
-  public executeReportProperty(id: ReportID, index: number, params: Parameter[]) {
+  public executeReportProperty(id: ReportID, params: Parameter[], index: number) {
     const sessionId = this.baseAPI.sessionID;
     const parameters = params.map(serializeParameter);
     const body = JSON.stringify({sessionId, reportId: id, parameters, index});

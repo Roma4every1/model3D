@@ -13,29 +13,25 @@ interface ReportParamListProps {
 }
 
 
-/** Редактор параметров SQL-программы или отчёта. */
+/** Редактор параметров процедуры. */
 export const ReportParamList = ({id, report, close}: ReportParamListProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const onParamChange = (param: Parameter, newValue: any) => {
+  const onParameterChange = (param: Parameter, newValue: any) => {
     dispatch(updateReportParameter(id, report.id, param.id, newValue));
   };
   const run = () => {
-    dispatch(runReport(report)); close();
+    dispatch(runReport(id, report)); close();
   };
   const { channels, parameters, canRun } = report;
 
   return (
     <Dialog title={t(`report.${report.type}-parameters`)} onClose={close} style={{zIndex: 99}}>
-      <ParameterList params={parameters} channels={channels} onChange={onParamChange}/>
+      <ParameterList params={parameters} channels={channels} onChange={onParameterChange}/>
       <DialogActionsBar>
-        <Button onClick={run} disabled={!canRun}>
-          {t('base.run')}
-        </Button>
-        <Button onClick={close}>
-          {t('base.cancel')}
-        </Button>
+        <Button onClick={run} disabled={!canRun}>{t('base.run')}</Button>
+        <Button onClick={close}>{t('base.cancel')}</Button>
       </DialogActionsBar>
     </Dialog>
   );
