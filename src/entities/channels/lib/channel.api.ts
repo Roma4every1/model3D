@@ -77,7 +77,7 @@ export class ChannelAPI {
   public async insertRows(tableID: TableID, newRows: ChannelRow[]) {
     const rowData = JSON.stringify(newRows);
     const query = {sessionId: this.baseAPI.sessionID, tableId: tableID, rowData};
-    return await this.baseAPI.request<ReportStatus>({path: 'insertRow', query});
+    return await this.baseAPI.request<OperationData>({path: 'insertRow', query});
   }
 
   /** Запрос обновления записи в таблице. */
@@ -85,7 +85,7 @@ export class ChannelAPI {
     const sessionId = this.baseAPI.sessionID;
     const rowsIndices = indexes.join(',');
     const body = JSON.stringify({sessionId, tableId: tableID, rowsIndices, newRowData});
-    return await this.baseAPI.request<ReportStatus>({method: 'POST', path: 'updateRow', body});
+    return await this.baseAPI.request<OperationData>({method: 'POST', path: 'updateRow', body});
   }
 
   /** Запрос на удаление записей из таблицы. */
@@ -93,7 +93,7 @@ export class ChannelAPI {
     const sessionId = this.baseAPI.sessionID;
     const rows = Array.isArray(indexes) ? indexes.join(',') : indexes;
     const query = {sessionId, tableId: tableID, rows};
-    return await this.baseAPI.request<ReportStatus>({path: 'removeRows', query});
+    return await this.baseAPI.request<OperationData>({path: 'removeRows', query});
   }
 }
 

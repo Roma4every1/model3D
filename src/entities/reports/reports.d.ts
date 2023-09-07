@@ -88,6 +88,7 @@ interface ReportData {
  * + `operationID`: {@link OperationID}
  * + `result: string`
  * + `wrongResult: boolean`
+ * + `error: string`
  * + `ready: boolean`
  * + `modifiedTables`: {@link TableID}[]
  * */
@@ -96,10 +97,8 @@ interface OperationData {
   operationID: OperationID | null;
   /** Результат выполнения. */
   result: string | null;
-  /** Флаг ошибки. */
-  wrongResult: boolean;
-  /** Является ли операция завершённой. */
-  ready: boolean;
+  /** Лог ошибки. */
+  error: string | null;
   /** Список таблиц, которые нужно обновить. */
   modifiedTables: TableID[];
 }
@@ -113,7 +112,7 @@ interface OperationData {
  * + `timestamp: Date`
  * + `file`: {@link OperationFile}
  * + `comment: string`
- * + `defaultResult: stinrg`
+ * + `defaultResult: string`
  * + `error: string`
  * + `modifiedTables`: {@link TableID}[]
  * + `log: string`

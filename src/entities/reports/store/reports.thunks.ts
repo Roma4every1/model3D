@@ -8,7 +8,7 @@ import { applyChannelsDeps } from 'widgets/presentation/lib/utils';
 import { createClientChannels } from 'widgets/presentation/lib/initialization';
 import { initializeReport, updateReportParam } from './reports.actions';
 import { setReportModels, setCanRunReport, setReportChannels } from './reports.actions';
-import { applyReportVisibility, updateReportChannelData, watchReport } from '../lib/common';
+import { applyReportVisibility, updateReportChannelData, watchOperation } from '../lib/common';
 import { reportsAPI } from 'entities/reports/lib/report.api.ts';
 import { t } from 'shared/locales';
 
@@ -16,7 +16,7 @@ import { t } from 'shared/locales';
 export function initializeActiveReport(id: ClientID, reportID: ReportID): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const res = await reportsAPI.getReportData(reportID);
-    if (res.ok === false) return;
+    if (res.ok === false) { dispatch(showWarningMessage(res.data)); return; }
 
     const { parameters, replaces, linkedPropertyCount } = res.data;
 
@@ -96,7 +96,7 @@ export function runReport(report: ReportModel): Thunk {
 
       if (data.operationID) {
         showNotification(t('report.start', {programName: report.displayName}))(dispatch).then();
-        await watchReport(report, data.operationID, dispatch, getState);
+        await watchOperation(report, data.operationID, dispatch, getState);
       }
     }
   };

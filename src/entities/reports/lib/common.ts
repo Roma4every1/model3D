@@ -8,15 +8,14 @@ import { t } from 'shared/locales';
 import { reportsAPI } from './report.api.ts';
 
 
-export async function watchReport(
-  report: ReportModel, operationID: OperationID,
+/** Наблюдает за прогрессом операции, пока она не выполнится. */
+export async function watchOperation(
+  report: ReportModel | null, operationID: OperationID,
   dispatch: Dispatch, getState: StateGetter,
 ) {
-  let ready = false;
-  while (!ready) {
+  while (true) {
     const status = await reportsAPI.getOperationStatus(operationID);
     if (!status) return;
-    ready = status.ready
 
     const { modifiedTables, log } = status;
     if (modifiedTables.length) updateTables(modifiedTables)(dispatch, getState).then();
@@ -27,6 +26,7 @@ export async function watchReport(
     }
 
     dispatch(setOperationStatus(status));
+    if (status.ready) return;
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }
@@ -58,7 +58,7 @@ export async function updateReportChannelData(
 /* --- --- */
 
 /** Создаёт список программ/отчётов для презентации. */
-export async function createReportModels(params: ParamDict, rootID: FormID, id: FormID) {
+export async function createReportModels(paramDict: ParamDict, rootID: ClientID, id: ClientID) {
   const res = await reportsAPI.getPresentationReports(id);
   const reportModels = res.ok ? res.data : [];
   if (reportModels.length === 0) return reportModels;
@@ -69,7 +69,7 @@ export async function createReportModels(params: ParamDict, rootID: FormID, id: 
   for (const report of reportModels) {
     if (!report.type) report.type = 'report';
     if (!report.paramsForCheckVisibility) { report.visible = true; continue; }
-    const parameters = fillParamValues(report.paramsForCheckVisibility, params, clients);
+    const parameters = fillParamValues(report.paramsForCheckVisibility, paramDict, clients);
 
     for (const parameter of parameters) {
       if (!parameter.relatedReports) parameter.relatedReports = [];

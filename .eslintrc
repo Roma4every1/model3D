@@ -12,6 +12,7 @@
   "rules": {
     "no-empty": "warn",
     "prefer-const": "off",
+    "no-constant-condition": ["error", {"checkLoops": false}],
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-unused-vars": "warn",
     "@typescript-eslint/ban-ts-comment": "warn",
