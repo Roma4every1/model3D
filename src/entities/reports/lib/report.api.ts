@@ -1,5 +1,5 @@
 import { BaseAPI, API, getFileExtension } from 'shared/lib';
-import { serializeParameter } from 'entities/parameters';
+import { handleParam, serializeParameter } from 'entities/parameters';
 
 
 export class ReportAPI {
@@ -10,9 +10,11 @@ export class ReportAPI {
     return this.baseAPI.request<ReportModel[]>({path: 'programsList', query});
   }
 
-  public getReportData(id: ReportID) {
+  public async getReportData(id: ReportID) {
     const query = {sessionId: this.baseAPI.sessionID, reportId: id};
-    return this.baseAPI.request<ReportData>({path: 'reportData', query});
+    const res = await this.baseAPI.request<ReportData>({path: 'reportData', query});
+    if (res.ok) res.data.parameters.forEach(handleParam);
+    return res;
   }
 
   public async getProgramVisibility(reportID: ReportID, parameters: Parameter[]) {

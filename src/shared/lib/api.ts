@@ -45,8 +45,6 @@ export class BaseAPI implements IBaseAPI {
       return {ok: true, data: response};
     }
     catch (error) {
-      console.warn('Fetch error: ' + fullPath);
-      console.warn(error);
       return {ok: false, data: error instanceof Error ? error.message : 'Unknown error'};
     }
   }

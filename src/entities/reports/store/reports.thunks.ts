@@ -17,7 +17,6 @@ export function initializeActiveReport(id: ClientID, reportID: ReportID): Thunk 
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const res = await reportsAPI.getReportData(reportID);
     if (res.ok === false) { dispatch(showWarningMessage(res.data)); return; }
-
     const { parameters, replaces, linkedPropertyCount } = res.data;
 
     const state = getState();
