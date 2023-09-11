@@ -34,14 +34,14 @@ export const ActiveOperations = ({activeID}: ActiveReportsProps) => {
       <div className={'active-operations-header'}>
         <Checkbox
           id={'downloadFiles'} name={'downloadFiles'}
-          label={t('downloadFiles.filter')}
+          label={t('report.filter-operations')}
           value={filterByPresentation}
           onChange={(e) => {setFilterByPresentation(e.value)}}
         />
         <Button className={'k-button k-button-clear'} onClick={deleteReports}>
           <img
-            src={reportDeleteIcon} alt={t('downloadFiles.clear')}
-            title={t('downloadFiles.clear')}
+            src={reportDeleteIcon} alt={t('report.clear-operations')}
+            title={t('report.clear-operations')}
           />
         </Button>
       </div>

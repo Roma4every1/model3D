@@ -42,16 +42,17 @@ export class ReportAPI {
     return this.baseAPI.request<OperationData>(req);
   }
 
-  public async getOperationStatus(id: OperationID): Promise<OperationStatus | null> {
+  public async getOperationStatus(id: OperationID) {
     const query = {sessionId: this.baseAPI.sessionID, operationId: id};
     const res = await this.baseAPI.request<OperationStatus>({path: 'operationStatus', query});
-    if (res.ok === false || !res.data) return null;
 
-    const status = res.data;
-    status.id = id;
-    status.timestamp = new Date(status.timestamp);
-    if (status.file) status.file.extension = getFileExtension(status.file.name);
-    return status;
+    if (res.ok && res.data) {
+      const status = res.data;
+      status.id = id;
+      status.timestamp = new Date(status.timestamp);
+      if (status.file) status.file.extension = getFileExtension(status.file.name);
+    }
+    return res;
   }
 
   public clearReports(clientID: FormID) {

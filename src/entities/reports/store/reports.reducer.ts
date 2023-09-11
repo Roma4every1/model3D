@@ -4,7 +4,7 @@ export enum ReportActionType {
   SET = 'reports/set',
   INITIALIZE = 'reports/init',
   SET_FIELD = 'reports/field',
-  UPDATE_PARAM = 'reports/param',
+  UPDATE_PARAMETER = 'reports/parameter',
   SET_OPERATION_STATUS = 'reports/status',
   CLEAR_OPERATIONS = 'reports/operations',
 }
@@ -13,37 +13,37 @@ export enum ReportActionType {
 
 interface ActionSet {
   type: ReportActionType.SET;
-  payload: {clientID: FormID, models: ReportModel[]};
+  payload: {clientID: ClientID, models: ReportModel[]};
 }
 interface ActionInitializeReport {
   type: ReportActionType.INITIALIZE;
-  payload: {clientID: FormID, id: ReportID, initData: ReportInitData};
+  payload: {clientID: ClientID, id: ReportID, initData: ReportInitData};
 }
 interface ActionSetField {
   type: ReportActionType.SET_FIELD;
-  payload: {clientID: FormID, id: ReportID, field: keyof ReportModel, value: any};
+  payload: {clientID: ClientID, reportID: ReportID, field: keyof ReportModel, value: any};
 }
 interface ActionUpdateParam {
-  type: ReportActionType.UPDATE_PARAM;
-  payload: {clientID: FormID, id: ReportID, paramID: ParameterID, value: any};
+  type: ReportActionType.UPDATE_PARAMETER;
+  payload: {clientID: ClientID, reportID: ReportID, parameterID: ParameterID, value: any};
 }
 interface ActionSetOperationStatus {
   type: ReportActionType.SET_OPERATION_STATUS;
-  payload: OperationStatus;
+  payload: Partial<OperationStatus>;
 }
 interface ActionClearOperations {
   type: ReportActionType.CLEAR_OPERATIONS;
   payload: FormID | null;
 }
 
-export type ReportsAction = ActionSet | ActionInitializeReport | ActionSetField |
+export type ReportAction = ActionSet | ActionInitializeReport | ActionSetField |
   ActionUpdateParam | ActionSetOperationStatus | ActionClearOperations;
 
 /* --- Init State & Reducer --- */
 
 const init: Reports = {models: {}, operations: []};
 
-export function reportsReducer(state: Reports = init, action: ReportsAction): Reports {
+export function reportsReducer(state: Reports = init, action: ReportAction): Reports {
   switch (action.type) {
 
     case ReportActionType.SET: {
@@ -63,20 +63,20 @@ export function reportsReducer(state: Reports = init, action: ReportsAction): Re
     }
 
     case ReportActionType.SET_FIELD: {
-      const { clientID, id, field, value } = action.payload;
+      const { clientID, reportID, field, value } = action.payload;
       const models = state.models[clientID];
 
-      const index = models.findIndex(model => model.id === id);
+      const index = models.findIndex(model => model.id === reportID);
       if (index === -1) return state;
 
       models[index] = {...models[index], [field]: value};
       return {...state, models: {...state.models, [clientID]: [...models]}};
     }
 
-    case ReportActionType.UPDATE_PARAM: {
-      const { clientID, id, paramID, value } = action.payload;
-      const parameters = state.models[clientID].find(model => model.id === id).parameters;
-      const index = parameters.findIndex(p => p.id === paramID);
+    case ReportActionType.UPDATE_PARAMETER: {
+      const { clientID, reportID, parameterID, value } = action.payload;
+      const parameters = state.models[clientID].find(model => model.id === reportID).parameters;
+      const index = parameters.findIndex(p => p.id === parameterID);
       parameters[index] = {...parameters[index], value};
       return {...state};
     }
@@ -87,9 +87,9 @@ export function reportsReducer(state: Reports = init, action: ReportsAction): Re
 
       const operations = state.operations;
       const index = state.operations.findIndex(o => o.id === operationID);
-      if (index === -1) return {...state, operations: [status, ...operations]};
+      if (index === -1) return {...state, operations: [status as OperationStatus, ...operations]};
 
-      operations[index] = status;
+      operations[index] = {...operations[index], ...status};
       return {...state, operations: [...operations]};
     }
 

@@ -3,6 +3,7 @@ import { StateGetter } from 'shared/lib';
 import { fillParamValues } from 'entities/parameters';
 import { updateTables, fillChannels } from 'entities/channels';
 import { showInfoMessage } from 'entities/window';
+import { showNotification } from 'entities/notifications';
 import { setOperationStatus } from '../store/reports.actions';
 import { t } from 'shared/locales';
 import { reportsAPI } from './report.api.ts';
@@ -14,10 +15,14 @@ export async function watchOperation(
   dispatch: Dispatch, getState: StateGetter,
 ) {
   while (true) {
-    const status = await reportsAPI.getOperationStatus(operationID);
-    if (!status) return;
+    const res = await reportsAPI.getOperationStatus(operationID);
+    if (res.ok === false) {
+      const message = t('report.get-operation-status-error');
+      showNotification({type: 'warning', content: message})(dispatch).then();
+      dispatch(setOperationStatus({id: operationID, error: res.data})); return;
+    }
 
-    const { modifiedTables, log } = status;
+    const { modifiedTables, log, ready } = res.data;
     if (modifiedTables.length) updateTables(modifiedTables)(dispatch, getState).then();
 
     if (log && report) {
@@ -25,9 +30,9 @@ export async function watchOperation(
       dispatch(showInfoMessage(log, title));
     }
 
-    dispatch(setOperationStatus(status));
-    if (status.ready) return;
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    dispatch(setOperationStatus(res.data));
+    if (ready) return;
+    await new Promise((resolve) => setTimeout(resolve, 1500));
   }
 }
 
