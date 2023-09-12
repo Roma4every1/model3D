@@ -14,8 +14,13 @@ export async function watchOperation(
   report: ReportModel | null, operationID: OperationID,
   dispatch: Dispatch, getState: StateGetter,
 ) {
+  let tabSelected = false;
   while (true) {
     const res = await reportsAPI.getOperationStatus(operationID);
+    if (!tabSelected) {
+      getState().root.layout.common.showTab('right-dock', 0, true);
+      tabSelected = true;
+    }
     if (res.ok === false) {
       const message = t('report.get-operation-status-error');
       showNotification({type: 'warning', content: message})(dispatch).then();

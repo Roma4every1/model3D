@@ -90,7 +90,7 @@ export function runReport(clientID: ClientID, report: ReportModel): Thunk {
         dispatch(showInfoMessage(result, title));
       }
       if (operationID) {
-        showNotification(t('report.start', {programName: report.displayName}))(dispatch).then();
+        showNotification(t('report.start', {name: report.displayName}))(dispatch).then();
         await watchOperation(report, operationID, dispatch, getState);
       }
     }

@@ -12,11 +12,12 @@ import { fetchSessionStart, fetchSessionEnd, fetchSessionError } from 'entities/
 import { createObjects, createObjectModels, setObjects } from 'entities/objects';
 import { setRootFormState } from './root-form.actions';
 import { setSessionID } from '../app-state/app.actions';
-import { getSessionToSave } from '../../lib/session-save.ts';
-import { startNewSession } from '../../lib/session-utils.ts';
+import { getSessionToSave } from '../../lib/session-save';
+import { startNewSession } from '../../lib/session-utils';
 import { t } from 'shared/locales';
 import { formsAPI } from 'widgets/presentation/lib/forms.api';
-import { appAPI } from '../../lib/app.api.ts';
+import { appAPI } from '../../lib/app.api';
+import { LayoutManager } from '../../lib/layout';
 
 
 /** Сохранение текущей сессии. */
@@ -59,7 +60,11 @@ export function startSession(isDefault: boolean): Thunk {
     dispatch(setParamDict(paramDict));
     dispatch(setChannels(channels));
     dispatch(setRootFormState(root));
-    dispatch(setObjects(createObjects(getState())));
+
+    const objects = createObjects(getState());
+    root.layout.common.traceExist = Boolean(objects.trace.parameterID);
+    dispatch(setObjects(objects));
+
     dispatch(setSessionID(resSessionID.data));
     dispatch(fetchSessionEnd());
 
@@ -116,22 +121,7 @@ async function createRootFormState(): Promise<RootFormState | string> {
   const dateChanging = dateChangingRaw?.year ? dateChangingRaw : null;
   const settings: DockSettings = {dateChanging, parameterGroups: null};
 
-  const layout = createDockLayout(resLayout);
+  const layoutData: any = resLayout.ok ? resLayout.data : {};
+  const layout = {common: new LayoutManager(layoutData.layout), left: createLeftLayout(layoutData)};
   return {id, settings, layout, presentationTree, children, activeChildID};
-}
-
-function createDockLayout(res: Res<any>): DockLayout {
-  const data = res.ok ? res.data : {};
-  const layout = data.layout;
-
-  return {
-    common: {
-      selectedTopTab: layout?.selectedtop ?? -1,
-      selectedRightTab: layout?.selectedright ?? -1,
-      topPanelHeight: 90,
-      leftPanelWidth: layout?.sizeleft ?? 270,
-      rightPanelWidth: layout?.sizeright ?? 270,
-    },
-    left: createLeftLayout(data),
-  };
 }

@@ -108,17 +108,17 @@ function getLayoutsToSave(root: RootFormState, presentations: PresentationDict):
 }
 
 function getRootLayout(root: RootFormState): any {
-  const { common, left } = root.layout;
-  const model = left.model.toJson();
+  const result = root.layout.left.model.toJson();
+  const { topBorder, rightBorder, model } = root.layout.common;
 
-  model.id = root.id;
-  model.layout = {
-    ...model.layout,
-    sizeleft: common.leftPanelWidth,
-    sizeright: common.rightPanelWidth,
-    selectedtop: common.selectedTopTab,
+  result.id = root.id;
+  result.layout = {
+    ...result.layout,
+    sizeleft: model.getNodeById('left').getRect().width,
+    sizeright: rightBorder.getSize(),
+    selectedtop: topBorder.getSelected(),
+    selectedright: rightBorder.getSelected(),
     selectedleft: 0,
-    selectedright: common.selectedRightTab
   };
-  return model;
+  return result;
 }

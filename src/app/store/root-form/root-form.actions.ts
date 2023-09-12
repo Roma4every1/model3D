@@ -7,7 +7,7 @@ export function setRootFormState(state: RootFormState): RootFormAction {
 }
 
 /** Выбор презентации из списка. */
-export function selectPresentation(id: FormID): RootFormAction {
+export function selectPresentation(id: ClientID): RootFormAction {
   return {type: RootFormActionType.SET_ACTIVE_CHILD_ID, payload: id};
 }
 

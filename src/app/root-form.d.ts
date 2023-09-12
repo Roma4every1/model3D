@@ -50,35 +50,14 @@ interface PresentationTreeItem {
 /* --- Dock Layout --- */
 
 /** Разметка общих элементов.
- * + `common`: {@link CommonLayout}
+ * + `common: LayoutManager`
  * + `left`: {@link LeftPanelLayout}
  * */
 interface DockLayout {
-  /** Разметка главной формы. */
-  common: CommonLayout;
+  /** Менеджер разметки приложения. */
+  common: any;
   /** Разметка левой панели. */
   left: LeftPanelLayout;
-}
-
-/** Разметка главной формы.
- * + `selectedTopTab` — индекс активной верхней вкладки.
- * + `selectedRightTab` — индекс активной вкладки справа
- * + `topPanelHeight` — высота тела верхней панели
- * + `leftPanelWidth` — ширина левой панели
- * + `rightPanelWidth` — ширина правой панели
- * @see DockLayout
- * */
-interface CommonLayout {
-  /** Индекс активной верхней вкладки. */
-  selectedTopTab: number;
-  /** Индекс активной вкладки справа */
-  selectedRightTab: number;
-  /** Высота тела верхней панели. */
-  topPanelHeight: number;
-  /** Ширина левой панели с параметрами. */
-  leftPanelWidth: number;
-  /** Ширина правой панели. */
-  rightPanelWidth: number;
 }
 
 /** Разметка левой панели с параметрами.
