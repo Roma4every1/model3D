@@ -1,5 +1,5 @@
 import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
-import { useEffect, useCallback, useMemo, useRef } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
@@ -55,6 +55,7 @@ export const PropertiesWindow = ({formID, setOpen}: PropertiesWindowProps) => {
   }, [utils]);
 
   const apply = () => {
+    if (!element) return;
     if (isElementCreating) { acceptCreating(); return; }
     const modifiedLayer = mapState.mapData.layers.find(l => l.elements?.includes(element));
     modifiedLayer.modified = true;
@@ -64,16 +65,13 @@ export const PropertiesWindow = ({formID, setOpen}: PropertiesWindowProps) => {
   };
 
   const init = useMemo<any>(() => {
+    if (!element) return;
     if (element.type === 'polyline') return createPolylineInit(element);
     if (element.type === 'label') return createLabelInit(element);
     if (element.type === 'field') return createFieldInit(element);
   }, [element]);
 
-  const cancel = useCallback(() => {
-    if (isElementCreating) {
-      cancelCreating()
-      return;
-    }
+  const rollbackElement = (element: MapElement, init: any) => {
     if (element.type === 'polyline') {
       rollbackPolyline(element, init);
     }
@@ -84,6 +82,14 @@ export const PropertiesWindow = ({formID, setOpen}: PropertiesWindowProps) => {
     else if (element.type === 'field') {
       rollbackField(element, init);
     }
+  }
+
+  const cancel = useCallback(() => {
+    if (isElementCreating) {
+      cancelCreating()
+      return;
+    }
+    if (element) rollbackElement(element, init);
     update(); close();
   }, [element, mode, init, update, close, setOpen, isElementCreating]); // eslint-disable-line
 
@@ -100,21 +106,21 @@ export const PropertiesWindow = ({formID, setOpen}: PropertiesWindowProps) => {
   };
 
   const ElementProperties = () => {
-    if (element.type === 'polyline')
+    if (element?.type === 'polyline')
       return (
         <PolylineProperties
           element={element} init={init} legends={legends.data}
           apply={apply} update={update} cancel={cancel} t={t} isElementCreating={isElementCreating}
         />
       );
-    if (element.type === 'label')
+    if (element?.type === 'label')
       return (
         <LabelProperties
           element={element} init={init}
           apply={apply} update={update} cancel={cancel} t={t} isElementCreating={isElementCreating}
         />
       );
-    if (element.type === 'field')
+    if (element?.type === 'field')
       return (
         <FieldProperties
           element={element} init={init}
@@ -124,18 +130,15 @@ export const PropertiesWindow = ({formID, setOpen}: PropertiesWindowProps) => {
     return <div>{t('map.selecting.no-selected')}</div>;
   };
 
-  const initElement = useRef(element);
-
   useEffect(() => {
-    if (element.type === 'sign' || element !== initElement.current) cancel();
-    if (element.type === 'label' && !element.edited) { element.edited = true; update(); }
-  }, [element, initElement, update, cancel]);
-
-  useEffect(() => {
+    if (!element || element.type === 'sign') {
+      update(); close();
+      return;
+    }
     const title = t('map.properties-edit', {elementType: t('map.' + element.type)});
     const [width, height] = windowSizeDict[element.type] ?? [];
     dispatch(updateWindow(windowID, {title, width, height}))
-  }, [element.type, t, dispatch]);
+  }, [element, t, dispatch, close, update, init]);
 
   return (
     <LocalizationProvider language={'ru-RU'}>
