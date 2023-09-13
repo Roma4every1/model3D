@@ -10,7 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@cyntler/react-doc-viewer": "1.13.0",
     "@progress/kendo-file-saver": "1.1.1",
     "@progress/kendo-licensing": "1.3.0",
     "@progress/kendo-react-animation": "5.9.0",
