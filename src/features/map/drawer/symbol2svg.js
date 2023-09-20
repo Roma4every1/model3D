@@ -68,20 +68,8 @@ function xml2text(xml) {
 	}
 }
 
-function makeDefaultProps() {
-	return {
-		pen: {color: 'Black', bkcolor: 'Black', style: 'Solid', width: 0},
-		brush: {color: 'Black', bkcolor: 'Black', style: 'Solid', hatch: ''},
-		font: {
-			color: 'Black', bkcolor: '', typeface: '',
-			size: 1, angle: 0, weight: 0, italic: 0,
-			underlined: 0, strikedout: 0,
-		},
-	};
-}
-
 function parseColor(color) {
-	return colorsDict.hasOwnProperty(color) ? colorsDict[color] : color;
+  return colorsDict[color] ?? color;
 }
 
 function calcSvgStyle(props, ret) {
@@ -243,33 +231,47 @@ export function parseDef(lib) {
 		return vsdL[name.toLowerCase()];
 	}
 
+  /** @type Record<string, Map<number, any>> */
 	const ret = {};
-	const subst = lib['CHR Substitution'];
+	const substitution = lib['CHR Substitution'];
 
-	for (let i in subst) if (subst.hasOwnProperty(i)) {
+	for (let i in substitution) {
 		let pic = [];
-		let props = makeDefaultProps();
-		draw(pic, props, getElement(subst[i]));
+		let props = {
+      pen: {color: 'Black', bkcolor: 'Black', style: 'Solid', width: 0},
+      brush: {color: 'Black', bkcolor: 'Black', style: 'Solid', hatch: ''},
+      font: {
+        color: 'Black', bkcolor: '', typeface: '',
+        size: 1, angle: 0, weight: 0, italic: 0,
+        underlined: 0, strikedout: 0,
+      },
+    };
+		draw(pic, props, getElement(substitution[i]));
 
-		ret[i] = (color) => xml2text({
-			name: 'svg',
-			attributes: {
-				xmlns: 'http://www.w3.org/2000/svg', version: '1.1',
-				width: '15mm', height: '15mm', viewBox: '0 0 15 15',
-			},
-			children: [{
-				name: 'g',
-				attributes: calcSvgStyle(
-					{
-						pen: {style: 'Solid', color, width: 0.2},
-						brush: {style: 'Solid', color},
-					},
-					{transform: 'translate(7.5 7.5) scale(1 -1)'}
-				),
-				children: pic,
-			}],
-		})
+    const match = i.match(/([\w.-]+) *\((\d+)\)/);
+    if (!match) continue;
+    const libName = match[1].toUpperCase();
+    const index = parseInt(match[2]);
+
+    if (!ret[libName]) ret[libName] = new Map();
+    ret[libName].set(index, (color) => xml2text({
+      name: 'svg',
+      attributes: {
+        xmlns: 'http://www.w3.org/2000/svg', version: '1.1',
+        width: '15mm', height: '15mm', viewBox: '0 0 15 15',
+      },
+      children: [{
+        name: 'g',
+        attributes: calcSvgStyle(
+          {
+            pen: {style: 'Solid', color, width: 0.2},
+            brush: {style: 'Solid', color},
+          },
+          {transform: 'translate(7.5 7.5) scale(1 -1)'}
+        ),
+        children: pic,
+      }],
+    }));
 	}
-
 	return ret;
 }

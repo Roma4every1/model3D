@@ -13,16 +13,18 @@ import {
 } from '../../../store/map.actions';
 
 import {
-  createFieldInit, createLabelInit, createPolylineInit,
-  rollbackField, rollbackLabel, rollbackPolyline,
+  createSignInit, createFieldInit, createLabelInit, createPolylineInit,
+  rollbackSign, rollbackField, rollbackLabel, rollbackPolyline,
 } from './properties-utils';
 
+import { SignProperties } from './sign/sign-properties.tsx';
 import { PolylineProperties } from './polyline/polyline-properties';
 import { LabelProperties } from './label/label-properties';
 import { FieldProperties } from './field/field-properties';
 
 
-const windowSizeDict: Record<'polyline' | 'label' | 'field', [number, number]> = {
+const windowSizeDict: Record<MapElementType, [number, number]> = {
+  sign: [410, 186],
   polyline: [320, 260],
   label: [350, 205],
   field: [320, 260],
@@ -66,13 +68,17 @@ export const PropertiesWindow = ({formID, setOpen}: PropertiesWindowProps) => {
 
   const init = useMemo<any>(() => {
     if (!element) return;
+    if (element.type === 'sign') return createSignInit(element);
     if (element.type === 'polyline') return createPolylineInit(element);
     if (element.type === 'label') return createLabelInit(element);
     if (element.type === 'field') return createFieldInit(element);
   }, [element]);
 
   const rollbackElement = (element: MapElement, init: any) => {
-    if (element.type === 'polyline') {
+    if (element.type === 'sign') {
+      rollbackSign(element, init);
+    }
+    else if (element.type === 'polyline') {
       rollbackPolyline(element, init);
     }
     else if (element.type === 'label') {
@@ -85,10 +91,7 @@ export const PropertiesWindow = ({formID, setOpen}: PropertiesWindowProps) => {
   }
 
   const cancel = useCallback(() => {
-    if (isElementCreating) {
-      cancelCreating()
-      return;
-    }
+    if (isElementCreating) { cancelCreating(); return; }
     if (element) rollbackElement(element, init);
     update(); close();
   }, [element, mode, init, update, close, setOpen, isElementCreating]); // eslint-disable-line
@@ -106,35 +109,35 @@ export const PropertiesWindow = ({formID, setOpen}: PropertiesWindowProps) => {
   };
 
   const ElementProperties = () => {
-    if (element?.type === 'polyline')
-      return (
-        <PolylineProperties
-          element={element} init={init} legends={legends.data}
-          apply={apply} update={update} cancel={cancel} t={t} isElementCreating={isElementCreating}
-        />
-      );
-    if (element?.type === 'label')
-      return (
-        <LabelProperties
-          element={element} init={init}
-          apply={apply} update={update} cancel={cancel} t={t} isElementCreating={isElementCreating}
-        />
-      );
-    if (element?.type === 'field')
-      return (
-        <FieldProperties
-          element={element} init={init}
-          apply={apply} update={update} cancel={cancel} t={t} isElementCreating={isElementCreating}
-        />
-      );
+    if (element?.type === 'sign') return (
+      <SignProperties
+        element={element} init={init}
+        apply={apply} update={update} cancel={cancel} t={t} isElementCreating={isElementCreating}
+      />
+    );
+    if (element?.type === 'polyline') return (
+      <PolylineProperties
+        element={element} init={init} legends={legends.data}
+        apply={apply} update={update} cancel={cancel} t={t} isElementCreating={isElementCreating}
+      />
+    );
+    if (element?.type === 'label') return (
+      <LabelProperties
+        element={element} init={init}
+        apply={apply} update={update} cancel={cancel} t={t} isElementCreating={isElementCreating}
+      />
+    );
+    if (element?.type === 'field') return (
+      <FieldProperties
+        element={element} init={init}
+        apply={apply} update={update} cancel={cancel} t={t} isElementCreating={isElementCreating}
+      />
+    );
     return <div>{t('map.selecting.no-selected')}</div>;
   };
 
   useEffect(() => {
-    if (!element || element.type === 'sign') {
-      update(); close();
-      return;
-    }
+    if (!element) { update(); close(); return; }
     const title = t('map.properties-edit', {elementType: t('map.' + element.type)});
     const [width, height] = windowSizeDict[element.type] ?? [];
     dispatch(updateWindow(windowID, {title, width, height}))

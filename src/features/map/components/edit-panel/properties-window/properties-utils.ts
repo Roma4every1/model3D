@@ -5,6 +5,16 @@ import { polylineType } from '../selecting/selecting-utils';
 import { ColorPickerPaletteSettings, ColorPickerGradientSettings } from '@progress/kendo-react-inputs';
 
 
+export interface InitSignState {
+  x: number;
+  y: number;
+  size: number;
+  color: string;
+  fontName: string;
+  symbolCode: number;
+  img: HTMLImageElement;
+}
+
 export interface InitLabelState {
   text: string,
   color: string,
@@ -53,6 +63,27 @@ let gridTemplates = new Array(30).fill(null).map((x, i) => 'grids-' + i);
 let litTemplates = new Array(27).fill(null).map((x, i) => 'lit-' + i);
 let halfToneTemplates = new Array(9).fill(null).map((x, i) => 'halftone-' + (i * 8));
 export const templatesData: string[] = ['', ...gridTemplates, ...litTemplates, ...halfToneTemplates];
+
+/* --- Sign Properties --- */
+
+/** Создание начального состояния точечного элемента. */
+export function createSignInit(sign: MapSign): InitSignState {
+  return  {
+    x: sign.x, y: sign.y, size: sign.size,
+    color: sign.color, fontName: sign.fontname, symbolCode: sign.symbolcode, img: sign.img,
+  };
+}
+
+/** Откат изменённого точечного элемента в начальное состояние. */
+export function rollbackSign(sign: MapSign, init: InitSignState): void {
+  sign.x = init.x;
+  sign.y = init.y;
+  sign.size = init.size;
+  sign.color = init.color;
+  sign.fontname = init.fontName;
+  sign.symbolcode = init.symbolCode;
+  sign.img = init.img;
+}
 
 /* --- Label Properties --- */
 

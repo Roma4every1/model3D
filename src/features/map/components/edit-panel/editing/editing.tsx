@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
+import { WindowProps } from '@progress/kendo-react-dialogs';
 import { EditElement } from './edit-element';
 import { CreateElement } from './create-element';
 import { DeleteElementWindow } from './delete-element';
@@ -25,7 +26,7 @@ interface EditingProps {
 
 const mouseMoveNeedModes: MapModes[] = [MapModes.MOVE, MapModes.MOVE_POINT, MapModes.ROTATE];
 const creatingElementTypes: MapElementType[] = ['polyline', 'sign', 'label'];
-const hasPropertiesWindow: MapElementType[] = ['polyline', 'label', 'field'];
+const hasPropertiesWindow: MapElementType[] = ['sign', 'polyline', 'label', 'field'];
 
 export const Editing = ({mapState, formID}: EditingProps) => {
   const { t } = useTranslation();
@@ -135,9 +136,9 @@ export const Editing = ({mapState, formID}: EditingProps) => {
     const content = <PropertiesWindow formID={formID} setOpen={setPropertiesWindowOpen}/>;
     if (mapState.mode < MapModes.MOVE_MAP) dispatch(setEditMode(formID, MapModes.MOVE_MAP));
 
-    const windowProps = {
+    const windowProps: WindowProps = {
       className: 'propertiesWindow', resizable: false,
-      style: {zIndex: 99},
+      style: {zIndex: 99}, maximizeButton: () => null,
     };
     dispatch(showWindow('mapPropertiesWindow', windowProps, content));
   };
