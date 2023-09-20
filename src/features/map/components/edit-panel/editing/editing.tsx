@@ -147,7 +147,11 @@ export const Editing = ({mapState, formID}: EditingProps) => {
     const windowID = 'mapAttrTableWindow';
     const onClose = () => dispatch(closeWindow(windowID));
     const content = <AttrTableWindow formID={formID} setOpen={setAttrTableOpen} onClose={onClose}/>;
-    const windowProps = {title: t('map.attr-table'), width: 300, height: 300, onClose};
+
+    const windowProps: WindowProps = {
+      className: 'attr-table-window', title: t('map.attr-table'),
+      width: 320, height: 260, onClose, maximizeButton: () => null,
+    };
     dispatch(showWindow(windowID, windowProps, content));
   };
 
@@ -166,21 +170,18 @@ export const Editing = ({mapState, formID}: EditingProps) => {
     isElementCreating ||
     !hasPropertiesWindow.includes(selectedElement?.type);
 
-  const arcPathInvalid = selectedElement?.type === 'polyline' ? selectedElement?.arcs[0]?.path?.length <= 2 : false;
+  const arcPathInvalid = selectedElement?.type === 'polyline'
+    ? selectedElement?.arcs[0]?.path?.length <= 2
+    : false;
 
   const disabledAccept = disableAll ||
     (!isElementCreating && !isElementEditing) ||
     arcPathInvalid ||
     (oldData.x === null && oldData.arc === null);
+
   const disabledCancel  = disabledAccept && !(isPolylineCreating && !isPropertiesWindowOpen);
-
-  const disabledAttrTable = disableAll ||
-    !selectedElement?.attrTable ||
-    Object.keys(selectedElement?.attrTable).length === 0;
-
-  const disabledDelete = disableAll ||
-    isElementCreating ||
-    !selectedElement;
+  const disabledAttrTable = disableAll || !selectedElement?.attrTable;
+  const disabledDelete = disableAll || isElementCreating || !selectedElement;
 
   return (
     <section className={'map-editing'}>

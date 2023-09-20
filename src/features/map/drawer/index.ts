@@ -17,13 +17,13 @@ export interface SignFontData {
 
 
 class MapProvider {
-  private static UnknownFontData: SignFontData = {
+  private static readonly UnknownFontData: SignFontData = {
     id: '', name: 'unknown',
     minIndex: 0, maxIndex: 0
   };
-  private static defaultSignLib = 'PNT.CHR';
+  private static readonly defaultSignLib = 'PNT.CHR';
 
-  public drawOptions = {
+  public readonly drawOptions = {
     zoomSleep: 400,
     selectedSize: 6,
     selectedColor: '#000FFF',
@@ -33,12 +33,12 @@ class MapProvider {
     piesliceAlpha: 0.7,
   };
 
-  public lineConfig = lines;
-  public fontData: SignFontData[] = [];
+  public readonly lineConfig = lines;
+  public readonly fontData: SignFontData[] = [];
 
   private initialized: boolean = false;
   private lib: SignImageLibrary = {};
-  private cache: Record<string, Promise<HTMLImageElement>> = {};
+  private readonly cache: Record<string, Promise<HTMLImageElement>> = {};
 
   public getSignImage(fontID: string, index: number, color: string): Promise<HTMLImageElement> {
     const hash = fontID + index + color;

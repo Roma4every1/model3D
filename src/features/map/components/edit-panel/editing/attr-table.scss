@@ -1,0 +1,16 @@
+.attr-table-window > .k-window-content {
+  padding: 8px;
+}
+
+.attr-table-field {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  align-items: baseline;
+  gap: 0.25em;
+  margin: 4px 0;
+  height: 24px;
+
+  > * {
+    height: 24px;
+  }
+}
