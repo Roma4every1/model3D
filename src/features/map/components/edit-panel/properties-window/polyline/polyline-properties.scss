@@ -1,9 +1,9 @@
 .polyline-properties {
   fieldset {
     display: grid;
-    grid-gap: 8px;
-    margin-bottom: 7px;
-    margin-right: 7px;
+    grid-template-columns: 100px 100px 110px;
+    grid-gap: 5px;
+    margin-bottom: 10px;
   }
 
   .item {
@@ -19,104 +19,8 @@
     gap: 5px;
     justify-self: flex-end;
   }
-}
 
-.polylinePropertiesLegendLabel {
-  margin: 2px;
-  font-size: 12px;
-}
-
-.polylinePropertiesLegendCombobox {
-  height: 20px;
-  margin: 2px;
-}
-
-.polylinePropertiesFillColorLabel {
-  margin: 2px;
-  display: inline-block;
-  vertical-align: bottom;
-  font-size: 12px;
-}
-
-.polylinePropertiesFillColorCombobox {
-  height: 20px;
-  margin: 2px;
-}
-
-.polylinePropertiesBkColorLabel {
-  margin: 2px;
-  font-size: 12px;
-}
-
-.polylinePropertiesBkColorCombobox {
-  margin: 2px;
-  font-size: 12px;
-}
-
-.polylinePropertiesTemplateLabel {
-  margin: 2px;
-  font-size: 12px;
-}
-
-.polylinePropertiesTemplateCombobox {
-  height: 20px;
-  margin: 2px;
-}
-
-.polylinePropertiesStrokeColorLabel {
-  margin: 2px;
-  font-size: 12px;
-}
-
-.polylinePropertiesStrokeColorCombobox {
-  height: 20px;
-  margin: 2px;
-}
-
-.polylinePropertiesStrokeWidthLabel {
-  margin: 2px;
-  font-size: 12px;
-}
-
-.polylinePropertiesStrokeWidthCombobox {
-  height: 20px;
-  margin: 2px;
-  font-size: 12px;
-}
-
-.polylinePropertiesStyleLabel {
-  margin: 2px;
-  font-size: 12px;
-}
-
-.polylinePropertiesStyleCombobox {
-  height: 20px;
-  margin: 2px;
-  font-size: 12px;
-}
-
-.polylinePropertiesTransparencyCheckbox {
-  height: 20px;
-  margin: 2px;
-  font-size: 12px;
-}
-
-.polylinePropertiesClosedCheckbox {
-  height: 20px;
-  margin: 2px;
-  font-size: 12px;
-}
-
-.polylinePropertiesApplyButton {
-  width: 100px;
-  height: 25px;
-  margin: 5px;
-  font-size: 12px;
-}
-
-.polylinePropertiesCancelButton {
-  width: 100px;
-  height: 25px;
-  margin: 5px;
-  font-size: 12px;
+  .label {
+    font-size: 12px;
+  }
 }

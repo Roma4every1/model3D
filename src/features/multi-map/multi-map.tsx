@@ -42,12 +42,13 @@ export const MultiMap = ({id, channelName}: MultiMapProps) => {
   }, [children, configs, state?.children, fetchState, id, dispatch]);
 
   useEffect(() => {
-    if (stateNeedFetch(fetchState)) dispatch(fetchMultiMapData(id));
-  }, [fetchState, id, dispatch]);
+    if (state && stateNeedFetch(fetchState)) dispatch(fetchMultiMapData(id));
+  }, [state, fetchState, id, dispatch]);
 
   const factory = (node: TabNode) => {
     const tabID = node.getId();
     const config = state.configs.find(item => item.formID === tabID);
+    if (!config) return null;
     return <MultiMapItem parent={id} config={config}/>;
   };
 

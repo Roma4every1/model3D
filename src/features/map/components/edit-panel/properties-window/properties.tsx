@@ -25,8 +25,8 @@ import { FieldProperties } from './field/field-properties';
 
 const windowSizeDict: Record<MapElementType, [number, number]> = {
   sign: [410, 186],
-  polyline: [320, 260],
-  label: [350, 205],
+  polyline: [335, 235],
+  label: [350, 210],
   field: [320, 260],
 };
 

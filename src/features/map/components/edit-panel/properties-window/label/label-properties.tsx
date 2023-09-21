@@ -1,32 +1,31 @@
+import { useState } from 'react';
 import { TFunction } from 'react-i18next';
-import { InputChangeEvent, ColorPickerChangeEvent } from '@progress/kendo-react-inputs';
-import { NumericTextBoxChangeEvent, CheckboxChangeEvent } from '@progress/kendo-react-inputs';
-import { useState, useCallback } from 'react';
-import { ColorPicker, NumericTextBox, Checkbox, Input } from '@progress/kendo-react-inputs';
-import { Button } from '@progress/kendo-react-buttons';
 import { InitLabelState, paletteSettings, gradientSettings } from '../properties-utils';
-import { AlignSwitcher } from './align-switcher';
+
 import './label-properties.scss';
+import { AlignSwitcher } from './align-switcher';
+import { Button } from '@progress/kendo-react-buttons';
+
+import {
+  ColorPicker, NumericTextBox, Checkbox, Input,
+  InputChangeEvent, ColorPickerChangeEvent, NumericTextBoxChangeEvent, CheckboxChangeEvent,
+} from '@progress/kendo-react-inputs';
 
 
 interface LabelPropertiesProps {
-  element: MapLabel,
-  init: InitLabelState,
-  apply: () => void,
-  update: () => void,
-  cancel: () => void,
-  t: TFunction,
-  isElementCreating: boolean,
+  element: MapLabel;
+  init: InitLabelState;
+  apply: () => void;
+  update: () => void;
+  cancel: () => void;
+  t: TFunction;
+  isElementCreating: boolean;
 }
 
 
-export const LabelProperties = ({element: label, init, apply, update, cancel, t, isElementCreating}: LabelPropertiesProps) => {
+export const LabelProperties = (props: LabelPropertiesProps) => {
+  const { element: label, init, apply, update, cancel, t, isElementCreating } = props;
   const [changed, setChanged] = useState(false);
-
-  const onChange = useCallback(() => {
-    setChanged(true);
-    update();
-  }, [update]);
 
   /* --- Polyline Properties State --- */
 
@@ -44,53 +43,48 @@ export const LabelProperties = ({element: label, init, apply, update, cancel, t,
 
   /* --- Properties Handlers --- */
 
-  const onTextChange = useCallback((event: InputChangeEvent) => {
+  const onTextChange = (event: InputChangeEvent) => {
     label.text = event.value;
     setText(label.text);
-    onChange();
-  }, [label, onChange]);
-
-  const onColorChange = useCallback((event: ColorPickerChangeEvent) => {
+    setChanged(true); update();
+  };
+  const onColorChange = (event: ColorPickerChangeEvent) => {
     label.color = event.value;
     setColor(label.color);
-    onChange();
-  }, [label, onChange]);
-
-  const onFontSizeChange = useCallback((e: NumericTextBoxChangeEvent) => {
+    setChanged(true); update();
+  };
+  const onFontSizeChange = (e: NumericTextBoxChangeEvent) => {
     label.fontsize = e.value;
     setFontSize(label.fontsize);
-    onChange();
-  }, [label, onChange]);
+    setChanged(true); update();
+  };
 
-  const onXOffsetChange = useCallback((e: NumericTextBoxChangeEvent) => {
+  const onXOffsetChange = (e: NumericTextBoxChangeEvent) => {
     label.xoffset = e.value;
     setXOffset(label.xoffset);
-    onChange();
-  }, [label, onChange]);
-
-  const onYOffsetChange = useCallback((e: NumericTextBoxChangeEvent) => {
+    setChanged(true); update();
+  };
+  const onYOffsetChange = (e: NumericTextBoxChangeEvent) => {
     label.yoffset = e.value;
     setYOffset(label.yoffset);
-    onChange();
-  }, [label, onChange]);
+    setChanged(true); update();
+  };
 
-  const onAlignmentChange = useCallback((h: MapLabelAlignment, v: MapLabelAlignment) => {
+  const onAlignmentChange = (h: MapLabelAlignment, v: MapLabelAlignment) => {
     label.halignment = h; label.valignment = v;
     setHAlignment(h); setVAlignment(v);
-    onChange();
-  }, [label, onChange]);
-
-  const onAngleChange = useCallback((e: NumericTextBoxChangeEvent) => {
+    setChanged(true); update();
+  };
+  const onAngleChange = (e: NumericTextBoxChangeEvent) => {
     label.angle = e.value;
     setAngle(label.angle);
-    onChange();
-  }, [label, onChange]);
-
-  const onTransparentChange = useCallback((e: CheckboxChangeEvent) => {
+    setChanged(true); update();
+  };
+  const onTransparentChange = (e: CheckboxChangeEvent) => {
     label.transparent = e.value;
     setTransparent(label.transparent);
-    onChange();
-  }, [label, onChange]);
+    setChanged(true); update();
+  };
 
   /* --- View --- */
 
@@ -113,7 +107,7 @@ export const LabelProperties = ({element: label, init, apply, update, cancel, t,
           <NumericTextBox value={fontSize} format={'#'} min={1} onChange={onFontSizeChange}/>
         </div>
       </fieldset>
-      <fieldset style={{gridTemplateColumns: '1fr 1fr 1.5fr'}}>
+      <fieldset style={{gridTemplateColumns: '1.1fr 1fr 1.3fr'}}>
         <div>
           <div>Выравнивание:</div>
           <div className={'label-offset'}>
@@ -147,11 +141,14 @@ export const LabelProperties = ({element: label, init, apply, update, cancel, t,
           </div>
         </div>
       </fieldset>
-      <div>
-        <Button disabled={ isElementCreating ? false : !changed } onClick={apply}>{t('base.apply')}</Button>
-        <Button onClick={cancel}>{t('base.cancel')}</Button>
+      <div className={'wm-dialog-actions'} style={{paddingTop: 6}}>
+        <Button disabled={ isElementCreating ? false : !changed } onClick={apply}>
+          {t('base.apply')}
+        </Button>
+        <Button onClick={cancel}>
+          {t('base.cancel')}
+        </Button>
       </div>
     </div>
   );
-}
-
+};

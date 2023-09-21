@@ -65,7 +65,6 @@ function createLayout(forms: FormDataWM[], active: FormID): IJsonModel {
 
 function createTabSetNode(form: FormDataWM, active: FormID): IJsonTabSetNode {
   return {
-    id: form.id,
     type: 'tabset', selected: 0, active: form.id === active,
     children: [{
       id: form.id, type: 'tab', name: form.displayName,

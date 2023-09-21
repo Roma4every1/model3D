@@ -46,7 +46,7 @@ export const AttrTableWindow = ({formID, setOpen, onClose}: AttrTableWindowProps
   const pairToField = ([key, value], i: number) => {
     const onChange = (e) => {
       setReadyForApply(true);
-      attrTable[value] = e.value;
+      attrTable[key] = e.value;
       setAttrTable({...attrTable});
     };
     return (

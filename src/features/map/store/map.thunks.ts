@@ -21,7 +21,7 @@ export function fetchMapData(formID: FormID, mapID: MapID, owner: MapOwner, setP
   }
 }
 
-export function fetchMultiMapData(id: FormID): Thunk {
+export function fetchMultiMapData(id: ClientID): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const multiMapState = getState().maps.multi[id];
     if (!multiMapState) return;
