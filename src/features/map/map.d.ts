@@ -15,6 +15,7 @@ interface MapsState {
  * */
 interface MultiMapState {
   sync: boolean;
+  templateFormID: FormID;
   children: FormID[];
   configs: MapItemConfig[];
 }

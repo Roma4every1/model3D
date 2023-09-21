@@ -29,18 +29,17 @@ export enum MapsActions {
 /* --- Action Interfaces --- */
 
 interface MapAction {
-  type: MapsActions,
-  formID: FormID,
+  type: MapsActions;
+  formID: FormID;
 }
 
 interface ActionAddMulti {
-  type: MapsActions.ADD_MULTI_MAP,
-  id: FormID,
-  payload: MapItemConfig[],
+  type: MapsActions.ADD_MULTI_MAP;
+  payload: {id: ClientID, configs: MapItemConfig[], templateFormID: FormID};
 }
 interface ActionSetSync extends MapAction {
-  type: MapsActions.SET_SYNC,
-  payload: boolean,
+  type: MapsActions.SET_SYNC;
+  payload: boolean;
 }
 
 interface ActionAdd {
@@ -164,9 +163,11 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
     /* --- multi --- */
 
     case MapsActions.ADD_MULTI_MAP: {
-      const { id, payload: configs } = action;
-      const sync = state.multi[id]?.sync ?? true;
-      state.multi[id] = {sync, configs, children: configs.map(c => c.formID)};
+      const { id, configs } = action.payload;
+      const oldState = state.multi[id];
+      const sync = oldState?.sync ?? true;
+      const templateFormID = oldState?.templateFormID ?? action.payload.templateFormID;
+      state.multi[id] = {sync, templateFormID, configs, children: configs.map(c => c.formID)};
 
       for (const { formID } of configs) {
         const utils = { updateCanvas: () => {}, pointToMap: (point) => point };

@@ -25,11 +25,14 @@ export function fetchMultiMapData(id: ClientID): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const multiMapState = getState().maps.multi[id];
     if (!multiMapState) return;
+
     dispatch(fetchFormsStart([id + '_map']));
+    const owner = 'Common';
+    const templateID = multiMapState.templateFormID;
 
     for (const config of multiMapState.configs) {
       config.setProgress(0);
-      const loadedMap = await mapsAPI.loadMap(config.id, 'Common', config.setProgress, id);
+      const loadedMap = await mapsAPI.loadMap(config.id, owner, config.setProgress, templateID);
       config.data = loadedMap;
 
       const formID = config.formID;
