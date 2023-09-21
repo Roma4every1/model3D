@@ -47,6 +47,15 @@ export const fetchPresentationState = (id: ClientID): Thunk => {
     const existingChannels = Object.keys(state.channels);
     const channels = await createClientChannels(baseChannels, paramDict, existingChannels);
 
+    const channelErrors = Object.entries(channels).filter(e => !e[1]).map(e => e[0]);
+    if (channelErrors.length > 0) {
+      const message = channelErrors.length === 1
+        ? `Ошибка при инициализации канала ${channelErrors[0]}`
+        : `Ошибка при инициализации каналов ${channelErrors.join(', ')}`;
+      dispatch(fetchFormError(id, message));
+      dispatch(fetchFormsEnd(childrenID)); return;
+    }
+
     const allChannels = {...state.channels, ...channels};
     paramDict[rootID] = state.parameters[rootID];
     applyChannelsDeps(allChannels, paramDict);
