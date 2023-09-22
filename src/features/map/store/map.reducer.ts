@@ -1,6 +1,6 @@
-import { MapModes } from '../lib/enums';
+import { MapMode } from '../lib/constants.ts';
 import { chunk } from 'lodash';
-import { getBoundsByPoints, getMultiMapChildrenCanvases } from '../lib/map-utils';
+import { createMapElementInit, getBoundsByPoints, getMultiMapChildrenCanvases } from '../lib/map-utils';
 import { traceLayerProto, getTraceMapElement, getFullTraceViewport } from '../lib/traces-map-utils';
 
 /* --- Action Types --- */
@@ -10,10 +10,8 @@ export enum MapsActions {
   SET_SYNC = 'maps/sync',
   ADD = 'maps/add',
   LOAD_SUCCESS = 'maps/loadOk',
-  LOAD_ERROR = 'maps/loadErr',
   START_LOAD = 'maps/start_load',
   SET_MODE = 'maps/setMode',
-  SET_DRAW_END = 'maps/setEnd',
   SET_FIELD = 'maps/setField',
   CLEAR_SELECT = 'maps/clear',
   START_EDITING = 'maps/startEdit',
@@ -37,12 +35,12 @@ interface ActionAddMulti {
   type: MapsActions.ADD_MULTI_MAP;
   payload: {id: ClientID, configs: MapItemConfig[], templateFormID: FormID};
 }
-interface ActionSetSync extends MapAction {
+interface ActionSetSync {
   type: MapsActions.SET_SYNC;
-  payload: boolean;
+  payload: {id: ClientID, sync: boolean};
 }
 
-interface ActionAdd {
+interface ActionCreate {
   type: MapsActions.ADD,
   payload: FormStatePayload,
 }
@@ -50,19 +48,12 @@ interface ActionLoadSuccess extends MapAction {
   type: MapsActions.LOAD_SUCCESS,
   mapData: MapData,
 }
-interface ActionLoadError extends MapAction {
-  type: MapsActions.LOAD_ERROR,
-}
 interface ActionStartLoad extends MapAction {
   type: MapsActions.START_LOAD,
 }
 interface ActionSetMode extends MapAction {
   type: MapsActions.SET_MODE,
-  payload: MapModes,
-}
-interface ActionSetDimensions extends MapAction {
-  type: MapsActions.SET_DRAW_END,
-  payload: (canvas: MapCanvas, x: number, y: number, scale: number) => void,
+  payload: MapMode,
 }
 interface ActionSetField extends MapAction {
   type: MapsActions.SET_FIELD,
@@ -101,20 +92,13 @@ interface ActionSetTrace extends MapAction {
 }
 
 
-export type MapsAction = ActionAddMulti | ActionSetSync | ActionAdd |
-  ActionStartLoad | ActionLoadSuccess | ActionLoadError |
-  ActionSetMode | ActionSetDimensions | ActionSetField | ActionClearSelect |
+export type MapsAction = ActionAddMulti | ActionSetSync | ActionCreate |
+  ActionStartLoad | ActionLoadSuccess | ActionSetMode | ActionSetField | ActionClearSelect |
   ActionStartEditing | ActionAcceptEditing | ActionCancelEditing |
   ActionStartCreating | ActionCreateElement | ActionCancelCreating | ActionAcceptCreating |
   ActionSetTrace;
 
 /* --- Reducer Utils --- */
-
-const clearOldData = (mapState: MapState): void => {
-  mapState.oldData.x = null;
-  mapState.oldData.y = null;
-  mapState.oldData.arc = null;
-};
 
 const clearSelect = (mapState: MapState): void => {
   if (mapState.element) {
@@ -123,8 +107,6 @@ const clearSelect = (mapState: MapState): void => {
     mapState.element = null;
   }
   mapState.isElementEditing = false;
-
-  clearOldData(mapState);
 };
 
 const setMultiMapBlocked = (state: MapsState, parentFormID: FormID, blocked: boolean): void => {
@@ -134,8 +116,7 @@ const setMultiMapBlocked = (state: MapsState, parentFormID: FormID, blocked: boo
 };
 
 const initMapState: MapState = {
-  mode: MapModes.NONE,
-  legends: {loaded: false, success: undefined, data: null},
+  mode: MapMode.NONE,
   mapData: null,
   activeLayer: null,
   isLoadSuccessfully: undefined,
@@ -143,9 +124,10 @@ const initMapState: MapState = {
   owner: null,
   mapID: null,
   element: null,
+  elementInit: null,
+  elementInitProperties: null,
   isElementEditing: false,
   isElementCreating: false,
-  oldData: {x: null, y: null, arc: null, ange: null},
   selecting: {nearestElements: [], activeIndex: 0, lastPoint: null},
   isModified: false,
   cursor: 'auto',
@@ -177,7 +159,7 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
     }
 
     case MapsActions.SET_SYNC: {
-      const { formID: parentID, payload: sync } = action;
+      const { id: parentID, sync } = action.payload;
       state.multi[parentID] = {...state.multi[parentID], sync};
       const children = state.multi[parentID].children;
 
@@ -217,18 +199,13 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
       return {...state};
     }
 
-    case MapsActions.LOAD_ERROR: {
-      state.single[action.formID] = {...state.single[action.formID], isLoadSuccessfully: false};
-      return {...state};
-    }
-
     case MapsActions.SET_MODE: {
       const { formID, payload: mode } = action;
       const newMapState: MapState = {...state.single[formID]};
       newMapState.mode = mode;
-      newMapState.cursor = mode === MapModes.AWAIT_POINT ? 'crosshair' : 'auto';
+      newMapState.cursor = mode === MapMode.AWAIT_POINT ? 'crosshair' : 'auto';
 
-      const isEditing = mode > MapModes.MOVE_MAP;
+      const isEditing = mode > MapMode.MOVE_MAP;
       newMapState.childOf
         ? setMultiMapBlocked(state, newMapState.childOf, isEditing)
         : newMapState.canvas.blocked = isEditing;
@@ -242,12 +219,6 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
       return {...state};
     }
 
-    case MapsActions.SET_DRAW_END: {
-      const { formID, payload } = action;
-      state.single[formID].mapData.onDrawEnd = payload;
-      return {...state};
-    }
-
     case MapsActions.SET_FIELD: {
       const { formID, field, payload } = action;
       state.single[formID] = {...state.single[formID], [field]: payload};
@@ -258,7 +229,6 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
       const { formID, elementOnly } = action;
       const newMapState: MapState = {...state.single[formID]};
 
-      clearOldData(newMapState);
       newMapState.childOf
         ? setMultiMapBlocked(state, newMapState.childOf, false)
         : newMapState.canvas.blocked = false;
@@ -279,22 +249,7 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
 
     case MapsActions.START_EDITING: {
       const newMapState: MapState = {...state.single[action.formID]};
-      const element = newMapState.element;
-
-      if (element.type === 'polyline') {
-        const arc = element.arcs[0];
-        newMapState.oldData.arc = {closed: arc.closed, path: [...arc.path]};
-      }
-      if (element.type === 'label') {
-        newMapState.oldData.x = element.x;
-        newMapState.oldData.y = element.y;
-        newMapState.oldData.ange = element.angle;
-      }
-      if (element.type === 'sign') {
-        newMapState.oldData.x = element.x;
-        newMapState.oldData.y = element.y;
-      }
-
+      newMapState.elementInit = createMapElementInit(newMapState.element);
       state.single[action.formID] = newMapState;
       return {...state};
     }
@@ -304,14 +259,11 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
       const element = newMapState.element;
 
       clearSelect(newMapState);
-      newMapState.mode = MapModes.NONE;
+      newMapState.mode = MapMode.NONE;
       newMapState.childOf
         ? setMultiMapBlocked(state, newMapState.childOf, false)
         : newMapState.canvas.blocked = false;
 
-      if (element.type === 'polyline') {
-        element.bounds = getBoundsByPoints(chunk(element.arcs[0].path, 2) as [number, number][]);
-      }
       const modifiedLayer = newMapState.mapData.layers?.find(l => l.elements?.includes(element));
       if (modifiedLayer) {
         modifiedLayer.modified = true;
@@ -330,32 +282,15 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
 
     case MapsActions.CANCEL_EDITING: {
       const newMapState: MapState = {...state.single[action.formID]};
-      const element = newMapState.element;
-      const oldData = newMapState.oldData;
-
-      if (element) {
-        if (element.type === 'polyline') {
-          element.arcs[0] = oldData.arc;
-        }
-        if (element.type === 'label') {
-          element.x = oldData.x;
-          element.y = oldData.y;
-          element.angle = oldData.ange;
-        }
-        if (element.type === 'sign') {
-          element.x = oldData.x;
-          element.y = oldData.y;
-        }
-        element.selected = false;
-        element.edited = false;
+      for (const field in newMapState.elementInit) {
+        newMapState.element[field] = newMapState.elementInit[field];
       }
-      clearOldData(newMapState);
 
       newMapState.childOf
         ? setMultiMapBlocked(state, newMapState.childOf, false)
         : newMapState.canvas.blocked = false;
       newMapState.isElementEditing = false;
-      newMapState.mode = MapModes.NONE;
+      newMapState.mode = MapMode.NONE;
       newMapState.utils.updateCanvas();
       state.single[action.formID] = newMapState;
       return {...state};
@@ -364,7 +299,7 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
     case MapsActions.START_CREATING: {
       const newMapState: MapState = {...state.single[action.formID]};
       clearSelect(newMapState);
-      newMapState.mode = MapModes.CREATING;
+      newMapState.mode = MapMode.CREATING;
       newMapState.isElementCreating = true;
       newMapState.utils.updateCanvas();
       state.single[action.formID] = newMapState;
@@ -383,7 +318,7 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
         : newMapState.canvas.blocked = false;
 
       const isPolyline = newMapState.element.type === 'polyline';
-      newMapState.mode = isPolyline ? MapModes.ADD_END : MapModes.MOVE_MAP;
+      newMapState.mode = isPolyline ? MapMode.ADD_END : MapMode.MOVE_MAP;
       newMapState.canvas.blocked = isPolyline;
       newMapState.isModified = !(isPolyline && (newMapState.element as MapPolyline)?.isTrace);
 
@@ -398,7 +333,6 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
 
       newMapState.isElementCreating = false;
       newMapState.isElementEditing = false;
-      clearOldData(newMapState);
 
       newMapState.activeLayer.modified = true;
       newMapState.isModified = true;
@@ -406,7 +340,7 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
       newMapState.childOf
         ? setMultiMapBlocked(state, newMapState.childOf, false)
         : newMapState.canvas.blocked = false;
-      newMapState.mode = MapModes.NONE;
+      newMapState.mode = MapMode.NONE;
       newMapState.utils.updateCanvas();
       state.single[action.formID] = newMapState;
       return {...state};
@@ -425,9 +359,8 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
       newMapState.childOf
         ? setMultiMapBlocked(state, newMapState.childOf, false)
         : newMapState.canvas.blocked = false;
-      newMapState.mode = MapModes.NONE;
+      newMapState.mode = MapMode.NONE;
       newMapState.cursor = 'auto';
-      newMapState.utils.updateCanvas();
       state.single[action.formID] = newMapState;
       return {...state};
     }

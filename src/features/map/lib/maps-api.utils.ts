@@ -6,7 +6,7 @@ import { readXml } from '../drawer/gs-transform';
 
 /** Заглушка серверной ошибки со строковым значением масштабов. */
 export function handleLayerScales(rawLayer: MapLayerRaw): void {
-  if (typeof rawLayer.lowscale === 'string' && rawLayer.lowscale !== 'INF')
+  if (typeof rawLayer.lowscale === 'string')
     rawLayer.lowscale = parseInt(rawLayer.lowscale);
   if (typeof rawLayer.highscale === 'string' && rawLayer.highscale !== 'INF')
     rawLayer.highscale = parseInt(rawLayer.highscale);

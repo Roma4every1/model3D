@@ -1,11 +1,59 @@
 import { Dispatch } from 'redux';
 import { Thunk, StateGetter } from 'shared/lib';
+import { createElement } from 'react';
 import { showNotification } from 'entities/notifications';
 import { fetchFormsStart, fetchFormsEnd } from 'entities/fetch-state';
-import { loadMapError, loadMapSuccess, setMapField, startMapLoad } from './map.actions';
+import {
+  cancelCreatingElement,
+  loadMapError,
+  loadMapSuccess,
+  setEditMode,
+  setMapField,
+  startMapLoad
+} from './map.actions';
 import { t } from 'shared/locales';
 import { mapsAPI } from '../lib/maps.api';
+import { PropertiesWindow } from '../components/edit-panel/properties-window/properties.tsx';
+import { MapMode, propertyWindowConfig } from '../lib/constants.ts';
+import { WindowProps } from '@progress/kendo-react-dialogs';
+import { closeWindow, showWindow } from '../../../entities/window';
+import { createMapElementInit } from '../lib/map-utils.ts';
 
+
+export function showMapPropertyWindow(id: FormID, element: MapElement): Thunk {
+  return async (dispatch: Dispatch, getState: StateGetter) => {
+    const mapState = getState().maps.single[id];
+    if (mapState.mode < MapMode.MOVE_MAP) dispatch(setEditMode(id, MapMode.MOVE_MAP));
+
+    const creating = mapState.isElementCreating;
+    const init = createMapElementInit(element);
+    mapState.elementInitProperties = init;
+
+    const windowID = 'map-properties-window';
+    const close = () => dispatch(closeWindow(windowID));
+
+    const onClose = () => {
+      close();
+      mapState.elementInitProperties = null;
+      if (creating) {
+        dispatch(cancelCreatingElement(id));
+      } else {
+        for (const field in init) element[field] = init[field];
+      }
+      mapState.utils.updateCanvas();
+    };
+
+    const content = createElement<any>(PropertiesWindow, {id, init, cancel: onClose, close});
+    const [width, height] = propertyWindowConfig[element.type].windowSize;
+    const title = t('map.properties-edit', {elementType: t('map.' + element.type)});
+
+    const windowProps: WindowProps = {
+      className: 'propertiesWindow', style: {zIndex: 99}, title,
+      width, height, resizable: false, maximizeButton: () => null, onClose,
+    };
+    dispatch(showWindow(windowID, windowProps, content));
+  };
+}
 
 export function fetchMapData(formID: FormID, mapID: MapID, owner: MapOwner, setProgress: (p: number) => void): Thunk {
   return async (dispatch: Dispatch) => {

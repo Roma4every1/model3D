@@ -31,7 +31,7 @@ export function getTraceMapElement(model: TraceModel): MapPolyline {
     borderstyle: 0,
     fillbkcolor: '#0000ff', fillcolor: '#0000ff',
     bordercolor: '#0000ff', borderwidth: 1.25,
-    attrTable: {}, transparent: true, isTrace: true
+    transparent: true, isTrace: true
   };
 }
 

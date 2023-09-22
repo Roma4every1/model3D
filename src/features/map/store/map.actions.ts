@@ -7,8 +7,8 @@ export function addMultiMap(id: ClientID, templateFormID: FormID, configs: MapIt
 }
 
 /** Устанавливает значение параметра синхронизации. */
-export function setMultiMapSync(formID: FormID, sync: boolean): MapsAction {
-  return {type: MapsActions.SET_SYNC, formID, payload: sync};
+export function setMultiMapSync(id: ClientID, sync: boolean): MapsAction {
+  return {type: MapsActions.SET_SYNC, payload: {id, sync}};
 }
 
 /** Добавляет в хранилище состояний карт новую карту. */
@@ -28,12 +28,7 @@ export function loadMapSuccess(formID: FormID, mapData: any): MapsAction {
 
 /** Ошибка при загрузке карты. */
 export function loadMapError(formID: FormID): MapsAction {
-  return {type: MapsActions.LOAD_ERROR, formID: formID};
-}
-
-/** Установить функцию, выполняющуюся в конце цикла отрисовки. */
-export function setOnDrawEnd(formID: FormID, setter: any): MapsAction {
-  return {type: MapsActions.SET_DRAW_END, formID, payload: setter};
+  return {type: MapsActions.SET_FIELD, formID: formID, field: 'isLoadSuccessfully', payload: false};
 }
 
 /** Установить какое-либо поле хранилища карты. */

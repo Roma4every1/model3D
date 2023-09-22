@@ -29,7 +29,7 @@ interface MapItemConfig {
 }
 
 /** ## Состояние карты.
- * + `mode`: {@link MapModes} — режим карты
+ * + `mode`: {@link MapMode} — режим карты
  * + `mapData`: {@link MapData} — данные для отрисовки
  * + `activeLayer`: {@link MapLayer} — активный слой
  * + `isLoadSuccessfully` — состояние загрузки
@@ -46,17 +46,17 @@ interface MapItemConfig {
 interface MapState {
   mode: number, // MapModes
   mapData: MapData;
-  legends: any;
   activeLayer: MapLayer;
   isLoadSuccessfully: boolean | undefined;
   canvas: MapCanvas;
   owner: MapOwner;
   mapID: MapID;
   element: MapElement;
+  elementInit: MapElement;
+  elementInitProperties: MapElement;
   isElementEditing: boolean;
   isElementCreating?: boolean;
   selecting: MapSelectingState;
-  oldData: {x: number | null, y: number | null, arc: PolylineArc | null, ange: number | null};
   isModified: boolean;
   cursor: string;
   childOf: ClientID;
@@ -351,7 +351,7 @@ type MapLabelAngle = number;
 
 /* -- Sign -- */
 
-/** ## Точечный объект.
+/** Точечный объект.
  * + `x, y` — координаты
  * + `size` — размер
  * + `color` — цвет заполнения
@@ -359,7 +359,6 @@ type MapLabelAngle = number;
  * + `symbolcode` — ID паттерна
  * + `img`: {@link HTMLImageElement} — паттерн
  * @see MapElement
- * @see MapElementProto
  * */
 interface MapSign extends MapElementProto {
   type: 'sign';
@@ -370,12 +369,6 @@ interface MapSign extends MapElementProto {
   fontname: string;
   symbolcode: number;
   img: HTMLImageElement;
-}
-
-interface SignImageProto {
-  fontName: string;
-  symbolCode: number;
-  color: string;
 }
 
 /* -- Map Element Prototype -- */
@@ -403,7 +396,7 @@ interface MapElementProto {
 
 /* -- Field -- */
 
-/** ## Точечный объект.
+/** Поле.
  * + `x, y` — координаты
  * + `sizeX` — количество ячеек по X
  * + `sizeY` — количество ячеек по Y

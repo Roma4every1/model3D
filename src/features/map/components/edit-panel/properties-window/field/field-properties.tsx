@@ -1,27 +1,16 @@
-import { TFunction } from 'react-i18next';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { showWindow, closeWindow } from 'entities/window';
-import { createFieldPaletteInit, InitFieldState } from '../properties-utils';
+import { PropertyWindowProps } from '../properties-utils';
 import { Button } from '@progress/kendo-react-buttons';
 import { NumericTextBox, NumericTextBoxChangeEvent } from '@progress/kendo-react-inputs';
 import { FieldPalettePropertiesWindow } from './field-palette-properties';
 
 
-interface FieldPropertiesProps {
-  element: MapField,
-  init: InitFieldState,
-  apply: () => void,
-  update: () => void,
-  cancel: () => void,
-  t: TFunction,
-  isElementCreating: boolean,
-}
-
-
-export const FieldProperties = ({element: field, init, apply, update, cancel, t, isElementCreating}: FieldPropertiesProps) => {
+export const FieldProperties = (props: PropertyWindowProps<MapField>) => {
   const dispatch = useDispatch();
   const [changed, setChanged] = useState(false);
+  const { element: field, init, apply, update, cancel, t, isElementCreating } = props;
 
   /* --- Field Properties State --- */
 
@@ -78,7 +67,7 @@ export const FieldProperties = ({element: field, init, apply, update, cancel, t,
 
     const content = <FieldPalettePropertiesWindow
       onClose={onClose} element={field.palette[0]} update={update} t={t}
-      init={createFieldPaletteInit(field.palette[0])}
+      init={init.palette[0]}
     />;
     const windowProps = {
       title: 'Свойства палитры', className: 'propertiesWindow',
@@ -127,8 +116,12 @@ export const FieldProperties = ({element: field, init, apply, update, cancel, t,
         </div>
       </fieldset>
       <div>
-        <Button disabled={ isElementCreating ? false : !changed } onClick={apply}>{t('base.apply')}</Button>
-        <Button onClick={cancel}>{t('base.cancel')}</Button>
+        <Button onClick={apply} disabled={ isElementCreating ? false : !changed }>
+          {t('base.apply')}
+        </Button>
+        <Button onClick={cancel}>
+          {t('base.cancel')}
+        </Button>
       </div>
     </div>
   );

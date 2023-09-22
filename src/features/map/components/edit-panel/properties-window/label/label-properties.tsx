@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { TFunction } from 'react-i18next';
-import { InitLabelState, paletteSettings, gradientSettings } from '../properties-utils';
+import { PropertyWindowProps, paletteSettings, gradientSettings } from '../properties-utils';
 
 import './label-properties.scss';
 import { AlignSwitcher } from './align-switcher';
@@ -12,18 +11,7 @@ import {
 } from '@progress/kendo-react-inputs';
 
 
-interface LabelPropertiesProps {
-  element: MapLabel;
-  init: InitLabelState;
-  apply: () => void;
-  update: () => void;
-  cancel: () => void;
-  t: TFunction;
-  isElementCreating: boolean;
-}
-
-
-export const LabelProperties = (props: LabelPropertiesProps) => {
+export const LabelProperties = (props: PropertyWindowProps<MapLabel>) => {
   const { element: label, init, apply, update, cancel, t, isElementCreating } = props;
   const [changed, setChanged] = useState(false);
 
@@ -31,12 +19,12 @@ export const LabelProperties = (props: LabelPropertiesProps) => {
 
   const [text, setText] = useState(init.text);
   const [color, setColor] = useState(init.color ?? null);
-  const [fontSize, setFontSize] = useState(init.fontSize);
+  const [fontSize, setFontSize] = useState(init.fontsize);
 
-  const [xOffset, setXOffset] = useState(init.xOffset);
-  const [yOffset, setYOffset] = useState(init.yOffset);
-  const [hAlignment, setHAlignment] = useState<MapLabelAlignment>(init.hAlignment);
-  const [vAlignment, setVAlignment] = useState<MapLabelAlignment>(init.vAlignment);
+  const [xOffset, setXOffset] = useState(init.xoffset);
+  const [yOffset, setYOffset] = useState(init.yoffset);
+  const [hAlignment, setHAlignment] = useState<MapLabelAlignment>(init.halignment);
+  const [vAlignment, setVAlignment] = useState<MapLabelAlignment>(init.valignment);
 
   const [angle, setAngle] = useState(init.angle);
   const [transparent, setTransparent] = useState(init.transparent);

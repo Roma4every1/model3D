@@ -87,5 +87,3 @@ function getIndexNumberArray(str) {
   });
   return numberArray;
 }
-
-

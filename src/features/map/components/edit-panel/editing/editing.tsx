@@ -1,30 +1,30 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
+import { useDispatch } from 'shared/lib';
 
 import { WindowProps } from '@progress/kendo-react-dialogs';
 import { EditElement } from './edit-element';
 import { CreateElement } from './create-element';
 import { DeleteElementWindow } from './delete-element';
-import { PropertiesWindow } from '../properties-window/properties';
 import { AttrTableWindow } from './attr-table';
 
-import { MapModes } from '../../../lib/enums';
+import { MapMode } from '../../../lib/constants.ts';
 import { getHeaderText } from './editing-utils';
 import { applyMouseDownActionToPolyline, applyMouseMoveActionToElement, applyRotateToLabel } from './edit-element-utils';
 import { clientPoint, getNearestPointIndex, listenerOptions } from '../../../lib/map-utils';
 import { showDialog, showWindow, closeWindow } from 'entities/window';
 import { setEditMode, acceptMapEditing, cancelMapEditing, setMapField } from '../../../store/map.actions';
 import { startCreatingElement, cancelCreatingElement } from '../../../store/map.actions';
+import { showMapPropertyWindow } from '../../../store/map.thunks.ts';
 
 
 interface EditingProps {
-  mapState: MapState,
-  formID: FormID,
+  mapState: MapState;
+  formID: FormID;
 }
 
 
-const mouseMoveNeedModes: MapModes[] = [MapModes.MOVE, MapModes.MOVE_POINT, MapModes.ROTATE];
+const mouseMoveNeedModes: MapMode[] = [MapMode.MOVE, MapMode.MOVE_POINT, MapMode.ROTATE];
 const creatingElementTypes: MapElementType[] = ['polyline', 'sign', 'label'];
 const hasPropertiesWindow: MapElementType[] = ['sign', 'polyline', 'label', 'field'];
 
@@ -32,7 +32,7 @@ export const Editing = ({mapState, formID}: EditingProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const { canvas, activeLayer, utils, mode, isElementEditing, isElementCreating, oldData, mapData } = mapState;
+  const { canvas, activeLayer, utils, mode, isElementEditing, isElementCreating, mapData } = mapState;
   const selectedElement = mapState.element;
 
   const creatingType = activeLayer?.elementType;
@@ -48,7 +48,7 @@ export const Editing = ({mapState, formID}: EditingProps) => {
     if (selectedElement.type !== 'polyline') return;
 
     const scale = mapData.scale;
-    if (mode === MapModes.MOVE_POINT) {
+    if (mode === MapMode.MOVE_POINT) {
       pIndex.current = getNearestPointIndex(point, scale, selectedElement);
     }
     applyMouseDownActionToPolyline(selectedElement, {mode, point, scale});
@@ -71,7 +71,7 @@ export const Editing = ({mapState, formID}: EditingProps) => {
   }, []);
 
   const mouseWheel = useCallback((event: WheelEvent) => {
-    if (mode !== MapModes.ROTATE || !(selectedElement?.type === 'label')) return;
+    if (mode !== MapMode.ROTATE || !(selectedElement?.type === 'label')) return;
     applyRotateToLabel(selectedElement, event.deltaY > 0, event.shiftKey);
     utils.updateCanvas();
   }, [selectedElement, mode, utils]);
@@ -94,16 +94,15 @@ export const Editing = ({mapState, formID}: EditingProps) => {
     }
   }, [canvas, mouseDown, mouseMove, mouseUp, mouseWheel]);
 
-  const isCreating = mode === MapModes.CREATING || mode === MapModes.AWAIT_POINT;
-  const [isPropertiesWindowOpen, setPropertiesWindowOpen] = useState(false);
   const [isAttrTableOpen, setAttrTableOpen] = useState(false);
+  const isCreating = mode === MapMode.CREATING || mode === MapMode.AWAIT_POINT;
   const isPolylineCreating = isElementCreating && creatingType === 'polyline';
 
   const toggleCreating = () => {
     if (isCreating) dispatch(cancelCreatingElement(formID));
     else {
       dispatch(startCreatingElement(formID));
-      dispatch(setEditMode(formID, MapModes.AWAIT_POINT));
+      dispatch(setEditMode(formID, MapMode.AWAIT_POINT));
     }
   };
 
@@ -133,14 +132,7 @@ export const Editing = ({mapState, formID}: EditingProps) => {
   };
 
   const showPropertiesWindow = () => {
-    const content = <PropertiesWindow formID={formID} setOpen={setPropertiesWindowOpen}/>;
-    if (mapState.mode < MapModes.MOVE_MAP) dispatch(setEditMode(formID, MapModes.MOVE_MAP));
-
-    const windowProps: WindowProps = {
-      className: 'propertiesWindow', resizable: false,
-      style: {zIndex: 99}, maximizeButton: () => null,
-    };
-    dispatch(showWindow('mapPropertiesWindow', windowProps, content));
+    dispatch(showMapPropertyWindow(formID, selectedElement));
   };
 
   const showAttrTableWindow = () => {
@@ -159,14 +151,14 @@ export const Editing = ({mapState, formID}: EditingProps) => {
     return getHeaderText(isCreating, selectedElement?.type, activeLayer?.name, t);
   }, [activeLayer, selectedElement, isCreating, t]);
 
-  const disableAll = isPropertiesWindowOpen || isAttrTableOpen;
+  const disableAll = Boolean(mapState.elementInitProperties) || isAttrTableOpen;
 
   const disabledCreate = disableAll ||
     (isElementCreating && !isCreating) ||
     !(activeLayer && activeLayer.visible) ||
     (creatingElementTypes.indexOf(creatingType) === -1);
 
-  const disabledProperties = disableAll||
+  const disabledProperties = disableAll ||
     isElementCreating ||
     !hasPropertiesWindow.includes(selectedElement?.type);
 
@@ -176,10 +168,9 @@ export const Editing = ({mapState, formID}: EditingProps) => {
 
   const disabledAccept = disableAll ||
     (!isElementCreating && !isElementEditing) ||
-    arcPathInvalid ||
-    (oldData.x === null && oldData.arc === null);
+    arcPathInvalid;
 
-  const disabledCancel  = disabledAccept && !(isPolylineCreating && !isPropertiesWindowOpen);
+  const disabledCancel = disabledAccept && !(isPolylineCreating && !mapState.elementInitProperties);
   const disabledAttrTable = disableAll || !selectedElement?.attrTable;
   const disabledDelete = disableAll || isElementCreating || !selectedElement;
 
@@ -231,7 +222,6 @@ export const Editing = ({mapState, formID}: EditingProps) => {
             mapState={mapState}
             formID={formID}
             creatingType={creatingType}
-            showPropertiesWindow={showPropertiesWindow}
           />
           : selectedElement
             ? <EditElement type={selectedElement.type} mode={mode} formID={formID}/>

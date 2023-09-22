@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { TFunction } from 'react-i18next';
-import { rollbackFieldPalette } from '../properties-utils';
-
 import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
 import { Button } from '@progress/kendo-react-buttons';
 import { Checkbox, CheckboxChangeEvent } from '@progress/kendo-react-inputs';
@@ -27,7 +25,7 @@ export const FieldPalettePropertiesWindow = (props: FieldPalettePropertiesProps)
   };
 
   const cancel = () => {
-    rollbackFieldPalette(palette, init);
+    for (const key in palette) palette[key] = init[key];
     update();
     onClose();
   };

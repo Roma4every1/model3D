@@ -1,56 +1,35 @@
-import { TFunction } from 'react-i18next';
 import { useState, useEffect, cloneElement } from 'react';
 import { Button } from '@progress/kendo-react-buttons';
 import { DropDownList, DropDownListChangeEvent } from '@progress/kendo-react-dropdowns';
 import { Checkbox } from '@progress/kendo-react-inputs';
-import { ColorPicker } from '@progress/kendo-react-inputs';
+import { ColorPicker, ColorPickerChangeEvent } from '@progress/kendo-react-inputs';
 import { NumericTextBox } from '@progress/kendo-react-inputs';
 import { FillNameTemplate } from './fill-name-template';
 import { StyleTemplate } from './style-template';
-import { applyLegend, InitPolylineState } from '../properties-utils';
-import { stylesData, templatesData, paletteSettings, gradientSettings, updateImg } from '../properties-utils';
-import parseColor from 'parse-color';
+import { fillPatterns } from 'shared/drawing';
+import { stylesData, paletteSettings, gradientSettings, updateImg, PropertyWindowProps } from '../properties-utils';
 import './polyline-properties.scss';
 
 
-interface PolylinePropertiesProps {
-  element: MapPolyline;
-  init: InitPolylineState;
-  legends: any;
-  apply: () => void;
-  update: () => void;
-  cancel: () => void;
-  t: TFunction;
-  isElementCreating: boolean;
-}
-
-export const PolylineProperties = ({element: polyline, init, legends, apply, update, cancel, t, isElementCreating}: PolylinePropertiesProps) => {
-  const legendsData: any[] = legends?.sublayerSettings || [];
+export const PolylineProperties = (props: PropertyWindowProps<MapPolyline>) => {
+  const { element: polyline, init, apply, update, cancel, t, isElementCreating } = props;
   const [changed, setChanged] = useState(false);
 
   /* --- Polyline Properties State --- */
 
-  const [legend, setLegend] = useState(init.legend);
-  const [closed, setClosed] = useState(init.closed === true);
+  const [closed, setClosed] = useState(init.arcs[0]?.closed === true);
   const [transparent, setTransparent] = useState(init.transparent === true);
 
-  const [borderWidth, setBorderWidth] = useState(init.borderWidth || 0);
-  const [borderColor, setBorderColor] = useState(init.borderColor || null);
-  const [borderStyle, setBorderStyle] = useState(init.borderStyle);
-  const [borderStyleID, setBorderStyleID] = useState(init.borderStyleID);
+  const [borderWidth, setBorderWidth] = useState(init.borderwidth || 0);
+  const [borderColor, setBorderColor] = useState(init.bordercolor || null);
+  const [borderStyle, setBorderStyle] = useState(init.borderstyleid);
+  const [borderStyleID, setBorderStyleID] = useState(init.borderstyleid);
 
-  const [fillName, setFillName] = useState(init.fillName);
-  const [fillColor, setFillColor] = useState(init.fillColor || null);
-  const [fillBackColor, setFillBackColor] = useState(init.fillBackColor || null);
+  const [fillName, setFillName] = useState(init.fillname);
+  const [fillColor, setFillColor] = useState(init.fillcolor || null);
+  const [fillBackColor, setFillBackColor] = useState(init.fillbkcolor || null);
 
   /* --- Properties Handlers --- */
-
-  const onLegendChange = (event) => {
-    polyline.legend = event.value;
-    setLegend(polyline.legend);
-    applyLegend(polyline, event.value);
-    setChanged(true); update();
-  };
 
   const onChangeClosed = () => {
     polyline.arcs[0].closed = !polyline.arcs[0].closed;
@@ -82,8 +61,8 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
     setChanged(true); update();
   };
 
-  const onBorderColorChange = (event) => {
-    polyline.bordercolor = parseColor(event.value).hex;
+  const onBorderColorChange = ({value}: ColorPickerChangeEvent) => {
+    polyline.bordercolor = value;
     setBorderColor(polyline.bordercolor);
     setChanged(true); update();
   };
@@ -94,14 +73,14 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
     updateImg(polyline); setChanged(true); update();
   };
 
-  const onFillColorChange = (event) => {
-    polyline.fillcolor = parseColor(event.value).hex;
+  const onFillColorChange = ({value}: ColorPickerChangeEvent) => {
+    polyline.fillcolor = value;
     setFillColor(polyline.fillcolor);
     updateImg(polyline); setChanged(true); update();
   };
 
-  const onFillBackColorChange = (event) => {
-    polyline.fillbkcolor = parseColor(event.value).hex;
+  const onFillBackColorChange = ({value}: ColorPickerChangeEvent) => {
+    polyline.fillbkcolor = value;
     setFillBackColor(polyline.fillbkcolor);
     updateImg(polyline); setChanged(true); update();
   };
@@ -127,15 +106,6 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
   }, [borderStyleID]);
 
   /* --- --- --- */
-
-  const legendRender = (li, itemProps) => {
-    const itemChildren = (
-      <span style={{fontWeight: itemProps?.dataItem.default ? 'bold' : 'normal'}}>
-        {itemProps?.dataItem.name}
-      </span>
-    );
-    return cloneElement(li, li.props, itemChildren);
-  };
 
   const styleValueRender = (element, value) => {
     const children = [
@@ -198,15 +168,6 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
           <span className={'label'}>
             {t('map.legend')}
           </span>
-          <DropDownList
-            style={{height: 20}}
-            name={'legend'}
-            data={legendsData}
-            value={legend}
-            itemRender={legendRender}
-            textField={'name'}
-            onChange={onLegendChange}
-          />
         </div>
         <div className={'item'}>
           <span className={'label'}>
@@ -239,7 +200,7 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
           <DropDownList
             style={{height: 20}}
             name={'template'}
-            data={templatesData}
+            data={fillPatterns.allPatterns}
             value={fillName}
             valueRender={templateValueRender}
             itemRender={templatesRender}

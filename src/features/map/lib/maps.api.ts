@@ -15,11 +15,11 @@ export class MapsAPI {
     return response.arrayBuffer();
   }
 
-  /** Загрузка легенды карты. */
-  public async getMapLegend() {
-    const query = {sessionId: this.baseAPI.sessionID};
-    return await this.baseAPI.request<any>({path: 'mapLegends', query});
-  }
+  // /** Загрузка легенды карты. */
+  // public async getMapLegend() {
+  //   const query = {sessionId: this.baseAPI.sessionID};
+  //   return await this.baseAPI.request<any>({path: 'mapLegends', query});
+  // }
 
   /** Запрос на сохранение карты. */
   public async saveMap(formID: FormID, mapID: MapID, mapData: any, owner: MapOwner) {
@@ -78,8 +78,7 @@ export class MapsAPI {
           }, 500);
         } else {
           mapData.mapErrors.push(`error loading container ${layer.container}: ${data}`);
-          // @ts-ignore
-          layer.elements = [];
+          (layer as MapLayer).elements = [];
         }
         return;
       }
@@ -103,8 +102,7 @@ export class MapsAPI {
         if (t && t.loaded) await t.loaded(element);
       }
     } finally {
-      // @ts-ignore
-      layer.elements = elements;
+      (layer as MapLayer).elements = elements;
     }
   }
 

@@ -1,7 +1,14 @@
 import { TFunction } from 'react-i18next';
 import { distance } from '../../../lib/map-utils';
 import { getBoundsByPoints } from '../../../lib/map-utils';
+import { provider } from '../../../drawer';
 
+
+export function getDefaultMapElement(type: MapElementType, point: Point): MapElement {
+  if (type === 'sign') return getDefaultSign(point);
+  if (type === 'label') return getDefaultLabel(point);
+  return getDefaultPolyline(point);
+}
 
 /** Линия со стандартными свойствами. */
 function getDefaultPolyline(point: Point): MapPolyline {
@@ -18,9 +25,9 @@ function getDefaultPolyline(point: Point): MapPolyline {
 }
 
 /** Подпись со стандартными свойствами. */
-export function getDefaultLabel(point: Point, text: string): MapLabel {
+function getDefaultLabel(point: Point): MapLabel {
   return {
-    type: 'label', text, color: '#000000',
+    type: 'label', text: 'текст', color: '#000000',
     fontname: 'Arial', fontsize: 12,
     halignment: 0, valignment: 0,
     xoffset: 0, yoffset: 0,
@@ -30,68 +37,13 @@ export function getDefaultLabel(point: Point, text: string): MapLabel {
 }
 
 /** Точечный объект со стандартными свойствами. */
-export function getDefaultSign(point: Point, img: HTMLImageElement, proto: SignImageProto): MapSign {
+function getDefaultSign(point: Point): MapSign {
   return {
     type: 'sign',
-    color: proto.color, fontname: proto.fontName,
-    symbolcode: proto.symbolCode, img,
+    color: provider.defaultSignColor, fontname: provider.defaultSignLib,
+    symbolcode: 0, img: provider.defaultSignImage,
     size: 1.3, x: point.x, y: point.y,
   };
-}
-
-export function polylineByLegends(point: Point, legends: any, layerName: string): MapPolyline {
-  const polyline = getDefaultPolyline(point);
-  const sublayerSettings = legends?.sublayers?.find(sub => sub.name === layerName);
-  if (!sublayerSettings) return polyline;
-
-  let legendToSet = sublayerSettings.legends.find(l => l.default);
-  if (!legendToSet && sublayerSettings.legends.length > 0) {
-    legendToSet = sublayerSettings.legends[0];
-  }
-  if (!legendToSet) return polyline;
-
-  switch (sublayerSettings.type) {
-    case 'LabelModel':
-      break;
-    case 'PolylineModel':
-      legendToSet.attrTable.forEach(p => {polyline.attrTable[p.name] = p.value});
-      polyline.legend = legendToSet;
-      legendToSet.properties.forEach(p => {
-        switch (p.name) {
-          case 'BorderStyle':
-            polyline.borderstyle = Number(p.value.replace(',', '.'));
-            break;
-          case 'BorderStyleId':
-            polyline.borderstyle = null;
-            polyline.borderstyleid = p.value;
-            break;
-          case 'Closed':
-            polyline.arcs[0].closed = (p.value === 'True');
-            break;
-          case 'FillBkColor':
-            polyline.fillbkcolor = '#' + (p.value.slice(-6));
-            break;
-          case 'FillColor':
-            polyline.fillcolor = '#' + (p.value.slice(-6));
-            break;
-          case 'FillName':
-            polyline.fillname = p.value;
-            break;
-          case 'StrokeColor':
-            polyline.bordercolor = '#' + (p.value.slice(-6));
-            break;
-          case 'StrokeThickness':
-            polyline.borderwidth = Number(p.value.replace(',', '.'));
-            break;
-          case 'Transparency':
-            polyline.transparent = (p.value !== 'Nontransparent');
-            break;
-          default: break;
-        }
-      });
-      return polyline;
-    default: break;
-  }
 }
 
 /** Находит новый угол поворота элемента. */

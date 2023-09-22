@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { TFunction } from 'react-i18next';
-import { InitSignState, gradientSettings } from '../properties-utils.ts';
+import { PropertyWindowProps } from '../properties-utils.ts';
+import { gradientSettings } from '../properties-utils.ts';
 import { provider } from '../../../../drawer';
 import { Button } from '@progress/kendo-react-buttons';
 import { DropDownList, DropDownListChangeEvent } from '@progress/kendo-react-dropdowns';
+import { coordinateFormat } from '../../../../lib/constants.ts';
 import './sign-properties.scss';
 
 import {
@@ -12,18 +13,7 @@ import {
 } from '@progress/kendo-react-inputs';
 
 
-interface SignPropertiesProps {
-  element: MapSign;
-  init: InitSignState;
-  apply: () => void;
-  update: () => void;
-  cancel: () => void;
-  t: TFunction;
-  isElementCreating: boolean;
-}
-
-
-export const SignProperties = (props: SignPropertiesProps) => {
+export const SignProperties = (props: PropertyWindowProps<MapSign>) => {
   const { element: sign, init, apply, update, cancel, t, isElementCreating } = props;
 
   const [changed, setChanged] = useState(false);
@@ -34,8 +24,8 @@ export const SignProperties = (props: SignPropertiesProps) => {
   const [size, setSize] = useState(init.size);
 
   const [color, setColor] = useState(init.color);
-  const [fontName, setFontName] = useState(init.fontName);
-  const [symbolCode, setSymbolCode] = useState(init.symbolCode);
+  const [fontName, setFontName] = useState(init.fontname);
+  const [symbolCode, setSymbolCode] = useState(init.symbolcode);
 
   const fontData = provider.getSignFontData(fontName);
   const validFontData = Boolean(fontData.id);
@@ -90,11 +80,11 @@ export const SignProperties = (props: SignPropertiesProps) => {
         <fieldset>
           <div className={'edit-field'}>
             <span>X:</span>
-            <NumericTextBox value={x} onChange={onXChange}/>
+            <NumericTextBox value={x} onChange={onXChange} format={coordinateFormat}/>
           </div>
           <div className={'edit-field'}>
             <span>Y:</span>
-            <NumericTextBox value={y} onChange={onYChange}/>
+            <NumericTextBox value={y} onChange={onYChange} format={coordinateFormat}/>
           </div>
           <div className={'edit-field'}>
             <span>Символ:</span>
@@ -115,7 +105,7 @@ export const SignProperties = (props: SignPropertiesProps) => {
           </div>
           <div className={'edit-field'}>
             <span>Размер:</span>
-            <NumericTextBox value={size} onChange={onSizeChange} step={0.1}/>
+            <NumericTextBox value={size} onChange={onSizeChange} min={0} step={0.1}/>
           </div>
           <div className={'edit-field'}>
             <span>Фонт:</span>

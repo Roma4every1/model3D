@@ -1,12 +1,12 @@
 import { TFunction } from 'react-i18next';
 import { NumericTextBoxChangeEvent } from '@progress/kendo-react-inputs';
-import { NumberFormatOptions } from '@progress/kendo-react-intl';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { BigButton, BigButtonToggle } from 'shared/ui';
 import { NumericTextBox } from '@progress/kendo-react-inputs';
-import { setOnDrawEnd, setMultiMapSync } from '../../store/map.actions';
+import { setMultiMapSync } from '../../store/map.actions';
 import { getFullViewport, getPointToMap } from '../../lib/map-utils';
+import { coordinateFormat } from '../../lib/constants.ts';
 
 import xIcon from 'assets/images/map/x.png';
 import yIcon from 'assets/images/map/y.png';
@@ -16,21 +16,14 @@ import synchronizeIcon from 'assets/images/map/synchronize.png';
 
 
 interface DimensionsProps {
-  mapState: MapState,
-  sync: boolean | undefined,
-  formID: FormID,
-  parentID: FormID,
-  t: TFunction,
+  mapState: MapState;
+  sync: boolean | undefined;
+  parentID: ClientID;
+  t: TFunction;
 }
 
 
-const coordsFormat: NumberFormatOptions = {
-  style: 'decimal',
-  useGrouping: false,
-  maximumFractionDigits: 2,
-};
-
-export const Dimensions = ({mapState, sync, formID, parentID, t}: DimensionsProps) => {
+export const Dimensions = ({mapState, sync, parentID, t}: DimensionsProps) => {
   const dispatch = useDispatch();
   const { mapData, utils, canvas, isLoadSuccessfully } = mapState;
   const layers = mapData?.layers;
@@ -39,14 +32,12 @@ export const Dimensions = ({mapState, sync, formID, parentID, t}: DimensionsProp
   const [y, setY] = useState(null);
   const [scale, setScale] = useState(null);
 
-  const onDrawEnd = useCallback((canvas, x, y, scale) => {
-    setX(x); setY(y); setScale(scale);
-    utils.pointToMap = getPointToMap(canvas, x, y, scale);
-  }, [utils]);
-
   useEffect(() => {
-    if (mapData) dispatch(setOnDrawEnd(formID, onDrawEnd));
-  }, [mapData, onDrawEnd, dispatch, formID]);
+    if (mapData) mapData.onDrawEnd = (canvas, x, y, scale) => {
+      setX(x); setY(y); setScale(scale);
+      utils.pointToMap = getPointToMap(canvas, x, y, scale);
+    };
+  }, [mapData, utils]);
 
   /** Центрировать карту. */
   const toFullViewPort = () => {
@@ -62,19 +53,19 @@ export const Dimensions = ({mapState, sync, formID, parentID, t}: DimensionsProp
 
   const xChanged = (event: NumericTextBoxChangeEvent) => {
     const newX = event.value === null ? 0 : Math.round(event.value);
-    utils?.updateCanvas({centerX: newX, centerY: mapData.y, scale: mapData.scale});
+    utils.updateCanvas({centerX: newX, centerY: mapData.y, scale: mapData.scale});
     setX(newX);
   };
 
   const yChanged = (event: NumericTextBoxChangeEvent) => {
     const newY = event.value === null ? 0 : Math.round(-event.value);
-    utils?.updateCanvas({centerX: mapData.x, centerY: newY, scale: mapData.scale});
+    utils.updateCanvas({centerX: mapData.x, centerY: newY, scale: mapData.scale});
     setY(newY);
   };
 
   const scaleChanged = (event: NumericTextBoxChangeEvent) => {
     const newScale = event.value >= 1 ? event.value : 1;
-    utils?.updateCanvas({centerX: mapData.x, centerY: mapData.y, scale: newScale});
+    utils.updateCanvas({centerX: mapData.x, centerY: mapData.y, scale: newScale});
     setScale(newScale);
   };
 
@@ -87,18 +78,18 @@ export const Dimensions = ({mapState, sync, formID, parentID, t}: DimensionsProp
             <span title={t('map.dimensions.x')}><img src={xIcon} alt={'x'}/> x:</span>
             <NumericTextBox
               disabled={!isLoadSuccessfully}
-              value={Math.round(x)}
+              value={x}
               onChange={xChanged}
-              format={coordsFormat}
+              format={coordinateFormat}
             />
           </div>
           <div>
             <span title={t('map.dimensions.y')}><img src={yIcon} alt={'y'}/> y:</span>
             <NumericTextBox
               disabled={!isLoadSuccessfully}
-              value={Math.round(-y)}
+              value={-y}
               onChange={yChanged}
-              format={coordsFormat}
+              format={coordinateFormat}
             />
           </div>
           <div>

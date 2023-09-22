@@ -1,6 +1,23 @@
 import { chunk } from 'lodash';
 
 
+export function createMapElementInit(element: MapElement): MapElement {
+  const type = element.type;
+  let copy: MapElement;
+
+  if (type === 'sign' || type === 'label') {
+    copy = {...element};
+  } else if (type === 'field') {
+    copy = structuredClone(element);
+  } else {
+    copy = structuredClone({...element, fillStyle: undefined});
+    copy.fillStyle = element.fillStyle;
+  }
+  delete copy.selected;
+  delete copy.edited;
+  return copy;
+}
+
 /** Настройки для метода `addEventListener`. */
 export const listenerOptions = {passive: true};
 
@@ -61,8 +78,6 @@ export function getBoundsByPoints(points: [number, number][]): Bounds {
   };
 }
 
-const SELECTION_RADIUS = 0.015;
-
 export function getNearestPointIndex(point: Point, scale: MapScale, polyline: MapPolyline): number {
   let minRadius, nearestIndex: number | null = null;
   const points = chunk<number>(polyline.arcs[0].path, 2);
@@ -72,7 +87,7 @@ export function getNearestPointIndex(point: Point, scale: MapScale, polyline: Ma
     const localDist = Math.sqrt(Math.pow(p[0] - point.x, 2) + Math.pow(p[1] - point.y, 2));
     if (!minRadius || localDist < minRadius) {
       minRadius = localDist;
-      if ((minRadius / scale) < SELECTION_RADIUS) nearestIndex = i;
+      if ((minRadius / scale) < 0.015) nearestIndex = i;
     }
   });
   return nearestIndex;

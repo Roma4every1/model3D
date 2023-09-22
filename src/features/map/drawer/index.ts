@@ -1,4 +1,3 @@
-import lines from './lines.json';
 import { def2json } from './symbols';
 import { parseDef } from './symbol2svg';
 import { loadImageData } from './html-helper';
@@ -21,19 +20,10 @@ class MapProvider {
     id: '', name: 'unknown',
     minIndex: 0, maxIndex: 0
   };
-  private static readonly defaultSignLib = 'PNT.CHR';
 
-  public readonly drawOptions = {
-    zoomSleep: 400,
-    selectedSize: 6,
-    selectedColor: '#000FFF',
-    selectedWidth: 1,
-    piesliceBorderColor: 'black',
-    piesliceBorderWidth: 0.2,
-    piesliceAlpha: 0.7,
-  };
-
-  public readonly lineConfig = lines;
+  public defaultSignLib = 'PNT.CHR';
+  public defaultSignColor = '#000000';
+  public defaultSignImage: HTMLImageElement;
   public readonly fontData: SignFontData[] = [];
 
   private initialized: boolean = false;
@@ -45,7 +35,7 @@ class MapProvider {
     if (this.cache[hash]) return this.cache[hash];
 
     let getter = this.lib[fontID.toUpperCase()]?.get(index);
-    if (!getter) getter = this.lib[MapProvider.defaultSignLib].get(0);
+    if (!getter) getter = this.lib[this.defaultSignLib].get(0);
     const imageData = loadImageData(getter(color), 'image/svg+xml');
 
     this.cache[hash] = imageData;
@@ -66,11 +56,11 @@ class MapProvider {
     }
 
     const libIDs = Object.keys(this.lib);
-    if (libIDs.length === 0 || !libIDs.includes(MapProvider.defaultSignLib)) {
+    if (libIDs.length === 0 || !libIDs.includes(this.defaultSignLib)) {
       const map = new Map<number, SignImageGetter>();
       map.set(0, () => '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
-      this.lib[MapProvider.defaultSignLib] = map;
-      libIDs.push(MapProvider.defaultSignLib);
+      this.lib[this.defaultSignLib] = map;
+      libIDs.push(this.defaultSignLib);
     }
 
     for (const id of libIDs) {
@@ -82,6 +72,9 @@ class MapProvider {
       const name = `${id} ${minIndex} - ${maxIndex}`;
       this.fontData.push({id, name, minIndex, maxIndex});
     }
+
+    this.defaultSignImage = await this.getSignImage(this.defaultSignLib, 0, this.defaultSignColor);
+    this.initialized = true;
   }
 }
 

@@ -4,6 +4,8 @@ import { getLabelTextNumberArray } from './label-text-parser';
 import { fillPatterns } from '../../../shared/drawing';
 import { rects } from './geom';
 import { provider } from './index';
+
+import lines from './lines.json';
 import linesDefStub from './lines.def.stub.json';
 
 
@@ -52,10 +54,9 @@ declareType('namedpoint', {
   draft: (i, options) => {
     const p = options.pointToControl(i);
     const context = options.context;
-    const drawOptions = options.provider.drawOptions;
-    context.strokeStyle = drawOptions.selectedColor || '#0000ff';
-    context.lineWidth = (drawOptions.selectedWidth || 0.75) * 0.001 * options.dotsPerMeter;
-    const s = (drawOptions.selectedSize || 5) * 0.001 * options.dotsPerMeter;
+    context.strokeStyle = '#000FFF';
+    context.lineWidth = 0.001 * options.dotsPerMeter;
+    const s = 0.006 * options.dotsPerMeter;
     context.strokeRect(p.x - s / 2, p.y - s / 2, s, s);
   },
 });
@@ -696,7 +697,7 @@ var polyline = declareType('polyline', {
     /** @type CanvasRenderingContext2D */
     const context = options.context;
     const configThicknessCoefficient = options.pixelRatio;
-    const linesConfig = options.provider.lineConfig.BorderStyles[0].Element;
+    const linesConfig = lines.BorderStyles[0].Element;
 
     let currentLineConfig = [];
     if (i.borderstyleid) {
@@ -747,7 +748,7 @@ var polyline = declareType('polyline', {
     const configThicknessCoefficient = options.pixelRatio;
     /** @type CanvasRenderingContext2D */
     const context = options.context;
-    const linesConfig = options.provider.lineConfig.BorderStyles[0].Element;
+    const linesConfig = lines.BorderStyles[0].Element;
 
     let currentLineConfig = [];
     if (i.borderstyleid) {
@@ -945,29 +946,15 @@ var label = declareType('label', {
         width = context.measureText(i.text).width;
       }
 
-      switch (i.halignment) {
-        case label.alHorRight: {
-          x -= width + 2;
-          break;
-        }
-        case label.alHorCenter: {
-          x -= width / 2 + 1;
-          break;
-        }
-        default: {
-        }
+      if (i.halignment === label.alHorRight) {
+        x -= width + 2;
+      } else if (i.halignment === label.alHorCenter) {
+        x -= width / 2 + 1;
       }
-      switch (i.valignment) {
-        case label.alVerBottom: {
-          y -= fontsize + 2;
-          break;
-        }
-        case label.alVerCenter: {
-          y -= fontsize / 2 + 1;
-          break;
-        }
-        default: {
-        }
+      if (i.valignment === label.alVerBottom) {
+        y -= fontsize + 2;
+      } else if (i.valignment === label.alVerCenter) {
+        y -= fontsize / 2 + 1;
       }
 
       const fillStyle = i.color === '#ffffff' ? 'black' : i.color;
@@ -1072,14 +1059,13 @@ declareType('pieslice', {
     if (!(i.startangle === 0 && Math.abs(i.endangle - twoPi) < 1e-6)) context.moveTo(p.x, p.y);
     context.arc(p.x, p.y, r, i.startangle + Math.PI / 2, i.endangle + Math.PI / 2, false);
     context.closePath();
-    const drawOptions = options.provider.drawOptions || {};
-    context.strokeStyle = (drawOptions.piesliceBorderColor || 'black');
-    context.lineWidth = (drawOptions.piesliceBorderWidth || 0.2) * 0.001 * options.dotsPerMeter;
+    context.strokeStyle = 'black';
+    context.lineWidth = 0.2 * 0.001 * options.dotsPerMeter;
     const gradient = context.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
     gradient.addColorStop(0, 'white');
     gradient.addColorStop(1, i.color);
     context.fillStyle = gradient; // i.color
-    context.globalAlpha = drawOptions.piesliceAlpha || 0.7;
+    context.globalAlpha = 0.7;
     context.fill();
     context.globalAlpha = 1;
     context.stroke();
@@ -1111,7 +1097,6 @@ export async function startPaint(canvas, map, options) {
   const drawOptions = {
     canvas: canvas,
     context: canvas.getContext('2d'),
-    provider: provider,
     pointToControl: coords.pointToControl,
     pointToMap: coords.pointToMap,
     dotsPerMeter: coords.cscale,

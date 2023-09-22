@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Checkbox } from '@progress/kendo-react-inputs';
 import { traceStateSelector } from 'entities/objects';
-import { MapModes } from '../../../lib/enums';
+import { MapMode } from '../../../lib/constants.ts';
 import { clientPoint, listenerOptions } from '../../../lib/map-utils';
 import { setSelectedElement, clearMapSelect, setEditMode, cancelMapEditing } from '../../../store/map.actions';
 import selectingIcon from 'assets/images/map/selecting-mode.png';
@@ -27,7 +27,7 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
 
   const { canvas, utils, activeLayer, mapData } = mapState;
   const { element: selectedElement, selecting: selectState } = mapState;
-  const isInSelectingMode = mapState.mode === MapModes.SELECTING;
+  const isInSelectingMode = mapState.mode === MapMode.SELECTING;
 
   const [isSelectAll, setIsSelectAll] = useState(true);
   const [isSelectContours, setIsSelectContours] = useState(false);
@@ -114,7 +114,7 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
       utils.updateCanvas();
     }
     if (!isInSelectingMode && mapState.isElementEditing) dispatch(cancelMapEditing(formID));
-    dispatch(setEditMode(formID, isInSelectingMode ? MapModes.NONE : MapModes.SELECTING));
+    dispatch(setEditMode(formID, isInSelectingMode ? MapMode.NONE : MapMode.SELECTING));
   }, [dispatch, formID, selectedElement, utils, isInSelectingMode, mapState.isElementEditing]);
 
   const isSelectAllClick = () => {

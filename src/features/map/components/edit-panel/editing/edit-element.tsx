@@ -1,6 +1,6 @@
 import { useDispatch } from 'react-redux';
 import { TFunction, useTranslation } from 'react-i18next';
-import { MapModes } from '../../../lib/enums';
+import { MapMode } from '../../../lib/constants.ts';
 import { startMapEditing, setEditMode } from '../../../store/map.actions';
 
 import addBetween from 'assets/images/map/add-between.png';
@@ -14,11 +14,11 @@ import rotateIcon from 'assets/images/map/rotate.png';
 
 interface EditElementProps {
   type: string;
-  mode: MapModes;
+  mode: MapMode;
   formID: FormID;
 }
 interface EditItemProps {
-  ownMode: MapModes;
+  ownMode: MapMode;
   selected: boolean;
   t: TFunction;
   action: () => void;
@@ -47,13 +47,13 @@ const translationDict: Record<number, string> = {
 };
 
 /** Доступные режимы редактирования для выбранных элементов карты. */
-const elementsModes: {[key: string]: MapModes[]} = {
+const elementsModes: {[key: string]: MapMode[]} = {
   'polyline': [
-    MapModes.MOVE_MAP, MapModes.MOVE_POINT,
-    MapModes.ADD_END, MapModes.ADD_BETWEEN, MapModes.DELETE_POINT
+    MapMode.MOVE_MAP, MapMode.MOVE_POINT,
+    MapMode.ADD_END, MapMode.ADD_BETWEEN, MapMode.DELETE_POINT
   ],
-  'label': [MapModes.MOVE_MAP, MapModes.MOVE, MapModes.ROTATE],
-  'sign': [MapModes.MOVE_MAP, MapModes.MOVE],
+  'label': [MapMode.MOVE_MAP, MapMode.MOVE, MapMode.ROTATE],
+  'sign': [MapMode.MOVE_MAP, MapMode.MOVE],
 };
 
 export const EditElement = ({type, mode, formID}: EditElementProps) => {
@@ -63,8 +63,8 @@ export const EditElement = ({type, mode, formID}: EditElementProps) => {
   const buttons = (elementsModes[type] || []).map((ownMode) => {
     const isSameMode = mode === ownMode;
     const action = () => {
-      if (mode < MapModes.MOVE_MAP) dispatch(startMapEditing(formID));
-      dispatch(setEditMode(formID, isSameMode ? MapModes.NONE : ownMode));
+      if (mode < MapMode.MOVE_MAP) dispatch(startMapEditing(formID));
+      dispatch(setEditMode(formID, isSameMode ? MapMode.NONE : ownMode));
     }
     return <EditItem key={ownMode} ownMode={ownMode} selected={isSameMode} t={t} action={action}/>;
   });
