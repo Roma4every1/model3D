@@ -17,20 +17,11 @@
     "warning": "Предупреждение",
     "yes": "Да"
   },
-  "downloadFiles": {
-    "clear": "Очистить список отчётов",
-    "comment": "Комментарий: {{comment}}",
-    "date": "Дата: {{date}}",
-    "error": "Ошибки при получении отчета: {{error}}",
-    "filter": "Текущая презентация",
-    "inOrderAndProgress": "В очереди: {{order}}, прогресс: {{progress}}%"
-  },
   "editors": {
     "files-count": "Выбрано файлов: {{count}}",
     "file-not-selected": "Файл не выбран",
     "files-not-selected": "Файлы не выбраны",
-    "file-upload-error": "При загрузке файла произошла ошибка",
-    "activeObjectNullDisplayName": "Нет значения"
+    "file-upload-error": "При загрузке файла произошла ошибка"
   },
   "layout": {
     "close": "Закрыть",
@@ -316,11 +307,19 @@
   },
   "report": {
     "no-reports": "Нет доступных программ или отчётов.",
-    "start": "{{programName}} добавлен в очередь. Результаты выполнения находятся на панели Отчёты",
+    "start": "{{name}} добавлен в очередь",
     "report-result": "Результат запуска отчёта",
     "program-result": "Результат запуска программы",
     "report-parameters": "Параметры отчёта",
-    "program-parameters": "Параметры программы"
+    "program-parameters": "Параметры программы",
+    "filter-operations": "Текущая презентация",
+    "clear-operations": "Очистить список",
+    "operation-progress": "В очереди: {{order}}, прогресс: {{progress}}%",
+    "operation-timestamp": "Дата: {{timestamp}}",
+    "operation-comment": "Комментарий: {{comment}}",
+    "operation-error": "Ошибка при получении отчета: {{error}}",
+    "download-error": "Ошибка при скачивании отчёта",
+    "get-operation-status-error": "Ошибка при получении статуса операции"
   },
   "session": {
     "loading": "Загрузка сессии...",
@@ -328,6 +327,7 @@
     "unknown-path": "Путь \"{{unresolvedPath}}\" не найден. Возможные пути:"
   },
   "systems": {
+    "loading": "Загрузка списка систем...",
     "system": "система",
     "list":  "Список доступных систем:",
     "loading-error": "Не удалось загрузить список систем.",

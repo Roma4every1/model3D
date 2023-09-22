@@ -32,7 +32,7 @@ export const LoadingStatus = ({percentage, status, statusOptions}: LoadingStatus
   return (
     <div className={'wm-loading-status'}>
       <CircularProgressBar size={100} percentage={percentage}/>
-      {status && <div className={'wm-text-info'}>{t(status, statusOptions)}</div>}
+      {status && <div className={'status'}>{t(status, statusOptions)}</div>}
     </div>
   );
 };

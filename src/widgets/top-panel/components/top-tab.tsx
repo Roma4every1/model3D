@@ -8,23 +8,25 @@ import { CaratEditPanel } from 'features/carat';
 
 
 export interface TopPanelProps {
-  panelID: string;
+  /** ID вкладки. */
+  tabID: string;
+  /** Активная презентация. */
   presentation: PresentationState;
 }
 
 
 /** Словарь всех компонентов верхней панели. */
 const editPanelDict: Record<string, [FunctionComponent<FormEditPanelProps>, FormType]> = {
-  'top-dataset': [TableEditPanel, 'dataSet'],
+  'top-table': [TableEditPanel, 'dataSet'],
   'top-chart': [ChartEditPanel, 'chart'],
   'top-map': [MapEditPanel, 'map'],
-  'top-tracks': [TrackEditPanel, 'carat'],
+  'top-track': [TrackEditPanel, 'carat'],
   'top-carat': [CaratEditPanel, 'carat'],
 };
 
 /** Панель редактирования формы. */
-export const TopPanel = ({panelID, presentation}: TopPanelProps) => {
-  if (panelID.endsWith('traces')) {
+export const TopTab = ({tabID, presentation}: TopPanelProps) => {
+  if (tabID.endsWith('trace')) {
     const hasMap = presentation?.childrenTypes.has('map') ?? false;
     return <TracePanel hasMap={hasMap}/>;
   }
@@ -32,11 +34,12 @@ export const TopPanel = ({panelID, presentation}: TopPanelProps) => {
   if (!activeChildID) return null;
 
   const activeFormType = presentation.children.find(child => child.id === activeChildID).type;
-  const [TopTabComponent, formType] = editPanelDict[panelID];
+  const [Component, formType] = editPanelDict[tabID];
 
   const formID = activeFormType === formType
     ? activeChildID
-    : presentation.children.find(child => child.type === formType).id;
+    : presentation.children.find(child => child.type === formType)?.id;
 
-  return <TopTabComponent id={formID} parentID={presentation.id}/>;
+  if (!formID) return null;
+  return <Component id={formID} parentID={presentation.id}/>;
 };

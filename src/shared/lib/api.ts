@@ -41,12 +41,10 @@ export class BaseAPI implements IBaseAPI {
       const onFulfilled = BaseAPI.mapperDict[mapper ?? 'json'];
       const response = await fetch(url, init).then(onFulfilled);
 
-      if (response.error) return {ok: false, data: response.message || 'Server side error'};
+      if (response.error === true) return {ok: false, data: response.message || 'Server side error'};
       return {ok: true, data: response};
     }
     catch (error) {
-      console.warn('Fetch error: ' + fullPath);
-      console.warn(error);
       return {ok: false, data: error instanceof Error ? error.message : 'Unknown error'};
     }
   }

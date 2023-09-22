@@ -1,43 +1,44 @@
-import { AppDispatch, getFileExtension } from 'shared/lib';
+import { Dispatch } from 'redux';
+import { StateGetter } from 'shared/lib';
 import { fillParamValues } from 'entities/parameters';
 import { updateTables, fillChannels } from 'entities/channels';
 import { showInfoMessage } from 'entities/window';
+import { showNotification } from 'entities/notifications';
 import { setOperationStatus } from '../store/reports.actions';
 import { t } from 'shared/locales';
-import { reportsAPI } from './reports.api';
+import { reportsAPI } from './report.api.ts';
 
 
-export function watchReport(report: ReportModel, operationID: OperationID, dispatch: AppDispatch) {
-  async function tick() {
-    const { ok, data } = await reportsAPI.getOperationResult(operationID);
-    if (!ok || !data) return;
-
-    const modifiedTables = data?.report?.ModifiedTables?.ModifiedTables ?? [];
-    if (modifiedTables.length) dispatch(updateTables(modifiedTables));
-
-    if (data?.reportLog && report) {
-      const title = t(`report.${report.type}-result`);
-      dispatch(showInfoMessage(data.reportLog, title));
+/** Наблюдает за прогрессом операции, пока она не выполнится. */
+export async function watchOperation(
+  report: ReportModel | null, operationID: OperationID,
+  dispatch: Dispatch, getState: StateGetter,
+) {
+  let tabSelected = false;
+  while (true) {
+    const res = await reportsAPI.getOperationStatus(operationID);
+    if (!tabSelected) {
+      getState().root.layout.common.showTab('right-dock', 0, true);
+      tabSelected = true;
+    }
+    if (res.ok === false) {
+      const message = t('report.get-operation-status-error');
+      showNotification({type: 'warning', content: message})(dispatch).then();
+      dispatch(setOperationStatus({id: operationID, error: res.data})); return;
     }
 
-    dispatch(setOperationStatus(convertOperationStatus(data.report)));
-    if (data.isReady === false) setTimeout(tick, 1000);
-  }
-  tick();
-}
+    const { modifiedTables, log, ready } = res.data;
+    if (modifiedTables.length) updateTables(modifiedTables)(dispatch, getState).then();
 
-/** Конвертирует ответ сервера в подготовленный вид. */
-function convertOperationStatus(raw: ReportStatus): OperationStatus {
-  let file: OperationFile | null = null;
-  if (raw.Path) {
-    const name = raw.Path?.split('\\').pop().split('/').pop()
-    file = {name, path: raw.Path, extension: getFileExtension(name)};
+    if (log && report) {
+      const title = t(`report.${report.type}-result`);
+      dispatch(showInfoMessage(log, title));
+    }
+
+    dispatch(setOperationStatus(res.data));
+    if (ready) return;
+    await new Promise((resolve) => setTimeout(resolve, 1500));
   }
-  return {
-    id: raw.Id, clientID: raw.ID_PR,
-    queueNumber: raw.Ord, progress: raw.Progress, timestamp: new Date(raw.Dt),
-    file, description: raw.Comment, defaultResult: raw.DefaultResult, error: raw.Error,
-  };
 }
 
 /* --- --- */
@@ -67,7 +68,7 @@ export async function updateReportChannelData(
 /* --- --- */
 
 /** Создаёт список программ/отчётов для презентации. */
-export async function createReportModels(params: ParamDict, rootID: FormID, id: FormID) {
+export async function createReportModels(paramDict: ParamDict, rootID: ClientID, id: ClientID) {
   const res = await reportsAPI.getPresentationReports(id);
   const reportModels = res.ok ? res.data : [];
   if (reportModels.length === 0) return reportModels;
@@ -78,7 +79,7 @@ export async function createReportModels(params: ParamDict, rootID: FormID, id: 
   for (const report of reportModels) {
     if (!report.type) report.type = 'report';
     if (!report.paramsForCheckVisibility) { report.visible = true; continue; }
-    const parameters = fillParamValues(report.paramsForCheckVisibility, params, clients);
+    const parameters = fillParamValues(report.paramsForCheckVisibility, paramDict, clients);
 
     for (const parameter of parameters) {
       if (!parameter.relatedReports) parameter.relatedReports = [];

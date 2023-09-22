@@ -29,7 +29,10 @@ export function updateParamDeep(clientID: ClientID, id: ParameterID, newValue: a
     if (relatedReportChannels.length) {
       await reloadReportChannels(relatedReportChannels)(dispatch, getState);
     }
-    updateObjects([{clientID, id, value: newValue}], dispatch, getState());
+
+    const state = getState();
+    const dependentParameters = findDependentParameters(id, state.parameters);
+    updateObjects([{clientID, id, value: newValue}], dispatch, state);
 
     const channels = getState().channels;
     const entries: UpdateParamData[] = [];
@@ -37,23 +40,23 @@ export function updateParamDeep(clientID: ClientID, id: ParameterID, newValue: a
     const channelsToUpdate = new Set<ChannelName>();
     const reportsToUpdate = new Set(relatedReports);
 
-    const updatedList = [];
-    findDependentParameters(id, clientParameters, updatedList);
+    for (const clientID in dependentParameters) {
+      const updatedList = dependentParameters[clientID];
+      for (const updatedParam of updatedList) {
+        const updateData: UpdateParamData = {clientID, id: updatedParam.id, value: null};
 
-    for (const updatedParam of updatedList) {
-      const updateData: UpdateParamData = {clientID, id: updatedParam.id, value: null};
+        if (updatedParam.canBeNull === false && updatedParam.externalChannelName) {
+          const channel = channels[updatedParam.externalChannelName];
+          const row = channel?.data?.rows?.at(0);
+          if (row) updateData.value = tableRowToString(channel, row) ?? null;
+        }
+        entries.push(updateData);
+        updatedParam.relatedChannels?.forEach(channelName => channelsToUpdate.add(channelName));
+        updatedParam.relatedReports?.forEach(reportID => reportsToUpdate.add(reportID));
 
-      if (updatedParam.canBeNull === false && updatedParam.externalChannelName) {
-        const channel = channels[updatedParam.externalChannelName];
-        const row = channel?.data?.rows?.at(0);
-        if (row) updateData.value = tableRowToString(channel, row) ?? null;
-      }
-      entries.push(updateData);
-      updatedParam.relatedChannels?.forEach((channelName) => channelsToUpdate.add(channelName));
-      updatedParam.relatedReports?.forEach((reportID) => reportsToUpdate.add(reportID));
-
-      if (updatedParam.relatedReportChannels.length) {
-        reportEntries.push(...updatedParam.relatedReportChannels);
+        if (updatedParam.relatedReportChannels.length) {
+          reportEntries.push(...updatedParam.relatedReportChannels);
+        }
       }
     }
 

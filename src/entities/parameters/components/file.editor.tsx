@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@progress/kendo-react-buttons';
 import { showNotification } from 'entities/notifications';
-import { reportsAPI } from '../../reports/lib/reports.api';
+import { reportsAPI } from '../../reports/lib/report.api.ts';
 
 
 export const FileEditor = ({parameter, update}: EditorProps<ParamString>) => {

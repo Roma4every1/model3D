@@ -3,12 +3,14 @@ import { MapLayerTree } from 'features/map';
 
 
 export interface RightTabProps {
-  panelID: string;
+  /** ID вкладки. */
+  tabID: string;
+  /** Активная презентация. */
   presentation: PresentationState;
 }
 
 
-export const RightTab = ({panelID, presentation}: RightTabProps) => {
+export const RightTab = ({tabID, presentation}: RightTabProps) => {
   if (!presentation) return null;
 
   const activeChildID = presentation.activeChildID;
@@ -18,7 +20,5 @@ export const RightTab = ({panelID, presentation}: RightTabProps) => {
     ? activeChildID
     : presentation.children.find(child => child.type === 'map').id;
 
-  return panelID === 'right-trace'
-    ? <TraceEditor id={formID}/>
-    : <MapLayerTree id={formID}/>;
+  return tabID === 'right-trace' ? <TraceEditor id={formID}/> : <MapLayerTree id={formID}/>;
 };

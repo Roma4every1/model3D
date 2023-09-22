@@ -5,7 +5,7 @@ import { showWarningMessage } from 'entities/window';
 import { setFileViewModel } from './file-view.actions';
 import { t } from 'shared/locales';
 import { mimeTypeDict } from '../lib/constants';
-import { reportsAPI } from 'entities/reports/lib/reports.api';
+import { reportsAPI } from 'entities/reports/lib/report.api.ts';
 
 
 export function updateFileViewModel(id: FormID, data: ChannelData): Thunk {

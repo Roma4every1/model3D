@@ -22,7 +22,7 @@ export const SystemRoot = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const isSystemExist = useMemo(() => {
-    return systemList && systemList.find((system) => system.id === paramsSystemID) !== undefined;
+    return systemList && systemList.find(system => system.id === paramsSystemID) !== undefined;
   }, [systemList, paramsSystemID]);
 
   const isNeedStartSession = useMemo(() => {

@@ -3,9 +3,10 @@ import { useDispatch, useSelector } from 'shared/lib';
 import { fetchPresentationState } from '../store/presentation.thunks';
 import { stateNeedFetch, stateNotLoaded, formFetchStateSelector } from 'entities/fetch-state';
 
+import { TextInfo } from 'shared/ui';
 import { Grid } from './grid';
 import { MultiMap } from 'features/multi-map/multi-map';
-import { PresentationSkeleton, PresentationFetchError } from './plugs';
+import { PresentationSkeleton } from './plugs';
 
 
 export interface PresentationProps {
@@ -26,7 +27,7 @@ export const Presentation = ({id, state}: PresentationProps) => {
   }, [fetchState, id, dispatch]);
 
   if (stateNotLoaded(fetchState)) return <PresentationSkeleton/>;
-  if (fetchState.details) return <PresentationFetchError details={fetchState.details}/>;
+  if (fetchState.details) return <TextInfo text={fetchState.details}/>;
 
   const multiMapChannel = state.settings.multiMapChannel;
   if (multiMapChannel) return <MultiMap id={id} channelName={multiMapChannel}/>;

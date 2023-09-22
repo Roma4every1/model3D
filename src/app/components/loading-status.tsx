@@ -24,7 +24,7 @@ export const LoadingStatus = ({loadingType, success}: LoadingStatusProps) => {
 
 function getKey(type: string, isError: boolean): string {
   if (type === 'systems') {
-    return isError ? 'systems.loadingError' : 'systems.loading';
+    return isError ? 'systems.loading-error' : 'systems.loading';
   }
   if (type === 'session') {
     return isError ? 'session.loadingError' : 'session.loading';

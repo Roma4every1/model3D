@@ -1,15 +1,14 @@
-import { createElement } from 'react';
 import { useSelector } from 'react-redux';
-import { FormSkeleton, FormFetchError } from './plugs';
+import { TextInfo } from 'shared/ui';
+import { FormSkeleton } from './plugs';
 import { formStateSelector } from '../store/form.selectors';
 import { stateNotLoaded, formFetchStateSelector } from 'entities/fetch-state';
-import { NotSupportedForm } from './plugs';
 import { formDict } from '../lib/form-dict';
 
 
 export interface FormProps {
-  id: FormID,
-  type: FormType,
+  id: FormID;
+  type: FormType;
 }
 
 
@@ -19,11 +18,14 @@ export const Form = ({id, type}: FormProps) => {
   const formState: FormState = useSelector(formStateSelector.bind(id));
 
   if (stateNotLoaded(fetchState)) return <FormSkeleton/>;
-  if (fetchState.details) return <FormFetchError details={fetchState.details}/>;
+  if (fetchState.details) return <TextInfo text={fetchState.details}/>;
+
+  const TypedForm = formDict[type];
+  if (!TypedForm) return <TextInfo text={'messages.unsupported-form'}/>;
 
   return (
     <div className={'form-container'}>
-      {createElement(formDict[type] ?? NotSupportedForm, formState)}
+      <TypedForm {...formState}/>
     </div>
   );
 };

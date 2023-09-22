@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { saveAs } from '@progress/kendo-file-saver';
 import { showNotification } from 'entities/notifications';
 import { fileExtensionIconDict, defaultFileIcon } from 'shared/lib';
-import { reportsAPI } from 'entities/reports/lib/reports.api';
+import { reportsAPI } from 'entities/reports/lib/report.api.ts';
 
 
 /** Форматирование даты. */
@@ -17,7 +17,7 @@ export const ActiveOperationStatus = ({status}: {status: OperationStatus}) => {
   const file = status.file;
   const hasFile = file?.extension;
 
-  const date = formatter.format(status.timestamp);
+  const timestamp = formatter.format(status.timestamp);
   const progressStringData = {order: status.queueNumber, progress: status.progress};
 
   const fileImage = hasFile
@@ -29,7 +29,7 @@ export const ActiveOperationStatus = ({status}: {status: OperationStatus}) => {
       if (res.ok) {
         saveAs(res.data, file.name);
       } else {
-        showNotification('Ошибка при скачивании файла')(dispatch).then();
+        showNotification(t('report.download-error'))(dispatch).then();
       }
     });
   } : undefined;
@@ -50,18 +50,18 @@ export const ActiveOperationStatus = ({status}: {status: OperationStatus}) => {
       <div>
         {operationHeader}
         <div>
-          {t('downloadFiles.inOrderAndProgress', progressStringData)}
+          {t('report.operation-progress', progressStringData)}
         </div>
         <div>
-          {t('downloadFiles.date', {date})}
+          {t('report.operation-timestamp', {timestamp})}
         </div>
-        {status.description &&
+        {status.comment &&
           <div className={'operation-description'}>
-            {t('downloadFiles.comment', {comment: status.description})}
+            {t('report.operation-comment', {comment: status.comment})}
           </div>}
         {status.error &&
           <div className={'operation-error'}>
-            {t('downloadFiles.error', {error: status.error})}
+            {t('report.operation-error', {error: status.error})}
           </div>}
       </div>
     </section>

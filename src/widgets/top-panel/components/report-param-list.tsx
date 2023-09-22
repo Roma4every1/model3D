@@ -3,62 +3,35 @@ import { useTranslation } from 'react-i18next';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Button } from '@progress/kendo-react-buttons';
 import { ParameterList } from 'entities/parameters';
-import { updateTables } from 'entities/channels';
-import { showNotification } from 'entities/notifications';
-import { showInfoMessage, showWarningMessage } from 'entities/window';
-import { reportsAPI } from 'entities/reports/lib/reports.api';
-import { watchReport, updateReportParam, updateReportParameter } from 'entities/reports';
+import { updateReportParameter, runReport } from 'entities/reports';
 
 
 interface ReportParamListProps {
-  id: FormID;
+  id: ClientID;
   report: ReportModel;
   close: () => void;
 }
 
 
-/** Редактор параметров SQL-программы или отчёта. */
+/** Редактор параметров процедуры. */
 export const ReportParamList = ({id, report, close}: ReportParamListProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const { channels, parameters, canRun } = report;
 
-  const runReport = async () => {
-    const { data } = await reportsAPI.runReport(report.id, id, parameters);
-    if (typeof data === 'string') { dispatch(showWarningMessage(data)); return; }
-
-    const modifiedTables = data?.ModifiedTables?.ModifiedTables;
-    if (modifiedTables) dispatch(updateTables(modifiedTables));
-
-    if (data?.ReportResult) {
-      const title = t(`report.${report.type}-result`);
-      dispatch(showInfoMessage(data.ReportResult, title));
-    }
-    parameters.forEach(param => {
-      if (param.editorType === 'fileTextEditor') {
-        dispatch(updateReportParam(id, report.id, param.id, null));
-      }
-    });
-    if (data.OperationId) {
-      showNotification(t('report.start', {programName: report.displayName}))(dispatch).then();
-      await watchReport(report, data.OperationId, dispatch);
-    }
-  };
-
-  const onParamChange = (param: Parameter, newValue: any) => {
+  const onParameterChange = (param: Parameter, newValue: any) => {
     dispatch(updateReportParameter(id, report.id, param.id, newValue));
   };
+  const run = () => {
+    dispatch(runReport(id, report)); close();
+  };
+  const { channels, parameters, canRun } = report;
 
   return (
     <Dialog title={t(`report.${report.type}-parameters`)} onClose={close} style={{zIndex: 99}}>
-      <ParameterList params={parameters} channels={channels} onChange={onParamChange}/>
+      <ParameterList params={parameters} channels={channels} onChange={onParameterChange}/>
       <DialogActionsBar>
-        <Button onClick={() => { runReport(); close(); }} disabled={!canRun}>
-          {t('base.run')}
-        </Button>
-        <Button onClick={close}>
-          {t('base.cancel')}
-        </Button>
+        <Button onClick={run} disabled={!canRun}>{t('base.run')}</Button>
+        <Button onClick={close}>{t('base.cancel')}</Button>
       </DialogActionsBar>
     </Dialog>
   );
