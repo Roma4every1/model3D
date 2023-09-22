@@ -1,4 +1,4 @@
-import './image-renderer.scss'
+import './../renderers.scss' 
 import {useCallback, useEffect, useRef, useState} from "react";
 import {zoomImage} from "../../../lib/utils.ts";
 

@@ -1,10 +1,10 @@
-import './html-renderer.scss'
+import './../renderers.scss'
 
 export const HTMLRenderer = ({model}: FileRendererProps) => {
   const objectURL = URL.createObjectURL(model.data);
   return (
     <>
-      <iframe id={'htmlRenderer'} src={objectURL}></iframe>
+      <iframe className={'basicRenderer'} src={objectURL}></iframe>
     </>
   );
 };
