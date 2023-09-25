@@ -1,178 +1,66 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
+import { TFunction } from 'react-i18next';
+import { useState, useMemo } from 'react';
 import { useDispatch } from 'shared/lib';
 
-import { WindowProps } from '@progress/kendo-react-dialogs';
 import { EditElement } from './edit-element';
-import { CreateElement } from './create-element';
 import { DeleteElementWindow } from './delete-element';
-import { AttrTableWindow } from './attr-table';
 
-import { MapMode } from '../../../lib/constants.ts';
 import { getHeaderText } from './editing-utils';
-import { applyMouseDownActionToPolyline, applyMouseMoveActionToElement, applyRotateToLabel } from './edit-element-utils';
-import { clientPoint, getNearestPointIndex, listenerOptions } from '../../../lib/map-utils';
-import { showDialog, showWindow, closeWindow } from 'entities/window';
-import { setEditMode, acceptMapEditing, cancelMapEditing, setMapField } from '../../../store/map.actions';
-import { startCreatingElement, cancelCreatingElement } from '../../../store/map.actions';
-import { showMapPropertyWindow } from '../../../store/map.thunks.ts';
+import { showDialog, closeWindow } from 'entities/window';
+import { showMapPropertyWindow, showMapAttrTableWindow } from '../../../store/map.thunks.ts';
+import { canCreateTypes, canEditPropertyTypes } from '../../../lib/constants.ts';
 
 
 interface EditingProps {
-  mapState: MapState;
-  formID: FormID;
+  id: FormID;
+  state: MapState;
+  t: TFunction;
 }
 
 
-const mouseMoveNeedModes: MapMode[] = [MapMode.MOVE, MapMode.MOVE_POINT, MapMode.ROTATE];
-const creatingElementTypes: MapElementType[] = ['polyline', 'sign', 'label'];
-const hasPropertiesWindow: MapElementType[] = ['sign', 'polyline', 'label', 'field'];
-
-export const Editing = ({mapState, formID}: EditingProps) => {
-  const { t } = useTranslation();
+export const Editing = ({id, state, t}: EditingProps) => {
   const dispatch = useDispatch();
+  const [_signal, setSignal] = useState(false);
 
-  const { canvas, activeLayer, utils, mode, isElementEditing, isElementCreating, mapData } = mapState;
-  const selectedElement = mapState.element;
+  const { stage, propertyWindowOpen, attrTableWindowOpen } = state;
+  stage.listeners.editPanelChange = () => setSignal(!_signal);
 
+  const activeLayer = stage.getActiveLayer();
+  const activeElement = stage.getActiveElement();
+
+  const isCreating = stage.isElementCreating();
   const creatingType = activeLayer?.elementType;
-
-  const isOnMove = useRef(false);
-  const pIndex = useRef<number>(null);
-
-  const mouseDown = useCallback((event: MouseEvent) => {
-    if (!isElementEditing) return;
-    const point = utils.pointToMap(clientPoint(event));
-    isOnMove.current = mouseMoveNeedModes.includes(mode);
-
-    if (selectedElement.type !== 'polyline') return;
-
-    const scale = mapData.scale;
-    if (mode === MapMode.MOVE_POINT) {
-      pIndex.current = getNearestPointIndex(point, scale, selectedElement);
-    }
-    applyMouseDownActionToPolyline(selectedElement, {mode, point, scale});
-    dispatch(setMapField(formID, 'element', selectedElement));
-    utils.updateCanvas();
-  }, [isElementEditing, utils, selectedElement, mode, mapData, formID, dispatch]);
-
-  const mouseMove = useCallback((event: MouseEvent) => {
-    if (!isOnMove.current) return;
-    const point = utils.pointToMap(clientPoint(event));
-    const action = {mode, point, pIndex: pIndex.current};
-
-    applyMouseMoveActionToElement(selectedElement, action);
-    utils.updateCanvas();
-  }, [selectedElement, utils, mode]);
-
-  const mouseUp = useCallback(() => {
-    isOnMove.current = false;
-    pIndex.current = null;
-  }, []);
-
-  const mouseWheel = useCallback((event: WheelEvent) => {
-    if (mode !== MapMode.ROTATE || !(selectedElement?.type === 'label')) return;
-    applyRotateToLabel(selectedElement, event.deltaY > 0, event.shiftKey);
-    utils.updateCanvas();
-  }, [selectedElement, mode, utils]);
-
-  // ставим слушатели на <canvas>
-  useEffect(() => {
-    if (canvas) {
-      canvas.addEventListener('mousedown', mouseDown, listenerOptions);
-      canvas.addEventListener('mousemove', mouseMove, listenerOptions);
-      canvas.addEventListener('mouseup', mouseUp, listenerOptions);
-      canvas.addEventListener('wheel', mouseWheel, listenerOptions);
-    }
-    return () => {
-      if (canvas) {
-        canvas.removeEventListener('mousedown', mouseDown);
-        canvas.removeEventListener('mousemove', mouseMove);
-        canvas.removeEventListener('mouseup', mouseUp);
-        canvas.removeEventListener('wheel', mouseWheel);
-      }
-    }
-  }, [canvas, mouseDown, mouseMove, mouseUp, mouseWheel]);
-
-  const [isAttrTableOpen, setAttrTableOpen] = useState(false);
-  const isCreating = mode === MapMode.CREATING || mode === MapMode.AWAIT_POINT;
-  const isPolylineCreating = isElementCreating && creatingType === 'polyline';
-
-  const toggleCreating = () => {
-    if (isCreating) dispatch(cancelCreatingElement(formID));
-    else {
-      dispatch(startCreatingElement(formID));
-      dispatch(setEditMode(formID, MapMode.AWAIT_POINT));
-    }
-  };
-
-  const acceptEditing = () => {
-    if (!selectedElement) return;
-    dispatch(acceptMapEditing(formID));
-  };
-
-  const acceptPolylineValid = () => {
-    showPropertiesWindow();
-  }
-
-  const cancelCreating = () => {
-    dispatch(cancelCreatingElement(formID));
-  };
-
-  const cancelEditing = () => {
-    if (!selectedElement) return;
-    dispatch(cancelMapEditing(formID));
-  };
+  const isPolylineCreating = isCreating && creatingType === 'polyline';
 
   const showDeleteWindow = () => {
     const windowID = 'mapDeleteWindow';
     const onClose = () => dispatch(closeWindow(windowID));
-    const content = <DeleteElementWindow mapState={mapState} formID={formID} onClose={onClose}/>;
+    const content = <DeleteElementWindow id={id} stage={stage} onClose={onClose}/>;
     dispatch(showDialog(windowID, {title: t('map.delete-element'), onClose}, content));
   };
 
   const showPropertiesWindow = () => {
-    dispatch(showMapPropertyWindow(formID, selectedElement));
+    dispatch(showMapPropertyWindow(id, activeElement));
   };
-
   const showAttrTableWindow = () => {
-    const windowID = 'mapAttrTableWindow';
-    const onClose = () => dispatch(closeWindow(windowID));
-    const content = <AttrTableWindow formID={formID} setOpen={setAttrTableOpen} onClose={onClose}/>;
-
-    const windowProps: WindowProps = {
-      className: 'attr-table-window', title: t('map.attr-table'),
-      width: 320, height: 260, onClose, maximizeButton: () => null,
-    };
-    dispatch(showWindow(windowID, windowProps, content));
+    dispatch(showMapAttrTableWindow(id));
   };
+
+  const create = () => stage.startCreating();
+  const accept = () => stage.accept();
+  const cancel = () => stage.cancel();
 
   const headerText = useMemo(() => {
-    return getHeaderText(isCreating, selectedElement?.type, activeLayer?.name, t);
-  }, [activeLayer, selectedElement, isCreating, t]);
+    return getHeaderText(isCreating, activeElement?.type, activeLayer?.displayName, t);
+  }, [activeLayer, activeElement, isCreating, t]);
 
-  const disableAll = Boolean(mapState.elementInitProperties) || isAttrTableOpen;
-
-  const disabledCreate = disableAll ||
-    (isElementCreating && !isCreating) ||
-    !(activeLayer && activeLayer.visible) ||
-    (creatingElementTypes.indexOf(creatingType) === -1);
-
-  const disabledProperties = disableAll ||
-    isElementCreating ||
-    !hasPropertiesWindow.includes(selectedElement?.type);
-
-  const arcPathInvalid = selectedElement?.type === 'polyline'
-    ? selectedElement?.arcs[0]?.path?.length <= 2
-    : false;
-
-  const disabledAccept = disableAll ||
-    (!isElementCreating && !isElementEditing) ||
-    arcPathInvalid;
-
-  const disabledCancel = disabledAccept && !(isPolylineCreating && !mapState.elementInitProperties);
-  const disabledAttrTable = disableAll || !selectedElement?.attrTable;
-  const disabledDelete = disableAll || isElementCreating || !selectedElement;
+  const disableAll = propertyWindowOpen || attrTableWindowOpen;
+  const canAccept = activeElement !== null;
+  const canCancel = activeElement !== null;
+  const canCreate = activeLayer && canCreateTypes.includes(creatingType) && !isCreating;
+  const canDelete = activeElement && !isCreating;
+  const canEditProperties = activeElement && canEditPropertyTypes.includes(activeElement.type);
+  const canEditAttrTable = activeElement && activeElement.attrTable;
 
   return (
     <section className={'map-editing'}>
@@ -181,51 +69,43 @@ export const Editing = ({mapState, formID}: EditingProps) => {
         <div className={'common-buttons'}>
           <button
             className={'map-panel-button k-button'} title={t('map.editing.accept')}
-            disabled={disabledAccept}
-            onClick={isPolylineCreating ? acceptPolylineValid : acceptEditing}
+            disabled={disableAll || !canAccept}
+            onClick={isPolylineCreating ? showPropertiesWindow : accept}
           >
             <span className={'k-icon k-i-check-outline'} />
           </button>
           <button
             className={'k-button map-panel-button'} title={t('map.editing.cancel')}
-            disabled={disabledCancel} onClick={isElementCreating ? cancelCreating : cancelEditing}
+            disabled={disableAll || !canCancel} onClick={cancel}
           >
             <span className={'k-icon k-i-close-outline'} />
           </button>
           <button
             className={'k-button map-panel-button' + (isCreating ? ' active' : '')} title={t('map.creating.button-hint')}
-            disabled={disabledCreate} onClick={toggleCreating}
+            disabled={disableAll || !canCreate} onClick={create}
           >
             <span className={'k-icon k-i-add'} />
           </button>
           <button
             className={'k-button map-panel-button'} title={t('map.editing.properties')}
-            disabled={disabledProperties} onClick={showPropertiesWindow}
+            disabled={disableAll || !canEditProperties} onClick={showPropertiesWindow}
           >
             <span className={'k-icon k-i-saturation'} />
           </button>
           <button
             className={'k-button map-panel-button'} title={t('map.attr-table')}
-            disabled={disabledAttrTable} onClick={showAttrTableWindow}
+            disabled={disableAll || !canEditAttrTable} onClick={showAttrTableWindow}
           >
             <span className={'k-icon k-i-table'} />
           </button>
           <button
             className={'k-button map-panel-button'} title={t('map.editing.delete')}
-            disabled={disabledDelete} onClick={showDeleteWindow}
+            disabled={disableAll || !canDelete} onClick={showDeleteWindow}
           >
             <span className={'k-icon k-i-delete'}/>
           </button>
         </div>
-        {isCreating
-          ? <CreateElement
-            mapState={mapState}
-            formID={formID}
-            creatingType={creatingType}
-          />
-          : selectedElement
-            ? <EditElement type={selectedElement.type} mode={mode} formID={formID}/>
-            : <div/>}
+        {!isCreating && activeElement ? <EditElement stage={stage}/> : <div/>}
       </div>
     </section>
   );

@@ -15,6 +15,7 @@ export const polylineType: PolylineType = types['polyline'];
 /** Снимает выделение с элемента карты. */
 export function unselectElement(element: MapElement): void {
   element.selected = false;
+  element.edited = false;
 
   if (element.type === 'polyline' && element.fillname && !element.transparent) {
     const back = polylineType.bkcolor(element);
@@ -34,27 +35,6 @@ export function selectElement(element: MapElement): void {
 
 /** Является ли элемент карты линией с закрашенной площадью. */
 export const isPolygon = (element: MapPolyline) => element.fillbkcolor && !element.transparent;
-
-/** Проверяет подслой карты на видимость и соответствие масштабов. */
-const checkLayer = (layer, scale: MapScale) => {
-  const { visible, highscale: highScale, lowscale: lowScale } = layer;
-  const condition = (typeof highScale === 'string' && highScale.includes('INF')) || scale <= highScale;
-  return visible && lowScale <= scale && condition;
-}
-
-/** Возвращает список ближайших элементов от места клика. */
-export const getNearestElements = (layers: MapLayer[], activeLayer: MapLayer, scale: MapScale, filterFn: (layer) => boolean) => {
-  let nearestElements = [];
-  if (activeLayer) {
-    nearestElements = activeLayer.elements.filter(filterFn);
-  } else {
-    for (const layer of layers) {
-      if (checkLayer(layer, scale)) nearestElements.push(...layer.elements.filter(filterFn));
-    }
-  }
-  nearestElements.reverse();
-  return nearestElements;
-};
 
 /** Проверяет, достаточно ли далеко находится старая точка от новой. */
 export const checkDistancePoints = (oldPoint: Point | null, newPoint: Point, scale: MapScale): boolean => {

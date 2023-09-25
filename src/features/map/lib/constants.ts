@@ -25,8 +25,7 @@ import { FieldProperties } from '../components/edit-panel/properties-window/fiel
  * + `DELETE_POINT` — удалить точку
  * */
 export enum MapMode {
-  NONE = -1,
-  SELECTING = 0,
+  NONE = 0,
   CREATING = 1,
   AWAIT_POINT = 2,
 
@@ -45,8 +44,28 @@ export enum MapMode {
 export const coordinateFormat: NumberFormatOptions = {
   style: 'decimal',
   useGrouping: false,
-  maximumFractionDigits: 1,
+  maximumFractionDigits: 0,
 };
+
+/** Доступные режимы редактирования для выбранных элементов карты. */
+export const elementEditModes: Record<MapElementType, MapMode[]> = {
+  polyline: [
+    MapMode.MOVE_MAP, MapMode.MOVE_POINT,
+    MapMode.ADD_END, MapMode.ADD_BETWEEN, MapMode.DELETE_POINT,
+  ],
+  label: [
+    MapMode.MOVE_MAP, MapMode.MOVE, MapMode.ROTATE,
+  ],
+  sign: [
+    MapMode.MOVE_MAP, MapMode.MOVE,
+  ],
+  field: [],
+};
+
+/** Типы элементов, которые можно создать. */
+export const canCreateTypes: MapElementType[] = ['polyline', 'sign', 'label'];
+/** Типы элементов, у которых можно редактировать свойства через специальное окно. */
+export const canEditPropertyTypes: MapElementType[] = ['sign', 'polyline', 'label', 'field'];
 
 export const propertyWindowConfig: Record<MapElementType, PropertyWindowConfig> = {
   'sign': {

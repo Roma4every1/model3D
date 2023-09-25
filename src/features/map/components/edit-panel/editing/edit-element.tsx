@@ -1,7 +1,5 @@
-import { useDispatch } from 'react-redux';
 import { TFunction, useTranslation } from 'react-i18next';
-import { MapMode } from '../../../lib/constants.ts';
-import { startMapEditing, setEditMode } from '../../../store/map.actions';
+import { MapMode, elementEditModes } from '../../../lib/constants.ts';
 
 import addBetween from 'assets/images/map/add-between.png';
 import handIcon from 'assets/images/map/hand.png';
@@ -13,9 +11,7 @@ import rotateIcon from 'assets/images/map/rotate.png';
 
 
 interface EditElementProps {
-  type: string;
-  mode: MapMode;
-  formID: FormID;
+  stage: IMapStage;
 }
 interface EditItemProps {
   ownMode: MapMode;
@@ -46,39 +42,29 @@ const translationDict: Record<number, string> = {
   24: 'map.editing.delete-point', // MapModes.DELETE_POINT
 };
 
-/** Доступные режимы редактирования для выбранных элементов карты. */
-const elementsModes: {[key: string]: MapMode[]} = {
-  'polyline': [
-    MapMode.MOVE_MAP, MapMode.MOVE_POINT,
-    MapMode.ADD_END, MapMode.ADD_BETWEEN, MapMode.DELETE_POINT
-  ],
-  'label': [MapMode.MOVE_MAP, MapMode.MOVE, MapMode.ROTATE],
-  'sign': [MapMode.MOVE_MAP, MapMode.MOVE],
-};
-
-export const EditElement = ({type, mode, formID}: EditElementProps) => {
+export const EditElement = ({stage}: EditElementProps) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
+  const mode = stage.getMode();
+  const type = stage.getActiveElement().type;
 
-  const buttons = (elementsModes[type] || []).map((ownMode) => {
+  const toButton = (ownMode: MapMode) => {
     const isSameMode = mode === ownMode;
     const action = () => {
-      if (mode < MapMode.MOVE_MAP) dispatch(startMapEditing(formID));
-      dispatch(setEditMode(formID, isSameMode ? MapMode.NONE : ownMode));
-    }
+      if (mode < MapMode.MOVE_MAP) stage.startEditing();
+      stage.setMode(isSameMode ? MapMode.NONE : ownMode);
+    };
     return <EditItem key={ownMode} ownMode={ownMode} selected={isSameMode} t={t} action={action}/>;
-  });
-  return <div>{buttons}</div>;
+  };
+  return <div>{elementEditModes[type].map(toButton)}</div>;
 };
 
 const EditItem = ({ownMode, selected, t, action}: EditItemProps) => {
-  const src = mapEditIconsDict[ownMode], alt = translationDict[ownMode];
+  const title = t(translationDict[ownMode]);
   const className = 'map-panel-button' + (selected ? ' selected' : '');
-  const title = t(alt);
 
   return (
     <button className={className} onClick={action}>
-      <img src={src} alt={title} title={title}/>
+      <img src={mapEditIconsDict[ownMode]} alt={title} title={title}/>
     </button>
   );
 };

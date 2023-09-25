@@ -10,18 +10,20 @@ import { FieldPalettePropertiesWindow } from './field-palette-properties';
 export const FieldProperties = (props: PropertyWindowProps<MapField>) => {
   const dispatch = useDispatch();
   const [changed, setChanged] = useState(false);
-  const { element: field, init, apply, update, cancel, t, isElementCreating } = props;
+
+  const { element: field, apply, update, cancel, t, isElementCreating } = props;
+  const [paletteInit] = useState(field.palette[0]);
 
   /* --- Field Properties State --- */
 
-  const [boundX, setBoundX] = useState(init.x);
-  const [boundY, setBoundY] = useState(init.y);
+  const [boundX, setBoundX] = useState(field.x);
+  const [boundY, setBoundY] = useState(field.y);
 
-  const [sizeX, setSizeX] = useState(init.sizex);
-  const [sizeY, setSizeY] = useState(init.sizey);
+  const [sizeX, setSizeX] = useState(field.sizex);
+  const [sizeY, setSizeY] = useState(field.sizey);
 
-  const [stepX, setStepX] = useState(init.stepx);
-  const [stepY, setStepY] = useState(init.stepy);
+  const [stepX, setStepX] = useState(field.stepx);
+  const [stepY, setStepY] = useState(field.stepy);
 
   /* --- Properties Handlers --- */
 
@@ -67,7 +69,7 @@ export const FieldProperties = (props: PropertyWindowProps<MapField>) => {
 
     const content = <FieldPalettePropertiesWindow
       onClose={onClose} element={field.palette[0]} update={update} t={t}
-      init={init.palette[0]}
+      init={paletteInit}
     />;
     const windowProps = {
       title: 'Свойства палитры', className: 'propertiesWindow',

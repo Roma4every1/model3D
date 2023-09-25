@@ -1106,7 +1106,7 @@ export async function startPaint(canvas, map, options) {
   try {
     for (const layer of map.layers) {
       if (!layer.visible) continue;
-      if (!coords.scaleVisible(layer)) continue;
+      if (!layer.isScaleVisible(coords.mscale)) continue;
       if (!rects.intersects(drawBounds, layer.bounds)) continue;
 
       let c = onCheckExecution();
@@ -1130,11 +1130,11 @@ export async function startPaint(canvas, map, options) {
       }
     }
 
-    map.x = options.events.centerx;
-    map.y = options.events.centery;
-    map.scale = options.events.scale;
-    map.onDrawEnd(canvas, map.x, map.y, map.scale);
-  } catch {
+    map.x = options.point.x;
+    map.y = options.point.y;
+    map.scale = coords.mscale;
+    map.onDrawEnd(options.point, coords.mscale);
+  } catch (e) {
     // ...
   }
 }

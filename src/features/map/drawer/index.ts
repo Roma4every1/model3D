@@ -1,6 +1,5 @@
 import { def2json } from './symbols';
 import { parseDef } from './symbol2svg';
-import { loadImageData } from './html-helper';
 import { mapsAPI } from '../lib/maps.api';
 
 
@@ -36,7 +35,7 @@ class MapProvider {
 
     let getter = this.lib[fontID.toUpperCase()]?.get(index);
     if (!getter) getter = this.lib[this.defaultSignLib].get(0);
-    const imageData = loadImageData(getter(color), 'image/svg+xml');
+    const imageData = loadImageData(getter(color));
 
     this.cache[hash] = imageData;
     return imageData;
@@ -76,6 +75,22 @@ class MapProvider {
     this.defaultSignImage = await this.getSignImage(this.defaultSignLib, 0, this.defaultSignColor);
     this.initialized = true;
   }
+}
+
+function loadImageData(data: string): Promise<HTMLImageElement> {
+  const blob = new Blob([data], {type: 'image/svg+xml'});
+  const url = URL.createObjectURL(blob);
+
+  const img = new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.src = url;
+    image.onload = () => { resolve(image); };
+    image.onerror = reject;
+  });
+
+  const fin = () => { URL.revokeObjectURL(url); };
+  img.then(fin).catch(fin);
+  return img;
 }
 
 export const provider = new MapProvider();

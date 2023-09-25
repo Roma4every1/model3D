@@ -4,10 +4,9 @@ import { checkDistancePoints } from '../components/edit-panel/selecting/selectin
 
 
 /** Прототип объекта слоя трассы. */
-export const traceLayerProto: MapLayer = {
+export const traceLayerProto: MapLayerRaw = {
   bounds: {min: {x: 0, y: 0}, max: {x: 0, y: 0}},
   container: 'null',
-  elements: [],
   group: 'Трассы',
   highscale: 'INF',
   lowscale: 0,
@@ -15,7 +14,6 @@ export const traceLayerProto: MapLayer = {
   uid: '{TRACES-LAYER}',
   version: '1.0',
   visible: true,
-  temporary: true,
 };
 
 /** Возвращает элемент карты polyline для отрисовки трассы */

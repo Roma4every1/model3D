@@ -18,30 +18,8 @@ export function createMapElementInit(element: MapElement): MapElement {
   return copy;
 }
 
-/** Настройки для метода `addEventListener`. */
-export const listenerOptions = {passive: true};
-
 /** Количество пикселей в метре. В браузере `1cm = 96px / 2.54`. */
 export const PIXEL_PER_METER: number = 100 * 96 / 2.54;
-
-/** Возвращает список холстов привязанных карт в рамках одной мультикарты. */
-export function getMultiMapChildrenCanvases(
-  multi: FormDict<MultiMapState>, single: FormDict<MapState>,
-  formID: FormID, parentID: FormID,
-): MapCanvas[] {
-  const childrenUtils: MapCanvas[] = [];
-  const multiMapState = multi[parentID];
-
-  if (!multiMapState || !multiMapState.sync || multiMapState.children.length < 1) {
-    return childrenUtils;
-  }
-  for (const childFormID of multiMapState.children) {
-    if (childFormID === formID) continue;
-    const mapState = single[childFormID];
-    if (mapState?.canvas?.events) childrenUtils.push(mapState.canvas);
-  }
-  return childrenUtils;
-}
 
 /** Возвращает точку с координатами клика мыши. */
 export function clientPoint(event: MouseEvent): Point {
@@ -137,12 +115,12 @@ export function squaredDistanceBetweenPointAndSegment(segment, point) {
 }
 
 /** Определяет вьюпорт карты, чтобы все элементы влазили в экран. */
-export function getFullViewport(layers: MapLayer[], canvas: HTMLCanvasElement): MapViewport {
+export function getFullViewport(layers: IMapLayer[], canvas: HTMLCanvasElement): MapViewport {
   let minX = Infinity, minY = Infinity;
   let maxX = -Infinity, maxY = -Infinity;
 
   for (const layer of layers) {
-    if (!layer.visible || layer.temporary) continue;
+    if (!layer.visible || layer.isTemporary()) continue;
     const { min, max } = layer.bounds;
 
     if (min.x < minX) minX = min.x;

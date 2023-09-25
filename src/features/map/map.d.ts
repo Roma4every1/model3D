@@ -28,60 +28,89 @@ interface MapItemConfig {
   setProgress?: (process: number) => void;
 }
 
-/** ## Состояние карты.
- * + `mode`: {@link MapMode} — режим карты
- * + `mapData`: {@link MapData} — данные для отрисовки
- * + `activeLayer`: {@link MapLayer} — активный слой
- * + `isLoadSuccessfully` — состояние загрузки
- * + `canvas` — HTML элемент `<canvas>`
- * + `owner`: {@link MapOwner} — владелец
- * + `mapID`: {@link MapID} — ID карты
- * + `selecting`: {@link MapSelectingState}
- * + `isModified` — изменена ли карта
- * + `cursor` — стиль курсора
- * + `childOf`: {@link FormID}
- * + `utils`: {@link MapUtils} — вспомогательные функции
- * @see MapsState
- * */
+/** Состояние карты. */
 interface MapState {
-  mode: number, // MapModes
-  mapData: MapData;
-  activeLayer: MapLayer;
-  isLoadSuccessfully: boolean | undefined;
+  /** Ссылка на холст. */
   canvas: MapCanvas;
+  /** Класс сцены. */
+  stage: IMapStage;
+  /** Класс для отслеживания изменения размеров холста. */
+  observer: ResizeObserver;
+  /** Владелец карты. */
   owner: MapOwner;
+  /** Идентификатор карты. */
   mapID: MapID;
-  element: MapElement;
-  elementInit: MapElement;
-  elementInitProperties: MapElement;
-  isElementEditing: boolean;
-  isElementCreating?: boolean;
-  selecting: MapSelectingState;
-  isModified: boolean;
-  cursor: string;
-  childOf: ClientID;
-  scroller: { setList(list: MapCanvas[]) } | null;
-  utils: MapUtils;
+  /** Состояние загрузки карты. */
+  loading: MapLoading;
+  /** Была ли карта изменена. */
+  modified: boolean;
+  /** Открыто ли окно свойств элемента. */
+  propertyWindowOpen: boolean;
+  /** Открыта ли аттрибутивная таблица. */
+  attrTableWindowOpen: boolean;
+}
+
+/** Состояние загрузки данных карты.
+ * + `percentage: number`
+ * + `status: string`
+ * */
+interface MapLoading {
+  /** Процент загрузки. */
+  percentage: number;
+  /** Статус загрузки: название загружаемого слоя. */
+  status: string;
+}
+
+interface IMapStage {
+  readonly select: IMapSelect;
+  readonly listeners: MapStageListeners;
+
+  getMode(): number;
+  getSelecting(): boolean;
+  getMapData(): MapData;
+  getMapDataToSave(): any;
+  getActiveLayer(): IMapLayer | null;
+  getActiveElement(): MapElement | null;
+  getActiveElementLayer(): IMapLayer | null;
+  isElementEditing(): boolean;
+  isElementCreating(): boolean;
+
+  setCanvas(canvas: MapCanvas): void;
+  setData(data: MapData): void;
+  setMode(mode: number): void;
+  setSelecting(selecting: boolean): void;
+  setActiveLayer(layer: IMapLayer): void;
+
+  startCreating(): void;
+  startEditing(): void;
+  accept(): void;
+  cancel(): void;
+
+  clearSelect(): void;
+  deleteActiveElement(): void;
+
+  handleMouseUp(event: MouseEvent): MapElement | null;
+  handleMouseDown(event: MouseEvent): void;
+  handleMouseMove(event: MouseEvent): void;
+  handleMouseWheel(event: WheelEvent): void;
+
+  pointToMap(point: Point): Point;
+  resize(): void;
+  render(viewport?: MapViewport): void;
+}
+
+interface IMapSelect {
+  onlyActiveLayer: boolean;
+  types: Record<MapElementType, boolean>;
+}
+interface MapStageListeners {
+  selectPanelChange(): void;
+  editPanelChange(): void;
+  propertyWindowClose(): void;
+  attrTableWindowClose(): void;
 }
 
 type MapCanvas = HTMLCanvasElement & {selectingMode: boolean, blocked: boolean, events: any};
-
-interface MapUtils {
-  updateCanvas(cs?: MapViewport): void;
-  pointToMap(point: Point): Point;
-}
-
-/** ## Состояние выделения карты.
- * + `nearestElements` — список ближайших элементов
- * + `activeIndex` — иднекс списка элементов
- * + `lastPoint` — точка последнего клика
- * @see MapState
- * */
-interface MapSelectingState {
-  nearestElements: any[];
-  activeIndex: number;
-  lastPoint: Point;
-}
 
 /* --- Загрузка карты --- */
 
@@ -136,7 +165,7 @@ interface MapViewport {
 interface MapData {
   date: string;
   eTag: string;
-  layers: MapLayer[];
+  layers: IMapLayer[];
   mapCode: string;
   mapData: any;
   mapErrors: any[];
@@ -153,37 +182,39 @@ interface MapData {
   x: number;
   y: number;
   scale: number;
-  onDrawEnd: (canvas: MapCanvas, x: number, y: number, scale: number) => void;
+  onDrawEnd: (center: Point, scale: number) => void;
 }
 
 interface LayerTreeItem {
   id: string;
   text: string;
-  sublayer: MapLayer;
+  sublayer: IMapLayer;
   visible: boolean;
   items?: LayerTreeItem[];
 }
 
 /** Слой карты. */
-interface MapLayer {
-  bounds: Bounds;
-  container: string;
-  elements: MapElement[];
-  group: string;
-  highscale: LayerHighScale;
-  lowscale: number;
-  name: string;
-  uid: string;
-  index?: any;
-  version: any;
-  visible?: boolean;
-  elementType?: MapElementType;
-  modified?: boolean;
-  temporary?: boolean;
-}
+interface IMapLayer {
+  readonly id: string;
+  readonly group: string;
+  readonly displayName: DisplayName;
+  readonly elementType: MapElementType;
 
-/** Максимальный масштаб карты, при котором данный слой будет отрисовываться. */
-type LayerHighScale = number | 'INF';
+  bounds: Bounds;
+  elements: MapElement[];
+  visible: boolean;
+  active: boolean;
+  modified: boolean;
+
+  getMinScale(): number;
+  getMaxScale(): number;
+  isScaleVisible(scale: MapScale): boolean;
+  isTemporary(): boolean;
+
+  setMinScale(scale: number): void;
+  setMaxScale(scale: number): void;
+  toInit(): any;
+}
 
 /** Границы объекта (слоя, элемента) карты.
  * + `max`: {@link Point}

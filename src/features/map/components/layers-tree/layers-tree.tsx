@@ -14,20 +14,19 @@ interface MapLayerTreeProps {
 /** Дерево слоёв карты. */
 export const MapLayerTree = ({id}: MapLayerTreeProps) => {
   const mapState: MapState = useSelector(mapStateSelector.bind(id));
-  const layers = mapState?.mapData?.layers;
+  const layers = mapState?.stage?.getMapData()?.layers;
 
   const treeItems = useMemo(() => {
     return getTreeItems(layers);
   }, [layers]);
 
   const itemToElement = (item: LayerTreeItem, i: number) => {
-    return <LayersTreeElement key={i} item={item} mapState={mapState} formID={id}/>;
+    return <LayersTreeElement key={i} item={item} stage={mapState.stage}/>;
   };
-
   return <div>{treeItems.map(itemToElement)}</div>;
 };
 
-function getTreeItems(layers: MapLayer[]): LayerTreeItem[] {
+function getTreeItems(layers: IMapLayer[]): LayerTreeItem[] {
   const tree: LayerTreeItem[] = [];
   if (!layers) return tree;
 
@@ -52,7 +51,6 @@ function getTreeItems(layers: MapLayer[]): LayerTreeItem[] {
   return tree;
 }
 
-function getGroupForTree(layer: MapLayer): LayerTreeItem {
-  const visible = typeof layer.visible === 'string' ? (layer.visible !== '0') : layer.visible;
-  return {id: layer.uid, text: layer.name, sublayer: layer, visible};
+function getGroupForTree(layer: IMapLayer): LayerTreeItem {
+  return {id: layer.id, text: layer.displayName, sublayer: layer, visible: layer.visible};
 }

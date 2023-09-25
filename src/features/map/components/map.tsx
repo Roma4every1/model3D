@@ -5,18 +5,12 @@ import { channelSelector } from 'entities/channels';
 import { traceStateSelector, wellStateSelector, setCurrentTrace } from 'entities/objects';
 import { updateParam, currentPlastCodeSelector} from 'entities/parameters';
 import { tableRowToString } from 'entities/parameters/lib/table-row';
-
-import { Scroller } from '../drawer/scroller';
-import { showMap } from '../drawer/maps';
 import { mapsStateSelector, mapStateSelector } from '../store/map.selectors';
-import { fetchMapData } from '../store/map.thunks';
-import { setMapField, loadMapSuccess, loadMapError, applyTraceToMap } from '../store/map.actions';
+import { fetchMapData, showMapPropertyWindow } from '../store/map.thunks';
+import { setMapField, setMapCanvas, applyTraceToMap } from '../store/map.actions';
 import { handleClick } from '../lib/traces-map-utils';
-
-import {
-  clientPoint, getFullViewport, getMultiMapChildrenCanvases, getPointToMap,
-  listenerOptions,
-} from '../lib/map-utils';
+import { clientPoint, getFullViewport, getPointToMap } from '../lib/map-utils';
+import { MapMode } from '../lib/constants.ts';
 
 
 export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) => {
@@ -28,33 +22,21 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
   const mapState: MapState = useSelector(mapStateSelector.bind(id));
 
   const canvasRef = useRef(null);
-  const mapDrawnData = useRef(null);
-  const scroller = useRef(null);
-
   const [isMapExist, setIsMapExist] = useState(true);
-  const [progress, setProgress] = useState(0);
 
   const canvas = mapState?.canvas;
-  const mapData = mapState?.mapData;
-  const utils = mapState?.utils;
+  const stage = mapState?.stage;
+  const mapData = stage?.getMapData();
+  const loading = mapState?.loading;
 
   const isPartOfDynamicMultiMap = data !== undefined;
   const activeChannelName = isPartOfDynamicMultiMap ? null : channels[0].name;
   const activeChannel: Channel = useSelector(channelSelector.bind(activeChannelName));
   const currentPlastCode = useSelector(currentPlastCodeSelector);
 
-  // обновление списка связанных карт
-  useEffect(() => {
-    const canvases = getMultiMapChildrenCanvases(mapsState.multi, mapsState.single, id, parent);
-    if (scroller.current) scroller.current.setList(canvases);
-  }, [mapsState, mapState, id, parent]);
-
   useEffect(() => {
     if (!mapState || !isPartOfDynamicMultiMap) return;
-    if (!mapState.mapID && data.layers) {
-      dispatch(setMapField(id, 'mapID', data));
-      dispatch(loadMapSuccess(id, data));
-    }
+    if (!mapState.mapID && data.layers) mapState.stage.setData(data);
   }, [isPartOfDynamicMultiMap, mapState, id, data, dispatch]);
 
   // проверка параметров формы
@@ -62,15 +44,8 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
     if (!mapState || isPartOfDynamicMultiMap) return;
     const rows = activeChannel?.data?.rows;
     if (!rows || rows.length === 0) {
-      if (mapState?.isLoadSuccessfully === false) return;
-      dispatch(loadMapError(id));
+      if (loading.percentage < 0) return;
       return setIsMapExist(false);
-    }
-
-    // если карта загружена, но параметры были сброшены
-    if (mapData?.layers && mapState?.isLoadSuccessfully === false) {
-      dispatch(setMapField(id, 'isLoadSuccessfully', true));
-      return;
     }
 
     setIsMapExist(true);
@@ -91,44 +66,31 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
       dispatch(setMapField(id, 'owner', owner));
     }
     if (changeMapID) {
-      setProgress(0);
       dispatch(setMapField(id, 'mapID', mapID));
-      dispatch(fetchMapData(id, mapID, owner, setProgress));
+      dispatch(fetchMapData(id));
     }
   }, [mapState, activeChannel, id, parent, isPartOfDynamicMultiMap, dispatch]); // eslint-disable-line
-
-  const updateCanvas = useCallback((viewport?: MapViewport) => {
-    if (!mapData || !canvasRef.current) return;
-    if (!viewport) viewport = {centerX: mapData.x, centerY: mapData.y, scale: mapData.scale};
-    if (mapDrawnData.current) mapDrawnData.current.emit('detach');
-    mapDrawnData.current = showMap(canvasRef.current, mapData, viewport);
-  }, [mapData]);
-
-  // переопределение функции updateCanvas
-  useEffect(() => {
-    if (utils) utils.updateCanvas = updateCanvas;
-  }, [utils, updateCanvas]);
 
   const getWellViewport = useCallback((wellID, maxScale) => {
     if (!mapData) return;
     let pointsData: MapPoint[];
     if (isPartOfDynamicMultiMap) {
       const currentMapID = parent + ',' + mapsState.multi[parent].configs
-        .find(c => c.data.plastCode === currentPlastCode)?.id
+        .find(c => c.data.plastCode === currentPlastCode)?.id;
       const activeMapState : MapState = mapsState.single[currentMapID];
-      if (!activeMapState?.mapData) return;
+      if (!activeMapState?.stage.getMapData()) return;
       const isSync = mapsState.multi[parent].sync;
-      const isActiveMap = currentMapID === id
+      const isActiveMap = currentMapID === id;
 
-      if (isActiveMap) pointsData = mapData.points
-      if (isSync && !isActiveMap) pointsData = activeMapState.mapData.points
+      if (isActiveMap) pointsData = mapData.points;
+      if (isSync && !isActiveMap) pointsData = activeMapState.stage.getMapData().points;
       if (!isSync && !isActiveMap) return null;
     } else {
-      pointsData = mapData.points
+      pointsData = mapData.points;
     }
 
     const point = pointsData.find(p => parseInt(p.UWID) === wellID);
-    if (point && scroller.current) {
+    if (point) {
       const scale = mapData.scale < maxScale ? mapData.scale : maxScale;
       return {centerX: point.x, centerY: point.y, scale};
     }
@@ -139,29 +101,24 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
   ]);
 
   const wellsMaxScale = useMemo(() => {
-    return mapData?.layers?.find(l => l.elementType === 'sign')?.highscale ?? 50_000;
+    return mapData?.layers?.find(l => l.elementType === 'sign')?.getMaxScale() ?? 50_000;
   }, [mapData?.layers]);
 
-  // закрепление ссылки на холст
+  // обновление ссылки на холст
   useLayoutEffect(() => {
-    if (canvasRef.current && canvasRef.current !== canvas && mapData) {
-      dispatch(setMapField(id, 'canvas', canvasRef.current));
+    if (canvasRef.current === canvas) return;
+    dispatch(setMapCanvas(id, canvasRef.current));
+    if (!mapData) return;
 
-      scroller.current
-        ? scroller.current.setCanvas(canvasRef.current)
-        : scroller.current = new Scroller(canvasRef.current);
-      if (!mapState.scroller) dispatch(setMapField(id, 'scroller', scroller.current));
+    const viewport =
+      getWellViewport(currentWell?.id, wellsMaxScale) ||
+      getFullViewport(mapData.layers, canvasRef.current);
 
-      const viewport =
-        getWellViewport(currentWell?.id, wellsMaxScale) ||
-        getFullViewport(mapData.layers, canvasRef.current);
-
-      // случай, когда вкладка карт не была открыта и приосходит редактирование трассы
-      if (!mapData.onDrawEnd) mapData.onDrawEnd = (canvas, x, y, scale) => {
-        utils.pointToMap = getPointToMap(canvas, x, y, scale);
-      };
-      updateCanvas(viewport);
-    }
+    // случай, когда вкладка карт не была открыта и приосходит редактирование трассы
+    if (!mapData.onDrawEnd) mapData.onDrawEnd = ({x, y}, scale) => {
+      stage.pointToMap = getPointToMap(canvas, x, y, scale);
+    };
+    stage.render(viewport);
   });
 
   /* --- --- */
@@ -174,54 +131,63 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
   useEffect(() => {
     if (currentWellID && currentWellID !== wellRef.current) {
       const viewport = getWellViewport(currentWellID, wellsMaxScale);
-      if (viewport) updateCanvas(viewport);
+      if (viewport) canvasRef.current?.events.emit('cs', viewport);
     }
     wellRef.current = currentWellID;
-  }, [currentWellID, getWellViewport, wellsMaxScale, updateCanvas]);
+  }, [currentWellID, getWellViewport, wellsMaxScale, stage]);
 
   // отрисовка текущей трассы
   useEffect( () => {
-    if (!mapState?.isLoadSuccessfully) return;
+    if (!loading || loading.percentage < 100) return;
     const updateViewport =
       currentTrace?.id !== traceRef.current?.id ||           // изменилась активная трасса
       (traceEditing && traceRef.current?.editing === false); // вошли в режим режактирования
     dispatch(applyTraceToMap(id, currentTrace, updateViewport));
     traceRef.current = {id: currentTrace?.id, editing: traceEditing};
-  }, [mapState?.isLoadSuccessfully, currentTrace, traceEditing, id, dispatch]);
-
-  /* --- --- */
-
-  // добавление/удаление точек к текущей трассе через клик по карте
-  const mouseDown = useCallback((event: MouseEvent) => {
-    if (!currentTrace || !traceEditing) return;
-    if (!mapData || !mapState.isLoadSuccessfully) return;
-
-    const eventPoint = utils.pointToMap(clientPoint(event));
-    const changed = handleClick(currentTrace, eventPoint, mapData);
-    if (changed) dispatch(setCurrentTrace({...currentTrace}));
-  }, [mapState?.isLoadSuccessfully, mapData, utils, currentTrace, traceEditing, dispatch]);
-
-  // добавление слушателей событий для добавления/удаления точек трассы через клик по скважинам
-  useEffect(() => {
-    if (!canvas) return;
-    if (traceEditing) {
-      canvas.addEventListener('mousedown', mouseDown, listenerOptions);
-    } else {
-      canvas.removeEventListener('mousedown', mouseDown);
-    }
-    return () => canvas.removeEventListener('mousedown', mouseDown);
-  }, [traceEditing, mouseDown, canvas]);
+  }, [loading, currentTrace, traceEditing, id, dispatch]);
 
   /* --- --- */
 
   if (!mapState) return <div/>;
   if (!isMapExist) return <TextInfo text={'map.not-found'}/>;
-  if (mapState.isLoadSuccessfully === undefined) return <LoadingStatus percentage={progress}/>;
-  if (mapState.isLoadSuccessfully === false) return <TextInfo text={'map.not-loaded'}/>;
+  if (loading.percentage < 0) return <TextInfo text={'map.not-loaded'}/>;
+  if (loading.percentage < 100) return <LoadingStatus {...loading}/>;
+
+  const onMouseDown = ({nativeEvent}) => {
+    stage.handleMouseDown(nativeEvent);
+    if (!currentTrace || !traceEditing) return;
+
+    // добавление/удаление точек к текущей трассе через клик по карте
+    const point = stage.pointToMap(clientPoint(nativeEvent));
+    const changed = handleClick(currentTrace, point, mapData);
+    if (changed) dispatch(setCurrentTrace({...currentTrace}));
+  };
+
+  const onMouseUp = ({nativeEvent}) => {
+    const element = stage.handleMouseUp(nativeEvent);
+    if (!element) return;
+
+    stage.startCreating();
+    if (element.type === 'sign' || element.type === 'label') {
+      dispatch(showMapPropertyWindow(id, element));
+    }
+  };
+
+  const onMouseMove = ({nativeEvent}) => {
+    stage.handleMouseMove(nativeEvent);
+  };
+  const onMouseWheel = ({nativeEvent}) => {
+    stage.handleMouseWheel(nativeEvent);
+  };
 
   return (
     <div className={'map-container'}>
-      <canvas style={{cursor: mapState.cursor}} ref={canvasRef}/>
+      <canvas
+        ref={canvasRef}
+        style={{cursor: stage.getMode() === MapMode.AWAIT_POINT ? 'crosshair' : 'auto'}}
+        onMouseDown={onMouseDown} onMouseUp={onMouseUp}
+        onMouseMove={onMouseMove} onWheel={onMouseWheel}
+      />
     </div>
   );
 };

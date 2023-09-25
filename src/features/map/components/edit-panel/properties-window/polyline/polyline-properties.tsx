@@ -12,22 +12,22 @@ import './polyline-properties.scss';
 
 
 export const PolylineProperties = (props: PropertyWindowProps<MapPolyline>) => {
-  const { element: polyline, init, apply, update, cancel, t, isElementCreating } = props;
+  const { element: polyline, apply, update, cancel, t, isElementCreating } = props;
   const [changed, setChanged] = useState(false);
 
   /* --- Polyline Properties State --- */
 
-  const [closed, setClosed] = useState(init.arcs[0]?.closed === true);
-  const [transparent, setTransparent] = useState(init.transparent === true);
+  const [closed, setClosed] = useState(polyline.arcs[0]?.closed === true);
+  const [transparent, setTransparent] = useState(polyline.transparent === true);
 
-  const [borderWidth, setBorderWidth] = useState(init.borderwidth || 0);
-  const [borderColor, setBorderColor] = useState(init.bordercolor || null);
-  const [borderStyle, setBorderStyle] = useState(init.borderstyleid);
-  const [borderStyleID, setBorderStyleID] = useState(init.borderstyleid);
+  const [borderWidth, setBorderWidth] = useState(polyline.borderwidth || 0);
+  const [borderColor, setBorderColor] = useState(polyline.bordercolor || null);
+  const [borderStyle, setBorderStyle] = useState(polyline.borderstyleid);
+  const [borderStyleID, setBorderStyleID] = useState(polyline.borderstyleid);
 
-  const [fillName, setFillName] = useState(init.fillname);
-  const [fillColor, setFillColor] = useState(init.fillcolor || null);
-  const [fillBackColor, setFillBackColor] = useState(init.fillbkcolor || null);
+  const [fillName, setFillName] = useState(polyline.fillname);
+  const [fillColor, setFillColor] = useState(polyline.fillcolor || null);
+  const [fillBackColor, setFillBackColor] = useState(polyline.fillbkcolor || null);
 
   /* --- Properties Handlers --- */
 

@@ -12,22 +12,22 @@ import {
 
 
 export const LabelProperties = (props: PropertyWindowProps<MapLabel>) => {
-  const { element: label, init, apply, update, cancel, t, isElementCreating } = props;
+  const { element: label, apply, update, cancel, t, isElementCreating } = props;
   const [changed, setChanged] = useState(false);
 
   /* --- Polyline Properties State --- */
 
-  const [text, setText] = useState(init.text);
-  const [color, setColor] = useState(init.color ?? null);
-  const [fontSize, setFontSize] = useState(init.fontsize);
+  const [text, setText] = useState(label.text);
+  const [color, setColor] = useState(label.color ?? null);
+  const [fontSize, setFontSize] = useState(label.fontsize);
 
-  const [xOffset, setXOffset] = useState(init.xoffset);
-  const [yOffset, setYOffset] = useState(init.yoffset);
-  const [hAlignment, setHAlignment] = useState<MapLabelAlignment>(init.halignment);
-  const [vAlignment, setVAlignment] = useState<MapLabelAlignment>(init.valignment);
+  const [xOffset, setXOffset] = useState(label.xoffset);
+  const [yOffset, setYOffset] = useState(label.yoffset);
+  const [hAlignment, setHAlignment] = useState<MapLabelAlignment>(label.halignment);
+  const [vAlignment, setVAlignment] = useState<MapLabelAlignment>(label.valignment);
 
-  const [angle, setAngle] = useState(init.angle);
-  const [transparent, setTransparent] = useState(init.transparent);
+  const [angle, setAngle] = useState(label.angle);
+  const [transparent, setTransparent] = useState(label.transparent);
 
   /* --- Properties Handlers --- */
 

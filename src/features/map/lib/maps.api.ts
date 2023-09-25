@@ -2,7 +2,8 @@ import { BaseAPI, API } from 'shared/lib';
 import { types } from '../drawer/map-drawer';
 import { provider } from '../drawer';
 import { converter } from './maps-api.utils';
-import { handleLayerScales, checkLayerIndex } from './maps-api.utils';
+import { checkLayerIndex } from './maps-api.utils';
+import { MapLayer } from './map-layer.ts';
 import symbolDef from 'assets/map-libs/symbol.def';
 
 
@@ -63,51 +64,8 @@ export class MapsAPI {
     mapData.points = data.namedpoints;
   }
 
-  /** Запрос контейнеров и подготовка элементов слоя. */
-  public async setLayerElements(
-    mapData: MapDataRaw, layer: MapLayerRaw, indexName: string,
-    owner: MapOwner, needReload = true,
-  ): Promise<void> {
-    let elements: MapElement[] = [];
-    try {
-      const data = await this.getMapContainer(layer.container, owner, indexName);
-      if (typeof data === 'string') {
-        if (needReload) {
-          setTimeout(() => {
-            this.setLayerElements(mapData, layer, indexName, owner, false);
-          }, 500);
-        } else {
-          mapData.mapErrors.push(`error loading container ${layer.container}: ${data}`);
-          (layer as MapLayer).elements = [];
-        }
-        return;
-      }
-
-      const layerFromContainer = layer.uid.includes(layer.container)
-        ? data.layers[layer.uid.replace(layer.container, '')]
-        : data.layers[layer.uid];
-
-      elements = layerFromContainer.elements;
-      layer.version = layerFromContainer.version;
-
-      if (elements.length === 0) {
-        // try to find elements among of [layer name] layer into container
-        const nameFromContainer = '[' + layerFromContainer.name + ']';
-        const newLayer = Object.values<MapLayer>(data.layers).find((l) => l.name === nameFromContainer);
-        if (newLayer != null) elements = newLayer.elements;
-      }
-
-      for (const element of elements) {
-        const t = types[element.type];
-        if (t && t.loaded) await t.loaded(element);
-      }
-    } finally {
-      (layer as MapLayer).elements = elements;
-    }
-  }
-
   /** Загрузка карты. */
-  public async loadMap(mapID: MapID, owner: MapOwner, setProgress: (p: number) => void, formID: FormID): Promise<MapData | string> {
+  public async loadMap(mapID: MapID, owner: MapOwner, setLoading: (l: any) => void, formID: FormID): Promise<MapData | string> {
     const response = await this.getMap(mapID, formID);
     if (!response.ok) return response.data as string;
     const mapData = response.data;
@@ -116,21 +74,52 @@ export class MapsAPI {
     await provider.initialize();
     await this.setNamedPoints(mapData, owner);
 
-    let i = 1;
+    let layerCounter = 0;
     const step = 100 / mapData.layers.length;
+    const layers: MapLayer[] = [];
 
-    for (const layer of mapData.layers) {
-      handleLayerScales(layer);
-      const indexName = checkLayerIndex(mapData, layer);
-      await this.setLayerElements(mapData, layer, indexName, owner);
+    for (const rawLayer of mapData.layers) {
+      setLoading({percentage: Math.round(layerCounter * step), status: rawLayer.name});
+      const indexName = checkLayerIndex(mapData, rawLayer);
+      layers.push(await this.createLayer(mapData, rawLayer, indexName, owner));
 
       if (mapData.mapErrors.length > 3) {
         const errors = mapData.mapErrors.join('\n');
         return 'More than 3 errors while load map:\n' + errors;
       }
-      setProgress(Math.round(i * step)); i++;
+      layerCounter++;
     }
+    mapData.layers = layers as any;
     return mapData as any as MapData;
+  }
+
+  /** Запрос контейнеров и подготовка элементов слоя. */
+  private async createLayer(
+    mapData: MapDataRaw, layer: MapLayerRaw, indexName: string,
+    owner: MapOwner,
+  ): Promise<MapLayer> {
+    try {
+      const data = await this.getMapContainer(layer.container, owner, indexName);
+      if (typeof data === 'string') {
+        mapData.mapErrors.push(`error loading container ${layer.container}: ${data}`);
+        return new MapLayer(layer, []);
+      }
+
+      const layerFromContainer = layer.uid.includes(layer.container)
+        ? data.layers[layer.uid.replace(layer.container, '')]
+        : data.layers[layer.uid];
+
+      const elements = layerFromContainer.elements;
+      layer.version = layerFromContainer.version;
+
+      for (const element of elements) {
+        const t = types[element.type];
+        if (t && t.loaded) await t.loaded(element);
+      }
+      return new MapLayer(layer, elements);
+    } catch {
+      return new MapLayer(layer, []);
+    }
   }
 }
 

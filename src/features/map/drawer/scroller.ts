@@ -1,19 +1,25 @@
 import Events from 'events';
 import { Translator, getTranslator } from './geom';
-import { clientPoint, listenerOptions } from '../lib/map-utils';
+import { clientPoint } from '../lib/map-utils';
 
 
 interface ScrollerAction {
-	stop?: any,
-	moved?: boolean,
-	movePoint: Point,
-	mapMovePoint?: Point,
-	oldPoint?: Point,
-	initialCoords?: any,
+	stop?: any;
+	moved?: boolean;
+	movePoint: Point;
+	mapMovePoint?: Point;
+	oldPoint?: Point;
+	initialCoords?: any;
+  noUiMode?: boolean;
 }
 interface IScroller {
-	setCanvas(canvas: MapCanvas): void
-	setList(list: MapCanvas[]): void
+	setCanvas(canvas: MapCanvas): void;
+  setList(list: MapCanvas[]): void;
+
+	mouseDown(event: MouseEvent): void;
+  mouseUp(event: MouseEvent): void;
+  mouseMove(event: MouseEvent): void;
+  wheel(event: WheelEvent): void;
 }
 
 
@@ -26,12 +32,11 @@ export class Scroller implements IScroller {
 	private action: ScrollerAction;
 	private translator: Translator;
 
-	constructor(canvas: MapCanvas) {
+	constructor() {
+    this.canvas = null;
+    this.list = [];
 		this.action = null;
 		this.translator = getTranslator(1, {x: 0, y: 0}, 1, {x: 0, y: 0});
-
-		this.list = [];
-		this.setCanvas(canvas);
 	}
 
 	public setCanvas(canvas: MapCanvas) {
@@ -39,11 +44,6 @@ export class Scroller implements IScroller {
 		canvas.events = new Events();
 		canvas.events.on('init', (t: Translator) => { this.translator = t; });
 		canvas.events.on('sync', (newCs) => { this.emit('cs', newCs); })
-
-		canvas.addEventListener('wheel', this.mouseWheelListener.bind(this), listenerOptions);
-		canvas.addEventListener('mousedown', this.mouseDownListener.bind(this), listenerOptions);
-		canvas.addEventListener('mousemove', this.mouseMoveListener.bind(this), listenerOptions);
-		canvas.addEventListener('mouseup', this.mouseUpListener.bind(this), listenerOptions);
 	}
 
 	public setList(list: MapCanvas[]) {
@@ -58,7 +58,7 @@ export class Scroller implements IScroller {
 	}
 
 	private startAction(data: ScrollerAction) {
-		this.emit(uiMode, true);
+		if (!data.noUiMode) this.emit(uiMode, true);
 		this.action = data;
 		this.action.initialCoords = this.translator;
 		this.action.mapMovePoint = this.translator.pointToMap(this.action.movePoint);
@@ -82,15 +82,14 @@ export class Scroller implements IScroller {
 
 	/* --- Listeners --- */
 
-	private mouseWheelListener = (event: WheelEvent) => {
-		if (event.target !== this.canvas || this.canvas.blocked) return;
-
+	public wheel(event: WheelEvent): void {
+		if (this.canvas.blocked) return;
 		const moving = !!this.action;
 		const movedPoint = clientPoint(event);
 		const delta = event.deltaY < 0 ? 1 : -1;
 
 		this.stopAction(event);
-		this.startAction({movePoint: movedPoint});
+		this.startAction({movePoint: movedPoint, noUiMode: true});
 		this.updateView(this.action.movePoint, Math.pow(1.5, -delta));
 		this.stopAction(event);
 
@@ -106,7 +105,7 @@ export class Scroller implements IScroller {
 		}
 	}
 
-	private mouseDownListener(event: MouseEvent) {
+	public mouseDown(event: MouseEvent): void {
 		this.stopAction(event);
 		if (event.button !== 0) return;
 		if (event.target !== this.canvas) return;
@@ -121,7 +120,7 @@ export class Scroller implements IScroller {
 		});
 	}
 
-	private mouseMoveListener(event: MouseEvent) {
+	public mouseMove(event: MouseEvent): void {
 		if (!this.action) return;
 		if (event.button !== 0) return this.stopAction(event);
 		if (event.target !== this.canvas || this.canvas.blocked) return;
@@ -133,7 +132,7 @@ export class Scroller implements IScroller {
 		this.updateView(point, 1);
 	}
 
-	private mouseUpListener(event: MouseEvent) {
+	public mouseUp(event: MouseEvent): void {
 		if (this.action) this.stopAction(event);
 	}
 }

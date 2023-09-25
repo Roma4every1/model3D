@@ -1,146 +1,37 @@
 import { TFunction } from 'react-i18next';
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Checkbox } from '@progress/kendo-react-inputs';
 import { traceStateSelector } from 'entities/objects';
-import { MapMode } from '../../../lib/constants.ts';
-import { clientPoint, listenerOptions } from '../../../lib/map-utils';
-import { setSelectedElement, clearMapSelect, setEditMode, cancelMapEditing } from '../../../store/map.actions';
 import selectingIcon from 'assets/images/map/selecting-mode.png';
-
-import {
-  selectElement, unselectElement,
-  checkDistance, checkDistancePoints, getNearestElements,
-} from './selecting-utils';
 
 
 interface SelectingProps {
-  mapState: MapState,
-  formID: FormID,
-  t: TFunction
+  mapState: MapState;
+  t: TFunction;
 }
 
 
-export const Selecting = ({mapState, formID, t}: SelectingProps) => {
-  const dispatch = useDispatch();
+export const Selecting = ({mapState, t}: SelectingProps) => {
   const trace = useSelector(traceStateSelector);
+  const [_signal, setSignal] = useState(false);
+  const signal = () => setSignal(!_signal);
 
-  const { canvas, utils, activeLayer, mapData } = mapState;
-  const { element: selectedElement, selecting: selectState } = mapState;
-  const isInSelectingMode = mapState.mode === MapMode.SELECTING;
+  const stage = mapState.stage;
+  const select = stage.select;
+  stage.listeners.selectPanelChange = signal;
 
-  const [isSelectAll, setIsSelectAll] = useState(true);
-  const [isSelectContours, setIsSelectContours] = useState(false);
-  const [isSelectSign, setIsSelectSign] = useState(false);
-  const [isSelectLabels, setIsSelectLabels] = useState(false);
-  const [isOnlyActiveLayer, setIsOnlyActiveLayer] = useState(false);
+  const selecting = stage.getSelecting();
+  const toggleSelecting = () => stage.setSelecting(!selecting);
 
-  const allowedTypes = useMemo<string[]>(() => {
-    const types = [];
-    if (isSelectAll) types.push('all');
-    if (isSelectContours) types.push('polyline');
-    if (isSelectSign) types.push('sign');
-    if (isSelectLabels) types.push('label');
-    return types;
-  }, [isSelectAll, isSelectContours, isSelectSign, isSelectLabels]);
-
-  const mouseDown = useCallback((event) => {
-    if (!isInSelectingMode) return;
-
-    const point = utils.pointToMap(clientPoint(event));
-    const scale = mapData.scale;
-
-    if (checkDistancePoints(selectState.lastPoint, point, scale)) {
-      if (selectState.nearestElements.length === 0) return;
-      selectState.activeIndex++;
-      if (selectedElement) unselectElement(selectedElement);
-
-      if (selectState.activeIndex < selectState.nearestElements.length) {
-        let newElement = selectState.nearestElements[selectState.activeIndex];
-        selectElement(newElement);
-        dispatch(setSelectedElement(formID, newElement));
-      } else {
-        selectState.activeIndex = -1;
-        dispatch(clearMapSelect(formID));
-      }
-      utils.updateCanvas();
-    } else {
-      const getTextWidth = (text) => canvas.getContext('2d').measureText(text).width;
-      const filterFn = (element) => {
-        if (allowedTypes[0] !== 'all' && !allowedTypes.includes(element.type)) return false;
-        return checkDistance(element, point, scale, getTextWidth);
-      }
-      const activeLayer_ = isOnlyActiveLayer ? activeLayer : null;
-      const filteredLayers = mapData.layers.filter(layer => !layer.temporary);
-      const nearestElements = getNearestElements(filteredLayers, activeLayer_, scale, filterFn);
-
-      if (nearestElements.length === 0) return selectState.lastPoint = null;
-      if (selectedElement) unselectElement(selectedElement);
-      let activeIndex = 0;
-      let newElement = nearestElements[activeIndex];
-      selectElement(newElement);
-      selectState.activeIndex = 0;
-      selectState.nearestElements = nearestElements;
-      selectState.lastPoint = point;
-      dispatch(setSelectedElement(formID, newElement));
-      utils.updateCanvas();
-    }
-  }, [
-    allowedTypes, selectedElement, dispatch, formID, isInSelectingMode, isOnlyActiveLayer,
-    canvas, utils, selectState, activeLayer, mapData
-  ]);
-
-  const mouseWheel = useCallback(() => {
-    selectState.lastPoint = null;
-  }, [selectState]);
-
-  useEffect(() => {
-    if (canvas) {
-      canvas.addEventListener('mousedown', mouseDown, listenerOptions);
-      canvas.addEventListener('wheel', mouseWheel, listenerOptions);
-    }
-    return () => {
-      if (canvas) {
-        canvas.removeEventListener('mousedown', mouseDown);
-        canvas.removeEventListener('wheel', mouseWheel);
-      }
-    }
-  }, [canvas, mouseDown, mouseWheel]);
-
-  const toggleSelecting = useCallback(() => {
-    if (isInSelectingMode && selectedElement) {
-      dispatch(clearMapSelect(formID, false));
-      unselectElement(selectedElement);
-      utils.updateCanvas();
-    }
-    if (!isInSelectingMode && mapState.isElementEditing) dispatch(cancelMapEditing(formID));
-    dispatch(setEditMode(formID, isInSelectingMode ? MapMode.NONE : MapMode.SELECTING));
-  }, [dispatch, formID, selectedElement, utils, isInSelectingMode, mapState.isElementEditing]);
-
-  const isSelectAllClick = () => {
-    setIsSelectAll(!isSelectAll);
-
-    if (!isSelectAll) {
-      setIsSelectContours(false);
-      setIsSelectSign(false);
-      setIsSelectLabels(false);
-    }
-  }
-  const isSelectContoursClick = () => {
-    setIsSelectContours(!isSelectContours);
-    setIsSelectAll(false);
-  }
-  const isSelectWellsClick = () => {
-    setIsSelectSign(!isSelectSign);
-    setIsSelectAll(false);
-  }
-  const isSelectLabelsClick = () => {
-    setIsSelectLabels(!isSelectLabels);
-    setIsSelectAll(false);
-  }
-  const isOnlyActiveLayerClick = () => {
-    setIsOnlyActiveLayer(!isOnlyActiveLayer);
-  }
+  const toggleType = (type: MapElementType) => {
+    select.types[type] = !select.types[type];
+    signal();
+  };
+  const toggleOnlyActiveLayer = () => {
+    select.onlyActiveLayer = !select.onlyActiveLayer;
+    signal();
+  };
 
   return (
     <section className={'map-selecting'}>
@@ -148,8 +39,8 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
       <div className={'map-panel-main'}>
         <div>
           <button
-            disabled={!mapState?.isLoadSuccessfully || mapState?.isElementCreating || trace.editing}
-            className={'map-panel-button' + (isInSelectingMode ? ' active' : '')}
+            disabled={mapState.loading.percentage < 100 || stage.isElementCreating() || trace.editing}
+            className={'map-panel-button' + (selecting ? ' active' : '')}
             onClick={toggleSelecting} title={t('map.selecting.button-hint')}
           >
             <img src={selectingIcon} alt={'selecting'}/>
@@ -157,25 +48,24 @@ export const Selecting = ({mapState, formID, t}: SelectingProps) => {
         </div>
         <div>
           <Checkbox
-            label={t('map.selecting.all')} title={t('map.selecting.all-hint')}
-            checked={isSelectAll} onClick={isSelectAllClick}
+            label={t('map.selecting.field')} title={t('map.selecting.field-hint')}
+            checked={select.types.field} onClick={() => toggleType('field')}
           />
           <Checkbox
-            label={t('map.selecting.contours')} title={t('map.selecting.contours-hint')}
-            checked={isSelectContours} onClick={isSelectContoursClick}
-          />
-          <Checkbox
-            label={t('map.selecting.layer')} title={t('map.selecting.layer-hint')}
-            checked={isOnlyActiveLayer} onClick={isOnlyActiveLayerClick}
+            label={t('map.selecting.polyline')} title={t('map.selecting.polyline-hint')}
+            checked={select.types.polyline} onClick={() => toggleType('polyline')}
           />
           <Checkbox
             label={t('map.selecting.sign')} title={t('map.selecting.sign-hint')}
-            checked={isSelectSign} onClick={isSelectWellsClick}
+            checked={select.types.sign} onClick={() => toggleType('sign')}
           />
-          <div/>
           <Checkbox
             label={t('map.selecting.label')} title={t('map.selecting.label-hint')}
-            checked={isSelectLabels} onClick={isSelectLabelsClick}
+            checked={select.types.label} onClick={() => toggleType('label')}
+          />
+          <Checkbox
+            label={t('map.selecting.layer')} title={t('map.selecting.layer-hint')}
+            checked={select.onlyActiveLayer} onClick={toggleOnlyActiveLayer}
           />
         </div>
       </div>

@@ -4,19 +4,18 @@ import { LayersTreeLayer } from './layers-tree-layer';
 
 
 interface LayersTreeElementProps {
-  item: LayerTreeItem,
-  mapState: MapState,
-  formID: FormID,
+  stage: IMapStage;
+  item: LayerTreeItem;
 }
 
 
-export const LayersTreeElement = ({item, mapState, formID}: LayersTreeElementProps) => {
+export const LayersTreeElement = ({item, stage}: LayersTreeElementProps) => {
   const [expanded, setExpanded] = useState(false);
 
   const itemToElement = (item: LayerTreeItem, i: number) => {
     return item.items
-      ? <LayersTreeElement key={i} item={item} mapState={mapState} formID={formID} />
-      : <LayersTreeLayer key={i} layer={item.sublayer} mapState={mapState} formID={formID} />
+      ? <LayersTreeElement key={i} item={item} stage={stage}/>
+      : <LayersTreeLayer key={i} layer={item.sublayer} stage={stage}/>;
   };
 
   return (

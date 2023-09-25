@@ -14,18 +14,18 @@ import {
 
 
 export const SignProperties = (props: PropertyWindowProps<MapSign>) => {
-  const { element: sign, init, apply, update, cancel, t, isElementCreating } = props;
+  const { element: sign, apply, update, cancel, t, isElementCreating } = props;
 
   const [changed, setChanged] = useState(false);
   const onChange = () => { setChanged(true); update(); };
 
-  const [x, setX] = useState(init.x);
-  const [y, setY] = useState(-init.y);
-  const [size, setSize] = useState(init.size);
+  const [x, setX] = useState(sign.x);
+  const [y, setY] = useState(-sign.y);
+  const [size, setSize] = useState(sign.size);
 
-  const [color, setColor] = useState(init.color);
-  const [fontName, setFontName] = useState(init.fontname);
-  const [symbolCode, setSymbolCode] = useState(init.symbolcode);
+  const [color, setColor] = useState(sign.color);
+  const [fontName, setFontName] = useState(sign.fontname);
+  const [symbolCode, setSymbolCode] = useState(sign.symbolcode);
 
   const fontData = provider.getSignFontData(fontName);
   const validFontData = Boolean(fontData.id);

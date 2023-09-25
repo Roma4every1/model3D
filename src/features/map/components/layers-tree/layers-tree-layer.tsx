@@ -1,114 +1,95 @@
 import { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { InputChangeEvent, Input, Checkbox } from '@progress/kendo-react-inputs';
+import { NumericTextBox, Checkbox, NumericTextBoxChangeEvent } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
-import { setActiveLayer } from '../../store/map.actions';
 
 
 interface LayersTreeLayerProps {
-  layer: MapLayer;
-  mapState: MapState;
-  formID: FormID;
+  stage: IMapStage;
+  layer: IMapLayer;
 }
 
 
-export const LayersTreeLayer = ({layer, mapState, formID}: LayersTreeLayerProps) => {
+export const LayersTreeLayer = ({stage, layer}: LayersTreeLayerProps) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
 
-  const utils = mapState?.utils;
-  const activeLayer = mapState?.activeLayer;
-
-  const [checked, setChecked] = useState(layer.visible);
-  const [lowScale, setLowScale] = useState(layer.lowscale.toString());
-  const [highScale, setHighScale] = useState(layer.highscale.toString());
-
-  const [initLowScale, setInitLowScale] = useState(layer.lowscale);
-  const [initHighScale, setInitHighScale] = useState(layer.highscale);
-
+  const [checked, setChecked] = useState(false);
   const [selected, setSelected] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
-  // обновление активного слоя
-  useEffect(() => {
-    setSelected(layer === activeLayer);
-  }, [activeLayer, layer]);
+  const [minScale, setMinScale] = useState(0);
+  const [maxScale, setMaxScale] = useState(0);
+  const [initMinScale, setInitMinScale] = useState(0);
+  const [initMaxScale, setInitMaxScale] = useState(0);
 
   // обновление состояния при смене слоя
   useEffect(() => {
     setChecked(layer.visible);
-    setHighScale(layer.highscale.toString());
-    setLowScale(layer.lowscale.toString());
-
-    setInitLowScale(layer.lowscale);
-    setInitHighScale(layer.highscale);
+    setSelected(layer.active);
+    setMinScale(layer.getMinScale());
+    setMaxScale(layer.getMaxScale());
+    setInitMinScale(layer.getMinScale());
+    setInitMaxScale(layer.getMaxScale());
   }, [layer]);
 
-  const onLowScaleChange = (e: InputChangeEvent) => {
-    setLowScale(e.value);
-  };
-
-  const onHighScaleChange = (e: InputChangeEvent) => {
-    setHighScale(e.value);
-  };
-
-  const setExpandedState = () => {
-    setExpanded(!expanded)
-  };
-  const setInfinity = () => {
-    setHighScale('∞')
-  };
-
-  const onChecked = () => {
-    layer.visible = !checked;
-    setChecked(!checked);
-    if (!layer.visible && selected) {
-      dispatch(setActiveLayer(formID, null));
-      setSelected(false);
-    }
-    utils.updateCanvas();
-  };
-
-  const setSelectedState = () => {
+  const onClick = () => {
     if (selected) {
-      dispatch(setActiveLayer(formID, null));
+      stage.setActiveLayer(null);
     } else {
-      dispatch(setActiveLayer(formID, layer));
-      if (!checked) onChecked();
+      stage.setActiveLayer(layer);
+      if (!checked) onVisibilityChange();
     }
     setSelected(!selected);
   };
-
-  const applyLayerScales = () => {
-    const newLowScale = parseInt(lowScale);
-    const newHighScale = highScale === '∞' ? 'INF' : parseInt(highScale);
-
-    if (!isNaN(newLowScale)) {
-      layer.lowscale = newLowScale;
-      setInitLowScale(newLowScale);
+  const onExpandChange = () => {
+    setExpanded(!expanded)
+  };
+  const onVisibilityChange = () => {
+    layer.visible = !checked;
+    setChecked(!checked);
+    if (checked && selected) {
+      stage.setActiveLayer(null);
+      setSelected(false);
     }
-    if (newHighScale === 'INF' || !isNaN(newHighScale)) {
-      layer.highscale = newHighScale;
-      setInitHighScale(newHighScale);
-    }
-    utils.updateCanvas();
+    stage.render();
   };
 
-  const rollbackLayerScales = () => {
-    layer.lowscale = initLowScale;
-    layer.highscale = initHighScale;
-    setLowScale(initLowScale.toString());
-    setHighScale(initHighScale === 'INF' ? '∞' : initHighScale.toString());
-    utils.updateCanvas();
+  const onMinScaleChange = ({value}: NumericTextBoxChangeEvent) => {
+    if (value === null) value = 0;
+    setMinScale(value);
+    layer.setMinScale(value);
+    stage.render();
+  };
+  const onMaxScaleChange = ({value}: NumericTextBoxChangeEvent) => {
+    if (value === null) value = 0;
+    setMaxScale(value);
+    layer.setMaxScale(value);
+    stage.render();
+  };
+  const setInfinity = () => {
+    setMaxScale(Infinity);
+    layer.setMaxScale(Infinity);
+    stage.render();
+  };
+
+  const apply = () => {
+    setInitMinScale(minScale);
+    setInitMaxScale(maxScale);
+  };
+  const rollback = () => {
+    setMinScale(initMinScale);
+    setMaxScale(initMaxScale);
+    layer.setMinScale(initMinScale);
+    layer.setMaxScale(initMaxScale);
+    stage.render();
   };
 
   return (
     <div className={'map-layer'}>
       <div className={'map-layer-header' + (selected ? ' selected' : '')}>
-        <Checkbox value={checked} onChange={onChecked} />
-        <span onClick={setSelectedState}>{layer.name}</span>
-        <button className={'k-button k-button-clear'} onClick={setExpandedState} title={t('map.layerVisibilityControl')}>
+        <Checkbox checked={checked} onChange={onVisibilityChange} />
+        <span onClick={onClick}>{layer.displayName}</span>
+        <button className={'k-button k-button-clear'} onClick={onExpandChange} title={t('map.layerVisibilityControl')}>
           <span className={'k-icon k-i-gear'}/>
         </button>
       </div>
@@ -118,21 +99,27 @@ export const LayersTreeLayer = ({layer, mapState, formID}: LayersTreeLayerProps)
           <fieldset>
             <div>{t('map.layers-tree.min-scale')}</div>
             <div>
-              <Input value={lowScale} onChange={onLowScaleChange}/>
+              <NumericTextBox
+                value={minScale} onChange={onMinScaleChange}
+                min={0} max={maxScale} format={'#'} spinners={false}
+              />
             </div>
           </fieldset>
           <fieldset>
             <div>{t('map.layers-tree.max-scale')}</div>
             <div>
-              <Input value={highScale} onChange={onHighScaleChange}/>
+              <NumericTextBox
+                value={maxScale} onChange={onMaxScaleChange}
+                min={minScale} format={'#'} spinners={false}
+              />
               <Button onClick={setInfinity}>{'∞'}</Button>
             </div>
           </fieldset>
           <div className={'map-layer-bottom'}>
-            <Button  onClick={applyLayerScales}>
+            <Button onClick={apply}>
               {t('base.apply')}
             </Button>
-            <Button onClick={rollbackLayerScales} title={t('map.revertInitialValues')}>
+            <Button onClick={rollback} title={t('map.revertInitialValues')}>
               <span className={'k-icon k-i-reset-sm'}/>
             </Button>
           </div>

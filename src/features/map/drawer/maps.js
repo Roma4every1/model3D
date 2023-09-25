@@ -1,7 +1,6 @@
 import EventEmitter from 'events';
 import { startPaint } from './map-drawer';
 import { getTranslator, rects } from './geom';
-import { onElementSize } from './html-helper';
 import { PIXEL_PER_METER } from '../lib/map-utils';
 
 
@@ -20,16 +19,15 @@ export function showMap(canvas, map, viewport) {
   const canvasEvents = canvas.events;
   if (!canvas.events) update(canvas);
 
-  const fin = [onElementSize(canvas, update)];
+  const fin = [];
   function detach() {
     fin.reverse().forEach(f => f());
     fin.length = 0;
   }
 
   events.on('update', () => update(canvas));
-  events.on('detach', detach);
 
-  if (canvasEvents && canvasEvents.listenerCount('changed') < 5) {
+  if (canvasEvents) {
     function on(event, action) {
       const handler = function () {
         return checkCanvas() && action.apply(this, arguments);
@@ -54,12 +52,8 @@ export function showMap(canvas, map, viewport) {
     });
     on('uimode', (newMode) => { uiMode = newMode; });
   }
-
-  events.scale = scale;
-  events.centerx = centerX;
-  events.centery = centerY;
-
-  return events;
+  update(canvas);
+  return {update, detach};
 
   function checkCanvas() {
     if (canvasFlag === canvas.showMapFlag) return true;
@@ -118,18 +112,14 @@ export function showMap(canvas, map, viewport) {
       });
     }
 
-    const p = coords.pointToMap({x: width / 2, y: height / 2});
-    events.scale = coords.mscale;
-    events.centerx = p.x;
-    events.centery = p.y;
-
+    const point = coords.pointToMap({x: width / 2, y: height / 2});
     canvasEvents && canvasEvents.emit('init', coords.changeResolution(1 / window.devicePixelRatio));
 
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, width, height);
 
     const startPaintFn = (draftDrawing) => startPaint(canvas, map, {
-      events, onCheckExecution, coords,
+      onCheckExecution, coords, point,
       pixelRatio: window.devicePixelRatio, draftDrawing,
     });
 

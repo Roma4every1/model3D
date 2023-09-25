@@ -8,7 +8,6 @@ import lines from '../../../drawer/lines.json';
 
 export interface PropertyWindowProps<T = MapElement> {
   element: T;
-  init: T;
   apply: () => void;
   update: () => void;
   cancel: () => void;

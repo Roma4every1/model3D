@@ -10,14 +10,13 @@ type PointTranslator = (point: Point) => Point;
  * + `scaleVisible` — проверяет, является ли слой видимым
  * */
 export interface Translator {
-	mscale: number,
-	cscale: number,
-	pointToControl(point: Point): Point,
-	pointToMap(point: Point): Point,
-	scaleVisible(layer: MapLayer): boolean,
-	zoom(scaleIn, cPoint: Point, mPoint: Point): Translator,
-	setScale(scale: number, cPoint: Point | null, mPoint: Point | null): Translator,
-	changeResolution(multiplier: number): Translator,
+	mscale: number;
+	cscale: number;
+	pointToControl(point: Point): Point;
+	pointToMap(point: Point): Point;
+	zoom(scaleIn, cPoint: Point, mPoint: Point): Translator;
+	setScale(scale: number, cPoint: Point | null, mPoint: Point | null): Translator;
+	changeResolution(multiplier: number): Translator;
 }
 
 interface Rects {
@@ -81,12 +80,6 @@ export function getTranslator(mScale: number, mCenter: Point, cScale: number, cC
 		mscale: mScale, cscale: cScale,
 		pointToControl: translate(mScale, mCenter, cScale, cCenter),
 		pointToMap: translate(cScale, cCenter, mScale, mCenter),
-
-		scaleVisible: (layer: MapLayer) => {
-			const lowScale = layer.lowscale, highScale = layer.highscale;
-			if ((!lowScale && lowScale !== 0) || (!highScale && highScale !== 0)) return true;
-			return lowScale <= mScale && (typeof highScale === 'string' || mScale <= highScale);
-		},
 
 		zoom: (scaleIn, cPoint, mPoint) => ret.setScale(mScale * scaleIn, cPoint, mPoint),
 

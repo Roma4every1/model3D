@@ -15,29 +15,28 @@ import selectAllIcon from 'assets/images/map/select-all.png';
 import synchronizeIcon from 'assets/images/map/synchronize.png';
 
 
-interface DimensionsProps {
+interface MapNavigationProps {
   mapState: MapState;
   sync: boolean | undefined;
   parentID: ClientID;
   t: TFunction;
 }
+interface DimensionProps {
+  canvas: MapCanvas;
+  stage: IMapStage;
+  mapData: MapData;
+  disabled: boolean;
+  t: TFunction;
+}
 
 
-export const Dimensions = ({mapState, sync, parentID, t}: DimensionsProps) => {
+export const MapNavigation = ({mapState, sync, parentID, t}: MapNavigationProps) => {
   const dispatch = useDispatch();
-  const { mapData, utils, canvas, isLoadSuccessfully } = mapState;
+  const { stage, canvas } = mapState;
+  const notLoaded = mapState.loading.percentage < 100;
+
+  const mapData = stage.getMapData();
   const layers = mapData?.layers;
-
-  const [x, setX] = useState(null);
-  const [y, setY] = useState(null);
-  const [scale, setScale] = useState(null);
-
-  useEffect(() => {
-    if (mapData) mapData.onDrawEnd = (canvas, x, y, scale) => {
-      setX(x); setY(y); setScale(scale);
-      utils.pointToMap = getPointToMap(canvas, x, y, scale);
-    };
-  }, [mapData, utils]);
 
   /** Центрировать карту. */
   const toFullViewPort = () => {
@@ -48,66 +47,17 @@ export const Dimensions = ({mapState, sync, parentID, t}: DimensionsProps) => {
   /** Включить или отключить синхронизацию систем координат карт. */
   const toggleSync = () => {
     dispatch(setMultiMapSync(parentID, !sync));
-    canvas.events.emit('sync', {centerX: mapData.x, centerY: mapData.y, scale: mapData.scale});
-  };
-
-  const xChanged = (event: NumericTextBoxChangeEvent) => {
-    const newX = event.value === null ? 0 : Math.round(event.value);
-    utils.updateCanvas({centerX: newX, centerY: mapData.y, scale: mapData.scale});
-    setX(newX);
-  };
-
-  const yChanged = (event: NumericTextBoxChangeEvent) => {
-    const newY = event.value === null ? 0 : Math.round(-event.value);
-    utils.updateCanvas({centerX: mapData.x, centerY: newY, scale: mapData.scale});
-    setY(newY);
-  };
-
-  const scaleChanged = (event: NumericTextBoxChangeEvent) => {
-    const newScale = event.value >= 1 ? event.value : 1;
-    utils.updateCanvas({centerX: mapData.x, centerY: mapData.y, scale: newScale});
-    setScale(newScale);
   };
 
   return (
     <section className={'map-dimensions'}>
       <div className={'menu-header'}>{t('map.dimensions.header')}</div>
       <div className={'map-panel-main'}>
-        <div className={'map-dimensions-viewer'}>
-          <div>
-            <span title={t('map.dimensions.x')}><img src={xIcon} alt={'x'}/> x:</span>
-            <NumericTextBox
-              disabled={!isLoadSuccessfully}
-              value={x}
-              onChange={xChanged}
-              format={coordinateFormat}
-            />
-          </div>
-          <div>
-            <span title={t('map.dimensions.y')}><img src={yIcon} alt={'y'}/> y:</span>
-            <NumericTextBox
-              disabled={!isLoadSuccessfully}
-              value={-y}
-              onChange={yChanged}
-              format={coordinateFormat}
-            />
-          </div>
-          <div>
-            <span title={t('map.dimensions.scale')}><img src={scaleIcon} alt={'scale'}/> 1/</span>
-            <NumericTextBox
-              disabled={!isLoadSuccessfully}
-              defaultValue={1}
-              value={scale < 1 ? 1 : scale}
-              min={1}
-              onChange={scaleChanged}
-              format={'#'}
-            />
-          </div>
-        </div>
+        <Dimensions canvas={canvas} stage={stage} mapData={mapData} disabled={notLoaded} t={t}/>
         <div className={'map-actions'}>
           <BigButton
             text={t('map.actions.show-all')} icon={selectAllIcon}
-            action={toFullViewPort} disabled={canvas?.blocked === true || !mapState?.isLoadSuccessfully }
+            action={toFullViewPort} disabled={canvas?.blocked || notLoaded}
           />
           <BigButtonToggle
             text={'Синхронизация карт по центру'} icon={synchronizeIcon}
@@ -116,5 +66,63 @@ export const Dimensions = ({mapState, sync, parentID, t}: DimensionsProps) => {
         </div>
       </div>
     </section>
+  );
+};
+
+const Dimensions = ({canvas, stage, mapData, disabled, t}: DimensionProps) => {
+  const [x, setX] = useState(null);
+  const [y, setY] = useState(null);
+  const [scale, setScale] = useState(null);
+
+  useEffect(() => {
+    if (mapData) mapData.onDrawEnd = ({x, y}, scale) => {
+      setX(x); setY(y); setScale(scale);
+      stage.pointToMap = getPointToMap(canvas, x, y, scale);
+    };
+  }, [mapData, stage, canvas]);
+
+  const xChanged = (event: NumericTextBoxChangeEvent) => {
+    const newX = event.value === null ? 0 : Math.round(event.value);
+    stage.render({centerX: newX, centerY: mapData.y, scale: mapData.scale});
+    setX(newX);
+  };
+
+  const yChanged = (event: NumericTextBoxChangeEvent) => {
+    const newY = event.value === null ? 0 : Math.round(-event.value);
+    stage.render({centerX: mapData.x, centerY: newY, scale: mapData.scale});
+    setY(newY);
+  };
+
+  const scaleChanged = (event: NumericTextBoxChangeEvent) => {
+    const newScale = event.value >= 1 ? event.value : 1;
+    stage.render({centerX: mapData.x, centerY: mapData.y, scale: newScale});
+    setScale(newScale);
+  };
+
+  return (
+    <div className={'map-dimensions-viewer'}>
+      <div>
+        <span title={t('map.dimensions.x')}><img src={xIcon} alt={'x'}/> x:</span>
+        <NumericTextBox
+          value={x} onChange={xChanged} disabled={disabled}
+          format={coordinateFormat}
+        />
+      </div>
+      <div>
+        <span title={t('map.dimensions.y')}><img src={yIcon} alt={'y'}/> y:</span>
+        <NumericTextBox
+          value={-y} onChange={yChanged} disabled={disabled}
+          format={coordinateFormat}
+        />
+      </div>
+      <div>
+        <span title={t('map.dimensions.scale')}><img src={scaleIcon} alt={'scale'}/> 1/</span>
+        <NumericTextBox
+          disabled={disabled}
+          value={scale < 1 ? 1 : scale} min={1} onChange={scaleChanged}
+          format={'#'} defaultValue={1}
+        />
+      </div>
+    </div>
   );
 };

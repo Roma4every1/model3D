@@ -1,33 +1,29 @@
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@progress/kendo-react-buttons';
-import { clearMapSelect } from '../../../store/map.actions';
+import { setMapField } from '../../../store/map.actions';
 
 
 interface DeleteElementWindowProps {
-  mapState: MapState;
-  formID: FormID;
+  id: FormID;
+  stage: IMapStage;
   onClose: () => void;
 }
 
 
-export const DeleteElementWindow = ({mapState, formID, onClose}: DeleteElementWindowProps) => {
+export const DeleteElementWindow = ({id, stage, onClose}: DeleteElementWindowProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const selectedElement = mapState.element;
-  const modifiedLayer = mapState.mapData?.layers?.find(l => l.elements?.includes(selectedElement));
+  const activeElement = stage.getActiveElement();
+  const activeElementLayer = stage.getActiveElementLayer();
 
   const deleteElement = () => {
-    if (!mapState || !selectedElement || !mapState.utils.updateCanvas) return;
-
-    let index = modifiedLayer.elements.indexOf(selectedElement);
-    modifiedLayer.elements.splice(index, 1);
-    modifiedLayer.modified = true;
-    mapState.isModified = true;
-
-    dispatch(clearMapSelect(formID));
-    mapState.utils.updateCanvas();
+    stage.deleteActiveElement();
+    stage.clearSelect();
+    stage.render();
+    activeElementLayer.modified = true;
+    dispatch(setMapField(id, 'modified', true));
     onClose();
   };
 
@@ -35,8 +31,8 @@ export const DeleteElementWindow = ({mapState, formID, onClose}: DeleteElementWi
     <>
       <div>{t('map.areYouSureToDelete')}</div>
       <ul style={{paddingLeft: '16px'}}>
-        <li><b>Подслой: </b><span>{modifiedLayer?.name}</span></li>
-        <li><b>Тип элемента: </b><span>{t('map.' + selectedElement.type)}</span></li>
+        <li><b>Слой: </b><span>{activeElementLayer.displayName}</span></li>
+        <li><b>Тип элемента: </b><span>{t('map.' + activeElement.type)}</span></li>
       </ul>
       <div className={'wm-dialog-actions'}>
         <Button onClick={deleteElement}>{t('base.yes')}</Button>

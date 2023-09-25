@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useState} from 'react';
+import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { setMapField } from '../../../store/map.actions';
-import { mapStateSelector } from '../../../store/map.selectors';
 
 import './attr-table.scss';
 import { Input } from '@progress/kendo-react-inputs';
@@ -10,44 +9,36 @@ import { Button } from '@progress/kendo-react-buttons';
 
 
 interface AttrTableWindowProps {
-  formID: FormID;
-  setOpen;
+  id: FormID;
+  stage: IMapStage;
   onClose: () => void;
 }
 
 
-export const AttrTableWindow = ({formID, setOpen, onClose}: AttrTableWindowProps) => {
+export const AttrTableWindow = ({id, stage, onClose}: AttrTableWindowProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const mapState: MapState = useSelector(mapStateSelector.bind(formID));
-  const selectedObject = mapState.element;
-  const modifiedLayer = mapState.mapData?.layers?.find(l => l.elements?.includes(selectedObject));
+  const activeElement = stage.getActiveElement();
+  const [init] = useState({...activeElement.attrTable});
 
-  const [readyForApply, setReadyForApply] = useState(false);
-  const [attrTable, setAttrTable] = useState({});
-
-  useEffect(() => {
-    setOpen(true);
-    return () => setOpen(false);
-  }, []); // eslint-disable-line
-
-  useEffect(() => {
-    setAttrTable({...selectedObject?.attrTable});
-  }, [selectedObject]);
+  const [signal, setSignal] = useState(false);
+  const [changed, setChanged] = useState(false);
 
   const apply = () => {
-    modifiedLayer.modified = true;
-    selectedObject.attrTable = attrTable;
-    dispatch(setMapField(formID, 'isModified', true));
+    stage.getActiveElementLayer().modified = true;
+    dispatch(setMapField(id, 'modified', true));
+    onClose();
+  };
+  const cancel = () => {
+    activeElement.attrTable = init;
     onClose();
   };
 
   const pairToField = ([key, value], i: number) => {
     const onChange = (e) => {
-      setReadyForApply(true);
-      attrTable[key] = e.value;
-      setAttrTable({...attrTable});
+      setChanged(true); setSignal(!signal);
+      activeElement.attrTable[key] = e.value;
     };
     return (
       <div key={i} className={'attr-table-field'}>
@@ -60,13 +51,13 @@ export const AttrTableWindow = ({formID, setOpen, onClose}: AttrTableWindowProps
   return (
     <>
       <div style={{height: 154}}>
-        {Object.entries<string>(attrTable).map(pairToField)}
+        {Object.entries<string>(activeElement.attrTable).map(pairToField)}
       </div>
       <div className={'wm-dialog-actions'}>
-        <Button disabled={!readyForApply} onClick={apply}>
+        <Button disabled={!changed} onClick={apply}>
           {t('base.apply')}
         </Button>
-        <Button disabled={!readyForApply} onClick={onClose}>
+        <Button onClick={cancel}>
           {t('base.cancel')}
         </Button>
       </div>

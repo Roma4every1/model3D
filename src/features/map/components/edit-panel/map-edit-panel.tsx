@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { MenuSkeleton } from 'shared/ui';
-import { Dimensions } from './dimensions';
+import { MapNavigation } from './dimensions';
 import { Export } from './export';
 import { Selecting } from './selecting/selecting';
 import { Editing } from './editing/editing';
@@ -22,17 +22,17 @@ export const MapEditPanel = ({id, parentID}: FormEditPanelProps) => {
 
   // при смене активной карты обновить координаты
   useEffect(() => {
-    mapState?.utils.updateCanvas();
-  }, [mapState?.utils, id]);
+    mapState?.stage.render();
+  }, [mapState?.stage, id]);
 
   if (!mapState) return <MenuSkeleton template={panelTemplate}/>;
 
   return (
     <div className={'map-edit-panel menu'} style={{display: 'grid'}}>
-      <Dimensions mapState={mapState} sync={sync} parentID={parentID} t={t}/>
-      <Export mapState={mapState} t={t}/>
-      <Selecting mapState={mapState} formID={id} t={t}/>
-      <Editing mapState={mapState} formID={id}/>
+      <MapNavigation mapState={mapState} sync={sync} parentID={parentID} t={t}/>
+      <Export state={mapState} t={t}/>
+      <Selecting mapState={mapState} t={t}/>
+      <Editing id={id} state={mapState} t={t}/>
       <SaveMap id={id} state={mapState} t={t}/>
     </div>
   );
