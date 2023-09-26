@@ -12,30 +12,21 @@ interface ScrollerAction {
 	initialCoords?: any;
   noUiMode?: boolean;
 }
-interface IScroller {
-	setCanvas(canvas: MapCanvas): void;
-  setList(list: MapCanvas[]): void;
-
-	mouseDown(event: MouseEvent): void;
-  mouseUp(event: MouseEvent): void;
-  mouseMove(event: MouseEvent): void;
-  wheel(event: WheelEvent): void;
-}
 
 
 const changed = 'changed';
 const uiMode = 'uimode';
 
-export class Scroller implements IScroller {
-	private canvas: MapCanvas;
-	private list: MapCanvas[];
-	private action: ScrollerAction;
+export class Scroller implements IMapScroller {
+  public sync: boolean = false;
+  public list: MapCanvas[];
+
+  private canvas: MapCanvas = null;
+	private action: ScrollerAction = null;
 	private translator: Translator;
 
 	constructor() {
-    this.canvas = null;
     this.list = [];
-		this.action = null;
 		this.translator = getTranslator(1, {x: 0, y: 0}, 1, {x: 0, y: 0});
 	}
 
@@ -46,13 +37,9 @@ export class Scroller implements IScroller {
 		canvas.events.on('sync', (newCs) => { this.emit('cs', newCs); })
 	}
 
-	public setList(list: MapCanvas[]) {
-		this.list = list;
-	}
-
 	private emit(eventName: string, arg: Point | boolean | object) {
 		this.canvas.events.emit(eventName, arg);
-		for (const canvas of this.list) {
+		if (this.sync) for (const canvas of this.list) {
 			canvas.events.emit(eventName, arg);
 		}
 	}
@@ -74,7 +61,7 @@ export class Scroller implements IScroller {
 		const args = {control: this.canvas, coords};
 
 		this.canvas.events.emit(changed, args);
-		for (const canvas of this.list) {
+		if (this.sync) for (const canvas of this.list) {
 			args.control = canvas;
 			canvas.events.emit(changed, args);
 		}
@@ -89,7 +76,7 @@ export class Scroller implements IScroller {
 		const delta = event.deltaY < 0 ? 1 : -1;
 
 		this.stopAction(event);
-		this.startAction({movePoint: movedPoint, noUiMode: true});
+		this.startAction({movePoint: movedPoint, noUiMode: !this.sync});
 		this.updateView(this.action.movePoint, Math.pow(1.5, -delta));
 		this.stopAction(event);
 

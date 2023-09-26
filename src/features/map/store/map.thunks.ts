@@ -92,30 +92,36 @@ export function fetchMapData(id: FormID): Thunk {
 
 export function fetchMultiMapData(id: ClientID): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
-    const mapStates = getState().maps;
-    const multiMapState = mapStates.multi[id];
+    const multiMapState = getState().maps.multi[id];
     if (!multiMapState) return;
 
     dispatch(fetchFormsStart([id + '_map']));
     const owner = 'Common';
     const templateID = multiMapState.templateFormID;
 
-    for (const config of multiMapState.configs) {
-      config.setProgress(0);
-      const loadedMap = await mapsAPI.loadMap(config.id, owner, config.setProgress, templateID);
-      config.data = loadedMap;
+    const updateStages = () => {
+      for (const config of multiMapState.configs) {
+        config.stage.scroller.list = multiMapState.configs
+          .filter(c => c.id !== config.id)
+          .map(c => c.stage.getCanvas())
+          .filter(Boolean);
+      }
+    };
 
-      const formID = config.formID;
+    for (const config of multiMapState.configs) {
+      const setProgress = (l: MapLoading) => config.setProgress(l.percentage);
+      const loadedMap = await mapsAPI.loadMap(config.id, owner, setProgress, templateID);
+
       if (typeof loadedMap === 'string') {
         config.setProgress(-1);
-        dispatch(setMapLoading(formID, {percentage: -1}));
       } else {
         config.setProgress(100);
-        mapStates.single[formID].stage.setData(loadedMap);
-        dispatch(setMapLoading(formID, {percentage: 100}));
+        config.stage.setData(loadedMap);
+        updateStages();
       }
     }
     dispatch(fetchFormsEnd([id + '_map']));
+    setTimeout(updateStages, 100);
   };
 }
 

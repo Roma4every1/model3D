@@ -44,7 +44,7 @@ export const getMultiMapLayout = (rows: ChannelRow[], formID: FormID): MapTuple 
 
       const tab: IJsonTabNode = tabSet.children[0];
       const config: MapItemConfig = {
-        id, data: {}, formID: childFormID,
+        id, formID: childFormID, stage: null,
         progress: 0, setProgress: () => {},
       };
 

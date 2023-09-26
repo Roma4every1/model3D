@@ -22,9 +22,9 @@ interface MultiMapState {
 
 interface MapItemConfig {
   id: MapID;
-  data: any;
   formID: FormID;
   progress: number;
+  stage: IMapStage;
   setProgress?: (process: number) => void;
 }
 
@@ -42,6 +42,8 @@ interface MapState {
   mapID: MapID;
   /** Состояние загрузки карты. */
   loading: MapLoading;
+  /** Можно ли редактировать карту. */
+  editable: boolean;
   /** Была ли карта изменена. */
   modified: boolean;
   /** Открыто ли окно свойств элемента. */
@@ -63,8 +65,10 @@ interface MapLoading {
 
 interface IMapStage {
   readonly select: IMapSelect;
+  readonly scroller: IMapScroller;
   readonly listeners: MapStageListeners;
 
+  getCanvas(): MapCanvas;
   getMode(): number;
   getSelecting(): boolean;
   getMapData(): MapData;
@@ -102,6 +106,10 @@ interface IMapStage {
 interface IMapSelect {
   onlyActiveLayer: boolean;
   types: Record<MapElementType, boolean>;
+}
+interface IMapScroller {
+  sync: boolean;
+  list: MapCanvas[];
 }
 interface MapStageListeners {
   selectPanelChange(): void;

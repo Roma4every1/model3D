@@ -6,8 +6,8 @@ export function addMultiMap(id: ClientID, templateFormID: FormID, configs: MapIt
   return {type: MapActionType.ADD_MULTI_MAP, payload: {id, templateFormID, configs}};
 }
 /** Устанавливает значение параметра синхронизации. */
-export function setMultiMapSync(id: ClientID, sync: boolean): MapAction {
-  return {type: MapActionType.SET_SYNC, payload: {id, sync}};
+export function setMultiMapSync(formID: FormID, id: ClientID, sync: boolean): MapAction {
+  return {type: MapActionType.SET_SYNC, payload: {formID, id, sync}};
 }
 
 /** Добавляет в хранилище состояний карт новую карту. */

@@ -26,18 +26,6 @@ export function clientPoint(event: MouseEvent): Point {
   return {x: event.offsetX, y: event.offsetY};
 }
 
-/** Возвращает функцию для перевода точки клика из СК холста в СК карты. */
-export function getPointToMap(canvas: HTMLCanvasElement, cx: number, cy: number, scale: MapScale) {
-  const sc = 1 / PIXEL_PER_METER * scale;
-  const canvasCX = canvas.clientWidth / 2;
-  const canvasCY = canvas.clientHeight / 2;
-
-  return (point: Point): Point => ({
-    x: cx + (point.x - canvasCX) * sc,
-    y: cy + (point.y - canvasCY) * sc
-  });
-}
-
 export function getBoundsByPoints(path: number[]): Bounds {
   const points = chunk(path, 2);
   const xValues = points.map(p => p[0]);

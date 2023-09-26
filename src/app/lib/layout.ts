@@ -139,7 +139,7 @@ export class LayoutManager {
       const tab = isTop ? topTabDict[tabID] : rightTabDict[tabID];
       const borderID = isTop ? this.topBorder.getId() : this.rightBorder.getId();
       visibleIDs.add(tabID);
-      this.model.doAction(Actions.addNode(tab, borderID, DockLocation.CENTER, -1));
+      this.model.doAction(Actions.addNode(tab, borderID, DockLocation.CENTER, -1, false));
     }
   }
 

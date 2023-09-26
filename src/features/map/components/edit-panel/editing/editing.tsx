@@ -55,7 +55,7 @@ export const Editing = ({id, state, t}: EditingProps) => {
   const create = () => stage.startCreating();
   const cancel = () => stage.cancel();
 
-  const disableAll = propertyWindowOpen || attrTableWindowOpen;
+  const disableAll = !state.editable || propertyWindowOpen || attrTableWindowOpen;
   const canCancel = activeElement !== null || isCreating;
   const canDelete = activeElement && !isCreating;
   const canEditAttrTable = activeElement && activeElement.attrTable;
@@ -113,7 +113,9 @@ export const Editing = ({id, state, t}: EditingProps) => {
             <span className={'k-icon k-i-delete'}/>
           </button>
         </div>
-        {activeElement && (!isCreating || isPolyline) ? <EditElement stage={stage}/> : <div/>}
+        {state.editable && activeElement && (!isCreating || isPolyline)
+          ? <EditElement stage={stage}/>
+          : <div/>}
       </div>
     </section>
   );

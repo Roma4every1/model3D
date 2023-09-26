@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import { BigButton, BigButtonToggle } from 'shared/ui';
 import { NumericTextBox } from '@progress/kendo-react-inputs';
 import { setMultiMapSync } from '../../store/map.actions';
-import { getFullViewport, getPointToMap } from '../../lib/map-utils';
+import { getFullViewport } from '../../lib/map-utils';
 import { coordinateFormat } from '../../lib/constants.ts';
 
 import xIcon from 'assets/images/map/x.png';
@@ -16,6 +16,7 @@ import synchronizeIcon from 'assets/images/map/synchronize.png';
 
 
 interface MapNavigationProps {
+  id: FormID;
   mapState: MapState;
   sync: boolean | undefined;
   parentID: ClientID;
@@ -30,7 +31,7 @@ interface DimensionProps {
 }
 
 
-export const MapNavigation = ({mapState, sync, parentID, t}: MapNavigationProps) => {
+export const MapNavigation = ({id, mapState, sync, parentID, t}: MapNavigationProps) => {
   const dispatch = useDispatch();
   const { stage, canvas } = mapState;
   const notLoaded = mapState.loading.percentage < 100;
@@ -46,7 +47,7 @@ export const MapNavigation = ({mapState, sync, parentID, t}: MapNavigationProps)
 
   /** Включить или отключить синхронизацию систем координат карт. */
   const toggleSync = () => {
-    dispatch(setMultiMapSync(parentID, !sync));
+    dispatch(setMultiMapSync(id, parentID, !sync));
   };
 
   return (
@@ -77,7 +78,6 @@ const Dimensions = ({canvas, stage, mapData, disabled, t}: DimensionProps) => {
   useEffect(() => {
     if (mapData) mapData.onDrawEnd = ({x, y}, scale) => {
       setX(x); setY(y); setScale(scale);
-      stage.pointToMap = getPointToMap(canvas, x, y, scale);
     };
   }, [mapData, stage, canvas]);
 

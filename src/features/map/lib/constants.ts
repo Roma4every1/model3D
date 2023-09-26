@@ -7,8 +7,6 @@ import { FieldProperties } from '../components/edit-panel/properties-window/fiel
 
 
 /** ### Режимы редактирования карты.
- * **Режимы создания элемента**:
- * + `CREATING` — режим создания элемента
  * + `AWAIT_POINT` — ожидание точки нового элемента
  *
  * **Режимы редактирования элемента**:

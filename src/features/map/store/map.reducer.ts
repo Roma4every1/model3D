@@ -22,7 +22,7 @@ interface ActionAddMulti {
 }
 interface ActionSetSync {
   type: MapActionType.SET_SYNC;
-  payload: {id: ClientID, sync: boolean};
+  payload: {formID: FormID, id: ClientID, sync: boolean};
 }
 
 interface ActionCreate {
@@ -51,15 +51,15 @@ export type MapAction = ActionAddMulti | ActionSetSync | ActionCreate |
 
 /* --- Init State & Reducer --- */
 
-function createMapState(): MapState {
+function createMapState(editable: boolean): MapState {
   const stage = new MapStage();
   const observer = new ResizeObserver(() => { stage.resize(); });
 
   return {
     canvas: null, stage, observer,
-    owner: null, mapID: null,
-    loading: {percentage: 100, status: null},
-    modified: false, propertyWindowOpen: false, attrTableWindowOpen: false,
+    owner: null, mapID: null, loading: {percentage: 100, status: null},
+    modified: false, editable,
+    propertyWindowOpen: false, attrTableWindowOpen: false,
   };
 }
 
@@ -75,13 +75,33 @@ export const mapsReducer = (state: MapsState = init, action: MapAction): MapsSta
       const oldState = state.multi[id];
       const sync = oldState?.sync ?? true;
       const templateFormID = oldState?.templateFormID ?? action.payload.templateFormID;
+
+      if (oldState) for (const { formID } of oldState.configs) {
+        delete state.single[formID];
+      }
+      for (const config of configs) {
+        const mapState = createMapState(false);
+        config.stage = mapState.stage;
+        config.stage.scroller.sync = sync;
+        state.single[config.formID] = mapState;
+      }
       state.multi[id] = {sync, templateFormID, configs, children: configs.map(c => c.formID)};
       return {...state};
     }
 
     case MapActionType.SET_SYNC: {
-      const { id: parentID, sync } = action.payload;
-      state.multi[parentID] = {...state.multi[parentID], sync};
+      const { formID, id, sync } = action.payload;
+      const multiMapState = state.multi[id];
+
+      for (const config of multiMapState.configs) {
+        config.stage.scroller.sync = sync;
+      }
+      if (sync) {
+        const stage = state.single[formID].stage;
+        const { x, y, scale } = stage.getMapData();
+        stage.getCanvas().events.emit('sync', {centerX: x, centerY: y, scale});
+      }
+      state.multi[id] = {...multiMapState, sync};
       return {...state};
     }
 
@@ -89,7 +109,7 @@ export const mapsReducer = (state: MapsState = init, action: MapAction): MapsSta
 
     case MapActionType.CREATE: {
       const id = action.payload.state.id;
-      return {...state, single: {...state.single, [id]: createMapState()}};
+      return {...state, single: {...state.single, [id]: createMapState(true)}};
     }
 
     case MapActionType.SET_LOADING: {

@@ -9,11 +9,11 @@ import { mapStateSelector } from '../store/map.selectors';
 import { fetchMapData, showMapPropertyWindow } from '../store/map.thunks';
 import { setMapField, setMapCanvas, applyTraceToMap } from '../store/map.actions';
 import { handleClick } from '../lib/traces-map-utils';
-import { clientPoint, getPointToMap, getFullViewport } from '../lib/map-utils';
+import { clientPoint, getFullViewport } from '../lib/map-utils';
 import { MapMode } from '../lib/constants.ts';
 
 
-export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) => {
+export const Map = ({id, parent, channels}: FormState) => {
   const dispatch = useDispatch();
   const { model: currentWell } = useSelector(wellStateSelector);
   const { model: currentTrace, editing: traceEditing } = useSelector(traceStateSelector);
@@ -25,7 +25,7 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
   const { canvas, stage, loading } = mapState;
   const mapData = stage.getMapData();
 
-  const isPartOfDynamicMultiMap = data !== undefined;
+  const isPartOfDynamicMultiMap = channels === null;
   const activeChannelName = isPartOfDynamicMultiMap ? null : channels[0].name;
   const activeChannel: Channel = useSelector(channelSelector.bind(activeChannelName));
 
@@ -85,10 +85,6 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
       getWellViewport(currentWell?.id, wellsMaxScale) ||
       getFullViewport(mapData.layers, canvasRef.current);
 
-    // случай, когда вкладка карт не была открыта и приосходит редактирование трассы
-    if (!mapData.onDrawEnd) mapData.onDrawEnd = ({x, y}, scale) => {
-      stage.pointToMap = getPointToMap(canvas, x, y, scale);
-    };
     stage.render(initialViewport);
   });
 

@@ -29,7 +29,7 @@ export const MapEditPanel = ({id, parentID}: FormEditPanelProps) => {
 
   return (
     <div className={'map-edit-panel menu'} style={{display: 'grid'}}>
-      <MapNavigation mapState={mapState} sync={sync} parentID={parentID} t={t}/>
+      <MapNavigation id={id} mapState={mapState} sync={sync} parentID={parentID} t={t}/>
       <Export state={mapState} t={t}/>
       <Selecting mapState={mapState} t={t}/>
       <Editing id={id} state={mapState} t={t}/>

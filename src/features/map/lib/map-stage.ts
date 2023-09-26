@@ -6,11 +6,10 @@ import { Scroller } from '../drawer/scroller.ts';
 import { showMap } from '../drawer/maps.js';
 import { getDefaultMapElement } from '../components/edit-panel/editing/editing-utils.ts';
 import { selectElement, unselectElement } from './selecting-utils.ts';
+
 import {
-  clientPoint,
-  createMapElementInit,
-  getBoundsByPoints,
-  getNearestPointIndex
+  clientPoint, createMapElementInit,
+  getBoundsByPoints, getNearestPointIndex, PIXEL_PER_METER
 } from './map-utils.ts';
 
 import {
@@ -25,10 +24,9 @@ export class MapStage implements IMapStage {
   public readonly select: MapSelect;
   /** Слушатели событий сцены. */
   public readonly listeners: MapStageListeners;
-  /** Функция перевода координат канваса в координаты карты. */
-  public pointToMap: (point: Point) => Point;
+  /** Scroller. */
+  public readonly scroller: Scroller;
 
-  private readonly scroller: Scroller;
   private data: MapData = null;
   private canvas: MapCanvas = null;
   private drawData: any = null;
@@ -61,7 +59,10 @@ export class MapStage implements IMapStage {
       selectPanelChange: () => {}, editPanelChange: () => {},
       propertyWindowClose: () => {}, attrTableWindowClose: () => {},
     };
-    this.pointToMap = (p) => p;
+  }
+
+  public getCanvas(): MapCanvas {
+    return this.canvas;
   }
 
   public getMode(): MapMode {
@@ -105,11 +106,23 @@ export class MapStage implements IMapStage {
     return this.creating;
   }
 
+  /** Функция перевода координат канваса в координаты карты. */
+  public pointToMap(p: Point): Point {
+    if (!this.canvas || !this.data?.x) return p;
+    const sc = 1 / PIXEL_PER_METER * this.data.scale;
+    const canvasCenterX = this.canvas.clientWidth / 2;
+    const canvasCenterY = this.canvas.clientHeight / 2;
+
+    return {
+      x: this.data.x + (p.x - canvasCenterX) * sc,
+      y: this.data.y + (p.y - canvasCenterY) * sc
+    };
+  }
+
   public setCanvas(canvas: MapCanvas): void {
     this.canvas = canvas;
     if (!canvas) return;
     this.scroller.setCanvas(canvas);
-    this.scroller.setList([canvas]);
     const ctx = canvas.getContext('2d');
     this.select.setTextMeasurer(text => ctx.measureText(text).width);
   }
