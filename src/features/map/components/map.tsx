@@ -99,7 +99,7 @@ export const Map = ({id, parent, channels}: FormState) => {
     if (!mapData) return;
     if (currentWellID && currentWellID !== wellRef.current) {
       const viewport = getWellViewport(currentWellID, wellsMaxScale);
-      if (viewport) stage.render(viewport);
+      if (viewport) canvasRef.current?.events?.emit('sync', viewport);
     }
     wellRef.current = currentWellID;
   }, [currentWellID, getWellViewport, wellsMaxScale, mapData, stage]);
