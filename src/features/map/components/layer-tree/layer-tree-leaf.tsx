@@ -10,11 +10,9 @@ interface LayersTreeLayerProps {
 }
 
 
-export const LayersTreeLayer = ({stage, layer}: LayersTreeLayerProps) => {
+export const LayerTreeLeaf = ({stage, layer}: LayersTreeLayerProps) => {
   const { t } = useTranslation();
-
   const [checked, setChecked] = useState(false);
-  const [selected, setSelected] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
   const [minScale, setMinScale] = useState(0);
@@ -25,7 +23,6 @@ export const LayersTreeLayer = ({stage, layer}: LayersTreeLayerProps) => {
   // обновление состояния при смене слоя
   useEffect(() => {
     setChecked(layer.visible);
-    setSelected(layer.active);
     setMinScale(layer.getMinScale());
     setMaxScale(layer.getMaxScale());
     setInitMinScale(layer.getMinScale());
@@ -33,13 +30,12 @@ export const LayersTreeLayer = ({stage, layer}: LayersTreeLayerProps) => {
   }, [layer]);
 
   const onClick = () => {
-    if (selected) {
+    if (layer.active) {
       stage.setActiveLayer(null);
     } else {
       stage.setActiveLayer(layer);
       if (!checked) onVisibilityChange();
     }
-    setSelected(!selected);
   };
   const onExpandChange = () => {
     setExpanded(!expanded)
@@ -47,9 +43,8 @@ export const LayersTreeLayer = ({stage, layer}: LayersTreeLayerProps) => {
   const onVisibilityChange = () => {
     layer.visible = !checked;
     setChecked(!checked);
-    if (checked && selected) {
+    if (checked && layer.active) {
       stage.setActiveLayer(null);
-      setSelected(false);
     }
     stage.render();
   };
@@ -86,7 +81,7 @@ export const LayersTreeLayer = ({stage, layer}: LayersTreeLayerProps) => {
 
   return (
     <div className={'map-layer'}>
-      <div className={'map-layer-header' + (selected ? ' selected' : '')}>
+      <div className={'map-layer-header' + (layer.active ? ' selected' : '')}>
         <Checkbox checked={checked} onChange={onVisibilityChange} />
         <span onClick={onClick}>{layer.displayName}</span>
         <button className={'k-button k-button-clear'} onClick={onExpandChange} title={t('map.layerVisibilityControl')}>

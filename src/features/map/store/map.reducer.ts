@@ -115,41 +115,6 @@ export const mapsReducer = (state: MapsState = init, action: MapAction): MapsSta
       return {...state};
     }
 
-    // case MapsActions.ACCEPT_EDITING: {
-    //   const newMapState: MapState = {...state.single[action.formID]};
-    //   newMapState.isModified = true;
-    //
-    //   const element = newMapState.stage.getActiveElement();
-    //   if (element.type === 'polyline') {
-    //     element.bounds = getBoundsByPoints(chunk(element.arcs[0].path, 2) as [number, number][]);
-    //     newMapState.isModified = !(element as MapPolyline)?.isTrace;
-    //   }
-    //
-    //   newMapState.stage.acceptEditing();
-    //   newMapState.stage.render();
-    //   state.single[action.formID] = newMapState;
-    //   return {...state};
-    // }
-
-    // case MapsActions.CREATE_ELEMENT: {
-    //   const newMapState = {...state.single[action.formID]};
-    //   newMapState.element = action.payload;
-    //
-    //   newMapState.isElementEditing = true;
-    //   newMapState.activeLayer.elements.push(action.payload);
-    //   newMapState.canvas.blocked = false;
-    //
-    //   const isPolyline = newMapState.element.type === 'polyline';
-    //   newMapState.mode = isPolyline ? MapMode.ADD_END : MapMode.MOVE_MAP;
-    //   newMapState.canvas.blocked = isPolyline;
-    //   newMapState.isModified = !(isPolyline && (newMapState.element as MapPolyline)?.isTrace);
-    //
-    //   newMapState.cursor = 'auto';
-    //   newMapState.stage.render();
-    //   state.single[action.formID] = newMapState;
-    //   return {...state};
-    // }
-
     case MapActionType.SET_TRACE: {
       const { id, model, updateViewport } = action.payload;
       const mapState = state.single[id];

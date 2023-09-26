@@ -7,9 +7,7 @@ import { FieldProperties } from '../components/edit-panel/properties-window/fiel
 
 
 /** ### Режимы редактирования карты.
- * **Общие режимы**:
- * + `NONE` — "ничего"
- * + `SELECTING` — режим выбора элемента
+ * **Режимы создания элемента**:
  * + `CREATING` — режим создания элемента
  * + `AWAIT_POINT` — ожидание точки нового элемента
  *
@@ -25,9 +23,7 @@ import { FieldProperties } from '../components/edit-panel/properties-window/fiel
  * + `DELETE_POINT` — удалить точку
  * */
 export enum MapMode {
-  NONE = 0,
-  CREATING = 1,
-  AWAIT_POINT = 2,
+  AWAIT_POINT = 1,
 
   MOVE_MAP = 10,
   MOVE = 11,
@@ -74,7 +70,7 @@ export const propertyWindowConfig: Record<MapElementType, PropertyWindowConfig> 
   },
   'polyline': {
     component: PolylineProperties,
-    windowSize: [335, 235],
+    windowSize: [335, 212],
   },
   'label': {
     component: LabelProperties,

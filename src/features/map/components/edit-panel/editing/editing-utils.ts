@@ -1,6 +1,4 @@
 import { TFunction } from 'react-i18next';
-import { distance } from '../../../lib/map-utils';
-import { getBoundsByPoints } from '../../../lib/map-utils';
 import { provider } from '../../../drawer';
 
 
@@ -10,13 +8,22 @@ export function getDefaultMapElement(type: MapElementType, point: Point): MapEle
   return getDefaultPolyline(point);
 }
 
+/** Точечный объект со стандартными свойствами. */
+function getDefaultSign(point: Point): MapSign {
+  return {
+    type: 'sign',
+    color: provider.defaultSignColor, fontname: provider.defaultSignLib,
+    symbolcode: 0, img: provider.defaultSignImage,
+    size: 1.3, x: point.x, y: point.y,
+  };
+}
+
 /** Линия со стандартными свойствами. */
 function getDefaultPolyline(point: Point): MapPolyline {
-  const path: [number, number] = [point.x, point.y];
   return {
     type: 'polyline',
-    arcs: [{closed: false, path}],
-    bounds: getBoundsByPoints([path]),
+    arcs: [{closed: false, path: [point.x, point.y]}],
+    bounds: {min: point, max: point},
     borderstyle: 0,
     fillbkcolor: '#FFFFFF', fillcolor: '#000000',
     bordercolor: '#000000', borderwidth: 0.25,
@@ -36,32 +43,13 @@ function getDefaultLabel(point: Point): MapLabel {
   };
 }
 
-/** Точечный объект со стандартными свойствами. */
-function getDefaultSign(point: Point): MapSign {
-  return {
-    type: 'sign',
-    color: provider.defaultSignColor, fontname: provider.defaultSignLib,
-    symbolcode: 0, img: provider.defaultSignImage,
-    size: 1.3, x: point.x, y: point.y,
-  };
-}
-
-/** Находит новый угол поворота элемента. */
-export function getAngle(centerPoint: Point, currentPoint: Point): number {
-  currentPoint.x -= centerPoint.x; currentPoint.y -= centerPoint.y;
-  currentPoint.x /= distance(0, 0, currentPoint.x, currentPoint.y);
-  return Math.sign(-currentPoint.y) * Math.acos(currentPoint.x) * 180 / Math.PI;
-}
-
 /* --- --- --- */
 
-type SelectedType = 'polyline' | 'label' | 'sign' | 'field' | undefined;
-
-export function getHeaderText(isCreating: boolean, type: SelectedType, layerName: string, t: TFunction): string {
+export function getHeaderText(isCreating: boolean, type: MapElementType, layerName: string, t: TFunction): string {
   return isCreating ? getHeaderCreating(layerName) : getHeaderEditing(type, t);
 }
 
-function getHeaderEditing(selectedType: SelectedType, t: TFunction): string {
+function getHeaderEditing(selectedType: MapElementType, t: TFunction): string {
   const selectedTypeLabel = selectedType ? ` (тип: ${t('map.' + selectedType)})` : '';
   return `Редактирование${selectedTypeLabel}`;
 }

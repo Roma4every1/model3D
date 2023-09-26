@@ -23,13 +23,8 @@ export const PropertiesWindow = ({id, stage, element, close, cancel}: Properties
   const TypedPropertyWindow = propertyWindowConfig[element.type].component;
 
   const apply = () => {
-    if (isCreating) {
-      stage.accept();
-    } else {
-      stage.getActiveElementLayer().modified = true;
-      stage.setSelecting(true); stage.render();
-      dispatch(setMapField(id, 'modified', true));
-    }
+    stage.accept(); stage.render();
+    dispatch(setMapField(id, 'modified', true));
     close();
   };
 

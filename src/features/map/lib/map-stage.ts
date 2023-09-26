@@ -5,12 +5,18 @@ import { Scroller } from '../drawer/scroller.ts';
 
 import { showMap } from '../drawer/maps.js';
 import { getDefaultMapElement } from '../components/edit-panel/editing/editing-utils.ts';
-import { selectElement, unselectElement } from '../components/edit-panel/selecting/selecting-utils.ts';
-import { clientPoint, createMapElementInit, getNearestPointIndex } from './map-utils.ts';
+import { selectElement, unselectElement } from './selecting-utils.ts';
+import {
+  clientPoint,
+  createMapElementInit,
+  getBoundsByPoints,
+  getNearestPointIndex
+} from './map-utils.ts';
 
 import {
+  applyMouseDownActionToPolyline,
   applyMouseMoveActionToElement,
-  applyMouseDownActionToPolyline, applyRotateToLabel,
+  applyRotateToLabel,
 } from '../components/edit-panel/editing/edit-element-utils.ts';
 
 
@@ -28,7 +34,7 @@ export class MapStage implements IMapStage {
   private drawData: any = null;
 
   /** Режим редактирования карты. */
-  private mode: MapMode = MapMode.NONE;
+  private mode: MapMode = MapMode.MOVE_MAP;
   /** Активный слой. */
   private activeLayer: MapLayer = null;
   /** Активный элемент карты. */
@@ -51,6 +57,7 @@ export class MapStage implements IMapStage {
     this.scroller = new Scroller();
 
     this.listeners = {
+      layerTreeChange: () => {},
       selectPanelChange: () => {}, editPanelChange: () => {},
       propertyWindowClose: () => {}, attrTableWindowClose: () => {},
     };
@@ -115,12 +122,11 @@ export class MapStage implements IMapStage {
   public setMode(mode: MapMode): void {
     if (mode === this.mode) return;
     this.mode = mode;
-    this.creating = mode === MapMode.CREATING || mode === MapMode.AWAIT_POINT;
-    this.editing = mode > MapMode.MOVE_MAP;
+    if (mode > MapMode.MOVE_MAP) this.startEditing();
 
-    this.canvas.blocked = this.editing;
-    if (this.activeElement) { this.activeElement.edited = this.editing; this.render(); }
-    if (this.editing) this.setSelecting(false, false);
+    this.canvas.blocked = mode !== MapMode.MOVE_MAP;
+    this.canvas.style.cursor = mode === MapMode.AWAIT_POINT ? 'crosshair' : 'auto';
+    this.setSelecting(false, false);
     this.listeners.editPanelChange();
   }
 
@@ -137,43 +143,67 @@ export class MapStage implements IMapStage {
   }
 
   public setActiveLayer(layer: MapLayer): void {
+    if (this.activeLayer === layer) return;
+    if (this.creating || this.editing) this.cancel();
     this.activeLayer = layer;
     this.data.layers.forEach(l => { l.active = false; });
     if (layer) layer.active = true;
     this.listeners.editPanelChange();
+    this.listeners.layerTreeChange();
   }
 
   public startCreating(): void {
-    if (this.activeElement) this.clearSelect();
+    if (this.creating) return;
     this.creating = true;
-    this.setMode(MapMode.CREATING);
+    this.setSelecting(false);
+    this.setMode(MapMode.AWAIT_POINT);
+    this.listeners.selectPanelChange();
   }
 
   public startEditing(): void {
-    if (this.editing) return;
+    if (this.editing || this.creating) return;
     this.editing = true;
+    this.activeElement.edited = true;
     this.elementInit = createMapElementInit(this.activeElement);
   }
 
   public accept(): void {
     if (!this.activeElement) return;
+    if (this.activeElement.type === 'polyline') {
+      this.activeElement.bounds = getBoundsByPoints(this.activeElement.arcs[0].path);
+    }
+
+    this.getActiveElementLayer().modified = true;
+    this.activeElement = null;
+    this.listeners.editPanelChange();
+    this.clearSelect();
+
     this.canvas.blocked = false;
     this.editing = false;
     this.creating = false;
     this.elementInit = null;
-    this.mode = MapMode.NONE;
-    this.getActiveElementLayer().modified = true;
-    this.clearSelect();
+    this.mode = MapMode.MOVE_MAP;
   }
 
   public cancel(): void {
-    if (!this.activeElement) return;
-    for (const field in this.elementInit) {
-      this.activeElement[field] = this.elementInit[field];
+    if (!this.activeElement) {
+      if (!this.creating) return;
+      this.creating = false;
+      this.setMode(MapMode.MOVE_MAP);
+      this.listeners.selectPanelChange();
+      return;
     }
-    this.elementInit = null;
+    if (this.creating) {
+      this.activeLayer.elements.pop();
+    } else {
+      for (const field in this.elementInit) {
+        this.activeElement[field] = this.elementInit[field];
+      }
+      this.elementInit = null;
+    }
     this.creating = false;
     this.editing = false;
+    this.mode = MapMode.MOVE_MAP;
     this.clearSelect();
     this.render();
   }
@@ -210,8 +240,6 @@ export class MapStage implements IMapStage {
 
   public handleMouseDown(event: MouseEvent): void {
     this.scroller.mouseDown(event);
-    const mode = this.mode;
-
     if (this.selecting) {
       const scale = this.data.scale;
       const point = this.pointToMap(clientPoint(event));
@@ -225,18 +253,20 @@ export class MapStage implements IMapStage {
       this.setActiveElement(newElement);
       this.render();
     } else {
-      if (!this.editing) return;
-      this.isOnMove = mode === MapMode.MOVE
-        || mode === MapMode.MOVE_POINT || mode === MapMode.ROTATE;
+      if (!this.editing && !this.creating) return;
+      this.isOnMove = this.mode === MapMode.MOVE
+        || this.mode === MapMode.MOVE_POINT || this.mode === MapMode.ROTATE;
 
       if (this.activeElement?.type !== 'polyline') return;
       const scale = this.data.scale;
       const point = this.pointToMap(clientPoint(event));
 
-      if (mode === MapMode.MOVE_POINT) {
+      if (this.mode === MapMode.MOVE_POINT) {
         this.pIndex = getNearestPointIndex(point, scale, this.activeElement);
       }
-      applyMouseDownActionToPolyline(this.activeElement, {mode, point, scale});
+      const len = this.activeElement.arcs[0].path.length;
+      applyMouseDownActionToPolyline(this.activeElement, {mode: this.mode, point, scale});
+      if (len !== this.activeElement.arcs[0].path.length) this.listeners.editPanelChange();
       this.render();
     }
   }
@@ -246,14 +276,19 @@ export class MapStage implements IMapStage {
     this.isOnMove = false;
     this.pIndex = null;
 
-    if (this.mode !== MapMode.AWAIT_POINT) return null;
+    if (this.mode !== MapMode.AWAIT_POINT || !this.activeLayer) return null;
     const creatingType = this.activeLayer?.elementType;
     if (!canCreateTypes.includes(creatingType)) return null;
 
     const point = this.pointToMap(clientPoint(event));
     point.x = Math.round(point.x);
     point.y = Math.round(point.y);
-    return getDefaultMapElement(creatingType, point);
+
+    const newElement = getDefaultMapElement(creatingType, point);
+    this.activeLayer.elements.push(newElement);
+    this.setActiveElement(newElement);
+    this.render();
+    return newElement;
   }
 
   public handleMouseMove(event: MouseEvent): void {

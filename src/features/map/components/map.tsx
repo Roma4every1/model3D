@@ -166,10 +166,12 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
   const onMouseUp = ({nativeEvent}) => {
     const element = stage.handleMouseUp(nativeEvent);
     if (!element) return;
+    element.edited = true;
 
-    stage.startCreating();
     if (element.type === 'sign' || element.type === 'label') {
       dispatch(showMapPropertyWindow(id, element));
+    } else if (element.type === 'polyline') {
+      stage.setMode(MapMode.ADD_END);
     }
   };
 

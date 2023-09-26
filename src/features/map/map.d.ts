@@ -106,6 +106,7 @@ interface IMapSelect {
 interface MapStageListeners {
   selectPanelChange(): void;
   editPanelChange(): void;
+  layerTreeChange(): void;
   propertyWindowClose(): void;
   attrTableWindowClose(): void;
 }

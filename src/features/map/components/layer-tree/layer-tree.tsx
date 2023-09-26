@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { LayersTreeElement } from './layers-tree-element';
+import { LayerTreeNode } from './layer-tree-node.tsx';
 import { mapStateSelector } from '../../store/map.selectors';
-import './layers-tree.scss';
+import './layer-tree.scss';
 
 
 interface MapLayerTreeProps {
@@ -14,14 +14,18 @@ interface MapLayerTreeProps {
 /** Дерево слоёв карты. */
 export const MapLayerTree = ({id}: MapLayerTreeProps) => {
   const mapState: MapState = useSelector(mapStateSelector.bind(id));
-  const layers = mapState?.stage?.getMapData()?.layers;
+  const stage = mapState?.stage;
+  const layers = stage?.getMapData()?.layers;
+
+  const [signal, setSignal] = useState(false);
+  if (stage) stage.listeners.layerTreeChange = () => setSignal(!signal);
 
   const treeItems = useMemo(() => {
     return getTreeItems(layers);
   }, [layers]);
 
   const itemToElement = (item: LayerTreeItem, i: number) => {
-    return <LayersTreeElement key={i} item={item} stage={mapState.stage}/>;
+    return <LayerTreeNode key={i} item={item} stage={stage}/>;
   };
   return <div>{treeItems.map(itemToElement)}</div>;
 };

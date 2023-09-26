@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { MenuSkeleton } from 'shared/ui';
 import { MapNavigation } from './dimensions';
 import { Export } from './export';
-import { Selecting } from './selecting/selecting';
+import { Selecting } from './selecting.tsx';
 import { Editing } from './editing/editing';
 import { SaveMap } from './save-map';
 import { multiMapStateSelector, mapStateSelector } from '../../store/map.selectors';

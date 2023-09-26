@@ -38,15 +38,8 @@ export function getPointToMap(canvas: HTMLCanvasElement, cx: number, cy: number,
   });
 }
 
-/** Евклидово расстояние между двумя точками по их координатам.
- *
- * `√ (x1 - x2)^2 + (y1 - y2)^2`
- * */
-export function distance(x1: number, y1: number, x2: number, y2: number): number {
-  return Math.sqrt((x1 * x1 + x2 * x2) + (y1 * y1 + y2 * y2) - 2 * (x1 * x2 + y1 * y2));
-}
-
-export function getBoundsByPoints(points: [number, number][]): Bounds {
+export function getBoundsByPoints(path: number[]): Bounds {
+  const points = chunk(path, 2);
   const xValues = points.map(p => p[0]);
   const yValues = points.map(p => p[1]);
 

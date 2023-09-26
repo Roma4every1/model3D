@@ -50,8 +50,8 @@ export const EditElement = ({stage}: EditElementProps) => {
   const toButton = (ownMode: MapMode) => {
     const isSameMode = mode === ownMode;
     const action = () => {
+      if (!isSameMode) stage.setMode(ownMode);
       if (mode < MapMode.MOVE_MAP) stage.startEditing();
-      stage.setMode(isSameMode ? MapMode.NONE : ownMode);
     };
     return <EditItem key={ownMode} ownMode={ownMode} selected={isSameMode} t={t} action={action}/>;
   };

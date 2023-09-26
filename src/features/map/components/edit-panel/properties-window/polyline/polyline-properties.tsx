@@ -166,8 +166,18 @@ export const PolylineProperties = (props: PropertyWindowProps<MapPolyline>) => {
       <fieldset>
         <div className={'item'}>
           <span className={'label'}>
-            {t('map.legend')}
+            {t('map.template')}
           </span>
+          <DropDownList
+            style={{height: 20}}
+            name={'template'}
+            data={fillPatterns.allPatterns}
+            value={fillName}
+            valueRender={templateValueRender}
+            itemRender={templatesRender}
+            onChange={onFillNameChange}
+            disabled={!fillColor}
+          />
         </div>
         <div className={'item'}>
           <span className={'label'}>
@@ -195,22 +205,18 @@ export const PolylineProperties = (props: PropertyWindowProps<MapPolyline>) => {
       <fieldset>
         <div className={'item'}>
           <span className={'label'}>
-            {t('map.template')}
+            {t('map.border-style')}
           </span>
           <DropDownList
-            style={{height: 20}}
-            name={'template'}
-            data={fillPatterns.allPatterns}
-            value={fillName}
-            valueRender={templateValueRender}
-            itemRender={templatesRender}
-            onChange={onFillNameChange}
-            disabled={!fillColor}
+            data={stylesData} style={{height: 20}}
+            value={stylesData.find(sd => sd?.key === borderStyle || sd?.key === borderStyleID)}
+            valueRender={styleValueRender} itemRender={stylesRender}
+            onChange={onBorderStyleChange} disabled={!borderColor}
           />
         </div>
         <div className={'item'}>
           <span className={'label'}>
-            {t('map.strokeColor')}
+            {t('map.border-color')}
           </span>
           <ColorPicker
             view={'gradient'} value={borderColor}
@@ -222,7 +228,7 @@ export const PolylineProperties = (props: PropertyWindowProps<MapPolyline>) => {
         </div>
         <div className={'item'}>
           <span className={'label'}>
-            {t('map.strokeWidth')}
+            {t('map.border-width')}
           </span>
           <NumericTextBox
             style={{height: 20}} format={'n2'}
@@ -232,29 +238,16 @@ export const PolylineProperties = (props: PropertyWindowProps<MapPolyline>) => {
         </div>
       </fieldset>
       <fieldset style={{gridTemplateColumns: '1fr 1fr'}}>
-        <div className={'item'}>
-          <span className={'label'}>
-            {t('map.style')}
-          </span>
-          <DropDownList
-            data={stylesData} style={{height: 20}}
-            value={stylesData.find(sd => sd?.key === borderStyle || sd?.key === borderStyleID)}
-            valueRender={styleValueRender} itemRender={stylesRender}
-            onChange={onBorderStyleChange} disabled={!borderColor}
-          />
-        </div>
-        <div className={'item-checkbox'}>
-          <Checkbox
-            label={t('map.transparency')}
-            checked={transparent}
-            onChange={onTransparentChange}
-          />
-          <Checkbox
-            label={t('map.closed')}
-            checked={closed}
-            onChange={onChangeClosed}
-          />
-        </div>
+        <Checkbox
+          label={t('map.transparency')}
+          checked={transparent}
+          onChange={onTransparentChange}
+        />
+        <Checkbox
+          label={t('map.closed')}
+          checked={closed}
+          onChange={onChangeClosed}
+        />
       </fieldset>
       <div className={'wm-dialog-actions'}>
         <Button onClick={apply} disabled={isElementCreating ? false : !changed}>

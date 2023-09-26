@@ -1,13 +1,14 @@
 import { TFunction } from 'react-i18next';
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useDispatch } from 'shared/lib';
 
 import { EditElement } from './edit-element';
 import { DeleteElementWindow } from './delete-element';
 
-import { getHeaderText } from './editing-utils';
 import { showDialog, closeWindow } from 'entities/window';
+import { setMapField } from '../../../store/map.actions.ts';
 import { showMapPropertyWindow, showMapAttrTableWindow } from '../../../store/map.thunks.ts';
+import { getHeaderText } from './editing-utils';
 import { canCreateTypes, canEditPropertyTypes } from '../../../lib/constants.ts';
 
 
@@ -27,10 +28,10 @@ export const Editing = ({id, state, t}: EditingProps) => {
 
   const activeLayer = stage.getActiveLayer();
   const activeElement = stage.getActiveElement();
+  const isPolyline = activeElement?.type === 'polyline';
 
   const isCreating = stage.isElementCreating();
   const creatingType = activeLayer?.elementType;
-  const isPolylineCreating = isCreating && creatingType === 'polyline';
 
   const showDeleteWindow = () => {
     const windowID = 'mapDeleteWindow';
@@ -46,31 +47,38 @@ export const Editing = ({id, state, t}: EditingProps) => {
     dispatch(showMapAttrTableWindow(id));
   };
 
+  const accept = () => {
+    stage.accept(); stage.render();
+    dispatch(setMapField(id, 'modified', true));
+  };
+
   const create = () => stage.startCreating();
-  const accept = () => stage.accept();
   const cancel = () => stage.cancel();
 
-  const headerText = useMemo(() => {
-    return getHeaderText(isCreating, activeElement?.type, activeLayer?.displayName, t);
-  }, [activeLayer, activeElement, isCreating, t]);
-
   const disableAll = propertyWindowOpen || attrTableWindowOpen;
-  const canAccept = activeElement !== null;
-  const canCancel = activeElement !== null;
-  const canCreate = activeLayer && canCreateTypes.includes(creatingType) && !isCreating;
+  const canCancel = activeElement !== null || isCreating;
   const canDelete = activeElement && !isCreating;
-  const canEditProperties = activeElement && canEditPropertyTypes.includes(activeElement.type);
   const canEditAttrTable = activeElement && activeElement.attrTable;
+
+  let canAccept = activeElement !== null;
+  if (canAccept && isPolyline) canAccept = activeElement.arcs[0].path.length > 2;
+
+  const canCreate = activeLayer && !activeLayer.isTemporary() && !isCreating
+    && canCreateTypes.includes(creatingType);
+  const canEditProperties = activeElement && !isCreating
+    && canEditPropertyTypes.includes(activeElement.type);
 
   return (
     <section className={'map-editing'}>
-      <div className={'menu-header'}>{headerText}</div>
+      <div className={'menu-header'}>
+        {getHeaderText(isCreating, activeElement?.type, activeLayer?.displayName, t)}
+      </div>
       <div className={'map-panel-main'}>
         <div className={'common-buttons'}>
           <button
             className={'map-panel-button k-button'} title={t('map.editing.accept')}
             disabled={disableAll || !canAccept}
-            onClick={isPolylineCreating ? showPropertiesWindow : accept}
+            onClick={isCreating && isPolyline ? showPropertiesWindow : accept}
           >
             <span className={'k-icon k-i-check-outline'} />
           </button>
@@ -105,7 +113,7 @@ export const Editing = ({id, state, t}: EditingProps) => {
             <span className={'k-icon k-i-delete'}/>
           </button>
         </div>
-        {!isCreating && activeElement ? <EditElement stage={stage}/> : <div/>}
+        {activeElement && (!isCreating || isPolyline) ? <EditElement stage={stage}/> : <div/>}
       </div>
     </section>
   );

@@ -1,23 +1,23 @@
 import { MapMode } from '../../../lib/constants.ts';
-import { getAngle } from './editing-utils';
+import { distance } from 'shared/lib';
 import { getNearestPointIndex, getNearestSegment, PIXEL_PER_METER } from '../../../lib/map-utils';
 
 
 export interface MouseDownEditAction {
-  mode: MapMode,
-  point: Point,
-  pIndex?: number,
-  scale?: MapScale,
+  mode: MapMode;
+  point: Point;
+  pIndex?: number;
+  scale?: MapScale;
 }
 export interface MouseMoveEditAction {
-  mode: MapMode,
-  point: Point,
-  pIndex?: number,
+  mode: MapMode;
+  point: Point;
+  pIndex?: number;
 }
 
 /* --- Mouse Down Event --- */
 
-export const applyMouseDownActionToPolyline = (element: MapPolyline, action: MouseDownEditAction): void => {
+export function applyMouseDownActionToPolyline(element: MapPolyline, action: MouseDownEditAction): void {
   switch (action.mode) {
     case MapMode.ADD_END: {
       const firstArc = element.arcs[0];
@@ -40,14 +40,19 @@ export const applyMouseDownActionToPolyline = (element: MapPolyline, action: Mou
 
 /* --- Mouse Move Event --- */
 
-const applyMouseMoveActionToPolyline = (element: MapPolyline, action: MouseMoveEditAction): void => {
+export function applyMouseMoveActionToElement(element: MapElement, action: MouseMoveEditAction): void {
+  if (element.type === 'polyline') return applyMouseMoveActionToPolyline(element, action);
+  if (element.type === 'label') return applyMouseMoveActionToLabel(element, action);
+  if (element.type === 'sign') return applyMouseMoveActionToSign(element, action);
+}
+function applyMouseMoveActionToPolyline(element: MapPolyline, action: MouseMoveEditAction): void {
   if (action.mode === MapMode.MOVE_POINT && typeof action.pIndex === 'number') {
     const firstArcPath = element.arcs[0].path;
     firstArcPath[action.pIndex * 2] = action.point.x;
     firstArcPath[action.pIndex * 2 + 1] = action.point.y;
   }
 }
-const applyMouseMoveActionToLabel = (element: MapLabel, action: MouseMoveEditAction): void => {
+function applyMouseMoveActionToLabel(element: MapLabel, action: MouseMoveEditAction): void {
   if (action.mode === MapMode.MOVE) {
     element.x = action.point.x;
     element.y = action.point.y;
@@ -59,17 +64,11 @@ const applyMouseMoveActionToLabel = (element: MapLabel, action: MouseMoveEditAct
     element.angle = getAngle(centerPoint, action.point);
   }
 }
-const applyMouseMoveActionToSign = (element: MapSign, action: MouseMoveEditAction): void => {
+function applyMouseMoveActionToSign(element: MapSign, action: MouseMoveEditAction): void {
   if (action.mode === MapMode.MOVE) {
     element.x = action.point.x;
     element.y = action.point.y;
   }
-}
-
-export const applyMouseMoveActionToElement = (element: MapElement, action: MouseMoveEditAction): void => {
-  if (element.type === 'polyline') return applyMouseMoveActionToPolyline(element, action);
-  if (element.type === 'label') return applyMouseMoveActionToLabel(element, action);
-  if (element.type === 'sign') return applyMouseMoveActionToSign(element, action);
 }
 
 /* --- Mouse Wheel Event --- */
@@ -78,7 +77,7 @@ export const applyMouseMoveActionToElement = (element: MapElement, action: Mouse
  * Поворачивает подпись на 4 градуса по/против часовой стрелки.
  * С зажатым шифтом выравнивает угол.
  * */
-export const applyRotateToLabel = (element: MapLabel, clockwise: boolean, align: boolean) => {
+export function applyRotateToLabel(element: MapLabel, clockwise: boolean, align: boolean) {
   if (align) {
     let angle = 0;
     for (let i = -22.5; i < 360; i += 45) {
@@ -92,4 +91,11 @@ export const applyRotateToLabel = (element: MapLabel, clockwise: boolean, align:
 
   if (element.angle > 360) element.angle -= 360;
   if (element.angle < 0) element.angle += 360;
+}
+
+function getAngle(centerPoint: Point, currentPoint: Point): number {
+  currentPoint.x -= centerPoint.x;
+  currentPoint.y -= centerPoint.y;
+  currentPoint.x /= distance({x: 0, y: 0}, currentPoint);
+  return Math.sign(-currentPoint.y) * Math.acos(currentPoint.x) * 180 / Math.PI;
 }

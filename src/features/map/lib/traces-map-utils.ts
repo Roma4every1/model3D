@@ -1,6 +1,5 @@
-import { chunk } from 'lodash';
 import { getBoundsByPoints, PIXEL_PER_METER } from './map-utils';
-import { checkDistancePoints } from '../components/edit-panel/selecting/selecting-utils';
+import { checkDistancePoints } from './selecting-utils.ts';
 
 
 /** Прототип объекта слоя трассы. */
@@ -25,7 +24,7 @@ export function getTraceMapElement(model: TraceModel): MapPolyline {
   return {
     type: 'polyline',
     arcs: [arc],
-    bounds: getBoundsByPoints(chunk(path, 2) as [number, number][]),
+    bounds: getBoundsByPoints(path),
     borderstyle: 0,
     fillbkcolor: '#0000ff', fillcolor: '#0000ff',
     bordercolor: '#0000ff', borderwidth: 1.25,

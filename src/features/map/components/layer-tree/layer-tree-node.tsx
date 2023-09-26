@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ExpansionPanel, ExpansionPanelContent } from '@progress/kendo-react-layout';
-import { LayersTreeLayer } from './layers-tree-layer';
+import { LayerTreeLeaf } from './layer-tree-leaf.tsx';
 
 
 interface LayersTreeElementProps {
@@ -9,13 +9,13 @@ interface LayersTreeElementProps {
 }
 
 
-export const LayersTreeElement = ({item, stage}: LayersTreeElementProps) => {
+export const LayerTreeNode = ({item, stage}: LayersTreeElementProps) => {
   const [expanded, setExpanded] = useState(false);
 
   const itemToElement = (item: LayerTreeItem, i: number) => {
     return item.items
-      ? <LayersTreeElement key={i} item={item} stage={stage}/>
-      : <LayersTreeLayer key={i} layer={item.sublayer} stage={stage}/>;
+      ? <LayerTreeNode key={i} item={item} stage={stage}/>
+      : <LayerTreeLeaf key={i} layer={item.sublayer} stage={stage}/>;
   };
 
   return (
