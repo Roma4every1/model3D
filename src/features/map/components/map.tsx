@@ -3,13 +3,13 @@ import { useDispatch, useSelector } from 'shared/lib';
 import { LoadingStatus, TextInfo } from 'shared/ui';
 import { channelSelector } from 'entities/channels';
 import { traceStateSelector, wellStateSelector, setCurrentTrace } from 'entities/objects';
-import { updateParam, currentPlastCodeSelector} from 'entities/parameters';
+import { updateParam } from 'entities/parameters';
 import { tableRowToString } from 'entities/parameters/lib/table-row';
-import { mapsStateSelector, mapStateSelector } from '../store/map.selectors';
+import { mapStateSelector } from '../store/map.selectors';
 import { fetchMapData, showMapPropertyWindow } from '../store/map.thunks';
 import { setMapField, setMapCanvas, applyTraceToMap } from '../store/map.actions';
 import { handleClick } from '../lib/traces-map-utils';
-import { clientPoint, getFullViewport, getPointToMap } from '../lib/map-utils';
+import { clientPoint, getPointToMap, getFullViewport } from '../lib/map-utils';
 import { MapMode } from '../lib/constants.ts';
 
 
@@ -18,37 +18,25 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
   const { model: currentWell } = useSelector(wellStateSelector);
   const { model: currentTrace, editing: traceEditing } = useSelector(traceStateSelector);
 
-  const mapsState = useSelector(mapsStateSelector);
+  const [isMapExist, setIsMapExist] = useState(true);
   const mapState: MapState = useSelector(mapStateSelector.bind(id));
 
   const canvasRef = useRef(null);
-  const [isMapExist, setIsMapExist] = useState(true);
-
-  const canvas = mapState?.canvas;
-  const stage = mapState?.stage;
-  const mapData = stage?.getMapData();
-  const loading = mapState?.loading;
+  const { canvas, stage, loading } = mapState;
+  const mapData = stage.getMapData();
 
   const isPartOfDynamicMultiMap = data !== undefined;
   const activeChannelName = isPartOfDynamicMultiMap ? null : channels[0].name;
   const activeChannel: Channel = useSelector(channelSelector.bind(activeChannelName));
-  const currentPlastCode = useSelector(currentPlastCodeSelector);
-
-  useEffect(() => {
-    if (!mapState || !isPartOfDynamicMultiMap) return;
-    if (!mapState.mapID && data.layers) mapState.stage.setData(data);
-  }, [isPartOfDynamicMultiMap, mapState, id, data, dispatch]);
 
   // проверка параметров формы
   useEffect(() => {
-    if (!mapState || isPartOfDynamicMultiMap) return;
+    if (isPartOfDynamicMultiMap) return;
     const rows = activeChannel?.data?.rows;
     if (!rows || rows.length === 0) {
       if (loading.percentage < 0) return;
       return setIsMapExist(false);
     }
-
-    setIsMapExist(true);
 
     const mapInfo = rows[0];
     const owner = mapInfo.Cells[12];
@@ -69,36 +57,20 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
       dispatch(setMapField(id, 'mapID', mapID));
       dispatch(fetchMapData(id));
     }
+    setIsMapExist(true);
   }, [mapState, activeChannel, id, parent, isPartOfDynamicMultiMap, dispatch]); // eslint-disable-line
 
-  const getWellViewport = useCallback((wellID, maxScale) => {
-    if (!mapData) return;
-    let pointsData: MapPoint[];
-    if (isPartOfDynamicMultiMap) {
-      const currentMapID = parent + ',' + mapsState.multi[parent].configs
-        .find(c => c.data.plastCode === currentPlastCode)?.id;
-      const activeMapState : MapState = mapsState.single[currentMapID];
-      if (!activeMapState?.stage.getMapData()) return;
-      const isSync = mapsState.multi[parent].sync;
-      const isActiveMap = currentMapID === id;
+  const getWellViewport = useCallback((wellID: WellID, maxScale: MapScale) => {
+    if (wellID === null || wellID === undefined) return null;
+    const idString = wellID.toString();
+    const point = mapData.points.find(p => p.UWID === idString);
 
-      if (isActiveMap) pointsData = mapData.points;
-      if (isSync && !isActiveMap) pointsData = activeMapState.stage.getMapData().points;
-      if (!isSync && !isActiveMap) return null;
-    } else {
-      pointsData = mapData.points;
-    }
-
-    const point = pointsData.find(p => parseInt(p.UWID) === wellID);
     if (point) {
       const scale = mapData.scale < maxScale ? mapData.scale : maxScale;
       return {centerX: point.x, centerY: point.y, scale};
     }
     return null;
-  }, [
-    mapData, currentPlastCode, id, parent, isPartOfDynamicMultiMap,
-    mapsState.multi, mapsState.single
-  ]);
+  }, [mapData]);
 
   const wellsMaxScale = useMemo(() => {
     return mapData?.layers?.find(l => l.elementType === 'sign')?.getMaxScale() ?? 50_000;
@@ -106,11 +78,10 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
 
   // обновление ссылки на холст
   useLayoutEffect(() => {
-    if (canvasRef.current === canvas) return;
+    if (!mapData || canvasRef.current === canvas) return;
     dispatch(setMapCanvas(id, canvasRef.current));
-    if (!mapData) return;
 
-    const viewport =
+    const initialViewport =
       getWellViewport(currentWell?.id, wellsMaxScale) ||
       getFullViewport(mapData.layers, canvasRef.current);
 
@@ -118,7 +89,7 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
     if (!mapData.onDrawEnd) mapData.onDrawEnd = ({x, y}, scale) => {
       stage.pointToMap = getPointToMap(canvas, x, y, scale);
     };
-    stage.render(viewport);
+    stage.render(initialViewport);
   });
 
   /* --- --- */
@@ -129,26 +100,26 @@ export const Map = ({id, parent, channels, data}: FormState & {data?: MapData}) 
 
   // подстраивание карты под выбранную скважину
   useEffect(() => {
+    if (!mapData) return;
     if (currentWellID && currentWellID !== wellRef.current) {
       const viewport = getWellViewport(currentWellID, wellsMaxScale);
-      if (viewport) canvasRef.current?.events.emit('cs', viewport);
+      if (viewport) stage.render(viewport);
     }
     wellRef.current = currentWellID;
-  }, [currentWellID, getWellViewport, wellsMaxScale, stage]);
+  }, [currentWellID, getWellViewport, wellsMaxScale, mapData, stage]);
 
   // отрисовка текущей трассы
   useEffect( () => {
-    if (!loading || loading.percentage < 100) return;
+    if (!mapData || loading.percentage < 100) return;
     const updateViewport =
       currentTrace?.id !== traceRef.current?.id ||           // изменилась активная трасса
       (traceEditing && traceRef.current?.editing === false); // вошли в режим режактирования
     dispatch(applyTraceToMap(id, currentTrace, updateViewport));
     traceRef.current = {id: currentTrace?.id, editing: traceEditing};
-  }, [loading, currentTrace, traceEditing, id, dispatch]);
+  }, [loading, currentTrace, traceEditing, mapData, id, dispatch]);
 
   /* --- --- */
 
-  if (!mapState) return <div/>;
   if (!isMapExist) return <TextInfo text={'map.not-found'}/>;
   if (loading.percentage < 0) return <TextInfo text={'map.not-loaded'}/>;
   if (loading.percentage < 100) return <LoadingStatus {...loading}/>;

@@ -316,7 +316,10 @@ export class MapStage implements IMapStage {
 
   public render(viewport?: MapViewport): void {
     if (!this.canvas || !this.data) return;
-    if (!viewport) viewport = {centerX: this.data.x, centerY: this.data.y, scale: this.data.scale};
+    if (!viewport) {
+      if (this.data.x === undefined) return;
+      viewport = {centerX: this.data.x, centerY: this.data.y, scale: this.data.scale};
+    }
     if (this.drawData) this.drawData.detach();
     this.drawData = showMap(this.canvas, this.data, viewport);
   }

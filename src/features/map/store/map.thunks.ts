@@ -75,6 +75,8 @@ export function fetchMapData(id: FormID): Thunk {
   return async (dispatch: Dispatch, getState) => {
     const { stage, mapID, owner } = getState().maps.single[id];
     const setLoading = (l: MapLoading) => dispatch(setMapLoading(id, l));
+
+    setLoading({percentage: 0, status: null});
     const mapData = await mapsAPI.loadMap(mapID, owner, setLoading, id);
 
     if (typeof mapData === 'string') {

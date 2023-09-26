@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
 import { startPaint } from './map-drawer';
-import { getTranslator, rects } from './geom';
+import { getTranslator  } from './geom';
 import { PIXEL_PER_METER } from '../lib/map-utils';
 
 
@@ -28,13 +28,13 @@ export function showMap(canvas, map, viewport) {
   events.on('update', () => update(canvas));
 
   if (canvasEvents) {
-    function on(event, action) {
-      const handler = function () {
+    const on = (event, action) => {
+      const handler = function() {
         return checkCanvas() && action.apply(this, arguments);
       };
       canvasEvents.on(event, handler);
       fin.push(() => canvasEvents.removeListener(event, handler));
-    }
+    };
 
     on('changed', (data) => {
       coords = data.coords.changeResolution(window.devicePixelRatio);
@@ -87,24 +87,6 @@ export function showMap(canvas, map, viewport) {
     if (!coords) {
       let dotsPerMeter = width / (canvas.clientWidth / PIXEL_PER_METER);
       if (isNaN(dotsPerMeter)) dotsPerMeter = 3780;
-
-      if (centerX == null) {
-        const bounds = rects.middleRect(...map.layers.map(layer => layer.bounds));
-        if (!bounds) {
-          if (!scale) scale = 5000;
-          centerX = 0;
-          centerY = 0;
-        } else {
-          if (!scale) {
-            scale = 1.05 * Math.max(
-              (bounds.max.x - bounds.min.x) / (width / dotsPerMeter),
-              (bounds.max.y - bounds.min.y) / (height / dotsPerMeter)
-            );
-          }
-          centerX = (bounds.min.x + bounds.max.x) / 2;
-          centerY = (bounds.min.y + bounds.max.y) / 2;
-        }
-      }
 
       coords = getTranslator(scale, {x: centerX, y: centerY}, dotsPerMeter, {
         x: width / 2,

@@ -20,23 +20,11 @@ export interface Translator {
 }
 
 interface Rects {
-	join(...rects: Bounds[]): Bounds
-	intersects(a: Bounds, b: Bounds): boolean
-	joinPoints(...points: Point[]): Bounds
-	inflate(r: Bounds, d: number): Bounds
-	middleRect(...rects: Bounds[]): Bounds
+	join(...rects: Bounds[]): Bounds;
+	intersects(a: Bounds, b: Bounds): boolean;
+	joinPoints(...points: Point[]): Bounds;
+	inflate(r: Bounds, d: number): Bounds;
 }
-
-
-const sum = (array: number[]) => array.reduce((a, b) => a + b);
-const middle = (array: number[]) => sum(array) / array.length;
-const norm = (array: number[]) => { const m = sum(array); return array.map(a => a / m) };
-
-const middleCoordinate = (coords: number[]) => {
-	const m = middle(coords);
-	const w = norm(coords.map(c => 1 / (1 + (c - m) * (c - m))));
-	return sum(coords.map((c, i) => c * w[i]))
-};
 
 export const rects: Rects = {
 	join: (...rects: Bounds[]) => rects.reduce(
@@ -55,12 +43,6 @@ export const rects: Rects = {
 		min: { x: r.min.x - d, y: r.min.y - d },
 		max: { x: r.max.x + d, y: r.max.y + d },
 	}),
-	middleRect: (...rects: Bounds[]): Bounds => {
-		return {
-			min: {x: middleCoordinate(rects.map(r => r.min.x)), y: middleCoordinate(rects.map(r => r.min.y))},
-			max: {x: middleCoordinate(rects.map(r => r.max.x)), y: middleCoordinate(rects.map(r => r.max.y))},
-		};
-	},
 }
 
 function translate(scale1: number, p1: Point, scale2: number, p2: Point): PointTranslator {
