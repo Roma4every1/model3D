@@ -20,8 +20,6 @@ interface FileViewState {
  * + `fileType: string`
  * + `data`: {@link Blob}
  * + `uri: string` — техническое поле
- *
- * Названия полей выбраны для совместимости с библиотекой.
  * */
 interface FileViewModel {
   /** Название файла. */
@@ -32,4 +30,11 @@ interface FileViewModel {
   data: Blob;
   /** Моковая ссылка. */
   uri: string;
+}
+
+/** Параметры рендерера файла.
+ * + `model: string` — модель просматриваемого файла
+ * */
+interface FileRendererProps {
+  model: FileViewModel
 }

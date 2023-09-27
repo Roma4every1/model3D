@@ -1,0 +1,94 @@
+.basicRenderer {
+  width: 100%;
+  height: 100%;
+}
+
+.excelRendererContainer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.excelRendererTableContainer {
+  overflow-y: auto;
+  height: 100%;
+}
+
+.excelRendererTableContainer td {
+  padding: 5px;
+  border: 1px solid #CDCDCD;
+  white-space: nowrap;
+}
+
+.excelRendererTableContainer th {
+  text-align: center;
+  padding: 5px;
+  background: #FBFBFB;
+  border: 1px solid #b2b2b2;
+  color: #b2b2b2;
+  white-space: nowrap;
+}
+
+.excelRendererFooter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: 2px;
+  padding: 2px;
+}
+
+.changeExcelSheetButton {
+  padding: 4px 8px;
+  width: 160px;
+
+  color: black;
+  border-radius: 2px;
+  border: none;
+  background-color: #f8f8f8;
+  transition: background-color 0.2s;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #fadad8;
+  }
+  &.active {
+    background-color: #fccbc7;
+  }
+
+  span {
+    word-break: break-all;
+  }
+}
+
+#imageRendererContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#imageRenderer {
+  max-width: 90%;
+  max-height: 90%;
+}
+
+.msDocRendererContainer {
+  overflow-x: auto;
+  background: #b2b2b2;
+}
+
+#msDocRenderer {
+  width: fit-content;
+  overflow-x: visible;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+#msDocRenderer section {
+  background: #ffffff;
+}
