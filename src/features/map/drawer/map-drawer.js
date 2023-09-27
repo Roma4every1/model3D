@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import parseColor from 'parse-color';
 import { getLabelTextNumberArray } from './label-text-parser';
 import { fillPatterns } from '../../../shared/drawing';
-import { rects } from './geom';
+import { intersects } from './geom';
 import { provider } from './index';
 
 import lines from './lines.json';
@@ -73,8 +73,8 @@ declareType('sign', {
     if (!img) return;
 
     const point = options.pointToControl(i);
-    let width = img.width * i.size * options.pixelRatio;
-    let height = img.height * i.size * options.pixelRatio;
+    let width = img.width * i.size * window.devicePixelRatio;
+    let height = img.height * i.size * window.devicePixelRatio;
 
     if (i.selected) {
       width *= 2;
@@ -548,7 +548,7 @@ var polyline = declareType('polyline', {
     context.beginPath();
 
     var fillSegmentWithDecoration = function (ctx, lineConfig, point, lpoint, overhead, i, options) {
-      const scale = options.pixelRatio;
+      const scale = window.devicePixelRatio;
       const decorations = lineConfig.Decoration;
 
       if (!decorations) {
@@ -696,7 +696,7 @@ var polyline = declareType('polyline', {
   draft: function (i, options) {
     /** @type CanvasRenderingContext2D */
     const context = options.context;
-    const configThicknessCoefficient = options.pixelRatio;
+    const configThicknessCoefficient = window.devicePixelRatio;
     const linesConfig = lines.BorderStyles[0].Element;
 
     let currentLineConfig = [];
@@ -745,7 +745,7 @@ var polyline = declareType('polyline', {
 
   draw: async (i, options) => {
     // Thickness coefficient for all lines defined in lines.json/xml
-    const configThicknessCoefficient = options.pixelRatio;
+    const configThicknessCoefficient = window.devicePixelRatio;
     /** @type CanvasRenderingContext2D */
     const context = options.context;
     const linesConfig = lines.BorderStyles[0].Element;
@@ -1078,36 +1078,35 @@ declareType('pieslice', {
  * @param options {any}
  * */
 export async function startPaint(canvas, map, options) {
-  // to stop painting set the options.check callback and
-  // throw an exception inside it.
-  // options.check may return a Promise ( or Thenable ) to pause drawing
-
   const coords = options.coords;
   const onCheckExecution = options.onCheckExecution;
 
-  const exactBounds = rects.joinPoints(
-    coords.pointToMap({x: 0, y: 0}),
-    coords.pointToMap({x: canvas.width, y: canvas.height})
-  );
-  const drawBounds = rects.inflate(exactBounds, 0.1 * Math.max(
-    exactBounds.max.x - exactBounds.min.x,
-    exactBounds.max.y - exactBounds.min.y
-  ));
+  const topLeft = coords.pointToMap({x: 0, y: 0});
+  const bottomRight = coords.pointToMap({x: canvas.width, y: canvas.height});
+
+  const bounds = {
+    min: {x: Math.min(topLeft.x, bottomRight.x), y: Math.min(topLeft.y, bottomRight.y)},
+    max: {x: Math.max(topLeft.x, bottomRight.x), y: Math.max(topLeft.y, bottomRight.y)},
+  };
+
+  const d = 0.1 * Math.max(bounds.max.x - bounds.min.x, bounds.max.y - bounds.min.y);
+  bounds.min.x -= d;
+  bounds.max.x += d;
+  bounds.min.y -= d;
+  bounds.max.y += d;
 
   const drawOptions = {
     canvas: canvas,
-    context: canvas.getContext('2d'),
+    context: options.ctx,
     pointToControl: coords.pointToControl,
     pointToMap: coords.pointToMap,
     dotsPerMeter: coords.cscale,
-    pixelRatio: options.pixelRatio,
   };
 
   try {
     for (const layer of map.layers) {
-      if (!layer.visible) continue;
-      if (!layer.isScaleVisible(coords.mscale)) continue;
-      if (!rects.intersects(drawBounds, layer.bounds)) continue;
+      if (!layer.visible || !layer.isScaleVisible(coords.mscale)) continue;
+      if (!intersects(bounds, layer.bounds)) continue;
 
       let c = onCheckExecution();
       c && (await c);
@@ -1116,16 +1115,16 @@ export async function startPaint(canvas, map, options) {
 
       // отрисовка всех элементов
       for (const element of layer.elements) {
-        let D = types[element.type];
-        if (!rects.intersects(drawBounds, D.bound(element))) continue;
+        const elementDrawer = types[element.type];
+        if (!intersects(bounds, elementDrawer.bound(element))) continue;
 
         c = onCheckExecution();
         c && (await c);
 
-        if (D.draw && !options.draftDrawing) {
-          await D.draw(element, drawOptions);
-        } else if (D.draft) {
-          D.draft(element, drawOptions);
+        if (elementDrawer.draw && !options.draftDrawing) {
+          await elementDrawer.draw(element, drawOptions);
+        } else if (elementDrawer.draft) {
+          elementDrawer.draft(element, drawOptions);
         }
       }
     }

@@ -1,4 +1,3 @@
-import EventEmitter from 'events';
 import { startPaint } from './map-drawer';
 import { getTranslator  } from './geom';
 import { PIXEL_PER_METER } from '../lib/map-utils';
@@ -11,47 +10,39 @@ import { PIXEL_PER_METER } from '../lib/map-utils';
  * */
 export function showMap(canvas, map, viewport) {
   let { centerX, centerY, scale } = viewport;
-
   let coords;
   let uiMode;
   const canvasFlag = canvas.showMapFlag = {};
-  const events = new EventEmitter();
   const canvasEvents = canvas.events;
-  if (!canvas.events) update(canvas);
 
-  const fin = [];
+  const onChanged = (data) => {
+    if (!checkCanvas()) return;
+    coords = data.coords.changeResolution(window.devicePixelRatio);
+    update(data.control);
+  };
+  const onCS = (newCS) => {
+    if (!checkCanvas()) return;
+    const mapCenter = {x: newCS.centerX, y: newCS.centerY};
+    const canvasCenter = {x: canvas.width / 2, y: canvas.height / 2};
+    const dotsPerMeter = canvas.width / (canvas.clientWidth / PIXEL_PER_METER);
+    coords = getTranslator(newCS.scale, mapCenter, dotsPerMeter, canvasCenter)
+    update(canvas);
+  };
+  const onUiMode = (newMode) => {
+    if (!checkCanvas()) return;
+    uiMode = newMode;
+  };
+
+  canvasEvents.on('changed', onChanged);
+  canvasEvents.on('cs', onCS);
+  canvasEvents.on('uimode', onUiMode);
+
   function detach() {
-    fin.reverse().forEach(f => f());
-    fin.length = 0;
+    canvasEvents.removeListener('changed', onChanged);
+    canvasEvents.removeListener('cs', onCS);
+    canvasEvents.removeListener('uimode', onUiMode);
   }
 
-  events.on('update', () => update(canvas));
-
-  if (canvasEvents) {
-    const on = (event, action) => {
-      const handler = function() {
-        return checkCanvas() && action.apply(this, arguments);
-      };
-      canvasEvents.on(event, handler);
-      fin.push(() => canvasEvents.removeListener(event, handler));
-    };
-
-    on('changed', (data) => {
-      coords = data.coords.changeResolution(window.devicePixelRatio);
-      update(data.control);
-    });
-    on('cs', (newCS) => {
-      const mapCenter = {x: newCS.centerX, y: newCS.centerY};
-      const canvasCenter = {x: canvas.width / 2, y: canvas.height / 2};
-      const dotsPerMeter = canvas.width / (canvas.clientWidth / PIXEL_PER_METER);
-      coords = getTranslator(newCS.scale, mapCenter, dotsPerMeter, canvasCenter)
-      update(canvas);
-    });
-    on('pointPicked', (data) => {
-      events.emit('pointPicked', data, events.scale);
-    });
-    on('uimode', (newMode) => { uiMode = newMode; });
-  }
   update(canvas);
   return {update, detach};
 
@@ -88,28 +79,24 @@ export function showMap(canvas, map, viewport) {
       let dotsPerMeter = width / (canvas.clientWidth / PIXEL_PER_METER);
       if (isNaN(dotsPerMeter)) dotsPerMeter = 3780;
 
-      coords = getTranslator(scale, {x: centerX, y: centerY}, dotsPerMeter, {
-        x: width / 2,
-        y: height / 2
-      });
+      const mapCenter = {x: centerX, y: centerY};
+      const canvasCenter = {x: width / 2, y: height / 2};
+      coords = getTranslator(scale, mapCenter, dotsPerMeter, canvasCenter);
     }
 
     const point = coords.pointToMap({x: width / 2, y: height / 2});
-    canvasEvents && canvasEvents.emit('init', coords.changeResolution(1 / window.devicePixelRatio));
+    canvasEvents.emit('init', coords.changeResolution(1 / window.devicePixelRatio));
 
     const ctx = canvas.getContext('2d');
+    const options = {onCheckExecution, coords, point, ctx, draftDrawing: true};
     ctx.clearRect(0, 0, width, height);
 
-    const startPaintFn = (draftDrawing) => startPaint(canvas, map, {
-      onCheckExecution, coords, point,
-      pixelRatio: window.devicePixelRatio, draftDrawing,
-    });
-
     if (uiMode) {
-      await startPaintFn(true);
+      await startPaint(canvas, map, options);
       // sleep for 400ms
-      await new Promise((resolve) => setTimeout(resolve, 400));
+      await new Promise((resolve) => setTimeout(resolve, 200));
     }
-    await startPaintFn(false);
+    options.draftDrawing = false;
+    await startPaint(canvas, map, options);
   }
 }

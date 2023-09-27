@@ -3,7 +3,6 @@ import { Translator, getTranslator } from './geom';
 
 
 interface ScrollerAction {
-	stop?: any;
 	moved?: boolean;
 	movePoint: Point;
 	mapMovePoint?: Point;
@@ -49,9 +48,8 @@ export class Scroller implements IMapScroller {
 		this.action.initialCoords = this.translator;
 		this.action.mapMovePoint = this.translator.pointToMap(this.action.movePoint);
 	}
-	private stopAction(event: MouseEvent | WheelEvent) {
+	private stopAction() {
 		this.emit(uiMode, false);
-		if (this.action && this.action.stop) this.action.stop(event);
 		this.action = null;
 	}
 
@@ -74,41 +72,29 @@ export class Scroller implements IMapScroller {
 		const movedPoint = {x: event.offsetX, y: event.offsetY};
 		const delta = event.deltaY < 0 ? 1 : -1;
 
-		this.stopAction(event);
+		this.stopAction();
 		this.startAction({movePoint: movedPoint, noUiMode: !this.sync});
 		this.updateView(this.action.movePoint, Math.pow(1.5, -delta));
-		this.stopAction(event);
+		this.stopAction();
 
 		if (moving) {
-			this.startAction({
-				stop: () => {
-					if (this.action.moved) return;
-					this.emit('pointPicked', this.action.mapMovePoint);
-				},
-				oldPoint: movedPoint, movePoint: movedPoint,
-			});
+			this.startAction({oldPoint: movedPoint, movePoint: movedPoint});
 			this.action.moved = true;
 		}
 	}
 
 	public mouseDown(event: MouseEvent): void {
-		this.stopAction(event);
+		this.stopAction();
 		if (event.button !== 0) return;
 		if (event.target !== this.canvas) return;
 
 		const movedPoint = {x: event.offsetX, y: event.offsetY};
-		this.startAction({
-			stop: () => {
-				if (this.action.moved) return;
-				this.emit('pointPicked', this.action.mapMovePoint);
-			},
-			oldPoint: movedPoint, movePoint: movedPoint,
-		});
+		this.startAction({oldPoint: movedPoint, movePoint: movedPoint});
 	}
 
 	public mouseMove(event: MouseEvent): void {
 		if (!this.action) return;
-		if (event.button !== 0) return this.stopAction(event);
+		if (event.button !== 0) return this.stopAction();
 		if (event.target !== this.canvas || this.canvas.blocked) return;
 		const point = {x: event.offsetX, y: event.offsetY};
 
@@ -118,7 +104,7 @@ export class Scroller implements IMapScroller {
 		this.updateView(point, 1);
 	}
 
-	public mouseUp(event: MouseEvent): void {
-		if (this.action) this.stopAction(event);
+	public mouseUp(): void {
+		if (this.action) this.stopAction();
 	}
 }
