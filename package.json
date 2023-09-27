@@ -33,6 +33,7 @@
     "cldr-dates-full": "41.0.0",
     "cldr-numbers-full": "41.0.0",
     "docx-preview": "0.1.18",
+    "events": "3.3.0",
     "exceljs": "4.3.0",
     "flexlayout-react": "0.7.9",
     "i18next": "21.8.11",
