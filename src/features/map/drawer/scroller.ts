@@ -1,6 +1,5 @@
 import Events from 'events';
 import { Translator, getTranslator } from './geom';
-import { clientPoint } from '../lib/map-utils';
 
 
 interface ScrollerAction {
@@ -72,7 +71,7 @@ export class Scroller implements IMapScroller {
 	public wheel(event: WheelEvent): void {
 		if (this.canvas.blocked) return;
 		const moving = !!this.action;
-		const movedPoint = clientPoint(event);
+		const movedPoint = {x: event.offsetX, y: event.offsetY};
 		const delta = event.deltaY < 0 ? 1 : -1;
 
 		this.stopAction(event);
@@ -97,7 +96,7 @@ export class Scroller implements IMapScroller {
 		if (event.button !== 0) return;
 		if (event.target !== this.canvas) return;
 
-		const movedPoint = clientPoint(event);
+		const movedPoint = {x: event.offsetX, y: event.offsetY};
 		this.startAction({
 			stop: () => {
 				if (this.action.moved) return;
@@ -111,7 +110,7 @@ export class Scroller implements IMapScroller {
 		if (!this.action) return;
 		if (event.button !== 0) return this.stopAction(event);
 		if (event.target !== this.canvas || this.canvas.blocked) return;
-		const point = clientPoint(event);
+		const point = {x: event.offsetX, y: event.offsetY};
 
 		this.emit(uiMode, true);
 		this.action.moved = true;

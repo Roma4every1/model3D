@@ -48,10 +48,6 @@ export const Selecting = ({mapState, t}: SelectingProps) => {
         </div>
         <div>
           <Checkbox
-            label={t('map.selecting.field')} title={t('map.selecting.field-hint')}
-            checked={select.types.field} onClick={() => toggleType('field')}
-          />
-          <Checkbox
             label={t('map.selecting.polyline')} title={t('map.selecting.polyline-hint')}
             checked={select.types.polyline} onClick={() => toggleType('polyline')}
           />
@@ -62,6 +58,10 @@ export const Selecting = ({mapState, t}: SelectingProps) => {
           <Checkbox
             label={t('map.selecting.label')} title={t('map.selecting.label-hint')}
             checked={select.types.label} onClick={() => toggleType('label')}
+          />
+          <Checkbox
+            label={t('map.selecting.field')} title={t('map.selecting.field-hint')}
+            checked={select.types.field} onClick={() => toggleType('field')}
           />
           <Checkbox
             label={t('map.selecting.layer')} title={t('map.selecting.layer-hint')}

@@ -8,7 +8,7 @@ import { getDefaultMapElement } from '../components/edit-panel/editing/editing-u
 import { selectElement, unselectElement } from './selecting-utils.ts';
 
 import {
-  clientPoint, createMapElementInit,
+  createMapElementInit,
   getBoundsByPoints, getNearestPointIndex, PIXEL_PER_METER
 } from './map-utils.ts';
 
@@ -78,7 +78,7 @@ export class MapStage implements IMapStage {
   }
 
   public getMapDataToSave(): any {
-    const layers = this.data.layers.filter(l => !l.isTemporary()).map(l => l.toInit());
+    const layers = this.data.layers.filter(l => !l.temporary).map(l => l.toInit());
     return {
       ...this.data, layers,
       x: undefined, y: undefined, scale: undefined, onDrawEnd: undefined,
@@ -106,16 +106,16 @@ export class MapStage implements IMapStage {
     return this.creating;
   }
 
-  /** Функция перевода координат канваса в координаты карты. */
-  public pointToMap(p: Point): Point {
-    if (!this.canvas || !this.data?.x) return p;
+  /** Перевод координат канваса в координаты карты. */
+  public eventToPoint(event: MouseEvent): Point {
+    if (!this.canvas || !this.data?.x) return {x: event.offsetX, y: event.offsetY};
     const sc = 1 / PIXEL_PER_METER * this.data.scale;
     const canvasCenterX = this.canvas.clientWidth / 2;
     const canvasCenterY = this.canvas.clientHeight / 2;
 
     return {
-      x: this.data.x + (p.x - canvasCenterX) * sc,
-      y: this.data.y + (p.y - canvasCenterY) * sc
+      x: this.data.x + (event.offsetX - canvasCenterX) * sc,
+      y: this.data.y + (event.offsetY - canvasCenterY) * sc
     };
   }
 
@@ -187,6 +187,7 @@ export class MapStage implements IMapStage {
     }
 
     this.getActiveElementLayer().modified = true;
+    unselectElement(this.activeElement);
     this.activeElement = null;
     this.listeners.editPanelChange();
     this.clearSelect();
@@ -255,7 +256,7 @@ export class MapStage implements IMapStage {
     this.scroller.mouseDown(event);
     if (this.selecting) {
       const scale = this.data.scale;
-      const point = this.pointToMap(clientPoint(event));
+      const point = this.eventToPoint(event);
       const newElement = this.select.findElement(point, this.data.layers, this.activeLayer, scale);
 
       if (this.activeElement) {
@@ -272,7 +273,7 @@ export class MapStage implements IMapStage {
 
       if (this.activeElement?.type !== 'polyline') return;
       const scale = this.data.scale;
-      const point = this.pointToMap(clientPoint(event));
+      const point = this.eventToPoint(event);
 
       if (this.mode === MapMode.MOVE_POINT) {
         this.pIndex = getNearestPointIndex(point, scale, this.activeElement);
@@ -293,7 +294,7 @@ export class MapStage implements IMapStage {
     const creatingType = this.activeLayer?.elementType;
     if (!canCreateTypes.includes(creatingType)) return null;
 
-    const point = this.pointToMap(clientPoint(event));
+    const point = this.eventToPoint(event);
     point.x = Math.round(point.x);
     point.y = Math.round(point.y);
 
@@ -307,7 +308,7 @@ export class MapStage implements IMapStage {
   public handleMouseMove(event: MouseEvent): void {
     this.scroller.mouseMove(event);
     if (!this.isOnMove) return;
-    const point = this.pointToMap(clientPoint(event));
+    const point = this.eventToPoint(event);
     const action = {mode: this.mode, point, pIndex: this.pIndex};
     applyMouseMoveActionToElement(this.activeElement, action);
     this.render();

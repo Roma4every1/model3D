@@ -9,7 +9,7 @@ import { showDialog, closeWindow } from 'entities/window';
 import { setMapField } from '../../../store/map.actions.ts';
 import { showMapPropertyWindow, showMapAttrTableWindow } from '../../../store/map.thunks.ts';
 import { getHeaderText } from './editing-utils';
-import { canCreateTypes, canEditPropertyTypes } from '../../../lib/constants.ts';
+import { canCreateTypes } from '../../../lib/constants.ts';
 
 
 interface EditingProps {
@@ -63,10 +63,9 @@ export const Editing = ({id, state, t}: EditingProps) => {
   let canAccept = activeElement !== null;
   if (canAccept && isPolyline) canAccept = activeElement.arcs[0].path.length > 2;
 
-  const canCreate = activeLayer && !activeLayer.isTemporary() && !isCreating
+  const canCreate = activeLayer && !activeLayer.temporary && !isCreating
     && canCreateTypes.includes(creatingType);
-  const canEditProperties = activeElement && !isCreating
-    && canEditPropertyTypes.includes(activeElement.type);
+  const canEditProperties = activeElement && !isCreating;
 
   return (
     <section className={'map-editing'}>

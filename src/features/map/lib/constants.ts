@@ -58,8 +58,6 @@ export const elementEditModes: Record<MapElementType, MapMode[]> = {
 
 /** Типы элементов, которые можно создать. */
 export const canCreateTypes: MapElementType[] = ['polyline', 'sign', 'label'];
-/** Типы элементов, у которых можно редактировать свойства через специальное окно. */
-export const canEditPropertyTypes: MapElementType[] = ['sign', 'polyline', 'label', 'field'];
 
 export const propertyWindowConfig: Record<MapElementType, PropertyWindowConfig> = {
   'sign': {

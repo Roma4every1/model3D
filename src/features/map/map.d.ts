@@ -78,6 +78,7 @@ interface IMapStage {
   getActiveElementLayer(): IMapLayer | null;
   isElementEditing(): boolean;
   isElementCreating(): boolean;
+  eventToPoint(event: MouseEvent): Point;
 
   setCanvas(canvas: MapCanvas): void;
   setData(data: MapData): void;
@@ -98,7 +99,6 @@ interface IMapStage {
   handleMouseMove(event: MouseEvent): void;
   handleMouseWheel(event: WheelEvent): void;
 
-  pointToMap(point: Point): Point;
   resize(): void;
   render(viewport?: MapViewport): void;
 }
@@ -214,15 +214,15 @@ interface IMapLayer {
   visible: boolean;
   active: boolean;
   modified: boolean;
+  readonly temporary: boolean;
 
   getMinScale(): number;
   getMaxScale(): number;
   isScaleVisible(scale: MapScale): boolean;
-  isTemporary(): boolean;
 
   setMinScale(scale: number): void;
   setMaxScale(scale: number): void;
-  toInit(): any;
+  toInit(): MapLayerRaw & {elements: MapElement[]};
 }
 
 /** Границы объекта (слоя, элемента) карты.

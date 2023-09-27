@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import { MouseEvent, WheelEvent, useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'shared/lib';
 import { LoadingStatus, TextInfo } from 'shared/ui';
 import { channelSelector } from 'entities/channels';
@@ -9,7 +9,7 @@ import { mapStateSelector } from '../store/map.selectors';
 import { fetchMapData, showMapPropertyWindow } from '../store/map.thunks';
 import { setMapField, setMapCanvas, applyTraceToMap } from '../store/map.actions';
 import { handleClick } from '../lib/traces-map-utils';
-import { clientPoint, getFullViewport } from '../lib/map-utils';
+import { getFullViewport } from '../lib/map-utils';
 import { MapMode } from '../lib/constants.ts';
 
 
@@ -120,17 +120,17 @@ export const Map = ({id, parent, channels}: FormState) => {
   if (loading.percentage < 0) return <TextInfo text={'map.not-loaded'}/>;
   if (loading.percentage < 100) return <LoadingStatus {...loading}/>;
 
-  const onMouseDown = ({nativeEvent}) => {
+  const onMouseDown = ({nativeEvent}: MouseEvent) => {
     stage.handleMouseDown(nativeEvent);
     if (!currentTrace || !traceEditing) return;
 
     // добавление/удаление точек к текущей трассе через клик по карте
-    const point = stage.pointToMap(clientPoint(nativeEvent));
+    const point = stage.eventToPoint(nativeEvent);
     const changed = handleClick(currentTrace, point, mapData);
     if (changed) dispatch(setCurrentTrace({...currentTrace}));
   };
 
-  const onMouseUp = ({nativeEvent}) => {
+  const onMouseUp = ({nativeEvent}: MouseEvent) => {
     const element = stage.handleMouseUp(nativeEvent);
     if (!element) return;
     element.edited = true;
@@ -142,10 +142,10 @@ export const Map = ({id, parent, channels}: FormState) => {
     }
   };
 
-  const onMouseMove = ({nativeEvent}) => {
+  const onMouseMove = ({nativeEvent}: MouseEvent) => {
     stage.handleMouseMove(nativeEvent);
   };
-  const onMouseWheel = ({nativeEvent}) => {
+  const onMouseWheel = ({nativeEvent}: WheelEvent) => {
     stage.handleMouseWheel(nativeEvent);
   };
 

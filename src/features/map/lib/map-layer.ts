@@ -20,7 +20,7 @@ export class MapLayer implements IMapLayer {
   /** Был ли слой изменён. */
   public modified: boolean = false;
   /** Является ли слой временным (для трасс). */
-  private readonly temporary: boolean;
+  public readonly temporary: boolean;
 
   /** Минимальный масштаб при котором слой будет рисоваться. */
   private minScale: number;
@@ -66,10 +66,6 @@ export class MapLayer implements IMapLayer {
     return this.minScale <= scale && scale <= this.maxScale;
   }
 
-  public isTemporary(): boolean {
-    return this.temporary;
-  }
-
   public setMinScale(scale: number): void {
     this.minScale = scale;
   }
@@ -78,9 +74,10 @@ export class MapLayer implements IMapLayer {
     this.maxScale =scale;
   }
 
-  public toInit(): any {
+  public toInit(): MapLayerRaw & {elements: MapElement[]} {
     return {
       group: this.group, name: this.displayName, elements: this.elements,
+      bounds: this.bounds, visible: this.visible,
       uid: this.id, version: this.version, container: this.container, index: this.index,
       lowscale: serializeScale(this.minScale), highscale: serializeScale(this.maxScale),
     };
@@ -90,7 +87,7 @@ export class MapLayer implements IMapLayer {
 function parseScale(value: number | string): number {
   if (typeof value === 'string') {
     if (value === 'INF') return Infinity;
-    const scale = parseInt(value);
+    const scale = parseFloat(value);
     return isNaN(scale) ? 0 : scale;
   } else {
     return isNaN(value) ? 0 : value;

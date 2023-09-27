@@ -43,7 +43,7 @@ export class MapSelect implements IMapSelect {
       }
     } else {
       for (const layer of layers) {
-        if (!layer.visible || layer.isTemporary() || !this.types[layer.elementType]) continue;
+        if (!layer.visible || layer.temporary || !this.types[layer.elementType]) continue;
         if (layer.isScaleVisible(scale)) this.nearestElements.push(...layer.elements.filter(filterFn));
       }
     }

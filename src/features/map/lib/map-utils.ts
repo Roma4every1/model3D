@@ -21,11 +21,6 @@ export function createMapElementInit(element: MapElement): MapElement {
 /** Количество пикселей в метре. В браузере `1cm = 96px / 2.54`. */
 export const PIXEL_PER_METER: number = 100 * 96 / 2.54;
 
-/** Возвращает точку с координатами клика мыши. */
-export function clientPoint(event: MouseEvent): Point {
-  return {x: event.offsetX, y: event.offsetY};
-}
-
 export function getBoundsByPoints(path: number[]): Bounds {
   const points = chunk(path, 2);
   const xValues = points.map(p => p[0]);
@@ -101,7 +96,7 @@ export function getFullViewport(layers: IMapLayer[], canvas: HTMLCanvasElement):
   let maxX = -Infinity, maxY = -Infinity;
 
   for (const layer of layers) {
-    if (!layer.visible || layer.isTemporary()) continue;
+    if (!layer.visible || layer.temporary) continue;
     const { min, max } = layer.bounds;
 
     if (min.x < minX) minX = min.x;
@@ -110,8 +105,8 @@ export function getFullViewport(layers: IMapLayer[], canvas: HTMLCanvasElement):
     if (max.y > maxY) maxY = max.y;
   }
 
-  const scaleX = 1.2 * (maxX - minX) * PIXEL_PER_METER / canvas.clientWidth;
-  const scaleY = 1.2 * (maxY - minY) * PIXEL_PER_METER / canvas.clientHeight;
+  const scaleX = 1.15 * (maxX - minX) * PIXEL_PER_METER / canvas.clientWidth;
+  const scaleY = 1.15 * (maxY - minY) * PIXEL_PER_METER / canvas.clientHeight;
   const scale: MapScale = Math.max(scaleX, scaleY);
 
   return {centerX: (minX + maxX) / 2, centerY: (minY + maxY) / 2, scale};
