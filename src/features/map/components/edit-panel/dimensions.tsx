@@ -22,19 +22,43 @@ interface MapNavigationProps {
   parentID: ClientID;
   t: TFunction;
 }
+interface NavigationPanelProps {
+  id: FormID;
+  parentID: ClientID;
+  state: MapState;
+  sync: boolean;
+  t: TFunction;
+}
 interface DimensionProps {
   canvas: MapCanvas;
   stage: IMapStage;
-  mapData: MapData;
   disabled: boolean;
   t: TFunction;
 }
 
 
 export const MapNavigation = ({id, mapState, sync, parentID, t}: MapNavigationProps) => {
-  const dispatch = useDispatch();
   const { stage, canvas } = mapState;
   const notLoaded = mapState.loading.percentage < 100;
+
+  return (
+    <section className={'map-dimensions'}>
+      <div className={'menu-header'}>{t('map.dimensions.header')}</div>
+      <div className={'map-panel-main'}>
+        <Dimensions canvas={canvas} stage={stage} disabled={notLoaded} t={t}/>
+        <NavigationPanel id={id} parentID={parentID} state={mapState} sync={sync} t={t}/>
+      </div>
+    </section>
+  );
+};
+
+const NavigationPanel = ({id, state, parentID, sync, t}: NavigationPanelProps) => {
+  const dispatch = useDispatch();
+  const { stage, canvas } = state;
+  const notLoaded = state.loading.percentage < 100;
+
+  const [signal, setSignal] = useState(false);
+  stage.listeners.navigationPanelChange = () => setSignal(!signal);
 
   const mapData = stage.getMapData();
   const layers = mapData?.layers;
@@ -51,26 +75,21 @@ export const MapNavigation = ({id, mapState, sync, parentID, t}: MapNavigationPr
   };
 
   return (
-    <section className={'map-dimensions'}>
-      <div className={'menu-header'}>{t('map.dimensions.header')}</div>
-      <div className={'map-panel-main'}>
-        <Dimensions canvas={canvas} stage={stage} mapData={mapData} disabled={notLoaded} t={t}/>
-        <div className={'map-actions'}>
-          <BigButton
-            text={t('map.actions.show-all')} icon={selectAllIcon}
-            action={toFullViewPort} disabled={canvas?.blocked || notLoaded}
-          />
-          <BigButtonToggle
-            text={'Синхронизация карт по центру'} icon={synchronizeIcon}
-            action={toggleSync} active={sync} disabled={sync === undefined}
-          />
-        </div>
-      </div>
-    </section>
+    <div className={'map-actions'}>
+      <BigButton
+        text={t('map.actions.show-all')} icon={selectAllIcon}
+        action={toFullViewPort} disabled={canvas?.blocked || notLoaded}
+      />
+      <BigButtonToggle
+        text={'Синхронизация карт по центру'} icon={synchronizeIcon}
+        action={toggleSync} active={sync} disabled={sync === undefined}
+      />
+    </div>
   );
 };
 
-const Dimensions = ({canvas, stage, mapData, disabled, t}: DimensionProps) => {
+const Dimensions = ({canvas, stage, disabled, t}: DimensionProps) => {
+  const mapData = stage.getMapData();
   const [x, setX] = useState(null);
   const [y, setY] = useState(null);
   const [scale, setScale] = useState(null);

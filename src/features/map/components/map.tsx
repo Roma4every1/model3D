@@ -8,7 +8,7 @@ import { tableRowToString } from 'entities/parameters/lib/table-row';
 import { mapStateSelector } from '../store/map.selectors';
 import { fetchMapData, showMapPropertyWindow } from '../store/map.thunks';
 import { setMapField, setMapCanvas, applyTraceToMap } from '../store/map.actions';
-import { handleClick } from '../lib/traces-map-utils';
+import { getFullTraceViewport, getTraceMapElement, handleClick } from '../lib/traces-map-utils';
 import { getFullViewport } from '../lib/map-utils';
 import { MapMode } from '../lib/constants.ts';
 
@@ -80,11 +80,17 @@ export const Map = ({id, parent, channels}: FormState) => {
   useLayoutEffect(() => {
     if (!mapData || canvasRef.current === canvas) return;
     dispatch(setMapCanvas(id, canvasRef.current));
+    if (!canvasRef.current) return;
 
-    const initialViewport =
-      getWellViewport(currentWell?.id, wellsMaxScale) ||
-      getFullViewport(mapData.layers, canvasRef.current);
-
+    let initialViewport: MapViewport;
+    if (currentTrace) {
+      initialViewport = getFullTraceViewport(getTraceMapElement(currentTrace), canvasRef.current);
+    } else if (currentWell) {
+      initialViewport = getWellViewport(currentWell.id, wellsMaxScale);
+    }
+    if (!initialViewport) {
+      initialViewport = getFullViewport(mapData.layers, canvasRef.current);
+    }
     stage.render(initialViewport);
   });
 

@@ -157,10 +157,12 @@ export const mapsReducer = (state: MapsState = init, action: MapAction): MapsSta
         traceLayer.bounds = traceElement.bounds;
       }
 
-      const viewport = traceElement && updateViewport
-        ? getFullTraceViewport(traceElement, mapState.canvas)
-        : undefined;
-      mapState.stage.render(viewport);
+      if (mapState.canvas) {
+        const viewport = traceElement && updateViewport
+          ? getFullTraceViewport(traceElement, mapState.canvas)
+          : undefined;
+        mapState.stage.render(viewport);
+      }
       return {...state};
     }
 

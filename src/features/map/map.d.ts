@@ -112,6 +112,7 @@ interface IMapScroller {
   list: MapCanvas[];
 }
 interface MapStageListeners {
+  navigationPanelChange(): void;
   selectPanelChange(): void;
   editPanelChange(): void;
   layerTreeChange(): void;
@@ -222,7 +223,7 @@ interface IMapLayer {
 
   setMinScale(scale: number): void;
   setMaxScale(scale: number): void;
-  toInit(): MapLayerRaw & {elements: MapElement[]};
+  toInit(): MapLayerRaw & {elements: MapElement[], modified: boolean};
 }
 
 /** Границы объекта (слоя, элемента) карты.

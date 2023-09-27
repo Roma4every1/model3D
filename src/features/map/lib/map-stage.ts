@@ -55,7 +55,7 @@ export class MapStage implements IMapStage {
     this.scroller = new Scroller();
 
     this.listeners = {
-      layerTreeChange: () => {},
+      layerTreeChange: () => {}, navigationPanelChange: () => {},
       selectPanelChange: () => {}, editPanelChange: () => {},
       propertyWindowClose: () => {}, attrTableWindowClose: () => {},
     };
@@ -140,7 +140,9 @@ export class MapStage implements IMapStage {
     this.canvas.blocked = mode !== MapMode.MOVE_MAP;
     this.canvas.style.cursor = mode === MapMode.AWAIT_POINT ? 'crosshair' : 'auto';
     this.setSelecting(false, false);
+
     this.listeners.editPanelChange();
+    this.listeners.navigationPanelChange();
   }
 
   public setSelecting(selecting: boolean, clearSelect: boolean = true): void {
@@ -193,6 +195,7 @@ export class MapStage implements IMapStage {
     this.clearSelect();
 
     this.canvas.blocked = false;
+    this.listeners.navigationPanelChange();
     this.editing = false;
     this.creating = false;
     this.elementInit = null;
@@ -225,6 +228,7 @@ export class MapStage implements IMapStage {
   public clearSelect(): void {
     this.select.clear();
     this.canvas.blocked = false;
+    this.listeners.navigationPanelChange();
     this.editing = false;
     if (this.activeElement) unselectElement(this.activeElement);
     this.setActiveElement(null);
@@ -300,6 +304,14 @@ export class MapStage implements IMapStage {
 
     const newElement = getDefaultMapElement(creatingType, point);
     this.activeLayer.elements.push(newElement);
+
+    const maxScale = this.activeLayer.getMaxScale();
+    if (this.data.scale > maxScale) {
+      this.data.x = point.x;
+      this.data.y = point.y;
+      this.data.scale = maxScale;
+    }
+
     this.setActiveElement(newElement);
     this.render();
     return newElement;

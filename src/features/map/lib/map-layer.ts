@@ -74,10 +74,10 @@ export class MapLayer implements IMapLayer {
     this.maxScale =scale;
   }
 
-  public toInit(): MapLayerRaw & {elements: MapElement[]} {
+  public toInit(): MapLayerRaw & {elements: MapElement[], modified: boolean} {
     return {
       group: this.group, name: this.displayName, elements: this.elements,
-      bounds: this.bounds, visible: this.visible,
+      bounds: this.bounds, visible: this.visible, modified: this.modified,
       uid: this.id, version: this.version, container: this.container, index: this.index,
       lowscale: serializeScale(this.minScale), highscale: serializeScale(this.maxScale),
     };
