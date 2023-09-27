@@ -29,7 +29,9 @@ export function showMapPropertyWindow(id: FormID, element: MapElement): Thunk {
       stage.listeners.propertyWindowClose = () => {};
       stage.cancel(); stage.render(); close();
     };
+
     stage.listeners.propertyWindowClose = cancel;
+    stage.startEditing();
 
     const [width, height] = propertyWindowConfig[element.type].windowSize;
     const title = t('map.properties-edit', {elementType: t('map.' + element.type)});
@@ -38,9 +40,6 @@ export function showMapPropertyWindow(id: FormID, element: MapElement): Thunk {
       className: 'propertiesWindow', style: {zIndex: 99}, title,
       width, height, resizable: false, maximizeButton: () => null, onClose: cancel,
     };
-
-    if (stage.getMode() < MapMode.MOVE_MAP) stage.setMode(MapMode.MOVE_MAP);
-    stage.startEditing();
 
     const props = {id, stage, element, cancel, close};
     dispatch(setMapField(id, 'propertyWindowOpen', true));

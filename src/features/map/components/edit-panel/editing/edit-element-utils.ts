@@ -20,8 +20,7 @@ export interface MouseMoveEditAction {
 export function applyMouseDownActionToPolyline(element: MapPolyline, action: MouseDownEditAction): void {
   switch (action.mode) {
     case MapMode.ADD_END: {
-      const firstArc = element.arcs[0];
-      firstArc.path = firstArc.path.concat([action.point.x, action.point.y]);
+      element.arcs[0].path.push(action.point.x, action.point.y);
       return;
     }
     case MapMode.ADD_BETWEEN: {

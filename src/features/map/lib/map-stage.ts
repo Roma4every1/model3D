@@ -9,7 +9,9 @@ import { selectElement, unselectElement } from './selecting-utils.ts';
 
 import {
   createMapElementInit,
-  getBoundsByPoints, getNearestPointIndex, PIXEL_PER_METER
+  getBoundsByPoints,
+  getNearestPointIndex,
+  PIXEL_PER_METER
 } from './map-utils.ts';
 
 import {
@@ -135,19 +137,23 @@ export class MapStage implements IMapStage {
   public setMode(mode: MapMode): void {
     if (mode === this.mode) return;
     this.mode = mode;
-    if (mode > MapMode.MOVE_MAP) this.startEditing();
+    const edited = mode > MapMode.MOVE_MAP;
+    if (edited) this.startEditing();
 
     this.canvas.blocked = mode !== MapMode.MOVE_MAP;
     this.canvas.style.cursor = mode === MapMode.AWAIT_POINT ? 'crosshair' : 'auto';
-    this.setSelecting(false, false);
 
+    if (this.activeElement?.type === 'polyline' && this.activeElement.edited !== edited) {
+      this.activeElement.edited = edited;
+      this.render();
+    }
     this.listeners.editPanelChange();
     this.listeners.navigationPanelChange();
   }
 
-  public setSelecting(selecting: boolean, clearSelect: boolean = true): void {
+  public setSelecting(selecting: boolean): void {
     if (selecting === this.selecting) return;
-    if (clearSelect && !selecting && this.activeElement) {
+    if (!selecting && this.activeElement) {
       this.clearSelect(); this.render();
     }
     if (selecting && this.editing) {
@@ -170,7 +176,10 @@ export class MapStage implements IMapStage {
   public startCreating(): void {
     if (this.creating) return;
     this.creating = true;
-    this.setSelecting(false);
+
+    if (this.activeElement) {
+      this.clearSelect(); this.render();
+    }
     this.setMode(MapMode.AWAIT_POINT);
     this.listeners.selectPanelChange();
   }
@@ -178,8 +187,15 @@ export class MapStage implements IMapStage {
   public startEditing(): void {
     if (this.editing || this.creating) return;
     this.editing = true;
-    this.activeElement.edited = true;
     this.elementInit = createMapElementInit(this.activeElement);
+
+    if (this.activeElement.type === 'polyline') {
+      this.activeElement.edited = this.mode > MapMode.MOVE_MAP;
+    } else {
+      this.activeElement.edited = true;
+    }
+    this.listeners.selectPanelChange();
+    this.render();
   }
 
   public accept(): void {
@@ -191,23 +207,24 @@ export class MapStage implements IMapStage {
     this.getActiveElementLayer().modified = true;
     unselectElement(this.activeElement);
     this.activeElement = null;
-    this.listeners.editPanelChange();
     this.clearSelect();
 
     this.canvas.blocked = false;
-    this.listeners.navigationPanelChange();
     this.editing = false;
     this.creating = false;
     this.elementInit = null;
     this.mode = MapMode.MOVE_MAP;
+    this.listeners.navigationPanelChange();
+    this.listeners.selectPanelChange();
+    this.listeners.editPanelChange();
   }
 
   public cancel(): void {
+    this.listeners.selectPanelChange();
     if (!this.activeElement) {
       if (!this.creating) return;
       this.creating = false;
       this.setMode(MapMode.MOVE_MAP);
-      this.listeners.selectPanelChange();
       return;
     }
     if (this.creating) {
@@ -246,32 +263,11 @@ export class MapStage implements IMapStage {
     this.setActiveElement(null);
   }
 
-  private setActiveElement(element: MapElement | null): void {
-    if (this.activeElement === element) return;
-    this.listeners.editPanelChange();
-    this.listeners.propertyWindowClose();
-    this.listeners.attrTableWindowClose();
-    this.activeElement = element;
-  }
-
   /* --- Handlers --- */
 
   public handleMouseDown(event: MouseEvent): void {
     this.scroller.mouseDown(event);
-    if (this.selecting) {
-      const scale = this.data.scale;
-      const point = this.eventToPoint(event);
-      const newElement = this.select.findElement(point, this.data.layers, this.activeLayer, scale);
-
-      if (this.activeElement) {
-        unselectElement(this.activeElement);
-        this.activeElement.edited = false;
-      }
-      if (newElement) selectElement(newElement);
-      this.setActiveElement(newElement);
-      this.render();
-    } else {
-      if (!this.editing && !this.creating) return;
+    if (this.editing || this.creating) {
       this.isOnMove = this.mode === MapMode.MOVE
         || this.mode === MapMode.MOVE_POINT || this.mode === MapMode.ROTATE;
 
@@ -282,10 +278,15 @@ export class MapStage implements IMapStage {
       if (this.mode === MapMode.MOVE_POINT) {
         this.pIndex = getNearestPointIndex(point, scale, this.activeElement);
       }
-      const len = this.activeElement.arcs[0].path.length;
+      const path = this.activeElement.arcs[0].path;
+      const oldPathLength = path.length;
       applyMouseDownActionToPolyline(this.activeElement, {mode: this.mode, point, scale});
-      if (len !== this.activeElement.arcs[0].path.length) this.listeners.editPanelChange();
+
+      if (path.length !== oldPathLength) this.listeners.editPanelChange();
       this.render();
+    } else if (this.selecting) {
+      const point = this.eventToPoint(event);
+      this.handleSelectChange(point);
     }
   }
 
@@ -348,5 +349,28 @@ export class MapStage implements IMapStage {
     }
     if (this.drawData) this.drawData.detach();
     this.drawData = showMap(this.canvas, this.data, viewport);
+  }
+
+  /* --- Private --- */
+
+  private handleSelectChange(point: Point): void {
+    const scale = this.data.scale;
+    const newElement = this.select.findElement(point, this.data.layers, this.activeLayer, scale);
+
+    if (this.activeElement) {
+      unselectElement(this.activeElement);
+      this.activeElement.edited = false;
+    }
+    if (newElement) selectElement(newElement);
+    this.setActiveElement(newElement);
+    this.render();
+  }
+
+  private setActiveElement(element: MapElement | null): void {
+    if (this.activeElement === element) return;
+    this.listeners.editPanelChange();
+    this.listeners.propertyWindowClose();
+    this.listeners.attrTableWindowClose();
+    this.activeElement = element;
   }
 }

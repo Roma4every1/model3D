@@ -27,7 +27,7 @@
   &.selected, &:active, &.active {
     background-color: #f8b3ae;
   }
-  :disabled {
+  &:disabled {
     filter: grayscale(1);
   }
 }

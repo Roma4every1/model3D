@@ -24,6 +24,9 @@ export const Selecting = ({mapState, t}: SelectingProps) => {
   const selecting = stage.getSelecting();
   const toggleSelecting = () => stage.setSelecting(!selecting);
 
+  const toggleSelectingDisabled = stage.isElementEditing() || stage.isElementCreating() ||
+    mapState.loading.percentage < 100 || trace.editing;
+
   const toggleType = (type: MapElementType) => {
     select.types[type] = !select.types[type];
     signal();
@@ -39,7 +42,7 @@ export const Selecting = ({mapState, t}: SelectingProps) => {
       <div className={'map-panel-main'}>
         <div>
           <button
-            disabled={mapState.loading.percentage < 100 || stage.isElementCreating() || trace.editing}
+            disabled={toggleSelectingDisabled}
             className={'map-panel-button' + (selecting ? ' active' : '')}
             onClick={toggleSelecting} title={t('map.selecting.button-hint')}
           >
