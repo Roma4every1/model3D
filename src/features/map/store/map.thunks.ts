@@ -9,7 +9,7 @@ import { closeWindow, showWindow } from '../../../entities/window';
 
 import { t } from 'shared/locales';
 import { mapsAPI } from '../lib/maps.api';
-import { MapMode, propertyWindowConfig } from '../lib/constants.ts';
+import { propertyWindowConfig } from '../lib/constants.ts';
 import { WindowProps } from '@progress/kendo-react-dialogs';
 import { AttrTableWindow } from '../components/edit-panel/editing/attr-table.tsx';
 import { PropertiesWindow } from '../components/edit-panel/properties-window/properties.tsx';
