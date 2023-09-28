@@ -27,20 +27,20 @@ export function parseCSV(csvString: string) {
 
   for (const row of rows) {
     let insideQuotes = false;
-    let currentField = '';
+    let currentFieldChars : string[] = [];
     const fields = [];
 
     for (const char of row) {
       if (char === '"') {
         insideQuotes = !insideQuotes;
       } else if (char === ',' && !insideQuotes) {
-        fields.push(currentField.trim());
-        currentField = '';
+        fields.push(currentFieldChars.join(''));
+        currentFieldChars = [];
       } else {
-        currentField += char;
+        currentFieldChars.push(char);
       }
     }
-    if (currentField) fields.push(currentField.trim());
+    if (currentFieldChars.length) fields.push(currentFieldChars.join(''));
 
     result.push(fields);
   }

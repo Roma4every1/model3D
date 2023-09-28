@@ -11,7 +11,6 @@ export const mimeTypeDict = {
     'csv': 'text/csv',
     'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'doc': 'application/msword'
 };
 
 /** Список поддерживаемых расширений для просмотра. */

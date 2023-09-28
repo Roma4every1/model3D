@@ -1,14 +1,14 @@
-import './../renderers.scss' 
+import './../renderers.scss'
 import {useCallback, useEffect, useRef, useState} from "react";
 import {zoomImage} from "../../../lib/utils.ts";
 
 export const ImageRenderer = ({model}: FileRendererProps) => {
   const objectURL = model.fileType !== 'svg' ?
-    URL.createObjectURL(model.data) :
+    model.uri :
     URL.createObjectURL(new Blob([model.data], { type: 'image/svg+xml' }));
 
-  let containerRef = useRef();
-  let imageRef = useRef();
+  const containerRef = useRef<HTMLDivElement>();
+  const imageRef = useRef();
 
   const [currentZoom, setCurrentZoom] = useState(1);
 
@@ -18,11 +18,11 @@ export const ImageRenderer = ({model}: FileRendererProps) => {
     zoomImage(direction, currentZoom, setCurrentZoom, imageRef?.current);
   },[currentZoom, setCurrentZoom]);
 
-  useEffect(()=>{
-    if (!containerRef) return;
-    const container: HTMLElement = containerRef.current;
-    container.addEventListener('wheel', onWheel);
-    return () => container.removeEventListener('wheel', onWheel);
+  // через onWheel нельзя из-за passive: true, необходим preventDefault
+  useEffect(() => {
+    const container = containerRef.current;
+    container?.addEventListener('wheel', onWheel, {passive: false});
+    return () => container?.removeEventListener('wheel', onWheel);
   }, [containerRef, onWheel]);
 
   return (

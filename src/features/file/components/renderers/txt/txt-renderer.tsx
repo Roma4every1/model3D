@@ -1,14 +1,14 @@
-import './txt-renderer.scss'
+import './../renderers.scss'
+import {useRef} from "react";
 
 export const TXTRenderer = ({model}: FileRendererProps) => {
   const reader = new FileReader();
   reader.readAsText(model.data);
+  let containerRef = useRef<HTMLDivElement>(null);
   reader.onload = () => {
-    document.getElementById('txtRenderer').innerHTML = reader.result as string;
+    if (containerRef.current) containerRef.current.innerHTML = reader.result as string;
   };
   return (
-    <div id={'txtRenderer'}>
-
-    </div>
+    <div className={'basicRenderer'} ref={containerRef} />
   );
 };
