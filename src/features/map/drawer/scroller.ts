@@ -1,5 +1,5 @@
 import Events from 'events';
-import { Translator } from './geom';
+import { Translator, getTranslator } from './geom';
 
 
 interface ScrollerAction {
@@ -34,17 +34,17 @@ export class Scroller implements IMapScroller {
 
 	public wheel(event: WheelEvent): void {
 		if (this.canvas.blocked) return;
-		const movePoint = {x: event.offsetX * devicePixelRatio, y: event.offsetY * devicePixelRatio};
-    const mapMovePoint = this.translator.pointToMap(movePoint);
+		const point = {x: event.offsetX * devicePixelRatio, y: event.offsetY * devicePixelRatio};
+    const mapPoint = this.translator.pointToMap(point);
 
-    const scaleIn = event.deltaY < 0 ? 2 / 3 : 1.5;
-    const coords = this.translator.zoom(scaleIn, movePoint, mapMovePoint);
+    const newScale = this.translator.mapScale * (event.deltaY < 0 ? 2 / 3 : 1.5);
+    const translator = getTranslator(newScale, mapPoint, point);
     this.emit('mode', this.sync);
-    this.emit('changed', coords);
+    this.emit('changed', translator);
 
 		if (this.action) {
       this.emit('mode', true);
-      this.action.mapMovePoint = mapMovePoint;
+      this.action.mapMovePoint = mapPoint;
       this.action.initTranslator = this.translator;
     }
 	}
@@ -60,9 +60,10 @@ export class Scroller implements IMapScroller {
 		if (!this.action || this.canvas.blocked) return;
 		this.emit('mode', true);
 
+    const scale = this.action.initTranslator.mapScale;
     const point = {x: event.offsetX * devicePixelRatio, y: event.offsetY * devicePixelRatio};
-    const coords = this.action.initTranslator.zoom(1, point, this.action.mapMovePoint);
-    this.emit('changed', coords);
+    const translator = getTranslator(scale, this.action.mapMovePoint, point);
+    this.emit('changed', translator);
 	}
 
 	public mouseUp(): void {

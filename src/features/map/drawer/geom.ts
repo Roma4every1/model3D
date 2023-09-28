@@ -6,7 +6,6 @@ export interface Translator {
 	mapScale: MapScale;
 	pointToControl(point: Point): Point;
 	pointToMap(point: Point): Point;
-	zoom(scaleIn, cPoint: Point, mPoint: Point): Translator;
 }
 
 export const intersects = (a: Bounds, b: Bounds) => a && b
@@ -34,9 +33,5 @@ export function getTranslator(mScale: number, mCenter: Point, cCenter: Point): T
     mapScale: mScale,
     pointToControl: translate(mScale, mCenter, cScale, cCenter),
     pointToMap: translate(cScale, cCenter, mScale, mCenter),
-
-    zoom: (scaleIn, cPoint: Point, mPoint: Point): Translator => {
-      return getTranslator(mScale * scaleIn, mPoint, cPoint);
-    },
   };
 }

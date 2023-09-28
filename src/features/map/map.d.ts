@@ -110,6 +110,7 @@ interface IMapSelect {
 interface IMapScroller {
   sync: boolean;
   list: MapCanvas[];
+  mouseUp(): void;
 }
 interface MapStageListeners {
   navigationPanelChange(): void;

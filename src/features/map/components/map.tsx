@@ -155,6 +155,9 @@ export const Map = ({id, parent, channels}: FormState) => {
   const onMouseWheel = ({nativeEvent}: WheelEvent) => {
     stage.handleMouseWheel(nativeEvent);
   };
+  const onMouseLeave = () => {
+    stage.scroller.mouseUp();
+  };
 
   return (
     <div className={'map-container'}>
@@ -162,7 +165,7 @@ export const Map = ({id, parent, channels}: FormState) => {
         ref={canvasRef}
         style={{cursor: stage.getMode() === MapMode.AWAIT_POINT ? 'crosshair' : 'auto'}}
         onMouseDown={onMouseDown} onMouseUp={onMouseUp}
-        onMouseMove={onMouseMove} onWheel={onMouseWheel}
+        onMouseMove={onMouseMove} onWheel={onMouseWheel} onMouseLeave={onMouseLeave}
       />
     </div>
   );
