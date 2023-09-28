@@ -4,6 +4,7 @@ import { getLabelTextNumberArray } from './label-text-parser';
 import { fillPatterns } from '../../../shared/drawing';
 import { intersects } from './geom';
 import { provider } from './index';
+import { PIXEL_PER_METER } from '../lib/map-utils';
 
 import lines from './lines.json';
 import linesDefStub from './lines.def.stub.json';
@@ -1100,12 +1101,12 @@ export async function startPaint(canvas, map, options) {
     context: options.ctx,
     pointToControl: coords.pointToControl,
     pointToMap: coords.pointToMap,
-    dotsPerMeter: coords.cscale,
+    dotsPerMeter: window.devicePixelRatio * PIXEL_PER_METER,
   };
 
   try {
     for (const layer of map.layers) {
-      if (!layer.visible || !layer.isScaleVisible(coords.mscale)) continue;
+      if (!layer.visible || !layer.isScaleVisible(coords.mapScale)) continue;
       if (!intersects(bounds, layer.bounds)) continue;
 
       let c = onCheckExecution();
@@ -1131,8 +1132,8 @@ export async function startPaint(canvas, map, options) {
 
     map.x = options.point.x;
     map.y = options.point.y;
-    map.scale = coords.mscale;
-    map.onDrawEnd(options.point, coords.mscale);
+    map.scale = coords.mapScale;
+    map.onDrawEnd(options.point, coords.mapScale);
   } catch (e) {
     // ...
   }
