@@ -1,38 +1,26 @@
 import Events from 'events';
-import { Translator, getTranslator } from './geom';
+import { Translator } from './geom';
 
 
 interface ScrollerAction {
-	moved?: boolean;
-	movePoint: Point;
-	mapMovePoint?: Point;
-	oldPoint?: Point;
-	initialCoords?: any;
-  noUiMode?: boolean;
+	mapMovePoint: Point;
+	initTranslator: Translator;
 }
 
 
-const changed = 'changed';
-const uiMode = 'uimode';
-
 export class Scroller implements IMapScroller {
   public sync: boolean = false;
-  public list: MapCanvas[];
+  public list: MapCanvas[] = [];
 
   private canvas: MapCanvas = null;
 	private action: ScrollerAction = null;
-	private translator: Translator;
-
-	constructor() {
-    this.list = [];
-		this.translator = getTranslator(1, {x: 0, y: 0}, 1, {x: 0, y: 0});
-	}
+	private translator: Translator = null;
 
 	public setCanvas(canvas: MapCanvas) {
 		this.canvas = canvas;
 		canvas.events = new Events();
 		canvas.events.on('init', (t: Translator) => { this.translator = t; });
-		canvas.events.on('sync', (newCs) => { this.emit('cs', newCs); })
+		canvas.events.on('sync', (view: MapViewport) => { this.emit('cs', view); })
 	}
 
 	private emit(eventName: string, arg: Point | boolean | object) {
@@ -42,69 +30,45 @@ export class Scroller implements IMapScroller {
 		}
 	}
 
-	private startAction(data: ScrollerAction) {
-		if (!data.noUiMode) this.emit(uiMode, true);
-		this.action = data;
-		this.action.initialCoords = this.translator;
-		this.action.mapMovePoint = this.translator.pointToMap(this.action.movePoint);
-	}
-	private stopAction() {
-		this.emit(uiMode, false);
-		this.action = null;
-	}
-
-	private updateView = (screenPoint: Point, scaleMultiplier: number) => {
-		const coords = this.action.initialCoords.zoom(scaleMultiplier, screenPoint, this.action.mapMovePoint);
-		const args = {control: this.canvas, coords};
-
-		this.canvas.events.emit(changed, args);
-		if (this.sync) for (const canvas of this.list) {
-			args.control = canvas;
-			canvas.events.emit(changed, args);
-		}
-	}
-
 	/* --- Listeners --- */
 
 	public wheel(event: WheelEvent): void {
 		if (this.canvas.blocked) return;
-		const moving = !!this.action;
-		const movedPoint = {x: event.offsetX, y: event.offsetY};
-		const delta = event.deltaY < 0 ? 1 : -1;
+		const movePoint = {x: event.offsetX, y: event.offsetY};
+    const mapMovePoint = this.translator.pointToMap(movePoint);
 
-		this.stopAction();
-		this.startAction({movePoint: movedPoint, noUiMode: !this.sync});
-		this.updateView(this.action.movePoint, Math.pow(1.5, -delta));
-		this.stopAction();
+    const scaleIn = event.deltaY < 0 ? 2 / 3 : 1.5;
+    const coords = this.translator.zoom(scaleIn, movePoint, mapMovePoint);
+    this.emit('mode', this.sync);
+    this.emit('changed', coords);
 
-		if (moving) {
-			this.startAction({oldPoint: movedPoint, movePoint: movedPoint});
-			this.action.moved = true;
-		}
+		if (this.action) {
+      this.emit('mode', true);
+      this.action.mapMovePoint = mapMovePoint;
+      this.action.initTranslator = this.translator;
+    }
 	}
 
 	public mouseDown(event: MouseEvent): void {
-		this.stopAction();
-		if (event.button !== 0) return;
-		if (event.target !== this.canvas) return;
-
-		const movedPoint = {x: event.offsetX, y: event.offsetY};
-		this.startAction({oldPoint: movedPoint, movePoint: movedPoint});
+    this.emit('mode', true);
+    const movePoint = {x: event.offsetX, y: event.offsetY};
+    const mapMovePoint = this.translator.pointToMap(movePoint);
+    this.action = {mapMovePoint, initTranslator: this.translator};
 	}
 
 	public mouseMove(event: MouseEvent): void {
-		if (!this.action) return;
-		if (event.button !== 0) return this.stopAction();
-		if (event.target !== this.canvas || this.canvas.blocked) return;
-		const point = {x: event.offsetX, y: event.offsetY};
+		if (!this.action || this.canvas.blocked) return;
+		this.emit('mode', true);
 
-		this.emit(uiMode, true);
-		this.action.moved = true;
-		this.action.oldPoint = point;
-		this.updateView(point, 1);
+    const point = {x: event.offsetX, y: event.offsetY};
+    const coords = this.action.initTranslator.zoom(1, point, this.action.mapMovePoint);
+    this.emit('changed', coords);
 	}
 
 	public mouseUp(): void {
-		if (this.action) this.stopAction();
+		if (this.action) {
+      this.emit('mode', false);
+      this.action = null;
+    }
 	}
 }

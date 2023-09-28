@@ -127,6 +127,7 @@ export const Map = ({id, parent, channels}: FormState) => {
   if (loading.percentage < 100) return <LoadingStatus {...loading}/>;
 
   const onMouseDown = ({nativeEvent}: MouseEvent) => {
+    if (nativeEvent.button !== 0) return;
     stage.handleMouseDown(nativeEvent);
     if (!currentTrace || !traceEditing) return;
 

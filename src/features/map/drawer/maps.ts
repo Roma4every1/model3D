@@ -1,64 +1,59 @@
 import { startPaint } from './map-drawer';
-import { getTranslator  } from './geom';
+import { getTranslator, Translator } from './geom';
 import { PIXEL_PER_METER } from '../lib/map-utils';
 
 
-/**
- * @param canvas {MapCanvas}
- * @param map {MapData}
- * @param viewport {MapViewport}
- * */
-export function showMap(canvas, map, viewport) {
+export function showMap(canvas: MapCanvas, map: MapData, viewport: MapViewport) {
   let { centerX, centerY, scale } = viewport;
-  let coords;
-  let uiMode;
+  let coords: Translator;
+  let uiMode: boolean;
   const canvasFlag = canvas.showMapFlag = {};
   const canvasEvents = canvas.events;
 
-  const onChanged = (data) => {
-    if (!checkCanvas()) return;
-    coords = data.coords.changeResolution(window.devicePixelRatio);
-    update(data.control);
+  const onChanged = (data: Translator) => {
+    if (changeCanvas()) return;
+    coords = data.changeResolution(window.devicePixelRatio);
+    update(canvas);
   };
-  const onCS = (newCS) => {
-    if (!checkCanvas()) return;
+  const onCS = (newCS: MapViewport) => {
+    if (changeCanvas()) return;
     const mapCenter = {x: newCS.centerX, y: newCS.centerY};
     const canvasCenter = {x: canvas.width / 2, y: canvas.height / 2};
     const dotsPerMeter = canvas.width / (canvas.clientWidth / PIXEL_PER_METER);
     coords = getTranslator(newCS.scale, mapCenter, dotsPerMeter, canvasCenter)
     update(canvas);
   };
-  const onUiMode = (newMode) => {
-    if (!checkCanvas()) return;
+  const onMode = (newMode: boolean) => {
+    if (changeCanvas()) return;
     uiMode = newMode;
   };
 
   canvasEvents.on('changed', onChanged);
   canvasEvents.on('cs', onCS);
-  canvasEvents.on('uimode', onUiMode);
+  canvasEvents.on('mode', onMode);
 
   function detach() {
     canvasEvents.removeListener('changed', onChanged);
     canvasEvents.removeListener('cs', onCS);
-    canvasEvents.removeListener('uimode', onUiMode);
+    canvasEvents.removeListener('mode', onMode);
   }
 
   update(canvas);
   return {update, detach};
 
-  function checkCanvas() {
-    if (canvasFlag === canvas.showMapFlag) return true;
+  function changeCanvas() {
+    if (canvasFlag === canvas.showMapFlag) return false;
     detach();
-    return false;
+    return true;
   }
 
-  async function update(canvas) {
-    if (!checkCanvas()) return;
+  async function update(canvas: MapCanvas) {
+    if (changeCanvas()) return;
     const drawFlag = canvas.showMapFlag.mapDrawCycle = {};
     let count = 0;
 
     const onCheckExecution = () => {
-      if (!checkCanvas()) throw new Error('map drawer is detached');
+      if (changeCanvas()) throw new Error('map drawer is detached');
       if (drawFlag !== canvas.showMapFlag.mapDrawCycle) throw new Error('stop');
 
       if (++count > (uiMode ? 20 : 1000)) {

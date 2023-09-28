@@ -120,7 +120,12 @@ interface MapStageListeners {
   attrTableWindowClose(): void;
 }
 
-type MapCanvas = HTMLCanvasElement & {selectingMode: boolean, blocked: boolean, events: any};
+type MapCanvas = HTMLCanvasElement & {
+  selectingMode: boolean;
+  blocked: boolean;
+  events: any;
+  showMapFlag: any;
+};
 
 /* --- Загрузка карты --- */
 
