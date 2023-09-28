@@ -34,7 +34,7 @@ export class Scroller implements IMapScroller {
 
 	public wheel(event: WheelEvent): void {
 		if (this.canvas.blocked) return;
-		const movePoint = {x: event.offsetX, y: event.offsetY};
+		const movePoint = {x: event.offsetX * devicePixelRatio, y: event.offsetY * devicePixelRatio};
     const mapMovePoint = this.translator.pointToMap(movePoint);
 
     const scaleIn = event.deltaY < 0 ? 2 / 3 : 1.5;
@@ -51,7 +51,7 @@ export class Scroller implements IMapScroller {
 
 	public mouseDown(event: MouseEvent): void {
     this.emit('mode', true);
-    const movePoint = {x: event.offsetX, y: event.offsetY};
+    const movePoint = {x: event.offsetX * devicePixelRatio, y: event.offsetY * devicePixelRatio};
     const mapMovePoint = this.translator.pointToMap(movePoint);
     this.action = {mapMovePoint, initTranslator: this.translator};
 	}
@@ -60,7 +60,7 @@ export class Scroller implements IMapScroller {
 		if (!this.action || this.canvas.blocked) return;
 		this.emit('mode', true);
 
-    const point = {x: event.offsetX, y: event.offsetY};
+    const point = {x: event.offsetX * devicePixelRatio, y: event.offsetY * devicePixelRatio};
     const coords = this.action.initTranslator.zoom(1, point, this.action.mapMovePoint);
     this.emit('changed', coords);
 	}

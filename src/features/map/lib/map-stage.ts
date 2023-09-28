@@ -111,7 +111,7 @@ export class MapStage implements IMapStage {
   /** Перевод координат канваса в координаты карты. */
   public eventToPoint(event: MouseEvent): Point {
     if (!this.canvas || !this.data?.x) return {x: event.offsetX, y: event.offsetY};
-    const sc = 1 / PIXEL_PER_METER * this.data.scale;
+    const sc = this.data.scale / PIXEL_PER_METER;
     const canvasCenterX = this.canvas.clientWidth / 2;
     const canvasCenterY = this.canvas.clientHeight / 2;
 

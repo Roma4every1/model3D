@@ -1,6 +1,5 @@
 import { startPaint } from './map-drawer';
 import { getTranslator, Translator } from './geom';
-import { PIXEL_PER_METER } from '../lib/map-utils';
 
 
 export function showMap(canvas: MapCanvas, map: MapData, viewport: MapViewport) {
@@ -12,15 +11,14 @@ export function showMap(canvas: MapCanvas, map: MapData, viewport: MapViewport) 
 
   const onChanged = (data: Translator) => {
     if (changeCanvas()) return;
-    coords = data.changeResolution(window.devicePixelRatio);
+    coords = data;
     update(canvas);
   };
   const onCS = (newCS: MapViewport) => {
     if (changeCanvas()) return;
     const mapCenter = {x: newCS.centerX, y: newCS.centerY};
     const canvasCenter = {x: canvas.width / 2, y: canvas.height / 2};
-    const dotsPerMeter = canvas.width / (canvas.clientWidth / PIXEL_PER_METER);
-    coords = getTranslator(newCS.scale, mapCenter, dotsPerMeter, canvasCenter)
+    coords = getTranslator(newCS.scale, mapCenter, canvasCenter)
     update(canvas);
   };
   const onMode = (newMode: boolean) => {
@@ -71,16 +69,13 @@ export function showMap(canvas: MapCanvas, map: MapData, viewport: MapViewport) 
     if (canvas.height !== height) canvas.height = height;
 
     if (!coords) {
-      let dotsPerMeter = width / (canvas.clientWidth / PIXEL_PER_METER);
-      if (isNaN(dotsPerMeter)) dotsPerMeter = 3780;
-
       const mapCenter = {x: centerX, y: centerY};
       const canvasCenter = {x: width / 2, y: height / 2};
-      coords = getTranslator(scale, mapCenter, dotsPerMeter, canvasCenter);
+      coords = getTranslator(scale, mapCenter, canvasCenter);
     }
 
     const point = coords.pointToMap({x: width / 2, y: height / 2});
-    canvasEvents.emit('init', coords.changeResolution(1 / window.devicePixelRatio));
+    canvasEvents.emit('init', coords);
 
     const ctx = canvas.getContext('2d');
     const options = {onCheckExecution, coords, point, ctx, draftDrawing: true};
