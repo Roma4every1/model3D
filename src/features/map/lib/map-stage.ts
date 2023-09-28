@@ -291,7 +291,7 @@ export class MapStage implements IMapStage {
   }
 
   public handleMouseUp(event: MouseEvent): MapElement | null {
-    this.scroller.mouseUp(event);
+    this.scroller.mouseUp();
     this.isOnMove = false;
     this.pIndex = null;
 

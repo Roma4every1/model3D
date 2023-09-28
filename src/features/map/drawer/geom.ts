@@ -1,6 +1,3 @@
-/** Функция переводящая точку из одной системы координат в другую. */
-type PointTranslator = (point: Point) => Point;
-
 /** ## Translator.
  * Объект для работы с координатами и масштабом.
  * + `mscale` — масштаб карты
@@ -19,33 +16,13 @@ export interface Translator {
 	changeResolution(multiplier: number): Translator;
 }
 
-interface Rects {
-	join(...rects: Bounds[]): Bounds;
-	intersects(a: Bounds, b: Bounds): boolean;
-	joinPoints(...points: Point[]): Bounds;
-	inflate(r: Bounds, d: number): Bounds;
-}
+export const intersects = (a: Bounds, b: Bounds) => a && b
+  && (a.min.x < b.max.x)
+  && (b.min.x < a.max.x)
+  && (a.min.y < b.max.y)
+  && (b.min.y < a.max.y);
 
-export const rects: Rects = {
-	join: (...rects: Bounds[]) => rects.reduce(
-		(a, b) => !a ? b : !b ? a : {
-			min: {x: Math.min(a.min.x, b.min.x), y: Math.min(a.min.y, b.min.y)},
-			max: {x: Math.max(a.max.x, b.max.x), y: Math.max(a.max.y, b.max.y)},
-		}
-	),
-	intersects: (a: Bounds, b: Bounds) => a && b
-		&& (a.min.x < b.max.x)
-		&& (b.min.x < a.max.x)
-		&& (a.min.y < b.max.y)
-		&& (b.min.y < a.max.y),
-	joinPoints: (...points: Point[]) => rects.join(...points.map(p => ({ min: p, max: p }))),
-	inflate: (r: Bounds, d: number): Bounds => ({
-		min: { x: r.min.x - d, y: r.min.y - d },
-		max: { x: r.max.x + d, y: r.max.y + d },
-	}),
-}
-
-function translate(scale1: number, p1: Point, scale2: number, p2: Point): PointTranslator {
+function translate(scale1: number, p1: Point, scale2: number, p2: Point) {
 	const sc = 1 / scale1 * scale2;
 	return (point: Point): Point => ({x: p2.x + (point.x - p1.x) * sc, y: p2.y + (point.y - p1.y) * sc});
 }
