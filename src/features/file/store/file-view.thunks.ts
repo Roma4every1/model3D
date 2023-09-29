@@ -4,7 +4,7 @@ import { channelRowToRecord } from 'entities/channels';
 import { showWarningMessage } from 'entities/window';
 import { setFileViewModel } from './file-view.actions';
 import { t } from 'shared/locales';
-import { mimeTypeDict } from '../lib/constants';
+import { mimeTypeDict, fileParserDict } from '../lib/constants';
 import { reportsAPI } from 'entities/reports/lib/report.api.ts';
 
 
@@ -41,6 +41,9 @@ export function updateFileViewModel(id: FormID, data: ChannelData): Thunk {
 
       model = {fileName, fileType, data: blob, uri: URL.createObjectURL(blob)};
       memo.push(model);
+
+      const parser = fileParserDict[fileType];
+      if (parser) model.content = await parser(blob);
     } else if (model === oldModel) {
       return;
     }

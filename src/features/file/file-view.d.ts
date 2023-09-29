@@ -21,20 +21,29 @@ interface FileViewState {
  * + `data`: {@link Blob}
  * + `uri: string` — техническое поле
  * */
-interface FileViewModel {
+interface FileViewModel<T = any> {
   /** Название файла. */
   fileName: string;
   /** Расширение файла. */
   fileType: string;
-  /** Содержимое файла. */
+  /** Данные файла в двоичном виде. */
   data: Blob;
   /** Моковая ссылка. */
   uri: string;
+  /** Модель содержимого в зависимости от типа. */
+  content?: T;
 }
 
-/** Параметры рендерера файла.
- * + `model: string` — модель просматриваемого файла
- * */
-interface FileRendererProps {
-  model: FileViewModel
+/** Парсер конкретного типа файла. */
+type FileParser<T = any> = (data: Blob) => Promise<T>;
+
+/** Модель Excel файла. */
+interface FileModelExcel {
+  /** Листы. */
+  sheets: any[];
+  /** Цветовая тема документа. */
+  colorScheme: string[];
 }
+
+/** Модель CSV файла. */
+type FileModelCSV = string[][];
