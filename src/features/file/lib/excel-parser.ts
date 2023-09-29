@@ -1,64 +1,31 @@
-import {excelIndexedColors, imageZoomStepSize, maxImageZoom, minImageZoom} from "./constants.ts"
-import {xml2js} from "xml-js";
-import Excel from "exceljs";
-import {CSSProperties} from "react";
+import { CSSProperties } from 'react';
+import { Workbook, Cell, Worksheet } from 'exceljs';
+import { xml2js } from 'xml-js';
+import { excelIndexedColors } from './constants.ts'
 
-/** Функция для приближения изображения */
-export const zoomImage = (
-  direction: number,
-  zoom: number,
-  setCurrentZoom: (value: number) => void,
-  image: HTMLImageElement) => {
 
-  if (!image) return;
-  let newZoom = zoom + direction * imageZoomStepSize;
-  if (newZoom < minImageZoom || newZoom > maxImageZoom) {
-    return;
-  }
-  setCurrentZoom(newZoom);
-  image.style.transform = 'scale(' + zoom + ')';
+export async function excelParser(data: Blob): Promise<FileModelExcel> {
+  const buffer = await data.arrayBuffer();
+  const workbook = new Workbook();
+  await workbook.xlsx.load(buffer);
+
+  const themeXML = Object.values(workbook.model.themes)[0];
+  return {sheets: workbook.worksheets, colorScheme: parseThemeColorsXML(themeXML)};
 }
 
-/** Получает матрицу значний CSV таблицы из строки,
- * учитывая случай запятой внутри кавычек. */
-export function parseCSV(csvString: string) {
-  const rows = csvString.split('\n');
-  const result = [];
-
-  for (const row of rows) {
-    let insideQuotes = false;
-    let currentFieldChars : string[] = [];
-    const fields = [];
-
-    for (const char of row) {
-      if (char === '"') {
-        insideQuotes = !insideQuotes;
-      } else if (char === ',' && !insideQuotes) {
-        fields.push(currentFieldChars.join(''));
-        currentFieldChars = [];
-      } else {
-        currentFieldChars.push(char);
-      }
-    }
-    if (currentFieldChars.length) fields.push(currentFieldChars.join(''));
-
-    result.push(fields);
-  }
-  return result;
-}
 
 /** Получает массив цветов Excel темы из XML объекта темы */
-export const parseThemeColorsXML = themeXML => {
-  const themeElements = xml2js(themeXML).elements[0].elements[0]
-  const clrSchemeObjects = themeElements.elements[0].elements.map(el => el.elements[0])
-  return clrSchemeObjects.map(el => `#${el.attributes?.lastClr ?
-    el.attributes?.lastClr :
-    el.attributes?.val}`
-  )
+export function parseThemeColorsXML(themeXML: any): string[] {
+  const themeElements = xml2js(themeXML).elements[0].elements[0];
+  const clrSchemeObjects = themeElements.elements[0].elements.map(el => el.elements[0]);
+
+  return clrSchemeObjects.map(({attributes}): string => {
+    return `#${attributes?.lastClr ? attributes?.lastClr : attributes?.val}`
+  });
 }
 
 /** Получает объект CSS стилей для ячейки таблицы из объекта Excel стилей ячейки */
-export const getCellStyles = (cell: Excel.Cell, clrSchemeColors: string[]) => {
+export function getCellStyles(cell: Cell, clrSchemeColors: string[]): CSSProperties {
   const cellStyle: CSSProperties = {};
   const styles = cell.style;
 
@@ -110,15 +77,13 @@ export const getCellStyles = (cell: Excel.Cell, clrSchemeColors: string[]) => {
 
 /** Приводит массив объединений ячеек Excel таблицы к удобному для
  * записи в HTML-таблицу формату. */
-export const getSheetMergesMasterCells = (sheet: Excel.Worksheet) => {
+export function getSheetMergesMasterCells(sheet: Worksheet): any[] {
   const merges = sheet.model['merges'].map(m => m.split(':'));
   return merges.map(m => {
     const mergeMasterCell = sheet.getCell(m[0]);
     const mergeEndCell = sheet.getCell(m[1]);
     const rowSpan = +mergeEndCell.row - +mergeMasterCell.row + 1;
     const colSpan = +mergeEndCell.col - +mergeMasterCell.col + 1;
-
-    return {master: m[0], rowSpan, colSpan}
-  })
+    return {master: m[0], rowSpan, colSpan};
+  });
 }
-
