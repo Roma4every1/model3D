@@ -1,7 +1,7 @@
 import { Worksheet } from 'exceljs';
 import { ExcelTableRow } from './excel-table-row.tsx';
 import { ExcelTableHeadRow } from './excel-table-head-row.tsx';
-import { getSheetMergesMasterCells } from '../../../lib/excel-parser.ts';
+import { getSheetMergesMasterCells } from '../../lib/excel-parser.ts';
 
 
 interface ExcelSheetTableProps {

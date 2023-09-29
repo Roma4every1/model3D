@@ -11,7 +11,7 @@ export const MsWordView = ({content}: FileViewModel<ArrayBuffer>) => {
   }, [content]);
 
   return (
-    <div style={{overflowX: 'auto', backgroundColor: '#e1e1e1'}}>
+    <div style={{backgroundColor: '#cbcaca'}}>
       <div className={'file-view-ms-word'} ref={ref}/>
     </div>
   );

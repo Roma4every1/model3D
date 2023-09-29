@@ -1,5 +1,5 @@
 import { Row } from 'exceljs';
-import { getCellStyles } from '../../../lib/excel-parser.ts';
+import { getCellStyles } from '../../lib/excel-parser.ts';
 
 
 interface ExcelTableRowProps {
