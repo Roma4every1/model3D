@@ -28,13 +28,13 @@ export async function fillChannel(channel: Channel, paramDict: ParamDict) {
 
 /** Создаёт новые каналы, не заполняя их данными. */
 export function createChannels(names: ChannelName[]): Promise<ChannelDict> {
-  return Promise.all(names.map(createChannel)).then((entries) => Object.fromEntries(entries));
+  return Promise.all(names.map(createChannel)).then(entries => Object.fromEntries(entries));
 }
 
 /** Создаёт объект нового канала; не заполняет данными. */
 async function createChannel(name: ChannelName): Promise<[ChannelName, Channel]> {
   const resInfo = await channelAPI.getChannelInfo(name);
-  if (!resInfo.ok) return;
+  if (!resInfo.ok) return [name, null];
 
   const info = resInfo.data;
   const properties = info.properties;

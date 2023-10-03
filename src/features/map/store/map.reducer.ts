@@ -1,448 +1,152 @@
-import { MapModes } from '../lib/enums';
-import { chunk } from 'lodash';
-import { getBoundsByPoints, getMultiMapChildrenCanvases } from '../lib/map-utils';
+import { MapStage } from '../lib/map-stage.ts';
+import { MapLayer } from '../lib/map-layer.ts';
 import { traceLayerProto, getTraceMapElement, getFullTraceViewport } from '../lib/traces-map-utils';
 
 /* --- Action Types --- */
 
-export enum MapsActions {
-  ADD_MULTI_MAP = 'maps/add_multi',
-  SET_SYNC = 'maps/sync',
-  ADD = 'maps/add',
-  LOAD_SUCCESS = 'maps/loadOk',
-  LOAD_ERROR = 'maps/loadErr',
-  START_LOAD = 'maps/start_load',
-  SET_MODE = 'maps/setMode',
-  SET_DRAW_END = 'maps/setEnd',
-  SET_FIELD = 'maps/setField',
-  CLEAR_SELECT = 'maps/clear',
-  START_EDITING = 'maps/startEdit',
-  ACCEPT_EDITING = 'maps/acceptEdit',
-  CANCEL_EDITING = 'maps/cancelEdit',
-  START_CREATING = 'maps/startCreate',
-  CREATE_ELEMENT = 'maps/createEl',
-  ACCEPT_CREATING = 'maps/acceptCreate',
-  CANCEL_CREATING = 'maps/cancelCreate',
-  SET_TRACE = 'maps/trace',
+export enum MapActionType {
+  ADD_MULTI_MAP = 'map/multi',
+  SET_SYNC = 'map/sync',
+  CREATE = 'map/create',
+  SET_LOADING = 'map/loading',
+  SET_CANVAS = 'map/canvas',
+  SET_FIELD = 'map/field',
+  SET_TRACE = 'map/trace',
 }
 
 /* --- Action Interfaces --- */
 
-interface MapAction {
-  type: MapsActions,
-  formID: FormID,
-}
-
 interface ActionAddMulti {
-  type: MapsActions.ADD_MULTI_MAP,
-  id: FormID,
-  payload: MapItemConfig[],
+  type: MapActionType.ADD_MULTI_MAP;
+  payload: {id: ClientID, configs: MapItemConfig[], templateFormID: FormID};
 }
-interface ActionSetSync extends MapAction {
-  type: MapsActions.SET_SYNC,
-  payload: boolean,
-}
-
-interface ActionAdd {
-  type: MapsActions.ADD,
-  payload: FormStatePayload,
-}
-interface ActionLoadSuccess extends MapAction {
-  type: MapsActions.LOAD_SUCCESS,
-  mapData: MapData,
-}
-interface ActionLoadError extends MapAction {
-  type: MapsActions.LOAD_ERROR,
-}
-interface ActionStartLoad extends MapAction {
-  type: MapsActions.START_LOAD,
-}
-interface ActionSetMode extends MapAction {
-  type: MapsActions.SET_MODE,
-  payload: MapModes,
-}
-interface ActionSetDimensions extends MapAction {
-  type: MapsActions.SET_DRAW_END,
-  payload: (canvas: MapCanvas, x: number, y: number, scale: number) => void,
-}
-interface ActionSetField extends MapAction {
-  type: MapsActions.SET_FIELD,
-  field: keyof MapState;
-  payload: any,
-}
-interface ActionClearSelect extends MapAction {
-  type: MapsActions.CLEAR_SELECT,
-  elementOnly: boolean,
-}
-interface ActionStartEditing extends MapAction {
-  type: MapsActions.START_EDITING,
-}
-interface ActionAcceptEditing extends MapAction {
-  type: MapsActions.ACCEPT_EDITING,
-}
-interface ActionCancelEditing extends MapAction {
-  type: MapsActions.CANCEL_EDITING,
-}
-interface ActionStartCreating extends MapAction {
-  type: MapsActions.START_CREATING,
-}
-interface ActionCreateElement extends MapAction {
-  type: MapsActions.CREATE_ELEMENT,
-  payload: MapElement,
-}
-interface ActionAcceptCreating extends MapAction {
-  type: MapsActions.ACCEPT_CREATING,
-}
-interface ActionCancelCreating extends MapAction {
-  type: MapsActions.CANCEL_CREATING,
-}
-interface ActionSetTrace extends MapAction {
-  type: MapsActions.SET_TRACE,
-  model: TraceModel, updateViewport: boolean,
+interface ActionSetSync {
+  type: MapActionType.SET_SYNC;
+  payload: {formID: FormID, id: ClientID, sync: boolean};
 }
 
+interface ActionCreate {
+  type: MapActionType.CREATE;
+  payload: FormStatePayload;
+}
+interface ActionSetLoading {
+  type: MapActionType.SET_LOADING;
+  payload: {id: FormID, loading: Partial<MapLoading>};
+}
+interface ActionSetCanvas {
+  type: MapActionType.SET_CANVAS;
+  payload: {id: FormID, canvas: MapCanvas};
+}
+interface ActionSetField {
+  type: MapActionType.SET_FIELD;
+  payload: {id: FormID, field: keyof MapState, value: any};
+}
+interface ActionSetTrace {
+  type: MapActionType.SET_TRACE;
+  payload: {id: FormID, model: TraceModel, updateViewport: boolean};
+}
 
-export type MapsAction = ActionAddMulti | ActionSetSync | ActionAdd |
-  ActionStartLoad | ActionLoadSuccess | ActionLoadError |
-  ActionSetMode | ActionSetDimensions | ActionSetField | ActionClearSelect |
-  ActionStartEditing | ActionAcceptEditing | ActionCancelEditing |
-  ActionStartCreating | ActionCreateElement | ActionCancelCreating | ActionAcceptCreating |
-  ActionSetTrace;
-
-/* --- Reducer Utils --- */
-
-const clearOldData = (mapState: MapState): void => {
-  mapState.oldData.x = null;
-  mapState.oldData.y = null;
-  mapState.oldData.arc = null;
-};
-
-const clearSelect = (mapState: MapState): void => {
-  if (mapState.element) {
-    mapState.element.edited = false;
-    mapState.element.selected = false;
-    mapState.element = null;
-  }
-  mapState.isElementEditing = false;
-
-  clearOldData(mapState);
-};
-
-const setMultiMapBlocked = (state: MapsState, parentFormID: FormID, blocked: boolean): void => {
-  state.multi[parentFormID].children.forEach((formID) => {
-    state.single[formID].canvas.blocked = blocked;
-  });
-};
-
-const initMapState: MapState = {
-  mode: MapModes.NONE,
-  legends: {loaded: false, success: undefined, data: null},
-  mapData: null,
-  activeLayer: null,
-  isLoadSuccessfully: undefined,
-  canvas: null,
-  owner: null,
-  mapID: null,
-  element: null,
-  isElementEditing: false,
-  isElementCreating: false,
-  oldData: {x: null, y: null, arc: null, ange: null},
-  selecting: {nearestElements: [], activeIndex: 0, lastPoint: null},
-  isModified: false,
-  cursor: 'auto',
-  childOf: null, scroller: null,
-  utils: { updateCanvas: () => {}, pointToMap: (point) => point },
-};
+export type MapAction = ActionAddMulti | ActionSetSync | ActionCreate |
+  ActionSetLoading | ActionSetField | ActionSetTrace | ActionSetCanvas;
 
 /* --- Init State & Reducer --- */
 
+function createMapState(editable: boolean): MapState {
+  const stage = new MapStage();
+  const observer = new ResizeObserver(() => { stage.resize(); });
+
+  return {
+    canvas: null, stage, observer,
+    owner: null, mapID: null, loading: {percentage: 100, status: null},
+    modified: false, editable,
+    propertyWindowOpen: false, attrTableWindowOpen: false,
+  };
+}
+
 const init: MapsState = {multi: {}, single: {}};
 
-export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsState => {
+export const mapsReducer = (state: MapsState = init, action: MapAction): MapsState => {
   switch (action.type) {
 
     /* --- multi --- */
 
-    case MapsActions.ADD_MULTI_MAP: {
-      const { id, payload: configs } = action;
-      const sync = state.multi[id]?.sync ?? true;
-      state.multi[id] = {sync, configs, children: configs.map(c => c.formID)};
+    case MapActionType.ADD_MULTI_MAP: {
+      const { id, configs } = action.payload;
+      const oldState = state.multi[id];
+      const sync = oldState?.sync ?? true;
+      const templateFormID = oldState?.templateFormID ?? action.payload.templateFormID;
 
-      for (const { formID } of configs) {
-        const utils = { updateCanvas: () => {}, pointToMap: (point) => point };
-        state.single[formID] = {...initMapState, utils, childOf: id};
+      if (oldState) for (const { formID } of oldState.configs) {
+        delete state.single[formID];
       }
+      for (const config of configs) {
+        const mapState = createMapState(false);
+        config.stage = mapState.stage;
+        config.stage.scroller.sync = sync;
+        state.single[config.formID] = mapState;
+      }
+      state.multi[id] = {sync, templateFormID, configs, children: configs.map(c => c.formID)};
       return {...state};
     }
 
-    case MapsActions.SET_SYNC: {
-      const { formID: parentID, payload: sync } = action;
-      state.multi[parentID] = {...state.multi[parentID], sync};
-      const children = state.multi[parentID].children;
+    case MapActionType.SET_SYNC: {
+      const { formID, id, sync } = action.payload;
+      const multiMapState = state.multi[id];
 
-      if (sync === false) {
-        children.forEach((childID: FormID) => {
-          state.single[childID]?.scroller?.setList([]);
-        });
-      } else {
-        children.forEach((childID: FormID) => {
-          const canvases = getMultiMapChildrenCanvases(state.multi, state.single, childID, parentID);
-          state.single[childID]?.scroller?.setList(canvases);
-        });
+      for (const config of multiMapState.configs) {
+        config.stage.scroller.sync = sync;
       }
+      if (sync) {
+        const stage = state.single[formID].stage;
+        const { x, y, scale } = stage.getMapData();
+        stage.getCanvas().events.emit('sync', {centerX: x, centerY: y, scale});
+      }
+      state.multi[id] = {...multiMapState, sync};
       return {...state};
     }
 
     /* --- single --- */
 
-    case MapsActions.ADD: {
-      const { id, parent } = action.payload.state;
-      const childOf = state.multi[parent] ? parent : null;
-      const utils = { updateCanvas: () => {}, pointToMap: (point) => point };
-      state.single[id] = {...initMapState, utils, childOf};
-      return {...state, single: {...state.single}};
+    case MapActionType.CREATE: {
+      const id = action.payload.state.id;
+      return {...state, single: {...state.single, [id]: createMapState(true)}};
     }
 
-    case MapsActions.START_LOAD: {
-      const formID = action.formID;
-      state.single[formID] = {...state.single[formID], mapData: null, isLoadSuccessfully: undefined};
+    case MapActionType.SET_LOADING: {
+      const { id, loading } = action.payload;
+      const newLoading = {...state.single[id].loading, ...loading};
+      return {...state, single: {...state.single, [id]: {...state.single[id], loading: newLoading}}};
+    }
+
+    case MapActionType.SET_CANVAS: {
+      const { id, canvas } = action.payload;
+      const { stage, observer, canvas: oldCanvas } = state.single[id];
+
+      if (oldCanvas) observer.unobserve(oldCanvas);
+      if (canvas) observer.observe(canvas);
+
+      stage.setCanvas(canvas);
+      return {...state, single: {...state.single, [id]: {...state.single[id], canvas}}};
+    }
+
+    case MapActionType.SET_FIELD: {
+      const { id, field, value } = action.payload;
+      state.single[id] = {...state.single[id], [field]: value};
       return {...state};
     }
 
-    case MapsActions.LOAD_SUCCESS: {
-      const { formID, mapData } = action;
-      mapData.layers.forEach(l => l.elementType = l.elements[0]?.type ?? 'sign');
-      state.single[formID] = {...state.single[formID], mapData, isLoadSuccessfully: true};
-      return {...state};
-    }
-
-    case MapsActions.LOAD_ERROR: {
-      state.single[action.formID] = {...state.single[action.formID], isLoadSuccessfully: false};
-      return {...state};
-    }
-
-    case MapsActions.SET_MODE: {
-      const { formID, payload: mode } = action;
-      const newMapState: MapState = {...state.single[formID]};
-      newMapState.mode = mode;
-      newMapState.cursor = mode === MapModes.AWAIT_POINT ? 'crosshair' : 'auto';
-
-      const isEditing = mode > MapModes.MOVE_MAP;
-      newMapState.childOf
-        ? setMultiMapBlocked(state, newMapState.childOf, isEditing)
-        : newMapState.canvas.blocked = isEditing;
-
-      if (newMapState.element) {
-        newMapState.isElementEditing = isEditing;
-        newMapState.element.edited = isEditing;
-        newMapState.utils.updateCanvas();
-      }
-      state.single[formID] = newMapState;
-      return {...state};
-    }
-
-    case MapsActions.SET_DRAW_END: {
-      const { formID, payload } = action;
-      state.single[formID].mapData.onDrawEnd = payload;
-      return {...state};
-    }
-
-    case MapsActions.SET_FIELD: {
-      const { formID, field, payload } = action;
-      state.single[formID] = {...state.single[formID], [field]: payload};
-      return {...state};
-    }
-
-    case MapsActions.CLEAR_SELECT: {
-      const { formID, elementOnly } = action;
-      const newMapState: MapState = {...state.single[formID]};
-
-      clearOldData(newMapState);
-      newMapState.childOf
-        ? setMultiMapBlocked(state, newMapState.childOf, false)
-        : newMapState.canvas.blocked = false;
-      newMapState.isElementEditing = false;
-
-      if (newMapState.element) {
-        newMapState.element.edited = false;
-        newMapState.element = null;
-      }
-      if (!elementOnly) {
-        newMapState.selecting = {nearestElements: [], activeIndex: 0, lastPoint: null};
-        newMapState.cursor = 'auto';
-      }
-
-      state.single[formID] = newMapState;
-      return {...state};
-    }
-
-    case MapsActions.START_EDITING: {
-      const newMapState: MapState = {...state.single[action.formID]};
-      const element = newMapState.element;
-
-      if (element.type === 'polyline') {
-        const arc = element.arcs[0];
-        newMapState.oldData.arc = {closed: arc.closed, path: [...arc.path]};
-      }
-      if (element.type === 'label') {
-        newMapState.oldData.x = element.x;
-        newMapState.oldData.y = element.y;
-        newMapState.oldData.ange = element.angle;
-      }
-      if (element.type === 'sign') {
-        newMapState.oldData.x = element.x;
-        newMapState.oldData.y = element.y;
-      }
-
-      state.single[action.formID] = newMapState;
-      return {...state};
-    }
-
-    case MapsActions.ACCEPT_EDITING: {
-      const newMapState: MapState = {...state.single[action.formID]};
-      const element = newMapState.element;
-
-      clearSelect(newMapState);
-      newMapState.mode = MapModes.NONE;
-      newMapState.childOf
-        ? setMultiMapBlocked(state, newMapState.childOf, false)
-        : newMapState.canvas.blocked = false;
-
-      if (element.type === 'polyline') {
-        element.bounds = getBoundsByPoints(chunk(element.arcs[0].path, 2) as [number, number][]);
-      }
-      const modifiedLayer = newMapState.mapData.layers?.find(l => l.elements?.includes(element));
-      if (modifiedLayer) {
-        modifiedLayer.modified = true;
-        newMapState.isModified = true;
-      }
-
-      if (element.type === 'polyline') {
-        element.bounds = getBoundsByPoints(chunk(element.arcs[0].path, 2) as [number, number][]);
-        newMapState.isModified = !(element as MapPolyline)?.isTrace;
-      }
-
-      newMapState.utils.updateCanvas();
-      state.single[action.formID] = newMapState;
-      return {...state};
-    }
-
-    case MapsActions.CANCEL_EDITING: {
-      const newMapState: MapState = {...state.single[action.formID]};
-      const element = newMapState.element;
-      const oldData = newMapState.oldData;
-
-      if (element) {
-        if (element.type === 'polyline') {
-          element.arcs[0] = oldData.arc;
-        }
-        if (element.type === 'label') {
-          element.x = oldData.x;
-          element.y = oldData.y;
-          element.angle = oldData.ange;
-        }
-        if (element.type === 'sign') {
-          element.x = oldData.x;
-          element.y = oldData.y;
-        }
-        element.selected = false;
-        element.edited = false;
-      }
-      clearOldData(newMapState);
-
-      newMapState.childOf
-        ? setMultiMapBlocked(state, newMapState.childOf, false)
-        : newMapState.canvas.blocked = false;
-      newMapState.isElementEditing = false;
-      newMapState.mode = MapModes.NONE;
-      newMapState.utils.updateCanvas();
-      state.single[action.formID] = newMapState;
-      return {...state};
-    }
-
-    case MapsActions.START_CREATING: {
-      const newMapState: MapState = {...state.single[action.formID]};
-      clearSelect(newMapState);
-      newMapState.mode = MapModes.CREATING;
-      newMapState.isElementCreating = true;
-      newMapState.utils.updateCanvas();
-      state.single[action.formID] = newMapState;
-      return {...state};
-    }
-
-    case MapsActions.CREATE_ELEMENT: {
-      const newMapState = {...state.single[action.formID]};
-      newMapState.element = action.payload;
-
-      newMapState.isElementEditing = true;
-      newMapState.activeLayer.elements.push(action.payload);
-
-      newMapState.childOf
-        ? setMultiMapBlocked(state, newMapState.childOf, false)
-        : newMapState.canvas.blocked = false;
-
-      const isPolyline = newMapState.element.type === 'polyline';
-      newMapState.mode = isPolyline ? MapModes.ADD_END : MapModes.MOVE_MAP;
-      newMapState.canvas.blocked = isPolyline;
-      newMapState.isModified = !(isPolyline && (newMapState.element as MapPolyline)?.isTrace);
-
-      newMapState.cursor = 'auto';
-      newMapState.utils.updateCanvas();
-      state.single[action.formID] = newMapState;
-      return {...state};
-    }
-
-    case MapsActions.ACCEPT_CREATING: {
-      const newMapState: MapState = {...state.single[action.formID]};
-
-      newMapState.isElementCreating = false;
-      newMapState.isElementEditing = false;
-      clearOldData(newMapState);
-
-      newMapState.activeLayer.modified = true;
-      newMapState.isModified = true;
-
-      newMapState.childOf
-        ? setMultiMapBlocked(state, newMapState.childOf, false)
-        : newMapState.canvas.blocked = false;
-      newMapState.mode = MapModes.NONE;
-      newMapState.utils.updateCanvas();
-      state.single[action.formID] = newMapState;
-      return {...state};
-    }
-
-    case MapsActions.CANCEL_CREATING: {
-      const newMapState: MapState = {...state.single[action.formID]};
-
-      newMapState.isElementCreating = false;
-      newMapState.isElementEditing = false;
-      clearSelect(newMapState);
-
-      newMapState.activeLayer.elements.pop();
-
-      newMapState.cursor = 'auto';
-      newMapState.childOf
-        ? setMultiMapBlocked(state, newMapState.childOf, false)
-        : newMapState.canvas.blocked = false;
-      newMapState.mode = MapModes.NONE;
-      newMapState.cursor = 'auto';
-      newMapState.utils.updateCanvas();
-      state.single[action.formID] = newMapState;
-      return {...state};
-    }
-
-    case MapsActions.SET_TRACE: {
-      const { formID, model, updateViewport } = action;
-      const mapState = state.single[formID];
-      const layers = mapState?.mapData?.layers;
-      if (!layers) return state;
+    case MapActionType.SET_TRACE: {
+      const { id, model, updateViewport } = action.payload;
+      const mapState = state.single[id];
+      const mapData = mapState?.stage.getMapData();
+      if (!mapData) return state;
 
       let traceElement: MapPolyline;
-      let traceLayer = layers.find(layer => layer.uid === '{TRACES-LAYER}');
+      let traceLayer = mapData.layers.find(layer => layer.id === '{TRACES-LAYER}');
 
       if (!traceLayer) {
-        traceLayer = structuredClone(traceLayerProto);
-        mapState.mapData.layers = [...layers, traceLayer];
+        traceLayer = new MapLayer(traceLayerProto, [], true);
+        mapData.layers = [...mapData.layers, traceLayer];
       }
 
       if (!model || !model.nodes.length) {
@@ -453,10 +157,12 @@ export const mapsReducer = (state: MapsState = init, action: MapsAction): MapsSt
         traceLayer.bounds = traceElement.bounds;
       }
 
-      const viewport = traceElement && updateViewport
-        ? getFullTraceViewport(traceElement, mapState.canvas)
-        : undefined;
-      mapState.utils.updateCanvas(viewport);
+      if (mapState.canvas) {
+        const viewport = traceElement && updateViewport
+          ? getFullTraceViewport(traceElement, mapState.canvas)
+          : undefined;
+        setTimeout(() => mapState.stage.render(viewport), 10);
+      }
       return {...state};
     }
 

@@ -1,7 +1,7 @@
 import { once } from 'lodash';
 import { useRef, useLayoutEffect } from 'react';
 import { PIXEL_PER_METER } from '../../../../lib/map-utils';
-import { polylineType } from '../../selecting/selecting-utils';
+import { polylineType } from '../../../../lib/selecting-utils.ts';
 
 
 interface StyleTemplateProps {

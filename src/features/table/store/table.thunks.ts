@@ -57,13 +57,20 @@ export function saveTableRecord({type, formID, row}: SaveTableMetadata): Thunk {
       res = await channelAPI.updateRows(tableID, [row.ID], [row]);
     }
 
-    if (res.ok === false) { dispatch(showWarningMessage(res.data)); return; }
-    if (res.data.error) { dispatch(showWarningMessage(res.data.error)); return; }
+    let error: string;
+    const tables: TableID[] = [tableID];
 
-    const tables = [tableID, ...res.data.modifiedTables];
+    if (res.ok === false) {
+      error = res.data;
+    } else if (res.data.error) {
+      error = res.data.error;
+    } else {
+      tables.push(...res.data.modifiedTables);
+    }
+    if (error) dispatch(showWarningMessage(error));
+
     await updateTables(tables)(dispatch, getState);
-
-    const text = t('table.save.' + (res.data.error ? 'end-error' : 'end-ok'));
+    const text = t('table.save.' + (error ? 'end-error' : 'end-ok'));
     await showNotification(text)(dispatch);
   };
 }
@@ -110,7 +117,7 @@ export function getNewRow (
       const cells = copy ? records[index].cells : res.data['Cells'];
       const record = createRecord(newID, cells, Object.values(state.columns));
       records.splice(index, 0, record);
-      return records;
+      return [...records];
     });
 
     const editColumnID = state.activeCell.columnID ?? state.columnTreeFlatten[0];

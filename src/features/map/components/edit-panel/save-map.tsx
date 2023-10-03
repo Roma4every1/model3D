@@ -14,7 +14,7 @@ interface SaveMapProps {
 
 export const SaveMap = ({id, state, t}: SaveMapProps) => {
   const dispatch = useDispatch();
-  const disabled = !state.isModified;
+  const disabled = !state.editable || !state.modified;
   const action = () => dispatch(saveMap(id));
 
   return (

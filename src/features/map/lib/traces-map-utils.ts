@@ -1,13 +1,11 @@
-import { chunk } from 'lodash';
 import { getBoundsByPoints, PIXEL_PER_METER } from './map-utils';
-import { checkDistancePoints } from '../components/edit-panel/selecting/selecting-utils';
+import { checkDistancePoints } from './selecting-utils.ts';
 
 
 /** Прототип объекта слоя трассы. */
-export const traceLayerProto: MapLayer = {
+export const traceLayerProto: MapLayerRaw = {
   bounds: {min: {x: 0, y: 0}, max: {x: 0, y: 0}},
   container: 'null',
-  elements: [],
   group: 'Трассы',
   highscale: 'INF',
   lowscale: 0,
@@ -15,7 +13,6 @@ export const traceLayerProto: MapLayer = {
   uid: '{TRACES-LAYER}',
   version: '1.0',
   visible: true,
-  temporary: true,
 };
 
 /** Возвращает элемент карты polyline для отрисовки трассы */
@@ -27,11 +24,11 @@ export function getTraceMapElement(model: TraceModel): MapPolyline {
   return {
     type: 'polyline',
     arcs: [arc],
-    bounds: getBoundsByPoints(chunk(path, 2) as [number, number][]),
+    bounds: getBoundsByPoints(path),
     borderstyle: 0,
     fillbkcolor: '#0000ff', fillcolor: '#0000ff',
     bordercolor: '#0000ff', borderwidth: 1.25,
-    attrTable: {}, transparent: true, isTrace: true
+    transparent: true, isTrace: true
   };
 }
 

@@ -1,44 +1,22 @@
-import lines from '../../../drawer/lines.json';
-import parseColor from 'parse-color';
+import { TFunction } from 'react-i18next';
+import { FunctionComponent } from 'react';
 import { fillPatterns } from 'shared/drawing';
-import { polylineType } from '../selecting/selecting-utils';
+import { polylineType } from '../../../lib/selecting-utils.ts';
 import { ColorPickerPaletteSettings, ColorPickerGradientSettings } from '@progress/kendo-react-inputs';
+import lines from '../../../drawer/lines.json';
 
 
-export interface InitLabelState {
-  text: string,
-  color: string,
-  fontSize: number,
-  hAlignment: MapLabelAlignment,
-  vAlignment: MapLabelAlignment,
-  xOffset: number,
-  yOffset: number,
-  angle: number,
-  transparent: boolean,
+export interface PropertyWindowProps<T = MapElement> {
+  element: T;
+  apply: () => void;
+  update: () => void;
+  cancel: () => void;
+  t: TFunction;
+  isElementCreating: boolean;
 }
-
-export interface InitPolylineState {
-  legend: any,
-  closed: boolean,
-  transparent: boolean,
-  borderWidth: number,
-  style: PolylineBorderStyle,
-  borderColor: string,
-  borderStyle: number,
-  borderStyleID: string,
-  fillName: any,
-  fillColor: string,
-  fillBackColor: string,
-}
-
-export interface InitFieldState {
-  x: number,
-  y: number,
-  sizex: number,
-  sizey: number,
-  stepx: number,
-  stepy: number,
-  palette: MapFieldPalette,
+export interface PropertyWindowConfig {
+  component: FunctionComponent<PropertyWindowProps>;
+  windowSize: [number, number];
 }
 
 /* --- Polyline Templates --- */
@@ -49,113 +27,11 @@ let borderStyles = [5, 4, 3, 2, 1, 0].reverse().map(e => ({borderStyle: e, key: 
 let borderStylesID = lines.BorderStyles[0].Element.map(e => ({style: e, key: e?.guid?._value}));
 export const stylesData: StyleData[] = [...borderStyles, ...borderStylesID];
 
-let gridTemplates = new Array(30).fill(null).map((x, i) => 'grids-' + i);
-let litTemplates = new Array(27).fill(null).map((x, i) => 'lit-' + i);
-let halfToneTemplates = new Array(9).fill(null).map((x, i) => 'halftone-' + (i * 8));
-export const templatesData: string[] = ['', ...gridTemplates, ...litTemplates, ...halfToneTemplates];
-
-/* --- Label Properties --- */
-
-/** Создание начального состояния подписи. */
-export function createLabelInit(label: MapLabel): InitLabelState {
-  return {
-    text: label.text, color: label.color, fontSize: label.fontsize,
-    xOffset: label.xoffset, yOffset: label.yoffset,
-    hAlignment: label.halignment, vAlignment: label.valignment,
-    angle: label.angle, transparent: label.transparent,
-  };
-}
-
-/** Откат изменённой подписи в начальное состояние. */
-export function rollbackLabel(label: MapLabel, init: InitLabelState): void {
-  label.text = init.text;
-  label.color = init.color;
-  label.fontsize = init.fontSize;
-  label.xoffset = init.xOffset;
-  label.yoffset = init.yOffset;
-  label.halignment = init.hAlignment;
-  label.valignment = init.vAlignment;
-  label.angle = init.angle;
-  label.transparent = init.transparent;
-}
-
-/* --- Polyline Properties --- */
-
 export function updateImg(polyline: MapPolyline): void {
   const back = polyline.transparent || !polyline.fillbkcolor
     ? 'none'
     : polylineType.bkcolor(polyline);
   polyline.fillStyle = fillPatterns.createFillStyle(polyline.fillname, polyline.fillcolor, back);
-}
-
-/** Создание начального состояния линии. */
-export function createPolylineInit(polyline: MapPolyline): InitPolylineState {
-  return {
-    legend: polyline.legend,
-    closed: polyline.arcs[0].closed,
-    transparent: polyline.transparent,
-    style: polyline.style ? structuredClone(polyline.style) : undefined,
-    borderWidth: polyline.borderwidth,
-    borderStyle: polyline.borderstyle,
-    borderStyleID: polyline.borderstyleid,
-    borderColor: polyline.bordercolor,
-    fillName: polyline.fillname,
-    fillColor: polyline.fillcolor,
-    fillBackColor: polyline.fillbkcolor,
-  };
-}
-
-/** Откат изменённой линии в начальное состояние. */
-export function rollbackPolyline(polyline: MapPolyline, init: InitPolylineState): void {
-  polyline.arcs[0].closed = init.closed;
-  polyline.transparent = init.transparent;
-  polyline.borderwidth = init.borderWidth;
-  polyline.borderstyle = init.borderStyle;
-  polyline.borderstyleid = init.borderStyleID;
-  polyline.bordercolor = init.borderColor;
-  polyline.fillname = init.fillName;
-  polyline.fillcolor = init.fillColor;
-  polyline.fillbkcolor = init.fillBackColor;
-  polyline.legend = init.legend;
-  polyline.style = init.style;
-  updateImg(polyline);
-}
-
-export function applyLegend(polyline: MapPolyline, legend: any): void {
-  legend.properties.forEach(p => {
-    switch (p.name) {
-      case "BorderStyle":
-        polyline.borderstyle = Number(p.value.replace(',', '.'));
-        polyline.borderstyleid = undefined;
-        break;
-      case "BorderStyleId":
-        polyline.borderstyle = undefined;
-        polyline.borderstyleid = p.value;
-        break;
-      case "Closed":
-        polyline.arcs[0].closed = p.value === 'True';
-        break;
-      case "FillBkColor":
-        polyline.fillbkcolor = parseColor('#' + (p.value.slice(-6))).hex;
-        break;
-      case "FillColor":
-        polyline.fillcolor = parseColor('#' + (p.value.slice(-6))).hex;
-        break;
-      case "FillName":
-        polyline.fillname = p.value;
-        break;
-      case "StrokeColor":
-        polyline.bordercolor = parseColor('#' + (p.value.slice(-6))).hex;
-        break;
-      case "StrokeThickness":
-        polyline.borderwidth = Number(p.value.replace(',', '.'));
-        break;
-      case "Transparency":
-        polyline.transparent = p.value !== 'Nontransparent';
-        break;
-      default: break;
-    }
-  });
 }
 
 export const gradientSettings: ColorPickerGradientSettings = {opacity: false};
@@ -182,44 +58,4 @@ export const paletteSettings: ColorPickerPaletteSettings = {
     '#000000', '#808000', '#808040', '#808080',
     '#408080', '#c0c0c0', '#400040', '#ffffff',
   ],
-};
-
-/* --- Field Properties --- */
-
-/** Создание начального состояния поля. */
-export const createFieldInit = (field: MapField): InitFieldState => {
-  return {
-    x: field.x,
-    y: field.y,
-    sizex: field.sizex,
-    sizey: field.sizey,
-    stepx: field.stepx,
-    stepy: field.stepy,
-    palette: field.palette,
-  };
-};
-
-/** Откат изменённой поля в начальное состояние. */
-export const rollbackField = (field: MapField, init: InitFieldState) => {
-  field.x = init.x;
-  field.y = init.y;
-  field.sizex = init.sizex;
-  field.sizey = init.sizey;
-  field.stepx = init.stepx;
-  field.stepy = init.stepy;
-  field.palette = init.palette;
-};
-
-/** Создание начального состояния палитры поля. */
-export const createFieldPaletteInit = (palette: MapFieldPalette): MapFieldPalette => {
-  return {
-    interpolated: palette.interpolated,
-    level: [...palette.level.map(level => Object.assign({}, level) )],
-  };
-};
-
-/** Откат изменённой палитры поля в начальное состояние. */
-export const rollbackFieldPalette = (palette: MapFieldPalette, init: MapFieldPalette) => {
-  palette.interpolated = init.interpolated;
-  palette.level = init.level;
 };

@@ -1,6 +1,6 @@
 {
   "name": "well-manager",
-  "version": "1.3.17.files",
+  "version": "1.3.18.3",
   "private": true,
   "type": "module",
   "scripts": {
@@ -22,7 +22,6 @@
     "@progress/kendo-react-indicators": "5.9.0",
     "@progress/kendo-react-inputs": "5.9.0",
     "@progress/kendo-react-intl": "5.9.0",
-    "@progress/kendo-react-labels": "5.9.0",
     "@progress/kendo-react-layout": "5.9.0",
     "@progress/kendo-react-listbox": "5.9.0",
     "@progress/kendo-react-notification": "5.9.0",
@@ -33,8 +32,9 @@
     "cldr-core": "41.0.0",
     "cldr-dates-full": "41.0.0",
     "cldr-numbers-full": "41.0.0",
-    "docx-preview": "^0.1.18",
-    "exceljs": "^4.3.0",
+    "docx-preview": "0.1.18",
+    "events": "3.3.0",
+    "exceljs": "4.3.0",
     "flexlayout-react": "0.7.9",
     "i18next": "21.8.11",
     "jspdf": "2.5.1",

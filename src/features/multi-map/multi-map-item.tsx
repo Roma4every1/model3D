@@ -18,11 +18,5 @@ export const MultiMapItem = ({parent, config}: MultiMapItemProps) => {
 
   if (progress < 0) return <TextInfo text={'map.not-loaded'}/>;
   if (progress < 100) return <LoadingStatus percentage={progress}/>;
-
-  return (
-    <Map
-      id={config.formID} type={'map'} parent={parent}
-      settings={{}} channels={[]} data={config.data}
-    />
-  );
+  return <Map id={config.formID} type={'map'} parent={parent} settings={null} channels={null}/>;
 };

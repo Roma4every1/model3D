@@ -2,8 +2,11 @@ import * as _ from 'lodash';
 import parseColor from 'parse-color';
 import { getLabelTextNumberArray } from './label-text-parser';
 import { fillPatterns } from '../../../shared/drawing';
-import { rects } from './geom';
+import { intersects } from './geom';
 import { provider } from './index';
+import { PIXEL_PER_METER } from '../lib/map-utils';
+
+import lines from './lines.json';
 import linesDefStub from './lines.def.stub.json';
 
 
@@ -52,10 +55,9 @@ declareType('namedpoint', {
   draft: (i, options) => {
     const p = options.pointToControl(i);
     const context = options.context;
-    const drawOptions = options.provider.drawOptions;
-    context.strokeStyle = drawOptions.selectedColor || '#0000ff';
-    context.lineWidth = (drawOptions.selectedWidth || 0.75) * 0.001 * options.dotsPerMeter;
-    const s = (drawOptions.selectedSize || 5) * 0.001 * options.dotsPerMeter;
+    context.strokeStyle = '#000FFF';
+    context.lineWidth = 0.001 * options.dotsPerMeter;
+    const s = 0.006 * options.dotsPerMeter;
     context.strokeRect(p.x - s / 2, p.y - s / 2, s, s);
   },
 });
@@ -72,8 +74,8 @@ declareType('sign', {
     if (!img) return;
 
     const point = options.pointToControl(i);
-    let width = img.width * i.size * options.pixelRatio;
-    let height = img.height * i.size * options.pixelRatio;
+    let width = img.width * i.size * window.devicePixelRatio;
+    let height = img.height * i.size * window.devicePixelRatio;
 
     if (i.selected) {
       width *= 2;
@@ -547,7 +549,7 @@ var polyline = declareType('polyline', {
     context.beginPath();
 
     var fillSegmentWithDecoration = function (ctx, lineConfig, point, lpoint, overhead, i, options) {
-      const scale = options.pixelRatio;
+      const scale = window.devicePixelRatio;
       const decorations = lineConfig.Decoration;
 
       if (!decorations) {
@@ -695,8 +697,8 @@ var polyline = declareType('polyline', {
   draft: function (i, options) {
     /** @type CanvasRenderingContext2D */
     const context = options.context;
-    const configThicknessCoefficient = options.pixelRatio;
-    const linesConfig = options.provider.lineConfig.BorderStyles[0].Element;
+    const configThicknessCoefficient = window.devicePixelRatio;
+    const linesConfig = lines.BorderStyles[0].Element;
 
     let currentLineConfig = [];
     if (i.borderstyleid) {
@@ -744,10 +746,10 @@ var polyline = declareType('polyline', {
 
   draw: async (i, options) => {
     // Thickness coefficient for all lines defined in lines.json/xml
-    const configThicknessCoefficient = options.pixelRatio;
+    const configThicknessCoefficient = window.devicePixelRatio;
     /** @type CanvasRenderingContext2D */
     const context = options.context;
-    const linesConfig = options.provider.lineConfig.BorderStyles[0].Element;
+    const linesConfig = lines.BorderStyles[0].Element;
 
     let currentLineConfig = [];
     if (i.borderstyleid) {
@@ -945,29 +947,15 @@ var label = declareType('label', {
         width = context.measureText(i.text).width;
       }
 
-      switch (i.halignment) {
-        case label.alHorRight: {
-          x -= width + 2;
-          break;
-        }
-        case label.alHorCenter: {
-          x -= width / 2 + 1;
-          break;
-        }
-        default: {
-        }
+      if (i.halignment === label.alHorRight) {
+        x -= width + 2;
+      } else if (i.halignment === label.alHorCenter) {
+        x -= width / 2 + 1;
       }
-      switch (i.valignment) {
-        case label.alVerBottom: {
-          y -= fontsize + 2;
-          break;
-        }
-        case label.alVerCenter: {
-          y -= fontsize / 2 + 1;
-          break;
-        }
-        default: {
-        }
+      if (i.valignment === label.alVerBottom) {
+        y -= fontsize + 2;
+      } else if (i.valignment === label.alVerCenter) {
+        y -= fontsize / 2 + 1;
       }
 
       const fillStyle = i.color === '#ffffff' ? 'black' : i.color;
@@ -1072,14 +1060,13 @@ declareType('pieslice', {
     if (!(i.startangle === 0 && Math.abs(i.endangle - twoPi) < 1e-6)) context.moveTo(p.x, p.y);
     context.arc(p.x, p.y, r, i.startangle + Math.PI / 2, i.endangle + Math.PI / 2, false);
     context.closePath();
-    const drawOptions = options.provider.drawOptions || {};
-    context.strokeStyle = (drawOptions.piesliceBorderColor || 'black');
-    context.lineWidth = (drawOptions.piesliceBorderWidth || 0.2) * 0.001 * options.dotsPerMeter;
+    context.strokeStyle = 'black';
+    context.lineWidth = 0.2 * 0.001 * options.dotsPerMeter;
     const gradient = context.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
     gradient.addColorStop(0, 'white');
     gradient.addColorStop(1, i.color);
     context.fillStyle = gradient; // i.color
-    context.globalAlpha = drawOptions.piesliceAlpha || 0.7;
+    context.globalAlpha = 0.7;
     context.fill();
     context.globalAlpha = 1;
     context.stroke();
@@ -1092,37 +1079,35 @@ declareType('pieslice', {
  * @param options {any}
  * */
 export async function startPaint(canvas, map, options) {
-  // to stop painting set the options.check callback and
-  // throw an exception inside it.
-  // options.check may return a Promise ( or Thenable ) to pause drawing
-
   const coords = options.coords;
   const onCheckExecution = options.onCheckExecution;
 
-  const exactBounds = rects.joinPoints(
-    coords.pointToMap({x: 0, y: 0}),
-    coords.pointToMap({x: canvas.width, y: canvas.height})
-  );
-  const drawBounds = rects.inflate(exactBounds, 0.1 * Math.max(
-    exactBounds.max.x - exactBounds.min.x,
-    exactBounds.max.y - exactBounds.min.y
-  ));
+  const topLeft = coords.pointToMap({x: 0, y: 0});
+  const bottomRight = coords.pointToMap({x: canvas.width, y: canvas.height});
+
+  const bounds = {
+    min: {x: Math.min(topLeft.x, bottomRight.x), y: Math.min(topLeft.y, bottomRight.y)},
+    max: {x: Math.max(topLeft.x, bottomRight.x), y: Math.max(topLeft.y, bottomRight.y)},
+  };
+
+  const d = 0.1 * Math.max(bounds.max.x - bounds.min.x, bounds.max.y - bounds.min.y);
+  bounds.min.x -= d;
+  bounds.max.x += d;
+  bounds.min.y -= d;
+  bounds.max.y += d;
 
   const drawOptions = {
     canvas: canvas,
-    context: canvas.getContext('2d'),
-    provider: provider,
+    context: options.ctx,
     pointToControl: coords.pointToControl,
     pointToMap: coords.pointToMap,
-    dotsPerMeter: coords.cscale,
-    pixelRatio: options.pixelRatio,
+    dotsPerMeter: window.devicePixelRatio * PIXEL_PER_METER,
   };
 
   try {
     for (const layer of map.layers) {
-      if (!layer.visible) continue;
-      if (!coords.scaleVisible(layer)) continue;
-      if (!rects.intersects(drawBounds, layer.bounds)) continue;
+      if (!layer.visible || !layer.isScaleVisible(coords.mapScale)) continue;
+      if (!intersects(bounds, layer.bounds)) continue;
 
       let c = onCheckExecution();
       c && (await c);
@@ -1131,25 +1116,25 @@ export async function startPaint(canvas, map, options) {
 
       // отрисовка всех элементов
       for (const element of layer.elements) {
-        let D = types[element.type];
-        if (!rects.intersects(drawBounds, D.bound(element))) continue;
+        const elementDrawer = types[element.type];
+        if (!intersects(bounds, elementDrawer.bound(element))) continue;
 
         c = onCheckExecution();
         c && (await c);
 
-        if (D.draw && !options.draftDrawing) {
-          await D.draw(element, drawOptions);
-        } else if (D.draft) {
-          D.draft(element, drawOptions);
+        if (elementDrawer.draw && !options.draftDrawing) {
+          await elementDrawer.draw(element, drawOptions);
+        } else if (elementDrawer.draft) {
+          elementDrawer.draft(element, drawOptions);
         }
       }
     }
 
-    map.x = options.events.centerx;
-    map.y = options.events.centery;
-    map.scale = options.events.scale;
-    map.onDrawEnd(canvas, map.x, map.y, map.scale);
-  } catch {
+    map.x = options.point.x;
+    map.y = options.point.y;
+    map.scale = coords.mapScale;
+    map.onDrawEnd(options.point, coords.mapScale);
+  } catch (e) {
     // ...
   }
 }

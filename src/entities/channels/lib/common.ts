@@ -110,7 +110,9 @@ export function channelRowToRecord(row: ChannelRow, columns: ChannelColumn[]): C
 export function getLinkedChannels(dict: ChannelDict): Set<ChannelName> {
   const linkedChannels = new Set<ChannelName>();
   for (const name in dict) {
-    const properties = dict[name].info.properties;
+    const properties = dict[name]?.info.properties;
+    if (!properties) continue;
+
     for (const property of properties) {
       const linkedChannelName = property.secondLevelChannelName;
       if (linkedChannelName) linkedChannels.add(linkedChannelName);
@@ -123,7 +125,8 @@ export function getLinkedChannels(dict: ChannelDict): Set<ChannelName> {
 export function getLookupChannels(dict: ChannelDict): Set<ChannelName> {
   const lookupChannels = new Set<ChannelName>();
   for (const name in dict) {
-    const lookups = dict[name].info.lookupChannels;
+    const lookups = dict[name]?.info.lookupChannels;
+    if (!lookups) continue;
     for (const lookupName of lookups) lookupChannels.add(lookupName);
   }
   return lookupChannels;

@@ -1,57 +1,28 @@
 import { chunk } from 'lodash';
 
 
-/** Настройки для метода `addEventListener`. */
-export const listenerOptions = {passive: true};
+export function createMapElementInit(element: MapElement): MapElement {
+  const type = element.type;
+  let copy: MapElement;
+
+  if (type === 'sign' || type === 'label') {
+    copy = {...element};
+  } else if (type === 'field') {
+    copy = structuredClone(element);
+  } else {
+    copy = structuredClone({...element, fillStyle: undefined});
+    copy.fillStyle = element.fillStyle;
+  }
+  delete copy.selected;
+  delete copy.edited;
+  return copy;
+}
 
 /** Количество пикселей в метре. В браузере `1cm = 96px / 2.54`. */
 export const PIXEL_PER_METER: number = 100 * 96 / 2.54;
 
-/** Возвращает список холстов привязанных карт в рамках одной мультикарты. */
-export function getMultiMapChildrenCanvases(
-  multi: FormDict<MultiMapState>, single: FormDict<MapState>,
-  formID: FormID, parentID: FormID,
-): MapCanvas[] {
-  const childrenUtils: MapCanvas[] = [];
-  const multiMapState = multi[parentID];
-
-  if (!multiMapState || !multiMapState.sync || multiMapState.children.length < 1) {
-    return childrenUtils;
-  }
-  for (const childFormID of multiMapState.children) {
-    if (childFormID === formID) continue;
-    const mapState = single[childFormID];
-    if (mapState?.canvas?.events) childrenUtils.push(mapState.canvas);
-  }
-  return childrenUtils;
-}
-
-/** Возвращает точку с координатами клика мыши. */
-export function clientPoint(event: MouseEvent): Point {
-  return {x: event.offsetX, y: event.offsetY};
-}
-
-/** Возвращает функцию для перевода точки клика из СК холста в СК карты. */
-export function getPointToMap(canvas: HTMLCanvasElement, cx: number, cy: number, scale: MapScale) {
-  const sc = 1 / PIXEL_PER_METER * scale;
-  const canvasCX = canvas.clientWidth / 2;
-  const canvasCY = canvas.clientHeight / 2;
-
-  return (point: Point): Point => ({
-    x: cx + (point.x - canvasCX) * sc,
-    y: cy + (point.y - canvasCY) * sc
-  });
-}
-
-/** Евклидово расстояние между двумя точками по их координатам.
- *
- * `√ (x1 - x2)^2 + (y1 - y2)^2`
- * */
-export function distance(x1: number, y1: number, x2: number, y2: number): number {
-  return Math.sqrt((x1 * x1 + x2 * x2) + (y1 * y1 + y2 * y2) - 2 * (x1 * x2 + y1 * y2));
-}
-
-export function getBoundsByPoints(points: [number, number][]): Bounds {
+export function getBoundsByPoints(path: number[]): Bounds {
+  const points = chunk(path, 2);
   const xValues = points.map(p => p[0]);
   const yValues = points.map(p => p[1]);
 
@@ -60,8 +31,6 @@ export function getBoundsByPoints(points: [number, number][]): Bounds {
     max: {x: Math.max(...xValues), y: Math.max(...yValues)}
   };
 }
-
-const SELECTION_RADIUS = 0.015;
 
 export function getNearestPointIndex(point: Point, scale: MapScale, polyline: MapPolyline): number {
   let minRadius, nearestIndex: number | null = null;
@@ -72,7 +41,7 @@ export function getNearestPointIndex(point: Point, scale: MapScale, polyline: Ma
     const localDist = Math.sqrt(Math.pow(p[0] - point.x, 2) + Math.pow(p[1] - point.y, 2));
     if (!minRadius || localDist < minRadius) {
       minRadius = localDist;
-      if ((minRadius / scale) < SELECTION_RADIUS) nearestIndex = i;
+      if ((minRadius / scale) < 0.015) nearestIndex = i;
     }
   });
   return nearestIndex;
@@ -122,7 +91,7 @@ export function squaredDistanceBetweenPointAndSegment(segment, point) {
 }
 
 /** Определяет вьюпорт карты, чтобы все элементы влазили в экран. */
-export function getFullViewport(layers: MapLayer[], canvas: HTMLCanvasElement): MapViewport {
+export function getFullViewport(layers: IMapLayer[], canvas: HTMLCanvasElement): MapViewport {
   let minX = Infinity, minY = Infinity;
   let maxX = -Infinity, maxY = -Infinity;
 
@@ -136,8 +105,8 @@ export function getFullViewport(layers: MapLayer[], canvas: HTMLCanvasElement): 
     if (max.y > maxY) maxY = max.y;
   }
 
-  const scaleX = 1.2 * (maxX - minX) * PIXEL_PER_METER / canvas.clientWidth;
-  const scaleY = 1.2 * (maxY - minY) * PIXEL_PER_METER / canvas.clientHeight;
+  const scaleX = 1.15 * (maxX - minX) * PIXEL_PER_METER / canvas.clientWidth;
+  const scaleY = 1.15 * (maxY - minY) * PIXEL_PER_METER / canvas.clientHeight;
   const scale: MapScale = Math.max(scaleX, scaleY);
 
   return {centerX: (minX + maxX) / 2, centerY: (minY + maxY) / 2, scale};

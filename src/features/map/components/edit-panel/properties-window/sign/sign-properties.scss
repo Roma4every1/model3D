@@ -1,0 +1,21 @@
+.sign-properties {
+  > :first-child {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 4px;
+  }
+
+  .edit-field {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 8px;
+    height: 24px;
+
+    > * {
+      height: 24px;
+    }
+  }
+}

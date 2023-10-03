@@ -1,57 +1,35 @@
-import { TFunction } from 'react-i18next';
 import { useState, useEffect, cloneElement } from 'react';
 import { Button } from '@progress/kendo-react-buttons';
-import { Label } from '@progress/kendo-react-labels';
 import { DropDownList, DropDownListChangeEvent } from '@progress/kendo-react-dropdowns';
 import { Checkbox } from '@progress/kendo-react-inputs';
-import { ColorPicker } from '@progress/kendo-react-inputs';
+import { ColorPicker, ColorPickerChangeEvent } from '@progress/kendo-react-inputs';
 import { NumericTextBox } from '@progress/kendo-react-inputs';
 import { FillNameTemplate } from './fill-name-template';
 import { StyleTemplate } from './style-template';
-import { applyLegend, InitPolylineState } from '../properties-utils';
-import { stylesData, templatesData, paletteSettings, gradientSettings, updateImg } from '../properties-utils';
-import parseColor from 'parse-color';
+import { fillPatterns } from 'shared/drawing';
+import { stylesData, paletteSettings, gradientSettings, updateImg, PropertyWindowProps } from '../properties-utils';
 import './polyline-properties.scss';
 
 
-interface PolylinePropertiesProps {
-  element: MapPolyline,
-  init: InitPolylineState,
-  legends: any,
-  apply: () => void,
-  update: () => void,
-  cancel: () => void,
-  t: TFunction,
-  isElementCreating: boolean,
-}
-
-export const PolylineProperties = ({element: polyline, init, legends, apply, update, cancel, t, isElementCreating}: PolylinePropertiesProps) => {
-  const legendsData: any[] = legends?.sublayerSettings || [];
+export const PolylineProperties = (props: PropertyWindowProps<MapPolyline>) => {
+  const { element: polyline, apply, update, cancel, t, isElementCreating } = props;
   const [changed, setChanged] = useState(false);
 
   /* --- Polyline Properties State --- */
 
-  const [legend, setLegend] = useState(init.legend);
-  const [closed, setClosed] = useState(init.closed === true);
-  const [transparent, setTransparent] = useState(init.transparent === true);
+  const [closed, setClosed] = useState(polyline.arcs[0]?.closed === true);
+  const [transparent, setTransparent] = useState(polyline.transparent === true);
 
-  const [borderWidth, setBorderWidth] = useState(init.borderWidth || 0);
-  const [borderColor, setBorderColor] = useState(init.borderColor || null);
-  const [borderStyle, setBorderStyle] = useState(init.borderStyle);
-  const [borderStyleID, setBorderStyleID] = useState(init.borderStyleID);
+  const [borderWidth, setBorderWidth] = useState(polyline.borderwidth || 0);
+  const [borderColor, setBorderColor] = useState(polyline.bordercolor || null);
+  const [borderStyle, setBorderStyle] = useState(polyline.borderstyleid);
+  const [borderStyleID, setBorderStyleID] = useState(polyline.borderstyleid);
 
-  const [fillName, setFillName] = useState(init.fillName);
-  const [fillColor, setFillColor] = useState(init.fillColor || null);
-  const [fillBackColor, setFillBackColor] = useState(init.fillBackColor || null);
+  const [fillName, setFillName] = useState(polyline.fillname);
+  const [fillColor, setFillColor] = useState(polyline.fillcolor || null);
+  const [fillBackColor, setFillBackColor] = useState(polyline.fillbkcolor || null);
 
   /* --- Properties Handlers --- */
-
-  const onLegendChange = (event) => {
-    polyline.legend = event.value;
-    setLegend(polyline.legend);
-    applyLegend(polyline, event.value);
-    setChanged(true); update();
-  };
 
   const onChangeClosed = () => {
     polyline.arcs[0].closed = !polyline.arcs[0].closed;
@@ -83,8 +61,8 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
     setChanged(true); update();
   };
 
-  const onBorderColorChange = (event) => {
-    polyline.bordercolor = parseColor(event.value).hex;
+  const onBorderColorChange = ({value}: ColorPickerChangeEvent) => {
+    polyline.bordercolor = value;
     setBorderColor(polyline.bordercolor);
     setChanged(true); update();
   };
@@ -95,14 +73,14 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
     updateImg(polyline); setChanged(true); update();
   };
 
-  const onFillColorChange = (event) => {
-    polyline.fillcolor = parseColor(event.value).hex;
+  const onFillColorChange = ({value}: ColorPickerChangeEvent) => {
+    polyline.fillcolor = value;
     setFillColor(polyline.fillcolor);
     updateImg(polyline); setChanged(true); update();
   };
 
-  const onFillBackColorChange = (event) => {
-    polyline.fillbkcolor = parseColor(event.value).hex;
+  const onFillBackColorChange = ({value}: ColorPickerChangeEvent) => {
+    polyline.fillbkcolor = value;
     setFillBackColor(polyline.fillbkcolor);
     updateImg(polyline); setChanged(true); update();
   };
@@ -128,15 +106,6 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
   }, [borderStyleID]);
 
   /* --- --- --- */
-
-  const legendRender = (li, itemProps) => {
-    const itemChildren = (
-      <span style={{fontWeight: itemProps?.dataItem.default ? 'bold' : 'normal'}}>
-        {itemProps?.dataItem.name}
-      </span>
-    );
-    return cloneElement(li, li.props, itemChildren);
-  };
 
   const styleValueRender = (element, value) => {
     const children = [
@@ -193,59 +162,16 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
   /* --- View --- */
 
   return (
-    <fieldset className={'polyline-properties'}>
-      <fieldset style={{gridTemplateColumns: '1fr 1fr 1.5fr'}}>
+    <div className={'polyline-properties'}>
+      <fieldset>
         <div className={'item'}>
-          <Label editorId={'legend'} className={'polylinePropertiesLegendLabel'}>
-            {t('map.legend')}
-          </Label>
-          <DropDownList
-            className={'polylinePropertiesLegendCombobox'}
-            name={'legend'}
-            data={legendsData}
-            value={legend}
-            itemRender={legendRender}
-            textField={'name'}
-            onChange={onLegendChange}
-          />
-        </div>
-        <div className={'item'}>
-          <Label editorId={'fillColor'} className={'polylinePropertiesFillColorLabel'}>
-            {t('map.fillColor')}
-          </Label>
-          <div className={'polylinePropertiesFillColorCombobox'}>
-            <ColorPicker
-              view={'gradient'} value={fillColor}
-              paletteSettings={paletteSettings}
-              gradientSettings={gradientSettings}
-              onChange={onFillColorChange}
-            />
-          </div>
-        </div>
-        <div className={'item'}>
-          <Label editorId={'bkColor'} className={'polylinePropertiesBkColorLabel'}>
-            {t('map.bkColor')}
-          </Label>
-          <div className={'polylinePropertiesBkColorCombobox'}>
-            <ColorPicker
-              view={'gradient'} value={fillBackColor}
-              paletteSettings={paletteSettings}
-              gradientSettings={gradientSettings}
-              onChange={onFillBackColorChange}
-            />
-          </div>
-        </div>
-      </fieldset>
-
-      <fieldset style={{gridTemplateColumns: '1fr 1fr 1.5fr'}}>
-        <div className={'item'}>
-          <Label editorId={'template'} className={'polylinePropertiesTemplateLabel'}>
+          <span className={'label'}>
             {t('map.template')}
-          </Label>
+          </span>
           <DropDownList
-            className={'polylinePropertiesTemplateCombobox'}
+            style={{height: 20}}
             name={'template'}
-            data={templatesData}
+            data={fillPatterns.allPatterns}
             value={fillName}
             valueRender={templateValueRender}
             itemRender={templatesRender}
@@ -254,79 +180,83 @@ export const PolylineProperties = ({element: polyline, init, legends, apply, upd
           />
         </div>
         <div className={'item'}>
-          <Label editorId={'strokeColor'} className={'polylinePropertiesStrokeColorLabel'}>
-            {t('map.strokeColor')}
-          </Label>
-          <div className={'polylinePropertiesStrokeColorCombobox'}>
-            <ColorPicker
-              view={'gradient'} value={borderColor}
-              disabled={borderColorDisabled}
-              paletteSettings={paletteSettings}
-              gradientSettings={gradientSettings}
-              onChange={onBorderColorChange}
-            />
-          </div>
+          <span className={'label'}>
+            {t('map.fillColor')}
+          </span>
+          <ColorPicker
+            view={'gradient'} value={fillColor}
+            paletteSettings={paletteSettings}
+            gradientSettings={gradientSettings}
+            onChange={onFillColorChange}
+          />
         </div>
         <div className={'item'}>
-          <Label editorId={'strokeWidth'} className={'polylinePropertiesStrokeWidthLabel'}>
-            {t('map.strokeWidth')}
-          </Label>
+          <span className={'label'}>
+            {t('map.bkColor')}
+          </span>
+          <ColorPicker
+            view={'gradient'} value={fillBackColor}
+            paletteSettings={paletteSettings}
+            gradientSettings={gradientSettings}
+            onChange={onFillBackColorChange}
+          />
+        </div>
+      </fieldset>
+      <fieldset>
+        <div className={'item'}>
+          <span className={'label'}>
+            {t('map.border-style')}
+          </span>
+          <DropDownList
+            data={stylesData} style={{height: 20}}
+            value={stylesData.find(sd => sd?.key === borderStyle || sd?.key === borderStyleID)}
+            valueRender={styleValueRender} itemRender={stylesRender}
+            onChange={onBorderStyleChange} disabled={!borderColor}
+          />
+        </div>
+        <div className={'item'}>
+          <span className={'label'}>
+            {t('map.border-color')}
+          </span>
+          <ColorPicker
+            view={'gradient'} value={borderColor}
+            disabled={borderColorDisabled}
+            paletteSettings={paletteSettings}
+            gradientSettings={gradientSettings}
+            onChange={onBorderColorChange}
+          />
+        </div>
+        <div className={'item'}>
+          <span className={'label'}>
+            {t('map.border-width')}
+          </span>
           <NumericTextBox
-            className={'polylinePropertiesStrokeWidthCombobox'}
-            name={'strokeWidth'} value={borderWidth}
-            min={0} max={20} step={0.25} format={'n2'}
+            style={{height: 20}} format={'n2'}
+            value={borderWidth} min={0} max={20} step={0.25}
             disabled={borderWidthDisabled} onChange={onBorderWidthChange}
           />
         </div>
       </fieldset>
-
       <fieldset style={{gridTemplateColumns: '1fr 1fr'}}>
-        <div className={'item'}>
-          <Label editorId={'style'} className={'polylinePropertiesStyleLabel'}>
-            {t('map.style')}
-          </Label>
-          <DropDownList
-            className={'polylinePropertiesStyleCombobox'}
-            name={'style'}
-            data={stylesData}
-            value={stylesData.find(sd => sd?.key === borderStyle || sd?.key === borderStyleID)}
-            valueRender={styleValueRender}
-            itemRender={stylesRender}
-            onChange={onBorderStyleChange}
-            disabled={!borderColor}
-          />
-        </div>
-        <div className={'item-checkbox'}>
-          <Checkbox
-            className={'polylinePropertiesTransparencyCheckbox'}
-            name={'transparency'}
-            label={t('map.transparency')}
-            checked={transparent}
-            onChange={onTransparentChange}
-          />
-          <Checkbox
-            className={'polylinePropertiesClosedCheckbox'}
-            name={'closed'}
-            label={t('map.closed')}
-            checked={closed}
-            onChange={onChangeClosed}
-          />
-        </div>
+        <Checkbox
+          label={t('map.transparency')}
+          checked={transparent}
+          onChange={onTransparentChange}
+        />
+        <Checkbox
+          label={t('map.closed')}
+          checked={closed}
+          onChange={onChangeClosed}
+        />
       </fieldset>
-
-      <fieldset style={{gridTemplateColumns: '1fr 1fr'}}>
-        <Button style={{justifySelf: 'start'}}
-                className={'polylinePropertiesApplyButton'}
-                disabled={isElementCreating ? false : !changed}
-                onClick={apply}
-        >
+      <div className={'wm-dialog-actions'}>
+        <Button onClick={apply} disabled={isElementCreating ? false : !changed}>
           {t('base.apply')}
         </Button>
-        <Button style={{justifySelf: 'end'}} className={'polylinePropertiesCancelButton'} onClick={cancel}>
+        <Button onClick={cancel}>
           {t('base.cancel')}
         </Button>
-      </fieldset>
-
-    </fieldset>
+      </div>
+    </div>
   );
 };

@@ -26,7 +26,7 @@ export const TraceEditor = ({id}: TraceEditorProps) => {
   const mapState: MapState = useSelector(mapStateSelector.bind(id));
 
   if (!model) return <div/>;
-  const mapPoints = mapState?.mapData?.points;
+  const mapPoints = mapState?.stage.getMapData()?.points;
 
   // задание недостающих координат и имён
   if (mapPoints) {

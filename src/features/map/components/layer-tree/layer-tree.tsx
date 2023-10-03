@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { LayersTreeElement } from './layers-tree-element';
+import { LayerTreeNode } from './layer-tree-node.tsx';
 import { mapStateSelector } from '../../store/map.selectors';
-import './layers-tree.scss';
+import './layer-tree.scss';
 
 
 interface MapLayerTreeProps {
@@ -14,20 +14,23 @@ interface MapLayerTreeProps {
 /** Дерево слоёв карты. */
 export const MapLayerTree = ({id}: MapLayerTreeProps) => {
   const mapState: MapState = useSelector(mapStateSelector.bind(id));
-  const layers = mapState?.mapData?.layers;
+  const stage = mapState?.stage;
+  const layers = stage?.getMapData()?.layers;
+
+  const [signal, setSignal] = useState(false);
+  if (stage) stage.listeners.layerTreeChange = () => setSignal(!signal);
 
   const treeItems = useMemo(() => {
     return getTreeItems(layers);
   }, [layers]);
 
   const itemToElement = (item: LayerTreeItem, i: number) => {
-    return <LayersTreeElement key={i} item={item} mapState={mapState} formID={id}/>;
+    return <LayerTreeNode key={i} item={item} stage={stage}/>;
   };
-
   return <div>{treeItems.map(itemToElement)}</div>;
 };
 
-function getTreeItems(layers: MapLayer[]): LayerTreeItem[] {
+function getTreeItems(layers: IMapLayer[]): LayerTreeItem[] {
   const tree: LayerTreeItem[] = [];
   if (!layers) return tree;
 
@@ -52,7 +55,6 @@ function getTreeItems(layers: MapLayer[]): LayerTreeItem[] {
   return tree;
 }
 
-function getGroupForTree(layer: MapLayer): LayerTreeItem {
-  const visible = typeof layer.visible === 'string' ? (layer.visible !== '0') : layer.visible;
-  return {id: layer.uid, text: layer.name, sublayer: layer, visible};
+function getGroupForTree(layer: IMapLayer): LayerTreeItem {
+  return {id: layer.id, text: layer.displayName, sublayer: layer, visible: layer.visible};
 }

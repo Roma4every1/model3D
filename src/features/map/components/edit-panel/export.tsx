@@ -4,18 +4,20 @@ import { jsPDF } from 'jspdf';
 import pdfIcon from 'assets/images/map/pdf.png';
 
 
-interface ActionsProps {
-  mapState: MapState,
-  t: TFunction
+interface ExportSectionProps {
+  state: MapState;
+  t: TFunction;
 }
 
 
-export const Export = ({mapState, t}: ActionsProps) => {
-  const { canvas, mapData } = mapState;
+export const Export = ({state, t}: ExportSectionProps) => {
+  const { canvas, stage, loading } = state
 
   const exportToPDF = () => {
     const format = [canvas.width, canvas.height];
     const doc = new jsPDF({unit: 'px', orientation: 'l', format});
+
+    const mapData = stage.getMapData();
     const mapName = mapData?.mapName || 'Map', date = mapData?.date || '';
 
     const imgData = canvas.toDataURL('image/png', 1.0);
@@ -28,7 +30,7 @@ export const Export = ({mapState, t}: ActionsProps) => {
     <MenuSection header={t('map.actions.header')} className={'map-actions'}>
       <BigButton
         text={t('map.actions.export')} icon={pdfIcon}
-        action={exportToPDF} disabled={!mapState?.isLoadSuccessfully}
+        action={exportToPDF} disabled={loading.percentage < 100}
       />
     </MenuSection>
   );

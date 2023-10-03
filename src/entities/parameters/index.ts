@@ -7,5 +7,4 @@ export { serializeParameter } from './lib/serialization';
 export { parameterMethodDict } from './lib/methods';
 
 export * from './store/parameters.actions';
-export * from './store/parameters.selectors';
 export { updateParamDeep } from './store/parameters.thunks';

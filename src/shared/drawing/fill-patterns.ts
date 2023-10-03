@@ -6,7 +6,7 @@ import regionalLib from 'assets/map-libs/regional.bin';
 
 
 interface IFillPatterns {
-  initialize(): Promise<boolean>
+  initialize(): Promise<void>
   createFillStyle(name: string, color: ColorHEX, background: ColorHEX): CanvasPattern | string;
 }
 
@@ -28,6 +28,8 @@ export class FillPatterns implements IFillPatterns {
 
   /** Флаг, показывающий, вызывался ли метод инициализации. */
   public initialized: boolean;
+  /** Список доступных заливкок. */
+  public readonly allPatterns: string[];
   /** Словарь библиотек заливок. */
   private readonly libs: Record<string, Matrix[]>;
 
@@ -39,6 +41,10 @@ export class FillPatterns implements IFillPatterns {
   private readonly imageData: ImageData;
 
   constructor() {
+    this.allPatterns = [
+      '', 'halftone-0', 'halftone-8', 'halftone-16', 'halftone-24',
+      'halftone-32', 'halftone-40', 'halftone-48', 'halftone-56', 'halftone-64',
+    ];
     this.libs = {};
     this.initialized = false;
 
@@ -52,17 +58,22 @@ export class FillPatterns implements IFillPatterns {
   }
 
   /** Загружает библиотеки заливок. */
-  public async initialize(): Promise<boolean> {
+  public async initialize(): Promise<void> {
     if (this.initialized) return;
     this.initialized = true;
 
-    const results = await Promise.all([
+    await Promise.all([
       this.fetchLib('dro32_', dro32Lib),
       this.fetchLib('grids', gridsLib),
       this.fetchLib('lit', litLib),
       this.fetchLib('regional', regionalLib)
     ]);
-    return results[0] && results[1] && results[2] && results[3];
+
+    for (const type of ['grids', 'lit', 'regional']) {
+      for (let i = 0; i < this.libs[type].length; i++) {
+        this.allPatterns.push(type + '-' + i);
+      }
+    }
   }
 
   /** Создаёт паттерн заливки по типу и двум цветам. */
@@ -122,15 +133,13 @@ export class FillPatterns implements IFillPatterns {
   }
 
   /** Загружает библиотеку и парсит её как SMB. */
-  private async fetchLib(type: string, path: string): Promise<boolean> {
+  private async fetchLib(type: string, path: string): Promise<void> {
     try {
       const init: RequestInit = {credentials: 'include'};
       const buffer = await fetch(path, init).then((res) => res.arrayBuffer());
       this.libs[type] = this.parseSMB(new Uint8Array(buffer));
-      return true;
-    }
-    catch {
-      return false;
+    } catch {
+      this.libs[type] = [];
     }
   }
 

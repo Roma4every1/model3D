@@ -30,7 +30,7 @@ export const Presentation = ({id, state}: PresentationProps) => {
   if (fetchState.details) return <TextInfo text={fetchState.details}/>;
 
   const multiMapChannel = state.settings.multiMapChannel;
-  if (multiMapChannel) return <MultiMap id={id} channelName={multiMapChannel}/>;
+  if (multiMapChannel) return <MultiMap presentation={state} channelName={multiMapChannel}/>;
 
   return <Grid id={id} model={state.layout}/>;
 };

@@ -19,7 +19,7 @@ export class CaratCorrelations implements ICaratCorrelations {
   constructor(init: CaratColumnInit, drawer: CaratDrawer) {
     this.init = init;
     this.drawer = drawer;
-    this.width = init.settings.width;
+    this.width = init?.settings?.width ?? 50;
     this.correlations = [];
   }
 

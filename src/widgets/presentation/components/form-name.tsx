@@ -13,9 +13,8 @@ interface FormNameProps {
 
 function getParamValues(this: {formID: FormID, params: ParameterID[]}, state: WState) {
   const dict: ParamValuesDict = {};
-  const formParams = state.parameters[this.formID];
   const parent = state.forms[this.formID]?.parent;
-  if (!formParams || !parent) return dict;
+  if (!parent) return dict;
 
   const parentFormParams = state.parameters[parent];
   const globalParams = state.parameters[state.root.id];
@@ -27,10 +26,7 @@ function getParamValues(this: {formID: FormID, params: ParameterID[]}, state: WS
     if (fromGlobal) { dict[paramID] = fromGlobal.value; continue; }
 
     const fromParent = parentFormParams.find(findByID);
-    if (fromParent) { dict[paramID] = fromParent.value; continue; }
-
-    const fromForm = formParams.find(findByID);
-    if (fromForm) dict[paramID] = fromForm.value;
+    if (fromParent) dict[paramID] = fromParent.value;
   }
   return dict;
 }

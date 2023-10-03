@@ -1,149 +1,40 @@
-import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
-import { useEffect, useCallback, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
-import { MapModes } from '../../../lib/enums';
-import { updateWindow, closeWindow } from 'entities/window';
-import { mapStateSelector } from '../../../store/map.selectors';
+import { propertyWindowConfig } from '../../../lib/constants.ts';
+import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
+import { setMapField } from '../../../store/map.actions';
 
-import {
-  setMapField, setEditMode,
-  acceptCreatingElement, cancelCreatingElement,
-} from '../../../store/map.actions';
-
-import {
-  createFieldInit, createLabelInit, createPolylineInit,
-  rollbackField, rollbackLabel, rollbackPolyline,
-} from './properties-utils';
-
-import { PolylineProperties } from './polyline/polyline-properties';
-import { LabelProperties } from './label/label-properties';
-import { FieldProperties } from './field/field-properties';
-
-
-const windowSizeDict: Record<'polyline' | 'label' | 'field', [number, number]> = {
-  polyline: [320, 260],
-  label: [350, 205],
-  field: [320, 260],
-};
 
 interface PropertiesWindowProps {
-  formID: FormID;
-  setOpen?;
+  id: FormID;
+  stage: IMapStage;
+  element: MapElement;
+  close: () => void;
+  cancel: () => void;
 }
 
-export const PropertiesWindow = ({formID, setOpen}: PropertiesWindowProps) => {
+
+export const PropertiesWindow = ({id, stage, element, close, cancel}: PropertiesWindowProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const windowID = 'mapPropertiesWindow';
-  const mapState: MapState = useSelector(mapStateSelector.bind(formID))
-  const { element, utils, legends, mode, isElementCreating } = mapState;
-
-  useEffect(() => {
-    setOpen(true);
-    return () => setOpen(false);
-  }, []); // eslint-disable-line
-
-  const close = useCallback(() => {
-    dispatch(closeWindow(windowID));
-  }, [dispatch]);
-
-  const update = useCallback(() => {
-    utils.updateCanvas();
-  }, [utils]);
+  const isCreating = stage.isElementCreating();
+  const TypedPropertyWindow = propertyWindowConfig[element.type].component;
 
   const apply = () => {
-    if (!element) return;
-    if (isElementCreating) { acceptCreating(); return; }
-    const modifiedLayer = mapState.mapData.layers.find(l => l.elements?.includes(element));
-    modifiedLayer.modified = true;
-    dispatch(setMapField(formID, 'isModified', true));
-    dispatch(setEditMode(formID, MapModes.SELECTING));
-    update(); close();
-  };
-
-  const init = useMemo<any>(() => {
-    if (!element) return;
-    if (element.type === 'polyline') return createPolylineInit(element);
-    if (element.type === 'label') return createLabelInit(element);
-    if (element.type === 'field') return createFieldInit(element);
-  }, [element]);
-
-  const rollbackElement = (element: MapElement, init: any) => {
-    if (element.type === 'polyline') {
-      rollbackPolyline(element, init);
-    }
-    else if (element.type === 'label') {
-      if (mode === MapModes.MOVE_MAP && element.edited) element.edited = false;
-      rollbackLabel(element, init);
-    }
-    else if (element.type === 'field') {
-      rollbackField(element, init);
-    }
-  }
-
-  const cancel = useCallback(() => {
-    if (isElementCreating) {
-      cancelCreating()
-      return;
-    }
-    if (element) rollbackElement(element, init);
-    update(); close();
-  }, [element, mode, init, update, close, setOpen, isElementCreating]); // eslint-disable-line
-
-  const acceptCreating = () => {
-    if (!element) return;
-    dispatch(acceptCreatingElement(formID));
+    stage.accept(); stage.render();
+    dispatch(setMapField(id, 'modified', true));
     close();
   };
-
-  const cancelCreating = () => {
-    if (!element) return;
-    dispatch(cancelCreatingElement(formID));
-    close();
-  };
-
-  const ElementProperties = () => {
-    if (element?.type === 'polyline')
-      return (
-        <PolylineProperties
-          element={element} init={init} legends={legends.data}
-          apply={apply} update={update} cancel={cancel} t={t} isElementCreating={isElementCreating}
-        />
-      );
-    if (element?.type === 'label')
-      return (
-        <LabelProperties
-          element={element} init={init}
-          apply={apply} update={update} cancel={cancel} t={t} isElementCreating={isElementCreating}
-        />
-      );
-    if (element?.type === 'field')
-      return (
-        <FieldProperties
-          element={element} init={init}
-          apply={apply} update={update} cancel={cancel} t={t} isElementCreating={isElementCreating}
-        />
-      );
-    return <div>{t('map.selecting.no-selected')}</div>;
-  };
-
-  useEffect(() => {
-    if (!element || element.type === 'sign') {
-      update(); close();
-      return;
-    }
-    const title = t('map.properties-edit', {elementType: t('map.' + element.type)});
-    const [width, height] = windowSizeDict[element.type] ?? [];
-    dispatch(updateWindow(windowID, {title, width, height}))
-  }, [element, t, dispatch, close, update, init]);
 
   return (
     <LocalizationProvider language={'ru-RU'}>
       <IntlProvider locale={'ru'}>
-        <ElementProperties/>
+        <TypedPropertyWindow
+          element={element} isElementCreating={isCreating}
+          update={() => stage.render()} apply={apply} cancel={cancel} t={t}
+        />
       </IntlProvider>
     </LocalizationProvider>
   );

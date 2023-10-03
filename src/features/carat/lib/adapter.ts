@@ -64,9 +64,10 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
 }
 
 /** Возвращает настройки формы по состоянию формы. */
-export function caratStateToSettings(id: FormID, state: CaratState): CaratFormSettings {
-  const settings = state.stage.getCaratSettings();
-  const columns = state.stage.getActiveTrack().getInitColumns();
-  columns.push(state.stage.correlations.getInit());
+export function caratStateToSettings(id: FormID, {stage}: CaratState): CaratFormSettings {
+  const settings = stage.getCaratSettings();
+  const columns = stage.getActiveTrack().getInitColumns();
+  const correlationSettings = stage.correlations.getInit();
+  if (correlationSettings) columns.push(correlationSettings);
   return {id, settings, columns};
 }

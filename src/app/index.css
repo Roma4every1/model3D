@@ -144,20 +144,6 @@ html {
   width: 10px;
 }
 
-.attrTableBlock {
-  margin: 5px;
-}
-
-.attrTableLabel {
-  width: 45%;
-  height: 20px;
-}
-
-.attrTableEditor {
-  width: 45%;
-  height: 20px;
-}
-
 .treeview {
   font-size: 12px;
 }

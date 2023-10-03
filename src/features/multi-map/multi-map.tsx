@@ -15,13 +15,14 @@ import { multiMapStateSelector } from '../map/store/map.selectors';
 
 
 interface MultiMapProps {
-  id: ClientID;
+  presentation: PresentationState;
   channelName: ChannelName;
 }
 
 
-export const MultiMap = ({id, channelName}: MultiMapProps) => {
+export const MultiMap = ({presentation, channelName}: MultiMapProps) => {
   const dispatch = useDispatch();
+  const id = presentation.id;
 
   const channelData: Channel = useSelector(channelSelector.bind(channelName));
   const state: MultiMapState = useSelector(multiMapStateSelector.bind(id));
@@ -37,17 +38,18 @@ export const MultiMap = ({id, channelName}: MultiMapProps) => {
     if (compareArrays(state?.children ?? [], children)) return;
     const newChildren: FormDataWM[] = children.map(id => ({id, type: 'map', displayName: ''}));
     dispatch(setPresentationChildren(id, newChildren));
-    dispatch(addMultiMap(id, configs));
+    dispatch(addMultiMap(id, presentation.openedChildren[0], configs));
     if (fetchState) { fetchState.ok = undefined; fetchState.loading = false; }
-  }, [children, configs, state?.children, fetchState, id, dispatch]);
+  }, [children, configs, state?.children, fetchState, id]); // eslint-disable-line
 
   useEffect(() => {
-    if (stateNeedFetch(fetchState)) dispatch(fetchMultiMapData(id));
-  }, [fetchState, id, dispatch]);
+    if (state && stateNeedFetch(fetchState)) dispatch(fetchMultiMapData(id));
+  }, [state, fetchState, id, dispatch]);
 
   const factory = (node: TabNode) => {
     const tabID = node.getId();
     const config = state.configs.find(item => item.formID === tabID);
+    if (!config) return null;
     return <MultiMapItem parent={id} config={config}/>;
   };
 

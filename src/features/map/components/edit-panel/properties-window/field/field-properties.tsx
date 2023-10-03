@@ -1,38 +1,29 @@
-import { TFunction } from 'react-i18next';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { showWindow, closeWindow } from 'entities/window';
-import { createFieldPaletteInit, InitFieldState } from '../properties-utils';
+import { PropertyWindowProps } from '../properties-utils';
 import { Button } from '@progress/kendo-react-buttons';
 import { NumericTextBox, NumericTextBoxChangeEvent } from '@progress/kendo-react-inputs';
 import { FieldPalettePropertiesWindow } from './field-palette-properties';
 
 
-interface FieldPropertiesProps {
-  element: MapField,
-  init: InitFieldState,
-  apply: () => void,
-  update: () => void,
-  cancel: () => void,
-  t: TFunction,
-  isElementCreating: boolean,
-}
-
-
-export const FieldProperties = ({element: field, init, apply, update, cancel, t, isElementCreating}: FieldPropertiesProps) => {
+export const FieldProperties = (props: PropertyWindowProps<MapField>) => {
   const dispatch = useDispatch();
   const [changed, setChanged] = useState(false);
 
+  const { element: field, apply, update, cancel, t, isElementCreating } = props;
+  const [paletteInit] = useState(field.palette[0]);
+
   /* --- Field Properties State --- */
 
-  const [boundX, setBoundX] = useState(init.x);
-  const [boundY, setBoundY] = useState(init.y);
+  const [boundX, setBoundX] = useState(field.x);
+  const [boundY, setBoundY] = useState(field.y);
 
-  const [sizeX, setSizeX] = useState(init.sizex);
-  const [sizeY, setSizeY] = useState(init.sizey);
+  const [sizeX, setSizeX] = useState(field.sizex);
+  const [sizeY, setSizeY] = useState(field.sizey);
 
-  const [stepX, setStepX] = useState(init.stepx);
-  const [stepY, setStepY] = useState(init.stepy);
+  const [stepX, setStepX] = useState(field.stepx);
+  const [stepY, setStepY] = useState(field.stepy);
 
   /* --- Properties Handlers --- */
 
@@ -78,7 +69,7 @@ export const FieldProperties = ({element: field, init, apply, update, cancel, t,
 
     const content = <FieldPalettePropertiesWindow
       onClose={onClose} element={field.palette[0]} update={update} t={t}
-      init={createFieldPaletteInit(field.palette[0])}
+      init={paletteInit}
     />;
     const windowProps = {
       title: 'Свойства палитры', className: 'propertiesWindow',
@@ -127,8 +118,12 @@ export const FieldProperties = ({element: field, init, apply, update, cancel, t,
         </div>
       </fieldset>
       <div>
-        <Button disabled={ isElementCreating ? false : !changed } onClick={apply}>{t('base.apply')}</Button>
-        <Button onClick={cancel}>{t('base.cancel')}</Button>
+        <Button onClick={apply} disabled={ isElementCreating ? false : !changed }>
+          {t('base.apply')}
+        </Button>
+        <Button onClick={cancel}>
+          {t('base.cancel')}
+        </Button>
       </div>
     </div>
   );
