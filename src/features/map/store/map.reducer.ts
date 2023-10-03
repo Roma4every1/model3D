@@ -161,7 +161,7 @@ export const mapsReducer = (state: MapsState = init, action: MapAction): MapsSta
         const viewport = traceElement && updateViewport
           ? getFullTraceViewport(traceElement, mapState.canvas)
           : undefined;
-        mapState.stage.render(viewport);
+        setTimeout(() => mapState.stage.render(viewport), 10);
       }
       return {...state};
     }

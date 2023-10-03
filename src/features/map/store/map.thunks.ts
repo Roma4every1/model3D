@@ -26,11 +26,9 @@ export function showMapPropertyWindow(id: FormID, element: MapElement): Thunk {
       dispatch(closeWindow(windowID));
     };
     const cancel = () => {
-      stage.listeners.propertyWindowClose = () => {};
-      stage.cancel(); stage.render(); close();
+      stage.cancel(); stage.render();
+      close();
     };
-
-    stage.listeners.propertyWindowClose = cancel;
     stage.startEditing();
 
     const [width, height] = propertyWindowConfig[element.type].windowSize;
@@ -50,23 +48,21 @@ export function showMapPropertyWindow(id: FormID, element: MapElement): Thunk {
 /** Показать аттрибутивную таблицу активного элемента. */
 export function showMapAttrTableWindow(id: FormID): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
+    const windowID = 'map-attr-table';
     const stage = getState().maps.single[id].stage;
 
     const onClose = () => {
-      stage.listeners.attrTableWindowClose = () => {};
       dispatch(setMapField(id, 'attrTableWindowOpen', false));
-      dispatch(closeWindow('map-attr-table'));
+      dispatch(closeWindow(windowID));
     };
     const windowProps: WindowProps = {
       className: 'attr-table-window', title: t('map.attr-table'),
       width: 320, height: 260, onClose, maximizeButton: () => null,
     };
 
-    stage.listeners.attrTableWindowClose = onClose;
     const content = createElement(AttrTableWindow, {id, stage, onClose});
-
     dispatch(setMapField(id, 'attrTableWindowOpen', true));
-    dispatch(showWindow('map-attr-table', windowProps, content));
+    dispatch(showWindow(windowID, windowProps, content));
   };
 }
 
