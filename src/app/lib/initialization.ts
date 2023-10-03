@@ -18,6 +18,8 @@ export function createClientConfig(data: unknown): ClientConfiguration {
       pathName = pathName.slice(0, pathName.indexOf('/'));
     }
     config.webServicesURL = window.location.origin + '/' + pathName + '/WebRequests.svc/';
+  } else if (!config.webServicesURL.endsWith('/')) {
+    config.webServicesURL += '/';
   }
 
   return config;

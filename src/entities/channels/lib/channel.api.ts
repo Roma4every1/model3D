@@ -29,9 +29,9 @@ export class ChannelAPI {
   constructor(private readonly baseAPI: BaseAPI) {}
 
   /** Запрос статических данных канала. */
-  public async getChannelInfo(channelName: ChannelName): Promise<Res<ChannelInfo>> {
-    const query = {sessionId: this.baseAPI.sessionID, channelName};
-    return await this.baseAPI.request<ChannelInfo>({path: 'channelSettings', query});
+  public getChannelInfo(channelName: ChannelName): Promise<Res<ChannelInfo>> {
+    const req: WRequest = {path: 'channelSettings', query: {channelName}}
+    return this.baseAPI.request<ChannelInfo>(req);
   }
 
   /** Запрос данных канала. */
@@ -39,10 +39,9 @@ export class ChannelAPI {
     name: ChannelName, parameters: Partial<Parameter>[],
     query: ChannelQuerySettings
   ): Promise<Res<ChannelDataDTO>> {
-    const sessionID = this.baseAPI.sessionID;
     const paramValues = parameters.map(serializeParameter);
     applyQuerySettings(paramValues, query);
-    const body = JSON.stringify({sessionId: sessionID, channelName: name, paramValues});
+    const body = JSON.stringify({channelName: name, paramValues});
 
     const req: WRequest = {method: 'POST', path: 'channelData', body};
     const res = await this.baseAPI.request<ChannelDTO>(req);
@@ -63,34 +62,32 @@ export class ChannelAPI {
 
   /** Запрос статистики по колонке. */
   public getStatistics(tableID: TableID, columnName: string): Promise<Res<any>> {
-    const query = {sessionId: this.baseAPI.sessionID, tableId: tableID, columnName};
+    const query = {tableId: tableID, columnName};
     return this.baseAPI.request<any>({path: 'getStatistics', query})
   }
 
   /** Запрос новой записи со стандартными значениями. */
   public getNewRow(tableID: TableID) {
-    const query = {sessionId: this.baseAPI.sessionID, tableId: tableID};
+    const query = {tableId: tableID};
     return this.baseAPI.request<ChannelRow>({path: 'getNewRow', query});
   }
 
   /** Запрос на добавление записи в таблицу. */
   public insertRows(tableID: TableID, rows: ChannelRow[]) {
-    const body = JSON.stringify({sessionId: this.baseAPI.sessionID, tableId: tableID, rows})
+    const body = JSON.stringify({tableId: tableID, rows})
     return this.baseAPI.request<OperationData>({method: 'POST', path: 'insertRows', body});
   }
 
   /** Запрос обновления записи в таблице. */
   public updateRows(tableID: TableID, indexes: number[], rows: ChannelRow[]) {
-    const sessionId = this.baseAPI.sessionID;
-    const body = JSON.stringify({sessionId, tableId: tableID, indexes, rows});
+    const body = JSON.stringify({tableId: tableID, indexes, rows});
     return this.baseAPI.request<OperationData>({method: 'POST', path: 'updateRows', body});
   }
 
   /** Запрос на удаление записей из таблицы. */
   public removeRows(tableID: TableID, indexes: number[] | 'all') {
-    const sessionId = this.baseAPI.sessionID;
     const rows = Array.isArray(indexes) ? indexes.join(',') : indexes;
-    const query = {sessionId, tableId: tableID, rows};
+    const query = {tableId: tableID, rows};
     return this.baseAPI.request<OperationData>({path: 'removeRows', query});
   }
 }

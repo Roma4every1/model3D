@@ -11,7 +11,6 @@ export async function initialize(dispatch: Dispatch, getState: StateGetter) {
 
   if (config.devMode) initializeDevTools(dispatch, getState);
   API.setBase(config.webServicesURL);
-  API.setRoot(config.root);
 
   const systemList = await appAPI.getSystemList();
   dispatch(setInitResult(config, systemList));
