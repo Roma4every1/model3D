@@ -40,9 +40,55 @@ type FileParser<T = any> = (data: Blob) => Promise<T>;
 /** Модель Excel файла. */
 interface FileModelExcel {
   /** Листы. */
-  sheets: any[];
-  /** Цветовая тема документа. */
-  colorScheme: string[];
+  sheets: ExcelSheetModel[];
+}
+
+/** Модель Excel страницы. */
+interface ExcelSheetModel {
+  /** Ключ. */
+  key: string;
+  /** Имя. */
+  name: string;
+  /** Строки. */
+  rows: ExcelSheetRowModel[];
+  /** Колонки. */
+  columns: ExcelColumnModel[];
+}
+
+/** Модель Excel колонки. */
+interface ExcelColumnModel {
+  /** Ключ. */
+  key: string;
+  /** Ширина колонки. */
+  width: number;
+  /** Буквенный колонки. */
+  letter: string;
+}
+
+/** Модель Excel ряда. */
+interface ExcelRowModel {
+  /** Ключ. */
+  key: string;
+  /** Номер ряда. */
+  number: number;
+  /** Высота ряда. */
+  height: number;
+  /** Ячейки ряда. */
+  cells: ExcelCellModel[];
+}
+
+/** Модель Excel ячейки. */
+interface ExcelCellModel {
+  /** Адрес ячейки (Например `B12`). */
+  address: string;
+  /** CSS стили ячейки. */
+  style: CSSProperties;
+  /** Количество рядов объедниямых ячейкой. */
+  rowSpan: number | null;
+  /** Количество колонок объедниямых ячейкой. */
+  colSpan: number | null;
+  /** Значение ячейки. */
+  value: string | number;
 }
 
 /** Модель CSV файла. */
