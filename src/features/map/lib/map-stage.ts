@@ -28,6 +28,8 @@ export class MapStage implements IMapStage {
   public readonly listeners: MapStageListeners;
   /** Scroller. */
   public readonly scroller: Scroller;
+  /** Активен ли режим редактирования трассы. */
+  public traceEditing: boolean = false;
 
   private data: MapData = null;
   private canvas: MapCanvas = null;
@@ -59,7 +61,6 @@ export class MapStage implements IMapStage {
     this.listeners = {
       layerTreeChange: () => {}, navigationPanelChange: () => {},
       selectPanelChange: () => {}, editPanelChange: () => {},
-      propertyWindowClose: () => {}, attrTableWindowClose: () => {},
     };
   }
 
@@ -209,14 +210,18 @@ export class MapStage implements IMapStage {
     this.activeElement = null;
     this.clearSelect();
 
-    this.canvas.blocked = false;
-    this.editing = false;
-    this.creating = false;
-    this.elementInit = null;
-    this.mode = MapMode.MOVE_MAP;
-    this.listeners.navigationPanelChange();
+    if (this.creating) {
+      this.setMode(MapMode.AWAIT_POINT);
+    } else {
+      this.canvas.blocked = false;
+      this.editing = false;
+      this.creating = false;
+      this.elementInit = null;
+      this.mode = MapMode.MOVE_MAP;
+      this.listeners.navigationPanelChange();
+      this.listeners.editPanelChange();
+    }
     this.listeners.selectPanelChange();
-    this.listeners.editPanelChange();
   }
 
   public cancel(): void {
@@ -284,7 +289,7 @@ export class MapStage implements IMapStage {
 
       if (path.length !== oldPathLength) this.listeners.editPanelChange();
       this.render();
-    } else if (this.selecting) {
+    } else if (this.selecting && !this.traceEditing) {
       const point = this.eventToPoint(event);
       this.handleSelectChange(point);
     }
@@ -369,8 +374,6 @@ export class MapStage implements IMapStage {
   private setActiveElement(element: MapElement | null): void {
     if (this.activeElement === element) return;
     this.listeners.editPanelChange();
-    this.listeners.propertyWindowClose();
-    this.listeners.attrTableWindowClose();
     this.activeElement = element;
   }
 }
