@@ -13,8 +13,8 @@ export const ExcelTableRow = ({row}: ExcelTableRowProps) => {
         <td key={c.address}
             data-id={c.address}
             style={c.style}
-            rowSpan={c.rowSpan ?? 0}
-            colSpan={c.colSpan ?? 0}
+            rowSpan={c.rowSpan}
+            colSpan={c.colSpan}
         >
           {c.value}
         </td>
