@@ -7,16 +7,26 @@ export async function csvParser(data: Blob): Promise<FileModelCSV> {
 
   for (const row of rows) {
     let insideQuotes = false;
+    let isQuoteScreening = false;
     let currentFieldChars : string[] = [];
     const fields: string[] = [];
 
     for (const char of row) {
       if (char === '"') {
-        insideQuotes = !insideQuotes;
+        if (isQuoteScreening) {
+          currentFieldChars.push(char);
+          isQuoteScreening = false;
+          insideQuotes = !insideQuotes;
+        } else {
+          isQuoteScreening = true;
+          insideQuotes = !insideQuotes;
+        }
       } else if (char === ',' && !insideQuotes) {
+        isQuoteScreening = false;
         fields.push(currentFieldChars.join(''));
         currentFieldChars = [];
       } else {
+        isQuoteScreening = false;
         currentFieldChars.push(char);
       }
     }

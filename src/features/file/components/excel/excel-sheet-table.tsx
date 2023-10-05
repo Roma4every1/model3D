@@ -1,38 +1,21 @@
-import { Worksheet } from 'exceljs';
 import { ExcelTableRow } from './excel-table-row.tsx';
 import { ExcelTableHeadRow } from './excel-table-head-row.tsx';
-import { getSheetMergesMasterCells } from '../../lib/excel-parser.ts';
 
 
 interface ExcelSheetTableProps {
-  sheet: Worksheet;
-  colorScheme: string[];
+  sheet: ExcelSheetModel;
 }
 
 
-export const ExcelSheetTable = ({sheet, colorScheme}: ExcelSheetTableProps) => {
-  const mergeMasterCells = getSheetMergesMasterCells(sheet);
-
-  const rowCount = sheet.rowCount;
-  const columnCount = sheet.columnCount;
-
-  const sheetRows = [];
-  for (let i = 1; i <= rowCount; i++) sheetRows.push(
-    <ExcelTableRow
-      key={`row_${i}`} row={sheet.getRow(i)} rowIndex={i}
-      colorScheme={colorScheme}
-      mergeMasterCells={mergeMasterCells}
-      columnCount={columnCount}
-    />
-  );
-
+export const ExcelSheetTable = ({sheet}: ExcelSheetTableProps) => {
+  if (!sheet) return <></>
   return (
     <table key={sheet.name}>
       <thead>
-        <ExcelTableHeadRow sheet={sheet}/>
+        <ExcelTableHeadRow columns={sheet.columns} />
       </thead>
       <tbody>
-        {sheetRows}
+        {sheet.rows.map(r => <ExcelTableRow key={r.key} row={r} />)}
       </tbody>
     </table>
   );
