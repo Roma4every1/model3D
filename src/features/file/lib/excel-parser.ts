@@ -1,7 +1,7 @@
-import { CSSProperties } from 'react';
-import { Workbook, Cell, Worksheet } from 'exceljs';
-import { xml2js } from 'xml-js';
-import { excelIndexedColors } from './constants.ts'
+import {CSSProperties} from 'react';
+import {Workbook, Cell, Worksheet} from 'exceljs';
+import {xml2js} from 'xml-js';
+import {excelIndexedColors} from './constants.ts'
 
 
 export async function excelParser(data: Blob): Promise<FileModelExcel> {
@@ -10,7 +10,68 @@ export async function excelParser(data: Blob): Promise<FileModelExcel> {
   await workbook.xlsx.load(buffer);
 
   const themeXML = Object.values(workbook.model.themes)[0];
-  return {sheets: workbook.worksheets, colorScheme: parseThemeColorsXML(themeXML)};
+  const colorScheme = parseThemeColorsXML(themeXML);
+
+  if (!workbook.worksheets.length) return;
+  const sheets : ExcelSheetModel[] = workbook.worksheets.map((sheet, sheetIndex) => {
+    const rowCount = sheet.rowCount;
+    const columnCount = sheet.columnCount;
+    const sheetKey = `sheet_${sheetIndex}`;
+
+    const mergeMasterCells = getSheetMergesMasterCells(sheet);
+
+    const sheetRows : ExcelRowModel[] = [];
+
+    for (let i = 1; i <= rowCount; i++) {
+      const row= sheet.getRow(i);
+      const rowCells: ExcelCellModel[] = [];
+      const rowKey= `row_${i}`;
+
+      for (let j = 1; j <= columnCount; j++) {
+        const cell = row.getCell(j);
+
+        if (cell?.master !== cell) continue;
+        const masterMerge = mergeMasterCells.find(el => el.master === cell.address);
+
+        const cellStyles = getCellStyles(cell, colorScheme);
+
+        const cellValue = typeof cell?.value === 'object' && cell?.value !== null ?
+          (cell?.result?.toString() || 0) :
+          (cell?.value?.toString() || '');
+
+        const cellObject : ExcelCellModel = {
+          address: cell.address,
+          style: cellStyles,
+          rowSpan: masterMerge?.rowSpan || null,
+          colSpan: masterMerge?.colSpan || null,
+          value: cellValue
+        }
+
+        rowCells.push(cellObject);
+      }
+
+      sheetRows.push({
+        key: rowKey,
+        number: i,
+        height: row.height / 20,
+        cells: rowCells})
+    }
+
+    const sheetColumns : ExcelColumnModel[] = sheet.columns.map((c, i) => ({
+      key: `column_${i}`,
+      letter: c['letter'],
+      width: c.width / 20
+    }))
+
+    return {
+      key: sheetKey,
+      name: sheet.name,
+      rows: sheetRows,
+      columns: sheetColumns
+    };
+  });
+
+  return {sheets};
 }
 
 

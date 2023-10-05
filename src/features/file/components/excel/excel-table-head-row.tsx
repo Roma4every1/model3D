@@ -1,23 +1,16 @@
-import { Worksheet } from "exceljs";
-
-
 interface ExcelTableHeadRowProps {
-  sheet: Worksheet;
+  columns: ExcelColumnModel[];
 }
 
 
-export const ExcelTableHeadRow = ({sheet}: ExcelTableHeadRowProps) => {
-  const headRowCells = [];
-  for (let i = 1; i <= sheet.columnCount; i++) {
-    const key = `column_${sheet.getColumn(i)['letter']}`;
-    const style = {minWidth: `${sheet.getColumn(i).width / 20}in`};
-    headRowCells.push(<th key={key} style={style}>{sheet.getColumn(i)['letter']}</th>);
-  }
-
+export const ExcelTableHeadRow = ({columns}: ExcelTableHeadRowProps) => {
+  if (!columns.length) return <></>
   return (
     <tr>
       <th/>
-      {headRowCells}
+      {columns.map(c => <th key={c.key} style={{minWidth: `${c.width}in`}}>
+        {c.letter}
+      </th>)}
     </tr>
   );
 }
