@@ -27,7 +27,6 @@ export function applyColumnTypes(state: TableState, channelColumns: ChannelColum
     }
   });
   state.columns = {...state.columns};
-  state.properties.typesApplied = true;
 }
 
 /** Определяет тип колонки по типу `.NET`. */
@@ -111,7 +110,7 @@ export function settingsToTableState(payload: FormStatePayload): TableState {
     tableID: null, editable: false, activeRecordParameter,
     headerSetterRules: settings.headerSetterRules ?? [],
     channelName, columnsSettings, columns: columnsState, columnTree, columnTreeFlatten,
-    properties: {...attachedProperties, list: properties, typesApplied: false},
+    properties: {...attachedProperties, list: properties},
     activeCell: {columnID: null, recordID: null, edited: false},
     selection: {}, total: 0, edit: {isNew: false, modified: false},
   };

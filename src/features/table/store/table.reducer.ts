@@ -143,9 +143,8 @@ export const tablesReducer = (state: TableStates = init, action: TablesAction): 
         tableState.selection = {};
         tableState.activeCell = {...tableState.activeCell, recordID: null, edited: false};
       }
-      if (!tableState.properties.typesApplied && channelData?.columns) {
+      if (channelData?.columns) {
         applyColumnTypes(tableState, channelData.columns);
-        tableState.properties.typesApplied = true;
       }
 
       const edit = {modified: false, isNew: false};
