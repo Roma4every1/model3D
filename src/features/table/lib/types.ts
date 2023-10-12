@@ -14,7 +14,7 @@ export interface TableFormSettings {
  * @example
  * {attachOption: "AttachAll", exclude: ["CODE"]}
  * */
-export type InitAttachedProperties = Omit<AttachedProperties, 'list' | 'typesApplied'>;
+export type InitAttachedProperties = Omit<AttachedProperties, 'list'>;
 
 interface DataSetColumnsSettings {
   columnsSettings: DataSetColumnSettings[];
