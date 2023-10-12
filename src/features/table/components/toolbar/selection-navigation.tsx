@@ -4,10 +4,10 @@ import { ButtonIconStock } from 'shared/ui';
 
 
 interface SelectionNavigationProps {
-  selectedRecords: TableRecordID[],
-  actions: ToolbarActions,
-  total: number,
-  t: TFunction,
+  selectedRecords: TableRecordID[];
+  actions: ToolbarActions;
+  total: number;
+  t: TFunction;
 }
 
 
@@ -22,8 +22,8 @@ export const SelectionNavigation = ({selectedRecords, actions, total, t}: Select
   const toNext = () => actions.moveCellVertical(1);
   const nextDisabled = selectedLength === 0 || maxRecord >= total - 1;
 
-  const toStartDisabled = selectedLength === 1 && selectedRecords[0] === 0;
-  const toEndDisabled = selectedLength === 1 && selectedRecords[0] === total - 1;
+  const toStartDisabled = (selectedLength === 1 && selectedRecords[0] === 0) || total === 0;
+  const toEndDisabled = (selectedLength === 1 && selectedRecords[0] === total - 1) || total === 0;
 
   return (
     <>
