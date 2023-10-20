@@ -35,13 +35,13 @@ export const CustomCell = ({td, props, state, actions}: CustomCellProps) => {
     actions.startEdit(columnID, recordID);
   } : undefined;
 
-  let cell;
   const tdProps: ComponentProps<'td'> = {...td.props, onClick, onDoubleClick};
   if (isActiveCell) {
     tdProps.id = columnID + '-' + recordID;
     tdProps.style = {...tdProps.style, padding: 2, boxShadow: 'inset 0 0 0 2px #f3afa7'};
   }
 
+  let cell = null;
   if (isActiveCell && activeCell.edited) {
     const value = dataItem[columnID];
     const update = column.type
@@ -54,8 +54,9 @@ export const CustomCell = ({td, props, state, actions}: CustomCellProps) => {
     }
     if (column.linkedTableChannel) {
       const open = () => actions.openLinkedTable(columnID);
-      cell = <LinkedTableCell value={cell ?? dataItem[columnID]} column={column} open={open}/>;
+      const value = cell === null ? dataItem[columnID] : cell;
+      cell = <LinkedTableCell value={value} column={column} open={open}/>;
     }
   }
-  return cell ? cloneElement(td, tdProps, cell) : cloneElement(td, tdProps);
+  return cell === null ? cloneElement(td, tdProps) : cloneElement(td, tdProps, cell);
 };
