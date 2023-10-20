@@ -18,8 +18,12 @@ export const Grid = ({id, model}: GridProps) => {
   const onAction = (action: Action) => {
     if (action.type === Actions.SET_ACTIVE_TABSET) {
       const tabset = model.getNodeById(action.data.tabsetNode);
-      const newActiveID = tabset.getChildren()[0]?.getId();
-      if (newActiveID) dispatch(setActiveForm(id, newActiveID))
+      const children = tabset.getChildren();
+
+      if (children.length === 1) {
+        const newActiveID = children[0].getId();
+        if (newActiveID) dispatch(setActiveForm(id, newActiveID));
+      }
     } else if (action.type === Actions.SELECT_TAB) {
       dispatch(setActiveForm(id, action.data.tabNode));
     }

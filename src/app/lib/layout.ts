@@ -98,12 +98,26 @@ export class LayoutManager {
   public updateTabVisibility(presentation: PresentationState): void {
     const types = presentation?.childrenTypes;
     if (types) {
+      const oldTopIndex = this.topBorder.getSelected();
+      const oldTopTabID = oldTopIndex > 1
+        ? this.topBorder.getChildren()[oldTopIndex].getId()
+        : null; // для -1, 0, 1 обработка не нужна
+
       this.handleTab('top-table', types.has('dataSet'));
       this.handleTab('top-chart', types.has('chart'));
       this.handleTab('top-map', types.has('map'));
       this.handleTab('top-track', types.has('carat'));
       this.handleTab('top-carat', types.has('carat'));
       this.handleTab('right-map', types.has('map'));
+
+      // исходя из UX, вкладка с программами самая популярная,
+      // но если последняя открытая осталась, то нужно остаться на ней
+      if (oldTopTabID) {
+        const currentIndex = this.topBorder.getSelected();
+        const currentTabID = this.topBorder.getChildren()[currentIndex].getId();
+        const neededTabID = this.visibleTopIDs.has(oldTopTabID) ? oldTopTabID : 'reports';
+        if (currentTabID !== neededTabID) this.model.doAction(Actions.selectTab(neededTabID));
+      }
     }
     const needTraceTab = this.traceExist && types &&
       (types.has('map') || types.has('carat'));

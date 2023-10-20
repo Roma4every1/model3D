@@ -46,7 +46,9 @@ export function presentationsReducer(state: PresentationDict = init, action: Pre
 
     case PresentationActionType.SET_ACTIVE_FORM: {
       const { id, activeChildID } = action.payload;
-      return {...state, [id]: {...state[id], activeChildID}};
+      const presentationState = state[id];
+      if (presentationState.activeChildID === activeChildID) return state;
+      return {...state, [id]: {...presentationState, activeChildID}};
     }
 
     default: return state;
