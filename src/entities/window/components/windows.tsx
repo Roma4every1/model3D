@@ -11,13 +11,13 @@ export const WindowHandler = () => {
   const dispatch = useDispatch();
   const states = useSelector(windowStatesSelector);
 
-  const stateToElement = (windowState: WindowState, i: number) => {
+  const stateToElement = (windowState: WindowState) => {
     const { id, props, content } = windowState;
     if (!props.onClose) {
       props.onClose = () => dispatch(closeWindow(id));
     }
     if (id.startsWith('message')) {
-      return <MessageDialog key={i} {...props}/>;
+      return <MessageDialog key={id} {...props}/>;
     }
     if (windowState.type === 'window') {
       const refCallback = props.onFocus ? (ref: {element: HTMLDivElement} | null) => {
@@ -25,9 +25,9 @@ export const WindowHandler = () => {
         ref.element.addEventListener('focusin', props.onFocus);
         windowState.listenerAdded = true;
       } : undefined;
-      return <Window key={i} {...props} onFocus={undefined} children={content} ref={refCallback}/>;
+      return <Window key={id} {...props} onFocus={undefined} children={content} ref={refCallback}/>;
     } else {
-      return <Dialog key={i} {...props} children={content}/>;
+      return <Dialog key={id} {...props} children={content}/>;
     }
   };
   return <div>{Object.values(states).map(stateToElement)}</div>;
