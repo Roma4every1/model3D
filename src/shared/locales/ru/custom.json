@@ -40,19 +40,14 @@
       "functions": {
         "header": "Функции",
         "export": "Экспорт в Excel",
-        "stat": "Статистика",
-        "visibility": "Видимость"
-      },
-      "selection": {
-        "header": "Выделение",
-        "select-all": "Выделить всё"
-      },
-      "params": {
-        "header": "Параметры",
-        "locking": "Фиксация колонок"
+        "visibility": "Видимость",
+        "select-all": "Выделить всё",
+        "locking": "Фиксация колонок",
+        "locking-title": "Включить/выключить режим фиксации колонок"
       },
       "column": {
         "header": "Колонка",
+        "stat": "Статистика",
         "auto-width": "Авто ширина",
         "order": "Порядок",
         "lock": "Зафиксировать",

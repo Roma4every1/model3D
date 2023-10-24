@@ -14,6 +14,6 @@ export const SelectAll = ({id, state, dispatch, t}: EditPanelItemProps) => {
     dispatch(setTableSelection(id, selection));
   };
 
-  const text = t('table.panel.selection.select-all');
+  const text = t('table.panel.functions.select-all');
   return <BigButton text={text} icon={selectAllIcon} action={selectAll} disabled={disabled}/>;
 };

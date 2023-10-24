@@ -6,23 +6,24 @@ import { getColumnWidth } from '../../lib/common';
 import { findGroupItems, moveColumn } from '../../lib/column-tree-actions';
 import { setTableColumns, setTableColumnTree } from '../../store/table.actions';
 import autoWidthIcon from 'assets/images/dataset/auto-width.png';
+import { ColumnStatistics } from './column-statistics.tsx';
 
 
 interface ColumnOrderControlsProps {
-  disabled: Record<string, boolean>,
-  move: (to: string) => void,
-  lock: () => void,
-  t: TFunction,
+  disabled: Record<string, boolean>;
+  move: (to: string) => void;
+  lock: () => void;
+  t: TFunction;
 }
 
 /** Состояние контролов колонки. */
 interface ControlsData {
   /** Группа в дереве колонок с активной колонкой. */
-  groupItems: ColumnTreeItem[],
+  groupItems: ColumnTreeItem[];
   /** Индекс колонки в группе. */
-  groupIndex: number,
+  groupIndex: number;
   /** Активность кнопок изменения порядка колонки. */
-  disabled: {left: boolean, right: boolean, start: boolean, end: boolean},
+  disabled: {left: boolean, right: boolean, start: boolean, end: boolean};
 }
 
 
@@ -63,7 +64,8 @@ export const ColumnControls = ({id, state, dispatch, t}: EditPanelItemProps) => 
   };
 
   return (
-    <MenuSection header={t('table.panel.column.header')} className={'map-actions'}>
+    <MenuSection className={'big-buttons'} header={t('table.panel.column.header')}>
+      <ColumnStatistics id={id} state={state} dispatch={dispatch} t={t}/>
       <BigButton
         text={t('table.panel.column.auto-width')} icon={autoWidthIcon}
         action={setAutoWidth} disabled={!activeColumnID}

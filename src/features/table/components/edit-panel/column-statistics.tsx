@@ -48,7 +48,7 @@ export const ColumnStatistics = ({state, dispatch, t}: EditPanelItemProps) => {
 
   return (
     <BigButton
-      text={t('table.panel.functions.stat')} icon={statisticsIcon}
+      text={t('table.panel.column.stat')} icon={statisticsIcon}
       action={getStat} disabled={!activeColumnID || !state.total}
     />
   );
