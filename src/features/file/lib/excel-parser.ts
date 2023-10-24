@@ -1,64 +1,92 @@
-import {excelIndexedColors, imageZoomStepSize, maxImageZoom, minImageZoom} from "./constants.ts"
-import {xml2js} from "xml-js";
-import Excel from "exceljs";
-import {CSSProperties} from "react";
+import {CSSProperties} from 'react';
+import {Workbook, Cell, Worksheet} from 'exceljs';
+import {xml2js} from 'xml-js';
+import {excelIndexedColors} from './constants.ts'
 
-/** Функция для приближения изображения */
-export const zoomImage = (
-  direction: number,
-  zoom: number,
-  setCurrentZoom: (value: number) => void,
-  image: HTMLImageElement) => {
 
-  if (!image) return;
-  let newZoom = zoom + direction * imageZoomStepSize;
-  if (newZoom < minImageZoom || newZoom > maxImageZoom) {
-    return;
-  }
-  setCurrentZoom(newZoom);
-  image.style.transform = 'scale(' + zoom + ')';
-}
+export async function excelParser(data: Blob): Promise<FileModelExcel> {
+  const buffer = await data.arrayBuffer();
+  const workbook = new Workbook();
+  await workbook.xlsx.load(buffer);
 
-/** Получает матрицу значний CSV таблицы из строки,
- * учитывая случай запятой внутри кавычек. */
-export function parseCSV(csvString: string) {
-  const rows = csvString.split('\n');
-  const result = [];
+  const themeXML = Object.values(workbook.model.themes)[0];
+  const colorScheme = parseThemeColorsXML(themeXML);
 
-  for (const row of rows) {
-    let insideQuotes = false;
-    let currentField = '';
-    const fields = [];
+  if (!workbook.worksheets.length) return;
+  const sheets : ExcelSheetModel[] = workbook.worksheets.map((sheet, sheetIndex) => {
+    const rowCount = sheet.rowCount;
+    const columnCount = sheet.columnCount;
+    const sheetKey = `sheet_${sheetIndex}`;
 
-    for (const char of row) {
-      if (char === '"') {
-        insideQuotes = !insideQuotes;
-      } else if (char === ',' && !insideQuotes) {
-        fields.push(currentField.trim());
-        currentField = '';
-      } else {
-        currentField += char;
+    const mergeMasterCells = getSheetMergesMasterCells(sheet);
+
+    const sheetRows : ExcelRowModel[] = [];
+
+    for (let i = 1; i <= rowCount; i++) {
+      const row= sheet.getRow(i);
+      const rowCells: ExcelCellModel[] = [];
+      const rowKey= `row_${i}`;
+
+      for (let j = 1; j <= columnCount; j++) {
+        const cell = row.getCell(j);
+
+        if (cell?.master !== cell) continue;
+        const masterMerge = mergeMasterCells.find(el => el.master === cell.address);
+
+        const cellStyles = getCellStyles(cell, colorScheme);
+
+        const cellValue = typeof cell?.value === 'object' && cell?.value !== null ?
+          (cell?.result?.toString() || 0) :
+          (cell?.value?.toString() || '');
+
+        const cellObject : ExcelCellModel = {
+          address: cell.address,
+          style: cellStyles,
+          rowSpan: masterMerge?.rowSpan || null,
+          colSpan: masterMerge?.colSpan || null,
+          value: cellValue
+        }
+
+        rowCells.push(cellObject);
       }
-    }
-    if (currentField) fields.push(currentField.trim());
 
-    result.push(fields);
-  }
-  return result;
+      sheetRows.push({
+        key: rowKey,
+        number: i,
+        height: row.height / 20,
+        cells: rowCells})
+    }
+
+    const sheetColumns : ExcelColumnModel[] = sheet.columns.map((c, i) => ({
+      key: `column_${i}`,
+      letter: c['letter'],
+      width: c.width / 20
+    }))
+
+    return {
+      key: sheetKey,
+      name: sheet.name,
+      rows: sheetRows,
+      columns: sheetColumns
+    };
+  });
+
+  return {sheets};
 }
+
 
 /** Получает массив цветов Excel темы из XML объекта темы */
-export const parseThemeColorsXML = themeXML => {
-  const themeElements = xml2js(themeXML).elements[0].elements[0]
-  const clrSchemeObjects = themeElements.elements[0].elements.map(el => el.elements[0])
-  return clrSchemeObjects.map(el => `#${el.attributes?.lastClr ?
-    el.attributes?.lastClr :
-    el.attributes?.val}`
-  )
+export function parseThemeColorsXML(themeXML: any): string[] {
+  const themeElements = xml2js(themeXML).elements[0].elements[0];
+  const clrSchemeObjects = themeElements.elements[0].elements.map(el => el.elements[0]);
+
+  return clrSchemeObjects.map(({attributes}): string => {
+    return `#${attributes?.lastClr ? attributes?.lastClr : attributes?.val}`
+  });
 }
 
 /** Получает объект CSS стилей для ячейки таблицы из объекта Excel стилей ячейки */
-export const getCellStyles = (cell: Excel.Cell, clrSchemeColors: string[]) => {
+export function getCellStyles(cell: Cell, clrSchemeColors: string[]): CSSProperties {
   const cellStyle: CSSProperties = {};
   const styles = cell.style;
 
@@ -110,15 +138,13 @@ export const getCellStyles = (cell: Excel.Cell, clrSchemeColors: string[]) => {
 
 /** Приводит массив объединений ячеек Excel таблицы к удобному для
  * записи в HTML-таблицу формату. */
-export const getSheetMergesMasterCells = (sheet: Excel.Worksheet) => {
+export function getSheetMergesMasterCells(sheet: Worksheet): any[] {
   const merges = sheet.model['merges'].map(m => m.split(':'));
   return merges.map(m => {
     const mergeMasterCell = sheet.getCell(m[0]);
     const mergeEndCell = sheet.getCell(m[1]);
     const rowSpan = +mergeEndCell.row - +mergeMasterCell.row + 1;
     const colSpan = +mergeEndCell.col - +mergeMasterCell.col + 1;
-
-    return {master: m[0], rowSpan, colSpan}
-  })
+    return {master: m[0], rowSpan, colSpan};
+  });
 }
-

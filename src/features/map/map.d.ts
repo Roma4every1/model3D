@@ -67,6 +67,7 @@ interface IMapStage {
   readonly select: IMapSelect;
   readonly scroller: IMapScroller;
   readonly listeners: MapStageListeners;
+  traceEditing: boolean;
 
   getCanvas(): MapCanvas;
   getMode(): number;
@@ -117,8 +118,6 @@ interface MapStageListeners {
   selectPanelChange(): void;
   editPanelChange(): void;
   layerTreeChange(): void;
-  propertyWindowClose(): void;
-  attrTableWindowClose(): void;
 }
 
 type MapCanvas = HTMLCanvasElement & {

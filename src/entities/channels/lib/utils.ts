@@ -5,13 +5,13 @@ import { createLookupChannels, createLookupColumnNames } from './lookup';
 
 
 /** Наполняет каналы данными. */
-export function fillChannels(channelDict: ChannelDict, paramDict: ParamDict) {
+export function fillChannels(channelDict: ChannelDict, paramDict: ParamDict): Promise<void[]> {
   const mapper = (channel) => fillChannel(channel, paramDict);
   return Promise.all(Object.values(channelDict).map(mapper));
 }
 
 /** Наполняет канал данными. */
-export async function fillChannel(channel: Channel, paramDict: ParamDict) {
+export async function fillChannel(channel: Channel, paramDict: ParamDict): Promise<void> {
   const paramValues = fillParamValues(channel.info.parameters, paramDict, channel.info.clients);
   const resData = await channelAPI.getChannelData(channel.name, paramValues, channel.query);
   if (!resData.ok) return;
@@ -22,7 +22,7 @@ export async function fillChannel(channel: Channel, paramDict: ParamDict) {
 
   const columns = data?.columns;
   const info = channel.info;
-  if (columns && !info.columnApplied) findColumnIndexes(columns, info);
+  if (columns) findColumnIndexes(columns, info);
 }
 
 

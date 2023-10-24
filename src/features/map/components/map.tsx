@@ -98,7 +98,7 @@ export const Map = ({id, parent, channels}: FormState) => {
 
   const currentWellID = currentWell?.id;
   const wellRef = useRef<WellID>();
-  const traceRef = useRef<{id: TraceID, editing: boolean}>();
+  const traceRef = useRef<TraceID>();
 
   // подстраивание карты под выбранную скважину
   useEffect(() => {
@@ -114,11 +114,12 @@ export const Map = ({id, parent, channels}: FormState) => {
   useEffect( () => {
     if (!mapData || loading.percentage < 100) return;
     const updateViewport =
-      currentTrace?.id !== traceRef.current?.id ||           // изменилась активная трасса
-      (traceEditing && traceRef.current?.editing === false); // вошли в режим режактирования
+      currentTrace?.id !== traceRef.current || // изменилась активная трасса
+      (traceEditing && !stage.traceEditing);   // вошли в режим режактирования
     dispatch(applyTraceToMap(id, currentTrace, updateViewport));
-    traceRef.current = {id: currentTrace?.id, editing: traceEditing};
-  }, [loading, currentTrace, traceEditing, mapData, id, dispatch]);
+    stage.traceEditing = traceEditing;
+    traceRef.current = currentTrace?.id;
+  }, [loading, currentTrace, traceEditing, mapData, stage, id, dispatch]);
 
   /* --- --- */
 
@@ -142,10 +143,11 @@ export const Map = ({id, parent, channels}: FormState) => {
     if (!element) return;
     element.edited = true;
 
-    if (element.type === 'sign' || element.type === 'label') {
-      dispatch(showMapPropertyWindow(id, element));
-    } else if (element.type === 'polyline') {
+    if (element.type === 'polyline') {
       stage.setMode(MapMode.ADD_END);
+    } else {
+      stage.setMode(MapMode.MOVE_MAP);
+      dispatch(showMapPropertyWindow(id, element));
     }
   };
 

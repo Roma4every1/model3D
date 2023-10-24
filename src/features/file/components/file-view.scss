@@ -15,18 +15,38 @@
   }
 }
 
-#txt-renderer {
-  white-space: pre;
+/* --- File Views --- */
+
+.file-view-text {
+  padding: 0.5rem;
+  font-size: 1.1rem;
   font-family: monospace;
-  padding: 1rem;
+  white-space: pre;
 }
 
-#html-renderer {
-  padding: 0;
+.file-view-ms-word {
+  width: fit-content;
+  overflow-x: visible;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 
-  > :first-child {
-    margin: 0;
-    padding: 0;
-    border: none;
+  section {
+    background: #ffffff;
+  }
+}
+
+.file-view-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    max-width: 90%;
+    max-height: 90%;
+    transition: 0.2s linear;
   }
 }

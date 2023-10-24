@@ -51,7 +51,6 @@ interface TableState {
  * + `attachOption`: {@link AttachOptionType}
  * + `exclude: string[]`
  * + `list`: {@link ChannelProperty}[]
- * + `typesApplied: boolean`
  * */
 interface AttachedProperties {
   /** Опция присоединения свойств колонок таблицы. */
@@ -60,8 +59,6 @@ interface AttachedProperties {
   exclude: string[];
   /** Итоговый список свойств, составленный по `attachOption` и `exclude`. */
   list: ChannelProperty[];
-  /** Учтены ли типы данных колонок в состоянии таблицы. */
-  typesApplied: boolean;
 }
 
 /** Параметр, связанный с текущей активной строкой таблицы.

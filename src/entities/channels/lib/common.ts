@@ -57,7 +57,7 @@ export function createColumnInfo<Fields extends string = string>(
 /** Добавляет в конфиг канала данные о колонках. */
 export function findColumnIndexes(columns: ChannelColumn[], channelInfo: ChannelInfo): void {
   columns.forEach((column: ChannelColumn, i: number) => {
-    for (const property of channelInfo.properties) {
+    if (!channelInfo.columnApplied) for (const property of channelInfo.properties) {
       if (property.fromColumn === column.Name) {
         property.type = column.NetType;
       }
