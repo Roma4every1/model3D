@@ -288,10 +288,19 @@
     "empty-trace": "Нет узлов"
   },
   "menu": {
-    "about": "О программе",
+    "main": "Главная",
+    "session": "Сессия",
     "back": "Назад к списку систем",
     "save-session": "Сохранить сессию",
     "load-default-session": "Загрузить сессию по умолчанию"
+  },
+  "about": {
+    "dialog-title": "О программе",
+    "version": "Версия",
+    "doc": "Документация",
+    "site": "Сайт",
+    "contact-email": "Почта для связи",
+    "dev-mode": "Режим разработки"
   },
   "messages": {
     "session-save-ok": "Сессия сохранена",

@@ -180,7 +180,7 @@ export class LayoutManager {
       borders: [
         {
           type: 'border', location: 'top',
-          barSize: 26, size: topPanelHeight, minSize: 80,
+          barSize: 26, size: topPanelHeight, minSize: topPanelHeight,
           className: 'no-user-select', children: initTopTabs,
           selected: selectedTopTab < initTopTabs.length ? selectedTopTab : -1,
         },

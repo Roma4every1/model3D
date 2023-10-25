@@ -59,12 +59,21 @@ interface AppState {
 
 /** Клиентская конфигурация Well Manager.
  * + `devMode?: boolean`
+ * + `devDocLink: string`
+ * + `userDocLink: string`
+ * + `contactEmail: string`
  * + `webServicesURL: string`
  * + `root?: string`
  * */
 interface ClientConfiguration {
   /** Режим разработчика. */
   devMode?: boolean;
+  /** Ссылка на документацию для разработчиков. */
+  devDocLink?: string;
+  /** Ссылка на пользовательскую документацию. */
+  userDocLink?: string;
+  /** Почта для связи. */
+  contactEmail?: string;
   /** Префикс API серверной части. */
   webServicesURL: string;
   /** Расположение корневой папки клиента. */

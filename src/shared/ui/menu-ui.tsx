@@ -95,12 +95,12 @@ export const ButtonIconStock = ({icon, title, action, disabled}: Omit<ButtonIcon
 
 /* --- --- --- */
 
-interface ButtonIconRowProps {
+interface IconRowProps {
   justifyContent?: string;
   gap?: number | string;
   children?: ReactNode;
 }
-interface ButtonIconRowItemProps {
+interface IconRowButtonProps {
   icon: string;
   alt?: string;
   title?: string;
@@ -108,21 +108,36 @@ interface ButtonIconRowItemProps {
   onClick?: () => void;
   disabled?: boolean;
 }
+interface IconRowLinkProps {
+  href: string;
+  target?: '_blank' | string;
+  icon: string;
+  alt?: string;
+  title?: string;
+}
 
-export const ButtonIconRow = ({children, justifyContent, gap}: ButtonIconRowProps) => {
+export const IconRow = ({children, justifyContent, gap}: IconRowProps) => {
   return (
-    <div className={'button-icon-row'} style={{justifyContent, gap}}>
+    <div className={'wm-icon-row'} style={{justifyContent, gap}}>
       {children}
     </div>
   );
 };
 
-export const ButtonIconRowItem = (props: ButtonIconRowItemProps) => {
+export const IconRowButton = (props: IconRowButtonProps) => {
   const className = props.active ? 'active' : undefined;
   return (
-    <button className={className} onClick={props.onClick} disabled={props.disabled}>
-      <img src={props.icon} alt={props.alt} title={props.title}/>
+    <button className={className} onClick={props.onClick} disabled={props.disabled} title={props.title}>
+      <img src={props.icon} alt={props.alt}/>
     </button>
+  );
+};
+
+export const IconRowLink = (props: IconRowLinkProps) => {
+  return (
+    <a href={props.href} target={props.target} title={props.title}>
+      <img src={props.icon} alt={props.alt}/>
+    </a>
   );
 };
 
