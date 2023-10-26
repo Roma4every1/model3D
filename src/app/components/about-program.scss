@@ -1,0 +1,27 @@
+.about-program {
+  padding: 8px;
+  font-size: 15px;
+  min-width: 480px;
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    padding: 2px 4px;
+    font-size: 16px;
+    font-weight: bold;
+  }
+  .section-body {
+    padding: 8px;
+  }
+
+  img {
+    width: 16px;
+    height: 16px;
+  }
+  a img {
+    width: 0.7em;
+    height: 0.7em;
+  }
+}

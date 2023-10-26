@@ -4,14 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { MenuSection, MenuSkeleton } from 'shared/ui';
 import { tableStateSelector } from '../../store/table.selectors';
 
+import './table-edit-panel.scss';
 import { ExcelExport } from './excel-export';
-import { ColumnStatistics } from './column-statistics';
 import { ColumnVisibility } from './column-visibility'
 import { SelectAll } from './select-all';
 import { ColumnLocking } from './column-locking';
 import { ColumnControls } from './column-controls';
-
-import './table-edit-panel.scss';
 
 
 export const TableEditPanel = ({id}: FormEditPanelProps) => {
@@ -24,15 +22,10 @@ export const TableEditPanel = ({id}: FormEditPanelProps) => {
   const props: EditPanelItemProps = {id, state, dispatch, t};
   return (
     <div className={'menu'}>
-      <MenuSection header={t('table.panel.functions.header')} className={'map-actions'}>
+      <MenuSection className={'big-buttons'} header={t('table.panel.functions.header')}>
         <ExcelExport {...props}/>
-        <ColumnStatistics {...props}/>
         <ColumnVisibility {...props}/>
-      </MenuSection>
-      <MenuSection header={t('table.panel.selection.header')} className={'map-actions'}>
         <SelectAll {...props}/>
-      </MenuSection>
-      <MenuSection header={t('table.panel.params.header')} className={'map-actions'}>
         <ColumnLocking {...props}/>
       </MenuSection>
       <ColumnControls {...props}/>

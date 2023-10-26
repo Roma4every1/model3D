@@ -20,8 +20,9 @@ export const ColumnLocking = ({id, state, dispatch, t}: EditPanelItemProps) => {
 
   return (
     <BigButtonToggle
-      text={t('table.panel.params.locking')} icon={columnsLockingIcon}
-      active={lockingEnabled} action={toggleColumnLocking}
+      text={t('table.panel.functions.locking')}
+      title={t('table.panel.functions.locking-title')}
+      icon={columnsLockingIcon} active={lockingEnabled} action={toggleColumnLocking}
     />
   );
 };

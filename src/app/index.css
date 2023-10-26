@@ -79,34 +79,6 @@ html {
   justify-content: center;
 }
 
-.mapEditWindow .k-window-titlebar {
-  padding: 5px;
-}
-
-.mapEditWindow .k-window-title {
-  padding: 5px;
-  margin: 0;
-  height: 25px;
-  font-size: 16px;
-}
-
-.mapEditWindow .k-window-content {
-  padding: 5px;
-  overflow-y: hidden;
-  overflow-x: hidden;
-}
-
-.mapEditing {
-  width: 36px;
-  height: 36px;
-}
-
-.mapEditingHorSpace {
-  width: 36px;
-  height: 36px;
-  margin-left: 5px;
-}
-
 .propertiesWindow .k-window-titlebar {
   padding: 5px;
 }
@@ -144,10 +116,9 @@ html {
   width: 10px;
 }
 
-.treeview {
-  font-size: 12px;
+.presentation-tree {
+  font-size: 13px;
 }
-
 .presentation {
   margin: 0 auto;
   float: right;

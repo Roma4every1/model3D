@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { TextBox, TextBoxChangeEvent } from '@progress/kendo-react-inputs';
 import { NumericTextBox, NumericTextBoxChangeEvent } from '@progress/kendo-react-inputs';
-import { MenuSection, ButtonIconRow, ButtonIconRowItem } from 'shared/ui';
+import { MenuSection, IconRow, IconRowButton } from 'shared/ui';
 import { constraints } from '../../lib/constants';
 
 import yAxisIcon from 'assets/images/carat/y-axis.svg';
@@ -142,23 +142,23 @@ const GroupYAxisSettings = ({stage, track, settings}: GroupYAxisSettingsProps) =
   };
 
   return (
-    <ButtonIconRow justifyContent={'center'} gap={2}>
-      <ButtonIconRowItem
+    <IconRow justifyContent={'center'} gap={2}>
+      <IconRowButton
         icon={yAxisIcon} alt={'y-axis'} title={'Показывать ось'}
         active={show} onClick={onShowChange}
       />
-      <ButtonIconRowItem
+      <IconRowButton
         icon={yAxisDepthMarksIcon} alt={'y-axis-depth-marks'} title={'Показывать отметку глубины'}
         active={showDepthMarks} onClick={onShowDepthMarksChange}
       />
-      <ButtonIconRowItem
+      <IconRowButton
         icon={yAxisAbsMarksIcon} alt={'y-axis-abs-marks'} title={'Показывать абсолютную отметку'}
         active={showAbsMarks} onClick={onShowAbsMarksChange} disabled={!track.inclinometry}
       />
-      <ButtonIconRowItem
+      <IconRowButton
         icon={yAxisGridIcon} alt={'y-axis-grid'} title={'Показывать сетку'}
         active={showGrid} onClick={onShowGridChange}
       />
-    </ButtonIconRow>
+    </IconRow>
   );
 };
