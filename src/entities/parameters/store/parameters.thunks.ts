@@ -1,10 +1,10 @@
 import { Dispatch } from 'redux';
-import { Thunk, StateGetter } from 'shared/lib';
+import { Thunk, StateGetter, uniqueArray } from 'shared/lib';
 import { reloadChannels } from '../../channels';
 import { reloadReportChannels, updateReportsVisibility } from '../../reports';
 import { updateObjects } from '../../objects';
 import { findDependentParameters } from '../lib/utils';
-import { tableRowToString } from '../lib/table-row';
+import { stringToTableCell, tableRowToString } from '../lib/table-row';
 import { updateParam, updateParams } from './parameters.actions';
 import { updatePresentationTreeVisibility } from 'widgets/left-panel/store/left-panel.thunks';
 
@@ -16,12 +16,31 @@ import { updatePresentationTreeVisibility } from 'widgets/left-panel/store/left-
  * */
 export function updateParamDeep(clientID: ClientID, id: ParameterID, newValue: any): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
-    const clientParameters = getState().parameters[clientID];
+    const initState = getState();
+    const clientParameters = initState.parameters[clientID];
     const parameter = clientParameters?.find(p => p.id === id);
 
     if (!parameter) return;
-    const { relatedChannels, relatedReportChannels, relatedReports } = parameter;
-    dispatch(updateParam(clientID, id, newValue));
+    const dateChanging = initState.root.settings.dateChanging;
+    let { relatedChannels, relatedReportChannels, relatedReports } = parameter;
+
+    if (dateChanging?.year === id) {
+      const dateIntervalID = dateChanging.dateInterval;
+      const dateInterval = clientParameters.find(p => p.id === dateIntervalID);
+      const dateIntervalNewValue = dateChangingValue(dateChanging, newValue, parameter.type);
+
+      relatedChannels = uniqueArray(relatedChannels, dateInterval.relatedChannels);
+      relatedReportChannels = uniqueArray(relatedReportChannels, dateInterval.relatedReportChannels);
+      relatedReports = uniqueArray(relatedReports, dateInterval.relatedReports);
+
+      const entries = [
+        {clientID, id: id, value: newValue},
+        {clientID, id: dateIntervalID, value: dateIntervalNewValue},
+      ];
+      dispatch(updateParams(entries));
+    } else {
+      dispatch(updateParam(clientID, id, newValue));
+    }
 
     if (relatedChannels.length) {
       await reloadChannels(relatedChannels)(dispatch, getState);
@@ -76,5 +95,24 @@ export function updateParamDeep(clientID: ClientID, id: ParameterID, newValue: a
     if (reportsToUpdate.size) {
       updateReportsVisibility([...reportsToUpdate])(dispatch, getState).then();
     }
+  };
+}
+
+function dateChangingValue(dateChanging: DateChangingPlugin, value: any, type: ParameterType): ParamValueDateInterval | null {
+  if (value === null) return null;
+  let year: number;
+
+  if (type === 'date') {
+    year = value.getFullYear();
+  } else if (type === 'tableRow' && dateChanging.columnName) {
+    year = parseInt(stringToTableCell(value, dateChanging.columnName))
+  } else if (type === 'integer') {
+    year = value;
+  }
+  if (year === undefined) return null;
+
+  return {
+    start: new Date(year, 0, 1),
+    end: new Date(year, 11, 31),
   };
 }

@@ -14,6 +14,7 @@ import { createRecord } from '../lib/records';
 import { createTableState, startTableEditing } from './table.actions';
 import { tableStateToSettings } from '../lib/table-settings';
 import { LinkedTable } from '../components/table/linked-table';
+import { setActiveForm } from '../../../widgets/presentation';
 
 
 /** Перезагрузка данных канала таблицы. */
@@ -162,7 +163,8 @@ export function showLinkedTable(formID: FormID, columnID: TableColumnID): Thunk 
     if (!property || !property.secondLevelChannelName) return;
     const channel = state.channels[property.secondLevelChannelName];
 
-    const presentation = state.presentations[state.root.activeChildID];
+    const presentationID = state.root.activeChildID;
+    const presentation = state.presentations[presentationID];
     const hasFormData = presentation.children.some(c => c.id === linkedTableID);
 
     if (!hasFormData) {
@@ -172,7 +174,7 @@ export function showLinkedTable(formID: FormID, columnID: TableColumnID): Thunk 
         displayNameString: null, displayNamePattern: null,
       };
       const formState: FormState = {
-        id: linkedTableID, parent: formID,
+        id: linkedTableID, parent: presentationID,
         type: 'dataSet', settings: null,
         channels: [{name: channel.name, attachOption: 'AttachAll', exclude: []}],
       };
@@ -194,12 +196,20 @@ export function showLinkedTable(formID: FormID, columnID: TableColumnID): Thunk 
       dispatch(createTableState(payload));
     }
 
-    const onClose = () => dispatch(closeWindow(linkedTableID));
+    const onFocus = () => {
+      dispatch(setActiveForm(presentationID, linkedTableID));
+    };
+    const onClose = () => {
+      dispatch(setActiveForm(presentationID, formID));
+      dispatch(closeWindow(linkedTableID));
+    };
     const windowProps = {
       className: 'linked-table-window', style: {zIndex: 99}, width: 400, height: 300,
-      resizable: false, title: channel.info.displayName, onClose,
+      resizable: false, title: channel.info.displayName, onFocus, onClose,
     };
+
     const content = createElement(LinkedTable, {id: linkedTableID, onClose});
     dispatch(showWindow(linkedTableID, windowProps, content));
+    dispatch(setActiveForm(presentationID, linkedTableID));
   };
 }

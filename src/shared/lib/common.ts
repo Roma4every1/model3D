@@ -89,13 +89,24 @@ export function forEachTreeLeaf<T>(
 
 /* --- Sets --- */
 
+/** Совмещает два итерируемых объекта и возвращает массив без повторений.
+ * @example
+ * uniqueArray(null, null) // []
+ * uniqueArray([1, 2], [1, 3]) // [1, 2, 3]
+ * */
+export function uniqueArray<T>(a: Iterable<T> | null | undefined, b?: Iterable<T> | null): T[] {
+  if (!a) return [...new Set(b)];
+  if (!b) return [...new Set(a)];
+  return [...new Set([...a, ...b])];
+}
+
 /** Возвращает объединение двух множеств.
  * @example
  * const a = new Set([1, 2]);
  * const b = new Set([2, 3]);
  * const c = setUnion(a, b); // Set {1, 2, 3}
  * */
-export function setUnion<Type>(a: Set<Type>, b: Set<Type>): Set<Type> {
+export function setUnion<T>(a: Set<T>, b: Set<T>): Set<T> {
   return new Set([...a, ...b]);
 }
 

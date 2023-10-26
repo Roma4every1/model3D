@@ -11,13 +11,13 @@
   flex-wrap: nowrap;
 }
 
-.button-icon-row {
+.wm-icon-row {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
   justify-content: flex-start;
 
-  button {
+  > button, a {
     width: 20px;
     height: 20px;
     padding: 2px;
@@ -28,11 +28,14 @@
     background-color: #e1e1e1;
     transition: 0.2s;
 
-    &.active {
-      background-color: #fccbc7;
-    }
     &:hover {
       background-color: #f3afa7;
+    }
+  }
+
+  > button {
+    &.active {
+      background-color: #fccbc7;
     }
     &:disabled {
       background-color: #e1e1e1;

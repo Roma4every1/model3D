@@ -8,13 +8,12 @@ import { showLeftTab, hideLeftTab } from '../lib/layout-actions';
 import { globalParamsSelector, presentationParamsSelector } from '../lib/selectors';
 import { globalParamsTabID, presentationParamsTabID, presentationTreeTabID } from '../lib/constants';
 
-import { GlobalParamList } from './global-param-list';
-import { PresentationParamList } from './presentation-param-list';
+import { ClientParameterList } from './client-parameter-list.tsx';
 import { PresentationTreeView } from './presentation-tree';
 
 
 export interface LeftPanelProps {
-  rootState: RootFormState,
+  rootState: RootFormState;
 }
 
 
@@ -27,10 +26,8 @@ export const LeftPanel = ({rootState}: LeftPanelProps) => {
 
   const rootID = rootState.id;
   const activeID = rootState.activeChildID;
-
   const layout = rootState.layout.left;
   const presentationTree = rootState.presentationTree;
-  const dateChanging = rootState.settings.dateChanging;
 
   useEffect(() => {
     if (presentationParamsLength === undefined) return;
@@ -50,9 +47,9 @@ export const LeftPanel = ({rootState}: LeftPanelProps) => {
   const factory = (node: TabNode): ReactNode => {
     const id = node.getId();
     if (id === globalParamsTabID)
-      return <GlobalParamList rootID={rootID} list={globalParams} dateChanging={dateChanging}/>;
+      return <ClientParameterList clientID={rootID} list={globalParams}/>;
     if (id === presentationParamsTabID)
-      return <PresentationParamList list={presentationParams} activeID={activeID}/>;
+      return <ClientParameterList clientID={activeID} list={presentationParams ?? []}/>;
     if (id === presentationTreeTabID)
       return <PresentationTreeView tree={presentationTree}/>;
     return null;

@@ -1,4 +1,7 @@
 {
   "devMode": true,
-  "webServicesURL": "http://js-wmw-dev/id3x19/WebRequests.svc/"
+  "webServicesURL": "http://js-wmw-dev/id3x22/WebRequests.svc/",
+  "devDocLink": "http://js-wmw-dev/about",
+  "userDocLink": "http://js-wmw-dev/about",
+  "contactEmail": "gs@geospline.ru"
 }

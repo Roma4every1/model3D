@@ -10,6 +10,7 @@ import { Dock } from './dock';
 import { LoadingStatus } from './loading-status';
 import { WindowHandler } from 'entities/window/components/windows';
 import { Notifications } from 'entities/notifications';
+import { TopToolbar } from './top-toolbar';
 
 
 /** Корень системы. Route: `/systems/:systemID`. */
@@ -41,15 +42,14 @@ export const SystemRoot = () => {
     }
   }, [isNeedStartSession, searchParams, setSearchParams, dispatch]);
 
-  if (fetchState?.ok) {
-    return (
-      <>
-        <Dock config={config}/>
-        <WindowHandler/>
-        <Notifications/>
-      </>
-    );
-  }
+  if (fetchState?.ok) return (
+    <>
+      <Dock config={config}/>
+      <TopToolbar config={config}/>
+      <WindowHandler/>
+      <Notifications/>
+    </>
+  );
 
   if (config === null) return <LoadingStatus loadingType={'systems'}/>;
   if (!systemList) return <LoadingStatus loadingType={'systems'} success={false}/>;

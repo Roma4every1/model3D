@@ -59,8 +59,7 @@ export function windowReducer(state: WindowStates = init, action: WindowAction):
 
     case WindowActionType.SHOW_WINDOW: {
       const { id, props, content } = action.payload;
-      for (const id in state) state[id].active = false;
-      return {...state, [id]: {id, type: 'window', props, content, active: true}};
+      return {...state, [id]: {id, type: 'window', props, content}};
     }
 
     case WindowActionType.CLOSE_WINDOW: {
