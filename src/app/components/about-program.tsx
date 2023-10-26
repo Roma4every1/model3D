@@ -33,24 +33,24 @@ export const AboutProgramWindow = ({config, t}: AboutProgramWindowProps) => {
         <SectionItem text={t('about.version')}>
           <b>{PACKAGE['version']}</b>
         </SectionItem>
-        <SectionItem text={t('about.doc')}>
+        {config.userDocLink && <SectionItem text={t('about.doc')}>
           <ExternalLink href={config.userDocLink}/>
-        </SectionItem>
+        </SectionItem>}
         <div className={'no-user-select'}>&nbsp;</div>
         <SectionItem text={t('about.site')}>
           <ExternalLink href={'https://geospline.com'} title={'geospline.com'}/>
         </SectionItem>
-        <SectionItem text={t('about.contact-email')}>
+        {config.contactEmail && <SectionItem text={t('about.contact-email')}>
           <a href={'mailto:' + config.contactEmail}>{config.contactEmail}</a>
-        </SectionItem>
+        </SectionItem>}
       </Section>
       {config.devMode && <Section header={t('about.dev-mode')} icon={debugIcon}>
         <SectionItem text={'API'}>
           <ExternalLink href={config.webServicesURL}/>
         </SectionItem>
-        <SectionItem text={t('about.doc')}>
+        {config.devDocLink && <SectionItem text={t('about.doc')}>
           <ExternalLink href={config.devDocLink}/>
-        </SectionItem>
+        </SectionItem>}
       </Section>}
     </div>
   );

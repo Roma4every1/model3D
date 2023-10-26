@@ -34,11 +34,11 @@ export const TopToolbar = ({config}: TopToolbarProps) => {
         />
         {config.devMode && config.devDocLink && <IconRowLink
           icon={devDocIcon} alt={'dev-doc'}
-          href={config.devDocLink} target={'_blank'} title={'Открыть документацию для разработчиков'}
+          href={config.devDocLink} target={'_blank'} title={t('menu.open-dev-doc')}
         />}
         {config.userDocLink && <IconRowLink
           icon={userDocIcon} alt={'user-doc'}
-          href={config.userDocLink} target={'_blank'} title={'Открыть пользовательскую документацию'}
+          href={config.userDocLink} target={'_blank'} title={t('menu.open-user-doc')}
         />}
         <IconRowButton
           icon={aboutProgramIcon} alt={'about'}
