@@ -1,27 +1,33 @@
 .about-program {
-  padding: 8px;
+  padding: 8px 16px;
   font-size: 15px;
-  min-width: 480px;
 
-  .section-header {
+  .header {
     display: flex;
     align-items: center;
     gap: 4px;
 
-    padding: 2px 4px;
     font-size: 16px;
     font-weight: bold;
   }
-  .section-body {
-    padding: 8px;
+
+  .link-list {
+    padding-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 3em;
   }
 
-  img {
-    width: 16px;
-    height: 16px;
+  .copyright {
+    color: #888888;
+    font-size: 0.8em;
+    text-align: center;
   }
+
   a img {
     width: 0.7em;
     height: 0.7em;
+    margin-left: 4px;
   }
 }
