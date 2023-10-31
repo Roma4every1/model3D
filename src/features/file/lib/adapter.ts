@@ -20,5 +20,5 @@ export function toFileViewState(payload: FormStatePayload): FileViewState {
     formState.channels = [attachedChannel];
     break;
   }
-  return {model: null, memo: [], useResources};
+  return {model: null, memo: [], useResources, loadingFlag: {current: 0}};
 }
