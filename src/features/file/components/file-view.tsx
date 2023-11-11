@@ -44,6 +44,9 @@ export const FileView = ({id, channels}: FormState) => {
   if (!model) {
     return <TextInfo text={'file-view.no-file'}/>;
   }
+  if (model.loading) {
+    return <TextInfo text={'base.loading'}/>;
+  }
   if (!supportedExtensions.has(model.fileType)) {
     return <UnsupportedFile name={model.fileName} data={model.data}/>;
   }

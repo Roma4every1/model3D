@@ -5,6 +5,8 @@ type FileViewStates = FormDict<FileViewState>;
  * + `model`: {@link FileViewModel}
  * + `memo`: {@link FileViewModel}[]
  * + `useResources: boolean`
+ * + `loading: boolean`
+ * + `loadingFlag: {current: number}`
  * */
 interface FileViewState {
   /** Текущий просматриваемый файл. */
@@ -13,6 +15,8 @@ interface FileViewState {
   memo: FileViewModel[];
   /** Хранится ли содержимое файлов в файловой системе сервера. */
   useResources: boolean;
+  /** Текущий флаг загрузки. */
+  loadingFlag: {current: number};
 }
 
 /** Модель просматриваемого файла.
@@ -32,6 +36,8 @@ interface FileViewModel<T = any> {
   uri: string;
   /** Модель содержимого в зависимости от типа. */
   content?: T;
+  /** Индикатор загрузки. */
+  loading: boolean;
 }
 
 /** Парсер конкретного типа файла. */
