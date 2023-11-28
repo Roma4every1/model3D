@@ -192,9 +192,16 @@ interface ICaratColumnGroup {
 }
 
 interface ICaratColumn {
+  rect: Rectangle;
   channel?: CaratAttachedChannel;
+
+  copy(): ICaratColumn;
+  getLookupNames(): ChannelName[];
   getElements?(): any[];
   getRange(): [number, number];
+  setChannelData(records: ChannelRecord[]): void;
+  setLookupData(lookupData: ChannelRecordDict): void;
+  render(): void;
 }
 
 /** Порт просмотра. */
@@ -231,7 +238,8 @@ type CaratCurveID = number;
 type CaratCurveType = string;
 
 /** Типы корректных подключённых каналов к каротажной форме. */
-type CaratChannelType = 'lithology' | 'perforations' | 'curve-set' | 'curve-data' | 'inclinometry';
+type CaratChannelType = 'lithology' | 'perforations' | 'curve-set' | 'curve-data' | 'inclinometry' |
+  'construction' | 'pump' | 'vertical';
 
 type CaratCurveSetInfo = CaratChannelInfo<'id' | 'type' | 'date' | 'top' | 'bottom' | 'defaultLoading' | 'description'>;
 type CaratLithologyInfo = CaratChannelInfo<'top' | 'bottom' | 'stratumID'>;

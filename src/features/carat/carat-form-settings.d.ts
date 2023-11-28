@@ -152,6 +152,7 @@ interface CaratAttachedChannel {
   styles?: CaratStyleLookup[];
   /** Справочник с названиями пластов. */
   namesChannel?: ChannelName;
+  imageLookup?: CaratAttachedLookup;
 }
 
 /** Информация о справочнике цветов и текста пропластков. */

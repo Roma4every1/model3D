@@ -1,5 +1,8 @@
 import { CaratDrawer } from './drawer';
 import { CaratColumn } from './column';
+import { ConstructionColumn } from './construction-column';
+import { PumpColumn } from './pump-column';
+import { VerticalLineColumn } from './v-line-column';
 import { CaratCurveColumn } from './curve-column';
 import { CaratCurveModel, CaratIntervalModel } from '../lib/types';
 import { CaratColumnHeader } from './column-header';
@@ -33,7 +36,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   public readonly yAxis: CaratColumnYAxis;
 
   /** Каротажные колонки в группе. */
-  private readonly columns: CaratColumn[];
+  private readonly columns: ICaratColumn[];
   /** Каротажные колонки с кривыми. */
   private readonly curveColumn: CaratCurveColumn | null;
 
@@ -78,8 +81,16 @@ export class CaratColumnGroup implements ICaratColumnGroup {
       if (channelType === 'curve-data') { curveDataChannel = attachedChannel; continue; }
 
       const columnRect = {top: 0, left: 0, width: rect.width, height};
-      const properties = init.properties[attachedChannel.name];
-      this.columns.push(new CaratColumn(columnRect, drawer, attachedChannel, properties));
+      if (channelType === 'construction') {
+        this.columns.push(new ConstructionColumn(columnRect, drawer, attachedChannel));
+      } else if (channelType === 'pump') {
+        this.columns.push(new PumpColumn(columnRect, drawer, attachedChannel));
+      } else if (channelType === 'vertical') {
+        this.columns.push(new VerticalLineColumn(columnRect, drawer, attachedChannel));
+      } else {
+        const properties = init.properties[attachedChannel.name];
+        this.columns.push(new CaratColumn(columnRect, drawer, attachedChannel, properties));
+      }
     }
 
     if (curveSetChannel && curveDataChannel) {

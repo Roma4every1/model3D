@@ -6,67 +6,91 @@ export type CaratCurveStyleDict = Map<CaratCurveType, CaratCurveStyle>;
 /** Модель каротажной кривой. */
 export interface CaratCurveModel {
   /** Идентификатор кривой. */
-  id: CaratCurveID,
+  id: CaratCurveID;
   /** Тип каротажа. */
-  type: CaratCurveType,
+  type: CaratCurveType;
   /** Дата кривой. */
-  date: Date,
+  date: Date;
   /** Описание (метод исследования). */
-  description: string,
+  description: string;
   /** Начальная отметка глубины. */
-  top: number,
+  top: number;
   /** Конечная отметка глубины. */
-  bottom: number,
+  bottom: number;
   /** Минимальное значение кривой. */
-  min: number,
+  min: number;
   /** Максимальное значение кривой. */
-  max: number,
+  max: number;
   /** Начальная отметка оси. */
-  axisMin: number,
+  axisMin: number;
   /** Конечная отметка оси. */
-  axisMax: number,
+  axisMax: number;
   /** Загружать ли кривую по умолчанию. */
-  defaultLoading: boolean,
+  defaultLoading: boolean;
   /** Данные кривой (SVG-путь). */
-  path: Path2D,
+  path: Path2D;
   /** Точки кривой. */
-  points: Point[],
+  points: Point[];
   /** Стиль отрисовки. */
-  style: CaratCurveStyle,
+  style: CaratCurveStyle;
   /** Является ли кривая активной. */
-  active: boolean,
+  active: boolean;
 }
 export interface CaratCurveStyle {
-  color: ColorHEX,
-  thickness: number,
+  color: ColorHEX;
+  thickness: number;
 }
 
 export interface CurveGroupState {
-  rect: Rectangle,
-  elements: CaratCurveModel[],
+  rect: Rectangle;
+  elements: CaratCurveModel[];
 }
 export interface CurveAxisGroup {
-  rect: Rectangle,
-  axes: CaratCurveModel[],
+  rect: Rectangle;
+  axes: CaratCurveModel[];
 }
 
 export interface CaratIntervalModel {
-  stratumID?: number,
-  top: number,
-  bottom: number,
-  styleID: string,
+  stratumID?: number;
+  top: number;
+  bottom: number;
+  styleID: string;
   style: CaratIntervalStyle,
-  text?: string,
+  text?: string;
 }
 export interface CaratBarModel {
-  top: number,
-  bottom: number,
-  value: number, // from 0 to 1
-  text?: string,
+  top: number;
+  bottom: number;
+  value: number; // from 0 to 1
+  text?: string;
 }
 export interface CaratIntervalStyle {
-  fill: ColorHEX | CanvasPattern,
-  stroke: ColorHEX,
+  fill: ColorHEX | CanvasPattern;
+  stroke: ColorHEX;
+}
+
+/** Элемент конструкции скважины. */
+export interface ConstructionElementModel {
+  top: number;
+  bottom: number;
+  innerDiameter: number;
+  outerDiameter: number;
+  cement: number;
+}
+
+/** Элемент конструкции скважины в виде картинки с насосом. */
+export interface CaratPumpModel {
+  top: number;
+  bottom: number;
+  pumpID: number;
+  pumpImage: any;
+}
+
+/** Элемент конструкции скважины в виде вертикальной прямой. */
+export interface CaratVerticalLineModel {
+  top: number;
+  bottom: number;
+  width: number;
 }
 
 /* --- Correlations --- */

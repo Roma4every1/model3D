@@ -2,7 +2,11 @@ import { CaratStage } from '../rendering/stage';
 import { CaratLoader } from './loader';
 import { createColumnInfo } from 'entities/channels';
 import { identifyCaratChannel, applyStyle } from './channels';
-import { drawerConfig, caratChannelCriterionDict, inclinometryCriterion } from './constants';
+
+import {
+  drawerConfig, caratChannelCriterionDict,
+  inclinometryCriterion, pumpImageCriterion,
+} from './constants';
 
 
 /** Создаёт состояние каротажа по её начальным настройкам. */
@@ -37,6 +41,22 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
 
           inclinometryChannel = attachedChannel;
           usedChannels.add(attachedChannel.name);
+        } else {
+          delete attachedChannel.type;
+        }
+      } else if (attachedChannel.type === 'pump') {
+        const propertyName = caratChannelCriterionDict.pump.pumpID;
+        const property = channel.info.properties.find(p => p.name === propertyName);
+        const pumpDataChannel = property.lookupChannels[0];
+
+        if (pumpDataChannel) {
+          attachedChannel.imageLookup = {
+            name: pumpDataChannel,
+            info: createColumnInfo(channelDict[pumpDataChannel], pumpImageCriterion),
+            dict: null,
+          };
+          usedChannels.add(attachedChannel.name);
+          attachedChannel.styles = [];
         } else {
           delete attachedChannel.type;
         }

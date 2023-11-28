@@ -46,6 +46,24 @@ export const caratChannelCriterionDict: Record<CaratChannelType, ChannelCriterio
     well: 'WELL ID',
     inclinometry: 'INCLINOMETRY',
   },
+  'construction': {
+    well: 'WELL ID', top: 'TOP', bottom: 'BASE',
+    innerDiameter: 'IN_D', outerDiameter: 'OUT DIAMETER', cement: 'CEMENT',
+  },
+  'pump': {
+    well: 'WELL ID', top: 'TOP', bottom: 'BASE',
+    pumpID: 'PUMP IMAGE', pumpName: 'NAME', label: 'LABEL_SP',
+  },
+  'vertical': {
+    well: 'WELL ID',
+    top: 'TOP', bottom: 'BASE', width: 'WIDTH',
+  },
+};
+
+/** Канал с картинками насоса. */
+export const pumpImageCriterion: ChannelCriterion = {
+  id: 'LOOKUPCODE',
+  image: 'LOOKUPVALUE',
 };
 
 /** Свойства для идентификации канала с данными инклинометрии. */

@@ -1,8 +1,8 @@
 import { round } from 'shared/lib';
 
 import {
-  CaratIntervalModel, CaratBarModel,
-  CaratCurveModel, CurveAxisGroup, CaratCorrelation,
+  CaratIntervalModel, CaratBarModel, ConstructionElementModel, CaratPumpModel,
+  CaratVerticalLineModel, CaratCurveModel, CurveAxisGroup, CaratCorrelation,
 } from '../lib/types';
 
 import {
@@ -461,6 +461,50 @@ export class CaratDrawer {
         const yCenter = canvasTop + canvasHeight / 2;
         this.drawIntervalText(text, xCenter, yCenter, this.columnWidth);
       }
+    }
+  }
+
+  public drawConstructionElements(elements: ConstructionElementModel[]): void {
+    const scaleY = window.devicePixelRatio * this.scale;
+    this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
+
+    for (const { top, bottom, innerDiameter, outerDiameter } of elements) {
+      if (bottom < this.yMin || top > this.yMax) continue;
+      const canvasTop = scaleY * top;
+      const canvasHeight = scaleY * (bottom - top);
+      const innerX = (this.columnWidth - innerDiameter) / 2;
+      const outerX = (this.columnWidth - outerDiameter) / 2;
+
+      this.ctx.fillStyle = '#808080';
+      this.ctx.fillRect(outerX, canvasTop, outerDiameter, canvasHeight);
+      this.ctx.fillStyle = '#d9d9d9';
+      this.ctx.fillRect(innerX, canvasTop, innerDiameter, canvasHeight);
+    }
+  }
+
+  public drawPumps(elements: CaratPumpModel[]): void {
+    const scaleY = window.devicePixelRatio * this.scale;
+    this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
+
+    for (const { top, pumpImage } of elements) {
+      if (top + pumpImage.height < this.yMin || top > this.yMax) continue;
+      const dx = (this.columnWidth - pumpImage.width) / 2;
+      const dy = scaleY * top;
+      this.ctx.drawImage(pumpImage, dx, dy);
+    }
+  }
+
+  public drawVerticalLines(elements: CaratVerticalLineModel[]): void {
+    const scaleY = window.devicePixelRatio * this.scale;
+    this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
+    this.ctx.fillStyle = '#3fa2ea';
+
+    for (const { top, bottom, width } of elements) {
+      if (bottom < this.yMin || top > this.yMax) continue;
+      const canvasTop = scaleY * top;
+      const canvasHeight = scaleY * (bottom - top);
+      const x = (this.columnWidth - width) / 2;
+      this.ctx.fillRect(x, canvasTop, width, canvasHeight);
     }
   }
 
