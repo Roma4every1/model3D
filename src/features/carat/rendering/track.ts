@@ -1,9 +1,10 @@
 import { CaratDrawer } from './drawer';
-import { CaratCurveModel } from '../lib/types';
+import { CaratCurveModel, ICaratInterval } from '../lib/types';
 import { CaratColumnGroup } from './column-group';
 import { CaratInclinometry } from '../lib/inclinometry';
 import { isRectInnerPoint } from 'shared/lib';
 import { defaultSettings } from '../lib/constants';
+import { getConstructionParts } from '../lib/utils.ts';
 
 
 /** Трек. */
@@ -34,6 +35,9 @@ export class CaratTrack implements ICaratTrack {
   private activeIndex: number;
   /** Активная кривая. */
   private activeCurve: CaratCurveModel | null;
+
+  /** Интервалы элементов конструкции. */
+  private constructionParts: ICaratInterval[];
 
   constructor(rect: Rectangle, columns: CaratColumnInit[], scale: number, drawer: CaratDrawer) {
     this.active = false;
@@ -160,12 +164,15 @@ export class CaratTrack implements ICaratTrack {
     [viewport.min, viewport.max] = this.backgroundGroup.getRange();
     viewport.y = viewport.min;
 
+    const constructionElements: ICaratInterval[] = [];
     for (const group of this.groups) {
       group.setData(data, cache);
+      constructionElements.push(...group.getConstructionElements());
       const [groupMin, groupMax] = group.getRange();
       if (groupMin < viewport.min) viewport.min = groupMin;
       if (groupMax > viewport.max) viewport.max = groupMax;
     }
+    this.constructionParts = getConstructionParts(constructionElements);
 
     this.setActiveCurve(null);
     this.updateGroupRects();

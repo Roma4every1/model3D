@@ -486,10 +486,10 @@ export class CaratDrawer {
     const scaleY = window.devicePixelRatio * this.scale;
     this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
 
-    for (const { top, pumpImage } of elements) {
-      if (top + pumpImage.height < this.yMin || top > this.yMax) continue;
+    for (const { top, bottom, pumpImage } of elements) {
+      if (bottom < this.yMin || top > this.yMax) continue;
       const dx = (this.columnWidth - pumpImage.width) / 2;
-      const dy = scaleY * top;
+      const dy = scaleY * (top + bottom) / 2;
       this.ctx.drawImage(pumpImage, dx, dy);
     }
   }

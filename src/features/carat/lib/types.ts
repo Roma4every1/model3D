@@ -50,6 +50,12 @@ export interface CurveAxisGroup {
   axes: CaratCurveModel[];
 }
 
+/** Обязательные поля любого интервального элемента. */
+export interface ICaratInterval {
+  top: number;
+  bottom: number;
+}
+
 export interface CaratIntervalModel {
   stratumID?: number;
   top: number;

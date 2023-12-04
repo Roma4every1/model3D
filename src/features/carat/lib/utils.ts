@@ -1,4 +1,4 @@
-import { CaratCurveModel } from './types';
+import { CaratCurveModel, ICaratInterval } from './types';
 import { distance, distanceFromStraight } from 'shared/lib';
 import { constraints } from './constants';
 
@@ -25,6 +25,24 @@ export function validateCaratScale(newScale: number): number {
   if (newScale < min) newScale = min;
   if (newScale > max) newScale = max;
   return Math.round(newScale);
+}
+
+export function getConstructionParts(elements: ICaratInterval[]): ICaratInterval[] {
+  const set = new Set<number>();
+  set.add(0);
+
+  for (const { top, bottom } of elements) {
+    set.add(Math.round(top));
+    set.add(Math.round(bottom));
+  }
+
+  const parts: ICaratInterval[] = [];
+  const coordinates = [...set].sort((a, b) => a - b);
+
+  for (let i = 0; i < coordinates.length - 1; i++) {
+    parts.push({top: coordinates[i], bottom: coordinates[i + 1]});
+  }
+  return parts;
 }
 
 /* --- Geometry --- */
@@ -56,7 +74,7 @@ export function distanceFromCaratCurve(
 }
 
 /** Бинарным поиском находит индекс точки, ближайшей по Y. */
-function findNearestYPoint(arr: Point[], value: number) {
+function findNearestYPoint(arr: Point[], value: number): number {
   let start = 0;
   let end = arr.length - 1;
 

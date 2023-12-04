@@ -4,7 +4,7 @@ import { ConstructionColumn } from './construction-column';
 import { PumpColumn } from './pump-column';
 import { VerticalLineColumn } from './v-line-column';
 import { CaratCurveColumn } from './curve-column';
-import { CaratCurveModel, CaratIntervalModel } from '../lib/types';
+import { CaratCurveModel, CaratIntervalModel, ICaratInterval } from '../lib/types';
 import { CaratColumnHeader } from './column-header';
 import { CurveManager } from '../lib/curve-manager';
 import { distanceFromCaratCurve } from '../lib/utils';
@@ -170,6 +170,15 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     let strata = column?.getElements() ?? [];
     if (id !== undefined) strata = strata.filter(s => s.stratumID === id);
     return strata;
+  }
+
+  public getConstructionElements(): ICaratInterval[] {
+    const elements: ICaratInterval[] = [];
+    for (const column of this.columns) {
+      const hasElements = (column instanceof ConstructionColumn) || (column instanceof PumpColumn);
+      if (hasElements) elements.push(...column.getElements());
+    }
+    return elements;
   }
 
   public getWidth(): number {
