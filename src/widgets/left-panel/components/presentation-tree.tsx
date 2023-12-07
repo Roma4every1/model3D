@@ -32,7 +32,7 @@ export const PresentationTreeView = ({tree}: {tree: PresentationTree}) => {
 
   return (
     <TreeView
-      className={'treeview'} data={visibleNodes}
+      className={'presentation-tree'} data={visibleNodes}
       expandIcons={true} aria-multiselectable={false}
       onExpandChange={onExpandChange} onItemClick={onItemClick}
     />

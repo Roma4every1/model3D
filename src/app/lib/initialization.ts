@@ -6,10 +6,17 @@ export function createClientConfig(data: unknown): ClientConfiguration {
   };
 
   if (data instanceof Object) {
-    const configURL = data['webServicesURL'];
-    if (typeof configURL === 'string') config.webServicesURL = configURL;
+    const apiPrefix = data['webServicesURL'];
+    if (typeof apiPrefix === 'string') config.webServicesURL = apiPrefix;
     const devMode = data['devMode'];
     if (typeof devMode === 'boolean') config.devMode = devMode;
+
+    const devDocLink = data['devDocLink'];
+    if (typeof devDocLink === 'string') config.devDocLink = devDocLink;
+    const userDocLink = data['userDocLink'];
+    if (typeof userDocLink === 'string') config.userDocLink = userDocLink;
+    const contactEmail = data['contactEmail'];
+    if (typeof contactEmail === 'string') config.contactEmail = contactEmail;
   }
 
   if (config.webServicesURL.length === 0) {
