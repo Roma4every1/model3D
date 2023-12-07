@@ -107,5 +107,6 @@ async function createFormSettings({id, type}: FormDataWM): Promise<FormSettings>
     return res.data;
   }
   if (type === 'map') await fillPatterns.initialize();
+  if (type === 'profile') await fillPatterns.initialize();
   return {};
 }

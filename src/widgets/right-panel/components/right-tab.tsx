@@ -1,5 +1,7 @@
 import { TraceEditor } from 'entities/objects';
 import { MapLayerTree } from 'features/map';
+import {createElement} from "react";
+import {ProfileEditor} from "../../../features/profile/components/profile-editor.tsx";
 
 
 export interface RightTabProps {
@@ -9,6 +11,13 @@ export interface RightTabProps {
   presentation: PresentationState;
 }
 
+type RightTabComponent = typeof MapLayerTree | typeof TraceEditor;
+
+const rightTabComponentsDict: Record<string, RightTabComponent> = {
+  'right-map': MapLayerTree,
+  'right-trace': TraceEditor,
+  'right-profile': ProfileEditor
+}
 
 export const RightTab = ({tabID, presentation}: RightTabProps) => {
   if (!presentation) return null;
@@ -16,9 +25,10 @@ export const RightTab = ({tabID, presentation}: RightTabProps) => {
   const activeChildID = presentation.activeChildID;
   const activeFormType = presentation.children.find(child => child.id === activeChildID).type;
 
-  const formID = activeFormType === 'map'
+  const formID = activeFormType === 'map' || activeFormType === 'profile'
     ? activeChildID
     : presentation.children.find(child => child.type === 'map').id;
 
-  return tabID === 'right-trace' ? <TraceEditor id={formID}/> : <MapLayerTree id={formID}/>;
+  const component = rightTabComponentsDict[tabID];
+  return createElement(component, {id: formID});
 };
