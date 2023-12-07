@@ -7,7 +7,8 @@ export function createPlaceModel(value: ParamValueTableRow): PlaceModel {
   const id = parseInt(stringToTableCell(value, placeCriterion.id as string));
   if (isNaN(id)) return null;
   const name = stringToTableCell(value, placeCriterion.name as string);
-  return {id, name};
+  const objectName = stringToTableCell(value, placeCriterion.objectName as string);
+  return {id, name, objectName};
 }
 
 /** По значение `TableRow` параметра создаёт модель пласта. */
