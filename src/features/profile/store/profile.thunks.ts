@@ -4,23 +4,31 @@ import {setProfileLoading} from "./profile.actions.ts";
 
 
 /** Обновляет данные профиля. */
-export function setProfileData(id: FormID, topBaseMapChannel: Channel): Thunk {
+export function setProfileData(id: FormID, objects: GMMOJobObjectParameters): Thunk {
+
   return async (dispatch: Dispatch, getState: StateGetter) => {
-    const { objects, profiles } = getState();
-    const { stage, loader } = profiles[id];
-    const { trace: { model: currentTrace } } = objects;
+    const { profiles } = getState();
+    const { loader } = profiles[id];
 
     loader.setLoading = (loading: Partial<ProfileLoading>) => {
-      if (loading.status) loading.status = 'profile.loading.' + loading.status;
       dispatch(setProfileLoading(id, loading));
     };
 
     const flag = ++loader.flag;
-    await loader.loadProfileData(id, currentTrace, topBaseMapChannel);
+    await loader.loadProfileData(objects);
     if (flag !== loader.flag) return;
+  };
+}
 
-    stage.setData(loader.cache);
-    loader.setLoading({percentage: 100});
-    stage.render();
+/** Обновляет данные достуных пластов профиля. */
+export function setProfilePlastsData(id: FormID, objects: GMMOJobObjectParameters): Thunk {
+
+  return async (dispatch: Dispatch, getState: StateGetter) => {
+    const { profiles } = getState();
+    const { loader } = profiles[id];
+
+    const flag = ++loader.flag;
+    await loader.loadPlData(objects);
+    if (flag !== loader.flag) return;
   };
 }

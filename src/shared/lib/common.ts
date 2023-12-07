@@ -37,10 +37,9 @@ export function compareObjects(a: Record<any, any>, b: Record<any, any>): boolea
  * @example
  * groupBy([{id: 3, name: 'bob'}, {id: 2, name: 'john'}, {id: 2, name: 'bob'}], el => el.name) =>
  * [[{id: 3, name: 'bob'}, {id: 2, name: 'bob'}], [{id: 2, name: 'john'}]]
- *
  * */
-export const groupBy = (list: Array<any>, keyGetter: (item: any) => any) => {
-  const map = new Map();
+export function groupBy<K, T>(list: Array<T>, keyGetter: (item: T) => K): Map<K, T[]> {
+  const map: Map<K ,T[]> = new Map();
   list.forEach((item) => {
     const key = keyGetter(item);
     const collection = map.get(key);

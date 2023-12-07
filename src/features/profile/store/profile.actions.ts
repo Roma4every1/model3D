@@ -11,7 +11,12 @@ export function setProfileCanvas(id: FormID, canvas: HTMLCanvasElement): Profile
   return {type: ProfileActionType.SET_CANVAS, payload: {id, canvas}};
 }
 
-/** Обновляет данные каналов. */
+/** Обновляет данные загрузчика. */
 export function setProfileLoading(id: FormID, loading: Partial<CaratLoading>): ProfileAction {
   return {type: ProfileActionType.SET_LOADING, payload: {id, loading}};
+}
+
+/** Обновляет данные списка активных пластов. */
+export function setProfilePlastList(id: FormID, plastList: string[]): ProfileAction {
+  return {type: ProfileActionType.SET_ACTIVE_PLAST_LIST, payload: {id, plastList}};
 }
