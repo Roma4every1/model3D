@@ -50,8 +50,9 @@ export function loadCaratCurves(id: FormID, group: ICaratColumnGroup): Thunk {
     group.groupCurves(visibleCurves);
     const loadedIDs = await loader.loadCurveData(visibleCurves.map(curve => curve.id), false);
     curveManager.setCurvePointData(loadedIDs, loader.cache);
-    loader.checkCacheSize();
+    if (track.constructionMode) track.transformer.transformCurves(visibleCurves);
 
+    loader.checkCacheSize();
     track.updateGroupRects();
     stage.updateTrackRects();
     stage.resize();

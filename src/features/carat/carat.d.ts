@@ -147,9 +147,11 @@ interface CaratStageListeners {
 /** Трек каротажной диаграммы. */
 interface ICaratTrack {
   wellName: WellName;
+  constructionMode: boolean;
   readonly rect: BoundingRect;
   readonly viewport: CaratViewport;
   readonly inclinometry: ICaratInclinometry;
+  readonly transformer: IConstructionTransformer;
 
   getGroups(): ICaratColumnGroup[];
   getActiveGroup(): ICaratColumnGroup | null;
@@ -173,6 +175,13 @@ interface ICaratTrack {
 interface ICaratInclinometry {
   getAbsMark(depth: number): number;
   getDepth(absMark: number): number;
+}
+
+interface IConstructionTransformer {
+  parts: any[];
+  coords: number[];
+  step: number;
+  getConstructionHeight(): number;
 }
 
 interface ICaratColumnGroup {
@@ -236,6 +245,12 @@ interface CaratViewportScroll {
 type CaratCurveID = number;
 /** Тип каротажной кривой. */
 type CaratCurveType = string;
+
+/** Обязательные поля любого интервального элемента. */
+interface ICaratInterval {
+  top: number;
+  bottom: number;
+}
 
 /** Типы корректных подключённых каналов к каротажной форме. */
 type CaratChannelType = 'lithology' | 'perforations' | 'curve-set' | 'curve-data' | 'inclinometry' |

@@ -35,6 +35,8 @@ export interface CaratCurveModel {
   style: CaratCurveStyle;
   /** Является ли кривая активной. */
   active: boolean;
+  /** Была ли кривая трансформирована для показа в режиме конструкции. */
+  transformed?: boolean;
 }
 export interface CaratCurveStyle {
   color: ColorHEX;
@@ -48,12 +50,6 @@ export interface CurveGroupState {
 export interface CurveAxisGroup {
   rect: Rectangle;
   axes: CaratCurveModel[];
-}
-
-/** Обязательные поля любого интервального элемента. */
-export interface ICaratInterval {
-  top: number;
-  bottom: number;
 }
 
 export interface CaratIntervalModel {

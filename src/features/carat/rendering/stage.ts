@@ -371,6 +371,12 @@ export class CaratStage implements ICaratStage {
     const trackHeight = resultHeight - 2 * padding;
     for (const track of this.trackList) track.setHeight(trackHeight);
     this.correlations.updateRects(this.trackList);
+
+    if (track.constructionMode) {
+      const dataHeight /* px */ = track.getBackgroundGroup().getDataRect().height;
+      const constructionHeight /* m */ = track.transformer.getConstructionHeight();
+      track.setScale(dataHeight / constructionHeight / CaratDrawer.ratio);
+    }
   }
 
   /* --- Rendering --- */

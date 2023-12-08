@@ -4,7 +4,7 @@ import { ConstructionColumn } from './construction-column';
 import { PumpColumn } from './pump-column';
 import { VerticalLineColumn } from './v-line-column';
 import { CaratCurveColumn } from './curve-column';
-import { CaratCurveModel, CaratIntervalModel, ICaratInterval } from '../lib/types';
+import { CaratCurveModel, CaratIntervalModel } from '../lib/types';
 import { CaratColumnHeader } from './column-header';
 import { CurveManager } from '../lib/curve-manager';
 import { distanceFromCaratCurve } from '../lib/utils';

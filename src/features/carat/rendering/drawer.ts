@@ -58,6 +58,8 @@ export class CaratDrawer {
   private minusWidth: number;
   /** Инклинометрия скважины для получения абсолютной отметки. */
   private inclinometry: ICaratInclinometry;
+  /** Вспомогательный класс для показа конструкции скважины. */
+  private transformer: IConstructionTransformer;
 
   private trackRect: Rectangle;
   private yMin: number;
@@ -136,11 +138,15 @@ export class CaratDrawer {
     this.ctx.setTransform(ratio, 0, 0, ratio, ratio * x, ratio * y);
   }
 
-  public setCurrentTrack(rect: Rectangle, viewport: CaratViewport, inclinometry: ICaratInclinometry): void {
+  public setCurrentTrack(
+    rect: Rectangle, viewport: CaratViewport,
+    inclinometry: ICaratInclinometry, transformer: IConstructionTransformer,
+  ): void {
     this.trackRect = rect;
     this.yMin = viewport.y;
     this.scale = viewport.scale;
     this.inclinometry = inclinometry;
+    this.transformer = transformer;
   }
 
   public setCurrentGroup(rect: Rectangle, settings: CaratColumnSettings): void {
@@ -343,8 +349,14 @@ export class CaratDrawer {
     this.ctx.rect(0, scaleY * this.yMin, this.groupElementRect.width, this.groupElementRect.height);
     this.ctx.clip();
 
-    const step = settings.step;
-    const minY = Math.ceil(this.yMin / step - 1) * step;
+    let minY: number, step: number;
+    if (this.transformer.parts) {
+      step = this.transformer.step;
+      minY = 0;
+    } else {
+      step = settings.step;
+      minY = Math.ceil(this.yMin / step - 1) * step;
+    }
     const maxY = minY + this.groupElementRect.height / this.scale;
 
     const { font, color, markSize } = this.columnYAxisSettings;
@@ -354,11 +366,23 @@ export class CaratDrawer {
     this.setTextSettings(font, color, 'left', 'middle');
     this.ctx.beginPath();
 
-    for (let y = minY; y < maxY; y += step) {
-      const canvasY = y * scaleY;
-      this.ctx.moveTo(0, canvasY);
-      this.ctx.lineTo(markSize, canvasY);
-      drawMarksFn(y, canvasY);
+    if (this.transformer.parts) {
+      let i = 0;
+      for (let y = minY; y < maxY; y += step) {
+        const canvasY = y * scaleY;
+        this.ctx.moveTo(0, canvasY);
+        this.ctx.lineTo(markSize, canvasY);
+        drawMarksFn(this.transformer.coords[i], canvasY);
+        i++;
+        if (i >= this.transformer.coords.length) break;
+      }
+    } else {
+      for (let y = minY; y < maxY; y += step) {
+        const canvasY = y * scaleY;
+        this.ctx.moveTo(0, canvasY);
+        this.ctx.lineTo(markSize, canvasY);
+        drawMarksFn(y, canvasY);
+      }
     }
     this.ctx.stroke();
 
@@ -489,7 +513,7 @@ export class CaratDrawer {
     for (const { top, bottom, pumpImage } of elements) {
       if (bottom < this.yMin || top > this.yMax) continue;
       const dx = (this.columnWidth - pumpImage.width) / 2;
-      const dy = scaleY * (top + bottom) / 2;
+      const dy = (scaleY * (top + bottom) / 2) - pumpImage.height / 2;
       this.ctx.drawImage(pumpImage, dx, dy);
     }
   }

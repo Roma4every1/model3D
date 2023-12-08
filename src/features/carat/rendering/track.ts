@@ -1,10 +1,10 @@
 import { CaratDrawer } from './drawer';
-import { CaratCurveModel, ICaratInterval } from '../lib/types';
+import { CaratCurveModel } from '../lib/types';
 import { CaratColumnGroup } from './column-group';
 import { CaratInclinometry } from '../lib/inclinometry';
+import { ConstructionTransformer } from '../lib/transformer';
 import { isRectInnerPoint } from 'shared/lib';
 import { defaultSettings } from '../lib/constants';
-import { getConstructionParts } from '../lib/utils.ts';
 
 
 /** Трек. */
@@ -17,6 +17,11 @@ export class CaratTrack implements ICaratTrack {
   public readonly viewport: CaratViewport;
   /** Инклинометрия скважины. */
   public readonly inclinometry: CaratInclinometry;
+
+  /** Находится ли трек в режиме показа конструкции скважины. */
+  public constructionMode: boolean;
+  /** Класс, который трансформирует элементы для показа конструкции скважины. */
+  public readonly transformer: ConstructionTransformer;
 
   /** Является ли трек активным. */
   public active: boolean;
@@ -36,9 +41,6 @@ export class CaratTrack implements ICaratTrack {
   /** Активная кривая. */
   private activeCurve: CaratCurveModel | null;
 
-  /** Интервалы элементов конструкции. */
-  private constructionParts: ICaratInterval[];
-
   constructor(rect: Rectangle, columns: CaratColumnInit[], scale: number, drawer: CaratDrawer) {
     this.active = false;
     this.rect = rect;
@@ -48,6 +50,7 @@ export class CaratTrack implements ICaratTrack {
     this.activeIndex = -1;
     this.activeCurve = null;
     this.maxGroupHeaderHeight = 0;
+    this.transformer = new ConstructionTransformer();
 
     const groupWithYAxis = columns.find((group) => group.yAxis?.show);
     const step = groupWithYAxis?.yAxis.step ?? defaultSettings.yAxisStep;
@@ -100,6 +103,8 @@ export class CaratTrack implements ICaratTrack {
       rect: rect,
       viewport: viewport,
       inclinometry: this.inclinometry ? new CaratInclinometry(this.inclinometry.channel) : null,
+      constructionMode: this.constructionMode,
+      transformer: this.transformer,
     } as any;
 
     Object.setPrototypeOf(copy, CaratTrack.prototype);
@@ -172,7 +177,24 @@ export class CaratTrack implements ICaratTrack {
       if (groupMin < viewport.min) viewport.min = groupMin;
       if (groupMax > viewport.max) viewport.max = groupMax;
     }
-    this.constructionParts = getConstructionParts(constructionElements);
+
+    this.constructionMode = constructionElements.length > 0;
+    if (this.constructionMode) {
+      this.transformer.setConstructionElements(constructionElements);
+      for (const group of this.groups) {
+        for (const column of group.getColumns()) {
+          this.transformer.transformIntervals(column.getElements());
+        }
+        if (group.hasCurveColumn()) {
+          this.transformer.transformCurves(group.curveManager.getVisibleCurves());
+        }
+      }
+      for (const column of this.backgroundGroup.getColumns()) {
+        this.transformer.transformIntervals(column.getElements());
+      }
+    } else {
+      this.transformer.parts = null;
+    }
 
     this.setActiveCurve(null);
     this.updateGroupRects();
@@ -342,7 +364,7 @@ export class CaratTrack implements ICaratTrack {
   /** Полный рендер всего трека. */
   public render(): void {
     if (this.rect.width <= 0) return;
-    this.drawer.setCurrentTrack(this.rect, this.viewport, this.inclinometry);
+    this.drawer.setCurrentTrack(this.rect, this.viewport, this.inclinometry, this.transformer);
     this.backgroundGroup.renderContent();
 
     for (const group of this.groups) {
@@ -363,7 +385,7 @@ export class CaratTrack implements ICaratTrack {
   /** Частичный рендер трека: только элементы колонок. */
   public lazyRender(): void {
     if (this.rect.width <= 0) return;
-    this.drawer.setCurrentTrack(this.rect, this.viewport, this.inclinometry);
+    this.drawer.setCurrentTrack(this.rect, this.viewport, this.inclinometry, this.transformer);
     this.drawer.clearTrackElementRect(this.maxGroupHeaderHeight);
     this.backgroundGroup.renderContent();
 
