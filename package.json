@@ -51,6 +51,7 @@
     "redux": "4.2.0",
     "redux-thunk": "2.4.1",
     "stream": "0.0.2",
+    "uuid": "^9.0.1",
     "xml-js": "1.6.11"
   },
   "devDependencies": {

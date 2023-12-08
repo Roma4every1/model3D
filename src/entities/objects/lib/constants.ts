@@ -2,7 +2,7 @@
 export const placeCriterion: ChannelCriterion<keyof PlaceModel> = {
   id: 'LOOKUPCODE',    // number
   name: 'LOOKUPVALUE', // string
-  objectName: 'OBJNAME',  // string
+  objectName: {name: 'OBJNAME', optional: true},  // string
 };
 
 /** Набор свойств канала с пластами. */

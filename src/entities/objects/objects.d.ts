@@ -34,14 +34,14 @@ interface PlaceState {
 /** Модель месторождения.
  * + `id`: {@link PlaceID} — идентификатор
  * + `name`: {@link PlaceName} — название
- * + `objectName`: {@link PlaceObjName} — название объекта
+ * + `objectName`: {@link PlaceObjName} — код объекта
  * */
 interface PlaceModel {
   /** Идентификатор месторождения. */
   id: PlaceID;
   /** Название месторождения. */
   name: PlaceName;
-  /** Название объекта месторождения. */
+  /** Дополнительный дентификатор (код) месторождения. */
   objectName: PlaceObjName
 }
 
