@@ -51,7 +51,8 @@ export class ConstructionColumn implements ICaratColumn {
       const innerDiameter = record[info.innerDiameter.name];
       const outerDiameter = record[info.outerDiameter.name];
       const cement = record[info.cement.name];
-      return {top, bottom, innerDiameter, outerDiameter, cement};
+      const label = record[info.label.name];
+      return {top, bottom, innerDiameter, outerDiameter, cement, label};
     });
   }
 

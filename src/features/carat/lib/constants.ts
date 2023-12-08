@@ -48,11 +48,17 @@ export const caratChannelCriterionDict: Record<CaratChannelType, ChannelCriterio
   },
   'construction': {
     well: 'WELL ID', top: 'TOP', bottom: 'BASE',
-    innerDiameter: 'IN_D', outerDiameter: 'OUT DIAMETER', cement: 'CEMENT',
+    innerDiameter: 'IN_D', outerDiameter: 'OUT DIAMETER',
+    cement: 'CEMENT', label: 'LABEL_ZEM',
   },
   'pump': {
     well: 'WELL ID', top: 'TOP', bottom: 'BASE',
     pumpID: 'PUMP IMAGE', pumpName: 'NAME', label: 'LABEL_SP',
+  },
+  'face': {
+    well: 'WELL ID',
+    top: 'TOP', bottom: 'BASE', diameter: 'OUT_D',
+    type: 'TYPE', date: 'DT', label: 'LABEL_ZB',
   },
   'vertical': {
     well: 'WELL ID',

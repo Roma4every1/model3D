@@ -1,8 +1,9 @@
 import { round } from 'shared/lib';
 
 import {
-  CaratIntervalModel, CaratBarModel, ConstructionElementModel, CaratPumpModel,
-  CaratVerticalLineModel, CaratCurveModel, CurveAxisGroup, CaratCorrelation,
+  CaratIntervalModel, CaratBarModel, ConstructionElementModel,
+  CaratPumpModel, CaratVerticalLineModel, CaratWellFaceModel,
+  CaratCurveModel, CurveAxisGroup, CaratCorrelation,
 } from '../lib/types';
 
 import {
@@ -518,6 +519,20 @@ export class CaratDrawer {
     }
   }
 
+  public drawWellFaces(elements: CaratWellFaceModel[]): void {
+    const scaleY = window.devicePixelRatio * this.scale;
+    this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
+
+    for (const { top, bottom, diameter } of elements) {
+      if (bottom < this.yMin || top > this.yMax) continue;
+      const canvasTop = scaleY * top;
+      const canvasHeight = scaleY * (bottom - top);
+      const x = (this.columnWidth - diameter) / 2;
+      this.ctx.fillStyle = '#6e83b0';
+      this.ctx.fillRect(x, canvasTop, diameter, canvasHeight);
+    }
+  }
+
   public drawVerticalLines(elements: CaratVerticalLineModel[]): void {
     const scaleY = window.devicePixelRatio * this.scale;
     this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
@@ -529,6 +544,46 @@ export class CaratDrawer {
       const canvasHeight = scaleY * (bottom - top);
       const x = (this.columnWidth - width) / 2;
       this.ctx.fillRect(x, canvasTop, width, canvasHeight);
+    }
+  }
+
+  public drawConstructionLabels(dataRect: Rectangle, labelRect: Rectangle, labels: any[]): void {
+    const scaleY = window.devicePixelRatio * this.scale;
+    this.setCurrentGroup(labelRect, null);
+    this.setTranslate(this.groupTranslateX, this.groupTranslateY);
+
+    const boxMargin = 8;
+    const boxPadding = 6;
+    const fontSize = 14;
+
+    const dataGroupCenter = this.trackRect.left + dataRect.left + dataRect.width / 2 - this.groupTranslateX;
+    const boxWidth = labelRect.width - 2 * boxMargin;
+    const boxHeight = fontSize + 2 * boxPadding;
+    const maxLabelWidth = boxWidth - 2 * boxPadding;
+
+    this.ctx.textAlign = 'left';
+    this.ctx.textBaseline = 'middle';
+    this.setLineSettings(2, '#cb7b7a');
+
+    let boxY = boxMargin;
+    let labelY = boxMargin + boxPadding + fontSize / 2;
+
+    for (const { y, text } of labels) {
+      if (y < this.yMin || y > this.yMax) continue;
+      this.ctx.beginPath();
+      this.ctx.moveTo(dataGroupCenter, (y - this.yMin) * scaleY);
+      this.ctx.lineTo(0, labelY);
+      this.ctx.lineTo(boxMargin, labelY);
+      this.ctx.stroke();
+
+      this.ctx.strokeRect(boxMargin, boxY, boxWidth, boxHeight);
+      this.ctx.fillStyle = '#fff69b';
+      this.ctx.fillRect(boxMargin, boxY, boxWidth, boxHeight);
+      this.ctx.fillStyle = '#111';
+      this.ctx.fillText(text, boxMargin + boxPadding, labelY, maxLabelWidth);
+
+      boxY += boxHeight + boxMargin;
+      labelY += boxHeight + boxMargin;
     }
   }
 

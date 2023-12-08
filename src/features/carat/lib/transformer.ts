@@ -15,15 +15,21 @@ export interface ConstructionPart {
 
 /** Вспомогательный класс для трансформации координат при показе конструкции скважины. */
 export class ConstructionTransformer implements IConstructionTransformer {
+  /** Части конструкции скважины по котором производится выравнивание. */
   public parts: ConstructionPart[];
+  /** Опорные точки частей конструкции. */
   public coords: number[];
+  /** Шаг выравнивания: равен высоте одной части. */
   public step: number;
+  /** Высота всей конструкции: расстояние от начала первого до конца последнего элемента. */
+  public constructionHeight: number;
 
   /** @param elements **непустой** массив элементов конструкции */
   public setConstructionElements(elements: ICaratInterval[]): void {
     this.createParts(elements);
     const count = this.parts.length;
-    this.step = Math.round((this.parts[count - 1].bottom - this.parts[0].top) / count);
+    this.constructionHeight = this.parts[count - 1].bottom - this.parts[0].top;
+    this.step = Math.round(this.constructionHeight / count);
 
     let y = 0;
     for (let i = 0; i < count; i++) {
@@ -32,11 +38,6 @@ export class ConstructionTransformer implements IConstructionTransformer {
       part.tBottom = y + this.step;
       y += this.step;
     }
-  }
-
-  /** Высота всей конструкции: расстояние от начала первого до конца последнего элемента. */
-  public getConstructionHeight(): number {
-    return this.parts[this.parts.length - 1].bottom - this.parts[0].top;
   }
 
   /** Преобразует интервальные элементы для режима показа конструкции. */
@@ -74,6 +75,7 @@ export class ConstructionTransformer implements IConstructionTransformer {
     for (const p of this.parts) {
       if (y <= p.bottom) { part = p; break; }
     }
+    if (!part) return y;
     // относительное расстояние в рамках отрезка: 0 - начало, 0.5 - середина, 1 - конец
     const relativeDistance = (y - part.top) / (part.bottom - part.top);
     return part.tTop + this.step * relativeDistance;

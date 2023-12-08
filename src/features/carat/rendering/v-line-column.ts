@@ -27,7 +27,7 @@ export class VerticalLineColumn implements ICaratColumn {
     return [];
   }
 
-  public getElements?(): any[] {
+  public getElements(): any[] {
     return this.elements;
   }
 

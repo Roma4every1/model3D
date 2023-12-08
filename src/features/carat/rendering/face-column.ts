@@ -1,8 +1,9 @@
 import { CaratDrawer } from './drawer.ts';
-import { CaratPumpModel } from '../lib/types.ts';
+import { CaratWellFaceModel } from '../lib/types.ts';
 
 
-export class PumpColumn implements ICaratColumn {
+/** Колонка отображающая элементы типа "забой скважины". */
+export class WellFaceColumn implements ICaratColumn {
   /** Ссылка на отрисовщик. */
   private readonly drawer: CaratDrawer;
   /** Ограничивающий прямоугольник колонки. */
@@ -10,26 +11,21 @@ export class PumpColumn implements ICaratColumn {
   /** Массив подключённых свойств канала. */
   public readonly channel: CaratAttachedChannel;
 
-  private elements: CaratPumpModel[];
-  private imageDict: Record<number, any>;
+  private elements: CaratWellFaceModel[];
 
   constructor(rect: Rectangle, drawer: CaratDrawer, channel: CaratAttachedChannel) {
     this.drawer = drawer;
     this.rect = rect;
     this.channel = channel;
     this.elements = [];
-    this.imageDict = {};
   }
 
   public copy(): ICaratColumn {
-    const copy = new PumpColumn({...this.rect}, this.drawer, this.channel);
-    copy.imageDict = this.imageDict;
-    return copy;
+    return new WellFaceColumn({...this.rect}, this.drawer, this.channel);
   }
 
   public getLookupNames(): ChannelName[] {
-    const imageLookupName = this.channel.imageLookup?.name;
-    return imageLookupName ? [imageLookupName] : [];
+    return [];
   }
 
   public getElements(): any[] {
@@ -52,37 +48,23 @@ export class PumpColumn implements ICaratColumn {
     const info = this.channel.info;
 
     for (const record of records) {
-      const pumpID = record[info.pumpID.name];
-      const pumpImage = this.imageDict[pumpID];
       const top = record[info.top.name];
       const bottom = record[info.bottom.name];
+      const diameter = record[info.diameter.name];
+      const type = record[info.type.name];
+      const date = record[info.date.name];
       const label = record[info.label.name];
-      this.elements.push({top, bottom, pumpID, pumpImage, label});
+      this.elements.push({top, bottom, diameter, type, date, label});
     }
   }
 
   public setLookupData(lookupData: ChannelRecordDict): void {
-    this.imageDict = {};
-    const lookupInfo = this.channel.imageLookup.info;
-    const records = lookupData[this.channel.imageLookup.name];
-
-    for (const record of records) {
-      const id = record[lookupInfo.id.name];
-      const base64Str = record[lookupInfo.image.name];
-      if (id === null || id === undefined || !base64Str) continue;
-
-      const image = new Image();
-      image.src = 'data:image/png;base64,' + base64Str; // FIXME: load is async
-      this.imageDict[id] = image;
-    }
-    for (const element of this.elements) {
-      element.pumpImage = this.imageDict[element.pumpID];
-    }
+    // пока ничего не нужно
   }
 
   public render(): void {
     this.drawer.setCurrentColumn(this.rect);
-    this.drawer.drawPumps(this.elements);
+    this.drawer.drawWellFaces(this.elements);
     this.drawer.restore();
   }
 }

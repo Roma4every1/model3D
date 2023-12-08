@@ -374,8 +374,8 @@ export class CaratStage implements ICaratStage {
 
     if (track.constructionMode) {
       const dataHeight /* px */ = track.getBackgroundGroup().getDataRect().height;
-      const constructionHeight /* m */ = track.transformer.getConstructionHeight();
-      track.setScale(dataHeight / constructionHeight / CaratDrawer.ratio);
+      const constructionHeight /* m */ = track.transformer.constructionHeight;
+      track.setScale(dataHeight / constructionHeight / window.devicePixelRatio);
     }
   }
 

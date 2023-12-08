@@ -66,8 +66,13 @@ interface CaratColumnSettings {
   borderColor: string;
 }
 
-/** Тип колонки: `background` для трека, `external` для корреляций, `normal` для всего остального. */
-type CaratColumnType = 'normal' | 'background' | 'external';
+/** Тип колонки:
+ * + `background` — "колонка трека", рисуется под всеми остальными на всю ширину
+ * + `external` — корреляции
+ * + `labels` — подписи элементов конструкции скважины
+ * + `normal` — всё остальное
+ * */
+type CaratColumnType = 'normal' | 'background' | 'external' | 'labels';
 
 /** Настройки горизонтальных осей для кривых.
  * + `grid: boolean`

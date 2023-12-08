@@ -78,6 +78,7 @@ export interface ConstructionElementModel {
   innerDiameter: number;
   outerDiameter: number;
   cement: number;
+  label: string;
 }
 
 /** Элемент конструкции скважины в виде картинки с насосом. */
@@ -86,6 +87,17 @@ export interface CaratPumpModel {
   bottom: number;
   pumpID: number;
   pumpImage: any;
+  label: string;
+}
+
+/** Забой скважины; относится к элементам конструкции. */
+export interface CaratWellFaceModel {
+  top: number;
+  bottom: number;
+  diameter: number;
+  type: number;
+  date: string;
+  label: string;
 }
 
 /** Элемент конструкции скважины в виде вертикальной прямой. */

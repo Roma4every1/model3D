@@ -181,7 +181,7 @@ interface IConstructionTransformer {
   parts: any[];
   coords: number[];
   step: number;
-  getConstructionHeight(): number;
+  constructionHeight: number;
 }
 
 interface ICaratColumnGroup {
@@ -253,8 +253,8 @@ interface ICaratInterval {
 }
 
 /** Типы корректных подключённых каналов к каротажной форме. */
-type CaratChannelType = 'lithology' | 'perforations' | 'curve-set' | 'curve-data' | 'inclinometry' |
-  'construction' | 'pump' | 'vertical';
+type CaratChannelType = 'lithology' | 'perforations' | 'curve-set' | 'curve-data' |
+  'inclinometry' | 'construction' | 'pump' | 'face' | 'vertical';
 
 type CaratCurveSetInfo = CaratChannelInfo<'id' | 'type' | 'date' | 'top' | 'bottom' | 'defaultLoading' | 'description'>;
 type CaratLithologyInfo = CaratChannelInfo<'top' | 'bottom' | 'stratumID'>;
