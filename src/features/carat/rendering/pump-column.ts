@@ -1,5 +1,5 @@
-import { CaratDrawer } from './drawer.ts';
-import { CaratPumpModel } from '../lib/types.ts';
+import { CaratDrawer } from './drawer';
+import { CaratPumpModel } from '../lib/types';
 
 
 export class PumpColumn implements ICaratColumn {
@@ -61,7 +61,7 @@ export class PumpColumn implements ICaratColumn {
     }
   }
 
-  public setLookupData(lookupData: ChannelRecordDict): void {
+  public async setLookupData(lookupData: ChannelRecordDict): Promise<void> {
     this.imageDict = {};
     const lookupInfo = this.channel.imageLookup.info;
     const records = lookupData[this.channel.imageLookup.name];
@@ -72,8 +72,9 @@ export class PumpColumn implements ICaratColumn {
       if (id === null || id === undefined || !base64Str) continue;
 
       const image = new Image();
-      image.src = 'data:image/png;base64,' + base64Str; // FIXME: load is async
+      image.src = 'data:image/png;base64,' + base64Str;
       this.imageDict[id] = image;
+      await image.decode();
     }
     for (const element of this.elements) {
       element.pumpImage = this.imageDict[element.pumpID];

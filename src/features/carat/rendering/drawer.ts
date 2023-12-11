@@ -493,13 +493,15 @@ export class CaratDrawer {
     const scaleY = window.devicePixelRatio * this.scale;
     this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
 
-    for (const { top, bottom, innerDiameter, outerDiameter } of elements) {
+    for (const { top, bottom, innerDiameter, outerDiameter, cement } of elements) {
       if (bottom < this.yMin || top > this.yMax) continue;
       const canvasTop = scaleY * top;
       const canvasHeight = scaleY * (bottom - top);
       const innerX = (this.columnWidth - innerDiameter) / 2;
       const outerX = (this.columnWidth - outerDiameter) / 2;
 
+      this.ctx.fillStyle = '#ffa500';
+      this.ctx.fillRect(outerX - 4, cement * scaleY, outerDiameter + 8, canvasHeight);
       this.ctx.fillStyle = '#808080';
       this.ctx.fillRect(outerX, canvasTop, outerDiameter, canvasHeight);
       this.ctx.fillStyle = '#d9d9d9';
@@ -556,22 +558,24 @@ export class CaratDrawer {
     const boxPadding = 6;
     const fontSize = 14;
 
-    const dataGroupCenter = this.trackRect.left + dataRect.left + dataRect.width / 2 - this.groupTranslateX;
+    let boxY = boxMargin;
+    let labelY = boxMargin + boxPadding + fontSize / 2;
+
     const boxWidth = labelRect.width - 2 * boxMargin;
     const boxHeight = fontSize + 2 * boxPadding;
     const maxLabelWidth = boxWidth - 2 * boxPadding;
+
+    const dataGroupCenter = this.trackRect.left + dataRect.left
+      + dataRect.width / 2 - this.groupTranslateX;
 
     this.ctx.textAlign = 'left';
     this.ctx.textBaseline = 'middle';
     this.setLineSettings(2, '#cb7b7a');
 
-    let boxY = boxMargin;
-    let labelY = boxMargin + boxPadding + fontSize / 2;
-
-    for (const { y, text } of labels) {
+    for (const { y, shift, text } of labels) {
       if (y < this.yMin || y > this.yMax) continue;
       this.ctx.beginPath();
-      this.ctx.moveTo(dataGroupCenter, (y - this.yMin) * scaleY);
+      this.ctx.moveTo(dataGroupCenter + shift, (y - this.yMin) * scaleY);
       this.ctx.lineTo(0, labelY);
       this.ctx.lineTo(boxMargin, labelY);
       this.ctx.stroke();

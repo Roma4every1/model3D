@@ -222,9 +222,9 @@ export class CaratTrack implements ICaratTrack {
   }
 
   /** Обновление данных справочников. */
-  public setLookupData(lookupData: ChannelRecordDict): void {
-    this.backgroundGroup.setLookupData(lookupData);
-    for (const group of this.groups) group.setLookupData(lookupData);
+  public async setLookupData(lookupData: ChannelRecordDict): Promise<void> {
+    await this.backgroundGroup.setLookupData(lookupData);
+    for (const group of this.groups) await group.setLookupData(lookupData);
   }
 
   /** Обновляет масштаб трека. */

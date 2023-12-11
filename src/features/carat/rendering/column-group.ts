@@ -326,8 +326,8 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     }
   }
 
-  public setLookupData(lookupData: ChannelRecordDict): void {
-    for (const column of this.columns) column.setLookupData(lookupData);
+  public async setLookupData(lookupData: ChannelRecordDict): Promise<void> {
+    for (const column of this.columns) await column.setLookupData(lookupData);
     if (this.curveColumn) this.curveManager.setStyleData(lookupData);
   }
 

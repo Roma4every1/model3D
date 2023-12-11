@@ -32,6 +32,7 @@ export class CaratStage implements ICaratStage {
 
   private readonly useStaticScale: boolean;
   private readonly strataChannelName: ChannelName;
+  public actualLookup: boolean;
 
   constructor(init: CaratFormSettings, drawerConfig: CaratDrawerConfig) {
     this.wellIDs = [];
@@ -39,6 +40,7 @@ export class CaratStage implements ICaratStage {
     this.drawer = new CaratDrawer(drawerConfig);
     this.useStaticScale = init.settings.useStaticScale;
     this.strataChannelName = init.settings.strataChannelName;
+    this.actualLookup = false;
 
     const correlationsInit = init.columns.find(c => c.settings.type === 'external');
     this.correlations = new CaratCorrelations(correlationsInit, this.drawer);
@@ -151,8 +153,9 @@ export class CaratStage implements ICaratStage {
   }
 
   /** Обновляет данные справочников. */
-  public setLookupData(lookupData: ChannelRecordDict): void {
-    for (const track of this.trackList) track.setLookupData(lookupData);
+  public async setLookupData(lookupData: ChannelRecordDict): Promise<void> {
+    for (const track of this.trackList) await track.setLookupData(lookupData);
+    this.actualLookup = true;
   }
 
   /** Обновляет правила разбиения кривых по зонам. */

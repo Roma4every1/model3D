@@ -6,8 +6,13 @@ import { WellFaceColumn } from './face-column';
 import { ConstructionColumn } from './construction-column';
 
 
+/** Подпись к элементу конструкции скважины. */
 interface ConstructionLabel {
+  /** Координата подписи по Y. */
   y: number;
+  /** Смещение по X линии к подписи относительно центра колонки элемента. */
+  shift: number;
+  /** Текст подписи. */
   text: string;
 }
 
@@ -42,12 +47,18 @@ export class ConstructionLabels {
       ) {
         for (const element of column.getElements()) {
           if (!element.label) continue;
-          const y = (element.top + element.bottom) / 2
-          this.labels.push({y, text: element.label});
+          const y = (element.top + element.bottom) / 2;
+          const label: ConstructionLabel = {y, text: element.label, shift: 0};
+
+          if (column instanceof ConstructionColumn) {
+            label.shift = (element.innerDiameter + element.outerDiameter) / 4;
+          } else if (column instanceof WellFaceColumn) {
+            label.shift = element.diameter / 2;
+          }
+          this.labels.push(label);
         }
       }
     }
-    console.log(this.labels);
   }
 
   public render(): void {

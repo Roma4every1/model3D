@@ -87,6 +87,7 @@ interface ICaratStage {
   trackList: ICaratTrack[];
   correlations: ICaratCorrelations;
   listeners: CaratStageListeners;
+  actualLookup: boolean;
 
   getZones(): CaratZone[];
   getCaratSettings(): CaratSettings;
@@ -102,7 +103,7 @@ interface ICaratStage {
   gotoStratum(id: StratumID, toTop: boolean): void;
 
   setData(data: ChannelRecordDict[], cache: CurveDataCache): void;
-  setLookupData(lookupData: ChannelRecordDict): void;
+  setLookupData(lookupData: ChannelRecordDict): Promise<void>;
 
   handleKeyDown(key: string): boolean;
   handleMouseMove(point: Point, by: number): void;
@@ -182,6 +183,7 @@ interface IConstructionTransformer {
   coords: number[];
   step: number;
   constructionHeight: number;
+  transformCurves(curves: any[]): void;
 }
 
 interface ICaratColumnGroup {
