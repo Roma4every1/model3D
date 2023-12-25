@@ -51,7 +51,7 @@ async function createChannel(name: ChannelName): Promise<[ChannelName, Channel]>
 
   const channel: Channel = {
     name, info, data: null, tableID: null,
-    query: {maxRowCount: null, filters: null, order: []},
+    query: {maxRowCount: 5000, filters: null, order: []},
   };
   return [name, channel];
 }

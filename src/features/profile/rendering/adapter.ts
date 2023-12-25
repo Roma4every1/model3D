@@ -1,10 +1,11 @@
-import {ProfileLoader} from "../lib/loader-gmmo.ts";
-import {ProfileStage} from "./stage-gmmo.ts";
+import {ProfileLoader} from "../lib/loader.ts";
+import {ProfileStage} from "./stage.ts";
+import {drawerConfig} from "../lib/constants.ts";
 
 
 /** Создаёт состояние профиля. */
 export function settingsToProfileState(): ProfileState {
-  const stage = new ProfileStage();
+  const stage = new ProfileStage(drawerConfig);
   const loader = new ProfileLoader();
   const observer = new ResizeObserver(() => { stage.resize(); stage.render(); });
 
