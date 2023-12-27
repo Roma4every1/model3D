@@ -6,6 +6,8 @@ import {getPointsDistance2D, getPointsDistance3D, getTraceLines} from "./utils.t
 import {PROFILE_X_STEP} from "./constants.ts";
 import {cellsToRecords, channelAPI} from "../../../entities/channels";
 import {ProfileInclinometry} from "./inclinometry.ts";
+import {ProfileTrace} from "./trace.ts";
+import {ProfilePlast} from "./plast.ts";
 
 /** Класс, реализующий загрузку данных для профиля по трассе. */
 export class ProfileLoader implements IProfileLoader {
@@ -40,6 +42,8 @@ export class ProfileLoader implements IProfileLoader {
 
   /** Создаёт набор данных для построения профиля по трассе и данным канала. */
   public async loadProfileData(formID: FormID, trace: TraceModel, channels: ChannelDict) {
+    if (!trace?.nodes?.length) return;
+
     const ustChannel: Channel = channels[this.ustCoordsChannelName];
     const ustPoints: UstPoint[] = ustChannel.data.rows.map(r => ({
       WELL_ID: r.Cells[0],
@@ -51,6 +55,11 @@ export class ProfileLoader implements IProfileLoader {
     );
     const traceLinesData = getTraceLines(nodesCoords, ustPoints, PROFILE_X_STEP);
     const additionalWells = traceLinesData.additionalWells;
+
+    //
+    const profileTrace = new ProfileTrace(trace, ustChannel);
+    console.log('TRACE', profileTrace);
+    //
 
     await this.loadAdditionalProfileChannels(nodesCoords, additionalWells);
 
@@ -70,6 +79,14 @@ export class ProfileLoader implements IProfileLoader {
       this.plInfoRecords,
       el => el.PL_ID
     );
+
+    //
+    const plastsMap: Map<number, ProfilePlast> = new Map<number, ProfilePlast>();
+    topBaseFieldsMap.forEach((value, key) => {
+      plastsMap.set(key, new ProfilePlast(key, profileTrace.points, value));
+    });
+    console.log(plastsMap);
+    //
 
     const lithologyPointsMap: ProfileLithologyPointsMap = new Map<number, ProfileLitPoint[]>
     interpolatedLinesMap.forEach((line, plastCode) => {
@@ -103,7 +120,8 @@ export class ProfileLoader implements IProfileLoader {
       },
       inclinometryData: inclinometryDataMap,
       lithologyData: lithologyPointsMap,
-      plastsLinesData: interpolatedLinesMap
+      plastsLinesData: interpolatedLinesMap,
+      plastsData: plastsMap
     } as ProfileDataCache;
   }
 

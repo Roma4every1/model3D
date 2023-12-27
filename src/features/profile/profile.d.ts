@@ -104,10 +104,11 @@ interface ProfileDataCache {
   inclinometryData: ProfileInclDataMap;
   lithologyData: ProfileLithologyPointsMap;
   plastsLinesData: ProfilePlastDataMap;
+  plastsData: ProfilePlastMap;
 }
 
 /** Данные пласта профиля. */
-type ProfilePlastDataMap = Map<number, ProfilePlastData>;
+type ProfilePlastDataMap = Map<number, Profile>;
 
 interface ProfilePlastData {
   maxThickness: number;
@@ -123,7 +124,7 @@ interface ProfileLinePoint {
   y: number;
   distance: number;
   topAbsMark: number;
-  baseAbsMark;
+  baseAbsMark: number;
 }
 
 /** Конфиг отрисовщика профиля. */
@@ -233,8 +234,8 @@ interface IProfileDrawer {
 }
 
 interface TraceLineData {
-  startNode: UstPoint;
-  endNode: UstPoint;
+  startNode: IProfileWell;
+  endNode: IProfileWell;
   points: TracePoint[];
   remainder: number;
   distance: number;
@@ -246,10 +247,42 @@ interface TraceLinesData {
   additionalWells: UstPoint[];
 }
 
-interface TracePoint extends UstPoint {
+interface TracePoint extends Point {
   distance: number;
 }
 
 interface UstPoint extends Point {
   WELL_ID: number;
 }
+
+interface IProfileTrace {
+  nodes: IProfileWell[];
+  additionalWells: IProfileWell[];
+
+  distance: number;
+  lines: TraceLineData[];
+  points: TracePoint[];
+}
+
+interface IProfilePlast {
+  borderLine: ProfileLineData;
+  maxThickness: number;
+  maxY: number;
+  minY: number;
+
+  layers: IProfileLayer[];
+}
+
+interface IProfileLayer {
+  borderLine: ProfileLineData;
+  topBaseY: number;
+}
+
+interface IProfileWell {
+  id: number;
+  x: number;
+  y: number;
+  inclinometry: IProfileIncl;
+}
+
+type ProfilePlastMap = Map<number, IProfilePlast>;

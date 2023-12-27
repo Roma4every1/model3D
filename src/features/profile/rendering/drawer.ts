@@ -104,6 +104,8 @@ export class ProfileDrawer implements IProfileDrawer {
   }
 
   private drawPlastLines(plastLinesData: ProfileLineData) {
+
+
     this.setLineSettings(1, '#000000');
     this.drawLine(plastLinesData, 'TOP');
 

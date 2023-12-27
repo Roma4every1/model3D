@@ -23,21 +23,12 @@ export class ProfileInclinometry implements IProfileIncl {
       el => el.NWELL_ID
     );
 
-    // const checkFn = el => el.ABSMARK >= min && el.ABSMARK <= max;
-    // .filter((el, i) =>
-    //     checkFn(el) ||
-    //     (value[i - 1] && checkFn(value[i - 1])) ||
-    //     (value[i + 1] && checkFn(value[i + 1]))
-    //   )
     dataMap.forEach((value, key) =>
       dataMap.set(key, value.sort(
         (a, b) => a.ABSMARK - b.ABSMARK
       ))
     );
     this.data = dataMap;
-
-    // this.minAbs = min;
-    // this.maxAbs = max;
   }
 
   /** Возвращает значение глубины для указанной абсолютной отметки. */
@@ -45,12 +36,6 @@ export class ProfileInclinometry implements IProfileIncl {
     if (this.data === null) {
       return 0;
     }
-    // if (absMark < this.minAbs) {
-    //   return null;
-    // }
-    // if (absMark > this.maxAbs) {
-    //   return null;
-    // }
 
     const {smaller, greater} = this.findNearestMarksByAbs(wellId, absMark);
     if (!smaller || !greater) return null;
@@ -85,8 +70,6 @@ export class ProfileInclinometry implements IProfileIncl {
 
   /** Очищает данные. */
   private clear(): void {
-    // this.minAbs = null;
-    // this.maxAbs = null;
     this.data = null;
   }
 }
