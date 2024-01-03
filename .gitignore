@@ -1,6 +1,5 @@
 # External libraries
 node_modules
-package-lock.json
 
 # Build utils
 build-utils/systems.json
