@@ -37,8 +37,8 @@ export const TopToolbar = ({config}: TopToolbarProps) => {
           href={config.devDocLink} target={'_blank'} title={t('menu.open-dev-doc')}
         />}
         {config.userDocLink && <IconRowLink
-          icon={userDocIcon} alt={'user-doc'}
-          href={config.userDocLink} target={'_blank'} title={t('menu.open-user-doc')}
+          icon={userDocIcon} alt={'manual'}
+          href={config.userDocLink} target={'_blank'} title={t('menu.open-manual')}
         />}
         <IconRowButton
           icon={aboutProgramIcon} alt={'about'}
