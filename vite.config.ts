@@ -4,11 +4,11 @@ import wellManagerSystemPlugin from './build-utils/wm-system-plugin.js';
 
 
 // https://vitejs.dev/config/
-export default defineConfig(({command}: ConfigEnv): UserConfig => ({
-  base: './',
+export default defineConfig(({command, mode}: ConfigEnv): UserConfig => ({
+  base: mode === 'prod' ? '/PATH_TO_REPLACE/' : './',
   plugins: [
     react(),
-    wellManagerSystemPlugin(command),
+    mode === 'prod' ? undefined : wellManagerSystemPlugin(command),
   ],
   server: {
     port: 3000,
