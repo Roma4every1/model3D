@@ -1,7 +1,8 @@
 import { round } from 'shared/lib';
 
 import {
-  CaratIntervalModel, CaratBarModel, ConstructionElementModel,
+  CaratIntervalModel, CaratBarModel,
+  ConstructionElementModel, ConstructionElementStyle,
   CaratPumpModel, CaratVerticalLineModel, CaratWellFaceModel,
   CaratCurveModel, CurveAxisGroup, CaratCorrelation,
 } from '../lib/types';
@@ -489,7 +490,7 @@ export class CaratDrawer {
     }
   }
 
-  public drawConstructionElements(elements: ConstructionElementModel[]): void {
+  public drawConstructionElements(elements: ConstructionElementModel[], style: ConstructionElementStyle): void {
     const scaleY = window.devicePixelRatio * this.scale;
     this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
 
@@ -500,11 +501,11 @@ export class CaratDrawer {
       const innerX = (this.columnWidth - innerDiameter) / 2;
       const outerX = (this.columnWidth - outerDiameter) / 2;
 
-      this.ctx.fillStyle = '#ffa500';
+      this.ctx.fillStyle = style.cement;
       this.ctx.fillRect(outerX - 4, cement * scaleY, outerDiameter + 8, canvasHeight);
-      this.ctx.fillStyle = '#808080';
+      this.ctx.fillStyle = style.outerDiameter;
       this.ctx.fillRect(outerX, canvasTop, outerDiameter, canvasHeight);
-      this.ctx.fillStyle = '#d9d9d9';
+      this.ctx.fillStyle = style.innerDiameter;
       this.ctx.fillRect(innerX, canvasTop, innerDiameter, canvasHeight);
     }
   }

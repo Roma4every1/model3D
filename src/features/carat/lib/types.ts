@@ -80,6 +80,15 @@ export interface ConstructionElementModel {
   cement: number;
   label: string;
 }
+/** Настройки внешнего вида элементов конструкции. */
+export interface ConstructionElementStyle {
+  /** Цвет заливки прямоугольника для внутреннего диаметра. */
+  innerDiameter: ColorHEX;
+  /** Цвет заливки прямоугольника для внешнего диаметра. */
+  outerDiameter: ColorHEX;
+  /** Цвет заливки цементажа. */
+  cement: ColorHEX;
+}
 
 /** Элемент конструкции скважины в виде картинки с насосом. */
 export interface CaratPumpModel {

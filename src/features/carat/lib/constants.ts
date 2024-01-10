@@ -4,10 +4,24 @@ import { CaratDrawerConfig } from '../rendering/drawer-settings';
 /** Значения некоторых настроек по умолчанию. */
 export const defaultSettings = {
   scale: 400,
-  xAxis: {numberOfMarks: 2, grid: false},
   yAxisStep: 5,
-  curveStyle: {thickness: 2, color: '#605656'},
-  intervalStyle: {stroke: '#888888', fill: '#e8e8e8'},
+  xAxis: {
+    numberOfMarks: 2,
+    grid: false,
+  },
+  curveStyle: {
+    thickness: 2,
+    color: '#605656',
+  },
+  intervalStyle: {
+    stroke: '#888888',
+    fill: '#e8e8e8',
+  },
+  constructionElementStyle: {
+    innerDiameter: '#d9d9d9',
+    outerDiameter: '#808080',
+    cement: '#ffa500',
+  },
 };
 
 /** Ограничения на различные настройки каротажа. */

@@ -85,9 +85,11 @@ export class CaratColumnGroup implements ICaratColumnGroup {
       if (channelType === 'curve-data') { curveDataChannel = attachedChannel; continue; }
 
       const columnRect = {top: 0, left: 0, width: rect.width, height};
+      const properties = init.properties[attachedChannel.name];
+
       if (channelType === 'construction') {
         this.hasConstructionElements = true;
-        this.columns.push(new ConstructionColumn(columnRect, drawer, attachedChannel));
+        this.columns.push(new ConstructionColumn(columnRect, drawer, attachedChannel, properties));
       } else if (channelType === 'pump') {
         this.hasConstructionElements = true;
         this.columns.push(new PumpColumn(columnRect, drawer, attachedChannel));
@@ -97,7 +99,6 @@ export class CaratColumnGroup implements ICaratColumnGroup {
       } else if (channelType === 'vertical') {
         this.columns.push(new VerticalLineColumn(columnRect, drawer, attachedChannel));
       } else {
-        const properties = init.properties[attachedChannel.name];
         this.columns.push(new CaratColumn(columnRect, drawer, attachedChannel, properties));
       }
     }

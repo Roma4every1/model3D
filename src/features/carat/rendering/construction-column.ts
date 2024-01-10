@@ -1,5 +1,6 @@
 import { CaratDrawer } from './drawer';
-import { ConstructionElementModel } from '../lib/types';
+import { ConstructionElementModel, ConstructionElementStyle } from '../lib/types';
+import { defaultSettings } from '../lib/constants.ts';
 
 
 /** Колонка, содержащая элементы конструкции скважины. */
@@ -11,17 +12,41 @@ export class ConstructionColumn implements ICaratColumn {
   /** Массив подключённых свойств канала. */
   public readonly channel: CaratAttachedChannel;
 
+  /** Элементы конструкции. */
   private elements: ConstructionElementModel[];
+  /** Настройки внешнего вида элементов конструкции. */
+  private style: ConstructionElementStyle;
 
-  constructor(rect: Rectangle, drawer: CaratDrawer, channel: CaratAttachedChannel) {
+  constructor(
+    rect: Rectangle, drawer: CaratDrawer,
+    channel: CaratAttachedChannel, properties: CaratColumnProperties,
+  ) {
     this.drawer = drawer;
     this.rect = rect;
     this.channel = channel;
     this.elements = [];
+    if (properties) this.createStyle(properties);
+  }
+
+  private createStyle(properties: CaratColumnProperties): void {
+    const info = this.channel.info;
+    const defaultStyle = defaultSettings.constructionElementStyle;
+
+    const innerDiameterProperty = properties[info.innerDiameter.name]?.bar;
+    const outerDiameterProperty = properties[info.outerDiameter.name]?.bar;
+    const cementProperty = properties[info.cement.name]?.bar;
+
+    this.style = {
+      innerDiameter: innerDiameterProperty?.backgroundColor ?? defaultStyle.innerDiameter,
+      outerDiameter: outerDiameterProperty?.backgroundColor ?? defaultStyle.outerDiameter,
+      cement: cementProperty?.backgroundColor ?? defaultStyle.cement,
+    };
   }
 
   public copy(): ICaratColumn {
-    return new ConstructionColumn({...this.rect}, this.drawer, this.channel);
+    const column = new ConstructionColumn({...this.rect}, this.drawer, this.channel, null);
+    column.style = this.style;
+    return column;
   }
 
   public getLookupNames(): ChannelName[] {
@@ -62,7 +87,7 @@ export class ConstructionColumn implements ICaratColumn {
 
   public render(): void {
     this.drawer.setCurrentColumn(this.rect);
-    if (this.elements.length) this.drawer.drawConstructionElements(this.elements);
+    if (this.elements.length) this.drawer.drawConstructionElements(this.elements, this.style);
     this.drawer.restore();
   }
 }
