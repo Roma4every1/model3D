@@ -3,7 +3,7 @@ import { CaratColumnGroup } from './column-group';
 
 import { PumpColumn } from './pump-column';
 import { WellFaceColumn } from './face-column';
-import { ConstructionColumn } from './construction-column';
+import { WellBoreColumn } from './well-bore-column.ts';
 
 
 /** Подпись к элементу конструкции скважины. */
@@ -41,7 +41,7 @@ export class ConstructionLabels {
 
     for (const column of this.dataGroup.getColumns()) {
       if (
-        column instanceof ConstructionColumn ||
+        column instanceof WellBoreColumn ||
         column instanceof PumpColumn ||
         column instanceof WellFaceColumn
       ) {
@@ -50,7 +50,7 @@ export class ConstructionLabels {
           const y = (element.top + element.bottom) / 2;
           const label: ConstructionLabel = {y, text: element.label, shift: 0};
 
-          if (column instanceof ConstructionColumn) {
+          if (column instanceof WellBoreColumn) {
             label.shift = (element.innerDiameter + element.outerDiameter) / 4;
           } else if (column instanceof WellFaceColumn) {
             label.shift = element.diameter / 2;

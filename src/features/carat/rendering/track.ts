@@ -4,6 +4,7 @@ import { CaratColumnGroup } from './column-group';
 import { CaratInclinometry } from '../lib/inclinometry';
 import { ConstructionTransformer } from '../lib/transformer';
 import { ConstructionLabels } from './construction-labels';
+import { WellBoreColumn } from './well-bore-column.ts';
 import { isRectInnerPoint } from 'shared/lib';
 import { defaultSettings } from '../lib/constants';
 
@@ -198,7 +199,11 @@ export class CaratTrack implements ICaratTrack {
       this.transformer.setConstructionElements(constructionElements);
       for (const group of this.groups) {
         for (const column of group.getColumns()) {
-          this.transformer.transformIntervals(column.getElements());
+          if (column instanceof WellBoreColumn) {
+            this.transformer.transformWellBoreElements(column.getElements());
+          } else {
+            this.transformer.transformIntervals(column.getElements());
+          }
         }
         if (group.hasCurveColumn()) {
           this.transformer.transformCurves(group.curveManager.getVisibleCurves());

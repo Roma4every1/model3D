@@ -1,10 +1,10 @@
 import { CaratDrawer } from './drawer';
-import { ConstructionElementModel, ConstructionElementStyle } from '../lib/types';
+import { WellBoreElementModel, WellBoreElementStyle } from '../lib/types';
 import { defaultSettings } from '../lib/constants.ts';
 
 
-/** Колонка, содержащая элементы конструкции скважины. */
-export class ConstructionColumn implements ICaratColumn {
+/** Колонка, содержащая элементы ствола скважины. */
+export class WellBoreColumn implements ICaratColumn {
   /** Ссылка на отрисовщик. */
   private readonly drawer: CaratDrawer;
   /** Ограничивающий прямоугольник колонки. */
@@ -13,9 +13,9 @@ export class ConstructionColumn implements ICaratColumn {
   public readonly channel: CaratAttachedChannel;
 
   /** Элементы конструкции. */
-  private elements: ConstructionElementModel[];
+  private elements: WellBoreElementModel[];
   /** Настройки внешнего вида элементов конструкции. */
-  private style: ConstructionElementStyle;
+  private style: WellBoreElementStyle;
 
   constructor(
     rect: Rectangle, drawer: CaratDrawer,
@@ -44,7 +44,7 @@ export class ConstructionColumn implements ICaratColumn {
   }
 
   public copy(): ICaratColumn {
-    const column = new ConstructionColumn({...this.rect}, this.drawer, this.channel, null);
+    const column = new WellBoreColumn({...this.rect}, this.drawer, this.channel, null);
     column.style = this.style;
     return column;
   }
@@ -82,12 +82,12 @@ export class ConstructionColumn implements ICaratColumn {
   }
 
   public setLookupData(): void {
-    // пока нет настроек внешнего вида
+    // все настройки внешнего вида — константы сессии
   }
 
   public render(): void {
     this.drawer.setCurrentColumn(this.rect);
-    if (this.elements.length) this.drawer.drawConstructionElements(this.elements, this.style);
+    if (this.elements.length) this.drawer.drawWellBore(this.elements, this.style);
     this.drawer.restore();
   }
 }

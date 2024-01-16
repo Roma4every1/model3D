@@ -2,7 +2,7 @@ import { round } from 'shared/lib';
 
 import {
   CaratIntervalModel, CaratBarModel,
-  ConstructionElementModel, ConstructionElementStyle,
+  WellBoreElementModel, WellBoreElementStyle,
   CaratPumpModel, CaratVerticalLineModel, CaratWellFaceModel,
   CaratCurveModel, CurveAxisGroup, CaratCorrelation,
 } from '../lib/types';
@@ -490,19 +490,22 @@ export class CaratDrawer {
     }
   }
 
-  public drawConstructionElements(elements: ConstructionElementModel[], style: ConstructionElementStyle): void {
+  /** Отрисовка элементов ствола конструкции скважины. */
+  public drawWellBore(elements: WellBoreElementModel[], style: WellBoreElementStyle): void {
     const scaleY = window.devicePixelRatio * this.scale;
     this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
 
     for (const { top, bottom, innerDiameter, outerDiameter, cement } of elements) {
       if (bottom < this.yMin || top > this.yMax) continue;
-      const canvasTop = scaleY * top;
-      const canvasHeight = scaleY * (bottom - top);
       const innerX = (this.columnWidth - innerDiameter) / 2;
       const outerX = (this.columnWidth - outerDiameter) / 2;
 
+      const canvasTop = scaleY * top;
+      const canvasHeight = scaleY * (bottom - top);
+      const cementHeight = scaleY * (bottom - cement);
+
       this.ctx.fillStyle = style.cement;
-      this.ctx.fillRect(outerX - 4, cement * scaleY, outerDiameter + 8, canvasHeight);
+      this.ctx.fillRect(outerX - 4, cement * scaleY, outerDiameter + 8, cementHeight);
       this.ctx.fillStyle = style.outerDiameter;
       this.ctx.fillRect(outerX, canvasTop, outerDiameter, canvasHeight);
       this.ctx.fillStyle = style.innerDiameter;
@@ -510,6 +513,7 @@ export class CaratDrawer {
     }
   }
 
+  /** Отрисовка изображений насосов. */
   public drawPumps(elements: CaratPumpModel[]): void {
     const scaleY = window.devicePixelRatio * this.scale;
     this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
@@ -522,6 +526,7 @@ export class CaratDrawer {
     }
   }
 
+  /** Отрисовка забоев скважины. */
   public drawWellFaces(elements: CaratWellFaceModel[]): void {
     const scaleY = window.devicePixelRatio * this.scale;
     this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
@@ -536,6 +541,7 @@ export class CaratDrawer {
     }
   }
 
+  /** Отрисовка центральных вертикальных линий. */
   public drawVerticalLines(elements: CaratVerticalLineModel[]): void {
     const scaleY = window.devicePixelRatio * this.scale;
     this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
@@ -550,6 +556,7 @@ export class CaratDrawer {
     }
   }
 
+  /** Отрисовка подписей элементов конструкции. */
   public drawConstructionLabels(dataRect: Rectangle, labelRect: Rectangle, labels: any[]): void {
     const scaleY = window.devicePixelRatio * this.scale;
     this.setCurrentGroup(labelRect, null);
@@ -592,6 +599,7 @@ export class CaratDrawer {
     }
   }
 
+  /** Отрисовка каротажных кривых. */
   public drawCurves(elements: CaratCurveModel[]): void {
     const ratio = CaratDrawer.ratio;
     const scaleY = window.devicePixelRatio * this.scale;
@@ -617,6 +625,7 @@ export class CaratDrawer {
     this.ctx.restore();
   }
 
+  /** Отрисовка корреляций между треками. */
   public drawCorrelations(correlations: CaratCorrelation): void {
     const { rect, leftViewport, rightViewport } = correlations;
     this.setTranslate(rect.left, rect.top);

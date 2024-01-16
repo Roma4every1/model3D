@@ -1,4 +1,4 @@
-import { CaratCurveModel } from './types.ts';
+import { CaratCurveModel, WellBoreElementModel } from './types.ts';
 
 
 export interface ConstructionPart {
@@ -45,6 +45,15 @@ export class ConstructionTransformer implements IConstructionTransformer {
     for (const element of elements) {
       element.top = this.yTransform(element.top);
       element.bottom = this.yTransform(element.bottom);
+    }
+  }
+
+  /** Преобразует элементы ствола скважины для режима показа конструкции. */
+  public transformWellBoreElements(elements: WellBoreElementModel[]): void {
+    for (const element of elements) {
+      element.top = this.yTransform(element.top);
+      element.bottom = this.yTransform(element.bottom);
+      element.cement = this.yTransform(element.cement);
     }
   }
 

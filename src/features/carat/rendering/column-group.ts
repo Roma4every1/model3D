@@ -1,6 +1,6 @@
 import { CaratDrawer } from './drawer';
 import { CaratColumn } from './column';
-import { ConstructionColumn } from './construction-column';
+import { WellBoreColumn } from './well-bore-column.ts';
 import { PumpColumn } from './pump-column';
 import { WellFaceColumn } from './face-column.ts';
 import { VerticalLineColumn } from './v-line-column';
@@ -89,7 +89,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
 
       if (channelType === 'construction') {
         this.hasConstructionElements = true;
-        this.columns.push(new ConstructionColumn(columnRect, drawer, attachedChannel, properties));
+        this.columns.push(new WellBoreColumn(columnRect, drawer, attachedChannel, properties));
       } else if (channelType === 'pump') {
         this.hasConstructionElements = true;
         this.columns.push(new PumpColumn(columnRect, drawer, attachedChannel));
@@ -194,7 +194,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   public getConstructionElements(): ICaratInterval[] {
     const elements: ICaratInterval[] = [];
     for (const column of this.columns) {
-      const hasElements = (column instanceof ConstructionColumn) || (column instanceof PumpColumn);
+      const hasElements = (column instanceof WellBoreColumn) || (column instanceof PumpColumn);
       if (hasElements) elements.push(...column.getElements());
     }
     return elements;

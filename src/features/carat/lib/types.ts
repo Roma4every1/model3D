@@ -71,17 +71,23 @@ export interface CaratIntervalStyle {
   stroke: ColorHEX;
 }
 
-/** Элемент конструкции скважины. */
-export interface ConstructionElementModel {
+/** Элемент ствола скважины. */
+export interface WellBoreElementModel {
+  /** Начальная глубина элемента. */
   top: number;
+  /** Конечная глубина элемента. */
   bottom: number;
+  /** Внутренний диаметр ствола. */
   innerDiameter: number;
+  /** Внешний диаметр ствола. */
   outerDiameter: number;
+  /** Глубина начала цементирования (конец = bottom). */
   cement: number;
+  /** Подпись элемента конструкции. */
   label: string;
 }
 /** Настройки внешнего вида элементов конструкции. */
-export interface ConstructionElementStyle {
+export interface WellBoreElementStyle {
   /** Цвет заливки прямоугольника для внутреннего диаметра. */
   innerDiameter: ColorHEX;
   /** Цвет заливки прямоугольника для внешнего диаметра. */
