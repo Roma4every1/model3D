@@ -1,6 +1,6 @@
 * text=auto
 
-# sources
+# Sources
 *.html text eol=lf
 *.css  text eol=lf
 *.scss text eol=lf
@@ -8,13 +8,17 @@
 *.ts   text eol=lf
 *.tsx  text eol=lf
 
-# text assets
+# Text assets
 *.md   text eol=lf
 *.txt  text eol=lf
 *.json text eol=lf
 *.svg  text eol=lf
 
-# binary
+# Windows Specific
+*.bat  text eol=crlf
+*.ps1  text eol=crlf
+
+# Binary
 *.bin -text
 *.jpg -text
 *.png -text
