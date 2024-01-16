@@ -1,9 +1,18 @@
 # This script is used to deploy the application using the compiled client.
-#
-# WARNING: Do not use this script in Storage! This will change the build files.
-#
-# The script prompts the user for the necessary parameters and performs some
-# actions with the build files (index.html and assets).
+# The script runs under "deploy.bat" and requires the archive "client.zip".
+
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+Set-ExecutionPolicy RemoteSigned -Scope process
+
+# --- Global constants ---
+
+$zipFileName = "client.zip"
+$htmlFileName = "index.html"
+$webRequestsFileName = "WebRequests.svc"
+$systemInfoFileName = "System.Info.xml"
+$replaceHandle = "/PATH_TO_REPLACE/"
+
+# --- Utility Functions ---
 
 function Green {
   process { Write-Host $_ -ForegroundColor Green }
@@ -11,89 +20,126 @@ function Green {
 function Red {
   process { Write-Host $_ -ForegroundColor Red }
 }
-function StringifyArray([Array]$array) {
-  $result = New-Object String[] ($array.Length)
-  for ($i = 0; $i -le ($result.length - 1); $i += 1) {
-    $result[$i] = "'" + $array[$i] + "'"
+
+function Unzip {
+    param([string]$zipfile, [string]$outpath)
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($zipfile, $outpath)
+}
+
+function Get-WMWSystemList {
+  param ([string[]]$wmwDirectoryContent)
+
+  $systemList = New-Object String[] (0)
+  foreach ($item in $wmwDirectoryContent) {
+    if ($item -contains ".") { continue }
+    $directoryContent = Get-ChildItem (Join-Path -Path $wmwPath -ChildPath $item) -Name
+    if ($directoryContent -contains $systemInfoFileName) { $systemList += $item }
   }
-  "[" + ($result -join ", ") + "]"
+  $systemList
 }
 
-# --- Cliend build path ---
+function Get-BaseURL {
+  param ([string]$wmwPath)
 
-$inputClientPath = Read-Host -Prompt "Enter the full or relative path to the client build"
-Push-Location $inputClientPath
-$clientPath = Get-Location
-
-$htmlFileName = "index.html"
-$assetDirPath = Join-Path -Path $clientPath -ChildPath "assets"
-$htmlPath = Join-Path -Path $clientPath -ChildPath $htmlFileName
-
-if (-Not (Test-Path $assetDirPath)) {
-  Write-Output "Cannot resolve path with assets`r`n" | Red
-  exit 1
-}
-if (-Not (Test-Path $htmlPath)) {
-  Write-Output "Cannot resolve path with assets`r`n" | Red
-  exit 1
-}
-
-$clientPath = Resolve-Path -Path $clientPath
-Write-Output "Client build path is '$($clientPath.Path)'`r`n" | Green
-
-# --- Base URL ---
-
-$baseURL = Read-Host -Prompt "Enter the path where the application will be hosted"
-
-if (-Not $baseURL.StartsWith("/")) {
-  Write-Output "The path must start with '/'`r`n" | Red
-  exit 1
-}
-if (-Not $baseURL.EndsWith("/")) {
-  $baseURL = $baseURL + "/"
-}
-Write-Output "Path is '$baseURL'`r`n" | Green
-
-# --- System List ---
-
-$inputSystemList = Read-Host -Prompt "Enter system names separated by commas"
-$systemList = $inputSystemList -split " *, *"
-Write-Output "Systems are $(StringifyArray $systemList)`r`n" | Green
-
-# --- Contact Email ---
-
-$contactEmail = "support@geospline.ru"
-Write-Output "The contact email is '$contactEmail'"
-$contactEmailSubmit = Read-Host -Prompt "Ok? (y/n)"
-
-if ($contactEmailSubmit.StartsWith("n")) {
-  $contactEmail = Read-Host -Prompt "Enter the new contact email"
-
-  if (-Not $contactEmail) {
-    Write-Output "Contact email cannot be empty" | Red
+  try {
+    $iisApps = Get-WebApplication
+  } catch {
+    Write-Output @(
+    "Cannot get IIS application list. Most likely there are insufficient rights"
+    "or the required 'WebAdministrator' module is missing`r`n"
+    ) | Red
     exit 1
   }
+  $baseURL = ""
+
+  foreach ($app in $iisApps) {
+    if ($app.PhysicalPath -eq $wmwPath) {
+      $baseURL = $app.Path + "/client/"
+    }
+  }
+  if ($baseURL -eq "") {
+    Write-Output "Cannot find IIS application with path $wmwPath" | Red
+    exit 1
+  }
+  $baseURL
 }
-Write-Output "Contact email is '$contactEmail'`r`n" | Green
 
-# --- User Documentation Link ---
+# --- Input ---
 
-$userDocLink = Read-Host -Prompt "Enter a link to the user documentation (can be empty)"
-
-if ($userDocLink) {
-  Write-Output "User doc link is '$userDocLink'`r`n" | Green
-} else {
-  Write-Output "Link to user documentation not set`r`n" | Green
+$wmwPath = Read-Host -Prompt "Enter the full path to the directory with WMW"
+if (-Not (Test-Path $wmwPath)) {
+  Write-Output "Cannot resolve WMW path`r`n" | Red
+  exit 1
 }
 
-# --- Processing ---
+$wmwPath = (Resolve-Path $wmwPath).Path
+$clientPath = Join-Path -Path $wmwPath -ChildPath "client"
 
-$replaceHandle = "/PATH_TO_REPLACE/"
+$wmwDirectoryContent = Get-ChildItem $wmwPath -Name
+if (-Not ($wmwDirectoryContent -contains $webRequestsFileName)) {
+  Write-Output "$webRequestsFileName file not found`r`n" | Red
+  exit 1
+}
+
+# The case when the client is already installed.
+# Just need to update the list of systems.
+if ($wmwDirectoryContent -contains "client") {
+  Write-Output "Client already exist. Check system list..."
+
+  $systemListDirectory = Join-Path -Path $wmwPath -ChildPath "client/systems" -Resolve
+  $systemList = Get-WMWSystemList $wmwDirectoryContent
+  $currentSystemList = Get-ChildItem $systemListDirectory -Name
+
+  if ($systemList.Count -eq 0) {
+    Write-Output "No systems found`r`n" | Red
+    exit 0
+  }
+
+  $changed = $false
+  $htmlContent = Get-Content (Join-Path -Path $clientPath -ChildPath $htmlFileName -Resolve)
+
+  foreach ($systemName in $currentSystemList) {
+    if (-Not ($systemList -contains $systemName)) {
+      Write-Output "Remove system $systemName"
+      $systemPath = Join-Path -Path $systemListDirectory -ChildPath $systemName
+      Remove-Item -Path $systemPath -Force -Recurse
+      $changed = $true
+    }
+  }
+  foreach ($systemName in $systemList) {
+    if (-Not ($currentSystemList -contains $systemName)) {
+      Write-Output "Add system $systemName"
+      $systemPath = Join-Path -Path $systemListDirectory -ChildPath $systemName
+      [void](New-Item -ItemType Directory -Path $systemPath -Force)
+      Set-Content -Path (Join-Path -Path $systemPath -ChildPath $htmlFileName) -Value $htmlContent
+      $changed = $true
+    }
+  }
+  if (-Not $changed) {
+    Write-Output "Files up to date" | Green
+  }
+  exit 0
+}
+
+# --- Deploy ---
+
+if (-Not ((Get-ChildItem (Get-Location) -Name) -contains $zipFileName)) {
+  Write-Output "Cannot find `"$zipFileName`" in current location`r`n" | Red
+  exit 1  
+}
+
+Write-Output "Create client directory..."
+[void](New-Item -ItemType Directory -Path $clientPath -Force)
+Unzip $zipFileName $clientPath
+
+$baseURL = Get-BaseURL $wmwPath
+$htmlPath = Join-Path -Path $clientPath -ChildPath $htmlFileName
 $newHtmlContent = (Get-Content $htmlPath) | ForEach-Object { $_ -replace $replaceHandle, $baseURL }
 
 # replace
 
-Set-Content -Path $htmlFileName -Value $newHtmlContent
+Set-Content -Path $htmlPath -Value $newHtmlContent
+$assetDirPath = Join-Path -Path $clientPath -ChildPath "assets"
 $neededAssetFiles = (Get-ChildItem -Path $assetDirPath) | Where-Object { $_ -like "*.js" -or $_ -like "*.css" }
 
 foreach ($assetFile in $neededAssetFiles) {
@@ -103,20 +149,18 @@ foreach ($assetFile in $neededAssetFiles) {
 
 # add HTML files for systems
 
+Write-Output "Check system list..."
+$systemList = Get-WMWSystemList $wmwDirectoryContent
+if ($systemList.Count -eq 0) {
+  Write-Output "No systems found`r`n" | Red
+}
+
 foreach ($systemName in $systemList) {
   $systemPath = Join-Path -Path $clientPath -ChildPath ("systems/" + $systemName)
-  New-Item -ItemType Directory -Path $systemPath -Force
+  [void](New-Item -ItemType Directory -Path $systemPath -Force)
   Set-Content -Path (Join-Path -Path $systemPath -ChildPath $htmlFileName) -Value $newHtmlContent
 }
 
-# replaces in "client-configuration.json"
+# --- Log ---
 
-$clientConfigurationFile = "client-configuration.json"
-if ($userDocLink) {
-  (Get-Content $clientConfigurationFile) `
-    -replace '(?<="contactEmail": ").*?(?=")', $contactEmail `
-    -replace '(?<="userDocLink": ").*?(?=")', $userDocLink | Set-Content $clientConfigurationFile
-} else {
-  (Get-Content $clientConfigurationFile) `
-    -replace '(?<="contactEmail": ").*?(?=")', $contactEmail | Set-Content $clientConfigurationFile
-}
+Write-Output "Client deployed successfully" | Green
