@@ -17,7 +17,7 @@ export const defaultSettings = {
     stroke: '#888888',
     fill: '#e8e8e8',
   },
-  constructionElementStyle: {
+  wellBoreElementStyle: {
     innerDiameter: '#d9d9d9',
     outerDiameter: '#808080',
     cement: '#ffa500',
@@ -160,5 +160,15 @@ export const drawerConfig: CaratDrawerConfig = {
   },
   correlation: {
     thickness: 1,
+  },
+  construction: {
+    label: {
+      font: {size: 12},
+      color: '#111111',
+      background: '#fff69b',
+      border: {color: '#cb7b7a', thickness: 2},
+      margin: 8,
+      padding: 6,
+    },
   },
 };

@@ -54,6 +54,7 @@ export class PumpColumn implements ICaratColumn {
     for (const record of records) {
       const pumpID = record[info.pumpID.name];
       const pumpImage = this.imageDict[pumpID];
+      if (!pumpImage) continue;
       const top = record[info.top.name];
       const bottom = record[info.bottom.name];
       const label = record[info.label.name];

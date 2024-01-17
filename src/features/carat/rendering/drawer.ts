@@ -11,14 +11,14 @@ import {
   CaratDrawerConfig, CaratTrackBodyDrawSettings,
   CaratTrackHeaderDrawSettings, CaratColumnBodyDrawSettings,
   CaratColumnLabelDrawSettings, CaratColumnYAxisDrawSettings,
-  CaratColumnXAxesDrawSettings, CaratCorrelationDrawSettings,
+  CaratColumnXAxesDrawSettings, CaratCorrelationDrawSettings, ConstructionDrawSettings,
 } from './drawer-settings';
 
 import {
   createTrackBodyDrawSettings, createTrackHeaderDrawSettings,
   createColumnBodyDrawSettings, createColumnLabelDrawSettings,
   createColumnYAxisDrawSettings, createColumnXAxesDrawSettings,
-  createCorrelationDrawSettings,
+  createCorrelationDrawSettings, createConstructionDrawSettings,
 } from './drawer-settings';
 
 
@@ -48,6 +48,8 @@ export class CaratDrawer {
   public readonly columnXAxesSettings: CaratColumnXAxesDrawSettings;
   /** Настройки отрисовки корреляций. */
   public readonly correlationSettings: CaratCorrelationDrawSettings;
+  /** Настройки отрисовки конструкции. */
+  public readonly constructionSettings: ConstructionDrawSettings;
   /** Используемое по умолчанию семейство шрифтов. */
   public readonly fontFamily: string;
 
@@ -86,6 +88,7 @@ export class CaratDrawer {
     this.columnYAxisSettings = createColumnYAxisDrawSettings(config);
     this.columnXAxesSettings = createColumnXAxesDrawSettings(config);
     this.correlationSettings = createCorrelationDrawSettings(config);
+    this.constructionSettings = createConstructionDrawSettings(config);
     this.fontFamily = config.stage.font.family;
   }
 
@@ -562,15 +565,14 @@ export class CaratDrawer {
     this.setCurrentGroup(labelRect, null);
     this.setTranslate(this.groupTranslateX, this.groupTranslateY);
 
-    const boxMargin = 8;
-    const boxPadding = 6;
-    const fontSize = 14;
+    const { labelMargin: boxMargin, labelPadding: boxPadding } = this.constructionSettings;
+    const { labelColor, labelBackground, labelTextHeight } = this.constructionSettings;
+    const { labelBorderColor, labelBorderThickness } = this.constructionSettings;
 
     let boxY = boxMargin;
-    let labelY = boxMargin + boxPadding + fontSize / 2;
+    let labelY = boxMargin + boxPadding + labelTextHeight / 2;
 
     const boxWidth = labelRect.width - 2 * boxMargin;
-    const boxHeight = fontSize + 2 * boxPadding;
     const maxLabelWidth = boxWidth - 2 * boxPadding;
 
     const dataGroupCenter = this.trackRect.left + dataRect.left
@@ -578,10 +580,13 @@ export class CaratDrawer {
 
     this.ctx.textAlign = 'left';
     this.ctx.textBaseline = 'middle';
-    this.setLineSettings(2, '#cb7b7a');
+    this.ctx.font = this.constructionSettings.labelFont;
+    this.setLineSettings(labelBorderThickness, labelBorderColor);
 
-    for (const { y, shift, text } of labels) {
+    for (const { y, shift, lines } of labels) {
       if (y < this.yMin || y > this.yMax) continue;
+      const boxHeight = lines.length * labelTextHeight + 2 * boxPadding;
+
       this.ctx.beginPath();
       this.ctx.moveTo(dataGroupCenter + shift, (y - this.yMin) * scaleY);
       this.ctx.lineTo(0, labelY);
@@ -589,10 +594,14 @@ export class CaratDrawer {
       this.ctx.stroke();
 
       this.ctx.strokeRect(boxMargin, boxY, boxWidth, boxHeight);
-      this.ctx.fillStyle = '#fff69b';
+      this.ctx.fillStyle = labelBackground;
       this.ctx.fillRect(boxMargin, boxY, boxWidth, boxHeight);
-      this.ctx.fillStyle = '#111';
-      this.ctx.fillText(text, boxMargin + boxPadding, labelY, maxLabelWidth);
+      this.ctx.fillStyle = labelColor;
+
+      for (let i = 0; i < lines.length; i++) {
+        const y = labelY + i * labelTextHeight
+        this.ctx.fillText(lines[i], boxMargin + boxPadding, y, maxLabelWidth);
+      }
 
       boxY += boxHeight + boxMargin;
       labelY += boxHeight + boxMargin;

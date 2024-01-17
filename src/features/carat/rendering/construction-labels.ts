@@ -1,5 +1,6 @@
 import { CaratDrawer } from './drawer';
 import { CaratColumnGroup } from './column-group';
+import { getMeasurerForFont } from 'shared/lib';
 
 import { PumpColumn } from './pump-column';
 import { WellFaceColumn } from './face-column';
@@ -14,6 +15,8 @@ interface ConstructionLabel {
   shift: number;
   /** Текст подписи. */
   text: string;
+  /** Строки текста. */
+  lines: string[];
 }
 
 
@@ -28,11 +31,17 @@ export class ConstructionLabels {
 
   /** Подписи к элементам конструкции. */
   private labels: ConstructionLabel[];
+  /** Максимально допустимая ширина текста. */
+  private maxWidth: number;
+  /** Измеритель ширины текста. */
+  private readonly measurer: (text: string) => number;
 
   constructor(drawer: CaratDrawer, labelGroup: CaratColumnGroup) {
     this.drawer = drawer;
     this.labelGroup = labelGroup;
     this.labels = [];
+    this.measurer = getMeasurerForFont(drawer.constructionSettings.labelFont);
+    this.updateMaxWidth();
   }
 
   public updateData(): void {
@@ -48,7 +57,9 @@ export class ConstructionLabels {
         for (const element of column.getElements()) {
           if (!element.label) continue;
           const y = (element.top + element.bottom) / 2;
-          const label: ConstructionLabel = {y, text: element.label, shift: 0};
+          const text = element.label.trim().replaceAll(/\s+/g, ' ');
+          const lines = this.splitByWidth(text);
+          const label: ConstructionLabel = {y, text, lines, shift: 0};
 
           if (column instanceof WellBoreColumn) {
             label.shift = (element.innerDiameter + element.outerDiameter) / 4;
@@ -59,6 +70,32 @@ export class ConstructionLabels {
         }
       }
     }
+  }
+
+  public updateMaxWidth(): void {
+    const { labelMargin, labelPadding } = this.drawer.constructionSettings;
+    this.maxWidth = this.labelGroup.getWidth() - 2 * (labelMargin + labelPadding);
+  }
+
+  private splitByWidth(text: string): string[] {
+    const noPos = Number.MAX_SAFE_INTEGER;
+    const result = [];
+    let currentLineBegin = 0;
+    let currentLineEnd = text.indexOf(' ');
+
+    while (currentLineEnd !== noPos) {
+      let space = text.indexOf(' ', currentLineEnd + 1);
+      if (space === -1) space = noPos;
+      let line = text.substring(currentLineBegin, space);
+
+      if (this.measurer(line) > this.maxWidth) {
+        result.push(text.substring(currentLineBegin, currentLineEnd));
+        currentLineBegin = currentLineEnd + 1;
+      }
+      currentLineEnd = space;
+    }
+    result.push(text.substring(currentLineBegin, currentLineEnd));
+    return result;
   }
 
   public render(): void {

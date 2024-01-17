@@ -30,7 +30,7 @@ export class WellBoreColumn implements ICaratColumn {
 
   private createStyle(properties: CaratColumnProperties): void {
     const info = this.channel.info;
-    const defaultStyle = defaultSettings.constructionElementStyle;
+    const defaultStyle = defaultSettings.wellBoreElementStyle;
 
     const innerDiameterProperty = properties[info.innerDiameter.name]?.bar;
     const outerDiameterProperty = properties[info.outerDiameter.name]?.bar;

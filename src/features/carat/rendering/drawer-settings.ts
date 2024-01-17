@@ -77,6 +77,24 @@ export interface CaratDrawerConfig {
     /** Толщина обводки корреляции. */
     thickness: number,
   },
+  /** Настройки отрисовки конструкции скважины. */
+  construction: {
+    /** Настройки подписей к конструкции. */
+    label: {
+      /** Шрифт подписи к конструкции. */
+      font: Partial<CSSFont>,
+      /** Цвет подписи к конструкции. */
+      color: ColorHEX,
+      /** Фон подписи к конструкции. */
+      background: ColorHEX,
+      /** Цвет и толщина рамки подписи к конструкции. */
+      border: {color: ColorHEX, thickness: number},
+      /** Внешний отступ подписи. */
+      margin: number,
+      /** Внутренний отступ подписи. */
+      padding: number,
+    },
+  },
 }
 
 /** Настройки отрисовки тела трека. */
@@ -163,6 +181,26 @@ export interface CaratCorrelationDrawSettings {
   readonly thickness: number;
 }
 
+/** Настройки отрисовки конструкции скважины. */
+export interface ConstructionDrawSettings {
+  /** Шрифт подписи к конструкции. */
+  readonly labelFont: string;
+  /** Высота одной строки в подписи. */
+  readonly labelTextHeight;
+  /** Цвет подписи к конструкции. */
+  readonly labelColor: ColorHEX;
+  /** Фон подписи к конструкции. */
+  readonly labelBackground: ColorHEX;
+  /** Цвет рамки подписи к конструкции. */
+  readonly labelBorderColor: ColorHEX;
+  /** Толщина рамки подписи к конструкции. */
+  readonly labelBorderThickness: number;
+  /** Внешний отступ подписи. */
+  readonly labelMargin: number;
+  /** Внутренний отступ подписи. */
+  readonly labelPadding: number;
+}
+
 
 /** Создаёт настройки отрисовки трека по конфигу. */
 export function createTrackBodyDrawSettings(config: CaratDrawerConfig): CaratTrackBodyDrawSettings {
@@ -221,6 +259,23 @@ export function createColumnXAxesDrawSettings(config: CaratDrawerConfig): CaratC
 /** Создаёт настройки отрисовки корреляций по конфигу. */
 export function createCorrelationDrawSettings(config: CaratDrawerConfig): CaratCorrelationDrawSettings {
   return {thickness: config.correlation.thickness};
+}
+
+/** Создаёт настройки отрисовки конструкции по конфигу. */
+export function createConstructionDrawSettings(config: CaratDrawerConfig): ConstructionDrawSettings {
+  const labelSettings = config.construction.label;
+  const labelFont = getFont(labelSettings.font, config.stage.font);
+
+  return {
+    labelFont: labelFont,
+    labelTextHeight: labelSettings.font.size,
+    labelColor: labelSettings.color,
+    labelBackground: labelSettings.background,
+    labelBorderColor: labelSettings.border.color,
+    labelBorderThickness: labelSettings.border.thickness,
+    labelMargin: labelSettings.margin,
+    labelPadding: labelSettings.padding,
+  };
 }
 
 /** Преобразует модель шрифта в `canvas.font`. */
