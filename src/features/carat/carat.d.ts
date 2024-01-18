@@ -254,9 +254,19 @@ interface ICaratInterval {
   bottom: number;
 }
 
-/** Типы корректных подключённых каналов к каротажной форме. */
+/** Типы распознаваемых каналов, которые могут быть подключены к каротажной форме.
+ * + `lithology` — литологические пласты
+ * + `perforations` — перфорации
+ * + `curve-set` — каротажные кривые
+ * + `curve-data` — точки кривых
+ * + `inclinometry` — инклинометрия скважины
+ * + `bore` (конструкция) — элементы ствола скважины
+ * + `pump` (конструкция) — насосы
+ * + `face` (конструкция) — забои скважины
+ * + `vertical` (конструкция) — вертикальная линия
+ * */
 type CaratChannelType = 'lithology' | 'perforations' | 'curve-set' | 'curve-data' |
-  'inclinometry' | 'construction' | 'pump' | 'face' | 'vertical';
+  'inclinometry' | 'bore' | 'pump' | 'face' | 'vertical';
 
 type CaratCurveSetInfo = CaratChannelInfo<'id' | 'type' | 'date' | 'top' | 'bottom' | 'defaultLoading' | 'description'>;
 type CaratLithologyInfo = CaratChannelInfo<'top' | 'bottom' | 'stratumID'>;

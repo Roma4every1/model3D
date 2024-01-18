@@ -87,7 +87,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
       const columnRect = {top: 0, left: 0, width: rect.width, height};
       const properties = init.properties[attachedChannel.name];
 
-      if (channelType === 'construction') {
+      if (channelType === 'bore') {
         this.hasConstructionElements = true;
         this.columns.push(new WellBoreColumn(columnRect, drawer, attachedChannel, properties));
       } else if (channelType === 'pump') {

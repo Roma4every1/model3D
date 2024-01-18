@@ -533,14 +533,17 @@ export class CaratDrawer {
   public drawWellFaces(elements: CaratWellFaceModel[]): void {
     const scaleY = window.devicePixelRatio * this.scale;
     this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
+    this.ctx.lineWidth = this.constructionSettings.faceBorderThickness;
 
-    for (const { top, bottom, diameter } of elements) {
+    for (const { top, bottom, diameter, style } of elements) {
       if (bottom < this.yMin || top > this.yMax) continue;
       const canvasTop = scaleY * top;
       const canvasHeight = scaleY * (bottom - top);
       const x = (this.columnWidth - diameter) / 2;
-      this.ctx.fillStyle = '#6e83b0';
+      this.ctx.fillStyle = style.fill;
       this.ctx.fillRect(x, canvasTop, diameter, canvasHeight);
+      this.ctx.strokeStyle = style.stroke;
+      this.ctx.strokeRect(x, canvasTop, diameter, canvasHeight);
     }
   }
 

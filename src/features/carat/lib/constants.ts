@@ -61,7 +61,7 @@ export const caratChannelCriterionDict: Record<CaratChannelType, ChannelCriterio
     well: 'WELL ID',
     inclinometry: 'INCLINOMETRY',
   },
-  'construction': {
+  'bore': {
     well: 'WELL ID', top: 'TOP', bottom: 'BASE',
     innerDiameter: 'IN_D', outerDiameter: 'OUT DIAMETER',
     cement: 'CEMENT', label: 'LABEL_ZEM',
@@ -170,6 +170,9 @@ export const drawerConfig: CaratDrawerConfig = {
       border: {color: '#cb7b7a', thickness: 2},
       margin: 8,
       padding: 6,
+    },
+    face: {
+      borderThickness: 2,
     },
     vertical: {
       lineDash: [10, 10],

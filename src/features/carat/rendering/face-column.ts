@@ -1,5 +1,6 @@
 import { CaratDrawer } from './drawer.ts';
-import { CaratWellFaceModel } from '../lib/types.ts';
+import { CaratIntervalStyleDict, CaratWellFaceModel } from '../lib/types.ts';
+import { fixHEX } from '../lib/utils.ts';
 
 
 /** Колонка отображающая элементы типа "забой скважины". */
@@ -11,21 +12,28 @@ export class WellFaceColumn implements ICaratColumn {
   /** Массив подключённых свойств канала. */
   public readonly channel: CaratAttachedChannel;
 
+  /** Забои. */
   private elements: CaratWellFaceModel[];
+  /** Словарь свойств внешнего вида забоев. */
+  private styleDict: CaratIntervalStyleDict;
 
   constructor(rect: Rectangle, drawer: CaratDrawer, channel: CaratAttachedChannel) {
     this.drawer = drawer;
     this.rect = rect;
     this.channel = channel;
     this.elements = [];
+    this.styleDict = {};
   }
 
   public copy(): ICaratColumn {
-    return new WellFaceColumn({...this.rect}, this.drawer, this.channel);
+    const copy = new WellFaceColumn({...this.rect}, this.drawer, this.channel);
+    copy.styleDict = this.styleDict;
+    return copy;
   }
 
   public getLookupNames(): ChannelName[] {
-    return [];
+    const lookup = this.channel.styles[0].color;
+    return [lookup.name];
   }
 
   public getElements(): any[] {
@@ -48,18 +56,27 @@ export class WellFaceColumn implements ICaratColumn {
     const info = this.channel.info;
 
     for (const record of records) {
+      const style = this.styleDict[record[info.type.name]];
+      if (!style) continue;
       const top = record[info.top.name];
       const bottom = record[info.bottom.name];
       const diameter = record[info.diameter.name];
-      const type = record[info.type.name];
-      const date = record[info.date.name];
       const label = record[info.label.name];
-      this.elements.push({top, bottom, diameter, type, date, label});
+      this.elements.push({top, bottom, diameter, style, label});
     }
   }
 
   public setLookupData(lookupData: ChannelRecordDict): void {
-    // пока ничего не нужно
+    const lookup = this.channel.styles[0].color;
+    const records = lookupData[lookup.name];
+    this.styleDict = {};
+
+    for (const record of records) {
+      const id = record[lookup.info.id.name];
+      const fill = fixHEX(record[lookup.info.backgroundColor.name]);
+      const stroke = fixHEX(record[lookup.info.color.name]);
+      this.styleDict[id] = {fill, stroke};
+    }
   }
 
   public render(): void {

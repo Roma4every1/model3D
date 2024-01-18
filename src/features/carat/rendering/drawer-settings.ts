@@ -94,6 +94,11 @@ export interface CaratDrawerConfig {
       /** Внутренний отступ подписи. */
       padding: number,
     },
+    /** Настройки отображения вертикальных забоев. */
+    face: {
+      /** Толщина обводки. */
+      borderThickness: number,
+    },
     /** Настройки отображения вертикальных линий. */
     vertical: {
       /** Штриховка линии. */
@@ -204,6 +209,8 @@ export interface ConstructionDrawSettings {
   readonly labelMargin: number;
   /** Внутренний отступ подписи. */
   readonly labelPadding: number;
+  /** Ширина обводки забоя. */
+  readonly faceBorderThickness: number;
   /** Штриховка вертикальной линии. */
   readonly verticalLineDash: number[];
 }
@@ -282,6 +289,7 @@ export function createConstructionDrawSettings(config: CaratDrawerConfig): Const
     labelBorderThickness: labelSettings.border.thickness,
     labelMargin: labelSettings.margin,
     labelPadding: labelSettings.padding,
+    faceBorderThickness: config.construction.face.borderThickness,
     verticalLineDash: config.construction.vertical.lineDash,
   };
 }

@@ -110,8 +110,7 @@ export interface CaratWellFaceModel {
   top: number;
   bottom: number;
   diameter: number;
-  type: number;
-  date: string;
+  style: CaratIntervalStyle;
   label: string;
 }
 
