@@ -1,16 +1,13 @@
 interface IBaseAPI {
-  setBase(base: string): void
-  setRoot(root: string): void
-  setSessionID(sessionID: SessionID): void
-
-  request<Expected>(req: WRequest): Promise<Res<Expected>>
+  setBase(base: string): void;
+  setSessionID(sessionID: SessionID): void;
+  request<Expected>(req: WRequest): Promise<Res<Expected>>;
 }
 
 
 export class BaseAPI implements IBaseAPI {
-  public base: string = '/';
-  public root: string = '/';
-  public sessionID: SessionID = '';
+  private base: string = '/';
+  private sessionID: SessionID = '';
 
   public static mapperDict = {
     'text': (res: Response) => res.text(),
@@ -21,9 +18,6 @@ export class BaseAPI implements IBaseAPI {
 
   public setBase(base: string): void {
     this.base = base;
-  }
-  public setRoot(root: string): void {
-    this.root = root;
   }
   public setSessionID(sessionID: SessionID): void {
     this.sessionID = sessionID;
@@ -37,15 +31,24 @@ export class BaseAPI implements IBaseAPI {
       const url = new URL(fullPath);
       if (query) url.search = new URLSearchParams(query).toString();
 
-      const init: RequestInit = {body, method: method ?? 'GET', credentials: 'include'};
-      const onFulfilled = BaseAPI.mapperDict[mapper ?? 'json'];
-      const response = await fetch(url, init).then(onFulfilled);
+      const headers = this.sessionID ? {'x-session-id': this.sessionID} : undefined;
+      const init: RequestInit = {method: method ?? 'GET', body, headers, credentials: 'include'};
 
-      if (response.error === true) return {ok: false, data: response.message || 'Server side error'};
-      return {ok: true, data: response};
+      const response = await fetch(url, init);
+      const statusCode = response.status;
+
+      if (statusCode >= 400) {
+        const errorDetails = await response.json();
+        const message = errorDetails?.message ?? 'Unknown server side error';
+        return {ok: false, data: message, statusCode}
+      } else {
+        const data = await BaseAPI.mapperDict[mapper ?? 'json'](response);
+        return {ok: true, data, statusCode};
+      }
     }
-    catch (error) {
-      return {ok: false, data: error instanceof Error ? error.message : 'Unknown error'};
+    catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown client side error';
+      return {ok: false, data: message, statusCode: 400};
     }
   }
 }

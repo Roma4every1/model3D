@@ -61,6 +61,8 @@ interface WResponse<Data> {
   ok: true;
   /** Запрашиваемые данные. */
   data: Data;
+  /** HTTP-статус код ответа. */
+  statusCode: number;
 }
 
 /** Объект ответа, в случае, если произошла ошибка.
@@ -72,4 +74,6 @@ interface WErrorResponse {
   ok: false;
   /** Сообщиение ошибки. */
   data: string;
+  /** HTTP-статус код ошибки. */
+  statusCode: number;
 }

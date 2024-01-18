@@ -6,44 +6,41 @@ export class ReportAPI {
   constructor(private readonly baseAPI: BaseAPI) {}
 
   public getPresentationReports(id: ClientID) {
-    const query = {sessionId: this.baseAPI.sessionID, formId: id};
-    return this.baseAPI.request<ReportModel[]>({path: 'programsList', query});
+    const req: WRequest = {path: 'programsList', query: {formId: id}};
+    return this.baseAPI.request<ReportModel[]>(req);
   }
 
   public async getReportData(id: ReportID) {
-    const query = {sessionId: this.baseAPI.sessionID, reportId: id};
+    const query = {reportId: id};
     const res = await this.baseAPI.request<ReportData>({path: 'reportData', query});
     if (res.ok) res.data.parameters.forEach(handleParam);
     return res;
   }
 
   public async getProgramVisibility(reportID: ReportID, parameters: Parameter[]) {
-    const sessionId = this.baseAPI.sessionID;
     const paramValues = parameters.map(serializeParameter);
-    const body = JSON.stringify({sessionId, reportId: reportID, paramValues});
+    const body = JSON.stringify({reportId: reportID, paramValues});
     const req: WRequest = {method: 'POST', path: 'programVisibility', body};
     const res = await this.baseAPI.request<'true' | 'false'>(req);
     return res.ok && res.data === 'true';
   }
 
-  public async getCanRunReport(reportId: ReportID, parameters: Parameter[]) {
-    const sessionId = this.baseAPI.sessionID;
-    const paramValues = parameters.map(serializeParameter);
-    const body = JSON.stringify({sessionId, reportId, paramValues});
-    const res = await this.baseAPI.request<boolean>({method: 'POST', path: 'canRunReport', body});
+  public async getCanRunReport(reportID: ReportID, parameters: Parameter[]) {
+    const body = {reportId: reportID, paramValues: parameters.map(serializeParameter)};
+    const req: WRequest = {method: 'POST', path: 'canRunReport', body: JSON.stringify(body)};
+    const res = await this.baseAPI.request<boolean>(req);
     return res.ok && res.data;
   }
 
   public executeReportProperty(id: ReportID, params: Parameter[], index: number) {
-    const sessionId = this.baseAPI.sessionID;
     const parameters = params.map(serializeParameter);
-    const body = JSON.stringify({sessionId, reportId: id, parameters, index});
+    const body = JSON.stringify({reportId: id, parameters, index});
     const req: WRequest = {method: 'POST', path: 'executeReportProperty', body};
     return this.baseAPI.request<OperationData>(req);
   }
 
   public async getOperationStatus(id: OperationID) {
-    const query = {sessionId: this.baseAPI.sessionID, operationId: id};
+    const query = {operationId: id};
     const res = await this.baseAPI.request<OperationStatus>({path: 'operationStatus', query});
 
     if (res.ok && res.data) {
@@ -56,22 +53,21 @@ export class ReportAPI {
   }
 
   public clearReports(clientID: FormID) {
-    const query = {sessionId: this.baseAPI.sessionID, presentationId: clientID};
+    const query = {presentationId: clientID};
     return this.baseAPI.request<boolean>({path: 'clearReports', query});
   }
 
   public uploadFile(fileName: string, body: string | ArrayBuffer) {
-    const query = {sessionId: this.baseAPI.sessionID, filename: fileName};
+    const query = {filename: fileName};
     return this.baseAPI.request<string>({method: 'POST', path: 'uploadFile', query, body});
   }
 
   public downloadFile(path: string) {
-    const query = {sessionId: this.baseAPI.sessionID, path};
-    return this.baseAPI.request<Blob>({path: 'downloadResource', query, mapper: 'blob'});
+    const req: WRequest = {path: 'downloadResource', query: {path}, mapper: 'blob'};
+    return this.baseAPI.request<Blob>(req);
   }
 
   public exportToExcel(data: any) {
-    data.sessionId = this.baseAPI.sessionID;
     data.paramValues = data.paramValues.map(serializeParameter);
     const body = JSON.stringify(data);
     return this.baseAPI.request<OperationData>({method: 'POST', path: 'exportToExcel', body});
