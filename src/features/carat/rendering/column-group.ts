@@ -97,7 +97,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
         this.hasConstructionElements = true;
         this.columns.push(new WellFaceColumn(columnRect, drawer, attachedChannel));
       } else if (channelType === 'vertical') {
-        this.columns.push(new VerticalLineColumn(columnRect, drawer, attachedChannel));
+        this.columns.push(new VerticalLineColumn(columnRect, drawer, attachedChannel, properties));
       } else {
         this.columns.push(new CaratColumn(columnRect, drawer, attachedChannel, properties));
       }

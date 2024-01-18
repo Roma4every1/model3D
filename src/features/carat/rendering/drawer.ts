@@ -545,18 +545,23 @@ export class CaratDrawer {
   }
 
   /** Отрисовка центральных вертикальных линий. */
-  public drawVerticalLines(elements: CaratVerticalLineModel[]): void {
+  public drawVerticalLines(elements: CaratVerticalLineModel[], color: ColorHEX): void {
     const scaleY = window.devicePixelRatio * this.scale;
     this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
-    this.ctx.fillStyle = '#3fa2ea';
+
+    this.ctx.setLineDash(this.constructionSettings.verticalLineDash);
+    this.ctx.strokeStyle = color;
+    this.ctx.beginPath();
+    const x = this.columnWidth / 2;
 
     for (const { top, bottom, width } of elements) {
       if (bottom < this.yMin || top > this.yMax) continue;
-      const canvasTop = scaleY * top;
-      const canvasHeight = scaleY * (bottom - top);
-      const x = (this.columnWidth - width) / 2;
-      this.ctx.fillRect(x, canvasTop, width, canvasHeight);
+      this.ctx.lineWidth = width;
+      this.ctx.moveTo(x, scaleY * top);
+      this.ctx.lineTo(x, scaleY * bottom);
     }
+    this.ctx.stroke();
+    this.ctx.setLineDash([]);
   }
 
   /** Отрисовка подписей элементов конструкции. */

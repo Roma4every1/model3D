@@ -1,5 +1,6 @@
 import { CaratDrawer } from './drawer.ts';
 import { CaratVerticalLineModel } from '../lib/types.ts';
+import { defaultSettings } from '../lib/constants.ts';
 
 
 export class VerticalLineColumn implements ICaratColumn {
@@ -11,16 +12,27 @@ export class VerticalLineColumn implements ICaratColumn {
   public readonly channel: CaratAttachedChannel;
 
   private elements: CaratVerticalLineModel[];
+  private color: ColorHEX;
 
-  constructor(rect: Rectangle, drawer: CaratDrawer, channel: CaratAttachedChannel) {
+  constructor(
+    rect: Rectangle, drawer: CaratDrawer,
+    channel: CaratAttachedChannel, properties?: CaratColumnProperties,
+  ) {
     this.drawer = drawer;
     this.rect = rect;
     this.channel = channel;
     this.elements = [];
+
+    if (properties) {
+      const widthProperty = properties[channel.info.width.name];
+      this.color = widthProperty?.bar?.color ?? defaultSettings.verticalLineColor;
+    }
   }
 
   public copy(): ICaratColumn {
-    return new VerticalLineColumn({...this.rect}, this.drawer, this.channel);
+    const copy = new VerticalLineColumn({...this.rect}, this.drawer, this.channel);
+    copy.color = this.color;
+    return copy;
   }
 
   public getLookupNames(): ChannelName[] {
@@ -55,12 +67,12 @@ export class VerticalLineColumn implements ICaratColumn {
   }
 
   public setLookupData(): void {
-    // пока нет настроек внешнего вида
+    // все настройки внешнего вида — константы сессии
   }
 
   public render(): void {
     this.drawer.setCurrentColumn(this.rect);
-    this.drawer.drawVerticalLines(this.elements);
+    this.drawer.drawVerticalLines(this.elements, this.color);
     this.drawer.restore();
   }
 }

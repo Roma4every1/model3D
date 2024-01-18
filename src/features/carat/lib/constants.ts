@@ -22,6 +22,7 @@ export const defaultSettings = {
     outerDiameter: '#808080',
     cement: '#ffa500',
   },
+  verticalLineColor: '#007dea',
 };
 
 /** Ограничения на различные настройки каротажа. */
@@ -169,6 +170,9 @@ export const drawerConfig: CaratDrawerConfig = {
       border: {color: '#cb7b7a', thickness: 2},
       margin: 8,
       padding: 6,
+    },
+    vertical: {
+      lineDash: [10, 10],
     },
   },
 };

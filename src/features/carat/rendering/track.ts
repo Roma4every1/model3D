@@ -71,18 +71,14 @@ export class CaratTrack implements ICaratTrack {
         if (channel) this.inclinometry = new CaratInclinometry(channel.inclinometry);
       }
 
-      let { type, width } = column.settings;
-      if (type === 'normal') {
+      const { type, width } = column.settings;
+      if (type === 'normal' || type === 'labels') {
         const groupRect = {top, left: x, width, height};
         const group = new CaratColumnGroup(groupRect, drawer, column);
         this.groups.push(group);
         if (column.active) this.activeIndex = index;
         x += width; index++;
-
-        if (column.settings.label === 'Подписи') { // FIXME: это заглушка
-          column.settings.type = 'labels';
-          this.constructionLabels = new ConstructionLabels(drawer, group);
-        }
+        if (type === 'labels') this.constructionLabels = new ConstructionLabels(drawer, group);
       } else if (type === 'background') {
         const groupRect = {top, left: 0, height, width: rect.width};
         this.backgroundGroup = new CaratColumnGroup(groupRect, drawer, column);
