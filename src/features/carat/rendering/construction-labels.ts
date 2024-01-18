@@ -41,7 +41,8 @@ export class ConstructionLabels {
     this.labelGroup = labelGroup;
     this.labels = [];
     this.measurer = getMeasurerForFont(drawer.constructionSettings.labelFont);
-    this.updateMaxWidth();
+    const { labelMargin, labelPadding } = this.drawer.constructionSettings;
+    this.maxWidth = this.labelGroup.getWidth() - 2 * (labelMargin + labelPadding);
   }
 
   public updateData(): void {
@@ -75,6 +76,7 @@ export class ConstructionLabels {
   public updateMaxWidth(): void {
     const { labelMargin, labelPadding } = this.drawer.constructionSettings;
     this.maxWidth = this.labelGroup.getWidth() - 2 * (labelMargin + labelPadding);
+    for (const label of this.labels) label.lines = this.splitByWidth(label.text);
   }
 
   private splitByWidth(text: string): string[] {
@@ -82,6 +84,7 @@ export class ConstructionLabels {
     const result = [];
     let currentLineBegin = 0;
     let currentLineEnd = text.indexOf(' ');
+    if (currentLineEnd === -1) currentLineEnd = noPos;
 
     while (currentLineEnd !== noPos) {
       let space = text.indexOf(' ', currentLineEnd + 1);

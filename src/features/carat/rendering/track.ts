@@ -282,7 +282,12 @@ export class CaratTrack implements ICaratTrack {
 
   /** Задаёт новую ширину для колонки по индексу. */
   public setGroupWidth(idx: number, width: number): void {
-    this.groups[idx]?.setWidth(width);
+    const group = this.groups[idx];
+    if (!group) return;
+    group.setWidth(width);
+    if (this.constructionLabels && group === this.constructionLabels.labelGroup) {
+      this.constructionLabels.updateMaxWidth();
+    }
     this.updateGroupRects();
   }
 
