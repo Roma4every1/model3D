@@ -53,7 +53,7 @@ export class ConstructionTransformer implements IConstructionTransformer {
     for (const element of elements) {
       element.top = this.yTransform(element.top);
       element.bottom = this.yTransform(element.bottom);
-      element.cement = this.yTransform(element.cement);
+      if (element.cement !== null) element.cement = this.yTransform(element.cement);
     }
   }
 

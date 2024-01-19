@@ -507,8 +507,10 @@ export class CaratDrawer {
       const canvasHeight = scaleY * (bottom - top);
       const cementHeight = scaleY * (bottom - cement);
 
-      this.ctx.fillStyle = style.cement;
-      this.ctx.fillRect(outerX - 4, cement * scaleY, outerDiameter + 8, cementHeight);
+      if (cement !== null) {
+        this.ctx.fillStyle = style.cement;
+        this.ctx.fillRect(outerX - 4, cement * scaleY, outerDiameter + 8, cementHeight);
+      }
       this.ctx.fillStyle = style.outerDiameter;
       this.ctx.fillRect(outerX, canvasTop, outerDiameter, canvasHeight);
       this.ctx.fillStyle = style.innerDiameter;

@@ -71,6 +71,7 @@ export class ConstructionLabels {
         }
       }
     }
+    this.labels.sort((a, b) => a.y - b.y);
   }
 
   public updateMaxWidth(): void {
