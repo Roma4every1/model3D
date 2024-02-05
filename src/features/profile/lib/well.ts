@@ -7,7 +7,7 @@ export class ProfileWell implements IProfileWell {
   public y: number;
 
   public inclinometry: IProfileIncl;
-  public lithology: any;
+  public lithology: ProfileLitPiece[];
 
   constructor(id: number, x: number, y: number) {
     this.id = id;
@@ -17,5 +17,17 @@ export class ProfileWell implements IProfileWell {
 
   public createInclinometry (data: ProfileInclMark[]) {
     this.inclinometry = new ProfileInclinometry(data);
+  }
+
+  public toTracePoint(distance: number): TracePoint {
+    return {
+      x: this.x,
+      y: this.y,
+      distance
+    }
+  }
+
+  public setLithologyPieces(pieces: ProfileLitPiece[]) {
+    this.lithology = pieces.filter(p => p.NWELL_ID === this.id);
   }
 }

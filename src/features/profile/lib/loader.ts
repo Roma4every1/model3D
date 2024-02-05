@@ -2,7 +2,7 @@ import {mapsAPI} from "../../map/lib/maps.api.ts";
 import {types} from "../../map/drawer/map-drawer.js";
 import {getInterpolatedFieldValue} from "../../map/lib/selecting-utils.ts";
 import {groupBy} from "../../../shared/lib";
-import {getPointsDistance2D, getPointsDistance3D, getTraceLines} from "./utils.ts";
+import {getPointsDistance2D, getPointsDistance3D } from "./utils.ts";
 import {PROFILE_X_STEP} from "./constants.ts";
 import {cellsToRecords, channelAPI} from "../../../entities/channels";
 import {ProfileInclinometry} from "./inclinometry.ts";
@@ -45,123 +45,27 @@ export class ProfileLoader implements IProfileLoader {
     if (!trace?.nodes?.length) return;
 
     const ustChannel: Channel = channels[this.ustCoordsChannelName];
-    const ustPoints: UstPoint[] = ustChannel.data.rows.map(r => ({
-      WELL_ID: r.Cells[0],
-      x: r.Cells[2],
-      y: -r.Cells[1]
-    }));
-    const nodesCoords = trace?.nodes?.map(n =>
-      ustPoints.find(u => u.WELL_ID === n.id)
-    );
-    const traceLinesData = getTraceLines(nodesCoords, ustPoints, PROFILE_X_STEP);
-    const additionalWells = traceLinesData.additionalWells;
 
-    //
     const profileTrace = new ProfileTrace(trace, ustChannel);
-    console.log('TRACE', profileTrace);
-    //
 
-    await this.loadAdditionalProfileChannels(nodesCoords, additionalWells);
+    await this.loadAdditionalProfileChannels(profileTrace.wells);
+
+    profileTrace.wells.forEach(w => w.setLithologyPieces(this.plInfoRecords));
 
     const topBaseMapsChannel = channels[this.topBaseMapsChannelName];
-
     const topBaseFieldsMap =
       await this.loadTopBaseFields(formID, topBaseMapsChannel);
 
     this.setLoading({percentage: 90, status: 'trace', statusOptions: null});
 
-    const {interpolatedLinesMap, minY, maxY} =
-      this.getInterpolatedLinesMap(topBaseFieldsMap, traceLinesData);
-
-    const inclinometryDataMap = this.getInclDataMap(nodesCoords);
-
-    const lithologyMap = groupBy<number, ProfileLitPiece>(
-      this.plInfoRecords,
-      el => el.PL_ID
-    );
-
-    //
     const plastsMap: Map<number, ProfilePlast> = new Map<number, ProfilePlast>();
     topBaseFieldsMap.forEach((value, key) => {
       plastsMap.set(key, new ProfilePlast(key, profileTrace.points, value));
     });
-    console.log(plastsMap);
-    //
-
-    const lithologyPointsMap: ProfileLithologyPointsMap = new Map<number, ProfileLitPoint[]>
-    interpolatedLinesMap.forEach((line, plastCode) => {
-      const litPieces = lithologyMap.get(plastCode);
-      const litPoints: ProfileLitPoint[] = [];
-      line.borderLine.forEach(point => {
-        for (let abs = point.topAbsMark; abs <= point.baseAbsMark ; abs++) {
-          litPoints.push({
-            distance: point.x,
-            absMark: abs,
-            lithology: null,
-            // lithology: this.findNearestLithologyPiece(
-            //   point.x, point.y, abs, litPieces, incl, inclinometryDataMap
-            // )
-          })
-        }
-      })
-      lithologyPointsMap.set(plastCode, litPoints)
-    })
 
     this.cache = {
-      xAxisSettings: {
-        xMin: 0,
-        xMax: traceLinesData.distance,
-        xDelta: traceLinesData.distance
-      },
-      yAxisSettings: {
-        yMin: minY,
-        yMax: maxY,
-        yDelta: maxY - minY
-      },
-      inclinometryData: inclinometryDataMap,
-      lithologyData: lithologyPointsMap,
-      plastsLinesData: interpolatedLinesMap,
-      plastsData: plastsMap
+      plastsData: plastsMap as ProfilePlastMap
     } as ProfileDataCache;
-  }
-
-  private getInterpolatedLinesMap(topBaseFieldsMap: ProfileTopBaseFieldsMap, traceLinesData: TraceLinesData) {
-    let maxY = -Infinity;
-    let minY = Infinity;
-    this.setLoading({percentage: 95, status: 'linesData', statusOptions: null});
-    const interpolatedLinesMap: ProfilePlastDataMap = new Map<number, ProfilePlastData>;
-    topBaseFieldsMap.forEach((group, plastName) => {
-      const baseField = group.find(field => field.mapType === 'BASE');
-      const topField = group.find(field => field.mapType === 'TOP');
-      let maxThickness = 0;
-      interpolatedLinesMap.set(plastName, ({borderLine: traceLinesData?.points?.map(p => {
-        const baseAbsMark = getInterpolatedFieldValue(baseField.containerData, p);
-        const topAbsMark = getInterpolatedFieldValue(topField.containerData, p);
-        minY = Math.min(minY, baseAbsMark, topAbsMark);
-        maxY = Math.max(maxY, baseAbsMark, topAbsMark);
-        maxThickness = Math.max(maxThickness, Math.abs(topAbsMark - baseAbsMark))
-        return {
-          x: p.x,
-          y: p.y,
-          distance: p.distance,
-          baseAbsMark,
-          topAbsMark
-        } as ProfileLinePoint;
-      }) as ProfileLineData, maxThickness: maxThickness
-      }))
-    })
-    minY = Math.floor(minY);
-    maxY = Math.ceil(maxY);
-
-    interpolatedLinesMap.forEach((d, k) => {
-      console.log(`key: ${k} : ${d.maxThickness}`)
-    })
-
-    return {
-      interpolatedLinesMap,
-      minY,
-      maxY
-    }
   }
 
   /** Загружает данные контейнеров полей TOP и BASE карт. */
@@ -230,39 +134,7 @@ export class ProfileLoader implements IProfileLoader {
     return element as MapField;
   }
 
-  private findNearestLithologyPiece(
-    x: number, y: number, absValue: number,
-    litPieces: ProfileLitPiece[],
-    inclinometry: ProfileInclinometry,
-    inclinometryDataMap: ProfileInclDataMap
-  ) {
-    let minDistance = Infinity;
-    let nearestLitPiece: ProfileLitPiece = null;
-    if (!litPieces) return null;
-
-    for (let i = 0; i < litPieces.length; i++) {
-      const depth = inclinometry.getDepth(litPieces[i].NWELL_ID, absValue);
-      if (!depth) continue;
-
-      const wellInclData = inclinometryDataMap.get(litPieces[i].NWELL_ID);
-      const wellCoords = {x: wellInclData.ustX, y: wellInclData.ustY};
-      const topDistance =
-        getPointsDistance3D({x: x, y: y}, wellCoords, depth, litPieces[i].KROW);
-      const baseDistance =
-        getPointsDistance3D({x: x, y: y}, wellCoords, depth, litPieces[i].PODOSH);
-      if (topDistance < minDistance) {
-        minDistance = topDistance;
-        nearestLitPiece = litPieces[i];
-      }
-      if (baseDistance < minDistance) {
-        minDistance = baseDistance;
-        nearestLitPiece = litPieces[i];
-      }
-    }
-    return nearestLitPiece;
-  }
-
-  private async loadAdditionalProfileChannels(nodesCoords: UstPoint[], additionalWells: UstPoint[]) {
+  private async loadAdditionalProfileChannels(wells: IProfileWell[]) {
     const query: ChannelQuerySettings = {order: [], maxRowCount: 5000, filters: null};
     const parameters: Partial<Parameter>[] = [
       {
@@ -278,7 +150,7 @@ export class ProfileLoader implements IProfileLoader {
       {
         "id": "activeWells",
         "type": "string",
-        "value": [...nodesCoords, ...additionalWells].map(n => n.WELL_ID).join(',')
+        "value": wells.map(n => n.id).join(',')
       },
       {
         "id": "wellCaratSource",
@@ -301,59 +173,5 @@ export class ProfileLoader implements IProfileLoader {
       await channelAPI.getChannelData('PlInfo', parameters, query);
     const plInfoChannelData = plInfoChannel.ok ? plInfoChannel.data.data : null;
     this.plInfoRecords = (plInfoChannelData ? cellsToRecords(plInfoChannelData) : []) as ProfileLitPiece[];
-  }
-
-  private getInclDataMap = (nodes: UstPoint[]) => {
-    const incl = new ProfileInclinometry(this.wellInclRecords);
-    const inclinometryDataMap: ProfileInclDataMap =
-      new Map<number, ProfileWellIncl>();
-
-    let currentUstDistance = 0;
-    const traceFirstNode = nodes[0];
-    let lastUstX = traceFirstNode.x;
-    let lastUstY = traceFirstNode.y;
-
-    nodes.forEach(n => {
-      const nodeId = n.WELL_ID;
-      const nodeIncl = incl.data.get(nodeId);
-
-      const inclPoints = !nodeIncl ? null :
-        nodeIncl.map(inclPoint => {
-          const resultX = n.x + inclPoint.SHIFTX;
-          const resultY = n.y + inclPoint.SHIFTY;
-          return {
-            id: nodeId,
-            x: resultX,
-            y: resultY,
-            distance: currentUstDistance + getPointsDistance2D(
-              {x: lastUstX, y: lastUstY},
-              {x: resultX, y: resultY}
-            ),
-            absValue: Math.abs(inclPoint.ABSMARK),
-            depth: inclPoint.DEPTH
-          } as ProfileWellInclPoint;
-        }).sort((a, b) => b.absValue - a.absValue);
-
-      const ustDistance = currentUstDistance += getPointsDistance2D(
-        {x: lastUstX, y: lastUstY},
-        {x: n.x, y: n.y}
-      )
-
-      inclinometryDataMap.set(
-        n.WELL_ID,
-        {
-          WELL_ID: n.WELL_ID,
-          ustX: n.x,
-          ustY: n.y,
-          ustDistance,
-          inclPoints
-        }
-      );
-
-      lastUstX = n.x;
-      lastUstY = n.y;
-    })
-
-    return inclinometryDataMap;
   }
 }

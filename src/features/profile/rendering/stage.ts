@@ -21,7 +21,7 @@ export class ProfileStage implements IProfileStage {
   /** Ссылка на элемент холста. */
   private canvas: HTMLCanvasElement;
 
-  private plastsLinesDataMap: ProfilePlastDataMap;
+  private plastsLinesDataMap: ProfilePlastMap;
   private inclData: ProfileInclDataMap
   private xDelta: number;
   private yDelta: number;
@@ -77,13 +77,13 @@ export class ProfileStage implements IProfileStage {
   public setData(cache: ProfileDataCache): void {
     if (!cache) return;
 
-    this.xDelta = cache.xAxisSettings.xDelta;
-    this.yDelta = cache.yAxisSettings.yDelta;
-    this.plastsLinesDataMap = cache.plastsLinesData;
-    this.inclData = cache.inclinometryData;
-
-    this.drawer.setXAxisSettings(cache.xAxisSettings);
-    this.drawer.setYAxisSettings(cache.yAxisSettings);
+    // this.xDelta = cache.xAxisSettings.xDelta;
+    // this.yDelta = cache.yAxisSettings.yDelta;
+    this.plastsLinesDataMap = cache.plastsData;
+    // this.inclData = cache.inclinometryData;
+    //
+    // this.drawer.setXAxisSettings(cache.xAxisSettings);
+    // this.drawer.setYAxisSettings(cache.yAxisSettings);
 
     this.resize();
   }

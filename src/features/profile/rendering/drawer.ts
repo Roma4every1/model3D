@@ -89,27 +89,35 @@ export class ProfileDrawer implements IProfileDrawer {
     }
   }
 
-  public render(plastDataMap: ProfilePlastDataMap, inclData: ProfileInclDataMap): void {
+  public render(plastDataMap: ProfilePlastMap, inclData: ProfileInclDataMap): void {
     // this.setViewportCurrentPosition(2153, 1443);
+    // const draw = throttle(() =>  300);
+    // draw();
     this.drawLines(plastDataMap);
-    this.drawTraceNodes(inclData);
+
+    // this.drawTraceNodes(inclData);
     this.drawLitology(plastDataMap, inclData)
     this.drawAxes();
   }
 
-  private drawLines(plastDataMap: ProfilePlastDataMap): void {
+  private drawLines(plastDataMap: ProfilePlastMap): void {
     plastDataMap.forEach((plastData, plastCode) => {
+      if (plastData?.layers?.length) {
+        plastData.layers.forEach(layer => {
+          this.drawPlastLines(layer.borderLine, true);
+        })
+      }
+
       this.drawPlastLines(plastData.borderLine);
     })
   }
 
-  private drawPlastLines(plastLinesData: ProfileLineData) {
+  private drawPlastLines(plastLinesData: ProfileLineData, isLayer = false) {
 
-
-    this.setLineSettings(1, '#000000');
+    this.setLineSettings(1, isLayer ? '#00FF00' : '#000000');
     this.drawLine(plastLinesData, 'TOP');
 
-    this.setLineSettings(1, '#0000ff');
+    this.setLineSettings(1, isLayer ? '#FF0000' : '#0000ff');
     this.drawLine(plastLinesData, 'BASE');
   }
 

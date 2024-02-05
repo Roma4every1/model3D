@@ -99,11 +99,11 @@ interface ProfileYAxisSettings {
 
 /** Кэш данных профиля. */
 interface ProfileDataCache {
-  xAxisSettings: ProfileXAxisSettings;
-  yAxisSettings: ProfileYAxisSettings;
-  inclinometryData: ProfileInclDataMap;
-  lithologyData: ProfileLithologyPointsMap;
-  plastsLinesData: ProfilePlastDataMap;
+  xAxisSettings?: ProfileXAxisSettings;
+  yAxisSettings?: ProfileYAxisSettings;
+  inclinometryData?: ProfileInclDataMap;
+  lithologyData:? ProfileLithologyPointsMap;
+  plastsLinesData?: ProfilePlastDataMap;
   plastsData: ProfilePlastMap;
 }
 
@@ -125,6 +125,8 @@ interface ProfileLinePoint {
   distance: number;
   topAbsMark: number;
   baseAbsMark: number;
+  well?: IProfileWell;
+  nearestLitPiece?: ProfileLitPiece;
 }
 
 /** Конфиг отрисовщика профиля. */
@@ -249,6 +251,7 @@ interface TraceLinesData {
 
 interface TracePoint extends Point {
   distance: number;
+  nearestWell?: IProfileWell;
 }
 
 interface UstPoint extends Point {
@@ -257,7 +260,7 @@ interface UstPoint extends Point {
 
 interface IProfileTrace {
   nodes: IProfileWell[];
-  additionalWells: IProfileWell[];
+  wells: IProfileWell[];
 
   distance: number;
   lines: TraceLineData[];
@@ -283,6 +286,7 @@ interface IProfileWell {
   x: number;
   y: number;
   inclinometry: IProfileIncl;
+  lithology?: ProfileLitPiece[];
 }
 
 type ProfilePlastMap = Map<number, IProfilePlast>;

@@ -1,14 +1,11 @@
-import {
-  getPointsDistance2D,
-  getTraceLinePoints,
-} from "./utils.ts";
+import {getPointsDistance2D,} from "./utils.ts";
 import {ProfileWell} from "./well.ts";
 
 export class ProfileTrace implements IProfileTrace {
   private step = 200;
 
   public nodes: ProfileWell[] = [];
-  public additionalWells: ProfileWell[] = [];
+  public wells: ProfileWell[] = [];
 
   public distance: number;
   public lines: TraceLineData[] = [];
@@ -26,14 +23,14 @@ export class ProfileTrace implements IProfileTrace {
     });
 
     this.getLines();
-    this.additionalWells = this.getAdditionalWells(wellsPoints).map(w =>
-      new ProfileWell(w.WELL_ID, w.x, w.y)
-    );
+    this.wells = this.getAdditionalWells(wellsPoints);
   }
 
   public getLines() {
     if (!this.nodes) return null;
     let lastLineRemainder = 0;
+
+    this.points.push(this.nodes[0].toTracePoint(0));
 
     for (let i = 1; i < this.nodes.length; i++) {
       const line = this.getLinePoints(
@@ -47,6 +44,9 @@ export class ProfileTrace implements IProfileTrace {
       this.points = [...this.points, ...line.points];
       this.distance += line.distance;
     }
+
+    this.distance += lastLineRemainder;
+    this.points.push(this.nodes[this.nodes.length - 1].toTracePoint(this.distance));
   }
 
   public getLinePoints(node1: ProfileWell, node2: ProfileWell, remainder = 0): TraceLineData {
@@ -73,21 +73,34 @@ export class ProfileTrace implements IProfileTrace {
     };
   }
 
-  public getAdditionalWells(wellsPoints: UstPoint[]) {
-    const additionalPoints: UstPoint[] = [];
+  private getAdditionalWells(wellsPoints: UstPoint[]) {
+    const wells: ProfileWell[] = [];
 
-    for (const p of wellsPoints) {
-      for (const l of this.lines) {
-        const pointToStart = getPointsDistance2D(p, l.startNode);
-        const pointToEnd = getPointsDistance2D(p, l.endNode);
-
-        if (pointToStart < l.distance || pointToEnd < l.distance) {
-          additionalPoints.push(p);
-          break;
-        }
-      }
+    for (const p of this.points) {
+      const nearestWell = this.getPointNearestWell(p, wellsPoints);
+      if (!wells.find(w => w.id === nearestWell.id))
+        wells.push(nearestWell);
     }
 
-    return additionalPoints;
+    return wells;
+  }
+
+  private getPointNearestWell(point: TracePoint, wellsPoints: UstPoint[]): ProfileWell {
+    let minDistance = Infinity;
+    let minDistanceWell: UstPoint;
+    for (const w of wellsPoints) {
+      const distance = getPointsDistance2D(w, point);
+      if (distance < minDistance) {
+        minDistance = distance;
+        minDistanceWell = w;
+      }
+    }
+    const well = new ProfileWell(minDistanceWell.WELL_ID, minDistanceWell.x, minDistanceWell.y);
+    point.nearestWell = well;
+    return well;
+  }
+
+  public addWellsInclinometry() {
+
   }
 }

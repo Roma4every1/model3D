@@ -36,7 +36,8 @@ export class ProfilePlast implements IProfilePlast {
           y: p.y,
           distance: p.distance,
           baseAbsMark,
-          topAbsMark
+          topAbsMark,
+          well: p.nearestWell || null
         } as ProfileLinePoint;
       }
     );
@@ -49,7 +50,9 @@ export class ProfilePlast implements IProfilePlast {
     for (let i = 1; i <= layersCount; i++) {
       const topBaseY = this.layerThickness * i;
       const newLine = this.borderLine.map((p, j) => {
-        const newPoint = {...p};
+        const newPoint: ProfileLinePoint = {...p};
+
+        const thicknessInPoint = Math.abs(this.borderLine[j].topAbsMark - this.borderLine[j].baseAbsMark) / layersCount;
 
         newPoint.baseAbsMark = i === 1 ?
           this.borderLine[j].baseAbsMark :
@@ -57,7 +60,11 @@ export class ProfilePlast implements IProfilePlast {
 
         newPoint.topAbsMark = i === layersCount ?
           this.borderLine[j].topAbsMark :
-          this.borderLine[j].baseAbsMark + topBaseY;
+          this.borderLine[j].baseAbsMark - thicknessInPoint * i;
+
+        newPoint.nearestLitPiece = this.getNearestLitPieceInPoint(
+          this.borderLine[j].well, newPoint.topAbsMark, newPoint.baseAbsMark
+        );
 
         return newPoint;
       })
@@ -66,5 +73,22 @@ export class ProfilePlast implements IProfilePlast {
       const layer = new ProfileLayer(newLine, topBaseY);
       this.layers.push(layer);
     }
+  }
+
+  private getNearestLitPieceInPoint(well: IProfileWell, topAbsMark: number, baseAbsMark: number) {
+    const plastLitPieces = well?.lithology?.filter(l =>
+      l.PL_ID === this.plastCode
+    );
+    if (!plastLitPieces?.length) return null;
+    const inRange = plastLitPieces.filter(l =>
+      Math.abs(l.KROW_ABS) < topAbsMark && Math.abs(l.PODOSH_ABS) > baseAbsMark
+    );
+    if (!inRange?.length) return null;
+    console.log(inRange);
+    return inRange.reduce((max, current) => {
+      const delta = Math.abs(current.KROW_ABS - current.PODOSH_ABS) -
+        Math.abs(max?.KROW_ABS - max?.PODOSH_ABS);
+      return delta > 0 ? current : max;
+    }, null);
   }
 }
