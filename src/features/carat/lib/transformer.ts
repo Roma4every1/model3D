@@ -1,3 +1,7 @@
+import { CaratColumnGroup } from '../rendering/column-group.ts';
+import { WellBoreColumn } from '../rendering/well-bore-column.ts';
+import { WellFaceColumn } from '../rendering/face-column.ts';
+import { PumpColumn } from '../rendering/pump-column.ts';
 import { CaratCurveModel, WellBoreElementModel } from './types.ts';
 
 
@@ -24,36 +28,73 @@ export class ConstructionTransformer implements IConstructionTransformer {
   /** Высота всей конструкции: расстояние от начала первого до конца последнего элемента. */
   public constructionHeight: number;
 
-  /** @param elements **непустой** массив элементов конструкции */
-  public setConstructionElements(elements: ICaratInterval[]): void {
-    this.createParts(elements);
+  public setConstructionElements(groups: CaratColumnGroup[]): void {
+    this.createParts(groups);
     const count = this.parts.length;
     this.constructionHeight = this.parts[count - 1].bottom - this.parts[0].top;
-    this.step = Math.round(this.constructionHeight / count);
+    this.step = this.constructionHeight / count;
 
     let y = 0;
     for (let i = 0; i < count; i++) {
       const part = this.parts[i];
-      part.tTop = y;
-      part.tBottom = y + this.step;
+      part.tTop = Math.round(y);
+      part.tBottom = Math.round(y + this.step);
       y += this.step;
     }
   }
 
-  /** Преобразует интервальные элементы для режима показа конструкции. */
-  public transformIntervals(elements: ICaratInterval[]): void {
-    for (const element of elements) {
-      element.top = this.yTransform(element.top);
-      element.bottom = this.yTransform(element.bottom);
+  private createParts(groups: CaratColumnGroup[]): void {
+    let maxFaceBottom = -Infinity;
+    const set = new Set<number>();
+    set.add(0);
+
+    for (const group of groups) {
+      for (const column of group.getColumns()) {
+        if (column instanceof WellBoreColumn || column instanceof PumpColumn) {
+          for (const { top, bottom } of column.getElements()) {
+            set.add(Math.round(top));
+            set.add(Math.round(bottom));
+          }
+        } else if (column instanceof WellFaceColumn) {
+          const bottom = column.getRange()[1];
+          if (bottom > maxFaceBottom) maxFaceBottom = bottom;
+        }
+      }
     }
+    if (set.size === 1) set.add(1); // нет данных: координата-заглушка
+    maxFaceBottom = Math.round(maxFaceBottom);
+
+    const parts: ConstructionPart[] = [];
+    const coordinates = [...set].sort((a, b) => a - b);
+    const lastIndex = coordinates.length - 1;
+
+    if (maxFaceBottom > coordinates[lastIndex]) {
+      // иногда нижняя граница забоя может оказаться ниже конца ствола
+      // в этом случае нужно продлить область, чтобы забой в ней оказался
+      coordinates[lastIndex] = maxFaceBottom;
+    }
+    for (let i = 0; i < lastIndex; i++) {
+      parts.push({top: coordinates[i], bottom: coordinates[i + 1], tTop: 0, tBottom: 0});
+    }
+    this.coords = coordinates;
+    this.parts = parts;
   }
 
-  /** Преобразует элементы ствола скважины для режима показа конструкции. */
-  public transformWellBoreElements(elements: WellBoreElementModel[]): void {
-    for (const element of elements) {
-      element.top = this.yTransform(element.top);
-      element.bottom = this.yTransform(element.bottom);
-      if (element.cement !== null) element.cement = this.yTransform(element.cement);
+  public transformGroups(groups: CaratColumnGroup[], backgroundGroup: CaratColumnGroup): void {
+    for (const group of groups) {
+      for (const column of group.getColumns()) {
+        if (column instanceof WellBoreColumn) {
+          this.transformWellBoreElements(column.getElements());
+        } else {
+          this.transformIntervals(column.getElements());
+        }
+      }
+      if (group.hasCurveColumn()) {
+        this.transformCurves(group.curveManager.getVisibleCurves());
+      }
+    }
+    for (const column of backgroundGroup.getColumns()) {
+      this.transformIntervals(column.getElements());
     }
   }
 
@@ -78,6 +119,23 @@ export class ConstructionTransformer implements IConstructionTransformer {
     }
   }
 
+  /** Преобразует интервальные элементы для режима показа конструкции. */
+  private transformIntervals(elements: ICaratInterval[]): void {
+    for (const element of elements) {
+      element.top = this.yTransform(element.top);
+      element.bottom = this.yTransform(element.bottom);
+    }
+  }
+
+  /** Преобразует элементы ствола скважины для режима показа конструкции. */
+  private transformWellBoreElements(elements: WellBoreElementModel[]): void {
+    for (const element of elements) {
+      element.top = this.yTransform(element.top);
+      element.bottom = this.yTransform(element.bottom);
+      if (element.cement !== null) element.cement = this.yTransform(element.cement);
+    }
+  }
+
   private yTransform(y: number): number {
     let part: ConstructionPart;
     // поиск отрезка, которому принадлежит координата
@@ -88,24 +146,5 @@ export class ConstructionTransformer implements IConstructionTransformer {
     // относительное расстояние в рамках отрезка: 0 - начало, 0.5 - середина, 1 - конец
     const relativeDistance = (y - part.top) / (part.bottom - part.top);
     return part.tTop + this.step * relativeDistance;
-  }
-
-  private createParts(elements: ICaratInterval[]): void {
-    const set = new Set<number>();
-    set.add(0);
-
-    for (const { top, bottom } of elements) {
-      set.add(Math.round(top));
-      set.add(Math.round(bottom));
-    }
-
-    const parts: ConstructionPart[] = [];
-    const coordinates = [...set].sort((a, b) => a - b);
-
-    for (let i = 0; i < coordinates.length - 1; i++) {
-      parts.push({top: coordinates[i], bottom: coordinates[i + 1], tTop: 0, tBottom: 0});
-    }
-    this.coords = coordinates;
-    this.parts = parts;
   }
 }

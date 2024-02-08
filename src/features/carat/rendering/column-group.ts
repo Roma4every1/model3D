@@ -191,15 +191,6 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     return strata;
   }
 
-  public getConstructionElements(): ICaratInterval[] {
-    const elements: ICaratInterval[] = [];
-    for (const column of this.columns) {
-      const hasElements = (column instanceof WellBoreColumn) || (column instanceof PumpColumn);
-      if (hasElements) elements.push(...column.getElements());
-    }
-    return elements;
-  }
-
   public getWidth(): number {
     if (this.curveColumn) {
       return this.curveColumn.getGroupWidth();

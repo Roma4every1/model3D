@@ -98,13 +98,16 @@ export class CaratDrawer {
     this.minusWidth = context.measureText('-').width;
   }
 
-  private getDrawMarksFn(settings: CaratColumnYAxis, textStart: number) {
+  private getDrawMarksFn(settings: CaratColumnYAxis, markSize: number) {
+    const textStart = 1.1 * markSize;
     const { absMarks, depthMarks } = settings;
     let fn: (depth: number, canvasY: number) => void = CaratDrawer.emptyFn;
 
     if (depthMarks && absMarks && this.inclinometry) {
       const positiveStart = textStart + this.minusWidth;
       fn = (depth, canvasY) => {
+        this.ctx.moveTo(0, canvasY);
+        this.ctx.lineTo(markSize, canvasY);
         const absMark = this.inclinometry.getAbsMark(depth);
         this.ctx.textBaseline = 'bottom';
         this.ctx.fillText(depth.toString(), depth < 0 ? textStart : positiveStart, canvasY);
@@ -113,11 +116,15 @@ export class CaratDrawer {
       };
     } else if (absMarks && this.inclinometry) {
       fn = (depth, canvasY) => {
+        this.ctx.moveTo(0, canvasY);
+        this.ctx.lineTo(markSize, canvasY);
         const absMark = this.inclinometry.getAbsMark(depth);
         this.ctx.fillText(absMark.toString(), textStart, canvasY);
       };
     } else if (depthMarks) {
       fn = (depth, canvasY) => {
+        this.ctx.moveTo(0, canvasY);
+        this.ctx.lineTo(markSize, canvasY);
         this.ctx.fillText(depth.toString(), textStart, canvasY);
       };
     }
@@ -365,7 +372,7 @@ export class CaratDrawer {
     const maxY = minY + this.groupElementRect.height / this.scale;
 
     const { font, color, markSize } = this.columnYAxisSettings;
-    const drawMarksFn = this.getDrawMarksFn(settings, 1.1 * markSize);
+    const drawMarksFn = this.getDrawMarksFn(settings, markSize);
 
     this.setLineSettings(2, color);
     this.setTextSettings(font, color, 'left', 'middle');
@@ -374,19 +381,13 @@ export class CaratDrawer {
     if (this.transformer.parts) {
       let i = 0;
       for (let y = minY; y < maxY; y += step) {
-        const canvasY = y * scaleY;
-        this.ctx.moveTo(0, canvasY);
-        this.ctx.lineTo(markSize, canvasY);
-        drawMarksFn(this.transformer.coords[i], canvasY);
+        drawMarksFn(this.transformer.coords[i], y * scaleY);
         i++;
         if (i >= this.transformer.coords.length) break;
       }
     } else {
       for (let y = minY; y < maxY; y += step) {
-        const canvasY = y * scaleY;
-        this.ctx.moveTo(0, canvasY);
-        this.ctx.lineTo(markSize, canvasY);
-        drawMarksFn(y, canvasY);
+        drawMarksFn(y, y * scaleY);
       }
     }
     this.ctx.stroke();

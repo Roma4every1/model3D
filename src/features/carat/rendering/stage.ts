@@ -155,9 +155,9 @@ export class CaratStage implements ICaratStage {
     if (track.constructionMode) {
       const dataHeight /* px */ = track.getBackgroundGroup().getDataRect().height - 10;
       const constructionHeight /* m */ = track.transformer.constructionHeight;
-      const scale = dataHeight / constructionHeight / window.devicePixelRatio;
-      track.setScale(scale);
-      this.listeners.scaleChange(Math.round(CaratDrawer.pixelPerMeter / scale));
+      const scale = (constructionHeight / dataHeight) * window.devicePixelRatio;
+      track.setScale(1 / scale);
+      this.listeners.scaleChange(Math.round(CaratDrawer.pixelPerMeter * scale));
     }
   }
 
@@ -378,18 +378,20 @@ export class CaratStage implements ICaratStage {
     const neededHeight = track.rect.top + trackHeaderHeight + track.maxGroupHeaderHeight + 20;
     const resultHeight = Math.max(this.canvas.clientHeight, neededHeight);
 
-    let oldCanvasHeight = this.canvas.height;
     this.canvas.width = neededWidth * CaratDrawer.ratio;
     this.canvas.height = resultHeight * CaratDrawer.ratio;
     this.canvas.style.width = neededWidth + 'px';
     this.canvas.style.minHeight = neededHeight + 'px';
 
+    const dataRect = track.getBackgroundGroup().getDataRect();
+    const oldRectHeight = dataRect.height;
+
     const trackHeight = resultHeight - 2 * padding;
     for (const track of this.trackList) track.setHeight(trackHeight);
     this.correlations.updateRects(this.trackList);
 
-    if (track.constructionMode && oldCanvasHeight !== this.canvas.height) {
-      const newScale = track.viewport.scale * (this.canvas.height / oldCanvasHeight);
+    if (track.constructionMode && dataRect.height !== oldRectHeight) {
+      const newScale = track.viewport.scale * (dataRect.height / oldRectHeight);
       track.setScale(newScale);
       this.listeners.scaleChange(Math.round(CaratDrawer.pixelPerMeter / newScale));
     }

@@ -4,7 +4,6 @@ import { CaratColumnGroup } from './column-group';
 import { CaratInclinometry } from '../lib/inclinometry';
 import { ConstructionTransformer } from '../lib/transformer';
 import { ConstructionLabels } from './construction-labels';
-import { WellBoreColumn } from './well-bore-column.ts';
 import { isRectInnerPoint } from 'shared/lib';
 import { defaultSettings } from '../lib/constants';
 
@@ -21,7 +20,7 @@ export class CaratTrack implements ICaratTrack {
   public readonly inclinometry: CaratInclinometry;
 
   /** Находится ли трек в режиме показа конструкции скважины. */
-  public constructionMode: boolean;
+  public readonly constructionMode: boolean;
   /** Класс, который трансформирует элементы для показа конструкции скважины. */
   public readonly transformer: ConstructionTransformer;
   /** Класс, отвечающий за отрисовку подписей к элементам конструкции. */
@@ -84,6 +83,7 @@ export class CaratTrack implements ICaratTrack {
         this.backgroundGroup = new CaratColumnGroup(groupRect, drawer, column);
       }
     }
+    this.constructionMode = this.groups.some(g => g.hasConstructionElements);
   }
 
   /* --- Getters --- */
@@ -181,36 +181,17 @@ export class CaratTrack implements ICaratTrack {
     [viewport.min, viewport.max] = this.backgroundGroup.getRange();
     viewport.y = viewport.min;
 
-    const constructionElements: ICaratInterval[] = [];
     for (const group of this.groups) {
       group.setData(data, cache);
-      constructionElements.push(...group.getConstructionElements());
       const [groupMin, groupMax] = group.getRange();
       if (groupMin < viewport.min) viewport.min = groupMin;
       if (groupMax > viewport.max) viewport.max = groupMax;
     }
 
-    this.constructionMode = constructionElements.length > 0;
     if (this.constructionMode) {
-      this.transformer.setConstructionElements(constructionElements);
-      for (const group of this.groups) {
-        for (const column of group.getColumns()) {
-          if (column instanceof WellBoreColumn) {
-            this.transformer.transformWellBoreElements(column.getElements());
-          } else {
-            this.transformer.transformIntervals(column.getElements());
-          }
-        }
-        if (group.hasCurveColumn()) {
-          this.transformer.transformCurves(group.curveManager.getVisibleCurves());
-        }
-      }
-      for (const column of this.backgroundGroup.getColumns()) {
-        this.transformer.transformIntervals(column.getElements());
-      }
-      if (this.constructionLabels) {
-        this.constructionLabels.updateData();
-      }
+      this.transformer.setConstructionElements(this.groups);
+      this.transformer.transformGroups(this.groups, this.backgroundGroup);
+      if (this.constructionLabels) this.constructionLabels.updateData();
       this.viewport.scroll.step = this.transformer.step / 4;
     } else {
       this.transformer.parts = null;
