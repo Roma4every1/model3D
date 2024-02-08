@@ -36,9 +36,12 @@ export const CaratNavigationPanel = (props: CaratScalePanelProps) => {
 const ScaleSection = ({stage, track}: CaratScalePanelProps) => {
   const { t } = useTranslation();
   const ref = useRef<NumericTextBoxHandle>();
-
-  const { min: minScale, max: maxScale } = constraints.scale;
   const [scale, setScale] = useState(CaratDrawer.pixelPerMeter / track.viewport.scale);
+
+  let step = 10;
+  let buttonStep = 50;
+  let { min: minScale, max: maxScale } = constraints.scale;
+  if (track.constructionMode) { maxScale = Infinity; step *= 5; buttonStep *= 5; }
 
   // подписка на изменение масштаба сцены
   useEffect(() => {
@@ -51,19 +54,20 @@ const ScaleSection = ({stage, track}: CaratScalePanelProps) => {
   }, [scale]);
 
   const changeScale = (newScale: number) => {
-    stage.edit({type: 'scale', payload: validateCaratScale(newScale)});
+    newScale = validateCaratScale(newScale, !track.constructionMode);
+    stage.edit({type: 'scale', payload: newScale});
     stage.render();
   };
 
   const onScaleChange = (e: NumericTextBoxChangeEvent) => {
     let newScale = e.value;
     if (newScale === null) return;
-    if (scale === 1 && newScale === 11) newScale = 10;
+    if (scale === 1 && newScale === step + 1) newScale = step;
     changeScale(newScale);
   };
 
-  const scaleUp = () => changeScale(scale === 1 ? 50 : scale + 50);
-  const scaleDown = () => changeScale(scale - 50);
+  const scaleUp = () => changeScale(scale === 1 ? buttonStep : scale + buttonStep);
+  const scaleDown = () => changeScale(scale - buttonStep);
 
   return (
     <MenuSectionItem className={'menu-list carat-scale'}>
@@ -81,7 +85,7 @@ const ScaleSection = ({stage, track}: CaratScalePanelProps) => {
         <NumericTextBox
           ref={ref} title={t('carat.navigation.scale')}
           width={100} style={{height: '20px'}} format={'#'}
-          value={scale} step={10} min={minScale} max={maxScale} onChange={onScaleChange}
+          value={scale} step={step} min={minScale} max={maxScale} onChange={onScaleChange}
         />
       </div>
     </MenuSectionItem>

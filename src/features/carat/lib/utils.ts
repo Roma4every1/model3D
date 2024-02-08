@@ -20,10 +20,10 @@ export function fixHEX(hex: string) {
 }
 
 /** Ограничивает масштаб каротажа заданным минимальным и максимальным значением. */
-export function validateCaratScale(newScale: number): number {
+export function validateCaratScale(newScale: number, checkMax: boolean): number {
   const { min, max } = constraints.scale;
   if (newScale < min) newScale = min;
-  if (newScale > max) newScale = max;
+  if (checkMax && newScale > max) newScale = max;
   return Math.round(newScale);
 }
 

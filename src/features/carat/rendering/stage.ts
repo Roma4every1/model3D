@@ -150,6 +150,15 @@ export class CaratStage implements ICaratStage {
     this.correlations.setData(this.trackList);
     this.updateTrackRects();
     this.resize();
+
+    const track = this.trackList[this.activeIndex];
+    if (track.constructionMode) {
+      const dataHeight /* px */ = track.getBackgroundGroup().getDataRect().height - 10;
+      const constructionHeight /* m */ = track.transformer.constructionHeight;
+      const scale = dataHeight / constructionHeight / window.devicePixelRatio;
+      track.setScale(scale);
+      this.listeners.scaleChange(Math.round(CaratDrawer.pixelPerMeter / scale));
+    }
   }
 
   /** Обновляет данные справочников. */
@@ -294,9 +303,12 @@ export class CaratStage implements ICaratStage {
   /** Обрабатывает событие прокрутки колеса мыши. */
   public handleMouseWheel(point: Point, direction: 1 | -1, ctrlKey: boolean): void {
     if (ctrlKey) {
-      const scale = CaratDrawer.pixelPerMeter / this.getActiveTrack().viewport.scale;
-      let newScale = validateCaratScale(scale + 10 * direction);
-      if (scale === 1 && newScale === 11) newScale = 10;
+      const track = this.trackList[this.activeIndex];
+      const scale = CaratDrawer.pixelPerMeter / track.viewport.scale;
+
+      let step = track.constructionMode ? 50 : 10;
+      let newScale = validateCaratScale(scale + step * direction, !track.constructionMode);
+      if (scale === 1 && newScale === step + 1) newScale = step;
       if (newScale === scale) return;
 
       this.edit({type: 'scale', payload: newScale});
@@ -366,6 +378,7 @@ export class CaratStage implements ICaratStage {
     const neededHeight = track.rect.top + trackHeaderHeight + track.maxGroupHeaderHeight + 20;
     const resultHeight = Math.max(this.canvas.clientHeight, neededHeight);
 
+    let oldCanvasHeight = this.canvas.height;
     this.canvas.width = neededWidth * CaratDrawer.ratio;
     this.canvas.height = resultHeight * CaratDrawer.ratio;
     this.canvas.style.width = neededWidth + 'px';
@@ -375,10 +388,10 @@ export class CaratStage implements ICaratStage {
     for (const track of this.trackList) track.setHeight(trackHeight);
     this.correlations.updateRects(this.trackList);
 
-    if (track.constructionMode) {
-      const dataHeight /* px */ = track.getBackgroundGroup().getDataRect().height;
-      const constructionHeight /* m */ = track.transformer.constructionHeight;
-      track.setScale(dataHeight / constructionHeight / window.devicePixelRatio);
+    if (track.constructionMode && oldCanvasHeight !== this.canvas.height) {
+      const newScale = track.viewport.scale * (this.canvas.height / oldCanvasHeight);
+      track.setScale(newScale);
+      this.listeners.scaleChange(Math.round(CaratDrawer.pixelPerMeter / newScale));
     }
   }
 
