@@ -33,6 +33,8 @@ export class ConstructionLabels {
   private labels: ConstructionLabel[];
   /** Максимально допустимая ширина текста. */
   private maxWidth: number;
+  /** Минимальная ширина колонки, при которой подписи будут рисоваться. */
+  private readonly minGroupWidth: number;
   /** Измеритель ширины текста. */
   private readonly measurer: (text: string) => number;
 
@@ -40,9 +42,12 @@ export class ConstructionLabels {
     this.drawer = drawer;
     this.labelGroup = labelGroup;
     this.labels = [];
-    this.measurer = getMeasurerForFont(drawer.constructionSettings.labelFont);
+
     const { labelMargin, labelPadding } = this.drawer.constructionSettings;
-    this.maxWidth = this.labelGroup.getWidth() - 2 * (labelMargin + labelPadding);
+    const freeSpaceWidth = 2 * (labelMargin + labelPadding);
+    this.maxWidth = this.labelGroup.getWidth() - freeSpaceWidth;
+    this.measurer = getMeasurerForFont(drawer.constructionSettings.labelFont);
+    this.minGroupWidth = this.measurer('___') + freeSpaceWidth;
   }
 
   public updateData(): void {
@@ -75,6 +80,7 @@ export class ConstructionLabels {
   }
 
   public updateMaxWidth(): void {
+    if (this.labelGroup.settings.width < this.minGroupWidth) return;
     const { labelMargin, labelPadding } = this.drawer.constructionSettings;
     this.maxWidth = this.labelGroup.getWidth() - 2 * (labelMargin + labelPadding);
     for (const label of this.labels) label.lines = this.splitByWidth(label.text);
@@ -103,7 +109,7 @@ export class ConstructionLabels {
   }
 
   public render(): void {
-    if (!this.labels.length) return;
+    if (!this.labels.length || this.labelGroup.settings.width < this.minGroupWidth) return;
     const dataRect = this.dataGroup.getDataRect();
     const labelRect = this.labelGroup.getDataRect();
     this.drawer.drawConstructionLabels(dataRect, labelRect, this.labels);

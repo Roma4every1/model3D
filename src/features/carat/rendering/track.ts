@@ -211,6 +211,7 @@ export class CaratTrack implements ICaratTrack {
       if (this.constructionLabels) {
         this.constructionLabels.updateData();
       }
+      this.viewport.scroll.step = this.transformer.step / 4;
     } else {
       this.transformer.parts = null;
     }
@@ -315,8 +316,10 @@ export class CaratTrack implements ICaratTrack {
     const group = this.groups[idx];
     if (!group) return;
     group.yAxis.step = step;
-    const groupWithYAxis = this.groups.find(group => group.yAxis?.show);
-    this.viewport.scroll.step = groupWithYAxis?.yAxis.step ?? defaultSettings.yAxisStep;
+    if (!this.constructionMode) {
+      const groupWithYAxis = this.groups.find(group => group.yAxis?.show);
+      this.viewport.scroll.step = groupWithYAxis?.yAxis.step ?? defaultSettings.yAxisStep;
+    }
   }
 
   /* --- App Logic Actions --- */

@@ -596,6 +596,7 @@ export class CaratDrawer {
     for (const { y, shift, lines } of labels) {
       if (y < this.yMin || y > this.yMax) continue;
       const boxHeight = lines.length * labelTextHeight + 2 * boxPadding;
+      if (boxY + boxHeight > labelRect.height) break;
 
       this.ctx.beginPath();
       this.ctx.moveTo(dataGroupCenter + shift, (y - this.yMin) * scaleY);
