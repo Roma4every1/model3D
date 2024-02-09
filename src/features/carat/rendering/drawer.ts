@@ -361,15 +361,9 @@ export class CaratDrawer {
     this.ctx.rect(0, scaleY * this.yMin, this.groupElementRect.width, this.groupElementRect.height);
     this.ctx.clip();
 
-    let minY: number, step: number;
-    if (this.transformer.parts) {
-      step = this.transformer.step;
-      minY = 0;
-    } else {
-      step = settings.step;
-      minY = Math.ceil(this.yMin / step - 1) * step;
-    }
-    const maxY = minY + this.groupElementRect.height / this.scale;
+    const step = this.transformer.parts ? this.transformer.step : settings.step;
+    const minY = Math.ceil(this.yMin / step - 1) * step;
+    const maxY = minY + (this.yMax - this.yMin) + step;
 
     const { font, color, markSize } = this.columnYAxisSettings;
     const drawMarksFn = this.getDrawMarksFn(settings, markSize);
@@ -379,11 +373,8 @@ export class CaratDrawer {
     this.ctx.beginPath();
 
     if (this.transformer.parts) {
-      let i = 0;
-      for (let y = minY; y < maxY; y += step) {
-        drawMarksFn(this.transformer.coords[i], y * scaleY);
-        i++;
-        if (i >= this.transformer.coords.length) break;
+      for (const { y, ty } of this.transformer.anchorPoints) {
+        drawMarksFn(y, ty * scaleY);
       }
     } else {
       for (let y = minY; y < maxY; y += step) {

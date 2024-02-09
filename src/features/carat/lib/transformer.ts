@@ -22,7 +22,7 @@ export class ConstructionTransformer implements IConstructionTransformer {
   /** Части конструкции скважины по котором производится выравнивание. */
   public parts: ConstructionPart[];
   /** Опорные точки частей конструкции. */
-  public coords: number[];
+  public anchorPoints: CaratAnchorPoint[];
   /** Шаг выравнивания: равен высоте одной части. */
   public step: number;
   /** Высота всей конструкции: расстояние от начала первого до конца последнего элемента. */
@@ -35,11 +35,13 @@ export class ConstructionTransformer implements IConstructionTransformer {
     this.step = this.constructionHeight / count;
 
     let y = 0;
-    for (let i = 0; i < count; i++) {
-      const part = this.parts[i];
+    this.anchorPoints = [{y: 0, ty: 0}];
+
+    for (const part of this.parts) {
       part.tTop = Math.round(y);
-      part.tBottom = Math.round(y + this.step);
       y += this.step;
+      part.tBottom = Math.round(y);
+      this.anchorPoints.push({y: part.bottom, ty: part.tBottom})
     }
   }
 
@@ -76,7 +78,6 @@ export class ConstructionTransformer implements IConstructionTransformer {
     for (let i = 0; i < lastIndex; i++) {
       parts.push({top: coordinates[i], bottom: coordinates[i + 1], tTop: 0, tBottom: 0});
     }
-    this.coords = coordinates;
     this.parts = parts;
   }
 

@@ -180,10 +180,16 @@ interface ICaratInclinometry {
 
 interface IConstructionTransformer {
   parts: any[];
-  coords: number[];
+  anchorPoints: CaratAnchorPoint[];
   step: number;
   constructionHeight: number;
   transformCurves(curves: any[]): void;
+}
+interface CaratAnchorPoint {
+  /** Исходная координата по Y. */
+  y: number;
+  /** Трансформированная координата по Y. */
+  ty: number;
 }
 
 interface ICaratColumnGroup {
