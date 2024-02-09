@@ -164,7 +164,7 @@ export class CaratDrawer {
   public setCurrentGroup(rect: Rectangle, settings: CaratColumnSettings): void {
     this.groupSettings = settings;
     this.groupElementRect = rect;
-    this.yMax = this.yMin + rect.height / this.scale;
+    this.yMax = this.yMin + rect.height / (this.scale * window.devicePixelRatio);
     this.groupTranslateX = this.trackRect.left + this.groupElementRect.left;
     this.groupTranslateY = this.trackRect.top + this.groupElementRect.top;
   }

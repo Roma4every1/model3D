@@ -47,7 +47,7 @@ export class ConstructionLabels {
     const freeSpaceWidth = 2 * (labelMargin + labelPadding);
     this.maxWidth = this.labelGroup.getWidth() - freeSpaceWidth;
     this.measurer = getMeasurerForFont(drawer.constructionSettings.labelFont);
-    this.minGroupWidth = this.measurer('___') + freeSpaceWidth;
+    this.minGroupWidth = this.measurer('_') + freeSpaceWidth;
   }
 
   public updateData(): void {
