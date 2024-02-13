@@ -1,6 +1,6 @@
 {
   "name": "well-manager",
-  "version": "1.3.18.id33.2",
+  "version": "1.3.19",
   "private": true,
   "type": "module",
   "scripts": {
@@ -61,15 +61,15 @@
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.7",
     "@types/react-router-dom": "5.3.3",
-    "@typescript-eslint/eslint-plugin": "6.5.0",
-    "@typescript-eslint/parser": "6.5.0",
-    "@vitejs/plugin-react": "^4.2.1",
+    "@typescript-eslint/eslint-plugin": "6.21.0",
+    "@typescript-eslint/parser": "6.21.0",
+    "@vitejs/plugin-react": "4.2.1",
     "eslint": "8.56.0",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.5",
     "sass": "1.69.7",
     "typescript": "5.3.3",
-    "vite": "5.0.10"
+    "vite": "5.1.1"
   },
   "browserslist": {
     "production": [
