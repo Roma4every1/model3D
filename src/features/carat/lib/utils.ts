@@ -20,10 +20,10 @@ export function fixHEX(hex: string) {
 }
 
 /** Ограничивает масштаб каротажа заданным минимальным и максимальным значением. */
-export function validateCaratScale(newScale: number): number {
+export function validateCaratScale(newScale: number, checkMax: boolean): number {
   const { min, max } = constraints.scale;
   if (newScale < min) newScale = min;
-  if (newScale > max) newScale = max;
+  if (checkMax && newScale > max) newScale = max;
   return Math.round(newScale);
 }
 
@@ -56,7 +56,7 @@ export function distanceFromCaratCurve(
 }
 
 /** Бинарным поиском находит индекс точки, ближайшей по Y. */
-function findNearestYPoint(arr: Point[], value: number) {
+function findNearestYPoint(arr: Point[], value: number): number {
   let start = 0;
   let end = arr.length - 1;
 

@@ -17,28 +17,26 @@ export class MapsAPI {
   }
 
   // /** Загрузка легенды карты. */
-  // public async getMapLegend() {
-  //   const query = {sessionId: this.baseAPI.sessionID};
-  //   return await this.baseAPI.request<any>({path: 'mapLegends', query});
+  // public getMapLegend() {
+  //   return this.baseAPI.request<any>({path: 'mapLegends'});
   // }
 
   /** Запрос на сохранение карты. */
-  public async saveMap(formID: FormID, mapID: MapID, mapData: any, owner: MapOwner) {
-    const sessionId = this.baseAPI.sessionID;
-    const data = {sessionId, formId: formID, mapId: mapID, mapData, owner};
+  public saveMap(formID: FormID, mapID: MapID, mapData: any, owner: MapOwner) {
+    const data = {formId: formID, mapId: mapID, mapData, owner};
     const body = converter.encode(JSON.stringify(data));
-    return await this.baseAPI.request<any>({method: 'POST', path: 'saveMap', body});
+    return this.baseAPI.request<any>({method: 'POST', path: 'saveMap', body});
   }
 
   /** Загрузка общих данных карты. */
-  public async getMap(mapID: MapID, formID: FormID) {
-    const query = {sessionId: this.baseAPI.sessionID, mapId: mapID, formId: formID};
-    return await this.baseAPI.request<MapDataRaw>({path: 'getMap', query});
+  public getMap(mapID: MapID, formID: FormID) {
+    const query = {mapId: mapID, formId: formID};
+    return this.baseAPI.request<MapDataRaw>({path: 'getMap', query});
   }
 
   /** Загрузка контейнера карты. */
   public async getMapContainer(containerName: string, owner: MapOwner, index?: string) {
-    const query = {sessionId: this.baseAPI.sessionID, owner, containerName, index};
+    const query = {owner, containerName, index};
     const req: WRequest = {path: 'getContainer', query, mapper: 'buffer'};
     const response = await this.baseAPI.request<ArrayBuffer>(req);
     if (response.ok === false) return response.data;

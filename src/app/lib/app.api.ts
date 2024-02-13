@@ -6,11 +6,9 @@ export class AppAPI {
   constructor(private readonly baseAPI: BaseAPI) {}
 
   /** Запрос списка доступных систем. */
-  public async getSystemList(): Promise<WellManagerSystem[] | null> {
-    const { ok, data } = await this.baseAPI.request<any[]>({path: 'systemList'});
-    return ok && Array.isArray(data)
-      ? data.map((rawSystem) => ({id: rawSystem['Name'], ...rawSystem['Attributes']}))
-      : null;
+  public async getSystemList(): Promise<SystemList | null> {
+    const { ok, data } = await this.baseAPI.request<SystemList>({path: 'systemList'});
+    return ok && Array.isArray(data) ? data : null;
   }
 
   /** Новая сессия. */
@@ -33,8 +31,7 @@ export class AppAPI {
 
   /** Продлить срок жизни сессии. */
   public extendSession() {
-    const query = {sessionId: this.baseAPI.sessionID};
-    return this.baseAPI.request<boolean>({path: 'iAmAlive', query});
+    return this.baseAPI.request<boolean>({path: 'iAmAlive'});
   }
 }
 

@@ -87,6 +87,7 @@ interface ICaratStage {
   trackList: ICaratTrack[];
   correlations: ICaratCorrelations;
   listeners: CaratStageListeners;
+  actualLookup: boolean;
 
   getZones(): CaratZone[];
   getCaratSettings(): CaratSettings;
@@ -102,7 +103,7 @@ interface ICaratStage {
   gotoStratum(id: StratumID, toTop: boolean): void;
 
   setData(data: ChannelRecordDict[], cache: CurveDataCache): void;
-  setLookupData(lookupData: ChannelRecordDict): void;
+  setLookupData(lookupData: ChannelRecordDict): Promise<void>;
 
   handleKeyDown(key: string): boolean;
   handleMouseMove(point: Point, by: number): void;
@@ -147,9 +148,11 @@ interface CaratStageListeners {
 /** Трек каротажной диаграммы. */
 interface ICaratTrack {
   wellName: WellName;
+  constructionMode: boolean;
   readonly rect: BoundingRect;
   readonly viewport: CaratViewport;
   readonly inclinometry: ICaratInclinometry;
+  readonly transformer: IConstructionTransformer;
 
   getGroups(): ICaratColumnGroup[];
   getActiveGroup(): ICaratColumnGroup | null;
@@ -175,6 +178,20 @@ interface ICaratInclinometry {
   getDepth(absMark: number): number;
 }
 
+interface IConstructionTransformer {
+  parts: any[];
+  anchorPoints: CaratAnchorPoint[];
+  step: number;
+  constructionHeight: number;
+  transformCurves(curves: any[]): void;
+}
+interface CaratAnchorPoint {
+  /** Исходная координата по Y. */
+  y: number;
+  /** Трансформированная координата по Y. */
+  ty: number;
+}
+
 interface ICaratColumnGroup {
   readonly id: string;
   readonly settings: CaratColumnSettings;
@@ -192,9 +209,16 @@ interface ICaratColumnGroup {
 }
 
 interface ICaratColumn {
+  rect: Rectangle;
   channel?: CaratAttachedChannel;
+
+  copy(): ICaratColumn;
+  getLookupNames(): ChannelName[];
   getElements?(): any[];
   getRange(): [number, number];
+  setChannelData(records: ChannelRecord[]): void;
+  setLookupData(lookupData: ChannelRecordDict): void;
+  render(): void;
 }
 
 /** Порт просмотра. */
@@ -230,8 +254,25 @@ type CaratCurveID = number;
 /** Тип каротажной кривой. */
 type CaratCurveType = string;
 
-/** Типы корректных подключённых каналов к каротажной форме. */
-type CaratChannelType = 'lithology' | 'perforations' | 'curve-set' | 'curve-data' | 'inclinometry';
+/** Обязательные поля любого интервального элемента. */
+interface ICaratInterval {
+  top: number;
+  bottom: number;
+}
+
+/** Типы распознаваемых каналов, которые могут быть подключены к каротажной форме.
+ * + `lithology` — литологические пласты
+ * + `perforations` — перфорации
+ * + `curve-set` — каротажные кривые
+ * + `curve-data` — точки кривых
+ * + `inclinometry` — инклинометрия скважины
+ * + `bore` (конструкция) — элементы ствола скважины
+ * + `pump` (конструкция) — насосы
+ * + `face` (конструкция) — забои скважины
+ * + `vertical` (конструкция) — вертикальная линия
+ * */
+type CaratChannelType = 'lithology' | 'perforations' | 'curve-set' | 'curve-data' |
+  'inclinometry' | 'bore' | 'pump' | 'face' | 'vertical';
 
 type CaratCurveSetInfo = CaratChannelInfo<'id' | 'type' | 'date' | 'top' | 'bottom' | 'defaultLoading' | 'description'>;
 type CaratLithologyInfo = CaratChannelInfo<'top' | 'bottom' | 'stratumID'>;

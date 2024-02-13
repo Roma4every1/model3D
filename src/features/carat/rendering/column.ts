@@ -77,7 +77,7 @@ export class CaratColumn implements ICaratColumn {
     return [min, max];
   }
 
-  public setChannelData(records: ChannelRecord[]) {
+  public setChannelData(records: ChannelRecord[]): void {
     const info = this.channel.info as CaratLithologyInfo;
     const barProperty = this.channel.properties.find(p => this.properties[p.name]?.showBar);
 
@@ -126,7 +126,7 @@ export class CaratColumn implements ICaratColumn {
     }
   }
 
-  public setLookupData(lookupData: ChannelRecordDict) {
+  public setLookupData(lookupData: ChannelRecordDict): void {
     for (const { color: colorLookup, text: textLookup } of this.channel.styles) {
       const colorRecords = lookupData[colorLookup.name];
       colorLookup.dict = {};
@@ -161,7 +161,7 @@ export class CaratColumn implements ICaratColumn {
     }
   }
 
-  private updateStyleDict() {
+  private updateStyleDict(): void {
     this.styleDict = {};
     const styles = this.channel.styles;
 
@@ -204,7 +204,7 @@ export class CaratColumn implements ICaratColumn {
     }
   }
 
-  public render() {
+  public render(): void {
     this.drawer.setCurrentColumn(this.rect, this.barStyle, this.textStyle);
     if (this.intervals.length) this.drawer.drawIntervals(this.intervals);
     if (this.bars.length) this.drawer.drawBars(this.bars);

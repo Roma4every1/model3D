@@ -6,7 +6,6 @@ import { wellStateSelector, traceStateSelector, stratumStateSelector } from 'ent
 import { TextInfo, LoadingStatus } from 'shared/ui';
 
 import './carat.scss';
-import { channelDictToRecords } from '../lib/channels';
 import { caratStateSelector } from '../store/carat.selectors';
 import { setCaratData } from '../store/carat.thunks';
 import { setCaratCanvas } from '../store/carat.actions';
@@ -32,8 +31,7 @@ export const Carat = ({id}: FormState) => {
 
   // обновление данных каналов-справочников
   useEffect(() => {
-    stage.setLookupData(channelDictToRecords(lookupData));
-    stage.render();
+    stage.actualLookup = false;
   }, [lookupData, stage]);
 
   // обновление данных каналов
