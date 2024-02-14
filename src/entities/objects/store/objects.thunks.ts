@@ -7,6 +7,22 @@ import { updateParamDeep } from '../../parameters';
 import { tableRowToString } from '../../parameters/lib/table-row';
 
 
+/** Обновление параметры скважины. */
+export function setCurrentWell(id: WellID): Thunk {
+  return async (dispatch: Dispatch, getState: StateGetter) => {
+    const state = getState();
+    const { channelName, parameterID } = state.objects.well;
+    const wellChannel = state.channels[channelName];
+
+    const idIndex = wellChannel.info.lookupColumns.id.index;
+    const row = wellChannel.data?.rows.find(r => r.Cells[idIndex] === id);
+    if (!row) return;
+
+    const rowString = tableRowToString(wellChannel, row);
+    await updateParamDeep(state.root.id, parameterID, rowString)(dispatch, getState);
+  };
+}
+
 /** Создание новой трассы. */
 export function createTrace(model: TraceModel): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
