@@ -1,5 +1,9 @@
-import { InitAttachedProperties, TableFormSettings } from './types';
-import { DataSetColumnSettings, DataSetColumnDict } from './types';
+import {
+  InitAttachedProperties, TableFormSettings,
+  DataSetColumnSettings, DataSetColumnDict, RowStyleRule,
+} from './types';
+
+import { RecordHandler } from './record-handler.ts';
 import { getColumnWidth } from './common';
 import { createColumnTree, getFlatten } from './column-tree';
 
@@ -106,7 +110,27 @@ export function settingsToTableState(payload: FormStatePayload): TableState {
     }
   }
 
+  const rowStyleSelector = columns?.RowStyleSelector;
+  let rowStyleRules: RowStyleRule[] | null = null;
+
+  if (rowStyleSelector?.length > 0) {
+    rowStyleRules = [];
+    for (const rule of rowStyleSelector) {
+      const propertyName = rule.propertyName;
+      if (!propertyName) continue;
+      const property = allProperties.find(p => p.name === propertyName);
+      if (!property) continue;
+
+      if (!properties.includes(property)) {
+        properties.push(property);
+        columnsState[propertyName] = getColumn(property, null);
+      }
+      rowStyleRules.push(rule);
+    }
+  }
+
   return {
+    recordHandler: new RecordHandler(columnsState, rowStyleRules),
     tableID: null, editable: false, activeRecordParameter,
     headerSetterRules: settings.headerSetterRules ?? [],
     channelName, columnsSettings, columns: columnsState, columnTree, columnTreeFlatten,

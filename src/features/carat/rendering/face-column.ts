@@ -1,6 +1,6 @@
 import { CaratDrawer } from './drawer.ts';
 import { CaratIntervalStyleDict, CaratWellFaceModel } from '../lib/types.ts';
-import { fixHEX } from '../lib/utils.ts';
+import { fixColorHEX } from 'shared/lib';
 
 
 /** Колонка отображающая элементы типа "забой скважины". */
@@ -73,8 +73,8 @@ export class WellFaceColumn implements ICaratColumn {
 
     for (const record of records) {
       const id = record[lookup.info.id.name];
-      const fill = fixHEX(record[lookup.info.backgroundColor.name]);
-      const stroke = fixHEX(record[lookup.info.color.name]);
+      const fill = fixColorHEX(record[lookup.info.backgroundColor.name]);
+      const stroke = fixColorHEX(record[lookup.info.color.name]);
       this.styleDict[id] = {fill, stroke};
     }
   }

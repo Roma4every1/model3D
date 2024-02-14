@@ -36,9 +36,15 @@ export const CustomCell = ({td, props, state, actions}: CustomCellProps) => {
   } : undefined;
 
   const tdProps: ComponentProps<'td'> = {...td.props, onClick, onDoubleClick};
+  let tdStyle = tdProps.style;
+
+  if (dataItem.style && !isActiveRecord) {
+    tdProps.style = {...tdStyle, ...dataItem.style};
+  }
   if (isActiveCell) {
     tdProps.id = columnID + '-' + recordID;
-    tdProps.style = {...tdProps.style, padding: 2, boxShadow: 'inset 0 0 0 2px #f3afa7'};
+    tdStyle.padding = 2;
+    tdStyle.boxShadow = 'inset 0 0 0 2px #f3afa7';
   }
 
   let cell = null;

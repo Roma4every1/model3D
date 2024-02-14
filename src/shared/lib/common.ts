@@ -161,3 +161,11 @@ export function base64toBlob(data: string, contentType: string = '', sliceSize: 
   }
   return new Blob(byteArrays, {type: contentType});
 }
+
+/* --- Other --- */
+
+/** `#ARGB => #RGBA`: на сервере иногда бывает неправильный формат. */
+export function fixColorHEX(hex: ColorHEX): ColorHEX {
+  if (hex?.length > 7) hex = '#' + hex.substring(3) + hex.substring(1, 3);
+  return hex;
+}

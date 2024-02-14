@@ -13,12 +13,6 @@ export function calculateTrackWidth(columns: CaratColumnInit[]) {
   return trackWidth;
 }
 
-/** `#ARGB => #RGBA` */
-export function fixHEX(hex: string) {
-  if (hex?.length > 7) hex = '#' + hex.substring(3) + hex.substring(1, 3);
-  return hex;
-}
-
 /** Ограничивает масштаб каротажа заданным минимальным и максимальным значением. */
 export function validateCaratScale(newScale: number, checkMax: boolean): number {
   const { min, max } = constraints.scale;

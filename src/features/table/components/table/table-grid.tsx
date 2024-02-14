@@ -10,7 +10,6 @@ import { updateMaxRowCount } from 'entities/channels';
 
 import { ToolbarActions, CellActions, SaveTableMetadata, SetRecords } from '../../lib/types';
 import { scrollCellIntoView } from '../../lib/common';
-import { rollbackRecord, applyRecordEdit, validateRecord } from '../../lib/records';
 import { applyColumnsWidth } from '../../lib/column-tree-actions';
 import { setTableColumns, setTableSelection } from '../../store/table.actions';
 import { setTableActiveCell, startTableEditing, endTableEditing } from '../../store/table.actions';
@@ -40,7 +39,7 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
   const [skip, setSkip] = useState(0);
   const pageSize = 50;
 
-  const { columns: columnsState, selection, activeCell, total, edit } = state;
+  const { recordHandler, columns: columnsState, selection, activeCell, total, edit } = state;
   const activeRecordID = activeCell.recordID, activeColumnID = activeCell.columnID;
 
   const isTopCell = activeRecordID === 0;
@@ -87,7 +86,7 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
 
   const saveRecord = (record: TableRecord) => {
     if (!edit.isNew) {
-      const errors = validateRecord(record, columnsState);
+      const errors = recordHandler.validateRecord(record);
       if (errors.length) {
         const windowID = 'record-validation';
         const onClose = () => dispatch(closeWindow(windowID));
@@ -101,7 +100,7 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
         return false;
       }
     }
-    applyRecordEdit(record, columnsState);
+    recordHandler.applyRecordEdit(record);
 
     const row: ChannelRow = {ID: record.id, Cells: record.cells};
     const data: SaveTableMetadata = edit.isNew
@@ -139,7 +138,7 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
       if (edit.isNew) {
         records.splice(activeIndex, 1);
       } else {
-        rollbackRecord(activeRecord, columnsState);
+        recordHandler.rollbackRecord(activeRecord);
       }
       setRecords(records);
     }

@@ -72,7 +72,9 @@ export const tablesReducer = (state: TableStates = init, action: TablesAction): 
 
     case TableActionType.SET_COLUMNS: {
       const { id, columns } = action.payload;
-      return {...state, [id]: {...state[id], columns}};
+      const tableState = state[id];
+      tableState.recordHandler.setColumns(columns);
+      return {...state, [id]: {...tableState, columns}};
     }
 
     case TableActionType.SET_COLUMN_TREE: {
@@ -145,6 +147,7 @@ export const tablesReducer = (state: TableStates = init, action: TablesAction): 
       }
       if (channelData?.columns) {
         applyColumnTypes(tableState, channelData.columns);
+        tableState.recordHandler.setColumns(tableState.columns, channelData.columns);
       }
 
       const edit = {modified: false, isNew: false};

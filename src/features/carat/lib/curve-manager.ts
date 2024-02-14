@@ -1,6 +1,5 @@
 import { CaratCurveModel, CaratCurveStyleDict } from './types';
-import { getPragmaticMax, stringifyLocalDate } from 'shared/lib';
-import { fixHEX } from './utils';
+import { getPragmaticMax, stringifyLocalDate, fixColorHEX } from 'shared/lib';
 import { defaultSettings } from './constants';
 
 
@@ -201,7 +200,7 @@ export class CurveManager {
     lookupData[name]?.forEach((record) => {
       const type = record[info.type.name];
       const color = record[info.color.name];
-      this.styleDict.set(type, {color: fixHEX(color), thickness: 2});
+      this.styleDict.set(type, {color: fixColorHEX(color), thickness: 2});
     });
   }
 

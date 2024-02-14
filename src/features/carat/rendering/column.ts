@@ -1,8 +1,7 @@
 import { CaratDrawer } from './drawer';
 import { CaratBarModel, CaratIntervalModel, CaratIntervalStyleDict } from '../lib/types';
-import { cartesianProduct } from 'shared/lib';
+import { cartesianProduct, fixColorHEX } from 'shared/lib';
 import { fillPatterns, parseColorHEX, stringifyRGBA, overlayColor } from 'shared/drawing';
-import { fixHEX } from '../lib/utils';
 import { defaultSettings } from '../lib/constants';
 
 
@@ -138,9 +137,9 @@ export class CaratColumn implements ICaratColumn {
         const info = colorLookup.info;
         for (const record of colorRecords) {
           colorLookup.dict[record[info.id.name]] = {
-            color: parseColorHEX(fixHEX(record[info.color.name])),
-            borderColor: parseColorHEX(fixHEX(record[info.borderColor.name])),
-            backgroundColor: parseColorHEX(fixHEX(record[info.backgroundColor.name])),
+            color: parseColorHEX(fixColorHEX(record[info.color.name])),
+            borderColor: parseColorHEX(fixColorHEX(record[info.borderColor.name])),
+            backgroundColor: parseColorHEX(fixColorHEX(record[info.backgroundColor.name])),
             fillStyle: record[info.fillStyle.name],
             lineStyle: record[info.lineStyle.name],
           };

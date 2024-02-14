@@ -10,7 +10,6 @@ import { updateTables, reloadChannel, setChannelActiveRow, channelAPI } from 'en
 import { showWarningMessage, showWindow, closeWindow } from 'entities/window';
 import { showNotification } from 'entities/notifications';
 import { reportsAPI } from 'entities/reports/lib/report.api.ts';
-import { createRecord } from '../lib/records';
 import { createTableState, startTableEditing } from './table.actions';
 import { tableStateToSettings } from '../lib/table-settings';
 import { LinkedTable } from '../components/table/linked-table';
@@ -116,7 +115,7 @@ export function getNewRow (
         index = activeRecordID ? records.findIndex(rec => rec.id === activeRecordID) : 0;
       }
       const cells = copy ? records[index].cells : res.data['Cells'];
-      const record = createRecord(newID, cells, Object.values(state.columns));
+      const record = state.recordHandler.createRecord(newID, cells);
       records.splice(index, 0, record);
       return [...records];
     });
