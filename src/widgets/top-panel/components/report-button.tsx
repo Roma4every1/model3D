@@ -43,7 +43,10 @@ export const ReportButton = ({id, report}: ReportButtonProps) => {
           : <img src={report.type === 'report' ? reportIcon : programIcon} alt={'run'}/>}
         <div>{report.displayName}</div>
       </div>
-      {opened && <ReportParamList id={id} report={report} close={() => setOpened(false)}/>}
+      {opened && <ReportParamList
+        id={id} report={report}
+        setOpened={setOpened} setProcessing={setProcessing}
+      />}
     </>
   );
 };

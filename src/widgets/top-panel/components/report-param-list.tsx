@@ -1,4 +1,5 @@
-import { useDispatch } from 'shared/lib';
+import { ThunkDispatch } from 'redux-thunk';
+import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Button } from '@progress/kendo-react-buttons';
@@ -9,22 +10,26 @@ import { updateReportParameter, runReport } from 'entities/reports';
 interface ReportParamListProps {
   id: ClientID;
   report: ReportModel;
-  close: () => void;
+  setOpened: (opened: boolean) => void;
+  setProcessing: (processing: boolean) => void;
 }
 
 
 /** Редактор параметров процедуры. */
-export const ReportParamList = ({id, report, close}: ReportParamListProps) => {
+export const ReportParamList = ({id, report, setOpened, setProcessing}: ReportParamListProps) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<ThunkDispatch<WState, any, any>>();
+
+  const close = () => setOpened(false);
+  const { channels, parameters, canRun } = report;
 
   const onParameterChange = (param: Parameter, newValue: any) => {
-    dispatch(updateReportParameter(id, report.id, param.id, newValue));
+    dispatch(updateReportParameter(id, report.id, param.id, newValue)).then();
   };
   const run = () => {
-    dispatch(runReport(id, report)); close();
+    setProcessing(true); setOpened(false);
+    dispatch(runReport(id, report)).then(() => setProcessing(false));
   };
-  const { channels, parameters, canRun } = report;
 
   return (
     <Dialog title={t(`report.${report.type}-parameters`)} onClose={close} style={{zIndex: 99}}>
