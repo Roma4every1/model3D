@@ -4,7 +4,6 @@ import { getParsedParamValue } from './parsing';
 /** Обработка модели параметра после серверного запроса. */
 export function handleParam(parameter: Parameter): void {
   parameter.value = getParsedParamValue(parameter.type, parameter.value);
-  if (!parameter.nullDisplayValue) parameter.nullDisplayValue = 'Нет значения';
   if (!parameter.dependsOn || (parameter.dependsOn.length === 1 && !parameter.dependsOn[0])) {
     parameter.dependsOn = [];
   }

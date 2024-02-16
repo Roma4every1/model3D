@@ -2,7 +2,7 @@ import { ThunkDispatch } from 'redux-thunk';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Loader } from '@progress/kendo-react-indicators';
-import { ReportParamList } from './report-param-list';
+import { ReportParameterList } from './report-parameter-list.tsx';
 import { initializeActiveReport, refreshReport } from 'entities/reports';
 
 import reportIcon from 'assets/images/reports/report.svg';
@@ -43,7 +43,7 @@ export const ReportButton = ({id, report}: ReportButtonProps) => {
           : <img src={report.type === 'report' ? reportIcon : programIcon} alt={'run'}/>}
         <div>{report.displayName}</div>
       </div>
-      {opened && <ReportParamList
+      {opened && <ReportParameterList
         id={id} report={report}
         setOpened={setOpened} setProcessing={setProcessing}
       />}

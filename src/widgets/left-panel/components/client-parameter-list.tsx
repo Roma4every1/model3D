@@ -9,14 +9,14 @@ interface ClientParameterListProps {
 }
 
 
-/** Редактор глобальный параметров или параметров презентации. */
+/** Список глобальных параметров или параметров презентации. */
 export const ClientParameterList = ({clientID, list}: ClientParameterListProps) => {
   const dispatch = useDispatch();
-  const externalChannels = [...getExternalChannels(list)];
-  const channels = useSelector(channelDictSelector.bind(externalChannels), compareObjects);
+  const channelNames = getExternalChannels(list);
+  const channels = useSelector(channelDictSelector.bind(channelNames), compareObjects);
 
   const onChange = (parameter: Parameter, newValue: any) => {
     dispatch(updateParamDeep(clientID, parameter.id, newValue));
   };
-  return <ParameterList params={list} channels={channels} onChange={onChange}/>;
+  return <ParameterList list={list} channels={channels} onChange={onChange}/>;
 };
