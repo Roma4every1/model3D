@@ -1,11 +1,7 @@
 import {mapsAPI} from "../../map/lib/maps.api.ts";
 import {types} from "../../map/drawer/map-drawer.js";
-import {getInterpolatedFieldValue} from "../../map/lib/selecting-utils.ts";
 import {groupBy} from "../../../shared/lib";
-import {getPointsDistance2D, getPointsDistance3D } from "./utils.ts";
-import {PROFILE_X_STEP} from "./constants.ts";
 import {cellsToRecords, channelAPI} from "../../../entities/channels";
-import {ProfileInclinometry} from "./inclinometry.ts";
 import {ProfileTrace} from "./trace.ts";
 import {ProfilePlast} from "./plast.ts";
 
@@ -16,27 +12,24 @@ export class ProfileLoader implements IProfileLoader {
   /** Функция для обновления состояния загрузки на уровне интерфейса. */
   public setLoading: (l: Partial<CaratLoading>) => void;
 
-  /** Канал с устьевыми координатами. */
-  private readonly topBaseMapsChannelName: string;
-  /** Канал с устьевыми координатами. */
-  private readonly ustCoordsChannelName: string;
-  /** Канал с инклинометрией. */
-  private readonly inclinometryChannelName: string;
+  /** Имя канала с данными доступных карт подошвы и кровли. */
+  private readonly topBaseMapsChannelName: string  = 'TopBaseMaps';
+  /** Имя канала с устьевыми координатами. */
+  private readonly ustCoordsChannelName: string = 'UstCoords';
 
+  /** Записы канала с икнлинометрией скважин. */
   public wellInclRecords: ProfileInclMark[];
+  /** Записи канала с перформациями скважин. */
   public perfRecords: ChannelRecord[];
+  /** Записи канала с пропластками. */
   public plInfoRecords: ProfileLitPiece[];
 
   /** Кеш данных профиля. */
   public cache: ProfileDataCache;
 
   constructor() {
-    this.topBaseMapsChannelName = 'TopBaseMaps';
-    this.ustCoordsChannelName = 'UstCoords';
-
     this.flag = 0;
-    this.setLoading = () => {
-    };
+    this.setLoading = () => {};
     this.cache = null;
   }
 
@@ -44,32 +37,44 @@ export class ProfileLoader implements IProfileLoader {
   public async loadProfileData(formID: FormID, trace: TraceModel, channels: ChannelDict) {
     if (!trace?.nodes?.length) return;
 
+    // канал с устьевыми координатами скважин
     const ustChannel: Channel = channels[this.ustCoordsChannelName];
 
+    // создание трассы профиля по устьевым координатам
     const profileTrace = new ProfileTrace(trace, ustChannel);
 
+    // загрузка данных инлинометрии, перфораций и литологии
     await this.loadAdditionalProfileChannels(profileTrace.wells);
 
+    // установка соответствующих записей пропластков (литологии) для каждой скважины
     profileTrace.wells.forEach(w => w.setLithologyPieces(this.plInfoRecords));
 
+    // канал, содержащий все доступные карты кровли и подошвы по параметру месторождения
     const topBaseMapsChannel = channels[this.topBaseMapsChannelName];
+
+    // загрузка контейнеров полей TOP и BASE для каждой доступной карты
     const topBaseFieldsMap =
       await this.loadTopBaseFields(formID, topBaseMapsChannel);
 
     this.setLoading({percentage: 90, status: 'trace', statusOptions: null});
 
-    const plastsMap: Map<number, ProfilePlast> = new Map<number, ProfilePlast>();
+    // создание объектов пластов профиля
+    const plastsMap: ProfilePlastMap = new Map<number, ProfilePlast>();
     topBaseFieldsMap.forEach((value, key) => {
       plastsMap.set(key, new ProfilePlast(key, profileTrace.points, value));
     });
 
     this.cache = {
-      plastsData: plastsMap as ProfilePlastMap
+      plastsData: plastsMap
     } as ProfileDataCache;
   }
 
   /** Загружает данные контейнеров полей TOP и BASE карт. */
-  private async loadTopBaseFields(formID: FormID, topBaseMapsChannel: Channel): Promise<ProfileTopBaseFieldsMap> {
+  private async loadTopBaseFields(
+    formID: FormID,
+    topBaseMapsChannel: Channel
+  ): Promise<Map<number, TopBaseMapsDataRaw[]>> {
+
     const topBaseMapsChannelData = topBaseMapsChannel.data.rows.map(r => r.Cells);
 
     let count = 1;
@@ -95,6 +100,7 @@ export class ProfileLoader implements IProfileLoader {
       }
     ));
 
+    // группирует данные контейнеров по идентификатору пласта
     return groupBy<number, TopBaseMapsDataRaw>(
       topBaseMapsData,
       (data) => data.plastCode
@@ -134,8 +140,12 @@ export class ProfileLoader implements IProfileLoader {
     return element as MapField;
   }
 
+  /** Загружает данные инлинометрии, перфораций и литологии (пропластков) для списка скважин. */
   private async loadAdditionalProfileChannels(wells: IProfileWell[]) {
     const query: ChannelQuerySettings = {order: [], maxRowCount: 5000, filters: null};
+
+    // временные статичные значения параметров, т.к. параметр activeWells так или иначе
+    // приходится задавать мануально
     const parameters: Partial<Parameter>[] = [
       {
         "id": "currentMest",
@@ -159,6 +169,7 @@ export class ProfileLoader implements IProfileLoader {
       }
     ];
 
+    // повторный запрос каналов, у которых есть параметр activeWells
     const wellInclChannel =
       await channelAPI.getChannelData('WellIncl', parameters, query);
     const wellInclChannelData = wellInclChannel.ok ? wellInclChannel.data.data : null;

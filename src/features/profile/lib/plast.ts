@@ -1,15 +1,15 @@
 import {getInterpolatedFieldValue} from "../../map/lib/selecting-utils.ts";
 import {ProfileLayer} from "./layer.ts";
 
+
+/** Класс, содержащий данные о пласте профиля. */
 export class ProfilePlast implements IProfilePlast {
   /** Толищна одного слоя пласта в метрах. */
   private layerThickness = 0.1;
 
   public plastCode: number;
 
-  public plastIncl: IProfileIncl;
-
-  public borderLine: ProfileLineData;
+  public borderLine: ProfileBorderLineData;
   public maxThickness: number = 0;
   public maxY: number = -Infinity;
   public minY: number = Infinity;
@@ -22,6 +22,7 @@ export class ProfilePlast implements IProfilePlast {
     this.createPlastLayers();
   }
 
+  /** Создание ограничивающих линий куска профиля данного пласта. */
   public createBorderLine(tracePoints: TracePoint[], topBaseData: TopBaseMapsDataRaw[]) {
     const baseField = topBaseData.find(field => field.mapType === 'BASE');
     const topField = topBaseData.find(field => field.mapType === 'TOP');
@@ -43,6 +44,7 @@ export class ProfilePlast implements IProfilePlast {
     );
   }
 
+  /** Создание пластов слоя. */
   public createPlastLayers () {
     const layersCount = Math.floor(this.maxThickness / this.layerThickness);
     let lastLine = this.borderLine;
@@ -84,7 +86,6 @@ export class ProfilePlast implements IProfilePlast {
       Math.abs(l.KROW_ABS) < topAbsMark && Math.abs(l.PODOSH_ABS) > baseAbsMark
     );
     if (!inRange?.length) return null;
-    console.log(inRange);
     return inRange.reduce((max, current) => {
       const delta = Math.abs(current.KROW_ABS - current.PODOSH_ABS) -
         Math.abs(max?.KROW_ABS - max?.PODOSH_ABS);

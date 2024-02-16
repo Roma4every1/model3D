@@ -1,18 +1,26 @@
 import {getPointsDistance2D,} from "./utils.ts";
 import {ProfileWell} from "./well.ts";
 
+
+/** Класс, содержащий данные о трассе профиля. */
 export class ProfileTrace implements IProfileTrace {
+  /** Шаг промежуточных точек трассы профиля. */
   private step = 200;
 
+  /** Узлы трассы. */
   public nodes: ProfileWell[] = [];
+  /** Скважины трассы (в том числе дополнительные для нахождения литологии на слоях). */
   public wells: ProfileWell[] = [];
 
+  /** Расстояние вдоль трассы. */
   public distance: number;
+  /** Линии трассы между узлами. */
   public lines: TraceLineData[] = [];
+  /** Промежуточные точки трассы профиля. */
   public points: TracePoint[] = [];
 
   constructor(trace: TraceModel, ustChannel: Channel) {
-    const wellsPoints: UstPoint[] = ustChannel.data.rows.map(r => ({
+    const wellsPoints: WellPoint[] = ustChannel.data.rows.map(r => ({
       WELL_ID: r.Cells[0],
       x: r.Cells[2],
       y: -r.Cells[1]
@@ -26,6 +34,7 @@ export class ProfileTrace implements IProfileTrace {
     this.wells = this.getAdditionalWells(wellsPoints);
   }
 
+  /** Находит все промежуточные точки трассы и записывает их в this.points. */
   public getLines() {
     if (!this.nodes) return null;
     let lastLineRemainder = 0;
@@ -49,6 +58,7 @@ export class ProfileTrace implements IProfileTrace {
     this.points.push(this.nodes[this.nodes.length - 1].toTracePoint(this.distance));
   }
 
+  /** Находит промежуточные точки трассы между двумя узлами, с шагом, заданным в поле step. */
   public getLinePoints(node1: ProfileWell, node2: ProfileWell, remainder = 0): TraceLineData {
 
     const result = [];
@@ -73,7 +83,10 @@ export class ProfileTrace implements IProfileTrace {
     };
   }
 
-  private getAdditionalWells(wellsPoints: UstPoint[]) {
+  /** Находит ближайшую скважину для каждой промежуточной точки трассы.
+   * Возвращает список скважин без повторений.
+   * */
+  private getAdditionalWells(wellsPoints: WellPoint[]) {
     const wells: ProfileWell[] = [];
 
     for (const p of this.points) {
@@ -85,9 +98,10 @@ export class ProfileTrace implements IProfileTrace {
     return wells;
   }
 
-  private getPointNearestWell(point: TracePoint, wellsPoints: UstPoint[]): ProfileWell {
+  /** Находит ближайшую скважину (из массива объектов с координатами скважин) к заданной точке. */
+  private getPointNearestWell(point: TracePoint, wellsPoints: WellPoint[]): ProfileWell {
     let minDistance = Infinity;
-    let minDistanceWell: UstPoint;
+    let minDistanceWell: WellPoint;
     for (const w of wellsPoints) {
       const distance = getPointsDistance2D(w, point);
       if (distance < minDistance) {
@@ -98,9 +112,5 @@ export class ProfileTrace implements IProfileTrace {
     const well = new ProfileWell(minDistanceWell.WELL_ID, minDistanceWell.x, minDistanceWell.y);
     point.nearestWell = well;
     return well;
-  }
-
-  public addWellsInclinometry() {
-
   }
 }

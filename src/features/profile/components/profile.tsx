@@ -84,7 +84,6 @@ export const Profile = ({id, channels}: FormState) => {
               onMouseMove={onMouseMove}
               onMouseDown={onMouseDown}
               onMouseUp={onMouseUp}
-        // onWheel={onWheel}
       />
     </div>
   )

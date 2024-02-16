@@ -1,25 +1,16 @@
 import {groupBy} from "../../../shared/lib";
 
 
-/** Класс для управления инклинометрией профиля. */
+/** Класс для управления инклинометрией скважины профиля. */
 export class ProfileInclinometry implements IProfileIncl {
-  /** Даннные канала инклинометрии. */
-  public readonly channelData: ProfileInclMark[];
-  /** Данные инклинометрии (абс. отметка => расстояния смещения). */
+  /** Данные инклинометрии (скважина => отметки инклинометрии). */
   public data: Map<number, ProfileInclMark[]>;
 
-  /** Данные инклинометрии для интерполяции. */
-  private interpolationData: any;
-  // /** Минимальная посчитанная абсолютная отметка. */
-  // private minAbs: number | null;
-  // /** Максимальная посчитанная абсолютная отметка. */
-  // private maxAbs: number | null;
-
   constructor(data: ProfileInclMark[]) {
-    this.channelData = data.map(p => ({...p, ABSMARK: -p.ABSMARK}));
+    data = data.map(p => ({...p, ABSMARK: -p.ABSMARK}));
 
     const dataMap: Map<number, ProfileInclMark[]> = groupBy(
-      this.channelData,
+      data,
       el => el.NWELL_ID
     );
 
@@ -66,10 +57,5 @@ export class ProfileInclinometry implements IProfileIncl {
     const {ABSMARK: x0, DEPTH: y0} = p1;
     const {ABSMARK: x1, DEPTH: y1} = p2;
     return Math.round(((absMark - x0) / (x1 - x0)) * (y1 - y0) + y0);
-  }
-
-  /** Очищает данные. */
-  private clear(): void {
-    this.data = null;
   }
 }

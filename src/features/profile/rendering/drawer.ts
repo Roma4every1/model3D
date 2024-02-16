@@ -17,10 +17,6 @@ export class ProfileDrawer implements IProfileDrawer {
   /** Контекст отрисовки. */
   private ctx: CanvasRenderingContext2D;
 
-  private yDelta: number;
-
-  private xDelta: number;
-
   /** Порт просмотра профиля. */
   public readonly viewport: ProfileViewport;
 
@@ -31,36 +27,35 @@ export class ProfileDrawer implements IProfileDrawer {
     this.drawerConfig = config;
 
     this.viewport = {
-      currentX: 0, currentY: 1440,
+      currentX: 0, currentY: 0,
       currentMaxX: 10000, currentMaxY: 10000,
-      startX: 0, startY: 0, width: 0, height: 0,
-      minX: 0, maxX: 10000, minY: 0, maxY: 10000
+      startX: 0, startY: 0,
+      width: 0, height: 0,
+      realWidth: 0, realHeight: 0,
+      minX: 0, maxX: 10000, minY: 1400, maxY: 1500
     }
   }
 
   public setViewportCurrentPosition(x: number, y: number) {
-    this.viewport.currentX = x;
-    this.viewport.currentY = y;
+    if (x !== null) this.viewport.currentX = x;
+    if (y !== null) this.viewport.currentY = y;
 
-    const w = this.viewport.width / ProfileDrawer.HORIZONTAL_SCALE;
-    const h = Math.ceil(this.viewport.height / ProfileStage.Y_AXIS_BARS_STEP);
-
-    this.viewport.currentMaxX = x + w;
-    this.viewport.currentMaxY = y + h;
+    this.viewport.currentMaxX = this.viewport.currentX + this.viewport.realWidth;
+    this.viewport.currentMaxY = this.viewport.currentY + this.viewport.realHeight;
   }
 
   /** Устанавливает настройки оси Y. */
   public setYAxisSettings(settings: ProfileYAxisSettings): void {
-    // this.yMin = settings.yMin;
-    // this.yMax = settings.yMax;
-    this.yDelta = settings.yDelta;
+    this.viewport.minY = settings.yMin;
+    this.viewport.maxY = settings.yMax;
+    // this.yDelta = settings.yDelta;
   }
 
   /** Устанавливает настройки оси X. */
   public setXAxisSettings(settings: ProfileXAxisSettings): void {
-    // this.xMin = settings.xMin;
-    // this.xMax = settings.xMax;
-    this.xDelta = settings.xDelta;
+    this.viewport.minX = settings.xMin;
+    this.viewport.maxX = settings.xMax;
+    // this.xDelta = settings.xDelta;
   }
 
   /** Устанавливает контекст отрисовки. */
@@ -89,19 +84,14 @@ export class ProfileDrawer implements IProfileDrawer {
     }
   }
 
-  public render(plastDataMap: ProfilePlastMap, inclData: ProfileInclDataMap): void {
-    // this.setViewportCurrentPosition(2153, 1443);
-    // const draw = throttle(() =>  300);
-    // draw();
+  public render(plastDataMap: ProfilePlastMap): void {
     this.drawLines(plastDataMap);
 
-    // this.drawTraceNodes(inclData);
-    this.drawLitology(plastDataMap, inclData)
     this.drawAxes();
   }
 
   private drawLines(plastDataMap: ProfilePlastMap): void {
-    plastDataMap.forEach((plastData, plastCode) => {
+    plastDataMap.forEach((plastData) => {
       if (plastData?.layers?.length) {
         plastData.layers.forEach(layer => {
           this.drawPlastLines(layer.borderLine, true);
@@ -112,7 +102,7 @@ export class ProfileDrawer implements IProfileDrawer {
     })
   }
 
-  private drawPlastLines(plastLinesData: ProfileLineData, isLayer = false) {
+  private drawPlastLines(plastLinesData: ProfileBorderLineData, isLayer = false) {
 
     this.setLineSettings(1, isLayer ? '#00FF00' : '#000000');
     this.drawLine(plastLinesData, 'TOP');
@@ -121,7 +111,7 @@ export class ProfileDrawer implements IProfileDrawer {
     this.drawLine(plastLinesData, 'BASE');
   }
 
-  private drawLine(lineData: ProfileLineData, type: 'TOP' | 'BASE'): void {
+  private drawLine(lineData: ProfileBorderLineData, type: 'TOP' | 'BASE'): void {
     if (!lineData?.length) {
       return;
     }
@@ -226,7 +216,7 @@ export class ProfileDrawer implements IProfileDrawer {
 
     const barCanvasX = ProfileStage.PLAST_AXIS_WIDTH + ProfileStage.Y_AXIS_WIDTH;
 
-    let barLength;
+    let barLength: number;
     const firstNodeY = Math.ceil(this.viewport.currentY);
     for (let y = firstNodeY; y < this.viewport.currentMaxY; y++) {
       const {y: canvasY} = this.toCanvasCoords({x: 0, y})
@@ -300,46 +290,46 @@ export class ProfileDrawer implements IProfileDrawer {
     this.ctx.strokeRect(x, y, w, h);
   }
 
-  public drawTraceNodes(traceNodesInclData: ProfileInclDataMap) {
-    traceNodesInclData.forEach(node => {
-      if (!node) {
-        return;
-      }
-      this.setLineSettings(3, '#ff0000');
-      this.ctx.beginPath();
+  // public drawTraceNodes(traceNodesInclData: any) {
+  //   traceNodesInclData.forEach(node => {
+  //     if (!node) {
+  //       return;
+  //     }
+  //     this.setLineSettings(3, '#ff0000');
+  //     this.ctx.beginPath();
+  //
+  //     const topCanvasPoint = {x: node.ustDistance, y: 0};
+  //     const {x: topX, y: topY} = this.toCanvasCoords(topCanvasPoint);
+  //     this.setTextSettings(
+  //       'bold 24px serif',
+  //       '#ff0000',
+  //       'center',
+  //       'bottom'
+  //     );
+  //     this.ctx.fillText(node.WELL_ID.toString(), topX, topY);
+  //     this.ctx.moveTo(topX, topY);
+  //     this.ctx.lineTo(topX, topY + this.viewport.height);
+  //
+  //     this.ctx.stroke();
+  //
+  //     this.setLineSettings(2, '#00ec05');
+  //     this.ctx.beginPath();
+  //     let isFirstPoint = true;
+  //     node?.inclPoints?.forEach(point => {
+  //       const canvasPoint = {x: point.distance, y: point.absValue};
+  //       const {x, y} = this.toCanvasCoords(canvasPoint);
+  //       if (isFirstPoint) {
+  //         this.ctx.moveTo(x, y);
+  //         isFirstPoint = false;
+  //       } else {
+  //         this.ctx.lineTo(x, y);
+  //       }
+  //     })
+  //     this.ctx.stroke();
+  //   })
+  // }
 
-      const topCanvasPoint = {x: node.ustDistance, y: 0};
-      const {x: topX, y: topY} = this.toCanvasCoords(topCanvasPoint);
-      this.setTextSettings(
-        'bold 24px serif',
-        '#ff0000',
-        'center',
-        'bottom'
-      );
-      this.ctx.fillText(node.WELL_ID.toString(), topX, topY);
-      this.ctx.moveTo(topX, topY);
-      this.ctx.lineTo(topX, topY + this.viewport.height);
-
-      this.ctx.stroke();
-
-      this.setLineSettings(2, '#00ec05');
-      this.ctx.beginPath();
-      let isFirstPoint = true;
-      node?.inclPoints?.forEach(point => {
-        const canvasPoint = {x: point.distance, y: point.absValue};
-        const {x, y} = this.toCanvasCoords(canvasPoint);
-        if (isFirstPoint) {
-          this.ctx.moveTo(x, y);
-          isFirstPoint = false;
-        } else {
-          this.ctx.lineTo(x, y);
-        }
-      })
-      this.ctx.stroke();
-    })
-  }
-
-  public drawLitology(plastDataMap: ProfilePlastDataMap, inclData: ProfileInclDataMap) {
-
-  }
+  // public drawLitology(plastDataMap: ProfilePlastDataMap, inclData: any) {
+  //
+  // }
 }

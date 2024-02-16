@@ -22,9 +22,6 @@ export class ProfileStage implements IProfileStage {
   private canvas: HTMLCanvasElement;
 
   private plastsLinesDataMap: ProfilePlastMap;
-  private inclData: ProfileInclDataMap
-  private xDelta: number;
-  private yDelta: number;
 
   /** Отступ по горизонтали для основой области профиля. */
   private xViewportOffset: number;
@@ -32,8 +29,6 @@ export class ProfileStage implements IProfileStage {
   private yViewportOffset: number;
 
   constructor(drawerConfig: ProfileDrawerConfig) {
-    this.xDelta = 0;
-    this.yDelta = 0;
     this.plastsLinesDataMap = null;
     this.drawer = new ProfileDrawer(drawerConfig);
   }
@@ -46,6 +41,7 @@ export class ProfileStage implements IProfileStage {
       this.xViewportOffset = ProfileStage.PLAST_AXIS_WIDTH + ProfileStage.Y_AXIS_WIDTH;
       this.yViewportOffset = ProfileStage.COLUMN_NAME_AXIS_HEIGHT;
       this.resize();
+      this.drawer.setViewportCurrentPosition(0, 1440);
     }
   }
 
@@ -53,21 +49,17 @@ export class ProfileStage implements IProfileStage {
   public resize(): void {
     if (!this.canvas) return;
 
-    // const resultWidth = (this.xDelta + 1000) * ProfileDrawer.HORIZONTAL_SCALE / ProfileDrawer.ratio;
-    // const resultHeight = this.yDelta * ProfileDrawer.VERTICAL_SCALE / ProfileDrawer.ratio;
-    //
-    // const neededWidth = resultWidth +
-    //   (ProfileDrawer.PLAST_AXIS_WIDTH + ProfileDrawer.Y_AXIS_WIDTH) / 2;
-    //
-    // const neededHeight = resultHeight +
-    //   (ProfileDrawer.COLUMN_NAME_AXIS_HEIGHT + ProfileDrawer.X_AXIS_HEIGHT) / 2;
-
-
     this.canvas.width = this.canvas.clientWidth * ProfileDrawer.ratio;
     this.canvas.height = this.canvas.clientHeight * ProfileDrawer.ratio;
 
-    this.drawer.viewport.width = this.canvas.width - this.xViewportOffset;
-    this.drawer.viewport.height = this.canvas.width - this.yViewportOffset;
+    const width = this.canvas.width - this.xViewportOffset;
+    const height = this.canvas.height - this.yViewportOffset;
+
+    this.drawer.viewport.width = width;
+    this.drawer.viewport.height = height;
+
+    this.drawer.viewport.realWidth = Math.ceil(width / ProfileDrawer.HORIZONTAL_SCALE);
+    this.drawer.viewport.realHeight = Math.ceil(height / ProfileDrawer.VERTICAL_SCALE);
 
     this.drawer.viewport.startX = this.xViewportOffset;
     this.drawer.viewport.startY = this.yViewportOffset;
@@ -77,66 +69,78 @@ export class ProfileStage implements IProfileStage {
   public setData(cache: ProfileDataCache): void {
     if (!cache) return;
 
-    // this.xDelta = cache.xAxisSettings.xDelta;
-    // this.yDelta = cache.yAxisSettings.yDelta;
     this.plastsLinesDataMap = cache.plastsData;
-    // this.inclData = cache.inclinometryData;
-    //
-    // this.drawer.setXAxisSettings(cache.xAxisSettings);
-    // this.drawer.setYAxisSettings(cache.yAxisSettings);
+    this.render();
+  }
 
-    this.resize();
+  private validateViewportMoveX (delta: number): number {
+    const viewport = this.drawer.viewport;
+
+    let newX = viewport.currentX + delta;
+    let newMaxX = viewport.currentMaxX + delta;
+
+    if (newMaxX > viewport.maxX) {
+      newX = viewport.maxX - viewport.realWidth;
+    } else if (newX < viewport.minX) {
+      newX = viewport.minX;
+    }
+
+    return newX;
+  }
+
+  private validateViewportMoveY (delta: number): number {
+    const viewport = this.drawer.viewport;
+
+    let newY = viewport.currentY + delta;
+    let newMaxY = viewport.currentMaxY + delta;
+
+    if (newMaxY > viewport.maxY) {
+      newY = viewport.maxY - viewport.realHeight;
+    } else if (newY < viewport.minY) {
+      newY = viewport.minY;
+    }
+
+    return newY;
   }
 
   /** Обрабатывает событие прокрутки колеса мыши. */
   public handleMouseWheel(point: Point, direction: 1 | -1, shiftKey: boolean): void {
-    const viewport = this.drawer.viewport;
 
     if (shiftKey) {
       const stepX = 20;
-      const newX = viewport.currentX + direction * stepX / (ProfileDrawer.HORIZONTAL_SCALE * window.devicePixelRatio);
-      if (!(viewport.currentX === newX)) {
-        this.drawer.setViewportCurrentPosition(newX, viewport.currentY);
-        this.render();
-      }
+      const coef = ProfileDrawer.HORIZONTAL_SCALE * window.devicePixelRatio;
+      const delta = direction * stepX / coef;
+      let newX = this.validateViewportMoveX(delta);
+      this.drawer.setViewportCurrentPosition(newX, null);
+
+      this.render();
     } else {
       const stepY = 20;
-      const newY = viewport.currentY + direction * stepY / (ProfileDrawer.VERTICAL_SCALE * window.devicePixelRatio);
-      if (!(viewport.currentY === newY)) {
-        this.drawer.setViewportCurrentPosition(viewport.currentX, newY);
-        this.render();
-      }
+      const coef = ProfileDrawer.VERTICAL_SCALE * window.devicePixelRatio;
+      const delta = direction * stepY / coef;
+
+      let newY = this.validateViewportMoveY(delta);
+
+      this.drawer.setViewportCurrentPosition(null, newY);
+      this.render();
     }
   }
 
   /** Обрабатывает событие движения мыши. */
   public handleMouseMove(point: Point, bx: number, by: number): void {
-    const viewport = this.drawer.viewport;
-    let newX = viewport.currentX - bx / (ProfileDrawer.HORIZONTAL_SCALE * window.devicePixelRatio);
-    let newY = viewport.currentY - by / (ProfileDrawer.VERTICAL_SCALE * window.devicePixelRatio);
+    const deltaX = -bx / (ProfileDrawer.HORIZONTAL_SCALE * window.devicePixelRatio);
+    const deltaY = -by / (ProfileDrawer.VERTICAL_SCALE * window.devicePixelRatio);
+    let newX = this.validateViewportMoveX(deltaX);
+    let newY = this.validateViewportMoveY(deltaY);
 
-    if (newY + viewport.height > viewport.maxY) {
-      newY = viewport.maxY - viewport.height; // !!!
-    } else if (newY < viewport.minY) {
-      newY = viewport.minY;
-    }
-
-    if (newX + viewport.width > viewport.maxX) {
-      newX = viewport.maxX - viewport.width; // !!!!
-    } else if (newX < viewport.minX) {
-      newX = viewport.minX;
-    }
-
-    if (!(viewport.currentX === newX && viewport.currentY === newY)) {
-      this.drawer.setViewportCurrentPosition(newX, newY);
-      this.render();
-    }
+    this.drawer.setViewportCurrentPosition(newX, newY);
+    this.render();
   }
 
   /** Полный рендер всей сцены профиля. */
   public render(): void {
     if (!this.canvas) return;
     this.drawer.clear();
-    this.drawer.render(this.plastsLinesDataMap, this.inclData);
+    this.drawer.render(this.plastsLinesDataMap);
   }
 }

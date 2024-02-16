@@ -1,7 +1,6 @@
 import {Dispatch} from "redux";
 import {StateGetter, Thunk} from "../../../shared/lib";
 import {setProfileLoading} from "./profile.actions.ts";
-import {updateMaxRowCount} from "../../../entities/channels";
 
 
 /** Обновляет данные профиля. */

@@ -1,12 +1,16 @@
 import {ProfileInclinometry} from "./inclinometry.ts";
 
+
+/** Класс, содержащий данные о скважине профиля. */
 export class ProfileWell implements IProfileWell {
   public id: number;
 
   public x: number;
   public y: number;
 
+  /** Данные инклинометрии скважины. */
   public inclinometry: IProfileIncl;
+  /** Данные литологии скважины. */
   public lithology: ProfileLitPiece[];
 
   constructor(id: number, x: number, y: number) {

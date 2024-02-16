@@ -27,14 +27,8 @@ interface ActionSetLoading {
   payload: {id: FormID, loading: Partial<CaratLoading>};
 }
 
-interface ActionSetPlastList {
-  type: ProfileActionType.SET_ACTIVE_PLAST_LIST;
-  payload: {id: FormID, plastList: string[]};
-}
 
-
-
-export type ProfileAction = ActionCreate | ActionSetCanvas | ActionSetLoading | ActionSetPlastList;
+export type ProfileAction = ActionCreate | ActionSetCanvas | ActionSetLoading;
 
 /* --- Init State & Reducer --- */
 
@@ -63,12 +57,6 @@ export function profileReducer(state: ProfileStates = init, action: ProfileActio
       const { id, loading } = action.payload;
       const newLoading = {...state[id].loading, ...loading};
       return {...state, [id]: {...state[id], loading: newLoading}};
-    }
-
-    case ProfileActionType.SET_ACTIVE_PLAST_LIST: {
-      const { id, plastList } = action.payload;
-      state[id].loader.activePlasts = plastList;
-      return {...state, [id]: {...state[id]}};
     }
 
     default:
