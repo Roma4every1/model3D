@@ -8,9 +8,13 @@ import { applyChannelsDeps } from 'widgets/presentation/lib/utils';
 import { createClientChannels } from 'widgets/presentation/lib/initialization';
 import { initializeReport, updateReportParam } from './reports.actions';
 import { setReportModels, setCanRunReport, setReportChannels } from './reports.actions';
-import { applyReportVisibility, updateReportChannelData, watchOperation } from '../lib/common';
 import { reportsAPI } from 'entities/reports/lib/report.api.ts';
 import { t } from 'shared/locales';
+
+import {
+  reportCompareFn, cloneReportParameter,
+  applyReportAvailability, updateReportChannelData, watchOperation,
+} from '../lib/common';
 
 
 export function initializeActiveReport(id: ClientID, reportID: ReportID): Thunk {
@@ -31,7 +35,7 @@ export function initializeActiveReport(id: ClientID, reportID: ReportID): Thunk 
           parametersState[id].find(p => p.id === paramID);
 
         if (param) {
-          param = structuredClone(param);
+          param = cloneReportParameter(param);
           parameters.push(param);
         }
       }
@@ -156,14 +160,14 @@ export function updateReportsVisibility(ids: ReportID[]): Thunk {
       const clients = [rootID, clientID];
 
       changedReports.push(...reports.map((report) => {
-        const params = fillParamValues(report.paramsForCheckVisibility, parameters, clients);
-        return applyReportVisibility(report, params)
+        const params = fillParamValues(report.availabilityParameters, parameters, clients);
+        return applyReportAvailability(report, params)
       }));
     }
 
     await Promise.all(changedReports);
     for (const clientID of changedClients) {
-      dispatch(setReportModels(clientID, [...models[clientID]]));
+      dispatch(setReportModels(clientID, models[clientID].toSorted(reportCompareFn)));
     }
   };
 }

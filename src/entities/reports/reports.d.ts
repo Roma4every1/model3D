@@ -10,7 +10,7 @@ interface Reports {
 }
 
 /** Хранилище отчётов и программ по презентациям. */
-type ReportDict = Record<FormID, ReportModel[]>;
+type ReportDict = Record<ClientID, ReportModel[]>;
 
 /** Модель программы/отчёта.
  * + `id`: {@link ReportID}
@@ -27,20 +27,22 @@ interface ReportModel {
   id: ReportID;
   /** Тип: программа или отчёт. */
   type: ReportType;
+  /** Порядковый номер в списке, переданном от сервера. */
+  orderIndex: number;
   /** Название процедуры. */
   displayName: DisplayName;
+  /** Количество исполняемых блоков процедуры. */
+  linkedPropertyCount: number;
   /** Список параметров процедуры. */
   parameters: Parameter[] | undefined;
   /** Каналы, необходимые для параметров. */
   channels: ChannelDict | undefined;
   /** Можно ли запустить процедуру при текущих параметрах. */
   canRun: boolean;
-  /** Список параметров для проверки видимости. */
-  paramsForCheckVisibility: ParameterID[];
-  /** Показывать ли процедуру на интерфейсе. */
-  visible: boolean;
-  /** Количество исполняемых блоков процедуры. */
-  linkedPropertyCount: number;
+  /** Доступность процедуры при текущих параметрах. */
+  available: boolean;
+  /** Список параметров для проверки доступности. */
+  availabilityParameters: ParameterID[];
 }
 
 /** Тип удалённой процедуры: программа или отчёт. */

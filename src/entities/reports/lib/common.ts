@@ -68,7 +68,7 @@ export async function updateReportChannelData(
 /* --- --- */
 
 /** Создаёт список программ/отчётов для презентации. */
-export async function createReportModels(paramDict: ParamDict, rootID: ClientID, id: ClientID) {
+export async function createReportModels(paramDict: ParamDict, rootID: ClientID, id: ClientID): Promise<ReportModel[]> {
   const res = await reportsAPI.getPresentationReports(id);
   const reportModels = res.ok ? res.data : [];
   if (reportModels.length === 0) return reportModels;
@@ -76,21 +76,46 @@ export async function createReportModels(paramDict: ParamDict, rootID: ClientID,
   const clients = [rootID, id];
   const changedReports: Promise<void>[] = [];
 
-  for (const report of reportModels) {
+  reportModels.forEach((report: ReportModel, i: number) => {
+    report.orderIndex = i;
     if (!report.type) report.type = 'report';
-    if (!report.paramsForCheckVisibility) { report.visible = true; continue; }
-    const parameters = fillParamValues(report.paramsForCheckVisibility, paramDict, clients);
+    report.availabilityParameters = (report as any).paramsForCheckVisibility;
+    delete (report as any).paramsForCheckVisibility;
+    if (!report.availabilityParameters) { report.available = true; return; }
+    const parameters = fillParamValues(report.availabilityParameters, paramDict, clients);
 
     for (const parameter of parameters) {
       if (!parameter.relatedReports) parameter.relatedReports = [];
       if (!parameter.relatedReports.includes(report.id)) parameter.relatedReports.push(report.id);
     }
-    changedReports.push(applyReportVisibility(report, parameters));
-  }
+    changedReports.push(applyReportAvailability(report, parameters));
+  });
   await Promise.all(changedReports);
-  return reportModels;
+  return reportModels.sort(reportCompareFn);
 }
 
-export async function applyReportVisibility(report: ReportModel, parameters: Parameter[]) {
-  report.visible = await reportsAPI.getProgramVisibility(report.id, parameters);
+export async function applyReportAvailability(report: ReportModel, parameters: Parameter[]): Promise<void> {
+  report.available = await reportsAPI.getReportAvailability(report.id, parameters);
+}
+
+/**
+ * Клонирует глобальный параметр или параметр презентации
+ * для подстановки в список параметров процедуры.
+ * */
+export function cloneReportParameter(parameter: Parameter): Parameter {
+  const clone = {...parameter};
+  clone.value = structuredClone(parameter.value);
+  clone.relatedReports = [];
+  delete clone.editor;
+  return clone;
+}
+
+/**
+ * Функция сравнение моделей процедур для сортировки:
+ * 1-ый признак — доступность, 2-ой — порядок, в котором они пришли с сервера.
+ * */
+export function reportCompareFn(a: ReportModel, b: ReportModel): number {
+  if (!a.available) return 1;
+  if (!b.available) return -1;
+  return a.orderIndex - b.orderIndex;
 }

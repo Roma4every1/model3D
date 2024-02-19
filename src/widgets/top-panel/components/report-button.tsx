@@ -23,7 +23,7 @@ export const ReportButton = ({id, report}: ReportButtonProps) => {
   const [opened, setOpened] = useState(false);
   const [processing, setProcessing] = useState(false);
 
-  const onClick = processing ? undefined : () => {
+  const onClick = (!report.available || processing) ? undefined : () => {
     if (opened) return;
     setProcessing(true);
 
@@ -37,7 +37,7 @@ export const ReportButton = ({id, report}: ReportButtonProps) => {
 
   return (
     <>
-      <div onClick={onClick}>
+      <div className={report.available ? undefined : 'unavailable'} onClick={onClick}>
         {processing
           ? <Loader size={'medium'} type={'pulsing'} />
           : <img src={report.type === 'report' ? reportIcon : programIcon} alt={'run'}/>}

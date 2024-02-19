@@ -17,7 +17,7 @@ export class ReportAPI {
     return res;
   }
 
-  public async getProgramVisibility(reportID: ReportID, parameters: Parameter[]) {
+  public async getReportAvailability(reportID: ReportID, parameters: Parameter[]) {
     const paramValues = parameters.map(serializeParameter);
     const body = JSON.stringify({reportId: reportID, paramValues});
     const req: WRequest = {method: 'POST', path: 'programVisibility', body};

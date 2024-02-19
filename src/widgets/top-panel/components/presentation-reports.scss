@@ -33,6 +33,15 @@
       border-radius: 2px;
     }
   }
+
+  .unavailable {
+    filter: grayscale(1);
+    cursor: default;
+
+    &:hover {
+      background-color: #f1f1f1;
+    }
+  }
 }
 
 .presentation-reports-empty {
