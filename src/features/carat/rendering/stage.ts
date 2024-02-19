@@ -32,6 +32,7 @@ export class CaratStage implements ICaratStage {
 
   private readonly useStaticScale: boolean;
   private readonly strataChannelName: ChannelName;
+  public actualLookup: boolean;
 
   constructor(init: CaratFormSettings, drawerConfig: CaratDrawerConfig) {
     this.wellIDs = [];
@@ -39,6 +40,7 @@ export class CaratStage implements ICaratStage {
     this.drawer = new CaratDrawer(drawerConfig);
     this.useStaticScale = init.settings.useStaticScale;
     this.strataChannelName = init.settings.strataChannelName;
+    this.actualLookup = false;
 
     const correlationsInit = init.columns.find(c => c.settings.type === 'external');
     this.correlations = new CaratCorrelations(correlationsInit, this.drawer);
@@ -148,11 +150,21 @@ export class CaratStage implements ICaratStage {
     this.correlations.setData(this.trackList);
     this.updateTrackRects();
     this.resize();
+
+    const track = this.trackList[this.activeIndex];
+    if (track.constructionMode) {
+      const dataHeight /* px */ = track.getBackgroundGroup().getDataRect().height - 10;
+      const constructionHeight /* m */ = track.transformer.constructionHeight;
+      const scale = (constructionHeight / dataHeight) * window.devicePixelRatio;
+      track.setScale(1 / scale);
+      this.listeners.scaleChange(Math.round(CaratDrawer.pixelPerMeter * scale));
+    }
   }
 
   /** Обновляет данные справочников. */
-  public setLookupData(lookupData: ChannelRecordDict): void {
-    for (const track of this.trackList) track.setLookupData(lookupData);
+  public async setLookupData(lookupData: ChannelRecordDict): Promise<void> {
+    for (const track of this.trackList) await track.setLookupData(lookupData);
+    this.actualLookup = true;
   }
 
   /** Обновляет правила разбиения кривых по зонам. */
@@ -291,9 +303,12 @@ export class CaratStage implements ICaratStage {
   /** Обрабатывает событие прокрутки колеса мыши. */
   public handleMouseWheel(point: Point, direction: 1 | -1, ctrlKey: boolean): void {
     if (ctrlKey) {
-      const scale = CaratDrawer.pixelPerMeter / this.getActiveTrack().viewport.scale;
-      let newScale = validateCaratScale(scale + 10 * direction);
-      if (scale === 1 && newScale === 11) newScale = 10;
+      const track = this.trackList[this.activeIndex];
+      const scale = CaratDrawer.pixelPerMeter / track.viewport.scale;
+
+      let step = track.constructionMode ? 50 : 10;
+      let newScale = validateCaratScale(scale + step * direction, !track.constructionMode);
+      if (scale === 1 && newScale === step + 1) newScale = step;
       if (newScale === scale) return;
 
       this.edit({type: 'scale', payload: newScale});
@@ -368,9 +383,18 @@ export class CaratStage implements ICaratStage {
     this.canvas.style.width = neededWidth + 'px';
     this.canvas.style.minHeight = neededHeight + 'px';
 
+    const dataRect = track.getBackgroundGroup().getDataRect();
+    const oldRectHeight = dataRect.height;
+
     const trackHeight = resultHeight - 2 * padding;
     for (const track of this.trackList) track.setHeight(trackHeight);
     this.correlations.updateRects(this.trackList);
+
+    if (track.constructionMode && dataRect.height !== oldRectHeight) {
+      const newScale = track.viewport.scale * (dataRect.height / oldRectHeight);
+      track.setScale(newScale);
+      this.listeners.scaleChange(Math.round(CaratDrawer.pixelPerMeter / newScale));
+    }
   }
 
   /* --- Rendering --- */

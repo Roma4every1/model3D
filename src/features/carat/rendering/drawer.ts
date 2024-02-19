@@ -2,6 +2,8 @@ import { round } from 'shared/lib';
 
 import {
   CaratIntervalModel, CaratBarModel,
+  WellBoreElementModel, WellBoreElementStyle,
+  CaratPumpModel, CaratVerticalLineModel, CaratWellFaceModel,
   CaratCurveModel, CurveAxisGroup, CaratCorrelation,
 } from '../lib/types';
 
@@ -9,14 +11,14 @@ import {
   CaratDrawerConfig, CaratTrackBodyDrawSettings,
   CaratTrackHeaderDrawSettings, CaratColumnBodyDrawSettings,
   CaratColumnLabelDrawSettings, CaratColumnYAxisDrawSettings,
-  CaratColumnXAxesDrawSettings, CaratCorrelationDrawSettings,
+  CaratColumnXAxesDrawSettings, CaratCorrelationDrawSettings, ConstructionDrawSettings,
 } from './drawer-settings';
 
 import {
   createTrackBodyDrawSettings, createTrackHeaderDrawSettings,
   createColumnBodyDrawSettings, createColumnLabelDrawSettings,
   createColumnYAxisDrawSettings, createColumnXAxesDrawSettings,
-  createCorrelationDrawSettings,
+  createCorrelationDrawSettings, createConstructionDrawSettings,
 } from './drawer-settings';
 
 
@@ -46,6 +48,8 @@ export class CaratDrawer {
   public readonly columnXAxesSettings: CaratColumnXAxesDrawSettings;
   /** Настройки отрисовки корреляций. */
   public readonly correlationSettings: CaratCorrelationDrawSettings;
+  /** Настройки отрисовки конструкции. */
+  public readonly constructionSettings: ConstructionDrawSettings;
   /** Используемое по умолчанию семейство шрифтов. */
   public readonly fontFamily: string;
 
@@ -58,6 +62,8 @@ export class CaratDrawer {
   private minusWidth: number;
   /** Инклинометрия скважины для получения абсолютной отметки. */
   private inclinometry: ICaratInclinometry;
+  /** Вспомогательный класс для показа конструкции скважины. */
+  private transformer: IConstructionTransformer;
 
   private trackRect: Rectangle;
   private yMin: number;
@@ -82,6 +88,7 @@ export class CaratDrawer {
     this.columnYAxisSettings = createColumnYAxisDrawSettings(config);
     this.columnXAxesSettings = createColumnXAxesDrawSettings(config);
     this.correlationSettings = createCorrelationDrawSettings(config);
+    this.constructionSettings = createConstructionDrawSettings(config);
     this.fontFamily = config.stage.font.family;
   }
 
@@ -91,13 +98,16 @@ export class CaratDrawer {
     this.minusWidth = context.measureText('-').width;
   }
 
-  private getDrawMarksFn(settings: CaratColumnYAxis, textStart: number) {
+  private getDrawMarksFn(settings: CaratColumnYAxis, markSize: number) {
+    const textStart = 1.1 * markSize;
     const { absMarks, depthMarks } = settings;
     let fn: (depth: number, canvasY: number) => void = CaratDrawer.emptyFn;
 
     if (depthMarks && absMarks && this.inclinometry) {
       const positiveStart = textStart + this.minusWidth;
       fn = (depth, canvasY) => {
+        this.ctx.moveTo(0, canvasY);
+        this.ctx.lineTo(markSize, canvasY);
         const absMark = this.inclinometry.getAbsMark(depth);
         this.ctx.textBaseline = 'bottom';
         this.ctx.fillText(depth.toString(), depth < 0 ? textStart : positiveStart, canvasY);
@@ -106,11 +116,15 @@ export class CaratDrawer {
       };
     } else if (absMarks && this.inclinometry) {
       fn = (depth, canvasY) => {
+        this.ctx.moveTo(0, canvasY);
+        this.ctx.lineTo(markSize, canvasY);
         const absMark = this.inclinometry.getAbsMark(depth);
         this.ctx.fillText(absMark.toString(), textStart, canvasY);
       };
     } else if (depthMarks) {
       fn = (depth, canvasY) => {
+        this.ctx.moveTo(0, canvasY);
+        this.ctx.lineTo(markSize, canvasY);
         this.ctx.fillText(depth.toString(), textStart, canvasY);
       };
     }
@@ -136,17 +150,21 @@ export class CaratDrawer {
     this.ctx.setTransform(ratio, 0, 0, ratio, ratio * x, ratio * y);
   }
 
-  public setCurrentTrack(rect: Rectangle, viewport: CaratViewport, inclinometry: ICaratInclinometry): void {
+  public setCurrentTrack(
+    rect: Rectangle, viewport: CaratViewport,
+    inclinometry: ICaratInclinometry, transformer: IConstructionTransformer,
+  ): void {
     this.trackRect = rect;
     this.yMin = viewport.y;
     this.scale = viewport.scale;
     this.inclinometry = inclinometry;
+    this.transformer = transformer;
   }
 
   public setCurrentGroup(rect: Rectangle, settings: CaratColumnSettings): void {
     this.groupSettings = settings;
     this.groupElementRect = rect;
-    this.yMax = this.yMin + rect.height / this.scale;
+    this.yMax = this.yMin + rect.height / (this.scale * window.devicePixelRatio);
     this.groupTranslateX = this.trackRect.left + this.groupElementRect.left;
     this.groupTranslateY = this.trackRect.top + this.groupElementRect.top;
   }
@@ -343,22 +361,25 @@ export class CaratDrawer {
     this.ctx.rect(0, scaleY * this.yMin, this.groupElementRect.width, this.groupElementRect.height);
     this.ctx.clip();
 
-    const step = settings.step;
+    const step = this.transformer.parts ? this.transformer.step : settings.step;
     const minY = Math.ceil(this.yMin / step - 1) * step;
-    const maxY = minY + this.groupElementRect.height / this.scale;
+    const maxY = minY + (this.yMax - this.yMin) + step;
 
     const { font, color, markSize } = this.columnYAxisSettings;
-    const drawMarksFn = this.getDrawMarksFn(settings, 1.1 * markSize);
+    const drawMarksFn = this.getDrawMarksFn(settings, markSize);
 
     this.setLineSettings(2, color);
     this.setTextSettings(font, color, 'left', 'middle');
     this.ctx.beginPath();
 
-    for (let y = minY; y < maxY; y += step) {
-      const canvasY = y * scaleY;
-      this.ctx.moveTo(0, canvasY);
-      this.ctx.lineTo(markSize, canvasY);
-      drawMarksFn(y, canvasY);
+    if (this.transformer.parts) {
+      for (const { y, ty } of this.transformer.anchorPoints) {
+        drawMarksFn(y, ty * scaleY);
+      }
+    } else {
+      for (let y = minY; y < maxY; y += step) {
+        drawMarksFn(y, y * scaleY);
+      }
     }
     this.ctx.stroke();
 
@@ -464,6 +485,133 @@ export class CaratDrawer {
     }
   }
 
+  /** Отрисовка элементов ствола конструкции скважины. */
+  public drawWellBore(elements: WellBoreElementModel[], style: WellBoreElementStyle): void {
+    const scaleY = window.devicePixelRatio * this.scale;
+    this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
+
+    for (const { top, bottom, innerDiameter, outerDiameter, cement } of elements) {
+      if (bottom < this.yMin || top > this.yMax) continue;
+      const innerX = (this.columnWidth - innerDiameter) / 2;
+      const outerX = (this.columnWidth - outerDiameter) / 2;
+
+      const canvasTop = scaleY * top;
+      const canvasHeight = scaleY * (bottom - top);
+      const cementHeight = scaleY * (bottom - cement);
+
+      if (cement !== null) {
+        this.ctx.fillStyle = style.cement;
+        this.ctx.fillRect(outerX - 4, cement * scaleY, outerDiameter + 8, cementHeight);
+      }
+      this.ctx.fillStyle = style.outerDiameter;
+      this.ctx.fillRect(outerX, canvasTop, outerDiameter, canvasHeight);
+      this.ctx.fillStyle = style.innerDiameter;
+      this.ctx.fillRect(innerX, canvasTop, innerDiameter, canvasHeight);
+    }
+  }
+
+  /** Отрисовка изображений насосов. */
+  public drawPumps(elements: CaratPumpModel[]): void {
+    const scaleY = window.devicePixelRatio * this.scale;
+    this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
+
+    for (const { top, bottom, pumpImage } of elements) {
+      if (bottom < this.yMin || top > this.yMax) continue;
+      const dx = (this.columnWidth - pumpImage.width) / 2;
+      const dy = (scaleY * (top + bottom) / 2) - pumpImage.height / 2;
+      this.ctx.drawImage(pumpImage, dx, dy);
+    }
+  }
+
+  /** Отрисовка забоев скважины. */
+  public drawWellFaces(elements: CaratWellFaceModel[]): void {
+    const scaleY = window.devicePixelRatio * this.scale;
+    this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
+    this.ctx.lineWidth = this.constructionSettings.faceBorderThickness;
+
+    for (const { top, bottom, diameter, style } of elements) {
+      if (bottom < this.yMin || top > this.yMax) continue;
+      const canvasTop = scaleY * top;
+      const canvasHeight = scaleY * (bottom - top);
+      const x = (this.columnWidth - diameter) / 2;
+      this.ctx.fillStyle = style.fill;
+      this.ctx.fillRect(x, canvasTop, diameter, canvasHeight);
+      this.ctx.strokeStyle = style.stroke;
+      this.ctx.strokeRect(x, canvasTop, diameter, canvasHeight);
+    }
+  }
+
+  /** Отрисовка центральных вертикальных линий. */
+  public drawVerticalLines(elements: CaratVerticalLineModel[], color: ColorHEX): void {
+    const scaleY = window.devicePixelRatio * this.scale;
+    this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
+
+    this.ctx.setLineDash(this.constructionSettings.verticalLineDash);
+    this.ctx.strokeStyle = color;
+    this.ctx.beginPath();
+    const x = this.columnWidth / 2;
+
+    for (const { top, bottom, width } of elements) {
+      if (bottom < this.yMin || top > this.yMax) continue;
+      this.ctx.lineWidth = width;
+      this.ctx.moveTo(x, scaleY * top);
+      this.ctx.lineTo(x, scaleY * bottom);
+    }
+    this.ctx.stroke();
+    this.ctx.setLineDash([]);
+  }
+
+  /** Отрисовка подписей элементов конструкции. */
+  public drawConstructionLabels(dataRect: Rectangle, labelRect: Rectangle, labels: any[]): void {
+    const scaleY = window.devicePixelRatio * this.scale;
+    this.setCurrentGroup(labelRect, null);
+    this.setTranslate(this.groupTranslateX, this.groupTranslateY);
+
+    const { labelMargin: boxMargin, labelPadding: boxPadding } = this.constructionSettings;
+    const { labelColor, labelBackground, labelTextHeight } = this.constructionSettings;
+    const { labelBorderColor, labelBorderThickness } = this.constructionSettings;
+
+    let boxY = boxMargin;
+    let labelY = boxMargin + boxPadding + labelTextHeight / 2;
+
+    const boxWidth = labelRect.width - 2 * boxMargin;
+    const maxLabelWidth = boxWidth - 2 * boxPadding;
+
+    const dataGroupCenter = this.trackRect.left + dataRect.left
+      + dataRect.width / 2 - this.groupTranslateX;
+
+    this.ctx.textAlign = 'left';
+    this.ctx.textBaseline = 'middle';
+    this.ctx.font = this.constructionSettings.labelFont;
+    this.setLineSettings(labelBorderThickness, labelBorderColor);
+
+    for (const { y, shift, lines } of labels) {
+      if (y < this.yMin || y > this.yMax) continue;
+      const boxHeight = lines.length * labelTextHeight + 2 * boxPadding;
+      if (boxY + boxHeight > labelRect.height) break;
+
+      this.ctx.beginPath();
+      this.ctx.moveTo(dataGroupCenter + shift, (y - this.yMin) * scaleY);
+      this.ctx.lineTo(0, labelY);
+      this.ctx.lineTo(boxMargin, labelY);
+      this.ctx.stroke();
+
+      this.ctx.strokeRect(boxMargin, boxY, boxWidth, boxHeight);
+      this.ctx.fillStyle = labelBackground;
+      this.ctx.fillRect(boxMargin, boxY, boxWidth, boxHeight);
+      this.ctx.fillStyle = labelColor;
+
+      for (let i = 0; i < lines.length; i++) {
+        const y = labelY + i * labelTextHeight
+        this.ctx.fillText(lines[i], boxMargin + boxPadding, y, maxLabelWidth);
+      }
+
+      boxY += boxHeight + boxMargin;
+      labelY += boxHeight + boxMargin;
+    }
+  }
+
+  /** Отрисовка каротажных кривых. */
   public drawCurves(elements: CaratCurveModel[]): void {
     const ratio = CaratDrawer.ratio;
     const scaleY = window.devicePixelRatio * this.scale;
@@ -489,6 +637,7 @@ export class CaratDrawer {
     this.ctx.restore();
   }
 
+  /** Отрисовка корреляций между треками. */
   public drawCorrelations(correlations: CaratCorrelation): void {
     const { rect, leftViewport, rightViewport } = correlations;
     this.setTranslate(rect.left, rect.top);

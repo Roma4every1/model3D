@@ -3,7 +3,7 @@ import { CaratCurveModel, CurveGroupState } from '../lib/types';
 
 
 /** Колонка каротажной диаграммы с кривыми. */
-export class CaratCurveColumn implements ICaratColumn {
+export class CaratCurveColumn {
   /** Ссылка на отрисовщик. */
   private readonly drawer: CaratDrawer;
   /** Подключённый канал со списком кривых. */

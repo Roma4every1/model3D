@@ -2,13 +2,14 @@ import { Dispatch } from 'redux';
 import { Thunk, StateGetter } from 'shared/lib';
 import { CurveManager } from '../lib/curve-manager';
 import { setCaratLoading } from './carat.actions';
+import { channelDictToRecords } from '../lib/channels';
 
 
 /** Обновляет данные каротажной диаграммы. */
 export function setCaratData(id: FormID, data: ChannelDict): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
-    const { objects, carats } = getState();
-    const { stage, loader } = carats[id];
+    const { objects, carats, channels } = getState();
+    const { stage, loader, lookupNames } = carats[id];
     const { well: { model: currentWell }, trace: { model: currentTrace } } = objects;
 
     if (currentTrace) {
@@ -30,6 +31,13 @@ export function setCaratData(id: FormID, data: ChannelDict): Thunk {
 
     const flag = ++loader.flag;
     const caratData = await loader.loadCaratData(stage.wellIDs, data);
+
+    if (!stage.actualLookup) {
+      const dict: ChannelDict = {};
+      lookupNames.forEach((name) => { dict[name] = channels[name]; });
+      const lookupData = channelDictToRecords(dict);
+      await stage.setLookupData(lookupData);
+    }
     if (flag !== loader.flag) return;
 
     stage.setData(caratData, loader.cache);
@@ -50,8 +58,9 @@ export function loadCaratCurves(id: FormID, group: ICaratColumnGroup): Thunk {
     group.groupCurves(visibleCurves);
     const loadedIDs = await loader.loadCurveData(visibleCurves.map(curve => curve.id), false);
     curveManager.setCurvePointData(loadedIDs, loader.cache);
-    loader.checkCacheSize();
+    if (track.constructionMode) track.transformer.transformCurves(visibleCurves);
 
+    loader.checkCacheSize();
     track.updateGroupRects();
     stage.updateTrackRects();
     stage.resize();

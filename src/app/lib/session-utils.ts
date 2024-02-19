@@ -23,8 +23,9 @@ export async function startNewSession(dispatch: AppDispatch, getState: StateGett
       if (intervalID !== null) clearInterval(intervalID);
       dispatch(showWarningMessage(t('messages.session-lost')));
     };
-    state.appState.sessionIntervalID = window.setInterval(extendSession, 2 * 60 * 1000);
+
     API.setSessionID(res.data);
+    state.appState.sessionIntervalID = window.setInterval(extendSession, 2 * 60 * 1000);
   } else {
     dispatch(showWarningMessage(res.data));
   }
@@ -33,6 +34,7 @@ export async function startNewSession(dispatch: AppDispatch, getState: StateGett
 
 /** Очищает данные текущей сессии, оставляя общие данные приложения. */
 function clearSessionData(state: WState): void {
+  API.setSessionID('');
   state.appState.sessionID = null;
   state.parameters = {};
   state.forms = {};

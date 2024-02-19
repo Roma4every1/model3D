@@ -1,5 +1,9 @@
 import { CaratDrawer } from './drawer';
 import { CaratColumn } from './column';
+import { WellBoreColumn } from './well-bore-column.ts';
+import { PumpColumn } from './pump-column';
+import { WellFaceColumn } from './face-column.ts';
+import { VerticalLineColumn } from './v-line-column';
 import { CaratCurveColumn } from './curve-column';
 import { CaratCurveModel, CaratIntervalModel } from '../lib/types';
 import { CaratColumnHeader } from './column-header';
@@ -33,13 +37,15 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   public readonly yAxis: CaratColumnYAxis;
 
   /** Каротажные колонки в группе. */
-  private readonly columns: CaratColumn[];
+  private readonly columns: ICaratColumn[];
   /** Каротажные колонки с кривыми. */
   private readonly curveColumn: CaratCurveColumn | null;
 
   private readonly channels: CaratAttachedChannel[];
   private readonly properties: Record<ChannelName, CaratColumnProperties>;
+
   public active: boolean;
+  public hasConstructionElements: boolean;
 
   constructor(rect: Rectangle, drawer: CaratDrawer, init: CaratColumnInit) {
     this.id = init.id;
@@ -50,6 +56,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     this.properties = init.properties;
     this.channels = init.channels;
     this.active = init.active;
+    this.hasConstructionElements = false;
 
     this.yAxis = init.yAxis;
     this.xAxis = init.xAxis ?? defaultSettings.xAxis;
@@ -79,8 +86,30 @@ export class CaratColumnGroup implements ICaratColumnGroup {
 
       const columnRect = {top: 0, left: 0, width: rect.width, height};
       const properties = init.properties[attachedChannel.name];
-      this.columns.push(new CaratColumn(columnRect, drawer, attachedChannel, properties));
+
+      if (channelType === 'bore') {
+        this.hasConstructionElements = true;
+        this.columns.push(new WellBoreColumn(columnRect, drawer, attachedChannel, properties));
+      } else if (channelType === 'pump') {
+        this.hasConstructionElements = true;
+        this.columns.push(new PumpColumn(columnRect, drawer, attachedChannel));
+      } else if (channelType === 'face') {
+        this.hasConstructionElements = true;
+        this.columns.push(new WellFaceColumn(columnRect, drawer, attachedChannel));
+      } else if (channelType === 'vertical') {
+        this.columns.push(new VerticalLineColumn(columnRect, drawer, attachedChannel, properties));
+      } else {
+        this.columns.push(new CaratColumn(columnRect, drawer, attachedChannel, properties));
+      }
     }
+    // каротажные элементы должны идти после элементов конструкции
+    this.columns.sort((a, b) => {
+      const aIsCaratColumn = a instanceof CaratColumn;
+      const bIsCaratColumn = b instanceof CaratColumn;
+      if (aIsCaratColumn && !bIsCaratColumn) return -1;
+      if (!aIsCaratColumn && bIsCaratColumn) return 1;
+      return 0;
+    });
 
     if (curveSetChannel && curveDataChannel) {
       const columnRect = {top: 0, left: 0, width: rect.width, height};
@@ -113,6 +142,7 @@ export class CaratColumnGroup implements ICaratColumnGroup {
       curveColumn: this.curveColumn?.copy() ?? null,
       channels: this.channels,
       properties: this.properties,
+      hasConstructionElements: this.hasConstructionElements,
     };
     Object.setPrototypeOf(copy, CaratColumnGroup.prototype);
     return copy as any as CaratColumnGroup;
@@ -288,8 +318,8 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     }
   }
 
-  public setLookupData(lookupData: ChannelRecordDict): void {
-    for (const column of this.columns) column.setLookupData(lookupData);
+  public async setLookupData(lookupData: ChannelRecordDict): Promise<void> {
+    for (const column of this.columns) await column.setLookupData(lookupData);
     if (this.curveColumn) this.curveManager.setStyleData(lookupData);
   }
 

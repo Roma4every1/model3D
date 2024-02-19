@@ -81,21 +81,33 @@ interface ClientConfiguration {
 }
 
 /** Список информационных систем. */
-type SystemList = WellManagerSystem[];
+type SystemList = SystemInfo[];
 
-/** Информационная система Well Manager.
+/** Информация о системе Well Manager.
  * + `id`: {@link SystemID}
  * + `displayName`: {@link DisplayName}
+ * + `displayNameShort`: {@link DisplayName}
  * + `description: string`
+ * + `version: string | null`
+ * + `color: string`
  * */
-interface WellManagerSystem {
+interface SystemInfo {
   /** Идентификатор системы. */
   id: SystemID;
-  /** Название системы */
+  /** Заголовок системы. */
   displayName: DisplayName;
+  /** Краткое описание системы. */
+  displayNameShort: DisplayName;
   /** Описание системы. */
   description: string;
+  /** Номер версии системы. */
+  version: string | null;
+  /** Акцентный цвет системы. */
+  color: string;
 }
 
-/** Идентификатор системы. */
+/** Идентификатор системы.
+ * @example
+ * "GTM_SYSTEM", "PREPARE_SYSTEM"
+ * */
 type SystemID = string;

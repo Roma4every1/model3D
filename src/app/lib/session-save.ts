@@ -6,8 +6,6 @@ import { caratStateToSettings } from 'features/carat';
 
 /** Модель, используемая в серверных запросах для сохранения сессии. */
 export interface SessionToSave {
-  /** ID сохраняемой сессии. */
-  sessionId: SessionID;
   /** Параметры главной формы и презентаций. */
   parameters: ParametersToSave;
   /** Состояние дочерних форм презентаций. */
@@ -35,7 +33,6 @@ type LayoutsToSave = ({id: ClientID} & IJsonModel)[];
 /** Конвертирует состояние приложения в модель сохраняемой сессии. */
 export function getSessionToSave(state: WState): SessionToSave {
   return {
-    sessionId: state.appState.sessionID,
     parameters: getParametersToSave(state.parameters),
     children: getChildrenToSave(state.root, state.presentations),
     layout: getLayoutsToSave(state.root, state.presentations),

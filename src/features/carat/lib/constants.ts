@@ -4,10 +4,25 @@ import { CaratDrawerConfig } from '../rendering/drawer-settings';
 /** Значения некоторых настроек по умолчанию. */
 export const defaultSettings = {
   scale: 400,
-  xAxis: {numberOfMarks: 2, grid: false},
   yAxisStep: 5,
-  curveStyle: {thickness: 2, color: '#605656'},
-  intervalStyle: {stroke: '#888888', fill: '#e8e8e8'},
+  xAxis: {
+    numberOfMarks: 2,
+    grid: false,
+  },
+  curveStyle: {
+    thickness: 2,
+    color: '#605656',
+  },
+  intervalStyle: {
+    stroke: '#888888',
+    fill: '#e8e8e8',
+  },
+  wellBoreElementStyle: {
+    innerDiameter: '#d9d9d9',
+    outerDiameter: '#808080',
+    cement: '#ffa500',
+  },
+  verticalLineColor: '#007dea',
 };
 
 /** Ограничения на различные настройки каротажа. */
@@ -46,6 +61,30 @@ export const caratChannelCriterionDict: Record<CaratChannelType, ChannelCriterio
     well: 'WELL ID',
     inclinometry: 'INCLINOMETRY',
   },
+  'bore': {
+    well: 'WELL ID', top: 'TOP', bottom: 'BASE',
+    innerDiameter: 'IN_D', outerDiameter: 'OUT DIAMETER',
+    cement: 'CEMENT', label: 'LABEL_ZEM',
+  },
+  'pump': {
+    well: 'WELL ID', top: 'TOP', bottom: 'BASE',
+    pumpID: 'PUMP IMAGE', pumpName: 'NAME', label: 'LABEL_SP',
+  },
+  'face': {
+    well: 'WELL ID',
+    top: 'TOP', bottom: 'BASE', diameter: 'OUT_D',
+    type: 'TYPE', date: 'DT', label: 'LABEL_ZB',
+  },
+  'vertical': {
+    well: 'WELL ID',
+    top: 'TOP', bottom: 'BASE', width: 'WIDTH',
+  },
+};
+
+/** Канал с картинками насоса. */
+export const pumpImageCriterion: ChannelCriterion = {
+  id: 'LOOKUPCODE',
+  image: 'LOOKUPVALUE',
 };
 
 /** Свойства для идентификации канала с данными инклинометрии. */
@@ -122,5 +161,21 @@ export const drawerConfig: CaratDrawerConfig = {
   },
   correlation: {
     thickness: 1,
+  },
+  construction: {
+    label: {
+      font: {size: 12},
+      color: '#111111',
+      background: '#fff69b',
+      border: {color: '#cb7b7a', thickness: 2},
+      margin: 8,
+      padding: 6,
+    },
+    face: {
+      borderThickness: 2,
+    },
+    vertical: {
+      lineDash: [10, 10],
+    },
   },
 };

@@ -29,7 +29,7 @@ export function applyStyle(
     const info = createColumnInfo(dict[lookupName], curveColorCriterion);
     if (info) attachment.curveColorLookup = {name: lookupName, info, dict: null};
   }
-  else if (attachment.type === 'lithology' || attachment.type === 'perforations') {
+  else if (['lithology', 'perforations', 'face'].includes(attachment.type)) {
     attachment.styles = [];
     for (const property of attachment.properties) {
       let styleChannel: ChannelName = null, styleInfo: CaratChannelInfo = null;

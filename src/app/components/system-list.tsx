@@ -13,7 +13,7 @@ interface SystemListProps {
 }
 interface SystemItemProps {
   config: ClientConfiguration;
-  system: WellManagerSystem;
+  system: SystemInfo;
   t: TFunction;
 }
 
@@ -26,7 +26,7 @@ export const SystemList = ({config, list}: SystemListProps) => {
   if (config === null) {
     mainContent = <SystemListSkeleton/>;
   } else if (list) {
-    const systemToListItem = (system: WellManagerSystem, i: number) => {
+    const systemToListItem = (system: SystemInfo, i: number) => {
       return <SystemItem key={i} system={system} config={config} t={t}/>;
     };
     mainContent = <div>{list.map(systemToListItem)}</div>;

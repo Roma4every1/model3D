@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'shared/lib';
 import { setSystemName } from '../store/app-state/app.actions';
@@ -22,25 +22,23 @@ export const SystemRoot = () => {
   const { systemID: paramsSystemID } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const isSystemExist = useMemo(() => {
-    return systemList && systemList.find(system => system.id === paramsSystemID) !== undefined;
-  }, [systemList, paramsSystemID]);
+  const defaultSession = searchParams.get('defaultSession') === 'true';
+  const systemExist = systemList && systemList.some(system => system.id === paramsSystemID);
 
-  const isNeedStartSession = useMemo(() => {
-    return isSystemExist && (stateNeedFetch(fetchState) || paramsSystemID !== systemID);
-  }, [fetchState, isSystemExist, systemID, paramsSystemID]);
+  const needStartSession = systemExist &&
+    (stateNeedFetch(fetchState) || paramsSystemID !== systemID || defaultSession);
 
+  // обновление ID системы
   useEffect(() => {
     if (paramsSystemID !== systemID) dispatch(setSystemName(paramsSystemID));
   }, [paramsSystemID, systemID, dispatch]);
 
+  // инициализация новой сессии
   useEffect(() => {
-    if (isNeedStartSession) {
-      const isDefault = searchParams.get('defaultSession') === 'true';
-      if (isDefault) setSearchParams({});
-      dispatch(startSession(isDefault));
-    }
-  }, [isNeedStartSession, searchParams, setSearchParams, dispatch]);
+    if (!needStartSession) return;
+    if (defaultSession) setSearchParams({});
+    dispatch(startSession(defaultSession));
+  }, [needStartSession, defaultSession, searchParams, setSearchParams, dispatch]);
 
   if (fetchState?.ok) return (
     <>
@@ -53,7 +51,7 @@ export const SystemRoot = () => {
 
   if (config === null) return <LoadingStatus loadingType={'systems'}/>;
   if (!systemList) return <LoadingStatus loadingType={'systems'} success={false}/>;
-  if (!isSystemExist) return <Navigate to={config.root} replace={true}/>;
+  if (!systemExist) return <Navigate to={config.root} replace={true}/>;
 
   if (stateNotLoaded(fetchState)) return <LoadingStatus loadingType={'session'}/>;
   return <LoadingStatus loadingType={'session'} success={false}/>;
