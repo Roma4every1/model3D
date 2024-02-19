@@ -14,7 +14,7 @@ export interface ParameterListProps {
 /** Компонент списка параметров. */
 export const ParameterList = ({list, onChange, channels}: ParameterListProps) => {
   if (list.length > 0 && list[0].editor === undefined) {
-    handleParameterList(list, channels);
+    handleParameterList(list);
   }
 
   const toElement = (parameter: Parameter, i: number) => {
