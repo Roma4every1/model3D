@@ -50,6 +50,8 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
   const isEditing = activeCell.edited;
   const selectedRecords = Object.keys(selection).map((n) => parseInt(n));
 
+  const isTableMode = state?.columnsSettings?.isTableMode
+
   const ref = useRef<HTMLDivElement>();
   const container = ref.current;
 
@@ -225,6 +227,31 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
 
   /* --- --- */
 
+  /** Двигает активную ячейку вертикально на 1 вверх. */
+  const prevCellHandler = (event: KeyboardEvent) => {
+    event.preventDefault();
+    if (isEditing && columnsState[activeColumnID].type === 'date') return;
+    event.ctrlKey ? toStart() : moveCellVertical(-1); return;
+  }
+
+  /** Двигает активную ячейку вертикально на 1 вниз. */
+  const nextCellHandler = (event: KeyboardEvent) => {
+    event.preventDefault();
+    if (isEditing && columnsState[activeColumnID].type === 'date') return;
+    event.ctrlKey ? toEnd() : moveCellVertical(1);
+    if (isBottomCell) addRecord(event.ctrlKey, state.total); return;
+  }
+
+  /** Двигает активную ячейку горизонтально на 1 влево. */
+  const prevColumnHandler = () => {
+    if (!isEditing) moveCellHorizontal(-1);
+  }
+
+  /** Двигает активную ячейку горизонтально на 1 вправо. */
+  const nextColumnHandler = () => {
+    if (!isEditing) moveCellHorizontal(1);
+  }
+
   const onKeyDown = (event: KeyboardEvent) => {
     switch (event.nativeEvent.key) {
       case 'Enter': {
@@ -254,23 +281,24 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
       }
       case 'ArrowUp':
       case 'PageUp': {
-        event.preventDefault();
-        if (isEditing && columnsState[activeColumnID].type === 'date') break;
-        event.ctrlKey ? toStart() : moveCellVertical(-1); break;
+        if (isTableMode) prevCellHandler(event);
+        else prevColumnHandler();
+        break;
       }
       case 'ArrowDown':
       case 'PageDown': {
-        event.preventDefault();
-        if (isEditing && columnsState[activeColumnID].type === 'date') break;
-        event.ctrlKey ? toEnd() : moveCellVertical(1);
-        if (isBottomCell) addRecord(event.ctrlKey, state.total); break;
+        if (isTableMode) nextCellHandler(event);
+        else nextColumnHandler();
+        break;
       }
       case 'ArrowLeft': {
-        if (!isEditing) moveCellHorizontal(-1);
+        if (isTableMode) prevColumnHandler();
+        else prevCellHandler(event);
         break;
       }
       case 'ArrowRight': {
-        if (!isEditing) moveCellHorizontal(1);
+        if (isTableMode) nextColumnHandler();
+        else nextCellHandler(event);
         break;
       }
       case 'Home': {
@@ -354,7 +382,7 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
       />
       <LocalizationProvider language={'ru-RU'}>
         <IntlProvider locale={'ru'}>
-          {state?.columnsSettings?.isTableMode ? <Grid
+          {isTableMode ? <Grid
             data={data.slice(skip, skip + pageSize)}
             dataItemKey={'id'} selectedField={'selected'}
             style={{height: '100%'}} rowHeight={28} total={total}
