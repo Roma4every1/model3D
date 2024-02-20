@@ -11,7 +11,7 @@ import programIcon from 'assets/images/reports/program.svg';
 
 interface ReportButtonProps {
   /** ID презентации. */
-  id: FormID;
+  id: ClientID;
   /** Модель отчёта. */
   report: ReportModel;
 }
@@ -23,7 +23,11 @@ export const ReportButton = ({id, report}: ReportButtonProps) => {
   const [opened, setOpened] = useState(false);
   const [processing, setProcessing] = useState(false);
 
-  const onClick = (!report.available || processing) ? undefined : () => {
+  const disabled = !report.available || processing;
+  const className = disabled ? 'disabled' : undefined;
+  const style = !report.available ? {filter: 'grayscale(1)'} : undefined;
+
+  const onClick = disabled ? undefined : () => {
     if (opened) return;
     setProcessing(true);
 
@@ -37,7 +41,7 @@ export const ReportButton = ({id, report}: ReportButtonProps) => {
 
   return (
     <>
-      <div className={report.available ? undefined : 'unavailable'} onClick={onClick}>
+      <div className={className} style={style} onClick={onClick}>
         {processing
           ? <Loader size={'medium'} type={'pulsing'} />
           : <img src={report.type === 'report' ? reportIcon : programIcon} alt={'run'}/>}

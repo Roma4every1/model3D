@@ -34,8 +34,7 @@
     }
   }
 
-  .unavailable {
-    filter: grayscale(1);
+  .disabled {
     cursor: default;
 
     &:hover {
