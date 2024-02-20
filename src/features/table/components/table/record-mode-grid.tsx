@@ -70,7 +70,10 @@ function getTableRecordModeRows(columns: TableColumnState[], activeRecord: Table
     row['field'] = c.field;
     row[c.field] = value;
     row[columnId] = c.title;
-    row[valueId] = c.type === 'date' ? stringifyLocalDate(value, '.', true) : value;
+    row[valueId] = c.type === 'date' && value ?
+      stringifyLocalDate(value, '.', true) :
+      value;
+
     return row;
   })
 }
