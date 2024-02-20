@@ -39,12 +39,18 @@ export function compareObjects(a: Record<any, any>, b: Record<any, any>): boolea
  * @example
  * stringifyLocalDate(new Date(2023, 6, 14)) => "2023-07-14"
  * */
-export function stringifyLocalDate(date: Date): string {
+export function stringifyLocalDate(
+  date: Date,
+  splitter = '-',
+  reverse = false
+): string {
   const month = date.getMonth() + 1;
   const monthString = month > 9 ? month : '0' + month;
   const day = date.getDate();
   const dayString = day > 9 ? day : '0' + day;
-  return `${date.getFullYear()}-${monthString}-${dayString}`;
+  const values = [date.getFullYear(), monthString, dayString];
+  if (reverse) values.reverse();
+  return values.join(splitter);
 }
 
 /* --- Trees --- */

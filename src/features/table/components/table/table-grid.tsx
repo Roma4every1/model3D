@@ -21,6 +21,7 @@ import { TableToolbar } from '../toolbar/table-toolbar';
 import { ValidationDialog } from '../dialogs/validation';
 import { DeleteRecordsDialog } from '../dialogs/delete-records';
 import { useTranslation } from 'react-i18next';
+import { RecordModeGrid } from './record-mode-grid.tsx';
 
 
 interface TableGridProps {
@@ -353,7 +354,7 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
       />
       <LocalizationProvider language={'ru-RU'}>
         <IntlProvider locale={'ru'}>
-          <Grid
+          {state?.columnsSettings?.isTableMode ? <Grid
             data={data.slice(skip, skip + pageSize)}
             dataItemKey={'id'} selectedField={'selected'}
             style={{height: '100%'}} rowHeight={28} total={total}
@@ -365,7 +366,12 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
             cellRender={cellRender}
           >
             {children}
-          </Grid>
+          </Grid> : <RecordModeGrid
+            state={state}
+            cellRender={cellRender}
+            activeRecord={records.find(r => r.id === activeCell.recordID) ?? records[0]}
+            actions={cellActions}
+          />}
         </IntlProvider>
       </LocalizationProvider>
     </div>
