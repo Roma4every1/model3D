@@ -1,5 +1,4 @@
 import { getBoundsByPoints, PIXEL_PER_METER } from './map-utils';
-import { checkDistancePoints } from './selecting-utils.ts';
 
 
 /** Прототип объекта слоя трассы. */
@@ -47,22 +46,18 @@ export function getFullTraceViewport(element: MapPolyline, canvas: MapCanvas): M
   return {centerX, centerY, scale: kScale * PIXEL_PER_METER};
 }
 
-/** Обновляет узлы трассы после клика по карте. */
-export function handleClick(model: TraceModel, eventPoint: Point, mapData: MapData): boolean {
-  const nearestPoint = mapData.points.find(p => checkDistancePoints(eventPoint, p, mapData.scale));
-  if (!nearestPoint) return false;
-
+/** Добавление/удаление точек к текущей трассе через клик по карте. */
+export function handleTraceClick(model: TraceModel, mapPoint: MapPoint): void {
   const nodes = model.nodes;
-  const nodeID = parseInt(nearestPoint.UWID);
+  const nodeID = parseInt(mapPoint.UWID);
 
   if (nodes.some(node => node.id === nodeID)) {
     model.nodes = nodes.filter(node => node.id !== nodeID);
   } else {
     const newNode: TraceNode = {
-      id: nodeID, name: nearestPoint.name,
-      x: nearestPoint.x, y: nearestPoint.y,
+      id: nodeID, name: mapPoint.name,
+      x: mapPoint.x, y: mapPoint.y,
     };
     model.nodes = [...nodes, newNode];
   }
-  return true;
 }

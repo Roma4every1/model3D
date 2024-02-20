@@ -2,14 +2,15 @@ import { MouseEvent, WheelEvent, useState, useMemo, useCallback, useEffect, useL
 import { useDispatch, useSelector } from 'shared/lib';
 import { LoadingStatus, TextInfo } from 'shared/ui';
 import { channelSelector } from 'entities/channels';
-import { traceStateSelector, wellStateSelector, setCurrentTrace } from 'entities/objects';
+import { traceStateSelector, wellStateSelector, setCurrentTrace, setCurrentWell } from 'entities/objects';
 import { updateParam } from 'entities/parameters';
 import { tableRowToString } from 'entities/parameters/lib/table-row';
 import { mapStateSelector } from '../store/map.selectors';
 import { fetchMapData, showMapPropertyWindow } from '../store/map.thunks';
 import { setMapField, setMapCanvas, applyTraceToMap } from '../store/map.actions';
-import { getFullTraceViewport, getTraceMapElement, handleClick } from '../lib/traces-map-utils';
+import { getFullTraceViewport, getTraceMapElement, handleTraceClick } from '../lib/traces-map-utils';
 import { getFullViewport } from '../lib/map-utils';
+import { checkDistancePoints } from '../lib/selecting-utils.ts';
 import { MapMode } from '../lib/constants.ts';
 
 
@@ -130,12 +131,29 @@ export const Map = ({id, parent, channels}: FormState) => {
   const onMouseDown = ({nativeEvent}: MouseEvent) => {
     if (nativeEvent.button !== 0) return;
     stage.handleMouseDown(nativeEvent);
-    if (!currentTrace || !traceEditing) return;
+    if (mapData.scale > wellsMaxScale) return;
+    const { x: clickX, y: clickY } = mapData;
 
-    // добавление/удаление точек к текущей трассе через клик по карте
-    const point = stage.eventToPoint(nativeEvent);
-    const changed = handleClick(currentTrace, point, mapData);
-    if (changed) dispatch(setCurrentTrace({...currentTrace}));
+    const needHandleTrace = currentTrace && traceEditing;
+    const needHandleWell = !needHandleTrace &&
+      !stage.getSelecting() && !stage.isElementEditing() && !stage.isElementCreating();
+    if (!needHandleWell && !needHandleTrace) return;
+
+    setTimeout(() => {
+      // если сразу после клика есть движение, то ничего делать не надо
+      if (mapData.x !== clickX || mapData.y !== clickY) return;
+
+      const point = stage.eventToPoint(nativeEvent);
+      const mapPoint = mapData.points.find(p => checkDistancePoints(point, p, mapData.scale));
+      if (!mapPoint) return;
+
+      if (needHandleTrace) {
+        handleTraceClick(currentTrace, mapPoint);
+        dispatch(setCurrentTrace({...currentTrace}));
+      } else {
+        dispatch(setCurrentWell(parseInt(mapPoint.UWID)));
+      }
+    }, 50);
   };
 
   const onMouseUp = ({nativeEvent}: MouseEvent) => {

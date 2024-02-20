@@ -1,4 +1,4 @@
-import { EditorProps } from './base-editor';
+import { EditorProps } from './editor-dict.ts';
 import { ChangeEvent, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';

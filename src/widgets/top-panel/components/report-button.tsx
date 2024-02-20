@@ -2,7 +2,7 @@ import { ThunkDispatch } from 'redux-thunk';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Loader } from '@progress/kendo-react-indicators';
-import { ReportParamList } from './report-param-list';
+import { ReportParameterList } from './report-parameter-list.tsx';
 import { initializeActiveReport, refreshReport } from 'entities/reports';
 
 import reportIcon from 'assets/images/reports/report.svg';
@@ -11,7 +11,7 @@ import programIcon from 'assets/images/reports/program.svg';
 
 interface ReportButtonProps {
   /** ID презентации. */
-  id: FormID;
+  id: ClientID;
   /** Модель отчёта. */
   report: ReportModel;
 }
@@ -23,7 +23,11 @@ export const ReportButton = ({id, report}: ReportButtonProps) => {
   const [opened, setOpened] = useState(false);
   const [processing, setProcessing] = useState(false);
 
-  const onClick = processing ? undefined : () => {
+  const disabled = !report.available || processing;
+  const className = disabled ? 'disabled' : undefined;
+  const style = !report.available ? {filter: 'grayscale(1)'} : undefined;
+
+  const onClick = disabled ? undefined : () => {
     if (opened) return;
     setProcessing(true);
 
@@ -37,13 +41,13 @@ export const ReportButton = ({id, report}: ReportButtonProps) => {
 
   return (
     <>
-      <div onClick={onClick}>
+      <div className={className} style={style} onClick={onClick}>
         {processing
           ? <Loader size={'medium'} type={'pulsing'} />
           : <img src={report.type === 'report' ? reportIcon : programIcon} alt={'run'}/>}
         <div>{report.displayName}</div>
       </div>
-      {opened && <ReportParamList
+      {opened && <ReportParameterList
         id={id} report={report}
         setOpened={setOpened} setProcessing={setProcessing}
       />}

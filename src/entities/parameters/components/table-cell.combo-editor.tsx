@@ -1,4 +1,4 @@
-import { EditorProps } from './base-editor';
+import { EditorProps } from './editor-dict.ts';
 import { getComboBoxItems } from '../lib/utils';
 import { tableCellToString } from '../lib/table-row';
 import { ComboBox, ComboBoxChangeEvent } from '@progress/kendo-react-dropdowns';

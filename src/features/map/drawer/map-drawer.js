@@ -1,5 +1,5 @@
-import * as _ from 'lodash';
 import parseColor from 'parse-color';
+import { once, chunk, isEqual, cloneDeep } from 'lodash';
 import { getLabelTextNumberArray } from './label-text-parser';
 import { fillPatterns } from '../../../shared/drawing';
 import { intersects } from './geom';
@@ -100,10 +100,10 @@ var field = declareType('field', {
   },
 
   loaded: (i) => {
-    i.sourceRenderDataMatrix = _.chunk(field._parseSourceRenderData(i.data), i.sizex); //reverse 'cause the source array isn't oriented right
+    i.sourceRenderDataMatrix = chunk(field._parseSourceRenderData(i.data), i.sizex); //reverse 'cause the source array isn't oriented right
     i.deltasPalette = field._getDeltasPalette(field._getRgbPaletteFromHex(i.palette[0].level));
     i.preCalculatedSpectre = field._getDeltasPreCalculatedPalettes(i.deltasPalette);
-    i.lastUsedPalette = _.cloneDeep(i.palette);
+    i.lastUsedPalette = cloneDeep(i.palette);
     i.bounds = field.bound(i);
   },
 
@@ -336,11 +336,11 @@ var field = declareType('field', {
     const context = options.context;
     const canvas = options.canvas;
 
-    if (!_.isEqual(i.palette[0].level, i.lastUsedPalette[0].level)) {
+    if (!isEqual(i.palette[0].level, i.lastUsedPalette[0].level)) {
       i.deltasPalette = field._getDeltasPalette(field._getRgbPaletteFromHex(i.palette[0].level));
       i.preCalculatedSpectre = field._getDeltasPreCalculatedPalettes(i.deltasPalette);
     }
-    i.lastUsedPalette = _.cloneDeep(i.palette);
+    i.lastUsedPalette = cloneDeep(i.palette);
 
     const width = canvas.width;
     const height = canvas.height;
@@ -398,7 +398,7 @@ var field = declareType('field', {
 
   _getRgbPaletteFromHex: (hexPalette) => {
     return hexPalette.map((item) => {
-      let hexColorsArr = _.chunk(item.color.slice(1).split(''), 2).map((i) => i.join(""));
+      let hexColorsArr = chunk(item.color.slice(1).split(''), 2).map((i) => i.join(""));
       return {
         hexColor: item.color,
         value: item.value,
@@ -758,7 +758,7 @@ var polyline = declareType('polyline', {
     if (currentLineConfig.length !== 0) {
       i.style = currentLineConfig[0];
     }
-    const pathNeeded = _.once(() => polyline.path(i, options));
+    const pathNeeded = once(() => polyline.path(i, options));
 
     if (i.isTrace) {
       context.lineCap = 'round';
@@ -834,7 +834,7 @@ var polyline = declareType('polyline', {
     if (context.setLineDash) context.setLineDash([]);
 
     if (i.style) {
-      const decorationPathNeeded = _.once(() => polyline.decorationPath(i, options, i.style));
+      const decorationPathNeeded = once(() => polyline.decorationPath(i, options, i.style));
       decorationPathNeeded();
       context.stroke();
       if (context.setLineDash) context.setLineDash([]);
@@ -1104,6 +1104,10 @@ export async function startPaint(canvas, map, options) {
     dotsPerMeter: window.devicePixelRatio * PIXEL_PER_METER,
   };
 
+  map.x = options.point.x;
+  map.y = options.point.y;
+  map.scale = coords.mapScale;
+
   try {
     for (const layer of map.layers) {
       if (!layer.visible || !layer.isScaleVisible(coords.mapScale)) continue;
@@ -1129,11 +1133,7 @@ export async function startPaint(canvas, map, options) {
         }
       }
     }
-
-    map.x = options.point.x;
-    map.y = options.point.y;
-    map.scale = coords.mapScale;
-    map.onDrawEnd(options.point, coords.mapScale);
+    map?.onDrawEnd(options.point, coords.mapScale);
   } catch (e) {
     // ...
   }

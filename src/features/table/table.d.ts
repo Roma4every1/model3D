@@ -9,6 +9,7 @@ type TableColumnID = string;
  * + `id`: {@link TableRecordID} — идентификатор
  * + `selected: boolean` — выделение
  * + `cells: any[]` — оригинальные значения
+ * + `style: CSSProperties` — переопределяемые CSS свойства ячеек
  * */
 type TableRecord = Record<TableColumnID, any>;
 
@@ -17,6 +18,8 @@ type TableStates = Record<FormID, TableState>;
 
 /** Состояние табличной формы. (dataset). */
 interface TableState {
+  /** Класс, отвечающий работу с записями таблицы. */
+  recordHandler: ITableRecordHandler;
   /** ID для API редактирования записей. */
   tableID: TableID;
   /** Название канала, который визуализируется. */
@@ -45,6 +48,18 @@ interface TableState {
   edit: TableEditState;
   /** Количество записей в таблице. */
   total: number;
+}
+
+/** Класс, отвечающий работу с записями таблицы. */
+interface ITableRecordHandler {
+  setColumns(columns: TableColumnsState, channelColumns?: ChannelColumn[]): void;
+  setLookupData(lookupData: ChannelDict): void;
+
+  createRecord(id: TableRecordID, cells: any[]): TableRecord;
+  createRecords(data: ChannelData): TableRecord[];
+  validateRecord(record: TableRecord): any[]; // RowErrors
+  rollbackRecord(record: TableRecord): void;
+  applyRecordEdit(record: TableRecord): void;
 }
 
 /** Ифнормация о свойствах колонок таблицы.

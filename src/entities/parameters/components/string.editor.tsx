@@ -1,4 +1,4 @@
-import { EditorProps } from './base-editor';
+import { EditorProps } from './editor-dict.ts';
 import { InputChangeEvent, Input } from '@progress/kendo-react-inputs';
 
 

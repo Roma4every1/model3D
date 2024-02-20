@@ -23,6 +23,7 @@ interface DataSetColumnsSettings {
   isTableMode: boolean;
   alternate: boolean;
   alternateRowBackground: any;
+  RowStyleSelector: RowStyleRule[];
 }
 
 export interface DataSetColumnSettings {
@@ -32,7 +33,7 @@ export interface DataSetColumnSettings {
   headerForeground: string;
   background: string;
   foreground: string;
-  typeFormat: any;
+  typeFormat: string;
   width: number;
   isReadOnly: boolean;
   isHeaderRotated: boolean;
@@ -41,6 +42,15 @@ export interface DataSetColumnSettings {
   isVisible: boolean;
   isContainsSearchMode: boolean;
 }
+
+export interface RowStyleRule {
+  type: RowStyleConditionType;
+  param: string;
+  propertyName: string;
+  background: ColorHEX;
+  foreground: ColorHEX;
+}
+export type RowStyleConditionType = 'equal' | 'not_empty';
 
 export type DataSetColumnDict = Record<TableColumnID, DataSetColumnSettings>;
 

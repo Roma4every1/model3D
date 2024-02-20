@@ -1,4 +1,4 @@
-import { EditorProps } from './base-editor';
+import { EditorProps } from './editor-dict.ts';
 import { DatePicker, DatePickerChangeEvent } from '@progress/kendo-react-dateinputs';
 
 

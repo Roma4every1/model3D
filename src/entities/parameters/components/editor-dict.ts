@@ -1,4 +1,4 @@
-import { FunctionComponent, createElement } from 'react';
+import { FunctionComponent } from 'react';
 import { BoolEditor } from './bool.editor';
 import { DateIntervalEditor } from './date-interval.editor';
 import { DateEditor } from './date.editor';
@@ -8,18 +8,17 @@ import { StringComboEditor } from './string.combo-editor';
 import { StringEditor } from './string.editor';
 import { TableCellComboEditor } from './table-cell.combo-editor';
 import { TableRowComboEditor } from './table-row.combo-editor';
-import './parameters.scss';
 
 
-export interface EditorProps<Param extends Parameter = Parameter> {
-  parameter: Param,
-  channel?: Channel,
-  update: (value: Param['value']) => void,
+export interface EditorProps<P extends Parameter = Parameter> {
+  parameter: P;
+  channel?: Channel;
+  update: (value: P['value']) => void;
 }
 
 
 /** Словарь для выбора редактора по типу; используется в компоненте `BaseEditor`. */
-const editorsDict: Record<string, FunctionComponent<EditorProps>> = {
+const editorDict: Record<string, FunctionComponent<EditorProps>> = {
   boolTextEditor: BoolEditor,
   dateIntervalTextEditor: DateIntervalEditor,
   dateKMNEditor: DateEditor,
@@ -34,14 +33,17 @@ const editorsDict: Record<string, FunctionComponent<EditorProps>> = {
   tableRowTreeMultiEditor: TableRowComboEditor,
 };
 
+export function handleParameterList(list: Parameter[]): void {
+  for (const parameter of list) {
+    if (!parameter.editorType) { parameter.editor = null; continue; }
+    parameter.editor = editorDict[parameter.editorType] ?? StringEditor;
+    if (!parameter.nullDisplayValue) parameter.nullDisplayValue = 'Нет значения';
+  }
+  list.sort(parameterCompareFn);
+}
 
-export const BaseEditor = (props: EditorProps) => {
-  const SpecificEditor = editorsDict[props.parameter.editorType] || StringEditor;
-
-  return (
-    <div className={'parameter'}>
-      <span>{props.parameter.displayName}</span>
-      {createElement<EditorProps>(SpecificEditor, props)}
-    </div>
-  );
-};
+function parameterCompareFn(a: Parameter, b: Parameter): number {
+  if (a.editorDisplayOrder === null) return 1;
+  if (b.editorDisplayOrder === null) return -1;
+  return a.editorDisplayOrder - b.editorDisplayOrder;
+}

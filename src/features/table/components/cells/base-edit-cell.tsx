@@ -15,14 +15,14 @@ export interface EditCellProps<Value = any> {
 
 const cellMetadataInt: EditCellMetadata = {
   regex: /^[-+]?\d+$/,
-  parse: parseInt
+  parse: parseInt,
 };
 const cellMetadataReal: EditCellMetadata = {
   regex: /^[+-]?((\d+([.,]\d*)?)|([.,]\d+))$/,
   parse: (str) => parseFloat(str.replace(',', '.')),
 };
 
-const cellsDict: Record<TableColumnType, FunctionComponent<EditCellProps>> = {
+const cellDict: Record<TableColumnType, FunctionComponent<EditCellProps>> = {
   'bool': EditCellBool,
   'int' : EditCellTextInput.bind(cellMetadataInt),
   'real': EditCellTextInput.bind(cellMetadataReal),
@@ -33,5 +33,5 @@ const cellsDict: Record<TableColumnType, FunctionComponent<EditCellProps>> = {
 };
 
 export const BaseEditCell = (props: EditCellProps) => {
-  return createElement(cellsDict[props.column.type ?? 'text'], props);
+  return createElement(cellDict[props.column.type ?? 'text'], props);
 };

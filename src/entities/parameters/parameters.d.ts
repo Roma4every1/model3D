@@ -159,25 +159,27 @@ type ParamTableRow = FormParamProto<'tableRow', ParamValueTableRow>;
 type ParamValueTableRow = string;
 
 interface FormParamProto<Type extends ParameterType, Value> {
-  id: ParameterID;
-  type: Type;
+  readonly id: ParameterID;
+  readonly type: Type;
   value: Value;
   canBeNull?: boolean;
-  displayName?: string;
+  readonly displayName?: string;
+
+  editor?: any; // FunctionComponent<EditorProps>>
   editorType?: ParameterEditorType;
-  editorDisplayOrder?: number;
+  readonly editorDisplayOrder?: number;
 
   /** Параметры, смена значений которых приводит к сбросу значения. */
   dependsOn?: ParameterID[];
   /** Каналы, которые зависят от данного параметра. */
   relatedChannels?: ChannelName[];
-  /** Каналы отчётов, которые зависят от данного параметра. */
+  /** Каналы процедур, которые зависят от данного параметра. */
   relatedReportChannels?: RelatedReportChannels[];
-  /** Программы, видимость которых зависят от данного параметра. */
+  /** Процедуры, доступность которых зависят от данного параметра. */
   relatedReports?: ReportID[];
 
-  externalChannelName: ChannelName;
-  showNullValue: boolean;
+  readonly externalChannelName: ChannelName;
+  readonly showNullValue: boolean;
   nullDisplayValue: string;
 }
 

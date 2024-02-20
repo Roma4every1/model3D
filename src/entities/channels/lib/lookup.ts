@@ -63,26 +63,31 @@ export function createLookupTree(rows: ChannelRow[], columnsInfo: LookupColumns)
   const idIndex = columnsInfo.id.index;
   const valueIndex = columnsInfo.value.index;
   const parentIndex = columnsInfo.parent.index;
-  const dict: LookupDict = {};
 
-  const allNodes: LookupTreeNode[] = rows.map((row) => {
+  const lookupDict: LookupDict = {};
+  const nodeDict: Record<LookupItemID, LookupTreeNode> = {};
+
+  const allNodes = rows.map((row): LookupTreeNode => {
     const cells = row.Cells;
-    const id = cells[idIndex], value = cells[valueIndex] ?? '';
-    dict[id] = value;
-    return {id, value, parent: cells[parentIndex]};
+    const id = cells[idIndex];
+    const value = cells[valueIndex] ?? '';
+    const node = {id, value, parent: cells[parentIndex]};
+    nodeDict[id] = node;
+    lookupDict[id] = value;
+    return node;
   });
-  const topLevelNodes: LookupTree = allNodes.filter(node => node.parent === null);
 
-  const findChildren = (localNodes: LookupTreeNode[]) => {
-    for (const node of localNodes) {
-      const id = node.id;
-      const children = allNodes.filter(n => n.parent === id);
-      if (children.length === 0) continue;
+  const topNodes: LookupTreeNode[] = [];
+  for (const node of allNodes) {
+    let parentNode: LookupTreeNode;
+    if (node.parent !== null) parentNode = nodeDict[node.parent];
 
-      node.children = children;
-      findChildren(children);
+    if (parentNode === undefined) {
+      topNodes.push(node);
+    } else {
+      if (!parentNode.children) parentNode.children = [];
+      parentNode.children.push(node);
     }
-  };
-  findChildren(topLevelNodes);
-  return [topLevelNodes, dict] as [LookupTree, LookupDict];
+  }
+  return [topNodes, lookupDict] as [LookupTree, LookupDict];
 }

@@ -7,7 +7,7 @@ import { ParameterList } from 'entities/parameters';
 import { updateReportParameter, runReport } from 'entities/reports';
 
 
-interface ReportParamListProps {
+interface ReportParameterListProps {
   id: ClientID;
   report: ReportModel;
   setOpened: (opened: boolean) => void;
@@ -16,7 +16,7 @@ interface ReportParamListProps {
 
 
 /** Редактор параметров процедуры. */
-export const ReportParamList = ({id, report, setOpened, setProcessing}: ReportParamListProps) => {
+export const ReportParameterList = ({id, report, setOpened, setProcessing}: ReportParameterListProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch<ThunkDispatch<WState, any, any>>();
 
@@ -33,7 +33,7 @@ export const ReportParamList = ({id, report, setOpened, setProcessing}: ReportPa
 
   return (
     <Dialog title={t(`report.${report.type}-parameters`)} onClose={close} style={{zIndex: 99}}>
-      <ParameterList params={parameters} channels={channels} onChange={onParameterChange}/>
+      <ParameterList list={parameters} channels={channels} onChange={onParameterChange}/>
       <DialogActionsBar>
         <Button onClick={run} disabled={!canRun}>{t('base.run')}</Button>
         <Button onClick={close}>{t('base.cancel')}</Button>
