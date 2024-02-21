@@ -1,11 +1,11 @@
 import { EditorProps } from './editor-dict.ts';
-import { CheckboxChangeEvent, Checkbox } from '@progress/kendo-react-inputs';
+import { Checkbox } from 'antd';
 
 
 export const BoolEditor = ({parameter, update}: EditorProps<ParamBool>) => {
   let value = parameter.value;
   if (value === null) value = false;
 
-  const onChange = (e: CheckboxChangeEvent) => update(e.value);
-  return <Checkbox value={value} onChange={onChange}/>;
+  const onChange = (e) => update(e.target.checked);
+  return <Checkbox checked={value} onChange={onChange}/>;
 };

@@ -1,6 +1,11 @@
 import { useEffect } from 'react';
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'shared/lib';
+
+import { ConfigProvider } from 'antd';
+import { ru_RU } from 'shared/locales';
+import { createAntDesignTheme, antdComponentSize } from 'shared/ui';
+
 import { setSystemName } from '../store/app-state/app.actions';
 import { appStateSelector } from '../store/app-state/app.selectors';
 import { startSession } from '../store/root-form/root-form.thunks';
@@ -23,9 +28,9 @@ export const SystemRoot = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const defaultSession = searchParams.get('defaultSession') === 'true';
-  const systemExist = systemList && systemList.some(system => system.id === paramsSystemID);
+  const systemInfo = systemList?.find(system => system.id === paramsSystemID);
 
-  const needStartSession = systemExist &&
+  const needStartSession = systemInfo &&
     (stateNeedFetch(fetchState) || paramsSystemID !== systemID || defaultSession);
 
   // обновление ID системы
@@ -40,18 +45,21 @@ export const SystemRoot = () => {
     dispatch(startSession(defaultSession));
   }, [needStartSession, defaultSession, searchParams, setSearchParams, dispatch]);
 
-  if (fetchState?.ok) return (
-    <>
-      <Dock config={config}/>
-      <TopToolbar config={config}/>
-      <WindowHandler/>
-      <Notifications/>
-    </>
-  );
+  if (fetchState?.ok) {
+    const theme = createAntDesignTheme(systemInfo.color);
+    return (
+      <ConfigProvider locale={ru_RU} theme={theme} componentSize={antdComponentSize}>
+        <Dock config={config}/>
+        <TopToolbar config={config}/>
+        <WindowHandler/>
+        <Notifications/>
+      </ConfigProvider>
+    );
+  }
 
   if (config === null) return <LoadingStatus loadingType={'systems'}/>;
   if (!systemList) return <LoadingStatus loadingType={'systems'} success={false}/>;
-  if (!systemExist) return <Navigate to={config.root} replace={true}/>;
+  if (!systemInfo) return <Navigate to={config.root} replace={true}/>;
 
   if (stateNotLoaded(fetchState)) return <LoadingStatus loadingType={'session'}/>;
   return <LoadingStatus loadingType={'session'} success={false}/>;

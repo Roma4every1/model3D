@@ -3,6 +3,10 @@ import { I18nLabel } from 'flexlayout-react';
 import { TFunction, initReactI18next } from 'react-i18next';
 import { load, loadMessages } from '@progress/kendo-react-intl';
 
+import ru_RU from 'antd/locale/ru_RU';
+import dayjs from 'dayjs';
+import 'dayjs/locale/ru';
+
 import likelySubtags from 'cldr-core/supplemental/likelySubtags.json';
 import currencyData from 'cldr-core/supplemental/currencyData.json';
 import weekData from 'cldr-core/supplemental/weekData.json';
@@ -27,6 +31,9 @@ i18n.use(initReactI18next).init({
   load(likelySubtags, currencyData, weekData, numbers, currencies, caGregorian, dateFields, timeZoneNames);
 });
 
+dayjs.locale('ru');
+
+export { ru_RU };
 export const t: TFunction = i18n.t;
 
 /** Локализация для flex-layout-react. */

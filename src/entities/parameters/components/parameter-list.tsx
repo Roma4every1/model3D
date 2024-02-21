@@ -1,6 +1,5 @@
-import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
 import { createElement } from 'react';
-import { EditorProps, handleParameterList } from './editor-dict.ts';
+import { EditorProps, handleParameterList } from './editor-dict';
 import './parameters.scss';
 
 
@@ -14,7 +13,7 @@ export interface ParameterListProps {
 /** Компонент списка параметров. */
 export const ParameterList = ({list, onChange, channels}: ParameterListProps) => {
   if (list.length > 0 && list[0].editor === undefined) {
-    handleParameterList(list);
+    handleParameterList(list, channels);
   }
 
   const toElement = (parameter: Parameter, i: number) => {
@@ -29,12 +28,5 @@ export const ParameterList = ({list, onChange, channels}: ParameterListProps) =>
       </div>
     );
   };
-
-  return (
-    <LocalizationProvider language={'ru-RU'}>
-      <IntlProvider locale={'ru'}>
-        <div>{list.filter(p => Boolean(p.editor)).map(toElement)}</div>
-      </IntlProvider>
-    </LocalizationProvider>
-  );
+  return <div>{list.filter(p => Boolean(p.editor)).map(toElement)}</div>;
 };
