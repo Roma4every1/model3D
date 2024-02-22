@@ -5,45 +5,47 @@ import { tableRowToString, stringToTableCell } from '../lib/table-row';
 
 
 interface TreeNode {
-  /** Значение селекта, используется значение из колонки `LOOKUPCODE`. */
-  value: string;
+  /** Значение селекта, для оптимизации используется индекс в массиве. */
+  value: number;
   /** Подпись, которая показывается в выпадающем списке. */
   title: string;
   /** Подпись в нижнем регистре, использующася для поиска. */
   titleLower: string;
   /** Дочерние узлы. */
   children?: TreeNode[];
+  /** Значение из колонки с кодом, приведённое к строке. */
+  id: string;
+  /** Значение из колонки с родителем, приведённое к строке. */
+  parent: string | null;
   /** Исходная запись из канала. */
   row: ChannelRow;
-  /** ID родителя. */
-  parent: number | string;
 }
 type TreeData = TreeNode[];
 
 
 export const TableRowTreeEditor = ({parameter, update, channel}: EditorProps<ParamTableRow>) => {
   const parameterValue = parameter.value;
-  const nullValue = parameter.showNullValue ? '' : undefined;
+  const nullValue = parameter.showNullValue ? -1 : undefined;
   const [value, setValue] = useState(nullValue);
 
   const rows = channel?.data?.rows;
   const lookupColumns = channel ? channel.info.lookupColumns : null;
 
-  const [treeData, nodeDict] = useMemo(() => {
+  const [treeData, allNodes] = useMemo(() => {
     return getTreeData(parameter, rows, lookupColumns);
   }, [parameter, rows, lookupColumns]);
 
   useEffect(() => {
     if (parameterValue) {
       const valueID = stringToTableCell(parameterValue, 'LOOKUPCODE');
-      const valueNode = nodeDict[valueID];
+      const valueNode = allNodes.find(node => node.id === valueID);
       setValue(valueNode ? valueNode.value : nullValue);
     } else {
       setValue(nullValue);
     }
-  }, [parameterValue, nodeDict, nullValue]);
+  }, [parameterValue, allNodes, nullValue]);
 
-  const onSelect = (value: string, {row}: TreeNode) => {
+  const onSelect = (value: number, {row}: TreeNode) => {
     if (row) {
       update(tableRowToString(channel, row));
     } else {
@@ -70,13 +72,13 @@ function filterTreeNode(value: string, node: TreeNode): boolean {
 }
 
 /** Создаёт дерево возможных значений и словарь данных канала-справочника. */
-function getTreeData(parameter: Parameter, rows: ChannelRow[], lookupColumns: LookupColumns): [TreeNode[], Record<LookupItemID, TreeNode>] {
+function getTreeData(parameter: Parameter, rows: ChannelRow[], lookupColumns: LookupColumns): [TreeNode[], TreeNode[]] {
   const nullNode: TreeNode = {
-    value: '', title: parameter.nullDisplayValue, titleLower: '',
-    row: null, parent: null,
+    value: -1, title: parameter.nullDisplayValue, titleLower: '',
+    row: null, id: null, parent: null,
   };
   if (!rows || !rows.length || !lookupColumns) {
-    return [parameter.showNullValue ? [nullNode] : [], {}];
+    return [parameter.showNullValue ? [nullNode] : [], []];
   }
 
   const idIndex = lookupColumns.id.index;
@@ -84,14 +86,18 @@ function getTreeData(parameter: Parameter, rows: ChannelRow[], lookupColumns: Lo
   const parentIndex = lookupColumns.parent.index;
 
   const nodeDict: Record<LookupItemID, TreeNode> = {};
-  const allNodes = rows.map((row): TreeNode => {
-    const id = row.Cells[idIndex]?.toString() ?? '';
-    const value = row.Cells[valueIndex] ?? id;
-    const parent = row.Cells[parentIndex];
+  const allNodes = rows.map((row, i: number): TreeNode => {
+    const idCell = row.Cells[idIndex];
+    const valueCell = row.Cells[valueIndex];
+    const parentCell = row.Cells[parentIndex];
+
+    const id = idCell ? idCell.toString() : '';
+    const title = valueCell ? valueCell.toString() : id;
+    const parent = parentCell ? parentCell.toString() : null;
 
     const node: TreeNode = {
-      value: id, title: value, titleLower: value.toLowerCase(),
-      children: [], row, parent,
+      value: i, title, titleLower: title.toLowerCase(),
+      children: [], id, parent, row,
     };
     nodeDict[id] = node;
     return node;
@@ -109,5 +115,5 @@ function getTreeData(parameter: Parameter, rows: ChannelRow[], lookupColumns: Lo
     }
   }
   if (parameter.showNullValue) treeData.push(nullNode);
-  return [treeData, nodeDict];
+  return [treeData, allNodes];
 }
