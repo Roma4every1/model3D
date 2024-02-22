@@ -9,7 +9,7 @@ export async function initialize(dispatch: Dispatch, getState: StateGetter) {
   const resConfig = await getClientConfig();
   const config = createClientConfig(resConfig);
 
-  if (config.devMode) initializeDevTools(dispatch, getState);
+  if (config.devMode) window['store'] = new WMDevTools(dispatch, getState);
   API.setBase(config.webServicesURL);
 
   const systemList = await appAPI.getSystemList();
@@ -28,7 +28,43 @@ async function getClientConfig(): Promise<unknown> {
   }
 }
 
-/** Инициализация инструментов разработчика. */
-function initializeDevTools(dispatch: Dispatch, getState: StateGetter): void {
-  window['store'] = {dispatch, getState};
+class WMDevTools {
+  constructor(
+    public readonly dispatch: Dispatch,
+    public readonly getState: StateGetter,
+  ) {}
+
+  public parameter(id: ParameterID): Parameter | null {
+    for (const list of Object.values(this.getState().parameters)) {
+      const parameter = list.find(p => p.id === id);
+      if (parameter) return parameter;
+    }
+    return null;
+  }
+
+  public parameters(id?: ClientID): Parameter[] {
+    const state = this.getState();
+    if (!id) id = state.root.id;
+    return state.parameters[id];
+  }
+
+  public channelRows(name: ChannelName, columns: boolean = false): any[][] | null {
+    const channel = this.getState().channels[name];
+    if (!channel || !channel.data) return null;
+    const table = channel.data.rows.map(r => r.Cells);
+    if (columns) table.unshift(channel.data.columns.map(c => c.Name));
+    return table;
+  }
+
+  public tables(): TableState[] {
+    return Object.values(this.getState().tables);
+  }
+
+  public maps(): MapState[] {
+    return Object.values(this.getState().maps.single);
+  }
+
+  public carats(): CaratState[] {
+    return Object.values(this.getState().carats);
+  }
 }
