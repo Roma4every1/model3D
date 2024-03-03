@@ -48,15 +48,15 @@ export const CustomCell = ({td, props, state, actions}: CustomCellProps) => {
   }
 
   let cell = null;
+  const value = dataItem ? dataItem[columnID] : null;
   if (isActiveCell && activeCell.edited) {
-    const value = dataItem[columnID];
     const update = column.type
       ? (value: any) => actions.setValue(columnID, recordID, value)
       : () => {};
     cell = <BaseEditCell column={column} value={value} actions={actions} update={update}/>;
   } else {
     if (column.lookupChannel) {
-      cell = column.lookupDict[dataItem[columnID]];
+      cell = column.lookupDict ? column.lookupDict[value] : null;
     }
     if (column.linkedTableChannel) {
       const open = () => actions.openLinkedTable(columnID);
