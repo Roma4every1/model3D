@@ -1,6 +1,6 @@
 import { BaseAPI, API } from 'shared/lib';
 import { IJsonModel } from 'flexlayout-react';
-import { handleParam } from 'entities/parameters';
+import { handleParam, serializeParameter } from 'entities/parameters';
 
 
 type FormSettingsDTO = DockSettings | GridFormSettings | FormSettings;
@@ -55,6 +55,17 @@ export class FormsAPI {
     const req: WRequest = {path: 'getChannelsForForm', query: {formId: id}};
     const res = await this.baseAPI.request<ChannelName[]>(req);
     return res.ok ? res.data.map(c => ({name: c, attachOption: 'AttachAll', exclude: []})) : [];
+  }
+
+  /** Выполнение привязанного свойства презентации. */
+  public async executeLinkedProperty(id: ClientID, params: Parameter[], index: number): Promise<string> {
+    const parameters = params.map(serializeParameter);
+    const body = JSON.stringify({reportId: id, parameters, index});
+    const req: WRequest = {method: 'POST', path: 'executeReportProperty', body};
+
+    const res = await this.baseAPI.request<OperationData>(req);
+    if (res.ok === false) return null;
+    return res.data.result || null;
   }
 }
 

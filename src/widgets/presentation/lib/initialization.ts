@@ -23,7 +23,7 @@ export async function createPresentationState(id: ClientID): Promise<Presentatio
 
   const settings = resSettings.ok
     ? resSettings.data as GridFormSettings
-    : {multiMapChannel: null, parametersGroups: null};
+    : {multiMapChannel: null, linkedProperties: [], parametersGroups: null};
   const layout = handleLayout(resLayout, children, activeChildren[0]);
 
   return {

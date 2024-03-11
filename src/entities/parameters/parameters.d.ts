@@ -171,6 +171,8 @@ interface FormParamProto<Type extends ParameterType, Value> {
 
   /** Параметры, смена значений которых приводит к сбросу значения. */
   dependsOn?: ParameterID[];
+  /** Сеттеры параметров, которые нужно обновить при обновлении данного. */
+  relatedSetters?: (ParameterSetter & {clientID: ClientID})[];
   /** Каналы, которые зависят от данного параметра. */
   relatedChannels?: ChannelName[];
   /** Каналы процедур, которые зависят от данного параметра. */

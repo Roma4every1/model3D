@@ -28,11 +28,24 @@ interface PresentationState {
 
 /** Настройки формы **Grid**.
  * + `multiMapChannel: string | null`
+ * + `linkedProperties`: {@link ParameterSetter}[]
  * + `parameterGroups`: {@link ParameterGroup}[] | null
  * */
 interface GridFormSettings {
   /** Название канала с картами, в случае если презентация это мультикарта. */
   multiMapChannel: string | null;
+  /** Данные о параметрах, которые должны автоматически обновляться. */
+  linkedProperties: ParameterSetter[];
   /** Группы параметров для разбиения списка на вкладки. */
   parameterGroups?: ParameterGroup[] | null;
+}
+
+/** Настройка, которая обновляет значение параметра презентации при изменении глобальных. */
+interface ParameterSetter {
+  /** Параметр, значение которого нужно обновить. */
+  parameterToSet: ParameterID;
+  /** Параметры, значения которых нужно будет передать в запрос `/executeReportProperty`. */
+  parametersToExecute: ParameterID[];
+  /** Индекс, который нужно будет передать в запрос `/executeReportProperty`. */
+  index: number;
 }

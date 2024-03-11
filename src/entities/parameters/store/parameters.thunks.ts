@@ -1,18 +1,19 @@
 import { Dispatch } from 'redux';
 import { Thunk, StateGetter, uniqueArray } from 'shared/lib';
-import { reloadChannels } from '../../channels';
-import { reloadReportChannels, updateReportsVisibility } from '../../reports';
-import { updateObjects } from '../../objects';
-import { findDependentParameters } from '../lib/utils';
+import { reloadChannels } from 'entities/channels';
+import { reloadReportChannels, updateReportsVisibility } from 'entities/reports';
+import { updateObjects } from 'entities/objects';
+import { fillParamValues, findDependentParameters } from '../lib/utils';
 import { stringToTableCell, tableRowToString } from '../lib/table-row';
-import { updateParam, updateParams } from './parameters.actions';
+import { updateParams } from './parameters.actions';
 import { updatePresentationTreeVisibility } from 'widgets/left-panel/store/left-panel.thunks';
+import { formsAPI } from 'widgets/presentation/lib/forms.api.ts';
 
 
 /** Обновление параметра и всех его зависимостей.
  * + зависимые параметры
  * + зависимые каналы
- * + зависимые программы отчёты
+ * + зависимые программы и отчёты
  * */
 export function updateParamDeep(clientID: ClientID, id: ParameterID, newValue: any): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
@@ -22,28 +23,42 @@ export function updateParamDeep(clientID: ClientID, id: ParameterID, newValue: a
 
     if (!parameter) return;
     const dateChanging = initState.root.settings.dateChanging;
-    let { relatedChannels, relatedReportChannels, relatedReports } = parameter;
 
+    const relatedChannels: Set<ChannelName> = new Set(parameter.relatedChannels);
+    const relatedReports: Set<ReportID> = new Set(parameter.relatedReports);
+    const relatedReportChannels: RelatedReportChannels[] = [...parameter.relatedReportChannels];
+
+    const updateParamData: UpdateParamData[] = [{clientID, id, value: newValue}];
     if (dateChanging?.year === id) {
       const dateIntervalID = dateChanging.dateInterval;
       const dateInterval = clientParameters.find(p => p.id === dateIntervalID);
       const dateIntervalNewValue = dateChangingValue(dateChanging, newValue, parameter.type);
 
-      relatedChannels = uniqueArray(relatedChannels, dateInterval.relatedChannels);
-      relatedReportChannels = uniqueArray(relatedReportChannels, dateInterval.relatedReportChannels);
-      relatedReports = uniqueArray(relatedReports, dateInterval.relatedReports);
+      dateInterval.relatedChannels?.forEach(c => relatedChannels.add(c));
+      dateInterval.relatedReports?.forEach(r => relatedReports.add(r));
+      dateInterval.relatedReportChannels?.forEach(x => relatedReportChannels.push(x));
+      updateParamData.push({clientID, id: dateIntervalID, value: dateIntervalNewValue});
+    }
+    if (parameter.relatedSetters) {
+      parameter.value = newValue;
+      await Promise.all(parameter.relatedSetters.map(async (setter) => {
+        const clients = [initState.root.id, setter.clientID];
+        const values = fillParamValues(setter.parametersToExecute, initState.parameters, clients);
+        const value = await formsAPI.executeLinkedProperty(setter.clientID, values, setter.index);
+        updateParamData.push({id: setter.parameterToSet, clientID: setter.clientID, value});
 
-      const entries = [
-        {clientID, id: id, value: newValue},
-        {clientID, id: dateIntervalID, value: dateIntervalNewValue},
-      ];
-      dispatch(updateParams(entries));
-    } else {
-      dispatch(updateParam(clientID, id, newValue));
+        const [parameter] = fillParamValues([setter.parameterToSet], initState.parameters, clients);
+        parameter.relatedChannels?.forEach(c => relatedChannels.add(c));
+        parameter.relatedReports?.forEach(r => relatedReports.add(r));
+        parameter.relatedReportChannels?.forEach(x => relatedReportChannels.push(x));
+      }));
     }
 
-    if (relatedChannels.length) {
-      await reloadChannels(relatedChannels)(dispatch, getState);
+    const updatedIDs = new Set(updateParamData.map(d => d.id));
+    dispatch(updateParams(updateParamData));
+
+    if (relatedChannels.size) {
+      await reloadChannels([...relatedChannels])(dispatch, getState);
     }
     if (relatedReportChannels.length) {
       await reloadReportChannels(relatedReportChannels)(dispatch, getState);
@@ -57,11 +72,11 @@ export function updateParamDeep(clientID: ClientID, id: ParameterID, newValue: a
     const entries: UpdateParamData[] = [];
     const reportEntries: RelatedReportChannels[] = [];
     const channelsToUpdate = new Set<ChannelName>();
-    const reportsToUpdate = new Set(relatedReports);
 
     for (const clientID in dependentParameters) {
       const updatedList = dependentParameters[clientID];
       for (const updatedParam of updatedList) {
+        if (updatedIDs.has(updatedParam.id)) continue;
         const updateData: UpdateParamData = {clientID, id: updatedParam.id, value: null};
 
         if (updatedParam.canBeNull === false && updatedParam.externalChannelName) {
@@ -71,7 +86,7 @@ export function updateParamDeep(clientID: ClientID, id: ParameterID, newValue: a
         }
         entries.push(updateData);
         updatedParam.relatedChannels?.forEach(channelName => channelsToUpdate.add(channelName));
-        updatedParam.relatedReports?.forEach(reportID => reportsToUpdate.add(reportID));
+        updatedParam.relatedReports?.forEach(reportID => relatedReports.add(reportID));
 
         if (updatedParam.relatedReportChannels.length) {
           reportEntries.push(...updatedParam.relatedReportChannels);
@@ -79,7 +94,7 @@ export function updateParamDeep(clientID: ClientID, id: ParameterID, newValue: a
       }
     }
 
-    const fullUpdateIDs = [id, ...entries.map(item => item.id)];
+    const fullUpdateIDs = uniqueArray(updatedIDs, entries.map(item => item.id));
     updatePresentationTreeVisibility(fullUpdateIDs)(dispatch, getState).then();
 
     if (entries.length) {
@@ -92,8 +107,8 @@ export function updateParamDeep(clientID: ClientID, id: ParameterID, newValue: a
     if (channelsToUpdate.size) {
       reloadChannels([...channelsToUpdate])(dispatch, getState).then();
     }
-    if (reportsToUpdate.size) {
-      updateReportsVisibility([...reportsToUpdate])(dispatch, getState).then();
+    if (relatedReports.size) {
+      updateReportsVisibility([...relatedReports])(dispatch, getState).then();
     }
   };
 }
