@@ -7,6 +7,7 @@ import { fillParamValues, findDependentParameters } from '../lib/utils';
 import { stringToTableCell, tableRowToString } from '../lib/table-row';
 import { updateParams } from './parameters.actions';
 import { updatePresentationTreeVisibility } from 'widgets/left-panel/store/left-panel.thunks';
+import { getParsedParamValue } from '../lib/parsing.ts';
 import { formsAPI } from 'widgets/presentation/lib/forms.api.ts';
 
 
@@ -42,12 +43,14 @@ export function updateParamDeep(clientID: ClientID, id: ParameterID, newValue: a
     if (parameter.relatedSetters) {
       parameter.value = newValue;
       await Promise.all(parameter.relatedSetters.map(async (setter) => {
-        const clients = [initState.root.id, setter.clientID];
+        const clients = [setter.clientID, initState.root.id];
         const values = fillParamValues(setter.parametersToExecute, initState.parameters, clients);
-        const value = await formsAPI.executeLinkedProperty(setter.clientID, values, setter.index);
-        updateParamData.push({id: setter.parameterToSet, clientID: setter.clientID, value});
+        const rawValue = await formsAPI.executeLinkedProperty(setter.clientID, values, setter.index);
 
         const [parameter] = fillParamValues([setter.parameterToSet], initState.parameters, clients);
+        const value = getParsedParamValue(parameter.type, rawValue);
+        updateParamData.push({id: parameter.id, clientID: setter.clientID, value});
+
         parameter.relatedChannels?.forEach(c => relatedChannels.add(c));
         parameter.relatedReports?.forEach(r => relatedReports.add(r));
         parameter.relatedReportChannels?.forEach(x => relatedReportChannels.push(x));
