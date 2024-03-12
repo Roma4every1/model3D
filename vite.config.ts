@@ -27,7 +27,7 @@ export default defineConfig((env: ConfigEnv): UserConfig => {
     build: {
       outDir: './build',
       sourcemap: devMode,
-      assetsInlineLimit: 512,
+      assetsInlineLimit: 2048,
     },
     esbuild: {
       // IIS по умолчанию не поддерживает UTF-8
