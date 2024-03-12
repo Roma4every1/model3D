@@ -37,7 +37,7 @@ export { ru_RU };
 export const t: TFunction = i18n.t;
 
 /** Локализация для flex-layout-react. */
-export const i18nMapper = (label: I18nLabel, parameter?: string): string => {
+export function i18nMapper(label: I18nLabel, parameter?: string): string {
   switch (label) {
     case I18nLabel.Close_Tab: return t('layout.close');
     case I18nLabel.Restore: return t('layout.restore');
@@ -47,4 +47,9 @@ export const i18nMapper = (label: I18nLabel, parameter?: string): string => {
     case I18nLabel.Error_rendering_component: return t('layout.error');
     default: return parameter ? label + parameter : label;
   }
-};
+}
+
+/** Используется для компонента `InputNumber` из And Design. */
+export function inputNumberParser(value: string): number {
+  return parseFloat(value.replace(',', '.'));
+}

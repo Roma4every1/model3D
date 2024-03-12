@@ -34,21 +34,31 @@
 
 /* --- Dimensions Section --- */
 
-.map-dimensions .map-panel-main {
-  display: flex;
-  flex-wrap: nowrap;
-  grid-gap: 2px;
-  justify-content: flex-start;
-  align-items: center;
-
-  > :first-child { min-width: 160px; }
-}
-
-.map-dimensions .k-input {
-  float: right;
-  height: 20px;
-  max-width: 125px;
-  font-size: 12px;
+.map-dimensions {
+  .map-panel-main {
+    display: flex;
+    flex-wrap: nowrap;
+    grid-gap: 2px;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  .ant-input-number-input-wrap {
+    height: 20px;
+    width: 120px;
+  }
+  .ant-input-number-group-addon {
+    padding: 0;
+  }
+  .input-prefix {
+    padding: 0 2px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2px;
+    width: 35px;
+    font-size: 13px;
+    cursor: default;
+  }
 }
 
 .map-actions {

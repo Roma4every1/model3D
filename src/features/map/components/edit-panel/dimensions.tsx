@@ -1,12 +1,11 @@
 import { TFunction } from 'react-i18next';
-import { NumericTextBoxChangeEvent } from '@progress/kendo-react-inputs';
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { BigButton, BigButtonToggle } from 'shared/ui';
-import { NumericTextBox } from '@progress/kendo-react-inputs';
+import { InputNumber } from 'antd';
+import { inputNumberParser } from 'shared/locales';
 import { setMultiMapSync } from '../../store/map.actions';
 import { getFullViewport } from '../../lib/map-utils';
-import { coordinateFormat } from '../../lib/constants.ts';
 
 import xIcon from 'assets/images/map/x.png';
 import yIcon from 'assets/images/map/y.png';
@@ -30,22 +29,22 @@ interface NavigationPanelProps {
   t: TFunction;
 }
 interface DimensionProps {
-  canvas: MapCanvas;
-  stage: IMapStage;
-  disabled: boolean;
+  state: MapState;
   t: TFunction;
+}
+interface InputPrefixProps {
+  icon: string;
+  prefix: string;
+  title: string;
 }
 
 
 export const MapNavigation = ({id, mapState, sync, parentID, t}: MapNavigationProps) => {
-  const { stage, canvas } = mapState;
-  const notLoaded = mapState.loading.percentage < 100;
-
   return (
     <section className={'map-dimensions'}>
       <div className={'menu-header'}>{t('map.dimensions.header')}</div>
       <div className={'map-panel-main'}>
-        <Dimensions canvas={canvas} stage={stage} disabled={notLoaded} t={t}/>
+        <Dimensions state={mapState} t={t}/>
         <NavigationPanel id={id} parentID={parentID} state={mapState} sync={sync} t={t}/>
       </div>
     </section>
@@ -88,8 +87,11 @@ const NavigationPanel = ({id, state, parentID, sync, t}: NavigationPanelProps) =
   );
 };
 
-const Dimensions = ({canvas, stage, disabled, t}: DimensionProps) => {
+const Dimensions = ({state, t}: DimensionProps) => {
+  const { stage, canvas } = state;
   const mapData = stage.getMapData();
+  const disabled = !mapData || state.loading.percentage < 100;
+
   const [x, setX] = useState(null);
   const [y, setY] = useState(null);
   const [scale, setScale] = useState(null);
@@ -98,50 +100,47 @@ const Dimensions = ({canvas, stage, disabled, t}: DimensionProps) => {
     if (mapData) mapData.onDrawEnd = ({x, y}, scale) => {
       setX(x); setY(y); setScale(scale);
     };
-  }, [mapData, stage, canvas]);
+  }, [mapData, canvas]);
 
-  const xChanged = (event: NumericTextBoxChangeEvent) => {
-    const newX = event.value === null ? 0 : Math.round(event.value);
-    stage.render({centerX: newX, centerY: mapData.y, scale: mapData.scale});
-    setX(newX);
+  const xChanged = (value: number) => {
+    stage.render({centerX: value, centerY: mapData.y, scale: mapData.scale});
+    setX(value);
   };
-
-  const yChanged = (event: NumericTextBoxChangeEvent) => {
-    const newY = event.value === null ? 0 : Math.round(-event.value);
-    stage.render({centerX: mapData.x, centerY: newY, scale: mapData.scale});
-    setY(newY);
+  const yChanged = (value: number) => {
+    stage.render({centerX: mapData.x, centerY: -value, scale: mapData.scale});
+    setY(-value);
   };
-
-  const scaleChanged = (event: NumericTextBoxChangeEvent) => {
-    const newScale = event.value >= 1 ? event.value : 1;
-    stage.render({centerX: mapData.x, centerY: mapData.y, scale: newScale});
-    setScale(newScale);
+  const scaleChanged = (value: number) => {
+    stage.render({centerX: mapData.x, centerY: mapData.y, scale: value});
+    setScale(value);
   };
 
   return (
-    <div className={'map-dimensions-viewer'}>
-      <div>
-        <span title={t('map.dimensions.x')}><img src={xIcon} alt={'x'}/> x:</span>
-        <NumericTextBox
-          value={x} onChange={xChanged} disabled={disabled}
-          format={coordinateFormat}
-        />
-      </div>
-      <div>
-        <span title={t('map.dimensions.y')}><img src={yIcon} alt={'y'}/> y:</span>
-        <NumericTextBox
-          value={-y} onChange={yChanged} disabled={disabled}
-          format={coordinateFormat}
-        />
-      </div>
-      <div>
-        <span title={t('map.dimensions.scale')}><img src={scaleIcon} alt={'scale'}/> 1/</span>
-        <NumericTextBox
-          disabled={disabled}
-          value={scale < 1 ? 1 : scale} min={1} onChange={scaleChanged}
-          format={'#'} defaultValue={1}
-        />
-      </div>
+    <div>
+      <InputNumber
+        addonBefore={<InputPrefix icon={xIcon} prefix={'x:'} title={t('map.dimensions.x')}/>}
+        value={x} onChange={xChanged} disabled={disabled} changeOnWheel={true}
+        parser={inputNumberParser} precision={0}
+      />
+      <InputNumber
+        addonBefore={<InputPrefix icon={yIcon} prefix={'y:'} title={t('map.dimensions.y')}/>}
+        value={y !== null ? -y : null} onChange={yChanged} disabled={disabled} changeOnWheel={true}
+        parser={inputNumberParser} precision={0}
+      />
+      <InputNumber
+        addonBefore={<InputPrefix icon={scaleIcon} prefix={'1/'} title={t('map.dimensions.scale')}/>}
+        value={scale} onChange={scaleChanged} disabled={disabled} changeOnWheel={true}
+        parser={inputNumberParser} precision={0} min={1}
+      />
+    </div>
+  );
+};
+
+const InputPrefix = ({icon, prefix, title}: InputPrefixProps) => {
+  return (
+    <div className={'input-prefix'} title={title}>
+      <img src={icon} alt={prefix}/>
+      <span>{prefix}</span>
     </div>
   );
 };
