@@ -59,7 +59,7 @@ export class RecordHandler implements ITableRecordHandler {
       if (!column.lookupChannel) continue;
       const channel = lookupData[column.lookupChannel];
       const rows = channel.data?.rows;
-      if (!rows?.length) { column.lookupData = []; column.lookupDict = {}; return; }
+      if (!rows?.length) { column.lookupData = []; column.lookupDict = {}; continue; }
 
       const columnsInfo = channel.info.lookupColumns;
       const isTree = columnsInfo.parent.index >= 0;
