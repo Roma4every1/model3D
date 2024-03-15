@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { compareObjects, compareArrays } from 'shared/lib';
 import { channelSelector, channelDictSelector } from 'entities/channels';
-import { tableStateSelector, headerSetterParamsSelector } from '../../store/table.selectors';
+import { tableStateSelector, getHeaderSetterParamSelector } from '../../store/table.selectors';
 import { resetTable, setTableColumnTree } from '../../store/table.actions';
 import { getColumnModel } from '../../lib/column-tree';
 import { applyColumnsHeaders } from '../../lib/column-tree-actions';
@@ -11,7 +11,7 @@ import './table.scss';
 
 
 /** Редактируемая таблица. */
-export const Table = ({id}: FormState) => {
+export const Table = ({id, parent}: FormState) => {
   const dispatch = useDispatch();
   const [records, setRecords] = useState<TableRecord[]>([]);
 
@@ -24,7 +24,7 @@ export const Table = ({id}: FormState) => {
   const lookups = channel.info?.lookupChannels ?? [];
   const lookupData: ChannelDict = useSelector(channelDictSelector.bind(lookups), compareObjects);
 
-  const paramsSelector = headerSetterParamsSelector.bind(headerSetterRules);
+  const paramsSelector = getHeaderSetterParamSelector(parent, headerSetterRules);
   const headerSetterParams: Parameter[] = useSelector(paramsSelector, compareArrays);
 
   // Обновление заголовков колонок
