@@ -45,13 +45,10 @@ export const TableRowTreeEditor = ({parameter, update, channel}: EditorProps<Par
     }
   }, [parameterValue, allNodes, nullValue]);
 
-  const onSelect = (value: number, {row}: TreeNode) => {
-    if (row) {
-      update(tableRowToString(channel, row));
-    } else {
-      update(null);
-    }
-    setValue(value);
+  const onSelect = (newValue: number, {row}: TreeNode) => {
+    if (newValue === value) return;
+    setValue(newValue);
+    update(row ? tableRowToString(channel, row) : null);
   };
   const onClear = () => {
     setValue(nullValue); update(null);

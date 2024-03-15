@@ -42,8 +42,9 @@ export const TableRowListEditor = ({parameter, update, channel}: TableRowListEdi
     }
   }, [parameterValue, options, nullValue, parameterType]);
 
-  const onSelect = (value: number, option: TableRowSelectOption) => {
-    setValue(value);
+  const onSelect = (newValue: number, option: TableRowSelectOption) => {
+    if (newValue === value) return;
+    setValue(newValue);
     update(getParameterValue(parameterType, option, channel));
   };
   const onClear = () => {
