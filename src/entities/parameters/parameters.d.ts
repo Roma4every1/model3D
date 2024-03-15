@@ -165,7 +165,6 @@ interface FormParamProto<Type extends ParameterType, Value> {
   canBeNull?: boolean;
   readonly displayName?: string;
 
-  editor?: any; // FunctionComponent<EditorProps>>
   editorType?: ParameterEditorType;
   readonly editorDisplayOrder?: number;
 

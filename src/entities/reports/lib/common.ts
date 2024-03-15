@@ -106,7 +106,6 @@ export function cloneReportParameter(parameter: Parameter): Parameter {
   const clone = {...parameter};
   clone.value = structuredClone(parameter.value);
   clone.relatedReports = [];
-  delete clone.editor;
   return clone;
 }
 

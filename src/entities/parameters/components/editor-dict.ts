@@ -32,24 +32,12 @@ const editorDict: Record<string, FunctionComponent<EditorProps>> = {
   tableRowTreeMultiEditor: TableRowListEditor,
 };
 
-export function handleParameterList(list: Parameter[], channels: ChannelDict): void {
-  for (const parameter of list) {
-    if (!parameter.editorType) { parameter.editor = null; continue; }
-    parameter.editor = editorDict[parameter.editorType] ?? StringEditor;
-    if (!parameter.nullDisplayValue) parameter.nullDisplayValue = 'Нет значения';
+export function getEditor(parameter: Parameter, channel?: Channel): FunctionComponent<EditorProps> {
+  if (!parameter.editorType) return null;
+  let editor = editorDict[parameter.editorType] ?? StringEditor;
 
-    if (parameter.type === 'tableRow' && parameter.editor === TableRowListEditor) {
-      const channel = channels[parameter.externalChannelName];
-      if (channel && channel.info.properties.some(p => p.name === 'LOOKUPPARENTCODE')) {
-        parameter.editor = TableRowTreeEditor;
-      }
-    }
+  if (channel && parameter.type === 'tableRow' && editor === TableRowListEditor) {
+    if (channel.info.lookupColumns.parent.index >= 0) editor = TableRowTreeEditor;
   }
-  list.sort(parameterCompareFn);
-}
-
-function parameterCompareFn(a: Parameter, b: Parameter): number {
-  if (a.editorDisplayOrder === null) return 1;
-  if (b.editorDisplayOrder === null) return -1;
-  return a.editorDisplayOrder - b.editorDisplayOrder;
+  return editor;
 }

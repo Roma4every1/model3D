@@ -1,6 +1,6 @@
 import { BaseAPI, API } from 'shared/lib';
 import { IJsonModel } from 'flexlayout-react';
-import { handleParam, serializeParameter } from 'entities/parameters';
+import { prepareParameterList, serializeParameter } from 'entities/parameters';
 
 
 type FormSettingsDTO = DockSettings | GridFormSettings | FormSettings;
@@ -35,13 +35,7 @@ export class FormsAPI {
   public async getClientParameters(id: ClientID) {
     const req: WRequest = {path: 'getFormParameters', query: {formId: id}};
     const res = await this.baseAPI.request<Parameter[]>(req);
-
-    if (res.ok) {
-      res.data.forEach(handleParam);
-      return res.data;
-    } else {
-      return [];
-    }
+    return res.ok ? prepareParameterList(res.data) : [];
   }
 
   /** Запрос дочерних форм. */

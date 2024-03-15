@@ -1,5 +1,4 @@
-import { createElement } from 'react';
-import { EditorProps, handleParameterList } from './editor-dict';
+import { getEditor } from './editor-dict';
 import './parameters.scss';
 
 
@@ -12,21 +11,20 @@ export interface ParameterListProps {
 
 /** Компонент списка параметров. */
 export const ParameterList = ({list, onChange, channels}: ParameterListProps) => {
-  if (list.length > 0 && list[0].editor === undefined) {
-    handleParameterList(list, channels);
-  }
-
   const toElement = (parameter: Parameter, i: number) => {
     const channelName = parameter.externalChannelName;
     const channel = channelName ? channels[channelName] : undefined;
     const update = (value: any) => { onChange(parameter, value); };
 
+    const Editor = getEditor(parameter, channel);
+    if (!Editor) return null;
+
     return (
       <div key={i} className={'parameter'}>
         <span>{parameter.displayName}</span>
-        {createElement<EditorProps>(parameter.editor, {parameter, update, channel})}
+        <Editor parameter={parameter} update={update} channel={channel}/>
       </div>
     );
   };
-  return <div>{list.filter(p => Boolean(p.editor)).map(toElement)}</div>;
+  return <div>{list.map(toElement)}</div>;
 };

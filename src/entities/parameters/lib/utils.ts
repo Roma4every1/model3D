@@ -1,12 +1,22 @@
 import { getParsedParamValue } from './parsing';
 
 
-/** Обработка модели параметра после серверного запроса. */
-export function handleParam(parameter: Parameter): void {
-  parameter.value = getParsedParamValue(parameter.type, parameter.value);
-  if (!parameter.dependsOn || (parameter.dependsOn.length === 1 && !parameter.dependsOn[0])) {
-    parameter.dependsOn = [];
+/** Обработка параметров после серверного запроса. */
+export function prepareParameterList(list: Parameter[]): Parameter[] {
+  for (const parameter of list) {
+    if (!parameter.dependsOn || (parameter.dependsOn.length === 1 && !parameter.dependsOn[0])) {
+      parameter.dependsOn = [];
+    }
+    parameter.value = getParsedParamValue(parameter.type, parameter.value);
+    if (!parameter.nullDisplayValue) parameter.nullDisplayValue = 'Нет значения';
   }
+  return list.sort(parameterCompareFn);
+}
+
+function parameterCompareFn(a: Parameter, b: Parameter): number {
+  if (a.editorDisplayOrder === null) return 1;
+  if (b.editorDisplayOrder === null) return -1;
+  return a.editorDisplayOrder - b.editorDisplayOrder;
 }
 
 /** Находит в хранилище параметров нужные элементы и наполняет массив.
@@ -45,23 +55,4 @@ export function findDependentParameters(id: ParameterID, parameters: ParamDict):
     find(id, clientID, parameters[clientID]);
   }
   return dependencies;
-}
-
-/* --- --- */
-
-export function getComboBoxItems(channel: Channel) {
-  const rows = channel.data?.rows;
-  if (!rows) return null;
-
-  const lookupColumns = channel.info.lookupColumns;
-  const idIndex = lookupColumns.id.index;
-  let valueIndex = lookupColumns.value.index;
-
-  if (valueIndex === -1) valueIndex = idIndex;
-  return rows.map((row) => getComboBoxItem(row, idIndex, valueIndex));
-}
-
-function getComboBoxItem(row: ChannelRow, idIndex: number, valueIndex: number) {
-  const id = row.Cells[idIndex];
-  return {id, name: row.Cells[valueIndex] ?? id, value: row};
 }

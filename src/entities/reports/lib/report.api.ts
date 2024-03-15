@@ -1,5 +1,5 @@
 import { BaseAPI, API, getFileExtension } from 'shared/lib';
-import { handleParam, serializeParameter } from 'entities/parameters';
+import { prepareParameterList, serializeParameter } from 'entities/parameters';
 
 
 export class ReportAPI {
@@ -13,7 +13,7 @@ export class ReportAPI {
   public async getReportData(id: ReportID) {
     const query = {reportId: id};
     const res = await this.baseAPI.request<ReportData>({path: 'reportData', query});
-    if (res.ok) res.data.parameters.forEach(handleParam);
+    if (res.ok) prepareParameterList(res.data.parameters);
     return res;
   }
 
