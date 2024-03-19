@@ -21,8 +21,8 @@ export class ReportAPI {
     const paramValues = parameters.map(serializeParameter);
     const body = JSON.stringify({reportId: reportID, paramValues});
     const req: WRequest = {method: 'POST', path: 'programVisibility', body};
-    const res = await this.baseAPI.request<'true' | 'false'>(req);
-    return res.ok && res.data === 'true';
+    const res = await this.baseAPI.request<boolean>(req);
+    return res.ok && res.data === true;
   }
 
   public async getCanRunReport(reportID: ReportID, parameters: Parameter[]) {

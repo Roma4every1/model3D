@@ -20,10 +20,10 @@ export const MessageDialog = ({type, title, content, onClose}: MessageDialogProp
   const iconSource = messageIconDict[type];
 
   return (
-    <Dialog title={title ?? t('base.' + type)} width={400} onClose={onClose}>
+    <Dialog title={title ?? t('base.' + type)} minWidth={400} onClose={onClose}>
       <div className={'message-dialog-content'}>
         <img src={iconSource} alt={type}/>
-        <div>{content}</div>
+        <div style={{whiteSpace: 'pre', maxWidth: 500}}>{content}</div>
       </div>
       <DialogActionsBar>
         <Button onClick={onClose}>{t('base.ok')}</Button>

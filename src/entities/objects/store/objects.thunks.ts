@@ -11,7 +11,8 @@ import { tableRowToString } from '../../parameters/lib/table-row';
 export function setCurrentWell(id: WellID): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const state = getState();
-    const { channelName, parameterID } = state.objects.well;
+    const { channelName, parameterID, model } = state.objects.well;
+    if (model && model.id === id) return;
     const wellChannel = state.channels[channelName];
 
     const idIndex = wellChannel.info.lookupColumns.id.index;

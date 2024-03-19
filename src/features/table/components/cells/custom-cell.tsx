@@ -38,7 +38,7 @@ export const CustomCell = ({td, props, state, actions}: CustomCellProps) => {
   const tdProps: ComponentProps<'td'> = {...td.props, onClick, onDoubleClick};
   let tdStyle = tdProps.style;
 
-  if (dataItem.style && !isActiveRecord) {
+  if (dataItem.style && !dataItem.selected) {
     tdProps.style = {...tdStyle, ...dataItem.style};
   }
   if (isActiveCell) {
