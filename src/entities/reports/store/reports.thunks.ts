@@ -91,7 +91,8 @@ export function runReport(clientID: ClientID, report: ReportModel): Thunk {
 
       if (result) {
         const title = t(`report.${report.type}-result`);
-        dispatch(showInfoMessage(result, title));
+        const style = {whiteSpace: 'pre', maxWidth: 400, maxHeight: 300};
+        dispatch(showInfoMessage(result, title, style));
       }
       if (operationID) {
         showNotification(t('report.start', {name: report.displayName}))(dispatch).then();

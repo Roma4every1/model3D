@@ -15,15 +15,15 @@ const messageIconDict: Record<MessageDialogType, string> = {
 };
 
 /** Диалоговое окно сообщения. */
-export const MessageDialog = ({type, title, content, onClose}: MessageDialogProps) => {
+export const MessageDialog = ({type, title, style, content, onClose}: MessageDialogProps) => {
   const { t } = useTranslation();
   const iconSource = messageIconDict[type];
 
   return (
-    <Dialog title={title ?? t('base.' + type)} minWidth={400} onClose={onClose}>
+    <Dialog title={title ?? t('base.' + type)} width={style ? undefined: 400} onClose={onClose}>
       <div className={'message-dialog-content'}>
         <img src={iconSource} alt={type}/>
-        <div style={{whiteSpace: 'pre', maxWidth: 500}}>{content}</div>
+        <div style={style}>{content}</div>
       </div>
       <DialogActionsBar>
         <Button onClick={onClose}>{t('base.ok')}</Button>

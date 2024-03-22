@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, CSSProperties } from 'react';
 import { DialogProps, WindowProps } from '@progress/kendo-react-dialogs';
 
 /* --- Action Types --- */
@@ -15,7 +15,7 @@ export enum WindowActionType {
 
 interface ActionShowMessage {
   type: WindowActionType.SHOW_MESSAGE;
-  payload: {type: MessageDialogType, title?: string, text: string};
+  payload: {type: MessageDialogType, title?: string, style?: CSSProperties, text: string};
 }
 interface ActionShowDialog {
   type: WindowActionType.SHOW_DIALOG;
@@ -46,9 +46,9 @@ export function windowReducer(state: WindowStates = init, action: WindowAction):
   switch (action.type) {
 
     case WindowActionType.SHOW_MESSAGE: {
-      const { type, title, text } = action.payload;
+      const { type, title, style, text } = action.payload;
       const id = `message-${++counter}`;
-      const props = {type, title, content: text};
+      const props: MessageDialogProps = {type, title, style, content: text};
       return {...state, [id]: {id, type: 'dialog', props, content: text}};
     }
 

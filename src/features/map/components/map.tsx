@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'shared/lib';
 import { LoadingStatus, TextInfo } from 'shared/ui';
 import { channelSelector } from 'entities/channels';
 import { traceStateSelector, wellStateSelector, setCurrentTrace, setCurrentWell } from 'entities/objects';
-import { updateParam } from 'entities/parameters';
+import { updateParamDeep } from 'entities/parameters';
 import { tableRowToString } from 'entities/parameters/lib/table-row';
 import { mapStateSelector } from '../store/map.selectors';
 import { fetchMapData, showMapPropertyWindow } from '../store/map.thunks';
@@ -49,7 +49,7 @@ export const Map = ({id, parent, channels}: FormState) => {
 
     if (objectName && (changeOwner || changeMapID)) {
       const value = tableRowToString(activeChannel, mapInfo)
-      dispatch(updateParam(parent, objectName, value));
+      dispatch(updateParamDeep(parent, objectName, value));
     }
     if (changeOwner) {
       dispatch(setMapField(id, 'owner', owner));

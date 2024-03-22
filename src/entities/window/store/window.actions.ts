@@ -1,21 +1,21 @@
-import { ReactNode } from 'react';
+import { ReactNode, CSSProperties } from 'react';
 import { DialogProps, WindowProps } from '@progress/kendo-react-dialogs';
 import { WindowAction, WindowActionType } from './window.reducer';
 
 
 /** Показать информационное сообщение. */
-export function showInfoMessage(text: string, title?: string): WindowAction {
-  return {type: WindowActionType.SHOW_MESSAGE, payload: {type: 'info', title, text}};
+export function showInfoMessage(text: string, title?: string, style?: CSSProperties): WindowAction {
+  return {type: WindowActionType.SHOW_MESSAGE, payload: {type: 'info', title, text, style}};
 }
 
 /** Показать предупреждение. */
-export function showWarningMessage(text: string, title?: string): WindowAction {
-  return {type: WindowActionType.SHOW_MESSAGE, payload: {type: 'warning', title, text}};
+export function showWarningMessage(text: string, title?: string, style?: CSSProperties): WindowAction {
+  return {type: WindowActionType.SHOW_MESSAGE, payload: {type: 'warning', title, text, style}};
 }
 
 /** Показать сообщение об ошибке. */
-export function showErrorMessage(text: string, title?: string): WindowAction {
-  return {type: WindowActionType.SHOW_MESSAGE, payload: {type: 'error', title, text}};
+export function showErrorMessage(text: string, title?: string, style?: CSSProperties): WindowAction {
+  return {type: WindowActionType.SHOW_MESSAGE, payload: {type: 'error', title, text, style}};
 }
 
 /** Показать диалог. */

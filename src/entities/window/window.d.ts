@@ -26,10 +26,12 @@ interface MessageDialogProps {
   type: MessageDialogType;
   /** Заголовок окна. */
   title?: string;
+  /** Стили контейнера для содержимого (`CSSProperties`). */
+  style?: any;
   /** Контент диалога (текст и т.п.). */
   content: any;
   /** Слушатель закрытия окна. */
-  onClose: () => void;
+  onClose?: () => void;
 }
 
 /** Тип сообщения: **информация**, **предупреждение** или **ошибка**. */
