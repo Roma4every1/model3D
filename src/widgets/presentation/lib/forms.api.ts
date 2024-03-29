@@ -61,6 +61,12 @@ export class FormsAPI {
     if (res.ok === false) return null;
     return res.data.result || null;
   }
+
+  /** Запрос дополнительных данных о форме (плагинов). */
+  public getPluginData(formID: FormID, pluginName: string) {
+    const query = {formId: formID, pluginName};
+    return this.baseAPI.request<any>({path: 'pluginData', query});
+  }
 }
 
 export const formsAPI = new FormsAPI(API);

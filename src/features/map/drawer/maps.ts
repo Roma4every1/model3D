@@ -2,14 +2,14 @@ import { startPaint } from './map-drawer';
 import { getTranslator, Translator } from './geom';
 
 
-export function showMap(canvas: MapCanvas, map: MapData, viewport: MapViewport) {
+export function showMap(canvas: MapCanvas, map: MapData, viewport: MapViewport, afterUpdate: () => void) {
   let { centerX, centerY, scale } = viewport;
   let coords: Translator;
   let uiMode: boolean;
   const canvasFlag = canvas.showMapFlag = {};
   const canvasEvents = canvas.events;
 
-  const onChanged = (data: Translator) => {
+  const onChanged = (data: Translator = coords) => {
     if (changeCanvas()) return;
     coords = data;
     update(canvas);
@@ -88,5 +88,6 @@ export function showMap(canvas: MapCanvas, map: MapData, viewport: MapViewport) 
     }
     options.draftDrawing = false;
     await startPaint(canvas, map, options);
+    afterUpdate();
   }
 }

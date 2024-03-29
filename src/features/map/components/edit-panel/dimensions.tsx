@@ -54,6 +54,7 @@ export const MapNavigation = ({id, mapState, sync, parentID, t}: MapNavigationPr
 const NavigationPanel = ({id, state, parentID, sync, t}: NavigationPanelProps) => {
   const dispatch = useDispatch();
   const { stage, canvas } = state;
+  const disabled = stage.inclinometryModeOn;
   const notLoaded = state.loading.percentage < 100;
 
   const [signal, setSignal] = useState(false);
@@ -77,11 +78,11 @@ const NavigationPanel = ({id, state, parentID, sync, t}: NavigationPanelProps) =
     <div className={'map-actions'}>
       <BigButton
         text={t('map.actions.show-all')} icon={selectAllIcon}
-        action={toFullViewPort} disabled={canvas?.blocked || notLoaded}
+        action={toFullViewPort} disabled={canvas?.blocked || disabled || notLoaded}
       />
       <BigButtonToggle
         text={'Синхронизация карт по центру'} icon={synchronizeIcon}
-        action={toggleSync} active={sync} disabled={sync === undefined}
+        action={toggleSync} active={sync} disabled={disabled || sync === undefined}
       />
     </div>
   );
@@ -90,7 +91,7 @@ const NavigationPanel = ({id, state, parentID, sync, t}: NavigationPanelProps) =
 const Dimensions = ({state, t}: DimensionProps) => {
   const { stage, canvas } = state;
   const mapData = stage.getMapData();
-  const disabled = !mapData || state.loading.percentage < 100;
+  const disabled = stage.inclinometryModeOn || !mapData || state.loading.percentage < 100;
 
   const [x, setX] = useState(null);
   const [y, setY] = useState(null);

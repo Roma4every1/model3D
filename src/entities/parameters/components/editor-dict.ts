@@ -3,6 +3,7 @@ import { BoolEditor } from './bool-editor.tsx';
 import { DateIntervalEditor } from './date-interval-editor.tsx';
 import { DateEditor } from './date-editor.tsx';
 import { FileEditor } from './file.editor';
+import { IntegerArrayTreeEditor } from './integer-array-tree-editor';
 import { IntegerEditor } from './integer-editor.tsx';
 import { StringEditor } from './string-editor.tsx';
 import { TableRowListEditor } from './table-row-list-editor.tsx';
@@ -22,8 +23,10 @@ const editorDict: Record<string, FunctionComponent<EditorProps>> = {
   dateIntervalTextEditor: DateIntervalEditor,
   dateKMNEditor: DateEditor,
   dateTextEditor: DateEditor,
+  doubleTextEditor: IntegerEditor,
   fileTextEditor: FileEditor,
   integerTextEditor: IntegerEditor,
+  integerArrayTreeEditor: IntegerArrayTreeEditor,
   stringComboEditor: TableRowListEditor,
   stringTextEditor: StringEditor,
   tableCellComboEditor: TableRowListEditor,

@@ -1,0 +1,255 @@
+import {cellsToRecords} from '../../../../../../entities/channels';
+import {groupBy} from 'lodash';
+import {InclModePluginChannelNames, PluginNames} from '../../lib/constants.ts';
+
+
+/** Плагин для вертикальной проекции инклинометрии на карте. */
+export class InclinometryModePlugin implements IInclinometryModePlugin {
+  /** Название плагина. */
+  public name: string = PluginNames.INCLINOMETRY_MODE;
+  /** Активен ли режим инклинометрии. */
+  public inclinometryModeOn: boolean;
+
+  /** Канвас карты. */
+  private canvas: MapCanvas;
+  /** Контекст карты. */
+  private ctx: CanvasRenderingContext2D = null;
+  /** Координата центра карты по X. */
+  private centerX: number = 0;
+  /** Координата центра карты по Y. */
+  private centerY: number = 0;
+  /** Радиус ограничевающей окружности проекции инклинометрии. */
+  private readonly radius: number;
+
+
+  /** Максимальное смещение инклинометрии (в координатах карты). */
+  public maxShift = 0;
+  /** Смещение в последней точке инклинометрии по X (в координатах канваса). */
+  public mapShiftX = 0;
+  /** Смещение в последней точке инклинометрии по Y (в координатах канваса). */
+  public mapShiftY = 0;
+
+  /** Данные точек инклинометрии выбранной скважины. */
+  private inclinometryData: ChannelRecord[] = null;
+  /** Данные версий инклинометрии выбранной скважины. */
+  private inclinometryVersionsData: ChannelRecord[] = null;
+  /** Дополнительные данные версии инклинометрии выбранной скважины (цвета для линий). */
+  private inclinometryVersionsPropertiesData: ChannelRecord[] = null;
+
+  /** Значение угла просмотра инклинометрии. */
+  private angle: number = 0;
+
+  /** Коллбэк для обновления значения угла просмотра инклинометрии. */
+  private updateAngleParamFunction: (value: any) => void;
+
+  constructor(settings: InclinometryPluginSettings) {
+    this.radius = settings.minCircle;
+    this.inclinometryModeOn = settings.inclinometryModeOn;
+    this.updateAngleParamFunction = () => {console.log('empty')};
+  }
+
+  /** Устанавливает коллбэк для обновления значения угла просмотра инклинометрии. */
+  public setUpdateAngleParamFunction(callback: (value: number) => void): void {
+    this.updateAngleParamFunction = callback;
+  }
+
+  /** Обновляет значение угла просмотра инклинометрии по точке. */
+  public handleInclinometryAngleChange(point: Point): void {
+    const value = this.getAngleFromPoint(point.x, point.y);
+
+    this.canvas.events.emit('changed')
+    this.updateAngleParamFunction(Math.round(value));
+    this.render();
+  }
+
+  /** Устанавливает данные инклинометрии. */
+  public setData(channels: ChannelDict, param?: Parameter) {
+    this.inclinometryData =
+      cellsToRecords(channels[InclModePluginChannelNames.INCLINOMETRY].data);
+    this.inclinometryVersionsData =
+      cellsToRecords(channels[InclModePluginChannelNames.VERSIONS].data);
+    // Фильтр чтобы убрать прозрачные цвета (не имеет смысла, ошибка конфига)
+    this.inclinometryVersionsPropertiesData =
+      cellsToRecords(channels[InclModePluginChannelNames.VERSIONS_PROPS].data).filter(it =>
+        it['COLOR'].slice(-2) !== "00"
+      );
+
+    const data = this.inclinometryData;
+    const maxShiftInclPoint = data.reduce((max, r) =>
+      !max || (max['SHIFT'] < r['SHIFT']) ? r : max, null)
+
+    this.maxShift = maxShiftInclPoint['SHIFT'];
+
+    // перевод в координаты канваса смещений по X и Y в последней точке инклинометрии
+    this.mapShiftX = maxShiftInclPoint['SHIFTY'] / this.maxShift * this.radius;
+    this.mapShiftY = -maxShiftInclPoint['SHIFTX'] / this.maxShift * this.radius;
+
+    // уставновка значения угла просмотра
+    this.angle = +param.value;
+  }
+
+  /** Устанавливает canvas и контекст отрисовки для плагина. */
+  public setCanvas(canvas: MapCanvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.centerX = canvas.clientWidth;
+    this.centerY = canvas.clientHeight;
+  }
+
+  /** Отрисовка элементов плагина. */
+  public render() {
+    if (!this.inclinometryModeOn) return;
+    this.drawCircle();
+    this.drawHelpText();
+    this.drawInclinometryLines();
+    this.drawAngleArrow(-this.angle + 90);
+  }
+
+  /** Отрисовывает линии инклинометрии. */
+  private drawInclinometryLines() {
+    const allData = this.inclinometryData;
+    const versions = this.inclinometryVersionsData;
+    const versionsProperties = this.inclinometryVersionsPropertiesData;
+
+    const maxShift = Math.max(...allData.map(r => r['SHIFT']));
+
+    const grouped =
+      groupBy(allData, r => r['INCL_HDR_ID']);
+
+    Object.entries(grouped).forEach(([code, data]) => {
+      const index = versions.findIndex(v => +v['RID'] === +code);
+      const properties = versionsProperties.find(p =>
+        p['CODE'] === index + 1 // первый цвет почему-то #ff000000
+      );
+      const color = properties ? properties['COLOR'] : null;
+
+      this.drawLine(data, color, maxShift);
+    })
+  }
+
+  /** Отрисовывает одну линию инклинометрии. */
+  private drawLine(data: ChannelRecord[], color: string, maxShift: number) {
+    if (!data?.length) return;
+    const ctx = this.ctx;
+
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 5;
+    ctx.moveTo(this.centerX, this.centerY);
+    data.forEach(r => {
+      const shiftX = r['SHIFTX'];
+      const shiftY = r['SHIFTY'];
+
+      ctx.lineTo(
+        this.centerX + (shiftY / maxShift * this.radius),
+        this.centerY + (-shiftX / maxShift * this.radius)
+      );
+    })
+    ctx.stroke();
+  }
+
+  /** Отрисовывает ограничивающую линию проекции инклинометрии. */
+  private drawCircle() {
+    const ctx = this.ctx;
+    if (!ctx) return;
+    ctx.beginPath();
+    ctx.arc(this.centerX, this.centerY, this.radius, 0, 2 * Math.PI);
+    ctx.fillStyle = 'rgba(0,0,0,0)';
+    ctx.strokeStyle = 'rgba(0,0,0,1)';
+    ctx.fill();
+    ctx.lineWidth = 5;
+    ctx.stroke();
+  }
+
+  /** Отрисовывает управляющий элемент стрелки инклинометрии для изменения угла просмотра. */
+  private drawAngleArrow(angle: number) {
+    const { x1, y1, x2, y2 } = this.calculateLineCoordinates(angle);
+
+    const ctx = this.ctx;
+    const headLength = 20;
+
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = '#ff0000';
+    ctx.lineWidth = 5;
+    ctx.stroke();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.translate(x2, y2);
+    ctx.rotate(angle * (Math.PI / 180));
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-headLength, -headLength / 2);
+    ctx.lineTo(-headLength, headLength / 2);
+    ctx.fillStyle = '#ff0000';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /** Вычисляет координаты для управляющего элемента стрелки инклинометрии. */
+  private calculateLineCoordinates(angleDegrees: number) {
+    const radius = this.radius;
+
+    let angleRadians = angleDegrees * Math.PI / 180;
+    let x1, y1, x2, y2;
+
+    if (angleDegrees >= 0 && angleDegrees <= 90) {
+      x2 = this.centerX + Math.cos(angleRadians) * radius;
+      y2 = this.centerY - Math.sin(angleRadians) * radius;
+
+      x1 = this.centerX - Math.cos(angleRadians) * radius;
+      y1 = this.centerY + Math.sin(angleRadians) * radius;
+    } else if (angleDegrees > 90 && angleDegrees <= 180) {
+      angleRadians = (angleDegrees - 90) * Math.PI / 180;
+      x1 = this.centerX + Math.sin(angleRadians) * radius;
+      y1 = this.centerY + Math.cos(angleRadians) * radius;
+      x2 = this.centerX - Math.sin(angleRadians) * radius;
+      y2 = this.centerY - Math.cos(angleRadians) * radius;
+    } else if (angleDegrees > 180 && angleDegrees <= 270) {
+      angleRadians = (angleDegrees - 180) * Math.PI / 180;
+      x2 = this.centerX - Math.cos(angleRadians) * radius;
+      y2 = this.centerY + Math.sin(angleRadians) * radius;
+      x1 = this.centerX + Math.cos(angleRadians) * radius;
+      y1 = this.centerY - Math.sin(angleRadians) * radius;
+    } else {
+      angleRadians = (angleDegrees - 270) * Math.PI / 180;
+      x1 = this.centerX - Math.sin(angleRadians) * radius;
+      y1 = this.centerY - Math.cos(angleRadians) * radius;
+      x2 = this.centerX + Math.sin(angleRadians) * radius;
+      y2 = this.centerY + Math.cos(angleRadians) * radius;
+    }
+    return { x1, y1, x2, y2 };
+  }
+
+  /** Получает угол на окружности по точке на канвасе. */
+  private getAngleFromPoint(x: number, y: number) {
+    const dx = x - this.centerX;
+    const dy = this.centerY - y;
+
+    const angleRadians = Math.atan(dy/dx);
+    let angleDegrees = angleRadians * 180 / Math.PI;
+    if (dx < 0) angleDegrees += 180;
+    angleDegrees = -angleDegrees + 90;
+
+    return angleDegrees < 0 ? angleDegrees + 360 : angleDegrees;
+  }
+
+  /** Отрисовывает подписи углов окружности. */
+  private drawHelpText() {
+    this.ctx.font = 'bold 24px Arial';
+    this.ctx.fillStyle = 'black';
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+
+    const angles = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2];
+    const labels = ['90', '180', '270', '0'];
+
+    for (let i = 0; i < angles.length; i++) {
+      const angle = angles[i];
+      const x = this.centerX + (this.radius + 30) * Math.cos(angle);
+      const y = this.centerY + (this.radius + 30) * Math.sin(angle);
+      this.ctx.fillText(labels[i], x, y);
+    }
+  }
+}

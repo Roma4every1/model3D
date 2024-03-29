@@ -12,3 +12,10 @@ export function multiMapStateSelector(this: FormID, state: WState): MultiMapStat
 export function mapStateSelector(this: FormID, state: WState): MapState {
   return state.maps.single[this];
 }
+
+/** Состояние карты. */
+export function getMapPresentationParameterSelector(parentID: ClientID, paramID: ParameterID) {
+  return (state: WState) => {
+    return state.parameters[parentID].find(p => p.id === paramID);
+  }
+}

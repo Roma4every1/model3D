@@ -19,6 +19,8 @@ import {
   applyMouseMoveActionToElement,
   applyRotateToLabel,
 } from '../components/edit-panel/editing/edit-element-utils.ts';
+import {InclinometryModePlugin} from './map-plugins/plugins/InclinometryModePlugin/InclinometryModePlugin.ts';
+import {PluginNames} from './map-plugins/lib/constants.ts';
 
 
 export class MapStage implements IMapStage {
@@ -54,7 +56,14 @@ export class MapStage implements IMapStage {
   private isOnMove: boolean = false;
   private pIndex: number = null;
 
-  constructor() {
+  /** Зарегистрированные плагины карты. */
+  public plugins: IMapPlugin[] = [];
+  /** Включен ли режим инклинометрии. */
+  public inclinometryModeOn: boolean = false;
+
+  constructor(plugins: IMapPlugin[] = []) {
+    this.plugins = plugins;
+    this.inclinometryModeOn = plugins.some(it => it?.inclinometryModeOn);
     this.select = new MapSelect();
     this.scroller = new Scroller();
 
@@ -126,6 +135,7 @@ export class MapStage implements IMapStage {
     this.canvas = canvas;
     if (!canvas) return;
     this.scroller.setCanvas(canvas);
+    this.plugins.forEach(p => p.setCanvas(canvas))
     const ctx = canvas.getContext('2d');
     this.select.setTextMeasurer(text => ctx.measureText(text).width);
   }
@@ -296,6 +306,13 @@ export class MapStage implements IMapStage {
   }
 
   public handleMouseUp(event: MouseEvent): MapElement | null {
+    if (this.inclinometryModeOn) {
+      const inclPlugin = this.plugins.find(it =>
+        it.name === PluginNames.INCLINOMETRY_MODE
+      ) as InclinometryModePlugin;
+      inclPlugin.handleInclinometryAngleChange({x: event.offsetX * 2, y: event.offsetY * 2});
+      return;
+    }
     this.scroller.mouseUp();
     this.isOnMove = false;
     this.pIndex = null;
@@ -333,6 +350,7 @@ export class MapStage implements IMapStage {
   }
 
   public handleMouseWheel(event: WheelEvent): void {
+    if (this.inclinometryModeOn) return;
     this.scroller.wheel(event);
     this.select.lastPoint = null;
     if (this.mode !== MapMode.ROTATE || !(this.activeElement?.type === 'label')) return;
@@ -344,21 +362,24 @@ export class MapStage implements IMapStage {
 
   public resize(): void {
     this.drawData ? this.drawData.update(this.canvas) : this.render();
+    this.plugins.forEach(p => p.setCanvas(this.canvas));
   }
 
   public render(viewport?: MapViewport): void {
     if (!this.canvas || !this.data) return;
     if (!viewport) {
-      if (this.data.x === undefined) return;
+      // if (this.data.x === undefined) return;
       viewport = {centerX: this.data.x, centerY: this.data.y, scale: this.data.scale};
     }
     if (this.drawData) this.drawData.detach();
-    this.drawData = showMap(this.canvas, this.data, viewport);
+    const afterUpdate = () => this.plugins.forEach(p => p.render());
+    this.drawData = showMap(this.canvas, this.data, viewport, afterUpdate);
   }
 
   /* --- Private --- */
 
   private handleSelectChange(point: Point): void {
+    if (this.inclinometryModeOn) return;
     const scale = this.data.scale;
     const newElement = this.select.findElement(point, this.data.layers, this.activeLayer, scale);
 
