@@ -74,6 +74,7 @@ export class InclinometryModePlugin implements IInclinometryModePlugin {
         it['COLOR'].slice(-2) !== "00"
       );
 
+    if (!this.inclinometryData?.length) return;
     const data = this.inclinometryData;
     const maxShiftInclPoint = data.reduce((max, r) =>
       !max || (max['SHIFT'] < r['SHIFT']) ? r : max, null)
@@ -99,6 +100,7 @@ export class InclinometryModePlugin implements IInclinometryModePlugin {
   /** Отрисовка элементов плагина. */
   public render() {
     if (!this.inclinometryModeOn) return;
+    if (!this.inclinometryData?.length) return;
     this.drawCircle();
     this.drawHelpText();
     this.drawInclinometryLines();
@@ -178,7 +180,7 @@ export class InclinometryModePlugin implements IInclinometryModePlugin {
     ctx.save();
     ctx.beginPath();
     ctx.translate(x2, y2);
-    ctx.rotate(angle * (Math.PI / 180));
+    ctx.rotate(Math.atan2(y2 - y1, x2 - x1));
     ctx.moveTo(0, 0);
     ctx.lineTo(-headLength, -headLength / 2);
     ctx.lineTo(-headLength, headLength / 2);
