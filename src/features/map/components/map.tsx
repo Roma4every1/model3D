@@ -115,7 +115,7 @@ export const Map = ({id, parent, channels}: FormState) => {
     if (!canvasRef.current) return;
 
     let initialViewport: MapViewport;
-    if (stage.inclinometryModeOn) {
+    if (stage.inclinometryModeOn && currentWell) {
       initialViewport = getWellViewport(currentWell.id, wellsMaxScale);
     } else if (currentTrace) {
       initialViewport = getFullTraceViewport(getTraceMapElement(currentTrace), canvasRef.current);
