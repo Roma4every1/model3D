@@ -56,7 +56,10 @@ export class InclinometryModePlugin implements IInclinometryModePlugin {
 
   /** Обновляет значение угла просмотра инклинометрии по точке. */
   public handleInclinometryAngleChange(point: Point): void {
-    const value = this.getAngleFromPoint(point.x, point.y);
+    const value = this.getAngleFromPoint(
+      point.x / 2 * window.devicePixelRatio,
+      point.y / 2 * window.devicePixelRatio
+    );
 
     this.canvas.events.emit('changed')
     this.updateAngleParamFunction(Math.round(value));
