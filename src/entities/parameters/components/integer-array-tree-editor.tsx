@@ -1,7 +1,7 @@
 import {getComboBoxItems} from '../lib/utils.ts';
 import {EditorProps} from './editor-dict.ts';
 import {TreeSelect, TreeSelectProps} from 'antd';
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 
 const { SHOW_PARENT } = TreeSelect;
 
@@ -10,13 +10,13 @@ export const IntegerArrayTreeEditor = ({parameter, update, channel}: EditorProps
 
   const parameterValue = parameter.value;
 
-  const nullValue = parameter.showNullValue ? [] : undefined;
+  const nullValue = useMemo(() => null, []);
   const [value, setValue] = useState(nullValue);
 
   const data = getDataValues(channel);
 
   useEffect(() => {
-    if (parameterValue && data) {
+    if (parameterValue?.length && data) {
       const isDataUpdated = parameterValue.every(pValueItem =>
         data.find(dataItem => dataItem.value === pValueItem)
       );
@@ -28,13 +28,18 @@ export const IntegerArrayTreeEditor = ({parameter, update, channel}: EditorProps
 
   const onChange = (newValue: (number)[]) => {
     if (!data) return;
+    if (!newValue) return;
     // получаем все id здесь для 'Все' так как значением TreeSelect не может быть массив
     const allIds = data?.map(v => v.id);
 
-    const newValueFinal = newValue[0] === -1 ? allIds : newValue;
+    const newValueFinal = newValue.includes(-1)
+      ? allIds
+      : newValue.filter(el => el !== null);
 
-    setValue(newValueFinal);
-    update(newValueFinal);
+    const newValueNullable = newValueFinal?.length ? newValueFinal : nullValue;
+
+    setValue(newValueNullable);
+    update(newValueNullable);
   };
 
   // в значение для опции 'Все' устанавливаем -1, так как TreeSelect не может быть массив

@@ -1,6 +1,7 @@
 import {cellsToRecords} from '../../../../../../entities/channels';
 import {groupBy} from 'lodash';
 import {InclModePluginChannelNames, PluginNames} from '../../lib/constants.ts';
+import {IInclinometryModePlugin} from './types.ts';
 
 
 /** Плагин для вертикальной проекции инклинометрии на карте. */
@@ -43,7 +44,7 @@ export class InclinometryModePlugin implements IInclinometryModePlugin {
   private updateAngleParamFunction: (value: any) => void;
 
   constructor(settings: InclinometryPluginSettings) {
-    this.radius = settings.minCircle;
+    this.radius = settings.minCircle / 2 * window.devicePixelRatio;
     this.inclinometryModeOn = settings.inclinometryModeOn;
     this.updateAngleParamFunction = () => {console.log('empty')};
   }
@@ -93,8 +94,8 @@ export class InclinometryModePlugin implements IInclinometryModePlugin {
   public setCanvas(canvas: MapCanvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
-    this.centerX = canvas.clientWidth;
-    this.centerY = canvas.clientHeight;
+    this.centerX = canvas.clientWidth / 2 * window.devicePixelRatio;
+    this.centerY = canvas.clientHeight / 2 * window.devicePixelRatio;
   }
 
   /** Отрисовка элементов плагина. */

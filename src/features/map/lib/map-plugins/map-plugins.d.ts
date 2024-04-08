@@ -1,11 +1,20 @@
 /** Данные настроек плагинов карты. */
-type PluginSettingsRaw = Record<string, string>;
+type MapPluginsSettingsDictRaw = Record<string, string>;
 
 /** Словарь настроек плагинов карты. */
-type MapPluginsSettings = Record<string, PluginSettings>;
+type MapPluginsSettingsDict = Record<string, MapPluginSettings>;
 
 /** Настройки плагинов карты. */
-type PluginSettings = InclinometryPluginSettings;
+type MapPluginSettings = InclinometryPluginSettings;
+
+/** Настройки плагина инклинометрии.
+ * + `minCircle` — минимальный радиус вспомогальной окружности
+ * + `inclinometryModeOn` — активен ли режим инклинометрии
+ * */
+interface InclinometryPluginSettings {
+  minCircle: number;
+  inclinometryModeOn: boolean;
+}
 
 /** Плагин карты. */
 interface IMapPlugin {

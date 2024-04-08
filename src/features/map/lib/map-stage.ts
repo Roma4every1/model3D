@@ -19,8 +19,10 @@ import {
   applyMouseMoveActionToElement,
   applyRotateToLabel,
 } from '../components/edit-panel/editing/edit-element-utils.ts';
-import {InclinometryModePlugin} from './map-plugins/plugins/InclinometryModePlugin/InclinometryModePlugin.ts';
 import {PluginNames} from './map-plugins/lib/constants.ts';
+import {
+  InclinometryModePlugin
+} from './map-plugins/plugins/inclinometry-mode-plugin/inclinometry-mode-plugin.ts';
 
 
 export class MapStage implements IMapStage {

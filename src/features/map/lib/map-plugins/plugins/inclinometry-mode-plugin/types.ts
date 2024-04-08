@@ -1,13 +1,4 @@
-/** Настройки плагина инклинометрии.
- * + `minCircle` — минимальный радиус вспомогальной окружности
- * + `inclinometryModeOn` — активен ли режим инклинометрии
- * */
-interface InclinometryPluginSettings {
-  minCircle: number;
-  inclinometryModeOn: boolean;
-}
-
-interface IInclinometryModePlugin extends IMapPlugin {
+export interface IInclinometryModePlugin extends IMapPlugin {
   /** Максимальное смещение инклинометрии (в координатах карты). */
   maxShift : number;
   /** Смещение в последней точке инклинометрии по X (в координатах канваса). */

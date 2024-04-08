@@ -54,7 +54,7 @@ export type MapAction = ActionAddMulti | ActionSetSync | ActionCreate |
 
 function createMapState(
   editable: boolean,
-  pluginsSettings?: MapPluginsSettings,
+  pluginsSettings?: MapPluginsSettingsDict,
 ): MapState {
   const plugins: IMapPlugin[] = Object.entries(pluginsSettings).map(
     ([pluginName, pluginsSettings]) => {

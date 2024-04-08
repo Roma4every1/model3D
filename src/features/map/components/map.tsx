@@ -12,8 +12,10 @@ import { getFullTraceViewport, getTraceMapElement, handleTraceClick } from '../l
 import { getFullViewport, PIXEL_PER_METER } from '../lib/map-utils';
 import { checkDistancePoints } from '../lib/selecting-utils.ts';
 import { MapMode } from '../lib/constants.ts';
-import { InclinometryModePlugin } from '../lib/map-plugins/plugins/InclinometryModePlugin/InclinometryModePlugin.ts';
 import {InclModePluginParamNames, PluginNames} from '../lib/map-plugins/lib/constants.ts';
+import {
+  InclinometryModePlugin
+} from '../lib/map-plugins/plugins/inclinometry-mode-plugin/inclinometry-mode-plugin.ts';
 
 
 export const Map = ({id, parent, channels}: FormState) => {
@@ -88,7 +90,7 @@ export const Map = ({id, parent, channels}: FormState) => {
   const getWellViewport = useCallback((wellID: WellID, maxScale: MapScale) => {
     if (wellID === null || wellID === undefined) return null;
     const idString = wellID.toString();
-    const point = mapData.points.find(p => p.UWID === idString);
+    const point = mapData?.points?.find(p => p.UWID === idString);
 
     if (point) {
       const scale = mapData.scale < maxScale ? mapData.scale : maxScale;
