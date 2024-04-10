@@ -85,7 +85,7 @@ export const Map = ({id, parent, channels}: FormState) => {
       dispatch(fetchMapData(id));
     }
     setIsMapExist(true);
-  }, [mapState, activeChannel, id, parent, isPartOfDynamicMultiMap, stage.inclinometryModeOn, dispatch]); // eslint-disable-line
+  }, [mapState?.owner, mapState?.mapID, activeChannel, id, parent, isPartOfDynamicMultiMap, stage.inclinometryModeOn, dispatch]); // eslint-disable-line
 
   const getWellViewport = useCallback((wellID: WellID, maxScale: MapScale) => {
     if (wellID === null || wellID === undefined) return null;
@@ -167,9 +167,8 @@ export const Map = ({id, parent, channels}: FormState) => {
     stage.plugins.forEach(p => {
       p.setData(channelDict, angleParam);
     });
-    setIsMapExist(true);
     stage.render();
-  }, [mapData?.layers, channelDict, stage, angleParam]);
+  }, [channelDict, stage, angleParam]);
 
   /* --- --- */
 

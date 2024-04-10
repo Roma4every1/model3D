@@ -46,7 +46,7 @@ export class InclinometryModePlugin implements IInclinometryModePlugin {
   constructor(settings: InclinometryPluginSettings) {
     this.radius = settings.minCircle / 2 * window.devicePixelRatio;
     this.inclinometryModeOn = settings.inclinometryModeOn;
-    this.updateAngleParamFunction = () => {console.log('empty')};
+    this.updateAngleParamFunction = () => {};
   }
 
   /** Устанавливает коллбэк для обновления значения угла просмотра инклинометрии. */
@@ -56,6 +56,7 @@ export class InclinometryModePlugin implements IInclinometryModePlugin {
 
   /** Обновляет значение угла просмотра инклинометрии по точке. */
   public handleInclinometryAngleChange(point: Point): void {
+    if (!this.inclinometryData?.length) return;
     const value = this.getAngleFromPoint(
       point.x / 2 * window.devicePixelRatio,
       point.y / 2 * window.devicePixelRatio
@@ -122,7 +123,7 @@ export class InclinometryModePlugin implements IInclinometryModePlugin {
     const grouped =
       groupBy(allData, r => r['INCL_HDR_ID']);
 
-    Object.entries(grouped).forEach(([code, data]) => {
+    Object.entries(grouped).reverse().forEach(([code, data]) => {
       const index = versions.findIndex(v => +v['RID'] === +code);
       const properties = versionsProperties.find(p =>
         p['CODE'] === index + 1 // первый цвет почему-то #ff000000
@@ -152,6 +153,7 @@ export class InclinometryModePlugin implements IInclinometryModePlugin {
       );
     })
     ctx.stroke();
+    ctx.strokeStyle = 'rgba(0,0,0,1)';
   }
 
   /** Отрисовывает ограничивающую линию проекции инклинометрии. */

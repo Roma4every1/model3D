@@ -363,7 +363,8 @@ export class MapStage implements IMapStage {
   /* --- Drawing --- */
 
   public resize(): void {
-    this.drawData ? this.drawData.update(this.canvas) : this.render();
+    // this.drawData ? this.drawData.update(this.canvas) : this.render();
+    this.render();
     this.plugins.forEach(p => p.setCanvas(this.canvas));
   }
 
