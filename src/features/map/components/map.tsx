@@ -148,14 +148,15 @@ export const Map = ({id, parent, channels}: FormState) => {
 
   // отрисовка текущей трассы
   useEffect( () => {
+    if (stage.inclinometryModeOn) return;
     if (!mapData || loading.percentage < 100) return;
     const updateViewport =
-      currentTrace?.id !== traceRef.current || // изменилась активная трасса
-      (traceEditing && !stage.traceEditing);   // вошли в режим режактирования
+      (currentTrace?.id !== traceRef.current || // изменилась активная трасса
+      (traceEditing && !stage.traceEditing));   // вошли в режим режактирования
     dispatch(applyTraceToMap(id, currentTrace, updateViewport));
     stage.traceEditing = traceEditing;
     traceRef.current = currentTrace?.id;
-  }, [loading, currentTrace, traceEditing, mapData, stage, id, dispatch]);
+  }, [loading, currentTrace, traceEditing, mapData, stage, id, dispatch, stage.inclinometryModeOn]);
 
   /* --- --- */
 

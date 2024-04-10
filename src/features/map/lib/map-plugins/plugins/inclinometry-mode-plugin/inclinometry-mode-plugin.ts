@@ -141,7 +141,7 @@ export class InclinometryModePlugin implements IInclinometryModePlugin {
 
     ctx.beginPath();
     ctx.strokeStyle = color;
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 2.5 * window.devicePixelRatio;
     ctx.moveTo(this.centerX, this.centerY);
     data.forEach(r => {
       const shiftX = r['SHIFTX'];
@@ -165,7 +165,7 @@ export class InclinometryModePlugin implements IInclinometryModePlugin {
     ctx.fillStyle = 'rgba(0,0,0,0)';
     ctx.strokeStyle = 'rgba(0,0,0,1)';
     ctx.fill();
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 2.5 * window.devicePixelRatio;
     ctx.stroke();
   }
 
@@ -174,13 +174,13 @@ export class InclinometryModePlugin implements IInclinometryModePlugin {
     const { x1, y1, x2, y2 } = this.calculateLineCoordinates(angle);
 
     const ctx = this.ctx;
-    const headLength = 20;
+    const headLength = 10 * window.devicePixelRatio;
 
     ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
     ctx.strokeStyle = '#ff0000';
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 2.5 * window.devicePixelRatio;
     ctx.stroke();
 
     ctx.save();
@@ -245,18 +245,19 @@ export class InclinometryModePlugin implements IInclinometryModePlugin {
 
   /** Отрисовывает подписи углов окружности. */
   private drawHelpText() {
-    this.ctx.font = 'bold 24px Arial';
+    this.ctx.font = `bold ${12 * window.devicePixelRatio}px Arial`;
     this.ctx.fillStyle = 'black';
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
+    const offset = 15 * window.devicePixelRatio;
 
     const angles = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2];
     const labels = ['90', '180', '270', '0'];
 
     for (let i = 0; i < angles.length; i++) {
       const angle = angles[i];
-      const x = this.centerX + (this.radius + 30) * Math.cos(angle);
-      const y = this.centerY + (this.radius + 30) * Math.sin(angle);
+      const x = this.centerX + (this.radius + offset) * Math.cos(angle);
+      const y = this.centerY + (this.radius + offset) * Math.sin(angle);
       this.ctx.fillText(labels[i], x, y);
     }
   }
