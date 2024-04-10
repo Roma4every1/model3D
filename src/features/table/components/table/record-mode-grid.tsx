@@ -47,7 +47,7 @@ export const RecordModeGrid = ({state, cellRender, activeRecord, actions}: Recor
           reorderable={false} navigatable={false}
           dataItemKey={'id'}
           selectedField={'selected'}
-          cellRender={cellRenderRecordMode}
+          cellRender={activeRecord ? cellRenderRecordMode : null}
           rowHeight={28}
           selectable={{mode: 'single'}}
           style={{height: '100%'}}
