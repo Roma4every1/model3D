@@ -1,6 +1,6 @@
 import { Dispatch } from 'redux';
 import { Thunk, StateGetter, base64toBlob, getFileExtension } from 'shared/lib';
-import { channelRowToRecord } from 'entities/channels';
+import { channelRowToRecord, channelAPI } from 'entities/channels';
 import { showWarningMessage } from 'entities/window';
 import { setFileViewModel } from './file-view.actions';
 import { t } from 'shared/locales';
@@ -18,9 +18,11 @@ export function updateFileViewModel(id: FormID, data: ChannelData): Thunk {
     const fileViewState = state.fileViews[id];
     const flag = ++fileViewState.loadingFlag.current;
 
-    const info = formState.channels[0].columnInfo;
+    const attachedChannel = formState.channels[0];
+    const fileColumnName = attachedChannel.columnInfo.descriptor.name;
+
     const record = channelRowToRecord(activeRow, data.columns);
-    const fileName: string = record[info.fileName.name];
+    const fileName: string = record[attachedChannel.columnInfo.fileName.name];
     let model = fileViewState.memo.find(memoModel => memoModel.fileName === fileName);
 
     if (model === undefined) {
@@ -28,7 +30,7 @@ export function updateFileViewModel(id: FormID, data: ChannelData): Thunk {
       fileViewState.memo.push(model);
       dispatch(setFileViewModel(id, model));
 
-      const descriptor = record[info.descriptor.name];
+      const descriptor = record[fileColumnName];
       const fileType = getFileExtension(fileName);
       const contentType = mimeTypeDict[fileType] ?? '';
 
@@ -39,8 +41,18 @@ export function updateFileViewModel(id: FormID, data: ChannelData): Thunk {
           dispatch(showWarningMessage(message)); return;
         }
         model.data = res.data.slice(0, res.data.size, contentType)
-      } else {
+      } else if (descriptor) {
         model.data = base64toBlob(descriptor, contentType);
+      } else {
+        const tableID = state.channels[attachedChannel.name].tableID;
+        const rowIndex = data.rows.findIndex(r => r === activeRow);
+        const res = await channelAPI.getResource(tableID, rowIndex, fileColumnName);
+
+        if (!res.ok) {
+          const message = t('file-view.download-error', {fileName});
+          dispatch(showWarningMessage(message)); return;
+        }
+        model.data = res.data.slice(0, res.data.size, contentType);
       }
 
       model.fileType = fileType;

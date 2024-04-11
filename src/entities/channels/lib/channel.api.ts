@@ -58,6 +58,12 @@ export class ChannelAPI {
     return {ok: true, data: resData} as Res<ChannelDataDTO>;
   }
 
+  /** Запрос ресурса из базы данных. */
+  public getResource(tableID: TableID, rowIndex: number, columnName: string): Promise<Res<Blob>> {
+    const query: ReqQuery = {tableId: tableID, index: rowIndex.toString(), name: columnName};
+    return this.baseAPI.request<Blob>({path: 'dbResource', query, mapper: 'blob'});
+  }
+
   /* --- --- */
 
   /** Запрос статистики по колонке. */
