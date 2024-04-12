@@ -113,8 +113,19 @@ interface ICaratStage {
   updateTrackRects(): void;
   resize(): void;
 
+  renderImage(options: CaratExportOptions): HTMLCanvasElement;
   render(): void;
   lazyRender(index: number): void;
+}
+
+/** Настройки экспокрта каротажной диаграммы в PNG. */
+interface CaratExportOptions {
+  /** Начальная глубина. */
+  startDepth: number;
+  /** Конечная глубина. */
+  endDepth: number;
+  /** Оставлять ли прозрачный фон. */
+  transparent?: boolean;
 }
 
 type StageEditAction =

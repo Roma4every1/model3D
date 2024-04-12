@@ -399,6 +399,44 @@ export class CaratStage implements ICaratStage {
 
   /* --- Rendering --- */
 
+  /** Рендер картинки с заданными характеристиками. */
+  public renderImage(options: CaratExportOptions): HTMLCanvasElement {
+    const { startDepth, endDepth, transparent } = options;
+    const trackPadding = this.drawer.trackBodySettings.padding;
+    const trackHeaderHeight = this.drawer.trackHeaderSettings.height;
+
+    const track = this.getActiveTrack();
+    const rectHeight = track.viewport.scale * window.devicePixelRatio * (endDepth - startDepth);
+    const trackHeight = trackHeaderHeight + track.maxGroupHeaderHeight + rectHeight;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = (track.rect.width + 2 * trackPadding) * CaratDrawer.ratio;
+    canvas.height = (track.rect.top + trackHeight + 2 * trackPadding) * CaratDrawer.ratio;
+
+    const originalY = track.viewport.y;
+    const originalLeft = track.rect.left;
+    const originalHeight = track.rect.height;
+
+    track.setHeight(trackHeight);
+    track.rect.left = trackPadding;
+    track.viewport.y = startDepth;
+
+    const ctx = canvas.getContext('2d');
+    this.drawer.setContext(ctx);
+    if (!transparent) {
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    track.render();
+
+    track.setHeight(originalHeight);
+    track.rect.left = originalLeft;
+    track.viewport.y = originalY;
+
+    this.drawer.setContext(this.canvas.getContext('2d'));
+    return canvas;
+  }
+
   /** Полный рендер всей диаграммы. */
   public render(): void {
     if (!this.canvas) return;

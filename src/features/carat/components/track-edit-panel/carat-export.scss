@@ -1,0 +1,17 @@
+.carat-export-dialog {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  height: 100%;
+}
+
+.carat-export-inputs {
+  display: grid;
+  grid-template-columns: 25px 120px;
+  gap: 2px;
+
+  > div {
+    width: 100%;
+  }
+}

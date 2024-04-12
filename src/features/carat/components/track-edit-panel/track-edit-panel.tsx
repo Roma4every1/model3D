@@ -8,6 +8,7 @@ import { CaratNavigationPanel } from './navigation-panel';
 import { CaratColumnPanel } from './column-panel.tsx';
 import { CaratActiveGroupPanel } from './active-group-panel';
 import { CaratCurvesPanel } from './curves-panel';
+import { CaratExportPanel } from './carat-export.tsx';
 
 
 /** Панель редактирования трека каротажной диаграммы. */
@@ -17,7 +18,7 @@ export const TrackEditPanel = ({id}: FormEditPanelProps) => {
 
   const state: CaratState = useSelector(caratStateSelector.bind(id));
   if (!state || state.loading.percentage < 100) {
-    return <MenuSkeleton template={['291px', '382px', '309px', '180px']}/>;
+    return <MenuSkeleton template={['291px', '335px', '309px', '161px', '92px']}/>;
   }
 
   const stage = state.stage;
@@ -33,6 +34,7 @@ export const TrackEditPanel = ({id}: FormEditPanelProps) => {
       <CaratColumnPanel stage={stage} track={track}/>
       <CaratActiveGroupPanel stage={stage} track={track} activeGroup={activeGroup}/>
       <CaratCurvesPanel id={id} stage={stage} curveGroup={curveGroup}/>
+      <CaratExportPanel stage={stage}/>
     </div>
   );
 };

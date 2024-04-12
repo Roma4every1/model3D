@@ -39,8 +39,10 @@
 
 .carat-column-groups {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  width: 300px;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+
+  width: 250px;
   height: 60px;
   overflow-y: auto;
 
@@ -55,7 +57,7 @@
     transition: 0.2s;
 
     min-height: 24px;
-    max-width: 97px;
+    max-width: 100%;
     overflow: hidden;
     white-space: nowrap;
     text-align: center;
@@ -74,6 +76,7 @@
 .carat-column-moving {
   display: flex;
   flex-direction: column;
+  min-width: 75px;
 
   :disabled {
     filter: grayscale(1);

@@ -27,7 +27,7 @@ export const CaratActiveGroupPanel = ({stage, track, activeGroup}: CaratActiveGr
   return (
     <MenuSection header={'Настройки активной колонки'} className={'carat-active-column'}>
       <GroupCommonSettings stage={stage} track={track} activeGroup={activeGroup}/>
-      <GroupYAxisSettings stage={stage} track={track} settings={activeGroup.yAxis}/>
+      <GroupYAxisSettings stage={stage} track={track} settings={activeGroup?.yAxis}/>
     </MenuSection>
   );
 };
@@ -105,6 +105,7 @@ const GroupYAxisSettings = ({stage, track, settings}: GroupYAxisSettingsProps) =
   const [showGrid, setShowGrid] = useState(false);
 
   useEffect(() => {
+    if (!settings) return;
     setShow(settings.show);
     setShowAbsMarks(settings.absMarks);
     setShowDepthMarks(settings.depthMarks);
