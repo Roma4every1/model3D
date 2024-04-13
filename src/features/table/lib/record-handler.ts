@@ -43,7 +43,7 @@ export class RecordHandler implements ITableRecordHandler {
       if (!type || rule.columnType === type) continue;
       rule.columnType = type;
 
-      if (type === 'real' || channelColumns[columnState.colIndex].NetType.includes('Int')) {
+      if (type === 'real' || channelColumns[columnState.colIndex].type.includes('Int')) {
         rule.compareValue = parseInt(rule.sourceCompareValue);
       } else if (type === 'date') {
         rule.compareValue = new Date(rule.sourceCompareValue).getTime();

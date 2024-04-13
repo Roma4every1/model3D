@@ -48,11 +48,11 @@ interface ChannelData {
 /** Информация о столбце в SQL-таблице. */
 interface ChannelColumn {
   /** Название колонки. */
-  Name: ColumnName;
+  name: ColumnName;
   /** Тип данных. */
-  NetType: ColumnType;
+  type: ColumnType;
   /** Разрешён ли `null` в качестве значения. */
-  AllowDBNull: boolean;
+  nullable: boolean;
 }
 
 /** Запись из данных канала. */

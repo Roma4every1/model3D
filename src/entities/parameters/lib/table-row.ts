@@ -1,13 +1,13 @@
 export function tableRowToString(channel: Channel, row: ChannelRow): string {
   if (!row) return null;
 
-  const addParamRow = (properties, column, row, index) => {
+  const addParamRow = (properties, column: ChannelColumn, row, index) => {
     let result = '';
     if (index !== 0) result = '|';
 
-    result += addParam(column, row.Cells[index], column.Name.toUpperCase());
+    result += addParam(column, row.Cells[index], column.name.toUpperCase());
 
-    const propName = properties.find(p => p.fromColumn?.toUpperCase() === column.Name.toUpperCase());
+    const propName = properties.find(p => p.fromColumn?.toUpperCase() === column.name.toUpperCase());
     if (propName) {
       result += '|' + addParam(column, row.Cells[index], propName.name.toUpperCase());
     }
@@ -22,7 +22,7 @@ export function tableRowToString(channel: Channel, row: ChannelRow): string {
 
 function addParam(column: ChannelColumn, rowValue: any, propName: string): string {
   return rowValue !== null
-    ? propName + '#' + rowValue + '#' + column.NetType
+    ? propName + '#' + rowValue + '#' + column.type
     : propName + '##System.DBNull';
 }
 
@@ -32,7 +32,7 @@ export function tableCellToString(channel: Channel, row: ChannelRow): string {
   const idIndex = channel.info.lookupColumns.id.index;
   const value = row.Cells[idIndex];
   if (value === null) return '#System.DBNull';
-  return String(value) + '#' + channel.data.columns[idIndex].NetType;
+  return String(value) + '#' + channel.data.columns[idIndex].type;
 }
 
 export function stringToTableCell(rowString: string, columnName: string): string {

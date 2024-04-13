@@ -42,8 +42,8 @@ export const getChartProto = (
       axes.push(getYAxisProto(yAxisID, axesSettings[yAxisID]));
     }
 
-    const xIndex = columns.findIndex(column => column.NetType.endsWith('DateTime'));
-    const xID = columns[xIndex].Name;
+    const xIndex = columns.findIndex(column => column.type.endsWith('DateTime'));
+    const xID = columns[xIndex].name;
 
     const xValues = rows.map((x, i) => {
       const date = new Date(rows[i].Cells[xIndex]);
@@ -54,10 +54,10 @@ export const getChartProto = (
     for (const property of properties) {
       if (property.fromColumn === xID) continue;
 
-      const dataIndex = columns.findIndex(column => column.Name === property.fromColumn);
+      const dataIndex = columns.findIndex(column => column.name === property.fromColumn);
       if (dataIndex === -1) continue;
 
-      const dataKey = columns[dataIndex].Name;
+      const dataKey = columns[dataIndex].name;
       const settingsItem = settings.seriesSettings;
       const item = settingsItem[dataKey];
       const name = property.displayName;

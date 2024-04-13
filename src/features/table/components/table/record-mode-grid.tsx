@@ -1,12 +1,8 @@
-import {ReactElement, useMemo} from 'react';
-import {
-  Grid,
-  GridCellProps,
-  GridColumn,
-} from '@progress/kendo-react-grid';
-import {CellActions} from '../../lib/types.ts';
-import {RecordModeColumnCell} from '../cells/record-mode-column-cell.tsx';
-import {stringifyLocalDate} from '../../../../shared/lib';
+import { ReactElement, useMemo } from 'react';
+import { Grid, GridCellProps, GridColumn } from '@progress/kendo-react-grid';
+import { CellActions } from '../../lib/types.ts';
+import { RecordModeColumnCell } from '../cells/record-mode-column-cell.tsx';
+
 
 interface RecordModeGridProps {
   state: TableState;
@@ -15,12 +11,10 @@ interface RecordModeGridProps {
   actions: CellActions;
 }
 
-export const RecordModeGrid = ({state, cellRender, activeRecord, actions}: RecordModeGridProps) => {
-  const {columnTree, columns, activeCell} = state;
 
-  const visibleColumns = columnTree
-    .filter(cT => cT.visible)
-    .map(cT => columns[cT.field]);
+export const RecordModeGrid = ({state, cellRender, activeRecord, actions}: RecordModeGridProps) => {
+  const { columnTreeFlatten, columns, activeCell } = state;
+  const visibleColumns = columnTreeFlatten.map(c => columns[c]);
 
   const records = getTableRecordModeRows(visibleColumns, activeRecord);
   const data = useMemo(() => {
@@ -42,38 +36,29 @@ export const RecordModeGrid = ({state, cellRender, activeRecord, actions}: Recor
   };
 
   return (
-    <Grid data={data}
-          resizable={true} groupable={false}
-          reorderable={false} navigatable={false}
-          dataItemKey={'id'}
-          selectedField={'selected'}
-          cellRender={activeRecord ? cellRenderRecordMode : null}
-          rowHeight={28}
-          selectable={{mode: 'single'}}
-          style={{height: '100%'}}
+    <Grid
+      data={data} dataItemKey={'id'}
+      resizable={true} groupable={false}
+      reorderable={false} navigatable={false}
+      cellRender={activeRecord ? cellRenderRecordMode : null}
+      rowHeight={28} style={{height: '100%'}}
+      selectable={{mode: 'single'}} selectedField={'selected'}
     >
-      <GridColumn field="Column" title="Колонка" width="200px" />
-      <GridColumn field="Value" title="Значение" />
+      <GridColumn field={'Column'} title={'Колонка'} width={200}/>
+      <GridColumn field={'Value'} title={'Значение'}/>
     </Grid>
   );
 };
 
-function getTableRecordModeRows(columns: TableColumnState[], activeRecord: TableRecord) {
-  const columnId = 'Column';
-  const valueId = 'Value';
-  return Object.values(columns).map(c => {
-    const row: TableRecord = {};
-
+function getTableRecordModeRows(columns: TableColumnState[], activeRecord: TableRecord): TableRecord[] {
+  return columns.map((c) => {
     let value = activeRecord ? activeRecord[c.field] : null;
     if (value !== null && c.type === 'date') value = new Date(value);
 
-    row['field'] = c.field;
-    row[c.field] = value;
-    row[columnId] = c.title;
-    row[valueId] = c.type === 'date' && value ?
-      stringifyLocalDate(value, '.', true) :
-      value;
-
-    return row;
-  })
+    return {
+      field: c.field, [c.field]: value,
+      Column: c.title,
+      Value: c.type === 'date' && value ? value.toLocaleDateString() : value,
+    };
+  });
 }

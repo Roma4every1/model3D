@@ -12,22 +12,22 @@ import { createColumnTree, getFlatten } from './column-tree';
 export function applyColumnTypes(state: TableState, channelColumns: ChannelColumn[]) {
   const propertyList = state.properties.list;
 
-  channelColumns.forEach(({ Name, NetType, AllowDBNull }, i) => {
-    for (const property of propertyList.filter(p => p.fromColumn === Name)) {
+  channelColumns.forEach(({name, type, nullable }, i) => {
+    for (const property of propertyList.filter(p => p.fromColumn === name)) {
       const columnState = state.columns[property.name];
 
       if (columnState.lookupChannel) {
         if (!columnState.type) columnState.type = 'list';
       } else {
-        const type = getColumnType(NetType);
-        columnState.type = type;
-        if (type === 'real') columnState.format = '{0:#.####}';
-        else if (type === 'date') columnState.format = '{0:d}';
+        const tableColumnType = getColumnType(type);
+        columnState.type = tableColumnType;
+        if (tableColumnType === 'real') columnState.format = '{0:#.####}';
+        else if (tableColumnType === 'date') columnState.format = '{0:d}';
       }
 
-      columnState.colName = Name;
+      columnState.colName = name;
       columnState.colIndex = i;
-      columnState.allowNull = AllowDBNull;
+      columnState.allowNull = nullable;
     }
   });
   state.columns = {...state.columns};

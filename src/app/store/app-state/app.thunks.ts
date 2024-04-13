@@ -52,7 +52,7 @@ class WMDevTools {
     const channel = this.getState().channels[name];
     if (!channel || !channel.data) return null;
     const table = channel.data.rows.map(r => r.Cells);
-    if (columns) table.unshift(channel.data.columns.map(c => c.Name));
+    if (columns) table.unshift(channel.data.columns.map(c => c.name));
     return table;
   }
 

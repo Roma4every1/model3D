@@ -4,15 +4,15 @@ import { applyQuerySettings } from './common';
 
 
 interface OldChannelDataDTO {
-  Rows: ChannelRow[],
-  Columns: ChannelColumn[],
-  DataPart: boolean,
-  Editable: boolean,
+  Rows: ChannelRow[];
+  Columns: any[];
+  DataPart: boolean;
+  Editable: boolean;
 }
 
 interface ChannelDataDTO {
-  data: ChannelData | null,
-  queryID: QueryID | null,
+  data: ChannelData | null;
+  queryID: QueryID | null;
 }
 
 
@@ -39,7 +39,7 @@ export class ChannelAPI {
     const data: OldChannelDataDTO = res.data.data;
 
     const channelData: ChannelData = data ? {
-      columns: data.Columns,
+      columns: data.Columns.map(c => ({name: c.Name, type: c.NetType, nullable: c.AllowDBNull})),
       rows: data.Rows,
       dataPart: data.DataPart,
       editable: data.Editable,

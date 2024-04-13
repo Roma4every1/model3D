@@ -22,7 +22,7 @@ export const FileListView = ({channels}: FormState) => {
 
   if (nameIndexRef.current === -1) {
     const columnName = info.fileName.name;
-    nameIndexRef.current = channel.data.columns.findIndex(c => c.Name === columnName);
+    nameIndexRef.current = channel.data.columns.findIndex(c => c.name === columnName);
   }
 
   const rowToItem = (row: ChannelRow, i: number) => {

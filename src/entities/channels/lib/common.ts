@@ -58,19 +58,19 @@ export function createColumnInfo<Fields extends string = string>(
 export function findColumnIndexes(columns: ChannelColumn[], channelInfo: ChannelInfo): void {
   columns.forEach((column: ChannelColumn, i: number) => {
     if (!channelInfo.columnApplied) for (const property of channelInfo.properties) {
-      if (property.fromColumn === column.Name) {
-        property.type = column.NetType;
+      if (property.fromColumn === column.name) {
+        property.type = column.type;
       }
     }
     for (const field in channelInfo.lookupColumns) {
       const propertyInfo = channelInfo.lookupColumns[field];
-      if (propertyInfo.name === column.Name) {
+      if (propertyInfo.name === column.name) {
         propertyInfo.index = i;
       }
     }
     if (channelInfo.columns) for (const field in channelInfo.columns) {
       const propertyInfo = channelInfo.columns[field];
-      if (propertyInfo.name === column.Name) {
+      if (propertyInfo.name === column.name) {
         propertyInfo.index = i;
       }
     }
@@ -86,7 +86,7 @@ export function cellsToRecords(data: ChannelData): ChannelRecord[] {
     const record: ChannelRecord = {};
 
     data.columns.forEach((column, i) => {
-      record[column.Name] = cells[i];
+      record[column.name] = cells[i];
     });
     return record;
   };
@@ -99,7 +99,7 @@ export function channelRowToRecord(row: ChannelRow, columns: ChannelColumn[]): C
   const record: ChannelRecord = {};
 
   columns.forEach((column, i) => {
-    record[column.Name] = cells[i];
+    record[column.name] = cells[i];
   });
   return record;
 }
