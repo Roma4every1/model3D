@@ -1,4 +1,4 @@
-import { BaseAPI, API } from 'shared/lib';
+import { Res, Fetcher, fetcher } from 'shared/lib';
 import { types } from '../drawer/map-drawer';
 import { provider } from '../drawer';
 import { converter } from './maps-api.utils';
@@ -8,7 +8,7 @@ import symbolDef from 'assets/map-libs/symbol.def';
 
 
 export class MapsAPI {
-  constructor(private readonly baseAPI: BaseAPI) {}
+  constructor(private readonly api: Fetcher) {}
 
   /** Загрузка файла с описаниями построения точечных элементов. */
   public async getSymbolsLib(): Promise<ArrayBuffer> {
@@ -16,56 +16,42 @@ export class MapsAPI {
     return response.arrayBuffer();
   }
 
-  // /** Загрузка легенды карты. */
-  // public getMapLegend() {
-  //   return this.baseAPI.request<any>({path: 'mapLegends'});
-  // }
-
   /** Запрос на сохранение карты. */
-  public saveMap(formID: FormID, mapID: MapID, mapData: any, owner: MapOwner) {
+  public saveMap(formID: FormID, mapID: MapID, mapData: any, owner: MapOwner): Promise<Res> {
     const data = {formId: formID, mapId: mapID, mapData, owner};
-    const body = converter.encode(JSON.stringify(data));
-    return this.baseAPI.request<any>({method: 'POST', path: 'saveMap', body});
+    return this.api.post('/saveMap', {blob: converter.encode(JSON.stringify(data))});
   }
 
   /** Загрузка общих данных карты. */
-  public getMap(mapID: MapID, formID: FormID) {
-    const query = {mapId: mapID, formId: formID};
-    return this.baseAPI.request<MapDataRaw>({path: 'getMap', query});
+  public getMap(mapID: MapID, formID: FormID): Promise<Res<MapDataRaw>> {
+    return this.api.get('/getMap', {query: {mapId: mapID, formId: formID}});
   }
 
   /** Загрузка контейнера карты. */
   public async getMapContainer(containerName: string, owner: MapOwner, index?: string) {
     const query = {owner, containerName, index};
-    const req: WRequest = {path: 'getContainer', query, mapper: 'buffer'};
-    const response = await this.baseAPI.request<ArrayBuffer>(req);
-    if (response.ok === false) return response.data;
-    return converter.parse(response.data);
+    const res = await this.api.get('/getContainer', {query, then: 'arrayBuffer'});
+    if (res.ok === false) return res.message;
+    return converter.parse(res.data);
   }
 
   /* --- Utils --- */
 
   /** Запрос именных точек. */
-  public async setNamedPoints(mapData: MapDataRaw, owner: MapOwner, needReload = true): Promise<void> {
+  public async setNamedPoints(mapData: MapDataRaw, owner: MapOwner): Promise<void> {
     const data = await this.getMapContainer(mapData.namedpoints, owner);
     if (typeof data === 'string') {
-      if (needReload) {
-        setTimeout(() => {
-          this.setNamedPoints(mapData, owner, false);
-        }, 500);
-      } else {
-        mapData.mapErrors.push('error loading named points from ' + mapData.namedpoints);
-        mapData.points = [];
-      }
-      return;
+      mapData.mapErrors.push('error loading named points from ' + mapData.namedpoints);
+      mapData.points = [];
+    } else {
+      mapData.points = data.namedpoints;
     }
-    mapData.points = data.namedpoints;
   }
 
   /** Загрузка карты. */
   public async loadMap(mapID: MapID, owner: MapOwner, setLoading: (l: any) => void, formID: FormID): Promise<MapData | string> {
     const response = await this.getMap(mapID, formID);
-    if (!response.ok) return response.data as string;
+    if (!response.ok) return response.message;
     const mapData = response.data;
     mapData.mapErrors = [];
 
@@ -121,4 +107,4 @@ export class MapsAPI {
   }
 }
 
-export const mapsAPI = new MapsAPI(API);
+export const mapsAPI = new MapsAPI(fetcher);

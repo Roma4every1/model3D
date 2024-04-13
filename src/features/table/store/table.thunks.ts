@@ -1,5 +1,5 @@
 import { Dispatch } from 'redux';
-import { StateGetter, Thunk } from 'shared/lib';
+import { StateGetter, Thunk, Res } from 'shared/lib';
 import { SaveTableMetadata, SetRecords } from '../lib/types';
 import { t } from 'shared/locales';
 import { createElement } from 'react';
@@ -61,7 +61,7 @@ export function saveTableRecord({type, formID, row}: SaveTableMetadata): Thunk {
     const tables: TableID[] = [tableID];
 
     if (res.ok === false) {
-      error = res.data;
+      error = res.message;
     } else if (res.data.error) {
       error = res.data.error;
     } else {
@@ -82,7 +82,7 @@ export function deleteTableRecords(formID: FormID, indexes: number[] | 'all'): T
     const tableState = getState().tables[formID];
     const res = await channelAPI.removeRows(tableState.tableID, indexes);
 
-    if (res.ok === false) { dispatch(showWarningMessage(res.data)); return; }
+    if (res.ok === false) { dispatch(showWarningMessage(res.message)); return; }
     if (res.data.error) { dispatch(showWarningMessage(res.data.error)); return; }
 
     const activeCell = tableState.activeCell;
@@ -105,7 +105,7 @@ export function getNewRow (
 ): Thunk {
   return async (dispatch: Dispatch) => {
     const res = !copy && await channelAPI.getNewRow(state.tableID);
-    if (!copy && res.ok === false) { dispatch(showWarningMessage(res.data)); return; }
+    if (!copy && res.ok === false) { dispatch(showWarningMessage(res.message)); return; }
 
     const newID = state.total;
     const activeRecordID = state.activeCell.recordID;
@@ -143,7 +143,7 @@ export function exportTableToExcel(id: FormID): Thunk {
     };
 
     const res = await reportsAPI.exportToExcel(exportData);
-    if (res.ok === false) { dispatch(showWarningMessage(res.data)); return; }
+    if (res.ok === false) { dispatch(showWarningMessage(res.message)); return; }
 
     const { operationID, error } = res.data;
     if (error) { dispatch(showWarningMessage(error)); return; }

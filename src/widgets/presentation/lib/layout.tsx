@@ -1,3 +1,4 @@
+import { Res } from 'shared/lib';
 import { IGlobalAttributes } from 'flexlayout-react/declarations/model/IJsonModel';
 import { IJsonModel, IJsonRowNode } from 'flexlayout-react/declarations/model/IJsonModel';
 import { IJsonTabNode, IJsonTabSetNode } from 'flexlayout-react/declarations/model/IJsonModel';

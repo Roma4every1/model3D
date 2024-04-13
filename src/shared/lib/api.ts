@@ -1,56 +1,161 @@
-interface IBaseAPI {
-  setBase(base: string): void;
-  setSessionID(sessionID: SessionID): void;
-  request<Expected>(req: WRequest): Promise<Res<Expected>>;
+/** Обёртка над HTTP-ответом. */
+export interface Res<T = any> {
+  /** `true` если статус код ответа `2xx`. */
+  ok: boolean;
+  /** Объект ответа от `fetch`; не задан если произошла клиентская ошибка. */
+  raw?: Response;
+  /** Преобразованное тело ответа. */
+  data?: T;
+  /** Сообщение ошибки, если `ok === false`. */
+  message?: string;
 }
 
+/** Настройки HTTP-запроса. */
+export interface ReqOptions {
+  /** Поисковые URL-параметры. */
+  query?: ReqQuery;
+  /** Заголовки запроса. */
+  headers?: HeadersInit;
+  /** Тело запроса в формате JSON. */
+  json?: object;
+  /** Тело запроса в формате обычного текста. */
+  text?: string;
+  /** Тело запроса в бинарном формате. */
+  blob?: Blob | ArrayBuffer;
+  /** Тип обработчика ответа. */
+  then?: ReqHandlerKind | null;
+  /** Время в миллисекундах, в течение которого ожидается ответ. */
+  timeout?: number;
+}
 
-export class BaseAPI implements IBaseAPI {
-  private base: string = '/';
-  private sessionID: SessionID = '';
+/** Метод HTTP запроса. */
+export type ReqMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
-  public static mapperDict = {
-    'text': (res: Response) => res.text(),
-    'json': (res: Response) => res.json(),
-    'blob': (res: Response) => res.blob(),
-    'buffer': (res: Response) => res.arrayBuffer(),
-  };
+/** Поисковые URL-параметры. */
+export type ReqQuery = Record<string, string | number | boolean>;
 
-  public setBase(base: string): void {
-    this.base = base;
+/** Вид обработчика тела ответа.
+ * @example
+ * response.text()
+ * response.json()
+ * response.blob()
+ * response.arrayBuffer()
+ */
+export type ReqHandlerKind = 'text' | 'json' | 'blob' | 'arrayBuffer';
+
+/* --- --- */
+
+interface IFetcher {
+  setPrefix(prefix: string): void;
+  setSessionID(sessionID: SessionID): void;
+
+  get<T>(path: string, options?: ReqOptions): Promise<Res<T>>;
+  post<T>(path: string, options?: ReqOptions): Promise<Res<T>>;
+  put<T>(path: string, options?: ReqOptions): Promise<Res<T>>;
+  patch<T>(path: string, options?: ReqOptions): Promise<Res<T>>;
+  delete<T>(path: string, options?: ReqOptions): Promise<Res<T>>;
+}
+
+export class Fetcher implements IFetcher {
+  /** Используется ли WMW WebRequests. */
+  public legacy: boolean;
+  /** Префикс URL для всех запросов. */
+  private prefix: string;
+  /** ID текущей сессии (добавляется в заголовки). */
+  private sessionID: SessionID;
+
+  public setPrefix(prefix: string): void {
+    if (prefix.endsWith('/')) prefix = prefix.slice(0, -1);
+    this.prefix = prefix;
+    this.legacy = prefix.includes('WebRequests');
   }
   public setSessionID(sessionID: SessionID): void {
     this.sessionID = sessionID;
   }
 
-  public async request<Expected>(req: WRequest): Promise<Res<Expected>> {
-    const fullPath = this.base + req.path;
-    const { method, query, body, mapper } = req;
+  public get<T = any>(path: string, o?: ReqOptions): Promise<Res<T>> {
+    return this.request('GET', path, o);
+  }
+  public post<T = any>(path: string, o?: ReqOptions): Promise<Res<T>> {
+    return this.request('POST', path, o);
+  }
+  public put<T = any>(path: string, o?: ReqOptions): Promise<Res<T>> {
+    return this.request('PUT', path, o);
+  }
+  public patch<T = any>(path: string, o?: ReqOptions): Promise<Res<T>> {
+    return this.request('PATCH', path, o);
+  }
+  public delete<T = any>(path: string, o?: ReqOptions): Promise<Res<T>> {
+    return this.request('DELETE', path, o);
+  }
 
-    try {
-      const url = new URL(fullPath);
-      if (query) url.search = new URLSearchParams(query).toString();
+  private async request(method: ReqMethod, path: string, options?: ReqOptions): Promise<Res> {
+    let query: ReqQuery;
+    let body: BodyInit;
+    let headers: HeadersInit;
+    let signal: AbortSignal;
+    let then: ReqHandlerKind | null;
 
-      const headers = this.sessionID ? {'x-session-id': this.sessionID} : undefined;
-      const init: RequestInit = {method: method ?? 'GET', body, headers, credentials: 'include'};
+    if (options) {
+      query = options.query;
+      then = options.then;
+      headers = options.headers ?? {};
 
-      const response = await fetch(url, init);
-      const statusCode = response.status;
+      const contentType = headers['content-type'];
+      if (options.json) {
+        body = JSON.stringify(options.json);
+        if (!contentType && !this.legacy) headers['content-type'] = 'application/json';
+      } else if (options.text) {
+        body = options.text;
+        if (!contentType && !this.legacy) headers['content-type'] = 'text/plain';
+      } else if (options.blob) {
+        body = options.blob;
+        if (!contentType && !this.legacy) headers['content-type'] = 'application/octet-stream';
+      }
 
-      if (statusCode >= 400) {
-        const errorDetails = await response.json();
-        const message = errorDetails?.message ?? 'Unknown server side error';
-        return {ok: false, data: message, statusCode}
-      } else {
-        const data = await BaseAPI.mapperDict[mapper ?? 'json'](response);
-        return {ok: true, data, statusCode};
+      if (options.timeout) {
+        const controller = new AbortController();
+        signal = controller.signal;
+        setTimeout(() => controller.abort(), options.timeout);
       }
     }
-    catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown client side error';
-      return {ok: false, data: message, statusCode: 400};
+    if (this.sessionID) {
+      if (!headers) headers = {};
+      headers['x-session-id'] = this.sessionID;
+    }
+
+    try {
+      const url = new URL(this.prefix + path);
+      if (query) url.search = new URLSearchParams(query as any).toString();
+
+      const init: RequestInit = {method, headers, body, signal, credentials: 'include'};
+      const response = await fetch(url, init);
+      const ok = response.ok;
+
+      if (ok) {
+        const res: Res = {ok, raw: response};
+        if (then === null) return res;
+        if (then) { res.data = await response[then](); return res; }
+
+        const contentType = response.headers.get('content-type');
+        if (contentType === 'application/json') {
+          res.data = await response.json();
+        } else if (contentType === 'application/octet-stream') {
+          res.data = await response.blob();
+        } else if (contentType.startsWith('text')) {
+          res.data = await response.text();
+        }
+        return res;
+      } else {
+        const errorDetails = await response.json();
+        const message = errorDetails?.message ?? 'Неизвестная ошибка';
+        return {ok, raw: response, message}
+      }
+    }
+    catch (e) {
+      return {ok: false, message: e.message};
     }
   }
 }
 
-export const API = new BaseAPI();
+export const fetcher = new Fetcher();

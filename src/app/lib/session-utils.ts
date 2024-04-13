@@ -1,5 +1,5 @@
 import { t } from 'shared/locales';
-import { API, AppDispatch, StateGetter } from 'shared/lib';
+import { AppDispatch, StateGetter, fetcher } from 'shared/lib';
 import { appAPI } from './app.api';
 import { getSessionToSave } from './session-save';
 import { showWarningMessage } from 'entities/window';
@@ -24,7 +24,7 @@ export async function startNewSession(dispatch: AppDispatch, getState: StateGett
       dispatch(showWarningMessage(t('messages.session-lost')));
     };
 
-    API.setSessionID(res.data);
+    fetcher.setSessionID(res.data);
     state.appState.sessionIntervalID = window.setInterval(extendSession, 2 * 60 * 1000);
   } else {
     dispatch(showWarningMessage(res.data));
@@ -34,7 +34,7 @@ export async function startNewSession(dispatch: AppDispatch, getState: StateGett
 
 /** Очищает данные текущей сессии, оставляя общие данные приложения. */
 function clearSessionData(state: WState): void {
-  API.setSessionID('');
+  fetcher.setSessionID('');
   state.appState.sessionID = null;
   state.parameters = {};
   state.forms = {};

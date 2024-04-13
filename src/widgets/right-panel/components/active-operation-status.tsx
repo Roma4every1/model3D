@@ -2,7 +2,7 @@ import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { saveAs } from '@progress/kendo-file-saver';
 import { showNotification } from 'entities/notifications';
-import { fileExtensionIconDict, defaultFileIcon } from 'shared/lib';
+import { Res, fileExtensionIconDict, defaultFileIcon } from 'shared/lib';
 import { reportsAPI } from 'entities/reports/lib/report.api.ts';
 
 

@@ -20,7 +20,7 @@ import {
 export function initializeActiveReport(id: ClientID, reportID: ReportID): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const res = await reportsAPI.getReportData(reportID);
-    if (res.ok === false) { dispatch(showWarningMessage(res.data)); return; }
+    if (res.ok === false) { dispatch(showWarningMessage(res.message)); return; }
     const { parameters, replaces, linkedPropertyCount } = res.data;
 
     const state = getState();
@@ -83,7 +83,7 @@ export function runReport(clientID: ClientID, report: ReportModel): Thunk {
 
     for (let i = 0; i < report.linkedPropertyCount; i++) {
       const res = await reportsAPI.executeReportProperty(reportID, parameters, i);
-      if (res.ok === false) { dispatch(showWarningMessage(res.data)); continue; }
+      if (res.ok === false) { dispatch(showWarningMessage(res.message)); continue; }
       if (res.data.error) { dispatch(showWarningMessage(res.data.error)); continue; }
 
       const { operationID, result, modifiedTables } = res.data;

@@ -1,4 +1,4 @@
-import { BaseAPI, API } from 'shared/lib';
+import { Res, Fetcher, fetcher } from 'shared/lib';
 import { IJsonModel } from 'flexlayout-react';
 import { prepareParameterList, serializeParameter } from 'entities/parameters';
 
@@ -7,60 +7,56 @@ type FormSettingsDTO = DockSettings | GridFormSettings | FormSettings;
 
 
 export class FormsAPI {
-  constructor(private readonly baseAPI: BaseAPI) {}
+  constructor(private readonly api: Fetcher) {}
 
   /** Запрос корневой формы. */
-  public getRootForm() {
-    return this.baseAPI.request<FormDataWM>({path: 'getRootForm'});
+  public getRootForm(): Promise<Res<FormDataWM>> {
+    return this.api.get('/getRootForm');
   }
 
-  public getPresentationTree(rootFormID: ClientID) {
-    const query = {formId: rootFormID};
-    return this.baseAPI.request<PresentationTreeItem>({path: 'presentationList', query});
+  public getPresentationTree(rootFormID: ClientID): Promise<Res<PresentationTreeItem>> {
+    return this.api.get('/presentationList', {query: {formId: rootFormID}});
   }
 
   /** Запрос разметки формы. */
-  public getPresentationLayout(id: ClientID) {
-    const req: WRequest = {path: 'getFormLayout', query: {formId: id}};
-    return this.baseAPI.request<IJsonModel>(req);
+  public getPresentationLayout(id: ClientID): Promise<Res<IJsonModel>> {
+    return this.api.get('/getFormLayout', {query: {formId: id}});
   }
 
   /** Запрос настроек формы. */
-  public getFormSettings(id: FormID) {
-    const req: WRequest = {path: 'getFormSettings', query: {formId: id}};
-    return this.baseAPI.request<FormSettingsDTO>(req);
+  public getFormSettings(id: FormID): Promise<Res<FormSettingsDTO>> {
+    return this.api.get('/getFormSettings', {query: {formId: id}});
   }
 
   /** Запрос параметров формы. */
-  public async getClientParameters(id: ClientID) {
-    const req: WRequest = {path: 'getFormParameters', query: {formId: id}};
-    const res = await this.baseAPI.request<Parameter[]>(req);
+  public async getClientParameters(id: ClientID): Promise<Parameter[]> {
+    const res = await this.api.get('/getFormParameters', {query: {formId: id}});
     return res.ok ? prepareParameterList(res.data) : [];
   }
 
   /** Запрос дочерних форм. */
-  public getClientChildren(id: ClientID) {
-    const req: WRequest = {path: 'getChildrenForms', query: {formId: id}};
-    return this.baseAPI.request<FormChildrenState>(req);
+  public getClientChildren(id: ClientID): Promise<Res<FormChildrenState>> {
+    return this.api.get('/getChildrenForms', {query: {formId: id}});
   }
 
   /** Запрос списка каналов формы. */
   public async getClientAttachedChannels(id: ClientID): Promise<AttachedChannel[]> {
-    const req: WRequest = {path: 'getChannelsForForm', query: {formId: id}};
-    const res = await this.baseAPI.request<ChannelName[]>(req);
-    return res.ok ? res.data.map(c => ({name: c, attachOption: 'AttachAll', exclude: []})) : [];
+    const query = {formId: id};
+    const { ok, data } = await this.api.get<any[]>('/getChannelsForForm', {query});
+
+    if (!ok || data.length == 0) return [];
+    if (typeof data[0] === 'object') return data;
+    return data.map(c => ({name: c, attachOption: 'AttachAll', exclude: []}));
   }
 
   /** Выполнение привязанного свойства презентации. */
   public async executeLinkedProperty(id: ClientID, params: Parameter[], index: number): Promise<string> {
     const parameters = params.map(serializeParameter);
-    const body = JSON.stringify({reportId: id, parameters, index});
-    const req: WRequest = {method: 'POST', path: 'executeReportProperty', body};
-
-    const res = await this.baseAPI.request<OperationData>(req);
+    const json = {reportId: id, parameters, index};
+    const res = await this.api.post('/executeReportProperty', {json});
     if (res.ok === false) return null;
     return res.data.result || null;
   }
 }
 
-export const formsAPI = new FormsAPI(API);
+export const formsAPI = new FormsAPI(fetcher);

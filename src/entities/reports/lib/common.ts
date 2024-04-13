@@ -24,7 +24,7 @@ export async function watchOperation(
     if (res.ok === false) {
       const message = t('report.get-operation-status-error');
       showNotification({type: 'warning', content: message})(dispatch).then();
-      dispatch(setOperationStatus({id: operationID, error: res.data})); return;
+      dispatch(setOperationStatus({id: operationID, error: res.message})); return;
     }
 
     const { modifiedTables, log, ready } = res.data;

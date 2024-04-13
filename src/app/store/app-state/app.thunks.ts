@@ -1,5 +1,5 @@
 import { Dispatch } from 'redux';
-import { StateGetter, API } from 'shared/lib';
+import { StateGetter, fetcher } from 'shared/lib';
 import { appAPI } from '../../lib/app.api';
 import { createClientConfig, getAppLocation } from '../../lib/initialization';
 import { setInitResult } from './app.actions';
@@ -10,7 +10,7 @@ export async function initialize(dispatch: Dispatch, getState: StateGetter) {
   const config = createClientConfig(resConfig);
 
   if (config.devMode) window['store'] = new WMDevTools(dispatch, getState);
-  API.setBase(config.webServicesURL);
+  fetcher.setPrefix(config.webServicesURL);
 
   const systemList = await appAPI.getSystemList();
   dispatch(setInitResult(config, systemList));

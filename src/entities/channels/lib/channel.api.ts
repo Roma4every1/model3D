@@ -1,4 +1,4 @@
-import { BaseAPI, API } from 'shared/lib';
+import { Res, Fetcher, fetcher } from 'shared/lib';
 import { serializeParameter } from 'entities/parameters';
 import { applyQuerySettings } from './common';
 
@@ -26,12 +26,11 @@ interface ChannelDataDTO {
 
 /** Запросы связанные с каналами. */
 export class ChannelAPI {
-  constructor(private readonly baseAPI: BaseAPI) {}
+  constructor(private readonly api: Fetcher) {}
 
   /** Запрос статических данных канала. */
   public getChannelInfo(channelName: ChannelName): Promise<Res<ChannelInfo>> {
-    const req: WRequest = {path: 'channelSettings', query: {channelName}}
-    return this.baseAPI.request<ChannelInfo>(req);
+    return this.api.get<ChannelInfo>('/channelSettings', {query: {channelName}});
   }
 
   /** Запрос данных канала. */
@@ -41,11 +40,10 @@ export class ChannelAPI {
   ): Promise<Res<ChannelDataDTO>> {
     const paramValues = parameters.map(serializeParameter);
     applyQuerySettings(paramValues, query);
-    const body = JSON.stringify({channelName: name, paramValues});
+    const json = {channelName: name, paramValues};
 
-    const req: WRequest = {method: 'POST', path: 'channelData', body};
-    const res = await this.baseAPI.request<ChannelDTO>(req);
-    if (res.ok === false) return res as Res<ChannelDataDTO>;
+    const res = await this.api.post<ChannelDTO>('/channelData', {json});
+    if (res.ok === false) return res as any;
     const data = res.data.data;
 
     const channelData: ChannelData = data ? {
@@ -60,43 +58,41 @@ export class ChannelAPI {
 
   /** Запрос ресурса из базы данных. */
   public getResource(tableID: TableID, rowIndex: number, columnName: string): Promise<Res<Blob>> {
-    const query: ReqQuery = {tableId: tableID, index: rowIndex.toString(), name: columnName};
-    return this.baseAPI.request<Blob>({path: 'dbResource', query, mapper: 'blob'});
+    const query = {tableId: tableID, index: rowIndex, name: columnName};
+    return this.api.get<Blob>('/dbResource',{query, then: 'blob'});
   }
 
   /* --- --- */
 
   /** Запрос статистики по колонке. */
-  public getStatistics(tableID: TableID, columnName: string): Promise<Res<any>> {
+  public getStatistics(tableID: TableID, columnName: string): Promise<Res> {
     const query = {tableId: tableID, columnName};
-    return this.baseAPI.request<any>({path: 'getStatistics', query})
+    return this.api.get('/getStatistics', {query})
   }
 
   /** Запрос новой записи со стандартными значениями. */
-  public getNewRow(tableID: TableID) {
-    const query = {tableId: tableID};
-    return this.baseAPI.request<ChannelRow>({path: 'getNewRow', query});
+  public getNewRow(tableID: TableID): Promise<Res<ChannelRow>> {
+    return this.api.get('/getNewRow', {query: {tableId: tableID}});
   }
 
   /** Запрос на добавление записи в таблицу. */
-  public insertRows(tableID: TableID, rows: ChannelRow[]) {
-    const body = JSON.stringify({tableId: tableID, rows})
-    return this.baseAPI.request<OperationData>({method: 'POST', path: 'insertRows', body});
+  public insertRows(tableID: TableID, rows: ChannelRow[]): Promise<Res<OperationData>> {
+    const json = {tableId: tableID, rows};
+    return this.api.post('/insertRows',{json});
   }
 
   /** Запрос обновления записи в таблице. */
-  public updateRows(tableID: TableID, indexes: number[], rows: ChannelRow[]) {
-    const body = JSON.stringify({tableId: tableID, indexes, rows});
-    return this.baseAPI.request<OperationData>({method: 'POST', path: 'updateRows', body});
+  public updateRows(tableID: TableID, indexes: number[], rows: ChannelRow[]): Promise<Res<OperationData>> {
+    const json = {tableId: tableID, indexes, rows};
+    return this.api.post('/updateRows', {json});
   }
 
   /** Запрос на удаление записей из таблицы. */
-  public removeRows(tableID: TableID, indexes: number[] | 'all') {
-    const rows = Array.isArray(indexes) ? indexes.join(',') : indexes;
-    const query = {tableId: tableID, rows};
-    return this.baseAPI.request<OperationData>({path: 'removeRows', query});
+  public removeRows(tableID: TableID, indexes: number[] | 'all'): Promise<Res<OperationData>> {
+    const query = {tableId: tableID, rows: Array.isArray(indexes) ? indexes.join(',') : indexes};
+    return this.api.get('/removeRows', {query});
   }
 }
 
 /** Запросы связанные с каналами. */
-export const channelAPI = new ChannelAPI(API);
+export const channelAPI = new ChannelAPI(fetcher);
