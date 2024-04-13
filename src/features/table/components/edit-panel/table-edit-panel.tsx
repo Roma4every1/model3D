@@ -10,6 +10,7 @@ import { ColumnVisibility } from './column-visibility'
 import { SelectAll } from './select-all';
 import { ColumnLocking } from './column-locking';
 import { ColumnControls } from './column-controls';
+import { ColumnMode } from './column-mode';
 
 
 export const TableEditPanel = ({id}: FormEditPanelProps) => {
@@ -22,6 +23,7 @@ export const TableEditPanel = ({id}: FormEditPanelProps) => {
   const props: EditPanelItemProps = {id, state, dispatch, t};
   return (
     <div className={'menu'}>
+      <ColumnMode {...props}/>
       <MenuSection className={'big-buttons'} header={t('table.panel.functions.header')}>
         <ExcelExport {...props}/>
         <ColumnVisibility {...props}/>
