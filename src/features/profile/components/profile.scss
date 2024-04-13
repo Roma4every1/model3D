@@ -1,0 +1,32 @@
+.profile-canvas {
+  width: 100%;
+  height: 100%;
+  outline: none;
+}
+
+.profile-container {
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.profile-plast-list-item {
+  display: grid;
+  grid-template-columns: 16px calc(100% - 40px) 16px;
+  grid-gap: 4px;
+  align-items: flex-end;
+
+  padding: 2px;
+  border-radius: 2px;
+  border: 1px solid #ffffff;
+}
+
+.profile-editor {
+
+  button {
+    margin-top: 6px;
+    font-size: 12px;
+    height: 22px;
+  }
+}

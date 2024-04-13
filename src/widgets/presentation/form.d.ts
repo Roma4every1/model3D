@@ -126,4 +126,4 @@ type FormType = 'dock' | 'grid' | 'dataSet' | 'carat' | 'chart' | 'map' | 'multi
   'spreadsheetUnite' | 'transferForm';
 
 /** Поддерживаемые типы форм. */
-type SupportedFormType = 'dataSet' | 'carat' | 'chart' | 'map' | 'files' | 'filesList';
+type SupportedFormType = 'dataSet' | 'carat' | 'chart' | 'map' | 'profile' | 'files' | 'filesList';

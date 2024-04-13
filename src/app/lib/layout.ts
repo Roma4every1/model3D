@@ -55,6 +55,10 @@ const rightTabDict: Record<TabID, IJsonTabNode> = {
     type: 'tab', enableDrag: false,
     id: 'right-trace', name: 'Редактирование трассы',
   },
+  'right-profile': {
+    type: 'tab', enableDrag: false,
+    id: 'right-profile', name: 'Параметры профиля',
+  },
 };
 
 
@@ -109,6 +113,7 @@ export class LayoutManager {
       this.handleTab('top-track', types.has('carat'));
       this.handleTab('top-carat', types.has('carat'));
       this.handleTab('right-map', types.has('map'));
+      this.handleTab('right-profile', types.has('profile'));
 
       // исходя из UX, вкладка с программами самая популярная,
       // но если последняя открытая осталась, то нужно остаться на ней

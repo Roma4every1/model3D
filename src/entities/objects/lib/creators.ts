@@ -7,7 +7,12 @@ export function createPlaceModel(value: ParamValueTableRow): PlaceModel {
   const id = parseInt(stringToTableCell(value, placeCriterion.id as string));
   if (isNaN(id)) return null;
   const name = stringToTableCell(value, placeCriterion.name as string);
-  return {id, name};
+  const criterionObjectName =
+    placeCriterion.objectName as {name: string; optional: boolean };
+
+  const objectName = value.includes(criterionObjectName.name) ?
+    stringToTableCell(value, criterionObjectName.name) : null;
+  return {id, name, objectName};
 }
 
 /** По значение `TableRow` параметра создаёт модель пласта. */

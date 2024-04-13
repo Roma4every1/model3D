@@ -114,5 +114,8 @@ async function createFormSettings({id, type}: FormDataWM): Promise<FormSettings>
     if (res.ok) return settings[inclinometryPluginName] = res.data;
     return settings;
   }
+  if (type === 'profile') {
+    await fillPatterns.initialize();
+  }
   return {};
 }

@@ -5,6 +5,7 @@ import { Table, createTableState } from 'features/table';
 import { Chart, createChartState } from 'features/chart';
 import { Map, createMapState } from 'features/map';
 import { Carat, createCaratState } from 'features/carat';
+import { Profile, createProfileState } from 'features/profile';
 import { FileView, createFileViewState } from 'features/file';
 import { FileListView, createFileListState } from 'features/file-list';
 
@@ -19,6 +20,7 @@ export const formDict: SupportedFormDict<FunctionComponent<FormState>> = {
   'carat': Carat,
   'chart': Chart,
   'map': Map,
+  'profile': Profile,
   'files': FileView,
   'filesList': FileListView,
 };
@@ -29,6 +31,7 @@ export const createFormDict: SupportedFormDict<FormStateCreator> = {
   'carat': createCaratState,
   'chart': createChartState,
   'map': createMapState,
+  'profile': createProfileState,
   'files': createFileViewState,
   'filesList': createFileListState,
 };

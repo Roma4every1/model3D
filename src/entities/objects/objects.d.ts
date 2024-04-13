@@ -34,18 +34,23 @@ interface PlaceState {
 /** Модель месторождения.
  * + `id`: {@link PlaceID} — идентификатор
  * + `name`: {@link PlaceName} — название
+ * + `objectName`: {@link PlaceObjName} — код объекта
  * */
 interface PlaceModel {
   /** Идентификатор месторождения. */
   id: PlaceID;
   /** Название месторождения. */
   name: PlaceName;
+  /** Дополнительный дентификатор (код) месторождения. */
+  objectName: PlaceObjName
 }
 
 /** Идентификатор месторождения. */
 type PlaceID = number;
 /** Название месторождения. */
 type PlaceName = string;
+/** Название объекта месторождения. */
+type PlaceObjName = string;
 
 /* --- Stratum --- */
 
