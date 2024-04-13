@@ -1,17 +1,21 @@
 import { MouseEvent, WheelEvent, useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
-import { useDispatch, useSelector } from 'shared/lib';
+import { compareObjects, useDispatch, useSelector } from 'shared/lib';
 import { LoadingStatus, TextInfo } from 'shared/ui';
-import { channelSelector } from 'entities/channels';
+import { channelDictSelector, channelSelector } from 'entities/channels';
 import { traceStateSelector, wellStateSelector, setCurrentTrace, setCurrentWell } from 'entities/objects';
 import { updateParamDeep } from 'entities/parameters';
 import { tableRowToString } from 'entities/parameters/lib/table-row';
-import { mapStateSelector } from '../store/map.selectors';
+import { getMapPresentationParameterSelector, mapStateSelector } from '../store/map.selectors';
 import { fetchMapData, showMapPropertyWindow } from '../store/map.thunks';
 import { setMapField, setMapCanvas, applyTraceToMap } from '../store/map.actions';
 import { getFullTraceViewport, getTraceMapElement, handleTraceClick } from '../lib/traces-map-utils';
-import { getFullViewport } from '../lib/map-utils';
+import { getFullViewport, PIXEL_PER_METER } from '../lib/map-utils';
 import { checkDistancePoints } from '../lib/selecting-utils.ts';
 import { MapMode } from '../lib/constants.ts';
+import {InclModePluginParamNames, PluginNames} from '../lib/map-plugins/lib/constants.ts';
+import {
+  InclinometryModePlugin
+} from '../lib/map-plugins/plugins/inclinometry-mode-plugin/inclinometry-mode-plugin.ts';
 
 
 export const Map = ({id, parent, channels}: FormState) => {
@@ -30,11 +34,33 @@ export const Map = ({id, parent, channels}: FormState) => {
   const activeChannelName = isPartOfDynamicMultiMap ? null : channels[0].name;
   const activeChannel: Channel = useSelector(channelSelector.bind(activeChannelName));
 
+  const angleParamName = InclModePluginParamNames.VIEW_ANGLE;
+  const angleSelector = getMapPresentationParameterSelector(parent, angleParamName)
+  const angleParam = useSelector(angleSelector);
+
+  const inclPlugin = stage.plugins.find(it =>
+    it.name === PluginNames.INCLINOMETRY_MODE
+  ) as InclinometryModePlugin;
+
   // проверка параметров формы
   useEffect(() => {
     if (isPartOfDynamicMultiMap) return;
     const rows = activeChannel?.data?.rows;
     if (!rows || rows.length === 0) {
+      if (stage.inclinometryModeOn && !canvas) {
+        stage.setData({
+          layers: [],
+          x: 0,
+          y: 0,
+          scale: 1
+        } as MapData);
+        dispatch(setMapCanvas(id, canvasRef.current));
+        inclPlugin.setUpdateAngleParamFunction((value: number) =>
+          dispatch(updateParamDeep(parent, angleParamName, value))
+        );
+        setIsMapExist(true);
+        return;
+      }
       if (loading.percentage < 0) return;
       return setIsMapExist(false);
     }
@@ -59,23 +85,30 @@ export const Map = ({id, parent, channels}: FormState) => {
       dispatch(fetchMapData(id));
     }
     setIsMapExist(true);
-  }, [mapState, activeChannel, id, parent, isPartOfDynamicMultiMap, dispatch]); // eslint-disable-line
+  }, [mapState?.owner, mapState?.mapID, activeChannel, id, parent, isPartOfDynamicMultiMap, stage.inclinometryModeOn, dispatch]); // eslint-disable-line
 
   const getWellViewport = useCallback((wellID: WellID, maxScale: MapScale) => {
     if (wellID === null || wellID === undefined) return null;
     const idString = wellID.toString();
-    const point = mapData.points.find(p => p.UWID === idString);
+    const point = mapData?.points?.find(p => p.UWID === idString);
 
     if (point) {
       const scale = mapData.scale < maxScale ? mapData.scale : maxScale;
+      if (stage.inclinometryModeOn) {
+        const centerX = point.x - inclPlugin?.mapShiftX * scale / window.devicePixelRatio / PIXEL_PER_METER;
+        const centerY = point.y - inclPlugin?.mapShiftY * scale / window.devicePixelRatio / PIXEL_PER_METER;
+        return {centerX, centerY, scale};
+      }
       return {centerX: point.x, centerY: point.y, scale};
     }
     return null;
-  }, [mapData]);
+  }, [inclPlugin.mapShiftX, inclPlugin.mapShiftY,
+    mapData?.points, mapData?.scale, stage.inclinometryModeOn]);
 
   const wellsMaxScale = useMemo(() => {
+    if (stage.inclinometryModeOn) return 5_000;
     return mapData?.layers?.find(l => l.elementType === 'sign')?.getMaxScale() ?? 50_000;
-  }, [mapData?.layers]);
+  }, [mapData?.layers, stage.inclinometryModeOn]);
 
   // обновление ссылки на холст
   useLayoutEffect(() => {
@@ -84,7 +117,9 @@ export const Map = ({id, parent, channels}: FormState) => {
     if (!canvasRef.current) return;
 
     let initialViewport: MapViewport;
-    if (currentTrace) {
+    if (stage.inclinometryModeOn && currentWell) {
+      initialViewport = getWellViewport(currentWell.id, wellsMaxScale);
+    } else if (currentTrace) {
       initialViewport = getFullTraceViewport(getTraceMapElement(currentTrace), canvasRef.current);
     } else if (currentWell) {
       initialViewport = getWellViewport(currentWell.id, wellsMaxScale);
@@ -103,7 +138,7 @@ export const Map = ({id, parent, channels}: FormState) => {
 
   // подстраивание карты под выбранную скважину
   useEffect(() => {
-    if (!mapData) return;
+    if (!mapData?.points) return;
     if (currentWellID && currentWellID !== wellRef.current) {
       const viewport = getWellViewport(currentWellID, wellsMaxScale);
       if (viewport) canvasRef.current?.events?.emit('sync', viewport);
@@ -113,14 +148,28 @@ export const Map = ({id, parent, channels}: FormState) => {
 
   // отрисовка текущей трассы
   useEffect( () => {
+    if (stage.inclinometryModeOn) return;
     if (!mapData || loading.percentage < 100) return;
     const updateViewport =
-      currentTrace?.id !== traceRef.current || // изменилась активная трасса
-      (traceEditing && !stage.traceEditing);   // вошли в режим режактирования
+      (currentTrace?.id !== traceRef.current || // изменилась активная трасса
+      (traceEditing && !stage.traceEditing));   // вошли в режим режактирования
     dispatch(applyTraceToMap(id, currentTrace, updateViewport));
     stage.traceEditing = traceEditing;
     traceRef.current = currentTrace?.id;
-  }, [loading, currentTrace, traceEditing, mapData, stage, id, dispatch]);
+  }, [loading, currentTrace, traceEditing, mapData, stage, id, dispatch, stage.inclinometryModeOn]);
+
+  /* --- --- */
+
+  const channelNames = channels.map(c => c.name);
+  const channelDict: ChannelDict = useSelector(channelDictSelector.bind(channelNames), compareObjects);
+
+  // обновление каналов плагинов
+  useEffect(() => {
+    stage.plugins.forEach(p => {
+      p.setData(channelDict, angleParam);
+    });
+    stage.render();
+  }, [channelDict, stage, angleParam]);
 
   /* --- --- */
 
@@ -129,6 +178,7 @@ export const Map = ({id, parent, channels}: FormState) => {
   if (loading.percentage < 100) return <LoadingStatus {...loading}/>;
 
   const onMouseDown = ({nativeEvent}: MouseEvent) => {
+    if (stage.inclinometryModeOn) return;
     if (nativeEvent.button !== 0) return;
     stage.handleMouseDown(nativeEvent);
     if (mapData.scale > wellsMaxScale) return;
@@ -158,6 +208,7 @@ export const Map = ({id, parent, channels}: FormState) => {
 
   const onMouseUp = ({nativeEvent}: MouseEvent) => {
     const element = stage.handleMouseUp(nativeEvent);
+    if (stage.inclinometryModeOn) return;
     if (!element) return;
     element.edited = true;
 

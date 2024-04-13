@@ -56,3 +56,20 @@ export function findDependentParameters(id: ParameterID, parameters: ParamDict):
   }
   return dependencies;
 }
+
+export function getComboBoxItems(channel: Channel) {
+  const rows = channel.data?.rows;
+  if (!rows) return null;
+
+  const lookupColumns = channel.info.lookupColumns;
+  const idIndex = lookupColumns.id.index;
+  let valueIndex = lookupColumns.value.index;
+
+  if (valueIndex === -1) valueIndex = idIndex;
+  return rows.map((row) => getComboBoxItem(row, idIndex, valueIndex));
+}
+
+function getComboBoxItem(row: ChannelRow, idIndex: number, valueIndex: number) {
+  const id = row.Cells[idIndex];
+  return {id, name: row.Cells[valueIndex] ?? id, value: row};
+}

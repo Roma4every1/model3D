@@ -15,6 +15,14 @@
   > :last-child {
     height: 20px;
   }
+
+  .integer-array-tree-editor {
+    height: unset;
+
+    .ant-select-selection-search {
+      display: none !important;
+    }
+  }
 }
 
 .file-text-editor {

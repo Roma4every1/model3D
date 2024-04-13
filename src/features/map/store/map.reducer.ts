@@ -1,6 +1,7 @@
 import { MapStage } from '../lib/map-stage.ts';
 import { MapLayer } from '../lib/map-layer.ts';
 import { traceLayerProto, getTraceMapElement, getFullTraceViewport } from '../lib/traces-map-utils';
+import {pluginNameToInstanceDict} from '../lib/map-plugins/lib/utils.ts';
 
 /* --- Action Types --- */
 
@@ -51,8 +52,17 @@ export type MapAction = ActionAddMulti | ActionSetSync | ActionCreate |
 
 /* --- Init State & Reducer --- */
 
-function createMapState(editable: boolean): MapState {
-  const stage = new MapStage();
+function createMapState(
+  editable: boolean,
+  pluginsSettings?: MapPluginsSettingsDict,
+): MapState {
+  const plugins: IMapPlugin[] = Object.entries(pluginsSettings).map(
+    ([pluginName, pluginsSettings]) => {
+      return pluginNameToInstanceDict[pluginName](pluginsSettings);
+    }
+  );
+
+  const stage = new MapStage(plugins);
   const observer = new ResizeObserver(() => { stage.resize(); });
 
   return {
@@ -60,6 +70,7 @@ function createMapState(editable: boolean): MapState {
     owner: null, mapID: null, loading: {percentage: 100, status: null},
     modified: false, editable,
     propertyWindowOpen: false, attrTableWindowOpen: false,
+    pluginsSettings
   };
 }
 
@@ -108,8 +119,15 @@ export const mapsReducer = (state: MapsState = init, action: MapAction): MapsSta
     /* --- single --- */
 
     case MapActionType.CREATE: {
+      const pluginSettings = action.payload.settings;
       const id = action.payload.state.id;
-      return {...state, single: {...state.single, [id]: createMapState(true)}};
+      return {
+        ...state,
+        single: {
+          ...state.single,
+          [id]: createMapState(true, pluginSettings)
+        }
+      };
     }
 
     case MapActionType.SET_LOADING: {

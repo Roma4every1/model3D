@@ -50,6 +50,8 @@ interface MapState {
   propertyWindowOpen: boolean;
   /** Открыта ли аттрибутивная таблица. */
   attrTableWindowOpen: boolean;
+  /** Настройки плагинов карты. */
+  pluginsSettings: MapPluginsSettings;
 }
 
 /** Состояние загрузки данных карты.
@@ -68,6 +70,8 @@ interface IMapStage {
   readonly scroller: IMapScroller;
   readonly listeners: MapStageListeners;
   traceEditing: boolean;
+  inclinometryModeOn: boolean;
+  readonly plugins: IMapPlugin[];
 
   getCanvas(): MapCanvas;
   getMode(): number;

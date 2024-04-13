@@ -57,6 +57,11 @@ export class FormsAPI {
     if (res.ok === false) return null;
     return res.data.result || null;
   }
+
+  /** Запрос дополнительных данных о форме (плагинов). */
+  public getPluginData(clientID: ClientID, pluginName: string): Promise<Res> {
+    return this.api.get('/pluginData', {query: {formId: clientID, pluginName}});
+  }
 }
 
 export const formsAPI = new FormsAPI(fetcher);

@@ -106,6 +106,13 @@ async function createFormSettings({id, type}: FormDataWM): Promise<FormSettings>
     if (!res.ok) return {};
     return res.data;
   }
-  if (type === 'map') await fillPatterns.initialize();
+  if (type === 'map') {
+    await fillPatterns.initialize();
+    const settings = {};
+    const inclinometryPluginName = 'wellsLinkedClients';
+    const res = await  formsAPI.getPluginData(id, inclinometryPluginName);
+    if (res.ok) return settings[inclinometryPluginName] = res.data;
+    return settings;
+  }
   return {};
 }
