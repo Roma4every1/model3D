@@ -16,9 +16,9 @@ export async function fillChannel(channel: Channel, paramDict: ParamDict): Promi
   const resData = await channelAPI.getChannelData(channel.name, paramValues, channel.query);
   if (!resData.ok) return;
 
-  const { data, tableID } = resData.data;
+  const { data, queryID } = resData.data;
   channel.data = data;
-  channel.tableID = tableID;
+  channel.queryID = queryID;
 
   const columns = data?.columns;
   const info = channel.info;
@@ -50,7 +50,7 @@ async function createChannel(name: ChannelName): Promise<[ChannelName, Channel]>
   info.lookupColumns = createLookupColumnNames(properties);
 
   const channel: Channel = {
-    name, info, data: null, tableID: null,
+    name, info, data: null, queryID: null,
     query: {maxRowCount: null, filters: null, order: []},
   };
   return [name, channel];

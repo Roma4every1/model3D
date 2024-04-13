@@ -21,7 +21,7 @@ export const EditButtons = ({state, actions, selectedRecords, t}: TableToolbarEd
     <>
       <ButtonIconStock
         icon={'plus-outline'} title={t('table.toolbar.add')}
-        action={() => actions.addRecord(false)} disabled={!state.tableID || rowAdding}
+        action={() => actions.addRecord(false)} disabled={!state.queryID || rowAdding}
       />
       <ButtonIconStock
         icon={'minus-outline'} title={t('table.toolbar.remove')}

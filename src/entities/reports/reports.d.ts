@@ -90,7 +90,7 @@ interface ReportData {
  * + `operationID`: {@link OperationID}
  * + `result: string`
  * + `error: string`
- * + `modifiedTables`: {@link TableID}[]
+ * + `modifiedTables`: {@link QueryID}[]
  * */
 interface OperationData {
   /** ID операции для `reportString`, иначе `null`. */
@@ -100,7 +100,7 @@ interface OperationData {
   /** Лог ошибки. */
   error: string | null;
   /** Список таблиц, которые нужно обновить. */
-  modifiedTables: TableID[];
+  modifiedTables: QueryID[];
 }
 
 /** Статус операции, выполняемой на сервере.
@@ -114,7 +114,7 @@ interface OperationData {
  * + `comment: string`
  * + `defaultResult: string`
  * + `error: string`
- * + `modifiedTables`: {@link TableID}[]
+ * + `modifiedTables`: {@link QueryID}[]
  * + `log: string`
  * */
 interface OperationStatus {
@@ -139,7 +139,7 @@ interface OperationStatus {
   /** Сообщение об ошибке. */
   error: string | null;
   /** Список таблиц, которые нужно обновить. */
-  modifiedTables: TableID[];
+  modifiedTables: QueryID[];
   /** Лог выполнения. */
   log: string | null;
 }

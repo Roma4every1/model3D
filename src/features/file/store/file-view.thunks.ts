@@ -44,9 +44,9 @@ export function updateFileViewModel(id: FormID, data: ChannelData): Thunk {
       } else if (descriptor) {
         model.data = base64toBlob(descriptor, contentType);
       } else {
-        const tableID = state.channels[attachedChannel.name].tableID;
+        const queryID = state.channels[attachedChannel.name].queryID;
         const rowIndex = data.rows.findIndex(r => r === activeRow);
-        const res = await channelAPI.getResource(tableID, rowIndex, fileColumnName);
+        const res = await channelAPI.getResource(queryID, rowIndex, fileColumnName);
 
         if (!res.ok) {
           const message = t('file-view.download-error', {fileName});

@@ -131,7 +131,7 @@ export function settingsToTableState(payload: FormStatePayload): TableState {
 
   return {
     recordHandler: new RecordHandler(columnsState, rowStyleRules),
-    tableID: null, editable: false, activeRecordParameter,
+    queryID: null, editable: false, activeRecordParameter,
     headerSetterRules: settings.headerSetterRules ?? [],
     channelName, columnsSettings, columns: columnsState, columnTree, columnTreeFlatten,
     properties: {...attachedProperties, list: properties},

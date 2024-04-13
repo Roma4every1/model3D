@@ -10,12 +10,12 @@ export function applyQuerySettings(paramValues: SerializedParameter[], query: Ch
 }
 
 /** По ID таблиц находит нужные каналы. */
-export function findChannelsByTables(ids: TableID[], channels: ChannelDict): ChannelName[] {
+export function findChannelsByQueryIDs(ids: QueryID[], channels: ChannelDict): ChannelName[] {
   const channelNames: ChannelName[] = [];
   for (const id of ids) {
     for (const name in channels) {
-      const tableID = channels[name].tableID;
-      if (tableID === id) channelNames.push(name);
+      const queryID = channels[name].queryID;
+      if (queryID === id) channelNames.push(name);
     }
   }
   return channelNames;

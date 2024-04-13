@@ -7,8 +7,8 @@ export function setChannels(channels: ChannelDict): ChannelAction {
 }
 
 /** Перезаписывает данные канала. */
-export function setChannelData(name: ChannelName, data: ChannelData, tableID: TableID): ChannelAction {
-  return {type: ChannelActionType.SET_CHANNEL_DATA, payload: {name, data, tableID}};
+export function setChannelData(name: ChannelName, data: ChannelData, queryID: QueryID): ChannelAction {
+  return {type: ChannelActionType.SET_CHANNEL_DATA, payload: {name, data, queryID}};
 }
 
 /** Перезаписывает данные нескольких каналов. */

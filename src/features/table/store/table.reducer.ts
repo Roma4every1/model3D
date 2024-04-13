@@ -51,7 +51,7 @@ interface ActionEndEditing {
 }
 interface ActionReset {
   type: TableActionType.RESET;
-  payload: {id: FormID, tableID: TableID, channelData: ChannelData};
+  payload: {id: FormID, queryID: QueryID, channelData: ChannelData};
 }
 
 export type TablesAction = ActionCreate | ActionSetColumns | ActionSetColumnTree |
@@ -135,7 +135,7 @@ export const tablesReducer = (state: TableStates = init, action: TablesAction): 
     }
 
     case TableActionType.RESET: {
-      const { id, tableID, channelData } = action.payload;
+      const { id, queryID, channelData } = action.payload;
       const tableState = state[id];
       const total = channelData?.rows.length ?? 0;
       const editable = channelData?.editable ?? tableState.editable;
@@ -151,7 +151,7 @@ export const tablesReducer = (state: TableStates = init, action: TablesAction): 
       }
 
       const edit = {modified: false, isNew: false};
-      return {...state, [id]: {...tableState, tableID, editable, edit}};
+      return {...state, [id]: {...tableState, queryID, editable, edit}};
     }
 
     default: return state;

@@ -21,7 +21,7 @@ interface TableState {
   /** Класс, отвечающий работу с записями таблицы. */
   recordHandler: ITableRecordHandler;
   /** ID для API редактирования записей. */
-  tableID: TableID;
+  queryID: QueryID;
   /** Название канала, который визуализируется. */
   channelName: ChannelName;
   /** Параметр, связанный с текущей активной строкой таблицы. */

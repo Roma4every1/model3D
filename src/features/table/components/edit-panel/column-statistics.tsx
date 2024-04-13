@@ -36,7 +36,7 @@ export const ColumnStatistics = ({state, dispatch, t}: EditPanelItemProps) => {
 
   const getStat = async () => {
     const columnState = state.columns[activeColumnID];
-    const { ok, data } = await channelAPI.getStatistics(state.tableID, columnState.colName);
+    const { ok, data } = await channelAPI.getStatistics(state.queryID, columnState.colName);
     if (!ok) { dispatch(showWarningMessage(data)); return; }
     if (typeof data !== 'object' || !data.Values) return;
 

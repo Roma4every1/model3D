@@ -48,28 +48,28 @@ export function updateActiveRecord(id: FormID, recordID: TableRecordID): Thunk {
 export function saveTableRecord({type, formID, row}: SaveTableMetadata): Thunk {
   return async (dispatch: Dispatch<any>, getState: StateGetter) => {
     showNotification(t('table.save.start'))(dispatch).then();
-    const tableID = getState().tables[formID].tableID;
+    const queryID = getState().tables[formID].queryID;
     let res: Res<OperationData>;
 
     if (type === 'insert') {
-      res = await channelAPI.insertRows(tableID, [row]);
+      res = await channelAPI.insertRows(queryID, [row]);
     } else {
-      res = await channelAPI.updateRows(tableID, [row.ID], [row]);
+      res = await channelAPI.updateRows(queryID, [row.ID], [row]);
     }
 
     let error: string;
-    const tables: TableID[] = [tableID];
+    const queryIDs: QueryID[] = [queryID];
 
     if (res.ok === false) {
       error = res.message;
     } else if (res.data.error) {
       error = res.data.error;
     } else {
-      tables.push(...res.data.modifiedTables);
+      queryIDs.push(...res.data.modifiedTables);
     }
     if (error) dispatch(showWarningMessage(error));
 
-    await updateTables(tables)(dispatch, getState);
+    await updateTables(queryIDs)(dispatch, getState);
     const text = t('table.save.' + (error ? 'end-error' : 'end-ok'));
     await showNotification(text)(dispatch);
   };
@@ -80,7 +80,7 @@ export function deleteTableRecords(formID: FormID, indexes: number[] | 'all'): T
   return async (dispatch: Dispatch, getState: StateGetter) => {
     if (Array.isArray(indexes) && indexes.length === 0) return;
     const tableState = getState().tables[formID];
-    const res = await channelAPI.removeRows(tableState.tableID, indexes);
+    const res = await channelAPI.removeRows(tableState.queryID, indexes);
 
     if (res.ok === false) { dispatch(showWarningMessage(res.message)); return; }
     if (res.data.error) { dispatch(showWarningMessage(res.data.error)); return; }
@@ -92,7 +92,7 @@ export function deleteTableRecords(formID: FormID, indexes: number[] | 'all'): T
     }
     tableState.selection = {};
 
-    const tables = [tableState.tableID, ...res.data.modifiedTables];
+    const tables = [tableState.queryID, ...res.data.modifiedTables];
     await updateTables(tables)(dispatch, getState);
     const text = t('table.delete-dialog.delete-ok', {n: indexes.length});
     await showNotification(text)(dispatch);
@@ -104,7 +104,7 @@ export function getNewRow (
   copy: boolean, index?: number,
 ): Thunk {
   return async (dispatch: Dispatch) => {
-    const res = !copy && await channelAPI.getNewRow(state.tableID);
+    const res = !copy && await channelAPI.getNewRow(state.queryID);
     if (!copy && res.ok === false) { dispatch(showWarningMessage(res.message)); return; }
 
     const newID = state.total;

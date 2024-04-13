@@ -41,7 +41,7 @@ export const Table = ({id, parent}: FormState) => {
 
   // Обновление записей таблицы и состояния при обновлении данных канала
   useEffect(() => {
-    dispatch(resetTable(id, channel.tableID, channelData));
+    dispatch(resetTable(id, channel.queryID, channelData));
     setRecords(recordHandler.createRecords(channelData));
   }, [channelData]); // eslint-disable-line
 

@@ -17,7 +17,7 @@ interface ActionSetChannels {
 }
 interface ActionSetChannelData {
   type: ChannelActionType.SET_CHANNEL_DATA;
-  payload: {name: ChannelName, data: ChannelData, tableID: TableID};
+  payload: {name: ChannelName, data: ChannelData, queryID: QueryID};
 }
 interface ActionSetChannelsData {
   type: ChannelActionType.SET_CHANNELS_DATA;
@@ -51,8 +51,8 @@ export function channelReducer(state: ChannelDict = init, action: ChannelAction)
     }
 
     case ChannelActionType.SET_CHANNEL_DATA: {
-      const { name, data, tableID } = action.payload;
-      return {...state, [name]: {...state[name], data, tableID}};
+      const { name, data, queryID } = action.payload;
+      return {...state, [name]: {...state[name], data, queryID}};
     }
 
     case ChannelActionType.SET_CHANNELS_DATA: {

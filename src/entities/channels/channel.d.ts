@@ -4,7 +4,7 @@ type ChannelDict = Record<ChannelName, Channel>;
 type ChannelRecordDict = Record<ChannelName, ChannelRecord[]>;
 
 /** Модель канала данных.
- * + `tableID`: {@link TableID}
+ * + `queryID`: {@link QueryID}
  * + `data`: {@link ChannelData}
  * + `info`: {@link ChannelInfo}
  * + `query`: {@link ChannelQuerySettings}
@@ -12,7 +12,7 @@ type ChannelRecordDict = Record<ChannelName, ChannelRecord[]>;
 interface Channel {
   name: ChannelName;
   /** ID для API редактирования записей. */
-  tableID: TableID;
+  queryID: QueryID;
   /** Данные из базы. */
   data: ChannelData | null;
   /** Информация о канале. */
@@ -24,7 +24,7 @@ interface Channel {
 /** Идентификатор канала с данными. */
 type ChannelName = string;
 /** ID для API редактирования записей. */
-type TableID = string;
+type QueryID = string;
 
 /** Данные канала.
  * + `columns`: {@link ChannelColumn}[]

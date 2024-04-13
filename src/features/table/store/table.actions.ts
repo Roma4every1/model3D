@@ -42,6 +42,6 @@ export function endTableEditing(id: FormID): TablesAction {
 }
 
 /** Ресет некоторых свойств при обновлении данных канала. */
-export function resetTable(id: FormID, tableID: TableID, channelData: ChannelData): TablesAction {
-  return {type: TableActionType.RESET, payload: {id, tableID, channelData}};
+export function resetTable(id: FormID, queryID: QueryID, channelData: ChannelData): TablesAction {
+  return {type: TableActionType.RESET, payload: {id, queryID, channelData}};
 }

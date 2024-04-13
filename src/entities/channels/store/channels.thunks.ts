@@ -1,7 +1,7 @@
 import { Dispatch } from 'redux';
 import { Thunk, StateGetter } from 'shared/lib';
 import { fillChannel, fillChannels } from '../lib/utils';
-import { findChannelsByTables } from '../lib/common';
+import { findChannelsByQueryIDs } from '../lib/common';
 import { setChannelData, setChannelsData } from './channel.actions.ts';
 import { setChannelSortOrder, setChannelMaxRowCount } from './channel.actions.ts';
 
@@ -25,8 +25,8 @@ export function reloadChannel(channelName: ChannelName): Thunk {
   return async (dispatch: Dispatch, getState: StateGetter) => {
     const { channels, parameters } = getState();
     await fillChannel(channels[channelName], parameters);
-    const { data, tableID } = channels[channelName];
-    dispatch(setChannelData(channelName, data, tableID));
+    const { data, queryID } = channels[channelName];
+    dispatch(setChannelData(channelName, data, queryID));
   };
 }
 
@@ -47,10 +47,10 @@ export function updateMaxRowCount(channelName: ChannelName, count: number): Thun
 }
 
 /** Перезагрузить данные каналов по ID таблиц. */
-export function updateTables(tables: TableID[]) {
+export function updateTables(tables: QueryID[]) {
   return async (dispatch: Dispatch<any>, getState: StateGetter) => {
     const state = getState();
-    const channelNames = findChannelsByTables(tables, state.channels);
+    const channelNames = findChannelsByQueryIDs(tables, state.channels);
     await reloadChannels(channelNames)(dispatch, () => state);
   };
 }

@@ -31,14 +31,14 @@ export function createTrace(model: TraceModel): Thunk {
     const { channelName, parameterID } = state.objects.trace;
 
     const traceChannel = state.channels[channelName];
-    const resNewRow = await channelAPI.getNewRow(traceChannel.tableID);
+    const resNewRow = await channelAPI.getNewRow(traceChannel.queryID);
     if (resNewRow.ok === false) return;
 
     const newRow = resNewRow.data; // id новой трассы берётся из newRow
     model.id = newRow.Cells[traceChannel.info.columns.id.index];
     applyModelToRow(traceChannel, newRow, model);
 
-    await channelAPI.insertRows(traceChannel.tableID, [newRow]).then();
+    await channelAPI.insertRows(traceChannel.queryID, [newRow]).then();
     await reloadChannel(traceChannel.name)(dispatch, getState);
 
     const rowString = tableRowToString(traceChannel, newRow);
@@ -59,17 +59,17 @@ export function saveTrace(): Thunk {
     const row = traceChannel.data.rows[index];
     applyModelToRow(traceChannel, row, model);
 
-    await channelAPI.updateRows(traceChannel.tableID, [index], [row]);
+    await channelAPI.updateRows(traceChannel.queryID, [index], [row]);
     await reloadChannel(traceChannel.name)(dispatch, getState);
 
     if (!isNodesEqual(oldModel?.nodes ?? [], model.nodes)) {
       const { objects, channels } = getState();
       const nodeChannel = channels[objects.trace.nodeChannelName];
-      const tableID = nodeChannel.tableID;
+      const queryID = nodeChannel.queryID;
 
       const nodeRows = traceToNodeChannelRows(nodeChannel, objects.trace.model);
-      await channelAPI.removeRows(tableID, 'all');
-      await channelAPI.insertRows(tableID, nodeRows).then();
+      await channelAPI.removeRows(queryID, 'all');
+      await channelAPI.insertRows(queryID, nodeRows).then();
       await reloadChannel(nodeChannel.name)(dispatch, getState);
     }
 
@@ -86,18 +86,18 @@ export function deleteTrace(): Thunk {
     const traceState = state.objects.trace;
     const traceChannel = state.channels[traceState.channelName];
 
-    const traceTableID = traceChannel.tableID;
-    const nodesTableID = state.channels[traceState.nodeChannelName].tableID;
+    const traceQueryID = traceChannel.queryID;
+    const nodesQueryID = state.channels[traceState.nodeChannelName].queryID;
 
     const rowIndex = traceChannel.data.rows.findIndex(row => row.Cells[0] === traceState.model.id);
     if (rowIndex === -1) return;
 
     await Promise.all([
-      channelAPI.removeRows(traceTableID, [rowIndex]).then(),
-      channelAPI.removeRows(nodesTableID, 'all').then(),
+      channelAPI.removeRows(traceQueryID, [rowIndex]).then(),
+      channelAPI.removeRows(nodesQueryID, 'all').then(),
     ]);
 
-    await updateTables([traceTableID, nodesTableID])(dispatch, getState);
+    await updateTables([traceQueryID, nodesQueryID])(dispatch, getState);
     await updateParamDeep(state.root.id, traceState.parameterID, null)(dispatch, getState);
     dispatch(setCurrentTrace(undefined, false, false));
   };
