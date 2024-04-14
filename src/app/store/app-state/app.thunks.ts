@@ -51,9 +51,9 @@ class WMDevTools {
   public channelRows(name: ChannelName, columns: boolean = false): any[][] | null {
     const channel = this.getState().channels[name];
     if (!channel || !channel.data) return null;
-    const table = channel.data.rows.map(r => r.Cells);
-    if (columns) table.unshift(channel.data.columns.map(c => c.name));
-    return table;
+    const rows = channel.data.rows;
+    if (columns) rows.unshift(channel.data.columns.map(c => c.name));
+    return rows;
   }
 
   public tables(): TableState[] {

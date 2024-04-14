@@ -21,9 +21,9 @@ export class ProfileTrace implements IProfileTrace {
 
   constructor(trace: TraceModel, ustChannel: Channel) {
     const wellsPoints: WellPoint[] = ustChannel.data.rows.map(r => ({
-      WELL_ID: r.Cells[0],
-      x: r.Cells[2],
-      y: -r.Cells[1]
+      WELL_ID: r[0],
+      x: r[2],
+      y: -r[1]
     }));
     this.nodes = trace?.nodes?.map(n => {
       const well = wellsPoints.find(u => u.WELL_ID === n.id);

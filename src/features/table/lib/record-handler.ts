@@ -76,7 +76,7 @@ export class RecordHandler implements ITableRecordHandler {
   /** Создаёт массив объектов данных для рендеринга в `Grid`. */
   public createRecords(data: ChannelData): TableRecord[] {
     if (!data?.rows.length) return [];
-    return data.rows.map((row, i) => this.createRecord(i, row.Cells));
+    return data.rows.map((row, i) => this.createRecord(i, row));
   }
 
   /** Создаёт модель записи для рендеринга в `Grid`. */

@@ -75,7 +75,7 @@ export class ProfileLoader implements IProfileLoader {
     topBaseMapsChannel: Channel
   ): Promise<Map<number, TopBaseMapsDataRaw[]>> {
 
-    const topBaseMapsChannelData = topBaseMapsChannel.data.rows.map(r => r.Cells);
+    const topBaseMapsChannelData = topBaseMapsChannel.data.rows;
 
     let count = 1;
     const total = topBaseMapsChannelData.length;

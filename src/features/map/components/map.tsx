@@ -65,16 +65,16 @@ export const Map = ({id, parent, channels}: FormState) => {
       return setIsMapExist(false);
     }
 
-    const mapInfo = rows[0];
-    const owner = mapInfo.Cells[12];
-    const mapID = String(mapInfo.Cells[0]);
+    const firstRow = rows[0];
+    const owner = firstRow[12];
+    const mapID = String(firstRow[0]);
 
     const changeOwner = owner !== mapState.owner;
     const changeMapID = mapID !== mapState.mapID;
     const objectName = activeChannel.info.currentRowObjectName;
 
     if (objectName && (changeOwner || changeMapID)) {
-      const value = tableRowToString(activeChannel, mapInfo)
+      const value = tableRowToString(activeChannel, firstRow)
       dispatch(updateParamDeep(parent, objectName, value));
     }
     if (changeOwner) {

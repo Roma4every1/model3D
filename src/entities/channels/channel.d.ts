@@ -55,11 +55,8 @@ interface ChannelColumn {
   nullable: boolean;
 }
 
-/** Запись из данных канала. */
-interface ChannelRow {
-  ID: number | null;
-  Cells: any[];
-}
+/** Упорядоченный набор ячеек. */
+type ChannelRow = any[];
 
 /** Словарь значений по названиям **колонок**. */
 type ChannelRecord = Record<ColumnName, any>;

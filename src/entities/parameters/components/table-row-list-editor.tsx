@@ -79,8 +79,8 @@ function getSelectOptions(parameter: Parameter, rows: ChannelRow[], lookupColumn
   if (valueIndex === -1) valueIndex = idIndex;
 
   const options = rows.map((row: ChannelRow, i: number): TableRowSelectOption => {
-    const idCell = row.Cells[idIndex];
-    const valueCell = row.Cells[valueIndex];
+    const idCell = row[idIndex];
+    const valueCell = row[valueIndex];
     const id = idCell !== null ? idCell.toString() : '';
     const label = valueCell !== null ? valueCell.toString() : id;
     return {value: i, label, labelLower: label.toLowerCase(), id, row};

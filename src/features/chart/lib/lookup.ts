@@ -26,8 +26,8 @@ export function applyLookupToMarks(marks: ChartMarkProps[], data: ChannelDict) {
       const idIndex = lookupColumns.id.index;
       if (idIndex === -1) continue;
 
-      const row = channel.data.rows.find(row => row.Cells[idIndex] === item.id);
-      if (row) item.text = row.Cells[lookupColumns.value.index];
+      const row = channel.data.rows.find(row => row[idIndex] === item.id);
+      if (row) item.text = row[lookupColumns.value.index];
     }
   }
 }

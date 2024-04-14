@@ -99,6 +99,7 @@ export type SaveTableMetadata = InsertRowMetadata | UpdateRowMetadata;
 interface InsertRowMetadata {
   type: 'insert';
   formID: FormID;
+  rowID: TableRecordID;
   row: ChannelRow;
 }
 
@@ -106,6 +107,7 @@ interface InsertRowMetadata {
 interface UpdateRowMetadata {
   type: 'update';
   formID: FormID;
+  rowID: TableRecordID;
   row: ChannelRow;
 }
 

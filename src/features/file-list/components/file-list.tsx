@@ -25,11 +25,11 @@ export const FileListView = ({channels}: FormState) => {
     nameIndexRef.current = channel.data.columns.findIndex(c => c.name === columnName);
   }
 
-  const rowToItem = (row: ChannelRow, i: number) => {
-    const fileName = row.Cells[nameIndexRef.current];
+  const toElement = (row: ChannelRow, i: number) => {
+    const fileName = row[nameIndexRef.current];
     const active = row === channelData.activeRow;
     const onClick = () => dispatch(setChannelActiveRow(channelName, row));
     return <FileListItem key={i} fileName={fileName} active={active} onClick={onClick}/>;
   };
-  return <div className={'file-list'}>{rows.map(rowToItem)}</div>;
+  return <div className={'file-list'}>{rows.map(toElement)}</div>;
 };

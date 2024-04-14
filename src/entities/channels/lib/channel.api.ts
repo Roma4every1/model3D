@@ -3,8 +3,14 @@ import { serializeParameter } from 'entities/parameters';
 import { applyQuerySettings } from './common';
 
 
+/** Запись из данных канала. */
+export interface ChannelRowOld {
+  ID: number | null;
+  Cells: any[];
+}
+
 interface OldChannelDataDTO {
-  Rows: ChannelRow[];
+  Rows: ChannelRowOld[];
   Columns: any[];
   DataPart: boolean;
   Editable: boolean;
@@ -40,7 +46,7 @@ export class ChannelAPI {
 
     const channelData: ChannelData = data ? {
       columns: data.Columns.map(c => ({name: c.Name, type: c.NetType, nullable: c.AllowDBNull})),
-      rows: data.Rows,
+      rows: data.Rows.map(r => r.Cells),
       dataPart: data.DataPart,
       editable: data.Editable,
     } : null;
@@ -64,19 +70,22 @@ export class ChannelAPI {
   }
 
   /** Запрос новой записи со стандартными значениями. */
-  public getNewRow(queryID: QueryID): Promise<Res<ChannelRow>> {
-    return this.api.get('/getNewRow', {query: {tableId: queryID}});
+  public async getNewRow(queryID: QueryID): Promise<Res<ChannelRow>> {
+    const query = {tableId: queryID};
+    const res = await this.api.get('/getNewRow', {query});
+    if (res.ok) res.data = res.data.Cells;
+    return res;
   }
 
   /** Запрос на добавление записи в таблицу. */
   public insertRows(queryID: QueryID, rows: ChannelRow[]): Promise<Res<OperationData>> {
-    const json = {tableId: queryID, rows};
+    const json = {tableId: queryID, rows: rows.map(toChannelRowOld)};
     return this.api.post('/insertRows',{json});
   }
 
   /** Запрос обновления записи в таблице. */
   public updateRows(queryID: QueryID, indexes: number[], rows: ChannelRow[]): Promise<Res<OperationData>> {
-    const json = {tableId: queryID, indexes, rows};
+    const json = {tableId: queryID, indexes, rows: rows.map(toChannelRowOld)};
     return this.api.post('/updateRows', {json});
   }
 
@@ -85,6 +94,10 @@ export class ChannelAPI {
     const query = {tableId: queryID, rows: Array.isArray(indexes) ? indexes.join(',') : indexes};
     return this.api.get('/removeRows', {query});
   }
+}
+
+function toChannelRowOld(row: ChannelRow): ChannelRowOld {
+  return {ID: null, Cells: row};
 }
 
 /** Запросы связанные с каналами. */

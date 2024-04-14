@@ -46,7 +46,7 @@ export const getChartProto = (
     const xID = columns[xIndex].name;
 
     const xValues = rows.map((x, i) => {
-      const date = new Date(rows[i].Cells[xIndex]);
+      const date = new Date(rows[i][xIndex]);
       return {x: dateFn(date), step: stepFn(date)};
     });
     for (const xValue of xValues) if (!data[xValue.step]) data[xValue.step] = xValue;
@@ -65,7 +65,7 @@ export const getChartProto = (
 
       if (item.typeCode === 'vertical') {
         xValues.forEach((xValue, i) => {
-          const id = rows[i].Cells[dataIndex], key = dataKey + i;
+          const id = rows[i][dataIndex], key = dataKey + i;
           const sameMark = marks.find(mark => mark.x === xValue.x);
           if (sameMark) {
             sameMark.label.value.push({id, property, color: item.color});
@@ -82,7 +82,7 @@ export const getChartProto = (
       }
 
       xValues.forEach((xValue, i) => {
-        data[xValue.step][dataKey] = rows[i].Cells[dataIndex];
+        data[xValue.step][dataKey] = rows[i][dataIndex];
       });
     }
   }

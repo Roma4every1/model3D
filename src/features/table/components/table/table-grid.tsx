@@ -105,10 +105,9 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
     }
     recordHandler.applyRecordEdit(record);
 
-    const row: ChannelRow = {ID: record.id, Cells: record.cells};
     const data: SaveTableMetadata = edit.isNew
-      ? {type: 'insert', formID: id, row}
-      : {type: 'update', formID: id, row};
+      ? {type: 'insert', formID: id, rowID: record.id, row: record.cells}
+      : {type: 'update', formID: id, rowID: record.id, row: record.cells};
     dispatch(saveTableRecord(data));
   };
 

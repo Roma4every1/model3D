@@ -82,11 +82,9 @@ export function findColumnIndexes(columns: ChannelColumn[], channelInfo: Channel
 export function cellsToRecords(data: ChannelData): ChannelRecord[] {
   if (!data) return [];
   const create = (row: ChannelRow) => {
-    const cells = row.Cells;
     const record: ChannelRecord = {};
-
     data.columns.forEach((column, i) => {
-      record[column.name] = cells[i];
+      record[column.name] = row[i];
     });
     return record;
   };
@@ -95,11 +93,9 @@ export function cellsToRecords(data: ChannelData): ChannelRecord[] {
 
 /** Конвертирует строку канала из ячеек в словарь по названиям колонок. */
 export function channelRowToRecord(row: ChannelRow, columns: ChannelColumn[]): ChannelRecord {
-  const cells = row.Cells;
   const record: ChannelRecord = {};
-
   columns.forEach((column, i) => {
-    record[column.name] = cells[i];
+    record[column.name] = row[i];
   });
   return record;
 }

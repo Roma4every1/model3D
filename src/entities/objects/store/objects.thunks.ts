@@ -16,7 +16,7 @@ export function setCurrentWell(id: WellID): Thunk {
     const wellChannel = state.channels[channelName];
 
     const idIndex = wellChannel.info.lookupColumns.id.index;
-    const row = wellChannel.data?.rows.find(r => r.Cells[idIndex] === id);
+    const row = wellChannel.data?.rows.find(r => r[idIndex] === id);
     if (!row) return;
 
     const rowString = tableRowToString(wellChannel, row);
@@ -35,7 +35,7 @@ export function createTrace(model: TraceModel): Thunk {
     if (resNewRow.ok === false) return;
 
     const newRow = resNewRow.data; // id новой трассы берётся из newRow
-    model.id = newRow.Cells[traceChannel.info.columns.id.index];
+    model.id = newRow[traceChannel.info.columns.id.index];
     applyModelToRow(traceChannel, newRow, model);
 
     await channelAPI.insertRows(traceChannel.queryID, [newRow]).then();
@@ -55,7 +55,7 @@ export function saveTrace(): Thunk {
     const traceChannel = state.channels[channelName];
 
     const idIndex = traceChannel.info.columns.id.index;
-    const index = traceChannel.data.rows.findIndex(row => row.Cells[idIndex] === model.id);
+    const index = traceChannel.data.rows.findIndex(row => row[idIndex] === model.id);
     const row = traceChannel.data.rows[index];
     applyModelToRow(traceChannel, row, model);
 
@@ -89,7 +89,7 @@ export function deleteTrace(): Thunk {
     const traceQueryID = traceChannel.queryID;
     const nodesQueryID = state.channels[traceState.nodeChannelName].queryID;
 
-    const rowIndex = traceChannel.data.rows.findIndex(row => row.Cells[0] === traceState.model.id);
+    const rowIndex = traceChannel.data.rows.findIndex(row => row[0] === traceState.model.id);
     if (rowIndex === -1) return;
 
     await Promise.all([

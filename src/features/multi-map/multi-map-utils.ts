@@ -39,7 +39,7 @@ export const getMultiMapLayout = (rows: ChannelRow[], formID: FormID): MapTuple 
 
   for (const row of children) {
     for (const tabSet of row.children) {
-      const id = rows[i].Cells[0].toString();
+      const id = rows[i][0].toString();
       const childFormID = formID + ',' + id;
 
       const tab: IJsonTabNode = tabSet.children[0];
@@ -50,7 +50,7 @@ export const getMultiMapLayout = (rows: ChannelRow[], formID: FormID): MapTuple 
 
       tabSet.id = id;
       tab.id = childFormID;
-      tab.name = rows[i].Cells[3];
+      tab.name = rows[i][3];
 
       childrenList.push(childFormID);
       configList.push(config);

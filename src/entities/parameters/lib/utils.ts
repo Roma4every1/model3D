@@ -70,6 +70,6 @@ export function getComboBoxItems(channel: Channel) {
 }
 
 function getComboBoxItem(row: ChannelRow, idIndex: number, valueIndex: number) {
-  const id = row.Cells[idIndex];
-  return {id, name: row.Cells[valueIndex] ?? id, value: row};
+  const id = row[idIndex];
+  return {id, name: row[valueIndex] ?? id, value: row};
 }

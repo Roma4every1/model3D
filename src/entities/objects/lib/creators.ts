@@ -53,11 +53,11 @@ export function createTraceModel(
     const xIndex = nodeInfo.x.index;
     const yIndex = nodeInfo.y.index;
 
-    for (const { Cells: cells } of nodeRows) {
+    for (const cells of nodeRows) {
       if (cells[traceIDIndex] !== traceID) continue;
       const nodeID = parseInt(cells[idIndex]);
-      const wellRow = wellRows?.find(row => row.Cells[wellIDIndex] === nodeID);
-      const name = wellRow?.Cells[wellNameIndex] ?? null;
+      const wellRow = wellRows?.find(row => row[wellIDIndex] === nodeID);
+      const name = wellRow ? wellRow[wellNameIndex] : null;
       nodes.push({id: nodeID, name: name, x: cells[xIndex], y: cells[yIndex]});
     }
   }

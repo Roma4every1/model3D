@@ -45,7 +45,7 @@ export function updateActiveRecord(id: FormID, recordID: TableRecordID): Thunk {
 }
 
 /** Сохранение состояния строк таблицы в базу данных. */
-export function saveTableRecord({type, formID, row}: SaveTableMetadata): Thunk {
+export function saveTableRecord({type, formID, rowID, row}: SaveTableMetadata): Thunk {
   return async (dispatch: Dispatch<any>, getState: StateGetter) => {
     showNotification(t('table.save.start'))(dispatch).then();
     const queryID = getState().tables[formID].queryID;
@@ -54,7 +54,7 @@ export function saveTableRecord({type, formID, row}: SaveTableMetadata): Thunk {
     if (type === 'insert') {
       res = await channelAPI.insertRows(queryID, [row]);
     } else {
-      res = await channelAPI.updateRows(queryID, [row.ID], [row]);
+      res = await channelAPI.updateRows(queryID, [rowID], [row]);
     }
 
     let error: string;
@@ -114,7 +114,7 @@ export function getNewRow (
       if (index === undefined) {
         index = activeRecordID ? records.findIndex(rec => rec.id === activeRecordID) : 0;
       }
-      const cells = copy ? records[index].cells : res.data['Cells'];
+      const cells = copy ? records[index].cells : res.data;
       const record = state.recordHandler.createRecord(newID, cells);
       records.splice(index, 0, record);
       return [...records];

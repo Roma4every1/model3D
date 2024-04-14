@@ -10,10 +10,8 @@ import {
 /** Преобразует модель трассы в запись канала. */
 export function applyModelToRow(channel: Channel, proto: ChannelRow, model: TraceModel) {
   const info = channel.info.columns;
-  const cells = proto.Cells;
-
-  cells[info.place.index] = model.place;
-  cells[info.name.index] = model.name;
+  proto[info.place.index] = model.place;
+  proto[info.name.index] = model.name;
 }
 
 /** Проверяет, равны ли узлы трассы. */
@@ -40,7 +38,7 @@ export function traceToNodeChannelRows(nodeChannel: Channel, model: TraceModel):
     cells[info.x.index] = node.x;
     cells[info.y.index] = node.y;
     cells[info.order.index] = i;
-    return {ID: null, Cells: cells};
+    return cells;
   });
 }
 

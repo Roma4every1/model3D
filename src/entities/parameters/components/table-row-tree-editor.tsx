@@ -84,9 +84,9 @@ function getTreeData(parameter: Parameter, rows: ChannelRow[], lookupColumns: Lo
 
   const nodeDict: Record<LookupItemID, TreeNode> = {};
   const allNodes = rows.map((row, i: number): TreeNode => {
-    const idCell = row.Cells[idIndex];
-    const valueCell = row.Cells[valueIndex];
-    const parentCell = row.Cells[parentIndex];
+    const idCell = row[idIndex];
+    const valueCell = row[valueIndex];
+    const parentCell = row[parentIndex];
 
     const id = idCell !== null ? idCell.toString() : '';
     const title = valueCell !== null ? valueCell.toString() : id;
