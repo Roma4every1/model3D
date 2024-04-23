@@ -1,5 +1,5 @@
-import {getInterpolatedFieldValue} from "../../map/lib/selecting-utils.ts";
-import {ProfileLayer} from "./layer.ts";
+import { getInterpolatedFieldValue } from '../../map/lib/selecting-utils';
+import { ProfileLayer } from './layer';
 
 
 /** Класс, содержащий данные о пласте профиля. */

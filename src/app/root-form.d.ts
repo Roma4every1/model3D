@@ -4,21 +4,18 @@
  * + `settings`: {@link DockSettings}
  * + `children`: {@link FormDataWM}[]
  * + `activeChildID`: {@link ClientID}
- * + `presentationsTree`: {@link PresentationTree}
  * */
 interface RootFormState {
   /** ID главной формы. */
   id: ClientID,
   /** Базовая разметка приложения. */
-  layout: DockLayout,
+  layout: DockLayout;
   /** Настройки главной формы. */
-  settings: DockSettings,
+  settings: DockSettings;
   /** Список презентаций. */
-  children: FormDataWM[],
+  children: FormDataWM[];
   /** ID активной презентации. */
-  activeChildID: ClientID,
-  /** Дерево презентаций. */
-  presentationTree: PresentationTree,
+  activeChildID: ClientID;
 }
 
 /** Дерево презентаций. */
@@ -29,7 +26,7 @@ interface PresentationTreeItem {
   /** ID презентации, есть только у листьев. */
   id: ClientID;
   /** Название презентации в дереве. */
-  text: DisplayName;
+  text: string;
   /** Дочерние элементы: группы или презентации. */
   items?: PresentationTreeItem[];
   /** Выбрана ли текущая презентация. */
@@ -39,12 +36,8 @@ interface PresentationTreeItem {
 
   /** Виден ли узел дерева в данный момент. */
   visible: boolean;
-  /** Строка видимости презентации. */
-  visibilityString?: string;
-  /** Параметры, необходимые для расчёта видимости. */
-  visibilityParameters?: Set<ParameterID>;
-  /** Обработчик видимости презентации.. */
-  visibilityHandler?: (parameters: Parameter[]) => boolean;
+  /** Шаблон видимости. */
+  visibilityString?: any; // ParameterStringTemplate
 }
 
 /* --- Dock Layout --- */
@@ -82,7 +75,7 @@ interface LeftTabInfo {
   /** Показывать ли вкладку. */
   show: boolean;
   /** Название вкладки. */
-  displayName: DisplayName;
+  displayName: string;
   /** ID родителя. */
   parent?: string;
   /** Индекс вкладки в группе. */
@@ -97,14 +90,17 @@ type LeftTabType = 'global' | 'presentation' | 'tree';
 /* --- Dock Settings --- */
 
 /** Настройки формы **Dock**.
+ * + `presentationTree`: {@link PresentationTree}
  * + `dateChanging`: {@link DateChangingPlugin}
  * + `parameterGroups`: {@link ParameterGroup}[]
  * */
 interface DockSettings {
+  /** Дерево презентаций. */
+  presentationTree: PresentationTree;
   /** Плагин, добавляющий связь между параметром года и интервалом дат. */
-  dateChanging: DateChangingPlugin | null;
+  dateChanging?: DateChangingPlugin;
   /** Группы параметров для разбиения списка на вкладки. */
-  parameterGroups: ParameterGroup[] | null;
+  parameterGroups?: ParameterGroup[];
 }
 
 /** Добавляет связь между параметром года и интервалом дат. */

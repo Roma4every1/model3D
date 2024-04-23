@@ -1,5 +1,4 @@
-import { useDispatch } from 'react-redux';
-import { setLeftLayout } from '../../../app/store/root-form/root-form.actions';
+import { setLeftLayout } from '../../../app/store/root-form.actions';
 import { hideLeftTab, showLeftTab } from '../../left-panel';
 import { BigButtonToggle, MenuSection } from 'shared/ui';
 
@@ -10,11 +9,9 @@ import presentationsListIcon from 'assets/images/menu/presentations-list.png';
 
 /** Секция, отображающая видимость различных панелей управления. */
 export const PanelsVisibility = ({leftLayout}: {leftLayout: LeftPanelLayout}) => {
-  const dispatch = useDispatch();
-
   const toggleLeftVisible = (type: LeftTabType) => {
     (leftLayout[type].show ? hideLeftTab : showLeftTab)(leftLayout, type);
-    dispatch(setLeftLayout({...leftLayout}));
+    setLeftLayout({...leftLayout});
   };
 
   return (

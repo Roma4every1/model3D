@@ -1,5 +1,5 @@
 import { TFunction, useTranslation } from 'react-i18next';
-import { MapMode, elementEditModes } from '../../../lib/constants.ts';
+import { MapMode, elementEditModes } from '../../../lib/constants';
 
 import addBetween from 'assets/images/map/add-between.png';
 import handIcon from 'assets/images/map/hand.png';

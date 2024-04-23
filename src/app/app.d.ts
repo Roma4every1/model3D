@@ -1,45 +1,3 @@
-/** Well Manager State. */
-interface WState {
-  /** Данные общего характера. */
-  appState: AppState;
-  /** Состояние корневой формы. */
-  root: RootFormState;
-  /** Состояния презентаций. */
-  presentations: PresentationDict;
-  /** Состояния форм. */
-  forms: FormStates;
-  /** Параметры форм. */
-  parameters: ParamDict;
-  /** Активные объекты. */
-  objects: ObjectsState;
-  /** Данные каналов. */
-  channels: ChannelDict;
-  /** Хранилище данных таблиц. */
-  tables: TableStates;
-  /** Хранилище каротажных диаграмм. */
-  carats: CaratStates;
-  /** Хранилище графиков. */
-  charts: ChartStates;
-  /** Хранилище карт. */
-  maps: MapsState;
-  /** Хранилище форм профиля. */
-  profiles: ProfileStates;
-  /** Хранилище форм просмотра файлов. */
-  fileViews: FileViewStates;
-  /** Хранилище форм списков файлов. */
-  fileLists: FileListStates;
-  /** Состояние отчётов и SQL-программ. */
-  reports: Reports;
-  /** Окна и диалоги. */
-  windows: WindowStates;
-  /** Уведомления. */
-  notifications: Notifications;
-  /** Состояние серверных запросов. */
-  fetches: FetchesState;
-}
-
-/* --- --- --- */
-
 /** Общие данные приложения.
  * + `config`: {@link ClientConfiguration}
  * + `systemList`: {@link SystemList}
@@ -85,21 +43,14 @@ interface ClientConfiguration {
 /** Список информационных систем. */
 type SystemList = SystemInfo[];
 
-/** Информация о системе Well Manager.
- * + `id`: {@link SystemID}
- * + `displayName`: {@link DisplayName}
- * + `displayNameShort`: {@link DisplayName}
- * + `description: string`
- * + `version: string | null`
- * + `color: string`
- * */
+/** Информация о системе Well Manager. */
 interface SystemInfo {
   /** Идентификатор системы. */
   id: SystemID;
   /** Заголовок системы. */
-  displayName: DisplayName;
+  displayName: string;
   /** Краткое описание системы. */
-  displayNameShort: DisplayName;
+  displayNameShort: string;
   /** Описание системы. */
   description: string;
   /** Номер версии системы. */

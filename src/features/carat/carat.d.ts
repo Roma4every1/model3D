@@ -1,5 +1,5 @@
 /** Хранилище каротажных диаграмм. */
-type CaratStates = FormDict<CaratState>;
+type CaratStates = Record<FormID, CaratState>;
 
 /** Состояние каротажной формы.
  * + `canvas`: {@link HTMLCanvasElement}

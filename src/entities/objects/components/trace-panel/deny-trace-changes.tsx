@@ -1,4 +1,3 @@
-import { useDispatch } from 'shared/lib';
 import { useTranslation } from 'react-i18next';
 import { deleteTrace, setCurrentTrace } from '../../index';
 import { BigButton } from 'shared/ui';
@@ -12,13 +11,12 @@ interface DenyTraceChangesProps {
 
 export const DenyTraceChanges = ({trace}: DenyTraceChangesProps) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
 
   const action = () => {
     if (trace.creating) {
-      dispatch(deleteTrace());
+      deleteTrace().then();
     } else {
-      dispatch(setCurrentTrace(trace.oldModel, false, false));
+      setCurrentTrace(trace.oldModel, false, false);
     }
   };
 

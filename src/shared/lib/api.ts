@@ -24,6 +24,8 @@ export interface ReqOptions {
   blob?: Blob | ArrayBuffer;
   /** Тип обработчика ответа. */
   then?: ReqHandlerKind | null;
+  /** Сигнал для прекращения запроса. */
+  signal?: AbortSignal;
   /** Время в миллисекундах, в течение которого ожидается ответ. */
   timeout?: number;
 }
@@ -113,7 +115,9 @@ export class Fetcher implements IFetcher {
         if (!contentType && !this.legacy) headers['content-type'] = 'application/octet-stream';
       }
 
-      if (options.timeout) {
+      if (options.signal) {
+        signal = options.signal;
+      } else if (options.timeout) {
         const controller = new AbortController();
         signal = controller.signal;
         setTimeout(() => controller.abort(), options.timeout);
@@ -138,9 +142,11 @@ export class Fetcher implements IFetcher {
         if (then) { res.data = await response[then](); return res; }
 
         const contentType = response.headers.get('content-type');
-        if (contentType === 'application/json') {
+        if (!contentType) return res;
+
+        if (contentType.startsWith('application/json')) {
           res.data = await response.json();
-        } else if (contentType === 'application/octet-stream') {
+        } else if (contentType.startsWith('application/octet-stream')) {
           res.data = await response.blob();
         } else if (contentType.startsWith('text')) {
           res.data = await response.text();
@@ -153,6 +159,7 @@ export class Fetcher implements IFetcher {
       }
     }
     catch (e) {
+      if (e instanceof DOMException) throw e; // aborted
       return {ok: false, message: e.message};
     }
   }

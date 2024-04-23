@@ -1,17 +1,17 @@
 import { Layout, TabNode, Action, Actions } from 'flexlayout-react';
 import { useEffect, useMemo } from 'react';
-import { useSelector, useDispatch, compareArrays } from 'shared/lib';
+import { compareArrays } from 'shared/lib';
 import { i18nMapper } from 'shared/locales';
 import { TextInfo } from 'shared/ui';
-import { channelSelector } from 'entities/channels';
-import { stateNeedFetch, formFetchStateSelector } from 'entities/fetch-state';
+import { useChannel } from 'entities/channel';
+import { useFormFetchState, stateNeedFetch } from 'entities/fetch-state';
 import { setPresentationChildren, setActiveForm } from 'widgets/presentation';
 
 import { getMultiMapLayout } from './multi-map-utils';
 import { MultiMapItem } from './multi-map-item';
 import { addMultiMap } from '../map/store/map.actions';
 import { fetchMultiMapData } from '../map/store/map.thunks';
-import { multiMapStateSelector } from '../map/store/map.selectors';
+import { useMultiMapState } from '../map/store/map.store';
 
 
 interface MultiMapProps {
@@ -21,12 +21,11 @@ interface MultiMapProps {
 
 
 export const MultiMap = ({presentation, channelName}: MultiMapProps) => {
-  const dispatch = useDispatch();
   const id = presentation.id;
+  const channelData = useChannel(channelName);
 
-  const channelData: Channel = useSelector(channelSelector.bind(channelName));
-  const state: MultiMapState = useSelector(multiMapStateSelector.bind(id));
-  const fetchState: FetchState = useSelector(formFetchStateSelector.bind(id + '_map'));
+  const state = useMultiMapState(id);
+  const fetchState: FetchState = useFormFetchState(id + '_map');
 
   const [model, children, configs] = useMemo(() => {
     const rows = channelData?.data?.rows;
@@ -37,14 +36,14 @@ export const MultiMap = ({presentation, channelName}: MultiMapProps) => {
   useEffect(() => {
     if (compareArrays(state?.children ?? [], children)) return;
     const newChildren: FormDataWM[] = children.map(id => ({id, type: 'map', displayName: ''}));
-    dispatch(setPresentationChildren(id, newChildren));
-    dispatch(addMultiMap(id, presentation.openedChildren[0], configs));
+    setPresentationChildren(id, newChildren);
+    addMultiMap(id, presentation.openedChildren[0], configs);
     if (fetchState) { fetchState.ok = undefined; fetchState.loading = false; }
   }, [children, configs, state?.children, fetchState, id]); // eslint-disable-line
 
   useEffect(() => {
-    if (state && stateNeedFetch(fetchState)) dispatch(fetchMultiMapData(id));
-  }, [state, fetchState, id, dispatch]);
+    if (state && stateNeedFetch(fetchState)) fetchMultiMapData(id).then();
+  }, [state, fetchState, id]);
 
   const factory = (node: TabNode) => {
     const tabID = node.getId();
@@ -58,9 +57,9 @@ export const MultiMap = ({presentation, channelName}: MultiMapProps) => {
     if (type === Actions.SET_ACTIVE_TABSET) {
       const tabset = model.getNodeById(data.tabsetNode);
       const newActiveID = tabset.getChildren()[0]?.getId();
-      if (newActiveID) dispatch(setActiveForm(id, newActiveID))
+      if (newActiveID) setActiveForm(id, newActiveID);
     } else if (type === Actions.SELECT_TAB) {
-      dispatch(setActiveForm(id, data.tabNode));
+      setActiveForm(id, data.tabNode);
     }
     return action;
   };

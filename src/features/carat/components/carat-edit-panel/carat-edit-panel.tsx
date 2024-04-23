@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { caratStateSelector } from '../../store/carat.selectors';
+import { useCaratState } from '../../store/carat.store';
 import { MenuSkeleton } from 'shared/ui';
 import { LocalizationProvider, IntlProvider } from '@progress/kendo-react-intl';
 
@@ -14,7 +13,7 @@ export const CaratEditPanel = ({id}: FormEditPanelProps) => {
   const [_signal, setSignal] = useState(false);
   const signal = () => setSignal(!_signal);
 
-  const state: CaratState = useSelector(caratStateSelector.bind(id));
+  const state: CaratState = useCaratState(id);
   if (!state || state.loading.percentage < 100) {
     return <MenuSkeleton template={['205px', '458px', '301px']}/>;
   }

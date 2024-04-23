@@ -1,5 +1,4 @@
 import { useState} from 'react';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { setMapField } from '../../../store/map.actions';
 
@@ -17,8 +16,6 @@ interface AttrTableWindowProps {
 
 export const AttrTableWindow = ({id, stage, onClose}: AttrTableWindowProps) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
-
   const activeElement = stage.getActiveElement();
   const [init] = useState({...activeElement.attrTable});
 
@@ -27,7 +24,7 @@ export const AttrTableWindow = ({id, stage, onClose}: AttrTableWindowProps) => {
 
   const apply = () => {
     stage.getActiveElementLayer().modified = true;
-    dispatch(setMapField(id, 'modified', true));
+    setMapField(id, 'modified', true);
     onClose();
   };
   const cancel = () => {

@@ -1,15 +1,13 @@
 import { TFunction } from 'react-i18next';
 import { useState } from 'react';
-import { useDispatch } from 'shared/lib';
-
 import { EditElement } from './edit-element';
 import { DeleteElementWindow } from './delete-element';
 
 import { showDialog, closeWindow } from 'entities/window';
-import { setMapField } from '../../../store/map.actions.ts';
-import { showMapPropertyWindow, showMapAttrTableWindow } from '../../../store/map.thunks.ts';
+import { setMapField } from '../../../store/map.actions';
+import { showMapPropertyWindow, showMapAttrTableWindow } from '../../../store/map.thunks';
 import { getHeaderText } from './editing-utils';
-import { canCreateTypes } from '../../../lib/constants.ts';
+import { canCreateTypes } from '../../../lib/constants';
 
 
 interface EditingProps {
@@ -20,9 +18,7 @@ interface EditingProps {
 
 
 export const Editing = ({id, state, t}: EditingProps) => {
-  const dispatch = useDispatch();
   const [_signal, setSignal] = useState(false);
-
   const { stage, propertyWindowOpen, attrTableWindowOpen } = state;
   stage.listeners.editPanelChange = () => setSignal(!_signal);
 
@@ -35,21 +31,17 @@ export const Editing = ({id, state, t}: EditingProps) => {
 
   const showDeleteWindow = () => {
     const windowID = 'mapDeleteWindow';
-    const onClose = () => dispatch(closeWindow(windowID));
+    const onClose = () => closeWindow(windowID);
     const content = <DeleteElementWindow id={id} stage={stage} onClose={onClose}/>;
-    dispatch(showDialog(windowID, {title: t('map.delete-element'), onClose}, content));
+    showDialog(windowID, {title: t('map.delete-element'), onClose}, content);
   };
 
-  const showPropertiesWindow = () => {
-    dispatch(showMapPropertyWindow(id, activeElement));
-  };
-  const showAttrTableWindow = () => {
-    dispatch(showMapAttrTableWindow(id));
-  };
+  const showPropertiesWindow = () => showMapPropertyWindow(id, activeElement);
+  const showAttrTableWindow = () => showMapAttrTableWindow(id);
 
   const accept = () => {
     stage.accept(); stage.render();
-    dispatch(setMapField(id, 'modified', true));
+    setMapField(id, 'modified', true);
   };
 
   const create = () => stage.startCreating();

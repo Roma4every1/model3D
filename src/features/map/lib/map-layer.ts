@@ -4,7 +4,7 @@ export class MapLayer implements IMapLayer {
   /** Группировка в дереве слоёв. */
   public readonly group: string;
   /** Название слоя. */
-  public readonly displayName: DisplayName;
+  public readonly displayName: string;
   /** Тип элементов слоя. */
   public readonly elementType: MapElementType;
 

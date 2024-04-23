@@ -1,7 +1,7 @@
 import { chunk } from 'lodash';
 import { fillPatterns } from 'shared/drawing';
 import { types } from '../drawer/map-drawer.js';
-import { PIXEL_PER_METER } from './map-utils.ts';
+import { PIXEL_PER_METER } from './map-utils';
 
 
 /** Функция, определяющая ширину текста внутри {@link HTMLCanvasElement}. */

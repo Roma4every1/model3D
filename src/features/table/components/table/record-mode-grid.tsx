@@ -1,7 +1,7 @@
 import { ReactElement, useMemo } from 'react';
 import { Grid, GridCellProps, GridColumn } from '@progress/kendo-react-grid';
-import { CellActions } from '../../lib/types.ts';
-import { RecordModeColumnCell } from '../cells/record-mode-column-cell.tsx';
+import { CellActions } from '../../lib/types';
+import { RecordModeColumnCell } from '../cells/record-mode-column-cell';
 
 
 interface RecordModeGridProps {

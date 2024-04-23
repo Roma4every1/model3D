@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Checkbox } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
 import { ActiveOperationStatus } from './active-operation-status';
-import { operationsSelector, clearOperations } from 'entities/reports';
-import { reportsAPI } from 'entities/reports/lib/report.api.ts';
+import { useOperations, clearOperations } from 'entities/report';
+import { reportsAPI } from 'entities/report/lib/report.api';
 import reportDeleteIcon from 'assets/images/reports/report_delete.png';
 import './active-operations.scss';
 
@@ -18,14 +17,12 @@ export interface ActiveReportsProps {
 /** Список активных отчётов, готовых или в процессе. */
 export const ActiveOperations = ({activeID}: ActiveReportsProps) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
-
-  const operations = useSelector(operationsSelector);
+  const operations = useOperations();
   const [filterByPresentation, setFilterByPresentation] = useState(true);
 
   const deleteReports = () => {
     const presentationID = filterByPresentation ? activeID : null;
-    const onClearEnd = () => { dispatch(clearOperations(presentationID)); };
+    const onClearEnd = () => clearOperations(presentationID);
     reportsAPI.clearReports(presentationID).then(onClearEnd);
   };
 

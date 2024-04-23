@@ -1,7 +1,7 @@
 import { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'antd';
-import { CircularProgressBar } from './circular-progress-bar.tsx';
+import { CircularProgressBar } from './circular-progress-bar';
 import './common.scss';
 
 

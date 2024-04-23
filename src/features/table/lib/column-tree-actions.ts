@@ -1,5 +1,4 @@
-import { GridColumnProps } from '@progress/kendo-react-grid';
-import { stringToTableCell } from 'entities/parameters/lib/table-row';
+import type { GridColumnProps } from '@progress/kendo-react-grid';
 
 
 /** По состоянию колонок из события `onColumnResize` применяет новые значения ширины. */
@@ -21,8 +20,9 @@ export function applyColumnsWidth(columnsState: TableColumnsState, newColumns: G
 
 export function applyColumnsHeaders(tree: ColumnTree, rules: HeaderSetterRule[], params: Parameter[]) {
   const values = params.map((param, i) => {
-    if (!param?.value) return undefined;
-    return stringToTableCell(param.value as string, rules[i].column);
+    const value = param?.getValue();
+    if (!value) return undefined;
+    return value[rules[i].column]?.value;
   });
   applyRules(tree, rules, values);
 }

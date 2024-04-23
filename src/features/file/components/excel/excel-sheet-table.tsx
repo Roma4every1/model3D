@@ -1,5 +1,5 @@
-import { ExcelTableRow } from './excel-table-row.tsx';
-import { ExcelTableHeadRow } from './excel-table-head-row.tsx';
+import { ExcelTableRow } from './excel-table-row';
+import { ExcelTableHeadRow } from './excel-table-head-row';
 
 
 interface ExcelSheetTableProps {

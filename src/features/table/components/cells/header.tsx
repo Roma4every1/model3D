@@ -1,6 +1,5 @@
 import { GridHeaderCellProps } from '@progress/kendo-react-grid';
-import { useDispatch } from 'shared/lib';
-import { updateSortOrder } from 'entities/channels';
+import { updateChannelSortOrder } from 'entities/channel';
 
 
 interface HeaderCellThis {
@@ -11,10 +10,8 @@ interface HeaderCellThis {
 
 
 export function HeaderCell(this: HeaderCellThis, {title}: GridHeaderCellProps) {
-  const dispatch = useDispatch();
-
   const { channelName, channelColumn, query } = this;
-  const direction = query.order.find(o => o.column === channelColumn)?.direction ?? null;
+  const direction = query.order?.find(o => o.column === channelColumn)?.direction ?? null;
 
   const onClick = () => {
     // по возврастанию -> по убыванию -> без порядка
@@ -22,7 +19,7 @@ export function HeaderCell(this: HeaderCellThis, {title}: GridHeaderCellProps) {
     if (direction === null) newDirection = 'desc';
     else if (direction === 'desc') newDirection = 'asc';
     const order = newDirection ? [{column: channelColumn, direction: newDirection}] : [];
-    dispatch(updateSortOrder(channelName, order));
+    updateChannelSortOrder(channelName, order).then();
   };
 
   return (

@@ -1,51 +1,62 @@
-import { IJsonModel } from 'flexlayout-react';
-import { serializeParameter } from 'entities/parameters';
-import { TableFormSettings, tableStateToSettings } from 'features/table';
-import { caratStateToSettings } from 'features/carat';
+import type { IJsonModel } from 'flexlayout-react';
+import type { TableFormSettings } from 'features/table';
+
+import { useRootStore } from '../store/root-form.store';
+import { usePresentationStore } from 'widgets/presentation';
+import { useParameterStore, serializeParameter, ParameterStringTemplate } from 'entities/parameter';
+import { useTableStore, tableStateToSettings } from 'features/table';
+import { useCaratStore, caratStateToSettings } from 'features/carat';
 
 
 /** Модель, используемая в серверных запросах для сохранения сессии. */
 export interface SessionToSave {
   /** Параметры главной формы и презентаций. */
-  parameters: ParametersToSave;
+  parameters: ParametersToSave[];
   /** Состояние дочерних форм презентаций. */
-  children: FormChildrenState[];
+  children: ChildrenToSave[];
   /** Разметка презентаций. */
-  layout: LayoutsToSave;
+  layout: LayoutToSave[];
   /** Настройки форм по типам. */
-  settings: SessionSettings;
+  settings: SettingsToSave;
 }
 
-/** Хранилище настроек форм по типам. */
-interface SessionSettings {
+/** Массив с данными о параметрах главной формы и презентаций. */
+type ParametersToSave = {id: ClientID, value: SerializedParameter[]};
+/** Массив с данными о дочерних клиентах главной формы и презентаций. */
+type ChildrenToSave = ClientChildrenDTO & {id: ClientID};
+/** Массив с данными о разметке презентаций. */
+type LayoutToSave = IJsonModel & {id: ClientID};
+
+/** Настройки форм по типам. */
+interface SettingsToSave {
   /** Настройки таблиц (тип `dataSet`). */
   tables: TableFormSettings[];
   /** Настройки каротажных диаграмм (тип `carat`). */
   carats: CaratFormSettings[];
 }
 
-/** Массив с данными о параметрах главной формы и презентаций. */
-type ParametersToSave = {id: ClientID, value: SerializedParameter[]}[];
-/** Массив с данными о разметке презентаций. */
-type LayoutsToSave = ({id: ClientID} & IJsonModel)[];
-
 
 /** Конвертирует состояние приложения в модель сохраняемой сессии. */
-export function getSessionToSave(state: WState): SessionToSave {
+export function getSessionToSave(): SessionToSave {
+  const rootState = useRootStore.getState();
+  const presentations = usePresentationStore.getState();
+
   return {
-    parameters: getParametersToSave(state.parameters),
-    children: getChildrenToSave(state.root, state.presentations),
-    layout: getLayoutsToSave(state.root, state.presentations),
-    settings: getSettingsToSave(state.tables, state.carats),
+    parameters: getParametersToSave(),
+    children: getChildrenToSave(rootState, presentations),
+    layout: getLayoutsToSave(rootState, presentations),
+    settings: getSettingsToSave(),
   };
 }
 
 /* --- Parameters --- */
 
-function getParametersToSave(formParams: ParamDict): ParametersToSave {
-  const parameters: ParametersToSave = [];
-  for (const id in formParams) {
-    const value = formParams[id].map(serializeParameter);
+function getParametersToSave(): ParametersToSave[] {
+  const state = useParameterStore.getState();
+  const parameters: ParametersToSave[] = [];
+
+  for (const id in state) {
+    const value = state[id].map(serializeParameter);
     parameters.push({id, value});
   }
   return parameters;
@@ -53,32 +64,39 @@ function getParametersToSave(formParams: ParamDict): ParametersToSave {
 
 /* --- Children --- */
 
-function getChildrenToSave(root: RootFormState, presentations: PresentationDict): FormChildrenState[] {
+function getChildrenToSave(root: RootFormState, presentations: PresentationDict): ChildrenToSave[] {
   const childArray = Object.values(presentations)
     .filter(p => !p.settings.multiMapChannel)
-    .map(presentationStateToChildren);
+    .map(toChildrenToSave);
 
   childArray.push({
     id: root.id,
-    children: root.children,
+    children: root.children.map(toFormDataWM),
     openedChildren: [root.activeChildID],
     activeChildren: [root.activeChildID],
   });
   return childArray;
 }
 
-function presentationStateToChildren(state: PresentationState): FormChildrenState {
+function toChildrenToSave(state: PresentationState): ChildrenToSave {
   return {
     id: state.id,
-    children: state.children,
+    children: state.children.map(toFormDataWM),
     openedChildren: state.openedChildren,
     activeChildren: state.activeChildID ? [state.activeChildID] : [],
   };
 }
+function toFormDataWM(child: FormDataWM): FormDataWM {
+  const pattern: ParameterStringTemplate = child.displayNameString;
+  return pattern ? {...child, displayNameString: pattern.source} : child;
+}
 
 /* --- Settings --- */
 
-function getSettingsToSave(tableStates: TableStates, caratsState: CaratStates): SessionSettings {
+function getSettingsToSave(): SettingsToSave {
+  const tableStates = useTableStore.getState();
+  const caratStates = useCaratStore.getState();
+
   const tables: TableFormSettings[] = [];
   const carats: CaratFormSettings[] = [];
 
@@ -86,8 +104,8 @@ function getSettingsToSave(tableStates: TableStates, caratsState: CaratStates): 
     const tableState = tableStates[id];
     tables.push(tableStateToSettings(id, tableState));
   }
-  for (const id in caratsState) {
-    const caratState = caratsState[id];
+  for (const id in caratStates) {
+    const caratState = caratStates[id];
     carats.push(caratStateToSettings(id, caratState));
   }
   return {tables, carats};
@@ -95,8 +113,8 @@ function getSettingsToSave(tableStates: TableStates, caratsState: CaratStates): 
 
 /* --- Layout --- */
 
-function getLayoutsToSave(root: RootFormState, presentations: PresentationDict): LayoutsToSave {
-  const layoutArray: LayoutsToSave = [getRootLayout(root)];
+function getLayoutsToSave(root: RootFormState, presentations: PresentationDict): LayoutToSave[] {
+  const layoutArray: LayoutToSave[] = [getRootLayout(root)];
   for (const id in presentations) {
     const layout = presentations[id].layout.toJson();
     layoutArray.push({...layout, id});
@@ -104,7 +122,7 @@ function getLayoutsToSave(root: RootFormState, presentations: PresentationDict):
   return layoutArray;
 }
 
-function getRootLayout(root: RootFormState): any {
+function getRootLayout(root: RootFormState): LayoutToSave {
   const result = root.layout.left.model.toJson();
   const { topBorder, rightBorder, model } = root.layout.common;
 

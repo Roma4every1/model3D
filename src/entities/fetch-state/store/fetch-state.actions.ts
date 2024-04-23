@@ -1,33 +1,44 @@
-import { FetchStateAction, FetchStateActions } from './fetch-state.reducer';
+import { useFetchStateStore } from './fetch-state.store';
 
 
 /** Начало загрузки новой сессии. */
-export function fetchSessionStart(): FetchStateAction {
-  return {type: FetchStateActions.FETCH_START, payload: {type: 'session'}};
+export function sessionFetchingStart(): void {
+  const stateWait: FetchStateWait = {ok: undefined, loading: true, details: null};
+  useFetchStateStore.setState({session: stateWait});
 }
 
 /** Конец загрузки новой сессии. */
-export function fetchSessionEnd(): FetchStateAction {
-  return {type: FetchStateActions.FETCH_END, payload: {type: 'session'}};
+export function sessionFetchingEnd(error?: any): void {
+  const state: FetchState = error
+    ? {ok: false, loading: false, details: error}
+    : {ok: true, loading: false, details: null};
+  useFetchStateStore.setState({session: state});
 }
 
-/** Ошибка при загрузке новой сессии. */
-export function fetchSessionError(error: any): FetchStateAction {
-  return {type: FetchStateActions.FETCH_ERROR, payload: {type: 'session', error}};
+export function clientFetchingStart(ids: ClientID | ClientID[]): void {
+  const forms = useFetchStateStore.getState().forms;
+  if (Array.isArray(ids)) {
+    for (const id of ids) forms[id] = {ok: undefined, loading: true, details: null};
+  } else {
+    forms[ids] = {ok: undefined, loading: true, details: null};
+  }
+  useFetchStateStore.setState({forms: {...forms}});
 }
 
-
-/** Начало загрузки новой формы/презентации. */
-export function fetchFormsStart(ids: FormID[]): FetchStateAction {
-  return {type: FetchStateActions.FETCH_START, payload: {type: 'form', ids}};
+export function clientFetchingEnd(ids: ClientID | ClientID[]): void {
+  const forms = useFetchStateStore.getState().forms;
+  if (Array.isArray(ids)) {
+    for (const id of ids) forms[id] = {ok: true, loading: false, details: null};
+  } else {
+    forms[ids] = {ok: true, loading: false, details: null};
+  }
+  useFetchStateStore.setState({forms: {...forms}});
 }
 
-/** Конец загрузки новой формы/презентации. */
-export function fetchFormsEnd(ids: FormID[]): FetchStateAction {
-  return {type: FetchStateActions.FETCH_END, payload: {type: 'form', ids}};
-}
-
-/** Ошибка при загрузке новой формы/презентации. */
-export function fetchFormError(formID: FormID, error: any): FetchStateAction {
-  return {type: FetchStateActions.FETCH_ERROR, payload: {type: 'form', formID, error}};
+export function clientFetchingError(entries: {id: ClientID, details: any}[]): void {
+  const forms = useFetchStateStore.getState().forms;
+  for (const { id, details } of entries) {
+    forms[id] = {ok: false, loading: false, details};
+  }
+  useFetchStateStore.setState({forms: {...forms}});
 }

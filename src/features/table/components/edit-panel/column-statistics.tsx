@@ -2,7 +2,7 @@ import { TFunction } from 'react-i18next';
 import { EditPanelItemProps } from '../../lib/types';
 import { Button } from '@progress/kendo-react-buttons';
 import { BigButton } from 'shared/ui';
-import { channelAPI } from 'entities/channels/lib/channel.api.ts';
+import { channelAPI } from 'entities/channel/lib/channel.api';
 import { showWarningMessage, showDialog, closeWindow } from 'entities/window';
 import statisticsIcon from 'assets/images/dataset/statistics.png';
 
@@ -31,19 +31,19 @@ interface ColumnStat {
 }
 
 
-export const ColumnStatistics = ({state, dispatch, t}: EditPanelItemProps) => {
+export const ColumnStatistics = ({state, t}: EditPanelItemProps) => {
   const activeColumnID = state.activeCell.columnID;
 
   const getStat = async () => {
     const columnState = state.columns[activeColumnID];
     const { ok, data } = await channelAPI.getStatistics(state.queryID, columnState.colName);
-    if (!ok) { dispatch(showWarningMessage(data)); return; }
+    if (!ok) { showWarningMessage(data); return; }
     if (typeof data !== 'object' || !data.Values) return;
 
     const title = t('table.stat.window-title', {column: columnState.title});
-    const onClose = () => dispatch(closeWindow('stat'));
+    const onClose = () => closeWindow('stat');
     const content = <StatDialogContent title={title} stat={data.Values} t={t} onClose={onClose}/>;
-    dispatch(showDialog('stat', {title, width: 300, onClose}, content))
+    showDialog('stat', {title, width: 300, onClose}, content);
   };
 
   return (

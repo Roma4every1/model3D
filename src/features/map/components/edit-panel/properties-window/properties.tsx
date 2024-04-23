@@ -1,7 +1,5 @@
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-
-import { propertyWindowConfig } from '../../../lib/constants.ts';
+import { propertyWindowConfig } from '../../../lib/constants';
 import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
 import { setMapField } from '../../../store/map.actions';
 
@@ -17,15 +15,12 @@ interface PropertiesWindowProps {
 
 export const PropertiesWindow = ({id, stage, element, close, cancel}: PropertiesWindowProps) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
-
   const isCreating = stage.isElementCreating();
   const TypedPropertyWindow = propertyWindowConfig[element.type].component;
 
   const apply = () => {
     stage.accept(); stage.render();
-    dispatch(setMapField(id, 'modified', true));
-    close();
+    setMapField(id, 'modified', true); close();
   };
 
   return (

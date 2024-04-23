@@ -4,3 +4,4 @@ export { TrackEditPanel } from './components/track-edit-panel/track-edit-panel';
 
 export { caratStateToSettings } from './lib/adapter';
 export { createCaratState } from './store/carat.actions';
+export { useCaratStore } from './store/carat.store';

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ExpansionPanel, ExpansionPanelContent } from '@progress/kendo-react-layout';
-import { LayerTreeLeaf } from './layer-tree-leaf.tsx';
+import { LayerTreeLeaf } from './layer-tree-leaf';
 
 
 interface LayersTreeElementProps {

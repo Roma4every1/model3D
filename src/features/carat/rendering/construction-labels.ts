@@ -4,7 +4,7 @@ import { getMeasurerForFont } from 'shared/lib';
 
 import { PumpColumn } from './pump-column';
 import { WellFaceColumn } from './face-column';
-import { WellBoreColumn } from './well-bore-column.ts';
+import { WellBoreColumn } from './well-bore-column';
 
 
 /** Подпись к элементу конструкции скважины. */

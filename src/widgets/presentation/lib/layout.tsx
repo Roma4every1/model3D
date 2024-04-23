@@ -1,4 +1,3 @@
-import { Res } from 'shared/lib';
 import { IGlobalAttributes } from 'flexlayout-react/declarations/model/IJsonModel';
 import { IJsonModel, IJsonRowNode } from 'flexlayout-react/declarations/model/IJsonModel';
 import { IJsonTabNode, IJsonTabSetNode } from 'flexlayout-react/declarations/model/IJsonModel';
@@ -19,10 +18,10 @@ const gridLayoutGlobalAttrs: IGlobalAttributes = {
   splitterSize: 6,
 };
 
-export function handleLayout(res: Res<IJsonModel>, children: FormDataWM[], activeID: FormID): IJsonModel {
+export function handleLayout(data: IJsonModel, children: FormDataWM[], activeID: FormID): IJsonModel {
   let formLayout: IJsonModel;
-  if (res.ok && res.data?.layout?.children) {
-    formLayout = res.data;
+  if (data?.layout?.children) {
+    formLayout = data;
     formLayout.global = {...gridLayoutGlobalAttrs, ...formLayout.global};
     fillLayout(formLayout.layout, children, activeID);
   } else {
@@ -43,11 +42,9 @@ function fillLayout(layout: LayoutArg, forms: FormDataWM[], active: FormID) {
   layout.children?.forEach(child => fillLayout(child, forms, active));
 }
 
-function fillTabNode(node: IJsonTabNode, form: FormDataWM) {
-  const displayNamePattern = form.displayNamePattern;
-  if (displayNamePattern) {
-    const { pattern, params } = displayNamePattern;
-    node.name = <FormName formID={form.id} pattern={pattern} params={params}/> as any;
+function fillTabNode(node: IJsonTabNode, form: FormDataWM): void {
+  if (form.displayNameString) {
+    node.name = <FormName formID={form.id} pattern={form.displayNameString}/> as any;
   } else {
     node.name = node['title'] ?? form.displayName;
   }

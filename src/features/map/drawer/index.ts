@@ -1,6 +1,6 @@
 import { def2json } from './symbols';
 import { parseDef } from './symbol2svg';
-import { mapsAPI } from '../lib/maps.api';
+import { mapAPI } from '../lib/map.api';
 
 
 type SignImageGetter = (color: ColorHEX) => string;
@@ -14,12 +14,7 @@ export interface SignFontData {
 }
 
 
-class MapProvider {
-  private static readonly UnknownFontData: SignFontData = {
-    id: '', name: 'unknown',
-    minIndex: 0, maxIndex: 0
-  };
-
+export class MapProvider {
   public defaultSignLib = 'PNT.CHR';
   public defaultSignColor = '#000000';
   public defaultSignImage: HTMLImageElement;
@@ -42,13 +37,14 @@ class MapProvider {
   }
 
   public getSignFontData(id: string): SignFontData {
-    return this.fontData.find(d => d.id === id) ?? MapProvider.UnknownFontData;
+    const data = this.fontData.find(d => d.id === id);
+    return data ?? {id: '', name: 'unknown', minIndex: 0, maxIndex: 0};
   }
 
   public async initialize(): Promise<void> {
     if (this.initialized) return;
     try {
-      const data = await mapsAPI.getSymbolsLib();
+      const data = await mapAPI.getSymbolLib();
       this.lib = parseDef(def2json(new TextDecoder('cp1251').decode(data)));
     } catch {
       this.lib = {}; // handler below

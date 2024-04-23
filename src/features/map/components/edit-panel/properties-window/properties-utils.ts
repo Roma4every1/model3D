@@ -1,7 +1,7 @@
 import { TFunction } from 'react-i18next';
 import { FunctionComponent } from 'react';
 import { fillPatterns } from 'shared/drawing';
-import { polylineType } from '../../../lib/selecting-utils.ts';
+import { polylineType } from '../../../lib/selecting-utils';
 import { ColorPickerPaletteSettings, ColorPickerGradientSettings } from '@progress/kendo-react-inputs';
 import lines from '../../../drawer/lines.json';
 

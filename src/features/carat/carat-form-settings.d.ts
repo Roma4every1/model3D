@@ -57,7 +57,7 @@ interface CaratColumnSettings {
   /** Тип колонки. */
   type: CaratColumnType;
   /** Название колонки. */
-  label: DisplayName;
+  label: string;
   /** Ширина колонки в пикселях. */
   width: number;
   /** Порядковый номер колонки. */

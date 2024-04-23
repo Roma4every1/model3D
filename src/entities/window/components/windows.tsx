@@ -1,5 +1,4 @@
-import { useDispatch, useSelector } from 'react-redux';
-import { windowStatesSelector } from '../store/window.selectors';
+import { useWindowStore } from '../store/window.store';
 import { closeWindow } from '../store/window.actions';
 
 import './window.scss';
@@ -8,13 +7,12 @@ import { MessageDialog } from './message-dialog';
 
 
 export const WindowHandler = () => {
-  const dispatch = useDispatch();
-  const states = useSelector(windowStatesSelector);
+  const states = useWindowStore();
 
-  const stateToElement = (windowState: WindowState) => {
+  const toElement = (windowState: WindowState) => {
     const { id, props, content } = windowState;
     if (!props.onClose) {
-      props.onClose = () => dispatch(closeWindow(id));
+      props.onClose = () => closeWindow(id);
     }
     if (id.startsWith('message')) {
       return <MessageDialog key={id} {...props}/>;
@@ -30,5 +28,5 @@ export const WindowHandler = () => {
       return <Dialog key={id} {...props} children={content}/>;
     }
   };
-  return <div>{Object.values(states).map(stateToElement)}</div>;
+  return <div>{Object.values(states).map(toElement)}</div>;
 };

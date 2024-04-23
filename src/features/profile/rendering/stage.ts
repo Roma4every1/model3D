@@ -1,4 +1,4 @@
-import {ProfileDrawer} from "./drawer.ts";
+import { ProfileDrawer } from './drawer';
 
 
 /** Сцена профиля. */

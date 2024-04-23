@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
-import { useSelector } from 'react-redux';
-import { LayerTreeNode } from './layer-tree-node.tsx';
-import { mapStateSelector } from '../../store/map.selectors';
+import { LayerTreeNode } from './layer-tree-node';
+import { useMapState } from '../../store/map.store';
 import './layer-tree.scss';
 
 
@@ -13,7 +12,7 @@ interface MapLayerTreeProps {
 
 /** Дерево слоёв карты. */
 export const MapLayerTree = ({id}: MapLayerTreeProps) => {
-  const mapState: MapState = useSelector(mapStateSelector.bind(id));
+  const mapState = useMapState(id);
   const stage = mapState?.stage;
   const layers = stage?.getMapData()?.layers;
 

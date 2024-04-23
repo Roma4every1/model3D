@@ -1,30 +1,26 @@
 import { useEffect, useMemo, useCallback } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import { ResponsiveContainer, ComposedChart, CartesianGrid, Legend, Tooltip, XAxis } from 'recharts';
 import { useCurrentPng } from 'recharts-to-png';
 import { saveAs } from '@progress/kendo-file-saver';
 import { TextInfo } from 'shared/ui';
-import { compareObjects, compareArrays } from 'shared/lib';
-import { channelsSelector, channelDictSelector } from 'entities/channels';
+import { useChannels, useChannelDict } from 'entities/channel';
 
 import './chart.scss';
 import { ChartProto, getChartProto } from '../lib/chart-proto';
 import { getChartLookups, applyLookupToMarks } from '../lib/lookup';
 import { propsToYAxis, propsToDiagram, markToReferenceLine } from '../lib/chart-mappers';
-import { chartStateSelector } from '../store/chart.selectors';
+import { useChartState } from '../store/chart.store';
 import { setChartDownloadFn } from '../store/chart.actions';
 
 
 const chartStyle = {overflow: 'hidden'}; // for correct tooltip display
 const chartMargin = {top: 2, left: 0, bottom: 0, right: 0};
 
-export const Chart = ({id, channels}: FormState) => {
-  const dispatch = useDispatch();
+export const Chart = ({id, channels}: SessionClient) => {
   const [getPng, { ref }] = useCurrentPng();
 
-  const names = channels.map(c => c.name);
-  const channelsData: Channel[] = useSelector(channelsSelector.bind(names), compareArrays);
-  const state: ChartState = useSelector(chartStateSelector.bind(id));
+  const channelsData = useChannels(channels.map(c => c.name));
+  const state: ChartState = useChartState(id);
   const { seriesSettings, dateStep, tooltip } = state;
 
   const { data, diagrams, axes, marks, legend } = useMemo<ChartProto>(() => {
@@ -35,7 +31,7 @@ export const Chart = ({id, channels}: FormState) => {
     return getChartLookups(marks);
   }, [marks]);
 
-  const lookupData: ChannelDict = useSelector(channelDictSelector.bind(markChannels), compareObjects);
+  const lookupData = useChannelDict(markChannels);
 
   const handleDownload = useCallback(async () => {
     const png = await getPng();
@@ -44,8 +40,8 @@ export const Chart = ({id, channels}: FormState) => {
 
   // обновление функции для сохранения графика в PNG
   useEffect(() => {
-    dispatch(setChartDownloadFn(id, handleDownload));
-  }, [id, handleDownload, dispatch]);
+    setChartDownloadFn(id, handleDownload);
+  }, [id, handleDownload]);
 
   // задание текста для вертикальных пометок
   useEffect(() => {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, round } from 'shared/lib';
+import { round } from 'shared/lib';
 import { updateWindow } from 'entities/window';
 
 import { Button } from '@progress/kendo-react-buttons';
@@ -12,7 +12,7 @@ import { TextInfo } from 'shared/ui';
 import './curve-selection-window.scss';
 import { CaratCurveModel } from '../../lib/types';
 import { CurveManager } from '../../lib/curve-manager';
-import { loadCaratCurves } from '../../store/carat.thunks';
+import { loadCaratCurves } from '../../store/carat.actions';
 
 
 interface CurveSelectionWindowProps {
@@ -28,15 +28,13 @@ interface CurveFiltersProps {
 
 export const CurveSelectionWindow = ({id, stage, onClose}: CurveSelectionWindowProps) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
+  const [, setSignal] = useState(false);
+  const signal = () => setSignal(value => !value);
 
   const track = stage.getActiveTrack();
   const curveGroup = track.getCurveGroup();
   const curveManager: CurveManager = curveGroup?.curveManager;
   const tree = curveManager?.getCurveTree() ?? [];
-
-  const [, setSignal] = useState(false);
-  const signal = () => setSignal(value => !value);
 
   // подписка на события изменения сцены
   useEffect(() => {
@@ -47,8 +45,8 @@ export const CurveSelectionWindow = ({id, stage, onClose}: CurveSelectionWindowP
   // обновление заголовка окна при смене активного трека
   useEffect(() => {
     const title = t('carat.selection.window-title', {well: track.wellName});
-    dispatch(updateWindow('curve-selection', {title}));
-  }, [track.wellName, t, dispatch]);
+    updateWindow('curve-selection', {title});
+  }, [track.wellName, t]);
 
   const onExpandChange = (event: TreeViewExpandChangeEvent) => {
     event.item.expanded = !event.item.expanded;
@@ -81,7 +79,7 @@ export const CurveSelectionWindow = ({id, stage, onClose}: CurveSelectionWindowP
 
   const onSubmit = () => {
     onClose();
-    dispatch(loadCaratCurves(id, curveGroup));
+    loadCaratCurves(id, curveGroup).then();
   };
 
   return (

@@ -1,21 +1,21 @@
-import {EditPanelItemProps} from '../../lib/types.ts';
-import {BigButtonToggle, MenuSection} from '../../../../shared/ui';
-import {useCallback} from 'react';
-import {setTableColumnsSettings} from '../../store/table.actions.ts';
+import { useCallback} from 'react';
+import { EditPanelItemProps } from '../../lib/types';
+import { setTableColumnsSettings } from '../../store/table.actions';
 
-import recordModeIcon from '../../../../assets/images/dataset/record-mode.png';
-import tableModeIcon from '../../../../assets/images/dataset/table-mode.png';
+import { BigButtonToggle, MenuSection } from 'shared/ui';
+import recordModeIcon from 'assets/images/dataset/record-mode.png';
+import tableModeIcon from 'assets/images/dataset/table-mode.png';
 
 
-export const ColumnMode = ({id, state, dispatch, t}: EditPanelItemProps) => {
+export const ColumnMode = ({id, state, t}: EditPanelItemProps) => {
   const { columnsSettings: settings } = state;
   const isTableMode = settings.isTableMode;
 
   const toggleTableModeOn = useCallback((value: boolean) => {
     if (isTableMode === value) return;
     const newSettings = {...settings, isTableMode: value};
-    dispatch(setTableColumnsSettings(id, newSettings));
-  }, [dispatch, id, settings, isTableMode]);
+    setTableColumnsSettings(id, newSettings);
+  }, [id, settings, isTableMode]);
 
   return (
     <MenuSection className={'big-buttons'} header={t('table.panel.mode.header')}>

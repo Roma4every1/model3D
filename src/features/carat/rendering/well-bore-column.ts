@@ -1,6 +1,6 @@
 import { CaratDrawer } from './drawer';
 import { WellBoreElementModel, WellBoreElementStyle } from '../lib/types';
-import { defaultSettings } from '../lib/constants.ts';
+import { defaultSettings } from '../lib/constants';
 
 
 /** Колонка, содержащая элементы ствола скважины. */

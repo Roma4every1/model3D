@@ -1,30 +1,26 @@
 import { KeyboardEvent, MouseEvent } from 'react';
 import { useEffect, useLayoutEffect, useRef, useCallback } from 'react';
-import { useSelector, useDispatch, compareObjects } from 'shared/lib';
-import { channelDictSelector } from 'entities/channels';
-import { wellStateSelector, traceStateSelector, stratumStateSelector } from 'entities/objects';
+import { useChannelDict } from 'entities/channel';
+import { useCurrentWell, useCurrentTrace, useCurrentStratum } from 'entities/objects';
 import { TextInfo, LoadingStatus } from 'shared/ui';
 
 import './carat.scss';
-import { caratStateSelector } from '../store/carat.selectors';
+import { useCaratState } from '../store/carat.store';
 import { setCaratData } from '../store/carat.thunks';
 import { setCaratCanvas } from '../store/carat.actions';
 
 
 /** Каротажная диаграмма. */
-export const Carat = ({id}: FormState) => {
-  const dispatch = useDispatch();
-  const { model: currentWell } = useSelector(wellStateSelector);
-  const { model: currentTrace } = useSelector(traceStateSelector);
-  const { model: currentStratum } = useSelector(stratumStateSelector);
+export const Carat = ({id}: SessionClient) => {
+  const { model: currentWell } = useCurrentWell();
+  const { model: currentTrace } = useCurrentTrace();
+  const { model: currentStratum } = useCurrentStratum();
 
-  const caratState: CaratState = useSelector(caratStateSelector.bind(id));
+  const caratState = useCaratState(id);
   const { stage, canvas, channelNames, lookupNames, loading } = caratState;
 
-  const channelData: ChannelDict =
-    useSelector(channelDictSelector.bind(channelNames), compareObjects);
-  const lookupData: ChannelDict =
-    useSelector(channelDictSelector.bind(lookupNames), compareObjects);
+  const channelData = useChannelDict(channelNames);
+  const lookupData = useChannelDict(lookupNames);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isOnMoveRef = useRef<boolean>(false);
@@ -36,8 +32,8 @@ export const Carat = ({id}: FormState) => {
 
   // обновление данных каналов
   useEffect(() => {
-    dispatch(setCaratData(id, channelData));
-  }, [channelData, currentWell, currentTrace, id, dispatch]);
+    setCaratData(id, channelData).then();
+  }, [channelData, currentWell, currentTrace, id]);
 
   // выравнивание по активному пласту
   useEffect(() => {
@@ -49,7 +45,7 @@ export const Carat = ({id}: FormState) => {
   // обновление ссылки на холст
   useLayoutEffect(() => {
     if (canvasRef.current === canvas) return;
-    dispatch(setCaratCanvas(id, canvasRef.current));
+    setCaratCanvas(id, canvasRef.current);
   });
 
   const onWheel = useCallback((e: WheelEvent) => {

@@ -1,28 +1,26 @@
 import { useEffect } from 'react';
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
-import { useDispatch, useSelector } from 'shared/lib';
 
 import { ConfigProvider } from 'antd';
 import { ru_RU } from 'shared/locales';
 import { createAntDesignTheme, antdComponentSize } from 'shared/ui';
 
-import { setSystemName } from '../store/app-state/app.actions';
-import { appStateSelector } from '../store/app-state/app.selectors';
-import { startSession } from '../store/root-form/root-form.thunks';
-import { stateNeedFetch, stateNotLoaded, sessionFetchStateSelector } from 'entities/fetch-state';
+import { useAppStore } from '../store/app.store';
+import { setSystemName } from '../store/app.actions';
+import { startSession } from '../store/root-form.thunks';
+import { useSessionFetchState, stateNeedFetch, stateNotLoaded } from 'entities/fetch-state';
 
 import { Dock } from './dock';
 import { LoadingStatus } from './loading-status';
 import { WindowHandler } from 'entities/window/components/windows';
-import { Notifications } from 'entities/notifications';
+import { Notifications } from 'entities/notification';
 import { TopToolbar } from './top-toolbar';
 
 
 /** Корень системы. Route: `/systems/:systemID`. */
 export const SystemRoot = () => {
-  const dispatch = useDispatch();
-  const fetchState = useSelector(sessionFetchStateSelector);
-  const { systemList, systemID, config } = useSelector(appStateSelector);
+  const fetchState = useSessionFetchState();
+  const { systemList, systemID, config } = useAppStore();
 
   const { systemID: paramsSystemID } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -35,15 +33,15 @@ export const SystemRoot = () => {
 
   // обновление ID системы
   useEffect(() => {
-    if (paramsSystemID !== systemID) dispatch(setSystemName(paramsSystemID));
-  }, [paramsSystemID, systemID, dispatch]);
+    if (paramsSystemID !== systemID) setSystemName(paramsSystemID);
+  }, [paramsSystemID, systemID]);
 
   // инициализация новой сессии
   useEffect(() => {
     if (!needStartSession) return;
     if (defaultSession) setSearchParams({});
-    dispatch(startSession(defaultSession));
-  }, [needStartSession, defaultSession, searchParams, setSearchParams, dispatch]);
+    startSession(defaultSession).then();
+  }, [needStartSession, defaultSession, searchParams, setSearchParams]);
 
   if (fetchState?.ok) {
     const theme = createAntDesignTheme(systemInfo.color);

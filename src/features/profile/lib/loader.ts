@@ -1,9 +1,10 @@
-import {mapsAPI} from "../../map/lib/maps.api.ts";
-import {types} from "../../map/drawer/map-drawer.js";
-import {groupBy} from "../../../shared/lib";
-import {cellsToRecords, channelAPI} from "../../../entities/channels";
-import {ProfileTrace} from "./trace.ts";
-import {ProfilePlast} from "./plast.ts";
+import { groupBy } from 'shared/lib';
+import { cellsToRecords, channelAPI } from 'entities/channel';
+import { mapAPI } from 'features/map/lib/map.api';
+import { types } from 'features/map/drawer/map-drawer';
+import { ProfileTrace } from './trace';
+import { ProfilePlast } from './plast';
+
 
 /** Класс, реализующий загрузку данных для профиля по трассе. */
 export class ProfileLoader implements IProfileLoader {
@@ -109,25 +110,14 @@ export class ProfileLoader implements IProfileLoader {
 
   /** Загружает данные поля из контейнера по MapID карты. */
   private async loadMapFieldContainer(mapID: MapID, formID: FormID): Promise<MapField> {
-    const mapRes = await mapsAPI.getMap(mapID, formID);
-    const mapData = typeof mapRes.data === 'string' ?
-      null :
-      mapRes.data as MapDataRaw;
+    const { ok: mapOk, data: mapData } = await mapAPI.getMap(mapID, formID);
+    if (!mapOk || !mapData) return null;
 
-    if (!mapData) return null;
     const mapOwner = mapData.owner || 'Common';
-    const layer = mapData.layers.find(l =>
-      l.container.includes('Fields')
-    );
+    const layer = mapData.layers.find(l => l.container.includes('Fields'));
 
-    const data = await mapsAPI.getMapContainer(
-      layer.container,
-      mapOwner
-    );
-
-    if (typeof data === 'string') {
-      return null;
-    }
+    const { ok, data } = await mapAPI.getMapContainer(layer.container, mapOwner);
+    if (!ok) return null;
 
     const layerFromContainer = layer.uid.includes(layer.container)
       ? data.layers[layer.uid.replace(layer.container, '')]
@@ -141,48 +131,44 @@ export class ProfileLoader implements IProfileLoader {
   }
 
   /** Загружает данные инлинометрии, перфораций и литологии (пропластков) для списка скважин. */
-  private async loadAdditionalProfileChannels(wells: IProfileWell[]) {
-    const query: ChannelQuerySettings = {order: [], maxRowCount: 5000, filters: null};
+  private async loadAdditionalProfileChannels(wells: IProfileWell[]): Promise<void> {
+    const query: ChannelQuerySettings = {limit: 5000};
 
     // временные статичные значения параметров, т.к. параметр activeWells так или иначе
     // приходится задавать мануально
     const parameters: Partial<Parameter>[] = [
       {
-        "id": "currentMest",
-        "type": "tableRow",
-        "value": "OPR##System.DBNull|LOOKUPCODE#195#System.Decimal|LOOKUPCODE#195#System.Decimal|LOOKUPPARENTCODE#81#System.Decimal|LOOKUPPARENTCODE#81#System.Decimal|LOOKUPVALUE#Абдрахмановская#System.String|LOOKUPVALUE#Абдрахмановская#System.String|OBJCODE#21#System.Int32|MS#1042#System.Int32|OBJNAME#10-1-911#System.String|CODE#1042#System.Decimal|PARENT_ID#1#System.Decimal|ID#121#System.Decimal|MEST#1021#System.Int32|ZP#1042#System.Int32"
+        id: 'currentTpp', type: 'tableRow',
+        toString: () => 'SCHEMA_NAME#dbmm_tat#System.String',
       },
       {
-        "id": "currentTpp",
-        "type": "tableRow",
-        "value": "ID#1#System.Decimal|LOOKUPCODE#1#System.Decimal|SCHEMA_NAME#dbmm_tat#System.String|SCHEMA_NAME#dbmm_tat#System.String|NAME#НГДУ\"Лениногорскнефть\"#System.String|LOOKUPVALUE#НГДУ\"Лениногорскнефть\"#System.String"
+        id: 'currentMest', type: 'tableRow',
+        toString: () => 'OBJNAME#10-1-911#System.String',
       },
       {
-        "id": "activeWells",
-        "type": "string",
-        "value": wells.map(n => n.id).join(',')
+        id: 'activeWells', type: 'string',
+        toString: () => wells.map(n => n.id).join(','),
       },
       {
-        "id": "wellCaratSource",
-        "type": "string",
-        "value": "1"
-      }
+        id: 'wellCaratSource', type: 'string',
+        toString: () => '1'
+      },
     ];
 
     // повторный запрос каналов, у которых есть параметр activeWells
     const wellInclChannel =
       await channelAPI.getChannelData('WellIncl', parameters, query);
-    const wellInclChannelData = wellInclChannel.ok ? wellInclChannel.data.data : null;
+    const wellInclChannelData = wellInclChannel.ok ? wellInclChannel.data : null;
     this.wellInclRecords = (wellInclChannelData ? cellsToRecords(wellInclChannelData) : []) as ProfileInclMark[]
 
     const perfChannel =
       await channelAPI.getChannelData('Perf', parameters, query);
-    const perfChannelData = perfChannel.ok ? perfChannel.data.data : null;
+    const perfChannelData = perfChannel.ok ? perfChannel.data : null;
     this.perfRecords = perfChannelData ? cellsToRecords(perfChannelData) : [];
 
     const plInfoChannel =
       await channelAPI.getChannelData('PlInfo', parameters, query);
-    const plInfoChannelData = plInfoChannel.ok ? plInfoChannel.data.data : null;
+    const plInfoChannelData = plInfoChannel.ok ? plInfoChannel.data : null;
     this.plInfoRecords = (plInfoChannelData ? cellsToRecords(plInfoChannelData) : []) as ProfileLitPiece[];
   }
 }

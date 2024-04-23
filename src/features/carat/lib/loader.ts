@@ -1,6 +1,6 @@
-import { cellsToRecords, channelAPI } from 'entities/channels';
+import { StringArrayParameter, TableRowParameter, rowToParameterValue } from 'entities/parameter';
+import { cellsToRecords, channelAPI } from 'entities/channel';
 import { channelDictToRecords } from './channels';
-import { tableRowToString } from 'entities/parameters/lib/table-row';
 
 
 /** Класс, реализующий загрузку данных для построения каротажа по трассе. */
@@ -96,22 +96,18 @@ export class CaratLoader implements ICaratLoader {
     if (bySteps) {
       this.setLoading({percentage: 0, status: 'curves', statusOptions: {count: 0, total}});
     }
-
     const channelName = this.curveDataChannel.name;
-    const query: ChannelQuerySettings = {order: [], maxRowCount: null, filters: null};
 
     for (let i = 0; i < total; i += step) {
       const slice = idsToLoad.slice(i, i + step);
 
-      const parameter: Partial<Parameter> = {
-        id: CaratLoader.curveDataParameterID, type: 'stringArray',
-        value: slice.map(String),
-      };
+      const parameter = new StringArrayParameter(CaratLoader.curveDataParameterID, null);
+      parameter.setValue(slice.map(String));
 
-      const res = await channelAPI.getChannelData(channelName, [parameter], query);
+      const res = await channelAPI.getChannelData(channelName, [parameter]);
       if (flag !== this.flag) return;
 
-      const data = res.ok ? res.data.data : null;
+      const data = res.ok ? res.data : null;
       const records = cellsToRecords(data);
       const idColumnName = this.curveDataChannel.info.id.name;
 
@@ -165,15 +161,11 @@ export class CaratLoader implements ICaratLoader {
   /** Загружает данные инклинометрии по скважине. */
   private async loadInclinometry(row: ChannelRow, channel: Channel): Promise<ChannelRecord[]> {
     const channelName = this.inclinometryChannel.inclinometry.name;
-    const query: ChannelQuerySettings = {order: [], maxRowCount: null, filters: null};
+    const parameter = new TableRowParameter(CaratLoader.inclinometryParameterID, null);
+    parameter.setValue(rowToParameterValue(row, channel));
 
-    const parameter: Partial<Parameter> = {
-      id: CaratLoader.inclinometryParameterID, type: 'tableRow',
-      value: tableRowToString(channel, row),
-    };
-
-    const res = await channelAPI.getChannelData(channelName, [parameter], query);
-    const data = res.ok ? res.data.data : null;
+    const res = await channelAPI.getChannelData(channelName, [parameter]);
+    const data = res.ok ? res.data : null;
     return data ? cellsToRecords(data) : [];
   }
 

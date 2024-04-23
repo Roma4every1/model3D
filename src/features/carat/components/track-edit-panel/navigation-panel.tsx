@@ -1,8 +1,7 @@
 import { MouseEvent, useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
-import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { stratumStateSelector } from 'entities/objects';
-import { channelSelector, createLookupList } from 'entities/channels';
+import { useCurrentStratum } from 'entities/objects';
+import { useChannel, createLookupList } from 'entities/channel';
 import { validateCaratScale } from '../../lib/utils';
 import { constraints } from '../../lib/constants';
 import { MenuSection, MenuSectionItem, ButtonIcon, BigButton } from 'shared/ui';
@@ -94,7 +93,7 @@ const ScaleSection = ({stage, track}: CaratScalePanelProps) => {
 
 const NavigationSection = ({stage, track}: CaratScalePanelProps) => {
   const { t } = useTranslation();
-  const { model: currentStratum } = useSelector(stratumStateSelector);
+  const { model: currentStratum } = useCurrentStratum();
 
   const [isOpen, setIsOpen] = useState(false);
   const [anchor, setAnchor] = useState(null);
@@ -104,7 +103,7 @@ const NavigationSection = ({stage, track}: CaratScalePanelProps) => {
   const strata: CaratIntervalModel[] = strataColumn?.getElements() ?? [];
 
   const lookupName = strataColumn?.channel.namesChannel;
-  const lookupData: Channel = useSelector(channelSelector.bind(lookupName));
+  const lookupData = useChannel(lookupName);
 
   const nameDict: LookupDict<string> = useMemo(() => {
     const rows = lookupData?.data?.rows;

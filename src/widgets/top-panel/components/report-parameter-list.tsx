@@ -1,10 +1,8 @@
-import { ThunkDispatch } from 'redux-thunk';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Button } from '@progress/kendo-react-buttons';
-import { ParameterList } from 'entities/parameters';
-import { updateReportParameter, runReport } from 'entities/reports';
+import { ParameterList } from 'entities/parameter';
+import { updateReportParameter, runReport } from 'entities/report';
 
 
 interface ReportParameterListProps {
@@ -18,17 +16,15 @@ interface ReportParameterListProps {
 /** Редактор параметров процедуры. */
 export const ReportParameterList = ({id, report, setOpened, setProcessing}: ReportParameterListProps) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch<ThunkDispatch<WState, any, any>>();
-
   const close = () => setOpened(false);
   const { channels, parameters, canRun } = report;
 
   const onParameterChange = (param: Parameter, newValue: any) => {
-    dispatch(updateReportParameter(id, report.id, param.id, newValue)).then();
+    updateReportParameter(id, report.id, param.id, newValue).then();
   };
   const run = () => {
     setProcessing(true); setOpened(false);
-    dispatch(runReport(id, report)).then(() => setProcessing(false));
+    runReport(id, report).then(() => setProcessing(false));
   };
 
   return (

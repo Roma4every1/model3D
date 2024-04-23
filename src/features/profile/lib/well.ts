@@ -1,10 +1,9 @@
-import {ProfileInclinometry} from "./inclinometry.ts";
+import { ProfileInclinometry } from './inclinometry';
 
 
 /** Класс, содержащий данные о скважине профиля. */
 export class ProfileWell implements IProfileWell {
   public id: number;
-
   public x: number;
   public y: number;
 

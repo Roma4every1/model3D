@@ -1,4 +1,3 @@
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { MenuSection, BigButton } from 'shared/ui';
 import { showWindow, closeWindow } from 'entities/window';
@@ -20,11 +19,10 @@ interface CaratCurvesPanelProps {
 
 export const CaratCurvesPanel = ({id, stage, curveGroup}: CaratCurvesPanelProps) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
 
   const openCurveSelectionWindow = () => {
     const windowID = 'curve-selection';
-    const onClose = () => dispatch(closeWindow(windowID));
+    const onClose = () => closeWindow(windowID);
     const content = <CurveSelectionWindow id={id} stage={stage} onClose={onClose}/>;
 
     const windowProps: WindowProps = {
@@ -32,19 +30,19 @@ export const CaratCurvesPanel = ({id, stage, curveGroup}: CaratCurvesPanelProps)
       width: 720, height: 480, resizable: false, style: {zIndex: 99},
       onClose, maximizeButton: () => null,
     };
-    dispatch(showWindow(windowID, windowProps, content));
+    showWindow(windowID, windowProps, content);
   };
 
   const openZonesEditingWindow = () => {
     const windowID = 'curve-zones';
-    const onClose = () => dispatch(closeWindow(windowID));
+    const onClose = () => closeWindow(windowID);
     const content = <ZonesEditingWindow stage={stage} onClose={onClose}/>;
 
     const windowProps: WindowProps = {
       title: t('carat.zones.window-title'), maximizeButton: () => null,
       width: 720, height: 480, resizable: false, style: {zIndex: 99}, onClose,
     };
-    dispatch(showWindow(windowID, windowProps, content));
+    showWindow(windowID, windowProps, content);
   };
 
   return (

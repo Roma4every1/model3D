@@ -1,14 +1,11 @@
 import { useMemo } from 'react';
-import { useDispatch } from 'react-redux';
 import { TreeView } from '@progress/kendo-react-treeview';
 import { TreeViewExpandChangeEvent, TreeViewItemClickEvent } from '@progress/kendo-react-treeview';
 import { forEachTreeLeaf, findInTree } from 'shared/lib';
-import { selectPresentation } from 'app/store/root-form/root-form.actions';
+import { selectPresentation } from 'app/store/root-form.actions';
 
 
 export const PresentationTreeView = ({tree}: {tree: PresentationTree}) => {
-  const dispatch = useDispatch();
-
   const visibleNodes = useMemo(() => {
     return getVisibleNodes(tree);
   }, [tree]);
@@ -27,7 +24,7 @@ export const PresentationTreeView = ({tree}: {tree: PresentationTree}) => {
     const callback = (i: PresentationTreeItem) => { i.selected = i.id === id; };
     forEachTreeLeaf(tree, callback, 'items');
     forEachTreeLeaf(visibleNodes, callback, 'items');
-    dispatch(selectPresentation(id));
+    selectPresentation(id);
   };
 
   return (

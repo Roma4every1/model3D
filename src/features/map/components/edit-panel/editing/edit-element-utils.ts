@@ -1,4 +1,4 @@
-import { MapMode } from '../../../lib/constants.ts';
+import { MapMode } from '../../../lib/constants';
 import { distance } from 'shared/lib';
 import { getNearestPointIndex, getNearestSegment, PIXEL_PER_METER } from '../../../lib/map-utils';
 

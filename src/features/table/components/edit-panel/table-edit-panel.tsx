@@ -1,8 +1,7 @@
 import { EditPanelItemProps } from '../../lib/types';
-import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { MenuSection, MenuSkeleton } from 'shared/ui';
-import { tableStateSelector } from '../../store/table.selectors';
+import { useTableState } from '../../store/table.store';
 
 import './table-edit-panel.scss';
 import { ExcelExport } from './excel-export';
@@ -15,12 +14,10 @@ import { ColumnMode } from './column-mode';
 
 export const TableEditPanel = ({id}: FormEditPanelProps) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
-
-  const state: TableState = useSelector(tableStateSelector.bind(id));
+  const state = useTableState(id);
   if (!state) return <MenuSkeleton template={['250px', '90px', '105px', '405px']}/>;
+  const props: EditPanelItemProps = {id, state, t};
 
-  const props: EditPanelItemProps = {id, state, dispatch, t};
   return (
     <div className={'menu'}>
       <ColumnMode {...props}/>

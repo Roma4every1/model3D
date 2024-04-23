@@ -1,5 +1,6 @@
-import {PROFILE_X_STEP} from "../lib/constants.ts";
-import {ProfileStage} from "./stage.ts";
+import { PROFILE_X_STEP } from '../lib/constants';
+import { ProfileStage } from './stage';
+
 
 /** Отрисовщик профиля. */
 export class ProfileDrawer implements IProfileDrawer {

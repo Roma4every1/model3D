@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { useSelector } from 'react-redux';
 import { i18nMapper } from 'shared/locales';
 import { Presentation } from 'widgets/presentation';
 import { LeftPanel } from 'widgets/left-panel';
@@ -7,15 +6,17 @@ import { ActiveOperations, RightTab } from 'widgets/right-panel';
 import { MainMenu, PresentationReports, TopTab } from 'widgets/top-panel';
 
 import { Layout, TabNode } from 'flexlayout-react';
-import { LayoutManager } from '../lib/layout.ts';
-import { rootStateSelector, presentationSelector, needTraceRightTabSelector } from '../store/root-form/root-form.selectors';
+import { LayoutManager } from '../lib/layout';
+import { useRootStore } from '../store/root-form.store';
+import { usePresentation } from 'widgets/presentation';
+import { useTraceEditing } from 'entities/objects';
 
 
 /** Главная форма. */
 export const Dock = ({config}: {config: ClientConfiguration}) => {
-  const rootState = useSelector(rootStateSelector);
-  const presentation = useSelector(presentationSelector);
-  const needRightTraceTab = useSelector(needTraceRightTabSelector);
+  const rootState = useRootStore();
+  const presentation = usePresentation(rootState.activeChildID);
+  const needRightTraceTab = useTraceEditing();
 
   const activeID = rootState.activeChildID;
   const leftLayout = rootState.layout.left;

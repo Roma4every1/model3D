@@ -1,7 +1,7 @@
-import {CSSProperties} from 'react';
-import {Workbook, Cell, Worksheet} from 'exceljs';
-import {xml2js} from 'xml-js';
-import {excelIndexedColors} from './constants.ts'
+import { CSSProperties } from 'react';
+import { Workbook, Cell, Worksheet } from 'exceljs';
+import { xml2js } from 'xml-js';
+import { excelIndexedColors } from './constants';
 
 
 export async function excelParser(data: Blob): Promise<FileModelExcel> {

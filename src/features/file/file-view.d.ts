@@ -1,5 +1,5 @@
 /** Состояния форм просмотра файлов. */
-type FileViewStates = FormDict<FileViewState>;
+type FileViewStates = Record<FormID, FileViewState>;
 
 /** Состояние формы просмотра файлов.
  * + `model`: {@link FileViewModel}

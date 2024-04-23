@@ -1,17 +1,48 @@
-import { CaratAction, CaratActionType } from './carat.reducer';
+import { useCaratStore } from './carat.store';
+import { settingsToCaratState } from '../lib/adapter';
+import { CurveManager } from '../lib/curve-manager';
 
 
 /** Добавляет в хранилище состояний каротажа новую каротажную форму. */
-export function createCaratState(payload: FormStatePayload): CaratAction {
-  return {type: CaratActionType.CREATE, payload};
+export function createCaratState(payload: FormStatePayload): void {
+  const id = payload.state.id;
+  useCaratStore.setState({[id]: settingsToCaratState(payload)});
 }
 
-/** Обновляет данные каналов. */
-export function setCaratLoading(id: FormID, loading: Partial<CaratLoading>): CaratAction {
-  return {type: CaratActionType.SET_LOADING, payload: {id, loading}};
+/** Обновляет состояние загрузки каротажа. */
+export function setCaratLoading(id: FormID, loading: Partial<CaratLoading>): void {
+  const state = useCaratStore.getState()[id];
+  const newLoading = {...state.loading, ...loading};
+  useCaratStore.setState({[id]: {...state, loading: newLoading}});
 }
 
 /** Установить элемент холста. */
-export function setCaratCanvas(id: FormID, canvas: HTMLCanvasElement): CaratAction {
-  return {type: CaratActionType.SET_CANVAS, payload: {id, canvas}};
+export function setCaratCanvas(id: FormID, canvas: HTMLCanvasElement): void {
+  const state = useCaratStore.getState()[id];
+  const { stage, observer, canvas: oldCanvas } = state;
+
+  if (oldCanvas) observer.unobserve(oldCanvas);
+  if (canvas) observer.observe(canvas);
+
+  stage.setCanvas(canvas);
+  useCaratStore.setState({[id]: {...state, canvas}});
+}
+
+/** Дозагрузить каротажные кривые. */
+export async function loadCaratCurves(id: FormID, group: ICaratColumnGroup): Promise<void> {
+  const { stage, loader } = useCaratStore.getState()[id];
+  const curveManager: CurveManager = group.curveManager;
+  const track = stage.getActiveTrack();
+
+  const visibleCurves = curveManager.getVisibleCurves();
+  group.groupCurves(visibleCurves);
+  const loadedIDs = await loader.loadCurveData(visibleCurves.map(curve => curve.id), false);
+  curveManager.setCurvePointData(loadedIDs, loader.cache);
+  if (track.constructionMode) track.transformer.transformCurves(visibleCurves);
+
+  loader.checkCacheSize();
+  track.updateGroupRects();
+  stage.updateTrackRects();
+  stage.resize();
+  stage.render();
 }

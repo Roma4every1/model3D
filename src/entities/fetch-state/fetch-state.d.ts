@@ -1,4 +1,4 @@
-interface FetchesState {
+interface FetchStates {
   session: FetchState;
   forms: Record<ClientID, FetchState>;
 }

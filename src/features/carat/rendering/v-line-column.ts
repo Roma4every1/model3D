@@ -1,6 +1,6 @@
-import { CaratDrawer } from './drawer.ts';
-import { CaratVerticalLineModel } from '../lib/types.ts';
-import { defaultSettings } from '../lib/constants.ts';
+import { CaratDrawer } from './drawer';
+import { CaratVerticalLineModel } from '../lib/types';
+import { defaultSettings } from '../lib/constants';
 
 
 export class VerticalLineColumn implements ICaratColumn {

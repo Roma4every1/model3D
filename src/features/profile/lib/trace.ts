@@ -1,5 +1,5 @@
-import {getPointsDistance2D,} from "./utils.ts";
-import {ProfileWell} from "./well.ts";
+import { ProfileWell } from './well';
+import { getPointsDistance2D } from './utils';
 
 
 /** Класс, содержащий данные о трассе профиля. */

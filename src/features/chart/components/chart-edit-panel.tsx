@@ -1,8 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
 import { MenuSkeleton, MenuSection, BigButtonToggle, BigButton } from 'shared/ui';
 import { DropDownList, DropDownListChangeEvent } from '@progress/kendo-react-dropdowns';
-import { chartStateSelector } from '../store/chart.selectors';
+import { useChartState } from '../store/chart.store';
 import { setChartDateStep, setChartTooltipVisibility } from '../store/chart.actions';
 import chartTooltipIcon from 'assets/images/chart/tooltip.png';
 import chartDownloadIcon from 'assets/images/chart/download-png.png';
@@ -14,17 +13,15 @@ const dateStepData = [
 ];
 
 export const ChartEditPanel = ({id}: FormEditPanelProps) => {
-  const dispatch = useDispatch();
   const { t } = useTranslation();
-
-  const state: ChartState = useSelector(chartStateSelector.bind(id));
+  const state: ChartState = useChartState(id);
   if (!state) return <MenuSkeleton template={['107px', '95px', '100px']}/>;
 
   const toggleTooltipVisible = () => {
-    dispatch(setChartTooltipVisibility(id, !state.tooltip))
+    setChartTooltipVisibility(id, !state.tooltip);
   };
   const toggleDateStep = (event: DropDownListChangeEvent) => {
-    dispatch(setChartDateStep(id, event.value.id));
+    setChartDateStep(id, event.value.id);
   };
 
   return (

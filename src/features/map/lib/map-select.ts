@@ -1,4 +1,4 @@
-import { checkDistance, checkDistancePoints } from './selecting-utils.ts';
+import { checkDistance, checkDistancePoints } from './selecting-utils';
 
 
 export class MapSelect implements IMapSelect {

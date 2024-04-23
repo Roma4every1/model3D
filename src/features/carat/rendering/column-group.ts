@@ -1,8 +1,8 @@
 import { CaratDrawer } from './drawer';
 import { CaratColumn } from './column';
-import { WellBoreColumn } from './well-bore-column.ts';
+import { WellBoreColumn } from './well-bore-column';
 import { PumpColumn } from './pump-column';
-import { WellFaceColumn } from './face-column.ts';
+import { WellFaceColumn } from './face-column';
 import { VerticalLineColumn } from './v-line-column';
 import { CaratCurveColumn } from './curve-column';
 import { CaratCurveModel, CaratIntervalModel } from '../lib/types';

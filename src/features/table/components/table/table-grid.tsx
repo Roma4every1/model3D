@@ -1,12 +1,12 @@
 import { ReactElement, ReactNode, KeyboardEvent } from 'react';
 import { useState, useLayoutEffect, useMemo, useRef } from 'react';
-import { useDispatch, compareObjects } from 'shared/lib';
+import { compareObjects } from 'shared/lib';
 import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
 import { Grid, GridCellProps } from '@progress/kendo-react-grid';
 import { GridColumnResizeEvent, GridPageChangeEvent } from '@progress/kendo-react-grid';
 import { GridSelectionChangeEvent, getSelectedState } from '@progress/kendo-react-grid';
 import { showDialog, closeWindow } from 'entities/window';
-import { updateMaxRowCount } from 'entities/channels';
+import { updateChannelLimit } from 'entities/channel';
 
 import { ToolbarActions, CellActions, SaveTableMetadata, SetRecords } from '../../lib/types';
 import { scrollCellIntoView } from '../../lib/common';
@@ -20,7 +20,7 @@ import { TableToolbar } from '../toolbar/table-toolbar';
 import { ValidationDialog } from '../dialogs/validation';
 import { DeleteRecordsDialog } from '../dialogs/delete-records';
 import { useTranslation } from 'react-i18next';
-import { RecordModeGrid } from './record-mode-grid.tsx';
+import { RecordModeGrid } from './record-mode-grid';
 
 
 interface TableGridProps {
@@ -34,9 +34,7 @@ interface TableGridProps {
 
 
 export const TableGrid = ({id, state, query, records, setRecords, children}: TableGridProps) => {
-  const dispatch = useDispatch();
   const { t } = useTranslation();
-
   const [skip, setSkip] = useState(0);
   const pageSize = 50;
 
@@ -84,7 +82,7 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
   const addRecord = (copy: boolean, index?: number) => {
     if (!state.editable || edit.isNew) return;
     if (activeRecordID === null) contentElement?.scrollTo({top: 0});
-    dispatch(getNewRow(id, state, setRecords, copy, index));
+    getNewRow(id, state, setRecords, copy, index).then();
   };
 
   const saveRecord = (record: TableRecord) => {
@@ -92,14 +90,14 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
       const errors = recordHandler.validateRecord(record);
       if (errors.length) {
         const windowID = 'record-validation';
-        const onClose = () => dispatch(closeWindow(windowID));
+        const onClose = () => closeWindow(windowID);
 
         const windowProps = {
           title: t('table.validation-dialog.header'),
           width: 500, height: 250, resizable: false, onClose,
         };
         const content = <ValidationDialog errors={errors} columns={columnsState} t={t} onClose={onClose}/>;
-        dispatch(showDialog(windowID, windowProps, content));
+        showDialog(windowID, windowProps, content);
         return false;
       }
     }
@@ -108,21 +106,21 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
     const data: SaveTableMetadata = edit.isNew
       ? {type: 'insert', formID: id, rowID: record.id, row: record.cells}
       : {type: 'update', formID: id, rowID: record.id, row: record.cells};
-    dispatch(saveTableRecord(data));
+    saveTableRecord(data).then();
   };
 
   const deleteRecords = () => {
     const windowID = 'delete-records';
-    const onClose = () => dispatch(closeWindow(windowID));
+    const onClose = () => closeWindow(windowID);
 
     const windowProps = {title: t('table.delete-dialog.header'), resizable: false, onClose};
     const content = <DeleteRecordsDialog id={id} indexes={selectedRecords} t={t} onClose={onClose}/>;
-    dispatch(showDialog(windowID, windowProps, content));
+    showDialog(windowID, windowProps, content);
   };
 
   const startEdit = (columnID: string, recordID: TableRecordID) => {
     if (!state.editable) return;
-    dispatch(startTableEditing(id, columnID, recordID, edit.isNew));
+    startTableEditing(id, columnID, recordID, edit.isNew);
   };
 
   const endEdit = (apply: boolean) => {
@@ -144,7 +142,7 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
       }
       setRecords(records);
     }
-    dispatch(endTableEditing(id));
+    endTableEditing(id);
   };
 
   // вызовы: onKeyDown (Enter && edited), Toolbar -> AcceptButton, setSelection
@@ -155,7 +153,7 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
   /* --- Selection --- */
 
   const setSelection = (newSelection: TableSelection) => {
-    dispatch(setTableSelection(id, newSelection));
+    setTableSelection(id, newSelection);
   };
 
   const setActiveCell = (cell: TableActiveCell) => {
@@ -165,9 +163,9 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
         const isSave = saveRecord(activeRecord);
         if (isSave === false) return;
       }
-      dispatch(updateActiveRecord(id, cell.recordID));
+      updateActiveRecord(id, cell.recordID).then();
     }
-    dispatch(setTableActiveCell(id, cell));
+    setTableActiveCell(id, cell);
   };
 
   const setValue = (columnID: string, recordID: TableRecordID, value: any) => {
@@ -344,11 +342,11 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
   const onColumnResize = (event: GridColumnResizeEvent) => {
     if (!event.end) return;
     applyColumnsWidth(columnsState, event.columns);
-    dispatch(setTableColumns(id, {...columnsState}));
+    setTableColumns(id, {...columnsState});
   };
 
   const openLinkedTable = (columnID: TableColumnID) => {
-    dispatch(showLinkedTable(id, columnID));
+    showLinkedTable(id, columnID);
   };
 
   const cellActions: CellActions = {
@@ -367,8 +365,8 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
 
   const onPageChange = (event: GridPageChangeEvent) => {
     const newSkip = event.page.skip; setSkip(newSkip);
-    if (newSkip + pageSize > total && total === query.maxRowCount) {
-      dispatch(updateMaxRowCount(state.channelName, total + 2 * pageSize));
+    if (newSkip + pageSize > total && total === query.limit) {
+      updateChannelLimit(state.channelName, total + 2 * pageSize).then();
     }
   };
 

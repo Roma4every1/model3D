@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { setCurrentTrace } from '../../store/objects.actions';
 
@@ -10,8 +9,6 @@ import { TraceListItem } from './trace-list-item';
 
 export const TraceNodes = ({model}: {model: TraceModel}) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
-
   const nodes = model.nodes;
   const [activeNode, setActiveNode] = useState<TraceNode>(null);
 
@@ -34,13 +31,13 @@ export const TraceNodes = ({model}: {model: TraceModel}) => {
         nodes.unshift(nodes.pop());
       }
     }
-    dispatch(setCurrentTrace({...model, nodes: [...nodes]}));
+    setCurrentTrace({...model, nodes: [...nodes]});
   };
 
   const removePoint = (id: number) => {
     if (id === null) return;
     const newNodes = nodes.filter(p => p.id !== id);
-    dispatch(setCurrentTrace({...model, nodes: newNodes}));
+    setCurrentTrace({...model, nodes: newNodes});
   };
 
   const itemToTraceListItem = (node: TraceNode, i: number) => {

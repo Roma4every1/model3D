@@ -6,7 +6,7 @@ import { getColumnWidth } from '../../lib/common';
 import { findGroupItems, moveColumn } from '../../lib/column-tree-actions';
 import { setTableColumns, setTableColumnTree } from '../../store/table.actions';
 import autoWidthIcon from 'assets/images/dataset/auto-width.png';
-import { ColumnStatistics } from './column-statistics.tsx';
+import { ColumnStatistics } from './column-statistics';
 
 
 interface ColumnOrderControlsProps {
@@ -27,7 +27,7 @@ interface ControlsData {
 }
 
 
-export const ColumnControls = ({id, state, dispatch, t}: EditPanelItemProps) => {
+export const ColumnControls = ({id, state, t}: EditPanelItemProps) => {
   const settings = state.columnsSettings;
   const activeColumnID = state.activeCell.columnID;
   const activeColumn = state.columns[activeColumnID];
@@ -48,24 +48,24 @@ export const ColumnControls = ({id, state, dispatch, t}: EditPanelItemProps) => 
     }
     settings.lockedCount++;
     activeColumn.locked = true;
-    dispatch(setTableColumnTree(id, [...state.columnTree]));
+    setTableColumnTree(id, [...state.columnTree]);
   } : undefined;
 
   const setAutoWidth = () => {
     if (activeColumn.autoWidth) return;
     activeColumn.autoWidth = true;
     activeColumn.width = getColumnWidth(activeColumn.title);
-    dispatch(setTableColumns(id, {...state.columns}));
+    setTableColumns(id, {...state.columns});
   };
 
   const move = (to: string) => {
     moveColumn(groupItems, groupIndex, to);
-    dispatch(setTableColumnTree(id, [...state.columnTree]));
+    setTableColumnTree(id, [...state.columnTree]);
   };
 
   return (
     <MenuSection className={'big-buttons'} header={t('table.panel.column.header')}>
-      <ColumnStatistics id={id} state={state} dispatch={dispatch} t={t}/>
+      <ColumnStatistics id={id} state={state} t={t}/>
       <BigButton
         text={t('table.panel.column.auto-width')} icon={autoWidthIcon}
         action={setAutoWidth} disabled={!activeColumnID}

@@ -1,4 +1,3 @@
-import { useDispatch } from 'shared/lib';
 import { TFunction } from 'react-i18next';
 import { Button } from '@progress/kendo-react-buttons';
 import { deleteTableRecords } from '../../store/table.thunks';
@@ -14,10 +13,8 @@ interface DeleteRecordsDialogProps {
 
 /** Диалог с подтверждением при удалении строк. */
 export const DeleteRecordsDialog = ({id, indexes, t, onClose}: DeleteRecordsDialogProps) => {
-  const dispatch = useDispatch();
-
   const onApply = () => {
-    dispatch(deleteTableRecords(id, indexes));
+    deleteTableRecords(id, indexes).then();
     onClose();
   };
 

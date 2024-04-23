@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import { useSelector } from 'react-redux';
 import { Table } from './table';
-import { presentationSelector } from 'app/store/root-form/root-form.selectors';
+import { useActivePresentationID } from '../../../../app/store/root-form.store';
+import { usePresentation } from 'widgets/presentation';
 
 
 interface LinkedTableProps {
@@ -11,7 +11,8 @@ interface LinkedTableProps {
 
 
 export const LinkedTable = ({id, onClose}: LinkedTableProps) => {
-  const presentation = useSelector(presentationSelector);
+  const activePresentationID = useActivePresentationID();
+  const presentation = usePresentation(activePresentationID);
   const child = presentation?.children.find(c => c.id === id);
 
   // закрывает окно при смене презентации

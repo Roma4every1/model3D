@@ -1,6 +1,5 @@
 import { useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { channelSelector, setChannelActiveRow } from 'entities/channels';
+import { useChannel, setChannelActiveRow } from 'entities/channel';
 
 import './file-list.scss';
 import { TextInfo } from 'shared/ui';
@@ -8,13 +7,11 @@ import { FileListItem } from './file-list-item';
 
 
 /** Список файлов. */
-export const FileListView = ({channels}: FormState) => {
-  const dispatch = useDispatch();
+export const FileListView = ({channels}: SessionClient) => {
   const nameIndexRef = useRef(-1);
-
   const channelName = channels[0]?.name;
   const info = channels[0]?.columnInfo;
-  const channel: Channel = useSelector(channelSelector.bind(channelName));
+  const channel = useChannel(channelName);
   const channelData = channel?.data;
 
   const rows = channelData?.rows ?? [];
@@ -28,7 +25,7 @@ export const FileListView = ({channels}: FormState) => {
   const toElement = (row: ChannelRow, i: number) => {
     const fileName = row[nameIndexRef.current];
     const active = row === channelData.activeRow;
-    const onClick = () => dispatch(setChannelActiveRow(channelName, row));
+    const onClick = () => setChannelActiveRow(channelName, row);
     return <FileListItem key={i} fileName={fileName} active={active} onClick={onClick}/>;
   };
   return <div className={'file-list'}>{rows.map(toElement)}</div>;

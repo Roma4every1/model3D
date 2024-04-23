@@ -27,7 +27,7 @@ export class CaratDrawer {
   /** Количество пикселей в метре: `96px = 2.54cm`. */
   public static readonly pixelPerMeter = 100 * 96 / 2.54;
   /** Коэффициент уплотнения DPI для улучшения чёткости изображения. */
-  public static readonly ratio = 2;
+  public static ratio = 2;
 
   /** Пустая функция. */
   private static readonly emptyFn = () => {};

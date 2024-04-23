@@ -1,7 +1,6 @@
-import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { useReportModels } from 'entities/report';
 import { ReportButton } from './report-button';
-import { reportModelsSelector } from 'entities/reports';
 import './presentation-reports.scss';
 
 
@@ -12,7 +11,7 @@ export interface PresentationReportsProps {
 
 /** Список доступных программ/отчётов презентации. */
 export const PresentationReports = ({id}: PresentationReportsProps) => {
-  const reports: ReportModel[] = useSelector(reportModelsSelector.bind(id));
+  const reports = useReportModels(id);
   if (!reports) return <div/>;
   if (reports.length === 0) return <NoReports/>;
 

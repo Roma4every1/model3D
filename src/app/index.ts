@@ -1,3 +1,2 @@
-export { App } from './components/app.tsx';
-export { store } from './store';
-export { getBeforeunloadCallback } from './lib/session-utils.ts';
+export { App } from './components/app';
+export { beforeunloadCallback } from './lib/session-utils';

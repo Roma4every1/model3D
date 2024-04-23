@@ -16,7 +16,7 @@ export interface TopPanelProps {
 
 
 /** Словарь всех компонентов верхней панели. */
-const editPanelDict: Record<string, [FunctionComponent<FormEditPanelProps>, FormType]> = {
+const editPanelDict: Record<string, [FunctionComponent<FormEditPanelProps>, ClientType]> = {
   'top-table': [TableEditPanel, 'dataSet'],
   'top-chart': [ChartEditPanel, 'chart'],
   'top-map': [MapEditPanel, 'map'],

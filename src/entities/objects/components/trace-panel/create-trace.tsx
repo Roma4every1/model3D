@@ -1,6 +1,6 @@
-import { useDispatch, useSelector } from 'shared/lib';
 import { useTranslation } from 'react-i18next';
-import { createTrace, currentPlaceSelector } from '../../index';
+import { createTrace } from '../../store/objects.thunks';
+import { useCurrentPlaceModel } from '../../store/objects.store';
 import { BigButton } from 'shared/ui';
 import createTraceIcon from 'assets/images/trace/create-trace.png';
 
@@ -14,15 +14,10 @@ interface CreateTraceProps {
 /** Кнопка создания трассы. */
 export const CreateTrace = ({trace, hasMap}: CreateTraceProps) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
+  const placeID = useCurrentPlaceModel()?.id;
 
-  const currentPlace = useSelector(currentPlaceSelector);
-  const placeID = currentPlace?.id;
+  const action = () => createTrace({id: null, place: placeID, name: '', nodes: []});
   const disabled = trace.editing || trace.creating || !placeID || !hasMap;
-
-  const action = () => {
-    dispatch(createTrace({id: null, place: placeID, name: '', nodes: []}));
-  };
 
   return (
     <BigButton

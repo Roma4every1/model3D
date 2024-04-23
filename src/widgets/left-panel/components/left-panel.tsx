@@ -1,14 +1,13 @@
 import { ReactNode } from 'react';
 import { Layout, TabNode } from 'flexlayout-react';
 import { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import { i18nMapper } from 'shared/locales';
-import { setLeftLayout } from '../../../app/store/root-form/root-form.actions';
+import { setLeftLayout } from '../../../app/store/root-form.actions';
 import { showLeftTab, hideLeftTab } from '../lib/layout-actions';
-import { globalParamsSelector, presentationParamsSelector } from '../lib/selectors';
+import { useGlobalParameters, useClientParameters } from 'entities/parameter';
 import { globalParamsTabID, presentationParamsTabID, presentationTreeTabID } from '../lib/constants';
 
-import { ClientParameterList } from './client-parameter-list.tsx';
+import { ClientParameterList } from './client-parameter-list';
 import { PresentationTreeView } from './presentation-tree';
 
 
@@ -19,37 +18,35 @@ export interface LeftPanelProps {
 
 /** Левая боковая панель (содержит параметры и список презентаций). */
 export const LeftPanel = ({rootState}: LeftPanelProps) => {
-  const dispatch = useDispatch();
-  const globalParams = useSelector(globalParamsSelector);
-  const presentationParams = useSelector(presentationParamsSelector);
-  const presentationParamsLength = presentationParams?.filter(p => p.editorType).length;
-
-  const rootID = rootState.id;
   const activeID = rootState.activeChildID;
   const layout = rootState.layout.left;
-  const presentationTree = rootState.presentationTree;
+  const presentationTree = rootState.settings.presentationTree;
+
+  const globalParameters = useGlobalParameters();
+  const presentationParameters = useClientParameters(activeID);
+  const needPresentationTab = presentationParameters?.some(p => p.editor);
 
   useEffect(() => {
-    if (presentationParamsLength === undefined) return;
+    if (needPresentationTab === undefined) return;
     const { show, disabled } = layout.presentation;
 
-    if (presentationParamsLength === 0 && !disabled) {
+    if (!needPresentationTab && !disabled) {
       layout.presentation.disabled = true;
       if (show) hideLeftTab(layout, 'presentation');
-      dispatch(setLeftLayout({...layout}));
-    } else if (presentationParamsLength > 0 && disabled) {
+      setLeftLayout({...layout});
+    } else if (needPresentationTab && disabled) {
       layout.presentation.disabled = false;
       if (!show) showLeftTab(layout, 'presentation');
-      dispatch(setLeftLayout({...layout}));
+      setLeftLayout({...layout});
     }
-  }, [layout, presentationParamsLength, dispatch]);
+  }, [layout, needPresentationTab]);
 
   const factory = (node: TabNode): ReactNode => {
     const id = node.getId();
     if (id === globalParamsTabID)
-      return <ClientParameterList clientID={rootID} list={globalParams}/>;
+      return <ClientParameterList clientID={'root'} list={globalParameters}/>;
     if (id === presentationParamsTabID)
-      return <ClientParameterList clientID={activeID} list={presentationParams ?? []}/>;
+      return <ClientParameterList clientID={activeID} list={presentationParameters ?? []}/>;
     if (id === presentationTreeTabID)
       return <PresentationTreeView tree={presentationTree}/>;
     return null;

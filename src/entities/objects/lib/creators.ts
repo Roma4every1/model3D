@@ -1,42 +1,40 @@
-import { stringToTableCell } from '../../parameters/lib/table-row';
 import { placeCriterion, stratumCriterion, wellCriterion, traceCriterion } from './constants';
 
 
 /** По значение `TableRow` параметра создаёт модель месторождения. */
-export function createPlaceModel(value: ParamValueTableRow): PlaceModel {
-  const id = parseInt(stringToTableCell(value, placeCriterion.id as string));
+export function createPlaceModel(value: ParameterValueMap['tableRow']): PlaceModel {
+  const id = Number(value[placeCriterion.id as string]?.value);
   if (isNaN(id)) return null;
-  const name = stringToTableCell(value, placeCriterion.name as string);
-  const criterionObjectName =
-    placeCriterion.objectName as {name: string; optional: boolean };
 
-  const objectName = value.includes(criterionObjectName.name) ?
-    stringToTableCell(value, criterionObjectName.name) : null;
+  const name = value[placeCriterion.name as string]?.value;
+  const criterionObjectName = placeCriterion.objectName as {name: string; optional: boolean };
+  const objectName = value[criterionObjectName.name]?.value;
+
   return {id, name, objectName};
 }
 
 /** По значение `TableRow` параметра создаёт модель пласта. */
-export function createStratumModel(value: ParamValueTableRow): StratumModel {
-  const id = parseInt(stringToTableCell(value, stratumCriterion.id as string));
+export function createStratumModel(value: ParameterValueMap['tableRow']): StratumModel {
+  const id = Number(value[stratumCriterion.id as string]?.value);
   if (isNaN(id)) return null;
-  const name = stringToTableCell(value, stratumCriterion.name as string);
+  const name = value[stratumCriterion.name as string]?.value;
   return {id, name};
 }
 
 /** По значение `TableRow` параметра создаёт модель скважины. */
-export function createWellModel(value: ParamValueTableRow): WellModel {
-  const id = parseInt(stringToTableCell(value, wellCriterion.id as string));
+export function createWellModel(value: ParameterValueMap['tableRow']): WellModel {
+  const id = Number(value[wellCriterion.id as string]?.value);
   if (isNaN(id)) return null;
-  const name = stringToTableCell(value, wellCriterion.name as string);
+  const name = value[wellCriterion.name as string]?.value;
   return {id, name};
 }
 
 /** По значение `TableRow` параметра создаёт модель трассы. */
 export function createTraceModel(
-  rowString: ParamValueTableRow,
+  value: ParameterValueMap['tableRow'],
   nodeChannel: Channel, wellChannel: Channel,
 ): TraceModel {
-  const traceID = parseInt(stringToTableCell(rowString, traceCriterion.id as string));
+  const traceID = Number(value[traceCriterion.id as string]?.value);
 
   const nodes: TraceNode[] = [];
   const nodeRows = nodeChannel.data?.rows;
@@ -64,8 +62,8 @@ export function createTraceModel(
 
   return {
     id: traceID,
-    name: stringToTableCell(rowString, traceCriterion.name as string),
-    place: parseInt(stringToTableCell(rowString, traceCriterion.place as string)),
+    name: value[traceCriterion.name as string]?.value,
+    place: Number(value[traceCriterion.place as string]?.value),
     nodes,
   };
 }

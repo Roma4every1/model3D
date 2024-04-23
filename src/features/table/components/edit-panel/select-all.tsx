@@ -4,14 +4,14 @@ import { setTableSelection } from '../../store/table.actions';
 import selectAllIcon from 'assets/images/dataset/select-all.png';
 
 
-export const SelectAll = ({id, state, dispatch, t}: EditPanelItemProps) => {
+export const SelectAll = ({id, state, t}: EditPanelItemProps) => {
   const disabled = state.activeCell.edited || !state.total;
 
   const selectAll = () => {
     const total = state.total;
     const selection: TableSelection = {};
     for (let i = 0; i < total; i++) selection[i] = true;
-    dispatch(setTableSelection(id, selection));
+    setTableSelection(id, selection)
   };
 
   const text = t('table.panel.functions.select-all');

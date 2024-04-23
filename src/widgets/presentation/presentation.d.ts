@@ -4,9 +4,9 @@ type PresentationDict = Record<ClientID, PresentationState>;
 /** Состояние презентации.
  * + `id`: {@link ClientID}
  * + `layout: Model`
- * + `settings`: {@link GridFormSettings}
+ * + `settings`: {@link PresentationSettings}
  * + `children`: {@link FormDataWM}[]
- * + `childrenTypes`: {@link FormType}[]
+ * + `childrenTypes`: {@link ClientType}[]
  * + `activeChildID`: {@link FormID}
  * */
 interface PresentationState {
@@ -15,29 +15,29 @@ interface PresentationState {
   /** Разметка */
   layout: any; // Model из 'flex-layout-react'
   /** Настройки презентации. */
-  settings: GridFormSettings;
+  settings: PresentationSettings;
   /** Дочерние формы. */
   children: FormDataWM[];
   /** Список всех типов форм внутри презентации. */
-  childrenTypes: Set<FormType>;
+  childrenTypes: Set<ClientType>;
   /** Отображаемые дочерние формы. */
   openedChildren: FormID[];
   /** Активная формы */
   activeChildID: FormID;
 }
 
-/** Настройки формы **Grid**.
- * + `multiMapChannel: string | null`
- * + `linkedProperties`: {@link ParameterSetter}[]
- * + `parameterGroups`: {@link ParameterGroup}[] | null
+/** Настройки презентации.
+ * + `multiMapChannel?`: {@link ChannelName}
+ * + `linkedProperties?`: {@link ParameterSetter}[]
+ * + `parameterGroups?`: {@link ParameterGroup}[]
  * */
-interface GridFormSettings {
+interface PresentationSettings {
   /** Название канала с картами, в случае если презентация это мультикарта. */
-  multiMapChannel: string | null;
+  multiMapChannel?: ChannelName;
   /** Данные о параметрах, которые должны автоматически обновляться. */
-  linkedProperties: ParameterSetter[];
+  linkedProperties?: ParameterSetter[];
   /** Группы параметров для разбиения списка на вкладки. */
-  parameterGroups?: ParameterGroup[] | null;
+  parameterGroups?: ParameterGroup[];
 }
 
 /** Настройка, которая обновляет значение параметра презентации при изменении глобальных. */

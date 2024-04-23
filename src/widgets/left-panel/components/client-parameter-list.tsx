@@ -1,6 +1,5 @@
-import { useSelector, useDispatch, compareObjects } from 'shared/lib';
-import { ParameterList, updateParamDeep } from 'entities/parameters';
-import { channelDictSelector, getExternalChannels } from 'entities/channels';
+import { ParameterList, updateParamDeep } from 'entities/parameter';
+import { getExternalChannels, useChannelDict } from 'entities/channel';
 
 
 interface ClientParameterListProps {
@@ -11,12 +10,11 @@ interface ClientParameterListProps {
 
 /** Список глобальных параметров или параметров презентации. */
 export const ClientParameterList = ({clientID, list}: ClientParameterListProps) => {
-  const dispatch = useDispatch();
   const channelNames = getExternalChannels(list);
-  const channels = useSelector(channelDictSelector.bind(channelNames), compareObjects);
+  const channels = useChannelDict(channelNames);
 
   const onChange = (parameter: Parameter, newValue: any) => {
-    dispatch(updateParamDeep(clientID, parameter.id, newValue));
+    updateParamDeep(clientID, parameter.id, newValue).then();
   };
   return <ParameterList list={list} channels={channels} onChange={onChange}/>;
 };

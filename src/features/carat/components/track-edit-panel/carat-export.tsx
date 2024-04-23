@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { inputNumberParser } from 'shared/locales';
 import { closeWindow, showDialog } from 'entities/window';
 
@@ -12,7 +11,6 @@ import './carat-export.scss';
 import exportIcon from 'assets/images/carat/carat-export-png.svg';
 
 
-
 interface CaratExportPanelProps {
   stage: ICaratStage;
 }
@@ -23,14 +21,13 @@ interface CaratExportDialogProps {
 
 
 export const CaratExportPanel = ({stage}: CaratExportPanelProps) => {
-  const dispatch = useDispatch();
   const disabled = stage.getActiveTrack().constructionMode;
 
   const action = () => {
-    const onClose = () => dispatch(closeWindow('carat-export'));
+    const onClose = () => closeWindow('carat-export');
     const dialogProps: DialogProps = {title: 'Экспорт в PNG', width: 320, height: 170, onClose};
     const content = <CaratExportDialog stage={stage} close={onClose}/>;
-    dispatch(showDialog('carat-export', dialogProps, content));
+    showDialog('carat-export', dialogProps, content);
   };
 
   return (
@@ -60,13 +57,18 @@ const CaratExportDialog = ({stage, close}: CaratExportDialogProps) => {
 
   const onSave = () => {
     const canvas = stage.renderImage({startDepth, endDepth});
-    const dataURL = canvas.toDataURL('image/png');
     close();
 
-    const a = document.createElement('a');
-    a.setAttribute('href', dataURL);
-    a.setAttribute('download', 'carat.png');
-    a.click();
+    canvas.toBlob((data: Blob) => {
+      if (!data) return;
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+
+      a.setAttribute('href', url);
+      a.setAttribute('download', 'carat.png');
+      a.click();
+      URL.revokeObjectURL(url);
+    }, 'image/png', 1);
   };
 
   return (

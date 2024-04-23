@@ -1,6 +1,6 @@
 import { CaratStage } from '../rendering/stage';
 import { CaratLoader } from './loader';
-import { createColumnInfo } from 'entities/channels';
+import { createColumnInfo } from 'entities/channel';
 import { identifyCaratChannel, applyStyle } from './channels';
 
 import {

@@ -1,39 +1,44 @@
 import { ReactNode, CSSProperties } from 'react';
 import { DialogProps, WindowProps } from '@progress/kendo-react-dialogs';
-import { WindowAction, WindowActionType } from './window.reducer';
+import { useWindowStore } from './window.store';
 
+
+let counter = 0;
 
 /** Показать информационное сообщение. */
-export function showInfoMessage(text: string, title?: string, style?: CSSProperties): WindowAction {
-  return {type: WindowActionType.SHOW_MESSAGE, payload: {type: 'info', title, text, style}};
+export function showInfoMessage(text: string, title?: string, style?: CSSProperties): void {
+  const id = `message-${++counter}`;
+  const props: MessageDialogProps = {type: 'info', title, style, content: text};
+  useWindowStore.setState({[id]: {id, type: 'dialog', props, content: text}});
 }
 
 /** Показать предупреждение. */
-export function showWarningMessage(text: string, title?: string, style?: CSSProperties): WindowAction {
-  return {type: WindowActionType.SHOW_MESSAGE, payload: {type: 'warning', title, text, style}};
-}
-
-/** Показать сообщение об ошибке. */
-export function showErrorMessage(text: string, title?: string, style?: CSSProperties): WindowAction {
-  return {type: WindowActionType.SHOW_MESSAGE, payload: {type: 'error', title, text, style}};
+export function showWarningMessage(text: string, title?: string, style?: CSSProperties): void {
+  const id = `message-${++counter}`;
+  const props: MessageDialogProps = {type: 'warning', title, style, content: text};
+  useWindowStore.setState({[id]: {id, type: 'dialog', props, content: text}});
 }
 
 /** Показать диалог. */
-export function showDialog(id: WindowID, props: DialogProps, content: ReactNode): WindowAction {
-  return {type: WindowActionType.SHOW_DIALOG, payload: {id, props, content}};
+export function showDialog(id: WindowID, props: DialogProps, content: ReactNode): void {
+  useWindowStore.setState({[id]: {id, type: 'dialog', props, content}});
 }
 
 /** Показать окно. */
-export function showWindow(id: WindowID, props: WindowProps, content: ReactNode): WindowAction {
-  return {type: WindowActionType.SHOW_WINDOW, payload: {id, props, content}};
+export function showWindow(id: WindowID, props: WindowProps, content: ReactNode): void {
+  useWindowStore.setState({[id]: {id, type: 'window', props, content}});
 }
 
 /** Закрыть указанное окно. */
-export function closeWindow(id: WindowID): WindowAction {
-  return {type: WindowActionType.CLOSE_WINDOW, payload: id};
+export function closeWindow(id: WindowID): void {
+  const state = useWindowStore.getState();
+  delete state[id];
+  useWindowStore.setState({...state});
 }
 
 /** Обновить свойства окна или диалога. */
-export function updateWindow(id: WindowID, props: WindowProps | DialogProps): WindowAction {
-  return {type: WindowActionType.UPDATE_WINDOW, payload: {id, props}};
+export function updateWindow(id: WindowID, props: WindowProps | DialogProps): void {
+  const windowState = useWindowStore.getState()[id];
+  if (!windowState) return;
+  useWindowStore.setState({[id]: {...windowState, props: {...windowState.props, ...props}}});
 }

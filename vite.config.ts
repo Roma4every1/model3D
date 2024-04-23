@@ -14,7 +14,7 @@ const aliasOptions: AliasOptions = [
 
 // https://vitejs.dev/config/
 export default defineConfig((env: ConfigEnv): UserConfig => {
-  const devMode = env.mode !== 'prod';
+  const devMode = env.mode !== 'production';
   const plugins: PluginOption[] = [react()];
   if (devMode) plugins.push(wellManagerSystemPlugin(env.command));
 

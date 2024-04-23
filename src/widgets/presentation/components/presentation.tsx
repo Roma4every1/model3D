@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'shared/lib';
 import { fetchPresentationState } from '../store/presentation.thunks';
-import { stateNeedFetch, stateNotLoaded, formFetchStateSelector } from 'entities/fetch-state';
+import { useFormFetchState, stateNeedFetch, stateNotLoaded } from 'entities/fetch-state';
 
 import { TextInfo } from 'shared/ui';
 import { Grid } from './grid';
@@ -19,12 +18,11 @@ export interface PresentationProps {
 
 /** Презентация: клиент типа `grid`. */
 export const Presentation = ({id, state}: PresentationProps) => {
-  const dispatch = useDispatch();
-  const fetchState: FetchState = useSelector(formFetchStateSelector.bind(id));
+  const fetchState: FetchState = useFormFetchState(id);
 
   useEffect(() => {
-    if (stateNeedFetch(fetchState)) dispatch(fetchPresentationState(id));
-  }, [fetchState, id, dispatch]);
+    if (stateNeedFetch(fetchState)) fetchPresentationState(id).then();
+  }, [fetchState, id]);
 
   if (stateNotLoaded(fetchState)) return <PresentationSkeleton/>;
   if (fetchState.details) return <TextInfo text={fetchState.details}/>;

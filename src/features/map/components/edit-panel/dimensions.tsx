@@ -1,6 +1,5 @@
 import { TFunction } from 'react-i18next';
 import { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { BigButton, BigButtonToggle } from 'shared/ui';
 import { InputNumber } from 'antd';
 import { inputNumberParser } from 'shared/locales';
@@ -52,7 +51,6 @@ export const MapNavigation = ({id, mapState, sync, parentID, t}: MapNavigationPr
 };
 
 const NavigationPanel = ({id, state, parentID, sync, t}: NavigationPanelProps) => {
-  const dispatch = useDispatch();
   const { stage, canvas } = state;
   const disabled = stage.inclinometryModeOn;
   const notLoaded = state.loading.percentage < 100;
@@ -70,9 +68,7 @@ const NavigationPanel = ({id, state, parentID, sync, t}: NavigationPanelProps) =
   };
 
   /** Включить или отключить синхронизацию систем координат карт. */
-  const toggleSync = () => {
-    dispatch(setMultiMapSync(id, parentID, !sync));
-  };
+  const toggleSync = () => setMultiMapSync(id, parentID, !sync);
 
   return (
     <div className={'map-actions'}>

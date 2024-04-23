@@ -1,10 +1,11 @@
 /** Идентификатор сессии. */
 type SessionID = string;
 
-/** Строка для отображения названия сущности на интерфейсе. */
-type DisplayName = string;
-
 type I18nOptions = Record<string, string | number>;
+
+/** Тип какого-либо значения. */
+type DataTypeName = 'boolean' | 'i8' | 'i16' | 'i32' | 'i64' | 'u8' | 'u16' | 'u32' | 'u64' |
+  'f32' | 'f64' | 'string' | 'date' | 'datetime' | 'blob' | 'null';
 
 /** HEX цвета.
  * @example

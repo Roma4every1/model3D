@@ -1,5 +1,7 @@
-import { Dispatch } from 'redux';
+import type { ParameterUpdateEntries } from 'entities/parameter';
 import { setObjects } from '../store/objects.actions';
+import { useChannelStore } from 'entities/channel';
+import { useObjectsStore } from '../store/objects.store';
 
 import {
   createPlaceModel, createStratumModel,
@@ -45,9 +47,9 @@ export function traceToNodeChannelRows(nodeChannel: Channel, model: TraceModel):
 /* --- --- */
 
 /** По данным обновления параметров обновляет активные объекты. */
-export function updateObjects(updates: UpdateParamData[], dispatch: Dispatch, state: WState) {
-  const { channels, objects } = state;
-  let { place, stratum, well, trace } = objects;
+export function updateObjects(updates: ParameterUpdateEntries[]): void {
+  const channels = useChannelStore.getState();
+  let { place, stratum, well, trace } = useObjectsStore.getState();
 
   const placeParameterID = place.parameterID;
   const stratumParameterID = stratum.parameterID;
@@ -82,6 +84,6 @@ export function updateObjects(updates: UpdateParamData[], dispatch: Dispatch, st
     if (changeFlags.place) newObjects.place = {...place};
     if (changeFlags.stratum) newObjects.stratum = {...stratum};
     if (changeFlags.well) newObjects.well = {...well};
-    dispatch(setObjects(newObjects));
+    setObjects(newObjects);
   }
 }

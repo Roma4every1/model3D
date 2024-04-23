@@ -188,3 +188,13 @@ export function fixColorHEX(hex: ColorHEX): ColorHEX {
   if (hex?.length > 7) hex = '#' + hex.substring(3) + hex.substring(1, 3);
   return hex;
 }
+
+/** Разделяет строку по первому вхождению искомой подстроки.
+ * @example
+ * splitByFirstOccurrence('1, 2, 3', ', ') => ['1', '2, 3']
+ * */
+export function splitByFirstOccurrence(input: string, search: string): [string, string] {
+  const index = input.indexOf(search);
+  if (index === -1) return [input, ''];
+  return [input.substring(0, index), input.substring(index + search.length)];
+}

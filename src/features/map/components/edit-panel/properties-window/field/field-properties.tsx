@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { showWindow, closeWindow } from 'entities/window';
 import { PropertyWindowProps } from '../properties-utils';
 import { Button } from '@progress/kendo-react-buttons';
@@ -8,10 +7,8 @@ import { FieldPalettePropertiesWindow } from './field-palette-properties';
 
 
 export const FieldProperties = (props: PropertyWindowProps<MapField>) => {
-  const dispatch = useDispatch();
-  const [changed, setChanged] = useState(false);
-
   const { element: field, apply, update, cancel, t, isElementCreating } = props;
+  const [changed, setChanged] = useState(false);
   const [paletteInit] = useState(field.palette[0]);
 
   /* --- Field Properties State --- */
@@ -65,7 +62,7 @@ export const FieldProperties = (props: PropertyWindowProps<MapField>) => {
 
   const openPaletteWindow = () => {
     const windowID = 'mapAdditionalPropertiesWindow';
-    const onClose = () => dispatch(closeWindow(windowID));
+    const onClose = () => closeWindow(windowID);
 
     const content = <FieldPalettePropertiesWindow
       onClose={onClose} element={field.palette[0]} update={update} t={t}
@@ -75,7 +72,7 @@ export const FieldProperties = (props: PropertyWindowProps<MapField>) => {
       title: 'Свойства палитры', className: 'propertiesWindow',
       resizable: false, width: 320, height: 260, style: {zIndex: 99}, onClose,
     };
-    dispatch(showWindow(windowID, windowProps, content));
+    showWindow(windowID, windowProps, content);
   };
 
   /* --- View --- */

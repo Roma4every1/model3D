@@ -1,5 +1,5 @@
 /** Состояние форм списков файлов. */
-type FileListStates = FormDict<FileListState>;
+type FileListStates = Record<FormID, FileListState>;
 
 /** Состояние формы списка файлов. */
 interface FileListState {

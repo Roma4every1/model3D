@@ -409,9 +409,13 @@ export class CaratStage implements ICaratStage {
     const rectHeight = track.viewport.scale * window.devicePixelRatio * (endDepth - startDepth);
     const trackHeight = trackHeaderHeight + track.maxGroupHeaderHeight + rectHeight;
 
+    const height = track.rect.top + trackHeight + 2 * trackPadding;
+    // в браузерах есть ограничение на размер холста
+    CaratDrawer.ratio = Math.min(2, 65_500 / height);
+
     const canvas = document.createElement('canvas');
     canvas.width = (track.rect.width + 2 * trackPadding) * CaratDrawer.ratio;
-    canvas.height = (track.rect.top + trackHeight + 2 * trackPadding) * CaratDrawer.ratio;
+    canvas.height = height * CaratDrawer.ratio;
 
     const originalY = track.viewport.y;
     const originalLeft = track.rect.left;
@@ -433,6 +437,7 @@ export class CaratStage implements ICaratStage {
     track.rect.left = originalLeft;
     track.viewport.y = originalY;
 
+    CaratDrawer.ratio = 2;
     this.drawer.setContext(this.canvas.getContext('2d'));
     return canvas;
   }

@@ -1,6 +1,6 @@
-import { CSSProperties } from 'react';
-import { RowErrors, RowStyleRule } from './types.ts';
-import { createLookupList, createLookupTree } from 'entities/channels';
+import type { CSSProperties } from 'react';
+import type { RowErrors, RowStyleRule } from './types';
+import { createLookupList, createLookupTree } from 'entities/channel';
 import { stringifyLocalDate, fixColorHEX } from 'shared/lib';
 
 

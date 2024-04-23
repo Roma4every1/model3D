@@ -21,7 +21,7 @@ interface FocusRef {
 }
 
 
-export const ColumnVisibility = ({id, state, dispatch, t}: EditPanelItemProps) => {
+export const ColumnVisibility = ({id, state, t}: EditPanelItemProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [anchor, setAnchor] = useState(null);
 
@@ -41,13 +41,13 @@ export const ColumnVisibility = ({id, state, dispatch, t}: EditPanelItemProps) =
   };
 
   const setTree = (newTree: ColumnTree) => {
-    dispatch(setTableColumnTree(id, newTree));
+    setTableColumnTree(id, newTree);
     const activeCell = state.activeCell;
     if (!activeCell.columnID) return;
 
     const [group, index] = findGroupItems(state.columnTree, activeCell.columnID);
     if (group[index]?.visible === false) {
-      dispatch(setTableActiveCell(id, {...activeCell, columnID: null}));
+      setTableActiveCell(id, {...activeCell, columnID: null});
     }
   };
 

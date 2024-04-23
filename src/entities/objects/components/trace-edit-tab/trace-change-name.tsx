@@ -1,13 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { setCurrentTrace } from '../../store/objects.actions';
 
 
 export const TraceChangeName = ({model}: {model: TraceModel}) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
-
   const name = model.name;
   const [newName, setNewName] = useState(name);
 
@@ -15,13 +12,8 @@ export const TraceChangeName = ({model}: {model: TraceModel}) => {
     setNewName(name);
   }, [name]);
 
-  const onChange = (event) => {
-    setNewName(event.target.value.toString());
-  };
-
-  const onBlur = () => {
-    dispatch(setCurrentTrace({...model, name: newName}));
-  };
+  const onChange = (event) =>setNewName(event.target.value.toString());
+  const onBlur = () => setCurrentTrace({...model, name: newName});
 
   return (
     <div className={'trace-edit-tab__inner-block'}>

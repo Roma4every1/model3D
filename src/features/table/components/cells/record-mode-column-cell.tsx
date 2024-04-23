@@ -1,6 +1,7 @@
-import {cloneElement, ComponentProps, ReactElement} from 'react';
-import {GridCellProps} from '@progress/kendo-react-grid';
-import {CellActions} from '../../lib/types.ts';
+import { cloneElement, ComponentProps, ReactElement } from 'react';
+import { GridCellProps } from '@progress/kendo-react-grid';
+import { CellActions } from '../../lib/types';
+
 
 interface RecordModeColumnCellProps {
   td: ReactElement,
@@ -8,6 +9,7 @@ interface RecordModeColumnCellProps {
   state: TableState,
   actions: CellActions,
 }
+
 
 export const RecordModeColumnCell  = ({td, props, state, actions}: RecordModeColumnCellProps) => {
   const { field: columnID, dataItem } = props;

@@ -1,4 +1,3 @@
-import { Dispatch } from 'redux';
 import { TFunction } from 'react-i18next';
 
 
@@ -117,6 +116,5 @@ interface UpdateRowMetadata {
 export interface EditPanelItemProps {
   id: FormID;
   state: TableState;
-  dispatch: Dispatch<any>;
   t: TFunction;
 }

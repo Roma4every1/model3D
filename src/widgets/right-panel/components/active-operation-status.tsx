@@ -1,9 +1,8 @@
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { saveAs } from '@progress/kendo-file-saver';
-import { showNotification } from 'entities/notifications';
+import { showNotification } from 'entities/notification';
 import { Res, fileExtensionIconDict, defaultFileIcon } from 'shared/lib';
-import { reportsAPI } from 'entities/reports/lib/report.api.ts';
+import { reportsAPI } from 'entities/report/lib/report.api';
 
 
 /** Форматирование даты. */
@@ -12,8 +11,6 @@ const formatter = new Intl.DateTimeFormat('ru', {dateStyle: 'long', timeStyle: '
 /** Информация о состоянии активной операции. */
 export const ActiveOperationStatus = ({status}: {status: OperationStatus}) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
-
   const file = status.file;
   const hasFile = file?.extension;
 
@@ -29,7 +26,7 @@ export const ActiveOperationStatus = ({status}: {status: OperationStatus}) => {
       if (res.ok) {
         saveAs(res.data, file.name);
       } else {
-        showNotification(t('report.download-error'))(dispatch).then();
+        showNotification(t('report.download-error'));
       }
     });
   } : undefined;

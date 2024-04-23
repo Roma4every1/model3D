@@ -1,9 +1,8 @@
-import { useDispatch } from 'shared/lib';
 import { useTranslation } from 'react-i18next';
 import { showDialog } from 'entities/window';
-import { saveSession } from 'app/store/root-form/root-form.thunks';
+import { saveSession } from 'app/store/root-form.thunks';
 import { IconRow, IconRowButton, IconRowLink } from 'shared/ui';
-import { AboutProgramWindow } from './about-program.tsx';
+import { AboutProgramWindow } from './about-program';
 
 import saveSessionIcon from 'assets/images/menu/save-session.svg';
 import devDocIcon from 'assets/images/menu/dev-doc.svg';
@@ -17,12 +16,11 @@ interface TopToolbarProps {
 
 
 export const TopToolbar = ({config}: TopToolbarProps) => {
-  const dispatch = useDispatch();
   const { t } = useTranslation();
 
   const showAboutWindow = () => {
     const props = {title: t('about.dialog-title'), contentStyle: {padding: 0}};
-    dispatch(showDialog('about', props, <AboutProgramWindow config={config} t={t}/>));
+    showDialog('about', props, <AboutProgramWindow config={config} t={t}/>);
   };
 
   return (
@@ -30,7 +28,7 @@ export const TopToolbar = ({config}: TopToolbarProps) => {
       <IconRow gap={2}>
         <IconRowButton
           icon={saveSessionIcon} alt={'save'}
-          title={t('menu.save-session')} onClick={() => dispatch(saveSession())}
+          title={t('menu.save-session')} onClick={saveSession}
         />
         {config.devMode && config.devDocLink && <IconRowLink
           icon={devDocIcon} alt={'dev-doc'}

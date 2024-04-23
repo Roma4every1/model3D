@@ -1,139 +1,124 @@
-import { Dispatch } from 'redux';
-import { Thunk, StateGetter } from 'shared/lib';
 import { createElement } from 'react';
-
-import { showNotification } from 'entities/notifications';
-import { fetchFormsStart, fetchFormsEnd } from 'entities/fetch-state';
+import { showNotification } from 'entities/notification';
+import { clientFetchingStart, clientFetchingEnd } from 'entities/fetch-state';
 import { setMapField, setMapLoading, } from './map.actions';
-import { closeWindow, showWindow } from '../../../entities/window';
+import { closeWindow, showWindow } from 'entities/window';
 
 import { t } from 'shared/locales';
-import { mapsAPI } from '../lib/maps.api';
-import { propertyWindowConfig } from '../lib/constants.ts';
+import { mapAPI } from '../lib/map.api';
+import { propertyWindowConfig } from '../lib/constants';
 import { WindowProps } from '@progress/kendo-react-dialogs';
-import { AttrTableWindow } from '../components/edit-panel/editing/attr-table.tsx';
-import { PropertiesWindow } from '../components/edit-panel/properties-window/properties.tsx';
+import { AttrTableWindow } from '../components/edit-panel/editing/attr-table';
+import { PropertiesWindow } from '../components/edit-panel/properties-window/properties';
+import { useMapStore, useMultiMapStore } from './map.store';
 
 
 /** Показать окно свойств активного элемента. */
-export function showMapPropertyWindow(id: FormID, element: MapElement): Thunk {
-  return async (dispatch: Dispatch, getState: StateGetter) => {
-    const windowID = 'map-properties-window';
-    const stage = getState().maps.single[id].stage;
+export function showMapPropertyWindow(id: FormID, element: MapElement): void {
+  const windowID = 'map-properties-window';
+  const stage = useMapStore.getState()[id].stage;
 
-    const close = () => {
-      dispatch(setMapField(id, 'propertyWindowOpen', false));
-      dispatch(closeWindow(windowID));
-    };
-    const cancel = () => {
-      stage.cancel(); stage.render();
-      close();
-    };
-    stage.startEditing();
-
-    const [width, height] = propertyWindowConfig[element.type].windowSize;
-    const title = t('map.properties-edit', {elementType: t('map.' + element.type)});
-
-    const windowProps: WindowProps = {
-      className: 'propertiesWindow', style: {zIndex: 99}, title,
-      width, height, resizable: false, maximizeButton: () => null, onClose: cancel,
-    };
-
-    const props = {id, stage, element, cancel, close};
-    dispatch(setMapField(id, 'propertyWindowOpen', true));
-    dispatch(showWindow(windowID, windowProps, createElement(PropertiesWindow, props)));
+  const close = () => {
+    setMapField(id, 'propertyWindowOpen', false);
+    closeWindow(windowID);
   };
+  const cancel = () => {
+    stage.cancel(); stage.render();
+    close();
+  };
+  stage.startEditing();
+
+  const [width, height] = propertyWindowConfig[element.type].windowSize;
+  const title = t('map.properties-edit', {elementType: t('map.' + element.type)});
+
+  const windowProps: WindowProps = {
+    className: 'propertiesWindow', style: {zIndex: 99}, title,
+    width, height, resizable: false, maximizeButton: () => null, onClose: cancel,
+  };
+
+  const props = {id, stage, element, cancel, close};
+  setMapField(id, 'propertyWindowOpen', true);
+  showWindow(windowID, windowProps, createElement(PropertiesWindow, props));
 }
 
 /** Показать аттрибутивную таблицу активного элемента. */
-export function showMapAttrTableWindow(id: FormID): Thunk {
-  return async (dispatch: Dispatch, getState: StateGetter) => {
-    const windowID = 'map-attr-table';
-    const stage = getState().maps.single[id].stage;
+export function showMapAttrTableWindow(id: FormID): void {
+  const windowID = 'map-attr-table';
+  const stage = useMapStore.getState()[id].stage;
 
-    const onClose = () => {
-      dispatch(setMapField(id, 'attrTableWindowOpen', false));
-      dispatch(closeWindow(windowID));
-    };
-    const windowProps: WindowProps = {
-      className: 'attr-table-window', title: t('map.attr-table'),
-      width: 320, height: 260, onClose, maximizeButton: () => null,
-    };
-
-    const content = createElement(AttrTableWindow, {id, stage, onClose});
-    dispatch(setMapField(id, 'attrTableWindowOpen', true));
-    dispatch(showWindow(windowID, windowProps, content));
+  const onClose = () => {
+    setMapField(id, 'attrTableWindowOpen', false);
+    closeWindow(windowID);
   };
+  const windowProps: WindowProps = {
+    className: 'attr-table-window', title: t('map.attr-table'),
+    width: 320, height: 260, onClose, maximizeButton: () => null,
+  };
+
+  const content = createElement(AttrTableWindow, {id, stage, onClose});
+  setMapField(id, 'attrTableWindowOpen', true);
+  showWindow(windowID, windowProps, content);
 }
 
-export function fetchMapData(id: FormID): Thunk {
-  return async (dispatch: Dispatch, getState) => {
-    const { stage, mapID, owner } = getState().maps.single[id];
-    const setLoading = (l: MapLoading) => dispatch(setMapLoading(id, l));
+export async function fetchMapData(id: FormID): Promise<void> {
+  const { stage, loader, mapID, owner } = useMapStore.getState()[id];
+  setMapLoading(id, {percentage: 0, status: null});
 
-    setLoading({percentage: 0, status: null});
-    const mapData = await mapsAPI.loadMap(mapID, owner, setLoading, id);
+  loader.onProgressChange = (l: MapLoading) => setMapLoading(id, l);
+  const mapData = await loader.loadMapData(mapID, owner);
 
-    if (typeof mapData === 'string') {
-      console.warn(mapData);
-      dispatch(setMapLoading(id, {percentage: -1, status: null}));
-    } else {
-      if (mapData.mapErrors.length) mapData.mapErrors.forEach(err => console.warn(err));
-      stage.setData(mapData);
-      dispatch(setMapLoading(id, {percentage: 100, status: null}));
-    }
+  if (typeof mapData === 'string') {
+    console.warn(mapData);
+    setMapLoading(id, {percentage: -1, status: null});
+  } else if (mapData) {
+    stage.setData(mapData);
+    setMapLoading(id, {percentage: 100, status: null});
   }
 }
 
-export function fetchMultiMapData(id: ClientID): Thunk {
-  return async (dispatch: Dispatch, getState: StateGetter) => {
-    const multiMapState = getState().maps.multi[id];
-    if (!multiMapState) return;
+export async function fetchMultiMapData(id: ClientID): Promise<void> {
+  const multiMapState = useMultiMapStore.getState()[id];
+  if (!multiMapState) return;
+  clientFetchingStart(id + '_map');
 
-    dispatch(fetchFormsStart([id + '_map']));
-    const owner = 'Common';
-    const templateID = multiMapState.templateFormID;
-
-    const updateStages = () => {
-      for (const config of multiMapState.configs) {
-        config.stage.scroller.list = multiMapState.configs
-          .filter(c => c.id !== config.id)
-          .map(c => c.stage.getCanvas())
-          .filter(Boolean);
-      }
-    };
-
+  const updateStages = () => {
     for (const config of multiMapState.configs) {
-      const setProgress = (l: MapLoading) => config.setProgress(l.percentage);
-      const loadedMap = await mapsAPI.loadMap(config.id, owner, setProgress, templateID);
-
-      if (typeof loadedMap === 'string') {
-        config.setProgress(-1);
-      } else {
-        config.setProgress(100);
-        config.stage.setData(loadedMap);
-        updateStages();
-      }
+      config.stage.scroller.list = multiMapState.configs
+        .filter(c => c.id !== config.id)
+        .map(c => c.stage.getCanvas())
+        .filter(Boolean);
     }
-    dispatch(fetchFormsEnd([id + '_map']));
-    setTimeout(updateStages, 100);
   };
+
+  for (const config of multiMapState.configs) {
+    const loader = config.loader;
+    loader.onProgressChange = (l: MapLoading) => config.setProgress(l.percentage);
+    const mapData = await loader.loadMapData(config.id, 'Common');
+
+    if (typeof mapData === 'string') {
+      config.setProgress(-1);
+    } else if (mapData) {
+      config.setProgress(100);
+      config.stage.setData(mapData);
+      updateStages();
+    }
+  }
+  clientFetchingEnd(id + '_map');
+  setTimeout(updateStages, 100);
 }
 
 /** Сохранение отредактированной карты. */
-export function saveMap(id: FormID): Thunk {
-  return async (dispatch: Dispatch, getState: StateGetter) => {
-    const { stage, owner, mapID } = getState().maps.single[id];
-    showNotification(t('map.saving.save-start'))(dispatch).then();
+export async function saveMap(id: FormID): Promise<void> {
+  const { stage, owner, mapID } = useMapStore.getState()[id];
+  showNotification(t('map.saving.save-start'));
 
-    const mapData = stage.getMapDataToSave();
-    const res = await mapsAPI.saveMap(id, mapID, mapData, owner);
+  const mapData = stage.getMapDataToSave();
+  const res = await mapAPI.saveMap(id, mapID, mapData, owner);
 
-    const notice: NotificationProto = res.ok
-      ? {type: 'info', content: t('map.saving.save-end-ok')}
-      : {type: 'warning', content: t('map.saving.save-end-error')};
+  const notice: NotificationProto = res.ok
+    ? {type: 'info', content: t('map.saving.save-end-ok')}
+    : {type: 'warning', content: t('map.saving.save-end-error')};
 
-    showNotification(notice)(dispatch).then();
-    dispatch(setMapField(id, 'modified', !res.ok));
-  };
+  showNotification(notice);
+  setMapField(id, 'modified', !res.ok);
 }

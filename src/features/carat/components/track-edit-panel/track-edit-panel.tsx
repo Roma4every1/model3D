@@ -1,14 +1,13 @@
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
 import { MenuSkeleton } from 'shared/ui';
-import { caratStateSelector } from '../../store/carat.selectors';
+import { useCaratState } from '../../store/carat.store';
 
 import './track-edit-panel.scss';
 import { CaratNavigationPanel } from './navigation-panel';
-import { CaratColumnPanel } from './column-panel.tsx';
+import { CaratColumnPanel } from './column-panel';
 import { CaratActiveGroupPanel } from './active-group-panel';
 import { CaratCurvesPanel } from './curves-panel';
-import { CaratExportPanel } from './carat-export.tsx';
+import { CaratExportPanel } from './carat-export';
 
 
 /** Панель редактирования трека каротажной диаграммы. */
@@ -16,7 +15,7 @@ export const TrackEditPanel = ({id}: FormEditPanelProps) => {
   const [_signal, setSignal] = useState(false);
   const signal = () => setSignal(!_signal);
 
-  const state: CaratState = useSelector(caratStateSelector.bind(id));
+  const state = useCaratState(id);
   if (!state || state.loading.percentage < 100) {
     return <MenuSkeleton template={['291px', '335px', '309px', '161px', '92px']}/>;
   }

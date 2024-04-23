@@ -1,4 +1,3 @@
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@progress/kendo-react-buttons';
 import { setMapField } from '../../../store/map.actions';
@@ -13,8 +12,6 @@ interface DeleteElementWindowProps {
 
 export const DeleteElementWindow = ({id, stage, onClose}: DeleteElementWindowProps) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
-
   const activeElement = stage.getActiveElement();
   const activeElementLayer = stage.getActiveElementLayer();
 
@@ -23,7 +20,7 @@ export const DeleteElementWindow = ({id, stage, onClose}: DeleteElementWindowPro
     stage.clearSelect();
     stage.render();
     activeElementLayer.modified = true;
-    dispatch(setMapField(id, 'modified', true));
+    setMapField(id, 'modified', true);
     onClose();
   };
 

@@ -1,108 +1,116 @@
-import { Dispatch } from 'redux';
-import { StateGetter, Thunk } from 'shared/lib';
-import { createReportModels, setReportModels } from 'entities/reports';
-import { fillChannels, setChannels } from 'entities/channels';
-import { getPresentationChannels } from '../lib/initialization';
-import { createPresentationState, createClientChannels, createFormStates } from '../lib/initialization';
+import { t } from 'shared/locales';
+import { clientAPI, addSessionClients } from 'entities/client';
+import { useObjectsStore } from 'entities/objects';
+import { createReportModels, setReportModels } from 'entities/report';
+import { useChannelStore, fillChannels, setChannels } from 'entities/channel';
+import { useParameterStore, addClientParameters, fillParamValues } from 'entities/parameter';
+import { clientFetchingStart, clientFetchingEnd, clientFetchingError } from 'entities/fetch-state';
+
+import { createPresentationState, createClientChannels, createPresentationChildren } from '../lib/initialization';
 import { applyChannelsDeps } from '../lib/utils';
 import { createFormDict } from '../lib/form-dict';
-import { formsAPI } from '../lib/forms.api';
-
-import { fillParamValues, setParamDict } from 'entities/parameters';
-import { fetchFormsStart, fetchFormsEnd, fetchFormError } from 'entities/fetch-state';
 import { setPresentationState } from './presentation.actions';
-import { setFormsState } from 'widgets/presentation/store/form.actions';
-import { getParsedParamValue } from 'entities/parameters/lib/parsing.ts';
 
 
 /** Инициализация презентации. */
-export function fetchPresentationState(id: ClientID): Thunk {
-  return async (dispatch: Dispatch, getState: StateGetter) => {
-    dispatch(fetchFormsStart([id]));
+export async function fetchPresentationState(id: ClientID): Promise<void> {
+  clientFetchingStart(id);
+  const [presentation, parameters, attachedChannels] = await createPresentationState(id);
+  if (!presentation) {
+    clientFetchingError([{id, details: t('messages.presentation-fetch-error')}]);
+    return;
+  }
 
-    const presentation = await createPresentationState(id);
-    if (!presentation) {
-      dispatch(fetchFormError(id, 'ошибка при инициализации презентации'));
-      return;
+  const parameterState = useParameterStore.getState();
+  const paramDict = {[id]: parameters, root: parameterState.root};
+  await prepareParameters(presentation, paramDict);
+  addClientParameters(id, parameters);
+
+  const reportModels = await createReportModels(paramDict, 'root', id);
+  setReportModels(id, reportModels);
+  setPresentationState(presentation);
+
+  const childIDs = presentation.children.map(child => child.id);
+  clientFetchingStart(childIDs);
+  clientFetchingEnd(id);
+
+  const childStates = await createPresentationChildren(id, presentation.children);
+  const baseChannels: Set<ChannelName> = new Set(attachedChannels.map(c => c.name));
+
+  for (const childID of childIDs) {
+    const channels = childStates[childID]?.channels;
+    if (channels) for (const channel of channels) baseChannels.add(channel.name);
+  }
+
+  const allChannels = {...useChannelStore.getState()};
+  const channels = await createClientChannels(baseChannels, parameters, Object.keys(allChannels));
+  const errorChannels: Set<ChannelName> = new Set();
+
+  for (const name in channels) {
+    const channel = channels[name];
+    if (channel) {
+      allChannels[name] = channel;
+    } else {
+      errorChannels.add(name);
     }
+  }
+  applyChannelsDeps(allChannels, paramDict);
 
-    const childrenID = presentation.children.map(child => child.id);
-    const presentationParameters = await formsAPI.getClientParameters(id);
-    const paramDict = {[id]: presentationParameters};
-    dispatch(setParamDict(paramDict));
+  const successForms: FormID[] = [];
+  const errorForms: {id: FormID, details: string}[] = [];
+  const objects = useObjectsStore.getState();
 
-    const state = getState();
-    const rootID = state.root.id;
-
-    const reportParamDict = {[rootID]: state.parameters[rootID], [id]: presentationParameters};
-    const reportModels = await createReportModels(reportParamDict, rootID, id);
-    await prepareParameters(presentation, rootID, reportParamDict);
-
-    dispatch(fetchFormsStart(childrenID));
-    dispatch(setReportModels(id, reportModels));
-    dispatch(setPresentationState(presentation));
-    dispatch(fetchFormsEnd([id]));
-
-    const [baseChannels, childrenChannelNames] = await getPresentationChannels(id, childrenID);
-    const formStates = await createFormStates(id, presentation.children, childrenChannelNames);
-
-    const existingChannels = Object.keys(state.channels);
-    const channels = await createClientChannels(baseChannels, paramDict, existingChannels);
-
-    const channelErrors = Object.entries(channels).filter(e => !e[1]).map(e => e[0]);
-    if (channelErrors.length > 0) {
-      const message = channelErrors.length === 1
-        ? `Ошибка при инициализации канала ${channelErrors[0]}`
-        : `Ошибка при инициализации каналов ${channelErrors.join(', ')}`;
-      dispatch(fetchFormError(id, message));
-      dispatch(fetchFormsEnd(childrenID)); return;
+  for (const childID of childIDs) {
+    const client: SessionClient = childStates[childID];
+    if (!client) {
+      errorForms.push({id: childID, details: t('messages.form-fetch-error')});
+      continue;
     }
-
-    const allChannels = {...state.channels, ...channels};
-    paramDict[rootID] = state.parameters[rootID];
-    applyChannelsDeps(allChannels, paramDict);
-
-    for (const id of childrenID) {
-      const formState = formStates[id];
-      const creator = createFormDict[formState.type];
-      if (!creator) continue;
-
-      const payload: FormStatePayload = {
-        state: formStates[id],
-        settings: formStates[id].settings,
-        objects: state.objects,
-        parameters: {...state.parameters, ...paramDict},
-        channels: allChannels,
-      };
-      dispatch(creator(payload));
+    if (client.channels.some(c => errorChannels.has(c.name))) {
+      errorForms.push({id: childID, details: t('messages.form-channel-error')});
+      continue;
     }
+    successForms.push(childID);
 
-    await fillChannels(channels, paramDict);
-    dispatch(setChannels(channels));
-    dispatch(setFormsState(formStates));
-    dispatch(fetchFormsEnd(childrenID));
-  };
+    const creator = createFormDict[client.type];
+    if (creator) creator({
+      state: client,
+      settings: client.settings,
+      objects: objects,
+      parameters: {...parameterState, ...paramDict},
+      channels: allChannels,
+    });
+  }
+
+  await fillChannels(channels, paramDict);
+  setChannels(channels);
+  addSessionClients(childStates);
+
+  clientFetchingEnd(successForms);
+  clientFetchingError(errorForms);
 }
 
 /**
  * Если у параметра презентации есть сеттер в `linkedProperties`,
  * выполняется запрос, который устанавливает его значение.
- * */
-async function prepareParameters(presentation: PresentationState, rootID: ClientID, paramDict: ParamDict): Promise<void> {
+ */
+async function prepareParameters(presentation: PresentationState, paramDict: ParamDict): Promise<void> {
   const id = presentation.id;
-  const localParameters = paramDict[id];
+  const linkedProperties = presentation.settings.linkedProperties;
+  if (!linkedProperties) { presentation.settings.linkedProperties = []; return; }
 
+  const localParameters = paramDict[id];
   const setters: ParameterSetter[] = [];
   const parametersToFill: Parameter[] = [];
   const promises: Promise<string>[] = [];
 
-  for (const setter of presentation.settings.linkedProperties) {
+  for (const setter of linkedProperties) {
     const parameter = localParameters.find(p => p.id === setter.parameterToSet);
     if (!parameter) continue;
     setters.push(setter);
 
-    const executeParameters = fillParamValues(setter.parametersToExecute, paramDict, [rootID, id]);
-    promises.push(formsAPI.executeLinkedProperty(presentation.id, executeParameters, setter.index));
+    const executeParameters = fillParamValues(setter.parametersToExecute, paramDict, ['root', id]);
+    promises.push(clientAPI.executeLinkedProperty(presentation.id, executeParameters, setter.index));
     parametersToFill.push(parameter);
 
     for (const parameter of executeParameters) {
@@ -116,6 +124,6 @@ async function prepareParameters(presentation: PresentationState, rootID: Client
 
   const values = await Promise.all(promises);
   parametersToFill.forEach((p, i) => {
-    p.value = getParsedParamValue(p.type, values[i]);
+    p.setValueString(values[i]);
   });
 }

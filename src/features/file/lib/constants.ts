@@ -1,5 +1,5 @@
-import { csvParser } from './csv-parser.ts';
-import { excelParser } from './excel-parser.ts';
+import { csvParser } from './csv-parser';
+import { excelParser } from './excel-parser';
 
 
 /** Словарь типов MIME для расширений файлов. */

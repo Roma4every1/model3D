@@ -1,14 +1,5 @@
 /* --- Maps State --- */
 
-/** Хранилище состояний карт.
- * + `multi`: {@link FormDict} of {@link MultiMapState}
- * + `single`: {@link FormDict} of {@link MapState}
- * */
-interface MapsState {
-  multi: FormDict<MultiMapState>;
-  single: FormDict<MapState>;
-}
-
 /** ## Состояние мультикарты.
  * + `sync: boolean` — синхронизация СК
  * + `children`: {@link FormID}[] — карты
@@ -25,6 +16,7 @@ interface MapItemConfig {
   formID: FormID;
   progress: number;
   stage: IMapStage;
+  loader: IMapLoader;
   setProgress?: (process: number) => void;
 }
 
@@ -34,6 +26,8 @@ interface MapState {
   canvas: MapCanvas;
   /** Класс сцены. */
   stage: IMapStage;
+  /** Загрузчик. */
+  loader: IMapLoader;
   /** Класс для отслеживания изменения размеров холста. */
   observer: ResizeObserver;
   /** Владелец карты. */
@@ -52,17 +46,6 @@ interface MapState {
   attrTableWindowOpen: boolean;
   /** Настройки плагинов карты. */
   pluginsSettings: MapPluginsSettings;
-}
-
-/** Состояние загрузки данных карты.
- * + `percentage: number`
- * + `status: string`
- * */
-interface MapLoading {
-  /** Процент загрузки. */
-  percentage: number;
-  /** Статус загрузки: название загружаемого слоя. */
-  status: string;
 }
 
 interface IMapStage {
@@ -106,6 +89,23 @@ interface IMapStage {
 
   resize(): void;
   render(viewport?: MapViewport): void;
+}
+
+interface IMapLoader {
+  loadMapData(mapID: MapID, owner: MapOwner): Promise<MapData | string | null>;
+  abortLoading(): void;
+  onProgressChange(l: MapLoading): void;
+}
+
+/** Состояние загрузки данных карты.
+ * + `percentage: number`
+ * + `status: string`
+ * */
+interface MapLoading {
+  /** Процент загрузки. */
+  percentage: number;
+  /** Статус загрузки: название загружаемого слоя. */
+  status: string;
 }
 
 interface IMapSelect {
@@ -216,7 +216,7 @@ interface LayerTreeItem {
 interface IMapLayer {
   readonly id: string;
   readonly group: string;
-  readonly displayName: DisplayName;
+  readonly displayName: string;
   readonly elementType: MapElementType;
 
   bounds: Bounds;

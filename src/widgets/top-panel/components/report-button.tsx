@@ -1,9 +1,7 @@
-import { ThunkDispatch } from 'redux-thunk';
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { Loader } from '@progress/kendo-react-indicators';
-import { ReportParameterList } from './report-parameter-list.tsx';
-import { initializeActiveReport, refreshReport } from 'entities/reports';
+import { ReportParameterList } from './report-parameter-list';
+import { initializeActiveReport, refreshReport } from 'entities/report';
 
 import reportIcon from 'assets/images/reports/report.svg';
 import programIcon from 'assets/images/reports/program.svg';
@@ -18,8 +16,6 @@ interface ReportButtonProps {
 
 
 export const ReportButton = ({id, report}: ReportButtonProps) => {
-  const dispatch = useDispatch<ThunkDispatch<WState, any, any>>();
-
   const [opened, setOpened] = useState(false);
   const [processing, setProcessing] = useState(false);
 
@@ -33,9 +29,9 @@ export const ReportButton = ({id, report}: ReportButtonProps) => {
 
     const onLoad = () => { setProcessing(false); setOpened(true); };
     if (report.parameters) {
-      dispatch(refreshReport(id, report)).then(onLoad);
+      refreshReport(id, report).then(onLoad);
     } else {
-      dispatch(initializeActiveReport(id, report.id)).then(onLoad);
+      initializeActiveReport(id, report.id).then(onLoad);
     }
   };
 

@@ -1,44 +1,34 @@
-import { useSelector } from 'react-redux';
-import { profileStateSelector } from '../store/profile.selectors.ts';
-import {
-  channelDictSelector,
-} from '../../../entities/channels';
-import {MouseEvent, useCallback, useEffect, useLayoutEffect, useRef} from "react";
-import {compareObjects, useDispatch} from "../../../shared/lib";
-import {traceStateSelector} from "../../../entities/objects";
-import {setProfileData} from "../store/profile.thunks.ts";
-import {setProfileCanvas} from "../store/profile.actions.ts";
-import {LoadingStatus, TextInfo} from "../../../shared/ui";
-import './profile.scss'
+import { MouseEvent, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import { LoadingStatus, TextInfo } from 'shared/ui';
+import { useCurrentTrace } from 'entities/objects';
+import { useChannelDict } from 'entities/channel';
 
-export const Profile = ({id, channels}: FormState) => {
-  const dispatch = useDispatch();
+import './profile.scss';
+import { useProfileState } from '../store/profile.store';
+import { setProfileCanvas, setProfileData } from '../store/profile.actions';
+
+
+export const Profile = ({id, channels}: SessionClient) => {
   const isOnMoveRef = useRef<boolean>(false);
-
-  const profileState: ProfileState = useSelector(profileStateSelector.bind(id));
-  const { canvas, stage, loading } = profileState;
-
-  const { model: currentTrace } = useSelector(traceStateSelector);
-
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const channelNames = channels.map(c => c.name);
-  const channelData: ChannelDict =
-    useSelector(channelDictSelector.bind(channelNames), compareObjects);
+  const { canvas, stage, loading } = useProfileState(id);
+  const channelData = useChannelDict(channels.map(c => c.name));
+  const { model: currentTrace } = useCurrentTrace();
 
   useEffect(() => {
-    dispatch(setProfileData(id, currentTrace, channelData));
-  }, [dispatch, channelData, id, currentTrace]);
+    setProfileData(id, currentTrace, channelData).then();
+  }, [channelData, id, currentTrace]);
 
   // обновление ссылки на холст
   useLayoutEffect(() => {
     if (loading.percentage < 100) return;
     if (canvasRef.current === canvas) return;
 
-    dispatch(setProfileCanvas(id, canvasRef.current));
+    setProfileCanvas(id, canvasRef.current);
     stage.resize();
     stage.render();
-  }, [canvas, dispatch, id, stage, loading.percentage]);
+  }, [canvas, id, stage, loading.percentage]);
 
   const onWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
@@ -70,21 +60,19 @@ export const Profile = ({id, channels}: FormState) => {
   if (!channelData || !currentTrace) {
     return <TextInfo text={'profile.no-data'}/>;
   }
-
   if (currentTrace && currentTrace.nodes.length === 0) {
     return <TextInfo text={'profile.no-nodes'}/>;
   }
+  if (loading.percentage < 100) {
+    return <LoadingStatus {...loading}/>;
+  }
 
-  if (loading.percentage < 100) return <LoadingStatus {...loading}/>;
   return (
     <div className={'profile-container'}>
-      <canvas className={'profile-canvas'}
-              ref={canvasRef}
-              tabIndex={0}
-              onMouseMove={onMouseMove}
-              onMouseDown={onMouseDown}
-              onMouseUp={onMouseUp}
+      <canvas
+        className={'profile-canvas'} ref={canvasRef} tabIndex={0}
+        onMouseMove={onMouseMove} onMouseDown={onMouseDown} onMouseUp={onMouseUp}
       />
     </div>
-  )
+  );
 };

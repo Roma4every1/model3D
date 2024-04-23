@@ -1,4 +1,4 @@
-import { PIXEL_PER_METER } from '../lib/map-utils.ts';
+import { PIXEL_PER_METER } from '../lib/map-utils';
 
 
 /** Объект для перевода координат. */

@@ -1,5 +1,4 @@
 import { FunctionComponent } from 'react';
-import { AnyAction } from 'redux';
 
 import { Table, createTableState } from 'features/table';
 import { Chart, createChartState } from 'features/chart';
@@ -11,11 +10,11 @@ import { FileListView, createFileListState } from 'features/file-list';
 
 
 type SupportedFormDict<T> = Record<SupportedFormType, T>;
-type FormStateCreator = (payload: FormStatePayload) => AnyAction;
+type FormStateCreator = (payload: FormStatePayload) => void;
 
 
 /** Словарь компонентов форм; используется в компоненте `Form`. */
-export const formDict: SupportedFormDict<FunctionComponent<FormState>> = {
+export const formDict: SupportedFormDict<FunctionComponent<SessionClient>> = {
   'dataSet': Table,
   'carat': Carat,
   'chart': Chart,

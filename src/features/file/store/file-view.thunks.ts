@@ -1,73 +1,70 @@
-import { Dispatch } from 'redux';
-import { Thunk, StateGetter, base64toBlob, getFileExtension } from 'shared/lib';
-import { channelRowToRecord, channelAPI } from 'entities/channels';
+import { base64toBlob, getFileExtension } from 'shared/lib';
+import { useClientStore } from 'entities/client';
+import { channelRowToRecord, channelAPI } from 'entities/channel';
 import { showWarningMessage } from 'entities/window';
 import { setFileViewModel } from './file-view.actions';
 import { t } from 'shared/locales';
 import { mimeTypeDict, fileParserDict } from '../lib/constants';
-import { reportsAPI } from 'entities/reports/lib/report.api.ts';
+import { reportsAPI } from 'entities/report/lib/report.api';
+import { useFileViewStore } from './file-view.store';
 
 
-export function updateFileViewModel(id: FormID, data: ChannelData): Thunk {
-  return async (dispatch: Dispatch, getState: StateGetter) => {
-    const activeRow = data?.activeRow;
-    if (!activeRow) { dispatch(setFileViewModel(id, null)); return; }
+export async function updateFileViewModel(id: FormID, data: ChannelData): Promise<void> {
+  const activeRow = data?.activeRow;
+  if (!activeRow) { setFileViewModel(id, null); return; }
 
-    const state = getState();
-    const formState = state.forms[id];
-    const fileViewState = state.fileViews[id];
-    const flag = ++fileViewState.loadingFlag.current;
+  const formState = useClientStore.getState()[id];
+  const fileViewState = useFileViewStore.getState()[id];
+  const flag = ++fileViewState.loadingFlag.current;
 
-    const attachedChannel = formState.channels[0];
-    const fileColumnName = attachedChannel.columnInfo.descriptor.name;
+  const attachedChannel = formState.channels[0];
+  const fileColumnName = attachedChannel.columnInfo.descriptor.name;
 
-    const record = channelRowToRecord(activeRow, data.columns);
-    const fileName: string = record[attachedChannel.columnInfo.fileName.name];
-    let model = fileViewState.memo.find(memoModel => memoModel.fileName === fileName);
+  const record = channelRowToRecord(activeRow, data.columns);
+  const fileName: string = record[attachedChannel.columnInfo.fileName.name];
+  let model = fileViewState.memo.find(memoModel => memoModel.fileName === fileName);
 
-    if (model === undefined) {
-      model = {fileName, fileType: null, data: null, uri: null, loading: true};
-      fileViewState.memo.push(model);
-      dispatch(setFileViewModel(id, model));
+  if (model === undefined) {
+    model = {fileName, fileType: null, data: null, uri: null, loading: true};
+    fileViewState.memo.push(model);
+    setFileViewModel(id, model);
 
-      const descriptor = record[fileColumnName];
-      const fileType = getFileExtension(fileName);
-      const contentType = mimeTypeDict[fileType] ?? '';
+    const descriptor = record[fileColumnName];
+    const fileType = getFileExtension(fileName);
+    const contentType = mimeTypeDict[fileType] ?? '';
 
-      if (fileViewState.useResources) {
-        const res = await reportsAPI.downloadFile(descriptor);
-        if (!res.ok) {
-          const message = t('file-view.download-error', {fileName});
-          dispatch(showWarningMessage(message)); return;
-        }
-        model.data = res.data.slice(0, res.data.size, contentType)
-      } else if (descriptor) {
-        model.data = base64toBlob(descriptor, contentType);
-      } else {
-        const queryID = state.channels[attachedChannel.name].queryID;
-        const rowIndex = data.rows.findIndex(r => r === activeRow);
-        const res = await channelAPI.getResource(queryID, rowIndex, fileColumnName);
-
-        if (!res.ok) {
-          const message = t('file-view.download-error', {fileName});
-          dispatch(showWarningMessage(message)); return;
-        }
-        model.data = res.data.slice(0, res.data.size, contentType);
+    if (fileViewState.useResources) {
+      const res = await reportsAPI.downloadFile(descriptor);
+      if (!res.ok) {
+        const message = t('file-view.download-error', {fileName});
+        showWarningMessage(message); return;
       }
+      model.data = res.data.slice(0, res.data.size, contentType)
+    } else if (descriptor) {
+      model.data = base64toBlob(descriptor, contentType);
+    } else {
+      const rowIndex = data.rows.findIndex(r => r === activeRow);
+      const res = await channelAPI.getResource(data.queryID, rowIndex, fileColumnName);
 
-      model.fileType = fileType;
-      model.uri = URL.createObjectURL(model.data);
-
-      const parser = fileParserDict[fileType];
-      if (parser) model.content = await parser(model.data);
-
-      model.loading = false;
-      const currentModel = getState().fileViews[id].model;
-      if (model === currentModel) dispatch(setFileViewModel(id, model)); // rerender
+      if (!res.ok) {
+        const message = t('file-view.download-error', {fileName});
+        showWarningMessage(message); return;
+      }
+      model.data = res.data.slice(0, res.data.size, contentType);
     }
-    else if (model === fileViewState.model) {
-      return;
-    }
-    if (fileViewState.loadingFlag.current === flag) dispatch(setFileViewModel(id, model));
-  };
+
+    model.fileType = fileType;
+    model.uri = URL.createObjectURL(model.data);
+
+    const parser = fileParserDict[fileType];
+    if (parser) model.content = await parser(model.data);
+
+    model.loading = false;
+    const currentModel = useFileViewStore.getState()[id].model;
+    if (model === currentModel) setFileViewModel(id, model); // rerender
+  }
+  else if (model === fileViewState.model) {
+    return;
+  }
+  if (fileViewState.loadingFlag.current === flag) setFileViewModel(id, model);
 }

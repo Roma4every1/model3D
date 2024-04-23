@@ -1,17 +1,26 @@
-import { PresentationAction, PresentationActionType } from './presentation.reducer';
+import { usePresentationStore } from './presentation.store';
+import { getChildrenTypes } from '../lib/utils';
 
 
 /** Установить состояние презентации. */
-export function setPresentationState(state: PresentationState): PresentationAction {
-  return {type: PresentationActionType.SET, payload: state};
+export function setPresentationState(state: PresentationState): void {
+  usePresentationStore.setState({[state.id]: state});
 }
 
 /** Установить список дочерних форм. */
-export function setPresentationChildren(id: FormID, children: FormDataWM[]): PresentationAction {
-  return {type: PresentationActionType.SET_CHILDREN, payload: {id, children}};
+export function setPresentationChildren(id: ClientID, children: FormDataWM[]): void {
+  const openedChildren = children.map(child => child.id);
+  const childrenTypes = getChildrenTypes(children, openedChildren);
+  const activeChildID = children[0]?.id;
+
+  const state = usePresentationStore.getState()[id];
+  const newState = {...state, children, openedChildren, activeChildID, childrenTypes};
+  usePresentationStore.setState({[id]: newState})
 }
 
 /** Установить активную форму для презентации. */
-export function setActiveForm(id: FormID, activeChildID: FormID): PresentationAction {
-  return {type: PresentationActionType.SET_ACTIVE_FORM, payload: {id, activeChildID}};
+export function setActiveForm(id: FormID, activeChildID: FormID): void {
+  const state = usePresentationStore.getState()[id];
+  if (state.activeChildID === activeChildID) return;
+  usePresentationStore.setState({[id]: {...state, activeChildID}});
 }

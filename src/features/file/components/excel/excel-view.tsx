@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ExcelSheetTable } from './excel-sheet-table.tsx';
+import { ExcelSheetTable } from './excel-sheet-table';
 import './excel-view.scss';
 
 

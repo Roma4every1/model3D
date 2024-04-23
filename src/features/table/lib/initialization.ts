@@ -3,7 +3,7 @@ import {
   DataSetColumnSettings, DataSetColumnDict, RowStyleRule,
 } from './types';
 
-import { RecordHandler } from './record-handler.ts';
+import { RecordHandler } from './record-handler';
 import { getColumnWidth } from './common';
 import { createColumnTree, getFlatten } from './column-tree';
 
@@ -54,7 +54,7 @@ export function settingsToTableState(payload: FormStatePayload): TableState {
   const channel = payload.channels[channelName];
 
   const allProperties = channel?.info.properties ?? [];
-  if (channel) channel.query.maxRowCount = 100;
+  if (channel && channel.query.limit === undefined) channel.query.limit = 100;
 
   let { columns, attachedProperties } = settings;
   if (!attachedProperties) attachedProperties = {attachOption: 'AttachNothing', exclude: []};

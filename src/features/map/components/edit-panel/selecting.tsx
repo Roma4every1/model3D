@@ -1,8 +1,7 @@
 import { TFunction } from 'react-i18next';
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
 import { Checkbox } from '@progress/kendo-react-inputs';
-import { traceStateSelector } from 'entities/objects';
+import { useCurrentTrace } from 'entities/objects';
 import selectingIcon from 'assets/images/map/selecting-mode.png';
 
 
@@ -13,7 +12,7 @@ interface SelectingProps {
 
 
 export const Selecting = ({mapState, t}: SelectingProps) => {
-  const trace = useSelector(traceStateSelector);
+  const trace = useCurrentTrace();
   const [_signal, setSignal] = useState(false);
   const signal = () => setSignal(!_signal);
 

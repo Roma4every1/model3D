@@ -1,28 +1,25 @@
-import { canCreateTypes, MapMode } from './constants.ts';
-import { MapSelect } from './map-select.ts';
-import { MapLayer } from './map-layer.ts';
-import { Scroller } from '../drawer/scroller.ts';
+import { canCreateTypes, MapMode } from './constants';
+import { MapSelect } from './map-select';
+import { MapLayer } from './map-layer';
+import { Scroller } from '../drawer/scroller';
+import { InclinometryModePlugin } from './plugins';
 
-import { showMap } from '../drawer/maps.js';
-import { getDefaultMapElement } from '../components/edit-panel/editing/editing-utils.ts';
-import { selectElement, unselectElement } from './selecting-utils.ts';
+import { showMap } from '../drawer/maps';
+import { getDefaultMapElement } from '../components/edit-panel/editing/editing-utils';
+import { selectElement, unselectElement } from './selecting-utils';
 
 import {
   createMapElementInit,
   getBoundsByPoints,
   getNearestPointIndex,
   PIXEL_PER_METER
-} from './map-utils.ts';
+} from './map-utils';
 
 import {
   applyMouseDownActionToPolyline,
   applyMouseMoveActionToElement,
   applyRotateToLabel,
-} from '../components/edit-panel/editing/edit-element-utils.ts';
-import {PluginNames} from './map-plugins/lib/constants.ts';
-import {
-  InclinometryModePlugin
-} from './map-plugins/plugins/inclinometry-mode-plugin/inclinometry-mode-plugin.ts';
+} from '../components/edit-panel/editing/edit-element-utils';
 
 
 export class MapStage implements IMapStage {
@@ -310,7 +307,7 @@ export class MapStage implements IMapStage {
   public handleMouseUp(event: MouseEvent): MapElement | null {
     if (this.inclinometryModeOn) {
       const inclPlugin = this.plugins.find(it =>
-        it.name === PluginNames.INCLINOMETRY_MODE
+        it instanceof InclinometryModePlugin
       ) as InclinometryModePlugin;
       inclPlugin.handleInclinometryAngleChange({x: event.offsetX * 2, y: event.offsetY * 2});
       return;

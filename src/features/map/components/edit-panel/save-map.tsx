@@ -1,7 +1,6 @@
 import { TFunction } from 'react-i18next'
-import { useDispatch } from 'shared/lib';
 import { MenuSection, BigButton } from 'shared/ui';
-import { saveMap } from '../../store/map.thunks.ts';
+import { saveMap } from '../../store/map.thunks';
 import saveMapIcon from 'assets/images/map/save-map.png';
 
 
@@ -13,9 +12,8 @@ interface SaveMapProps {
 
 
 export const SaveMap = ({id, state, t}: SaveMapProps) => {
-  const dispatch = useDispatch();
   const disabled = !state.editable || !state.modified;
-  const action = () => dispatch(saveMap(id));
+  const action = () => saveMap(id);
 
   return (
     <MenuSection header={t('map.saving.header')} className={'big-buttons'}>

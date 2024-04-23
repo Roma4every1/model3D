@@ -1,6 +1,5 @@
-import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { traceStateSelector } from '../../index';
+import { useCurrentTrace } from '../../store/objects.store';
 
 import { MenuSection } from 'shared/ui';
 import { EditTrace } from './edit-trace';
@@ -19,7 +18,7 @@ interface TracePanelProps {
 /** Верхняя панель трасс. */
 export const TracePanel = ({hasMap}: TracePanelProps) => {
   const { t } = useTranslation();
-  const trace = useSelector(traceStateSelector);
+  const trace = useCurrentTrace();
 
   return (
     <div className={'menu'}>

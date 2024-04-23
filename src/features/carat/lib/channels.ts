@@ -1,4 +1,4 @@
-import { cellsToRecords, createColumnInfo } from 'entities/channels';
+import { cellsToRecords, createColumnInfo } from 'entities/channel';
 
 import {
   caratChannelCriterionDict, curveColorCriterion,

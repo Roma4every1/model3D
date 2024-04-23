@@ -1,4 +1,3 @@
-import { useDispatch } from 'shared/lib';
 import { useTranslation } from 'react-i18next';
 import { closeWindow, showDialog } from 'entities/window';
 import { deleteTrace } from '../../store/objects.thunks';
@@ -19,14 +18,13 @@ interface DeleteTraceWindowProps {
 
 export const DeleteTrace = ({trace}: DeleteTraceProps) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
 
   const openDialog = () => {
     const windowID = 'trace-delete-window';
-    const onClose = () => dispatch(closeWindow(windowID));
+    const onClose = () => closeWindow(windowID);
     const dialogProps = {title: t('trace.delete-dialog'), onClose};
     const content = <DeleteTraceDialog model={trace.model} onClose={onClose}/>;
-    dispatch(showDialog(windowID, dialogProps, content));
+    showDialog(windowID, dialogProps, content);
   };
 
   return (
@@ -39,10 +37,9 @@ export const DeleteTrace = ({trace}: DeleteTraceProps) => {
 
 const DeleteTraceDialog = ({model, onClose}: DeleteTraceWindowProps) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
 
   const onApply = () => {
-    dispatch(deleteTrace());
+    deleteTrace().then();
     onClose();
   };
 

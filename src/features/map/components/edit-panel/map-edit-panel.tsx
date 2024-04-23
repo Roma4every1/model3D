@@ -1,13 +1,12 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 import { MenuSkeleton } from 'shared/ui';
 import { MapNavigation } from './dimensions';
 import { Export } from './export';
-import { Selecting } from './selecting.tsx';
+import { Selecting } from './selecting';
 import { Editing } from './editing/editing';
 import { SaveMap } from './save-map';
-import { multiMapStateSelector, mapStateSelector } from '../../store/map.selectors';
+import { useMapState, useMultiMapState } from '../../store/map.store';
 import './map-edit-panel.scss';
 
 
@@ -16,8 +15,8 @@ const panelTemplate = ['330px', '90px', '275px', 'calc(100% - 785px)', '90px'];
 /** Панель редактирования карты. */
 export const MapEditPanel = ({id, parentID}: FormEditPanelProps) => {
   const { t } = useTranslation();
-  const mapState: MapState = useSelector(mapStateSelector.bind(id));
-  const multiMapState: MultiMapState = useSelector(multiMapStateSelector.bind(parentID));
+  const mapState = useMapState(id);
+  const multiMapState = useMultiMapState(parentID);
   const sync = multiMapState?.sync;
 
   // при смене активной карты обновить координаты

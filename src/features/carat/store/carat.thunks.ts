@@ -1,69 +1,49 @@
-import { Dispatch } from 'redux';
-import { Thunk, StateGetter } from 'shared/lib';
-import { CurveManager } from '../lib/curve-manager';
+import { useCaratStore } from './carat.store';
+import { useChannelStore } from 'entities/channel';
+import { useObjectsStore } from 'entities/objects';
+
 import { setCaratLoading } from './carat.actions';
 import { channelDictToRecords } from '../lib/channels';
 
 
 /** Обновляет данные каротажной диаграммы. */
-export function setCaratData(id: FormID, data: ChannelDict): Thunk {
-  return async (dispatch: Dispatch, getState: StateGetter) => {
-    const { objects, carats, channels } = getState();
-    const { stage, loader, lookupNames } = carats[id];
-    const { well: { model: currentWell }, trace: { model: currentTrace } } = objects;
+export async function setCaratData(id: FormID, data: ChannelDict): Promise<void> {
+  const objects = useObjectsStore.getState();
+  const channels = useChannelStore.getState();
 
-    if (currentTrace) {
-      if (currentTrace.nodes.length) {
-        stage.setTrackList(currentTrace.nodes);
-      } else {
-        return;
-      }
-    } else if (currentWell) {
-      stage.setTrackList([currentWell]);
+  const { stage, loader, lookupNames } = useCaratStore.getState()[id];
+  const { well: { model: currentWell }, trace: { model: currentTrace } } = objects;
+
+  if (currentTrace) {
+    if (currentTrace.nodes.length) {
+      stage.setTrackList(currentTrace.nodes);
     } else {
       return;
     }
+  } else if (currentWell) {
+    stage.setTrackList([currentWell]);
+  } else {
+    return;
+  }
 
-    loader.setLoading = (loading: Partial<CaratLoading>) => {
-      if (loading.status) loading.status = 'carat.loading.' + loading.status;
-      dispatch(setCaratLoading(id, loading));
-    };
-
-    const flag = ++loader.flag;
-    const caratData = await loader.loadCaratData(stage.wellIDs, data);
-
-    if (!stage.actualLookup) {
-      const dict: ChannelDict = {};
-      lookupNames.forEach((name) => { dict[name] = channels[name]; });
-      const lookupData = channelDictToRecords(dict);
-      await stage.setLookupData(lookupData);
-    }
-    if (flag !== loader.flag) return;
-
-    stage.setData(caratData, loader.cache);
-    loader.checkCacheSize();
-    loader.setLoading({percentage: 100});
-    stage.render();
+  loader.setLoading = (loading: Partial<CaratLoading>) => {
+    if (loading.status) loading.status = 'carat.loading.' + loading.status;
+    setCaratLoading(id, loading);
   };
-}
 
-/** Дозагрузить каротажные кривые. */
-export function loadCaratCurves(id: FormID, group: ICaratColumnGroup): Thunk {
-  return async (dispatch: Dispatch, getState: StateGetter) => {
-    const { stage, loader } = getState().carats[id];
-    const curveManager: CurveManager = group.curveManager;
-    const track = stage.getActiveTrack();
+  const flag = ++loader.flag;
+  const caratData = await loader.loadCaratData(stage.wellIDs, data);
 
-    const visibleCurves = curveManager.getVisibleCurves();
-    group.groupCurves(visibleCurves);
-    const loadedIDs = await loader.loadCurveData(visibleCurves.map(curve => curve.id), false);
-    curveManager.setCurvePointData(loadedIDs, loader.cache);
-    if (track.constructionMode) track.transformer.transformCurves(visibleCurves);
+  if (!stage.actualLookup) {
+    const dict: ChannelDict = {};
+    lookupNames.forEach((name) => { dict[name] = channels[name]; });
+    const lookupData = channelDictToRecords(dict);
+    await stage.setLookupData(lookupData);
+  }
+  if (flag !== loader.flag) return;
 
-    loader.checkCacheSize();
-    track.updateGroupRects();
-    stage.updateTrackRects();
-    stage.resize();
-    stage.render();
-  };
+  stage.setData(caratData, loader.cache);
+  loader.checkCacheSize();
+  loader.setLoading({percentage: 100});
+  stage.render();
 }

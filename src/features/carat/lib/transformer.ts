@@ -1,8 +1,8 @@
-import { CaratColumnGroup } from '../rendering/column-group.ts';
-import { WellBoreColumn } from '../rendering/well-bore-column.ts';
-import { WellFaceColumn } from '../rendering/face-column.ts';
-import { PumpColumn } from '../rendering/pump-column.ts';
-import { CaratCurveModel, WellBoreElementModel } from './types.ts';
+import { CaratColumnGroup } from '../rendering/column-group';
+import { WellBoreColumn } from '../rendering/well-bore-column';
+import { WellFaceColumn } from '../rendering/face-column';
+import { PumpColumn } from '../rendering/pump-column';
+import { CaratCurveModel, WellBoreElementModel } from './types';
 
 
 export interface ConstructionPart {

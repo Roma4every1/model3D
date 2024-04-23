@@ -1,7 +1,7 @@
+import { createElement } from 'react';
 import { TraceEditor } from 'entities/objects';
 import { MapLayerTree } from 'features/map';
-import {createElement} from "react";
-import {ProfileEditor} from "../../../features/profile/components/profile-editor.tsx";
+import { ProfileEditor } from '../../../features/profile/components/profile-editor';
 
 
 export interface RightTabProps {

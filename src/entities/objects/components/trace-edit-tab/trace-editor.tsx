@@ -1,9 +1,8 @@
-import { useSelector, useDispatch } from 'shared/lib';
 import { useTranslation } from 'react-i18next';
-import { mapStateSelector } from 'features/map/store/map.selectors';
-import { traceStateSelector } from '../../store/objects.selectors';
+import { useCurrentTrace } from '../../store/objects.store';
 import { setCurrentTrace } from '../../store/objects.actions';
 import { deleteTrace } from '../../store/objects.thunks';
+import { useMapState } from 'features/map';
 
 import './traces-edit-tab.scss';
 import { TraceChangeName } from './trace-change-name';
@@ -20,10 +19,8 @@ interface TraceEditorProps {
 /** Правая панель редактирования трассы. */
 export const TraceEditor = ({id}: TraceEditorProps) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
-
-  const { model, oldModel, creating } = useSelector(traceStateSelector);
-  const mapState: MapState = useSelector(mapStateSelector.bind(id));
+  const { model, oldModel, creating } = useCurrentTrace();
+  const mapState = useMapState(id);
 
   if (!model) return <div/>;
   const mapPoints = mapState?.stage.getMapData()?.points;
@@ -43,9 +40,9 @@ export const TraceEditor = ({id}: TraceEditorProps) => {
 
   const onClick = () => {
     if (creating) {
-      dispatch(deleteTrace());
+      deleteTrace().then();
     } else {
-      dispatch(setCurrentTrace(oldModel, false, false));
+      setCurrentTrace(oldModel, false, false);
     }
   };
 

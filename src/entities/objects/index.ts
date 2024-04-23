@@ -4,5 +4,6 @@ export { TracePanel } from './components/trace-panel/trace-panel';
 export { createObjects, createObjectModels } from './lib/initialization';
 export { updateObjects } from './lib/common';
 export { setObjects, setCurrentTrace } from './store/objects.actions';
+
 export * from './store/objects.thunks';
-export * from './store/objects.selectors';
+export * from './store/objects.store';

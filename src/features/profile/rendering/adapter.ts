@@ -1,6 +1,6 @@
-import {ProfileLoader} from "../lib/loader.ts";
-import {ProfileStage} from "./stage.ts";
-import {drawerConfig} from "../lib/constants.ts";
+import { ProfileLoader } from '../lib/loader';
+import { ProfileStage } from './stage';
+import { drawerConfig } from '../lib/constants';
 
 
 /** Создаёт состояние профиля. */

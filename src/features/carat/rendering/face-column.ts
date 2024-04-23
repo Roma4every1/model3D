@@ -1,5 +1,5 @@
-import { CaratDrawer } from './drawer.ts';
-import { CaratIntervalStyleDict, CaratWellFaceModel } from '../lib/types.ts';
+import { CaratDrawer } from './drawer';
+import { CaratIntervalStyleDict, CaratWellFaceModel } from '../lib/types';
 import { fixColorHEX } from 'shared/lib';
 
 

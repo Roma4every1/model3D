@@ -4,7 +4,7 @@ import { setTableColumnsSettings, setTableColumns } from '../../store/table.acti
 import columnsLockingIcon from 'assets/images/dataset/columns-locking.png';
 
 
-export const ColumnLocking = ({id, state, dispatch, t}: EditPanelItemProps) => {
+export const ColumnLocking = ({id, state, t}: EditPanelItemProps) => {
   const { columns, columnsSettings: settings } = state;
   const lockingEnabled = settings.isLockingEnabled;
 
@@ -13,9 +13,9 @@ export const ColumnLocking = ({id, state, dispatch, t}: EditPanelItemProps) => {
     if (lockingEnabled) {
       newSettings.lockedCount = 0;
       for (const column of Object.values(columns)) column.locked = false;
-      dispatch(setTableColumns(id, {...columns}));
+      setTableColumns(id, {...columns});
     }
-    dispatch(setTableColumnsSettings(id, newSettings));
+    setTableColumnsSettings(id, newSettings);
   };
 
   return (

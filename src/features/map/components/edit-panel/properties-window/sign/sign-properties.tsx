@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { PropertyWindowProps } from '../properties-utils.ts';
-import { gradientSettings } from '../properties-utils.ts';
+import { PropertyWindowProps, gradientSettings } from '../properties-utils';
 import { provider } from '../../../../drawer';
 import { Button } from '@progress/kendo-react-buttons';
 import { DropDownList, DropDownListChangeEvent } from '@progress/kendo-react-dropdowns';
-import { coordinateFormat } from '../../../../lib/constants.ts';
+import { coordinateFormat } from '../../../../lib/constants';
 import './sign-properties.scss';
 
 import {

@@ -1,5 +1,4 @@
 import { KeyboardEvent, useState, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { setCurrentTrace } from '../../store/objects.actions';
 
@@ -17,7 +16,6 @@ interface TraceAddNodeProps {
 
 export const TraceAddNode = ({model, mapPoints}: TraceAddNodeProps) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
   const [addedPoint, setAddedPoint] = useState<MapPoint>(null);
 
   const traceNodeIDs = useMemo(() => {
@@ -39,7 +37,7 @@ export const TraceAddNode = ({model, mapPoints}: TraceAddNodeProps) => {
     };
     model.nodes = [...model.nodes, node];
     setAddedPoint(null);
-    dispatch(setCurrentTrace({...model}));
+    setCurrentTrace({...model});
   };
 
   const onKeyDown = (e: KeyboardEvent) => {
