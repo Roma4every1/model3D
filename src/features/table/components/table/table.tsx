@@ -16,7 +16,7 @@ export const Table = ({id, parent}: SessionClient) => {
   const { recordHandler, channelName, headerSetterRules, columns, columnTree } = state;
 
   const channel: Channel = useChannel(channelName) ?? {} as any;
-  const lookupData = useChannelDict(channel.info?.lookupChannels ?? []);
+  const lookupData = useChannelDict(channel.config?.lookupChannels ?? []);
   const { data: channelData, query } = channel;
   const headerSetterParams = useLocalOrGlobalParameters(parent, headerSetterRules.map(r => r.parameter));
 

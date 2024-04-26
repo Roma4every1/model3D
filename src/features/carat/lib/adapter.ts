@@ -29,8 +29,8 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
         curveDataChannel = attachedChannel;
       } if (attachedChannel.type === 'inclinometry') {
         const propertyName = caratChannelCriterionDict.inclinometry.inclinometry;
-        const property = channel.info.properties.find(p => p.name === propertyName);
-        const inclinometryDataChannel = property?.secondLevelChannelName;
+        const property = channel.config.properties.find(p => p.name === propertyName);
+        const inclinometryDataChannel = property?.detailChannel;
 
         if (inclinometryDataChannel) {
           attachedChannel.inclinometry = {
@@ -46,7 +46,7 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
         }
       } else if (attachedChannel.type === 'pump') {
         const propertyName = caratChannelCriterionDict.pump.pumpID;
-        const property = channel.info.properties.find(p => p.name === propertyName);
+        const property = channel.config.properties.find(p => p.name === propertyName);
         const pumpDataChannel = property.lookupChannels[0];
 
         if (pumpDataChannel) {

@@ -1,7 +1,7 @@
 import { MouseEvent, WheelEvent, useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { LoadingStatus, TextInfo } from 'shared/ui';
 import { useChannel, useChannelDict } from 'entities/channel';
-import { useCurrentWell, useCurrentTrace, setCurrentTrace, setCurrentWell } from 'entities/objects';
+import { useCurrentWell, useTraceManager, setCurrentTrace, setCurrentWell } from 'entities/objects';
 import { updateParamDeep, useClientParameter, rowToParameterValue } from 'entities/parameter';
 import { useMapState } from '../store/map.store';
 import { fetchMapData, showMapPropertyWindow } from '../store/map.thunks';
@@ -14,8 +14,8 @@ import { InclinometryModePlugin } from '../lib/plugins';
 
 
 export const Map = ({id, parent, channels}: SessionClient) => {
-  const { model: currentWell } = useCurrentWell();
-  const { model: currentTrace, editing: traceEditing } = useCurrentTrace();
+  const currentWell = useCurrentWell();
+  const { model: currentTrace, editing: traceEditing } = useTraceManager();
 
   const [isMapExist, setIsMapExist] = useState(true);
   const mapState = useMapState(id);
@@ -57,11 +57,11 @@ export const Map = ({id, parent, channels}: SessionClient) => {
 
     const changeOwner = owner !== mapState.owner;
     const changeMapID = mapID !== mapState.mapID;
-    const objectName = activeChannel.info.currentRowObjectName;
+    const activeRowParameter = activeChannel.config.activeRowParameter;
 
-    if (objectName && (changeOwner || changeMapID)) {
+    if (activeRowParameter && (changeOwner || changeMapID)) {
       const value = rowToParameterValue(firstRow, activeChannel);
-      updateParamDeep(parent, objectName, value).then();
+      updateParamDeep(parent, activeRowParameter, value).then();
     }
     if (changeOwner) {
       setMapField(id, 'owner', owner);

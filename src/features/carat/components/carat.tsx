@@ -12,9 +12,9 @@ import { setCaratCanvas } from '../store/carat.actions';
 
 /** Каротажная диаграмма. */
 export const Carat = ({id}: SessionClient) => {
-  const { model: currentWell } = useCurrentWell();
-  const { model: currentTrace } = useCurrentTrace();
-  const { model: currentStratum } = useCurrentStratum();
+  const currentWell = useCurrentWell();
+  const currentStratum = useCurrentStratum();
+  const currentTrace = useCurrentTrace();
 
   const caratState = useCaratState(id);
   const { stage, canvas, channelNames, lookupNames, loading } = caratState;

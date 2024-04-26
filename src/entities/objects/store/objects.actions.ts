@@ -1,22 +1,45 @@
+import { PlaceManager } from '../lib/place';
+import { StratumManager } from '../lib/stratum';
+import { WellManager } from '../lib/well';
+import { TraceManager } from '../lib/trace';
 import { useObjectsStore } from './objects.store';
 
 
-/** Установить состояние активных объектов. */
-export function setObjects(objects: ObjectsState): void {
-  useObjectsStore.setState(objects, true);
+export function initializeObjects(parameters: Parameter[], channels: ChannelDict): ObjectsState {
+  const placeManager = new PlaceManager(parameters, channels);
+  const stratumManager = new StratumManager(parameters, channels);
+  const wellManager = new WellManager(parameters, channels);
+  const traceManager = new TraceManager(channels, wellManager.channelName);
+
+  const newState: ObjectsState = {
+    place: placeManager, stratum: stratumManager,
+    well: wellManager, trace: traceManager,
+  };
+  useObjectsStore.setState(newState, true);
+  return newState;
+}
+
+export function initializeObjectModels(parameters: Parameter[], channels: ChannelDict): void {
+  const { place, stratum, well, trace } = useObjectsStore.getState();
+  if (place.activated()) place.initializeModel(parameters);
+  if (stratum.activated()) stratum.initializeModel(parameters);
+  if (well.activated()) well.initializeModel(parameters);
+  if (trace.activated()) trace.initializeModel(parameters, channels);
+  useObjectsStore.setState({place, stratum, well, trace}, true);
 }
 
 /** Установить состояние трассы. */
 export function setCurrentTrace(model: TraceModel, creating?: boolean, editing?: boolean): void {
-  const state = useObjectsStore.getState();
-  const traceState = state.trace;
+  const traceManager = useObjectsStore.getState().trace;
+  if (model === undefined) model = traceManager.model;
+  if (creating === undefined) creating = traceManager.creating;
+  if (editing === undefined) editing = traceManager.editing;
 
-  if (model === undefined) model = traceState.model;
-  if (creating === undefined) creating = traceState.creating;
-  if (editing === undefined) editing = traceState.editing;
-
-  if (editing && !traceState.editing) {
-    traceState.oldModel = creating ? null : structuredClone(model);
+  if (editing && !traceManager.editing) {
+    traceManager.oldModel = creating ? null : structuredClone(model);
   }
-  useObjectsStore.setState({...state, trace: {...state.trace, model, creating, editing}}, true);
+  traceManager.editing = editing;
+  traceManager.creating = creating;
+  traceManager.model = model;
+  useObjectsStore.setState({trace: traceManager.clone()});
 }

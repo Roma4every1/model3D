@@ -5,7 +5,7 @@ import applyTraceChangesIcon from 'assets/images/trace/accept.png';
 
 
 interface ApplyTraceChangesProps {
-  trace: TraceState,
+  trace: ITraceManager,
 }
 
 

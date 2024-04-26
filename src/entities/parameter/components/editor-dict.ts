@@ -38,7 +38,7 @@ const editorDict: Record<string, FunctionComponent<EditorProps>> = {
 export function getEditor(parameter: Parameter, channel?: Channel): FunctionComponent<EditorProps> {
   let editor = editorDict[parameter.editor.type] ?? StringEditor;
   if (channel && parameter.type === 'tableRow' && editor === TableRowListEditor) {
-    if (channel.info.lookupColumns.parent.index >= 0) editor = TableRowTreeEditor;
+    if (channel.config.lookupColumns.parent.index >= 0) editor = TableRowTreeEditor;
   }
   return editor;
 }

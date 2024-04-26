@@ -7,7 +7,7 @@ import { createParameters, serializeParameter } from 'entities/parameter';
 
 interface ClientDataDTO {
   settings: any;
-  channels: AttachedChannel[];
+  channels: AttachedChannelDTO[];
   parameters: Parameter[];
   children?: ClientChildrenDTO;
   layout?: IJsonModel;
@@ -16,11 +16,6 @@ interface ClientDataDTO {
 
 export class ClientAPI {
   constructor(private readonly api: Fetcher) {}
-
-  /** Запрос корневой формы. */
-  public getRootForm(): Promise<Res<FormDataWM>> {
-    return this.api.get('/getRootForm');
-  }
 
   public getClientData(id: ClientID, type: ClientType): Promise<Res<ClientDataDTO>> {
     if (this.api.legacy) {
@@ -107,12 +102,12 @@ export class ClientAPI {
     return {ok: true, data: {settings, channels, parameters: []}};
   }
 
-  private getAttachedChannels(res: Res<any[]>): AttachedChannel[] {
+  private getAttachedChannels(res: Res<any[]>): AttachedChannelDTO[] {
     if (res.ok && res.data.length > 0) {
       if (typeof res.data[0] === 'object') {
         return res.data;
       } else {
-        return res.data.map(c => ({name: c, attachOption: 'AttachAll', exclude: []}));
+        return res.data.map(c => ({name: c}));
       }
     }
     return [];

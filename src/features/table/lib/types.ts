@@ -4,50 +4,54 @@ import { TFunction } from 'react-i18next';
 /** Серверный формат настроек формы **DataSet**. */
 export interface TableFormSettings {
   id: FormID;
-  columns: DataSetColumnsSettings;
-  attachedProperties: InitAttachedProperties;
-  headerSetterRules: HeaderSetterRule[];
+  toolbar?: TableToolbarSettings;
+  columnSettings?: DataSetColumnsSettings;
+  headerSetterRules?: HeaderSetterRule[];
+  exportToExcel?: true;
+  stat?: true;
+  selection?: true;
+  columnVisibility?: true;
 }
 
-/** Настройки отображаемых свойств канала.
- * @example
- * {attachOption: "AttachAll", exclude: ["CODE"]}
- * */
-export type InitAttachedProperties = Omit<AttachedProperties, 'list'>;
-
-interface DataSetColumnsSettings {
-  columnsSettings: DataSetColumnSettings[];
-  frozenColumnCount: number;
-  canUserFreezeColumns: boolean;
-  isTableMode: boolean;
-  alternate: boolean;
-  alternateRowBackground: any;
-  RowStyleSelector: RowStyleRule[];
+export interface DataSetColumnsSettings {
+  columns?: DataSetColumnSettings[];
+  columnGroups?: TableColumnGroupSettings[];
+  rowStyleRules?: RowStyleRule[];
+  tableMode?: boolean;
+  alternate?: boolean;
+  alternateBackground?: string;
+  fixedColumnCount?: number;
 }
 
 export interface DataSetColumnSettings {
-  channelPropertyName: string;
-  displayName: string;
-  headerBackground: string;
-  headerForeground: string;
-  background: string;
-  foreground: string;
-  typeFormat: string;
-  width: number;
-  isReadOnly: boolean;
-  isHeaderRotated: boolean;
-  hideIfEmpty: boolean;
-  displayIndex: number;
-  isVisible: boolean;
-  isContainsSearchMode: boolean;
+  property: string;
+  displayName?: string;
+  displayIndex?: number;
+  width?: number;
+  foreground?: string;
+  background?: string;
+  headerForeground?: string;
+  headerBackground?: string;
+  visible?: boolean;
+  readOnly?: boolean;
+  typeFormat?: string;
+}
+
+interface TableColumnGroupSettings {
+  name: string;
+  displayName?: string;
+  headerForeground?: string;
+  headerBackground?: string;
+  borderColor?: string;
+  borderWidth?: number;
 }
 
 export interface RowStyleRule {
   type: RowStyleConditionType;
-  param: string;
-  propertyName: string;
-  background: ColorHEX;
-  foreground: ColorHEX;
+  parameter?: string;
+  property: string;
+  foreground?: string;
+  background?: string;
 }
 export type RowStyleConditionType = 'equal' | 'not_empty';
 

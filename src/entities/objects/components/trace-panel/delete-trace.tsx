@@ -8,7 +8,7 @@ import deleteTraceIcon from 'assets/images/trace/detele-trace.png';
 
 
 interface DeleteTraceProps {
-  trace: TraceState;
+  trace: ITraceManager;
 }
 interface DeleteTraceWindowProps {
   model: TraceModel;

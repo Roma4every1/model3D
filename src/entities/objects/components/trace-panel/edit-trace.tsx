@@ -6,7 +6,7 @@ import editTraceIcon from 'assets/images/trace/edit-trace.png';
 
 interface EditTraceProps {
   /** Состояние трасс. */
-  trace: TraceState;
+  trace: ITraceManager;
   /** Есть ли на активной презентации карта. */
   hasMap: boolean;
 }

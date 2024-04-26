@@ -13,8 +13,8 @@ export const Profile = ({id, channels}: SessionClient) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const { canvas, stage, loading } = useProfileState(id);
+  const currentTrace = useCurrentTrace();
   const channelData = useChannelDict(channels.map(c => c.name));
-  const { model: currentTrace } = useCurrentTrace();
 
   useEffect(() => {
     setProfileData(id, currentTrace, channelData).then();

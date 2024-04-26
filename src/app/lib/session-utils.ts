@@ -31,7 +31,7 @@ export async function startNewSession(isDefault: boolean) {
   const systemName = appState.systemID;
   const res = await appAPI.startSession(systemName, isDefault);
 
-  if (res.ok === true) {
+  if (res.ok) {
     const intervalID = appState.sessionIntervalID;
     if (intervalID !== null) clearInterval(intervalID);
 
@@ -43,10 +43,10 @@ export async function startNewSession(isDefault: boolean) {
       showWarningMessage(t('messages.session-lost'));
     };
 
-    fetcher.setSessionID(fetcher.legacy ? res.data : res.data.id);
+    fetcher.setSessionID(res.data.id);
     appState.sessionIntervalID = window.setInterval(extendSession, 2 * 60 * 1000);
   } else {
-    showWarningMessage(res.data);
+    showWarningMessage(res.message);
   }
   return res;
 }

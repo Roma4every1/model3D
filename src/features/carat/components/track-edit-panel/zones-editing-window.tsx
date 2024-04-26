@@ -173,5 +173,5 @@ function zonesToState(zones: CaratZone[]): [ZoneList, Set<CaratCurveType>] {
 
 function stateToZones(state: ZoneList): CaratZone[] {
   const listToZone = (item: ZoneListItem) => item.type;
-  return state.map((list) => ({relativeWidth: null, types: list.map(listToZone)}));
+  return state.map((list) => ({types: list.map(listToZone)}));
 }

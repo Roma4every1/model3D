@@ -93,7 +93,7 @@ const ScaleSection = ({stage, track}: CaratScalePanelProps) => {
 
 const NavigationSection = ({stage, track}: CaratScalePanelProps) => {
   const { t } = useTranslation();
-  const { model: currentStratum } = useCurrentStratum();
+  const currentStratum = useCurrentStratum();
 
   const [isOpen, setIsOpen] = useState(false);
   const [anchor, setAnchor] = useState(null);
@@ -108,7 +108,7 @@ const NavigationSection = ({stage, track}: CaratScalePanelProps) => {
   const nameDict: LookupDict<string> = useMemo(() => {
     const rows = lookupData?.data?.rows;
     if (!rows) return {};
-    return createLookupList(rows, lookupData.info.lookupColumns)[1];
+    return createLookupList(rows, lookupData.config.lookupColumns)[1];
   }, [lookupData]);
 
   const showStrata = (event: MouseEvent) => {

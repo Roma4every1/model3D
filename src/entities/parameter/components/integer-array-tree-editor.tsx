@@ -48,7 +48,7 @@ function getDataValues(channel: Channel) {
   const rows = channel?.data?.rows;
   if (!rows) return [];
 
-  const lookupColumns = channel.info.lookupColumns;
+  const lookupColumns = channel.config.lookupColumns;
   const idIndex = lookupColumns.id.index;
   let valueIndex = lookupColumns.value.index;
   if (valueIndex === -1) valueIndex = idIndex;

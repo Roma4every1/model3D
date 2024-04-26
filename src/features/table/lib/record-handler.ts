@@ -61,11 +61,11 @@ export class RecordHandler implements ITableRecordHandler {
       const rows = channel.data?.rows;
       if (!rows?.length) { column.lookupData = []; column.lookupDict = {}; continue; }
 
-      const columnsInfo = channel.info.lookupColumns;
-      const isTree = columnsInfo.parent.index >= 0;
+      const lookupColumns = channel.config.lookupColumns;
+      const isTree = lookupColumns.parent.index >= 0;
       if (isTree) column.type = 'tree';
 
-      const [lookup, dict] = (isTree ? createLookupTree : createLookupList)(rows, columnsInfo);
+      const [lookup, dict] = (isTree ? createLookupTree : createLookupList)(rows, lookupColumns);
       column.lookupData = lookup;
       column.lookupDict = dict;
     }
@@ -134,12 +134,12 @@ export class RecordHandler implements ITableRecordHandler {
 }
 
 function rowToRecordStyleRule(rule: RowStyleRule): RecordStyleRule {
-  const { propertyName: column, param, background, foreground } = rule;
+  const { property: column, parameter, background, foreground } = rule;
   let compareValue = null;
   let style: CSSProperties;
 
-  if (rule.type === 'equal' && param) {
-    compareValue = param;
+  if (rule.type === 'equal' && parameter) {
+    compareValue = parameter;
   }
   if (background || foreground) {
     style = {};

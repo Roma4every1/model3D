@@ -3,7 +3,7 @@ import { parseDBPrimitive } from '../lib/utils';
 
 
 export function cellToParameterValue(row: ChannelRow, channel: Channel): TypedCell {
-  const idIndex = channel.info.lookupColumns.id.index;
+  const idIndex = channel.config.lookupColumns.id.index;
   const value = row[idIndex];
   const type = value === null ? 'System.DBNull' : channel.data.columns[idIndex].type;
   return {type, value};

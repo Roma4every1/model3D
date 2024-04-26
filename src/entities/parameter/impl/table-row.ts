@@ -4,7 +4,7 @@ import { parseDBPrimitive } from '../lib/utils';
 
 export function rowToParameterValue(row: ChannelRow, channel: Channel): Record<string, TypedCell> {
   const value: Record<string, TypedCell> = {};
-  const properties = channel.info.properties;
+  const properties = channel.config.properties;
 
   channel.data?.columns.forEach(({name, type}: ChannelColumn, i: number) => {
     const cellValue = row[i];

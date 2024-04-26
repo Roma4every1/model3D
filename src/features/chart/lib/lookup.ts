@@ -22,7 +22,7 @@ export function applyLookupToMarks(marks: ChartMarkProps[], data: ChannelDict) {
       const channel = data[lookupName];
       if (!channel || !channel.data) continue;
 
-      const lookupColumns = channel.info.lookupColumns;
+      const lookupColumns = channel.config.lookupColumns;
       const idIndex = lookupColumns.id.index;
       if (idIndex === -1) continue;
 

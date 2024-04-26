@@ -1,0 +1,162 @@
+import type { ParameterUpdateEntries } from 'entities/parameter';
+import { getDataTypeName } from 'shared/lib';
+import { cellsToRecords, RecordInfoCreator } from 'entities/channel';
+import { traceChannelCriterion } from './constants';
+
+
+export class TraceManager implements ITraceManager {
+  /** Текущая активная трасса. */
+  public model: TraceModel | null = null;
+  /** Модель трассы до внесения изменений. */
+  public oldModel: TraceModel | null = null;
+  /** Создаётся ли трасса. */
+  public creating: boolean;
+  /** Является ли активная трасса редактируемой. */
+  public editing: boolean;
+
+  /** Название канала с трассами. */
+  public readonly channelName: ChannelName | undefined;
+  /** Название канала с узлами трасс. */
+  public readonly nodeChannelName: ChannelName | undefined;
+  /** Идентификатор параметра с трассами. */
+  public readonly parameterID: ParameterID | undefined;
+
+  private readonly wellChannelName: ChannelName;
+  private readonly info: ChannelRecordInfo<keyof TraceModel>;
+
+  constructor(channels: ChannelDict, wellChannelName: ChannelName) {
+    const traceChannel = channels['traces'];
+    if (!traceChannel) return;
+    this.channelName = traceChannel.name;
+    this.wellChannelName = wellChannelName;
+
+    this.parameterID = traceChannel.config.activeRowParameter;
+    if (!this.parameterID) return;
+
+    this.info = new RecordInfoCreator(channels).create(traceChannel, traceChannelCriterion);
+    if (!this.info) return;
+
+    const nodeDetails = this.info.nodes.details;
+    if (!nodeDetails.traceID) {
+      const columnName = 'WELLS_LIST_ID';
+      nodeDetails.traceID = {propertyName: columnName, columnName};
+    }
+
+    const nodePropertyName = this.info.nodes.propertyName;
+    const nodeProperty = traceChannel.config.properties.find(p => p.name === nodePropertyName);
+    this.nodeChannelName = channels[nodeProperty.detailChannel].name;
+  }
+
+  public clone(): TraceManager {
+    const clone = {...this};
+    Object.setPrototypeOf(clone, TraceManager.prototype);
+    return clone;
+  }
+
+  public activated(): boolean {
+    return this.info !== undefined;
+  }
+
+  public initializeModel(parameters: Parameter[], channels: ChannelDict): void {
+    const wellChannel = channels[this.wellChannelName];
+    const nodeChannel = channels[this.nodeChannelName];
+    const traceParameter = parameters.find(p => p.id === this.parameterID);
+    const traceRow = traceParameter.getValue() as ParameterValueMap['tableRow'];
+    if (traceRow) this.model = this.createModel(traceRow, nodeChannel, wellChannel);
+  }
+
+  public onParameterUpdate(entries: ParameterUpdateEntries, channels: ChannelDict): boolean {
+    const entry = entries.find(e => e.id === this.parameterID);
+    if (!entry) return false;
+    const oldModel = this.model;
+    const wellChannel = channels[this.wellChannelName];
+    const nodeChannel = channels[this.nodeChannelName];
+    this.model = this.createModel(entry.value, nodeChannel, wellChannel);
+    return this.model === oldModel;
+  }
+
+  private createModel(value: ParameterValueMap['tableRow'], nodeChannel: Channel, wellChannel: Channel): TraceModel {
+    if (!value || !this.info) return null;
+    const traceID = value[this.info.id.propertyName]?.value;
+    const nodes: TraceNode[] = [];
+
+    const nodeRecords = cellsToRecords(nodeChannel.data);
+    const wellRows = wellChannel.data?.rows;
+
+    const wellIDIndex = wellChannel.config.lookupColumns.id.index;
+    const wellNameIndex = wellChannel.config.lookupColumns.value.index;
+
+    const nodeInfo: ChannelRecordInfo<TraceNodeChannelFields> = this.info.nodes.details;
+    const traceIDColumn = nodeInfo.traceID.columnName;
+    const idColumn = nodeInfo.id.columnName;
+    const xColumn = nodeInfo.x.columnName;
+    const yColumn = nodeInfo.y.columnName;
+
+    for (const record of nodeRecords) {
+      if (record[traceIDColumn] !== traceID) continue;
+      const nodeID = Number(record[idColumn]);
+      const wellRow = wellRows?.find(row => row[wellIDIndex] === nodeID);
+      const name = wellRow ? wellRow[wellNameIndex] : null;
+      nodes.push({id: nodeID, name: name, x: record[xColumn], y: record[yColumn]});
+    }
+
+    return {
+      id: traceID,
+      name: value[traceChannelCriterion.properties.name.name as string]?.value,
+      place: Number(value[traceChannelCriterion.properties.place.name as string]?.value),
+      nodes,
+    };
+  }
+
+  public applyModelToChannelRow(traceChannel: Channel, row: ChannelRow): void {
+    const columns = traceChannel.data.columns;
+    const placeIndex = columns.findIndex(c => c.name === this.info.place.columnName);
+    const nameIndex = columns.findIndex(c => c.name === this.info.name.columnName);
+
+    if (placeIndex !== -1) {
+      let placeID: number | string = this.model.place;
+      const columnType = getDataTypeName(columns[placeIndex].type);
+      if (columnType === 'string') placeID = String(placeID);
+      row[placeIndex] = placeID;
+    }
+    if (nameIndex !== -1) {
+      row[nameIndex] = this.model.name;
+    }
+  }
+
+  /** Преобразует узлы трассы в массив записей канала. */
+  public getNodeChannelRows(columns: ChannelColumn[]): ChannelRow[] {
+    const info: ChannelRecordInfo<TraceNodeChannelFields> = this.info.nodes.details;
+    const findIndex = (name: ColumnName) => columns.findIndex(c => c.name === name);
+
+    const traceIndex = findIndex(info.traceID.columnName);
+    const idIndex = findIndex(info.id.columnName);
+    const xIndex = findIndex(info.x.columnName);
+    const yIndex = findIndex(info.y.columnName);
+    const orderIndex = findIndex(info.order.columnName);
+
+    return this.model.nodes.map((node, i): ChannelRow => {
+      const cells = new Array(columns.length).fill(null);
+      cells[traceIndex] = this.model.id;
+      cells[idIndex] = node.id;
+      cells[xIndex] = node.x;
+      cells[yIndex] = node.y;
+      cells[orderIndex] = i;
+      return cells;
+    });
+  }
+
+  public nodesChanged(): boolean {
+    const oldNodes = this.oldModel?.nodes ?? [];
+    const newNodes = this.model.nodes;
+    if (oldNodes.length !== newNodes.length) return true;
+
+    for (let i = 0; i < oldNodes.length; i++) {
+      const oldNode = oldNodes[i];
+      const newNode = newNodes[i];
+      if (oldNode.id !== newNode.id) return true;
+      if (oldNode.x !== newNode.x || oldNode.y !== newNode.y) return true;
+    }
+    return false;
+  }
+}

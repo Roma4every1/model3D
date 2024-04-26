@@ -316,35 +316,34 @@ type PolylineArcPath = number[];
 type IsArcClosed = boolean;
 
 interface PolylineBorderStyle {
-  guid: {_value: string};
-  name: {_value: string};
-  baseColor?: {_value: string};
-  baseThickness?: {_value: number};
+  guid: string;
+  name: string;
+  baseColor?: string;
+  baseThickness?: number;
+  strokeDashArray?: PolylineStrokeDashArray;
   Decoration?: BorderStyleDecoration[];
-  StrokeDashArrays?: {StrokeDashArray: StrokeDashArray[]}[];
+}
+
+interface PolylineStrokeDashArray {
+  data: string;
+  onBase: boolean;
+  color?: string;
 }
 
 interface BorderStyleDecoration {
-  initialInterval: {_value: number};
-  interval: {_value: number};
-  offsetX: {_value: number};
-  offsetY: {_value: number};
-  thickness?: {_value: number};
-  Shape: {Line?: ShapeLine[], Polyline?: any[]}[];
-}
-
-interface StrokeDashArray {
-  data: {_value: string};
-  onBase: {_value: boolean};
-  color?: {_value: string};
-  _text: any[];
+  initialInterval: number;
+  interval: number;
+  offsetX: number;
+  offsetY: number;
+  thickness?: number;
+  Shape: {Line?: ShapeLine[], Polyline?: any[]};
 }
 
 interface ShapeLine {
-  x1: {_value: number};
-  x2: {_value: number};
-  y1: {_value: number};
-  y2: {_value: number};
+  x1: number;
+  x2: number;
+  y1: number;
+  y2: number;
 }
 
 /* -- Label -- */

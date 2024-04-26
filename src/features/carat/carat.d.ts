@@ -44,7 +44,7 @@ interface CaratLoading {
 interface ICaratLoader {
   flag: number;
   cache: CurveDataCache;
-  setLoading: (l: Partial<CaratLoading>) => void;
+  onProgressChange: (l: Partial<CaratLoading>) => void;
 
   loadCaratData(ids: WellID[], channelData: ChannelDict): Promise<ChannelRecordDict[]>;
   loadCurveData(ids: CaratCurveID[], bySteps: boolean): Promise<CaratCurveID[]>;
@@ -158,7 +158,7 @@ interface CaratStageListeners {
 
 /** Трек каротажной диаграммы. */
 interface ICaratTrack {
-  wellName: WellName;
+  wellName: string;
   constructionMode: boolean;
   readonly rect: BoundingRect;
   readonly viewport: CaratViewport;

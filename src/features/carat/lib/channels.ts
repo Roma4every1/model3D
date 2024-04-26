@@ -24,7 +24,7 @@ export function applyStyle(
 ) {
   if (attachment.type === 'curve-set') {
     const colorPropertyName = attachment.info.type.name;
-    const colorProperty = channel.info.properties.find(p => p.fromColumn === colorPropertyName);
+    const colorProperty = channel.config.properties.find(p => p.fromColumn === colorPropertyName);
     const lookupName = colorProperty?.lookupChannels?.at(0);
     const info = createColumnInfo(dict[lookupName], curveColorCriterion);
     if (info) attachment.curveColorLookup = {name: lookupName, info, dict: null};
@@ -52,7 +52,7 @@ export function applyStyle(
         text: {name: textChannel, info: textInfo, dict: {}},
       });
     }
-    for (const property of channel.info.properties) {
+    for (const property of channel.config.properties) {
       if (property.name === caratChannelCriterionDict.lithology.stratumID) {
         attachment.namesChannel = property.lookupChannels[0];
       }
@@ -64,7 +64,7 @@ export function applyStyle(
 }
 
 function getAttachedProperties(attachment: CaratAttachedChannel, channel: Channel) {
-  const allProperties = channel.info.properties;
+  const allProperties = channel.config.properties;
   const { attachOption, exclude } = attachment;
 
   const checker = attachOption === 'AttachAll'

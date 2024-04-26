@@ -31,22 +31,22 @@ export const StyleTemplate = ({style, borderColor, borderWidth, borderStyle}: St
 
     if (style) {
       if (style.baseColor)
-        ctx.strokeStyle = style.baseColor._value;
+        ctx.strokeStyle = style.baseColor;
       else
         ctx.strokeStyle = borderColor;
       if (style.baseThickness)
-        ctx.lineWidth = thicknessCoefficient * style.baseThickness._value * defaultLineWidth * 0.001 * PIXEL_PER_METER;  // Thickness
+        ctx.lineWidth = thicknessCoefficient * style.baseThickness * defaultLineWidth * 0.001 * PIXEL_PER_METER;  // Thickness
       else
         ctx.lineWidth = thicknessCoefficient * (borderWidth || defaultLineWidth) * 0.001 * PIXEL_PER_METER;
-      if (style.StrokeDashArrays) {
-        const dashObj = style.StrokeDashArrays[0].StrokeDashArray[0];
-        if (dashObj.onBase._value) {
-          const dashes = dashObj.data._value.split(" ").map(Number);
+      if (style.strokeDashArray) {
+        const dashObj = style.strokeDashArray;
+        if (dashObj.onBase) {
+          const dashes = dashObj.data.split(' ').map(Number);
           for (let j = dashes.length - 1; j >= 0; j--) {
             dashes[j] = dashes[j] * thicknessCoefficient;
           }
           if (ctx.setLineDash) ctx.setLineDash(dashes);
-          if (dashObj.color) ctx.strokeStyle = dashObj.color._value;
+          if (dashObj.color) ctx.strokeStyle = dashObj.color;
         }
       }
 

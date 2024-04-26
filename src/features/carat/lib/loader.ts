@@ -7,15 +7,13 @@ import { channelDictToRecords } from './channels';
 export class CaratLoader implements ICaratLoader {
   /** Фиксированное название параметра для загрузки точек кривых. */
   private static readonly curveDataParameterID = 'currentCurveIds';
-  /** Фиксированное название параметра для загрузки инклинометрии. */
-  private static readonly inclinometryParameterID = 'currentWellGeom';
   /** Максимальное количество кривых в кеше. */
   private static readonly maxCacheCurveCount = 50;
 
   /** Флаг для преждевременной остановки загрузки. */
   public flag: number;
   /** Функция для обновления состояния загрузки на уровне интерфейса. */
-  public setLoading: (l: Partial<CaratLoading>) => void;
+  public onProgressChange: (l: Partial<CaratLoading>) => void;
 
   /** Кеш точек кривых. */
   public readonly cache: CurveDataCache;
@@ -34,7 +32,7 @@ export class CaratLoader implements ICaratLoader {
     curveDataChannel: CaratAttachedChannel, inclinometryChannel: CaratAttachedChannel,
   ) {
     this.flag = 0;
-    this.setLoading = () => {};
+    this.onProgressChange = () => {};
     this.cache = {};
     this.curveCounter = 0;
 
@@ -59,7 +57,7 @@ export class CaratLoader implements ICaratLoader {
     await this.loadCurveData(curveIDs, true);
 
     if (flag === this.flag && this.inclinometryChannel) {
-      this.setLoading({status: 'inclinometry', statusOptions: null});
+      this.onProgressChange({status: 'inclinometry', statusOptions: null});
       const inclinometryChannel = channelData[this.inclinometryChannel.name];
 
       if (inclinometryChannel?.data) {
@@ -94,7 +92,7 @@ export class CaratLoader implements ICaratLoader {
 
     const step = bySteps ? 5 : total;
     if (bySteps) {
-      this.setLoading({percentage: 0, status: 'curves', statusOptions: {count: 0, total}});
+      this.onProgressChange({percentage: 0, status: 'curves', statusOptions: {count: 0, total}});
     }
     const channelName = this.curveDataChannel.name;
 
@@ -126,7 +124,7 @@ export class CaratLoader implements ICaratLoader {
       if (bySteps) {
         const count = i + slice.length;
         const percentage = count / (total + 1) * 100;
-        this.setLoading({percentage, statusOptions: {count, total}});
+        this.onProgressChange({percentage, statusOptions: {count, total}});
       }
     }
     return idsToLoad;
@@ -161,7 +159,7 @@ export class CaratLoader implements ICaratLoader {
   /** Загружает данные инклинометрии по скважине. */
   private async loadInclinometry(row: ChannelRow, channel: Channel): Promise<ChannelRecord[]> {
     const channelName = this.inclinometryChannel.inclinometry.name;
-    const parameter = new TableRowParameter(CaratLoader.inclinometryParameterID, null);
+    const parameter = new TableRowParameter(channel.config.parameters[0], null);
     parameter.setValue(rowToParameterValue(row, channel));
 
     const res = await channelAPI.getChannelData(channelName, [parameter]);

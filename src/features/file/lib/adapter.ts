@@ -4,7 +4,7 @@ export function toFileViewState(payload: FormStatePayload): FileViewState {
   let useResources: boolean;
 
   for (const attachedChannel of formState.channels) {
-    const properties = channels[attachedChannel.name].info.properties;
+    const properties = channels[attachedChannel.name].config.properties;
     const property = properties.find(p => p.file);
     if (!property) continue;
 
@@ -13,9 +13,9 @@ export function toFileViewState(payload: FormStatePayload): FileViewState {
     const nameProperty = properties.find(p => p.name === nameFrom);
     if (nameProperty === undefined) continue;
 
-    attachedChannel.columnInfo = {
-      fileName: {name: nameProperty.fromColumn, index: -1}, // name
-      descriptor: {name: property.fromColumn, index: -1},   // data or path
+    attachedChannel.info = {
+      fileName: {propertyName: nameProperty.name, columnName: nameProperty.fromColumn},
+      descriptor: {propertyName: property.name, columnName: property.fromColumn}, // data or path
     };
     formState.channels = [attachedChannel];
     break;

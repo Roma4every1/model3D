@@ -1,162 +1,140 @@
 /** Активные объекты.
- * + `place`: {@link PlaceState} — месторождение
- * + `stratum`: {@link StratumState} — пласт
- * + `well`: {@link WellState} — скважина
- * + `trace`: {@link TraceState} — трасса
- * */
+ * + `place`: {@link IPlaceManager} — месторождение
+ * + `stratum`: {@link IStratumManager} — пласт
+ * + `well`: {@link IWellManager} — скважина
+ * + `trace`: {@link ITraceManager} — трасса
+ */
 interface ObjectsState {
   /** Месторождение. */
-  place: PlaceState;
+  place: IPlaceManager;
   /** Пласт. */
-  stratum: StratumState;
+  stratum: IStratumManager;
   /** Скважин. */
-  well: WellState;
+  well: IWellManager;
   /** Трасса. */
-  trace: TraceState;
+  trace: ITraceManager;
+}
+
+/** Менеджер активного объекта системы. */
+interface ActiveObjectManager<T> {
+  /** Модель активного объекта. */
+  model: T | null;
+  /** Если объект существует в системе, менеджер активен. */
+  activated(): boolean;
+  /** По текущему значению параметров системы иницализирует модель объекта. */
+  initializeModel(parameters: Parameter[], channels?: ChannelDict): void;
+  /** Метод, который вызывается при обновлении параметров системы. */
+  onParameterUpdate(entries: any[], channels?: ChannelDict): boolean;
 }
 
 /* --- Place --- */
 
-/** Состояние активного месторождения.
- * + `channelName`: {@link ChannelName}
- * + `parameterID`: {@link ParameterID}
- * + `model`: {@link PlaceModel}
- * */
-interface PlaceState {
+/** Состояние активного месторождения. */
+interface IPlaceManager extends ActiveObjectManager<PlaceModel> {
   /** Название канала с месторождениями. */
-  channelName: ChannelName | null;
+  channelName?: ChannelName;
   /** Идентификатор параметра месторождения. */
-  parameterID: ParameterID | null;
-  /** Текущее активное месторождение. */
-  model: PlaceModel | null;
+  parameterID?: ParameterID;
 }
 
 /** Модель месторождения.
  * + `id`: {@link PlaceID} — идентификатор
- * + `name`: {@link PlaceName} — название
- * + `objectName`: {@link PlaceObjName} — код объекта
- * */
+ * + `name: string` — название
+ */
 interface PlaceModel {
   /** Идентификатор месторождения. */
   id: PlaceID;
   /** Название месторождения. */
-  name: PlaceName;
-  /** Дополнительный дентификатор (код) месторождения. */
-  objectName: PlaceObjName
+  name: string;
 }
 
 /** Идентификатор месторождения. */
 type PlaceID = number;
-/** Название месторождения. */
-type PlaceName = string;
-/** Название объекта месторождения. */
-type PlaceObjName = string;
 
 /* --- Stratum --- */
 
-/** Состояние активного пласта.
- * + `channelName`: {@link ChannelName}
- * + `parameterID`: {@link ParameterID}
- * + `current`: {@link StratumModel}
- * */
-interface StratumState {
+/** Состояние активного пласта. */
+interface IStratumManager extends ActiveObjectManager<StratumModel> {
   /** Название канала с пластами. */
-  channelName: ChannelName | null;
+  channelName?: ChannelName;
   /** Идентификатор параметра пласта. */
-  parameterID: ParameterID | null;
-  /** Текущий активный пласт. */
-  model: StratumModel | null;
+  parameterID?: ParameterID;
 }
 
 /** Модель пласта.
  * + `id`: {@link StratumID} — идентификатор
- * + `name`: {@link StratumName} — название
- * */
+ * + `name: string` — название
+ */
 interface StratumModel {
   /** Идентификатор пласта. */
   id: StratumID;
   /** Название пласта. */
-  name: StratumName;
+  name: string;
 }
 
 /** Идентификатор пласта. */
 type StratumID = number;
-/** Название пласта. */
-type StratumName = string;
 
 /* --- Well --- */
 
-/** Состояние активной скважины.
- * + `channelName`: {@link ChannelName}
- * + `parameterID`: {@link ParameterID}
- * + `model`: {@link WellModel}
- * */
-interface WellState {
+/** Состояние активной скважины. */
+interface IWellManager extends ActiveObjectManager<WellModel> {
   /** Название канала со скважинами. */
-  channelName: ChannelName | null;
-  /** Идентификатор параметра скважины. */
-  parameterID: ParameterID | null;
-  /** Текущая активная скважина. */
-  model: WellModel | null;
+  channelName?: ChannelName;
+  /** Название параметрка со скважинами. */
+  parameterID?: ParameterID;
 }
 
 /** Модель скважины.
  * + `id`: {@link WellID} — идентификатор
- * + `name`: {@link WellName} — название
- * */
+ * + `name: string` — название
+ */
 interface WellModel {
   /** Идентификатор скважины. */
   id: WellID;
   /** Название скважины. */
-  name: WellName;
+  name: string;
 }
 
-/** Идентификатор скважины (`UWID`). */
+/** Идентификатор скважины. */
 type WellID = number;
-/** Название скважины. */
-type WellName = string;
 
 /* --- Trace --- */
 
-/** Состояние активной трассы.
- * + `channelName`: {@link ChannelName}
- * + `nodeChannelName`: {@link ChannelName}
- * + `parameterID`: {@link ParameterID}
- * + `model`: {@link TraceModel}
- * + `oldModel`: {@link TraceModel}
- * + `creating: boolean`
- * + `editing: boolean`
- * */
-interface TraceState {
+/** Состояние активной трассы. */
+interface ITraceManager extends ActiveObjectManager<TraceModel> {
   /** Название канала с трассами. */
-  channelName: ChannelName | null;
+  channelName?: ChannelName;
   /** Название канала с узлами трасс. */
-  nodeChannelName: ChannelName | null;
+  nodeChannelName?: ChannelName;
   /** Идентификатор параметра с трассами. */
-  parameterID: ParameterID | null;
-  /** Текущая активная трасса. */
-  model: TraceModel | null;
+  parameterID?: ParameterID;
   /** Модель трассы до внесения изменений. */
   oldModel: TraceModel | null;
   /** Создаётся ли трасса. */
   creating: boolean;
   /** Является ли активная трасса редактируемой. */
   editing: boolean;
+
+  clone(): ITraceManager;
+  nodesChanged(): boolean;
+  applyModelToChannelRow(traceChannel: Channel, row: ChannelRow): void;
+  getNodeChannelRows(columns: ChannelColumn[]): ChannelRow[];
 }
 
 /** Модель трассы.
  * + `id`: {@link TraceID} — идентификатор
  * + `place`: {@link PlaceID} — месторождение
- * + `name`: {@link TraceName} — название
+ * + `name: string` — название
  * + `nodes`: {@link TraceNode}[] — список узлов
- * */
+ */
 interface TraceModel {
   /** Идентификатор трассы. */
   id: TraceID;
   /** Идентификатор месторождения. */
   place: PlaceID;
   /** Название трассы. */
-  name: TraceName;
+  name: string;
   /** Список узлов трассы. */
   nodes: TraceNode[];
 }
@@ -166,7 +144,7 @@ interface TraceNode {
   /** Идентификатор узла. */
   id: WellID;
   /** Название узла. */
-  name: WellName;
+  name: string;
   /** Координата узла по X. */
   x: number;
   /** Координата узла по Y. */
@@ -175,5 +153,6 @@ interface TraceNode {
 
 /** Идентификатор трассы. */
 type TraceID = number;
-/** Название трассы. */
-type TraceName = string;
+
+/** Поля узла трассы в БД. */
+type TraceNodeChannelFields = (keyof Omit<TraceNode, 'name'>) | 'traceID' | 'order';

@@ -1,5 +1,12 @@
-import { Res, Fetcher, fetcher } from 'shared/lib';
-import { SessionToSave } from './session-save';
+import type { Res } from 'shared/lib';
+import type { SessionToSave } from './session-save';
+import { Fetcher, fetcher } from 'shared/lib';
+
+
+interface StartSessionDTO {
+  id: SessionID;
+  root: ClientID;
+}
 
 
 export class AppAPI {
@@ -13,10 +20,16 @@ export class AppAPI {
   }
 
   /** Новая сессия. */
-  public startSession(systemID: SystemID, isDefault: boolean): Promise<Res> {
+  public async startSession(systemID: SystemID, isDefault: boolean): Promise<Res<StartSessionDTO>> {
     if (this.api.legacy) {
       const query = {systemName: systemID, defaultConfiguration: isDefault};
-      return this.api.get('/startSession', {query});
+      const resSession = await this.api.get<SessionID>('/startSession', {query});
+      if (!resSession.ok) return resSession as any;
+
+      const headers: HeadersInit = {'x-session-id': resSession.data};
+      const resRoot = await this.api.get<FormDataWM>('/getRootForm', {headers});
+      if (!resRoot.ok) return resRoot as any;
+      return {ok: true, data: {id: resSession.data, root: resRoot.data.id}};
     } else {
       const query = {system: systemID, default: isDefault};
       return this.api.get('/session', {query});

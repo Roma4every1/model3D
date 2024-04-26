@@ -1,9 +1,23 @@
-import { updateParamDeep, rowToParameterValue } from 'entities/parameter';
+import { ParameterUpdateEntries, updateParamDeep, rowToParameterValue } from 'entities/parameter';
 import { useChannelStore, reloadChannel, reloadChannelsByQueryIDs, channelAPI } from 'entities/channel';
-import { applyModelToRow, isNodesEqual, traceToNodeChannelRows } from '../lib/common';
 import { setCurrentTrace } from './objects.actions';
 import { useObjectsStore } from './objects.store';
 
+
+/** По данным обновления параметров обновляет активные объекты. */
+export function updateObjects(entries: ParameterUpdateEntries): void {
+  const channels = useChannelStore.getState();
+  const { place, stratum, well, trace } = useObjectsStore.getState();
+
+  const placeUpdated = place.activated() && place.onParameterUpdate(entries);
+  const stratumUpdated = stratum.activated() && stratum.onParameterUpdate(entries);
+  const wellUpdated = well.activated() && well.onParameterUpdate(entries);
+  const traceUpdated = trace.activated() && trace.onParameterUpdate(entries, channels);
+
+  if (placeUpdated || stratumUpdated || wellUpdated || traceUpdated) {
+    useObjectsStore.setState({place, stratum, well, trace}, true);
+  }
+}
 
 /** Обновление параметры скважины. */
 export async function setCurrentWell(id: WellID): Promise<void> {
@@ -11,7 +25,7 @@ export async function setCurrentWell(id: WellID): Promise<void> {
   if (model && model.id === id) return;
   const wellChannel = useChannelStore.getState()[channelName];
 
-  const idIndex = wellChannel.info.lookupColumns.id.index;
+  const idIndex = wellChannel.config.lookupColumns.id.index;
   const row = wellChannel.data?.rows.find(r => r[idIndex] === id);
   if (!row) return;
 
@@ -21,45 +35,46 @@ export async function setCurrentWell(id: WellID): Promise<void> {
 
 /** Создание новой трассы. */
 export async function createTrace(model: TraceModel): Promise<void> {
-  const { channelName, parameterID } = useObjectsStore.getState().trace;
-  const traceChannel = useChannelStore.getState()[channelName];
+  const traceManager = useObjectsStore.getState().trace;
+  const traceChannel = useChannelStore.getState()[traceManager.channelName];
   const traceQueryID = traceChannel.data.queryID;
 
   const { ok, data: newRow } = await channelAPI.getNewRow(traceQueryID);
   if (!ok) return;
 
   // id новой трассы берётся из newRow
-  model.id = newRow[traceChannel.info.columns.id.index];
-  applyModelToRow(traceChannel, newRow, model);
+  model.id = newRow[traceChannel.config.lookupColumns.id.index];
+  traceManager.model = model;
+  traceManager.applyModelToChannelRow(traceChannel, newRow);
 
   await channelAPI.insertRows(traceQueryID, [newRow]).then();
   await reloadChannel(traceChannel.name);
 
-  const rowValue = rowToParameterValue(newRow, traceChannel);
-  await updateParamDeep('root', parameterID, rowValue);
+  const value = rowToParameterValue(newRow, traceChannel);
+  await updateParamDeep('root', traceManager.parameterID, value);
   setCurrentTrace(model, true, true);
 }
 
 /** Сохранение изменений трассы. */
 export async function saveTrace(): Promise<void> {
-  const { model, oldModel, channelName, parameterID } = useObjectsStore.getState().trace;
+  const traceManager = useObjectsStore.getState().trace;
+  const { model, channelName, nodeChannelName, parameterID } = traceManager;
   const traceChannel = useChannelStore.getState()[channelName];
   const traceData = traceChannel.data;
 
-  const idIndex = traceChannel.info.columns.id.index;
+  const idIndex = traceChannel.config.lookupColumns.id.index;
   const index = traceData.rows.findIndex(row => row[idIndex] === model.id);
   const row = traceData.rows[index];
-  applyModelToRow(traceChannel, row, model);
+  traceManager.applyModelToChannelRow(traceChannel, row);
 
   await channelAPI.updateRows(traceData.queryID, [index], [row]);
   await reloadChannel(traceChannel.name);
 
-  if (!isNodesEqual(oldModel?.nodes ?? [], model.nodes)) {
-    const objects = useObjectsStore.getState();
-    const nodeChannel = useChannelStore.getState()[objects.trace.nodeChannelName];
+  if (traceManager.nodesChanged()) {
+    const nodeChannel = useChannelStore.getState()[nodeChannelName];
     const queryID = nodeChannel.data.queryID;
 
-    const nodeRows = traceToNodeChannelRows(nodeChannel, objects.trace.model);
+    const nodeRows = traceManager.getNodeChannelRows(nodeChannel.data.columns);
     await channelAPI.removeRows(queryID, 'all');
     await channelAPI.insertRows(queryID, nodeRows).then();
     await reloadChannel(nodeChannel.name);
@@ -73,14 +88,13 @@ export async function saveTrace(): Promise<void> {
 /** Удаление трассы. */
 export async function deleteTrace(): Promise<void> {
   const channels = useChannelStore.getState();
-  const objects = useObjectsStore.getState();
-  const traceState = objects.trace;
-  const traceData = channels[traceState.channelName].data;
+  const traceManager = useObjectsStore.getState().trace;
+  const traceData = channels[traceManager.channelName].data;
 
   const traceQueryID = traceData.queryID;
-  const nodesQueryID = channels[traceState.nodeChannelName].data.queryID;
+  const nodesQueryID = channels[traceManager.nodeChannelName].data.queryID;
 
-  const rowIndex = traceData.rows.findIndex(row => row[0] === traceState.model.id);
+  const rowIndex = traceData.rows.findIndex(row => row[0] === traceManager.model.id);
   if (rowIndex === -1) return;
 
   await Promise.all([
@@ -89,6 +103,6 @@ export async function deleteTrace(): Promise<void> {
   ]);
 
   await reloadChannelsByQueryIDs([traceQueryID, nodesQueryID]);
-  await updateParamDeep('root', traceState.parameterID, null);
+  await updateParamDeep('root', traceManager.parameterID, null);
   setCurrentTrace(undefined, false, false);
 }

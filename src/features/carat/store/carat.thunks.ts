@@ -26,7 +26,7 @@ export async function setCaratData(id: FormID, data: ChannelDict): Promise<void>
     return;
   }
 
-  loader.setLoading = (loading: Partial<CaratLoading>) => {
+  loader.onProgressChange = (loading: Partial<CaratLoading>) => {
     if (loading.status) loading.status = 'carat.loading.' + loading.status;
     setCaratLoading(id, loading);
   };
@@ -44,6 +44,6 @@ export async function setCaratData(id: FormID, data: ChannelDict): Promise<void>
 
   stage.setData(caratData, loader.cache);
   loader.checkCacheSize();
-  loader.setLoading({percentage: 100});
+  loader.onProgressChange({percentage: 100});
   stage.render();
 }

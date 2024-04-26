@@ -10,7 +10,7 @@ type TableColumnID = string;
  * + `selected: boolean` — выделение
  * + `cells: any[]` — оригинальные значения
  * + `style: CSSProperties` — переопределяемые CSS свойства ячеек
- * */
+ */
 type TableRecord = Record<TableColumnID, any>;
 
 /** Хранилище состояний таблиц. */
@@ -29,7 +29,9 @@ interface TableState {
   /** Является ли таблица редактируемой. */
   editable: boolean;
   /** Настройки отображаемых свойств канала. */
-  properties: AttachedProperties;
+  properties: ChannelProperty[];
+  /** Настройки панели инструментов. */
+  toolbarSettings: TableToolbarSettings;
   /** Глобальные настройки колонок таблицы. */
   columnsSettings: TableColumnsSettings;
   /** Правила установки заголовков колонок. */
@@ -62,24 +64,16 @@ interface ITableRecordHandler {
   applyRecordEdit(record: TableRecord): void;
 }
 
-/** Ифнормация о свойствах колонок таблицы.
- * + `attachOption`: {@link AttachOptionType}
- * + `exclude: string[]`
- * + `list`: {@link ChannelProperty}[]
- * */
-interface AttachedProperties {
-  /** Опция присоединения свойств колонок таблицы. */
-  attachOption: AttachOptionType;
-  /** Список исключений для */
-  exclude: string[];
-  /** Итоговый список свойств, составленный по `attachOption` и `exclude`. */
-  list: ChannelProperty[];
-}
+type TableToolbarSettings = Partial<Record<TableToolbarElementID, boolean>>;
+
+type TableToolbarElementID =
+  'exportToExcel' | 'first' | 'last' | 'prev' | 'next' |
+  'add' | 'remove' | 'accept' | 'reject' | 'refresh';
 
 /** Параметр, связанный с текущей активной строкой таблицы.
  * + `id`: {@link ParameterID}
  * + `clientID`: {@link ClientID}
- * */
+ */
 interface ActiveRecordParameter {
   /** ID связанного параметра. */
   id: ParameterID;
@@ -95,12 +89,12 @@ interface TableColumnsSettings {
   isLockingEnabled: boolean;
   /** Доступно ли закрепление столбцов через GUI. */
   canUserLockColumns: boolean;
-  /** Всегда `true`, серверная настройка; на клиенте не используется. */
-  isTableMode: boolean;
+  /** Если `false`, то используется режим одной записи. */
+  tableMode: boolean;
   /** Если `true`, то строки раскрашиваются через 1 другим цветом. */
   alternate: boolean;
   /** Цвет раскраски, связанный с `alternate`. */
-  alternateRowBackground: string;
+  alternateBackground: string;
 }
 
 /** Правило установки заголовка колонки. */
@@ -147,7 +141,7 @@ interface TableColumnState {
   /** Данные из канала-справочника. */
   lookupData?: LookupList | LookupTree;
   /** Название канала для привязанной таблицы. */
-  linkedTableChannel?: ChannelName;
+  detailChannel?: ChannelName;
 }
 
 /** Поддерживаемые типы колонок.
@@ -158,7 +152,7 @@ interface TableColumnState {
  * + `date` — дата
  * + `list` — выборочное значение из **списка**
  * + `tree` — выборочное значение из **дерева**
- * */
+ */
 type TableColumnType = 'bool' | 'int' | 'real' | 'text' | 'date' | 'list' | 'tree';
 
 /** Дерево колонок таблицы. */
@@ -170,7 +164,7 @@ type ColumnTree = ColumnTreeItem[];
  * + `visible: boolean`
  * + `field?: string` — есть только у листьев
  * + `children`: {@link ColumnTreeItem}[] — есть только у групп
- * */
+ */
 interface ColumnTreeItem {
   title: string;
   paramTitle?: string;
@@ -186,7 +180,7 @@ type TableSelection = Record<TableRecordID, true>;
  * + `columnID:` {@link TableColumnID} `| null`
  * + `recordID:` {@link TableRecordID} `| null`
  * + `edited: boolean`
- * */
+ */
 interface TableActiveCell {
   /** ID колонки */
   columnID: TableColumnID | null;
@@ -199,7 +193,7 @@ interface TableActiveCell {
 /** Состояние редактирования таблицы.
  * + `isNew: boolean`
  * + `modified: boolean`
- * */
+ */
 interface TableEditState {
   /** Является ли редактируемая запись новой. */
   isNew: boolean;

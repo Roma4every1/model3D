@@ -23,7 +23,7 @@ export function createColumnTree(properties: ChannelProperty[], dict: DataSetCol
       node.children.push(nodeItem);
       node = nodeItem;
     }
-    const visible = dict[property.name]?.isVisible ?? true;
+    const visible = dict[property.name]?.visible ?? true;
     node.children.push({field: property.name, title: property.displayName, visible});
   }
   return groupTree.children;

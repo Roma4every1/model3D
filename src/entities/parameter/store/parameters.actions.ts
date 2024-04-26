@@ -8,7 +8,7 @@ export function addClientParameters(id: ClientID, parameters: Parameter[]): void
 }
 
 /** Обновить значение нескольких параметров. */
-export function updateParams(entries: ParameterUpdateEntries[]): void {
+export function updateParams(entries: ParameterUpdateEntries): void {
   const state = useParameterStore.getState();
   for (const { clientID, id, value } of entries) {
     const parameters = state[clientID];

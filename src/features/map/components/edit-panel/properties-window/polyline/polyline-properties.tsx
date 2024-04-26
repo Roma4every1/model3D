@@ -51,7 +51,7 @@ export const PolylineProperties = (props: PropertyWindowProps<MapPolyline>) => {
 
   const onBorderStyleChange = (event: DropDownListChangeEvent) => {
     polyline.borderstyle = event.value.borderStyle;
-    polyline.borderstyleid = event.value.style?.guid._value;
+    polyline.borderstyleid = event.value.style?.guid;
     if (typeof polyline.borderstyle === 'number') {
       polyline.borderstyleid = undefined;
       polyline.style = undefined;
@@ -94,11 +94,11 @@ export const PolylineProperties = (props: PropertyWindowProps<MapPolyline>) => {
     const data = stylesData.find(sd => sd?.key === borderStyleID)?.style;
     setBorderWidthDisabled(data?.baseThickness !== undefined);
     let newBorderColorDisabled = false;
-    if (data?.baseColor?._value) {
+    if (data?.baseColor) {
       newBorderColorDisabled = true;
     }
-    else if (data?.StrokeDashArrays) {
-      if (data?.StrokeDashArrays[0].StrokeDashArray[0]?.color?._value) {
+    else if (data?.strokeDashArray) {
+      if (data.strokeDashArray.color) {
         newBorderColorDisabled = true;
       }
     }

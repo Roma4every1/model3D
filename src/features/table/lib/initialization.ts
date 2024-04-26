@@ -1,8 +1,4 @@
-import {
-  InitAttachedProperties, TableFormSettings,
-  DataSetColumnSettings, DataSetColumnDict, RowStyleRule,
-} from './types';
-
+import { TableFormSettings, DataSetColumnSettings, DataSetColumnDict, RowStyleRule } from './types';
 import { RecordHandler } from './record-handler';
 import { getColumnWidth } from './common';
 import { createColumnTree, getFlatten } from './column-tree';
@@ -10,10 +6,8 @@ import { createColumnTree, getFlatten } from './column-tree';
 
 /** Модифицирует состояние колонок, после появления информации о типах. */
 export function applyColumnTypes(state: TableState, channelColumns: ChannelColumn[]) {
-  const propertyList = state.properties.list;
-
   channelColumns.forEach(({name, type, nullable }, i) => {
-    for (const property of propertyList.filter(p => p.fromColumn === name)) {
+    for (const property of state.properties.filter(p => p.fromColumn === name)) {
       const columnState = state.columns[property.name];
 
       if (columnState.lookupChannel) {
@@ -48,25 +42,20 @@ function getColumnType(netType: ColumnType): TableColumnType {
 /* --- --- --- */
 
 /** Функция, создающая состояние таблицы по её начальным настройкам. */
-export function settingsToTableState(payload: FormStatePayload): TableState {
-  const settings: TableFormSettings = payload.settings;
-  const channelName = payload.state.channels[0]?.name;
-  const channel = payload.channels[channelName];
+export function settingsToTableState(payload: FormStatePayload<TableFormSettings>): TableState {
+  const settings = payload.settings;
+  const attachedChannel = payload.state.channels[0];
+  const channel = payload.channels[attachedChannel?.name];
 
-  const allProperties = channel?.info.properties ?? [];
+  const allProperties = channel?.config.properties ?? [];
   if (channel && channel.query.limit === undefined) channel.query.limit = 100;
 
-  let { columns, attachedProperties } = settings;
-  if (!attachedProperties) attachedProperties = {attachOption: 'AttachNothing', exclude: []};
-  const properties = getDisplayedProperties(allProperties, attachedProperties);
-
-  if (columns?.columnsSettings.filter((col) => col.isVisible).length === 0) {
-    columns.columnsSettings.forEach((col) => { col.isVisible = true; })
-  } // временная заглушка
+  let { columnSettings: columns, toolbar } = settings;
+  const properties = attachedChannel?.attachedProperties ?? [];
 
   const columnsState: TableColumnsState = {};
   const settingsDict: DataSetColumnDict = {};
-  columns?.columnsSettings.forEach((col) => settingsDict[col.channelPropertyName] = col);
+  columns?.columns.forEach((col) => settingsDict[col.property] = col);
 
   properties.sort((a, b) => {
     const aIndex = settingsDict[a.name]?.displayIndex ?? 1000;
@@ -79,44 +68,44 @@ export function settingsToTableState(payload: FormStatePayload): TableState {
   });
 
   const ids = properties.map(p => p.name);
-  const lockedCount = columns?.frozenColumnCount ?? 0;
+  const lockedCount = columns?.fixedColumnCount ?? 0;
   for (let i = 0; i < lockedCount; i++) columnsState[ids[i]].locked = true;
 
   const columnsSettings: TableColumnsSettings = {
     lockedCount, isLockingEnabled: lockedCount > 0,
-    canUserLockColumns: columns?.canUserFreezeColumns ?? true,
+    canUserLockColumns: true,
     alternate: columns?.alternate ?? true,
-    alternateRowBackground: columns?.alternateRowBackground ?? 'none',
-    isTableMode: columns?.isTableMode ?? true,
+    alternateBackground: columns?.alternateBackground ?? 'none',
+    tableMode: columns?.tableMode ?? true,
   };
 
   const columnTree = createColumnTree(properties, settingsDict);
   const columnTreeFlatten = getFlatten(columnTree);
 
   let activeRecordParameter: ActiveRecordParameter = null;
-  const currentRowObjectName = channel?.info.currentRowObjectName;
+  const activeRowParameter = channel?.config.activeRowParameter;
 
-  if (currentRowObjectName) {
+  if (activeRowParameter) {
     for (const clientID in payload.parameters) {
       const paramList = payload.parameters[clientID];
-      const parameter = paramList.find(p => p.id === currentRowObjectName);
+      const parameter = paramList.find(p => p.id === activeRowParameter);
 
       if (parameter) {
         if (parameter.type === 'tableRow') {
-          activeRecordParameter = {id: currentRowObjectName, clientID};
+          activeRecordParameter = {id: activeRowParameter, clientID};
         }
         break;
       }
     }
   }
 
-  const rowStyleSelector = columns?.RowStyleSelector;
+  const rowStyleSelector = columns?.rowStyleRules;
   let rowStyleRules: RowStyleRule[] | null = null;
 
   if (rowStyleSelector?.length > 0) {
     rowStyleRules = [];
     for (const rule of rowStyleSelector) {
-      const propertyName = rule.propertyName;
+      const propertyName = rule.property;
       if (!propertyName) continue;
       const property = allProperties.find(p => p.name === propertyName);
       if (!property) continue;
@@ -133,8 +122,10 @@ export function settingsToTableState(payload: FormStatePayload): TableState {
     recordHandler: new RecordHandler(columnsState, rowStyleRules),
     queryID: null, editable: false, activeRecordParameter,
     headerSetterRules: settings.headerSetterRules ?? [],
-    channelName, columnsSettings, columns: columnsState, columnTree, columnTreeFlatten,
-    properties: {...attachedProperties, list: properties},
+    channelName: attachedChannel?.name,
+    toolbarSettings: toolbar,
+    columnsSettings, columns: columnsState, columnTree, columnTreeFlatten,
+    properties: properties,
     activeCell: {columnID: null, recordID: null, edited: false},
     selection: {}, total: 0, edit: {isNew: false, modified: false},
   };
@@ -149,18 +140,7 @@ function getColumn(property: ChannelProperty, settings: DataSetColumnSettings): 
     field: property.name, colIndex: -1,
     title, width, autoWidth,
     lookupChannel: property.lookupChannels[0],
-    linkedTableChannel: property.secondLevelChannelName,
-    readOnly: settings?.isReadOnly === true, locked: false,
+    detailChannel: property.detailChannel,
+    readOnly: settings?.readOnly === true, locked: false,
   };
-}
-
-/** Возвращает список свойств, по которому будут строиться колонки. */
-function getDisplayedProperties(allProperties: ChannelProperty[], attached: InitAttachedProperties) {
-  const option: AttachOptionType = attached?.attachOption ?? 'AttachNothing';
-  const excludeList: string[] = attached?.exclude ?? [];
-
-  const checker = option === 'AttachAll'
-    ? (property) => !excludeList.includes(property.name)
-    : (property) => excludeList.includes(property.name);
-  return allProperties.filter(checker);
 }

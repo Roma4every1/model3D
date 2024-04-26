@@ -18,10 +18,10 @@ export async function updateFileViewModel(id: FormID, data: ChannelData): Promis
   const flag = ++fileViewState.loadingFlag.current;
 
   const attachedChannel = formState.channels[0];
-  const fileColumnName = attachedChannel.columnInfo.descriptor.name;
+  const fileColumnName = attachedChannel.info.descriptor.columnName;
 
   const record = channelRowToRecord(activeRow, data.columns);
-  const fileName: string = record[attachedChannel.columnInfo.fileName.name];
+  const fileName: string = record[attachedChannel.info.fileName.columnName];
   let model = fileViewState.memo.find(memoModel => memoModel.fileName === fileName);
 
   if (model === undefined) {

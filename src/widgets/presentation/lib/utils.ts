@@ -3,11 +3,11 @@
  * Необходимо для автообновления данных каналов.
  * */
 export function applyChannelsDeps(channelDict: ChannelDict, paramDict: ParamDict) {
-  const channelParams: [ChannelName, ChannelInfo][] = [];
+  const channelParams: [ChannelName, ChannelConfig][] = [];
   for (const name in channelDict) {
-    const channelInfo = channelDict[name].info;
-    if (!channelInfo.clients) channelInfo.clients = new Set();
-    channelParams.push([name, channelInfo]);
+    const config = channelDict[name].config;
+    if (!config.clients) config.clients = new Set();
+    channelParams.push([name, config]);
   }
 
   for (const clientID in paramDict) {

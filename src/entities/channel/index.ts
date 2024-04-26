@@ -1,9 +1,10 @@
 export { channelAPI } from './lib/channel.api';
+export { RecordInfoCreator } from './lib/criterion';
 export { createChannels, fillChannels } from './lib/utils';
 export { createLookupList, createLookupTree } from './lib/lookup';
 
 export {
-  getExternalChannels, getLinkedChannels, getLookupChannels,
+  getParameterChannels, getDetailChannels, getLookupChannels,
   createColumnInfo, cellsToRecords, channelRowToRecord,
 } from './lib/common';
 

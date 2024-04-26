@@ -6,7 +6,7 @@ import { setChannels } from 'entities/channel';
 import { showNotification } from 'entities/notification';
 import { showWarningMessage } from 'entities/window';
 import { sessionFetchingStart, sessionFetchingEnd } from 'entities/fetch-state';
-import { createObjects, createObjectModels, setObjects } from 'entities/objects';
+import { initializeObjects, initializeObjectModels } from 'entities/objects';
 import { createLeftLayout, handlePresentationTree } from 'widgets/left-panel';
 import { createClientChannels } from 'widgets/presentation/lib/initialization';
 import { applyChannelsDeps } from 'widgets/presentation/lib/utils';
@@ -32,11 +32,10 @@ export async function saveSession(): Promise<void> {
 /** Инициализация новой сессии. */
 export async function startSession(isDefault: boolean): Promise<void> {
   sessionFetchingStart();
-  const resSessionID = await startNewSession(isDefault);
-  if (resSessionID.ok === false) { sessionFetchingEnd(resSessionID.message); return; }
+  const { ok, data: dto, message } = await startNewSession(isDefault);
+  if (!ok) { sessionFetchingEnd(message); return; }
 
-  const arg = typeof resSessionID.data === 'object' ? resSessionID.data.root : undefined;
-  const [root, parameters] = await createRootFormState(arg);
+  const [root, parameters] = await createRootFormState(dto.root);
   if (!root) { sessionFetchingEnd(t('messages.root-fetch-error')); return; }
 
   const paramDict = {root: parameters};
@@ -49,29 +48,23 @@ export async function startSession(isDefault: boolean): Promise<void> {
   setChannels(channels);
   setRootFormState(root);
 
-  const objects = createObjects();
+  const objects = initializeObjects(parameters, channels);
   root.layout.common.traceExist = Boolean(objects.trace.parameterID);
-  setObjects(objects);
 
-  setSessionID(resSessionID.data);
+  setSessionID(dto.id);
   sessionFetchingEnd();
 
   for (const name in channels) channels[name] = {...channels[name]};
   await fillChannels(channels, paramDict);
   setChannels(channels);
-  setObjects(createObjectModels());
+  initializeObjectModels(parameters, channels);
 }
 
-async function createRootFormState(id?: ClientID): Promise<[RootFormState, Parameter[]]> {
-  if (!id) { // in the case of the legacy API
-    const { ok, data } = await clientAPI.getRootForm();
-    if (!ok) return [null, null];
-    id = data.id;
-  }
-  const res = await clientAPI.getClientData(id, 'dock');
-  if (!res.ok) return [null, null];
+async function createRootFormState(id: ClientID): Promise<[RootFormState, Parameter[]]> {
+  const { ok, data } = await clientAPI.getClientData(id, 'dock');
+  if (!ok) return [null, null];
 
-  const { children: childrenRaw, settings, layout: layoutRaw, parameters } = res.data;
+  const { children: childrenRaw, settings, layout: layoutRaw, parameters } = data;
   const { children, activeChildren: [activeChildID] } = childrenRaw;
 
   const layout = {common: new LayoutManager(layoutRaw.layout), left: createLeftLayout(layoutRaw)};

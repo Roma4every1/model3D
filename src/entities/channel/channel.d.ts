@@ -3,17 +3,17 @@ type ChannelDict = Record<ChannelName, Channel>;
 /** Словарь записей каналов. */
 type ChannelRecordDict = Record<ChannelName, ChannelRecord[]>;
 
-/** Модель канала данных.
+/** Модель канала.
  * + `name`: {@link ChannelName}
- * + `info`: {@link ChannelInfo}
+ * + `config`: {@link ChannelConfig}
  * + `data`: {@link ChannelData}
  * + `query`: {@link ChannelQuerySettings}
- * */
+ */
 interface Channel {
   /** Уникальное название канала. */
   readonly name: ChannelName;
-  /** Информация о канале. */
-  readonly info: ChannelInfo;
+  /** Конфигурация канала. */
+  readonly config: ChannelConfig;
   /** Данные из базы. */
   data: ChannelData | null;
   /** Настройки запроса данных. */
@@ -22,7 +22,7 @@ interface Channel {
 
 /** Идентификатор канала с данными. */
 type ChannelName = string;
-/** ID для API редактирования записей. */
+/** ID, который используется в серверных запросах редактирования данных. */
 type QueryID = string;
 
 /** Данные канала.
@@ -63,46 +63,33 @@ type ChannelRow = any[];
 
 /** Словарь значений по названиям **колонок**. */
 type ChannelRecord = Record<ColumnName, any>;
-/** Название колонки канала; всегда имеет верхний регистр. */
+/** Название колонки в датасете. */
 type ColumnName = string;
 
-/** Тип данных колонки канала.
+/** Название типа данных колонки.
  * @example
- * "System.Int32"
- * "System.Decimal"
+ * "i32"
  * "System.String"
  * "System.Byte[]"
- * */
+ */
 type ColumnType = string;
 
-/** Информация о канале, не меняющаяся в течение сессии.
- * + `displayName`: string
- * + `parameters`: {@link ParameterID}[]
- * + `properties`: {@link ChannelProperty}[]
- * + `currentRowObjectName`: {@link ParameterID}
- * + `clients`: {@link Set} of {@link FormID}
- * + `lookupChannels`: {@link ChannelName}[]
- * + `columns`: {@link ChannelColumnInfo}
- * + `lookupColumns`: {@link LookupColumns}
- * + `columnApplied: boolean`
- * */
-interface ChannelInfo {
+/** Информация о канале, не меняющаяся в течение сессии. */
+interface ChannelConfig {
   /** Название для отображения на интерфейсе. */
   readonly displayName: string;
-  /** Параметры канала. */
-  readonly parameters: ParameterID[];
   /** Свойства канала. */
   readonly properties: ChannelProperty[];
-  /** ID параметра, к которому привязан канал. */
-  readonly currentRowObjectName: ParameterID;
+  /** Параметры канала. */
+  readonly parameters: ParameterID[];
+  /** Список каналов справочников. */
+  readonly lookupChannels: ChannelName[];
+  /** Названия колонок, необходимых для справочников. */
+  readonly lookupColumns: LookupColumns;
+  /** Название параметра активной записи канала. */
+  readonly activeRowParameter?: ParameterID;
   /** ID форм, в которых лежат необходимые параметры. */
   clients?: Set<ClientID>;
-  /** Список каналов справочников. */
-  lookupChannels?: ChannelName[];
-  /** Информация о названиях и индексах колонок. */
-  columns?: ChannelColumnInfo;
-  /** Названия колонок, необходимых для справочников. */
-  lookupColumns?: LookupColumns;
   /** Были ли полученны данные о колонках канала. */
   columnApplied?: boolean;
 }
@@ -110,28 +97,28 @@ interface ChannelInfo {
 /** Дополнительные свойства колонки. */
 interface ChannelProperty {
   /** Название свойства. */
-  name: string;
-  /** Тип данных связанной колонки. */
-  type?: ColumnType;
+  readonly name: string;
   /** Какой колонке относится. */
   readonly fromColumn: ColumnName;
   /** Название для отображения на интерфейсе. */
-  readonly displayName: string;
-  /** Группировка относительно других колонок. */
+  readonly displayName?: string;
+  /** Путь в дереве свойств. */
   readonly treePath: string[];
-  /** Канал-справочник. */
+  /** Названия каналов-справочников. */
   readonly lookupChannels: ChannelName[];
   /** Название канала для привязанной таблицы. */
-  readonly secondLevelChannelName?: ChannelName;
+  readonly detailChannel?: ChannelName;
   /** Информация для свойства связанного с файлами. */
-  readonly file?: {nameFrom: string, fromResources: boolean};
+  readonly file?: {nameFrom: string, fromResources?: boolean};
+  /** Тип данных связанной колонки. */
+  type?: ColumnType;
 }
 
 /** Информация о колонках, необходимых для справочников.
  * + `id`: {@link LookupColumnInfo}
  * + `value`: {@link LookupColumnInfo}
  * + `parent`: {@link LookupColumnInfo}
- * */
+ */
 interface LookupColumns {
   /** Название и индекс колонки с идентификаторами. */
   id: LookupColumnInfo;
@@ -154,6 +141,77 @@ interface LookupColumnInfo {
 
 type ChannelCriterion<Fields extends string = string> = Record<Fields, ChannelColumnCriterion>;
 type ChannelColumnCriterion = string | {name: string, optional: boolean};
+
+/** Критерий канала. */
+interface ChannelCriterion2<P extends string = string> {
+  /** Условие на название. */
+  name?: StringMatcher;
+  /** Условие на свойства. */
+  properties?: ChannelPropertyCriteria<P>;
+}
+
+/** Критерии свойств канала. */
+type ChannelPropertyCriteria<P = string> = Record<P, ChannelPropertyCriterion>;
+
+/** Критерий свойства канала. */
+interface ChannelPropertyCriterion {
+  /** Название свойства должно совпадать с указанными паттерном. */
+  name?: StringMatcher;
+  /** Свойство должно ссылаться колонку с бинарным типом. */
+  binary?: boolean;
+  /** Свойство должно иметь указанные справочники. */
+  lookups?: Record<string, ChannelCriterion2>;
+  /** Свойство должно иметь указанный канал детализации. */
+  details?: ChannelCriterion2;
+
+  /** Является ли свойство обязательным.
+   * @default true
+   */
+  required?: boolean;
+}
+
+/** Критерии для справочников свойства. */
+type PropertyLookupCriteria<T extends string = string> = Record<T, ChannelCriterion2>;
+
+/* --- Info --- */
+
+/** Модель прикреплённого канала. */
+interface AttachedChannel<R = string> {
+  /** Название канала. */
+  readonly name: ChannelName;
+  /** Прикреплённые свойства канала. */
+  readonly attachedProperties: ChannelProperty[];
+  /** Тип прикреплённого канала. */
+  type?: string;
+  /** Информация о структуре данных канала. */
+  info?: ChannelRecordInfo<R>;
+  /** Дополнительная информация о канала, необходимая клиенту для работы. */
+  config?: any;
+}
+
+/** Информация о структуре данных канала. */
+type ChannelRecordInfo<T extends string = string> = Record<T, RecordPropertyInfo>;
+
+/** Информация о свойстве записи канала. */
+interface RecordPropertyInfo<L extends string = string> {
+  /** Название свойства канала. */
+  readonly propertyName: string;
+  /** Название колонки в датасете. */
+  readonly columnName?: ColumnName;
+  /** Индекс колонки в датасете. */
+  columnIndex?: number;
+  /** Название типа данных значения. */
+  dataType?: DataTypeName;
+  /** Информация о справочниках. */
+  lookups?: RecordLookupInfo<L>;
+  /** Информация о канале детализации. */
+  details?: ChannelRecordInfo;
+}
+
+/** Информация о справочниках свойства. */
+type RecordLookupInfo<T extends string = string> = Record<T, ChannelRecordInfo>;
+
+/* --- Query Settings --- */
 
 /** Настройки запроса данных. */
 interface ChannelQuerySettings {
@@ -178,7 +236,7 @@ type SortOrder = SortOrderItem[];
 /** Элемент порядка сортировки.
  * + `column`: {@link ColumnName}
  * + `direction`: {@link SortOrderDirection}
- * */
+ */
 interface SortOrderItem {
   /** Название колонки. */
   column: ColumnName;
@@ -189,7 +247,7 @@ interface SortOrderItem {
 /** Направление порядка.
  * + `asc`  — в порядке возрастания
  * + `desc` — в порядке убывания
- * */
+ */
 type SortOrderDirection = 'asc' | 'desc';
 
 /* --- Lookup --- */
@@ -200,7 +258,7 @@ type LookupList = LookupListItem[];
 /** Значение из канала справочника.
  * + `id: any`
  * + `value: any`
- * */
+ */
 interface LookupListItem {
   /** Идентификатор; обычно число. */
   id: LookupItemID;
@@ -216,7 +274,7 @@ type LookupTree = LookupTreeNode[];
  * + `value: any`
  * + `parent?`: {@link LookupItemID}
  * + `children?`: {@link LookupTreeNode}[]
- * */
+ */
 interface LookupTreeNode {
   /** Идентификатор; обычно число. */
   id: LookupItemID;

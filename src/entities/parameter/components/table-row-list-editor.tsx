@@ -30,7 +30,7 @@ export const TableRowListEditor = ({parameter, update, channel}: TableRowListEdi
   const [value, setValue] = useState(nullValue);
 
   const rows = channel?.data?.rows;
-  const lookupColumns = channel ? channel.info.lookupColumns : null;
+  const lookupColumns = channel?.config.lookupColumns;
 
   const options = useMemo(() => {
     return getSelectOptions(parameter, rows, lookupColumns);

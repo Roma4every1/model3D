@@ -23,7 +23,7 @@ interface CaratSettings {
 /** Зона распределения каротажных кривых. */
 interface CaratZone {
   /** Относительная ширина зоны. */
-  relativeWidth: number | null;
+  relativeWidth?: number;
   /** Типы кривых. */
   types: CaratCurveType[];
 }

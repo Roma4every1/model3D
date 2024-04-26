@@ -14,8 +14,8 @@ export interface ParameterInit {
   externalChannelName?: string | null;
 }
 
-/** Данные для обновления параметра. */
-export type ParameterUpdateEntries = {clientID: FormID, id: ParameterID, value: any};
+/** Массив объектов для обновления значений параметров. */
+export type ParameterUpdateEntries = {clientID: ClientID, id: ParameterID, value: any}[];
 
 /** Выражение параметра: вызов какого-либо метода.
  * @example

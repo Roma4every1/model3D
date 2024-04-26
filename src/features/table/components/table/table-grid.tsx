@@ -38,6 +38,7 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
   const [skip, setSkip] = useState(0);
   const pageSize = 50;
 
+  const isTableMode = state.columnsSettings?.tableMode;
   const { recordHandler, columns: columnsState, selection, activeCell, total, edit } = state;
   const activeRecordID = activeCell.recordID, activeColumnID = activeCell.columnID;
 
@@ -46,8 +47,6 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
 
   const isEditing = activeCell.edited;
   const selectedRecords = Object.keys(selection).map((n) => parseInt(n));
-
-  const isTableMode = state?.columnsSettings?.isTableMode
 
   const ref = useRef<HTMLDivElement>();
   const container = ref.current;

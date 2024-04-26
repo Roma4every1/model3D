@@ -1,5 +1,5 @@
 import { t } from 'shared/locales';
-import { clientAPI, addSessionClients } from 'entities/client';
+import { clientAPI, AttachedChannelFactory, addSessionClients } from 'entities/client';
 import { useObjectsStore } from 'entities/objects';
 import { createReportModels, setReportModels } from 'entities/report';
 import { useChannelStore, fillChannels, setChannels } from 'entities/channel';
@@ -44,15 +44,10 @@ export async function fetchPresentationState(id: ClientID): Promise<void> {
 
   const allChannels = {...useChannelStore.getState()};
   const channels = await createClientChannels(baseChannels, parameters, Object.keys(allChannels));
-  const errorChannels: Set<ChannelName> = new Set();
 
   for (const name in channels) {
     const channel = channels[name];
-    if (channel) {
-      allChannels[name] = channel;
-    } else {
-      errorChannels.add(name);
-    }
+    if (channel) allChannels[name] = channel;
   }
   applyChannelsDeps(allChannels, paramDict);
 
@@ -66,10 +61,7 @@ export async function fetchPresentationState(id: ClientID): Promise<void> {
       errorForms.push({id: childID, details: t('messages.form-fetch-error')});
       continue;
     }
-    if (client.channels.some(c => errorChannels.has(c.name))) {
-      errorForms.push({id: childID, details: t('messages.form-channel-error')});
-      continue;
-    }
+    client.channels = new AttachedChannelFactory(allChannels).createModels(client.channels);
     successForms.push(childID);
 
     const creator = createFormDict[client.type];

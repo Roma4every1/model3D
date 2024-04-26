@@ -1,7 +1,7 @@
 import { InclinometryModePlugin } from './inclinometry-mode.plugin';
 
 
-/** Возвращает коллбэк для создания экземпляра класса плагина. */
+/** Словарь плагинов карты. */
 export const mapPluginDict = {
   wellsLinkedClients: InclinometryModePlugin,
 };

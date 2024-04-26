@@ -34,7 +34,7 @@ export const getChartProto = (
     if (settings.xAxisType !== 'Dates') continue;
 
     const columns = channel.data.columns;
-    const properties = channel.info.properties;
+    const properties = channel.config.properties;
     const axesSettings = settings.axesSettings;
 
     for (const yAxisID in axesSettings) {

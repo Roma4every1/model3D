@@ -34,7 +34,7 @@ export class CaratTrack implements ICaratTrack {
   private readonly backgroundGroup: CaratColumnGroup;
 
   /** Название скважины трека. */
-  public wellName: WellName;
+  public wellName: string;
   /** Подпись трека. */
   private label: string;
   /** Высота заголовков групп колонок. */
@@ -89,7 +89,7 @@ export class CaratTrack implements ICaratTrack {
   /* --- Getters --- */
 
   /** Копия трека под заданные место и скважину. */
-  public cloneFor(rect: Rectangle, wellName: WellName): CaratTrack {
+  public cloneFor(rect: Rectangle, wellName: string): CaratTrack {
     const groups = this.groups.map(g => g.cloneFor(rect));
     groups.forEach(g => g.active = false);
     groups[0].active = true;

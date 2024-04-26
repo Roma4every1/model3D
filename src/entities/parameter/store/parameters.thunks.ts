@@ -26,7 +26,7 @@ export async function updateParamDeep(clientID: ClientID, id: ParameterID, newVa
   const relatedReports: Set<ReportID> = new Set(parameter.relatedReports);
   const relatedReportChannels: RelatedReportChannels[] = [...parameter.relatedReportChannels];
 
-  const updateParamData: ParameterUpdateEntries[] = [{clientID, id, value: newValue}];
+  const updateParamData: ParameterUpdateEntries = [{clientID, id, value: newValue}];
   if (dateChanging?.year === id) {
     const dateIntervalID = dateChanging.dateInterval;
     const dateInterval = clientParameters.find(p => p.id === dateIntervalID);
@@ -68,7 +68,7 @@ export async function updateParamDeep(clientID: ClientID, id: ParameterID, newVa
   updateObjects([{clientID, id, value: newValue}]);
 
   const channels = useChannelStore.getState();
-  const entries: ParameterUpdateEntries[] = [];
+  const entries: ParameterUpdateEntries = [];
   const reportEntries: RelatedReportChannels[] = [];
   const channelsToUpdate = new Set<ChannelName>();
 
@@ -76,7 +76,7 @@ export async function updateParamDeep(clientID: ClientID, id: ParameterID, newVa
     const updatedList = dependentParameters[clientID];
     for (const updatedParam of updatedList) {
       if (updatedIDs.has(updatedParam.id)) continue;
-      const updateData: ParameterUpdateEntries = {clientID, id: updatedParam.id, value: null};
+      const updateData = {clientID, id: updatedParam.id, value: null};
 
       if (updatedParam.editor?.canBeNull === false && updatedParam.channelName) {
         const channel = channels[updatedParam.channelName];

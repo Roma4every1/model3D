@@ -548,93 +548,69 @@ var polyline = declareType('polyline', {
     const context = options.context;
     context.beginPath();
 
-    var fillSegmentWithDecoration = function (ctx, lineConfig, point, lpoint, overhead, i, options) {
+    const fillSegmentWithDecoration = function (ctx, lineConfig, point, lpoint, overhead, i) {
       const scale = window.devicePixelRatio;
       const decorations = lineConfig.Decoration;
+      if (!decorations) { overhead = null; return; }
 
-      if (!decorations) {
-        overhead = null;
-        return;
-      }
+      for (let k = decorations.length - 1; k >= 0; k--) {
+        const decoration = decorations[k];
+        if (decoration.color) ctx.strokeStyle = decoration.color;
 
-      for (var k = decorations.length - 1; k >= 0; k--) {
-        var decoration = decorations[k];
+        ctx.lineWidth =
+          (decoration.thickness ?? 1) *
+          (i.style?.baseThickness ?? i.borderwidth ?? defaultLineWidth) * scale;
 
-        if (decoration.thickness) {
-          ctx.lineWidth = scale * decoration.thickness._value *
-            (i.style?.baseThickness ?? (i.borderwidth || defaultLineWidth)) *
-            0.001 *
-            options.dotsPerMeter;  // Thickness
-        } else {
-          ctx.lineWidth = scale * (i.style?.baseThickness ?? (i.borderwidth || defaultLineWidth)) * 0.001 * options.dotsPerMeter;
-        }
-        if (decoration.color)
-          ctx.strokeStyle = decoration.color._value;
+        var offx = decoration.offsetX * scale;
+        var offy = decoration.offsetY * scale;
 
-        var offx = decoration.offsetX._value * scale;
-        var offy = decoration.offsetY._value * scale;
-
-        var shape = decoration.Shape[0];
-        var lines = shape.Line;
-
+        var lines = decoration.Shape.Line;
         var l = 0;
-        var interval = decoration.interval._value * scale;
+        var interval = decoration.interval * scale;
         if (!overhead[k] || overhead[k] === 0) {
-          l = decoration.initialInterval._value * scale;
+          l = decoration.initialInterval * scale;
         } else {
           l = overhead[k];
         }
 
         // calculate the angle of the main line
-        var dx = point.x - lpoint.x;
-        var dy = point.y - lpoint.y;
-        var mainAngle = Math.atan2(dy, dx);
-        // ---
-        // calculate the length of the line
-        var lineLength = Math.sqrt(dx * dx + dy * dy);
-        // ---
+        let dx = point.x - lpoint.x;
+        let dy = point.y - lpoint.y;
+        const mainAngle = Math.atan2(dy, dx);
+        const lineLength = Math.sqrt(dx * dx + dy * dy);
 
         while (l < lineLength && interval > 0) {
           // calculate the start point for decoration
           // (overlay i over the line, get last point)
           dx = l;
           dy = 0;
-          var _dx = dx * Math.cos(mainAngle) - dy * Math.sin(mainAngle);
-          var _dy = dx * Math.sin(mainAngle) + dy * Math.cos(mainAngle);
-          var tempx = _dx + lpoint.x;
-          var tempy = _dy + lpoint.y;
+          let _dx = dx * Math.cos(mainAngle) - dy * Math.sin(mainAngle);
+          let _dy = dx * Math.sin(mainAngle) + dy * Math.cos(mainAngle);
+          const xTemp = _dx + lpoint.x;
+          const yTemp = _dy + lpoint.y;
           // ---
 
           // draw
-          for (var j = lines.length - 1; j >= 0; j--) {
-            var line = lines[j];
+          for (let j = lines.length - 1; j >= 0; j--) {
+            const line = lines[j];
+            const x1 = line.x1 * scale + xTemp + offx;
+            const y1 = line.y1 * scale + yTemp + offy;
+            const x2 = line.x2 * scale + xTemp + offx;
+            const y2 = line.y2 * scale + yTemp + offy;
+            const decorationAngle = mainAngle - Math.PI / 2;
 
-            var x1 = line.x1._value * scale + tempx + offx;
-            var y1 = line.y1._value * scale + tempy + offy;
-            var x2 = line.x2._value * scale + tempx + offx;
-            var y2 = line.y2._value * scale + tempy + offy;
-            // for customization purposes, I store the angle here as well
-            var decorationAngle = mainAngle - Math.PI / 2;
-            // turning the first point
-            dx = x1 - tempx;
-            dy = y1 - tempy;
+            dx = x1 - xTemp;
+            dy = y1 - yTemp;
             _dx = dx * Math.cos(decorationAngle) - dy * Math.sin(decorationAngle);
             _dy = dx * Math.sin(decorationAngle) + dy * Math.cos(decorationAngle);
-            var decx1 = _dx + tempx;
-            var decy1 = _dy + tempy;
-            // turning the second point
-            dx = x2 - tempx;
-            dy = y2 - tempy;
+            ctx.moveTo(_dx + xTemp, _dy + yTemp);
+
+            dx = x2 - xTemp;
+            dy = y2 - yTemp;
             _dx = dx * Math.cos(decorationAngle) - dy * Math.sin(decorationAngle);
             _dy = dx * Math.sin(decorationAngle) + dy * Math.cos(decorationAngle);
-            var decx2 = _dx + tempx;
-            var decy2 = _dy + tempy;
-
-            ctx.moveTo(decx1, decy1);
-            ctx.lineTo(decx2, decy2);
+            ctx.lineTo(_dx + xTemp, _dy + yTemp);
           }
-          // ---
-
           l += interval;
         }
         // If we have a line length of 10 and decoration interval of 3,
@@ -649,9 +625,6 @@ var polyline = declareType('polyline', {
           overhead[k] = l - lineLength;
         }
       }
-
-      // finalize
-      //return i - lineLength;
       return overhead;
     };
 
@@ -672,7 +645,7 @@ var polyline = declareType('polyline', {
             f = p;
             start = false;
           } else {
-            overhead = fillSegmentWithDecoration(context, lineConfig, p, lastPoint, overhead, i, options);
+            overhead = fillSegmentWithDecoration(context, lineConfig, p, lastPoint, overhead, i);
           }
           lastPoint = p;
           x = null;
@@ -680,7 +653,7 @@ var polyline = declareType('polyline', {
       }
       if (a.closed && i.arcs.length > 1 && f != null) {
         let s = options.pointToControl({x: a.path[0], y: a.path[1]});
-        overhead = fillSegmentWithDecoration(context, lineConfig, s, f, overhead, i, options);
+        overhead = fillSegmentWithDecoration(context, lineConfig, s, f, overhead, i);
       }
     }
     if (i.arcs.length === 1 && i.arcs[0].closed) {
@@ -689,7 +662,7 @@ var polyline = declareType('polyline', {
         x: i.arcs[0].path[i.arcs[0].path.length - 2],
         y: i.arcs[0].path[i.arcs[0].path.length - 1]
       });
-      fillSegmentWithDecoration(context, lineConfig, s, fi, overhead, i, options);
+      fillSegmentWithDecoration(context, lineConfig, s, fi, overhead, i);
       context.closePath();
     }
   },
@@ -698,11 +671,11 @@ var polyline = declareType('polyline', {
     /** @type CanvasRenderingContext2D */
     const context = options.context;
     const configThicknessCoefficient = window.devicePixelRatio;
-    const linesConfig = lines.BorderStyles[0].Element;
+    const linesConfig = lines;
 
     let currentLineConfig = [];
     if (i.borderstyleid) {
-      currentLineConfig = [linesConfig.find(e => e.guid._value === i.borderstyleid)];
+      currentLineConfig = [linesConfig.find(e => e.guid === i.borderstyleid)];
     }
     if (currentLineConfig.length !== 0) {
       i.style = currentLineConfig[0];
@@ -714,7 +687,7 @@ var polyline = declareType('polyline', {
     }
 
     polyline.path(i, options);
-    context.strokeStyle = i.bordercolor || i.fillcolor || i.fillbkcolor || "#000000";
+    context.strokeStyle = i.bordercolor || i.fillcolor || i.fillbkcolor || '#000000';
     context.lineWidth = (i.borderwidth || defaultLineWidth) * 0.001 * options.dotsPerMeter;
 
     // if a default style is present, set dash
@@ -724,23 +697,19 @@ var polyline = declareType('polyline', {
       for (var j = dash.length - 1; j >= 0; j--) {
         dash[j] = dash[j] * configThicknessCoefficient * baseThicknessCoefficient;
       }
-      if (context.setLineDash) {
-        context.setLineDash(dash);
-      }
+      context.setLineDash(dash);
     }
 
     if (i.style) {
-      context.strokeStyle = i.style.baseColor ? i.style.baseColor._value : 'black';
-      if (i.style.baseThickness)
-        context.lineWidth = i.style.baseThickness._value * (i.borderwidth || defaultLineWidth) * 0.001 * options.dotsPerMeter;
+      context.strokeStyle = i.style.baseColor ? i.style.baseColor : 'black';
+      if (i.style.baseThickness !== undefined)
+        context.lineWidth = i.style.baseThickness * (i.borderwidth || defaultLineWidth) * 0.001 * options.dotsPerMeter;
       else
         context.lineWidth = (i.borderwidth || defaultLineWidth) * 0.001 * options.dotsPerMeter;
     }
 
     context.stroke();
-    if (context.setLineDash) {
-      context.setLineDash([])
-    }
+    context.setLineDash([]);
     if (i.arcs[0].path.length === 2) polyline.points(i, options);
   },
 
@@ -749,11 +718,11 @@ var polyline = declareType('polyline', {
     const configThicknessCoefficient = window.devicePixelRatio;
     /** @type CanvasRenderingContext2D */
     const context = options.context;
-    const linesConfig = lines.BorderStyles[0].Element;
+    const linesConfig = lines;
 
     let currentLineConfig = [];
     if (i.borderstyleid) {
-      currentLineConfig = [linesConfig.find(e => e.guid._value === i.borderstyleid)];
+      currentLineConfig = [linesConfig.find(e => e.guid === i.borderstyleid)];
     }
     if (currentLineConfig.length !== 0) {
       i.style = currentLineConfig[0];
@@ -806,38 +775,35 @@ var polyline = declareType('polyline', {
       for (let j = dash.length - 1; j >= 0; j--) {
         dash[j] = dash[j] * configThicknessCoefficient * baseThicknessCoefficient;
       }
-      if (context.setLineDash) context.setLineDash(dash);
+      context.setLineDash(dash);
     }
 
     if (i.style) {
-      context.strokeStyle = i.style.baseColor ? i.style.baseColor._value : i.bordercolor;
-      if (i.style.baseThickness)
-        context.lineWidth = configThicknessCoefficient * i.style.baseThickness._value * defaultLineWidth * 0.001 * options.dotsPerMeter;  // Thickness
+      context.strokeStyle = i.style.baseColor ? i.style.baseColor : i.bordercolor;
+      if (i.style.baseThickness !== undefined)
+        context.lineWidth = configThicknessCoefficient * i.style.baseThickness * defaultLineWidth * 0.001 * options.dotsPerMeter;  // Thickness
       else
         context.lineWidth = configThicknessCoefficient * (i.borderwidth || defaultLineWidth) * 0.001 * options.dotsPerMeter;
-      if (i.style.StrokeDashArrays) {
-        var dashObj = i.style.StrokeDashArrays[0].StrokeDashArray[0];
-        if (dashObj.onBase._value) {
-          var dashes = dashObj.data._value.split(" ");
+      if (i.style.strokeDashArray) {
+        var dashObj = i.style.strokeDashArray;
+        if (dashObj.onBase) {
+          var dashes = dashObj.data.split(' ');
           for (let j = dashes.length - 1; j >= 0; j--) {
             dashes[j] = dashes[j] * configThicknessCoefficient;
           }
-          if (context.setLineDash) {
-            context.setLineDash(dashes);
-          }
-          if (dashObj.color)
-            context.strokeStyle = dashObj.color._value;
+          context.setLineDash(dashes);
+          if (dashObj.color) context.strokeStyle = dashObj.color;
         }
       }
     }
     context.stroke();
-    if (context.setLineDash) context.setLineDash([]);
+    context.setLineDash([]);
 
     if (i.style) {
       const decorationPathNeeded = once(() => polyline.decorationPath(i, options, i.style));
       decorationPathNeeded();
       context.stroke();
-      if (context.setLineDash) context.setLineDash([]);
+      context.setLineDash([]);
     }
     if (i.edited || i.arcs[0].path.length === 2) polyline.points(i, options);
   }

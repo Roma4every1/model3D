@@ -45,10 +45,10 @@ export async function initializeActiveReport(id: ClientID, reportID: ReportID): 
   applyChannelsDeps(channels, paramDict);
 
   for (const name in channels) {
-    const info = channels[name].info;
-    info.clients.add(rootID); info.clients.add(id);
+    const config = channels[name].config;
+    config.clients.add(rootID); config.clients.add(id);
 
-    for (const paramID of info.parameters) {
+    for (const paramID of config.parameters) {
       if (parameters.some(p => p.id === paramID)) continue;
       const param = parametersState[rootID].find(p => p.id === paramID);
       if (!param) continue;

@@ -2,14 +2,14 @@ import { Model } from 'flexlayout-react';
 import { setUnion, leftAntiJoin } from 'shared/lib';
 import { fillPatterns } from 'shared/drawing';
 import { ParameterStringTemplate } from 'entities/parameter';
-import { createChannels, getExternalChannels, getLinkedChannels, getLookupChannels } from 'entities/channel';
+import { createChannels, getParameterChannels, getDetailChannels, getLookupChannels } from 'entities/channel';
 import { clientAPI } from 'entities/client';
 import { handleLayout } from './layout';
 import { getChildrenTypes } from './utils';
 
 
 /** Создаёт состояние презентации. */
-export async function createPresentationState(id: ClientID): Promise<[PresentationState, Parameter[], AttachedChannel[]]> {
+export async function createPresentationState(id: ClientID): Promise<[PresentationState, Parameter[], AttachedChannelDTO[]]> {
   const { ok, data } = await clientAPI.getClientData(id, 'grid');
   if (!ok) return [null, null, null];
 
@@ -42,7 +42,8 @@ export async function createPresentationChildren(id: ClientID, children: FormDat
     const { ok, data: dto } = await clientAPI.getClientData(childID, data.type);
     if (!ok) return;
 
-    const { channels, settings } = dto;
+    const settings = dto.settings;
+    const channels = dto.channels as any[];
     childStates[childID] = {id: childID, type: data.type, parent: id, channels, settings};
   }));
   return childStates;
@@ -63,13 +64,13 @@ export async function createPresentationChildren(id: ClientID, children: FormDat
 export async function createClientChannels(
   set: Set<ChannelName>, parameters: Parameter[], existing: ChannelName[]
 ): Promise<ChannelDict> {
-  const externalSet = getExternalChannels(parameters);
+  const externalSet = getParameterChannels(parameters);
 
   const baseNames = [...leftAntiJoin(setUnion(set, externalSet), existing)];
   const baseChannels = await createChannels(baseNames);
   existing.push(...baseNames);
 
-  const linkedSet = getLinkedChannels(baseChannels);
+  const linkedSet = getDetailChannels(baseChannels);
   const linkedNames = [...leftAntiJoin(linkedSet, existing)];
   const linkedChannels = await createChannels(linkedNames);
   existing.push(...linkedNames);

@@ -181,13 +181,7 @@ export function base64toBlob(data: string, contentType: string = '', sliceSize: 
   return new Blob(byteArrays, {type: contentType});
 }
 
-/* --- Other --- */
-
-/** `#ARGB => #RGBA`: на сервере иногда бывает неправильный формат. */
-export function fixColorHEX(hex: ColorHEX): ColorHEX {
-  if (hex?.length > 7) hex = '#' + hex.substring(3) + hex.substring(1, 3);
-  return hex;
-}
+/* --- Strings --- */
 
 /** Разделяет строку по первому вхождению искомой подстроки.
  * @example
@@ -197,4 +191,23 @@ export function splitByFirstOccurrence(input: string, search: string): [string, 
   const index = input.indexOf(search);
   if (index === -1) return [input, ''];
   return [input.substring(0, index), input.substring(index + search.length)];
+}
+
+/** Проверяет, удовлетворяет ли строка указанному критерию. */
+export function testString(name: string, matcher: StringMatcher): boolean {
+  if (typeof matcher === 'string') {
+    return name === matcher;
+  } else if (Array.isArray(matcher)) {
+    return matcher.includes(name);
+  } else {
+    return matcher.test(name);
+  }
+}
+
+/* --- Other --- */
+
+/** `#ARGB => #RGBA`: на сервере иногда бывает неправильный формат. */
+export function fixColorHEX(hex: ColorHEX): ColorHEX {
+  if (hex?.length > 7) hex = '#' + hex.substring(3) + hex.substring(1, 3);
+  return hex;
 }

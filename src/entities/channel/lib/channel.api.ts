@@ -1,19 +1,7 @@
-import { Res, Fetcher, fetcher } from 'shared/lib';
+import type { Res } from 'shared/lib';
+import type { ChannelConfigDTO } from './channel.types';
+import { Fetcher, fetcher } from 'shared/lib';
 import { serializeParameter } from 'entities/parameter';
-import { applyQuerySettings } from './common';
-
-
-/** Запись из данных канала. */
-export interface ChannelRowOld {
-  ID: number | null;
-  Cells: any[];
-}
-interface OldChannelDataDTO {
-  Rows: ChannelRowOld[];
-  Columns: any[];
-  DataPart: boolean;
-  Editable: boolean;
-}
 
 
 /** Запросы связанные с каналами. */
@@ -21,7 +9,7 @@ export class ChannelAPI {
   constructor(private readonly api: Fetcher) {}
 
   /** Запрос статических данных канала. */
-  public getChannelInfo(name: ChannelName): Promise<Res<ChannelInfo>> {
+  public getChannelConfig(name: ChannelName): Promise<Res<ChannelConfigDTO>> {
     if (this.api.legacy) {
       return this.api.get('/channelSettings', {query: {channelName: name}});
     } else {
@@ -31,32 +19,24 @@ export class ChannelAPI {
 
   /** Запрос данных канала. */
   public async getChannelData(
-    name: ChannelName, parameters: Partial<Parameter>[],
-    query?: ChannelQuerySettings
+    name: ChannelName, payload: Partial<Parameter>[],
+    query?: ChannelQuerySettings, signal?: AbortSignal,
   ): Promise<Res<ChannelData>> {
-    const paramValues = parameters.map(serializeParameter);
-    if (!this.api.legacy) {
-      const json: any = {parameters: paramValues};
-      if (query?.limit !== null) json.limit = query.limit;
-      if (query?.order?.length) json.order = query.order;
-      return this.api.post('/channel/data', {query: {name}, json});
+    if (this.api.legacy) {
+      const paramValues = payload.map(serializeParameter);
+      if (query) applyQuerySettings(paramValues, query);
+      const json = {channelName: name, paramValues};
+      const res = await this.api.post('/channelData', {json, signal});
+      if (res.ok) res.data = convertLegacyChannelData(res.data);
+      return res;
+    } else {
+      const json: any = {parameters: payload.map(serializeParameter)};
+      if (query) {
+        if (query.limit !== null) json.limit = query.limit;
+        if (query.order?.length) json.order = query.order;
+      }
+      return this.api.post('/channel/data', {query: {name}, json, signal});
     }
-
-    if (query) applyQuerySettings(paramValues, query);
-    const json = {channelName: name, paramValues};
-
-    const res = await this.api.post('/channelData', {json});
-    if (res.ok === false) return res as any;
-    const data: OldChannelDataDTO = res.data.data;
-
-    const channelData: ChannelData = data ? {
-      queryID: res.data.tableId,
-      columns: data.Columns.map(c => ({name: c.Name, type: c.NetType, nullable: c.AllowDBNull})),
-      rows: data.Rows.map(r => r.Cells),
-      dataPart: data.DataPart,
-      editable: data.Editable,
-    } : null;
-    return {ok: true, data: channelData};
   }
 
   /** Запрос ресурса из базы данных. */
@@ -83,13 +63,13 @@ export class ChannelAPI {
 
   /** Запрос на добавление записи в таблицу. */
   public insertRows(queryID: QueryID, rows: ChannelRow[]): Promise<Res<OperationData>> {
-    const json = {tableId: queryID, rows: rows.map(toChannelRowOld)};
+    const json = {tableId: queryID, rows: rows.map(toLegacyChannelRow)};
     return this.api.post('/insertRows',{json});
   }
 
   /** Запрос обновления записи в таблице. */
   public updateRows(queryID: QueryID, indexes: number[], rows: ChannelRow[]): Promise<Res<OperationData>> {
-    const json = {tableId: queryID, indexes, rows: rows.map(toChannelRowOld)};
+    const json = {tableId: queryID, indexes, rows: rows.map(toLegacyChannelRow)};
     return this.api.post('/updateRows', {json});
   }
 
@@ -100,9 +80,57 @@ export class ChannelAPI {
   }
 }
 
-function toChannelRowOld(row: ChannelRow): ChannelRowOld {
-  return {ID: null, Cells: row};
-}
-
 /** Запросы связанные с каналами. */
 export const channelAPI = new ChannelAPI(fetcher);
+
+/* --- Legacy API Support --- */
+
+interface ChannelDataLegacyDTO {
+  data: ChannelDataLegacy;
+  tableId: string;
+}
+interface ChannelDataLegacy {
+  Rows: ChannelRowLegacy[];
+  Columns: ChannelColumnLegacy[];
+  DataPart: boolean;
+  Editable: boolean;
+}
+interface ChannelColumnLegacy {
+  Name: string;
+  NetType: string;
+  AllowDBNull: boolean;
+}
+interface ChannelRowLegacy {
+  ID: number | string | null;
+  Cells: any[];
+}
+
+function applyQuerySettings(parameters: SerializedParameter[], query: ChannelQuerySettings): void {
+  if (query.limit === false) {
+    parameters.push({id: 'readAllRows', type: 'bool', value: 'true'});
+  } else if (Number.isInteger(query.limit)) {
+    parameters.push({id: 'maxRowCount', type: 'integer', value: query.limit.toString()});
+  }
+  if (query.order?.length) {
+    const value = query.order.map(sort => sort.column + ' ' + sort.direction).join(',');
+    parameters.push({id: 'sortOrder', type: 'sortOrder', value});
+  }
+}
+
+function convertLegacyChannelData({data, tableId}: ChannelDataLegacyDTO): ChannelData {
+  if (!data) return null;
+  return {
+    queryID: tableId,
+    columns: data.Columns.map(convertLegacyChannelColumn),
+    rows: data.Rows.map(r => r.Cells),
+    dataPart: data.DataPart,
+    editable: data.Editable,
+  };
+}
+function convertLegacyChannelColumn(column: ChannelColumnLegacy): ChannelColumn {
+  return {name: column.Name, type: column.NetType, nullable: column.AllowDBNull};
+}
+
+function toLegacyChannelRow(row: ChannelRow): ChannelRowLegacy {
+  return {ID: null, Cells: row};
+}

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useCurrentTrace } from '../../store/objects.store';
+import { useTraceManager } from '../../store/objects.store';
 import { setCurrentTrace } from '../../store/objects.actions';
 import { deleteTrace } from '../../store/objects.thunks';
 import { useMapState } from 'features/map';
@@ -19,7 +19,7 @@ interface TraceEditorProps {
 /** Правая панель редактирования трассы. */
 export const TraceEditor = ({id}: TraceEditorProps) => {
   const { t } = useTranslation();
-  const { model, oldModel, creating } = useCurrentTrace();
+  const { model, oldModel, creating } = useTraceManager();
   const mapState = useMapState(id);
 
   if (!model) return <div/>;

@@ -9,7 +9,7 @@ import tableModeIcon from 'assets/images/dataset/table-mode.png';
 
 export const ColumnMode = ({id, state, t}: EditPanelItemProps) => {
   const { columnsSettings: settings } = state;
-  const isTableMode = settings.isTableMode;
+  const isTableMode = settings.tableMode;
 
   const toggleTableModeOn = useCallback((value: boolean) => {
     if (isTableMode === value) return;

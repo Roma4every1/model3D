@@ -1,37 +1,42 @@
-/** Набор свойств канала с месторождениями. */
-export const placeCriterion: ChannelCriterion<keyof PlaceModel> = {
-  id: 'LOOKUPCODE',    // number
-  name: 'LOOKUPVALUE', // string
-  objectName: {name: 'OBJNAME', optional: true},  // string
+/** Критерий канала с месторождениями. */
+export const placeChannelCriterion: ChannelCriterion2<keyof PlaceModel> = {
+  properties: {
+    id: {name: 'LOOKUPCODE'},    // number
+    name: {name: 'LOOKUPVALUE'}, // string
+  },
 };
 
-/** Набор свойств канала с пластами. */
-export const stratumCriterion: ChannelCriterion<keyof StratumModel> = {
-  id: 'LOOKUPCODE',    // number
-  name: 'LOOKUPVALUE', // string
+/** Критерий канала с пластами. */
+export const stratumChannelCriterion: ChannelCriterion2<keyof StratumModel> = {
+  properties: {
+    id: {name: 'LOOKUPCODE'},    // number
+    name: {name: 'LOOKUPVALUE'}, // string
+  },
 };
 
-/** Набор свойств канала со скважинами. */
-export const wellCriterion: ChannelCriterion<keyof WellModel> = {
-  id: 'LOOKUPCODE',    // number
-  name: 'LOOKUPVALUE', // string
-};
-
-/** Набор свойств канала с трассами. */
-export const traceCriterion: ChannelCriterion<keyof TraceModel> = {
-  id: 'LOOKUPCODE',    // number
-  place: 'STRATUM',    // string
-  name: 'LOOKUPVALUE', // string
-  nodes: 'ITEMS',      // string
+/** Критерий канала со скважинами. */
+export const wellChannelCriterion: ChannelCriterion2<keyof WellModel> = {
+  properties: {
+    id: {name: 'LOOKUPCODE'},    // number
+    name: {name: 'LOOKUPVALUE'}, // string
+  },
 };
 
 /** Набор свойств канала с узлами трасс. */
-export const traceNodeCriterion: ChannelCriterion = {
-  id: 'ITEM',          // string
-  x: 'X',              // number
-  y: 'Y',              // number
-  order: 'SORTORDER',  // number
+const traceNodePropertyCriteria: ChannelPropertyCriteria<TraceNodeChannelFields> = {
+  traceID: {name: 'WELLS_LIST_ID', required: false},
+  id: {name: 'ITEM'},
+  x: {name: 'X'},
+  y: {name: 'Y'},
+  order: {name: 'SORTORDER'},
 };
-
-/** Фиксированное название канала с трассами. */
-export const traceChannelName: ChannelName = 'traces';
+/** Критерий канала с трассами. */
+export const traceChannelCriterion: ChannelCriterion2<keyof TraceModel> = {
+  name: 'traces',
+  properties: {
+    id: {name: 'LOOKUPCODE'},    // number
+    place: {name: 'STRATUM'},    // string
+    name: {name: 'LOOKUPVALUE'}, // string
+    nodes: {name: 'ITEMS', details: {properties: traceNodePropertyCriteria}},
+  },
+};

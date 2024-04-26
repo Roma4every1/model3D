@@ -1,5 +1,5 @@
 import type { Res } from 'shared/lib';
-import type { SaveTableMetadata, SetRecords } from '../lib/types';
+import type { TableFormSettings, SaveTableMetadata, SetRecords } from '../lib/types';
 import { t } from 'shared/locales';
 import { createElement } from 'react';
 import { watchOperation } from 'entities/report';
@@ -13,7 +13,7 @@ import { tableStateToSettings } from '../lib/table-settings';
 import { LinkedTable } from '../components/table/linked-table';
 import { setActiveForm } from 'widgets/presentation';
 
-import { useClientStore, addSessionClient } from 'entities/client';
+import { useClientStore, addSessionClient, crateAttachedChannel } from 'entities/client';
 import { useObjectsStore } from 'entities/objects';
 import { usePresentationStore } from 'widgets/presentation';
 import { useTableStore } from './table.store';
@@ -119,7 +119,7 @@ export async function getNewRow (
 
 export async function exportTableToExcel(id: FormID): Promise<void> {
   const tableState = useTableStore.getState()[id];
-  const info = useChannelStore.getState()[tableState.channelName].info;
+  const config = useChannelStore.getState()[tableState.channelName].config;
 
   const parentID = useClientStore.getState()[id].parent;
   const parentState = usePresentationStore.getState()[parentID];
@@ -128,8 +128,8 @@ export async function exportTableToExcel(id: FormID): Promise<void> {
     channelName: tableState.channelName,
     paramName: parentState.children.find(child => child.id === id)?.displayName ?? 'Таблица',
     presentationId: parentID,
-    paramValues: fillParamValues(info.parameters, useParameterStore.getState(), info.clients),
-    settings: tableStateToSettings(id, tableState).columns,
+    paramValues: fillParamValues(config.parameters, useParameterStore.getState(), config.clients),
+    settings: tableStateToSettings(id, tableState).columnSettings,
   };
 
   const res = await reportsAPI.exportToExcel(exportData);
@@ -148,35 +148,29 @@ export function showLinkedTable(formID: FormID, columnID: TableColumnID): void {
   const rootTableState = tables[formID];
   const linkedTableState = tables[linkedTableID];
 
-  const property = rootTableState?.properties.list.find(p => p.name === columnID);
-  if (!property || !property.secondLevelChannelName) return;
-  const channel = channels[property.secondLevelChannelName];
+  const property = rootTableState?.properties.find(p => p.name === columnID);
+  if (!property || !property.detailChannel) return;
+
+  const channel = channels[property.detailChannel];
+  const displayName = channel.config.displayName ?? channel.name;
 
   const presentationID = useRootStore.getState().activeChildID;
   const presentation = usePresentationStore.getState()[presentationID];
   const hasFormData = presentation.children.some(c => c.id === linkedTableID);
 
   if (!hasFormData) {
-    const formData: FormDataWM = {
-      id: linkedTableID, type: 'dataSet',
-      displayName: channel.info.displayName,
-    };
     const formState: SessionClient = {
       id: linkedTableID, parent: presentationID,
       type: 'dataSet', settings: null,
-      channels: [{name: channel.name, attachOption: 'AttachAll', exclude: []}],
+      channels: [crateAttachedChannel({name: channel.name}, channel)],
     };
-    presentation.children.push(formData);
+    presentation.children.push({id: linkedTableID, type: 'dataSet', displayName});
     addSessionClient(formState);
   }
   if (!linkedTableState) {
-    const payload: FormStatePayload = {
+    const payload: FormStatePayload<TableFormSettings> = {
       state: useClientStore.getState()[linkedTableID],
-      settings: {
-        id: linkedTableID, columns: null,
-        attachedProperties: {attachOption: 'AttachAll', exclude: []},
-        headerSetterRules: [],
-      },
+      settings: {id: linkedTableID},
       objects: useObjectsStore.getState(),
       parameters: useParameterStore.getState(),
       channels: channels,
@@ -193,7 +187,7 @@ export function showLinkedTable(formID: FormID, columnID: TableColumnID): void {
   };
   const windowProps = {
     className: 'linked-table-window', style: {zIndex: 99}, width: 400, height: 300,
-    resizable: false, title: channel.info.displayName, onFocus, onClose,
+    resizable: false, title: displayName, onFocus, onClose,
   };
 
   const content = createElement(LinkedTable, {id: linkedTableID, onClose});

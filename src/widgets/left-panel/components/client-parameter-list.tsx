@@ -1,5 +1,5 @@
 import { ParameterList, updateParamDeep } from 'entities/parameter';
-import { getExternalChannels, useChannelDict } from 'entities/channel';
+import { getParameterChannels, useChannelDict } from 'entities/channel';
 
 
 interface ClientParameterListProps {
@@ -10,7 +10,7 @@ interface ClientParameterListProps {
 
 /** Список глобальных параметров или параметров презентации. */
 export const ClientParameterList = ({clientID, list}: ClientParameterListProps) => {
-  const channelNames = getExternalChannels(list);
+  const channelNames = getParameterChannels(list);
   const channels = useChannelDict(channelNames);
 
   const onChange = (parameter: Parameter, newValue: any) => {

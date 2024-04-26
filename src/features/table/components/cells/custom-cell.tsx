@@ -58,7 +58,7 @@ export const CustomCell = ({td, props, state, actions}: CustomCellProps) => {
     if (column.lookupChannel) {
       cell = column.lookupDict ? column.lookupDict[value] : null;
     }
-    if (column.linkedTableChannel) {
+    if (column.detailChannel) {
       const open = () => actions.openLinkedTable(columnID);
       const value = cell === null ? dataItem[columnID] : cell;
       cell = <LinkedTableCell value={value} column={column} open={open}/>;

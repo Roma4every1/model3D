@@ -1,13 +1,13 @@
 import { round } from 'shared/lib';
 
-import {
+import type {
   CaratIntervalModel, CaratBarModel,
   WellBoreElementModel, WellBoreElementStyle,
   CaratPumpModel, CaratVerticalLineModel, CaratWellFaceModel,
   CaratCurveModel, CurveAxisGroup, CaratCorrelation,
 } from '../lib/types';
 
-import {
+import type {
   CaratDrawerConfig, CaratTrackBodyDrawSettings,
   CaratTrackHeaderDrawSettings, CaratColumnBodyDrawSettings,
   CaratColumnLabelDrawSettings, CaratColumnYAxisDrawSettings,

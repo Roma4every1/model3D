@@ -5,7 +5,7 @@ import denyTraceChangesIcon from 'assets/images/trace/cancel.png';
 
 
 interface DenyTraceChangesProps {
-  trace: TraceState,
+  trace: ITraceManager,
 }
 
 

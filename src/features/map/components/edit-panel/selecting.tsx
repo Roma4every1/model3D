@@ -1,7 +1,7 @@
 import { TFunction } from 'react-i18next';
 import { useState } from 'react';
 import { Checkbox } from '@progress/kendo-react-inputs';
-import { useCurrentTrace } from 'entities/objects';
+import { useTraceEditing } from 'entities/objects';
 import selectingIcon from 'assets/images/map/selecting-mode.png';
 
 
@@ -12,7 +12,7 @@ interface SelectingProps {
 
 
 export const Selecting = ({mapState, t}: SelectingProps) => {
-  const trace = useCurrentTrace();
+  const traceEditing = useTraceEditing();
   const [_signal, setSignal] = useState(false);
   const signal = () => setSignal(!_signal);
 
@@ -24,7 +24,7 @@ export const Selecting = ({mapState, t}: SelectingProps) => {
   const toggleSelecting = () => stage.setSelecting(!selecting);
 
   const toggleSelectingDisabled = stage.inclinometryModeOn || stage.isElementEditing() ||
-    stage.isElementCreating() || mapState.loading.percentage < 100 || trace.editing;
+    stage.isElementCreating() || mapState.loading.percentage < 100 || traceEditing;
 
   const toggleType = (type: MapElementType) => {
     select.types[type] = !select.types[type];

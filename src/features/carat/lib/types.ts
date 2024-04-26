@@ -128,7 +128,7 @@ export interface CaratVerticalLineModel {
  * + `leftViewport`: {@link CaratViewport}
  * + `rightViewport`: {@link CaratViewport}
  * + `data`: {@link StratumCorrelation}[]
- * */
+ */
 export interface CaratCorrelation {
   /** Ограничивающий прямоугольник. */
   rect: Rectangle;
@@ -145,7 +145,7 @@ export interface CaratCorrelation {
  * + `leftBottom: number`
  * + `rightTop: number`
  * + `rightBottom: number`
- * */
+ */
 export interface StratumCorrelation {
   /** Глубина кровли пласта в треке слева. */
   leftTop: number;
@@ -167,7 +167,7 @@ export type InclinometryMap = Map<number, number>;
 /** Опорная точка инклинометрии.
  * + `depth: number`
  * + `absMark: number`
- * */
+ */
 export interface InclinometryMark {
   /** Значение глубины. */
   depth: number;

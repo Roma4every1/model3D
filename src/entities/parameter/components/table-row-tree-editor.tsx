@@ -28,7 +28,7 @@ export const TableRowTreeEditor = ({parameter, update, channel}: EditorProps<'ta
   const [value, setValue] = useState(nullValue);
 
   const rows = channel?.data?.rows;
-  const lookupColumns = channel ? channel.info.lookupColumns : null;
+  const lookupColumns = channel?.config.lookupColumns;
 
   const [treeData, allNodes] = useMemo(() => {
     return getTreeData(parameter, rows, lookupColumns);
