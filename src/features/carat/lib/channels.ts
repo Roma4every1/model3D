@@ -53,7 +53,7 @@ export function applyStyle(
       });
     }
     for (const property of channel.config.properties) {
-      if (property.name === caratChannelCriterionDict.lithology.stratumID) {
+      if (property.name === caratChannelCriterionDict.lithology.stratumID.name) {
         attachment.namesChannel = property.lookupChannels[0];
       }
     }

@@ -16,6 +16,8 @@ interface PresentationState {
   layout: any; // Model из 'flex-layout-react'
   /** Настройки презентации. */
   settings: PresentationSettings;
+  /** Прикреплённые каналы. */
+  channels: AttachedChannel[];
   /** Дочерние формы. */
   children: FormDataWM[];
   /** Список всех типов форм внутри презентации. */
@@ -27,13 +29,13 @@ interface PresentationState {
 }
 
 /** Настройки презентации.
- * + `multiMapChannel?`: {@link ChannelName}
+ * + `multiMapChannel?: boolean`
  * + `linkedProperties?`: {@link ParameterSetter}[]
  * + `parameterGroups?`: {@link ParameterGroup}[]
  * */
 interface PresentationSettings {
-  /** Название канала с картами, в случае если презентация это мультикарта. */
-  multiMapChannel?: ChannelName;
+  /** `true`, если презентация это мультикарта. */
+  multiMapChannel?: boolean;
   /** Данные о параметрах, которые должны автоматически обновляться. */
   linkedProperties?: ParameterSetter[];
   /** Группы параметров для разбиения списка на вкладки. */

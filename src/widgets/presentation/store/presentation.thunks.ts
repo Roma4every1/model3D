@@ -4,38 +4,42 @@ import { useObjectsStore } from 'entities/objects';
 import { createReportModels, setReportModels } from 'entities/report';
 import { useChannelStore, fillChannels, setChannels } from 'entities/channel';
 import { useParameterStore, addClientParameters, fillParamValues } from 'entities/parameter';
-import { clientFetchingStart, clientFetchingEnd, clientFetchingError } from 'entities/fetch-state';
-
-import { createPresentationState, createClientChannels, createPresentationChildren } from '../lib/initialization';
 import { applyChannelsDeps } from '../lib/utils';
 import { createFormDict } from '../lib/form-dict';
 import { setPresentationState } from './presentation.actions';
 
+import {
+  createPresentationState, createClientChannels,
+  createPresentationChildren, createAttachedChannels,
+} from '../lib/initialization';
+
+import {
+  fetchingStart, fetchingEnd, fetchingError,
+  fetchingStartMany, fetchingEndMany, fetchingErrorMany,
+} from 'entities/fetch-state';
+
 
 /** Инициализация презентации. */
 export async function fetchPresentationState(id: ClientID): Promise<void> {
-  clientFetchingStart(id);
-  const [presentation, parameters, attachedChannels] = await createPresentationState(id);
-  if (!presentation) {
-    clientFetchingError([{id, details: t('messages.presentation-fetch-error')}]);
-    return;
-  }
+  fetchingStart(id);
+  const [presentation, parameters, channelDTOs] = await createPresentationState(id);
+  if (!presentation) { fetchingError(id, t('messages.presentation-fetch-error')); return; }
 
   const parameterState = useParameterStore.getState();
   const paramDict = {[id]: parameters, root: parameterState.root};
   await prepareParameters(presentation, paramDict);
   addClientParameters(id, parameters);
 
-  const reportModels = await createReportModels(paramDict, 'root', id);
+  const reportModels = await createReportModels(id, paramDict);
   setReportModels(id, reportModels);
   setPresentationState(presentation);
 
   const childIDs = presentation.children.map(child => child.id);
-  clientFetchingStart(childIDs);
-  clientFetchingEnd(id);
+  fetchingStartMany(childIDs);
+  fetchingEnd(id);
 
   const childStates = await createPresentationChildren(id, presentation.children);
-  const baseChannels: Set<ChannelName> = new Set(attachedChannels.map(c => c.name));
+  const baseChannels: Set<ChannelName> = new Set(channelDTOs.map(c => c.name));
 
   for (const childID of childIDs) {
     const channels = childStates[childID]?.channels;
@@ -51,6 +55,11 @@ export async function fetchPresentationState(id: ClientID): Promise<void> {
   }
   applyChannelsDeps(allChannels, paramDict);
 
+  const attachedChannels = createAttachedChannels(presentation, channelDTOs, allChannels);
+  if (attachedChannels.length) {
+    setPresentationState({...presentation, channels: attachedChannels});
+  }
+
   const successForms: FormID[] = [];
   const errorForms: {id: FormID, details: string}[] = [];
   const objects = useObjectsStore.getState();
@@ -61,7 +70,7 @@ export async function fetchPresentationState(id: ClientID): Promise<void> {
       errorForms.push({id: childID, details: t('messages.form-fetch-error')});
       continue;
     }
-    client.channels = new AttachedChannelFactory(allChannels).createModels(client.channels);
+    client.channels = new AttachedChannelFactory(allChannels).create(client.channels);
     successForms.push(childID);
 
     const creator = createFormDict[client.type];
@@ -78,8 +87,8 @@ export async function fetchPresentationState(id: ClientID): Promise<void> {
   setChannels(channels);
   addSessionClients(childStates);
 
-  clientFetchingEnd(successForms);
-  clientFetchingError(errorForms);
+  fetchingEndMany(successForms);
+  fetchingErrorMany(errorForms);
 }
 
 /**

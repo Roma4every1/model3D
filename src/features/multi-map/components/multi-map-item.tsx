@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { LoadingStatus, TextInfo } from 'shared/ui';
-import { Map } from '../map';
+import { Map } from 'features/map';
 
 
 interface MultiMapItemProps {

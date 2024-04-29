@@ -1,10 +1,10 @@
-import { Model } from 'flexlayout-react';
 import { setUnion, leftAntiJoin } from 'shared/lib';
 import { fillPatterns } from 'shared/drawing';
-import { ParameterStringTemplate } from 'entities/parameter';
-import { createChannels, getParameterChannels, getDetailChannels, getLookupChannels } from 'entities/channel';
-import { clientAPI } from 'entities/client';
-import { handleLayout } from './layout';
+import { ParameterStringTemplate, getParameterChannels } from 'entities/parameter';
+import { createChannels, getDetailChannels, getLookupChannels } from 'entities/channel';
+import { AttachedChannelFactory, clientAPI } from 'entities/client';
+import { multiMapChannelCriterion } from 'features/multi-map';
+import { LayoutFactory } from './layout';
 import { getChildrenTypes } from './utils';
 
 
@@ -28,7 +28,8 @@ export async function createPresentationState(id: ClientID): Promise<[Presentati
   }
 
   const state: PresentationState = {
-    id, settings, layout: Model.fromJson(handleLayout(layout, children, activeChildren[0])),
+    id, settings, channels: [],
+    layout: new LayoutFactory(children, activeChildren[0]).create(layout),
     children, openedChildren, activeChildID: activeChildren[0], childrenTypes: types,
   };
   return [state, parameters, channels];
@@ -47,6 +48,18 @@ export async function createPresentationChildren(id: ClientID, children: FormDat
     childStates[childID] = {id: childID, type: data.type, parent: id, channels, settings};
   }));
   return childStates;
+}
+
+export function createAttachedChannels(
+  state: PresentationState, attached: AttachedChannelDTO[], all: ChannelDict,
+): AttachedChannel[] {
+  if (!state.settings.multiMapChannel) return [];
+  const criteria = {multiMap: multiMapChannelCriterion};
+  const factory = new AttachedChannelFactory(all, criteria);
+
+  const channels = factory.create(attached);
+  if (!channels.some(c => c.type === 'multiMap')) delete state.settings.multiMapChannel;
+  return channels;
 }
 
 /** Создаёт все необходимые каналы для клиента.

@@ -1,5 +1,5 @@
-import { ParameterList, updateParamDeep } from 'entities/parameter';
-import { getParameterChannels, useChannelDict } from 'entities/channel';
+import { useChannelDict } from 'entities/channel';
+import { ParameterList, updateParamDeep, getParameterChannels } from 'entities/parameter';
 
 
 interface ClientParameterListProps {

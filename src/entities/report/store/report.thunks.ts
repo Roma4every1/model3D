@@ -8,7 +8,6 @@ import { initializeReport, updateReportParam } from './report.actions';
 import { setReportModels, setCanRunReport, setReportChannels } from './report.actions';
 import { reportsAPI } from 'entities/report/lib/report.api';
 import { t } from 'shared/locales';
-import { useRootStore } from '../../../app/store/root-form.store';
 import { useReportStore } from './report.store';
 
 import {
@@ -102,7 +101,6 @@ export async function runReport(clientID: ClientID, report: ReportModel): Promis
 }
 
 export async function updateReportParameter(id: ClientID, reportID: ReportID, paramID: ParameterID, value: any): Promise<void> {
-  const root = useRootStore.getState();
   const reports = useReportStore.getState();
   const parameters = useParameterStore.getState();
 
@@ -113,7 +111,7 @@ export async function updateReportParameter(id: ClientID, reportID: ReportID, pa
   updateReportParam(id, reportID, paramID, value);
 
   if (param.relatedChannels.length) {
-    await updateReportChannelData(report, param.relatedChannels, root.id, id, parameters);
+    await updateReportChannelData(report, param.relatedChannels, 'root', id, parameters);
     setReportChannels(id, reportID, {...report.channels});
   }
 

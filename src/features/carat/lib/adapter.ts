@@ -10,17 +10,16 @@ import {
 
 
 /** Создаёт состояние каротажа по её начальным настройкам. */
-export function settingsToCaratState(payload: FormStatePayload): CaratState {
-  const { state: formState, channels: channelDict } = payload;
-  const init: CaratFormSettings = formState.settings;
-  init.columns.sort((a, b) => a.settings.index - b.settings.index);
+export function settingsToCaratState(payload: FormStatePayload<CaratFormSettings>): CaratState {
+  const { settings: init, channels: channelDict } = payload;
+  const columns = init.columns.toSorted(columnInitCompareFn);
 
   let curveDataChannel: CaratAttachedChannel;
   let inclinometryChannel: CaratAttachedChannel;
   const usedChannels = new Set<ChannelName>();
   const attachments: CaratAttachedChannel[] = [];
 
-  for (const column of init.columns) {
+  for (const column of columns) {
     for (const attachedChannel of column.channels) {
       const channel = channelDict[attachedChannel.name];
       identifyCaratChannel(attachedChannel, channel);
@@ -28,7 +27,7 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
       if (attachedChannel.type === 'curve-data') {
         curveDataChannel = attachedChannel;
       } if (attachedChannel.type === 'inclinometry') {
-        const propertyName = caratChannelCriterionDict.inclinometry.inclinometry;
+        const propertyName = caratChannelCriterionDict.inclinometry.inclinometry.name;
         const property = channel.config.properties.find(p => p.name === propertyName);
         const inclinometryDataChannel = property?.detailChannel;
 
@@ -45,7 +44,7 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
           delete attachedChannel.type;
         }
       } else if (attachedChannel.type === 'pump') {
-        const propertyName = caratChannelCriterionDict.pump.pumpID;
+        const propertyName = caratChannelCriterionDict.pump.pumpID.name;
         const property = channel.config.properties.find(p => p.name === propertyName);
         const pumpDataChannel = property.lookupChannels[0];
 
@@ -81,6 +80,12 @@ export function settingsToCaratState(payload: FormStatePayload): CaratState {
     lookupNames, channelNames: [...usedChannels],
     loading: {percentage: 100, status: null},
   };
+}
+
+function columnInitCompareFn(a: CaratColumnInit, b: CaratColumnInit): number {
+  const aIndex = a.settings.index ?? Number.MAX_SAFE_INTEGER;
+  const bIndex = b.settings.index ?? Number.MAX_SAFE_INTEGER;
+  return aIndex - bIndex;
 }
 
 /** Возвращает настройки формы по состоянию формы. */

@@ -1,5 +1,5 @@
 import { useClientState } from 'entities/client';
-import { useFormFetchState, stateNotLoaded } from 'entities/fetch-state';
+import { useFetchState } from 'entities/fetch-state';
 import { setActiveForm } from '../store/presentation.actions';
 import { TextInfo } from 'shared/ui';
 import { FormSkeleton } from './plugs';
@@ -15,10 +15,10 @@ export interface FormProps {
 /** Обобщённый компонент всех типов форм. */
 export const Form = ({id, type}: FormProps) => {
   const state = useClientState(id);
-  const fetchState = useFormFetchState(id);
+  const fetchState = useFetchState(id);
 
-  if (stateNotLoaded(fetchState)) return <FormSkeleton/>;
-  if (fetchState.details) return <TextInfo text={fetchState.details}/>;
+  if (fetchState.notLoaded()) return <FormSkeleton/>;
+  if (fetchState.error()) return <TextInfo text={fetchState.details}/>;
 
   const TypedForm = formDict[type];
   if (!TypedForm) return <TextInfo text={'messages.unsupported-form'}/>;

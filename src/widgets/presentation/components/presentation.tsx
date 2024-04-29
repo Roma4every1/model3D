@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { fetchPresentationState } from '../store/presentation.thunks';
-import { useFormFetchState, stateNeedFetch, stateNotLoaded } from 'entities/fetch-state';
+import { useFetchState } from 'entities/fetch-state';
 
 import { TextInfo } from 'shared/ui';
 import { Grid } from './grid';
-import { MultiMap } from 'features/multi-map/multi-map';
+import { MultiMap } from 'features/multi-map';
 import { PresentationSkeleton } from './plugs';
 
 
@@ -18,17 +18,18 @@ export interface PresentationProps {
 
 /** Презентация: клиент типа `grid`. */
 export const Presentation = ({id, state}: PresentationProps) => {
-  const fetchState: FetchState = useFormFetchState(id);
+  const fetchState = useFetchState(id);
 
   useEffect(() => {
-    if (stateNeedFetch(fetchState)) fetchPresentationState(id).then();
+    if (fetchState.needFetch()) fetchPresentationState(id).then();
   }, [fetchState, id]);
 
-  if (stateNotLoaded(fetchState)) return <PresentationSkeleton/>;
-  if (fetchState.details) return <TextInfo text={fetchState.details}/>;
+  if (fetchState.notLoaded()) return <PresentationSkeleton/>;
+  if (fetchState.error()) return <TextInfo text={fetchState.details}/>;
 
-  const multiMapChannel = state.settings.multiMapChannel;
-  if (multiMapChannel) return <MultiMap presentation={state} channelName={multiMapChannel}/>;
-
-  return <Grid id={id} model={state.layout}/>;
+  if (state.settings.multiMapChannel && state.channels.length) {
+    return <MultiMap id={id} channels={state.channels} openedChildren={state.openedChildren}/>;
+  } else {
+    return <Grid id={id} model={state.layout}/>;
+  }
 };

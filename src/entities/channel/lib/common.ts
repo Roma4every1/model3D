@@ -1,26 +1,14 @@
-export function createColumnInfo<Fields extends string = string>(
-  channel: Channel,
-  criterion: ChannelCriterion<Fields>,
-): ChannelColumnInfo<Fields> {
-  const info = {} as ChannelColumnInfo<Fields>;
+export function createColumnInfo(channel: Channel, criterion: ChannelCriterion): ChannelColumnInfo {
+  const info: ChannelColumnInfo = {};
   const properties = channel.config.properties;
   const propertyNames = properties.map(property => property.name.toUpperCase());
 
   for (const field in criterion) {
-    let propertyName: string, optional: boolean;
-    const criterionItem: ChannelColumnCriterion = criterion[field];
-
-    if (typeof criterionItem === 'string') {
-      propertyName = criterionItem;
-      optional = false;
-    } else {
-      propertyName = criterionItem.name;
-      optional = criterionItem.optional;
-    }
+    let { name: propertyName, optional } = criterion[field];
     const index = propertyNames.findIndex(name => name === propertyName);
 
     if (index === -1) {
-      if (!optional) return null;
+      if (optional !== true) return null;
       info[field] = {name: propertyName, index: -1};
     } else {
       info[field] = {name: properties[index].fromColumn, index: -1};
@@ -95,14 +83,4 @@ export function getLookupChannels(dict: ChannelDict): Set<ChannelName> {
     for (const lookupName of lookups) lookupChannels.add(lookupName);
   }
   return lookupChannels;
-}
-
-/** Находит и возвращает список каналов, необходимых для параметров. */
-export function getParameterChannels(parameters: Parameter[]): Set<ChannelName> {
-  const names: Set<ChannelName> = new Set();
-  for (const parameter of parameters) {
-    const name = parameter.channelName;
-    if (name) names.add(name);
-  }
-  return names;
 }

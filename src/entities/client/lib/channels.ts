@@ -1,9 +1,9 @@
 import { RecordInfoCreator } from 'entities/channel';
 
 
-export function crateAttachedChannel(init: AttachedChannelDTO, channel: Channel): AttachedChannel {
-  const channels = {[channel.name]: channel};
-  return new AttachedChannelFactory(channels).createModels([init])[0];
+export function crateAttachedChannel(dto: AttachedChannelDTO, channel: Channel): AttachedChannel {
+  const attachedProperties = getAttachedProperties(dto, channel.config.properties);
+  return {name: dto.name, attachedProperties};
 }
 
 export class AttachedChannelFactory {
@@ -20,7 +20,7 @@ export class AttachedChannelFactory {
     this.creator = new RecordInfoCreator(channels);
   }
 
-  public createModels(init: AttachedChannelDTO[]): AttachedChannel[] {
+  public create(init: AttachedChannelDTO[]): AttachedChannel[] {
     return init.map(dto => this.createModel(dto)).filter(Boolean);
   }
 
@@ -48,7 +48,7 @@ function getAttachedProperties(dto: AttachedChannelDTO, all: ChannelProperty[]):
   const attachOption = dto.attachOption ?? 'all';
   const exclude = (dto.exclude ?? []).map(name => name.toUpperCase());
 
-  const checker = attachOption === 'AttachAll' || attachOption === 'all'
+  const checker = attachOption === 'all' || attachOption === 'AttachAll'
     ? (property: ChannelProperty): boolean => !exclude.includes(property.name)
     : (property: ChannelProperty): boolean => exclude.includes(property.name);
   return all.filter(checker);

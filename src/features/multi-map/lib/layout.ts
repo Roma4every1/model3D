@@ -1,6 +1,10 @@
-import { IJsonModel, Model } from 'flexlayout-react';
-import { IGlobalAttributes, IJsonRowNode } from 'flexlayout-react/declarations/model/IJsonModel';
-import { IJsonTabSetNode, IJsonTabNode } from 'flexlayout-react/declarations/model/IJsonModel';
+import type {
+  IGlobalAttributes, IJsonRowNode,
+  IJsonTabSetNode, IJsonTabNode,
+} from 'flexlayout-react/declarations/model/IJsonModel';
+
+import { Model } from 'flexlayout-react';
+import { MultiMapRecord } from './rows';
 
 
 export type MapTuple = [Model, FormID[], MapItemConfig[]];
@@ -16,8 +20,8 @@ const globalSettings: IGlobalAttributes = {
   splitterSize: 4,
 };
 
-export const getMultiMapLayout = (rows: ChannelRow[], formID: FormID): MapTuple => {
-  const n = rows.length;
+export function getMultiMapLayout(records: MultiMapRecord[], parent: ClientID): MapTuple {
+  const n = records.length;
 
   let rowsCount = 1;
   while(rowsCount * (rowsCount + 1) < n) { rowsCount++; }
@@ -39,8 +43,8 @@ export const getMultiMapLayout = (rows: ChannelRow[], formID: FormID): MapTuple 
 
   for (const row of children) {
     for (const tabSet of row.children) {
-      const id = rows[i][0].toString();
-      const childFormID = formID + ',' + id;
+      const id = String(records[i].mapID);
+      const childFormID = parent + ',' + id;
 
       const tab: IJsonTabNode = tabSet.children[0];
       const config: MapItemConfig = {
@@ -50,13 +54,14 @@ export const getMultiMapLayout = (rows: ChannelRow[], formID: FormID): MapTuple 
 
       tabSet.id = id;
       tab.id = childFormID;
-      tab.name = rows[i][3];
+      tab.name = records[i].stratumName;
 
       childrenList.push(childFormID);
       configList.push(config);
       i++;
     }
   }
-  const layout: IJsonModel = {global: globalSettings, layout: {type: 'row', children}};
-  return [Model.fromJson(layout), childrenList, configList];
-};
+
+  const model = Model.fromJson({global: globalSettings, layout: {type: 'row', children}});
+  return [model, childrenList, configList];
+}

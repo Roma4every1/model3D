@@ -64,12 +64,12 @@ export async function updateReportChannelData(
 /* --- --- */
 
 /** Создаёт список программ/отчётов для презентации. */
-export async function createReportModels(paramDict: ParamDict, rootID: ClientID, id: ClientID): Promise<ReportModel[]> {
+export async function createReportModels(id: ClientID, paramDict: ParamDict): Promise<ReportModel[]> {
   const res = await reportsAPI.getPresentationReports(id);
   const reportModels = res.ok ? res.data : [];
   if (reportModels.length === 0) return reportModels;
 
-  const clients = [rootID, id];
+  const clients = ['root', id];
   const changedReports: Promise<void>[] = [];
 
   reportModels.forEach((report: ReportModel, i: number) => {

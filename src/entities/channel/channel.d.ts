@@ -140,7 +140,7 @@ interface LookupColumnInfo {
 }
 
 type ChannelCriterion<Fields extends string = string> = Record<Fields, ChannelColumnCriterion>;
-type ChannelColumnCriterion = string | {name: string, optional: boolean};
+type ChannelColumnCriterion = {name: string, optional?: boolean};
 
 /** Критерий канала. */
 interface ChannelCriterion2<P extends string = string> {

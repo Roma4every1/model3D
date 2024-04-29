@@ -37,83 +37,107 @@ export const constraints = {
 /** Свойства для идентификации каналов. */
 export const caratChannelCriterionDict: Record<CaratChannelType, ChannelCriterion> = {
   'lithology': {
-    well: 'WELL ID', stratumID: 'STRATUM ID',
-    top: 'TOP', bottom: 'BASE',
+    well: {name: 'WELL ID'},
+    top: {name: 'TOP'},
+    bottom: {name: 'BASE'},
+    stratumID: {name: 'STRATUM ID'},
   },
   'perforations': {
-    well: 'WELL ID',
-    type: 'TYPE', date: 'DATE',
-    top: 'TOP', bottom: 'BASE',
+    well: {name: 'WELL ID'},
+    top: {name: 'TOP'},
+    bottom: {name: 'BASE'},
+    type: {name: 'TYPE'},
+    date: {name: 'DATE'},
   },
   'curve-set': {
-    well: 'WELL ID', id: 'CURVE ID',
-    type: 'CURVE TYPE', date: 'DATE',
-    top: 'DEPTH START', bottom: 'DEPTH END',
-    defaultLoading: 'LOAD BY DEFAULT',
+    well: {name: 'WELL ID'},
+    id: {name: 'CURVE ID'},
+    top: {name: 'DEPTH START'},
+    bottom: {name: 'DEPTH END'},
+    type: {name: 'CURVE TYPE'},
+    date: {name: 'DATE'},
+    defaultLoading: {name: 'LOAD BY DEFAULT'},
     description: {name: 'DESCRIPTION', optional: true},
   },
   'curve-data': {
-    id: 'CURVE ID', data: 'CURVE DATA',
-    top: 'MIN DEPTH', bottom: 'MAX DEPTH',
-    min: 'MIN VALUE', max: 'MAX VALUE',
+    id: {name: 'CURVE ID'},
+    data: {name: 'CURVE DATA'},
+    top: {name: 'MIN DEPTH'},
+    bottom: {name: 'MAX DEPTH'},
+    min: {name: 'MIN VALUE'},
+    max: {name: 'MAX VALUE'},
   },
   'inclinometry': {
-    well: 'WELL ID',
-    inclinometry: 'INCLINOMETRY',
+    well: {name: 'WELL ID'},
+    inclinometry: {name: 'INCLINOMETRY'},
   },
   'bore': {
-    well: 'WELL ID', top: 'TOP', bottom: 'BASE',
-    innerDiameter: 'IN_D', outerDiameter: 'OUT DIAMETER',
-    cement: 'CEMENT', label: 'LABEL_ZEM',
+    well: {name: 'WELL ID'},
+    top: {name: 'TOP'},
+    bottom: {name: 'BASE'},
+    innerDiameter: {name: 'IN_D'},
+    outerDiameter: {name: 'OUT DIAMETER'},
+    cement: {name: 'CEMENT'},
+    label: {name: 'LABEL_ZEM'},
   },
   'pump': {
-    well: 'WELL ID', top: 'TOP', bottom: 'BASE',
-    pumpID: 'PUMP IMAGE', pumpName: 'NAME', label: 'LABEL_SP',
+    well: {name: 'WELL ID'},
+    top: {name: 'TOP'},
+    bottom: {name: 'BASE'},
+    pumpID: {name: 'PUMP IMAGE'},
+    pumpName: {name: 'NAME'},
+    label: {name: 'LABEL_SP'},
   },
   'face': {
-    well: 'WELL ID',
-    top: 'TOP', bottom: 'BASE', diameter: 'OUT_D',
-    type: 'TYPE', date: 'DT', label: 'LABEL_ZB',
+    well: {name: 'WELL ID'},
+    top: {name: 'TOP'},
+    bottom: {name: 'BASE'},
+    diameter: {name: 'OUT_D'},
+    type: {name: 'TYPE'},
+    date: {name: 'DT'},
+    label: {name: 'LABEL_ZB'},
   },
   'vertical': {
-    well: 'WELL ID',
-    top: 'TOP', bottom: 'BASE', width: 'WIDTH',
+    well: {name: 'WELL ID'},
+    top: {name: 'TOP'},
+    bottom: {name: 'BASE'},
+    width: {name: 'WIDTH'},
   },
 };
 
 /** Канал с картинками насоса. */
 export const pumpImageCriterion: ChannelCriterion = {
-  id: 'LOOKUPCODE',
-  image: 'LOOKUPVALUE',
+  id: {name: 'LOOKUPCODE'},
+  image: {name: 'LOOKUPVALUE'},
 };
 
 /** Свойства для идентификации канала с данными инклинометрии. */
 export const inclinometryCriterion: ChannelCriterion = {
-  well: 'WELL ID',
-  depth: 'DEPTH',
-  absMark: 'ABSMARK',
+  well: {name: 'WELL ID'},
+  depth: {name: 'DEPTH'},
+  absMark: {name: 'ABSMARK'},
 };
 
 /** Свойства для идентификации канала с цветами пластов. */
 export const lithologyStyleCriterion: ChannelCriterion = {
-  id: 'LOOKUPCODE',
-  color: 'COLOR',
-  borderColor: 'BORDER COLOR',
-  backgroundColor: 'BACKGROUND COLOR',
-  fillStyle: 'FILL STYLE',
-  lineStyle: 'LINE STYLE',
+  id: {name: 'LOOKUPCODE'},
+  color: {name: 'COLOR'},
+  borderColor: {name: 'BORDER COLOR'},
+  backgroundColor: {name: 'BACKGROUND COLOR'},
+  fillStyle: {name: 'FILL STYLE'},
+  lineStyle: {name: 'LINE STYLE'},
 };
 
 /** Свойства для идентификации канала с подписями пластов. */
 export const lithologyLabelCriterion: ChannelCriterion = {
-  id: 'LOOKUPCODE',
-  value: 'LOOKUPVALUE',
+  id: {name: 'LOOKUPCODE'},
+  value: {name: 'LOOKUPVALUE'},
 };
 
 /** Свойства для идентификации справочника с цветами кривых. */
 export const curveColorCriterion: ChannelCriterion = {
-  type: 'LOOKUPCODE',
-  color: 'COLOR',
+  type: {name: 'LOOKUPCODE'},
+  color: {name: 'COLOR'},
 };
 
 /** Настройки отрисовки. */

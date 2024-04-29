@@ -1,6 +1,6 @@
 import { createElement } from 'react';
 import { showNotification } from 'entities/notification';
-import { clientFetchingStart, clientFetchingEnd } from 'entities/fetch-state';
+import { fetchingStart, fetchingEnd } from 'entities/fetch-state';
 import { setMapField, setMapLoading, } from './map.actions';
 import { closeWindow, showWindow } from 'entities/window';
 
@@ -79,7 +79,7 @@ export async function fetchMapData(id: FormID): Promise<void> {
 export async function fetchMultiMapData(id: ClientID): Promise<void> {
   const multiMapState = useMultiMapStore.getState()[id];
   if (!multiMapState) return;
-  clientFetchingStart(id + '_map');
+  fetchingStart(id + '_map');
 
   const updateStages = () => {
     for (const config of multiMapState.configs) {
@@ -103,7 +103,7 @@ export async function fetchMultiMapData(id: ClientID): Promise<void> {
       updateStages();
     }
   }
-  clientFetchingEnd(id + '_map');
+  fetchingEnd(id + '_map');
   setTimeout(updateStages, 100);
 }
 

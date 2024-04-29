@@ -5,7 +5,7 @@ import { addClientParameters, rowToParameterValue } from 'entities/parameter';
 import { setChannels } from 'entities/channel';
 import { showNotification } from 'entities/notification';
 import { showWarningMessage } from 'entities/window';
-import { sessionFetchingStart, sessionFetchingEnd } from 'entities/fetch-state';
+import { fetchingStart, fetchingEnd, fetchingError } from 'entities/fetch-state';
 import { initializeObjects, initializeObjectModels } from 'entities/objects';
 import { createLeftLayout, handlePresentationTree } from 'widgets/left-panel';
 import { createClientChannels } from 'widgets/presentation/lib/initialization';
@@ -31,12 +31,12 @@ export async function saveSession(): Promise<void> {
 
 /** Инициализация новой сессии. */
 export async function startSession(isDefault: boolean): Promise<void> {
-  sessionFetchingStart();
+  fetchingStart('session');
   const { ok, data: dto, message } = await startNewSession(isDefault);
-  if (!ok) { sessionFetchingEnd(message); return; }
+  if (!ok) { fetchingError('session', message); return; }
 
   const [root, parameters] = await createRootFormState(dto.root);
-  if (!root) { sessionFetchingEnd(t('messages.root-fetch-error')); return; }
+  if (!root) { fetchingError('session', t('messages.root-fetch-error')); return; }
 
   const paramDict = {root: parameters};
   const channels = await createClientChannels(new Set(), parameters, []);
@@ -52,7 +52,7 @@ export async function startSession(isDefault: boolean): Promise<void> {
   root.layout.common.traceExist = Boolean(objects.trace.parameterID);
 
   setSessionID(dto.id);
-  sessionFetchingEnd();
+  fetchingEnd('session');
 
   for (const name in channels) channels[name] = {...channels[name]};
   await fillChannels(channels, paramDict);

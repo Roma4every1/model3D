@@ -1,13 +1,19 @@
 import { create } from 'zustand';
+import { FetchState, FetchStatus } from '../lib/utils';
 
 
-export const useFetchStateStore = create<FetchStates>(() => ({
-  session: null,
-  forms: {},
-}));
+/** Хранилище состояний загрузки. */
+export type FetchStates = Record<string, FetchState>;
 
-/** Состояние загрузки сессии. */
-export const useSessionFetchState = () => useFetchStateStore(state => state.session);
+/** Хранилище состояний загрузки. */
+export const useFetchStateStore = create((): FetchStates => ({}));
 
-/** Состояние загрузки формы/презентации. */
-export const useFormFetchState = (id: ClientID) => useFetchStateStore(state => state.forms[id]);
+/** Состояние загрузки. */
+export function useFetchState(id: string): FetchState {
+  const selector = (state: FetchStates) => {
+    let fetchState = state[id];
+    if (!fetchState) { fetchState = new FetchState(FetchStatus.NEED); state[id] = fetchState; }
+    return fetchState;
+  };
+  return useFetchStateStore(selector);
+}

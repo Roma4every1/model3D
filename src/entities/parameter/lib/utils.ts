@@ -2,6 +2,16 @@ import { getDataTypeName } from 'shared/lib';
 import { ParameterExpression } from './parameter.types';
 
 
+/** Находит и возвращает список каналов, необходимых для параметров. */
+export function getParameterChannels(parameters: Parameter[]): Set<ChannelName> {
+  const names: Set<ChannelName> = new Set();
+  for (const parameter of parameters) {
+    const name = parameter.channelName;
+    if (name) names.add(name);
+  }
+  return names;
+}
+
 export function parseDBPrimitive(value: string, typeName: string): any {
   const type = getDataTypeName(typeName);
   if (type === null) return null;

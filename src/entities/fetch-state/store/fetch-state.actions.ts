@@ -1,44 +1,43 @@
 import { useFetchStateStore } from './fetch-state.store';
+import { FetchState, FetchStatus } from '../lib/utils';
 
 
-/** Начало загрузки новой сессии. */
-export function sessionFetchingStart(): void {
-  const stateWait: FetchStateWait = {ok: undefined, loading: true, details: null};
-  useFetchStateStore.setState({session: stateWait});
+export function resetFetchState(id: string): void {
+  const fetchState = new FetchState(FetchStatus.NEED);
+  useFetchStateStore.setState({[id]: fetchState});
 }
 
-/** Конец загрузки новой сессии. */
-export function sessionFetchingEnd(error?: any): void {
-  const state: FetchState = error
-    ? {ok: false, loading: false, details: error}
-    : {ok: true, loading: false, details: null};
-  useFetchStateStore.setState({session: state});
+export function fetchingStart(id: string): void {
+  const fetchState = new FetchState(FetchStatus.PROCESSING);
+  useFetchStateStore.setState({[id]: fetchState});
 }
 
-export function clientFetchingStart(ids: ClientID | ClientID[]): void {
-  const forms = useFetchStateStore.getState().forms;
-  if (Array.isArray(ids)) {
-    for (const id of ids) forms[id] = {ok: undefined, loading: true, details: null};
-  } else {
-    forms[ids] = {ok: undefined, loading: true, details: null};
-  }
-  useFetchStateStore.setState({forms: {...forms}});
+export function fetchingStartMany(ids: string[]): void {
+  const state = useFetchStateStore.getState();
+  for (const id of ids) state[id] = new FetchState(FetchStatus.PROCESSING);
+  useFetchStateStore.setState({...state}, true);
 }
 
-export function clientFetchingEnd(ids: ClientID | ClientID[]): void {
-  const forms = useFetchStateStore.getState().forms;
-  if (Array.isArray(ids)) {
-    for (const id of ids) forms[id] = {ok: true, loading: false, details: null};
-  } else {
-    forms[ids] = {ok: true, loading: false, details: null};
-  }
-  useFetchStateStore.setState({forms: {...forms}});
+export function fetchingEnd(id: string): void {
+  const fetchState = new FetchState(FetchStatus.SUCCESS);
+  useFetchStateStore.setState({[id]: fetchState});
 }
 
-export function clientFetchingError(entries: {id: ClientID, details: any}[]): void {
-  const forms = useFetchStateStore.getState().forms;
+export function fetchingEndMany(ids: string[]): void {
+  const state = useFetchStateStore.getState();
+  for (const id of ids) state[id] = new FetchState(FetchStatus.SUCCESS);
+  useFetchStateStore.setState({...state}, true);
+}
+
+export function fetchingError(id: string, details?: string): void {
+  const fetchState = new FetchState(FetchStatus.ERROR, details);
+  useFetchStateStore.setState({[id]: fetchState});
+}
+
+export function fetchingErrorMany(entries: {id: string, details: string}[]): void {
+  const state = useFetchStateStore.getState();
   for (const { id, details } of entries) {
-    forms[id] = {ok: false, loading: false, details};
+    state[id] = new FetchState(FetchStatus.ERROR, details);
   }
-  useFetchStateStore.setState({forms: {...forms}});
+  useFetchStateStore.setState({...state}, true);
 }

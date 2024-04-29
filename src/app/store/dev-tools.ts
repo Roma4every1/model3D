@@ -1,5 +1,6 @@
 import { fetcher } from 'shared/lib';
 import { useRootStore } from './root-form.store';
+
 import { useClientStore } from 'entities/client';
 import { useChannelStore } from 'entities/channel';
 import { useParameterStore } from 'entities/parameter';
@@ -7,6 +8,8 @@ import { useReportStore } from 'entities/report';
 import { useWindowStore } from 'entities/window';
 import { useNotificationStore } from 'entities/notification';
 import { useObjectsStore } from 'entities/objects';
+import { FetchStates, useFetchStateStore } from 'entities/fetch-state';
+
 import { useTableStore } from 'features/table';
 import { useChartStore } from 'features/chart';
 import { useMapStore } from 'features/map';
@@ -35,8 +38,9 @@ export class WMDevTools {
     return null;
   }
 
-  public parameters(id?: ClientID): Parameter[] {
-    return useParameterStore.getState()[id ?? 'root'];
+  public parameters(id?: ClientID): ParamDict | Parameter[] {
+    const state = useParameterStore.getState();
+    return id === undefined ? state : state[id];
   }
 
   public channels(): ChannelDict {
@@ -89,6 +93,12 @@ export class WMDevTools {
 
   public fileViewStates(): FileViewState[] {
     return Object.values(useFileViewStore.getState());
+  }
+
+  /* --- --- */
+
+  public fetchStates(): FetchStates {
+    return useFetchStateStore.getState();
   }
 
   public windowStates(): WindowState[] {

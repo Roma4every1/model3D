@@ -25,7 +25,7 @@ export const Map = ({id, parent, channels}: SessionClient) => {
   const mapData = stage.getMapData();
 
   const isPartOfDynamicMultiMap = channels === null;
-  const activeChannelName = isPartOfDynamicMultiMap ? null : channels[0].name;
+  const activeChannelName = isPartOfDynamicMultiMap ? null : channels[0]?.name;
   const activeChannel = useChannel(activeChannelName);
 
   const angleParamName = 'inclinometryViewAngle';

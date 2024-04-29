@@ -55,7 +55,7 @@ export async function startNewSession(isDefault: boolean) {
 function clearSessionData(): void {
   fetcher.setSessionID('');
   useAppStore.setState({sessionID: null});
-  useFetchStateStore.setState({forms: {}});
+  useFetchStateStore.setState({}, true);
   useWindowStore.setState({}, true);
   useNotificationStore.setState({notifications: []}, true);
   useChannelStore.setState({}, true);

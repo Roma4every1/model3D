@@ -4,7 +4,7 @@ export { createChannels, fillChannels } from './lib/utils';
 export { createLookupList, createLookupTree } from './lib/lookup';
 
 export {
-  getParameterChannels, getDetailChannels, getLookupChannels,
+  getDetailChannels, getLookupChannels,
   createColumnInfo, cellsToRecords, channelRowToRecord,
 } from './lib/common';
 
