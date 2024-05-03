@@ -1,13 +1,10 @@
 import { useCaratStore } from './carat.store';
-import { useChannelStore } from 'entities/channel';
 import { useObjectsStore } from 'entities/objects';
-
-import { setCaratLoading } from './carat.actions';
-import { channelDictToRecords } from '../lib/channels';
+import { cellsToRecords, useChannelStore } from 'entities/channel';
 
 
 /** Обновляет данные каротажной диаграммы. */
-export async function setCaratData(id: FormID, data: ChannelDict): Promise<void> {
+export async function setCaratData(id: FormID): Promise<void> {
   const objects = useObjectsStore.getState();
   const channels = useChannelStore.getState();
 
@@ -26,21 +23,14 @@ export async function setCaratData(id: FormID, data: ChannelDict): Promise<void>
     return;
   }
 
-  loader.onProgressChange = (loading: Partial<CaratLoading>) => {
-    if (loading.status) loading.status = 'carat.loading.' + loading.status;
-    setCaratLoading(id, loading);
-  };
-
-  const flag = ++loader.flag;
-  const caratData = await loader.loadCaratData(stage.wellIDs, data);
-
   if (!stage.actualLookup) {
-    const dict: ChannelDict = {};
-    lookupNames.forEach((name) => { dict[name] = channels[name]; });
-    const lookupData = channelDictToRecords(dict);
-    await stage.setLookupData(lookupData);
+    const dict: ChannelRecordDict = {};
+    for (const name of lookupNames) dict[name] = cellsToRecords(channels[name]?.data);
+    stage.setLookupData(dict);
   }
-  if (flag !== loader.flag) return;
+
+  const caratData = await loader.loadCaratData(stage.wellIDs, channels);
+  if (!caratData) return;
 
   stage.setData(caratData, loader.cache);
   loader.checkCacheSize();

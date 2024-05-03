@@ -62,7 +62,7 @@ export class RecordHandler implements ITableRecordHandler {
       if (!rows?.length) { column.lookupData = []; column.lookupDict = {}; continue; }
 
       const lookupColumns = channel.config.lookupColumns;
-      const isTree = lookupColumns.parent.index >= 0;
+      const isTree = lookupColumns.parent.columnIndex >= 0;
       if (isTree) column.type = 'tree';
 
       const [lookup, dict] = (isTree ? createLookupTree : createLookupList)(rows, lookupColumns);

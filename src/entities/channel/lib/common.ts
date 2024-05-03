@@ -1,38 +1,14 @@
-export function createColumnInfo(channel: Channel, criterion: ChannelCriterion): ChannelColumnInfo {
-  const info: ChannelColumnInfo = {};
-  const properties = channel.config.properties;
-  const propertyNames = properties.map(property => property.name.toUpperCase());
-
-  for (const field in criterion) {
-    let { name: propertyName, optional } = criterion[field];
-    const index = propertyNames.findIndex(name => name === propertyName);
-
-    if (index === -1) {
-      if (optional !== true) return null;
-      info[field] = {name: propertyName, index: -1};
-    } else {
-      info[field] = {name: properties[index].fromColumn, index: -1};
-    }
+export function fillRecordInfo(info: ChannelRecordInfo, data: ChannelData): void {
+  if (!data) {
+    for (const field in info) info[field].columnIndex = -1;
+    return;
   }
-  return info;
-}
-
-/** Добавляет в конфиг канала данные о колонках. */
-export function findColumnIndexes(columns: ChannelColumn[], channelInfo: ChannelConfig): void {
-  columns.forEach((column: ChannelColumn, i: number) => {
-    if (!channelInfo.columnApplied) for (const property of channelInfo.properties) {
-      if (property.fromColumn === column.name) {
-        property.type = column.type;
-      }
-    }
-    for (const field in channelInfo.lookupColumns) {
-      const propertyInfo = channelInfo.lookupColumns[field];
-      if (propertyInfo.name === column.name) {
-        propertyInfo.index = i;
-      }
-    }
-  });
-  channelInfo.columnApplied = true;
+  const columns = data.columns;
+  for (const field in info) {
+    const propertyInfo = info[field];
+    const columnName = propertyInfo.columnName;
+    propertyInfo.columnIndex = columns.findIndex(c => c.name === columnName);
+  }
 }
 
 /** Конвертирует строки канала из массивов ячеек в словари по названиям колонок. */

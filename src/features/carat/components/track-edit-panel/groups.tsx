@@ -1,39 +1,47 @@
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MenuSection, ButtonIcon } from 'shared/ui';
+
+import { CaratStage } from '../../rendering/stage';
+import { CaratColumnGroup } from '../../rendering/column-group';
+
 import moveLeftIcon from 'assets/images/carat/move-left.svg';
 import moveRightIcon from 'assets/images/carat/move-right.svg';
 
 
 interface CaratColumnsPanelProps {
-  stage: ICaratStage;
-  track: ICaratTrack;
+  stage: CaratStage;
 }
 
 
-export const CaratColumnPanel = ({stage, track}: CaratColumnsPanelProps) => {
+export const CaratGroupSection = ({stage}: CaratColumnsPanelProps) => {
   const { t } = useTranslation();
+  const track = stage.getActiveTrack();
   const groups = track.getGroups();
-  const activeIndex = track.getActiveIndex();
+  const [activeIndex, setActiveIndex] = useState(track.getActiveIndex());
+
+  useEffect(() => {
+    stage.subscribe('group', setActiveIndex);
+    return () => stage.unsubscribe('group', setActiveIndex);
+  }, [stage]);
 
   const setActiveGroup = (idx: number) => {
-    stage.edit({type: 'active-group', payload: idx});
+    stage.setActiveGroup(idx);
     stage.render();
   };
-
   const moveLeft = () => {
-    stage.edit({type: 'move', payload: {idx: activeIndex, to: 'left'}});
+    stage.moveGroup(activeIndex, 'left');
     stage.render();
   };
-
   const moveRight = () => {
-    stage.edit({type: 'move', payload: {idx: activeIndex, to: 'right'}});
+    stage.moveGroup(activeIndex, 'right');
     stage.render();
   };
 
-  const columnToLabel = (column: ICaratColumnGroup, i: number) => {
+  const columnToLabel = (column: CaratColumnGroup, i: number) => {
     const text = column.settings.label
       ? column.settings.label
-      :<span style={{color: '#999'}}>{t('carat.columns.no-label')}</span>;
+      : <span style={{color: '#999'}}>{t('carat.columns.no-label')}</span>;
 
     const onClick = () => setActiveGroup(i);
     const className = i === activeIndex ? 'active' : undefined;

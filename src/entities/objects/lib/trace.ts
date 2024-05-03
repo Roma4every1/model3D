@@ -36,7 +36,7 @@ export class TraceManager implements ITraceManager {
     this.info = new RecordInfoCreator(channels).create(traceChannel, traceChannelCriterion);
     if (!this.info) return;
 
-    const nodeDetails = this.info.nodes.details;
+    const nodeDetails = this.info.nodes.details.info;
     if (!nodeDetails.traceID) {
       const columnName = 'WELLS_LIST_ID';
       nodeDetails.traceID = {propertyName: columnName, columnName};
@@ -72,7 +72,7 @@ export class TraceManager implements ITraceManager {
     const wellChannel = channels[this.wellChannelName];
     const nodeChannel = channels[this.nodeChannelName];
     this.model = this.createModel(entry.value, nodeChannel, wellChannel);
-    return this.model === oldModel;
+    return this.model !== oldModel;
   }
 
   private createModel(value: ParameterValueMap['tableRow'], nodeChannel: Channel, wellChannel: Channel): TraceModel {
@@ -83,10 +83,10 @@ export class TraceManager implements ITraceManager {
     const nodeRecords = cellsToRecords(nodeChannel.data);
     const wellRows = wellChannel.data?.rows;
 
-    const wellIDIndex = wellChannel.config.lookupColumns.id.index;
-    const wellNameIndex = wellChannel.config.lookupColumns.value.index;
+    const wellIDIndex = wellChannel.config.lookupColumns.id.columnIndex;
+    const wellNameIndex = wellChannel.config.lookupColumns.value.columnIndex;
 
-    const nodeInfo: ChannelRecordInfo<TraceNodeChannelFields> = this.info.nodes.details;
+    const nodeInfo: ChannelRecordInfo<TraceNodeChannelFields> = this.info.nodes.details.info;
     const traceIDColumn = nodeInfo.traceID.columnName;
     const idColumn = nodeInfo.id.columnName;
     const xColumn = nodeInfo.x.columnName;
@@ -126,7 +126,7 @@ export class TraceManager implements ITraceManager {
 
   /** Преобразует узлы трассы в массив записей канала. */
   public getNodeChannelRows(columns: ChannelColumn[]): ChannelRow[] {
-    const info: ChannelRecordInfo<TraceNodeChannelFields> = this.info.nodes.details;
+    const info: ChannelRecordInfo<TraceNodeChannelFields> = this.info.nodes.details.info;
     const findIndex = (name: ColumnName) => columns.findIndex(c => c.name === name);
 
     const traceIndex = findIndex(info.traceID.columnName);

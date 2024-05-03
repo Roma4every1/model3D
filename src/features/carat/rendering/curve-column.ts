@@ -1,31 +1,44 @@
+import type { CaratColumnInit, CaratColumnXAxis } from '../lib/dto.types';
+import type { CaratCurveModel, CurveGroupState } from '../lib/types';
 import { CaratDrawer } from './drawer';
-import { CaratCurveModel, CurveGroupState } from '../lib/types';
+import { CurveManager } from '../lib/curve-manager';
 
 
 /** Колонка каротажной диаграммы с кривыми. */
-export class CaratCurveColumn {
+export class CaratCurveColumn implements ICaratColumn {
   /** Ссылка на отрисовщик. */
   private readonly drawer: CaratDrawer;
+  /** Ограничивающий прямоугольник колонки. */
+  public readonly rect: Rectangle;
   /** Подключённый канал со списком кривых. */
-  public readonly curveSetChannel: CaratAttachedChannel;
+  public readonly channel: AttachedChannel;
 
+  /** Выборки кривых. */
+  public readonly curveManager: CurveManager;
+  /** Настройки горизонтальной оси. */
+  public xAxis: CaratColumnXAxis;
   /** Группы кривых по зонам. */
   private groups: CurveGroupState[];
   /** Координаты по X разделительных линий зон. */
   private dividingLines: number[];
 
-  constructor(rect: Rectangle, drawer: CaratDrawer, curveSetChannel: CaratAttachedChannel) {
+  constructor(rect: Rectangle, drawer: CaratDrawer, channel: AttachedChannel, init: CaratColumnInit) {
     this.drawer = drawer;
-    this.curveSetChannel = curveSetChannel;
+    this.rect = rect;
+    this.channel = channel;
+    this.xAxis = init.xAxis;
+    this.curveManager = new CurveManager(init.selection, init.measures);
+    this.curveManager.setChannel(channel);
     this.groups = [{rect, elements: []}];
     this.dividingLines = [];
   }
 
   public copy(): CaratCurveColumn {
-    const { drawer, curveSetChannel } = this;
-    const copy = new CaratCurveColumn(null, drawer, curveSetChannel);
-    copy.groups = this.groups.map(g => ({rect: {...g.rect}, elements: []}));
-    return copy;
+    const copy = {...this, curveManager: this.curveManager.copy()};
+    copy.groups = [{rect: this.rect, elements: []}];
+    copy.dividingLines = [];
+    Object.setPrototypeOf(copy, CaratCurveColumn.prototype);
+    return copy as CaratCurveColumn;
   }
 
   public getRange(): [number, number] {
@@ -41,6 +54,11 @@ export class CaratCurveColumn {
     return [min, max];
   }
 
+  public getLookupNames(): ChannelName[] {
+    const colorLookup = this.channel.info.type.lookups.color;
+    return colorLookup ? [colorLookup.name] : [];
+  }
+
   public getGroups(): CurveGroupState[] {
     return this.groups;
   }
@@ -53,22 +71,27 @@ export class CaratCurveColumn {
     return this.groups[0].rect.width * this.groups.length;
   }
 
-  public setGroupWidth(width: number) {
+  public setGroupWidth(width: number): void {
     for (let i = 0; i < this.groups.length; i++) {
       const left = i * width;
       const rect = this.groups[i].rect;
       rect.left = left; rect.width = width;
       if (i > 0) this.dividingLines[i - 1] = left;
     }
+    this.rect.width = this.getTotalWidth();
   }
 
-  public setHeight(height: number) {
+  public setHeight(height: number): void {
     for (const curveGroup of this.groups) {
       curveGroup.rect.height = height;
     }
   }
 
-  public setCurveData(curves: CaratCurveModel[], zones: CaratZone[]) {
+  public setChannelData(): void {
+    // данные обновляются в методе setCurveData
+  }
+
+  public setCurveData(curves: CaratCurveModel[], zones: CaratZone[]): void {
     let curveGroups: CaratCurveModel[][] = [];
     for (let i = 0; i <= zones.length; i++) curveGroups.push([]);
 
@@ -94,16 +117,24 @@ export class CaratCurveColumn {
       this.groups.push({rect, elements: curveGroups[i]});
       if (i > 0) this.dividingLines.push(rect.left);
     }
+    this.rect.width = this.getTotalWidth();
   }
 
-  public render() {
+  public setLookupData(lookupData: ChannelRecordDict): void {
+    this.curveManager.setStyleData(lookupData);
+  }
+
+  public render(): void {
+    if (this.xAxis.grid) {
+      this.drawer.drawVerticalGrid(this.groups, this.xAxis);
+    }
+    if (this.dividingLines.length) {
+      this.drawer.drawZoneDividingLines(this.dividingLines);
+    }
     for (const curveGroup of this.groups) {
       this.drawer.setCurrentColumn(curveGroup.rect);
       this.drawer.drawCurves(curveGroup.elements);
       this.drawer.restore();
-    }
-    if (this.dividingLines.length) {
-      this.drawer.drawZoneDividingLines(this.dividingLines);
     }
   }
 }

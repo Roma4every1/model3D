@@ -23,11 +23,11 @@ export function applyLookupToMarks(marks: ChartMarkProps[], data: ChannelDict) {
       if (!channel || !channel.data) continue;
 
       const lookupColumns = channel.config.lookupColumns;
-      const idIndex = lookupColumns.id.index;
+      const idIndex = lookupColumns.id.columnIndex;
       if (idIndex === -1) continue;
 
       const row = channel.data.rows.find(row => row[idIndex] === item.id);
-      if (row) item.text = row[lookupColumns.value.index];
+      if (row) item.text = row[lookupColumns.value.columnIndex];
     }
   }
 }

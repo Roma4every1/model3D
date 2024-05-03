@@ -75,7 +75,7 @@ interface FormDataWM {
 /* --- Channels --- */
 
 /** Критерии подключаемых каналов к клиенту. */
-type ClientChannelCriteria<T = string> = Record<T, ChannelCriterion2>;
+type ClientChannelCriteria<T = string> = Record<T, ChannelCriterion>;
 
 /** Данные для создания прикреплённого канала. */
 interface AttachedChannelDTO {

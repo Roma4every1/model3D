@@ -1,8 +1,3 @@
-/** Словарь стилей интервальных элементов. */
-export type CaratIntervalStyleDict = Record<number, CaratIntervalStyle>;
-/** Словарь стилей каротажных кривых. */
-export type CaratCurveStyleDict = Map<CaratCurveType, CaratCurveStyle>;
-
 /** Модель каротажной кривой. */
 export interface CaratCurveModel {
   /** Идентификатор кривой. */
@@ -32,32 +27,23 @@ export interface CaratCurveModel {
   /** Точки кривой. */
   points: Point[];
   /** Стиль отрисовки. */
-  style: CaratCurveStyle;
+  style: LineStyle;
   /** Является ли кривая активной. */
   active: boolean;
   /** Была ли кривая трансформирована для показа в режиме конструкции. */
   transformed?: boolean;
-}
-export interface CaratCurveStyle {
-  color: ColorHEX;
-  thickness: number;
 }
 
 export interface CurveGroupState {
   rect: Rectangle;
   elements: CaratCurveModel[];
 }
-export interface CurveAxisGroup {
-  rect: Rectangle;
-  axes: CaratCurveModel[];
-}
 
 export interface CaratIntervalModel {
   stratumID?: number;
   top: number;
   bottom: number;
-  styleID: string;
-  style: CaratIntervalStyle,
+  style: ShapeStyle,
   text?: string;
 }
 export interface CaratBarModel {
@@ -65,60 +51,6 @@ export interface CaratBarModel {
   bottom: number;
   value: number; // from 0 to 1
   text?: string;
-}
-export interface CaratIntervalStyle {
-  fill: ColorHEX | CanvasPattern;
-  stroke: ColorHEX;
-}
-
-/** Элемент ствола скважины. */
-export interface WellBoreElementModel {
-  /** Начальная глубина элемента. */
-  top: number;
-  /** Конечная глубина элемента. */
-  bottom: number;
-  /** Внутренний диаметр ствола. */
-  innerDiameter: number;
-  /** Внешний диаметр ствола. */
-  outerDiameter: number;
-  /** Глубина начала цементирования (конец = bottom). */
-  cement: number;
-  /** Подпись элемента конструкции. */
-  label: string;
-}
-/** Настройки внешнего вида элементов конструкции. */
-export interface WellBoreElementStyle {
-  /** Цвет заливки прямоугольника для внутреннего диаметра. */
-  innerDiameter: ColorHEX;
-  /** Цвет заливки прямоугольника для внешнего диаметра. */
-  outerDiameter: ColorHEX;
-  /** Цвет заливки цементажа. */
-  cement: ColorHEX;
-}
-
-/** Элемент конструкции скважины в виде картинки с насосом. */
-export interface CaratPumpModel {
-  top: number;
-  bottom: number;
-  pumpID: number;
-  pumpImage: any;
-  label: string;
-}
-
-/** Забой скважины; относится к элементам конструкции. */
-export interface CaratWellFaceModel {
-  top: number;
-  bottom: number;
-  diameter: number;
-  style: CaratIntervalStyle;
-  label: string;
-}
-
-/** Элемент конструкции скважины в виде вертикальной прямой. */
-export interface CaratVerticalLineModel {
-  top: number;
-  bottom: number;
-  width: number;
 }
 
 /* --- Correlations --- */
@@ -145,6 +77,7 @@ export interface CaratCorrelation {
  * + `leftBottom: number`
  * + `rightTop: number`
  * + `rightBottom: number`
+ * + `style`: {@link ShapeStyle}
  */
 export interface StratumCorrelation {
   /** Глубина кровли пласта в треке слева. */
@@ -156,21 +89,5 @@ export interface StratumCorrelation {
   /** Глубина подошвы пласта в треке справа. */
   rightBottom: number;
   /** Заливка и обводка корреляции. */
-  style: CaratIntervalStyle;
-}
-
-/* --- Inclinometry --- */
-
-/** Отображение "глубина => абс. отметка". */
-export type InclinometryMap = Map<number, number>;
-
-/** Опорная точка инклинометрии.
- * + `depth: number`
- * + `absMark: number`
- */
-export interface InclinometryMark {
-  /** Значение глубины. */
-  depth: number;
-  /** Значение абсолютной отметки. */
-  absMark: number;
+  style: ShapeStyle;
 }

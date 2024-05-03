@@ -1,19 +1,19 @@
+import type { CaratImageModel } from '../lib/construction.types';
 import { CaratDrawer } from './drawer';
-import { CaratPumpModel } from '../lib/types';
 
 
-export class PumpColumn implements ICaratColumn {
+export class CaratImageColumn implements ICaratColumn {
   /** Ссылка на отрисовщик. */
   private readonly drawer: CaratDrawer;
   /** Ограничивающий прямоугольник колонки. */
   public readonly rect: Rectangle;
   /** Массив подключённых свойств канала. */
-  public readonly channel: CaratAttachedChannel;
+  public readonly channel: AttachedChannel;
 
-  private elements: CaratPumpModel[];
-  private imageDict: Record<number, any>;
+  private elements: CaratImageModel[];
+  private imageDict: Record<number | string, HTMLImageElement>;
 
-  constructor(rect: Rectangle, drawer: CaratDrawer, channel: CaratAttachedChannel) {
+  constructor(rect: Rectangle, drawer: CaratDrawer, channel: AttachedChannel) {
     this.drawer = drawer;
     this.rect = rect;
     this.channel = channel;
@@ -21,15 +21,15 @@ export class PumpColumn implements ICaratColumn {
     this.imageDict = {};
   }
 
-  public copy(): ICaratColumn {
-    const copy = new PumpColumn({...this.rect}, this.drawer, this.channel);
+  public copy(): CaratImageColumn {
+    const copy = new CaratImageColumn({...this.rect}, this.drawer, this.channel);
     copy.imageDict = this.imageDict;
     return copy;
   }
 
   public getLookupNames(): ChannelName[] {
-    const imageLookupName = this.channel.imageLookup?.name;
-    return imageLookupName ? [imageLookupName] : [];
+    const imageLookupName = this.channel.info.imageID.lookups.image.name;
+    return [imageLookupName];
   }
 
   public getElements(): any[] {
@@ -52,39 +52,36 @@ export class PumpColumn implements ICaratColumn {
     const info = this.channel.info;
 
     for (const record of records) {
-      const pumpID = record[info.pumpID.name];
-      const pumpImage = this.imageDict[pumpID];
-      if (!pumpImage) continue;
-      const top = record[info.top.name];
-      const bottom = record[info.bottom.name];
-      const label = record[info.label.name];
-      this.elements.push({top, bottom, pumpID, pumpImage, label});
+      const id = record[info.imageID.columnName];
+      const image = this.imageDict[id];
+      if (!image) continue;
+      const top = record[info.top.columnName];
+      const bottom = record[info.bottom.columnName];
+      const label = record[info.label.columnName];
+      this.elements.push({top, bottom, image, label});
     }
   }
 
-  public async setLookupData(lookupData: ChannelRecordDict): Promise<void> {
+  public setLookupData(lookupData: ChannelRecordDict): void {
     this.imageDict = {};
-    const lookupInfo = this.channel.imageLookup.info;
-    const records = lookupData[this.channel.imageLookup.name];
+    const { name: lookupName, info: lookupInfo } = this.channel.info.imageID.lookups.image;
+    const records = lookupData[lookupName];
 
     for (const record of records) {
-      const id = record[lookupInfo.id.name];
-      const base64Str = record[lookupInfo.image.name];
+      const id = record[lookupInfo.id.columnName];
+      const base64Str = record[lookupInfo.image.columnName];
       if (id === null || id === undefined || !base64Str) continue;
 
       const image = new Image();
+      image.decoding = 'sync';
       image.src = 'data:image/png;base64,' + base64Str;
       this.imageDict[id] = image;
-      await image.decode();
-    }
-    for (const element of this.elements) {
-      element.pumpImage = this.imageDict[element.pumpID];
     }
   }
 
   public render(): void {
     this.drawer.setCurrentColumn(this.rect);
-    this.drawer.drawPumps(this.elements);
+    this.drawer.drawImages(this.elements);
     this.drawer.restore();
   }
 }

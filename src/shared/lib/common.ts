@@ -207,7 +207,7 @@ export function testString(name: string, matcher: StringMatcher): boolean {
 /* --- Other --- */
 
 /** `#ARGB => #RGBA`: на сервере иногда бывает неправильный формат. */
-export function fixColorHEX(hex: ColorHEX): ColorHEX {
+export function fixColorHEX(hex: ColorString): ColorString {
   if (hex?.length > 7) hex = '#' + hex.substring(3) + hex.substring(1, 3);
   return hex;
 }

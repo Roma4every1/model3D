@@ -42,7 +42,7 @@ export class StratumManager implements IStratumManager {
     if (!entry) return false;
     const oldModel = this.model;
     this.model = this.createModel(entry.value);
-    return this.model === oldModel;
+    return this.model !== oldModel;
   }
 
   /** По значение `TableRow` параметра создаёт модель пласта. */

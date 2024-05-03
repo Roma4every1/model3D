@@ -1,26 +1,27 @@
+import type { DialogProps } from '@progress/kendo-react-dialogs';
 import { useState } from 'react';
 import { inputNumberParser } from 'shared/locales';
 import { closeWindow, showDialog } from 'entities/window';
 
 import { Flex, Button, InputNumber } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
-import { DialogProps } from '@progress/kendo-react-dialogs';
 import { MenuSection, BigButton, ButtonSwitch } from 'shared/ui';
+import { CaratStage } from '../../rendering/stage';
 
 import './carat-export.scss';
 import exportIcon from 'assets/images/carat/carat-export-png.svg';
 
 
 interface CaratExportPanelProps {
-  stage: ICaratStage;
+  stage: CaratStage;
 }
 interface CaratExportDialogProps {
-  stage: ICaratStage;
+  stage: CaratStage;
   close: () => void;
 }
 
 
-export const CaratExportPanel = ({stage}: CaratExportPanelProps) => {
+export const CaratExportSection = ({stage}: CaratExportPanelProps) => {
   const disabled = stage.getActiveTrack().constructionMode;
 
   const action = () => {

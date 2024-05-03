@@ -16,8 +16,6 @@ export class ProfileStage implements IProfileStage {
 
   /** Отрисовщик. */
   private readonly drawer: ProfileDrawer;
-  /** Слушатели событий сцены. */
-  public readonly listeners: CaratStageListeners;
   /** Ссылка на элемент холста. */
   private canvas: HTMLCanvasElement;
 

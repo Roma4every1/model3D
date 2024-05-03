@@ -13,7 +13,7 @@ import { FetchStates, useFetchStateStore } from 'entities/fetch-state';
 import { useTableStore } from 'features/table';
 import { useChartStore } from 'features/chart';
 import { useMapStore } from 'features/map';
-import { useCaratStore } from 'features/carat';
+import { CaratState, useCaratStore } from 'features/carat';
 import { useProfileStore } from 'features/profile';
 import { useFileViewStore } from 'features/file';
 import { usePresentationStore } from 'widgets/presentation';

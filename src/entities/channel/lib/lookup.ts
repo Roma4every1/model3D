@@ -1,7 +1,7 @@
 /** Создаёт список возможных значений и словарь данных канала-справочника. */
 export function createLookupList(rows: ChannelRow[], columnsInfo: LookupColumns) {
-  const idIndex = columnsInfo.id.index;
-  const valueIndex = columnsInfo.value.index;
+  const idIndex = columnsInfo.id.columnIndex;
+  const valueIndex = columnsInfo.value.columnIndex;
   const dict: LookupDict = {};
 
   const list = rows.map((row: ChannelRow): LookupListItem => {
@@ -14,9 +14,9 @@ export function createLookupList(rows: ChannelRow[], columnsInfo: LookupColumns)
 
 /** Создаёт дерево возможных значений и словарь данных канала-справочника. */
 export function createLookupTree(rows: ChannelRow[], columnsInfo: LookupColumns) {
-  const idIndex = columnsInfo.id.index;
-  const valueIndex = columnsInfo.value.index;
-  const parentIndex = columnsInfo.parent.index;
+  const idIndex = columnsInfo.id.columnIndex;
+  const valueIndex = columnsInfo.value.columnIndex;
+  const parentIndex = columnsInfo.parent.columnIndex;
 
   const lookupDict: LookupDict = {};
   const nodeDict: Record<LookupItemID, LookupTreeNode> = {};

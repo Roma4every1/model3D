@@ -1,23 +1,28 @@
-import { useState, useEffect } from 'react';
+import type { CaratCurveModel } from '../../lib/types';
+import type { DateRangePickerChangeEvent } from '@progress/kendo-react-dateinputs';
+import type { TreeViewCheckChangeEvent, TreeViewExpandChangeEvent } from '@progress/kendo-react-treeview';
+
+import { useEffect } from 'react';
+import { useRerender } from 'shared/react';
 import { useTranslation } from 'react-i18next';
 import { round } from 'shared/lib';
 import { updateWindow } from 'entities/window';
 
 import { Button } from '@progress/kendo-react-buttons';
 import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
-import { DateRangePicker, DateRangePickerChangeEvent } from '@progress/kendo-react-dateinputs';
-import { TreeView, TreeViewCheckChangeEvent, TreeViewExpandChangeEvent } from '@progress/kendo-react-treeview';
+import { DateRangePicker } from '@progress/kendo-react-dateinputs';
+import { TreeView } from '@progress/kendo-react-treeview';
 import { TextInfo } from 'shared/ui';
 
-import './curve-selection-window.scss';
-import { CaratCurveModel } from '../../lib/types';
+import './curve-selection.scss';
+import { CaratStage } from '../../rendering/stage';
 import { CurveManager } from '../../lib/curve-manager';
 import { loadCaratCurves } from '../../store/carat.actions';
 
 
 interface CurveSelectionWindowProps {
   id: FormID;
-  stage: ICaratStage;
+  stage: CaratStage;
   onClose: () => void;
 }
 interface CurveFiltersProps {
@@ -28,19 +33,17 @@ interface CurveFiltersProps {
 
 export const CurveSelectionWindow = ({id, stage, onClose}: CurveSelectionWindowProps) => {
   const { t } = useTranslation();
-  const [, setSignal] = useState(false);
-  const signal = () => setSignal(value => !value);
+  const rerender = useRerender();
 
   const track = stage.getActiveTrack();
   const curveGroup = track.getCurveGroup();
-  const curveManager: CurveManager = curveGroup?.curveManager;
+  const curveManager: CurveManager = curveGroup?.getCurveColumn().curveManager;
   const tree = curveManager?.getCurveTree() ?? [];
 
-  // подписка на события изменения сцены
   useEffect(() => {
-    stage.listeners.curveWindowChange = () => setSignal(value => !value);
-    return () => { stage.listeners.curveWindowChange = () => {}; };
-  }, [stage]);
+    stage.subscribe('track', rerender);
+    return () => stage.unsubscribe('track', rerender);
+  }, [stage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // обновление заголовка окна при смене активного трека
   useEffect(() => {
@@ -50,7 +53,7 @@ export const CurveSelectionWindow = ({id, stage, onClose}: CurveSelectionWindowP
 
   const onExpandChange = (event: TreeViewExpandChangeEvent) => {
     event.item.expanded = !event.item.expanded;
-    signal();
+    rerender();
   };
 
   const onCheckChange = ({item}: TreeViewCheckChangeEvent) => {
@@ -64,7 +67,7 @@ export const CurveSelectionWindow = ({id, stage, onClose}: CurveSelectionWindowP
         if (isCurrentGroup) group.checked = group.children.some(c => c.checked);
       }
     }
-    signal();
+    rerender();
   };
 
   const onSetDefault = () => {
@@ -74,7 +77,7 @@ export const CurveSelectionWindow = ({id, stage, onClose}: CurveSelectionWindowP
       }
       curveTreeGroup.checked = curveTreeGroup.children.some(item => item.checked);
     }
-    signal();
+    rerender();
   };
 
   const onSubmit = () => {
@@ -98,7 +101,7 @@ export const CurveSelectionWindow = ({id, stage, onClose}: CurveSelectionWindowP
         </section>
         <section>
           <h5>{t('carat.selection.filters')}</h5>
-          <CurveFilters manager={curveManager} signal={signal}/>
+          <CurveFilters manager={curveManager} signal={rerender}/>
         </section>
       </div>
       <div>

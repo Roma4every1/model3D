@@ -3,7 +3,7 @@ import { FunctionComponent } from 'react';
 import { Table, createTableState } from 'features/table';
 import { Chart, createChartState } from 'features/chart';
 import { Map, createMapState } from 'features/map';
-import { Carat, createCaratState } from 'features/carat';
+import { Carat, createCaratState, caratChannelCriteria } from 'features/carat';
 import { Profile, createProfileState } from 'features/profile';
 import { FileView, createFileViewState } from 'features/file';
 import { FileListView, createFileListState } from 'features/file-list';
@@ -33,4 +33,8 @@ export const createFormDict: SupportedFormDict<FormStateCreator> = {
   'profile': createProfileState,
   'files': createFileViewState,
   'filesList': createFileListState,
+};
+
+export const formChannelCriteria: Partial<SupportedFormDict<ClientChannelCriteria>> = {
+  'carat': caratChannelCriteria,
 };

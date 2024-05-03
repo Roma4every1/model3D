@@ -1,5 +1,6 @@
+import type { CaratCurveModel } from '../lib/types';
+import type { CaratColumnInit, CaratColumnXAxis, CaratColumnYAxis } from '../lib/dto.types';
 import { CaratDrawer } from './drawer';
-import { CaratCurveModel } from '../lib/types';
 import { CaratColumnGroup } from './column-group';
 import { CaratInclinometry } from '../lib/inclinometry';
 import { ConstructionTransformer } from '../lib/transformer';
@@ -9,7 +10,7 @@ import { defaultSettings } from '../lib/constants';
 
 
 /** Трек. */
-export class CaratTrack implements ICaratTrack {
+export class CaratTrack {
   /** Отрисовщик. */
   private readonly drawer: CaratDrawer;
   /** Ограничивающий прямоугольник. */
@@ -53,7 +54,6 @@ export class CaratTrack implements ICaratTrack {
     this.activeIndex = -1;
     this.activeCurve = null;
     this.maxGroupHeaderHeight = 0;
-    this.transformer = new ConstructionTransformer();
 
     const groupWithYAxis = columns.find((group) => group.yAxis?.show);
     const step = groupWithYAxis?.yAxis.step ?? defaultSettings.yAxisStep;
@@ -67,7 +67,7 @@ export class CaratTrack implements ICaratTrack {
     for (const column of columns) {
       if (!this.inclinometry) {
         const channel = column.channels.find(c => c.type === 'inclinometry');
-        if (channel) this.inclinometry = new CaratInclinometry(channel.inclinometry);
+        if (channel) this.inclinometry = new CaratInclinometry(channel.info.inclinometry.details);
       }
 
       const { type, width } = column.settings;
@@ -83,7 +83,9 @@ export class CaratTrack implements ICaratTrack {
         this.backgroundGroup = new CaratColumnGroup(groupRect, drawer, column);
       }
     }
-    this.constructionMode = this.groups.some(g => g.hasConstructionElements);
+
+    this.constructionMode = this.groups.some(g => g.constructionMode());
+    if (this.constructionMode) this.transformer = new ConstructionTransformer();
   }
 
   /* --- Getters --- */
@@ -95,7 +97,7 @@ export class CaratTrack implements ICaratTrack {
     groups[0].active = true;
 
     if (this.constructionLabels) {
-      this.constructionLabels.dataGroup = groups.find(g => g.hasConstructionElements);
+      this.constructionLabels.dataGroup = groups.find(g => g.constructionMode());
       this.constructionLabels.labelGroup = groups.find(g => g.settings.type === 'labels');
     }
 
@@ -165,13 +167,6 @@ export class CaratTrack implements ICaratTrack {
     return [...new Set(names)];
   }
 
-  /** Исходные настройки колонок. */
-  public getInitColumns(): CaratColumnInit[] {
-    const init = this.groups.map(g => g.getInit());
-    init.push(this.backgroundGroup.getInit());
-    return init;
-  }
-
   /* --- Setters --- */
 
   /** Обновляет данные трека. */
@@ -193,8 +188,6 @@ export class CaratTrack implements ICaratTrack {
       this.transformer.transformGroups(this.groups, this.backgroundGroup);
       if (this.constructionLabels) this.constructionLabels.updateData();
       this.viewport.scroll.step = this.transformer.step / 4;
-    } else {
-      this.transformer.parts = null;
     }
 
     this.setActiveCurve(null);
@@ -205,9 +198,9 @@ export class CaratTrack implements ICaratTrack {
   }
 
   /** Обновление данных справочников. */
-  public async setLookupData(lookupData: ChannelRecordDict): Promise<void> {
-    await this.backgroundGroup.setLookupData(lookupData);
-    for (const group of this.groups) await group.setLookupData(lookupData);
+  public setLookupData(lookupData: ChannelRecordDict): void {
+    this.backgroundGroup.setLookupData(lookupData);
+    for (const group of this.groups) group.setLookupData(lookupData);
   }
 
   /** Обновляет масштаб трека. */

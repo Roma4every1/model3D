@@ -5,7 +5,7 @@ import { createReportModels, setReportModels } from 'entities/report';
 import { useChannelStore, fillChannels, setChannels } from 'entities/channel';
 import { useParameterStore, addClientParameters, fillParamValues } from 'entities/parameter';
 import { applyChannelsDeps } from '../lib/utils';
-import { createFormDict } from '../lib/form-dict';
+import { createFormDict, formChannelCriteria } from '../lib/form-dict';
 import { setPresentationState } from './presentation.actions';
 
 import {
@@ -70,7 +70,9 @@ export async function fetchPresentationState(id: ClientID): Promise<void> {
       errorForms.push({id: childID, details: t('messages.form-fetch-error')});
       continue;
     }
-    client.channels = new AttachedChannelFactory(allChannels).create(client.channels);
+
+    const factory = new AttachedChannelFactory(allChannels, formChannelCriteria[client.type]);
+    client.channels = factory.create(client.channels);
     successForms.push(childID);
 
     const creator = createFormDict[client.type];

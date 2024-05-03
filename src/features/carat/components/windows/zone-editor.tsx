@@ -1,15 +1,19 @@
-import { FunctionComponent, KeyboardEvent, useState, useEffect } from 'react';
+import type { FunctionComponent, KeyboardEvent } from 'react';
+import type { TextBoxChangeEvent } from '@progress/kendo-react-inputs';
+import type { ListBoxItemClickEvent, ListBoxToolbarClickEvent } from '@progress/kendo-react-listbox';
+
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TextBox, TextBoxChangeEvent } from '@progress/kendo-react-inputs';
+import { TextBox } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
 import { ListBox, ListBoxToolbar, processListBoxData } from '@progress/kendo-react-listbox';
-import { ListBoxItemClickEvent, ListBoxToolbarClickEvent } from '@progress/kendo-react-listbox';
 import { TextInfo } from 'shared/ui';
-import './zones-editing-window.scss';
+import { CaratStage } from '../../rendering/stage';
+import './zone-editor.scss';
 
 
-interface ZonesEditingWindowProps {
-  stage: ICaratStage;
+interface ZoneEditWindowProps {
+  stage: CaratStage;
   onClose: () => void;
 }
 interface ZoneEditorProps {
@@ -29,7 +33,7 @@ type ZoneList = ZoneListItem[][];
 const singleZoneTools = ['remove'];
 const pluralZoneTools = ['transferTo', 'transferFrom', 'transferAllTo', 'transferAllFrom', 'remove'];
 
-export const ZonesEditingWindow = ({stage, onClose}: ZonesEditingWindowProps) => {
+export const ZoneEditWindow = ({stage, onClose}: ZoneEditWindowProps) => {
   const { t } = useTranslation();
 
   const [state, setState] = useState<ZoneList>([]);
@@ -90,7 +94,7 @@ export const ZonesEditingWindow = ({stage, onClose}: ZonesEditingWindowProps) =>
   };
 
   return (
-    <div className={'zones-editing-window'}>
+    <div className={'zone-edit-window'}>
       {state.length
         ? <div style={{gridTemplateColumns: '1fr '.repeat(state.length)}}>
             {state.map(listToEditor, metaData)}

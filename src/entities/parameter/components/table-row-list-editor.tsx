@@ -78,8 +78,8 @@ function getSelectOptions(parameter: Parameter, rows: ChannelRow[], lookupColumn
     return parameter.editor.showNullValue ? [nullOption] : [];
   }
 
-  const idIndex = lookupColumns.id.index;
-  let valueIndex = lookupColumns.value.index;
+  const idIndex = lookupColumns.id.columnIndex;
+  let valueIndex = lookupColumns.value.columnIndex;
   if (valueIndex === -1) valueIndex = idIndex;
 
   const options = rows.map((row: ChannelRow, i: number): TableRowSelectOption => {

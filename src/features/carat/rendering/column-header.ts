@@ -1,4 +1,5 @@
-import { CurveAxisGroup, CurveGroupState } from '../lib/types';
+import type { CaratColumnXAxis } from '../lib/dto.types';
+import type { CurveGroupState } from '../lib/types';
 import { CaratDrawer } from './drawer';
 
 
@@ -9,7 +10,7 @@ export class CaratColumnHeader {
   /** Высота текста названия. */
   private readonly labelTextHeight: number;
   /** Горизонатльные оси для кривых. */
-  private curveAxes: CurveAxisGroup[];
+  private curveAxes: CurveGroupState[];
 
   /** Отступ сверху. */
   private padding: number;
@@ -31,48 +32,43 @@ export class CaratColumnHeader {
     this.totalHeight = this.labelHeight;
   }
 
-  /** Горизонтальные оси. */
-  public getCurveAxes(): CurveAxisGroup[] {
-    return this.curveAxes;
-  }
-
   /** Общая высота заголовка. */
-  public getHeight() {
+  public getHeight(): number {
     return this.totalHeight;
   }
 
   /** Высота осей и названия. */
-  public getContentHeight() {
+  public getContentHeight(): number {
     return this.labelHeight + this.axesHeight;
   }
 
   /** Установит значение подписи и высоту подписи. */
-  public setLabel(label: string) {
+  public setLabel(label: string): void {
     this.labelHeight = label ? this.labelTextHeight : 0;
   }
 
   /** Установит оси и их высоту. */
-  public setAxes(curveGroups: CurveGroupState[]) {
+  public setAxes(curveGroups: CurveGroupState[]): void {
     this.curveAxes = [];
     let maxHeight = 0;
-    const { axisHeight, gap } = this.drawer.columnXAxesSettings;
+    const { axisHeight, gap } = this.drawer.columnXAxisSettings;
 
     for (const { elements, rect } of curveGroups) {
       const height = (axisHeight + gap) * elements.length + gap;
       if (height > maxHeight) maxHeight = height;
 
       const axisRect = {top: 0, left: rect.left, width: rect.width, height: 0};
-      this.curveAxes.push({rect: axisRect, axes: [...elements]});
+      this.curveAxes.push({rect: axisRect, elements: [...elements]});
     }
     for (const axisGroup of this.curveAxes) {
-      axisGroup.axes.reverse();
+      axisGroup.elements.reverse();
       axisGroup.rect.height = maxHeight;
     }
     this.axesHeight = maxHeight;
   }
 
   /** Установит общую высоту заголовка. */
-  public setHeight(height: number) {
+  public setHeight(height: number): void {
     this.totalHeight = height;
     this.padding = height - (this.labelHeight + this.axesHeight);
 
@@ -81,7 +77,7 @@ export class CaratColumnHeader {
   }
 
   /** Установит ширину группы осей. */
-  public setGroupWidth(width: number) {
+  public setGroupWidth(width: number): void {
     for (let i = 0; i < this.curveAxes.length; i++) {
       const left = i * width;
       const rect = this.curveAxes[i].rect;
@@ -90,7 +86,7 @@ export class CaratColumnHeader {
   }
 
   /** Отрисовка заголовка. */
-  public render(settings: CaratColumnXAxis) {
+  public render(settings: CaratColumnXAxis): void {
     if (this.labelHeight) this.drawer.drawGroupLabel(this.padding);
     if (this.curveAxes.length) this.drawer.drawGroupXAxes(settings, this.curveAxes);
   }

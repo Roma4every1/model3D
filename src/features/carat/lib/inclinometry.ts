@@ -1,10 +1,22 @@
-import { InclinometryMark, InclinometryMap } from './types';
+/** Отображение "глубина => абс. отметка". */
+type InclinometryMap = Map<number, number>;
+
+/** Опорная точка инклинометрии.
+ * + `depth: number`
+ * + `absMark: number`
+ */
+interface InclinometryMark {
+  /** Значение глубины. */
+  depth: number;
+  /** Значение абсолютной отметки. */
+  absMark: number;
+}
 
 
 /** Класс для управления инклинометрией. */
 export class CaratInclinometry implements ICaratInclinometry {
   /** Даннные канала инклинометрии. */
-  public readonly channel: CaratAttachedLookup;
+  public readonly channel: {name: ChannelName, info: ChannelRecordInfo};
   /** Данные инклинометрии (глубина => абс. отметка). */
   public data: InclinometryMap | null;
 
@@ -15,7 +27,7 @@ export class CaratInclinometry implements ICaratInclinometry {
   /** Максимальная посчитанная отметка глубины. */
   private max: number | null;
 
-  constructor(channel: CaratAttachedLookup) {
+  constructor(channel: {name: ChannelName, info: ChannelRecordInfo}) {
     this.channel = channel;
     this.data = null;
 
@@ -55,10 +67,10 @@ export class CaratInclinometry implements ICaratInclinometry {
   public setData(channelData: ChannelRecordDict): void {
     const rows = channelData[this.channel.name];
     if (rows?.length) {
-      const info = this.channel.info as CaratChannelInfo<'depth' | 'absMark'>;
+      const info = this.channel.info;
       this.interpolationData = rows.map((record: ChannelRecord): InclinometryMark => ({
-        depth: record[info.depth.name],
-        absMark: record[info.absMark.name],
+        depth: record[info.depth.columnName],
+        absMark: record[info.absMark.columnName],
       }));
     } else {
       this.interpolationData = [];

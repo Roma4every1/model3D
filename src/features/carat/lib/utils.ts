@@ -1,17 +1,7 @@
-import { CaratCurveModel } from './types';
+import type { CaratCurveModel } from './types';
 import { distance, distanceFromStraight } from 'shared/lib';
 import { constraints } from './constants';
 
-
-/** Определяет ширину трека по ширинам колонок. */
-export function calculateTrackWidth(columns: CaratColumnInit[]) {
-  let trackWidth = 0;
-  for (const column of columns) {
-    const { type, width } = column.settings;
-    if (type === 'normal') trackWidth += width;
-  }
-  return trackWidth;
-}
 
 /** Ограничивает масштаб каротажа заданным минимальным и максимальным значением. */
 export function validateCaratScale(newScale: number, checkMax: boolean): number {

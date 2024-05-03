@@ -59,6 +59,9 @@ interface SystemInfo {
   color: string;
 }
 
+/** Идентификатор сессии. */
+type SessionID = string;
+
 /** Идентификатор системы.
  * @example
  * "GTM_SYSTEM", "PREPARE_SYSTEM"

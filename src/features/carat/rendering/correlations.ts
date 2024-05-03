@@ -1,11 +1,12 @@
+import type { CaratColumnDTO, CaratColumnInit } from '../lib/dto.types';
+import type { CaratCorrelation, StratumCorrelation, CaratIntervalModel } from '../lib/types';
 import { CaratDrawer } from './drawer';
 import { CaratTrack } from './track';
-import { CaratCorrelation, StratumCorrelation, CaratIntervalModel } from '../lib/types';
 import { defaultSettings } from '../lib/constants';
 
 
 /** Модель корреляций. */
-export class CaratCorrelations implements ICaratCorrelations {
+export class CaratCorrelations {
   /** Отрисовщик. */
   private readonly drawer: CaratDrawer;
   /** Оригинальные настройки вида корреляций. */
@@ -23,7 +24,7 @@ export class CaratCorrelations implements ICaratCorrelations {
     this.correlations = [];
   }
 
-  public getInit(): CaratColumnInit {
+  public getInit(): CaratColumnDTO {
     return this.init;
   }
 

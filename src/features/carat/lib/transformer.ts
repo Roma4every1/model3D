@@ -1,8 +1,9 @@
+import type { CaratCurveModel } from './types';
+import type { WellBoreElementModel } from './construction.types';
 import { CaratColumnGroup } from '../rendering/column-group';
 import { WellBoreColumn } from '../rendering/well-bore-column';
 import { WellFaceColumn } from '../rendering/face-column';
-import { PumpColumn } from '../rendering/pump-column';
-import { CaratCurveModel, WellBoreElementModel } from './types';
+import { CaratImageColumn } from '../rendering/image-column';
 
 
 export interface ConstructionPart {
@@ -16,20 +17,32 @@ export interface ConstructionPart {
   tBottom: number;
 }
 
+/** Обязательные поля любого интервального элемента. */
+interface ICaratInterval {
+  top: number;
+  bottom: number;
+}
+interface AnchorPoint {
+  /** Исходная координата по Y. */
+  y: number;
+  /** Трансформированная координата по Y. */
+  ty: number;
+}
+
 
 /** Вспомогательный класс для трансформации координат при показе конструкции скважины. */
-export class ConstructionTransformer implements IConstructionTransformer {
+export class ConstructionTransformer {
   /** Части конструкции скважины по котором производится выравнивание. */
   public parts: ConstructionPart[];
   /** Опорные точки частей конструкции. */
-  public anchorPoints: CaratAnchorPoint[];
+  public anchorPoints: AnchorPoint[];
   /** Шаг выравнивания: равен высоте одной части. */
   public step: number;
   /** Высота всей конструкции: расстояние от начала первого до конца последнего элемента. */
   public constructionHeight: number;
 
   public setConstructionElements(groups: CaratColumnGroup[]): void {
-    this.createParts(groups);
+    this.parts = this.createParts(groups);
     const count = this.parts.length;
     this.constructionHeight = this.parts[count - 1].bottom - this.parts[0].top;
     this.step = this.constructionHeight / count;
@@ -45,14 +58,14 @@ export class ConstructionTransformer implements IConstructionTransformer {
     }
   }
 
-  private createParts(groups: CaratColumnGroup[]): void {
+  private createParts(groups: CaratColumnGroup[]): ConstructionPart[] {
     let maxFaceBottom = -Infinity;
     const set = new Set<number>();
     set.add(0);
 
     for (const group of groups) {
       for (const column of group.getColumns()) {
-        if (column instanceof WellBoreColumn || column instanceof PumpColumn) {
+        if (column instanceof WellBoreColumn || column instanceof CaratImageColumn) {
           for (const { top, bottom } of column.getElements()) {
             set.add(Math.round(top));
             set.add(Math.round(bottom));
@@ -78,7 +91,7 @@ export class ConstructionTransformer implements IConstructionTransformer {
     for (let i = 0; i < lastIndex; i++) {
       parts.push({top: coordinates[i], bottom: coordinates[i + 1], tTop: 0, tBottom: 0});
     }
-    this.parts = parts;
+    return parts;
   }
 
   public transformGroups(groups: CaratColumnGroup[], backgroundGroup: CaratColumnGroup): void {
@@ -91,7 +104,8 @@ export class ConstructionTransformer implements IConstructionTransformer {
         }
       }
       if (group.hasCurveColumn()) {
-        this.transformCurves(group.curveManager.getVisibleCurves());
+        const curves = group.getCurveColumn().curveManager.getVisibleCurves();
+        this.transformCurves(curves);
       }
     }
     for (const column of backgroundGroup.getColumns()) {

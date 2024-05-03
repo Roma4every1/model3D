@@ -1,5 +1,6 @@
+import type { CaratColumnProperties } from '../lib/dto.types';
+import type { WellBoreElementModel, WellBoreElementStyle } from '../lib/construction.types';
 import { CaratDrawer } from './drawer';
-import { WellBoreElementModel, WellBoreElementStyle } from '../lib/types';
 import { defaultSettings } from '../lib/constants';
 
 
@@ -10,7 +11,7 @@ export class WellBoreColumn implements ICaratColumn {
   /** Ограничивающий прямоугольник колонки. */
   public readonly rect: Rectangle;
   /** Массив подключённых свойств канала. */
-  public readonly channel: CaratAttachedChannel;
+  public readonly channel: AttachedChannel;
 
   /** Элементы конструкции. */
   private elements: WellBoreElementModel[];
@@ -19,7 +20,7 @@ export class WellBoreColumn implements ICaratColumn {
 
   constructor(
     rect: Rectangle, drawer: CaratDrawer,
-    channel: CaratAttachedChannel, properties: CaratColumnProperties,
+    channel: AttachedChannel, properties: CaratColumnProperties,
   ) {
     this.drawer = drawer;
     this.rect = rect;
@@ -32,14 +33,14 @@ export class WellBoreColumn implements ICaratColumn {
     const info = this.channel.info;
     const defaultStyle = defaultSettings.wellBoreElementStyle;
 
-    const innerDiameterProperty = properties[info.innerDiameter.name]?.bar;
-    const outerDiameterProperty = properties[info.outerDiameter.name]?.bar;
-    const cementProperty = properties[info.cement.name]?.bar;
+    const innerDiameterProperty = properties[info.innerDiameter.propertyName]?.bar;
+    const outerDiameterProperty = properties[info.outerDiameter.propertyName]?.bar;
+    const cementProperty = properties[info.cement.propertyName]?.bar;
 
     this.style = {
-      innerDiameter: innerDiameterProperty?.backgroundColor ?? defaultStyle.innerDiameter,
-      outerDiameter: outerDiameterProperty?.backgroundColor ?? defaultStyle.outerDiameter,
-      cement: cementProperty?.backgroundColor ?? defaultStyle.cement,
+      innerColor: innerDiameterProperty?.backgroundColor ?? defaultStyle.innerDiameter,
+      outerColor: outerDiameterProperty?.backgroundColor ?? defaultStyle.outerDiameter,
+      cementColor: cementProperty?.backgroundColor ?? defaultStyle.cement,
     };
   }
 
@@ -71,12 +72,12 @@ export class WellBoreColumn implements ICaratColumn {
   public setChannelData(records: ChannelRecord[]): void {
     const info = this.channel.info;
     this.elements = records.map((record: ChannelRecord) => {
-      const top = record[info.top.name];
-      const bottom = record[info.bottom.name];
-      const innerDiameter = record[info.innerDiameter.name];
-      const outerDiameter = record[info.outerDiameter.name];
-      const cement = record[info.cement.name];
-      const label = record[info.label.name];
+      const top = record[info.top.columnName];
+      const bottom = record[info.bottom.columnName];
+      const innerDiameter = record[info.innerDiameter.columnName];
+      const outerDiameter = record[info.outerDiameter.columnName];
+      const cement = record[info.cement.columnName];
+      const label = record[info.label.columnName];
       return {top, bottom, innerDiameter, outerDiameter, cement, label};
     });
   }

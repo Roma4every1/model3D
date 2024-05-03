@@ -1,6 +1,5 @@
 import { channelAPI } from './channel.api';
 import { fillParamValues } from 'entities/parameter';
-import { findColumnIndexes } from './common';
 import { createChannel } from './factory';
 
 
@@ -17,10 +16,18 @@ export async function fillChannel(channel: Channel, paramDict: ParamDict): Promi
 
   const { ok, data } = await channelAPI.getChannelData(channel.name, paramValues, channel.query);
   if (!ok) return;
-
   channel.data = data;
-  const columns = data?.columns;
-  if (columns) findColumnIndexes(columns, config);
+
+  const { id: idInfo, value: valueInfo, parent: parentInfo } = config.lookupColumns;
+  if (data) {
+    idInfo.columnIndex = data.columns.findIndex(c => c.name === idInfo.columnName);
+    valueInfo.columnIndex = data.columns.findIndex(c => c.name === valueInfo.columnName);
+    parentInfo.columnIndex = data.columns.findIndex(c => c.name === parentInfo.columnName);
+  } else {
+    idInfo.columnIndex = -1;
+    valueInfo.columnIndex = -1;
+    parentInfo.columnIndex = -1;
+  }
 }
 
 

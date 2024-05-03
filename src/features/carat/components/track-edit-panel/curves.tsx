@@ -1,10 +1,12 @@
+import type { WindowProps } from '@progress/kendo-react-dialogs';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MenuSection, BigButton } from 'shared/ui';
 import { showWindow, closeWindow } from 'entities/window';
 
-import { WindowProps } from '@progress/kendo-react-dialogs';
-import { CurveSelectionWindow } from './curve-selection-window';
-import { ZonesEditingWindow } from './zones-editing-window';
+import { CaratStage } from '../../rendering/stage';
+import { CurveSelectionWindow } from '../windows/curve-selection';
+import { ZoneEditWindow } from '../windows/zone-editor';
 
 import curvesIcon from 'assets/images/carat/curves.svg';
 import curveZonesIcon from 'assets/images/carat/curve-zones.svg';
@@ -12,13 +14,19 @@ import curveZonesIcon from 'assets/images/carat/curve-zones.svg';
 
 interface CaratCurvesPanelProps {
   id: FormID;
-  stage: ICaratStage;
-  curveGroup: ICaratColumnGroup;
+  stage: CaratStage;
 }
 
 
-export const CaratCurvesPanel = ({id, stage, curveGroup}: CaratCurvesPanelProps) => {
+export const CaratCurveSection = ({id, stage}: CaratCurvesPanelProps) => {
   const { t } = useTranslation();
+  const [trackIndex, setTrackIndex] = useState(stage.getActiveIndex());
+  const curveGroup = stage.getTrack(trackIndex).getCurveGroup();
+
+  useEffect(() => {
+    stage.subscribe('track', setTrackIndex);
+    return () => stage.unsubscribe('track', setTrackIndex);
+  }, [stage]);
 
   const openCurveSelectionWindow = () => {
     const windowID = 'curve-selection';
@@ -36,7 +44,7 @@ export const CaratCurvesPanel = ({id, stage, curveGroup}: CaratCurvesPanelProps)
   const openZonesEditingWindow = () => {
     const windowID = 'curve-zones';
     const onClose = () => closeWindow(windowID);
-    const content = <ZonesEditingWindow stage={stage} onClose={onClose}/>;
+    const content = <ZoneEditWindow stage={stage} onClose={onClose}/>;
 
     const windowProps: WindowProps = {
       title: t('carat.zones.window-title'), maximizeButton: () => null,

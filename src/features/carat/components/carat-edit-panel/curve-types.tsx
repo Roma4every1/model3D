@@ -1,24 +1,27 @@
+import type { TFunction } from 'react-i18next';
+import type { NumericTextBoxChangeEvent } from '@progress/kendo-react-inputs'
+import type { CaratCurveMeasure } from '../../lib/dto.types';
 import { useState, useEffect } from 'react';
-import { TFunction, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
+import { useRerender } from 'shared/react';
 import { MenuSection, MenuSectionItem, BigButtonToggle } from 'shared/ui';
-import { NumericTextBox, NumericTextBoxChangeEvent } from '@progress/kendo-react-inputs';
+import { NumericTextBox } from '@progress/kendo-react-inputs';
+
+import { CaratStage } from '../../rendering/stage';
 import { CurveManager } from '../../lib/curve-manager';
-import { CaratCurveModel } from '../../lib/types';
 import { defaultSettings } from '../../lib/constants';
 import autoSettingIcon from 'assets/images/carat/column-width.svg';
 
 
 interface CurveTypesSectionProps {
-  stage: ICaratStage;
-  group: ICaratColumnGroup;
-  curve: CaratCurveModel | null;
+  stage: CaratStage;
 }
 interface CurveTypeSettingsProps {
   settings: TypeSettingsModel;
   onClick: () => void;
 }
 interface ActiveTypeSettingsProps {
-  stage: ICaratStage;
+  stage: CaratStage;
   manager: CurveManager;
   settings: TypeSettingsModel;
   onChange: () => void;
@@ -27,23 +30,28 @@ interface ActiveTypeSettingsProps {
 
 interface TypeSettingsModel {
   type: CaratCurveType;
-  color: ColorHEX;
+  color: ColorString;
   measure: CaratCurveMeasure;
   active: boolean;
 }
 
 
-export const CurveTypesSection = ({stage, group, curve}: CurveTypesSectionProps) => {
+export const CurveTypesSection = ({stage}: CurveTypesSectionProps) => {
   const { t } = useTranslation();
-  const wellName = stage.getActiveTrack().wellName;
-  const curveManager: CurveManager = group?.curveManager;
+  const rerender = useRerender();
+
+  const track = stage.getActiveTrack();
+  const curve = track.getActiveCurve();
+  const curveManager: CurveManager = track.getCurveGroup()?.getCurveColumn()?.curveManager;
   const curveTypes = curveManager.getCurveTypes();
 
   const [models, setModels] = useState<TypeSettingsModel[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const [_signal, setSignal] = useState(false);
-  const signal = () => setSignal(!_signal);
+  useEffect(() => {
+    stage.subscribe('track', rerender);
+    return () => stage.unsubscribe('track', rerender);
+  }, [stage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     setModels(curveTypes.map((type) => ({
@@ -71,14 +79,14 @@ export const CurveTypesSection = ({stage, group, curve}: CurveTypesSectionProps)
 
   return (
     <>
-      <MenuSection header={t('carat.types.header', {well: wellName})}>
+      <MenuSection header={t('carat.types.header', {well: track.wellName})}>
         <div className={'carat-column-groups'} style={{width: 450}}>
           {models.map(modelToSettings)}
         </div>
       </MenuSection>
       <ActiveTypeSettings
         stage={stage} manager={curveManager}
-        settings={settings} onChange={signal} t={t}
+        settings={settings} onChange={rerender} t={t}
       />
     </>
   );

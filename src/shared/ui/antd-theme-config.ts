@@ -7,7 +7,7 @@ const componentConfig: ThemeConfig['components'] = {
 };
 
 /** Создаёт конфиг темы AntDesign под акцентный цвет системы. */
-export function createAntDesignTheme(accentColor: ColorHEX): ThemeConfig {
+export function createAntDesignTheme(accentColor: ColorString): ThemeConfig {
   return {
     token: {fontSize: 12, colorPrimary: accentColor},
     components: componentConfig,

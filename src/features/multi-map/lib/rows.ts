@@ -7,7 +7,7 @@ export interface MultiMapRecord {
 
 
 /** Критерий канала мультикарты. */
-export const multiMapChannelCriterion: ChannelCriterion2<keyof MultiMapRecord> = {
+export const multiMapChannelCriterion: ChannelCriterion<keyof MultiMapRecord> = {
   properties: {
     mapID: {name: 'MAP_ID'},
     stratumName: {name: 'PLAST_NAME'},

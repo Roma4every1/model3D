@@ -1,20 +1,21 @@
+import type {
+  CaratColumnDTO, CaratColumnInit, CaratColumnSettings,
+  CaratColumnProperties, CaratColumnXAxis, CaratColumnYAxis,
+} from '../lib/dto.types';
+
+import type { CaratCurveModel, CaratIntervalModel } from '../lib/types';
 import { CaratDrawer } from './drawer';
-import { CaratColumn } from './column';
-import { WellBoreColumn } from './well-bore-column';
-import { PumpColumn } from './pump-column';
-import { WellFaceColumn } from './face-column';
-import { VerticalLineColumn } from './v-line-column';
-import { CaratCurveColumn } from './curve-column';
-import { CaratCurveModel, CaratIntervalModel } from '../lib/types';
 import { CaratColumnHeader } from './column-header';
-import { CurveManager } from '../lib/curve-manager';
-import { distanceFromCaratCurve } from '../lib/utils';
+import { CaratCurveColumn } from './curve-column';
+import { CaratColumnFactory, caratColumnCompareFn } from './columns';
+
 import { isRectInnerPoint } from 'shared/lib';
+import { distanceFromCaratCurve } from '../lib/utils';
 import { defaultSettings, constraints } from '../lib/constants';
 
 
 /** Группа колонок каротажной диаграммы. */
-export class CaratColumnGroup implements ICaratColumnGroup {
+export class CaratColumnGroup {
   /** Ссылка на отрисовщик. */
   private readonly drawer: CaratDrawer;
   /** Ограничивающий прямоугольник для элементов. */
@@ -26,8 +27,6 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   public readonly settings: CaratColumnSettings;
   /** Заголовок группы. */
   public readonly header: CaratColumnHeader;
-  /** Выборки кривых. */
-  public readonly curveManager: CurveManager;
 
   /** Зоны распределения каротажных кривых. */
   private zones: CaratZone[];
@@ -41,25 +40,24 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   /** Каротажные колонки с кривыми. */
   private readonly curveColumn: CaratCurveColumn | null;
 
-  private readonly channels: CaratAttachedChannel[];
+  private readonly channels: AttachedChannel<CaratChannelType>[];
   private readonly properties: Record<ChannelName, CaratColumnProperties>;
 
   public active: boolean;
-  public hasConstructionElements: boolean;
 
   constructor(rect: Rectangle, drawer: CaratDrawer, init: CaratColumnInit) {
     this.id = init.id;
     this.drawer = drawer;
     this.settings = init.settings;
     this.header = new CaratColumnHeader(drawer, init.settings.label);
-    this.curveManager = new CurveManager(init.selection, init.measures);
     this.properties = init.properties;
     this.channels = init.channels;
     this.active = init.active;
-    this.hasConstructionElements = false;
 
+    if (!init.xAxis) init.xAxis = defaultSettings.xAxis;
     this.yAxis = init.yAxis;
-    this.xAxis = init.xAxis ?? defaultSettings.xAxis;
+    this.xAxis = init.xAxis;
+
     const { min: minMarks, max: maxMarks } = constraints.yAxisMarks;
     if (this.xAxis.numberOfMarks < minMarks) this.xAxis.numberOfMarks = minMarks;
     if (this.xAxis.numberOfMarks > maxMarks) this.xAxis.numberOfMarks = maxMarks;
@@ -73,49 +71,28 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     this.curveColumn = null;
     this.zones = [];
 
-    let curveSetChannel: CaratAttachedChannel;
-    let curveDataChannel: CaratAttachedChannel;
-    const height = rect.height - headerHeight;
+    let curveSetChannel: AttachedChannel;
+    let curveDataChannel: AttachedChannel;
 
-    for (const attachedChannel of init.channels) {
-      const channelType = attachedChannel.type;
+    const height = rect.height - headerHeight;
+    const factory = new CaratColumnFactory(drawer, init);
+
+    for (const attachedChannel of this.channels) {
+      const channelType = attachedChannel.type as CaratChannelType;
       if (!channelType || channelType === 'inclinometry') continue;
 
-      if (channelType === 'curve-set') { curveSetChannel = attachedChannel; continue; }
+      if (channelType === 'curve') { curveSetChannel = attachedChannel; continue; }
       if (channelType === 'curve-data') { curveDataChannel = attachedChannel; continue; }
 
       const columnRect = {top: 0, left: 0, width: rect.width, height};
-      const properties = init.properties[attachedChannel.name];
-
-      if (channelType === 'bore') {
-        this.hasConstructionElements = true;
-        this.columns.push(new WellBoreColumn(columnRect, drawer, attachedChannel, properties));
-      } else if (channelType === 'pump') {
-        this.hasConstructionElements = true;
-        this.columns.push(new PumpColumn(columnRect, drawer, attachedChannel));
-      } else if (channelType === 'face') {
-        this.hasConstructionElements = true;
-        this.columns.push(new WellFaceColumn(columnRect, drawer, attachedChannel));
-      } else if (channelType === 'vertical') {
-        this.columns.push(new VerticalLineColumn(columnRect, drawer, attachedChannel, properties));
-      } else {
-        this.columns.push(new CaratColumn(columnRect, drawer, attachedChannel, properties));
-      }
+      this.columns.push(factory.createColumn(attachedChannel, columnRect));
     }
-    // каротажные элементы должны идти после элементов конструкции
-    this.columns.sort((a, b) => {
-      const aIsCaratColumn = a instanceof CaratColumn;
-      const bIsCaratColumn = b instanceof CaratColumn;
-      if (aIsCaratColumn && !bIsCaratColumn) return -1;
-      if (!aIsCaratColumn && bIsCaratColumn) return 1;
-      return 0;
-    });
-
     if (curveSetChannel && curveDataChannel) {
       const columnRect = {top: 0, left: 0, width: rect.width, height};
-      this.curveColumn = new CaratCurveColumn(columnRect, drawer, curveSetChannel);
-      this.curveManager.setChannel(curveSetChannel);
+      this.curveColumn = new CaratCurveColumn(columnRect, drawer, curveSetChannel, init);
+      this.columns.push(this.curveColumn);
     }
+    this.columns.sort(caratColumnCompareFn);
   }
 
   /** Копирует группу для прямоугольника. */
@@ -134,50 +111,56 @@ export class CaratColumnGroup implements ICaratColumnGroup {
       id: this.id,
       settings: structuredClone(this.settings),
       header: new CaratColumnHeader(this.drawer, this.settings.label),
-      curveManager: this.curveManager.copy(),
       zones: this.zones,
       xAxis: {...this.xAxis},
       yAxis: {...this.yAxis},
       columns: this.columns.map(c => c.copy()),
-      curveColumn: this.curveColumn?.copy() ?? null,
+      curveColumn: null,
       channels: this.channels,
       properties: this.properties,
-      hasConstructionElements: this.hasConstructionElements,
     };
+
+    copy.curveColumn = copy.columns.find(c => c.channel.type === 'curve') as CaratCurveColumn ?? null;
+    if (copy.curveColumn) copy.curveColumn.xAxis = copy.xAxis;
+
     Object.setPrototypeOf(copy, CaratColumnGroup.prototype);
     return copy as any as CaratColumnGroup;
   }
 
-  public getInit(): CaratColumnInit {
-    const attachedChannels = this.channels.map(attachment => ({
-      name: attachment.name,
-      attachOption: attachment.attachOption, exclude: attachment.exclude
-    }));
-
-    return {
+  public getInit(): CaratColumnDTO {
+    const dto: CaratColumnDTO = {
       id: this.id,
       settings: this.settings,
       xAxis: this.xAxis,
       yAxis: this.yAxis,
-      channels: attachedChannels,
-      selection: this.curveManager.getInitSelection(),
-      measures: this.curveManager.getInitMeasures(),
+      channels: this.channels.map(c => ({name: c.name})),
       properties: this.properties,
       active: this.active,
     };
+    if (this.curveColumn) {
+      dto.selection = this.curveColumn.curveManager.getInitSelection();
+      dto.measures = this.curveColumn.curveManager.getInitMeasures();
+    }
+    return dto;
   }
 
   /** Возвращает список названий справочников, необходимых для отрисовки. */
   public getLookupNames(): ChannelName[] {
     const names: ChannelName[] = [];
     for (const column of this.columns) names.push(...column.getLookupNames());
-    const curveSetChannel = this.curveManager.curveSetChannel;
-    if (curveSetChannel?.curveColorLookup) names.push(curveSetChannel.curveColorLookup.name);
     return names;
+  }
+
+  public constructionMode(): boolean {
+    return this.columns.some(c => c.channel.type === 'bore');
   }
 
   public getColumns(): ICaratColumn[] {
     return this.columns;
+  }
+
+  public getCurveColumn(): CaratCurveColumn | null {
+    return this.curveColumn;
   }
 
   public getDataRect(): Rectangle {
@@ -207,11 +190,6 @@ export class CaratColumnGroup implements ICaratColumnGroup {
       const [colMin, colMax] = column.getRange();
       if (colMin < min) min = colMin;
       if (colMax > max) max = colMax;
-    }
-    if (this.curveColumn) {
-      const [curveMin, curveMax] = this.curveColumn.getRange();
-      if (curveMin < min) min = curveMin;
-      if (curveMax > max) max = curveMax;
     }
     return [min, max];
   }
@@ -262,12 +240,12 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   public setZones(zones: CaratZone[]): void {
     this.zones = zones;
     if (!this.curveColumn) return;
-    this.groupCurves(this.curveManager.getVisibleCurves());
+    this.groupCurves(this.curveColumn.curveManager.getVisibleCurves());
   }
 
   public setActiveCurve(id?: CaratCurveID): void {
     if (!this.curveColumn) return;
-    this.curveManager.setActiveCurve(id);
+    this.curveColumn.curveManager.setActiveCurve(id);
   }
 
   /** Точка в системе координат трека. */
@@ -299,12 +277,12 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     }
 
     if (!this.curveColumn) return;
-    const curveSetData = data[this.curveColumn.curveSetChannel.name];
-    this.curveManager.setCurveChannelData(curveSetData, cache);
-    this.groupCurves(this.curveManager.getVisibleCurves());
+    const curveRecords = data[this.curveColumn.channel.name];
+    this.curveColumn.curveManager.setCurveChannelData(curveRecords, cache);
+    this.groupCurves(this.curveColumn.curveManager.getVisibleCurves());
   }
 
-  /** Группирует кривые по зонам, возвращает изменение ширины. */
+  /** Группирует кривые по зонам. */
   public groupCurves(curves: CaratCurveModel[]): void {
     this.curveColumn.setCurveData(curves, this.zones);
     this.header.setAxes(this.curveColumn.getGroups());
@@ -318,9 +296,8 @@ export class CaratColumnGroup implements ICaratColumnGroup {
     }
   }
 
-  public async setLookupData(lookupData: ChannelRecordDict): Promise<void> {
-    for (const column of this.columns) await column.setLookupData(lookupData);
-    if (this.curveColumn) this.curveManager.setStyleData(lookupData);
+  public setLookupData(lookupData: ChannelRecordDict): void {
+    for (const column of this.columns) column.setLookupData(lookupData);
   }
 
   /* --- Rendering --- */
@@ -333,10 +310,6 @@ export class CaratColumnGroup implements ICaratColumnGroup {
   public renderContent(): void {
     this.drawer.setCurrentGroup(this.dataRect, this.settings);
     for (const column of this.columns) column.render();
-
-    const curveAxes = this.header.getCurveAxes();
-    if (curveAxes.length && this.xAxis.grid) this.drawer.drawVerticalGrid(this.xAxis, curveAxes);
-    if (this.curveColumn) this.curveColumn.render();
 
     if (this.yAxis.show) this.drawer.drawGroupYAxis(this.yAxis);
     this.drawer.drawGroupBody(this.active);

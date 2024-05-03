@@ -1,5 +1,7 @@
 /** Словарь каналов. */
 type ChannelDict = Record<ChannelName, Channel>;
+/** Словарь данных каналов. */
+type ChannelDataDict = Record<ChannelName, ChannelData>;
 /** Словарь записей каналов. */
 type ChannelRecordDict = Record<ChannelName, ChannelRecord[]>;
 
@@ -90,8 +92,6 @@ interface ChannelConfig {
   readonly activeRowParameter?: ParameterID;
   /** ID форм, в которых лежат необходимые параметры. */
   clients?: Set<ClientID>;
-  /** Были ли полученны данные о колонках канала. */
-  columnApplied?: boolean;
 }
 
 /** Дополнительные свойства колонки. */
@@ -110,40 +110,12 @@ interface ChannelProperty {
   readonly detailChannel?: ChannelName;
   /** Информация для свойства связанного с файлами. */
   readonly file?: {nameFrom: string, fromResources?: boolean};
-  /** Тип данных связанной колонки. */
-  type?: ColumnType;
 }
 
-/** Информация о колонках, необходимых для справочников.
- * + `id`: {@link LookupColumnInfo}
- * + `value`: {@link LookupColumnInfo}
- * + `parent`: {@link LookupColumnInfo}
- */
-interface LookupColumns {
-  /** Название и индекс колонки с идентификаторами. */
-  id: LookupColumnInfo;
-  /** Название и индекс колонки со значениями. */
-  value: LookupColumnInfo;
-  /** Название и индекс колонки с ID родителей. */
-  parent: LookupColumnInfo;
-}
-
-/** Информация о названиях и индексах колонок канала. */
-type ChannelColumnInfo<Fields = string> = Record<Fields, LookupColumnInfo>;
-
-/** Информация о названии и индексе колонки. */
-interface LookupColumnInfo {
-  /** Название колонки. */
-  name: ColumnName;
-  /** Порядковый номер. */
-  index: number;
-}
-
-type ChannelCriterion<Fields extends string = string> = Record<Fields, ChannelColumnCriterion>;
-type ChannelColumnCriterion = {name: string, optional?: boolean};
+/* --- Criterion --- */
 
 /** Критерий канала. */
-interface ChannelCriterion2<P extends string = string> {
+interface ChannelCriterion<P extends string = string> {
   /** Условие на название. */
   name?: StringMatcher;
   /** Условие на свойства. */
@@ -160,9 +132,9 @@ interface ChannelPropertyCriterion {
   /** Свойство должно ссылаться колонку с бинарным типом. */
   binary?: boolean;
   /** Свойство должно иметь указанные справочники. */
-  lookups?: Record<string, ChannelCriterion2>;
+  lookups?: PropertyLookupCriteria;
   /** Свойство должно иметь указанный канал детализации. */
-  details?: ChannelCriterion2;
+  details?: PropertyChannelCriterion;
 
   /** Является ли свойство обязательным.
    * @default true
@@ -170,24 +142,29 @@ interface ChannelPropertyCriterion {
   required?: boolean;
 }
 
+/** Критерий справочника свойства или канала детализации. */
+type PropertyChannelCriterion = ChannelCriterion & {required?: boolean};
 /** Критерии для справочников свойства. */
-type PropertyLookupCriteria<T extends string = string> = Record<T, ChannelCriterion2>;
+type PropertyLookupCriteria<T extends string = string> = Record<T, PropertyChannelCriterion>;
 
 /* --- Info --- */
 
 /** Модель прикреплённого канала. */
-interface AttachedChannel<R = string> {
+interface AttachedChannel<T extends string = string> {
   /** Название канала. */
   readonly name: ChannelName;
   /** Прикреплённые свойства канала. */
   readonly attachedProperties: ChannelProperty[];
   /** Тип прикреплённого канала. */
-  type?: string;
+  type?: T;
   /** Информация о структуре данных канала. */
-  info?: ChannelRecordInfo<R>;
-  /** Дополнительная информация о канала, необходимая клиенту для работы. */
+  info?: ChannelRecordInfo;
+  /** Дополнительная информация о канале, необходимая клиенту для работы. */
   config?: any;
 }
+
+/** Информация о колонках, необходимых для справочников. */
+type LookupColumns = ChannelRecordInfo<'id' | 'value' | 'parent'>;
 
 /** Информация о структуре данных канала. */
 type ChannelRecordInfo<T extends string = string> = Record<T, RecordPropertyInfo>;
@@ -205,11 +182,12 @@ interface RecordPropertyInfo<L extends string = string> {
   /** Информация о справочниках. */
   lookups?: RecordLookupInfo<L>;
   /** Информация о канале детализации. */
-  details?: ChannelRecordInfo;
+  details?: PropertyAttachedChannel;
 }
 
+type PropertyAttachedChannel = {name: ChannelName, info: ChannelRecordInfo};
 /** Информация о справочниках свойства. */
-type RecordLookupInfo<T extends string = string> = Record<T, ChannelRecordInfo>;
+type RecordLookupInfo<T extends string = string> = Record<T, PropertyAttachedChannel>;
 
 /* --- Query Settings --- */
 

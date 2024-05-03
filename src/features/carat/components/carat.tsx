@@ -1,6 +1,6 @@
 import { KeyboardEvent, MouseEvent } from 'react';
 import { useEffect, useLayoutEffect, useRef, useCallback } from 'react';
-import { useChannelDict } from 'entities/channel';
+import { useChannels } from 'entities/channel';
 import { useCurrentWell, useCurrentTrace, useCurrentStratum } from 'entities/objects';
 import { TextInfo, LoadingStatus } from 'shared/ui';
 
@@ -13,14 +13,12 @@ import { setCaratCanvas } from '../store/carat.actions';
 /** Каротажная диаграмма. */
 export const Carat = ({id}: SessionClient) => {
   const currentWell = useCurrentWell();
-  const currentStratum = useCurrentStratum();
   const currentTrace = useCurrentTrace();
+  const currentStratum = useCurrentStratum();
 
-  const caratState = useCaratState(id);
-  const { stage, canvas, channelNames, lookupNames, loading } = caratState;
-
-  const channelData = useChannelDict(channelNames);
-  const lookupData = useChannelDict(lookupNames);
+  const { stage, canvas, channelNames, lookupNames, loading } = useCaratState(id);
+  const channelData = useChannels(channelNames);
+  const lookupData = useChannels(lookupNames);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isOnMoveRef = useRef<boolean>(false);
@@ -32,7 +30,7 @@ export const Carat = ({id}: SessionClient) => {
 
   // обновление данных каналов
   useEffect(() => {
-    setCaratData(id, channelData).then();
+    setCaratData(id).then();
   }, [channelData, currentWell, currentTrace, id]);
 
   // выравнивание по активному пласту
@@ -67,6 +65,9 @@ export const Carat = ({id}: SessionClient) => {
   }
   if (currentTrace && currentTrace.nodes.length === 0) {
     return <TextInfo text={'carat.no-nodes'}/>;
+  }
+  if (loading.percentage < 0) {
+    return <TextInfo text={loading.status}/>;
   }
   if (loading.percentage < 100) {
     return <LoadingStatus {...loading}/>;

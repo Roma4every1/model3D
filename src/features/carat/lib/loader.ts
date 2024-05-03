@@ -1,53 +1,66 @@
 import { StringArrayParameter, TableRowParameter, rowToParameterValue } from 'entities/parameter';
 import { cellsToRecords, channelAPI } from 'entities/channel';
-import { channelDictToRecords } from './channels';
 
 
 /** Класс, реализующий загрузку данных для построения каротажа по трассе. */
-export class CaratLoader implements ICaratLoader {
-  /** Фиксированное название параметра для загрузки точек кривых. */
-  private static readonly curveDataParameterID = 'currentCurveIds';
+export class CaratLoader {
   /** Максимальное количество кривых в кеше. */
-  private static readonly maxCacheCurveCount = 50;
-
-  /** Флаг для преждевременной остановки загрузки. */
-  public flag: number;
-  /** Функция для обновления состояния загрузки на уровне интерфейса. */
-  public onProgressChange: (l: Partial<CaratLoading>) => void;
-
+  public static readonly maxCacheSize = 50;
   /** Кеш точек кривых. */
   public readonly cache: CurveDataCache;
   /** Счётчик добавления кривых. */
   private curveCounter: number;
 
-  /** Каналы, необходимых для каждого трека. */
-  private readonly attachedChannels: CaratAttachedChannel[];
+  /** Каналы, необходимые для треков. */
+  private readonly attachedChannels: AttachedChannel[];
   /** Канал с точками привых. */
-  private readonly curveDataChannel: CaratAttachedChannel;
+  private readonly curveDataChannel: AttachedChannel;
   /** Канал с инклинометрией. */
-  private readonly inclinometryChannel: CaratAttachedChannel;
+  private readonly inclinometryChannel: AttachedChannel;
 
-  constructor(
-    channels: CaratAttachedChannel[],
-    curveDataChannel: CaratAttachedChannel, inclinometryChannel: CaratAttachedChannel,
-  ) {
-    this.flag = 0;
+  /** Контроллер прерывания. */
+  private abortController: AbortController;
+  /** Функция для обновления состояния загрузки на уровне интерфейса. */
+  public onProgressChange: (l: Partial<CaratLoading>) => void;
+
+  constructor(channels: AttachedChannel[]) {
     this.onProgressChange = () => {};
     this.cache = {};
     this.curveCounter = 0;
 
     this.attachedChannels = channels;
-    this.curveDataChannel = curveDataChannel;
-    this.inclinometryChannel = inclinometryChannel;
+    this.curveDataChannel = channels.find(c => c.type === 'curve-data');
+    this.inclinometryChannel = channels.find(c => c.type === 'inclinometry');
   }
 
   /** Создаёт набор данных для каждого трека по ID скважин и данным канала. */
   public async loadCaratData(ids: WellID[], channelData: ChannelDict): Promise<ChannelRecordDict[]> {
-    const flag = this.flag;
-    const curveIDs: CaratCurveID[] = [];
+    if (this.abortController) this.abortController.abort();
+    this.abortController = new AbortController();
+
+    const cbCatch = (e: Error) => {
+      if (e instanceof DOMException) return null; // aborted
+      this.onProgressChange({percentage: -1, status: 'carat.loading.error'});
+      this.abortController = null;
+      return null;
+    };
+    const cbThen = (data: ChannelRecordDict[]) => {
+      this.abortController = null;
+      return data;
+    };
+    return this.loadData(ids, channelData).then(cbThen).catch(cbCatch);
+  }
+
+  private async loadData(ids: WellID[], channelData: ChannelDict): Promise<ChannelRecordDict[]> {
+    const data: ChannelRecordDict = {};
     const caratData: ChannelRecordDict[] = [];
+
+    for (const { name } of this.attachedChannels) {
+      data[name] = cellsToRecords(channelData[name]?.data);
+    }
+
+    const curveIDs: CaratCurveID[] = [];
     const isTrace = ids.length > 1;
-    const data = channelDictToRecords(channelData);
 
     for (const id of ids) {
       const [trackData, newCurveIDs] = this.getTrackData(id, data, isTrace);
@@ -56,17 +69,20 @@ export class CaratLoader implements ICaratLoader {
     }
     await this.loadCurveData(curveIDs, true);
 
-    if (flag === this.flag && this.inclinometryChannel) {
-      this.onProgressChange({status: 'inclinometry', statusOptions: null});
+    if (this.inclinometryChannel) {
       const inclinometryChannel = channelData[this.inclinometryChannel.name];
+      const rows = inclinometryChannel?.data?.rows;
 
-      if (inclinometryChannel?.data) {
-        const inclinometryInfo = this.inclinometryChannel.inclinometry;
-        const mapper = (row) => this.loadInclinometry(row, inclinometryChannel);
-        const recordList = await Promise.all(inclinometryChannel.data.rows.map(mapper));
+      if (rows) {
+        this.onProgressChange({status: 'carat.loading.inclinometry', statusOptions: null});
+        const details = this.inclinometryChannel.info.inclinometry.details;
+        const inclinometryDataName = details.name;
+        const wellColumnName = details.info.well.columnName;
 
-        const inclinometryDataName = inclinometryInfo.name;
-        const wellColumnName = inclinometryInfo.info.well.name;
+        const recordList = await Promise.all(rows.map((row: ChannelRow) => {
+          const value = rowToParameterValue(row, inclinometryChannel);
+          return this.loadInclinometry(value, channelData[inclinometryDataName]);
+        }));
 
         if (ids.length > 1) {
           for (const records of recordList) {
@@ -85,29 +101,28 @@ export class CaratLoader implements ICaratLoader {
 
   /** Загружает данные точек кривых и кладёт их в кеш. */
   public async loadCurveData(ids: CaratCurveID[], bySteps: boolean): Promise<CaratCurveID[]> {
-    const flag = this.flag;
     const idsToLoad: CaratCurveID[] = [...new Set(ids)].filter(id => !this.cache[id]);
     const total = idsToLoad.length;
     if (total === 0) return idsToLoad;
 
     const step = bySteps ? 5 : total;
     if (bySteps) {
-      this.onProgressChange({percentage: 0, status: 'curves', statusOptions: {count: 0, total}});
+      const status = 'carat.loading.curves';
+      this.onProgressChange({percentage: 0, status, statusOptions: {count: 0, total}});
     }
     const channelName = this.curveDataChannel.name;
+    const parameter = new StringArrayParameter('currentCurveIds', null);
+    const signal = this.abortController?.signal;
 
     for (let i = 0; i < total; i += step) {
       const slice = idsToLoad.slice(i, i + step);
 
-      const parameter = new StringArrayParameter(CaratLoader.curveDataParameterID, null);
       parameter.setValue(slice.map(String));
-
-      const res = await channelAPI.getChannelData(channelName, [parameter]);
-      if (flag !== this.flag) return;
+      const res = await channelAPI.getChannelData(channelName, [parameter], null, signal);
 
       const data = res.ok ? res.data : null;
       const records = cellsToRecords(data);
-      const idColumnName = this.curveDataChannel.info.id.name;
+      const idColumnName = this.curveDataChannel.info.id.columnName;
 
       for (const id of slice) {
         const record = records.find(r => r[idColumnName] === id);
@@ -141,13 +156,13 @@ export class CaratLoader implements ICaratLoader {
       if (!records) { dict[channelName] = []; continue; }
 
       if (isTrace && records.length) {
-        const wellColumnName = attachment.info.well.name;
+        const wellColumnName = attachment.info.well.columnName;
         records = records.filter(row => row[wellColumnName] === id);
       }
 
-      if (attachment.type === 'curve-set') {
-        const idName = attachment.info.id.name;
-        const loadingName = attachment.info.defaultLoading.name;
+      if (attachment.type === 'curve') {
+        const idName = attachment.info.id.columnName;
+        const loadingName = attachment.info.defaultLoading.columnName;
         const defaultCurves = records.filter(record => Boolean(record[loadingName]));
         curveIDs.push(...defaultCurves.map(record => record[idName]));
       }
@@ -157,28 +172,27 @@ export class CaratLoader implements ICaratLoader {
   }
 
   /** Загружает данные инклинометрии по скважине. */
-  private async loadInclinometry(row: ChannelRow, channel: Channel): Promise<ChannelRecord[]> {
-    const channelName = this.inclinometryChannel.inclinometry.name;
+  private async loadInclinometry(value: any, channel: Channel): Promise<ChannelRecord[]> {
     const parameter = new TableRowParameter(channel.config.parameters[0], null);
-    parameter.setValue(rowToParameterValue(row, channel));
+    parameter.setValue(value);
 
-    const res = await channelAPI.getChannelData(channelName, [parameter]);
-    const data = res.ok ? res.data : null;
-    return data ? cellsToRecords(data) : [];
+    const signal = this.abortController.signal;
+    const res = await channelAPI.getChannelData(channel.name, [parameter], null, signal);
+    return res.ok ? cellsToRecords(res.data) : [];
   }
 
   /** Создаёт модель данных кривой. */
   private createCurveData(record: ChannelRecord): CaratCurveData {
     const info = this.curveDataChannel.info;
-    const pathSource = window.atob(record[info.data.name]);
+    const pathSource = window.atob(record[info.data.columnName]);
 
     return {
       path: new Path2D(pathSource),
       points: this.parseCurvePath(pathSource),
-      top: record[info.top.name],
-      bottom: record[info.bottom.name],
-      min: record[info.min.name],
-      max: record[info.max.name],
+      top: record[info.top.columnName],
+      bottom: record[info.bottom.columnName],
+      min: record[info.min.columnName],
+      max: record[info.max.columnName],
       order: ++this.curveCounter,
     };
   }
@@ -187,7 +201,7 @@ export class CaratLoader implements ICaratLoader {
   private parseCurvePath(source: string): Point[] {
     const items = source.split('L');
     items[0] = items[0].substring(1);
-    return items.map((item) => {
+    return items.map((item): Point => {
       const [x, y] = item.split(',');
       return {x: parseFloat(x), y: parseFloat(y)};
     });
@@ -196,10 +210,10 @@ export class CaratLoader implements ICaratLoader {
   /** Проверяет количество кривых в кеше и удаляет лишние кривые. */
   public checkCacheSize(): void {
     let entries = Object.entries(this.cache);
-    if (entries.length <= CaratLoader.maxCacheCurveCount) return;
+    if (entries.length <= CaratLoader.maxCacheSize) return;
 
     entries.sort((a, b) => a[1].order - b[1].order);
-    const idsToDelete = entries.map(entry => entry[0]).slice(CaratLoader.maxCacheCurveCount);
+    const idsToDelete = entries.map(entry => entry[0]).slice(CaratLoader.maxCacheSize);
 
     for (const id of idsToDelete) {
       delete this.cache[id];

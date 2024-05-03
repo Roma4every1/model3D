@@ -4,7 +4,7 @@ import { testString } from 'shared/lib';
 export class RecordInfoCreator {
   constructor(private readonly channels: ChannelDict) {}
 
-  public create(channel: Channel, criterion: ChannelCriterion2): ChannelRecordInfo {
+  public create(channel: Channel, criterion: ChannelCriterion): ChannelRecordInfo {
     const nameMatcher = criterion.name;
     if (nameMatcher && !testString(channel.name, nameMatcher)) return;
 
@@ -39,11 +39,12 @@ export class RecordInfoCreator {
       info.lookups = lookupInfo;
     }
     if (c.details) {
+      const required = c.details.required !== false;
       const channel = this.channels[p.detailChannel];
-      if (!channel) return;
+      if (!channel && required) return;
       const details = this.create(channel, c.details);
-      if (!details) return;
-      info.details = details;
+      if (!details && required) return;
+      info.details = {name: channel.name, info: details};
     }
     return info;
   }
@@ -60,10 +61,10 @@ export class RecordInfoCreator {
         const lookupInfo = this.create(channel, criterion);
         if (!lookupInfo) continue;
 
-        info[lookupName] = lookupInfo;
+        info[lookupName] = {name: channel.name, info: lookupInfo};
         matched = true; break;
       }
-      if (!matched) return;
+      if (!matched && criterion.required !== false) return;
     }
     return info;
   }

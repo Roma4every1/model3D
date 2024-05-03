@@ -7,7 +7,7 @@ import regionalLib from 'assets/map-libs/regional.bin';
 
 interface IFillPatterns {
   initialize(): Promise<void>
-  createFillStyle(name: string, color: ColorHEX, background: ColorHEX): CanvasPattern | string;
+  createFillStyle(name: string, color: ColorString, background: ColorString): CanvasPattern | string;
 }
 
 
@@ -77,7 +77,7 @@ export class FillPatterns implements IFillPatterns {
   }
 
   /** Создаёт паттерн заливки по типу и двум цветам. */
-  public createFillStyle(name: string, color: ColorHEX, background: ColorHEX): CanvasPattern | string {
+  public createFillStyle(name: string, color: ColorString, background: ColorString): CanvasPattern | string {
     if (!background || background === 'none') background = 'rgba(0,0,0,0)';
     if (!name) return background;
 
@@ -104,7 +104,7 @@ export class FillPatterns implements IFillPatterns {
   }
 
   /** Заполняет буфер значениями цвета. */
-  private fill(matrix: number[][], color: ColorHEX, background: ColorHEX) {
+  private fill(matrix: number[][], color: ColorString, background: ColorString) {
     let [red, green, blue, alpha] = parseColor(color).rgba;
     let [backRed, backGreen, backBlue, backAlpha] = parseColor(background).rgba;
     alpha = Math.round(alpha * 255);

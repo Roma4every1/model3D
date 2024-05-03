@@ -7,8 +7,10 @@ import { constraints } from '../../lib/constants';
 import { MenuSection, MenuSectionItem, ButtonIcon, BigButton } from 'shared/ui';
 import { Popup } from '@progress/kendo-react-popup';
 import { NumericTextBox, NumericTextBoxChangeEvent, NumericTextBoxHandle } from '@progress/kendo-react-inputs';
-import { CaratIntervalModel } from '../../lib/types';
+
+import { CaratStage } from '../../rendering/stage';
 import { CaratDrawer } from '../../rendering/drawer';
+import { CaratIntervalModel } from '../../lib/types';
 
 import scaleIcon from 'assets/images/carat/scale.svg';
 import scaleUpIcon from 'assets/images/carat/scale-up.svg';
@@ -18,24 +20,26 @@ import alignByStratumIcon from 'assets/images/carat/align-by-stratum.svg';
 
 
 interface CaratScalePanelProps {
-  stage: ICaratStage;
-  track: ICaratTrack;
+  stage: CaratStage;
 }
 
 
-export const CaratNavigationPanel = (props: CaratScalePanelProps) => {
+export const CaratNavigationSection = ({stage}: CaratScalePanelProps) => {
   return (
     <MenuSection header={'Навигация и масштаб'} className={'menu-section-row'}>
-      <NavigationSection {...props}/>
-      <ScaleSection {...props}/>
+      <NavigationSection stage={stage}/>
+      <ScaleSection stage={stage}/>
     </MenuSection>
   );
 };
 
-const ScaleSection = ({stage, track}: CaratScalePanelProps) => {
+const ScaleSection = ({stage}: CaratScalePanelProps) => {
   const { t } = useTranslation();
   const ref = useRef<NumericTextBoxHandle>();
-  const [scale, setScale] = useState(CaratDrawer.pixelPerMeter / track.viewport.scale);
+
+  const track = stage.getActiveTrack();
+  const initScale = Math.round(CaratDrawer.pixelPerMeter / track.viewport.scale);
+  const [scale, setScale] = useState(initScale);
 
   let step = 10;
   let buttonStep = 50;
@@ -44,7 +48,9 @@ const ScaleSection = ({stage, track}: CaratScalePanelProps) => {
 
   // подписка на изменение масштаба сцены
   useEffect(() => {
-    stage.listeners.scaleChange = (newScale: number) => setScale(newScale);
+    const callback = (newScale: number) => setScale(newScale);
+    stage.subscribe('scale', callback);
+    return () => stage.unsubscribe('scale', callback);
   }, [stage]);
 
   // чтобы работало изменение 1 -> 10 вместо 11
@@ -54,7 +60,7 @@ const ScaleSection = ({stage, track}: CaratScalePanelProps) => {
 
   const changeScale = (newScale: number) => {
     newScale = validateCaratScale(newScale, !track.constructionMode);
-    stage.edit({type: 'scale', payload: newScale});
+    stage.setScale(newScale);
     stage.render();
   };
 
@@ -91,18 +97,24 @@ const ScaleSection = ({stage, track}: CaratScalePanelProps) => {
   );
 };
 
-const NavigationSection = ({stage, track}: CaratScalePanelProps) => {
+const NavigationSection = ({stage}: CaratScalePanelProps) => {
   const { t } = useTranslation();
   const currentStratum = useCurrentStratum();
+  const [trackIndex, setTrackIndex] = useState(stage.getActiveIndex());
+
+  useEffect(() => {
+    stage.subscribe('track', setTrackIndex);
+    return () => stage.unsubscribe('track', setTrackIndex);
+  }, [stage]);
 
   const [isOpen, setIsOpen] = useState(false);
   const [anchor, setAnchor] = useState(null);
 
-  const backgroundColumns = track.getBackgroundGroup().getColumns();
+  const backgroundColumns = stage.getTrack(trackIndex).getBackgroundGroup().getColumns();
   const strataColumn = backgroundColumns.find(c => c.channel.type === 'lithology');
   const strata: CaratIntervalModel[] = strataColumn?.getElements() ?? [];
 
-  const lookupName = strataColumn?.channel.namesChannel;
+  const lookupName = strataColumn?.channel.info.stratumID.lookups.name?.name;
   const lookupData = useChannel(lookupName);
 
   const nameDict: LookupDict<string> = useMemo(() => {

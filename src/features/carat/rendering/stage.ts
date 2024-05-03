@@ -1,20 +1,44 @@
+import type {
+  CaratFormSettings, CaratGlobalSettings, CaratColumnInit,
+  CaratColumnXAxis, CaratColumnYAxis,
+} from '../lib/dto.types';
+
+import type { CaratIntervalModel } from '../lib/types';
 import { CaratTrack } from './track';
 import { CaratDrawer } from './drawer';
-import { CaratCorrelations } from './correlations';
 import { CaratDrawerConfig } from './drawer-settings';
-import { CaratIntervalModel } from '../lib/types';
-import { compareArrays, isRectInnerPoint } from 'shared/lib';
-import { calculateTrackWidth, validateCaratScale } from '../lib/utils';
+import { CaratCorrelations } from './correlations';
+
+import { EventBus, compareArrays, isRectInnerPoint } from 'shared/lib';
+import { validateCaratScale } from '../lib/utils';
 import { moveSmoothly } from '../lib/smooth-scroll';
 import { defaultSettings } from '../lib/constants';
 
 
+/** Типы аргументов для событий сцены каротажной диаграммы. */
+export interface CaratEventMap {
+  /** Событие изменения активного трека. */
+  'track': number;
+  /** Событие изменения активной группы. */
+  'group': number;
+  /** Событие изменения масштаба. */
+  'scale': number;
+}
+
+/** Типы событий сцены каротажной диаграммы.
+ * + `track` — изменение активного трека
+ * + `group` — изменение активной группы
+ * + `curve` — изменения активной кривой
+ */
+export type CaratEventKind = keyof CaratEventMap;
+
+
 /** Сцена диаграммы. */
-export class CaratStage implements ICaratStage {
+export class CaratStage {
   /** Отрисовщик. */
   private readonly drawer: CaratDrawer;
-  /** Слушатели событий сцены. */
-  public readonly listeners: CaratStageListeners;
+  /** Шина событий для сцены. */
+  private readonly eventBus: EventBus<CaratEventKind, CaratEventMap>;
   /** Ссылка на элемент холста. */
   private canvas: HTMLCanvasElement;
 
@@ -30,43 +54,62 @@ export class CaratStage implements ICaratStage {
   /** Индекс активного трека. */
   private activeIndex: number;
 
-  private readonly useStaticScale: boolean;
   private readonly strataChannelName: ChannelName;
   public actualLookup: boolean;
 
-  constructor(init: CaratFormSettings, drawerConfig: CaratDrawerConfig) {
-    this.wellIDs = [];
-    this.zones = init.settings.zones;
+  constructor(settings: CaratGlobalSettings, columns: CaratColumnInit[], drawerConfig: CaratDrawerConfig) {
     this.drawer = new CaratDrawer(drawerConfig);
-    this.useStaticScale = init.settings.useStaticScale;
-    this.strataChannelName = init.settings.strataChannelName;
+    this.eventBus = new EventBus();
+
+    this.wellIDs = [];
+    this.zones = settings.zones;
+    this.strataChannelName = settings.strataChannelName;
     this.actualLookup = false;
 
-    const correlationsInit = init.columns.find(c => c.settings.type === 'external');
+    const correlationsInit = columns.find(c => c.settings.type === 'external');
     this.correlations = new CaratCorrelations(correlationsInit, this.drawer);
 
-    const trackWidth = calculateTrackWidth(init.columns);
+    let trackWidth = 0;
+    for (const column of columns) {
+      const { type, width } = column.settings;
+      if (type === 'normal') trackWidth += width;
+    }
+
     const padding = this.drawer.trackBodySettings.padding;
     const rect: Rectangle = {top: padding, left: padding, width: trackWidth, height: 0};
-    const scale = CaratDrawer.pixelPerMeter / (init.settings.scale ?? defaultSettings.scale);
-    const track = new CaratTrack(rect, init.columns, scale, this.drawer);
+    const scale = CaratDrawer.pixelPerMeter / (settings.scale ?? defaultSettings.scale);
+
+    const track = new CaratTrack(rect, columns, scale, this.drawer);
     this.trackList = [track];
     this.activeIndex = 0;
 
     if (this.zones.length) {
       track.getGroups().forEach(g => g.setZones(this.zones));
     }
-    this.listeners = {
-      scaleChange: () => {}, trackPanelChange: () => {},
-      caratPanelChange: () => {}, curveWindowChange: () => {},
-    };
+  }
+
+  public subscribe<T extends CaratEventKind>(e: T, cb: EventCallback<CaratEventMap[T]>): void {
+    this.eventBus.subscribe(e, cb);
+  }
+  public unsubscribe<T extends CaratEventKind>(e: T, cb: EventCallback<CaratEventMap[T]>): void {
+    this.eventBus.unsubscribe(e, cb);
   }
 
   /* --- Getters --- */
 
+  /** Трек по индексу. */
+  public getTrack(idx: number): CaratTrack {
+    return this.trackList[idx];
+  }
+
   /** Текущий активный трек. */
   public getActiveTrack(): CaratTrack {
     return this.trackList[this.activeIndex];
+  }
+
+  /** Индекс активного трека. */
+  public getActiveIndex(): number {
+    return this.activeIndex;
   }
 
   /** Правила распределения кривых по зонам. */
@@ -74,13 +117,18 @@ export class CaratStage implements ICaratStage {
     return this.zones;
   }
 
-  /** Исходные общие настройки диаграммы. */
-  public getCaratSettings(): CaratSettings {
-    const scale = this.trackList[0].viewport.scale;
-    return {
-      scale: Math.round(CaratDrawer.pixelPerMeter / scale), useStaticScale: this.useStaticScale,
+  /** Исходные настройки. */
+  public getInitSettings(): Omit<CaratFormSettings, 'id'> {
+    const track = this.getActiveTrack();
+    const columns = track.getGroups().map(g => g.getInit());
+    columns.push(track.getBackgroundGroup().getInit());
+    columns.push(this.correlations.getInit());
+
+    const settings: CaratGlobalSettings = {
+      scale: Math.round(CaratDrawer.pixelPerMeter / track.viewport.scale),
       strataChannelName: this.strataChannelName, zones: this.zones,
     };
+    return {settings, columns};
   }
 
   /* --- Setters --- */
@@ -113,6 +161,7 @@ export class CaratStage implements ICaratStage {
     }
     this.activeIndex = 0;
     this.trackList[0].active = true;
+    this.eventBus.publish('track', 0);
   }
 
   /** Обновляет активный трек по индексу. */
@@ -122,6 +171,7 @@ export class CaratStage implements ICaratStage {
       this.trackList[idx].active = true;
     }
     this.activeIndex = idx;
+    this.eventBus.publish('track', idx);
   }
 
   /** Обновляет данные диаграммы. */
@@ -157,13 +207,13 @@ export class CaratStage implements ICaratStage {
       const constructionHeight /* m */ = track.transformer.constructionHeight;
       const scale = (constructionHeight / dataHeight) * window.devicePixelRatio;
       track.setScale(1 / scale);
-      this.listeners.scaleChange(Math.round(CaratDrawer.pixelPerMeter * scale));
+      this.eventBus.publish('scale', Math.round(CaratDrawer.pixelPerMeter * scale));
     }
   }
 
   /** Обновляет данные справочников. */
-  public async setLookupData(lookupData: ChannelRecordDict): Promise<void> {
-    for (const track of this.trackList) await track.setLookupData(lookupData);
+  public setLookupData(lookupData: ChannelRecordDict): void {
+    for (const track of this.trackList) track.setLookupData(lookupData);
     this.actualLookup = true;
   }
 
@@ -214,59 +264,48 @@ export class CaratStage implements ICaratStage {
     }
   }
 
-  /** Обрабатывает действие редактирования сцены. */
-  public edit(action: StageEditAction): void {
-    switch (action.type) {
-      case 'scale': { // изменение масштаба
-        const scale = CaratDrawer.pixelPerMeter / action.payload;
-        for (const track of this.trackList) track.setScale(scale);
-        return this.listeners.scaleChange(action.payload);
-      }
-      case 'move': { // изменении порядка колонок
-        const { idx, to } = action.payload;
-        for (const track of this.trackList) track.moveGroup(idx, to);
-        this.listeners.trackPanelChange();
-        return;
-      }
-      case 'active-group': { // изменение номера активной группы
-        const idx = action.payload;
-        for (const track of this.trackList) track.setActiveGroup(idx);
-        this.listeners.trackPanelChange();
-        this.listeners.caratPanelChange();
-        this.listeners.curveWindowChange();
-        return;
-      }
-      case 'group-width': { // изменение ширины колонки
-        const { idx, width } = action.payload;
-        for (const track of this.trackList) track.setGroupWidth(idx, width);
-        this.updateTrackRects();
-        this.resize();
-        return;
-      }
-      case 'group-label': { // изменение подписи колонки
-        const { idx, label } = action.payload;
-        for (const track of this.trackList) track.setGroupLabel(idx, label);
-        this.updateTrackRects();
-        this.listeners.trackPanelChange();
-        return;
-      }
-      case 'group-x-axis': {
-        const { idx, settings } = action.payload;
-        for (const track of this.trackList) track.setGroupXAxisSettings(idx, settings);
-        return;
-      }
-      case 'group-y-axis': { // настройки оси Y для группы
-        const { idx, settings } = action.payload;
-        for (const track of this.trackList) track.setGroupYAxisSettings(idx, settings);
-        return;
-      }
-      case 'group-y-step': { // изменение шага по оси Y
-        const { idx, step } = action.payload;
-        for (const track of this.trackList) track.setGroupYAxisStep(idx, step);
-        return;
-      }
-      default: { /* no other action types */ }
-    }
+  public setScale(value: number): void {
+    const scale = CaratDrawer.pixelPerMeter / value;
+    for (const track of this.trackList) track.setScale(scale);
+    this.eventBus.publish('scale', value);
+  }
+
+  public setActiveGroup(idx: number): void {
+    for (const track of this.trackList) track.setActiveGroup(idx);
+    this.eventBus.publish('group', idx);
+  }
+
+  public setGroupWidth(idx: number, width: number): void {
+    for (const track of this.trackList) track.setGroupWidth(idx, width);
+    this.updateTrackRects();
+    this.resize();
+    this.eventBus.publish('group', idx);
+  }
+
+  public setGroupLabel(idx: number, label: string): void {
+    for (const track of this.trackList) track.setGroupLabel(idx, label);
+    this.updateTrackRects();
+    this.eventBus.publish('group', idx);
+  }
+
+  public setGroupXAxis(idx: number, settings: CaratColumnXAxis): void {
+    for (const track of this.trackList) track.setGroupXAxisSettings(idx, settings);
+    this.eventBus.publish('group', idx);
+  }
+
+  public setGroupYAxis(idx: number, settings: CaratColumnYAxis): void {
+    for (const track of this.trackList) track.setGroupYAxisSettings(idx, settings);
+    this.eventBus.publish('group', idx);
+  }
+
+  public setGroupYStep(idx: number, step: number): void {
+    for (const track of this.trackList) track.setGroupYAxisStep(idx, step);
+    this.eventBus.publish('group', idx);
+  }
+
+  public moveGroup(idx: number, to: 'left' | 'right'): void {
+    for (const track of this.trackList) track.moveGroup(idx, to);
+    this.eventBus.publish('group', this.getActiveTrack().getActiveIndex());
   }
 
   /* --- Event Handlers --- */
@@ -292,11 +331,10 @@ export class CaratStage implements ICaratStage {
     const index = this.trackList.findIndex(t => isRectInnerPoint(point, t.rect));
     if (index === -1) return;
     this.setActiveTrack(index);
-    this.trackList[index].handleMouseDown(point);
 
-    this.listeners.trackPanelChange();
-    this.listeners.caratPanelChange();
-    this.listeners.curveWindowChange();
+    const track = this.trackList[index];
+    track.handleMouseDown(point);
+    this.eventBus.publish('group', track.getActiveIndex());
     this.render();
   }
 
@@ -311,7 +349,7 @@ export class CaratStage implements ICaratStage {
       if (scale === 1 && newScale === step + 1) newScale = step;
       if (newScale === scale) return;
 
-      this.edit({type: 'scale', payload: newScale});
+      this.setScale(newScale);
       this.render();
     } else {
       const index = this.trackList.findIndex(t => isRectInnerPoint(point, t.rect));
@@ -393,7 +431,7 @@ export class CaratStage implements ICaratStage {
     if (track.constructionMode && dataRect.height !== oldRectHeight) {
       const newScale = track.viewport.scale * (dataRect.height / oldRectHeight);
       track.setScale(newScale);
-      this.listeners.scaleChange(Math.round(CaratDrawer.pixelPerMeter / newScale));
+      this.eventBus.publish('scale', Math.round(CaratDrawer.pixelPerMeter / newScale));
     }
   }
 

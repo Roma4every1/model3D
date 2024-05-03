@@ -7,17 +7,6 @@ export function measureText(text: string): number {
   return Math.ceil(ctx.measureText(text).width);
 }
 
-/** Количество строк, требуемых для отрисовки текста. */
-export function getTextLinesCount(text: string, maxWidth: number): number {
-  const wordsWidth = text.split(' ').map(measureText);
-  let lines = 1, sum = 0;
-  for (const width of wordsWidth) {
-    if (sum + width < maxWidth) { sum += width; continue; }
-    lines += 1; sum = width;
-  }
-  return lines;
-}
-
 /** Возвращает функцию, которая измеряет длину текста. */
 export function getMeasurerForFont(font: string): (text: string) => number {
   const ctx = canvas.getContext('2d');

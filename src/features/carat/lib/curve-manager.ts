@@ -1,4 +1,5 @@
-import { CaratCurveModel, CaratCurveStyleDict } from './types';
+import type { CaratCurveModel } from './types';
+import type { CaratCurveMeasure, CaratDataSelection, CaratCurveSelector } from './dto.types';
 import { getPragmaticMax, stringifyLocalDate, fixColorHEX } from 'shared/lib';
 import { defaultSettings } from './constants';
 
@@ -27,9 +28,9 @@ export class CurveManager {
   /** Граничные значения шкал кривых. */
   public readonly measures: Record<CaratCurveType, CaratCurveMeasure>;
   /** Словарь свойств внешнего вида кривых. */
-  public styleDict: CaratCurveStyleDict;
+  public styleDict: Map<CaratCurveType, LineStyle>;
   /** Подключённый канал со списком кривых. */
-  public curveSetChannel: CaratAttachedChannel;
+  public curveSetChannel: AttachedChannel;
 
   /** Типы кривых. */
   public readonly popularTypes: CaratCurveSelector[];
@@ -64,21 +65,20 @@ export class CurveManager {
     return copy;
   }
 
-  public setChannel(curveSet: CaratAttachedChannel) {
+  public setChannel(curveSet: AttachedChannel): void {
     this.curveSetChannel = curveSet;
   }
 
   private createCurveModel(record: ChannelRecord, cache: CurveDataCache): CaratCurveModel {
-    const info = this.curveSetChannel.info as CaratCurveSetInfo;
-
-    const dateString = record[info.date.name];
-    const curveType = record[info.type.name];
-    const description = record[info.description.name] ?? '';
-    const style = this.styleDict.get(curveType) ?? defaultSettings.curveStyle;
-    const top = record[info.top.name], bottom = record[info.bottom.name];
-
-    const id = record[info.id.name];
+    const info = this.curveSetChannel.info;
+    const id = record[info.id.columnName];
     const cacheData: CaratCurveData = cache[id] ?? ({} as any);
+
+    const dateString = record[info.date.columnName];
+    const curveType = record[info.type.columnName];
+    const description = record[info.description?.columnName] ?? '';
+    const style = this.styleDict.get(curveType) ?? defaultSettings.curveStyle;
+    const top = record[info.top.columnName], bottom = record[info.bottom.columnName];
 
     return {
       id, type: curveType, description,
@@ -87,7 +87,7 @@ export class CurveManager {
       min: cacheData.min ?? 0, max: cacheData.max ?? 0,
       axisMin: 0, axisMax: 0,
       path: cacheData.path, points: cacheData.points,
-      defaultLoading: Boolean(record[info.defaultLoading.name]),
+      defaultLoading: Boolean(record[info.defaultLoading.columnName]),
       style, active: false,
     };
   }
@@ -127,21 +127,21 @@ export class CurveManager {
     }
   }
 
-  private resetTypeSelection() {
+  private resetTypeSelection(): void {
     const checkedTypes = this.curves.filter((c) => c.defaultLoading).map((c) => c.type);
     this.typeSelection = this.curveTypes.map((curveType) => {
       return {type: curveType, checked: checkedTypes.includes(curveType)};
     });
   }
 
-  private resetDates() {
+  private resetDates(): void {
     const minDate = this.curveTree.at(0)?.date;
     const maxDate = this.curveTree.at(-1)?.date;
     if (minDate) this.start = minDate;
     if (maxDate) this.end = maxDate;
   }
 
-  private updateTree() {
+  private updateTree(): void {
     for (const curveTreeGroup of this.curveTree) {
       for (const item of curveTreeGroup.children) {
         item.checked = this.testCurve(item.value);
@@ -150,7 +150,7 @@ export class CurveManager {
     }
   }
 
-  public setCurveChannelData(records: ChannelRecord[], cache: CurveDataCache) {
+  public setCurveChannelData(records: ChannelRecord[], cache: CurveDataCache): void {
     this.curveDict = {};
 
     if (records.length === 0) {
@@ -186,20 +186,21 @@ export class CurveManager {
     }
   }
 
-  public setActiveCurve(id?: CaratCurveID) {
+  public setActiveCurve(id?: CaratCurveID): void {
     this.curves.forEach((curve) => { curve.active = false; });
     const activeCurve = this.curveDict[id];
     if (activeCurve) activeCurve.active = true;
   }
 
-  public setStyleData(lookupData: ChannelRecordDict) {
+  public setStyleData(lookupData: ChannelRecordDict): void {
     this.styleDict.clear();
-    if (!this.curveSetChannel.curveColorLookup) return;
-    const { name, info } = this.curveSetChannel.curveColorLookup;
+    const colorLookup = this.curveSetChannel.info.type.lookups.color;
+    if (!colorLookup) return;
+    const { name, info } = colorLookup;
 
     lookupData[name]?.forEach((record) => {
-      const type = record[info.type.name];
-      const color = record[info.color.name];
+      const type = record[info.type.columnName];
+      const color = record[info.color.columnName];
       this.styleDict.set(type, {color: fixColorHEX(color), thickness: 2});
     });
   }
@@ -227,18 +228,18 @@ export class CurveManager {
     return this.curveTree;
   }
 
-  public setRange(start: Date, end: Date) {
+  public setRange(start: Date, end: Date): void {
     this.start = start;
     this.end = end;
     this.updateTree();
   }
 
-  public setTypeSelection(types: any[]) {
+  public setTypeSelection(types: any[]): void {
     this.typeSelection = types;
     this.updateTree();
   }
 
-  public setMeasure(curveType: CaratCurveType, min: number | null, max: number | null) {
+  public setMeasure(curveType: CaratCurveType, min: number | null, max: number | null): void {
     if (min === null && max === null) {
       delete this.measures[curveType];
     } else {
@@ -253,7 +254,7 @@ export class CurveManager {
     this.curves.filter(c => c.type === curveType).forEach(this.applyCurveAxisRange, this);
   }
 
-  private applyCurveAxisRange(model: CaratCurveModel) {
+  private applyCurveAxisRange(model: CaratCurveModel): void {
     const measure = this.measures[model.type];
     model.axisMin = measure?.min ?? 0;
     model.axisMax = measure?.max ?? getPragmaticMax(model.max);

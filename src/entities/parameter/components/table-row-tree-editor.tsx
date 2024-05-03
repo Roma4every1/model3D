@@ -77,9 +77,9 @@ function getTreeData(parameter: Parameter, rows: ChannelRow[], lookupColumns: Lo
     return [parameter.editor.showNullValue ? [nullNode] : [], []];
   }
 
-  const idIndex = lookupColumns.id.index;
-  const valueIndex = lookupColumns.value.index;
-  const parentIndex = lookupColumns.parent.index;
+  const idIndex = lookupColumns.id.columnIndex;
+  const valueIndex = lookupColumns.value.columnIndex;
+  const parentIndex = lookupColumns.parent.columnIndex;
 
   const nodeDict: Record<LookupItemID, TreeNode> = {};
   const allNodes = rows.map((row, i: number): TreeNode => {

@@ -1,98 +1,81 @@
+import type { CaratState } from '../store/carat.store';
+import type { CaratFormSettings, CaratColumnInit, CaratColumnDTO } from './dto.types';
+import { RecordInfoCreator } from 'entities/channel';
 import { CaratStage } from '../rendering/stage';
 import { CaratLoader } from './loader';
-import { createColumnInfo } from 'entities/channel';
-import { identifyCaratChannel, applyStyle } from './channels';
-
-import {
-  drawerConfig, caratChannelCriterionDict,
-  inclinometryCriterion, pumpImageCriterion,
-} from './constants';
+import { drawerConfig } from './constants';
+import { CaratStyleLookup } from './interval-style';
+import { rectStyle } from './channel-criteria';
+import { setCaratLoading } from '../store/carat.actions';
 
 
 /** Создаёт состояние каротажа по её начальным настройкам. */
 export function settingsToCaratState(payload: FormStatePayload<CaratFormSettings>): CaratState {
-  const { settings: init, channels: channelDict } = payload;
-  const columns = init.columns.toSorted(columnInitCompareFn);
+  const { id, channels: attachedChannels } = payload.state;
+  const { settings: caratSettings, columns: initColumns } = payload.settings;
 
-  let curveDataChannel: CaratAttachedChannel;
-  let inclinometryChannel: CaratAttachedChannel;
-  const usedChannels = new Set<ChannelName>();
-  const attachments: CaratAttachedChannel[] = [];
+  const usedChannels: Set<ChannelName> = new Set();
+  const columns = initColumns.map(c => dtoToInit(c, attachedChannels)).sort(columnCompareFn);
 
-  for (const column of columns) {
-    for (const attachedChannel of column.channels) {
-      const channel = channelDict[attachedChannel.name];
-      identifyCaratChannel(attachedChannel, channel);
-
-      if (attachedChannel.type === 'curve-data') {
-        curveDataChannel = attachedChannel;
-      } if (attachedChannel.type === 'inclinometry') {
-        const propertyName = caratChannelCriterionDict.inclinometry.inclinometry.name;
-        const property = channel.config.properties.find(p => p.name === propertyName);
-        const inclinometryDataChannel = property?.detailChannel;
-
-        if (inclinometryDataChannel) {
-          attachedChannel.inclinometry = {
-            name: inclinometryDataChannel,
-            info: createColumnInfo(channelDict[inclinometryDataChannel], inclinometryCriterion),
-            dict: null,
-          };
-
-          inclinometryChannel = attachedChannel;
-          usedChannels.add(attachedChannel.name);
-        } else {
-          delete attachedChannel.type;
-        }
-      } else if (attachedChannel.type === 'pump') {
-        const propertyName = caratChannelCriterionDict.pump.pumpID.name;
-        const property = channel.config.properties.find(p => p.name === propertyName);
-        const pumpDataChannel = property.lookupChannels[0];
-
-        if (pumpDataChannel) {
-          attachedChannel.imageLookup = {
-            name: pumpDataChannel,
-            info: createColumnInfo(channelDict[pumpDataChannel], pumpImageCriterion),
-            dict: null,
-          };
-          usedChannels.add(attachedChannel.name);
-          attachedChannel.styles = [];
-        } else {
-          delete attachedChannel.type;
-        }
-      } else {
-        applyStyle(attachedChannel, column.properties[attachedChannel.name], channel, channelDict);
-      }
-
-      if (attachedChannel.type && attachedChannel.type !== 'curve-data') {
-        usedChannels.add(attachedChannel.name);
-        attachments.push(attachedChannel);
-      }
+  for (const attachedChannel of attachedChannels) {
+    const type = attachedChannel.type as CaratChannelType;
+    if (type === 'lithology' || type === 'perforation' || type === 'face') {
+      applyStyle(attachedChannel, payload.channels);
+    }
+    if (type !== 'curve-data') {
+      usedChannels.add(attachedChannel.name);
     }
   }
 
-  const stage = new CaratStage(init, drawerConfig);
+  const stage = new CaratStage(caratSettings, columns, drawerConfig);
   const observer = new ResizeObserver(() => { stage.resize(); stage.render(); });
-  const loader = new CaratLoader(attachments, curveDataChannel, inclinometryChannel);
-  const lookupNames = stage.getActiveTrack().getLookupNames();
+
+  const loader = new CaratLoader(attachedChannels);
+  loader.onProgressChange = (loading: Partial<CaratLoading>) => setCaratLoading(id, loading);
 
   return {
     canvas: undefined, stage, loader, observer,
-    lookupNames, channelNames: [...usedChannels],
+    channelNames: [...usedChannels],
+    lookupNames: stage.getActiveTrack().getLookupNames(),
     loading: {percentage: 100, status: null},
   };
 }
 
-function columnInitCompareFn(a: CaratColumnInit, b: CaratColumnInit): number {
+function applyStyle(attachment: AttachedChannel, channels: ChannelDict): void {
+  const styles: CaratStyleLookup[] = [];
+  const creator = new RecordInfoCreator(channels);
+
+  for (const { fromColumn, lookupChannels } of attachment.attachedProperties) {
+    for (const channelName of lookupChannels) {
+      const info = creator.create(channels[channelName], rectStyle);
+      if (info) { styles.push({columnName: fromColumn, channelName, info}); break; }
+    }
+  }
+  attachment.config = styles;
+}
+
+function dtoToInit(dto: CaratColumnDTO, attachments: AttachedChannel[]): CaratColumnInit {
+  if (dto.settings.type === 'external') dto.channels = [];
+  const channels = dto.channels ?? [];
+  const resultChannels: AttachedChannel[] = [];
+
+  for (const channel of channels) {
+    const name = channel?.name;
+    if (!name) continue;
+    const attachedChannel = attachments.find(a => a.name === name);
+    if (attachedChannel) resultChannels.push(attachedChannel);
+  }
+  return {...dto, channels: resultChannels as AttachedChannel<CaratChannelType>[]};
+}
+
+function columnCompareFn(a: CaratColumnInit, b: CaratColumnInit): number {
   const aIndex = a.settings.index ?? Number.MAX_SAFE_INTEGER;
   const bIndex = b.settings.index ?? Number.MAX_SAFE_INTEGER;
   return aIndex - bIndex;
 }
 
-/** Возвращает настройки формы по состоянию формы. */
-export function caratStateToSettings(id: FormID, {stage}: CaratState): CaratFormSettings {
-  const settings = stage.getCaratSettings();
-  const columns = stage.getActiveTrack().getInitColumns();
-  const correlationSettings = stage.correlations.getInit();
-  if (correlationSettings) columns.push(correlationSettings);
-  return {id, settings, columns};
+/** Возвращает настройки формы по состоянию каротажа. */
+export function caratStateToSettings(id: FormID, state: CaratState): CaratFormSettings {
+  const settings = state.stage.getInitSettings();
+  return {id, ...settings};
 }

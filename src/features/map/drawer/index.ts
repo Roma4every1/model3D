@@ -3,7 +3,7 @@ import { parseDef } from './symbol2svg';
 import { mapAPI } from '../lib/map.api';
 
 
-type SignImageGetter = (color: ColorHEX) => string;
+type SignImageGetter = (color: ColorString) => string;
 type SignImageLibrary = Record<string, Map<number, SignImageGetter>>;
 
 export interface SignFontData {

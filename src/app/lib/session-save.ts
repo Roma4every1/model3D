@@ -1,5 +1,6 @@
 import type { IJsonModel } from 'flexlayout-react';
 import type { TableFormSettings } from 'features/table';
+import type { CaratFormSettings } from 'features/carat';
 
 import { useRootStore } from '../store/root-form.store';
 import { usePresentationStore } from 'widgets/presentation';

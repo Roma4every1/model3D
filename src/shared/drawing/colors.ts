@@ -8,7 +8,7 @@ import { round } from '../lib';
  * parseColorHEX("#00FF00FF") => [0, 255, 0, 1]
  * parseColorHEX("abc") => null
  * */
-export function parseColorHEX(hex: unknown): ColorModelRGBA | null {
+export function parseColorHEX(hex: unknown): RGBA | null {
   if (typeof hex !== 'string') return null;
   if (hex.length !== 4 && hex.length !== 7 && hex.length !== 9) return null;
   let red: number, green: number, blue: number, alpha: number = 1;
@@ -33,7 +33,7 @@ export function parseColorHEX(hex: unknown): ColorModelRGBA | null {
  * stringifyRGBA([0, 0, 0, 1]) => "rgb(0,0,0)";
  * stringifyRGBA([8, 64, 8, 0.5]) => "rgba(8,64,8,0.5)";
  * */
-export function stringifyRGBA([red, green, blue, alpha]: ColorModelRGBA): string {
+export function stringifyRGBA([red, green, blue, alpha]: RGBA): string {
   if (alpha === 1) {
     return `rgb(${red},${green},${blue})`;
   } else {
@@ -45,7 +45,7 @@ export function stringifyRGBA([red, green, blue, alpha]: ColorModelRGBA): string
  * @example
  * overlayColor([0, 0, 0, 0.5], [255, 255, 255, 0.5]) => [170, 170, 170, 0.75]
  * */
-export function overlayColor(base: ColorModelRGBA, additive: ColorModelRGBA): ColorModelRGBA {
+export function overlayColor(base: RGBA, additive: RGBA): RGBA {
   const baseAlpha = base[3];
   const addedAlpha = additive[3];
   if (!baseAlpha) return additive;

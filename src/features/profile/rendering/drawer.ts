@@ -66,12 +66,12 @@ export class ProfileDrawer implements IProfileDrawer {
 
   /* --- Rendering --- */
 
-  private setLineSettings(width: number, color: ColorHEX | CanvasPattern): void {
+  private setLineSettings(width: number, color: ColorString | CanvasPattern): void {
     this.ctx.lineWidth = width;
     this.ctx.strokeStyle = color;
   }
 
-  private setTextSettings(font: string, color: ColorHEX, align: CanvasTextAlign, baseline: CanvasTextBaseline): void {
+  private setTextSettings(font: string, color: ColorString, align: CanvasTextAlign, baseline: CanvasTextBaseline): void {
     this.ctx.font = font;
     this.ctx.fillStyle = color;
     this.ctx.textAlign = align;

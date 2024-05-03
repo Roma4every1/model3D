@@ -1,23 +1,11 @@
+import type { ConstructionLabel } from '../lib/construction.types';
 import { CaratDrawer } from './drawer';
 import { CaratColumnGroup } from './column-group';
 import { getMeasurerForFont } from 'shared/lib';
 
-import { PumpColumn } from './pump-column';
+import { CaratImageColumn } from './image-column';
 import { WellFaceColumn } from './face-column';
 import { WellBoreColumn } from './well-bore-column';
-
-
-/** Подпись к элементу конструкции скважины. */
-interface ConstructionLabel {
-  /** Координата подписи по Y. */
-  y: number;
-  /** Смещение по X линии к подписи относительно центра колонки элемента. */
-  shift: number;
-  /** Текст подписи. */
-  text: string;
-  /** Строки текста. */
-  lines: string[];
-}
 
 
 /** Класс, отвечающий за отображение подписей к элементам конструкции. */
@@ -57,7 +45,7 @@ export class ConstructionLabels {
     for (const column of this.dataGroup.getColumns()) {
       if (
         column instanceof WellBoreColumn ||
-        column instanceof PumpColumn ||
+        column instanceof CaratImageColumn ||
         column instanceof WellFaceColumn
       ) {
         for (const element of column.getElements()) {

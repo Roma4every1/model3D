@@ -9,12 +9,12 @@ export function updateObjects(entries: ParameterUpdateEntries): void {
   const channels = useChannelStore.getState();
   const { place, stratum, well, trace } = useObjectsStore.getState();
 
-  const placeUpdated = place.activated() && place.onParameterUpdate(entries);
-  const stratumUpdated = stratum.activated() && stratum.onParameterUpdate(entries);
-  const wellUpdated = well.activated() && well.onParameterUpdate(entries);
-  const traceUpdated = trace.activated() && trace.onParameterUpdate(entries, channels);
+  const placeChanged = place.activated() && place.onParameterUpdate(entries);
+  const stratumChanged = stratum.activated() && stratum.onParameterUpdate(entries);
+  const wellChanged = well.activated() && well.onParameterUpdate(entries);
+  const traceChanged = trace.activated() && trace.onParameterUpdate(entries, channels);
 
-  if (placeUpdated || stratumUpdated || wellUpdated || traceUpdated) {
+  if (placeChanged || stratumChanged || wellChanged || traceChanged) {
     useObjectsStore.setState({place, stratum, well, trace}, true);
   }
 }
@@ -25,7 +25,7 @@ export async function setCurrentWell(id: WellID): Promise<void> {
   if (model && model.id === id) return;
   const wellChannel = useChannelStore.getState()[channelName];
 
-  const idIndex = wellChannel.config.lookupColumns.id.index;
+  const idIndex = wellChannel.config.lookupColumns.id.columnIndex;
   const row = wellChannel.data?.rows.find(r => r[idIndex] === id);
   if (!row) return;
 
@@ -43,7 +43,7 @@ export async function createTrace(model: TraceModel): Promise<void> {
   if (!ok) return;
 
   // id новой трассы берётся из newRow
-  model.id = newRow[traceChannel.config.lookupColumns.id.index];
+  model.id = newRow[traceChannel.config.lookupColumns.id.columnIndex];
   traceManager.model = model;
   traceManager.applyModelToChannelRow(traceChannel, newRow);
 
@@ -62,7 +62,7 @@ export async function saveTrace(): Promise<void> {
   const traceChannel = useChannelStore.getState()[channelName];
   const traceData = traceChannel.data;
 
-  const idIndex = traceChannel.config.lookupColumns.id.index;
+  const idIndex = traceChannel.config.lookupColumns.id.columnIndex;
   const index = traceData.rows.findIndex(row => row[idIndex] === model.id);
   const row = traceData.rows[index];
   traceManager.applyModelToChannelRow(traceChannel, row);

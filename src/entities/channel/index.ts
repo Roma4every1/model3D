@@ -5,7 +5,7 @@ export { createLookupList, createLookupTree } from './lib/lookup';
 
 export {
   getDetailChannels, getLookupChannels,
-  createColumnInfo, cellsToRecords, channelRowToRecord,
+  cellsToRecords, channelRowToRecord,
 } from './lib/common';
 
 export * from './store/channel.actions';

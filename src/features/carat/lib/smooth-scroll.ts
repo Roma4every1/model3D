@@ -1,9 +1,13 @@
+import { CaratStage } from '../rendering/stage';
+import { CaratTrack } from '../rendering/track';
+
+
 /** Плавно переместит вьюпорт трека.
  * @param stage сцена диаграммы
  * @param index индекс изменяемеого трека, если -1, то все
  * @param direction в какую сторону
  * */
-export function moveSmoothly(stage: ICaratStage, index: number, direction: 1 | -1) {
+export function moveSmoothly(stage: CaratStage, index: number, direction: 1 | -1) {
   const frameTime = 16; // 60 FPS => 1000ms / 60
 
   if (index === -1) {
@@ -26,7 +30,7 @@ export function moveSmoothly(stage: ICaratStage, index: number, direction: 1 | -
   }
 }
 
-function fillQueue(track: ICaratTrack, direction: 1 | -1, frameTime: number) {
+function fillQueue(track: CaratTrack, direction: 1 | -1, frameTime: number) {
   const duration = 250; // 0.25 second
   const scroll = track.viewport.scroll;
 
@@ -56,11 +60,11 @@ function fillQueue(track: ICaratTrack, direction: 1 | -1, frameTime: number) {
 }
 
 /** Аналог CSS timing function `ease-in-out`. */
-function cubicBezierEaseInOut(t) {
+function cubicBezierEaseInOut(t): number {
   return t * t * (3 - 2 * t);
 }
 
-function moveView(stage: ICaratStage, viewport: CaratViewport, i: number) {
+function moveView(stage: CaratStage, viewport: CaratViewport, i: number) {
   const scroll = viewport.scroll;
 
   if (scroll.queue.length === 0) {

@@ -1,5 +1,5 @@
 /** Критерий канала с месторождениями. */
-export const placeChannelCriterion: ChannelCriterion2<keyof PlaceModel> = {
+export const placeChannelCriterion: ChannelCriterion<keyof PlaceModel> = {
   properties: {
     id: {name: 'LOOKUPCODE'},    // number
     name: {name: 'LOOKUPVALUE'}, // string
@@ -7,7 +7,7 @@ export const placeChannelCriterion: ChannelCriterion2<keyof PlaceModel> = {
 };
 
 /** Критерий канала с пластами. */
-export const stratumChannelCriterion: ChannelCriterion2<keyof StratumModel> = {
+export const stratumChannelCriterion: ChannelCriterion<keyof StratumModel> = {
   properties: {
     id: {name: 'LOOKUPCODE'},    // number
     name: {name: 'LOOKUPVALUE'}, // string
@@ -15,7 +15,7 @@ export const stratumChannelCriterion: ChannelCriterion2<keyof StratumModel> = {
 };
 
 /** Критерий канала со скважинами. */
-export const wellChannelCriterion: ChannelCriterion2<keyof WellModel> = {
+export const wellChannelCriterion: ChannelCriterion<keyof WellModel> = {
   properties: {
     id: {name: 'LOOKUPCODE'},    // number
     name: {name: 'LOOKUPVALUE'}, // string
@@ -31,7 +31,7 @@ const traceNodePropertyCriteria: ChannelPropertyCriteria<TraceNodeChannelFields>
   order: {name: 'SORTORDER'},
 };
 /** Критерий канала с трассами. */
-export const traceChannelCriterion: ChannelCriterion2<keyof TraceModel> = {
+export const traceChannelCriterion: ChannelCriterion<keyof TraceModel> = {
   name: 'traces',
   properties: {
     id: {name: 'LOOKUPCODE'},    // number

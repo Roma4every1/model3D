@@ -1,5 +1,6 @@
+import type { CaratColumnProperties } from '../lib/dto.types';
+import type { CaratVerticalLineModel } from '../lib/construction.types';
 import { CaratDrawer } from './drawer';
-import { CaratVerticalLineModel } from '../lib/types';
 import { defaultSettings } from '../lib/constants';
 
 
@@ -9,14 +10,14 @@ export class VerticalLineColumn implements ICaratColumn {
   /** Ограничивающий прямоугольник колонки. */
   public readonly rect: Rectangle;
   /** Массив подключённых свойств канала. */
-  public readonly channel: CaratAttachedChannel;
+  public readonly channel: AttachedChannel;
 
   private elements: CaratVerticalLineModel[];
-  private color: ColorHEX;
+  private color: ColorString;
 
   constructor(
     rect: Rectangle, drawer: CaratDrawer,
-    channel: CaratAttachedChannel, properties?: CaratColumnProperties,
+    channel: AttachedChannel, properties?: CaratColumnProperties,
   ) {
     this.drawer = drawer;
     this.rect = rect;
@@ -24,7 +25,7 @@ export class VerticalLineColumn implements ICaratColumn {
     this.elements = [];
 
     if (properties) {
-      const widthProperty = properties[channel.info.width.name];
+      const widthProperty = properties[channel.info.width.propertyName];
       this.color = widthProperty?.bar?.color ?? defaultSettings.verticalLineColor;
     }
   }
@@ -59,9 +60,9 @@ export class VerticalLineColumn implements ICaratColumn {
     const info = this.channel.info;
 
     for (const record of records) {
-      const top = record[info.top.name];
-      const bottom = record[info.bottom.name];
-      const width = record[info.width.name];
+      const top = record[info.top.columnName];
+      const bottom = record[info.bottom.columnName];
+      const width = record[info.width.columnName];
       this.elements.push({top, bottom, width});
     }
   }

@@ -49,25 +49,23 @@ function createLookupChannels(properties: ChannelProperty[]): ChannelName[] {
 
 /** Находит названия колонок для задания списка значений или списка смежностей дерева. */
 function createLookupColumnNames(properties: ChannelProperty[]): LookupColumns {
-  let idColumnName = 'LOOKUPCODE';           // стандартное название свойства с ID
-  let valueColumnName = 'LOOKUPVALUE';       // стандартное название свойства со значением
-  let parentColumnName = 'LOOKUPPARENTCODE'; // стандартное название свойства с ID родителя
+  const idName = 'LOOKUPCODE';           // стандартное название свойства с ID
+  const valueName = 'LOOKUPVALUE';       // стандартное название свойства со значением
+  const parentName = 'LOOKUPPARENTCODE'; // стандартное название свойства с ID родителя
 
-  let idPropertyColumnName, valuePropertyColumnName, parentPropertyColumnName;
-  for (const property of properties) {
-    const name = property.name;
-    if (name === idColumnName) idPropertyColumnName = property;
-    else if (name === valueColumnName) valuePropertyColumnName = property;
-    else if (name === parentColumnName) parentPropertyColumnName = property;
+  let idColumnName = idName;
+  let valueColumnName = valueName;
+  let parentColumnName = parentName;
+
+  for (const { name, fromColumn } of properties) {
+    if (name === idName) idColumnName = fromColumn;
+    else if (name === valueName) valueColumnName = fromColumn;
+    else if (name === parentName) parentColumnName = fromColumn;
   }
 
-  if (idPropertyColumnName) idColumnName = idPropertyColumnName.fromColumn;
-  if (valuePropertyColumnName) valueColumnName = valuePropertyColumnName.fromColumn;
-  if (parentPropertyColumnName) parentColumnName = parentPropertyColumnName.fromColumn;
-
   return {
-    id: {name: idColumnName, index: -1},
-    value: {name: valueColumnName, index: -1},
-    parent: {name: parentColumnName, index: -1},
+    id: {propertyName: idName, columnName: idColumnName, columnIndex: -1},
+    value: {propertyName: valueName, columnName: valueColumnName, columnIndex: -1},
+    parent: {propertyName: parentName, columnName: parentColumnName, columnIndex: -1},
   };
 }

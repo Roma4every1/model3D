@@ -12,16 +12,18 @@ export interface CaratDrawerConfig {
     /** Настройки тела трека. */
     body: {
       /** Цвет шапки активного трека. */
-      activeColor: ColorHEX,
-      /** Цвет и толщина рамки вокруг трека. */
-      border: {color: ColorHEX, thickness: number},
+      activeColor: ColorString,
+      /** Цвет рамки вокруг трека. */
+      borderColor: ColorString,
+      /** Толщина рамки вокруг трека. */
+      borderWidth: number;
     },
     /** Настройки шапки трека. */
     header: {
       /** Величина внутренних отступов шапки. */
       padding: number,
       /** Шрифт и цвет подписи внутри шапки. */
-      text: {font: Partial<CSSFont>, color: ColorHEX},
+      text: {font: Partial<CSSFont>, color: ColorString},
     },
   },
   /** Настройки отрисовки колонки. */
@@ -31,45 +33,49 @@ export interface CaratDrawerConfig {
       /** __Боковые__ внутренние отступы элементов. */
       padding: number,
       /** Толщина рамки и цвет активной колонки. */
-      border: {thickness: number, activeColor: ColorHEX},
+      border: {thickness: number, activeColor: ColorString},
     },
     /** Настройки подписей к колонкам. */
     label: {
       /** {@link CSSFont} подписи. */
       font: Partial<CSSFont>,
       /** Цвет подписи. */
-      color: ColorHEX,
+      color: ColorString,
       /** Отступ подписи сверху. */
       marginTop: number,
     },
-    /** Настройки осей. */
-    axis: {
-      /** Настройки вертикальной оси. */
-      vertical: {
-        /** {@link CSSFont} подписей. */
-        font: Partial<CSSFont>,
-        /** Цвет горизонтальной пометки и подписи. */
-        color: ColorHEX,
-        /** Размер горизонтальной пометки. */
-        markSize: number,
-        /** Толщина и штриховка линий сетки. */
-        grid: {thickness: number, lineDash: number[]},
-      },
-      /** Настройки горизонтальных осей кривых. */
-      horizontal: {
-        /** {@link CSSFont} подписей. */
-        font: Partial<CSSFont>,
-        /** {@link CSSFont} подписи активной кривой. */
-        activeFont: Partial<CSSFont>,
-        /** Толщина оси. */
-        thickness: number,
-        /** Размер вертикальной пометки. */
-        markSize: number,
-        /** Расстояние между осями по вертикали. */
-        gap: number,
-        /** Толщина и штриховка линий сетки. */
-        grid: {thickness: number, lineDash: number[]},
-      },
+    /** Настройки подписей по глубине. */
+    mark: {
+      /** Внутренние отступы подписи. */
+      padding: number;
+      /** Ширина рамки для текса. */
+      borderWidth: number;
+    },
+    /** Настройки вертикальной оси. */
+    xAxis: {
+      /** {@link CSSFont} подписей. */
+      font: Partial<CSSFont>,
+      /** {@link CSSFont} подписи активной кривой. */
+      activeFont: Partial<CSSFont>,
+      /** Толщина оси. */
+      thickness: number,
+      /** Размер вертикальной пометки. */
+      markSize: number,
+      /** Расстояние между осями по вертикали. */
+      gap: number,
+      /** Толщина и штриховка линий сетки. */
+      grid: {thickness: number, lineDash: number[]},
+    },
+    /** Настройки вертикальной оси. */
+    yAxis: {
+      /** {@link CSSFont} подписей. */
+      font: Partial<CSSFont>,
+      /** Цвет горизонтальной пометки и подписи. */
+      color: ColorString,
+      /** Размер горизонтальной пометки. */
+      markSize: number,
+      /** Толщина и штриховка линий сетки. */
+      grid: {thickness: number, lineDash: number[]},
     },
   },
   /** Настройки отрисовки корреляций между треками. */
@@ -84,11 +90,13 @@ export interface CaratDrawerConfig {
       /** Шрифт подписи к конструкции. */
       font: Partial<CSSFont>,
       /** Цвет подписи к конструкции. */
-      color: ColorHEX,
+      color: ColorString,
       /** Фон подписи к конструкции. */
-      background: ColorHEX,
-      /** Цвет и толщина рамки подписи к конструкции. */
-      border: {color: ColorHEX, thickness: number},
+      background: ColorString,
+      /** Цвет рамки подписи к конструкции. */
+      borderColor: ColorString,
+      /** Толщина рамки подписи к конструкции. */
+      borderWidth: number,
       /** Внешний отступ подписи. */
       margin: number,
       /** Внутренний отступ подписи. */
@@ -97,7 +105,7 @@ export interface CaratDrawerConfig {
     /** Настройки отображения вертикальных забоев. */
     face: {
       /** Толщина обводки. */
-      borderThickness: number,
+      borderWidth: number,
     },
     /** Настройки отображения вертикальных линий. */
     vertical: {
@@ -112,11 +120,11 @@ export interface CaratTrackBodyDrawSettings {
   /** Величина отступов вокруг треков. */
   readonly padding: number;
   /** Цвет рамки всего трека. */
-  readonly borderColor: ColorHEX;
+  readonly borderColor: ColorString;
   /** Толщина рамки всего трека. */
-  readonly borderThickness: number;
+  readonly borderWidth: number;
   /** Цвет шапки активного трека. */
-  readonly activeColor: ColorHEX;
+  readonly activeColor: ColorString;
 }
 
 /** Настройки отрисовки трека. */
@@ -128,17 +136,17 @@ export interface CaratTrackHeaderDrawSettings {
   /** Шрифт подписи шапки. */
   readonly font: string;
   /** Цвет подписи шапки. */
-  readonly color: ColorHEX;
+  readonly color: ColorString;
 }
 
 /** Настройки тела колонки. */
 export interface CaratColumnBodyDrawSettings {
   /** Боковые внутренние отступы элементов. */
   readonly padding: number;
-  /** Толщина рамки колонки. */
-  readonly borderThickness: number;
+  /** Ширина рамки колонки. */
+  readonly borderWidth: number;
   /** Цвет рамки активной колонки. */
-  readonly activeBorderColor: ColorHEX;
+  readonly activeBorderColor: ColorString;
 }
 
 /** Настройки отрисовки подписи колонки. */
@@ -146,9 +154,17 @@ export interface CaratColumnLabelDrawSettings {
   /** Шрифт подписи. */
   readonly font: string;
   /** Цвет подписи. */
-  readonly color: ColorHEX;
+  readonly color: ColorString;
   /** Высота подписи. */
   readonly height: number;
+}
+
+/** Настройки подписей по глубине. */
+export interface CaratMarkDrawSettings {
+  /** Внутренние отступы подписи. */
+  readonly padding: number;
+  /** Ширина рамки для текса. */
+  readonly borderWidth: number;
 }
 
 /** Настройки отрисовки вертикальной оси колонки. */
@@ -156,7 +172,7 @@ export interface CaratColumnYAxisDrawSettings {
   /** Шрифт подписей. */
   readonly font: string;
   /** Цвет подписей. */
-  readonly color: ColorHEX;
+  readonly color: ColorString;
   /** Размер горизонтальной черты. */
   readonly markSize: number;
   /** Толщина линий сетки. */
@@ -166,7 +182,7 @@ export interface CaratColumnYAxisDrawSettings {
 }
 
 /** Настройки отрисовки горизонтальных осей колонки. */
-export interface CaratColumnXAxesDrawSettings {
+export interface CaratColumnXAxisDrawSettings {
   /** Шрифт подписей. */
   readonly font: string;
   /** Шрифт подпики для активной кривой. */
@@ -198,19 +214,19 @@ export interface ConstructionDrawSettings {
   /** Высота одной строки в подписи. */
   readonly labelTextHeight;
   /** Цвет подписи к конструкции. */
-  readonly labelColor: ColorHEX;
+  readonly labelColor: ColorString;
   /** Фон подписи к конструкции. */
-  readonly labelBackground: ColorHEX;
+  readonly labelBackground: ColorString;
   /** Цвет рамки подписи к конструкции. */
-  readonly labelBorderColor: ColorHEX;
+  readonly labelBorderColor: ColorString;
   /** Толщина рамки подписи к конструкции. */
-  readonly labelBorderThickness: number;
+  readonly labelBorderWidth: number;
   /** Внешний отступ подписи. */
   readonly labelMargin: number;
   /** Внутренний отступ подписи. */
   readonly labelPadding: number;
   /** Ширина обводки забоя. */
-  readonly faceBorderThickness: number;
+  readonly faceBorderWidth: number;
   /** Штриховка вертикальной линии. */
   readonly verticalLineDash: number[];
 }
@@ -219,8 +235,8 @@ export interface ConstructionDrawSettings {
 /** Создаёт настройки отрисовки трека по конфигу. */
 export function createTrackBodyDrawSettings(config: CaratDrawerConfig): CaratTrackBodyDrawSettings {
   const padding = config.stage.padding;
-  const { border, activeColor } = config.track.body;
-  return {padding, borderColor: border.color, borderThickness: border.thickness, activeColor};
+  const { borderWidth, borderColor, activeColor } = config.track.body;
+  return {padding, borderColor, borderWidth, activeColor};
 }
 
 /** Создаёт настройки отрисовки трека по конфигу. */
@@ -230,7 +246,7 @@ export function createTrackHeaderDrawSettings(config: CaratDrawerConfig): CaratT
   return {
     height: text.font.size + 2 * padding,
     padding: padding,
-    font: getFont(text.font, config.stage.font),
+    font: buildFontString(text.font, config.stage.font),
     color: text.color,
   };
 }
@@ -238,33 +254,38 @@ export function createTrackHeaderDrawSettings(config: CaratDrawerConfig): CaratT
 /** Создаёт настройки отрисовки тела колонки по конфигу. */
 export function createColumnBodyDrawSettings(config: CaratDrawerConfig): CaratColumnBodyDrawSettings {
   const { padding, border } = config.column.body
-  return {padding, borderThickness: border.thickness, activeBorderColor: border.activeColor};
+  return {padding, borderWidth: border.thickness, activeBorderColor: border.activeColor};
 }
 
 /** Создаёт настройки отрисовки подписи колонки по конфигу. */
 export function createColumnLabelDrawSettings(config: CaratDrawerConfig): CaratColumnLabelDrawSettings {
   const { font, color, marginTop } = config.column.label;
   const height = font.size + marginTop;
-  return {font: getFont(font, config.stage.font), color, height};
+  return {font: buildFontString(font, config.stage.font), color, height};
+}
+
+/** Создаёт настройки отрисовки подписей по глубине по конфигу. */
+export function createMarkDrawSettings(config: CaratDrawerConfig): CaratMarkDrawSettings {
+  return config.column.mark;
 }
 
 /** Создаёт настройки отрисовки вертикальной оси колонки по конфигу. */
 export function createColumnYAxisDrawSettings(config: CaratDrawerConfig): CaratColumnYAxisDrawSettings {
-  const { font, color, markSize, grid } = config.column.axis.vertical;
+  const { font, color, markSize, grid } = config.column.yAxis;
   return {
-    font: getFont(font, config.stage.font), color, markSize,
+    font: buildFontString(font, config.stage.font), color, markSize,
     gridThickness: grid.thickness, gridLineDash: grid.lineDash,
   };
 }
 
 /** Создаёт настройки отрисовки горизонтальных осей колонки по конфигу. */
-export function createColumnXAxesDrawSettings(config: CaratDrawerConfig): CaratColumnXAxesDrawSettings {
-  const { font, activeFont, thickness, markSize, gap, grid } = config.column.axis.horizontal;
+export function createColumnXAxisDrawSettings(config: CaratDrawerConfig): CaratColumnXAxisDrawSettings {
+  const { font, activeFont, thickness, markSize, gap, grid } = config.column.xAxis;
   const axisHeight = font.size + 3 * thickness;
 
   return {
-    font: getFont(font, config.stage.font),
-    activeFont: getFont(activeFont, config.stage.font),
+    font: buildFontString(font, config.stage.font),
+    activeFont: buildFontString(activeFont, config.stage.font),
     thickness, markSize, gap, axisHeight,
     gridThickness: grid.thickness, gridLineDash: grid.lineDash
   };
@@ -278,24 +299,24 @@ export function createCorrelationDrawSettings(config: CaratDrawerConfig): CaratC
 /** Создаёт настройки отрисовки конструкции по конфигу. */
 export function createConstructionDrawSettings(config: CaratDrawerConfig): ConstructionDrawSettings {
   const labelSettings = config.construction.label;
-  const labelFont = getFont(labelSettings.font, config.stage.font);
+  const labelFont = buildFontString(labelSettings.font, config.stage.font);
 
   return {
     labelFont: labelFont,
     labelTextHeight: labelSettings.font.size,
     labelColor: labelSettings.color,
     labelBackground: labelSettings.background,
-    labelBorderColor: labelSettings.border.color,
-    labelBorderThickness: labelSettings.border.thickness,
+    labelBorderColor: labelSettings.borderColor,
+    labelBorderWidth: labelSettings.borderWidth,
     labelMargin: labelSettings.margin,
     labelPadding: labelSettings.padding,
-    faceBorderThickness: config.construction.face.borderThickness,
+    faceBorderWidth: config.construction.face.borderWidth,
     verticalLineDash: config.construction.vertical.lineDash,
   };
 }
 
 /** Преобразует модель шрифта в `canvas.font`. */
-function getFont(font: Partial<CSSFont>, defaultFont: CSSFont) {
+function buildFontString(font: Partial<CSSFont>, defaultFont: CSSFont): string {
   const style = font.style ?? defaultFont.style;
   const size = font.size ?? defaultFont.size;
   const family = font.family ?? defaultFont.family;
