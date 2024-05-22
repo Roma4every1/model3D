@@ -14,16 +14,23 @@ export function settingsToCaratState(payload: FormStatePayload<CaratFormSettings
   const { id, channels: attachedChannels } = payload.state;
   const { settings: caratSettings, columns: initColumns } = payload.settings;
 
+  const channels = payload.channels;
   const usedChannels: Set<ChannelName> = new Set();
-  const columns = initColumns.map(c => dtoToInit(c, attachedChannels)).sort(columnCompareFn);
+
+  const toInit = (c: CaratColumnDTO, i: number) => dtoToInit(c, i, attachedChannels);
+  const columns = initColumns.sort(columnCompareFn).map(toInit);
 
   for (const attachedChannel of attachedChannels) {
+    const name = attachedChannel.name;
+    const displayName = channels[name].config.displayName ?? name;
+    attachedChannel.config = {displayName};
+
     const type = attachedChannel.type as CaratChannelType;
     if (type === 'lithology' || type === 'perforation' || type === 'face') {
-      applyStyle(attachedChannel, payload.channels);
+      applyStyle(attachedChannel, channels);
     }
     if (type !== 'curve-data') {
-      usedChannels.add(attachedChannel.name);
+      usedChannels.add(name);
     }
   }
 
@@ -51,11 +58,13 @@ function applyStyle(attachment: AttachedChannel, channels: ChannelDict): void {
       if (info) { styles.push({columnName: fromColumn, channelName, info}); break; }
     }
   }
-  attachment.config = styles;
+  attachment.config.styles = styles;
 }
 
-function dtoToInit(dto: CaratColumnDTO, attachments: AttachedChannel[]): CaratColumnInit {
+function dtoToInit(dto: CaratColumnDTO, i: number, attachments: AttachedChannel[]): CaratColumnInit {
+  dto.settings.index = i;
   if (dto.settings.type === 'external') dto.channels = [];
+
   const channels = dto.channels ?? [];
   const resultChannels: AttachedChannel[] = [];
 
@@ -68,10 +77,12 @@ function dtoToInit(dto: CaratColumnDTO, attachments: AttachedChannel[]): CaratCo
   return {...dto, channels: resultChannels as AttachedChannel<CaratChannelType>[]};
 }
 
-function columnCompareFn(a: CaratColumnInit, b: CaratColumnInit): number {
-  const aIndex = a.settings.index ?? Number.MAX_SAFE_INTEGER;
-  const bIndex = b.settings.index ?? Number.MAX_SAFE_INTEGER;
-  return aIndex - bIndex;
+function columnCompareFn(a: CaratColumnDTO, b: CaratColumnDTO): number {
+  const { type: aType, index: aIndex } = a.settings;
+  const { type: bType, index: bIndex } = b.settings;
+  if (aType === 'background' || aType === 'external') return 1;
+  if (bType === 'background' || bType === 'external') return -1;
+  return (aIndex ?? Number.MAX_SAFE_INTEGER) - (bIndex ?? Number.MAX_SAFE_INTEGER);
 }
 
 /** Возвращает настройки формы по состоянию каротажа. */

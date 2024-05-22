@@ -3,7 +3,7 @@ import type { DateRangePickerChangeEvent } from '@progress/kendo-react-dateinput
 import type { TreeViewCheckChangeEvent, TreeViewExpandChangeEvent } from '@progress/kendo-react-treeview';
 
 import { useEffect } from 'react';
-import { useRerender } from 'shared/react';
+import { useRender } from 'shared/react';
 import { useTranslation } from 'react-i18next';
 import { round } from 'shared/lib';
 import { updateWindow } from 'entities/window';
@@ -33,7 +33,7 @@ interface CurveFiltersProps {
 
 export const CurveSelectionWindow = ({id, stage, onClose}: CurveSelectionWindowProps) => {
   const { t } = useTranslation();
-  const rerender = useRerender();
+  const rerender = useRender();
 
   const track = stage.getActiveTrack();
   const curveGroup = track.getCurveGroup();

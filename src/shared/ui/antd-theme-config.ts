@@ -8,6 +8,9 @@ const componentConfig: ThemeConfig['components'] = {
 
 /** Создаёт конфиг темы AntDesign под акцентный цвет системы. */
 export function createAntDesignTheme(accentColor: ColorString): ThemeConfig {
+  if (!accentColor) accentColor = '#808080';
+  document.body.style.setProperty('--wm-system-color', accentColor);
+
   return {
     token: {fontSize: 12, colorPrimary: accentColor},
     components: componentConfig,

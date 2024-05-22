@@ -28,7 +28,7 @@ export const defaultSettings = {
 
 export const defaultMarkSettings: Required<CaratMarkSettingsDTO> = {
   text: {
-    align: 'left',
+    align: 'center',
     fontSize: 12,
     color: '#222222',
     backgroundColor: '#f8f8f8',
@@ -37,7 +37,6 @@ export const defaultMarkSettings: Required<CaratMarkSettingsDTO> = {
   line: {
     color: '#605656',
     width: 1,
-    dasharray: '7 7',
   },
   showDepth: true, showLine: true,
 };
@@ -55,7 +54,7 @@ export const constraints = {
 export const drawerConfig: CaratDrawerConfig = {
   stage: {
     padding: 4,
-    font: {size: 14, style: 'normal', family: '"Segoe UI", Roboto, sans-serif'}
+    font: {size: 13, style: 'normal', family: 'Roboto'},
   },
   track: {
     body: {
@@ -65,7 +64,7 @@ export const drawerConfig: CaratDrawerConfig = {
     },
     header: {
       padding: 3,
-      text: {font: {size: 14}, color: '#222222'},
+      text: {font: {size: 13}, color: '#222222'},
     },
   },
   column: {
@@ -79,12 +78,13 @@ export const drawerConfig: CaratDrawerConfig = {
       marginTop: 4,
     },
     mark: {
-      padding: 4,
+      padding: 1,
       borderWidth: 1,
+      gap: 4,
     },
     xAxis: {
-      font: {size: 13},
-      activeFont: {size: 13, style: 'bold'},
+      font: {size: 12},
+      activeFont: {size: 12, style: 'bold'},
       thickness: 1.5,
       markSize: 8,
       gap: 2,

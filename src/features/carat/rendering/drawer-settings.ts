@@ -50,6 +50,8 @@ export interface CaratDrawerConfig {
       padding: number;
       /** Ширина рамки для текса. */
       borderWidth: number;
+      /** Расстояние между меткой глубины и подписью. */
+      gap: number;
     },
     /** Настройки вертикальной оси. */
     xAxis: {
@@ -165,6 +167,8 @@ export interface CaratMarkDrawSettings {
   readonly padding: number;
   /** Ширина рамки для текса. */
   readonly borderWidth: number;
+  /** Расстояние между меткой глубины и подписью. */
+  readonly gap: number;
 }
 
 /** Настройки отрисовки вертикальной оси колонки. */

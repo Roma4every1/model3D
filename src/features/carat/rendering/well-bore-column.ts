@@ -12,6 +12,8 @@ export class WellBoreColumn implements ICaratColumn {
   public readonly rect: Rectangle;
   /** Массив подключённых свойств канала. */
   public readonly channel: AttachedChannel;
+  /** Является ли колонка видимой. */
+  public visible: boolean;
 
   /** Элементы конструкции. */
   private elements: WellBoreElementModel[];
@@ -25,6 +27,7 @@ export class WellBoreColumn implements ICaratColumn {
     this.drawer = drawer;
     this.rect = rect;
     this.channel = channel;
+    this.visible = true;
     this.elements = [];
     if (properties) this.createStyle(properties);
   }
@@ -47,6 +50,7 @@ export class WellBoreColumn implements ICaratColumn {
   public copy(): ICaratColumn {
     const column = new WellBoreColumn({...this.rect}, this.drawer, this.channel, null);
     column.style = this.style;
+    column.visible = this.visible;
     return column;
   }
 

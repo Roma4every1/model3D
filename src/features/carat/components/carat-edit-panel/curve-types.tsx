@@ -3,7 +3,7 @@ import type { NumericTextBoxChangeEvent } from '@progress/kendo-react-inputs'
 import type { CaratCurveMeasure } from '../../lib/dto.types';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useRerender } from 'shared/react';
+import { useRender } from 'shared/react';
 import { MenuSection, MenuSectionItem, BigButtonToggle } from 'shared/ui';
 import { NumericTextBox } from '@progress/kendo-react-inputs';
 
@@ -38,7 +38,7 @@ interface TypeSettingsModel {
 
 export const CurveTypesSection = ({stage}: CurveTypesSectionProps) => {
   const { t } = useTranslation();
-  const rerender = useRerender();
+  const render = useRender();
 
   const track = stage.getActiveTrack();
   const curve = track.getActiveCurve();
@@ -49,8 +49,8 @@ export const CurveTypesSection = ({stage}: CurveTypesSectionProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
-    stage.subscribe('track', rerender);
-    return () => stage.unsubscribe('track', rerender);
+    stage.subscribe('track', render);
+    return () => stage.unsubscribe('track', render);
   }, [stage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -86,7 +86,7 @@ export const CurveTypesSection = ({stage}: CurveTypesSectionProps) => {
       </MenuSection>
       <ActiveTypeSettings
         stage={stage} manager={curveManager}
-        settings={settings} onChange={rerender} t={t}
+        settings={settings} onChange={render} t={t}
       />
     </>
   );

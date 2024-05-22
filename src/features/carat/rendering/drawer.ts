@@ -56,7 +56,7 @@ export class CaratDrawer {
   /** Настройки отрисовки подписи колонки. */
   public readonly columnLabelSettings: CaratColumnLabelDrawSettings;
   /** Настроки отрисовки подписей по глубине. */
-  private readonly markSettings: CaratMarkDrawSettings;
+  public readonly markSettings: CaratMarkDrawSettings;
   /** Настройки отрисовки вертикальной оси колонки. */
   public readonly columnYAxisSettings: CaratColumnYAxisDrawSettings;
   /** Настройки отрисовки горизонтальных осей. колонки. */
@@ -495,7 +495,7 @@ export class CaratDrawer {
   }
 
   /** Отрисовка подписей по глубине. */
-  public drawMarks(elements: CaratMarkModel[], settings: CaratMarkSettings): void {
+  public drawMarks(elements: CaratMarkModel[], settings: CaratMarkSettings, maxWidth: number): void {
     const scaleY = window.devicePixelRatio * this.scale;
     this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
 
@@ -510,30 +510,10 @@ export class CaratDrawer {
       x = this.columnWidth - textPadding;
     }
 
-    for (const { depth, text, textWidth } of elements) {
+    for (const { depth, depthText, lines, maxLineWidth } of elements) {
       if (depth < this.yMin || depth > this.yMax) continue;
       const y = depth * scaleY;
 
-      if (backgroundColor || borderColor) {
-        const boxY = y - fontSize;
-        const boxWidth = textWidth + 2 * textPadding;
-
-        let boxX = 0;
-        if (nAlign === 0) {
-          boxX = x - textWidth / 2 - textPadding;
-        } else if (nAlign === 1) {
-          boxX = x - textWidth - textPadding;
-        }
-
-        if (backgroundColor) {
-          this.ctx.fillStyle = backgroundColor;
-          this.ctx.fillRect(boxX, boxY, boxWidth, fontSize);
-        }
-        if (borderColor) {
-          this.setLineSettings(borderWidth, borderColor);
-          this.ctx.strokeRect(boxX, boxY, boxWidth, fontSize);
-        }
-      }
       if (settings.showLine) {
         if (dasharray.length) this.ctx.setLineDash(dasharray);
         this.setLineSettings(lineWidth, lineColor);
@@ -542,8 +522,52 @@ export class CaratDrawer {
         this.ctx.stroke();
         if (dasharray.length) this.ctx.setLineDash([]);
       }
-      this.setTextSettings(font, color, align, 'bottom');
-      this.ctx.fillText(text, x, y);
+      const boxHeight = (fontSize + textPadding) * lines.length + textPadding;
+      const boxY = y - boxHeight;
+
+      if (backgroundColor || borderColor) {
+        const boxWidth = maxLineWidth + 2 * textPadding;
+
+        let boxX = 0;
+        if (nAlign === 0) {
+          boxX = x - maxLineWidth / 2 - textPadding;
+        } else if (nAlign === 1) {
+          boxX = x - maxLineWidth - textPadding;
+        }
+
+        if (borderColor) {
+          this.setLineSettings(borderWidth, borderColor);
+          this.ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+        }
+        if (backgroundColor) {
+          this.ctx.fillStyle = backgroundColor;
+          this.ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+        }
+      }
+      let textY = boxY + textPadding;
+      this.setTextSettings(font, color, align, 'top');
+
+      for (const line of lines) {
+        this.ctx.fillText(line, x, textY, maxWidth);
+        textY += textPadding + fontSize;
+      }
+
+      if (settings.showDepth) {
+        const boxWidth = settings.depthTextWidth + textPadding;
+        const boxX = nAlign === -1 ? this.columnWidth - boxWidth : 0;
+        const boxY = y - fontSize;
+
+        if (borderColor) {
+          this.setLineSettings(borderWidth, borderColor);
+          this.ctx.strokeRect(boxX, boxY, boxWidth, fontSize);
+        }
+        if (backgroundColor) {
+          this.ctx.fillStyle = backgroundColor;
+          this.ctx.fillRect(boxX, boxY, boxWidth, fontSize);
+        }
+        this.setTextSettings(font, color, 'center', 'bottom');
+        this.ctx.fillText(depthText, boxX + boxWidth / 2, y + borderWidth);
+      }
     }
   }
 

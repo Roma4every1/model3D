@@ -6,9 +6,6 @@ type DataTypeName = 'boolean' | 'i8' | 'i16' | 'i32' | 'i64' | 'u8' | 'u16' | 'u
 
 type StringMatcher = string | string[] | RegExp;
 
-/** Ключ JavaScript объекта. */
-type DictKey = string | number | symbol;
-
 /** Колбэк, принимающий один аргумент. */
 type EventCallback<T> = (arg: T) => void;
 

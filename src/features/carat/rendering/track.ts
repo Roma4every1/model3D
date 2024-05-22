@@ -296,23 +296,28 @@ export class CaratTrack {
     }
   }
 
-  /* --- App Logic Actions --- */
+  public setGroupVisibility(idx: number, visibility: boolean): void {
+    this.groups[idx].visible = visibility;
+    this.updateGroupRects();
+  }
 
-  /** Перемещает колонку влево или вправо. */
-  public moveGroup(idx: number, to: 'left' | 'right'): void {
-    const k = to === 'left' ? -1 : 1;
-    const relatedIndex = idx + k;
-    const movedGroup = this.groups[idx];
-    const relatedGroup = this.groups[relatedIndex];
+  public setGroupColumnVisibility(groupIdx: number, columnIdx: number, visibility: boolean): void {
+    this.groups[groupIdx].setColumnVisibility(columnIdx, visibility);
+    if (this.constructionMode) this.constructionLabels.updateData();
+  }
 
-    movedGroup.settings.index = relatedIndex;
-    movedGroup.shift(k * relatedGroup.getDataRect().width);
-    relatedGroup.settings.index = idx;
-    relatedGroup.shift(-k * movedGroup.getDataRect().width);
-
-    this.groups[idx] = relatedGroup;
-    this.groups[relatedIndex] = movedGroup;
-    if (idx === this.activeIndex) this.activeIndex = relatedIndex;
+  public moveGroup(idx: number, position: number): void {
+    if (position === this.groups.length) {
+      const [group] = this.groups.splice(idx, 1);
+      this.groups.push(group);
+    } else {
+      const i = position < idx ? position : position - 1;
+      const [group] = this.groups.splice(idx, 1);
+      this.groups.splice(i, 0, group);
+    }
+    this.groups.forEach((g, i) => { g.settings.index = i; });
+    this.activeIndex = this.groups.findIndex(g => g.active);
+    this.updateGroupRects();
   }
 
   /* --- Event Handlers --- */
@@ -352,9 +357,10 @@ export class CaratTrack {
     let x = 0;
 
     for (const group of this.groups) {
-      const width = group.getDataRect().width;
-      group.getDataRect().left = x;
-      x += width;
+      if (!group.visible) continue;
+      const rect = group.getDataRect();
+      rect.left = x;
+      x += rect.width;
     }
     this.rect.width = x;
     this.backgroundGroup.setWidth(x);
@@ -369,13 +375,13 @@ export class CaratTrack {
     this.backgroundGroup.renderContent();
 
     for (const group of this.groups) {
-      if (group.active || group.settings.width <= 0) continue;
+      if (group.active || group.settings.width <= 0 || !group.visible) continue;
       group.renderHeader();
       group.renderContent();
     }
     if (this.activeIndex !== -1) {
       const group = this.groups[this.activeIndex];
-      if (group.settings.width > 0) {
+      if (group.settings.width > 0 && group.visible) {
         group.renderHeader();
         group.renderContent();
       }
@@ -392,10 +398,10 @@ export class CaratTrack {
     this.backgroundGroup.renderContent();
 
     for (const group of this.groups) {
-      if (!group.active && group.settings.width > 0) group.renderContent();
+      if (!group.active && group.settings.width > 0 && group.visible) group.renderContent();
     }
     const group = this.groups[this.activeIndex];
-    if (group && group.settings.width > 0) group.renderContent();
+    if (group && group.settings.width > 0 && group.visible) group.renderContent();
     if (this.constructionLabels) this.constructionLabels.render();
   }
 }

@@ -40,10 +40,14 @@ export interface CaratMarkLineSettingsDTO {
 export interface CaratMarkModel {
   /** Значение глубины. */
   depth: number;
+  /** Текст глубины. */
+  depthText: string;
   /** Текст подписи. */
   text: string;
-  /** Мемоизированное значение ширины текста. */
-  textWidth: number;
+  /** Строки текста. */
+  lines: string[];
+  /** Ширина самой длинной строки подписи. */
+  maxLineWidth: number;
 }
 
 /** Настройки отображения подписей по глубине. */
@@ -52,6 +56,8 @@ export type CaratMarkSettings = Omit<CaratMarkSettingsDTO, 'text' | 'line'> & {
   readonly text: CaratMarkTextSettings;
   /** Настройки отображения линии. */
   readonly line: CaratMarkLineSettings;
+  /** Ширина текста со значением глубины. */
+  depthTextWidth: number;
 }
 
 /** Настройки отображения текста для подписи по глубине. */

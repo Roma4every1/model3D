@@ -1,9 +1,12 @@
 import type { CaratCurveModel } from './types';
+import type { CaratMarkModel } from './mark.types';
 import type { WellBoreElementModel } from './construction.types';
 import { CaratColumnGroup } from '../rendering/column-group';
+import { CaratCurveColumn } from '../rendering/curve-column';
+import { CaratImageColumn } from '../rendering/image-column';
+import { CaratMarkColumn } from '../rendering/mark-column';
 import { WellBoreColumn } from '../rendering/well-bore-column';
 import { WellFaceColumn } from '../rendering/face-column';
-import { CaratImageColumn } from '../rendering/image-column';
 
 
 export interface ConstructionPart {
@@ -35,7 +38,7 @@ export class ConstructionTransformer {
   /** Части конструкции скважины по котором производится выравнивание. */
   public parts: ConstructionPart[];
   /** Опорные точки частей конструкции. */
-  public anchorPoints: AnchorPoint[];
+  public anchorPoints: AnchorPoint[] = [];
   /** Шаг выравнивания: равен высоте одной части. */
   public step: number;
   /** Высота всей конструкции: расстояние от начала первого до конца последнего элемента. */
@@ -97,15 +100,15 @@ export class ConstructionTransformer {
   public transformGroups(groups: CaratColumnGroup[], backgroundGroup: CaratColumnGroup): void {
     for (const group of groups) {
       for (const column of group.getColumns()) {
-        if (column instanceof WellBoreColumn) {
+        if (column instanceof CaratCurveColumn) {
+          this.transformCurves(column.curveManager.getVisibleCurves());
+        } else if (column instanceof WellBoreColumn) {
           this.transformWellBoreElements(column.getElements());
+        } else if (column instanceof CaratMarkColumn) {
+          this.transformMarks(column.getElements());
         } else {
           this.transformIntervals(column.getElements());
         }
-      }
-      if (group.hasCurveColumn()) {
-        const curves = group.getCurveColumn().curveManager.getVisibleCurves();
-        this.transformCurves(curves);
       }
     }
     for (const column of backgroundGroup.getColumns()) {
@@ -139,6 +142,12 @@ export class ConstructionTransformer {
     for (const element of elements) {
       element.top = this.yTransform(element.top);
       element.bottom = this.yTransform(element.bottom);
+    }
+  }
+
+  private transformMarks(elements: CaratMarkModel[]): void {
+    for (const element of elements) {
+      element.depth = this.yTransform(element.depth);
     }
   }
 

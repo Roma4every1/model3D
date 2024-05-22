@@ -1,12 +1,9 @@
-import { getMeasurerForFont } from 'shared/lib/layout';
+import { measureText } from 'shared/drawing';
 
-
-const font = '700 12px "Segoe UI", "Roboto", "Arial", sans-serif';
-const measurer = getMeasurerForFont(font);
 
 /** Находит оптимальную ширину колонки по её заголовку. */
 export function getColumnWidth(title: string): number {
-  return measurer(title) + 10;
+  return measureText(title, '700 12px "Segoe UI", Roboto') + 10;
 }
 
 /* --- --- */

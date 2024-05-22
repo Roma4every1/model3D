@@ -1,5 +1,5 @@
 /** Вспомогательный класс, реализующий архитектурный шаблон Event Bus. */
-export class EventBus<K extends DictKey = string, M extends Record<K, any> = Record<K, any>> {
+export class EventBus<K extends PropertyKey = string, M extends Record<K, any> = Record<K, any>> {
   /** Хранилище слушателей событий. */
   private readonly storage: Record<K, Set<EventCallback<M[K]>>> = {} as any;
 

@@ -7,6 +7,7 @@ import type { CaratCurveModel, CaratIntervalModel } from '../lib/types';
 import { CaratDrawer } from './drawer';
 import { CaratColumnHeader } from './column-header';
 import { CaratCurveColumn } from './curve-column';
+import { CaratMarkColumn } from './mark-column';
 import { CaratColumnFactory, caratColumnCompareFn } from './columns';
 
 import { isRectInnerPoint } from 'shared/lib';
@@ -20,6 +21,8 @@ export class CaratColumnGroup {
   private readonly drawer: CaratDrawer;
   /** Ограничивающий прямоугольник для элементов. */
   private readonly dataRect: Rectangle;
+  /** Является ли колонка видимой. */
+  public visible: boolean;
 
   /** Идентификатор колонки. */
   public readonly id: string;
@@ -53,6 +56,7 @@ export class CaratColumnGroup {
     this.properties = init.properties;
     this.channels = init.channels;
     this.active = init.active;
+    this.visible = true;
 
     if (!init.xAxis) init.xAxis = defaultSettings.xAxis;
     this.yAxis = init.yAxis;
@@ -108,6 +112,7 @@ export class CaratColumnGroup {
     const copy = {
       drawer: this.drawer,
       dataRect: dataRect,
+      visible: this.visible,
       id: this.id,
       settings: structuredClone(this.settings),
       header: new CaratColumnHeader(this.drawer, this.settings.label),
@@ -210,8 +215,11 @@ export class CaratColumnGroup {
       this.curveColumn.setGroupWidth(width);
       width = this.curveColumn.getTotalWidth();
     }
+    for (const column of this.columns) {
+      column.rect.width = width;
+      if (column instanceof CaratMarkColumn) column.updateBounds();
+    }
     this.dataRect.width = width;
-    for (const column of this.columns) column.rect.width = width;
   }
 
   public setHeight(height: number): void {
@@ -234,6 +242,10 @@ export class CaratColumnGroup {
 
   public shift(by: number): void {
     this.dataRect.left += by;
+  }
+
+  public setColumnVisibility(idx: number, visibility: boolean): void {
+    this.columns[idx].visible = visibility;
   }
 
   /** Делает перестроение зон, возвращает изменение ширины. */
@@ -309,8 +321,9 @@ export class CaratColumnGroup {
 
   public renderContent(): void {
     this.drawer.setCurrentGroup(this.dataRect, this.settings);
-    for (const column of this.columns) column.render();
-
+    for (const column of this.columns) {
+      if (column.visible) column.render();
+    }
     if (this.yAxis.show) this.drawer.drawGroupYAxis(this.yAxis);
     this.drawer.drawGroupBody(this.active);
   }

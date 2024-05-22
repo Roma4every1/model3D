@@ -1,0 +1,80 @@
+.carat-settings-window {
+  height: 155px;
+  overflow: auto;
+
+  > :last-child {
+    display: grid;
+  }
+}
+
+.column-drag {
+  display: grid;
+  width: 100%;
+  justify-items: center;
+  margin-bottom: 4px;
+
+  > section {
+    width: 100%;
+    position: relative;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  [draggable="true"] {
+    width: 24px;
+    padding: 0 3px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    cursor: grab;
+
+    &:hover {
+      background-color: #a4a3a3;
+    }
+  }
+
+  .droppable {
+    position: absolute;
+    width: 24px;
+    height: 100%;
+    background-color: #cccccc;
+    border-radius: 4px;
+  }
+
+  img {
+    width: 18px;
+  }
+}
+
+.carat-group {
+  min-width: 119px;
+  padding: 0 4px;
+  border-right: 1px solid #cccccc;
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+.carat-columns {
+  padding: 0;
+  margin: 4px 0 0;
+  border-top: 1px solid #cccccc;
+  list-style-type: none;
+  max-height: 100px;
+  overflow-y: auto;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 24px;
+
+    span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}

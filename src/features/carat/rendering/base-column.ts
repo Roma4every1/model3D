@@ -12,6 +12,8 @@ export class CaratColumn implements ICaratColumn {
   public readonly rect: Rectangle;
   /** Массив подключённых свойств канала. */
   public readonly channel: AttachedChannel;
+  /** Является ли колонка видимой. */
+  public visible: boolean;
   /** Словарь настроек отображения свойств. */
   private readonly properties: CaratColumnProperties;
 
@@ -36,13 +38,14 @@ export class CaratColumn implements ICaratColumn {
     this.rect = rect;
     this.drawer = drawer;
     this.channel = channel;
+    this.visible = true;
     this.properties = properties;
 
     this.intervals = [];
     this.bars = [];
 
     this.textDict = {};
-    this.styleManager = new IntervalStyleManager(this.channel.config);
+    this.styleManager = new IntervalStyleManager(this.channel.config.styles);
 
     for (const property of channel.attachedProperties) {
       const propertySettings = properties[property.name];

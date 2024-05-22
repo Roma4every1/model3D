@@ -9,6 +9,8 @@ export class CaratImageColumn implements ICaratColumn {
   public readonly rect: Rectangle;
   /** Массив подключённых свойств канала. */
   public readonly channel: AttachedChannel;
+  /** Является ли колонка видимой. */
+  public visible: boolean;
 
   private elements: CaratImageModel[];
   private imageDict: Record<number | string, HTMLImageElement>;
@@ -17,6 +19,7 @@ export class CaratImageColumn implements ICaratColumn {
     this.drawer = drawer;
     this.rect = rect;
     this.channel = channel;
+    this.visible = true;
     this.elements = [];
     this.imageDict = {};
   }
@@ -24,6 +27,7 @@ export class CaratImageColumn implements ICaratColumn {
   public copy(): CaratImageColumn {
     const copy = new CaratImageColumn({...this.rect}, this.drawer, this.channel);
     copy.imageDict = this.imageDict;
+    copy.visible = this.visible;
     return copy;
   }
 

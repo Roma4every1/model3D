@@ -17,9 +17,9 @@ import { defaultSettings } from '../lib/constants';
 
 /** Типы аргументов для событий сцены каротажной диаграммы. */
 export interface CaratEventMap {
-  /** Событие изменения активного трека. */
+  /** Событие изменения трека. */
   'track': number;
-  /** Событие изменения активной группы. */
+  /** Событие изменения группы. */
   'group': number;
   /** Событие изменения масштаба. */
   'scale': number;
@@ -155,7 +155,7 @@ export class CaratStage {
     this.trackList = [];
 
     for (const wellName of wellNames) {
-      const track = activeTrack.cloneFor({...rect}, wellName);
+      const track = activeTrack.cloneFor({...rect}, wellName.trim());
       this.trackList.push(track);
       rect.left += rect.width + correlationWidth;
     }
@@ -270,11 +270,6 @@ export class CaratStage {
     this.eventBus.publish('scale', value);
   }
 
-  public setActiveGroup(idx: number): void {
-    for (const track of this.trackList) track.setActiveGroup(idx);
-    this.eventBus.publish('group', idx);
-  }
-
   public setGroupWidth(idx: number, width: number): void {
     for (const track of this.trackList) track.setGroupWidth(idx, width);
     this.updateTrackRects();
@@ -303,9 +298,23 @@ export class CaratStage {
     this.eventBus.publish('group', idx);
   }
 
-  public moveGroup(idx: number, to: 'left' | 'right'): void {
-    for (const track of this.trackList) track.moveGroup(idx, to);
-    this.eventBus.publish('group', this.getActiveTrack().getActiveIndex());
+  public setGroupVisibility(idx: number, visibility: boolean): void {
+    for (const track of this.trackList) track.setGroupVisibility(idx, visibility);
+    this.updateTrackRects();
+    this.resize();
+    this.eventBus.publish('group', idx);
+  }
+
+  public setGroupColumnVisibility(groupIdx: number, columnIdx: number, visibility: boolean): void {
+    for (const track of this.trackList) {
+      track.setGroupColumnVisibility(groupIdx, columnIdx, visibility);
+    }
+    this.eventBus.publish('group', groupIdx);
+  }
+
+  public moveGroup(idx: number, position: number): void {
+    for (const track of this.trackList) track.moveGroup(idx, position);
+    this.eventBus.publish('group', idx);
   }
 
   /* --- Event Handlers --- */

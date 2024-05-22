@@ -1,4 +1,4 @@
-import { ReactNode, CSSProperties, MouseEvent } from 'react';
+import type { ReactNode, CSSProperties, MouseEvent } from 'react';
 import { Skeleton } from '@progress/kendo-react-indicators';
 import './menu-ui.scss';
 
@@ -96,7 +96,7 @@ export const ButtonIconStock = ({icon, title, action, disabled}: Omit<ButtonIcon
 /* --- --- --- */
 
 interface IconRowProps {
-  justifyContent?: string;
+  justify?: CSSProperties['justifyContent'];
   gap?: number | string;
   children?: ReactNode;
 }
@@ -116,9 +116,9 @@ interface IconRowLinkProps {
   title?: string;
 }
 
-export const IconRow = ({children, justifyContent, gap}: IconRowProps) => {
+export const IconRow = ({children, justify, gap}: IconRowProps) => {
   return (
-    <div className={'wm-icon-row'} style={{justifyContent, gap}}>
+    <div className={'wm-icon-row'} style={{justifyContent: justify, gap}}>
       {children}
     </div>
   );

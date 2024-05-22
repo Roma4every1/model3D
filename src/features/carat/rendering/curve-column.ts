@@ -12,6 +12,8 @@ export class CaratCurveColumn implements ICaratColumn {
   public readonly rect: Rectangle;
   /** Подключённый канал со списком кривых. */
   public readonly channel: AttachedChannel;
+  /** Является ли колонка видимой. */
+  public visible: boolean;
 
   /** Выборки кривых. */
   public readonly curveManager: CurveManager;
@@ -26,6 +28,7 @@ export class CaratCurveColumn implements ICaratColumn {
     this.drawer = drawer;
     this.rect = rect;
     this.channel = channel;
+    this.visible = true;
     this.xAxis = init.xAxis;
     this.curveManager = new CurveManager(init.selection, init.measures);
     this.curveManager.setChannel(channel);

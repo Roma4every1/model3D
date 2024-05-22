@@ -11,6 +11,8 @@ export class VerticalLineColumn implements ICaratColumn {
   public readonly rect: Rectangle;
   /** Массив подключённых свойств канала. */
   public readonly channel: AttachedChannel;
+  /** Является ли колонка видимой. */
+  public visible: boolean;
 
   private elements: CaratVerticalLineModel[];
   private color: ColorString;
@@ -22,6 +24,7 @@ export class VerticalLineColumn implements ICaratColumn {
     this.drawer = drawer;
     this.rect = rect;
     this.channel = channel;
+    this.visible = true;
     this.elements = [];
 
     if (properties) {
@@ -33,6 +36,7 @@ export class VerticalLineColumn implements ICaratColumn {
   public copy(): ICaratColumn {
     const copy = new VerticalLineColumn({...this.rect}, this.drawer, this.channel);
     copy.color = this.color;
+    copy.visible = this.visible;
     return copy;
   }
 

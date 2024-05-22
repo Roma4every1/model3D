@@ -73,29 +73,22 @@
   }
 }
 
-.carat-column-moving {
-  display: flex;
-  flex-direction: column;
-  min-width: 75px;
-
-  :disabled {
-    filter: grayscale(1);
-    opacity: 0.75;
-
-    &:hover {
-      background-color: transparent;
-    }
-  }
-}
-
 .carat-active-column {
   display: grid;
-  grid-template-columns: 150px 150px;
-  gap: 2px 4px;
+  grid-template-columns: 160px 96px 24px;
+  gap: 2px 8px;
+}
 
-  > div:not(:last-child) {
-    display: grid;
-    grid-template-columns: 2fr 3fr;
-    height: 24px;
-  }
+.carat-column-common-settings {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  grid-template-rows: 24px 24px;
+  gap: 4px;
+}
+
+.carat-column-y-axis-settings {
+  display: grid;
+  grid-template-rows: 24px 24px;
+  justify-items: start;
+  gap: 4px;
 }

@@ -1,6 +1,7 @@
-import { ReactNode, CSSProperties, createElement, useState } from 'react';
-import { Payload } from 'recharts/types/component/DefaultLegendContent';
-import { measureText } from 'shared/lib';
+import type { ReactNode, CSSProperties } from 'react';
+import type { Payload } from 'recharts/types/component/DefaultLegendContent';
+import { createElement, useState } from 'react';
+import { measureText } from 'shared/drawing';
 
 
 /** Вертикальная пометка на графике. */
@@ -72,7 +73,7 @@ const ChartMarkView = ({value, viewBox: { x, y, height }}: ChartMarkViewProps) =
 };
 
 const MarkTextBox = ({x, y, text, onClick, color}: MarkTextBoxProps) => {
-  const labelWidth = measureText(text) + 8;
+  const labelWidth = measureText(text, 'normal 12px "Segoe UI", Roboto') + 8;
   const style: CSSProperties = {cursor: onClick ? 'pointer' : 'default'};
 
   return (

@@ -59,6 +59,7 @@ interface ICaratInclinometry {
 interface ICaratColumn {
   rect: Rectangle;
   channel: AttachedChannel;
+  visible: boolean;
 
   copy(): ICaratColumn;
   getLookupNames(): ChannelName[];

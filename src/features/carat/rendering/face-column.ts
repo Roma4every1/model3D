@@ -11,6 +11,8 @@ export class WellFaceColumn implements ICaratColumn {
   public readonly rect: Rectangle;
   /** Массив подключённых свойств канала. */
   public readonly channel: AttachedChannel;
+  /** Является ли колонка видимой. */
+  public visible: boolean;
 
   /** Забои. */
   private elements: CaratWellFaceModel[];
@@ -21,6 +23,7 @@ export class WellFaceColumn implements ICaratColumn {
     this.drawer = drawer;
     this.rect = rect;
     this.channel = channel;
+    this.visible = true;
     this.elements = [];
     this.styleDict = {};
   }
@@ -28,6 +31,7 @@ export class WellFaceColumn implements ICaratColumn {
   public copy(): ICaratColumn {
     const copy = new WellFaceColumn({...this.rect}, this.drawer, this.channel);
     copy.styleDict = this.styleDict;
+    copy.visible = this.visible;
     return copy;
   }
 
