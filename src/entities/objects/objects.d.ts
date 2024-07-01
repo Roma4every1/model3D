@@ -44,6 +44,8 @@ interface IPlaceManager extends ActiveObjectManager<PlaceModel> {
 interface PlaceModel {
   /** Идентификатор месторождения. */
   id: PlaceID;
+  /** Строковый код месторождения. */
+  code: string;
   /** Название месторождения. */
   name: string;
 }

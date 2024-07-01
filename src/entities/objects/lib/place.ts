@@ -47,7 +47,8 @@ export class PlaceManager implements IPlaceManager {
     if (!value || !this.info) return null;
     const id = Number(value[this.info.id.columnName]?.value);
     if (isNaN(id)) return null;
+    const code = value[this.info.code.columnName]?.value;
     const name = value[this.info.name.columnName]?.value;
-    return {id, name};
+    return {id, code, name};
   }
 }

@@ -28,18 +28,8 @@ export function setProfileLoading(id: FormID, loading: Partial<CaratLoading>): v
 }
 
 /** Обновляет данные профиля. */
-export async function setProfileData(id: FormID, trace: TraceModel, channels: ChannelDict): Promise<void> {
-  const { loader, stage } = useProfileStore.getState()[id];
-
-  loader.setLoading = (loading: Partial<ProfileLoading>) => {
-    if (loading.status) loading.status = 'profile.loading.' + loading.status;
-    setProfileLoading(id, loading);
-  };
-
-  const flag = ++loader.flag;
-  await loader.loadProfileData(id, trace, channels);
-  if (flag !== loader.flag) return;
-
-  stage.setData(loader.cache);
-  loader.setLoading({percentage: 100});
+export function setProfileStrata(id: FormID, strata: string[]): void {
+  const state = useProfileStore.getState()[id];
+  state.loader.activeStrata = strata;
+  useProfileStore.setState({[id]: {...state}})
 }

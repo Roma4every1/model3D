@@ -1,13 +1,6 @@
-/* --- STATE --- */
+type ProfileStates = Record<ClientID, ProfileState>;
 
-type ProfileStates = Record<FormID, ProfileState>;
-
-/** Состояние профиля.
- * + `canvas: HTMLCanvasElement`
- * + stage: IProfileStage;
- * + loader: IProfileLoader;
- * + loading: ProfileLoading;
- * */
+/** Состояние профиля. */
 interface ProfileState {
   /** Канвас профиля. */
   canvas: HTMLCanvasElement;
@@ -21,15 +14,7 @@ interface ProfileState {
   observer: ResizeObserver;
 }
 
-/* --- --- */
-
-/* --- LOADER --- */
-
-/** Состояние загрузки данных профиля.
- * + `percentage: number`
- * + `status: string`
- * + `statusOptions?`: {@link I18nOptions}
- * */
+/** Состояние загрузки данных профиля. */
 interface ProfileLoading {
   /** Процент загрузки. */
   percentage: number;
@@ -39,254 +24,92 @@ interface ProfileLoading {
   statusOptions?: I18nOptions;
 }
 
-/** Загрузчик данных профиля. */
-interface IProfileLoader {
-  flag: number;
-  cache: ProfileDataCache;
-
-  setLoading: (l: Partial<ProfileLoading>) => void;
-  loadProfileData(formID: FormID, trace: TraceModel, channels: ChannelDict);
-}
-
-interface TopBaseMapsDataRaw {
-  plastCode: number;
-  mapType: string;
-  containerData: MapField;
-}
-
-/** Строка канала инлкинометрии WellIncl. */
-interface ProfileInclMark {
-  NWELL_ID: number;
-  ABSMARK: number;
-  AZIMUTH: number;
-  DEPTH: number;
-  DIRANGLE: number;
-  ELONGATION: number;
-  INCL: number;
-  SHIFT: number;
-  SHIFTX: number;
-  SHIFTY: number;
-}
-
-/** Строка канала литологии PlInfo. */
-interface ProfileLitPiece {
-  NWELL_ID: number;
-  PL_ID: number;
-  PL_NAME: string;
-  KROW: number;
-  PODOSH: number;
-  KROW_ABS: number;
-  PODOSH_ABS: number;
-  LIT_ID: number;
-  LIT_NAME: string,
-  MVODA: number;
-  MNEFT: number;
-  MGAS: number;
-  POR: number;
-  PERM: number;
-  SHAL: number;
-  TYPE_CODE: number;
-  TYPE_NAME: string;
-  SAT_ID: number;
-  SAT_NAME: string;
-  LITSAT: number;
-  LITSAT_NAME: string;
-}
-
-/** Кэш данных профиля. */
-interface ProfileDataCache {
-  plastsData: ProfilePlastMap;
-}
-
-/** Словарь пластов, содержит классы, выполняющие посмотрение профиля. */
-type ProfilePlastMap = Map<number, IProfilePlast>;
-
-/* --- --- */
-
-/* --- SCENE --- */
-
 /** Сцена профиля. */
 interface IProfileStage {
-  handleMouseMove(point: Point, bx: number, by: number): void;
-  handleMouseWheel(point: Point, direction: 1 | -1, shiftKey: boolean): void
+  readonly scroller: IMapScroller;
+  handleMouseDown(event: MouseEvent): void;
+  handleMouseMove(event: MouseEvent): void;
+  handleMouseWheel(event: WheelEvent): void;
 
   /** Устанваливает канвас сцены. */
   setCanvas(canvas: HTMLCanvasElement): void;
   /** Обновляет вид в соответствии с текущими размерами холста. */
   resize(): void;
   /** Устанавливает данные сцены профиля. */
-  setData(cache: ProfileDataCache): void;
+  setData(mapData: MapData): void;
+  /** Возвращает данные профиля. */
+  getMapData(): MapData;
   /** Отрисовывает всю сцену профиля. */
   render(): void;
 }
 
-/* --- --- */
+/* --- Loader --- */
 
-/* --- DRAWER --- */
+/** Загрузчик данных профиля. */
+interface IProfileLoader {
+  flag: number;
+  cache: ProfileDataCache;
+  activeStrata: string[];
 
-/** Отрисовщик профиля. */
-interface IProfileDrawer {
-  setYAxisSettings(settings: any);
-  setXAxisSettings(settings: any);
-  setContext(context: CanvasRenderingContext2D);
-  render(plastDataMap: ProfilePlastDataMap, inclData: ProfileInclDataMap)
+  setLoading: (l: Partial<CaratLoading>) => void;
+  loadProfileData(objects: GMMOJobObjectParameters);
+  loadPlData(objects: GMMOJobObjectParameters);
 }
 
-/** Порт просмотра. */
-interface ProfileViewport {
-  /** Координата начала вьюпорта по X (в пикселях). */
-  startX: number;
-  /** Координата начала вьюпорта по Y (в пикселях). */
-  startY: number;
-
-  /** Координата начала вьюпорта по X (в реальных координатах). */
-  currentX: number;
-  /** Координата начала вьюпорта по Y (в реальных координатах). */
-  currentY: number;
-  /** Координата конца вьюпорта по Y (в реальных координатах). */
-  currentMaxX: number;
-  /** Координата конца вьюпорта по Y (в реальных координатах). */
-  currentMaxY: number;
-
-  /** Ширина области просмотра (в пикселях). */
-  width: number;
-  /** Высота области просмотра (в пикселях). */
-  height: number;
-  /** Ширина области просмотра (в реальных координатах). */
-  realWidth: number;
-  /** Высота области просмотра (в реальных координатах). */
-  realHeight: number;
-
-  /** Минимально возможная координата по X (в реальных координатах). */
-  minX: number;
-  /** Максимально возможная координата по X (в реальных координатах). */
-  maxX: number;
-  /** Минимально возможная координата по Y (в реальных координатах). */
-  minY: number;
-  /** Максимально возможная координата по Y (в реальных координатах). */
-  maxY: number;
+/** Кэш данных профиля. */
+interface ProfileDataCache {
+  /** Данные контейнера профиля. */
+  profileData: MapData;
+  /** Список всех доступных пластов. */
+  plasts: GMMOPlJobDataItem[];
 }
 
-/** Настройки оси X. */
-interface ProfileXAxisSettings {
-  xMin: number;
-  xMax: number;
-  xDelta: number;
+interface GMMOJobParams {
+  objectCode: string;
+  organizationCode: string;
+  plastCode: string;
+  mapCode: string;
 }
 
-/** Настройки оси Y. */
-interface ProfileYAxisSettings {
-  yMin: number;
-  yMax: number;
-  yDelta: number;
+interface GMMOJobObjectParameters {
+  trace: TraceModel;
+  stratum: StratumModel;
+  place: PlaceModel;
 }
 
-/** Конфиг отрисовщика профиля. */
-interface ProfileDrawerConfig {
-  /** Настройки осей. */
-  axis: {
-    /** Базовый размер пометки. */
-    markSize: number,
-  },
+/* --- GMMO API --- */
+
+type GMMOJobData = GMMOPlastsJobDataResult | GMMOProfileDataResult;
+
+interface GMMOPlJobDataItem {
+  name: string;
+  code: string;
+  selected: string;
 }
 
-/* --- --- */
-
-/* --- BUILDING PROFILE --- */
-
-/** Класс, содержащий данные о трассе профиля. */
-interface IProfileTrace {
-  /** Узлы трассы. */
-  nodes: IProfileWell[];
-  /** Скважины трассы (в том числе дополнительные для нахождения литологии на слоях). */
-  wells: IProfileWell[];
-  /** Расстояние вдоль трассы. */
-  distance: number;
-  /** Линии трассы между узлами. */
-  lines: TraceLineData[];
-  /** Промежуточные точки трассы профиля. */
-  points: TracePoint[];
+interface GMMOPlastsJobDataResult {
+  operationid: string;
+  plast?: GMMOPlJobDataItem[];
 }
 
-/** Линия трассы между узлами. */
-interface TraceLineData {
-  /** Начальный узел. */
-  startNode: IProfileWell;
-  /** Конечный узел. */
-  endNode: IProfileWell;
-  /** Точки линии. */
-  points: TracePoint[];
-  /** Расстояние от последней точки линии до конечного узла. */
-  remainder: number;
-  /** Расстояние вдоль линии. */
-  distance: number;
+interface GMMOProfileDataResult {
+  mi: GMMOMiData;
+  profileInnerContainer: GMMOProfileInnerContainerData;
 }
 
-/** Промежуточная точка трассы профиля. */
-interface TracePoint extends Point {
-  /** Расстояние вдоль трассы. */
-  distance: number;
-  /** Ближайщая к точке скважина. */
-  nearestWell?: IProfileWell;
+interface GMMOProfileInnerContainerData {
+  layers:Record<string, GMMORawLayerData>;
 }
 
-/** Класс, содержащий данные о пласте профиля. */
-interface IProfilePlast {
-  borderLine: ProfileBorderLineData;
-  maxThickness: number;
-  maxY: number;
-  minY: number;
-
-  layers: IProfileLayer[];
+interface GMMOMiData {
+  layers: Record<string, MapLayerRaw>;
 }
 
-/** Класс, содержащий данные слое пласта профиля. */
-interface IProfileLayer {
-  borderLine: ProfileBorderLineData;
-  topBaseY: number;
+interface GMMORawLayerData {
+  group: string;
+  highscale: string | number;
+  lowscale: string | number;
+  name: string;
+  uid: string;
+  elements: MapElement[];
 }
-
-/** Класс, содержащий данные о скважине профиля. */
-interface IProfileWell {
-  id: number;
-  x: number;
-  y: number;
-  /** Класс с данными инклинометрии скважины. */
-  inclinometry?: IProfileIncl;
-  /** Данные литологии скважины. */
-  lithology?: ProfileLitPiece[];
-}
-
-/** Класс для управления инклинометрией профиля. */
-interface IProfileIncl {
-  /** Данные инклинометрии (скважина => отметки инклинометрии). */
-  data: Map<number, ProfileInclMark[]>;
-  /** Возвращает значение глубины для указанной абсолютной отметки. */
-  getDepth(wellId: number, absMark: number): number;
-}
-
-/** Интервльная линия профиля. */
-type ProfileBorderLineData = ProfileLinePoint[];
-
-/** Точка интервльной линий (двух ограничивающих линий) профиля. */
-interface ProfileLinePoint {
-  x: number;
-  y: number;
-  /** Расстояние вдоль трассы. */
-  distance: number;
-  /** Абсолютная отметка верхней границы интервала. */
-  topAbsMark: number;
-  /** Абсолютная отметка нижней границы интервала. */
-  baseAbsMark: number;
-  /** Ближайшая скважина. */
-  well?: IProfileWell;
-  /** Ближайший кусок литологии. */
-  nearestLitPiece?: ProfileLitPiece;
-}
-
-/** Координаты скважины. */
-interface WellPoint extends Point {
-  WELL_ID: number;
-}
-
-/* --- --- */

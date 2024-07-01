@@ -1,8 +1,9 @@
 /** Критерий канала с месторождениями. */
 export const placeChannelCriterion: ChannelCriterion<keyof PlaceModel> = {
   properties: {
-    id: {name: 'LOOKUPCODE'},    // number
-    name: {name: 'LOOKUPVALUE'}, // string
+    id: {name: 'LOOKUPCODE'},                 // number
+    code: {name: 'OBJNAME', required: false}, // string
+    name: {name: 'LOOKUPVALUE'},              // string
   },
 };
 

@@ -1,19 +1,12 @@
-import { ProfileLoader } from '../lib/loader';
-import { ProfileStage } from './stage';
-import { drawerConfig } from '../lib/constants';
+import { ProfileStage } from './stage-gmmo';
+import { ProfileLoader } from '../lib/loader-gmmo';
 
 
 /** Создаёт состояние профиля. */
 export function settingsToProfileState(): ProfileState {
-  const stage = new ProfileStage(drawerConfig);
+  const stage = new ProfileStage();
   const loader = new ProfileLoader();
   const observer = new ResizeObserver(() => { stage.resize(); stage.render(); });
-
-  return {
-    canvas: undefined,
-    observer,
-    stage,
-    loader,
-    loading: {percentage: 0, status: null},
-  };
+  const loading: ProfileLoading = {percentage: 0, status: null};
+  return {observer, stage, loader, loading, canvas: undefined};
 }

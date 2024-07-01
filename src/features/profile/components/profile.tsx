@@ -1,67 +1,91 @@
-import { MouseEvent, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
-import { LoadingStatus, TextInfo } from 'shared/ui';
-import { useCurrentTrace } from 'entities/objects';
-import { useChannelDict } from 'entities/channel';
+import type { MouseEvent, WheelEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useCurrentTrace, useCurrentStratum, useCurrentPlace } from 'entities/objects';
+import { useProfileState } from '../store/profile.store';
+import { setProfileCanvas } from '../store/profile.actions';
+import { setProfileData, setProfilePlastsData } from '../store/profile.thunks';
 
 import './profile.scss';
-import { useProfileState } from '../store/profile.store';
-import { setProfileCanvas, setProfileData } from '../store/profile.actions';
+import { LoadingStatus, TextInfo } from 'shared/ui';
 
 
-export const Profile = ({id, channels}: SessionClient) => {
+export const Profile = ({id}: Pick<SessionClient, 'id'>) => {
+  const { canvas, loader, stage, loading } = useProfileState(id);
+  const currentPlace = useCurrentPlace();
+  const currentTrace = useCurrentTrace();
+  const currentStratum = useCurrentStratum();
+
   const isOnMoveRef = useRef<boolean>(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const { canvas, stage, loading } = useProfileState(id);
-  const currentTrace = useCurrentTrace();
-  const channelData = useChannelDict(channels.map(c => c.name));
-
+  // загрузка данных доступных пластов
   useEffect(() => {
-    setProfileData(id, currentTrace, channelData).then();
-  }, [channelData, id, currentTrace]);
+    const objects = {trace: currentTrace, place: currentPlace, stratum: currentStratum};
+    setProfilePlastsData(id, objects).then();
+  }, [currentTrace, currentPlace, currentStratum, id]);
+
+  // загрузка данных профиля
+  useEffect(() => {
+    if (!loader?.activeStrata?.length) return;
+    const objects = {trace: currentTrace, place: currentPlace, stratum: currentStratum};
+    setProfileData(id, objects).then();
+  }, [id, loader?.activeStrata, currentTrace, currentPlace, currentStratum]);
 
   // обновление ссылки на холст
   useLayoutEffect(() => {
-    if (loading.percentage < 100) return;
+    if (loading?.percentage < 100) return;
     if (canvasRef.current === canvas) return;
-
+    if (!canvasRef.current) return;
     setProfileCanvas(id, canvasRef.current);
-    stage.resize();
-    stage.render();
-  }, [canvas, id, stage, loading.percentage]);
+  }, [canvas, id, stage, loading?.percentage]);
 
-  const onWheel = useCallback((e: WheelEvent) => {
-    e.preventDefault();
-    const direction = e.deltaY > 0 ? 1 : -1;
-    const { offsetX: x, offsetY: y } = e;
-    stage.handleMouseWheel({x, y}, direction, e.shiftKey);
-  }, [stage]);
-
-  // через ReactElement.onWheel нельзя из-за passive: true
   useEffect(() => {
-    canvas?.addEventListener('wheel', onWheel, {passive: false});
-    return () => canvas?.removeEventListener('wheel', onWheel);
-  }, [canvas, onWheel]);
+    if (loading?.percentage < 100) return;
+    if (!loader?.cache?.profileData) return;
+    stage.setData(loader.cache.profileData);
+  }, [stage, loading?.percentage, loader?.cache?.profileData]);
 
-  const onMouseDown = () => {
+  /* --- Events --- */
+
+  const onMouseDown = ({nativeEvent}: MouseEvent) => {
+    if (nativeEvent.button !== 0) return;
     isOnMoveRef.current = true;
+    stage.handleMouseDown(nativeEvent);
   };
 
   const onMouseUp = () => {
     isOnMoveRef.current = false;
+    stage.scroller.mouseUp();
   };
 
-  const onMouseMove = (e: MouseEvent) => {
-    if (!isOnMoveRef.current) return;
-    const { offsetX: x, offsetY: y } = e.nativeEvent;
-    stage.handleMouseMove({x, y}, e.nativeEvent.movementX, e.nativeEvent.movementY);
+  const onMouseMove = ({nativeEvent}: MouseEvent) => {
+    stage.handleMouseMove(nativeEvent);
+  };
+  const onMouseWheel = ({nativeEvent}: WheelEvent) => {
+    if (isOnMoveRef.current) return;
+    stage.handleMouseWheel(nativeEvent);
+  };
+  const onMouseLeave = () => {
+    isOnMoveRef.current = false;
+    stage.scroller.mouseUp();
   };
 
-  if (!channelData || !currentTrace) {
+  /* ---  --- */
+
+  if (!currentPlace || !currentStratum) {
     return <TextInfo text={'profile.no-data'}/>;
+  }
+  if (!currentTrace) {
+    return <TextInfo text={'profile.no-trace-data'}/>;
+  }
+  if (!loader?.activeStrata?.length) {
+    return <TextInfo text={'profile.no-plast-data'}/>;
   }
   if (currentTrace && currentTrace.nodes.length === 0) {
     return <TextInfo text={'profile.no-nodes'}/>;
+  }
+  if (loading.percentage >= 100 && !loader?.cache?.plasts) {
+    return <TextInfo text={'profile.timeout'}/>;
   }
   if (loading.percentage < 100) {
     return <LoadingStatus {...loading}/>;
@@ -71,7 +95,8 @@ export const Profile = ({id, channels}: SessionClient) => {
     <div className={'profile-container'}>
       <canvas
         className={'profile-canvas'} ref={canvasRef} tabIndex={0}
-        onMouseMove={onMouseMove} onMouseDown={onMouseDown} onMouseUp={onMouseUp}
+        onMouseDown={onMouseDown} onMouseUp={onMouseUp} onMouseMove={onMouseMove}
+        onWheel={onMouseWheel} onMouseLeave={onMouseLeave}
       />
     </div>
   );
