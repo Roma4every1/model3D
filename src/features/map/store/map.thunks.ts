@@ -1,6 +1,5 @@
 import { createElement } from 'react';
 import { showNotification } from 'entities/notification';
-import { fetchingStart, fetchingEnd } from 'entities/fetch-state';
 import { setMapField, setMapLoading, } from './map.actions';
 import { closeWindow, showWindow } from 'entities/window';
 
@@ -10,7 +9,7 @@ import { propertyWindowConfig } from '../lib/constants';
 import { WindowProps } from '@progress/kendo-react-dialogs';
 import { AttrTableWindow } from '../components/edit-panel/editing/attr-table';
 import { PropertiesWindow } from '../components/edit-panel/properties-window/properties';
-import { useMapStore, useMultiMapStore } from './map.store';
+import { useMapStore } from './map.store';
 
 
 /** Показать окно свойств активного элемента. */
@@ -74,37 +73,6 @@ export async function fetchMapData(id: FormID): Promise<void> {
     stage.setData(mapData);
     setMapLoading(id, {percentage: 100, status: null});
   }
-}
-
-export async function fetchMultiMapData(id: ClientID): Promise<void> {
-  const multiMapState = useMultiMapStore.getState()[id];
-  if (!multiMapState) return;
-  fetchingStart(id + '_map');
-
-  const updateStages = () => {
-    for (const config of multiMapState.configs) {
-      config.stage.scroller.list = multiMapState.configs
-        .filter(c => c.id !== config.id)
-        .map(c => c.stage.getCanvas())
-        .filter(Boolean);
-    }
-  };
-
-  for (const config of multiMapState.configs) {
-    const loader = config.loader;
-    loader.onProgressChange = (l: MapLoading) => config.setProgress(l.percentage);
-    const mapData = await loader.loadMapData(config.id, 'Common');
-
-    if (typeof mapData === 'string') {
-      config.setProgress(-1);
-    } else if (mapData) {
-      config.setProgress(100);
-      config.stage.setData(mapData);
-      updateStages();
-    }
-  }
-  fetchingEnd(id + '_map');
-  setTimeout(updateStages, 100);
 }
 
 /** Сохранение отредактированной карты. */

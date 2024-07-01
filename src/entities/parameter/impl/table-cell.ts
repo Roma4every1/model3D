@@ -11,12 +11,13 @@ export function cellToParameterValue(row: ChannelRow, channel: Channel): TypedCe
 
 export class TableCellParameter implements Parameter<'tableCell'> {
   public readonly id: ParameterID;
+  public readonly name: ParameterName;
   public readonly type = 'tableCell';
-  public onDeepChange: ParameterOnDeepChange;
   private value: TypedCell;
 
-  constructor(id: ParameterID, s: string | null) {
+  constructor(id: ParameterID, name: ParameterName, s: string | null) {
     this.id = id;
+    this.name = name;
     this.setValueString(s);
   }
 
@@ -30,10 +31,8 @@ export class TableCellParameter implements Parameter<'tableCell'> {
     return this.value;
   }
 
-  public setValue(value: TypedCell | null, deep?: boolean): void | Promise<void> {
-    const oldValue = this.value;
+  public setValue(value: TypedCell | null): void {
     this.value = value;
-    if (deep && this.onDeepChange) return this.onDeepChange(this, oldValue);
   }
 
   public setValueString(s?: string | null): void {

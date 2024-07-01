@@ -8,8 +8,8 @@ import { CaratStage } from '../../rendering/stage';
 import { CurveSelectionWindow } from '../windows/curve-selection';
 import { ZoneEditWindow } from '../windows/zone-editor';
 
-import curvesIcon from 'assets/images/carat/curves.svg';
-import curveZonesIcon from 'assets/images/carat/curve-zones.svg';
+import curvesIcon from 'assets/carat/curves.svg';
+import curveZonesIcon from 'assets/carat/curve-zones.svg';
 
 
 interface CaratCurvesPanelProps {

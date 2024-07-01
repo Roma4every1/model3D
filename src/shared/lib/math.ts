@@ -46,6 +46,72 @@ export function getPragmaticMax(n: number): number {
   return (n <= 5 ? 5 : 10) * e;
 }
 
+/* --- Set Theory --- */
+
+/** Добавляет во множество элементы. */
+export function addToSet<T>(set: Set<T>, elements: Iterable<T>): void {
+  for (const element of elements) set.add(element);
+}
+
+/**
+ * Возвращает объединение двух множеств.
+ * @example
+ * const a = new Set([1, 2]);
+ * const b = new Set([2, 3]);
+ * const c = setUnion(a, b); // Set {1, 2, 3}
+ */
+export function setUnion<T>(a: Set<T>, b: Set<T>): Set<T> {
+  return new Set([...a, ...b]);
+}
+
+/**
+ * Пересекаются ли два множества.
+ * @example
+ * const a = new Set([1, 2, 3]);
+ * const b = new Set([3, 4, 5]);
+ * hasIntersection(a, b); // true
+ */
+export function hasIntersection<T>(a: Set<T>, b: Iterable<T>): boolean {
+  if (a.size === 0) return false;
+  for (const element of b) {
+    if (a.has(element)) return true;
+  }
+  return false;
+}
+
+/**
+ * Возвращает пересечение двух множеств.
+ * @example
+ * const a = new Set([1, 2, 3]);
+ * const b = new Set([2, 3, 4]);
+ * setIntersection(a, b); // Set { 2, 3 }
+ */
+export function setIntersection<T>(a: Set<T>, b: Iterable<T>): Set<T> {
+  const intersection = new Set<T>();
+  for (const element of b) {
+    if (a.has(element)) intersection.add(element);
+  }
+  return intersection;
+}
+
+/** Возвращает множество элементов, которые входят в `a`, но НЕ входят в `b`. */
+export function leftAntiJoin<T>(a: Set<T>, b: Iterable<T>): Set<T> {
+  const result = new Set(a);
+  for (const element of b) {
+    if (result.has(element)) result.delete(element);
+  }
+  return result;
+}
+
+/**
+ * Декартово произведение.
+ * @example
+ * cartesianProduct([1, 2], [3, 4]) => [[1, 3], [1, 4], [2, 3], [2, 4]]
+ */
+export function cartesianProduct(...values: any[][]): any[][] {
+  return values.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
+}
+
 /* --- Geometry --- */
 
 /** Находит расстояние между двумя точками. */

@@ -1,68 +1,42 @@
 import { Action, Actions, Layout, TabNode } from 'flexlayout-react';
-import { useEffect, useMemo } from 'react';
-import { compareArrays } from 'shared/lib';
+import { useEffect } from 'react';
 import { i18nMapper } from 'shared/locales';
-import { TextInfo } from 'shared/ui';
-import { useChannel } from 'entities/channel';
-import { useFetchState, resetFetchState } from 'entities/fetch-state';
-import { setActiveForm, setPresentationChildren } from 'widgets/presentation';
+import { useChannelData } from 'entities/channel';
+import { setClientActiveChild } from 'entities/client';
+import { useMultiMapState } from '../store/multi-map.store';
+import { updateMultiMap } from '../store/multi-map.thunks';
 
-import { toMultiMapRecords } from '../lib/rows';
-import { getMultiMapLayout } from '../lib/layout';
+import { TextInfo } from 'shared/ui';
 import { MultiMapItem } from './multi-map-item';
 
-import { addMultiMap } from 'features/map/store/map.actions';
-import { fetchMultiMapData } from 'features/map/store/map.thunks';
-import { useMultiMapState } from 'features/map/store/map.store';
 
-
-type MultiMapProps = Pick<PresentationState, 'id' | 'channels' | 'openedChildren'>;
-
-
-export const MultiMap = ({id, channels, openedChildren}: MultiMapProps) => {
+export const MultiMap = ({id, channels}: Pick<PresentationState, 'id' | 'channels'>) => {
   const state = useMultiMapState(id);
-  const fetchState = useFetchState(id + '_map');
-
-  const { name: channelName, info } = channels[0];
-  const channel = useChannel(channelName);
-
-  const [model, children, configs] = useMemo(() => {
-    const records = toMultiMapRecords(channel?.data, info);
-    if (records.length === 0) return [null, [], []];
-    return getMultiMapLayout(records, id);
-  }, [channel, info, id]);
+  const channelData = useChannelData(channels[0].name);
 
   useEffect(() => {
-    if (compareArrays(state?.children ?? [], children)) return;
-    const newChildren: FormDataWM[] = children.map(id => ({id, type: 'map', displayName: ''}));
-    setPresentationChildren(id, newChildren);
-    addMultiMap(id, openedChildren[0], configs);
-    resetFetchState(id + '_map')
-  }, [children, configs, state?.children, fetchState, id]); // eslint-disable-line
+    updateMultiMap(id, channelData).then();
+  }, [channelData, id]);
 
-  useEffect(() => {
-    if (state && fetchState.needFetch()) fetchMultiMapData(id).then();
-  }, [state, fetchState, id]);
+  if (!state || state.children.length === 0) return <TextInfo text={'map.not-found'}/>;
+  const { layout, children } = state;
 
   const factory = (node: TabNode) => {
     const tabID = node.getId();
-    const config = state.configs.find(item => item.formID === tabID);
-    if (!config) return null;
-    return <MultiMapItem parent={id} config={config}/>;
+    const child = children.find(item => item.formID === tabID);
+    return child ? <MultiMapItem parent={id} config={child}/> : null;
   };
-
   const onAction = (action: Action) => {
     const { type, data } = action;
     if (type === Actions.SET_ACTIVE_TABSET) {
-      const tabset = model.getNodeById(data.tabsetNode);
+      const tabset = layout.getNodeById(data.tabsetNode);
       const newActiveID = tabset.getChildren()[0]?.getId();
-      if (newActiveID) setActiveForm(id, newActiveID);
+      if (newActiveID) setClientActiveChild(id, newActiveID);
     } else if (type === Actions.SELECT_TAB) {
-      setActiveForm(id, data.tabNode);
+      setClientActiveChild(id, data.tabNode);
     }
     return action;
   };
 
-  if (!children.length) return <TextInfo text={'map.not-found'}/>;
-  return <Layout model={model} factory={factory} onAction={onAction} i18nMapper={i18nMapper}/>;
+  return <Layout model={layout} factory={factory} onAction={onAction} i18nMapper={i18nMapper}/>;
 };

@@ -7,8 +7,11 @@ export const useChannelStore = createWithEqualityFn((): ChannelDict => ({}));
 
 /** Состояние канала. */
 export function useChannel(name: ChannelName): Channel {
-  const selector = (state: ChannelDict): Channel => state[name];
-  return useChannelStore(selector);
+  return useChannelStore(state => state[name]);
+}
+/** Данные канала. */
+export function useChannelData(name: ChannelName): ChannelData {
+  return useChannelStore(state => state[name]?.data);
 }
 
 /** Список каналов. */
@@ -16,7 +19,6 @@ export function useChannels(names: ChannelName[]): Channel[] {
   const selector = (state: ChannelDict): Channel[] => names.map(channel => state[channel]);
   return useChannelStore(selector, compareArrays);
 }
-
 /** Словарь каналов. */
 export function useChannelDict(names: Iterable<ChannelName>): ChannelDict {
   const selector = (state: ChannelDict) => {

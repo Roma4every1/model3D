@@ -1,24 +1,19 @@
 import { useTranslation } from 'react-i18next';
-import { useReportModels } from 'entities/report';
+import { useReports } from 'entities/report';
 import { ReportButton } from './report-button';
 import './presentation-reports.scss';
 
 
-export interface PresentationReportsProps {
-  id: ClientID;
-}
-
-
 /** Список доступных программ/отчётов презентации. */
-export const PresentationReports = ({id}: PresentationReportsProps) => {
-  const reports = useReportModels(id);
+export const PresentationReports = ({id}: {id: ClientID}) => {
+  const reports = useReports(id);
   if (!reports) return <div/>;
   if (reports.length === 0) return <NoReports/>;
 
-  const reportToButton = (report: ReportModel, i: number) => {
-    return <ReportButton key={i} id={id} report={report}/>;
+  const toButton = (report: ReportModel) => {
+    return <ReportButton key={report.orderIndex} report={report}/>;
   };
-  return <div className={'presentation-reports'}>{reports.map(reportToButton)}</div>;
+  return <div className={'presentation-reports'}>{reports.map(toButton)}</div>;
 };
 
 const NoReports = () => {

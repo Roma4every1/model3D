@@ -3,18 +3,17 @@ import { ParameterList, updateParamDeep, getParameterChannels } from 'entities/p
 
 
 interface ClientParameterListProps {
-  clientID: ClientID;
   list: Parameter[];
 }
 
 
 /** Список глобальных параметров или параметров презентации. */
-export const ClientParameterList = ({clientID, list}: ClientParameterListProps) => {
+export const ClientParameterList = ({list}: ClientParameterListProps) => {
   const channelNames = getParameterChannels(list);
   const channels = useChannelDict(channelNames);
 
   const onChange = (parameter: Parameter, newValue: any) => {
-    updateParamDeep(clientID, parameter.id, newValue).then();
+    updateParamDeep(parameter.id, newValue).then();
   };
   return <ParameterList list={list} channels={channels} onChange={onChange}/>;
 };

@@ -4,18 +4,13 @@ import { Checkbox } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
 import { ActiveOperationStatus } from './active-operation-status';
 import { useOperations, clearOperations } from 'entities/report';
-import { reportsAPI } from 'entities/report/lib/report.api';
-import reportDeleteIcon from 'assets/images/reports/report_delete.png';
+import { reportAPI } from 'entities/report/lib/report.api';
+import reportDeleteIcon from 'assets/reports/report-delete.png';
 import './active-operations.scss';
 
 
-export interface ActiveReportsProps {
-  activeID: FormID;
-}
-
-
 /** Список активных отчётов, готовых или в процессе. */
-export const ActiveOperations = ({activeID}: ActiveReportsProps) => {
+export const ActiveOperations = ({activeID}: {activeID: ClientID}) => {
   const { t } = useTranslation();
   const operations = useOperations();
   const [filterByPresentation, setFilterByPresentation] = useState(true);
@@ -23,7 +18,7 @@ export const ActiveOperations = ({activeID}: ActiveReportsProps) => {
   const deleteReports = () => {
     const presentationID = filterByPresentation ? activeID : null;
     const onClearEnd = () => clearOperations(presentationID);
-    reportsAPI.clearReports(presentationID).then(onClearEnd);
+    reportAPI.clearReports(presentationID).then(onClearEnd);
   };
 
   return (

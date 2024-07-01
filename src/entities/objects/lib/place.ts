@@ -1,4 +1,3 @@
-import type { ParameterUpdateEntries } from 'entities/parameter';
 import { RecordInfoCreator } from 'entities/channel';
 import { placeChannelCriterion } from './constants';
 
@@ -14,7 +13,7 @@ export class PlaceManager implements IPlaceManager {
   private readonly info: ChannelRecordInfo<keyof PlaceModel> | undefined;
 
   constructor (parameters: Parameter[], channels: ChannelDict) {
-    const parameter = parameters.find(p => p.id === 'currentMest');
+    const parameter = parameters.find(p => p.name === 'currentMest');
     if (!parameter || parameter.type !== 'tableRow') return;
     this.parameterID = parameter.id;
 
@@ -37,11 +36,9 @@ export class PlaceManager implements IPlaceManager {
     if (placeRow) this.model = this.createModel(placeRow);
   }
 
-  public onParameterUpdate(entries: ParameterUpdateEntries): boolean {
-    const entry = entries.find(e => e.id === this.parameterID);
-    if (!entry) return false;
+  public onParameterUpdate(value: ParameterValueMap['tableRow']): boolean {
     const oldModel = this.model;
-    this.model = this.createModel(entry.value);
+    this.model = this.createModel(value);
     return this.model !== oldModel;
   }
 

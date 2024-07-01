@@ -1,24 +1,28 @@
 import { channelAPI } from './channel.api';
-import { fillParamValues } from 'entities/parameter';
-import { createChannel } from './factory';
+import { findParameters } from 'entities/parameter';
 
 
 /** Наполняет каналы данными. */
-export function fillChannels(channelDict: ChannelDict, paramDict: ParamDict): Promise<void[]> {
-  const mapper = (channel) => fillChannel(channel, paramDict);
-  return Promise.all(Object.values(channelDict).map(mapper));
+export function fillChannels(channelDict: ChannelDict, storage: ParameterMap): Promise<void[]> {
+  const callback = (channel: Channel): Promise<void> => {
+    const parameters = findParameters(channel.config.parameters, storage);
+    return fillChannel(channel, parameters);
+  };
+  return Promise.all(Object.values(channelDict).map(callback));
 }
 
 /** Наполняет канал данными. */
-export async function fillChannel(channel: Channel, paramDict: ParamDict): Promise<void> {
-  const config = channel.config;
-  const paramValues = fillParamValues(config.parameters, paramDict, config.clients);
+export async function fillChannel(channel: Channel, parameters: Parameter[]): Promise<void> {
+  const { ok, data } = await channelAPI.getChannelData(channel.name, parameters, channel.query);
+  channel.actual = true;
 
-  const { ok, data } = await channelAPI.getChannelData(channel.name, paramValues, channel.query);
-  if (!ok) return;
-  channel.data = data;
+  if (ok) {
+    channel.data = data;
+  } else {
+    channel.data = null; return;
+  }
 
-  const { id: idInfo, value: valueInfo, parent: parentInfo } = config.lookupColumns;
+  const { id: idInfo, value: valueInfo, parent: parentInfo } = channel.config.lookupColumns;
   if (data) {
     idInfo.columnIndex = data.columns.findIndex(c => c.name === idInfo.columnName);
     valueInfo.columnIndex = data.columns.findIndex(c => c.name === valueInfo.columnName);
@@ -28,17 +32,4 @@ export async function fillChannel(channel: Channel, paramDict: ParamDict): Promi
     valueInfo.columnIndex = -1;
     parentInfo.columnIndex = -1;
   }
-}
-
-
-/** Создаёт новые каналы, не заполняя их данными. */
-export function createChannels(names: ChannelName[]): Promise<ChannelDict> {
-  return Promise.all(names.map(fetchChannel)).then(entries => Object.fromEntries(entries));
-}
-
-/** Создаёт объект нового канала; не заполняет данными. */
-async function fetchChannel(name: ChannelName): Promise<[ChannelName, Channel]> {
-  const res = await channelAPI.getChannelConfig(name);
-  if (!res.ok) return [name, null];
-  return [name, createChannel(name, res.data)];
 }

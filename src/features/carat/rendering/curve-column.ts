@@ -38,7 +38,7 @@ export class CaratCurveColumn implements ICaratColumn {
 
   public copy(): CaratCurveColumn {
     const copy = {...this, curveManager: this.curveManager.copy()};
-    copy.groups = [{rect: this.rect, elements: []}];
+    copy.groups = [{rect: this.groups[0].rect, elements: []}];
     copy.dividingLines = [];
     Object.setPrototypeOf(copy, CaratCurveColumn.prototype);
     return copy as CaratCurveColumn;

@@ -1,14 +1,21 @@
-.loading-status {
+.app-loading-status {
   width: 100vw;
   height: 100vh;
+  padding: 0 20%;
 
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-}
-.loading-status-text {
-  margin-top: 1rem;
-  font-size: 1.2rem;
-  font-style: italic;
+
+  h2 {
+    margin-bottom: 2rem;
+  }
+  p {
+    margin: 2rem 0 0;
+    font-size: 14px;
+  }
+  a {
+    font-size: 14px;
+  }
 }

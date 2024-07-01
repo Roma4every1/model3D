@@ -14,38 +14,57 @@ type SupportedFormType = 'dataSet' | 'carat' | 'chart' | 'map' | 'profile' | 'fi
 type ClientStates = Record<ClientID, SessionClient>;
 
 /** Клиент сессии. */
-interface SessionClient<S = any, L = any> {
+interface SessionClient<T extends ClientType = ClientType, S = any, L = any> {
   /** Уникальный идентификатор. */
-  id: ClientID;
+  readonly id: ClientID;
   /** Тип клиента. */
-  type: ClientType;
+  readonly type: T;
   /** Идентификатор родительского клиента. */
-  parent: ClientID;
-  /** Состояние дочерних клиентов. */
-  children?: ClientChildren;
-  /** Прикреплённые каналы к форме. */
+  readonly parent: ClientID;
+  /** ID параметров клиента. */
+  readonly parameters: ParameterID[];
+  /** Прикреплённые каналы. */
   channels: AttachedChannel[];
   /** Настройки, характерные для типа. */
   settings?: S;
   /** Модель разметки. */
   layout?: L;
+  /** Дочерние клиенты. */
+  children?: FormDataWM[];
+  /** Отображаемые дочерние клиенты. */
+  openedChildren?: FormID[];
+  /** Активный дочерний клиент. */
+  activeChildID?: FormID;
+  /** Типы дочерних клиентов. */
+  childrenTypes?: Set<ClientType>;
+  /** Названия каналов, необходимые для корректной работы. */
+  neededChannels?: ChannelName[];
+  /** Состояние загрузки. */
+  loading?: ClientLoadingState;
 }
 
-/* --- Children --- */
-
-/** Состояние дочерних клиентов сессии. */
-interface ClientChildren {
-  data: FormDataWM[];
-  opened: ClientID[];
-  active: ClientID;
-  types?: Set<ClientType>;
+/** Состояние загрузки презентации или формы. */
+interface ClientLoadingState {
+  /** Статус загрузки. */
+  status: ClientLoadingStatus;
+  /** Сообщение ошибки. */
+  error?: string;
 }
+
+/**
+ * Статус загрузки клиента сессии.
+ * + `init` — инициализация состояния
+ * + `data` — загрузка данных
+ * + `done` — загрузка успешно завершена
+ * + `error` — при загрузке произошла ошибка
+ */
+type ClientLoadingStatus = 'init' | 'data' | 'done' | 'error';
 
 /** Дочерние элементы клиента сессии.
  * + `children`: {@link FormDataWM}[]
  * + `openedChildren`: {@link ClientID}[]
  * + `activeChildren`: {@link ClientID}[]
- * */
+ */
 interface ClientChildrenDTO {
   /** Данные дочерних форм. */
   children: FormDataWM[];
@@ -55,12 +74,7 @@ interface ClientChildrenDTO {
   activeChildren: ClientID[];
 }
 
-/** Данные формы.
- * + `id`: {@link FormID}
- * + `type`: {@link ClientType}
- * + `displayName`: string
- * + `displayNameString: string`
- * */
+/** Данные формы. */
 interface FormDataWM {
   /** Идентификатор формы. */
   id: FormID;
@@ -93,18 +107,18 @@ interface AttachedChannelDTO {
  * + `state`: {@link SessionClient}
  * + `settings: S // зависит от типа`
  * + `objects`: {@link ObjectsState}
- * + `parameters`: {@link ParamDict}
+ * + `parameters`: {@link ParameterDict}
  * + `channels`: {@link ChannelDict}
- * */
+ */
 interface FormStatePayload<S = any> {
   /** Базовая информация о форме. */
-  state: SessionClient<S>;
+  state: SessionClient<ClientType, S>;
   /** Настройки формы. */
   settings: S;
   /** Состояние активных объектов. */
   objects: ObjectsState;
   /** Все существующие наборы параметров на момент создания. */
-  parameters: ParamDict;
+  parameters: ParameterDict;
   /** Все существующие каналы на момент создания. */
   channels: ChannelDict;
 }

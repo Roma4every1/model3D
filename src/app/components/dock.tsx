@@ -1,50 +1,55 @@
 import { useEffect } from 'react';
+import { Layout, TabNode } from 'flexlayout-react';
 import { i18nMapper } from 'shared/locales';
-import { Presentation } from 'widgets/presentation';
+import { useRootClient, useActivePresentation } from 'entities/client';
+import { useTraceEditing } from 'entities/objects';
 import { LeftPanel } from 'widgets/left-panel';
+import { Presentation } from 'widgets/presentation';
 import { ActiveOperations, RightTab } from 'widgets/right-panel';
 import { MainMenu, PresentationReports, TopTab } from 'widgets/top-panel';
+import { selectPresentation } from '../store/presentations';
+import { LayoutController } from '../lib/layout-controller';
 
-import { Layout, TabNode } from 'flexlayout-react';
-import { LayoutManager } from '../lib/layout';
-import { useRootStore } from '../store/root-form.store';
-import { usePresentation } from 'widgets/presentation';
-import { useTraceEditing } from 'entities/objects';
+
+interface DockProps {
+  location: string;
+  config: ClientConfig;
+}
 
 
 /** Главная форма. */
-export const Dock = ({config}: {config: ClientConfiguration}) => {
-  const rootState = useRootStore();
-  const presentation = usePresentation(rootState.activeChildID);
+export const Dock = ({location, config}: DockProps) => {
+  const rootState = useRootClient();
+  const presentation = useActivePresentation();
   const needRightTraceTab = useTraceEditing();
 
   const activeID = rootState.activeChildID;
   const leftLayout = rootState.layout.left;
-  const layoutManager: LayoutManager = rootState.layout.common;
-  const model = layoutManager.model;
+  const layoutController: LayoutController = rootState.layout.controller;
+  const model = layoutController.model;
 
   // обновление видимости вкладок в зависимости от активной презентации
   useEffect(() => {
-    layoutManager.updateTabVisibility(presentation);
-  }, [presentation, layoutManager]);
+    layoutController.updateTabVisibility(presentation);
+  }, [presentation, layoutController]);
 
   // обновление видимости вкладки редактирования трассы
   useEffect(() => {
-    layoutManager.updateTraceEditTabVisibility(needRightTraceTab);
-  }, [needRightTraceTab, layoutManager]);
+    layoutController.updateTraceEditTabVisibility(needRightTraceTab);
+  }, [needRightTraceTab, layoutController]);
 
   const factory = (node: TabNode) => {
     const id = node.getId();
-    if (id === 'left') return <LeftPanel rootState={rootState}/>;
+    if (id === 'left') return <LeftPanel rootState={rootState} selectPresentation={selectPresentation}/>;
 
-    if (id === 'menu') return <MainMenu leftLayout={leftLayout} config={config}/>;
+    if (id === 'menu') return <MainMenu location={location} leftLayout={leftLayout} config={config}/>;
     if (id === 'reports') return <PresentationReports id={activeID}/>;
     if (id.startsWith('top')) return <TopTab tabID={id} presentation={presentation}/>;
 
     if (id === 'right-dock') return <ActiveOperations activeID={activeID}/>;
     if (id.startsWith('right')) return <RightTab tabID={id} presentation={presentation}/>;
 
-    return <Presentation id={activeID} state={presentation}/>;
+    return <Presentation state={presentation}/>;
   };
 
   return <Layout model={model} factory={factory} i18nMapper={i18nMapper}/>;

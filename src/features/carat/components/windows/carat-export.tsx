@@ -9,7 +9,7 @@ import { MenuSection, BigButton, ButtonSwitch } from 'shared/ui';
 import { CaratStage } from '../../rendering/stage';
 
 import './carat-export.scss';
-import exportIcon from 'assets/images/carat/carat-export-png.svg';
+import exportIcon from 'assets/carat/carat-export-png.svg';
 
 
 interface CaratExportPanelProps {

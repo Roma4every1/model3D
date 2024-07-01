@@ -12,11 +12,11 @@ import { CaratStage } from '../../rendering/stage';
 import { CaratDrawer } from '../../rendering/drawer';
 import { CaratIntervalModel } from '../../lib/types';
 
-import scaleIcon from 'assets/images/carat/scale.svg';
-import scaleUpIcon from 'assets/images/carat/scale-up.svg';
-import scaleDownIcon from 'assets/images/carat/scale-down.svg';
-import goToStratumIcon from 'assets/images/carat/go-to-stratum.svg';
-import alignByStratumIcon from 'assets/images/carat/align-by-stratum.svg';
+import scaleIcon from 'assets/carat/scale.svg';
+import scaleUpIcon from 'assets/carat/scale-up.svg';
+import scaleDownIcon from 'assets/carat/scale-down.svg';
+import goToStratumIcon from 'assets/carat/go-to-stratum.svg';
+import alignByStratumIcon from 'assets/carat/align-by-stratum.svg';
 
 
 interface CaratScalePanelProps {

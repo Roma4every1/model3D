@@ -1,6 +1,5 @@
-import { TableFormSettings, DataSetColumnSettings, DataSetColumnDict, RowStyleRule } from './types';
+import type { TableFormSettings, DataSetColumnSettings, DataSetColumnDict, RowStyleRule } from './types';
 import { RecordHandler } from './record-handler';
-import { getColumnWidth } from './common';
 import { createColumnTree, getFlatten } from './column-tree';
 
 
@@ -82,23 +81,6 @@ export function settingsToTableState(payload: FormStatePayload<TableFormSettings
   const columnTree = createColumnTree(properties, settingsDict);
   const columnTreeFlatten = getFlatten(columnTree);
 
-  let activeRecordParameter: ActiveRecordParameter = null;
-  const activeRowParameter = channel?.config.activeRowParameter;
-
-  if (activeRowParameter) {
-    for (const clientID in payload.parameters) {
-      const paramList = payload.parameters[clientID];
-      const parameter = paramList.find(p => p.id === activeRowParameter);
-
-      if (parameter) {
-        if (parameter.type === 'tableRow') {
-          activeRecordParameter = {id: activeRowParameter, clientID};
-        }
-        break;
-      }
-    }
-  }
-
   const rowStyleSelector = columns?.rowStyleRules;
   let rowStyleRules: RowStyleRule[] | null = null;
 
@@ -117,11 +99,13 @@ export function settingsToTableState(payload: FormStatePayload<TableFormSettings
       rowStyleRules.push(rule);
     }
   }
+  const recordHandler = new RecordHandler(columnsState, rowStyleRules);
+  recordHandler.checkAutoWidthColumns();
 
   return {
-    recordHandler: new RecordHandler(columnsState, rowStyleRules),
-    queryID: null, editable: false, activeRecordParameter,
-    headerSetterRules: settings.headerSetterRules ?? [],
+    recordHandler, queryID: null, editable: false,
+    activeRecordParameter: channel?.config.activeRowParameter,
+    headerSetterRules: getHeaderSetterRules(settings.headerSetterRules, payload),
     channelName: attachedChannel?.name,
     toolbarSettings: toolbar,
     columnsSettings, columns: columnsState, columnTree, columnTreeFlatten,
@@ -132,15 +116,27 @@ export function settingsToTableState(payload: FormStatePayload<TableFormSettings
 }
 
 function getColumn(property: ChannelProperty, settings: DataSetColumnSettings): TableColumnState {
-  const title = settings?.displayName ?? property.displayName ?? property.name;
-  let width = settings?.width, autoWidth = false;
-  if (!width || width === 1) { width = getColumnWidth(title); autoWidth = true; }
-
   return {
     field: property.name, colIndex: -1,
-    title, width, autoWidth,
+    title: settings?.displayName ?? property.displayName ?? property.name,
+    width: settings?.width, autoWidth: false,
     lookupChannel: property.lookupChannels[0],
     detailChannel: property.detailChannel,
     readOnly: settings?.readOnly === true, locked: false,
   };
+}
+
+function getHeaderSetterRules(rules: HeaderSetterRule[], payload: FormStatePayload): HeaderSetterRule[] {
+  const result: HeaderSetterRule[] = [];
+  if (!rules) return result;
+
+  const parent = payload.state.parent;
+  const clients: ParameterDict = payload.parameters;
+
+  for (const rule of rules) {
+    const cb = (p: Parameter): boolean => p.name === rule.parameter;
+    const id = (clients[parent].find(cb) ?? clients.root.find(cb))?.id;
+    if (id) { rule.id = id; result.push(rule); }
+  }
+  return result;
 }

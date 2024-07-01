@@ -6,6 +6,7 @@ import { TreeSelect } from 'antd';
 export const IntegerArrayTreeEditor = ({parameter, update, channel}: EditorProps<'integerArray'>) => {
   const valueAll = Number.MIN_SAFE_INTEGER;
   const parameterValue = parameter.getValue();
+  const { disabled, nullDisplayValue } = parameter.editor;
   const [value, setValue] = useState<number[]>([]);
 
   const data = useMemo(() => {
@@ -37,7 +38,7 @@ export const IntegerArrayTreeEditor = ({parameter, update, channel}: EditorProps
     <TreeSelect
       className={'integer-array-tree-editor'} style={{width: '100%'}}
       treeData={treeData} value={value} onChange={onChange}
-      placeholder={parameter.editor.nullDisplayValue}
+      placeholder={nullDisplayValue} disabled={disabled}
       showSearch={false} showCheckedStrategy={'SHOW_PARENT'}
       treeCheckable={true} treeDefaultExpandAll={true}
     />

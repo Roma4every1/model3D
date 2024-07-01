@@ -24,7 +24,7 @@ export type TableRowListEditorProps = EditorProps<'tableRow' | 'tableCell' | 'st
 export const TableRowListEditor = ({parameter, update, channel}: TableRowListEditorProps) => {
   const parameterType = parameter.type;
   const parameterValue = parameter.getValue();
-  const { showNullValue, canBeNull, nullDisplayValue } = parameter.editor;
+  const { showNullValue, nullDisplayValue, disabled, loading } = parameter.editor;
 
   const nullValue = showNullValue ? -1 : undefined;
   const [value, setValue] = useState(nullValue);
@@ -58,9 +58,9 @@ export const TableRowListEditor = ({parameter, update, channel}: TableRowListEdi
   return (
     <Select
       options={options} value={value} onSelect={onSelect}
-      allowClear={canBeNull} onClear={onClear}
+      allowClear={parameter.nullable} onClear={onClear}
       showSearch={true} filterOption={filterOption}
-      placeholder={nullDisplayValue}
+      placeholder={nullDisplayValue} disabled={disabled} loading={loading}
     />
   );
 };

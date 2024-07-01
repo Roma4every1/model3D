@@ -1,12 +1,25 @@
-import { EditorProps } from './editor-dict';
+import type { EditorProps } from './editor-dict';
+import { useEffect, useRef, useState } from 'react';
 import { InputNumber } from 'antd';
 
 
 /** Редактор параметра типа `integer`. */
 export const IntegerEditor = ({parameter, update}: EditorProps<'integer'>) => {
-  const onChange = (value: number | null) => {
-    if (value !== null) value = Math.trunc(value);
-    update(value);
+  const value = parameter.getValue();
+  const [innerValue, setInnerValue] = useState(value);
+  const timer = useRef<number>();
+
+  useEffect(() => {
+    setInnerValue(value);
+  }, [value]);
+
+  const onChange = (newValue: number | null) => {
+    if (newValue !== null) newValue = Math.trunc(newValue);
+    setInnerValue(newValue);
+    window.clearTimeout(timer.current); // debounce
+    timer.current = window.setTimeout(update, 750, newValue);
   };
-  return <InputNumber value={parameter.getValue()} onChange={onChange}/>;
+
+  const disabled = parameter.editor.disabled;
+  return <InputNumber value={innerValue} onChange={onChange} disabled={disabled}/>;
 };

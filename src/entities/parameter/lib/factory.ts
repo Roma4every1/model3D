@@ -13,7 +13,7 @@ import { TableCellArrayParameter } from '../impl/table-cell-array';
 import { TableRowParameter } from '../impl/table-row';
 
 
-const parameterImplementationDict = {
+const parameterImplDict = {
   'bool': BoolParameter,
   'date': DateParameter,
   'dateInterval': DateIntervalParameter,
@@ -29,16 +29,12 @@ const parameterImplementationDict = {
 };
 
 export function parseParameterValue(value: string | null, type: ParameterType): any {
-  return new (parameterImplementationDict[type])(null, value).getValue();
+  return new (parameterImplDict[type])(null, null, value).getValue();
 }
 
-/** Обработка параметров после серверного запроса. */
-export function createParameters(dto: ParameterInit[]): Parameter[] {
-  return dto.map(createParameter).sort(parameterCompareFn);
-}
-
-function createParameter(dto: ParameterInit): Parameter {
-  const p: Parameter = new (parameterImplementationDict[dto.type])(dto.id, dto.value);
+export function createParameter(id: ParameterID, dto: ParameterInit): Parameter {
+  const p: Parameter = new (parameterImplDict[dto.type])(id, dto.id, dto.value);
+  p.nullable = Boolean(dto.canBeNull);
   p.dependsOn = dto.dependsOn ?? [];
   p.channelName = dto.externalChannelName;
 
@@ -54,14 +50,13 @@ function createEditor(dto: ParameterInit): ParameterEditorOptions {
   return {
     type: editorType,
     displayName: dto.displayName ?? dto.id,
-    canBeNull: Boolean(dto.canBeNull),
     showNullValue: Boolean(dto.showNullValue),
     nullDisplayValue: dto.nullDisplayValue ?? 'Нет значения',
     order: dto.editorDisplayOrder ?? 100_000_000,
   };
 }
 
-function parameterCompareFn(a: Parameter, b: Parameter): number {
+export function parameterCompareFn(a: Parameter, b: Parameter): number {
   if (!a.editor) return 1;
   if (!b.editor) return -1;
   return a.editor.order - b.editor.order;

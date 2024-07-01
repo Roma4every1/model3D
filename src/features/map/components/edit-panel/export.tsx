@@ -1,7 +1,7 @@
 import { TFunction } from 'react-i18next';
 import { MenuSection, BigButton } from 'shared/ui';
 import { jsPDF } from 'jspdf';
-import pdfIcon from 'assets/images/map/pdf.png';
+import pdfIcon from 'assets/map/pdf.png';
 
 
 interface ExportSectionProps {

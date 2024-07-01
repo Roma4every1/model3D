@@ -1,4 +1,3 @@
-import type { ParameterUpdateEntries } from 'entities/parameter';
 import { RecordInfoCreator } from 'entities/channel';
 import { wellChannelCriterion } from './constants';
 
@@ -15,7 +14,7 @@ export class WellManager implements IWellManager {
   private readonly info: ChannelRecordInfo<keyof WellModel> | undefined;
 
   constructor (parameters: Parameter[], channels: ChannelDict) {
-    const parameter = parameters.find(p => p.id === 'wellCurrent' || p.id === 'currentWell');
+    const parameter = parameters.find(p => p.name === 'wellCurrent' || p.name === 'currentWell');
     if (!parameter || parameter.type !== 'tableRow') return;
     this.parameterID = parameter.id;
 
@@ -38,11 +37,9 @@ export class WellManager implements IWellManager {
     if (wellRow) this.model = this.createModel(wellRow);
   }
 
-  public onParameterUpdate(entries: ParameterUpdateEntries): boolean {
-    const entry = entries.find(e => e.id === this.parameterID);
-    if (!entry) return false;
+  public onParameterUpdate(value: ParameterValueMap['tableRow']): boolean {
     const oldModel = this.model;
-    this.model = this.createModel(entry.value);
+    this.model = this.createModel(value);
     return this.model !== oldModel;
   }
 

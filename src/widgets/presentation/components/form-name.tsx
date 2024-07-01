@@ -1,17 +1,13 @@
-import { useClientStore } from 'entities/client';
-import { ParameterStringTemplate } from 'entities/parameter';
-import { useLocalOrGlobalParamValues } from 'entities/parameter/store/parameter.store';
+import { ParameterStringTemplate, useParameters } from 'entities/parameter';
 
 
 interface FormNameProps {
-  formID: FormID;
   pattern: ParameterStringTemplate;
 }
 
 
 /** Динамический заголовок формы. */
-export const FormName = ({formID, pattern}: FormNameProps) => {
-  const parent = useClientStore(state => state[formID]?.parent);
-  const values = useLocalOrGlobalParamValues(parent, pattern.parameterIDs);
-  return <>{pattern.build(values)}</>;
+export const FormName = ({pattern}: FormNameProps) => {
+  const parameters = useParameters([...pattern.parameterIDs]);
+  return <>{pattern.build(parameters)}</>;
 };

@@ -6,7 +6,7 @@
  * compareArrays([1, 2], [1, 2]) => true
  * compareArrays([obj], [obj])   => true
  * compareArrays([obj], [{}])    => false
- * */
+ */
 export function compareArrays(a: any[], b: any[]): boolean {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {
@@ -21,7 +21,7 @@ export function compareArrays(a: any[], b: any[]): boolean {
  * @example
  * compareObjects({x: 1}, {x: 1})   => true
  * compareObjects({x: []}, {x: []}) => false
- * */
+ */
 export function compareObjects(a: Record<any, any>, b: Record<any, any>): boolean {
   const aKeys = Object.keys(a);
   const bKeys = Object.keys(b);
@@ -37,7 +37,7 @@ export function compareObjects(a: Record<any, any>, b: Record<any, any>): boolea
  * @example
  * groupBy([{id: 3, name: 'bob'}, {id: 2, name: 'john'}, {id: 2, name: 'bob'}], el => el.name) =>
  * [[{id: 3, name: 'bob'}, {id: 2, name: 'bob'}], [{id: 2, name: 'john'}]]
- * */
+ */
 export function groupBy<K, T>(list: Array<T>, keyGetter: (item: T) => K): Map<K, T[]> {
   const map: Map<K ,T[]> = new Map();
   list.forEach((item) => {
@@ -54,10 +54,31 @@ export function groupBy<K, T>(list: Array<T>, keyGetter: (item: T) => K): Map<K,
 
 /* --- Dates --- */
 
-/** Сериализует дату в строку в форате `YYYY-MM-DD` без учёта временных зон.
+/**
+ * Создаёт объект даты на основе строки.
+ *
+ * Распознаваемые форматы: `yyyy-mm-dd`, `dd.mm.yyyy`.
+ *
+ * @returns объект даты, если строка распознана, иначе `null`
+ */
+export function parseDate(input: string): Date | null {
+  let date: Date;
+  if (/^\d\d\d\d[.-]\d\d[.-]\d\d$/.test(input)) {
+    date = new Date(input);
+  } else if (/^\d\d[.-]\d\d[.-]\d\d\d\d$/.test(input)) {
+    const year = input.substring(6);
+    const month = input.substring(3, 5);
+    const day = input.substring(0, 2);
+    date = new Date(`${year}-${month}-${day}`);
+  }
+  return date && !Number.isNaN(date.getTime()) ? date : null;
+}
+
+/**
+ * Сериализует дату в строку в формате `YYYY-MM-DD` без учёта временных зон.
  * @example
  * stringifyLocalDate(new Date(2023, 6, 14)) => "2023-07-14"
- * */
+ */
 export function stringifyLocalDate(date: Date): string {
   const month = date.getMonth() + 1;
   const monthString = month > 9 ? month : '0' + month;
@@ -87,7 +108,7 @@ export function findInTree<T>(
  * Применяет функцию ко всем листьям дерева.
  *
  * Элемент считается листом, если его `childrenField` не является массивом.
- * */
+ */
 export function forEachTreeLeaf<T>(
   tree: T[], callback: (leaf: T, i?: number) => void,
   childrenField: string = 'children',
@@ -104,60 +125,6 @@ export function forEachTreeLeaf<T>(
     }
   };
   visit(tree);
-}
-
-/* --- Sets --- */
-
-/** Совмещает два итерируемых объекта и возвращает массив без повторений.
- * @example
- * uniqueArray(null, null) // []
- * uniqueArray([1, 2], [1, 3]) // [1, 2, 3]
- * */
-export function uniqueArray<T>(a: Iterable<T> | null | undefined, b?: Iterable<T> | null): T[] {
-  if (!a) return [...new Set(b)];
-  if (!b) return [...new Set(a)];
-  return [...new Set([...a, ...b])];
-}
-
-/** Возвращает объединение двух множеств.
- * @example
- * const a = new Set([1, 2]);
- * const b = new Set([2, 3]);
- * const c = setUnion(a, b); // Set {1, 2, 3}
- * */
-export function setUnion<T>(a: Set<T>, b: Set<T>): Set<T> {
-  return new Set([...a, ...b]);
-}
-
-/** Возвращает пересечение двух множеств.
- * @example
- * const a = new Set([1, 2, 3]);
- * const b = new Set([2, 3, 4]);
- * const c = setIntersection(a, b); // Set {2, 3}
- * */
-export function setIntersection<Type>(a: Set<Type>, b: Iterable<Type>): Set<Type> {
-  const result = new Set<Type>();
-  for (const element of b) {
-    if (a.has(element)) result.add(element);
-  }
-  return result;
-}
-
-/** Возвращает множество элементов, которые входят в `a`, но НЕ входят в `b`. */
-export function leftAntiJoin<Type>(a: Set<Type>, b: Iterable<Type>): Set<Type> {
-  const result = new Set(a);
-  for (const element of b) {
-    if (result.has(element)) result.delete(element);
-  }
-  return result;
-}
-
-/** Декартово произведение.
- * @example
- * cartesianProduct([1, 2], [3, 4]) => [[1, 3], [1, 4], [2, 3], [2, 4]]
- * */
-export function cartesianProduct(...values: any[][]): any[][] {
-  return values.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
 }
 
 /* --- Binary Operations --- */
@@ -183,10 +150,11 @@ export function base64toBlob(data: string, contentType: string = '', sliceSize: 
 
 /* --- Strings --- */
 
-/** Разделяет строку по первому вхождению искомой подстроки.
+/**
+ * Разделяет строку по первому вхождению искомой подстроки.
  * @example
  * splitByFirstOccurrence('1, 2, 3', ', ') => ['1', '2, 3']
- * */
+ */
 export function splitByFirstOccurrence(input: string, search: string): [string, string] {
   const index = input.indexOf(search);
   if (index === -1) return [input, ''];
@@ -203,8 +171,6 @@ export function testString(name: string, matcher: StringMatcher): boolean {
     return matcher.test(name);
   }
 }
-
-/* --- Other --- */
 
 /** `#ARGB => #RGBA`: на сервере иногда бывает неправильный формат. */
 export function fixColorHEX(hex: ColorString): ColorString {

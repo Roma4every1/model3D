@@ -3,12 +3,13 @@ import { stringifyLocalDate } from 'shared/lib';
 
 export class DateParameter implements Parameter<'date'> {
   public readonly id: ParameterID;
+  public readonly name: ParameterName;
   public readonly type = 'date';
-  public onDeepChange: ParameterOnDeepChange;
   private value: Date | null;
 
-  constructor(id: ParameterID, s: string | null) {
+  constructor(id: ParameterID, name: ParameterName, s: string | null) {
     this.id = id;
+    this.name = name;
     this.setValueString(s);
   }
 
@@ -22,10 +23,8 @@ export class DateParameter implements Parameter<'date'> {
     return this.value;
   }
 
-  public setValue(value: Date | null, deep?: boolean): void | Promise<void> {
-    const oldValue = this.value;
+  public setValue(value: Date | null): void {
     this.value = value;
-    if (deep && this.onDeepChange) return this.onDeepChange(this, oldValue);
   }
 
   public setValueString(s?: string | null): void {

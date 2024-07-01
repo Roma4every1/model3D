@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { setCurrentTrace } from '../../store/objects.actions';
 import { BigButton } from 'shared/ui';
-import editTraceIcon from 'assets/images/trace/edit-trace.png';
+import editTraceIcon from 'assets/trace/edit-trace.png';
 
 
 interface EditTraceProps {

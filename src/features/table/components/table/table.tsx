@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useChannel, useChannelDict } from 'entities/channel';
-import { useLocalOrGlobalParameters } from 'entities/parameter';
+import { useParameters } from 'entities/parameter';
 import { useTableState } from '../../store/table.store';
 import { resetTable, setTableColumnTree } from '../../store/table.actions';
 import { getColumnModel } from '../../lib/column-tree';
@@ -10,15 +10,15 @@ import './table.scss';
 
 
 /** Редактируемая таблица. */
-export const Table = ({id, parent}: SessionClient) => {
+export const Table = ({id}: Pick<SessionClient, 'id'>) => {
   const [records, setRecords] = useState<TableRecord[]>([]);
   const state = useTableState(id);
   const { recordHandler, channelName, headerSetterRules, columns, columnTree } = state;
+  const headerSetterParams = useParameters(headerSetterRules.map(r => r.id));
 
   const channel: Channel = useChannel(channelName) ?? {} as any;
   const lookupData = useChannelDict(channel.config?.lookupChannels ?? []);
   const { data: channelData, query } = channel;
-  const headerSetterParams = useLocalOrGlobalParameters(parent, headerSetterRules.map(r => r.parameter));
 
   // Обновление заголовков колонок
   useEffect(() => {

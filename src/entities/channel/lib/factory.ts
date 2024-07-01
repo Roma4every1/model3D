@@ -1,18 +1,32 @@
 import type { ChannelConfigDTO, ChannelPropertyDTO } from './channel.types';
+import { channelAPI } from './channel.api';
 
 
-export function createChannel(name: ChannelName, dto: ChannelConfigDTO): Channel {
+/** Создаёт новые каналы, не заполняя их данными. */
+export async function createChannels(names: ChannelName[], resolve: PNameResolve): Promise<ChannelDict> {
+  const dict: ChannelDict = {};
+  await Promise.all(names.map(async (name: ChannelName): Promise<void> => {
+    const res = await channelAPI.getChannelConfig(name);
+    if (!res.ok) return;
+    dict[name] = createChannel(name, res.data, resolve);
+  }));
+  return dict;
+}
+
+function createChannel(name: ChannelName, dto: ChannelConfigDTO, resolve: PNameResolve): Channel {
   const properties = createProperties(dto.properties);
   const lookupChannels = createLookupChannels(properties);
   const lookupColumns = createLookupColumnNames(properties);
 
+  const parameterNames = dto.parameters ?? [];
+  const parameters = parameterNames.map(resolve).filter(Boolean);
+
   const config: ChannelConfig = {
     displayName: dto.displayName,
-    properties, parameters: dto.parameters ?? [],
-    lookupChannels, lookupColumns,
-    activeRowParameter: dto.currentRowObjectName,
+    properties, parameters, parameterNames, lookupChannels, lookupColumns,
+    activeRowParameter: resolve(dto.currentRowObjectName),
   };
-  return {name, config, data: null, query: {}};
+  return {name, config, data: null, query: {}, actual: false};
 }
 
 function createProperties(init: ChannelPropertyDTO[]): ChannelProperty[] {

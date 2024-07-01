@@ -1,11 +1,12 @@
 export class BoolParameter implements Parameter<'bool'> {
   public readonly id: ParameterID;
+  public readonly name: ParameterName;
   public readonly type = 'bool';
-  public onDeepChange: ParameterOnDeepChange;
   private value: boolean | null;
 
-  constructor(id: ParameterID, s: string | null) {
+  constructor(id: ParameterID, name: ParameterName, s: string | null) {
     this.id = id;
+    this.name = name;
     this.setValueString(s);
   }
 
@@ -19,10 +20,8 @@ export class BoolParameter implements Parameter<'bool'> {
     return this.value;
   }
 
-  public setValue(value: boolean | null, deep?: boolean): void | Promise<void> {
-    const oldValue = this.value;
+  public setValue(value: boolean | null): void {
     this.value = value;
-    if (deep && this.onDeepChange) return this.onDeepChange(this, oldValue);
   }
 
   public setValueString(s?: string | null): void {

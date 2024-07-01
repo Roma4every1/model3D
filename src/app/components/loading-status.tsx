@@ -1,33 +1,52 @@
 import { useTranslation } from 'react-i18next';
-import { Loader } from '@progress/kendo-react-indicators';
+import { Link } from 'react-router-dom';
+import { Steps, StepProps } from 'antd';
+import { LoadingOutlined, LeftCircleOutlined } from '@ant-design/icons';
+import { useAppLocation } from '../store/app.store';
 import './loading-status.scss';
 
 
-interface LoadingStatusProps {
-  readonly loadingType: 'systems' | 'session' | string,
-  readonly success?: boolean,
-}
+export const AppLoadingStatus = ({step, error}: AppLoadingState) => {
+  let current = 0;
+  if (step === 'session') {
+    current = 1;
+  } else if (step === 'data') {
+    current = 2;
+  }
+  const steps: StepProps[] = [
+    {title: 'Инициализация'},
+    {title: 'Создание сессии'},
+    {title: 'Загрузка данных'}
+  ];
 
+  for (let i = 0; i < current; ++i) steps[i].status = 'finish';
+  for (let i = current + 1; i < steps.length; ++i) steps[i].status = 'wait';
+  const currentStep = steps[current];
 
-export const LoadingStatus = ({loadingType, success}: LoadingStatusProps) => {
-  const { t } = useTranslation();
-  const isError = success === false;
-  const loadingStatusText = t(getKey(loadingType, isError));
+  if (error) {
+    currentStep.status = 'error';
+  } else {
+    currentStep.status = 'process';
+    currentStep.icon = <LoadingOutlined/>;
+  }
 
   return (
-    <div className={'loading-status'}>
-      {isError ? null : <Loader type={'pulsing'} size={'large'}/>}
-      <div className={'loading-status-text'}>{loadingStatusText}</div>
+    <div className={'app-loading-status'}>
+      <h2>Загрузка сессии...</h2>
+      <Steps items={steps} current={current} style={{margin: '0 2em'}}/>
+      {error && <LoadingErrorMessage error={error}/>}
     </div>
   );
-}
+};
 
-function getKey(type: string, isError: boolean): string {
-  if (type === 'systems') {
-    return isError ? 'systems.loading-error' : 'systems.loading';
-  }
-  if (type === 'session') {
-    return isError ? 'session.loadingError' : 'session.loading';
-  }
-  return isError ? 'base.wrong' : 'base.loading';
-}
+const LoadingErrorMessage = ({error}: {error: string}) => {
+  const location = useAppLocation();
+  const { t } = useTranslation();
+
+  return (
+    <>
+      <p>{t(error)}</p>
+      <Link to={location}><LeftCircleOutlined/> {t('menu.back')}</Link>
+    </>
+  );
+};

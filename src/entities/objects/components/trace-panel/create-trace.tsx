@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { createTrace } from '../../store/objects.thunks';
 import { useCurrentPlace } from '../../store/objects.store';
 import { BigButton } from 'shared/ui';
-import createTraceIcon from 'assets/images/trace/create-trace.png';
+import createTraceIcon from 'assets/trace/create-trace.png';
 
 
 interface CreateTraceProps {

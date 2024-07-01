@@ -1,14 +1,14 @@
 # External libraries
 node_modules
 
-# Build utils
-build-utils/systems.json
+# Script data
+scripts/systems.json
 
 # Output directories
 build
 dist
 
-# Editor directories and files
+# Editor and IDE data
 .vs
 .vscode
 .idea

@@ -1,83 +1,35 @@
-import { fillChannels, reloadChannelsByQueryIDs } from 'entities/channel';
-import { fillParamValues, useParameterStore } from 'entities/parameter';
-import { showInfoMessage, showWarningMessage } from 'entities/window';
-import { showNotification } from 'entities/notification';
-import { applyChannelsDeps } from 'widgets/presentation/lib/utils';
-import { createClientChannels } from 'widgets/presentation/lib/initialization';
-import { initializeReport, updateReportParam } from './report.actions';
-import { setReportModels, setCanRunReport, setReportChannels } from './report.actions';
-import { reportsAPI } from 'entities/report/lib/report.api';
 import { t } from 'shared/locales';
+import { hasIntersection } from 'shared/lib';
+import { showNotification } from 'entities/notification';
+import { showInfoMessage, showWarningMessage } from 'entities/window';
+import { reloadChannelsByQueryIDs } from 'entities/channel';
+import { useParameterStore, findParameters, rowToParameterValue } from 'entities/parameter';
 import { useReportStore } from './report.store';
-
-import {
-  reportCompareFn, cloneReportParameter,
-  applyReportAvailability, updateReportChannelData, watchOperation,
-} from '../lib/common';
+import { reportAPI } from '../lib/report.api';
+import { reportCompareFn, fillReportChannels, watchOperation } from '../lib/common';
 
 
-export async function initializeActiveReport(id: ClientID, reportID: ReportID): Promise<void> {
-  const res = await reportsAPI.getReportData(reportID);
-  if (res.ok === false) { showWarningMessage(res.message); return; }
-  const { parameters, replaces, linkedPropertyCount } = res.data;
+/** Обновление доступности программ и отчётов. */
+export async function updateReports(client: ClientID, reports: ReportModel[]): Promise<void> {
+  const models = useReportStore.getState().models;
+  const storage = useParameterStore.getState().storage;
 
-  const rootID = 'root';
-  const parametersState = useParameterStore.getState();
+  await Promise.all(reports.map(async (report: ReportModel): Promise<void> => {
+    const parameters = findParameters(report.availabilityParameters, storage);
+    report.available = await reportAPI.getReportAvailability(report.id, parameters);
+  }));
 
-  for (const paramID in replaces) {
-    let param = parameters.find(p => p.id === paramID);
-    if (!param) {
-      param =
-        parametersState[rootID].find(p => p.id === paramID) ??
-        parametersState[id].find(p => p.id === paramID);
-
-      if (param) {
-        param = cloneReportParameter(param);
-        parameters.push(param);
-      }
-    }
-    if (param && replaces[paramID] === true) delete param.editor;
-  }
-
-  const paramDict = {[reportID]: parameters};
-  const channels = await createClientChannels(new Set(), parameters, []);
-  applyChannelsDeps(channels, paramDict);
-
-  for (const name in channels) {
-    const config = channels[name].config;
-    config.clients.add(rootID); config.clients.add(id);
-
-    for (const paramID of config.parameters) {
-      if (parameters.some(p => p.id === paramID)) continue;
-      const param = parametersState[rootID].find(p => p.id === paramID);
-      if (!param) continue;
-
-      let relatedChannels = param.relatedReportChannels.find(item => item.reportID === reportID);
-      if (!relatedChannels) {
-        relatedChannels = {clientID: id, reportID, channels: []};
-        param.relatedReportChannels.push(relatedChannels);
-      }
-      relatedChannels.channels.push(name);
-    }
-  }
-
-  paramDict[rootID] = parametersState[rootID];
-  paramDict[id] = parametersState[id];
-  await fillChannels(channels, paramDict);
-
-  const initData: ReportInitData = {
-    parameters, channels, linkedPropertyCount,
-    canRun: await reportsAPI.getCanRunReport(reportID, parameters),
-  };
-  initializeReport(id, reportID, initData);
+  const clientReports = models[client].toSorted(reportCompareFn);
+  useReportStore.setState({models: {...models, [client]: clientReports}});
 }
 
-export async function runReport(clientID: ClientID, report: ReportModel): Promise<void> {
+/** Запуска процедуры. */
+export async function runReport(report: ReportModel): Promise<void> {
   const reportID = report.id;
   const parameters = report.parameters;
 
-  for (let i = 0; i < report.linkedPropertyCount; i++) {
-    const res = await reportsAPI.executeReportProperty(reportID, parameters, i);
+  for (let i = 0; i < report.linkedPropertyCount; ++i) {
+    const res = await reportAPI.executeReportProperty(reportID, parameters, i);
     if (res.ok === false) { showWarningMessage(res.message); continue; }
     if (res.data.error) { showWarningMessage(res.data.error); continue; }
 
@@ -95,75 +47,71 @@ export async function runReport(clientID: ClientID, report: ReportModel): Promis
     }
   }
   for (const parameter of parameters) {
-    if (parameter.editor?.type !== 'fileTextEditor') continue;
-    updateReportParam(clientID, reportID, parameter.id, null);
+    if (parameter.editor?.type !== 'fileTextEditor') parameter.setValue(null);
   }
 }
 
-export async function updateReportParameter(id: ClientID, reportID: ReportID, paramID: ParameterID, value: any): Promise<void> {
-  const reports = useReportStore.getState();
-  const parameters = useParameterStore.getState();
+/* --- --- */
 
-  const report = reports.models[id].find(r => r.id === reportID);
-  if (!report) return;
-  const param = report.parameters.find(p => p.id === paramID);
-  if (!param) return;
-  updateReportParam(id, reportID, paramID, value);
+/** Подготовка процедуры перед открытием диалога. */
+export async function prepareReport(report: ReportModel): Promise<void> {
+  const storage = useParameterStore.getState().storage;
+  const changes = handleReportRelations(report, storage);
 
-  if (param.relatedChannels.length) {
-    await updateReportChannelData(report, param.relatedChannels, 'root', id, parameters);
-    setReportChannels(id, reportID, {...report.channels});
+  const names: ChannelName[] = [];
+  const channels = Object.values(report.channels);
+
+  for (const { name, config, actual } of channels) {
+    if (!actual || hasIntersection(changes, config.parameters)) names.push(name);
   }
-
-  const canRun = await reportsAPI.getCanRunReport(reportID, report.parameters);
-  setCanRunReport(id, reportID, canRun);
+  if (names.length) {
+    await fillReportChannels(report, names, storage);
+  }
+  if (changes.size) {
+    prepareReportParameters(report, changes);
+    report.runnable = await reportAPI.canRunReport(report.id, report.parameters);
+  }
 }
 
-/** Обновляет связанные каналы отчётов. */
-export async function reloadReportChannels(entries: RelatedReportChannels[]): Promise<void> {
-  const promises: Promise<void>[] = [];
-  const reports = useReportStore.getState();
-  const parameters = useParameterStore.getState();
+/**
+ * Если в процедуре пользователь ни разу не трогал значение клонированного
+ * параметра, то при открытии диалога его значение должно совпадать
+ * со значением соответствующего параметра системы.
+ */
+function handleReportRelations(report: ReportModel, storage: ParameterMap): Set<ParameterID> {
+  const changes: Set<ParameterID> = new Set();
+  const { relations, checkRelations, parameters } = report;
 
-  for (const { clientID, reportID, channels } of entries) {
-    const report = reports.models[clientID]?.find(r => r.id === reportID);
-    if (report) {
-      promises.push(updateReportChannelData(report, channels, 'root', clientID, parameters));
+  if (!checkRelations || relations.size === 0) return changes;
+  report.checkRelations = false;
+
+  for (const parameter of parameters) {
+    const relatedID = relations.get(parameter.id);
+    if (relatedID === undefined) continue;
+
+    const newValue = storage.get(relatedID).getValue();
+    parameter.setValue(structuredClone(newValue));
+    changes.add(parameter.id);
+  }
+  return changes;
+}
+
+function prepareReportParameters(report: ReportModel, changes: Set<ParameterID>): void {
+  const { parameters, channels } = report;
+  const dependents: Set<ParameterID> = new Set();
+
+  for (const p of parameters) {
+    if (!changes.has(p.id)) continue;
+    for (const dep of p.dependents) dependents.add(dep);
+  }
+  for (const p of parameters) {
+    if (dependents.has(p.id) && !changes.has(p.id)) {
+      if (p.nullable === false && p.channelName && p.type === 'tableRow') {
+        const channel = channels[p.channelName];
+        const row = channel?.data?.rows?.at(0);
+        if (row) { p.setValue(rowToParameterValue(row, channel)); continue; }
+      }
+      if (p.getValue() !== null) p.setValue(null);
     }
   }
-  await Promise.all(promises);
-}
-
-/** Обновляет видимость программ по набору идентификаторов. */
-export async function updateReportsVisibility(ids: ReportID[]): Promise<void> {
-  const models = useReportStore.getState().models;
-  const parameters = useParameterStore.getState();
-
-  const changedClients: FormID[] = [];
-  const changedReports: Promise<void>[] = [];
-
-  for (const clientID in models) {
-    const reports = models[clientID].filter(m => ids.includes(m.id));
-    if (reports.length === 0) continue;
-
-    changedClients.push(clientID);
-    const clients = ['root', clientID];
-
-    changedReports.push(...reports.map((report) => {
-      const params = fillParamValues(report.availabilityParameters, parameters, clients);
-      return applyReportAvailability(report, params)
-    }));
-  }
-
-  await Promise.all(changedReports);
-  for (const clientID of changedClients) {
-    setReportModels(clientID, models[clientID].toSorted(reportCompareFn));
-  }
-}
-
-/** Обновляет состояние отчёта: перезагружает данные всех каналов. */
-export async function refreshReport(clientID: FormID, report: ReportModel): Promise<void> {
-  const parameters = useParameterStore.getState();
-  const names = Object.values(report.channels).map(c => c.name);
-  if (names.length) await updateReportChannelData(report, names, 'root', clientID, parameters);
 }

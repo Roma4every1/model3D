@@ -5,7 +5,7 @@ import { showWarningMessage } from 'entities/window';
 import { setFileViewModel } from './file-view.actions';
 import { t } from 'shared/locales';
 import { mimeTypeDict, fileParserDict } from '../lib/constants';
-import { reportsAPI } from 'entities/report/lib/report.api';
+import { reportAPI } from 'entities/report/lib/report.api';
 import { useFileViewStore } from './file-view.store';
 
 
@@ -34,7 +34,7 @@ export async function updateFileViewModel(id: FormID, data: ChannelData): Promis
     const contentType = mimeTypeDict[fileType] ?? '';
 
     if (fileViewState.useResources) {
-      const res = await reportsAPI.downloadFile(descriptor);
+      const res = await reportAPI.downloadFile(descriptor);
       if (!res.ok) {
         const message = t('file-view.download-error', {fileName});
         showWarningMessage(message); return;

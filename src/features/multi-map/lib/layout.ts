@@ -1,13 +1,5 @@
-import type {
-  IGlobalAttributes, IJsonRowNode,
-  IJsonTabSetNode, IJsonTabNode,
-} from 'flexlayout-react/declarations/model/IJsonModel';
-
+import type { IGlobalAttributes, IJsonRowNode, IJsonTabSetNode, IJsonTabNode } from 'flexlayout-react/declarations/model/IJsonModel';
 import { Model } from 'flexlayout-react';
-import { MultiMapRecord } from './rows';
-
-
-export type MapTuple = [Model, FormID[], MapItemConfig[]];
 
 
 const globalSettings: IGlobalAttributes = {
@@ -20,48 +12,31 @@ const globalSettings: IGlobalAttributes = {
   splitterSize: 4,
 };
 
-export function getMultiMapLayout(records: MultiMapRecord[], parent: ClientID): MapTuple {
-  const n = records.length;
-
+export function getMultiMapLayout(children: MultiMapChild[]): Model {
+  const n = children.length;
   let rowsCount = 1;
-  while(rowsCount * (rowsCount + 1) < n) { rowsCount++; }
+  while (rowsCount * (rowsCount + 1) < n) { rowsCount++; }
 
-  const children: IJsonRowNode[] = [];
-  for (let i = 0; i < rowsCount; i++) children.push({type: 'row', children: []});
+  const rowNodes: IJsonRowNode[] = [];
+  for (let i = 0; i < rowsCount; i++) rowNodes.push({type: 'row', children: []});
 
   let idx = 0, rowIndex = 0;
   while (idx < n) {
     const tabset: IJsonTabSetNode = {type: 'tabset', children: [{type: 'tab'}]};
-    children[rowIndex].children.push(tabset);
+    rowNodes[rowIndex].children.push(tabset);
     rowIndex = (rowIndex + 1) % rowsCount;
     idx++;
   }
 
   let i = 0;
-  const childrenList = [];
-  const configList = [];
-
-  for (const row of children) {
-    for (const tabSet of row.children) {
-      const id = String(records[i].mapID);
-      const childFormID = parent + ',' + id;
-
+  for (const rowNode of rowNodes) {
+    for (const tabSet of rowNode.children) {
+      const child = children[i++];
       const tab: IJsonTabNode = tabSet.children[0];
-      const config: MapItemConfig = {
-        id, formID: childFormID, stage: null, loader: null,
-        progress: 0, setProgress: () => {},
-      };
-
-      tabSet.id = id;
-      tab.id = childFormID;
-      tab.name = records[i].stratumName;
-
-      childrenList.push(childFormID);
-      configList.push(config);
-      i++;
+      tabSet.id = child.id;
+      tab.id = child.formID;
+      tab.name = child.stratumName;
     }
   }
-
-  const model = Model.fromJson({global: globalSettings, layout: {type: 'row', children}});
-  return [model, childrenList, configList];
+  return Model.fromJson({global: globalSettings, layout: {type: 'row', children: rowNodes}});
 }

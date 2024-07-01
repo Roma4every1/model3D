@@ -5,20 +5,13 @@ import litLib from 'assets/map-libs/lit.bin';
 import regionalLib from 'assets/map-libs/regional.bin';
 
 
-interface IFillPatterns {
-  initialize(): Promise<void>
-  createFillStyle(name: string, color: ColorString, background: ColorString): CanvasPattern | string;
-}
-
-
 /** Класс для реализации библиотек заливок. */
-export class FillPatterns implements IFillPatterns {
-
+export class FillPatterns {
   /**
    * Байты с которых должен начинаться файл библиотеки заливок:
    *
    * `"Element 1.0\r\n\x1A\x20\x00\x20\x00\x00"`
-   * */
+   */
   private static readonly firstBytes = [
     69, 108, 101, 109, 101, 110, 116, 32, 49, 46,
     48, 13, 10, 26, 32, 0, 32, 0, 0
@@ -104,7 +97,7 @@ export class FillPatterns implements IFillPatterns {
   }
 
   /** Заполняет буфер значениями цвета. */
-  private fill(matrix: number[][], color: ColorString, background: ColorString) {
+  private fill(matrix: Matrix, color: ColorString, background: ColorString): void {
     let [red, green, blue, alpha] = parseColor(color).rgba;
     let [backRed, backGreen, backBlue, backAlpha] = parseColor(background).rgba;
     alpha = Math.round(alpha * 255);
@@ -137,23 +130,23 @@ export class FillPatterns implements IFillPatterns {
     try {
       const init: RequestInit = {credentials: 'include'};
       const buffer = await fetch(path, init).then((res) => res.arrayBuffer());
-      this.libs[type] = this.parseSMB(new Uint8Array(buffer));
+      this.libs[type] = this.parseSMB(buffer);
     } catch {
       this.libs[type] = [];
     }
   }
 
   /** Создаёт набор матриц, задающих паттерн изображения. */
-  private parseSMB(data: Uint8Array): Matrix[] {
+  private parseSMB(data: ArrayBuffer): Matrix[] {
     const firstBytesLength = FillPatterns.firstBytes.length;
-    for (let i = 0; i < firstBytesLength; i++) {
-      if (data[i] !== FillPatterns.firstBytes[i]) throw new Error('not a SMB format');
+    for (let i = 0; i < firstBytesLength; ++i) {
+      if (data[i] !== FillPatterns.firstBytes[i]) throw new Error('Invalid format');
     }
 
     const lib: Matrix[] = [];
     let index = firstBytesLength;
 
-    while (index < data.length) {
+    while (index < data.byteLength) {
       const matrix: Matrix = [];
 
       for (let y = 0; y < 32; ++y) {

@@ -2,8 +2,7 @@ import type { IJsonModel } from 'flexlayout-react';
 import type { TableFormSettings } from 'features/table';
 import type { CaratFormSettings } from 'features/carat';
 
-import { useRootStore } from '../store/root-form.store';
-import { usePresentationStore } from 'widgets/presentation';
+import { useClientStore } from 'entities/client';
 import { useParameterStore, serializeParameter, ParameterStringTemplate } from 'entities/parameter';
 import { useTableStore, tableStateToSettings } from 'features/table';
 import { useCaratStore, caratStateToSettings } from 'features/carat';
@@ -39,8 +38,8 @@ interface SettingsToSave {
 
 /** Конвертирует состояние приложения в модель сохраняемой сессии. */
 export function getSessionToSave(): SessionToSave {
-  const rootState = useRootStore.getState();
-  const presentations = usePresentationStore.getState();
+  const rootState = useClientStore.getState().root;
+  const presentations = Object.values(useClientStore.getState()).filter(c => c.type === 'grid');
 
   return {
     parameters: getParametersToSave(),
@@ -53,11 +52,11 @@ export function getSessionToSave(): SessionToSave {
 /* --- Parameters --- */
 
 function getParametersToSave(): ParametersToSave[] {
-  const state = useParameterStore.getState();
   const parameters: ParametersToSave[] = [];
+  const dict: ParameterDict = useParameterStore.getState().clients;
 
-  for (const id in state) {
-    const value = state[id].map(serializeParameter);
+  for (const id in dict) {
+    const value = dict[id].map(serializeParameter);
     parameters.push({id, value});
   }
   return parameters;
@@ -65,8 +64,8 @@ function getParametersToSave(): ParametersToSave[] {
 
 /* --- Children --- */
 
-function getChildrenToSave(root: RootFormState, presentations: PresentationDict): ChildrenToSave[] {
-  const childArray = Object.values(presentations)
+function getChildrenToSave(root: SessionClient, presentations: SessionClient[]): ChildrenToSave[] {
+  const childArray = presentations
     .filter(p => !p.settings.multiMapChannel)
     .map(toChildrenToSave);
 
@@ -79,7 +78,7 @@ function getChildrenToSave(root: RootFormState, presentations: PresentationDict)
   return childArray;
 }
 
-function toChildrenToSave(state: PresentationState): ChildrenToSave {
+function toChildrenToSave(state: SessionClient): ChildrenToSave {
   return {
     id: state.id,
     children: state.children.map(toFormDataWM),
@@ -114,7 +113,7 @@ function getSettingsToSave(): SettingsToSave {
 
 /* --- Layout --- */
 
-function getLayoutsToSave(root: RootFormState, presentations: PresentationDict): LayoutToSave[] {
+function getLayoutsToSave(root: SessionClient, presentations: SessionClient[]): LayoutToSave[] {
   const layoutArray: LayoutToSave[] = [getRootLayout(root)];
   for (const id in presentations) {
     const layout = presentations[id].layout.toJson();
@@ -123,9 +122,9 @@ function getLayoutsToSave(root: RootFormState, presentations: PresentationDict):
   return layoutArray;
 }
 
-function getRootLayout(root: RootFormState): LayoutToSave {
+function getRootLayout(root: SessionClient): LayoutToSave {
   const result = root.layout.left.model.toJson();
-  const { topBorder, rightBorder, model } = root.layout.common;
+  const { topBorder, rightBorder, model } = root.layout.controller;
 
   result.id = root.id;
   result.layout = {

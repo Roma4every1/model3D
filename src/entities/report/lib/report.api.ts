@@ -1,19 +1,36 @@
-import { Res, Fetcher, fetcher, getFileExtension } from 'shared/lib';
-import { createParameters, serializeParameter } from 'entities/parameter';
+import type { Res } from 'shared/lib';
+import type { ParameterInit } from 'entities/parameter';
+import { Fetcher, fetcher, getFileExtension } from 'shared/lib';
+import { serializeParameter } from 'entities/parameter';
+
+
+export interface ReportModelDTO {
+  id: ReportID;
+  type?: ReportType;
+  displayName: string;
+  paramsForCheckVisibility?: string[];
+}
+/** Данные о параметрах и составных частях отчёта. */
+export interface ReportData {
+  /** Кастомные параметры процедуры. */
+  parameters: ParameterInit[];
+  /** Все необходимые параметры для процедуры (для `reportString` и `queryString` false). */
+  replaces: Record<string, boolean>;
+  /** Количество исполняемых блоков процедуры. */
+  linkedPropertyCount: number;
+}
 
 
 export class ReportAPI {
   constructor(private readonly api: Fetcher) {}
 
-  public async getPresentationReports(id: ClientID): Promise<Res<ReportModel[]>> {
+  public async getPresentationReports(id: ClientID): Promise<Res<ReportModelDTO[]>> {
     if (!this.api.legacy) return {ok: true, data: []};
     return await this.api.get('/programsList', {query: {formId: id}});
   }
 
-  public async getReportData(id: ReportID): Promise<Res<ReportData>> {
-    const res = await this.api.get('/reportData',{query: {reportId: id}});
-    if (res.ok) createParameters(res.data.parameters);
-    return res;
+  public getReportData(id: ReportID): Promise<Res<ReportData>> {
+    return this.api.get('/reportData',{query: {reportId: id}});
   }
 
   public async getReportAvailability(reportID: ReportID, parameters: Parameter[]): Promise<boolean> {
@@ -22,8 +39,8 @@ export class ReportAPI {
     return res.ok && res.data === true;
   }
 
-  public async getCanRunReport(reportID: ReportID, parameters: Parameter[]): Promise<boolean> {
-    const json = {reportId: reportID, paramValues: parameters.map(serializeParameter)};
+  public async canRunReport(id: ReportID, parameters: Parameter[]): Promise<boolean> {
+    const json = {reportId: id, paramValues: parameters.map(serializeParameter)};
     const res = await this.api.post<boolean>('/canRunReport', {json});
     return res.ok && res.data === true;
   }
@@ -65,4 +82,4 @@ export class ReportAPI {
   }
 }
 
-export const reportsAPI = new ReportAPI(fetcher);
+export const reportAPI = new ReportAPI(fetcher);

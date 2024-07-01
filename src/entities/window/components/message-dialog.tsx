@@ -2,9 +2,9 @@ import { useTranslation } from 'react-i18next';
 import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
 import { Button } from '@progress/kendo-react-buttons';
 
-import infoIcon from 'assets/images/common/info.svg';
-import warningIcon from 'assets/images/common/warning.svg';
-import errorIcon from 'assets/images/common/error.svg';
+import infoIcon from 'assets/common/info.svg';
+import warningIcon from 'assets/common/warning.svg';
+import errorIcon from 'assets/common/error.svg';
 
 
 /** Словарь иконок по типу сообщения. */

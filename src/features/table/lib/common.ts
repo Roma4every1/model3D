@@ -1,13 +1,3 @@
-import { measureText } from 'shared/drawing';
-
-
-/** Находит оптимальную ширину колонки по её заголовку. */
-export function getColumnWidth(title: string): number {
-  return measureText(title, '700 12px "Segoe UI", Roboto') + 10;
-}
-
-/* --- --- */
-
 /** Делает ячейку полностью видимой за счёт прокрутки контейнера таблицы. */
 export function scrollCellIntoView(container: Element, cell: HTMLTableCellElement) {
   let top = 0, left = 0, scrollBoxSize = 15;

@@ -1,13 +1,13 @@
-import { TFunction } from 'react-i18next';
-import PACKAGE from '/package.json';
+import type { TFunction } from 'react-i18next';
+import { version } from '../../../package.json';
 
 import './about-program.scss';
-import debugIcon from 'assets/images/menu/debug.svg';
-import externalLinkIcon from 'assets/images/common/external-link.svg';
+import debugIcon from 'assets/menu/debug.svg';
+import externalLinkIcon from 'assets/common/external-link.svg';
 
 
 interface AboutProgramWindowProps {
-  config: ClientConfiguration;
+  config: ClientConfig;
   t: TFunction;
 }
 interface ExternalLinkProps {
@@ -22,7 +22,7 @@ export const AboutProgramWindow = ({config, t}: AboutProgramWindowProps) => {
     <div className={'about-program'}>
       <div className={'header'}>JS Well Manager Web</div>
       <div style={{paddingBottom: 8}}>
-        <div>{t('about.version')}: {PACKAGE['version']}</div>
+        <div>{t('about.version')}: {version}</div>
         <div className={'link-list'}>
           <a href={'mailto:' + config.contactEmail}>{t('about.support')}</a>
           <ExternalLink href={config.userDocLink} title={t('about.manual')}/>

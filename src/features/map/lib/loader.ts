@@ -20,7 +20,7 @@ export class MapLoader implements IMapLoader {
     this.formID = formID;
   }
 
-  public loadMapData(mapID: MapID, owner: MapOwner): Promise<MapData | string | null> {
+  public loadMapData(mapID: MapID, owner: MapStorageID): Promise<MapData | string | null> {
     this.abortLoading();
     this.abortController = new AbortController();
     this.errors = [];
@@ -50,7 +50,7 @@ export class MapLoader implements IMapLoader {
   }
 
   /** Загрузка карты. */
-  private async loadMap(mapID: MapID, owner: MapOwner): Promise<MapData> {
+  private async loadMap(mapID: MapID, owner: MapStorageID): Promise<MapData> {
     const response = await mapAPI.getMap(mapID, this.formID, this.abortController.signal);
     if (!response.ok) throw new Error('Ошибка при получении данных карты');
 
@@ -86,7 +86,7 @@ export class MapLoader implements IMapLoader {
   }
 
   /** Запрос контейнеров и подготовка элементов слоя. */
-  private async createLayer(layer: MapLayerRaw, index: string, owner: MapOwner): Promise<MapLayer> {
+  private async createLayer(layer: MapLayerRaw, index: string, owner: MapStorageID): Promise<MapLayer> {
     try {
       const signal = this.abortController.signal;
       const res = await mapAPI.getMapContainer(layer.container, owner, index, signal);
@@ -118,7 +118,7 @@ export class MapLoader implements IMapLoader {
   }
 
   /** Запрос именных точек. */
-  private async loadNamedPoints(name: string, owner: MapOwner): Promise<MapPoint[]> {
+  private async loadNamedPoints(name: string, owner: MapStorageID): Promise<MapPoint[]> {
     const { ok, data } = await mapAPI.getMapContainer(name, owner, undefined, this.abortController.signal);
     if (ok) return data.namedpoints;
     this.errors.push('Ошибка при загрузке точек карты из контейнера ' + name);

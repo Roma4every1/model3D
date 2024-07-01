@@ -25,7 +25,7 @@ interface TableState {
   /** Название канала, который визуализируется. */
   channelName: ChannelName;
   /** Параметр, связанный с текущей активной строкой таблицы. */
-  activeRecordParameter: ActiveRecordParameter | null;
+  activeRecordParameter: ParameterID | undefined;
   /** Является ли таблица редактируемой. */
   editable: boolean;
   /** Настройки отображаемых свойств канала. */
@@ -56,6 +56,7 @@ interface TableState {
 interface ITableRecordHandler {
   setColumns(columns: TableColumnsState, channelColumns?: ChannelColumn[]): void;
   setLookupData(lookupData: ChannelDict): void;
+  setColumnAutoWidth(id: TableColumnID): void;
 
   createRecord(id: TableRecordID, cells: any[]): TableRecord;
   createRecords(data: ChannelData): TableRecord[];
@@ -69,17 +70,6 @@ type TableToolbarSettings = Partial<Record<TableToolbarElementID, boolean>>;
 type TableToolbarElementID =
   'exportToExcel' | 'first' | 'last' | 'prev' | 'next' |
   'add' | 'remove' | 'accept' | 'reject' | 'refresh';
-
-/** Параметр, связанный с текущей активной строкой таблицы.
- * + `id`: {@link ParameterID}
- * + `clientID`: {@link ClientID}
- */
-interface ActiveRecordParameter {
-  /** ID связанного параметра. */
-  id: ParameterID;
-  /** ID клиента параметра. */
-  clientID: ClientID;
-}
 
 /** Глобальные настройки колонок таблицы. */
 interface TableColumnsSettings {
@@ -99,8 +89,10 @@ interface TableColumnsSettings {
 
 /** Правило установки заголовка колонки. */
 interface HeaderSetterRule {
-  /** Параметр системы `(tableRow)` для установки значения. */
-  parameter: ParameterID;
+  /** ID параметра, вычисленное по названию. */
+  id?: ParameterID;
+  /** Название параметра системы `(tableRow)` для установки значения. */
+  parameter: string;
   /** Свойства **канала**, которому соответствует изменяемая колонка. */
   property: string;
   /** Название колонки **параметра**, значение которого устанавливается как название столбца. */

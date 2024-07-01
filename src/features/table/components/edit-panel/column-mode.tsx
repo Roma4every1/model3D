@@ -3,8 +3,8 @@ import { EditPanelItemProps } from '../../lib/types';
 import { setTableColumnsSettings } from '../../store/table.actions';
 
 import { BigButtonToggle, MenuSection } from 'shared/ui';
-import recordModeIcon from 'assets/images/dataset/record-mode.png';
-import tableModeIcon from 'assets/images/dataset/table-mode.png';
+import recordModeIcon from 'assets/dataset/record-mode.png';
+import tableModeIcon from 'assets/dataset/table-mode.png';
 
 
 export const ColumnMode = ({id, state, t}: EditPanelItemProps) => {

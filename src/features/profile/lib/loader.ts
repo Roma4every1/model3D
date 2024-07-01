@@ -138,19 +138,19 @@ export class ProfileLoader implements IProfileLoader {
     // приходится задавать мануально
     const parameters: Partial<Parameter>[] = [
       {
-        id: 'currentTpp', type: 'tableRow',
+        name: 'currentTpp', type: 'tableRow',
         toString: () => 'SCHEMA_NAME#dbmm_tat#System.String',
       },
       {
-        id: 'currentMest', type: 'tableRow',
+        name: 'currentMest', type: 'tableRow',
         toString: () => 'OBJNAME#10-1-911#System.String',
       },
       {
-        id: 'activeWells', type: 'string',
+        name: 'activeWells', type: 'string',
         toString: () => wells.map(n => n.id).join(','),
       },
       {
-        id: 'wellCaratSource', type: 'string',
+        name: 'wellCaratSource', type: 'string',
         toString: () => '1'
       },
     ];

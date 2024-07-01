@@ -6,7 +6,7 @@ import { Export } from './export';
 import { Selecting } from './selecting';
 import { Editing } from './editing/editing';
 import { SaveMap } from './save-map';
-import { useMapState, useMultiMapState } from '../../store/map.store';
+import { useMapState } from '../../store/map.store';
 import './map-edit-panel.scss';
 
 
@@ -16,8 +16,6 @@ const panelTemplate = ['330px', '90px', '275px', 'calc(100% - 785px)', '90px'];
 export const MapEditPanel = ({id, parentID}: FormEditPanelProps) => {
   const { t } = useTranslation();
   const mapState = useMapState(id);
-  const multiMapState = useMultiMapState(parentID);
-  const sync = multiMapState?.sync;
 
   // при смене активной карты обновить координаты
   useEffect(() => {
@@ -28,7 +26,7 @@ export const MapEditPanel = ({id, parentID}: FormEditPanelProps) => {
 
   return (
     <div className={'map-edit-panel menu'} style={{display: 'grid'}}>
-      <MapNavigation id={id} mapState={mapState} sync={sync} parentID={parentID} t={t}/>
+      <MapNavigation mapState={mapState} parentID={parentID} t={t}/>
       <Export state={mapState} t={t}/>
       <Selecting mapState={mapState} t={t}/>
       <Editing id={id} state={mapState} t={t}/>

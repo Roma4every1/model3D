@@ -1,6 +1,6 @@
 import { ConfigEnv, UserConfig, AliasOptions, PluginOption, defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import wellManagerSystemPlugin from './build-utils/wm-system-plugin.js';
+import wellManagerSystemPlugin from './scripts/wm-system-plugin.js';
 
 
 const aliasOptions: AliasOptions = [

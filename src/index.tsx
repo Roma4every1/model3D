@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { App, beforeunloadCallback } from 'app';
+import { App, initialize } from 'app';
 
 import 'flexlayout-react/style/light.css';
 import 'bootstrap/dist/css/bootstrap.css';
@@ -12,4 +12,4 @@ import 'shared/locales';
 
 const root = createRoot(document.getElementById('root'));
 root.render(<App/>);
-window.addEventListener('beforeunload', beforeunloadCallback);
+initialize().then();

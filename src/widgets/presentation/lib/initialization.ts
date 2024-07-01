@@ -1,102 +1,87 @@
-import { setUnion, leftAntiJoin } from 'shared/lib';
+import { t } from 'shared/locales';
 import { fillPatterns } from 'shared/drawing';
-import { ParameterStringTemplate, getParameterChannels } from 'entities/parameter';
-import { createChannels, getDetailChannels, getLookupChannels } from 'entities/channel';
-import { AttachedChannelFactory, clientAPI } from 'entities/client';
-import { multiMapChannelCriterion } from 'features/multi-map';
-import { LayoutFactory } from './layout';
-import { getChildrenTypes } from './utils';
+import { useObjectsStore } from 'entities/objects';
+import { useChannelStore } from 'entities/channel';
+import { setReportModels } from 'entities/report';
+import { showWarningMessage } from 'entities/window';
+import { addSessionClient, addSessionClients, setClientLoading } from 'entities/client';
+import { createFormDict } from './form-dict';
+import { PresentationFactory } from './presentation-factory';
+
+import {
+  useParameterStore, lockParameters, unlockParameters,
+  findClientParameter, findParameterDependents,
+} from 'entities/parameter';
 
 
-/** Создаёт состояние презентации. */
-export async function createPresentationState(id: ClientID): Promise<[PresentationState, Parameter[], AttachedChannelDTO[]]> {
-  const { ok, data } = await clientAPI.getClientData(id, 'grid');
-  if (!ok) return [null, null, null];
+/** Инициализация презентации. */
+export async function initializePresentation(id: ClientID): Promise<void> {
+  const factory = new PresentationFactory(id);
+  const presentation = await factory.createState();
+  if (!presentation) return setClientLoading(id, 'error', 'app.presentation-fetch-error');
 
-  const { settings, channels, children: childrenRaw, layout, parameters } = data;
-  if (!settings.linkedProperties) settings.linkedProperties = [];
+  const parameters = factory.getParameters();
+  lockParameters(parameters);
+  addSessionClient(presentation);
+  factory.createReports().then(reports => setReportModels(id, reports));
 
-  const { children, openedChildren, activeChildren } = childrenRaw;
-  const types = getChildrenTypes(children, openedChildren);
+  setClientLoading(id, 'data');
+  const children = factory.createChildren();
+  const allChannels = factory.getAllChannels();
 
-  for (const child of children) {
-    const pattern = child.displayNameString;
-    if (pattern) child.displayNameString = new ParameterStringTemplate(pattern);
+  const objects = useObjectsStore.getState();
+  const clientParameters = useParameterStore.getState().clients;
+  setParameterDependents(clientParameters);
+
+  for (const child of presentation.children) {
+    const client: SessionClient = children[child.id];
+    const loading: ClientLoadingState = client.loading;
+    if (loading.status === 'error') { loading.error = 'app.form-fetch-error'; continue; }
+
+    const creator = createFormDict[client.type];
+    if (creator) creator({
+      state: client, settings: client.settings, objects: objects,
+      parameters: clientParameters, channels: allChannels,
+    });
+    loading.status = 'done';
   }
+
+  const fillSuccess = await factory.fillData();
+  if (!fillSuccess) showWarningMessage(t('app.presentation-data-init-error'));
+  unlockParameters(parameters);
+  clientParameters[id] = [...parameters];
+  useChannelStore.setState(factory.getCreatedChannels());
+
+  const types = presentation.childrenTypes;
   if (types.has('map') || types.has('carat') || types.has('profile')) {
     await fillPatterns.initialize();
   }
-
-  const state: PresentationState = {
-    id, settings, channels: [],
-    layout: new LayoutFactory(children, activeChildren[0]).create(layout),
-    children, openedChildren, activeChildID: activeChildren[0], childrenTypes: types,
-  };
-  return [state, parameters, channels];
+  addSessionClients(children);
+  setClientLoading(id, 'done');
 }
 
-export async function createPresentationChildren(id: ClientID, children: FormDataWM[]): Promise<ClientStates> {
-  const childStates: ClientStates = {};
+function setParameterDependents(dict: ParameterDict): void {
+  const rootID = 'root';
+  const dictValues = Object.values(dict);
+  const depMap: Map<ParameterID, Set<ParameterID>> = new Map();
 
-  await Promise.all(children.map(async (data: FormDataWM): Promise<void> => {
-    const childID = data.id;
-    const { ok, data: dto } = await clientAPI.getClientData(childID, data.type);
-    if (!ok) return;
-
-    const settings = dto.settings;
-    const channels = dto.channels as any[];
-    childStates[childID] = {id: childID, type: data.type, parent: id, channels, settings};
-  }));
-  return childStates;
-}
-
-export function createAttachedChannels(
-  state: PresentationState, attached: AttachedChannelDTO[], all: ChannelDict,
-): AttachedChannel[] {
-  if (!state.settings.multiMapChannel) return [];
-  const criteria = {multiMap: multiMapChannelCriterion};
-  const factory = new AttachedChannelFactory(all, criteria);
-
-  const channels = factory.create(attached);
-  if (!channels.some(c => c.type === 'multiMap')) delete state.settings.multiMapChannel;
-  return channels;
-}
-
-/** Создаёт все необходимые каналы для клиента.
- *
- * Итоговый список каналов состоит из:
- * + базовых каналов (передаётся)
- * + каналов для параметров
- * + привязанных каналов
- * + каналов-справочников
- *
- * @param set базовый набор каналов
- * @param parameters параметры клиента
- * @param existing список уже существующих каналов
- * */
-export async function createClientChannels(
-  set: Set<ChannelName>, parameters: Parameter[], existing: ChannelName[]
-): Promise<ChannelDict> {
-  const externalSet = getParameterChannels(parameters);
-
-  const baseNames = [...leftAntiJoin(setUnion(set, externalSet), existing)];
-  const baseChannels = await createChannels(baseNames);
-  existing.push(...baseNames);
-
-  const linkedSet = getDetailChannels(baseChannels);
-  const linkedNames = [...leftAntiJoin(linkedSet, existing)];
-  const linkedChannels = await createChannels(linkedNames);
-  existing.push(...linkedNames);
-
-  const lookupSet = getLookupChannels({...baseChannels, ...linkedChannels});
-  const lookupNames = [...leftAntiJoin(lookupSet, existing)];
-  const lookupChannels = await createChannels(lookupNames);
-
-  // наполнение канала для параметра должно зависеть от серверной конфигурации:
-  // клиент не должен переопределять ограничение записей
-  for (const name of externalSet) {
-    const channel = baseChannels[name];
-    if (channel) channel.query.limit = null;
+  for (const list of dictValues) {
+    for (const parameter of list) {
+      depMap.set(parameter.id, new Set());
+    }
   }
-  return {...baseChannels, ...linkedChannels, ...lookupChannels};
+  for (const clientID in dict) {
+    const clients = clientID === rootID ? [rootID] : [clientID, rootID];
+    for (const { id, dependsOn } of dict[clientID]) {
+      for (const name of dependsOn) {
+        const dep = findClientParameter(name, dict, clients);
+        if (dep) depMap.get(dep.id).add(id);
+      }
+    }
+  }
+  for (const list of dictValues) {
+    for (const parameter of list) {
+      findParameterDependents(parameter, depMap);
+    }
+  }
 }

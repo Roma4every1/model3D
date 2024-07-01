@@ -1,7 +1,5 @@
 /** Словарь каналов. */
 type ChannelDict = Record<ChannelName, Channel>;
-/** Словарь данных каналов. */
-type ChannelDataDict = Record<ChannelName, ChannelData>;
 /** Словарь записей каналов. */
 type ChannelRecordDict = Record<ChannelName, ChannelRecord[]>;
 
@@ -20,6 +18,8 @@ interface Channel {
   data: ChannelData | null;
   /** Настройки запроса данных. */
   query: ChannelQuerySettings;
+  /** Флаг актуальности данных. */
+  actual: boolean;
 }
 
 /** Идентификатор канала с данными. */
@@ -82,16 +82,16 @@ interface ChannelConfig {
   readonly displayName: string;
   /** Свойства канала. */
   readonly properties: ChannelProperty[];
-  /** Параметры канала. */
+  /** ID параметров канала. */
   readonly parameters: ParameterID[];
+  /** Названия параметров канала. */
+  readonly parameterNames: ParameterName[];
   /** Список каналов справочников. */
   readonly lookupChannels: ChannelName[];
   /** Названия колонок, необходимых для справочников. */
   readonly lookupColumns: LookupColumns;
   /** Название параметра активной записи канала. */
   readonly activeRowParameter?: ParameterID;
-  /** ID форм, в которых лежат необходимые параметры. */
-  clients?: Set<ClientID>;
 }
 
 /** Дополнительные свойства колонки. */

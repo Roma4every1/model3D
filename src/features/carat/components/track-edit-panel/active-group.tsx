@@ -14,10 +14,10 @@ import { CaratSettingsWindow } from '../windows/carat-settings';
 import { CaratStage } from '../../rendering/stage';
 import { constraints } from '../../lib/constants';
 
-import yAxisIcon from 'assets/images/carat/y-axis.svg';
-import yAxisAbsMarksIcon from 'assets/images/carat/y-axis-abs-marks.svg';
-import yAxisDepthMarksIcon from 'assets/images/carat/y-axis-depth-marks.svg';
-import yAxisGridIcon from 'assets/images/carat/y-axis-grid.svg';
+import yAxisIcon from 'assets/carat/y-axis.svg';
+import yAxisAbsMarksIcon from 'assets/carat/y-axis-abs-marks.svg';
+import yAxisDepthMarksIcon from 'assets/carat/y-axis-depth-marks.svg';
+import yAxisGridIcon from 'assets/carat/y-axis-grid.svg';
 
 
 interface StageProps {

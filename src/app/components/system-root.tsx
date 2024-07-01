@@ -6,12 +6,10 @@ import { ru_RU } from 'shared/locales';
 import { createAntDesignTheme, antdComponentSize } from 'shared/ui';
 
 import { useAppStore } from '../store/app.store';
-import { setSystemName } from '../store/app.actions';
-import { startSession } from '../store/root-form.thunks';
-import { useFetchState } from 'entities/fetch-state';
+import { startSession } from '../store/session';
 
 import { Dock } from './dock';
-import { LoadingStatus } from './loading-status';
+import { AppLoadingStatus } from './loading-status';
 import { WindowHandler } from 'entities/window/components/windows';
 import { Notifications } from 'entities/notification';
 import { TopToolbar } from './top-toolbar';
@@ -19,21 +17,19 @@ import { TopToolbar } from './top-toolbar';
 
 /** Корень системы. Route: `/systems/:systemID`. */
 export const SystemRoot = () => {
-  const fetchState = useFetchState('session');
-  const { systemList, systemID, config } = useAppStore();
-
   const { systemID: paramsSystemID } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { location, systemList, systemID, config, loading } = useAppStore();
 
   const defaultSession = searchParams.get('defaultSession') === 'true';
   const systemInfo = systemList?.find(system => system.id === paramsSystemID);
 
   const needStartSession = systemInfo &&
-    (fetchState.needFetch() || paramsSystemID !== systemID || defaultSession);
+    (loading.step === 'wait' || paramsSystemID !== systemID || defaultSession);
 
   // обновление ID системы
   useEffect(() => {
-    if (paramsSystemID !== systemID) setSystemName(paramsSystemID);
+    if (paramsSystemID !== systemID) useAppStore.setState({systemID: paramsSystemID});
   }, [paramsSystemID, systemID]);
 
   // инициализация новой сессии
@@ -43,22 +39,16 @@ export const SystemRoot = () => {
     startSession(defaultSession).then();
   }, [needStartSession, defaultSession, searchParams, setSearchParams]);
 
-  if (fetchState.ok()) {
-    const theme = createAntDesignTheme(systemInfo.color);
-    return (
-      <ConfigProvider locale={ru_RU} theme={theme} componentSize={antdComponentSize}>
-        <Dock config={config}/>
-        <TopToolbar config={config}/>
-        <WindowHandler/>
-        <Notifications/>
-      </ConfigProvider>
-    );
-  }
+  if (loading.step !== 'init' && !systemInfo) return <Navigate to={location} replace/>;
+  if (!loading.done) return <AppLoadingStatus {...loading}/>;
+  const theme = createAntDesignTheme(systemInfo.color);
 
-  if (config === null) return <LoadingStatus loadingType={'systems'}/>;
-  if (!systemList) return <LoadingStatus loadingType={'systems'} success={false}/>;
-  if (!systemInfo) return <Navigate to={config.root} replace={true}/>;
-
-  if (fetchState.notLoaded()) return <LoadingStatus loadingType={'session'}/>;
-  return <LoadingStatus loadingType={'session'} success={false}/>;
+  return (
+    <ConfigProvider locale={ru_RU} theme={theme} componentSize={antdComponentSize}>
+      <Dock location={location} config={config}/>
+      <TopToolbar config={config}/>
+      <WindowHandler/>
+      <Notifications/>
+    </ConfigProvider>
+  );
 };

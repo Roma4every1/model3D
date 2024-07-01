@@ -6,7 +6,7 @@ interface IMapPlugin {
   inclinometryModeOn: boolean;
 
   /** Устанавливает данные плагина. */
-  setData(channels: ChannelDict, param?: Parameter): void;
+  setData(channels: ChannelDict, value: any): void;
   /** Устанавливает canvas и контекст отрисовки для плагина. */
   setCanvas(canvas: MapCanvas): void;
   /** Отрисовка элементов плагина. */

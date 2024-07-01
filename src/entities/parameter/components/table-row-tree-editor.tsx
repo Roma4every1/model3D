@@ -24,6 +24,8 @@ interface TreeNode {
 
 export const TableRowTreeEditor = ({parameter, update, channel}: EditorProps<'tableRow'>) => {
   const parameterValue = parameter.getValue();
+  const { nullDisplayValue, disabled, loading } = parameter.editor;
+
   const nullValue = parameter.editor.showNullValue ? -1 : undefined;
   const [value, setValue] = useState(nullValue);
 
@@ -56,9 +58,9 @@ export const TableRowTreeEditor = ({parameter, update, channel}: EditorProps<'ta
   return (
     <TreeSelect
       treeData={treeData} value={value} onSelect={onSelect}
-      allowClear={parameter.editor.canBeNull} onClear={onClear}
+      allowClear={parameter.nullable} onClear={onClear}
       showSearch={true} filterTreeNode={filterTreeNode}
-      placeholder={parameter.editor.nullDisplayValue}
+      placeholder={nullDisplayValue} disabled={disabled} loading={loading}
     />
   );
 };

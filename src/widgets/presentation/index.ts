@@ -1,5 +1,3 @@
 export type { PresentationProps } from './components/presentation';
 export { Presentation } from './components/presentation';
-
-export * from './store/presentation.actions';
-export { usePresentationStore, usePresentation } from './store/presentation.store';
+export { DataResolver } from './lib/data-resolver';

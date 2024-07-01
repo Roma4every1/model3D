@@ -130,6 +130,25 @@ export class MapStage implements IMapStage {
     };
   }
 
+  public getWellViewport(wellID: WellID): MapViewport | null {
+    if (wellID === null || wellID === undefined) return null;
+    const idString = wellID.toString();
+    const point = this.data?.points?.find(p => p.UWID === idString);
+    if (!point) return null;
+
+    if (this.inclinometryModeOn) {
+      const scale = 5_000;
+      const inclPlugin = this.plugins.find(it => it instanceof InclinometryModePlugin) as InclinometryModePlugin;
+      const centerX = point.x - inclPlugin.mapShiftX * scale / window.devicePixelRatio / PIXEL_PER_METER;
+      const centerY = point.y - inclPlugin.mapShiftY * scale / window.devicePixelRatio / PIXEL_PER_METER;
+      return {centerX, centerY, scale};
+    } else {
+      const wellLayer = this.data.layers?.find(l => l.elementType === 'sign');
+      const scale = Math.min(this.data.scale, wellLayer?.getMaxScale() ?? 50_000);
+      return {centerX: point.x, centerY: point.y, scale};
+    }
+  }
+
   public setCanvas(canvas: MapCanvas): void {
     this.canvas = canvas;
     if (!canvas) return;

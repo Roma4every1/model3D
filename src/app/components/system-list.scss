@@ -14,11 +14,11 @@
 
   section {
     display: grid;
-    grid-template-columns: calc(100% - 54px) 54px;
+    grid-template-columns: calc(100% - 56px) 56px;
     align-items: stretch;
     border-top: 1px solid #e0cdcd;
 
-    img, .k-skeleton-rectangle {
+    img, .ant-skeleton-avatar {
       width: 32px;
       height: 32px;
       margin: 0 12px;

@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { saveTrace } from '../../store/objects.thunks';
 import { BigButton } from 'shared/ui';
-import applyTraceChangesIcon from 'assets/images/trace/accept.png';
+import applyTraceChangesIcon from 'assets/trace/accept.png';
 
 
 interface ApplyTraceChangesProps {

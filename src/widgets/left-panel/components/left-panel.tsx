@@ -2,28 +2,25 @@ import { ReactNode } from 'react';
 import { Layout, TabNode } from 'flexlayout-react';
 import { useEffect } from 'react';
 import { i18nMapper } from 'shared/locales';
-import { setLeftLayout } from '../../../app/store/root-form.actions';
+import { useClientParameters } from 'entities/parameter';
+import { setLeftLayout } from '../store/left-panel.actions';
 import { showLeftTab, hideLeftTab } from '../lib/layout-actions';
-import { useGlobalParameters, useClientParameters } from 'entities/parameter';
-import { globalParamsTabID, presentationParamsTabID, presentationTreeTabID } from '../lib/constants';
-
 import { ClientParameterList } from './client-parameter-list';
 import { PresentationTreeView } from './presentation-tree';
+import { globalParamsTabID, presentationParamsTabID, presentationTreeTabID } from '../lib/constants';
 
 
-export interface LeftPanelProps {
-  rootState: RootFormState;
+interface LeftPanelProps {
+  rootState: RootClient;
+  selectPresentation: (id: ClientID) => void;
 }
 
 
 /** Левая боковая панель (содержит параметры и список презентаций). */
-export const LeftPanel = ({rootState}: LeftPanelProps) => {
-  const activeID = rootState.activeChildID;
+export const LeftPanel = ({rootState, selectPresentation}: LeftPanelProps) => {
   const layout = rootState.layout.left;
-  const presentationTree = rootState.settings.presentationTree;
-
-  const globalParameters = useGlobalParameters();
-  const presentationParameters = useClientParameters(activeID);
+  const globalParameters = useClientParameters(rootState.id);
+  const presentationParameters = useClientParameters(rootState.activeChildID);
   const needPresentationTab = presentationParameters?.some(p => p.editor);
 
   useEffect(() => {
@@ -43,12 +40,16 @@ export const LeftPanel = ({rootState}: LeftPanelProps) => {
 
   const factory = (node: TabNode): ReactNode => {
     const id = node.getId();
-    if (id === globalParamsTabID)
-      return <ClientParameterList clientID={'root'} list={globalParameters}/>;
-    if (id === presentationParamsTabID)
-      return <ClientParameterList clientID={activeID} list={presentationParameters ?? []}/>;
-    if (id === presentationTreeTabID)
-      return <PresentationTreeView tree={presentationTree}/>;
+    if (id === globalParamsTabID) {
+      return <ClientParameterList list={globalParameters}/>;
+    }
+    if (id === presentationParamsTabID) {
+      return <ClientParameterList list={presentationParameters ?? []}/>;
+    }
+    if (id === presentationTreeTabID) {
+      const tree = rootState.settings.presentationTree;
+      return <PresentationTreeView tree={tree} onSelect={selectPresentation}/>;
+    }
     return null;
   };
 

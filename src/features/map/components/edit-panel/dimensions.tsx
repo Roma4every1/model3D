@@ -1,30 +1,26 @@
 import { TFunction } from 'react-i18next';
 import { useState, useEffect } from 'react';
-import { BigButton, BigButtonToggle } from 'shared/ui';
 import { InputNumber } from 'antd';
+import { BigButton, BigButtonToggle } from 'shared/ui';
 import { inputNumberParser } from 'shared/locales';
-import { setMultiMapSync } from '../../store/map.actions';
+import { useMultiMapSync, setMultiMapSync } from 'features/multi-map';
 import { getFullViewport } from '../../lib/map-utils';
 
-import xIcon from 'assets/images/map/x.png';
-import yIcon from 'assets/images/map/y.png';
-import scaleIcon from 'assets/images/map/scale.png';
-import selectAllIcon from 'assets/images/map/select-all.png';
-import synchronizeIcon from 'assets/images/map/synchronize.png';
+import xIcon from 'assets/map/x.png';
+import yIcon from 'assets/map/y.png';
+import scaleIcon from 'assets/map/scale.png';
+import selectAllIcon from 'assets/map/select-all.png';
+import synchronizeIcon from 'assets/map/synchronize.png';
 
 
 interface MapNavigationProps {
-  id: FormID;
   mapState: MapState;
-  sync: boolean | undefined;
   parentID: ClientID;
   t: TFunction;
 }
 interface NavigationPanelProps {
-  id: FormID;
   parentID: ClientID;
   state: MapState;
-  sync: boolean;
   t: TFunction;
 }
 interface DimensionProps {
@@ -38,23 +34,24 @@ interface InputPrefixProps {
 }
 
 
-export const MapNavigation = ({id, mapState, sync, parentID, t}: MapNavigationProps) => {
+export const MapNavigation = ({mapState, parentID, t}: MapNavigationProps) => {
   return (
     <section className={'map-dimensions'}>
       <div className={'menu-header'}>{t('map.dimensions.header')}</div>
       <div className={'map-panel-main'}>
         <Dimensions state={mapState} t={t}/>
-        <NavigationPanel id={id} parentID={parentID} state={mapState} sync={sync} t={t}/>
+        <NavigationPanel parentID={parentID} state={mapState} t={t}/>
       </div>
     </section>
   );
 };
 
-const NavigationPanel = ({id, state, parentID, sync, t}: NavigationPanelProps) => {
+const NavigationPanel = ({state, parentID, t}: NavigationPanelProps) => {
   const { stage, canvas } = state;
   const disabled = stage.inclinometryModeOn;
   const notLoaded = state.loading.percentage < 100;
 
+  const sync = useMultiMapSync(parentID);
   const [signal, setSignal] = useState(false);
   stage.listeners.navigationPanelChange = () => setSignal(!signal);
 
@@ -68,7 +65,7 @@ const NavigationPanel = ({id, state, parentID, sync, t}: NavigationPanelProps) =
   };
 
   /** Включить или отключить синхронизацию систем координат карт. */
-  const toggleSync = () => setMultiMapSync(id, parentID, !sync);
+  const toggleSync = () => setMultiMapSync(parentID, !sync);
 
   return (
     <div className={'map-actions'}>

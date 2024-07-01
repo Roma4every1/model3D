@@ -1,2 +1,2 @@
 export { App } from './components/app';
-export { beforeunloadCallback } from './lib/session-utils';
+export { initialize } from './lib/app-init';

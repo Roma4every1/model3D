@@ -1,17 +1,17 @@
 import { useTranslation } from 'react-i18next';
 import { showDialog } from 'entities/window';
-import { saveSession } from 'app/store/root-form.thunks';
+import { saveSession } from 'app/store/session';
 import { IconRow, IconRowButton, IconRowLink } from 'shared/ui';
 import { AboutProgramWindow } from './about-program';
 
-import saveSessionIcon from 'assets/images/menu/save-session.svg';
-import devDocIcon from 'assets/images/menu/dev-doc.svg';
-import userDocIcon from 'assets/images/menu/user-doc.svg';
-import aboutProgramIcon from 'assets/images/menu/about-program.svg';
+import saveSessionIcon from 'assets/menu/save-session.svg';
+import devDocIcon from 'assets/menu/dev-doc.svg';
+import userDocIcon from 'assets/menu/user-doc.svg';
+import aboutProgramIcon from 'assets/menu/about-program.svg';
 
 
 interface TopToolbarProps {
-  config: ClientConfiguration;
+  config: ClientConfig;
 }
 
 

@@ -26,8 +26,8 @@ export class MapAPI {
   }
 
   /** Запрос на сохранение карты. */
-  public saveMap(formID: FormID, mapID: MapID, mapData: any, owner: MapOwner): Promise<Res> {
-    const data = {formId: formID, mapId: mapID, mapData, owner};
+  public saveMap(formID: FormID, mapID: MapID, mapData: any, storage: MapStorageID): Promise<Res> {
+    const data = {formId: formID, mapId: mapID, mapData, owner: storage};
     const blob = this.converter.encode(JSON.stringify(data));
     return this.api.post('/saveMap', {blob});
   }
@@ -40,9 +40,9 @@ export class MapAPI {
 
   /** Загрузка контейнера карты. */
   public async getMapContainer(
-    name: string, owner: MapOwner, index?: string, signal?: AbortSignal,
+    name: string, storage: MapStorageID, index?: string, signal?: AbortSignal,
   ): Promise<Res<ParsedContainer>> {
-    const query: ReqQuery = {owner, containerName: name};
+    const query: ReqQuery = {owner: storage, containerName: name};
     if (index) query.index = index;
     const res = await this.api.get('/getContainer', {query, then: 'arrayBuffer', signal});
     if (res.ok) res.data = this.converter.parse(res.data);

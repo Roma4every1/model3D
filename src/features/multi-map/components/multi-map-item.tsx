@@ -5,7 +5,7 @@ import { Map } from 'features/map';
 
 interface MultiMapItemProps {
   parent: ClientID;
-  config: MapItemConfig;
+  config: MultiMapChild;
 }
 
 
@@ -18,5 +18,5 @@ export const MultiMapItem = ({parent, config}: MultiMapItemProps) => {
 
   if (progress < 0) return <TextInfo text={'map.not-loaded'}/>;
   if (progress < 100) return <LoadingStatus percentage={progress}/>;
-  return <Map id={config.formID} type={'map'} parent={parent} settings={null} channels={null}/>;
+  return <Map id={config.formID} parent={parent} channels={null}/>;
 };

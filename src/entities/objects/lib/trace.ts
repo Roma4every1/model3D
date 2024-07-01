@@ -1,4 +1,3 @@
-import type { ParameterUpdateEntries } from 'entities/parameter';
 import { getDataTypeName } from 'shared/lib';
 import { cellsToRecords, RecordInfoCreator } from 'entities/channel';
 import { traceChannelCriterion } from './constants';
@@ -65,13 +64,11 @@ export class TraceManager implements ITraceManager {
     if (traceRow) this.model = this.createModel(traceRow, nodeChannel, wellChannel);
   }
 
-  public onParameterUpdate(entries: ParameterUpdateEntries, channels: ChannelDict): boolean {
-    const entry = entries.find(e => e.id === this.parameterID);
-    if (!entry) return false;
+  public onParameterUpdate(value: ParameterValueMap['tableRow'], channels: ChannelDict): boolean {
     const oldModel = this.model;
     const wellChannel = channels[this.wellChannelName];
     const nodeChannel = channels[this.nodeChannelName];
-    this.model = this.createModel(entry.value, nodeChannel, wellChannel);
+    this.model = this.createModel(value, nodeChannel, wellChannel);
     return this.model !== oldModel;
   }
 

@@ -60,8 +60,7 @@ export class LayoutFactory {
     if (!form) return;
 
     if (form.displayNameString) {
-      const props = {formID: form.id, pattern: form.displayNameString};
-      node.name = createElement(FormName, props) as any;
+      node.name = createElement(FormName, {pattern: form.displayNameString}) as any;
     } else {
       node.name = node['title'] ?? form.displayName;
     }

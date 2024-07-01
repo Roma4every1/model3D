@@ -1,26 +1,39 @@
-import { ParameterUpdateEntries, updateParamDeep, rowToParameterValue } from 'entities/parameter';
+import { useParameterStore, updateParamDeep, rowToParameterValue } from 'entities/parameter';
 import { useChannelStore, reloadChannel, reloadChannelsByQueryIDs, channelAPI } from 'entities/channel';
 import { setCurrentTrace } from './objects.actions';
 import { useObjectsStore } from './objects.store';
 
 
 /** По данным обновления параметров обновляет активные объекты. */
-export function updateObjects(entries: ParameterUpdateEntries): void {
-  const channels = useChannelStore.getState();
-  const { place, stratum, well, trace } = useObjectsStore.getState();
+export function updateObjects(changes: Set<ParameterID>): void {
+  let changed = false;
+  let { place, stratum, well, trace } = useObjectsStore.getState();
+  const storage = useParameterStore.getState().storage;
 
-  const placeChanged = place.activated() && place.onParameterUpdate(entries);
-  const stratumChanged = stratum.activated() && stratum.onParameterUpdate(entries);
-  const wellChanged = well.activated() && well.onParameterUpdate(entries);
-  const traceChanged = trace.activated() && trace.onParameterUpdate(entries, channels);
-
-  if (placeChanged || stratumChanged || wellChanged || traceChanged) {
+  if (place.activated() && changes.has(place.parameterID)) {
+    const value = storage.get(place.parameterID).getValue();
+    if (place.onParameterUpdate(value)) changed = true;
+  }
+  if (stratum.activated() && changes.has(stratum.parameterID)) {
+    const value = storage.get(stratum.parameterID).getValue();
+    if (stratum.onParameterUpdate(value)) changed = true;
+  }
+  if (well.activated() && changes.has(well.parameterID)) {
+    const value = storage.get(well.parameterID).getValue();
+    if (well.onParameterUpdate(value)) changed = true;
+  }
+  if (trace.activated() && changes.has(trace.parameterID)) {
+    const value = storage.get(trace.parameterID).getValue();
+    const channels = useChannelStore.getState();
+    if (trace.onParameterUpdate(value, channels)) { trace = trace.clone(); changed = true; }
+  }
+  if (changed) {
     useObjectsStore.setState({place, stratum, well, trace}, true);
   }
 }
 
 /** Обновление параметры скважины. */
-export async function setCurrentWell(id: WellID): Promise<void> {
+export function setCurrentWell(id: WellID): Promise<void> {
   const { channelName, parameterID, model } = useObjectsStore.getState().well;
   if (model && model.id === id) return;
   const wellChannel = useChannelStore.getState()[channelName];
@@ -30,7 +43,7 @@ export async function setCurrentWell(id: WellID): Promise<void> {
   if (!row) return;
 
   const rowValue = rowToParameterValue(row, wellChannel);
-  await updateParamDeep('root', parameterID, rowValue);
+  return updateParamDeep(parameterID, rowValue);
 }
 
 /** Создание новой трассы. */
@@ -51,7 +64,7 @@ export async function createTrace(model: TraceModel): Promise<void> {
   await reloadChannel(traceChannel.name);
 
   const value = rowToParameterValue(newRow, traceChannel);
-  await updateParamDeep('root', traceManager.parameterID, value);
+  await updateParamDeep(traceManager.parameterID, value);
   setCurrentTrace(model, true, true);
 }
 
@@ -60,15 +73,13 @@ export async function saveTrace(): Promise<void> {
   const traceManager = useObjectsStore.getState().trace;
   const { model, channelName, nodeChannelName, parameterID } = traceManager;
   const traceChannel = useChannelStore.getState()[channelName];
-  const traceData = traceChannel.data;
 
   const idIndex = traceChannel.config.lookupColumns.id.columnIndex;
-  const index = traceData.rows.findIndex(row => row[idIndex] === model.id);
-  const row = traceData.rows[index];
-  traceManager.applyModelToChannelRow(traceChannel, row);
+  const index = traceChannel.data.rows.findIndex(row => row[idIndex] === model.id);
+  const row = traceChannel.data.rows[index];
 
-  await channelAPI.updateRows(traceData.queryID, [index], [row]);
-  await reloadChannel(traceChannel.name);
+  traceManager.applyModelToChannelRow(traceChannel, row);
+  await channelAPI.updateRows(traceChannel.data.queryID, [index], [row]);
 
   if (traceManager.nodesChanged()) {
     const nodeChannel = useChannelStore.getState()[nodeChannelName];
@@ -80,8 +91,11 @@ export async function saveTrace(): Promise<void> {
     await reloadChannel(nodeChannel.name);
   }
 
-  const rowValue = rowToParameterValue(row, traceChannel);
-  await updateParamDeep('root', parameterID, rowValue);
+  await reloadChannel(traceChannel.name);
+  const updatedData = useChannelStore.getState()[traceChannel.name].data;
+  const updatedRow = updatedData?.rows.find(r => r[idIndex] === model.id);
+
+  await updateParamDeep(parameterID, rowToParameterValue(updatedRow, traceChannel));
   setCurrentTrace(undefined, false, false);
 }
 
@@ -97,12 +111,10 @@ export async function deleteTrace(): Promise<void> {
   const rowIndex = traceData.rows.findIndex(row => row[0] === traceManager.model.id);
   if (rowIndex === -1) return;
 
-  await Promise.all([
-    channelAPI.removeRows(traceQueryID, [rowIndex]).then(),
-    channelAPI.removeRows(nodesQueryID, 'all').then(),
-  ]);
+  await channelAPI.removeRows(nodesQueryID, 'all');
+  await channelAPI.removeRows(traceQueryID, [rowIndex]);
 
   await reloadChannelsByQueryIDs([traceQueryID, nodesQueryID]);
-  await updateParamDeep('root', traceManager.parameterID, null);
+  await updateParamDeep(traceManager.parameterID, null);
   setCurrentTrace(undefined, false, false);
 }

@@ -1,20 +1,19 @@
-import { fillParamValues } from 'entities/parameter';
-import { reloadChannelsByQueryIDs, fillChannels } from 'entities/channel';
+import { t } from 'shared/locales';
 import { showInfoMessage } from 'entities/window';
 import { showNotification } from 'entities/notification';
+import { reloadChannelsByQueryIDs, fillChannel } from 'entities/channel';
+import { reportAPI } from './report.api';
+import { useReportStore } from '../store/report.store';
 import { setOperationStatus } from '../store/report.actions';
-import { t } from 'shared/locales';
-import { reportsAPI } from './report.api';
-import { useRootStore } from '../../../app/store/root-form.store';
 
 
 /** Наблюдает за прогрессом операции, пока она не выполнится. */
 export async function watchOperation(report: ReportModel | null, operationID: OperationID): Promise<void> {
   let tabSelected = false;
   while (true) {
-    const res = await reportsAPI.getOperationStatus(operationID);
+    const res = await reportAPI.getOperationStatus(operationID);
     if (!tabSelected) {
-      useRootStore.getState().layout.common.showTab('right-dock', 0, true);
+      useReportStore.getState().layoutController.showTab('right-dock', 0, true);
       tabSelected = true;
     }
     if (res.ok === false) {
@@ -39,76 +38,35 @@ export async function watchOperation(report: ReportModel | null, operationID: Op
 
 /* --- --- */
 
-/** Обновляет у отчёта указанные каналы.
- * @param report модель отчёта
- * @param names названия каналов, которые нужно обновить
- * @param rootID ID главной формы
- * @param clientID ID презентации с отчётом
- * @param parameters текущее состояние параметров приложения
- * */
-export async function updateReportChannelData(
-  report: ReportModel, names: Iterable<ChannelName>,
-  rootID: FormID, clientID: FormID, parameters: ParamDict
-): Promise<void> {
-  const dict: ChannelDict = {};
-  for (const name of names) dict[name] = report.channels[name];
-
-  const paramDict: ParamDict = {
-    [report.id]: report.parameters,
-    [rootID]: parameters[rootID],
-    [clientID]: parameters[clientID],
-  };
-  await fillChannels(dict, paramDict);
-}
-
-/* --- --- */
-
-/** Создаёт список программ/отчётов для презентации. */
-export async function createReportModels(id: ClientID, paramDict: ParamDict): Promise<ReportModel[]> {
-  const res = await reportsAPI.getPresentationReports(id);
-  const reportModels = res.ok ? res.data : [];
-  if (reportModels.length === 0) return reportModels;
-
-  const clients = ['root', id];
-  const changedReports: Promise<void>[] = [];
-
-  reportModels.forEach((report: ReportModel, i: number) => {
-    report.orderIndex = i;
-    if (!report.type) report.type = 'report';
-    report.availabilityParameters = (report as any).paramsForCheckVisibility;
-    delete (report as any).paramsForCheckVisibility;
-    if (!report.availabilityParameters) { report.available = true; return; }
-    const parameters = fillParamValues(report.availabilityParameters, paramDict, clients);
-
-    for (const parameter of parameters) {
-      if (!parameter.relatedReports) parameter.relatedReports = [];
-      if (!parameter.relatedReports.includes(report.id)) parameter.relatedReports.push(report.id);
-    }
-    changedReports.push(applyReportAvailability(report, parameters));
-  });
-  await Promise.all(changedReports);
-  return reportModels.sort(reportCompareFn);
-}
-
-export async function applyReportAvailability(report: ReportModel, parameters: Parameter[]): Promise<void> {
-  report.available = await reportsAPI.getReportAvailability(report.id, parameters);
-}
-
 /**
- * Клонирует глобальный параметр или параметр презентации
- * для подстановки в список параметров процедуры.
- * */
-export function cloneReportParameter(parameter: Parameter): Parameter {
-  const clone = parameter.clone();
-  clone.setValue(structuredClone(parameter.getValue()));
-  clone.relatedReports = [];
-  return clone;
+ * Обновляет у отчёта указанные каналы.
+ * @param report модель отчёта
+ * @param names названия каналов, которые нужно обновить, если null, то все
+ * @param external внешние параметры (презентации, глобальные)
+ */
+export function fillReportChannels(
+  report: ReportModel, names: ChannelName[] | null,
+  external: ParameterMap,
+): Promise<void[]> {
+  const { channels, parameters } = report;
+  if (!names) names = Object.keys(channels);
+  const cb = (name: ChannelName) => fillReportChannel(channels[name], parameters, external);
+  return Promise.all(names.map(cb));
+}
+
+export function fillReportChannel(c: Channel, parameters: Parameter[], map: ParameterMap): Promise<void> {
+  const parametersToFill: Parameter[] = [];
+  for (const id of c.config.parameters) {
+    const parameter = parameters.find(p => p.id === id) ?? map.get(id);
+    if (parameter) parametersToFill.push(parameter);
+  }
+  return fillChannel(c, parametersToFill);
 }
 
 /**
  * Функция сравнение моделей процедур для сортировки:
  * 1-ый признак — доступность, 2-ой — порядок, в котором они пришли с сервера.
- * */
+ */
 export function reportCompareFn(a: ReportModel, b: ReportModel): number {
   if (!a.available) return 1;
   if (!b.available) return -1;

@@ -4,7 +4,7 @@ import { deleteTrace } from '../../store/objects.thunks';
 
 import { BigButton } from 'shared/ui';
 import { Button } from '@progress/kendo-react-buttons';
-import deleteTraceIcon from 'assets/images/trace/detele-trace.png';
+import deleteTraceIcon from 'assets/trace/detele-trace.png';
 
 
 interface DeleteTraceProps {

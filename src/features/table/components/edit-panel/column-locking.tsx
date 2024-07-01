@@ -1,7 +1,7 @@
 import { EditPanelItemProps } from '../../lib/types';
 import { BigButtonToggle } from 'shared/ui';
 import { setTableColumnsSettings, setTableColumns } from '../../store/table.actions';
-import columnsLockingIcon from 'assets/images/dataset/columns-locking.png';
+import columnsLockingIcon from 'assets/dataset/columns-locking.png';
 
 
 export const ColumnLocking = ({id, state, t}: EditPanelItemProps) => {

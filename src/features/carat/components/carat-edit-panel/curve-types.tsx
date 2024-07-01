@@ -10,7 +10,7 @@ import { NumericTextBox } from '@progress/kendo-react-inputs';
 import { CaratStage } from '../../rendering/stage';
 import { CurveManager } from '../../lib/curve-manager';
 import { defaultSettings } from '../../lib/constants';
-import autoSettingIcon from 'assets/images/carat/column-width.svg';
+import autoSettingIcon from 'assets/carat/column-width.svg';
 
 
 interface CurveTypesSectionProps {

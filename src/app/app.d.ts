@@ -1,31 +1,42 @@
-/** Общие данные приложения.
- * + `config`: {@link ClientConfiguration}
- * + `systemList`: {@link SystemList}
- * + `sessionID`: {@link SessionID}
- * + `systemID`: {@link SystemID}
- * */
+/** Общие данные приложения. */
 interface AppState {
+  /** Путь к начальной странице относительно хоста. */
+  location: string;
   /** Клиентская конфигурация. */
-  config: ClientConfiguration;
+  config: ClientConfig;
   /** Список систем. */
   systemList: SystemList;
   /** ID текущей системы. */
   systemID: SystemID;
-  /** Состояние сессии. */
-  sessionID: SessionID;
   /** ID из `setInterval` для запроса `extendSession`. */
   sessionIntervalID: number;
+  /** Состояние загрузки. */
+  loading: AppLoadingState;
+  /** Очередь инициализации презентаций. */
+  readonly initQueue: ClientID[];
 }
 
-/** Конфигурация клиента Well Manager.
- * + `devMode?: boolean`
- * + `devDocLink?: string`
- * + `userDocLink?: string`
- * + `contactEmail?: string`
- * + `webServicesURL?: string`
- * + `root?: string`
- * */
-interface ClientConfiguration {
+/** Состояние загрузки приложения. */
+interface AppLoadingState {
+  /** Шаг загрузки. */
+  step: AppLoadingStep;
+  /** Сообщение ошибки  */
+  error?: string;
+  /** Если true, загрузка завершена. */
+  done?: boolean;
+}
+
+/**
+ * Шаги загрузки приложения:
+ * + `init` — инициализация приложения (конфиг и список систем)
+ * + `wait` — ожидание загрузки новой сессии
+ * + `session` — создание новой сессии
+ * + `data` — загрузка начальных данных сессии
+ */
+type AppLoadingStep = 'init' | 'wait' | 'session' | 'data';
+
+/** Конфигурация клиента. */
+interface ClientConfig {
   /** Режим разработчика. */
   devMode?: boolean;
   /** Ссылка на документацию для разработчиков. */
@@ -36,8 +47,6 @@ interface ClientConfiguration {
   contactEmail?: string;
   /** Префикс API серверной части. */
   webServicesURL?: string;
-  /** Путь к начальной странице относительно хоста. */
-  root?: string;
 }
 
 /** Список информационных систем. */
@@ -62,8 +71,5 @@ interface SystemInfo {
 /** Идентификатор сессии. */
 type SessionID = string;
 
-/** Идентификатор системы.
- * @example
- * "GTM_SYSTEM", "PREPARE_SYSTEM"
- * */
+/** Идентификатор системы. */
 type SystemID = string;

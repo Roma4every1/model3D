@@ -1,35 +1,50 @@
 /** Словарь параметров. */
-type ParamDict = Record<ClientID, Parameter[]>;
+type ParameterDict = Record<ClientID, Parameter[]>;
 
-/** Идентификатор параметра формы. */
-type ParameterID = string;
+/** Идентификатор параметра. */
+type ParameterID = number;
+/** Название параметра в конфиге сессии. */
+type ParameterName = string;
 
-/** Тип параметра формы. */
+/** Тип параметра. */
 type ParameterType = 'bool' | 'integer' | 'integerArray' | 'string' | 'stringArray' | 'double' |
   'doubleInterval' | 'date' | 'dateInterval' | 'tableCell' | 'tableCellsArray' | 'tableRow';
 
-/** Необходимые свойства параметра для получения данных канала.
- * + `id`: {@link ParameterID}
- * + `type`: {@link ParameterType}
- * + `value: string`
- * */
+/** Необходимые свойства параметра для получения данных канала. */
 interface SerializedParameter {
-  /** ID параметра. */
-  id: ParameterID;
+  /** Название параметра в конфиге сессии. */
+  id: ParameterName;
   /** Тип параметра. */
   type: ParameterType | 'sortOrder';
   /** Сериализованное значение параметра. */
   value: string | null;
 }
 
-/** Слушатель события изменения значения параметра и всех его зависимостей. */
-type ParameterOnDeepChange = (p: Parameter, oldValue?: any) => Promise<void>;
+type ParameterMap = Map<ParameterID, Parameter>;
+type PNameResolve = (name: ParameterName) => ParameterID | undefined;
+
+/**
+ * Колбэк, который вызывается при обновлении параметра системы.
+ * Если в хранилище были внесены изменения, должно быть возвращено
+ * множество параметров, которые были изменены.
+ */
+type OnParameterUpdate = (newValue: any, storage: ParameterMap) =>
+  ParameterID | Set<ParameterID> | undefined;
 
 interface Parameter<T extends ParameterType = ParameterType> {
   /** Идентификатор параметра. */
-  readonly id: ParameterID;
+  id: ParameterID;
+  /** Название параметра в конфиге сессии. */
+  readonly name: ParameterName;
   /** Тип параметра. */
   readonly type: T;
+
+  /** Допускается ли пустое значение параметра. */
+  nullable?: boolean;
+  /** Названия параметров, от которых зависит значение данного параметра. */
+  dependsOn?: ParameterName[];
+  /** ID всех параметров, значения которых зависят от данного параметра. */
+  dependents?: ParameterID[];
 
   /** Настройки редактора. */
   editor?: ParameterEditorOptions;
@@ -39,27 +54,14 @@ interface Parameter<T extends ParameterType = ParameterType> {
   /** Получить значение параметра. */
   getValue(): ParameterValueMap[T] | null;
   /** Установить значение. */
-  setValue(value: ParameterValueMap[T] | null, deep?: boolean): void | Promise<void>;
+  setValue(value: ParameterValueMap[T] | null): void;
   /** Установить значение из строки. */
   setValueString(s?: string | null): void;
-  /** Слушатель события изменения значения и всех его зависимостей. */
-  onDeepChange?: ParameterOnDeepChange;
 
   /** Метод, который возвращает неглубокую копию параметра. */
   clone(): Parameter<T>;
   /** Сериалзиация значения. */
   toString(): string | null;
-
-  /** Параметры, смена значений которых приводит к сбросу значения. */
-  dependsOn?: ParameterID[];
-  /** Сеттеры параметров, которые нужно обновить при обновлении данного. */
-  relatedSetters?: (ParameterSetter & {clientID: ClientID})[];
-  /** Каналы, которые зависят от данного параметра. */
-  relatedChannels?: ChannelName[];
-  /** Каналы процедур, которые зависят от данного параметра. */
-  relatedReportChannels?: RelatedReportChannels[];
-  /** Процедуры, доступность которых зависят от данного параметра. */
-  relatedReports?: ReportID[];
 }
 
 /** Настройки редактора параметра. */
@@ -68,14 +70,16 @@ interface ParameterEditorOptions {
   readonly type: ParameterEditorType;
   /** Имя параметра, отображаемое на интерфейсе. */
   readonly displayName: string;
-  /** Позволяет ли редактор сбрасывать значение. */
-  readonly canBeNull: boolean;
   /** Добавлять ли в выпадающий список вариант со значением "не задано". */
   readonly showNullValue: boolean;
   /** Кастомный текст для значения "не задано". */
   readonly nullDisplayValue: string;
   /** Индекс для сортировки редакторов. */
   readonly order: number;
+  /** Состояние, при котором запрещено редактирование параметра через редактор. */
+  disabled?: boolean;
+  /** Состояние, когда данные для выбора значения загружаются. */
+  loading?: boolean;
 }
 
 /** Тип редактора для данного параметра. */
@@ -123,4 +127,16 @@ interface ParameterGroup {
   code: string;
   /** Название группы. */
   displayName: string;
+}
+
+/** Настройка, которая обновляет значение параметра при изменении других параметров. */
+interface ParameterSetter {
+  /** Параметр, значение которого нужно обновить. */
+  readonly setParameter: ParameterID;
+  /** Параметры, значения которых нужно будет передать в запрос `/executeReportProperty`. */
+  readonly executeParameters: Set<ParameterID>;
+  /** ID, который нужно будет передать в запрос выполнения. */
+  readonly client: ClientID;
+  /** Индекс, который нужно будет передать в запрос выполнения. */
+  readonly index: number;
 }

@@ -1,13 +1,13 @@
 import { TFunction, useTranslation } from 'react-i18next';
 import { MapMode, elementEditModes } from '../../../lib/constants';
 
-import addBetween from 'assets/images/map/add-between.png';
-import handIcon from 'assets/images/map/hand.png';
-import movePoint from 'assets/images/map/move-point.png';
-import addEnd from 'assets/images/map/add-end.png';
-import deletePoint from 'assets/images/map/delete-point.png';
-import moveIcon from 'assets/images/map/move.png';
-import rotateIcon from 'assets/images/map/rotate.png';
+import addBetween from 'assets/map/add-between.png';
+import handIcon from 'assets/map/hand.png';
+import movePoint from 'assets/map/move-point.png';
+import addEnd from 'assets/map/add-end.png';
+import deletePoint from 'assets/map/delete-point.png';
+import moveIcon from 'assets/map/move.png';
+import rotateIcon from 'assets/map/rotate.png';
 
 
 interface EditElementProps {

@@ -1,48 +1,44 @@
-/** Состояние отчётов и программ.
- * + `models`: {@link ReportDict}
- * + `operations`: {@link OperationStatus}[]
- * */
+/** Состояние отчётов и программ. */
 interface Reports {
   /** Модели отчётов и программ по презентациям. */
   models: ReportDict;
   /** Активные операции. */
   operations: OperationStatus[];
+  /** Сущность, управляющая разметкой приложения. */
+  layoutController: any;
 }
 
 /** Хранилище отчётов и программ по презентациям. */
 type ReportDict = Record<ClientID, ReportModel[]>;
 
-/** Модель программы/отчёта.
- * + `id`: {@link ReportID}
- * + `type`: {@link ReportType}
- * + `displayName`: string
- * + `parameters`: {@link Parameter}[]
- * + `channels`: {@link ChannelDict}
- * + `canRun: boolean`
- * + `paramsForCheckVisibility`: {@link ParameterID}[]
- * + `visible: boolean`
- * */
+/** Модель программы или отчёта. */
 interface ReportModel {
   /** ID процедуры. */
-  id: ReportID;
+  readonly id: ReportID;
   /** Тип: программа или отчёт. */
-  type: ReportType;
+  readonly type: ReportType;
+  /** ID клиента, которому принадлежит процедура. */
+  readonly owner: ClientID;
   /** Порядковый номер в списке, переданном от сервера. */
-  orderIndex: number;
+  readonly orderIndex: number;
   /** Название процедуры. */
-  displayName: string;
-  /** Количество исполняемых блоков процедуры. */
-  linkedPropertyCount: number;
-  /** Список параметров процедуры. */
-  parameters: Parameter[] | undefined;
-  /** Каналы, необходимые для параметров. */
-  channels: ChannelDict | undefined;
-  /** Можно ли запустить процедуру при текущих параметрах. */
-  canRun: boolean;
-  /** Доступность процедуры при текущих параметрах. */
-  available: boolean;
+  readonly displayName: string;
   /** Список параметров для проверки доступности. */
-  availabilityParameters: ParameterID[];
+  readonly availabilityParameters: ParameterID[];
+  /** Доступность процедуры при текущих параметрах системы, `undefined` означает неактуальность. */
+  available: boolean | undefined;
+  /** Можно ли запустить процедуру при её текущих параметрах, `undefined` означает загрузку. */
+  runnable: boolean | undefined;
+  /** Список параметров процедуры. */
+  parameters?: Parameter[];
+  /** Каналы, необходимые для параметров. */
+  channels?: ChannelDict;
+  /** Количество исполняемых блоков процедуры. */
+  linkedPropertyCount?: number;
+  /** ID параметров процедуры, значения которых нужно брать на основе параметров системны. */
+  relations?: Map</* report */ ParameterID, /* system */ ParameterID>;
+  /** Нужно ли делать проверку связанных параметров. */
+  checkRelations?: boolean;
 }
 
 /** Тип удалённой процедуры: программа или отчёт. */
@@ -53,45 +49,9 @@ type ReportID = string;
 /** Идентификатор операции. */
 type OperationID = string;
 
-/** Данные для инициализации списка параметров отчёта/программы. */
-type ReportInitData = Pick<ReportModel, 'parameters' | 'channels' | 'canRun' | 'linkedPropertyCount'>;
-
-/** Список связанных каналов отчёта.
- * + `clientID`: {@link ClientID}
- * + `reportID`: {@link ReportID}
- * + `channels`: {@link ChannelName}[]
- * */
-interface RelatedReportChannels {
-  /** ID клиента, в котором находится отчёт. */
-  clientID: ClientID;
-  /** ID отчёта. */
-  reportID: ReportID;
-  /** Названия связанных каналов. */
-  channels: ChannelName[];
-}
-
 /* --- Server API --- */
 
-/** Данные о параметрах и составных частях отчёта.
- * + `parameters`: {@link Parameter}[]
- * + `replaces`: {@link Record} of {@link ParameterID}
- * + `linkedPropertyCount: number`
- * */
-interface ReportData {
-  /** Кастомные параметры процедуры. */
-  parameters: Parameter[];
-  /** Все необходимые параметры для процедуры (для `reportString` и `queryString` false). */
-  replaces: Record<ParameterID, boolean>;
-  /** Количество исполняемых блоков процедуры. */
-  linkedPropertyCount: number;
-}
-
-/** Данные о выполнении удалённой операции на сервере.
- * + `operationID`: {@link OperationID}
- * + `result: string`
- * + `error: string`
- * + `modifiedTables`: {@link QueryID}[]
- * */
+/** Данные о выполнении удалённой операции на сервере. */
 interface OperationData {
   /** ID операции для `reportString`, иначе `null`. */
   operationID: OperationID | null;
@@ -103,20 +63,7 @@ interface OperationData {
   modifiedTables: QueryID[];
 }
 
-/** Статус операции, выполняемой на сервере.
- * + `id`: {@link OperationID}
- * + `clientID`: {@link ClientID}
- * + `ready: boolean`
- * + `progress: number`
- * + `queueNumber: string`
- * + `timestamp: Date`
- * + `file`: {@link OperationFile}
- * + `comment: string`
- * + `defaultResult: string`
- * + `error: string`
- * + `modifiedTables`: {@link QueryID}[]
- * + `log: string`
- * */
+/** Статус операции, выполняемой на сервере. */
 interface OperationStatus {
   /** ID операции. */
   id: OperationID;
@@ -144,12 +91,7 @@ interface OperationStatus {
   log: string | null;
 }
 
-/** Информация о файле активного отчёта.
- * + `name: string`
- * + `extension: string`
- * + `type: string`
- * + `path: string`
- * */
+/** Информация о файле активного отчёта. */
 interface OperationFile {
   /** Название файла. */
   name: string;

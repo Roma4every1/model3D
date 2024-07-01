@@ -1,21 +1,13 @@
 import { useState } from 'react';
 import { Loader } from '@progress/kendo-react-indicators';
 import { ReportParameterList } from './report-parameter-list';
-import { initializeActiveReport, refreshReport } from 'entities/report';
+import { initializeActiveReport, prepareReport } from 'entities/report';
 
-import reportIcon from 'assets/images/reports/report.svg';
-import programIcon from 'assets/images/reports/program.svg';
-
-
-interface ReportButtonProps {
-  /** ID презентации. */
-  id: ClientID;
-  /** Модель отчёта. */
-  report: ReportModel;
-}
+import reportIcon from 'assets/reports/report.svg';
+import programIcon from 'assets/reports/program.svg';
 
 
-export const ReportButton = ({id, report}: ReportButtonProps) => {
+export const ReportButton = ({report}: {report: ReportModel}) => {
   const [opened, setOpened] = useState(false);
   const [processing, setProcessing] = useState(false);
 
@@ -29,9 +21,9 @@ export const ReportButton = ({id, report}: ReportButtonProps) => {
 
     const onLoad = () => { setProcessing(false); setOpened(true); };
     if (report.parameters) {
-      refreshReport(id, report).then(onLoad);
+      prepareReport(report).then(onLoad);
     } else {
-      initializeActiveReport(id, report.id).then(onLoad);
+      initializeActiveReport(report).then(onLoad);
     }
   };
 
@@ -44,8 +36,7 @@ export const ReportButton = ({id, report}: ReportButtonProps) => {
         <div>{report.displayName}</div>
       </div>
       {opened && <ReportParameterList
-        id={id} report={report}
-        setOpened={setOpened} setProcessing={setProcessing}
+        report={report} setOpened={setOpened} setProcessing={setProcessing}
       />}
     </>
   );

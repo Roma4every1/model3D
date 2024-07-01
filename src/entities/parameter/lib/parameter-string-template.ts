@@ -1,6 +1,20 @@
-import { ParameterExpression } from './parameter.types';
-import { parseParameterExpression } from './utils';
-
+/** Выражение параметра: вызов какого-либо метода.
+ * @example
+ * 'date.Year' => {name: 'date', method: 'Year'}
+ * 'row.Cell[ID]' => {name: 'row', method: 'Cell', argument: 'ID'}
+ */
+interface ParameterExpression {
+  /** Идентификатор параметра. */
+  id: ParameterID;
+  /** Название параметра. */
+  name: ParameterName;
+  /** Вызываемый метод. */
+  method: string;
+  /** Аргумент метода. */
+  argument?: string;
+  /** Значение по умолчанию. */
+  defaultValue?: string;
+}
 
 /** Узел шаблона: строка или выражение для подстановки. */
 type TemplateNode = string | ParameterExpression[];
@@ -22,22 +36,22 @@ export class ParameterStringTemplate {
   /** Узлы шаблона. */
   private readonly nodes: TemplateNode[];
 
-  constructor(source: string) {
+  constructor(source: string, resolve: PNameResolve) {
     this.source = source;
     this.parameterIDs = new Set();
-    this.nodes = this.parse(source);
+    this.nodes = this.parse(source, resolve);
   }
 
-  public build(values?: Record<string, Parameter>): string | null {
+  public build(values?: Parameter[]): string | null {
     if (this.parameterIDs.size === 0) return this.source;
-    if (!values) values = {};
+    if (!values) values = [];
     return this.nodes.map(node => this.buildNode(node, values)).join('');
   }
 
-  private buildNode(node: TemplateNode, values: Record<string, Parameter>): string {
+  private buildNode(node: TemplateNode, values: Parameter[]): string {
     if (typeof node === 'string') return node;
     for (const { id, method, argument } of node) {
-      const parameter = values[id];
+      const parameter = values.find(p => p.id === id);
       if (!parameter || !parameter[method]) continue;
       const value = parameter[method](argument);
       if (value !== null) return value;
@@ -47,7 +61,7 @@ export class ParameterStringTemplate {
 
   /* --- Parsing --- */
 
-  private parse(source: string): TemplateNode[] {
+  private parse(source: string, resolve: PNameResolve): TemplateNode[] {
     if (!source) return [];
     const positions: number[] = [];
     let deep = 0;
@@ -76,19 +90,51 @@ export class ParameterStringTemplate {
       const end = positions[i + 1];
 
       const expressionSource = source.substring(start, end);
-      const expression = parseParameterExpression(expressionSource);
-      if (!expression) continue;
+      const expressions = parseParameterExpression(expressionSource);
+      if (!expressions) continue;
 
       if (start >= nodePosition) {
         if (start > nodePosition) nodes.push(source.substring(nodePosition, start));
         nodePosition = end;
       }
-      nodes.push(expression);
-      for (const { id } of expression) this.parameterIDs.add(id);
+      nodes.push(expressions);
+
+      for (const expression of expressions) {
+        const id = resolve(expression.name);
+        expression.id = id;
+        this.parameterIDs.add(id);
+      }
     }
 
     const postfix = source.substring(nodePosition);
     if (postfix) nodes.push(postfix);
     return nodes;
   }
+}
+
+/**
+ * @example
+ * '$(date.Year)' => [{id: 'date', method: 'Year'}]
+ * '$(row.Cell[ID]:0)' => [{id: 'row', method: 'Cell', argument: 'ID', defaultValue: '0'}]
+ */
+function parseParameterExpression(source: string): ParameterExpression[] | null {
+  let defaultValue: string;
+  const nodes: ParameterExpression[] = [];
+
+  while (true) {
+    if (!source) break;
+    const match = source.match(/^\$\((\w+)(?:\.(\w+)(?:\[(\w+)])?)?(?::(.*))?\)$/);
+    if (!match) { defaultValue = source; break; }
+
+    const [, name, method, argument, defaultNodeValue] = match;
+    source = defaultNodeValue;
+
+    const node: ParameterExpression = {id: undefined, name, method: method ?? 'Value'};
+    if (argument) node.argument = argument;
+    nodes.push(node);
+  }
+
+  if (nodes.length === 0) return null;
+  if (defaultValue) nodes[nodes.length - 1].defaultValue = defaultValue;
+  return nodes;
 }

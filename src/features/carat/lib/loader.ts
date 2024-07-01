@@ -111,7 +111,7 @@ export class CaratLoader {
       this.onProgressChange({percentage: 0, status, statusOptions: {count: 0, total}});
     }
     const channelName = this.curveDataChannel.name;
-    const parameter = new StringArrayParameter('currentCurveIds', null);
+    const parameter = new StringArrayParameter(null, 'currentCurveIds', null);
     const signal = this.abortController?.signal;
 
     for (let i = 0; i < total; i += step) {
@@ -173,7 +173,7 @@ export class CaratLoader {
 
   /** Загружает данные инклинометрии по скважине. */
   private async loadInclinometry(value: any, channel: Channel): Promise<ChannelRecord[]> {
-    const parameter = new TableRowParameter(channel.config.parameters[0], null);
+    const parameter = new TableRowParameter(null, channel.config.parameterNames[0], null);
     parameter.setValue(value);
 
     const signal = this.abortController.signal;

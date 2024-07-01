@@ -8,7 +8,7 @@ import { CaratColumnGroup } from '../../rendering/column-group';
 import { constraints } from '../../lib/constants';
 
 import './carat-settings.scss';
-import dragIcon from 'assets/images/carat/drag.svg';
+import dragIcon from 'assets/common/drag-horizontal.svg';
 
 
 interface CaratSettingsWindowProps {

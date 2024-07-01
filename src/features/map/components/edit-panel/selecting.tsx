@@ -2,7 +2,7 @@ import { TFunction } from 'react-i18next';
 import { useState } from 'react';
 import { Checkbox } from '@progress/kendo-react-inputs';
 import { useTraceEditing } from 'entities/objects';
-import selectingIcon from 'assets/images/map/selecting-mode.png';
+import selectingIcon from 'assets/map/selecting-mode.png';
 
 
 interface SelectingProps {

@@ -3,7 +3,7 @@ import { ChangeEvent, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@progress/kendo-react-buttons';
 import { showNotification } from 'entities/notification';
-import { reportsAPI } from 'entities/report/lib/report.api';
+import { reportAPI } from 'entities/report/lib/report.api';
 
 
 export const FileEditor = ({parameter, update}: EditorProps<'string'>) => {
@@ -16,7 +16,7 @@ export const FileEditor = ({parameter, update}: EditorProps<'string'>) => {
     if (!file) return;
 
     const fileData = await file.arrayBuffer();
-    const { ok, data: resourceID } = await reportsAPI.uploadFile(file.name, fileData);
+    const { ok, data: resourceID } = await reportAPI.uploadFile(file.name, fileData);
 
     if (ok && resourceID.endsWith(file.name)) {
       update(resourceID);
@@ -41,7 +41,7 @@ export const FileEditor = ({parameter, update}: EditorProps<'string'>) => {
         <Button onClick={clearFile} style={{paddingLeft: 4}}>
           <span className={'k-icon k-i-close'}/>
         </Button>
-        <Button onClick={openFiles}>
+        <Button onClick={openFiles} disabled={parameter.editor.disabled}>
           <span className={'k-icon k-i-folder-open'}/>
         </Button>
       </div>

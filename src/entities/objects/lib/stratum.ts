@@ -1,4 +1,3 @@
-import type { ParameterUpdateEntries } from 'entities/parameter';
 import { RecordInfoCreator } from 'entities/channel';
 import { stratumChannelCriterion } from './constants';
 
@@ -14,7 +13,7 @@ export class StratumManager implements IStratumManager {
   private readonly info: ChannelRecordInfo<keyof StratumModel> | undefined;
 
   constructor (parameters: Parameter[], channels: ChannelDict) {
-    const parameter = parameters.find(p => p.id === 'currentPlast');
+    const parameter = parameters.find(p => p.name === 'currentPlast');
     if (!parameter || parameter.type !== 'tableRow') return;
     this.parameterID = parameter.id;
 
@@ -37,11 +36,9 @@ export class StratumManager implements IStratumManager {
     if (stratumRow) this.model = this.createModel(stratumRow);
   }
 
-  public onParameterUpdate(entries: ParameterUpdateEntries): boolean {
-    const entry = entries.find(e => e.id === this.parameterID);
-    if (!entry) return false;
+  public onParameterUpdate(value: ParameterValueMap['tableRow']): boolean {
     const oldModel = this.model;
-    this.model = this.createModel(entry.value);
+    this.model = this.createModel(value);
     return this.model !== oldModel;
   }
 

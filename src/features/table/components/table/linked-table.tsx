@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
+import { useActivePresentation } from 'entities/client';
 import { Table } from './table';
-import { useActivePresentationID } from '../../../../app/store/root-form.store';
-import { usePresentation } from 'widgets/presentation';
 
 
 interface LinkedTableProps {
@@ -11,8 +10,7 @@ interface LinkedTableProps {
 
 
 export const LinkedTable = ({id, onClose}: LinkedTableProps) => {
-  const activePresentationID = useActivePresentationID();
-  const presentation = usePresentation(activePresentationID);
+  const presentation = useActivePresentation();
   const child = presentation?.children.find(c => c.id === id);
 
   // закрывает окно при смене презентации
@@ -21,5 +19,5 @@ export const LinkedTable = ({id, onClose}: LinkedTableProps) => {
   }, [child, onClose]);
 
   if (!child) return null;
-  return <Table id={id} parent={null} type={null} settings={null} channels={null}/>;
+  return <Table id={id}/>;
 };

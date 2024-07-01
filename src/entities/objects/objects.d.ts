@@ -24,7 +24,7 @@ interface ActiveObjectManager<T> {
   /** По текущему значению параметров системы иницализирует модель объекта. */
   initializeModel(parameters: Parameter[], channels?: ChannelDict): void;
   /** Метод, который вызывается при обновлении параметров системы. */
-  onParameterUpdate(entries: any[], channels?: ChannelDict): boolean;
+  onParameterUpdate(value: any, channels?: ChannelDict): boolean;
 }
 
 /* --- Place --- */

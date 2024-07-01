@@ -1,11 +1,16 @@
+import type { TreeViewExpandChangeEvent, TreeViewItemClickEvent } from '@progress/kendo-react-treeview';
 import { useMemo } from 'react';
 import { TreeView } from '@progress/kendo-react-treeview';
-import { TreeViewExpandChangeEvent, TreeViewItemClickEvent } from '@progress/kendo-react-treeview';
 import { forEachTreeLeaf, findInTree } from 'shared/lib';
-import { selectPresentation } from 'app/store/root-form.actions';
 
 
-export const PresentationTreeView = ({tree}: {tree: PresentationTree}) => {
+interface PresentationTreeProps {
+  tree: PresentationTree;
+  onSelect: (id: ClientID) => void | Promise<void>;
+}
+
+
+export const PresentationTreeView = ({tree, onSelect}: PresentationTreeProps) => {
   const visibleNodes = useMemo(() => {
     return getVisibleNodes(tree);
   }, [tree]);
@@ -24,7 +29,7 @@ export const PresentationTreeView = ({tree}: {tree: PresentationTree}) => {
     const callback = (i: PresentationTreeItem) => { i.selected = i.id === id; };
     forEachTreeLeaf(tree, callback, 'items');
     forEachTreeLeaf(visibleNodes, callback, 'items');
-    selectPresentation(id);
+    onSelect(id);
   };
 
   return (

@@ -1,7 +1,7 @@
 import { TFunction } from 'react-i18next'
 import { MenuSection, BigButton } from 'shared/ui';
 import { saveMap } from '../../store/map.thunks';
-import saveMapIcon from 'assets/images/map/save-map.png';
+import saveMapIcon from 'assets/map/save-map.png';
 
 
 interface SaveMapProps {

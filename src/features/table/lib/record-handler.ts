@@ -1,7 +1,8 @@
 import type { CSSProperties } from 'react';
 import type { RowErrors, RowStyleRule } from './types';
-import { createLookupList, createLookupTree } from 'entities/channel';
+import { measureText } from 'shared/drawing';
 import { stringifyLocalDate, fixColorHEX } from 'shared/lib';
+import { createLookupList, createLookupTree } from 'entities/channel';
 
 
 /** Условие, при выполнении которого у строки таблицы будут переопределены стили.  */
@@ -21,14 +22,17 @@ interface RecordStyleRule {
 
 /** Класс, отвечающий работу с записями таблицы. */
 export class RecordHandler implements ITableRecordHandler {
+  private static readonly font = '700 12px "Segoe UI", "Roboto", "Arial", sans-serif';
   private readonly styleRules: RecordStyleRule[] | null;
   private columnDict: TableColumnsState;
   private columnList: TableColumnState[];
+  private records: ChannelRecord[];
 
   constructor(columns: TableColumnsState, rowStyles: RowStyleRule[] | null) {
     this.styleRules = rowStyles ? rowStyles.map(rowToRecordStyleRule) : null;
     this.columnDict = columns;
     this.columnList = Object.values(columns);
+    this.records = [];
   }
 
   public setColumns(columns: TableColumnsState, channelColumns?: ChannelColumn[]): void {
@@ -53,6 +57,68 @@ export class RecordHandler implements ITableRecordHandler {
     }
   }
 
+  public checkAutoWidthColumns(): void {
+    for (const { field, width, autoWidth } of this.columnList) {
+      if (autoWidth || !width || width === 1) this.setColumnAutoWidth(field);
+    }
+  }
+
+  public setColumnAutoWidth(id: TableColumnID): void {
+    const column = this.columnDict[id];
+    column.autoWidth = true;
+    column.width = this.getAutoWidth(column);
+  }
+
+  private getAutoWidth(column: TableColumnState): number {
+    const titleWidth = measureText(column.title, RecordHandler.font);
+    let dataWidth = 0;
+
+    if (this.records.length > 0) {
+      if (column.type === 'date') {
+        dataWidth = 75;
+      } else if (column.type === 'bool') {
+        dataWidth = 40;
+      } else {
+        dataWidth = this.getLongestCellWidth(column);
+      }
+    }
+    if (column.detailChannel) {
+      dataWidth += 20;
+    }
+    return Math.min(400, Math.max(titleWidth, dataWidth) + 12);
+  }
+
+  private getLongestCellWidth(column: TableColumnState): number {
+    const { field, type } = column;
+    let max = 0;
+
+    if (type === 'text') {
+      for (const record of this.records) {
+        const value = record[field];
+        if (!value) continue;
+        const width = measureText(value, RecordHandler.font);
+        if (width > max) max = width;
+      }
+    } else if (column.lookupDict) { // type === 'list || type === 'tree'
+      for (const record of this.records) {
+        let value = record[field];
+        if (value === null) continue;
+        value = column.lookupDict[value];
+        if (value === null) continue;
+        const width = measureText(String(value), RecordHandler.font);
+        if (width > max) max = width;
+      }
+    } else {
+      for (const record of this.records) {
+        const value = record[field];
+        if (value === null) continue;
+        const width = measureText(String(value), RecordHandler.font);
+        if (width > max) max = width;
+      }
+    }
+    return max;
+  }
+
   /** Записывает данные справочников в состояние колонок. */
   public setLookupData(lookupData: ChannelDict): void {
     for (const column of this.columnList) {
@@ -75,8 +141,13 @@ export class RecordHandler implements ITableRecordHandler {
 
   /** Создаёт массив объектов данных для рендеринга в `Grid`. */
   public createRecords(data: ChannelData): TableRecord[] {
-    if (!data?.rows.length) return [];
-    return data.rows.map((row, i) => this.createRecord(i, row));
+    if (data && data.rows.length) {
+      this.records = data.rows.map((row, i) => this.createRecord(i, row));
+    } else {
+      this.records = [];
+    }
+    this.checkAutoWidthColumns();
+    return this.records;
   }
 
   /** Создаёт модель записи для рендеринга в `Grid`. */

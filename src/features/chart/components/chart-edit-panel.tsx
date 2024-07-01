@@ -3,8 +3,8 @@ import { MenuSkeleton, MenuSection, BigButtonToggle, BigButton } from 'shared/ui
 import { DropDownList, DropDownListChangeEvent } from '@progress/kendo-react-dropdowns';
 import { useChartState } from '../store/chart.store';
 import { setChartDateStep, setChartTooltipVisibility } from '../store/chart.actions';
-import chartTooltipIcon from 'assets/images/chart/tooltip.png';
-import chartDownloadIcon from 'assets/images/chart/download-png.png';
+import chartTooltipIcon from 'assets/chart/tooltip.png';
+import chartDownloadIcon from 'assets/chart/download-png.png';
 
 
 const dateStepData = [

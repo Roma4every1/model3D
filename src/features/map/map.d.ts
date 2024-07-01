@@ -1,37 +1,15 @@
-/* --- Maps State --- */
-
-/** ## Состояние мультикарты.
- * + `sync: boolean` — синхронизация СК
- * + `children`: {@link FormID}[] — карты
- * */
-interface MultiMapState {
-  sync: boolean;
-  templateFormID: FormID;
-  children: FormID[];
-  configs: MapItemConfig[];
-}
-
-interface MapItemConfig {
-  id: MapID;
-  formID: FormID;
-  progress: number;
-  stage: IMapStage;
-  loader: IMapLoader;
-  setProgress?: (process: number) => void;
-}
-
 /** Состояние карты. */
 interface MapState {
+  /** Класс сцены. */
+  readonly stage: IMapStage;
+  /** Загрузчик. */
+  readonly loader: IMapLoader;
+  /** Класс для отслеживания изменения размеров холста. */
+  readonly observer: ResizeObserver;
   /** Ссылка на холст. */
   canvas: MapCanvas;
-  /** Класс сцены. */
-  stage: IMapStage;
-  /** Загрузчик. */
-  loader: IMapLoader;
-  /** Класс для отслеживания изменения размеров холста. */
-  observer: ResizeObserver;
   /** Владелец карты. */
-  owner: MapOwner;
+  owner: MapStorageID;
   /** Идентификатор карты. */
   mapID: MapID;
   /** Состояние загрузки карты. */
@@ -56,6 +34,7 @@ interface IMapStage {
   inclinometryModeOn: boolean;
   readonly plugins: IMapPlugin[];
 
+  getWellViewport(wellID: WellID): MapViewport | null;
   getCanvas(): MapCanvas;
   getMode(): number;
   getSelecting(): boolean;
@@ -92,7 +71,7 @@ interface IMapStage {
 }
 
 interface IMapLoader {
-  loadMapData(mapID: MapID, owner: MapOwner): Promise<MapData | string | null>;
+  loadMapData(mapID: MapID, owner: MapStorageID): Promise<MapData | string | null>;
   abortLoading(): void;
   onProgressChange(l: MapLoading): void;
 }
@@ -193,7 +172,7 @@ interface MapData {
   objectCode: string;
   objectName: string;
   organization: string;
-  owner: MapOwner | null;
+  owner: MapStorageID | null;
   plastCode: string;
   plastName: string;
   points: MapPoint[];
@@ -261,16 +240,13 @@ interface MapPoint {
   selected?: boolean;
 }
 
+/** Идентификатор карты. */
+type MapID = string;
+/** Идентификатор системы хранения карт. */
+type MapStorageID = string;
+
 /** Масштаб карты. */
 type MapScale = number;
-/** Идентификатор карты — числовая строка. */
-type MapID = string;
-
-/** Владелец карты.
- * @example
- * "Common", "706\\VIN"
- * */
-type MapOwner = string;
 
 /* --- Map Elements Types --- */
 

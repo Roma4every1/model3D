@@ -1,7 +1,7 @@
 import { EditPanelItemProps } from '../../lib/types';
 import { BigButton } from 'shared/ui';
 import { setTableSelection } from '../../store/table.actions';
-import selectAllIcon from 'assets/images/dataset/select-all.png';
+import selectAllIcon from 'assets/dataset/select-all.png';
 
 
 export const SelectAll = ({id, state, t}: EditPanelItemProps) => {

@@ -2,13 +2,13 @@ import type { Res, ReqOptions } from 'shared/lib';
 import type { IJsonModel } from 'flexlayout-react';
 import type { ParameterInit } from 'entities/parameter';
 import { Fetcher, fetcher } from 'shared/lib';
-import { createParameters, serializeParameter } from 'entities/parameter';
+import { serializeParameter } from 'entities/parameter';
 
 
-interface ClientDataDTO {
-  settings: any;
+export interface ClientDataDTO<S = any> {
+  settings: S;
   channels: AttachedChannelDTO[];
-  parameters: Parameter[];
+  parameters: ParameterInit[];
   children?: ClientChildrenDTO;
   layout?: IJsonModel;
 }
@@ -56,13 +56,12 @@ export class ClientAPI {
     if (!resChildren.ok) return {ok: false, message: resChildren.message};
     if (!resTree.ok) return {ok: false, message: resTree.message};
 
-    const settings: DockSettings = resSettings.ok ? resSettings.data : {};
+    const settings: any = resSettings.ok ? resSettings.data : {};
     settings.presentationTree = resTree.data;
-    if (settings.dateChanging && !settings.dateChanging.year) delete settings.dateChanging;
 
     const children = resChildren.data;
     const layout = resLayout.ok ? resLayout.data : ({} as IJsonModel);
-    const parameters = resParameters.ok ? createParameters(resParameters.data) : [];
+    const parameters = resParameters.ok ? resParameters.data : [];
     return {ok: true, data: {settings, channels: [], parameters, children, layout}};
   }
 
@@ -81,7 +80,7 @@ export class ClientAPI {
     const children = resChildren.data;
     const channels = this.getAttachedChannels(resChannels);
     const layout = resLayout.ok ? resLayout.data : ({} as IJsonModel);
-    const parameters = resParameters.ok ? createParameters(resParameters.data) : [];
+    const parameters = resParameters.ok ? resParameters.data : [];
     return {ok: true, data: {settings, channels, parameters, children, layout}};
   }
 

@@ -1,12 +1,12 @@
-import { TFunction } from 'react-i18next';
-import { EditPanelItemProps } from '../../lib/types';
+import type { TFunction } from 'react-i18next';
+import type { EditPanelItemProps } from '../../lib/types';
 import { useMemo } from 'react';
-import { MenuSection, BigButton, ButtonStock } from 'shared/ui';
-import { getColumnWidth } from '../../lib/common';
 import { findGroupItems, moveColumn } from '../../lib/column-tree-actions';
 import { setTableColumns, setTableColumnTree } from '../../store/table.actions';
-import autoWidthIcon from 'assets/images/dataset/auto-width.png';
+
+import { MenuSection, BigButton, ButtonStock } from 'shared/ui';
 import { ColumnStatistics } from './column-statistics';
+import autoWidthIcon from 'assets/dataset/auto-width.png';
 
 
 interface ColumnOrderControlsProps {
@@ -53,8 +53,7 @@ export const ColumnControls = ({id, state, t}: EditPanelItemProps) => {
 
   const setAutoWidth = () => {
     if (activeColumn.autoWidth) return;
-    activeColumn.autoWidth = true;
-    activeColumn.width = getColumnWidth(activeColumn.title);
+    state.recordHandler.setColumnAutoWidth(activeColumn.field)
     setTableColumns(id, {...state.columns});
   };
 

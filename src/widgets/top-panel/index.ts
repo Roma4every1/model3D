@@ -1,8 +1,6 @@
 export type { MainMenuProps } from './components/main-menu';
-export { MainMenu } from './components/main-menu';
+export type { TopTabProps } from './components/top-tab';
 
-export type { PresentationReportsProps } from './components/presentation-reports';
-export { PresentationReports } from './components/presentation-reports';
-
-export type { TopPanelProps } from './components/top-tab';
 export { TopTab } from './components/top-tab';
+export { MainMenu } from './components/main-menu';
+export { PresentationReports } from './components/presentation-reports';

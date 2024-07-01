@@ -1,6 +1,10 @@
 import { getDataTypeName } from 'shared/lib';
-import { ParameterExpression } from './parameter.types';
 
+
+/** Убирает лишние свойста и сериализует значение параметра перед отправкой запроса на сервер. */
+export function serializeParameter(parameter: Parameter): SerializedParameter {
+  return {id: parameter.name, type: parameter.type, value: parameter.toString()};
+}
 
 /** Находит и возвращает список каналов, необходимых для параметров. */
 export function getParameterChannels(parameters: Parameter[]): Set<ChannelName> {
@@ -37,72 +41,24 @@ export function parseDBPrimitive(value: string, typeName: string): any {
   return null;
 }
 
-/** Убирает лишние свойста и сериализует значение параметра перед отправкой запроса на сервер. */
-export function serializeParameter(parameter: Parameter): SerializedParameter {
-  return {id: parameter.id, type: parameter.type, value: parameter.toString()};
-}
+export function findParameterDependents(p: Parameter, depMap: Map<ParameterID, Set<ParameterID>>): void {
+  const deps = depMap.get(p.id);
+  if (deps.size === 0) { p.dependents = []; return; }
 
-/** Находит в хранилище параметров нужные элементы и наполняет массив.
- * @example
- * // поиск среди глобальных параметров
- * fillParamValues(ids, storage, [rootID]);
- *
- * // поиск среди глобальных и параметров презентации
- * fillParamValues(ids, storage, [rootID, presentationID]);
- * */
-export function fillParamValues(ids: ParameterID[], storage: ParamDict, clientsID: Iterable<FormID>) {
-  const result: Parameter[] = [];
-  for (const id of ids) {
-    for (const clientID of clientsID) {
-      const neededParam = storage[clientID].find(p => p.id === id);
-      if (neededParam) { result.push(neededParam); break; }
+  const dependents: Set<ParameterID> = new Set();
+  const queue: ParameterID[] = [...deps];
+  const visited: Set<ParameterID> = new Set([p.id]);
+
+  while (queue.length) {
+    const id = queue.shift();
+    if (visited.has(id)) continue;
+
+    dependents.add(id);
+    visited.add(id);
+
+    for (const dep of depMap.get(id)) {
+      if (!visited.has(dep)) queue.push(dep);
     }
   }
-  return result;
-}
-
-/** Рекурсивно находит параметры, которые зависят от данного. */
-export function findDependentParameters(id: ParameterID, parameters: ParamDict): ParamDict {
-  const dependencies: ParamDict = {};
-
-  const find = (id: ParameterID, clientID: ClientID, clientParameters: Parameter[]) => {
-    for (const parameter of clientParameters) {
-      if (!parameter.dependsOn.includes(id)) continue;
-      if (dependencies[clientID]?.includes(parameter)) continue;
-      if (!dependencies[clientID]) dependencies[clientID] = [];
-      dependencies[clientID].push(parameter);
-      find(parameter.id, clientID, clientParameters);
-    }
-  };
-  for (const clientID in parameters) {
-    find(id, clientID, parameters[clientID]);
-  }
-  return dependencies;
-}
-
-/**
- * @example
- * '$(date.Year)' => [{id: 'date', method: 'Year'}]
- * '$(row.Cell[ID]:-1)' => [{id: 'row', method: 'Cell', argument: 'ID', defaultValue: '-1'}]
- */
-export function parseParameterExpression(source: string): ParameterExpression[] | null {
-  let defaultValue: string;
-  const nodes: ParameterExpression[] = [];
-
-  while (true) {
-    if (!source) break;
-    const match = source.match(/^\$\((\w+)(?:\.(\w+)(?:\[(\w+)])?)?(?::(.*))?\)$/);
-    if (!match) { defaultValue = source; break; }
-
-    const [, id, method, argument, defaultNodeValue] = match;
-    source = defaultNodeValue;
-
-    const node: ParameterExpression = {id, method: method ?? 'Value'};
-    if (argument) node.argument = argument;
-    nodes.push(node);
-  }
-
-  if (nodes.length === 0) return null;
-  if (defaultValue) nodes[nodes.length - 1].defaultValue = defaultValue;
-  return nodes;
+  p.dependents = [...dependents];
 }

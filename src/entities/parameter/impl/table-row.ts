@@ -20,14 +20,15 @@ export function rowToParameterValue(row: ChannelRow, channel: Channel): Record<s
 
 export class TableRowParameter implements Parameter<'tableRow'> {
   public readonly id: ParameterID;
+  public readonly name: ParameterName;
   public readonly type = 'tableRow';
-  public onDeepChange: ParameterOnDeepChange;
 
   private value: Record<string, TypedCell> | null;
   private valueString: string | null;
 
-  constructor(id: ParameterID, s: string | null) {
+  constructor(id: ParameterID, name: ParameterName, s: string | null) {
     this.id = id;
+    this.name = name;
     this.setValueString(s);
   }
 
@@ -41,16 +42,9 @@ export class TableRowParameter implements Parameter<'tableRow'> {
     return this.value;
   }
 
-  public setValue(value: Record<string, TypedCell> | null, deep?: boolean): void | Promise<void> {
-    const oldValue = this.value;
+  public setValue(value: Record<string, TypedCell> | null): void {
     this.value = value;
-
-    if (this.value) {
-      this.valueString = this.createValueString();
-    } else {
-      this.valueString = null;
-    }
-    if (deep && this.onDeepChange) return this.onDeepChange(this, oldValue);
+    this.valueString = value ? this.createValueString() : null;
   }
 
   public setValueString(s?: string | null): void {

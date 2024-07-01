@@ -1,6 +1,4 @@
-import { useClientState } from 'entities/client';
-import { useFetchState } from 'entities/fetch-state';
-import { setActiveForm } from '../store/presentation.actions';
+import { useClientState, setClientActiveChild } from 'entities/client';
 import { TextInfo } from 'shared/ui';
 import { FormSkeleton } from './plugs';
 import { formDict } from '../lib/form-dict';
@@ -15,14 +13,12 @@ export interface FormProps {
 /** Обобщённый компонент всех типов форм. */
 export const Form = ({id, type}: FormProps) => {
   const state = useClientState(id);
-  const fetchState = useFetchState(id);
-
-  if (fetchState.notLoaded()) return <FormSkeleton/>;
-  if (fetchState.error()) return <TextInfo text={fetchState.details}/>;
+  if (!state) return <FormSkeleton/>;
+  if (state.loading.error) return <TextInfo text={state.loading.error}/>;
 
   const TypedForm = formDict[type];
-  if (!TypedForm) return <TextInfo text={'messages.unsupported-form'}/>;
-  const onFocus = () => setActiveForm(state.parent, state.id);
+  if (!TypedForm) return <TextInfo text={'app.unsupported-form'}/>;
+  const onFocus = () => setClientActiveChild(state.parent, state.id);
 
   return (
     <div className={'form-container'} onFocus={onFocus}>

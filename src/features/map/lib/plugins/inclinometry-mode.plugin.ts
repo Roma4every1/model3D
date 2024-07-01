@@ -26,7 +26,6 @@ export class InclinometryModePlugin implements IMapPlugin {
   /** Радиус ограничевающей окружности проекции инклинометрии. */
   private readonly radius: number;
 
-
   /** Максимальное смещение инклинометрии (в координатах карты). */
   public maxShift = 0;
   /** Смещение в последней точке инклинометрии по X (в координатах канваса). */
@@ -63,7 +62,7 @@ export class InclinometryModePlugin implements IMapPlugin {
     if (!this.inclinometryData?.length) return;
     const value = this.getAngleFromPoint(
       point.x / 2 * window.devicePixelRatio,
-      point.y / 2 * window.devicePixelRatio
+      point.y / 2 * window.devicePixelRatio,
     );
 
     this.canvas.events.emit('changed')
@@ -72,7 +71,7 @@ export class InclinometryModePlugin implements IMapPlugin {
   }
 
   /** Устанавливает данные инклинометрии. */
-  public setData(channels: ChannelDict, param?: Parameter) {
+  public setData(channels: ChannelDict, angle: number): void {
     this.inclinometryData = cellsToRecords(channels[inclChannelName].data);
     this.inclinometryVersionsData = cellsToRecords(channels[inclVersionChannelName].data);
     this.inclinometryVersionsPropertiesData = cellsToRecords(channels[inclPropertyChannelName].data);
@@ -90,11 +89,11 @@ export class InclinometryModePlugin implements IMapPlugin {
     this.mapShiftY = -maxShiftInclPoint['SHIFTX'] / this.maxShift * this.radius;
 
     // уставновка значения угла просмотра
-    this.angle = +param.getValue();
+    this.angle = angle;
   }
 
   /** Устанавливает canvas и контекст отрисовки для плагина. */
-  public setCanvas(canvas: MapCanvas) {
+  public setCanvas(canvas: MapCanvas): void {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.centerX = canvas.clientWidth / 2 * window.devicePixelRatio;
@@ -102,7 +101,7 @@ export class InclinometryModePlugin implements IMapPlugin {
   }
 
   /** Отрисовка элементов плагина. */
-  public render() {
+  public render(): void {
     if (!this.inclinometryModeOn) return;
     if (!this.inclinometryData?.length) return;
     this.drawCircle();
@@ -112,7 +111,7 @@ export class InclinometryModePlugin implements IMapPlugin {
   }
 
   /** Отрисовывает линии инклинометрии. */
-  private drawInclinometryLines() {
+  private drawInclinometryLines(): void {
     const allData = this.inclinometryData;
     const versions = this.inclinometryVersionsData;
     const versionsProperties = this.inclinometryVersionsPropertiesData;
@@ -134,7 +133,7 @@ export class InclinometryModePlugin implements IMapPlugin {
   }
 
   /** Отрисовывает одну линию инклинометрии. */
-  private drawLine(data: ChannelRecord[], color: string, maxShift: number) {
+  private drawLine(data: ChannelRecord[], color: string, maxShift: number): void {
     if (!data?.length) return;
     const ctx = this.ctx;
 
@@ -156,7 +155,7 @@ export class InclinometryModePlugin implements IMapPlugin {
   }
 
   /** Отрисовывает ограничивающую линию проекции инклинометрии. */
-  private drawCircle() {
+  private drawCircle(): void {
     const ctx = this.ctx;
     if (!ctx) return;
     ctx.beginPath();
@@ -169,7 +168,7 @@ export class InclinometryModePlugin implements IMapPlugin {
   }
 
   /** Отрисовывает управляющий элемент стрелки инклинометрии для изменения угла просмотра. */
-  private drawAngleArrow(angle: number) {
+  private drawAngleArrow(angle: number): void {
     const { x1, y1, x2, y2 } = this.calculateLineCoordinates(angle);
 
     const ctx = this.ctx;
@@ -197,9 +196,8 @@ export class InclinometryModePlugin implements IMapPlugin {
   /** Вычисляет координаты для управляющего элемента стрелки инклинометрии. */
   private calculateLineCoordinates(angleDegrees: number) {
     const radius = this.radius;
-
-    let angleRadians = angleDegrees * Math.PI / 180;
     let x1, y1, x2, y2;
+    let angleRadians = angleDegrees * Math.PI / 180;
 
     if (angleDegrees >= 0 && angleDegrees <= 90) {
       x2 = this.centerX + Math.cos(angleRadians) * radius;
@@ -226,11 +224,11 @@ export class InclinometryModePlugin implements IMapPlugin {
       x2 = this.centerX + Math.sin(angleRadians) * radius;
       y2 = this.centerY + Math.cos(angleRadians) * radius;
     }
-    return { x1, y1, x2, y2 };
+    return {x1, y1, x2, y2};
   }
 
   /** Получает угол на окружности по точке на канвасе. */
-  private getAngleFromPoint(x: number, y: number) {
+  private getAngleFromPoint(x: number, y: number): number {
     const dx = x - this.centerX;
     const dy = this.centerY - y;
 
@@ -243,7 +241,7 @@ export class InclinometryModePlugin implements IMapPlugin {
   }
 
   /** Отрисовывает подписи углов окружности. */
-  private drawHelpText() {
+  private drawHelpText(): void {
     this.ctx.font = `bold ${12 * window.devicePixelRatio}px Arial`;
     this.ctx.fillStyle = 'black';
     this.ctx.textAlign = 'center';

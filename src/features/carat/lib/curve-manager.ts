@@ -1,6 +1,6 @@
 import type { CaratCurveModel } from './types';
 import type { CaratCurveMeasure, CaratDataSelection, CaratCurveSelector } from './dto.types';
-import { getPragmaticMax, stringifyLocalDate, fixColorHEX } from 'shared/lib';
+import { getPragmaticMax, parseDate, stringifyLocalDate, fixColorHEX } from 'shared/lib';
 import { defaultSettings } from './constants';
 
 
@@ -72,23 +72,21 @@ export class CurveManager {
   private createCurveModel(record: ChannelRecord, cache: CurveDataCache): CaratCurveModel {
     const info = this.curveSetChannel.info;
     const id = record[info.id.columnName];
+    const curveType = record[info.type.columnName];
     const cacheData: CaratCurveData = cache[id] ?? ({} as any);
 
-    const dateString = record[info.date.columnName];
-    const curveType = record[info.type.columnName];
-    const description = record[info.description?.columnName] ?? '';
-    const style = this.styleDict.get(curveType) ?? defaultSettings.curveStyle;
-    const top = record[info.top.columnName], bottom = record[info.bottom.columnName];
-
     return {
-      id, type: curveType, description,
-      date: dateString ? new Date(dateString) : null,
-      top: cacheData.top ?? top, bottom: cacheData.bottom ?? bottom,
+      id, type: curveType,
+      date: parseDate(record[info.date.columnName]),
+      description: record[info.description?.columnName] ?? '',
+      top: cacheData.top ?? record[info.top.columnName],
+      bottom: cacheData.bottom ?? record[info.bottom.columnName],
       min: cacheData.min ?? 0, max: cacheData.max ?? 0,
       axisMin: 0, axisMax: 0,
       path: cacheData.path, points: cacheData.points,
       defaultLoading: Boolean(record[info.defaultLoading.columnName]),
-      style, active: false,
+      style: this.styleDict.get(curveType) ?? defaultSettings.curveStyle,
+      active: false,
     };
   }
 

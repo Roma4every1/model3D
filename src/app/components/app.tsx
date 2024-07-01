@@ -1,32 +1,19 @@
-import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { getAppLocation } from '../lib/initialization';
-import { useAppStore } from '../store/app.store';
-import { initialize } from '../store/app.actions';
-
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useAppLocation } from '../store/app.store';
 import { SystemList } from './system-list';
 import { SystemRoot } from './system-root';
-import { UnknownRoute } from './unknown-route';
 
 
-/** Корень приложения. */
 export const App = () => {
-  const { config, systemList } = useAppStore();
-  const root = config ? config.root : getAppLocation();
-
-  // загрузка клиенсткой конфигурации и списка систем
-  useEffect(() => {
-    if (config === null) initialize().then();
-  }, [config]);
-
+  const location = useAppLocation();
   return (
     <BrowserRouter>
       <Routes>
-        <Route path={root}>
-          <Route path={''} element={ <SystemList config={config} list={systemList}/> }/>
+        <Route path={location}>
+          <Route path={''} element={ <SystemList/> }/>
           <Route path={'systems/:systemID'} element={ <SystemRoot/> }/>
         </Route>
-        <Route path={'*'} element={ <UnknownRoute root={root}/> }/>
+        <Route path={'*'} element={ <Navigate to={location} replace={true}/> }/>
       </Routes>
     </BrowserRouter>
   );

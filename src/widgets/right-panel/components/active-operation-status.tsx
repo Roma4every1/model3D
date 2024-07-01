@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { saveAs } from '@progress/kendo-file-saver';
 import { showNotification } from 'entities/notification';
 import { Res, fileExtensionIconDict, defaultFileIcon } from 'shared/lib';
-import { reportsAPI } from 'entities/report/lib/report.api';
+import { reportAPI } from 'entities/report/lib/report.api';
 
 
 /** Форматирование даты. */
@@ -22,7 +22,7 @@ export const ActiveOperationStatus = ({status}: {status: OperationStatus}) => {
     : defaultFileIcon;
 
   const download = hasFile ? () => {
-    reportsAPI.downloadFile(file.path).then((res: Res<Blob>) => {
+    reportAPI.downloadFile(file.path).then((res: Res<Blob>) => {
       if (res.ok) {
         saveAs(res.data, file.name);
       } else {

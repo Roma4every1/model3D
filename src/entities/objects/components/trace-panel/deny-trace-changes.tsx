@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { deleteTrace, setCurrentTrace } from '../../index';
 import { BigButton } from 'shared/ui';
-import denyTraceChangesIcon from 'assets/images/trace/cancel.png';
+import denyTraceChangesIcon from 'assets/trace/cancel.png';
 
 
 interface DenyTraceChangesProps {

@@ -1,47 +1,10 @@
 import { MapLoader } from '../lib/loader';
 import { MapStage } from '../lib/map-stage';
 import { MapLayer } from '../lib/map-layer';
-import { useMapStore, useMultiMapStore } from './map.store';
+import { useMapStore } from './map.store';
 import { mapPluginDict } from '../lib/plugins';
 import { getFullTraceViewport, getTraceMapElement, traceLayerProto } from '../lib/traces-map-utils';
 
-
-/** Добавляет в хранилище новую мультикарту. */
-export function addMultiMap(id: ClientID, templateFormID: FormID, configs: MapItemConfig[]): void {
-  const mapStates = useMapStore.getState();
-  const oldState = useMultiMapStore.getState()[id];
-
-  const sync = oldState?.sync ?? true;
-  templateFormID = oldState?.templateFormID ?? templateFormID;
-
-  if (oldState) for (const { formID } of oldState.configs) {
-    delete mapStates[formID];
-  }
-  for (const config of configs) {
-    const mapState = getMapState(templateFormID, false);
-    config.stage = mapState.stage;
-    config.stage.scroller.sync = sync;
-    mapStates[config.formID] = mapState;
-  }
-  useMapStore.setState({...mapStates}, true);
-  useMultiMapStore.setState({[id]: {sync, templateFormID, configs, children: configs.map(c => c.formID)}});
-}
-
-/** Устанавливает значение параметра синхронизации. */
-export function setMultiMapSync(formID: FormID, id: ClientID, sync: boolean): void {
-  const mapStates = useMapStore.getState();
-  const multiMapState = useMultiMapStore.getState()[id];
-
-  for (const config of multiMapState.configs) {
-    config.stage.scroller.sync = sync;
-  }
-  if (sync) {
-    const stage = mapStates[formID].stage;
-    const { x, y, scale } = stage.getMapData();
-    stage.getCanvas().events.emit('sync', {centerX: x, centerY: y, scale});
-  }
-  useMultiMapStore.setState({[id]: {...multiMapState, sync}});
-}
 
 /** Добавляет в хранилище состояний карт новую карту. */
 export function createMapState(payload: FormStatePayload): void {
@@ -106,7 +69,7 @@ export function applyTraceToMap(id: FormID, model: TraceModel, updateViewport: b
 
 /* --- --- */
 
-function getMapState(id: FormID, editable: boolean, settings?: Record<string, any>): MapState {
+export function getMapState(id: FormID, editable: boolean, settings?: Record<string, any>): MapState {
   const plugins: IMapPlugin[] = [];
   if (!settings) settings = {};
 

@@ -3,8 +3,11 @@ import type { SessionToSave } from './session-save';
 import { Fetcher, fetcher } from 'shared/lib';
 
 
-interface StartSessionDTO {
+/** DTO при запросе старта сессии.. */
+export interface StartSessionDTO {
+  /** ID созданной сессии. */
   id: SessionID;
+  /** ID корневого клиента сесиии. */
   root: ClientID;
 }
 

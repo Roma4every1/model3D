@@ -5,7 +5,7 @@ import { NumericTextBox, NumericTextBoxChangeEvent } from '@progress/kendo-react
 
 import { CaratStage } from '../../rendering/stage';
 import { constraints } from '../../lib/constants';
-import xAxisGridIcon from 'assets/images/carat/x-axis-grid.svg';
+import xAxisGridIcon from 'assets/carat/x-axis-grid.svg';
 
 
 interface XAxisSectionProps {

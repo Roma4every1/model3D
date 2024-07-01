@@ -2,12 +2,13 @@ type DoubleInterval = ParameterValueMap['doubleInterval'];
 
 export class DoubleIntervalParameter implements Parameter<'doubleInterval'> {
   public readonly id: ParameterID;
+  public readonly name: ParameterName;
   public readonly type = 'doubleInterval';
-  public onDeepChange: ParameterOnDeepChange;
   private value: DoubleInterval | null;
 
-  constructor(id: ParameterID, s: string | null) {
+  constructor(id: ParameterID, name: ParameterName, s: string | null) {
     this.id = id;
+    this.name = name;
     this.setValueString(s);
   }
 
@@ -21,10 +22,8 @@ export class DoubleIntervalParameter implements Parameter<'doubleInterval'> {
     return this.value;
   }
 
-  public setValue(value: DoubleInterval | null, deep?: boolean): void | Promise<void> {
-    const oldValue = this.value;
+  public setValue(value: DoubleInterval | null): void {
     this.value = value;
-    if (deep && this.onDeepChange) return this.onDeepChange(this, oldValue);
   }
 
   public setValueString(s?: string | null): void {

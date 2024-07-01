@@ -1,6 +1,6 @@
 import { Model, Layout, TabSetNode, TabNode, Action, Actions } from 'flexlayout-react';
 import { i18nMapper } from 'shared/locales';
-import { setActiveForm } from '../store/presentation.actions';
+import { setClientActiveChild } from 'entities/client';
 
 
 interface GridProps {
@@ -16,9 +16,9 @@ export const Grid = ({id, model}: GridProps) => {
     if (action.type === Actions.SET_ACTIVE_TABSET) {
       const tabset = model.getNodeById(action.data.tabsetNode) as TabSetNode;
       const activeTab = tabset.getChildren()[tabset.getSelected()];
-      if (activeTab) setActiveForm(id, activeTab.getId());
+      if (activeTab) setClientActiveChild(id, activeTab.getId());
     } else if (action.type === Actions.SELECT_TAB) {
-      setActiveForm(id, action.data.tabNode);
+      setClientActiveChild(id, action.data.tabNode);
     }
     return action;
   };

@@ -3,21 +3,18 @@ import type { TableFormSettings, SaveTableMetadata, SetRecords } from '../lib/ty
 import { t } from 'shared/locales';
 import { createElement } from 'react';
 import { watchOperation } from 'entities/report';
-import { fillParamValues, updateParamDeep, useParameterStore, rowToParameterValue } from 'entities/parameter';
+import { findParameters, updateParamDeep, useParameterStore, rowToParameterValue } from 'entities/parameter';
 import { reloadChannelsByQueryIDs, reloadChannel, setChannelActiveRow, channelAPI, useChannelStore } from 'entities/channel';
 import { showWarningMessage, showWindow, closeWindow } from 'entities/window';
 import { showNotification } from 'entities/notification';
-import { reportsAPI } from 'entities/report/lib/report.api';
+import { reportAPI } from 'entities/report/lib/report.api';
 import { createTableState, startTableEditing } from './table.actions';
 import { tableStateToSettings } from '../lib/table-settings';
 import { LinkedTable } from '../components/table/linked-table';
-import { setActiveForm } from 'widgets/presentation';
 
-import { useClientStore, addSessionClient, crateAttachedChannel } from 'entities/client';
+import { useClientStore, addSessionClient, setClientActiveChild, crateAttachedChannel } from 'entities/client';
 import { useObjectsStore } from 'entities/objects';
-import { usePresentationStore } from 'widgets/presentation';
 import { useTableStore } from './table.store';
-import { useRootStore } from '../../../app/store/root-form.store';
 
 
 /** Перезагрузка данных канала таблицы. */
@@ -36,9 +33,8 @@ export async function updateActiveRecord(id: FormID, recordID: TableRecordID): P
   setChannelActiveRow(channel.name, row);
 
   if (tableState.activeRecordParameter) {
-    const { id: parameterID, clientID } = tableState.activeRecordParameter;
     const newValue = rowToParameterValue(row, channel);
-    await updateParamDeep(clientID, parameterID, newValue);
+    await updateParamDeep(tableState.activeRecordParameter, newValue);
   }
 }
 
@@ -122,17 +118,17 @@ export async function exportTableToExcel(id: FormID): Promise<void> {
   const config = useChannelStore.getState()[tableState.channelName].config;
 
   const parentID = useClientStore.getState()[id].parent;
-  const parentState = usePresentationStore.getState()[parentID];
+  const parentState = useClientStore.getState()[parentID];
 
   const exportData = {
     channelName: tableState.channelName,
     paramName: parentState.children.find(child => child.id === id)?.displayName ?? 'Таблица',
     presentationId: parentID,
-    paramValues: fillParamValues(config.parameters, useParameterStore.getState(), config.clients),
+    paramValues: findParameters(config.parameters, useParameterStore.getState().storage),
     settings: tableStateToSettings(id, tableState).columnSettings,
   };
 
-  const res = await reportsAPI.exportToExcel(exportData);
+  const res = await reportAPI.exportToExcel(exportData);
   if (res.ok === false) { showWarningMessage(res.message); return; }
 
   const { operationID, error } = res.data;
@@ -154,14 +150,14 @@ export function showLinkedTable(formID: FormID, columnID: TableColumnID): void {
   const channel = channels[property.detailChannel];
   const displayName = channel.config.displayName ?? channel.name;
 
-  const presentationID = useRootStore.getState().activeChildID;
-  const presentation = usePresentationStore.getState()[presentationID];
+  const presentationID = useClientStore.getState().root.activeChildID;
+  const presentation = useClientStore.getState()[presentationID];
   const hasFormData = presentation.children.some(c => c.id === linkedTableID);
 
   if (!hasFormData) {
     const formState: SessionClient = {
       id: linkedTableID, parent: presentationID,
-      type: 'dataSet', settings: null,
+      type: 'dataSet', settings: null, parameters: [],
       channels: [crateAttachedChannel({name: channel.name}, channel)],
     };
     presentation.children.push({id: linkedTableID, type: 'dataSet', displayName});
@@ -172,17 +168,17 @@ export function showLinkedTable(formID: FormID, columnID: TableColumnID): void {
       state: useClientStore.getState()[linkedTableID],
       settings: {id: linkedTableID},
       objects: useObjectsStore.getState(),
-      parameters: useParameterStore.getState(),
+      parameters: useParameterStore.getState().clients,
       channels: channels,
     };
     createTableState(payload);
   }
 
   const onFocus = () => {
-    setActiveForm(presentationID, linkedTableID);
+    setClientActiveChild(presentationID, linkedTableID);
   };
   const onClose = () => {
-    setActiveForm(presentationID, formID);
+    setClientActiveChild(presentationID, formID);
     closeWindow(linkedTableID);
   };
   const windowProps = {
@@ -192,5 +188,5 @@ export function showLinkedTable(formID: FormID, columnID: TableColumnID): void {
 
   const content = createElement(LinkedTable, {id: linkedTableID, onClose});
   showWindow(linkedTableID, windowProps, content);
-  setActiveForm(presentationID, linkedTableID);
+  setClientActiveChild(presentationID, linkedTableID);
 }

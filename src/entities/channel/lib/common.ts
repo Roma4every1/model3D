@@ -1,16 +1,3 @@
-export function fillRecordInfo(info: ChannelRecordInfo, data: ChannelData): void {
-  if (!data) {
-    for (const field in info) info[field].columnIndex = -1;
-    return;
-  }
-  const columns = data.columns;
-  for (const field in info) {
-    const propertyInfo = info[field];
-    const columnName = propertyInfo.columnName;
-    propertyInfo.columnIndex = columns.findIndex(c => c.name === columnName);
-  }
-}
-
 /** Конвертирует строки канала из массивов ячеек в словари по названиям колонок. */
 export function cellsToRecords(data: ChannelData): ChannelRecord[] {
   if (!data) return [];
@@ -33,8 +20,6 @@ export function channelRowToRecord(row: ChannelRow, columns: ChannelColumn[]): C
   return record;
 }
 
-/* --- --- */
-
 /** Находит и возвращает список каналов детализации. */
 export function getDetailChannels(dict: ChannelDict): Set<ChannelName> {
   const linkedChannels = new Set<ChannelName>();
@@ -48,15 +33,4 @@ export function getDetailChannels(dict: ChannelDict): Set<ChannelName> {
     }
   }
   return linkedChannels;
-}
-
-/** Находит и возвращает список каналов-справочников. */
-export function getLookupChannels(dict: ChannelDict): Set<ChannelName> {
-  const lookupChannels = new Set<ChannelName>();
-  for (const name in dict) {
-    const lookups = dict[name]?.config.lookupChannels;
-    if (!lookups) continue;
-    for (const lookupName of lookups) lookupChannels.add(lookupName);
-  }
-  return lookupChannels;
 }

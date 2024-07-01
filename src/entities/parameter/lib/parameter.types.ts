@@ -13,22 +13,3 @@ export interface ParameterInit {
   showNullValue?: boolean | null;
   externalChannelName?: string | null;
 }
-
-/** Массив объектов для обновления значений параметров. */
-export type ParameterUpdateEntries = {clientID: ClientID, id: ParameterID, value: any}[];
-
-/** Выражение параметра: вызов какого-либо метода.
- * @example
- * 'date.Year' => {id: 'date', method: 'Year'}
- * 'row.Cell[ID]' => {id: 'row', method: 'Cell', argument: 'ID'}
- */
-export interface ParameterExpression {
-  /** Идентификатор параметра. */
-  id: string;
-  /** Вызываемый метод. */
-  method: string;
-  /** Аргумент метода. */
-  argument?: string;
-  /** Значение по умолчанию. */
-  defaultValue?: string;
-}
