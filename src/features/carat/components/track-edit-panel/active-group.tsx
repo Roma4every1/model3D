@@ -7,7 +7,7 @@ import { useRender } from 'shared/react';
 import { Flex, Input, InputNumber, Button } from 'antd';
 import { EllipsisOutlined } from '@ant-design/icons';
 import { MenuSection, IconRow, IconRowButton } from 'shared/ui';
-import { inputNumberParser } from 'shared/locales';
+import { inputIntParser } from 'shared/locales';
 
 import { showWindow } from 'entities/window';
 import { CaratSettingsWindow } from '../windows/carat-settings';
@@ -77,7 +77,7 @@ const GroupCommonSettings = ({stage}: StageProps) => {
       <InputNumber
         style={{width: 100}}
         value={activeGroup?.getWidth()} onChange={onWidthChange} changeOnWheel={true}
-        parser={inputNumberParser} min={minWidth} max={maxWidth} step={5} precision={0}
+        parser={inputIntParser} min={minWidth} max={maxWidth} step={5} precision={0}
       />
     </div>
   );
@@ -125,7 +125,7 @@ const GroupYAxisSettings = ({stage}: StageProps) => {
         <InputNumber
           style={{width: 60}}
           value={activeGroup?.yAxis.step} onChange={onStepChange} changeOnWheel={true}
-          parser={inputNumberParser} min={minStep} max={maxStep} step={1} precision={0}
+          parser={inputIntParser} min={minStep} max={maxStep} step={1} precision={0}
         />
       </Flex>
       <IconRow justify={'center'} gap={2}>

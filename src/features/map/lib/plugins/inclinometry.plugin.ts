@@ -9,11 +9,18 @@ const inclPropertyChannelName = 'InclinometryVersionsProperties';
 
 
 /** Плагин для вертикальной проекции инклинометрии на карте. */
-export class InclinometryModePlugin implements IMapPlugin {
+export class InclinometryPlugin implements IMapPlugin {
   /** Название плагина. */
-  public name = 'InclinometryModePlugin';
+  public readonly name = 'incl';
   /** Активен ли режим инклинометрии. */
   public inclinometryModeOn: boolean;
+
+  /** ID параметра системы, который отвечает за угол. */
+  public readonly parameterID: ParameterID;
+  /** Коллбэк для обновления значения угла просмотра инклинометрии. */
+  public onParameterUpdate: (value: number) => void;
+  /** Значение угла просмотра инклинометрии. */
+  private angle: number = 0;
 
   /** Канвас карты. */
   private canvas: MapCanvas;
@@ -34,51 +41,43 @@ export class InclinometryModePlugin implements IMapPlugin {
   public mapShiftY = 0;
 
   /** Данные точек инклинометрии выбранной скважины. */
-  private inclinometryData: ChannelRecord[] = null;
+  private data: ChannelRecord[] = null;
   /** Данные версий инклинометрии выбранной скважины. */
-  private inclinometryVersionsData: ChannelRecord[] = null;
+  private versions: ChannelRecord[] = null;
   /** Дополнительные данные версии инклинометрии выбранной скважины (цвета для линий). */
-  private inclinometryVersionsPropertiesData: ChannelRecord[] = null;
+  private versionProperties: ChannelRecord[] = null;
 
-  /** Значение угла просмотра инклинометрии. */
-  private angle: number = 0;
-
-  /** Коллбэк для обновления значения угла просмотра инклинометрии. */
-  private updateAngleParamFunction: (value: any) => void;
-
-  constructor(settings: any) {
+  constructor(settings: any, parameters: Parameter[]) {
+    this.parameterID = parameters.find(p => p.name === 'inclinometryViewAngle')?.id;
     this.radius = (+settings['@MinCircle']) / 2 * window.devicePixelRatio;
     this.inclinometryModeOn = settings['@InclinometryModeOn'] === 'true';
-    this.updateAngleParamFunction = () => {};
-  }
-
-  /** Устанавливает коллбэк для обновления значения угла просмотра инклинометрии. */
-  public setUpdateAngleParamFunction(callback: (value: number) => void): void {
-    this.updateAngleParamFunction = callback;
   }
 
   /** Обновляет значение угла просмотра инклинометрии по точке. */
   public handleInclinometryAngleChange(point: Point): void {
-    if (!this.inclinometryData?.length) return;
+    if (!this.data?.length) return;
     const value = this.getAngleFromPoint(
       point.x / 2 * window.devicePixelRatio,
       point.y / 2 * window.devicePixelRatio,
     );
-
     this.canvas.events.emit('changed')
-    this.updateAngleParamFunction(Math.round(value));
+    this.onParameterUpdate(Math.round(value));
     this.render();
   }
 
-  /** Устанавливает данные инклинометрии. */
-  public setData(channels: ChannelDict, angle: number): void {
-    this.inclinometryData = cellsToRecords(channels[inclChannelName].data);
-    this.inclinometryVersionsData = cellsToRecords(channels[inclVersionChannelName].data);
-    this.inclinometryVersionsPropertiesData = cellsToRecords(channels[inclPropertyChannelName].data);
-    this.inclinometryVersionsPropertiesData.forEach(r => { r.COLOR = fixColorHEX(r.COLOR); })
+  public setAngle(angle: number): void {
+    this.angle = angle;
+  }
 
-    if (!this.inclinometryData?.length) return;
-    const data = this.inclinometryData;
+  /** Устанавливает данные инклинометрии. */
+  public setData(channels: ChannelDict): void {
+    this.data = cellsToRecords(channels[inclChannelName].data);
+    this.versions = cellsToRecords(channels[inclVersionChannelName].data);
+    this.versionProperties = cellsToRecords(channels[inclPropertyChannelName].data);
+    this.versionProperties.forEach(r => { r.COLOR = fixColorHEX(r.COLOR); })
+
+    if (!this.data?.length) return;
+    const data = this.data;
     const maxShiftInclPoint = data.reduce((max, r) =>
       !max || (max['SHIFT'] < r['SHIFT']) ? r : max, null)
 
@@ -87,9 +86,6 @@ export class InclinometryModePlugin implements IMapPlugin {
     // перевод в координаты канваса смещений по X и Y в последней точке инклинометрии
     this.mapShiftX = maxShiftInclPoint['SHIFTY'] / this.maxShift * this.radius;
     this.mapShiftY = -maxShiftInclPoint['SHIFTX'] / this.maxShift * this.radius;
-
-    // уставновка значения угла просмотра
-    this.angle = angle;
   }
 
   /** Устанавливает canvas и контекст отрисовки для плагина. */
@@ -103,7 +99,7 @@ export class InclinometryModePlugin implements IMapPlugin {
   /** Отрисовка элементов плагина. */
   public render(): void {
     if (!this.inclinometryModeOn) return;
-    if (!this.inclinometryData?.length) return;
+    if (!this.data?.length) return;
     this.drawCircle();
     this.drawHelpText();
     this.drawInclinometryLines();
@@ -112,9 +108,9 @@ export class InclinometryModePlugin implements IMapPlugin {
 
   /** Отрисовывает линии инклинометрии. */
   private drawInclinometryLines(): void {
-    const allData = this.inclinometryData;
-    const versions = this.inclinometryVersionsData;
-    const versionsProperties = this.inclinometryVersionsPropertiesData;
+    const allData = this.data;
+    const versions = this.versions;
+    const versionsProperties = this.versionProperties;
 
     const maxShift = Math.max(...allData.map(r => r['SHIFT']));
 

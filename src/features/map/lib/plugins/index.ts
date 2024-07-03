@@ -1,9 +1,13 @@
-import { InclinometryModePlugin } from './inclinometry-mode.plugin';
+import { InclinometryPlugin } from './inclinometry.plugin';
 
 
 /** Словарь плагинов карты. */
 export const mapPluginDict = {
-  wellsLinkedClients: InclinometryModePlugin,
+  wellsLinkedClients: InclinometryPlugin,
 };
 
-export { InclinometryModePlugin };
+export interface MapPluginTypeMap {
+  'incl': InclinometryPlugin;
+}
+
+export { InclinometryPlugin };

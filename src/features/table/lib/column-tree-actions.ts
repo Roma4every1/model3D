@@ -2,12 +2,12 @@ import type { GridColumnProps } from '@progress/kendo-react-grid';
 
 
 /** По состоянию колонок из события `onColumnResize` применяет новые значения ширины. */
-export function applyColumnsWidth(columnsState: TableColumnsState, newColumns: GridColumnProps[]) {
+export function applyColumnsWidth(state: TableColumnsState, newColumns: GridColumnProps[]): void {
   for (const column of newColumns) {
     if (column.children?.length) {
-      applyColumnsWidth(columnsState, column.children as GridColumnProps[]);
+      applyColumnsWidth(state, column.children as GridColumnProps[]);
     } else {
-      const columnState = columnsState[column.id];
+      const columnState = state[column.id];
       if (columnState.width !== column.width) {
         columnState.width = Math.round(column.width as number);
         columnState.autoWidth = false;
@@ -18,16 +18,12 @@ export function applyColumnsWidth(columnsState: TableColumnsState, newColumns: G
 
 /* --- --- */
 
-export function applyColumnsHeaders(tree: ColumnTree, rules: HeaderSetterRule[], params: Parameter[]) {
-  const values = params.map((param, i) => {
-    const value = param?.getValue();
-    if (!value) return undefined;
-    return value[rules[i].column]?.value;
-  });
+export function applyColumnsHeaders(tree: ColumnTree, rules: HeaderSetterRule[], data: any[]): void {
+  const values = data.map((d, i) => d ? d[rules[i].column]?.value : undefined);
   applyRules(tree, rules, values);
 }
 
-function applyRules(items: ColumnTreeItem[], rules: HeaderSetterRule[], values: string[]) {
+function applyRules(items: ColumnTreeItem[], rules: HeaderSetterRule[], values: string[]): void {
   for (const item of items) {
     if (item.children) {
       applyRules(item.children, rules, values);
@@ -49,7 +45,7 @@ function applyRules(items: ColumnTreeItem[], rules: HeaderSetterRule[], values: 
  * + `start` — в начало **группы**
  * + `end` — в конец **группы**
  * */
-export function moveColumn(items: ColumnTreeItem[], index: number, to: string) {
+export function moveColumn(items: ColumnTreeItem[], index: number, to: string): void {
   let targetIndex: number;
   const notFirst = index > 0;
   const notLast = index < items.length - 1;
@@ -91,19 +87,19 @@ export function findGroupItems(tree: ColumnTree, columnID: TableColumnID): [Colu
  * 1. устанавливает такую же видимость для всех дочерних узлов
  * 2. если колонка видима, устанавливает видимость для родительских узлов
  * */
-export function toggleTreeItemVisibility(tree: ColumnTree, item: ColumnTreeItem) {
+export function toggleTreeItemVisibility(tree: ColumnTree, item: ColumnTreeItem): void {
   const visible = !item.visible;
   setChildrenVisible(item, visible);
   setParentsVisible(tree, item, visible);
 }
 
-function setChildrenVisible(item: ColumnTreeItem, visible: boolean) {
+function setChildrenVisible(item: ColumnTreeItem, visible: boolean): void {
   item.visible = visible;
   const items: ColumnTreeItem[] = item.children;
   if (items) items.forEach((i) => setChildrenVisible(i, visible));
 }
 
-function setParentsVisible(tree: ColumnTree, targetItem: ColumnTreeItem, visible: boolean) {
+function setParentsVisible(tree: ColumnTree, targetItem: ColumnTreeItem, visible: boolean): boolean {
   for (const item of tree) {
     const items = item.children;
     if (items && setParentsVisible(items, targetItem, visible)) {

@@ -29,7 +29,7 @@ export const AboutProgramWindow = ({config, t}: AboutProgramWindowProps) => {
           <ExternalLink href={'https://geospline.com'} title={t('about.site')}/>
         </div>
       </div>
-      {config.devMode && <DevModeSection config={config} t={t}/>}
+      {config.mode === 'dev' && <DevModeSection config={config} t={t}/>}
       <div className={'copyright'}>&copy; НПООО &#171;ГЕОСПЛАЙН&#187;</div>
     </div>
   );
@@ -45,7 +45,7 @@ const DevModeSection = ({config, t}: AboutProgramWindowProps) => {
       <div style={{padding: '8px 0'}}>
         <div>
           <span>API: </span>
-          <ExternalLink href={config.webServicesURL}/>
+          <ExternalLink href={config.api}/>
         </div>
         {config.devDocLink && <div>
           <span>{t('about.doc')}: </span>

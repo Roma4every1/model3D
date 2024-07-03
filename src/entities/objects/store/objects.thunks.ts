@@ -33,7 +33,7 @@ export function updateObjects(changes: Set<ParameterID>): void {
 }
 
 /** Обновление параметры скважины. */
-export function setCurrentWell(id: WellID): Promise<void> {
+export async function setCurrentWell(id: WellID): Promise<void> {
   const { channelName, parameterID, model } = useObjectsStore.getState().well;
   if (model && model.id === id) return;
   const wellChannel = useChannelStore.getState()[channelName];

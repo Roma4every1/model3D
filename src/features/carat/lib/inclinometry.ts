@@ -1,3 +1,6 @@
+import { round } from 'shared/lib';
+
+
 /** Отображение "глубина => абс. отметка". */
 type InclinometryMap = Map<number, number>;
 
@@ -16,9 +19,9 @@ interface InclinometryMark {
 /** Класс для управления инклинометрией. */
 export class CaratInclinometry implements ICaratInclinometry {
   /** Даннные канала инклинометрии. */
-  public readonly channel: {name: ChannelName, info: ChannelRecordInfo};
+  public readonly channel: PropertyAttachedChannel;
   /** Данные инклинометрии (глубина => абс. отметка). */
-  public data: InclinometryMap | null;
+  private data: InclinometryMap | null;
 
   /** Данные инклинометрии для интерполяции. */
   private interpolationData: InclinometryMark[];
@@ -27,7 +30,7 @@ export class CaratInclinometry implements ICaratInclinometry {
   /** Максимальная посчитанная отметка глубины. */
   private max: number | null;
 
-  constructor(channel: {name: ChannelName, info: ChannelRecordInfo}) {
+  constructor(channel: PropertyAttachedChannel) {
     this.channel = channel;
     this.data = null;
 
@@ -127,10 +130,10 @@ export class CaratInclinometry implements ICaratInclinometry {
       if (depth >= p2.depth && index < maxIndex) {
         p1 = p2;
         p2 = this.interpolationData[index + 2];
-        index++;
+        ++index;
       }
       this.data.set(depth, this.interpolate(p1, p2, depth));
-      i++; depth++;
+      ++i; ++depth;
     }
   }
 
@@ -157,7 +160,7 @@ export class CaratInclinometry implements ICaratInclinometry {
   private interpolate(p1: InclinometryMark, p2: InclinometryMark, depth: number): number {
     const { depth: x0, absMark: y0 } = p1;
     const { depth: x1, absMark: y1 } = p2;
-    return Math.round(((depth - x0) / (x1 - x0)) * (y1 - y0) + y0);
+    return round(((depth - x0) / (x1 - x0)) * (y1 - y0) + y0, 1);
   }
 
   /** Очищает данные. */

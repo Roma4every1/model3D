@@ -1,12 +1,9 @@
 /** Плагин карты. */
 interface IMapPlugin {
   /** Название плагина. */
-  name: string;
-  /** Активен ли режим инклинометрии. */
-  inclinometryModeOn: boolean;
-
+  readonly name: string;
   /** Устанавливает данные плагина. */
-  setData(channels: ChannelDict, value: any): void;
+  setData(channels: ChannelDict): void;
   /** Устанавливает canvas и контекст отрисовки для плагина. */
   setCanvas(canvas: MapCanvas): void;
   /** Отрисовка элементов плагина. */

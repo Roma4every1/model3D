@@ -1,8 +1,9 @@
+import type { MapPluginTypeMap } from './plugins';
 import { canCreateTypes, MapMode } from './constants';
 import { MapSelect } from './map-select';
 import { MapLayer } from './map-layer';
 import { Scroller } from '../drawer/scroller';
-import { InclinometryModePlugin } from './plugins';
+import { InclinometryPlugin } from './plugins';
 
 import { showMap } from '../drawer/maps';
 import { getDefaultMapElement } from '../components/edit-panel/editing/editing-utils';
@@ -62,7 +63,7 @@ export class MapStage implements IMapStage {
 
   constructor(plugins: IMapPlugin[] = []) {
     this.plugins = plugins;
-    this.inclinometryModeOn = plugins.some(it => it?.inclinometryModeOn);
+    this.inclinometryModeOn = this.getPlugin('incl')?.inclinometryModeOn ?? false;
     this.select = new MapSelect();
     this.scroller = new Scroller();
 
@@ -74,6 +75,10 @@ export class MapStage implements IMapStage {
 
   public getCanvas(): MapCanvas {
     return this.canvas;
+  }
+
+  public getPlugin<T extends keyof MapPluginTypeMap>(name: T): MapPluginTypeMap[T] {
+    return this.plugins.find(p => p.name === name) as MapPluginTypeMap[T];
   }
 
   public getMode(): MapMode {
@@ -138,13 +143,14 @@ export class MapStage implements IMapStage {
 
     if (this.inclinometryModeOn) {
       const scale = 5_000;
-      const inclPlugin = this.plugins.find(it => it instanceof InclinometryModePlugin) as InclinometryModePlugin;
+      const inclPlugin = this.plugins.find(it => it instanceof InclinometryPlugin) as InclinometryPlugin;
       const centerX = point.x - inclPlugin.mapShiftX * scale / window.devicePixelRatio / PIXEL_PER_METER;
       const centerY = point.y - inclPlugin.mapShiftY * scale / window.devicePixelRatio / PIXEL_PER_METER;
       return {centerX, centerY, scale};
     } else {
       const wellLayer = this.data.layers?.find(l => l.elementType === 'sign');
-      const scale = Math.min(this.data.scale, wellLayer?.getMaxScale() ?? 50_000);
+      const wellScale = wellLayer?.getMaxScale() ?? 50_000;
+      const scale = this.data.scale ? Math.min(this.data.scale, wellScale) : wellScale;
       return {centerX: point.x, centerY: point.y, scale};
     }
   }
@@ -325,11 +331,9 @@ export class MapStage implements IMapStage {
 
   public handleMouseUp(event: MouseEvent): MapElement | null {
     if (this.inclinometryModeOn) {
-      const inclPlugin = this.plugins.find(it =>
-        it instanceof InclinometryModePlugin
-      ) as InclinometryModePlugin;
-      inclPlugin.handleInclinometryAngleChange({x: event.offsetX * 2, y: event.offsetY * 2});
-      return;
+      const inclPlugin = this.getPlugin('incl');
+      const point: Point = {x: event.offsetX * 2, y: event.offsetY * 2};
+      inclPlugin.handleInclinometryAngleChange(point); return;
     }
     this.scroller.mouseUp();
     this.isOnMove = false;

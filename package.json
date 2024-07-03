@@ -1,6 +1,6 @@
 {
-  "name": "well-manager",
-  "version": "1.4.0",
+  "name": "well-manager-web",
+  "version": "1.4.0-rc2",
   "private": true,
   "type": "module",
   "scripts": {

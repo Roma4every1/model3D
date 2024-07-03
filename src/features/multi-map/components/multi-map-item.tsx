@@ -4,19 +4,18 @@ import { Map } from 'features/map';
 
 
 interface MultiMapItemProps {
-  parent: ClientID;
-  config: MultiMapChild;
+  data: MultiMapChild;
 }
 
 
-export const MultiMapItem = ({parent, config}: MultiMapItemProps) => {
-  const [progress, setProgress] = useState(config.progress);
+export const MultiMapItem = ({data}: MultiMapItemProps) => {
+  const [progress, setProgress] = useState(data.progress);
 
   useEffect(() => {
-    config.setProgress = (n: number) => { setProgress(n); config.progress = n; };
-  }, [config]);
+    data.setProgress = (n: number) => { setProgress(n); data.progress = n; };
+  }, [data]);
 
   if (progress < 0) return <TextInfo text={'map.not-loaded'}/>;
   if (progress < 100) return <LoadingStatus percentage={progress}/>;
-  return <Map id={config.formID} parent={parent} channels={null}/>;
+  return <Map id={data.formID} channels={null}/>;
 };

@@ -20,7 +20,7 @@ import { FieldProperties } from '../components/edit-panel/properties-window/fiel
  * + `ADD_BETWEEN` — добавить точку
  * + `DELETE_POINT` — удалить точку
  * */
-export enum MapMode {
+export const enum MapMode {
   AWAIT_POINT = 1,
 
   MOVE_MAP = 10,

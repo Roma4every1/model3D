@@ -1,4 +1,5 @@
-import { fetcher } from 'shared/lib';
+import { fetcher, testString } from 'shared/lib';
+import { profileAPI } from 'features/profile';
 import { appAPI } from './app.api';
 import { useAppStore } from '../store/app.store';
 import { WMDevTools } from './dev-tools';
@@ -11,8 +12,9 @@ export async function initialize(): Promise<void> {
   const configObject = await fetchClientConfig(appLocation);
   const config = createClientConfig(configObject);
 
-  fetcher.setPrefix(config.webServicesURL);
-  if (config.devMode) window['store'] = new WMDevTools();
+  fetcher.setPrefix(config.api);
+  if (config.geoManager) profileAPI.base = config.geoManager;
+  if (config.mode === 'dev') window['store'] = new WMDevTools();
 
   const systemList = await appAPI.getSystemList();
   useAppStore.setState({config, systemList, loading: {step: 'wait'}});
@@ -32,30 +34,32 @@ async function fetchClientConfig(appLocation: string): Promise<unknown> {
 }
 
 function createClientConfig(data: unknown): ClientConfig {
-  const config: ClientConfig = {devMode: false, webServicesURL: ''};
+  const check = (field: string, matcher?: StringMatcher) => {
+    const value = data[field];
+    if (typeof value !== 'string' || value.length === 0) return;
+    if (!matcher || testString(value, matcher)) config[field] = value;
+  };
+  const config: ClientConfig = {};
 
   if (data instanceof Object) {
-    const apiPrefix = data['webServicesURL'];
-    if (typeof apiPrefix === 'string') config.webServicesURL = apiPrefix;
-    const devMode = data['devMode'];
-    if (typeof devMode === 'boolean') config.devMode = devMode;
-
-    const devDocLink = data['devDocLink'];
-    if (typeof devDocLink === 'string') config.devDocLink = devDocLink;
-    const userDocLink = data['userDocLink'];
-    if (typeof userDocLink === 'string') config.userDocLink = userDocLink;
-    const contactEmail = data['contactEmail'];
-    if (typeof contactEmail === 'string') config.contactEmail = contactEmail;
+    check('mode', ['dev', 'production']);
+    check('api', /^http/);
+    check('geoManager', /^http/);
+    check('devDocLink');
+    check('userDocLink');
+    check('contactEmail');
   }
 
-  if (config.webServicesURL.length === 0) {
-    let pathName = window.location.pathname.slice(1);
-    if (pathName.includes('/')) {
-      pathName = pathName.slice(0, pathName.indexOf('/'));
-    }
-    config.webServicesURL = window.location.origin + '/' + pathName + '/WebRequests.svc/';
-  } else if (!config.webServicesURL.endsWith('/')) {
-    config.webServicesURL += '/';
-  }
+  if (config.api && !config.api.endsWith('/')) config.api += '/';
+  if (config.geoManager && !config.geoManager.endsWith('/')) config.geoManager += '/';
+
+  if (!config.api) config.api = getDefaultPrefix();
   return config;
+}
+
+function getDefaultPrefix(): string {
+  let pathName = window.location.pathname.slice(1);
+  const slashIndex = pathName.indexOf('/');
+  if (slashIndex !== -1) pathName = pathName.substring(0, slashIndex);
+  return window.location.origin + '/' + pathName + '/WebRequests.svc/';
 }

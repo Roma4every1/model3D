@@ -7,10 +7,10 @@ import { setProfileStrata } from '../store/profile.actions';
 
 interface ProfileStrataViewProps {
   id: FormID;
-  strata: GMMOPlJobDataItem[];
+  strata: GMPlJobDataItem[];
 }
 interface ProfileStratumViewProps {
-  stratum: GMMOPlJobDataItem;
+  stratum: GMPlJobDataItem;
   changeChecked: (checked: boolean, stratum: string) => void;
 }
 

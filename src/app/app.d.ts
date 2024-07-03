@@ -38,15 +38,17 @@ type AppLoadingStep = 'init' | 'wait' | 'session' | 'data';
 /** Конфигурация клиента. */
 interface ClientConfig {
   /** Режим разработчика. */
-  devMode?: boolean;
+  mode?: string;
+  /** Префикс API серверной части. */
+  api?: string;
+  /** Префикс API сервиса GeoManager. */
+  geoManager?: string;
   /** Ссылка на документацию для разработчиков. */
   devDocLink?: string;
   /** Ссылка на пользовательскую документацию. */
   userDocLink?: string;
   /** Почта для связи. */
   contactEmail?: string;
-  /** Префикс API серверной части. */
-  webServicesURL?: string;
 }
 
 /** Список информационных систем. */

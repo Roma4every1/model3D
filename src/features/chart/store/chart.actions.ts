@@ -4,8 +4,8 @@ import { settingsToChartState } from '../lib/initialization';
 
 /** Добавить новое состояние графика. */
 export function createChartState(payload: FormStatePayload): void {
-  const id = payload.state.id;
-  useChartStore.setState({[id]: settingsToChartState(payload.settings)});
+  const { id, settings } = payload.state;
+  useChartStore.setState({[id]: settingsToChartState(settings)});
 }
 
 /** Установить шаг по времени для графика. */

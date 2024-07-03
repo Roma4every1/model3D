@@ -42,7 +42,7 @@ function getColumnType(netType: ColumnType): TableColumnType {
 
 /** Функция, создающая состояние таблицы по её начальным настройкам. */
 export function settingsToTableState(payload: FormStatePayload<TableFormSettings>): TableState {
-  const settings = payload.settings;
+  const settings = payload.state.settings;
   const attachedChannel = payload.state.channels[0];
   const channel = payload.channels[attachedChannel?.name];
 

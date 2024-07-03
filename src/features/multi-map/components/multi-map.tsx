@@ -24,7 +24,7 @@ export const MultiMap = ({id, channels}: Pick<PresentationState, 'id' | 'channel
   const factory = (node: TabNode) => {
     const tabID = node.getId();
     const child = children.find(item => item.formID === tabID);
-    return child ? <MultiMapItem parent={id} config={child}/> : null;
+    return child ? <MultiMapItem data={child}/> : null;
   };
   const onAction = (action: Action) => {
     const { type, data } = action;

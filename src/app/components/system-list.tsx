@@ -9,44 +9,42 @@ import systemIcon from 'assets/common/system.svg';
 import loadDefaultIcon from 'assets/common/load-default.svg';
 
 
-interface SystemItemProps {
+interface SystemCardProps {
   location: string;
-  config: ClientConfig;
   system: SystemInfo;
+  dev: boolean;
   t: TFunction;
 }
 
 
 /** Страница списка систем. */
 export const SystemList = () => {
-  const { location, config, systemList } = useAppStore();
   const { t } = useTranslation();
-
-  let mainContent;
-  if (config === null) {
-    mainContent = <SystemListSkeleton/>;
-  } else if (systemList) {
-    const systemToListItem = (system: SystemInfo, i: number) => {
-      return <SystemItem key={i} location={location} system={system} config={config} t={t}/>;
-    };
-    mainContent = <div>{systemList.map(systemToListItem)}</div>;
-  } else {
-    mainContent = <div className={'not-loaded'}>{t('systems.loading-error')}</div>;
-  }
 
   return (
     <>
       <h1 id={'program-name'}>Well Manager Web</h1>
       <nav id={'system-list'}>
         <h2>{t('systems.list')}</h2>
-        {mainContent}
+        <SystemCards t={t}/>
       </nav>
     </>
   );
 }
 
-/** Элемент списка системы. */
-const SystemItem = ({location, system, config, t}: SystemItemProps) => {
+const SystemCards = ({t}: {t: TFunction}) => {
+  const { location, config, systemList } = useAppStore();
+  if (!config) return <SystemListSkeleton/>;
+  if (!systemList) return <div className={'not-loaded'}>{t('systems.loading-error')}</div>;
+  const dev = config.mode === 'dev';
+
+  const toCard = (system: SystemInfo) => {
+    return <SystemCard key={system.id} location={location} system={system} dev={dev} t={t}/>;
+  };
+  return <div>{systemList.map(toCard)}</div>;
+};
+
+const SystemCard = ({location, system, dev, t}: SystemCardProps) => {
   const id = system.id;
   const title = t('systems.load-by-default-title')
 
@@ -57,7 +55,7 @@ const SystemItem = ({location, system, config, t}: SystemItemProps) => {
         <div>
           <div>
             <span className={'system-name'}>{system.displayName}</span>
-            {config.devMode && <span className={'system-id'}>{`(${id})`}</span>}
+            {dev && <span className={'system-id'}>{`(${id})`}</span>}
           </div>
           <div>{system.description}</div>
         </div>
@@ -84,13 +82,13 @@ const SystemSkeleton = () => {
   return (
     <section>
       <div>
-        <Skeleton.Avatar shape={'square'} active/>
+        <Skeleton.Avatar shape={'square'} active={true}/>
         <div style={{paddingTop: 5, height: 43}}>
-          <Skeleton.Input style={{width: 200, height: 15}} block active/>
-          <Skeleton.Input style={{width: 500, height: 13}} block active/>
+          <Skeleton.Input style={{width: 200, height: 15}} block={true} active={true}/>
+          <Skeleton.Input style={{width: 500, height: 13}} block={true} active={true}/>
         </div>
       </div>
-      <div><Skeleton.Avatar shape={'square'} active/></div>
+      <div><Skeleton.Avatar shape={'square'} active={true}/></div>
     </section>
   );
 };

@@ -1,5 +1,5 @@
 import { createWithEqualityFn } from 'zustand/traditional';
-import { IDGenerator } from 'shared/lib';
+import { IDGenerator, compareArrays } from 'shared/lib';
 
 
 export interface ParameterStore {
@@ -21,27 +21,17 @@ export const useParameterStore = createWithEqualityFn((): ParameterStore => ({
   updateQueue: [],
 }));
 
+export function useParameterStorage(): ParameterMap {
+  // ссылка на storage никогда не меняется
+  return useParameterStore.getState().storage;
+}
 export function useClientParameters(id: ClientID): Parameter[] {
-  const selector = (s: ParameterStore) => s.clients[id];
-  return useParameterStore(selector);
+  return useParameterStore(s => s.clients[id]);
 }
-export function useClientParameterValue(id: ClientID, name: ParameterName): any {
-  const selector = (s: ParameterStore) => s.clients[id].find(p => p.name === name)?.getValue();
-  return useParameterStore(selector);
+export function useParameterValue(id: ParameterID): any {
+  return useParameterStore(s => s.storage.get(id)?.getValue());
 }
-
-export function useParameters(ids: ParameterID[]): Parameter[] {
-  const selector = (s: ParameterStore) => ids.map(id => s.storage.get(id));
-  return useParameterStore(selector, compareParameterArrays);
-}
-function compareParameterArrays(a: Parameter[], b: Parameter[]): boolean {
-  if (!a || !b) return a === b;
-  if (a.length !== b.length) return false;
-
-  for (let i = 0; i < a.length; ++i) {
-    const ap = a[i], bp = b[i];
-    if (ap !== bp) return false;
-    if (ap && ap.getValue() !== bp.getValue()) return false;
-  }
-  return true;
+export function useParameterValues(ids: ParameterID[]): any[] {
+  const selector = ({storage}: ParameterStore) => ids.map(id => storage.get(id)?.getValue());
+  return useParameterStore(selector, compareArrays);
 }

@@ -1,5 +1,4 @@
-import { FunctionComponent } from 'react';
-
+import type { FunctionComponent } from 'react';
 import { Table, createTableState } from 'features/table';
 import { Chart, createChartState } from 'features/chart';
 import { Map, createMapState } from 'features/map';
@@ -25,7 +24,7 @@ export const formDict: SupportedFormDict<FunctionComponent<SessionClient>> = {
 };
 
 /** Словарь функций-экшенов для создания состояния форм. */
-export const createFormDict: SupportedFormDict<FormStateCreator> = {
+export const formCreators: SupportedFormDict<FormStateCreator> = {
   'dataSet': createTableState,
   'carat': createCaratState,
   'chart': createChartState,
@@ -37,4 +36,5 @@ export const createFormDict: SupportedFormDict<FormStateCreator> = {
 
 export const formChannelCriteria: Partial<SupportedFormDict<ClientChannelCriteria>> = {
   'carat': caratChannelCriteria,
+  'profile': {},
 };

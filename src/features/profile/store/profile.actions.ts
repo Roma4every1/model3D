@@ -1,9 +1,12 @@
+import { InitializationError } from 'shared/lib';
+import { profileAPI } from '../lib/profile.api';
 import { useProfileStore } from './profile.store';
-import { settingsToProfileState } from '../rendering/adapter';
+import { settingsToProfileState } from '../lib/adapter';
 
 
 /** Добавляет в хранилище состояний профиля новую форму профиля. */
 export function createProfileState(payload: FormStatePayload): void {
+  if (!profileAPI.base) throw new InitializationError('profile.api-error');
   const id = payload.state.id;
   useProfileStore.setState({[id]: settingsToProfileState()});
 }
@@ -21,9 +24,9 @@ export function setProfileCanvas(id: FormID, canvas: HTMLCanvasElement): void {
 }
 
 /** Обновляет данные загрузчика. */
-export function setProfileLoading(id: FormID, loading: Partial<CaratLoading>): void {
+export function setProfileLoading(id: FormID, percentage: number, status?: string): void {
   const state = useProfileStore.getState()[id];
-  const newLoading = {...state.loading, ...loading};
+  const newLoading = {percentage, status: status ?? state.loading.status};
   useProfileStore.setState({[id]: {...state, loading: newLoading}});
 }
 

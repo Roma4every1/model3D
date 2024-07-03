@@ -7,7 +7,9 @@ import './profile.scss';
 
 export const ProfileEditor = ({id}: {id: FormID}) => {
   const state = useProfileState(id);
-  const strata = state.loader?.cache?.plasts;
+  if (!state) return null;
+
+  const strata = state.loader?.cache?.strata;
   const stage = state.stage as MapStage;
 
   return (

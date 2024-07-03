@@ -1,3 +1,4 @@
+import { InitializationError } from 'shared/lib';
 import { t } from 'shared/locales';
 import { fillPatterns } from 'shared/drawing';
 import { useObjectsStore } from 'entities/objects';
@@ -5,7 +6,7 @@ import { useChannelStore } from 'entities/channel';
 import { setReportModels } from 'entities/report';
 import { showWarningMessage } from 'entities/window';
 import { addSessionClient, addSessionClients, setClientLoading } from 'entities/client';
-import { createFormDict } from './form-dict';
+import { formCreators } from './form-dict';
 import { PresentationFactory } from './presentation-factory';
 
 import {
@@ -35,15 +36,25 @@ export async function initializePresentation(id: ClientID): Promise<void> {
 
   for (const child of presentation.children) {
     const client: SessionClient = children[child.id];
-    const loading: ClientLoadingState = client.loading;
-    if (loading.status === 'error') { loading.error = 'app.form-fetch-error'; continue; }
+    const { type, loading } = client;
 
-    const creator = createFormDict[client.type];
-    if (creator) creator({
-      state: client, settings: client.settings, objects: objects,
-      parameters: clientParameters, channels: allChannels,
-    });
-    loading.status = 'done';
+    if (type in formCreators && loading.status === 'init') {
+      try {
+        formCreators[type]({
+          state: client, objects: objects,
+          parameters: clientParameters, channels: allChannels,
+        });
+      } catch (e: unknown) {
+        loading.status = 'error';
+        if (e instanceof InitializationError && e.message) loading.error = e.message;
+      }
+    }
+
+    if (loading.status !== 'error') {
+      loading.status = 'done';
+    } else if (!loading.error) {
+      loading.error = 'app.form-fetch-error';
+    }
   }
 
   const fillSuccess = await factory.fillData();

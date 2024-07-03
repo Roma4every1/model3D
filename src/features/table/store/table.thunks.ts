@@ -1,5 +1,5 @@
 import type { Res } from 'shared/lib';
-import type { TableFormSettings, SaveTableMetadata, SetRecords } from '../lib/types';
+import type { SaveTableMetadata, SetRecords } from '../lib/types';
 import { t } from 'shared/locales';
 import { createElement } from 'react';
 import { watchOperation } from 'entities/report';
@@ -157,22 +157,19 @@ export function showLinkedTable(formID: FormID, columnID: TableColumnID): void {
   if (!hasFormData) {
     const formState: SessionClient = {
       id: linkedTableID, parent: presentationID,
-      type: 'dataSet', settings: null, parameters: [],
+      type: 'dataSet', settings: {}, parameters: [],
       channels: [crateAttachedChannel({name: channel.name}, channel)],
     };
     presentation.children.push({id: linkedTableID, type: 'dataSet', displayName});
     addSessionClient(formState);
   }
-  if (!linkedTableState) {
-    const payload: FormStatePayload<TableFormSettings> = {
-      state: useClientStore.getState()[linkedTableID],
-      settings: {id: linkedTableID},
-      objects: useObjectsStore.getState(),
-      parameters: useParameterStore.getState().clients,
-      channels: channels,
-    };
-    createTableState(payload);
-  }
+
+  if (!linkedTableState) createTableState({
+    state: useClientStore.getState()[linkedTableID],
+    objects: useObjectsStore.getState(),
+    parameters: useParameterStore.getState().clients,
+    channels: channels,
+  });
 
   const onFocus = () => {
     setClientActiveChild(presentationID, linkedTableID);

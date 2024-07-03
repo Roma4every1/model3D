@@ -1,3 +1,4 @@
+import { updateParamDeep } from 'entities/parameter';
 import { MapLoader } from '../lib/loader';
 import { MapStage } from '../lib/map-stage';
 import { MapLayer } from '../lib/map-layer';
@@ -8,9 +9,8 @@ import { getFullTraceViewport, getTraceMapElement, traceLayerProto } from '../li
 
 /** Добавляет в хранилище состояний карт новую карту. */
 export function createMapState(payload: FormStatePayload): void {
-  const pluginSettings = payload.settings;
   const id = payload.state.id;
-  useMapStore.setState({[id]: getMapState(id, true, pluginSettings)});
+  useMapStore.setState({[id]: getMapState(id, true, payload)});
 }
 
 export function setMapLoading(id: FormID, l: Partial<MapLoading>): void {
@@ -69,23 +69,29 @@ export function applyTraceToMap(id: FormID, model: TraceModel, updateViewport: b
 
 /* --- --- */
 
-export function getMapState(id: FormID, editable: boolean, settings?: Record<string, any>): MapState {
+export function getMapState(id: FormID, editable: boolean, payload?: FormStatePayload): MapState {
   const plugins: IMapPlugin[] = [];
-  if (!settings) settings = {};
 
-  for (const pluginName in settings) {
-    const Plugin = mapPluginDict[pluginName];
-    if (Plugin) plugins.push(new Plugin(settings[pluginName]));
+  if (payload) {
+    const settings: Record<string, any> = payload.state.settings ?? {};
+    const parentParameters = payload.parameters[payload.state.parent];
+
+    for (const pluginName in settings) {
+      const Plugin = mapPluginDict[pluginName];
+      if (Plugin) plugins.push(new Plugin(settings[pluginName], parentParameters));
+    }
   }
 
   const stage = new MapStage(plugins);
   const observer = new ResizeObserver(() => { stage.resize(); });
+
+  const inclPlugin = stage.getPlugin('incl');
+  if (inclPlugin) inclPlugin.onParameterUpdate = (v) => updateParamDeep(inclPlugin.parameterID, v);
 
   return {
     canvas: null, stage, loader: new MapLoader(id), observer,
     owner: null, mapID: null, loading: {percentage: 100, status: null},
     modified: false, editable,
     propertyWindowOpen: false, attrTableWindowOpen: false,
-    pluginsSettings: settings,
   };
 }

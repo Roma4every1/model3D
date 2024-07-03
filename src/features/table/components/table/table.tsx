@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useChannel, useChannelDict } from 'entities/channel';
-import { useParameters } from 'entities/parameter';
+import { useParameterValues } from 'entities/parameter';
 import { useTableState } from '../../store/table.store';
 import { resetTable, setTableColumnTree } from '../../store/table.actions';
 import { getColumnModel } from '../../lib/column-tree';
@@ -14,7 +14,7 @@ export const Table = ({id}: Pick<SessionClient, 'id'>) => {
   const [records, setRecords] = useState<TableRecord[]>([]);
   const state = useTableState(id);
   const { recordHandler, channelName, headerSetterRules, columns, columnTree } = state;
-  const headerSetterParams = useParameters(headerSetterRules.map(r => r.id));
+  const headerSetterValues = useParameterValues(headerSetterRules.map(r => r.id));
 
   const channel: Channel = useChannel(channelName) ?? {} as any;
   const lookupData = useChannelDict(channel.config?.lookupChannels ?? []);
@@ -23,9 +23,9 @@ export const Table = ({id}: Pick<SessionClient, 'id'>) => {
   // Обновление заголовков колонок
   useEffect(() => {
     if (headerSetterRules.length === 0) return;
-    applyColumnsHeaders(columnTree, headerSetterRules, headerSetterParams);
+    applyColumnsHeaders(columnTree, headerSetterRules, headerSetterValues);
     setTableColumnTree(id, [...columnTree]);
-  }, [headerSetterParams, headerSetterRules, id]); // eslint-disable-line
+  }, [headerSetterValues, headerSetterRules, id]); // eslint-disable-line
 
   // Обновление данных справочников
   useEffect(() => {

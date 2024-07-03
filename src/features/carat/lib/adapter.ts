@@ -12,7 +12,7 @@ import { setCaratLoading } from '../store/carat.actions';
 /** Создаёт состояние каротажа по её начальным настройкам. */
 export function settingsToCaratState(payload: FormStatePayload<CaratFormSettings>): CaratState {
   const { id, channels: attachedChannels } = payload.state;
-  const { settings: caratSettings, columns: initColumns } = payload.settings;
+  const { settings: caratSettings, columns: initColumns } = payload.state.settings;
 
   const channels = payload.channels;
   const usedChannels: Set<ChannelName> = new Set();

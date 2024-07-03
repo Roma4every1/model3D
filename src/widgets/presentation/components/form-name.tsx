@@ -1,4 +1,4 @@
-import { ParameterStringTemplate, useParameters } from 'entities/parameter';
+import { ParameterStringTemplate, useParameterStorage, useParameterValues } from 'entities/parameter';
 
 
 interface FormNameProps {
@@ -8,6 +8,10 @@ interface FormNameProps {
 
 /** Динамический заголовок формы. */
 export const FormName = ({pattern}: FormNameProps) => {
-  const parameters = useParameters([...pattern.parameterIDs]);
+  const ids = [...pattern.parameterIDs];
+  useParameterValues(ids); // подписка на изменения
+
+  const storage = useParameterStorage();
+  const parameters = ids.map(id => storage.get(id));
   return <>{pattern.build(parameters)}</>;
 };

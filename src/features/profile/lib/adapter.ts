@@ -1,5 +1,5 @@
-import { ProfileStage } from './stage-gmmo';
-import { ProfileLoader } from '../lib/loader-gmmo';
+import { ProfileStage } from './stage';
+import { ProfileLoader } from './loader';
 
 
 /** Создаёт состояние профиля. */

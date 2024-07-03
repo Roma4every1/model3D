@@ -49,7 +49,25 @@ export function i18nMapper(label: I18nLabel, parameter?: string): string {
   }
 }
 
-/** Используется для компонента `InputNumber` из And Design. */
+/**
+ * Парсер для редактора целого числа.
+ *
+ * В качестве разделителя дробной части поддерживается и точка, и запятая.
+ * Если строка не является записью числа, будет возвращён `null`.
+ * Дробные числа округляются до ближайшего целого.
+ */
+export function inputIntParser(value: string): number | null {
+  const number = Number(value.replace(',', '.'));
+  return Number.isNaN(number) ? null : Math.round(number);
+}
+
+/**
+ * Парсер для редактора числа.
+ *
+ * В качестве разделителя дробной части поддерживается и точка, и запятая.
+ * Если строка не является записью числа, будет возвращён `null`.
+ */
 export function inputNumberParser(value: string): number {
-  return parseFloat(value.replace(',', '.'));
+  const number = Number(value.replace(',', '.'));
+  return Number.isNaN(number) ? null : number;
 }

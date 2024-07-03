@@ -22,8 +22,6 @@ interface MapState {
   propertyWindowOpen: boolean;
   /** Открыта ли аттрибутивная таблица. */
   attrTableWindowOpen: boolean;
-  /** Настройки плагинов карты. */
-  pluginsSettings: MapPluginsSettings;
 }
 
 interface IMapStage {

@@ -2,7 +2,7 @@ import { MapLayer } from 'features/map/lib/map-layer';
 import { Scroller } from 'features/map/drawer/scroller';
 import { showMap } from 'features/map/drawer/maps';
 import { PIXEL_PER_METER } from 'features/map/lib/map-utils';
-import { getBounds } from '../lib/utils';
+import { getBounds } from './utils';
 
 
 /** Сцена профиля. */

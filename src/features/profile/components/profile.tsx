@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useCurrentTrace, useCurrentStratum, useCurrentPlace } from 'entities/objects';
 import { useProfileState } from '../store/profile.store';
 import { setProfileCanvas } from '../store/profile.actions';
-import { setProfileData, setProfilePlastsData } from '../store/profile.thunks';
+import { loadProfileData, loadProfileStrata } from '../store/profile.thunks';
 
 import './profile.scss';
 import { LoadingStatus, TextInfo } from 'shared/ui';
@@ -21,14 +21,14 @@ export const Profile = ({id}: Pick<SessionClient, 'id'>) => {
   // загрузка данных доступных пластов
   useEffect(() => {
     const objects = {trace: currentTrace, place: currentPlace, stratum: currentStratum};
-    setProfilePlastsData(id, objects).then();
+    loadProfileStrata(id, objects).then();
   }, [currentTrace, currentPlace, currentStratum, id]);
 
   // загрузка данных профиля
   useEffect(() => {
     if (!loader?.activeStrata?.length) return;
     const objects = {trace: currentTrace, place: currentPlace, stratum: currentStratum};
-    setProfileData(id, objects).then();
+    loadProfileData(id, objects).then();
   }, [id, loader?.activeStrata, currentTrace, currentPlace, currentStratum]);
 
   // обновление ссылки на холст
@@ -52,12 +52,10 @@ export const Profile = ({id}: Pick<SessionClient, 'id'>) => {
     isOnMoveRef.current = true;
     stage.handleMouseDown(nativeEvent);
   };
-
   const onMouseUp = () => {
     isOnMoveRef.current = false;
     stage.scroller.mouseUp();
   };
-
   const onMouseMove = ({nativeEvent}: MouseEvent) => {
     stage.handleMouseMove(nativeEvent);
   };
@@ -84,7 +82,7 @@ export const Profile = ({id}: Pick<SessionClient, 'id'>) => {
   if (currentTrace && currentTrace.nodes.length === 0) {
     return <TextInfo text={'profile.no-nodes'}/>;
   }
-  if (loading.percentage >= 100 && !loader?.cache?.plasts) {
+  if (loading.percentage >= 100 && !loader?.cache?.strata) {
     return <TextInfo text={'profile.timeout'}/>;
   }
   if (loading.percentage < 100) {

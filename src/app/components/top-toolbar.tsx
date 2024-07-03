@@ -30,7 +30,7 @@ export const TopToolbar = ({config}: TopToolbarProps) => {
           icon={saveSessionIcon} alt={'save'}
           title={t('menu.save-session')} onClick={saveSession}
         />
-        {config.devMode && config.devDocLink && <IconRowLink
+        {config.mode === 'dev' && config.devDocLink && <IconRowLink
           icon={devDocIcon} alt={'dev-doc'}
           href={config.devDocLink} target={'_blank'} title={t('menu.open-dev-doc')}
         />}

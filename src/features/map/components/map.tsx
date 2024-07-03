@@ -2,19 +2,19 @@ import type { MouseEvent, WheelEvent } from 'react';
 import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { LoadingStatus, TextInfo } from 'shared/ui';
 import { useChannel, useChannelDict } from 'entities/channel';
+import { updateParamDeep, useParameterValue, rowToParameterValue } from 'entities/parameter';
 import { useCurrentWell, useTraceManager, setCurrentTrace, setCurrentWell } from 'entities/objects';
-import { updateParamDeep, useClientParameterValue, rowToParameterValue } from 'entities/parameter';
 import { useMapState } from '../store/map.store';
 import { fetchMapData, showMapPropertyWindow } from '../store/map.thunks';
 import { setMapField, setMapCanvas, applyTraceToMap } from '../store/map.actions';
 import { getFullTraceViewport, getTraceMapElement, handleTraceClick } from '../lib/traces-map-utils';
 import { getFullViewport } from '../lib/map-utils';
 import { checkDistancePoints } from '../lib/selecting-utils';
+import { MapStage } from '../lib/map-stage';
 import { MapMode } from '../lib/constants';
-import { InclinometryModePlugin } from '../lib/plugins';
 
 
-export const Map = ({id, parent, channels}: Pick<SessionClient, 'id' | 'parent' | 'channels'>) => {
+export const Map = ({id, channels}: Pick<SessionClient, 'id' | 'channels'>) => {
   const currentWell = useCurrentWell();
   const { model: currentTrace, editing: traceEditing } = useTraceManager();
 
@@ -22,17 +22,13 @@ export const Map = ({id, parent, channels}: Pick<SessionClient, 'id' | 'parent' 
   const mapState = useMapState(id);
 
   const canvasRef = useRef(null);
-  const { canvas, stage, loading } = mapState;
+  const { canvas, loading } = mapState;
+  const stage = mapState.stage as MapStage;
   const mapData = stage.getMapData();
 
   const isPartOfDynamicMultiMap = channels === null;
   const activeChannelName = isPartOfDynamicMultiMap ? null : channels[0]?.name;
   const activeChannel = useChannel(activeChannelName);
-  const inclAngle = useClientParameterValue(parent, 'inclinometryViewAngle');
-
-  const inclPlugin = stage.plugins.find(it =>
-    it instanceof InclinometryModePlugin
-  ) as InclinometryModePlugin;
 
   // проверка параметров формы
   useEffect(() => {
@@ -42,9 +38,7 @@ export const Map = ({id, parent, channels}: Pick<SessionClient, 'id' | 'parent' 
       if (stage.inclinometryModeOn && !canvas) {
         stage.setData({layers: [], x: 0, y: 0, scale: 1} as MapData);
         setMapCanvas(id, canvasRef.current);
-        inclPlugin.setUpdateAngleParamFunction((value: number) => updateParamDeep(inclAngle.id, value));
-        setIsMapExist(true);
-        return;
+        setIsMapExist(true); return;
       }
       if (loading.percentage < 0) return;
       return setIsMapExist(false);
@@ -121,14 +115,21 @@ export const Map = ({id, parent, channels}: Pick<SessionClient, 'id' | 'parent' 
 
   /* --- --- */
 
+  const inclPlugin = stage.getPlugin('incl');
+  const inclAngle = useParameterValue(inclPlugin.parameterID);
   const channelDict = useChannelDict(channels?.map(c => c.name) ?? []);
+
+  // обновление угла инклинометрии
+  useEffect(() => {
+    if (inclPlugin && inclPlugin.parameterID) inclPlugin.setAngle(inclAngle);
+  }, [inclPlugin, inclAngle]);
 
   // обновление каналов плагинов
   useEffect(() => {
     if (stage.plugins.length === 0) return;
-    stage.plugins.forEach(p => { p.setData(channelDict, inclAngle); });
+    stage.plugins.forEach(p => { p.setData(channelDict); });
     stage.render();
-  }, [channelDict, stage, inclAngle]);
+  }, [channelDict, stage]);
 
   /* --- --- */
 

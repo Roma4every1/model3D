@@ -37,7 +37,8 @@ export class CaratCurveColumn implements ICaratColumn {
   }
 
   public copy(): CaratCurveColumn {
-    const copy = {...this, curveManager: this.curveManager.copy()};
+    const copy: any = {...this, curveManager: this.curveManager.copy()};
+    copy.rect = {...this.rect};
     copy.groups = [{rect: this.groups[0].rect, elements: []}];
     copy.dividingLines = [];
     Object.setPrototypeOf(copy, CaratCurveColumn.prototype);
@@ -75,7 +76,7 @@ export class CaratCurveColumn implements ICaratColumn {
   }
 
   public setGroupWidth(width: number): void {
-    for (let i = 0; i < this.groups.length; i++) {
+    for (let i = 0; i < this.groups.length; ++i) {
       const left = i * width;
       const rect = this.groups[i].rect;
       rect.left = left; rect.width = width;
@@ -96,7 +97,7 @@ export class CaratCurveColumn implements ICaratColumn {
 
   public setCurveData(curves: CaratCurveModel[], zones: CaratZone[]): void {
     let curveGroups: CaratCurveModel[][] = [];
-    for (let i = 0; i <= zones.length; i++) curveGroups.push([]);
+    for (let i = 0; i <= zones.length; ++i) curveGroups.push([]);
 
     for (const curve of curves) {
       const curveType = curve.type;
@@ -115,7 +116,7 @@ export class CaratCurveColumn implements ICaratColumn {
     this.groups = [];
     this.dividingLines = [];
 
-    for (let i = 0; i < curveGroups.length; i++) {
+    for (let i = 0; i < curveGroups.length; ++i) {
       const rect: Rectangle = {top, left: i * width, width, height};
       this.groups.push({rect, elements: curveGroups[i]});
       if (i > 0) this.dividingLines.push(rect.left);

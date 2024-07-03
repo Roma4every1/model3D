@@ -61,14 +61,15 @@ export class DataResolver {
         this.dependencies.set(id, new Set([channelName]));
       }
     }
+    for (const [id, setter] of this.setters) {
+      targetParameters.add(setter.setParameter);
+      this.targets.add(id);
+      this.dependencies.set(id, setIntersection(targetParameters, setter.executeParameters));
+    }
     for (const name in this.channels) {
       this.targets.add(name);
       const ids = this.channels[name].config.parameters;
       this.dependencies.set(name, setIntersection(targetParameters, ids));
-    }
-    for (const [key, setter] of this.setters) {
-      this.targets.add(key);
-      this.dependencies.set(key, setIntersection(targetParameters, setter.executeParameters));
     }
   }
 

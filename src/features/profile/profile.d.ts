@@ -1,5 +1,3 @@
-type ProfileStates = Record<ClientID, ProfileState>;
-
 /** Состояние профиля. */
 interface ProfileState {
   /** Канвас профиля. */
@@ -20,8 +18,6 @@ interface ProfileLoading {
   percentage: number;
   /** Статус загрузки. */
   status: string;
-  /** Аргументы шаблона локали. */
-  statusOptions?: I18nOptions;
 }
 
 /** Сцена профиля. */
@@ -43,73 +39,70 @@ interface IProfileStage {
   render(): void;
 }
 
-/* --- Loader --- */
-
 /** Загрузчик данных профиля. */
 interface IProfileLoader {
-  flag: number;
   cache: ProfileDataCache;
   activeStrata: string[];
+  setLoading: (percentage: number, status?: string) => void;
 
-  setLoading: (l: Partial<CaratLoading>) => void;
-  loadProfileData(objects: GMMOJobObjectParameters);
-  loadPlData(objects: GMMOJobObjectParameters);
+  loadStrata(objects: GMJobObjectParameters): Promise<void>;
+  loadProfileData(objects: GMJobObjectParameters): Promise<void>;
 }
 
 /** Кэш данных профиля. */
 interface ProfileDataCache {
+  /** Список всех доступных пластов. */
+  strata: GMPlJobDataItem[];
   /** Данные контейнера профиля. */
   profileData: MapData;
-  /** Список всех доступных пластов. */
-  plasts: GMMOPlJobDataItem[];
 }
 
-interface GMMOJobParams {
+/* --- GeoManager API --- */
+
+interface GMJobObjectParameters {
+  trace: TraceModel;
+  stratum: StratumModel;
+  place: PlaceModel;
+}
+
+interface GMJobPayload {
   objectCode: string;
   organizationCode: string;
   plastCode: string;
   mapCode: string;
 }
 
-interface GMMOJobObjectParameters {
-  trace: TraceModel;
-  stratum: StratumModel;
-  place: PlaceModel;
-}
-
-/* --- GMMO API --- */
-
-type GMMOJobData = GMMOPlastsJobDataResult | GMMOProfileDataResult;
-
-interface GMMOPlJobDataItem {
+interface GMPlJobDataItem {
   name: string;
   code: string;
   selected: string;
 }
 
-interface GMMOPlastsJobDataResult {
+interface GMStrataResult {
   operationid: string;
-  plast?: GMMOPlJobDataItem[];
+  plast?: GMPlJobDataItem[];
 }
 
-interface GMMOProfileDataResult {
-  mi: GMMOMiData;
-  profileInnerContainer: GMMOProfileInnerContainerData;
+interface GMProfileResult {
+  mi: GMMiData;
+  profileInnerContainer: GMProfileInnerContainerData;
 }
 
-interface GMMOProfileInnerContainerData {
-  layers:Record<string, GMMORawLayerData>;
+interface GMProfileInnerContainerData {
+  layers:Record<string, GMRawLayerData>;
 }
 
-interface GMMOMiData {
+interface GMMiData {
   layers: Record<string, MapLayerRaw>;
 }
 
-interface GMMORawLayerData {
+interface GMRawLayerData {
+  name: string;
+  uid: string;
   group: string;
   highscale: string | number;
   lowscale: string | number;
-  name: string;
-  uid: string;
   elements: MapElement[];
 }
+
+type GMJobID = string;
