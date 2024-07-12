@@ -1,7 +1,7 @@
 {
   "mode": "dev",
   "api": "http://js-wmw-dev/id42/WebRequests.svc",
-  "geoManager": "http://wmw-tn:8081/ij-srv",
+  "geoManager": "http://js-wmw-dev:8081/ij-srv",
   "devDocLink": "http://js-wmw-dev/about",
   "userDocLink": "http://js-wmw-dev/about",
   "contactEmail": "support@geospline.ru"

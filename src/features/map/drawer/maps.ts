@@ -1,5 +1,6 @@
+import type { Translator } from './translator';
 import { startPaint } from './map-drawer';
-import { getTranslator, Translator } from './geom';
+import { getTranslator } from './translator';
 
 
 export function showMap(canvas: MapCanvas, map: MapData, viewport: MapViewport, afterUpdate?: () => void) {
@@ -37,7 +38,7 @@ export function showMap(canvas: MapCanvas, map: MapData, viewport: MapViewport, 
   }
 
   update(canvas);
-  return {update, detach};
+  return detach;
 
   function changeCanvas() {
     if (canvasFlag === canvas.showMapFlag) return false;

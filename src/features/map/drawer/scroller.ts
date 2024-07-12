@@ -1,5 +1,6 @@
-import Events from 'events';
-import { Translator, getTranslator } from './geom';
+import type { Translator } from './translator';
+import EventEmitter from 'events';
+import { getTranslator } from './translator';
 
 
 interface ScrollerAction {
@@ -18,7 +19,7 @@ export class Scroller implements IMapScroller {
 
 	public setCanvas(canvas: MapCanvas) {
 		this.canvas = canvas;
-		canvas.events = new Events();
+		canvas.events = new EventEmitter();
 		canvas.events.on('init', (t: Translator) => { this.translator = t; });
 		canvas.events.on('sync', (view: MapViewport) => { this.emit('cs', view); })
 	}

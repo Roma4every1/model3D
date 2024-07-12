@@ -2,7 +2,7 @@ import type { ParameterStore } from './parameter.store';
 import { hasIntersection, setUnion, addToSet } from 'shared/lib';
 import { clientAPI } from 'entities/client';
 import { updateObjects } from 'entities/objects';
-import { resetDependentReports } from 'entities/report';
+import { resetDependentPrograms } from 'entities/program';
 import { useChannelStore, fillChannels, resetDependentChannels } from 'entities/channel';
 import { updateActivePresentation } from 'widgets/presentation/lib/update';
 import { updatePresentationTree } from 'widgets/left-panel/store/left-panel.actions';
@@ -85,7 +85,7 @@ class Updater {
     addToSet(this.allChanges, resultChanges);
 
     resetDependentChannels(resultChanges);
-    resetDependentReports(resultChanges);
+    resetDependentPrograms(resultChanges);
     updatePresentationTree(resultChanges);
   }
 

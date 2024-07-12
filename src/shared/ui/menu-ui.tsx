@@ -1,5 +1,6 @@
 import type { ReactNode, CSSProperties, MouseEvent } from 'react';
 import { Skeleton } from '@progress/kendo-react-indicators';
+import { clsx } from 'clsx';
 import './menu-ui.scss';
 
 
@@ -7,7 +8,7 @@ interface MenuSectionProps {
   header: string;
   className?: string;
   style?: CSSProperties;
-  children: ReactNode;
+  children?: ReactNode;
 }
 interface MenuSectionItemProps {
   className?: string;
@@ -98,6 +99,7 @@ export const ButtonIconStock = ({icon, title, action, disabled}: Omit<ButtonIcon
 interface IconRowProps {
   justify?: CSSProperties['justifyContent'];
   gap?: number | string;
+  className?: string;
   children?: ReactNode;
 }
 interface IconRowButtonProps {
@@ -116,12 +118,10 @@ interface IconRowLinkProps {
   title?: string;
 }
 
-export const IconRow = ({children, justify, gap}: IconRowProps) => {
-  return (
-    <div className={'wm-icon-row'} style={{justifyContent: justify, gap}}>
-      {children}
-    </div>
-  );
+export const IconRow = ({children, justify, className, gap}: IconRowProps) => {
+  const cls = clsx(className, 'wm-icon-row');
+  const style: CSSProperties = {justifyContent: justify, gap};
+  return <div className={cls} style={style}>{children}</div>;
 };
 
 export const IconRowButton = (props: IconRowButtonProps) => {

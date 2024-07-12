@@ -5,8 +5,9 @@ import { ProfileLoader } from './loader';
 /** Создаёт состояние профиля. */
 export function settingsToProfileState(): ProfileState {
   const stage = new ProfileStage();
-  const loader = new ProfileLoader();
   const observer = new ResizeObserver(() => { stage.resize(); stage.render(); });
-  const loading: ProfileLoading = {percentage: 0, status: null};
-  return {observer, stage, loader, loading, canvas: undefined};
+
+  const loader = new ProfileLoader();
+  const parameters: ProfileParameters = {strata: undefined, selectedStrata: undefined, ratio: 5};
+  return {observer, stage, loader, loading: {percentage: 0}, parameters, canvas: undefined};
 }

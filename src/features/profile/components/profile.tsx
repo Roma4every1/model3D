@@ -3,49 +3,46 @@ import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useCurrentTrace, useCurrentStratum, useCurrentPlace } from 'entities/objects';
 import { useProfileState } from '../store/profile.store';
 import { setProfileCanvas } from '../store/profile.actions';
-import { loadProfileData, loadProfileStrata } from '../store/profile.thunks';
+import { updateProfile, updateProfileStrata } from '../store/profile.thunks';
 
 import './profile.scss';
 import { LoadingStatus, TextInfo } from 'shared/ui';
 
 
 export const Profile = ({id}: Pick<SessionClient, 'id'>) => {
-  const { canvas, loader, stage, loading } = useProfileState(id);
-  const currentPlace = useCurrentPlace();
-  const currentTrace = useCurrentTrace();
-  const currentStratum = useCurrentStratum();
+  const { canvas, stage, loading, parameters } = useProfileState(id);
+  const place = useCurrentPlace();
+  const stratum = useCurrentStratum();
+  const trace = useCurrentTrace();
 
   const isOnMoveRef = useRef<boolean>(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // загрузка данных доступных пластов
   useEffect(() => {
-    const objects = {trace: currentTrace, place: currentPlace, stratum: currentStratum};
-    loadProfileStrata(id, objects).then();
-  }, [currentTrace, currentPlace, currentStratum, id]);
+    updateProfileStrata(id, {place, stratum, trace}).then();
+  }, [place, stratum, trace, id]);
 
   // загрузка данных профиля
   useEffect(() => {
-    if (!loader?.activeStrata?.length) return;
-    const objects = {trace: currentTrace, place: currentPlace, stratum: currentStratum};
-    loadProfileData(id, objects).then();
-  }, [id, loader?.activeStrata, currentTrace, currentPlace, currentStratum]);
+    updateProfile(id).then();
+  }, [place, stratum, trace, id]);
 
   // обновление ссылки на холст
   useLayoutEffect(() => {
-    if (loading?.percentage < 100) return;
-    if (canvasRef.current === canvas) return;
-    if (!canvasRef.current) return;
-    setProfileCanvas(id, canvasRef.current);
-  }, [canvas, id, stage, loading?.percentage]);
+    if (loading.percentage < 100) return;
+    if (canvasRef.current !== canvas) setProfileCanvas(id, canvasRef.current);
+  }, [canvas, loading.percentage, stage, id]);
 
-  useEffect(() => {
-    if (loading?.percentage < 100) return;
-    if (!loader?.cache?.profileData) return;
-    stage.setData(loader.cache.profileData);
-  }, [stage, loading?.percentage, loader?.cache?.profileData]);
+  if (!place || !stratum) return <TextInfo text={'profile.no-data'}/>;
+  if (!trace) return <TextInfo text={'profile.no-trace'}/>;
+  if (trace.nodes.length === 0) return <TextInfo text={'profile.no-trace-nodes'}/>;
+  if (!parameters.selectedStrata?.length) return <TextInfo text={'profile.no-strata'}/>;
 
-  /* --- Events --- */
+  if (loading.percentage < 0) return <TextInfo text={loading.status}/>;
+  if (loading.percentage < 100) return <LoadingStatus {...loading}/>;
+
+  /* --- --- */
 
   const onMouseDown = ({nativeEvent}: MouseEvent) => {
     if (nativeEvent.button !== 0) return;
@@ -68,31 +65,10 @@ export const Profile = ({id}: Pick<SessionClient, 'id'>) => {
     stage.scroller.mouseUp();
   };
 
-  /* ---  --- */
-
-  if (!currentPlace || !currentStratum) {
-    return <TextInfo text={'profile.no-data'}/>;
-  }
-  if (!currentTrace) {
-    return <TextInfo text={'profile.no-trace-data'}/>;
-  }
-  if (!loader?.activeStrata?.length) {
-    return <TextInfo text={'profile.no-plast-data'}/>;
-  }
-  if (currentTrace && currentTrace.nodes.length === 0) {
-    return <TextInfo text={'profile.no-nodes'}/>;
-  }
-  if (loading.percentage >= 100 && !loader?.cache?.strata) {
-    return <TextInfo text={'profile.timeout'}/>;
-  }
-  if (loading.percentage < 100) {
-    return <LoadingStatus {...loading}/>;
-  }
-
   return (
     <div className={'profile-container'}>
       <canvas
-        className={'profile-canvas'} ref={canvasRef} tabIndex={0}
+        ref={canvasRef} tabIndex={0}
         onMouseDown={onMouseDown} onMouseUp={onMouseUp} onMouseMove={onMouseMove}
         onWheel={onMouseWheel} onMouseLeave={onMouseLeave}
       />

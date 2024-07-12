@@ -1,12 +1,12 @@
+import { t } from 'shared/locales';
 import { base64toBlob, getFileExtension } from 'shared/lib';
+import { programAPI } from 'entities/program';
 import { useClientStore } from 'entities/client';
 import { channelRowToRecord, channelAPI } from 'entities/channel';
 import { showWarningMessage } from 'entities/window';
 import { setFileViewModel } from './file-view.actions';
-import { t } from 'shared/locales';
-import { mimeTypeDict, fileParserDict } from '../lib/constants';
-import { reportAPI } from 'entities/report/lib/report.api';
 import { useFileViewStore } from './file-view.store';
+import { mimeTypeDict, fileParserDict } from '../lib/constants';
 
 
 export async function updateFileViewModel(id: FormID, data: ChannelData): Promise<void> {
@@ -34,7 +34,7 @@ export async function updateFileViewModel(id: FormID, data: ChannelData): Promis
     const contentType = mimeTypeDict[fileType] ?? '';
 
     if (fileViewState.useResources) {
-      const res = await reportAPI.downloadFile(descriptor);
+      const res = await programAPI.downloadFile(descriptor);
       if (!res.ok) {
         const message = t('file-view.download-error', {fileName});
         showWarningMessage(message); return;

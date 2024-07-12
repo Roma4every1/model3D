@@ -6,7 +6,7 @@ import { setTableColumns, setTableColumnTree } from '../../store/table.actions';
 
 import { MenuSection, BigButton, ButtonStock } from 'shared/ui';
 import { ColumnStatistics } from './column-statistics';
-import autoWidthIcon from 'assets/dataset/auto-width.png';
+import autoWidthIcon from 'assets/table/auto-width.png';
 
 
 interface ColumnOrderControlsProps {

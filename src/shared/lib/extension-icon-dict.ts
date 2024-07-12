@@ -1,17 +1,17 @@
-import txtFileIcon from 'assets/reports/file-txt.png';
-import pngFileIcon from 'assets/reports/file-png.png';
-import binFileIcon from 'assets/reports/file-bin.png';
-import jpgFileIcon from 'assets/reports/file-jpg.png';
-import pdfFileIcon from 'assets/reports/file-pdf.png';
-import csvFileIcon from 'assets/reports/file-csv.png';
-import docFileIcon from 'assets/reports/file-doc.png';
-import docxFileIcon from 'assets/reports/file-docx.png';
-import xlsFileIcon from 'assets/reports/file-xls.png';
-import xlsmFileIcon from 'assets/reports/file-xlsm.png';
-import xlsxFileIcon from 'assets/reports/file-xlsx.png';
-import xlsxmFileIcon from 'assets/reports/file-xlsxm.png';
-import zipFileIcon from 'assets/reports/file-zip.png';
-import defaultFileIcon from 'assets/reports/file-unknown.png';
+import txtFileIcon from 'assets/files/file-txt.png';
+import pngFileIcon from 'assets/files/file-png.png';
+import binFileIcon from 'assets/files/file-bin.png';
+import jpgFileIcon from 'assets/files/file-jpg.png';
+import pdfFileIcon from 'assets/files/file-pdf.png';
+import csvFileIcon from 'assets/files/file-csv.png';
+import docFileIcon from 'assets/files/file-doc.png';
+import docxFileIcon from 'assets/files/file-docx.png';
+import xlsFileIcon from 'assets/files/file-xls.png';
+import xlsmFileIcon from 'assets/files/file-xlsm.png';
+import xlsxFileIcon from 'assets/files/file-xlsx.png';
+import xlsxmFileIcon from 'assets/files/file-xlsxm.png';
+import zipFileIcon from 'assets/files/file-zip.png';
+import defaultFileIcon from 'assets/files/file-unknown.png';
 
 
 /** Словарь иконок для различных расширений файлов. */

@@ -4,32 +4,32 @@ import { showNotification } from 'entities/notification';
 import { showInfoMessage, showWarningMessage } from 'entities/window';
 import { reloadChannelsByQueryIDs } from 'entities/channel';
 import { useParameterStore, findParameters, rowToParameterValue } from 'entities/parameter';
-import { useReportStore } from './report.store';
-import { reportAPI } from '../lib/report.api';
-import { reportCompareFn, fillReportChannels, watchOperation } from '../lib/common';
+import { useProgramStore } from './program.store';
+import { programAPI } from '../lib/program.api';
+import { programCompareFn, fillProgramChannels, watchOperation } from '../lib/common';
 
 
-/** Обновление доступности программ и отчётов. */
-export async function updateReports(client: ClientID, reports: ReportModel[]): Promise<void> {
-  const models = useReportStore.getState().models;
+/** Обновление доступности программ. */
+export async function updatePrograms(client: ClientID, programs: Program[]): Promise<void> {
+  const models = useProgramStore.getState().models;
   const storage = useParameterStore.getState().storage;
 
-  await Promise.all(reports.map(async (report: ReportModel): Promise<void> => {
-    const parameters = findParameters(report.availabilityParameters, storage);
-    report.available = await reportAPI.getReportAvailability(report.id, parameters);
+  await Promise.all(programs.map(async (program: Program): Promise<void> => {
+    const parameters = findParameters(program.availabilityParameters, storage);
+    program.available = await programAPI.getProgramAvailability(program.id, parameters);
   }));
 
-  const clientReports = models[client].toSorted(reportCompareFn);
-  useReportStore.setState({models: {...models, [client]: clientReports}});
+  const clientReports = models[client].toSorted(programCompareFn);
+  useProgramStore.setState({models: {...models, [client]: clientReports}});
 }
 
-/** Запуска процедуры. */
-export async function runReport(report: ReportModel): Promise<void> {
-  const reportID = report.id;
-  const parameters = report.parameters;
+/** Запуск серверной программы. */
+export async function runProgram(program: Program): Promise<void> {
+  const reportID = program.id;
+  const parameters = program.parameters;
 
-  for (let i = 0; i < report.linkedPropertyCount; ++i) {
-    const res = await reportAPI.executeReportProperty(reportID, parameters, i);
+  for (let i = 0; i < program.linkedPropertyCount; ++i) {
+    const res = await programAPI.executeReportProperty(reportID, parameters, i);
     if (res.ok === false) { showWarningMessage(res.message); continue; }
     if (res.data.error) { showWarningMessage(res.data.error); continue; }
 
@@ -37,39 +37,39 @@ export async function runReport(report: ReportModel): Promise<void> {
     if (modifiedTables.length) reloadChannelsByQueryIDs(modifiedTables).then();
 
     if (result) {
-      const title = t(`report.${report.type}-result`);
+      const title = t(`program.${program.type}-result`);
       const style = {whiteSpace: 'pre', maxWidth: 400, maxHeight: 300};
       showInfoMessage(result, title, style);
     }
     if (operationID) {
-      showNotification(t('report.start', {name: report.displayName}));
-      await watchOperation(report, operationID);
+      showNotification(t('program.start', {name: program.displayName}));
+      await watchOperation(operationID, program);
     }
   }
   for (const parameter of parameters) {
-    if (parameter.editor?.type !== 'fileTextEditor') parameter.setValue(null);
+    if (parameter.editor?.type === 'fileTextEditor') parameter.setValue(null);
   }
 }
 
 /* --- --- */
 
-/** Подготовка процедуры перед открытием диалога. */
-export async function prepareReport(report: ReportModel): Promise<void> {
+/** Подготовка программы перед открытием диалога. */
+export async function prepareProgram(program: Program): Promise<void> {
   const storage = useParameterStore.getState().storage;
-  const changes = handleReportRelations(report, storage);
+  const changes = handleProgramRelations(program, storage);
 
   const names: ChannelName[] = [];
-  const channels = Object.values(report.channels);
+  const channels = Object.values(program.channels);
 
   for (const { name, config, actual } of channels) {
     if (!actual || hasIntersection(changes, config.parameters)) names.push(name);
   }
   if (names.length) {
-    await fillReportChannels(report, names, storage);
+    await fillProgramChannels(program, names, storage);
   }
   if (changes.size) {
-    prepareReportParameters(report, changes);
-    report.runnable = await reportAPI.canRunReport(report.id, report.parameters);
+    prepareProgramParameters(program, changes);
+    program.runnable = await programAPI.canRunProgram(program.id, program.parameters);
   }
 }
 
@@ -78,12 +78,12 @@ export async function prepareReport(report: ReportModel): Promise<void> {
  * параметра, то при открытии диалога его значение должно совпадать
  * со значением соответствующего параметра системы.
  */
-function handleReportRelations(report: ReportModel, storage: ParameterMap): Set<ParameterID> {
+function handleProgramRelations(program: Program, storage: ParameterMap): Set<ParameterID> {
   const changes: Set<ParameterID> = new Set();
-  const { relations, checkRelations, parameters } = report;
+  const { relations, checkRelations, parameters } = program;
 
   if (!checkRelations || relations.size === 0) return changes;
-  report.checkRelations = false;
+  program.checkRelations = false;
 
   for (const parameter of parameters) {
     const relatedID = relations.get(parameter.id);
@@ -96,8 +96,8 @@ function handleReportRelations(report: ReportModel, storage: ParameterMap): Set<
   return changes;
 }
 
-function prepareReportParameters(report: ReportModel, changes: Set<ParameterID>): void {
-  const { parameters, channels } = report;
+function prepareProgramParameters(program: Program, changes: Set<ParameterID>): void {
+  const { parameters, channels } = program;
   const dependents: Set<ParameterID> = new Set();
 
   for (const p of parameters) {

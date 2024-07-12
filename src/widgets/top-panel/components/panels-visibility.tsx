@@ -2,9 +2,9 @@ import { hideLeftTab, showLeftTab } from 'widgets/left-panel';
 import { setLeftLayout } from 'widgets/left-panel/store/left-panel.actions';
 import { BigButtonToggle, MenuSection } from 'shared/ui';
 
-import globalParametersIcon from 'assets/menu/global-parameters.png';
-import presentationParametersIcon from 'assets/menu/presentation-parameters.png';
-import presentationsListIcon from 'assets/menu/presentations-list.png';
+import globalParametersIcon from 'assets/common/global-parameters.png';
+import presentationParametersIcon from 'assets/common/presentation-parameters.png';
+import presentationsListIcon from 'assets/common/presentation-list.png';
 
 
 /** Секция, отображающая видимость различных панелей управления. */

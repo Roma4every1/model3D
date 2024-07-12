@@ -2,12 +2,11 @@ import type { Res } from 'shared/lib';
 import type { SaveTableMetadata, SetRecords } from '../lib/types';
 import { t } from 'shared/locales';
 import { createElement } from 'react';
-import { watchOperation } from 'entities/report';
+import { watchOperation, programAPI } from 'entities/program';
 import { findParameters, updateParamDeep, useParameterStore, rowToParameterValue } from 'entities/parameter';
 import { reloadChannelsByQueryIDs, reloadChannel, setChannelActiveRow, channelAPI, useChannelStore } from 'entities/channel';
 import { showWarningMessage, showWindow, closeWindow } from 'entities/window';
 import { showNotification } from 'entities/notification';
-import { reportAPI } from 'entities/report/lib/report.api';
 import { createTableState, startTableEditing } from './table.actions';
 import { tableStateToSettings } from '../lib/table-settings';
 import { LinkedTable } from '../components/table/linked-table';
@@ -128,12 +127,12 @@ export async function exportTableToExcel(id: FormID): Promise<void> {
     settings: tableStateToSettings(id, tableState).columnSettings,
   };
 
-  const res = await reportAPI.exportToExcel(exportData);
+  const res = await programAPI.exportToExcel(exportData);
   if (res.ok === false) { showWarningMessage(res.message); return; }
 
   const { operationID, error } = res.data;
   if (error) { showWarningMessage(error); return; }
-  if (operationID) await watchOperation(null, operationID).then();
+  if (operationID) await watchOperation(operationID).then();
 }
 
 export function showLinkedTable(formID: FormID, columnID: TableColumnID): void {

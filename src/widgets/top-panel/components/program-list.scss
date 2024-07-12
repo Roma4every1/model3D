@@ -1,0 +1,36 @@
+.program-list {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: scroll;
+
+  button {
+    height: 50px;
+    width: 160px;
+    margin-right: 2px;
+
+    display: grid;
+    grid-template-columns: 32px 114px;
+    align-items: center;
+  }
+  span {
+    text-align: left;
+    white-space: normal;
+    line-height: 1.25;
+    max-height: 45px;
+    overflow: hidden;
+  }
+  img {
+    width: 24px;
+    height: 24px;
+  }
+
+  button[disabled] img {
+    filter: grayscale(1);
+  }
+}
+
+.program-list:not(:has(button)) {
+  padding: 8px;
+  justify-content: center;
+  overflow-x: auto;
+}

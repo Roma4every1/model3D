@@ -6,7 +6,7 @@ import { BigButton } from 'shared/ui';
 import { EditPanelItemProps } from '../../lib/types';
 import { setTableColumnTree, setTableActiveCell } from '../../store/table.actions';
 import { toggleTreeItemVisibility, findGroupItems } from '../../lib/column-tree-actions';
-import columnVisibilityIcon from 'assets/dataset/columns-visibility.png';
+import columnVisibilityIcon from 'assets/table/columns-visibility.png';
 
 
 interface ColumnTreeVisibilityProps {

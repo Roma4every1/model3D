@@ -3,7 +3,7 @@ import { ChangeEvent, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@progress/kendo-react-buttons';
 import { showNotification } from 'entities/notification';
-import { reportAPI } from 'entities/report/lib/report.api';
+import { programAPI } from 'entities/program/lib/program.api';
 
 
 export const FileEditor = ({parameter, update}: EditorProps<'string'>) => {
@@ -16,7 +16,7 @@ export const FileEditor = ({parameter, update}: EditorProps<'string'>) => {
     if (!file) return;
 
     const fileData = await file.arrayBuffer();
-    const { ok, data: resourceID } = await reportAPI.uploadFile(file.name, fileData);
+    const { ok, data: resourceID } = await programAPI.uploadFile(file.name, fileData);
 
     if (ok && resourceID.endsWith(file.name)) {
       update(resourceID);

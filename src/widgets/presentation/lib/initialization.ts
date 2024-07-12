@@ -3,7 +3,7 @@ import { t } from 'shared/locales';
 import { fillPatterns } from 'shared/drawing';
 import { useObjectsStore } from 'entities/objects';
 import { useChannelStore } from 'entities/channel';
-import { setReportModels } from 'entities/report';
+import { setClientPrograms } from 'entities/program';
 import { showWarningMessage } from 'entities/window';
 import { addSessionClient, addSessionClients, setClientLoading } from 'entities/client';
 import { formCreators } from './form-dict';
@@ -24,7 +24,7 @@ export async function initializePresentation(id: ClientID): Promise<void> {
   const parameters = factory.getParameters();
   lockParameters(parameters);
   addSessionClient(presentation);
-  factory.createReports().then(reports => setReportModels(id, reports));
+  factory.createPrograms().then(programs => setClientPrograms(id, programs));
 
   setClientLoading(id, 'data');
   const children = factory.createChildren();

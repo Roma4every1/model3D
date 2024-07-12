@@ -1,9 +1,9 @@
 import type { ClientDataDTO } from 'entities/client';
-import type { ReportModelDTO } from 'entities/report';
+import type { ProgramDTO } from 'entities/program';
 import type { ParameterStore } from 'entities/parameter';
 import { Model } from 'flexlayout-react';
 import { leftAntiJoin, setUnion } from 'shared/lib';
-import { reportAPI, reportCompareFn } from 'entities/report';
+import { programAPI, programCompareFn } from 'entities/program';
 import { useChannelStore, createChannels, getDetailChannels } from 'entities/channel';
 import { AttachedChannelFactory, clientAPI, getChildrenTypes } from 'entities/client';
 import { multiMapChannelCriterion } from 'features/multi-map';
@@ -159,16 +159,16 @@ export class PresentationFactory {
   /* --- Reports --- */
 
   /** Создаёт список программ презентации. */
-  public async createReports(): Promise<ReportModel[]> {
-    const { ok, data } = await reportAPI.getPresentationReports(this.id);
+  public async createPrograms(): Promise<Program[]> {
+    const { ok, data } = await programAPI.getProgramList(this.id);
     if (!ok) return [];
 
-    const create = (dto: ReportModelDTO, i: number) => this.createReport(dto, i);
+    const create = (dto: ProgramDTO, i: number) => this.createProgram(dto, i);
     const models = await Promise.all(data.map(create));
-    return models.sort(reportCompareFn);
+    return models.sort(programCompareFn);
   }
 
-  private async createReport(dto: ReportModelDTO, orderIndex: number): Promise<ReportModel> {
+  private async createProgram(dto: ProgramDTO, orderIndex: number): Promise<Program> {
     const availabilityParameters: ParameterID[] = [];
     if (dto.paramsForCheckVisibility) {
       for (const name of dto.paramsForCheckVisibility) {
@@ -177,15 +177,15 @@ export class PresentationFactory {
       }
     }
 
-    const report: ReportModel = {
+    const program: Program = {
       id: dto.id, type: dto.type, owner: this.id, orderIndex, displayName: dto.displayName,
       availabilityParameters, available: true, runnable: false,
     };
     if (availabilityParameters.length) {
       const parameters = findParameters(availabilityParameters, this.parameterStore.storage);
-      report.available = await reportAPI.getReportAvailability(dto.id, parameters)
+      program.available = await programAPI.getProgramAvailability(dto.id, parameters)
     }
-    return report;
+    return program;
   }
 
   /* --- Channels --- */

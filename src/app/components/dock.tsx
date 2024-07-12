@@ -6,19 +6,13 @@ import { useTraceEditing } from 'entities/objects';
 import { LeftPanel } from 'widgets/left-panel';
 import { Presentation } from 'widgets/presentation';
 import { ActiveOperations, RightTab } from 'widgets/right-panel';
-import { MainMenu, PresentationReports, TopTab } from 'widgets/top-panel';
+import { MainMenu, TopTab } from 'widgets/top-panel';
 import { selectPresentation } from '../store/presentations';
 import { LayoutController } from '../lib/layout-controller';
 
 
-interface DockProps {
-  location: string;
-  config: ClientConfig;
-}
-
-
 /** Главная форма. */
-export const Dock = ({location, config}: DockProps) => {
+export const Dock = () => {
   const rootState = useRootClient();
   const presentation = useActivePresentation();
   const needRightTraceTab = useTraceEditing();
@@ -42,8 +36,7 @@ export const Dock = ({location, config}: DockProps) => {
     const id = node.getId();
     if (id === 'left') return <LeftPanel rootState={rootState} selectPresentation={selectPresentation}/>;
 
-    if (id === 'menu') return <MainMenu location={location} leftLayout={leftLayout} config={config}/>;
-    if (id === 'reports') return <PresentationReports id={activeID}/>;
+    if (id === 'menu') return <MainMenu id={activeID} leftLayout={leftLayout}/>;
     if (id.startsWith('top')) return <TopTab tabID={id} presentation={presentation}/>;
 
     if (id === 'right-dock') return <ActiveOperations activeID={activeID}/>;

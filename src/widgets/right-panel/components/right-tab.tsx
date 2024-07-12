@@ -1,7 +1,7 @@
-import { createElement } from 'react';
+import type { FunctionComponent } from 'react';
 import { TraceEditor } from 'entities/objects';
 import { MapLayerTree } from 'features/map';
-import { ProfileEditor } from '../../../features/profile/components/profile-editor';
+import { ProfileEditor } from 'features/profile';
 
 
 export interface RightTabProps {
@@ -11,24 +11,32 @@ export interface RightTabProps {
   presentation: PresentationState;
 }
 
-type RightTabComponent = typeof MapLayerTree | typeof TraceEditor;
-
-const rightTabComponentsDict: Record<string, RightTabComponent> = {
-  'right-map': MapLayerTree,
-  'right-trace': TraceEditor,
-  'right-profile': ProfileEditor
-}
 
 export const RightTab = ({tabID, presentation}: RightTabProps) => {
-  if (!presentation) return null;
+  const activeChildID = presentation?.activeChildID;
+  if (!activeChildID) return null;
 
-  const activeChildID = presentation.activeChildID;
-  const activeFormType = presentation.children.find(child => child.id === activeChildID).type;
+  let formType: ClientType;
+  let Component: FunctionComponent<{id: FormID}>;
 
-  const formID = activeFormType === 'map' || activeFormType === 'profile'
+  if (tabID.endsWith('map')) {
+    formType = 'map';
+    Component = MapLayerTree;
+  } else if (tabID.endsWith('trace')) {
+    formType = 'map';
+    Component = TraceEditor;
+  } else if (tabID.endsWith('profile')) {
+    formType = 'profile';
+    Component = ProfileEditor;
+  } else {
+    return null;
+  }
+
+  const activeChild = presentation.children.find(child => child.id === activeChildID);
+  const formID = activeChild.type === formType
     ? activeChildID
-    : presentation.children.find(child => child.type === 'map').id;
+    : presentation.children.find(child => child.type === formType)?.id;
 
-  const component = rightTabComponentsDict[tabID];
-  return createElement(component, {id: formID});
+  if (!formID) return null;
+  return <Component id={formID}/>
 };

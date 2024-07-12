@@ -1,6 +1,6 @@
 import { t } from 'shared/locales';
 import { fetcher } from 'shared/lib';
-import { useReportStore } from 'entities/report';
+import { useProgramStore } from 'entities/program';
 import { useChannelStore } from 'entities/channel';
 import { addSessionClient } from 'entities/client';
 import { showWarningMessage } from 'entities/window';
@@ -56,9 +56,7 @@ export async function startSession(isDefault: boolean): Promise<void> {
   const objects = initializeObjects(parameters, channels);
   const layoutController = root.layout.controller;
   layoutController.traceExist = Boolean(objects.trace.parameterID);
-
-  const reports = useReportStore.getState();
-  reports.layoutController = layoutController;
+  useProgramStore.getState().layoutController = layoutController;
 
   appState.initQueue.push(root.activeChildID);
   initializePresentations(appState.initQueue).then();

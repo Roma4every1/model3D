@@ -1,9 +1,9 @@
-import type { ReportData } from './report.api';
+import type { ProgramData } from './program.api';
 import { showWarningMessage } from 'entities/window';
 import { createChannels } from 'entities/channel';
-import { reportAPI } from './report.api';
-import { fillReportChannel } from './common';
-import { useReportStore } from '../store/report.store';
+import { programAPI } from './program.api';
+import { fillProgramChannel } from './common';
+import { useProgramStore } from '../store/program.store';
 
 import {
   useParameterStore, createParameter, parameterCompareFn,
@@ -11,27 +11,27 @@ import {
 } from 'entities/parameter';
 
 
-export async function initializeActiveReport(report: ReportModel): Promise<void> {
-  const { id, owner } = report;
-  const { ok, data, message } = await reportAPI.getReportData(id);
+export async function initializeActiveProgram(program: Program): Promise<void> {
+  const { id, owner } = program;
+  const { ok, data, message } = await programAPI.getProgramData(id);
   if (!ok) { showWarningMessage(message); return; }
 
   const linkedPropertyCount = data.linkedPropertyCount;
-  const [parameters, relations] = createReportParameters(owner, data);
-  const channels = await createReportChannels(owner, parameters);
+  const [parameters, relations] = createProgramParameters(owner, data);
+  const channels = await createProgramChannels(owner, parameters);
 
   let runnable = true;
-  if (parameters.length) runnable = await reportAPI.canRunReport(id, parameters);
+  if (parameters.length) runnable = await programAPI.canRunProgram(id, parameters);
 
-  const allModels = useReportStore.getState().models;
+  const allModels = useProgramStore.getState().models;
   const models = allModels[owner];
-  const index = models.indexOf(report);
+  const index = models.indexOf(program);
 
-  models[index] = {...report, runnable, parameters, channels, linkedPropertyCount, relations};
-  useReportStore.setState({models: {...allModels, [owner]: [...models]}});
+  models[index] = {...program, runnable, parameters, channels, linkedPropertyCount, relations};
+  useProgramStore.setState({models: {...allModels, [owner]: [...models]}});
 }
 
-function createReportParameters(id: ClientID, data: ReportData): [Parameter[], Map<ParameterID, ParameterID>] {
+function createProgramParameters(id: ClientID, data: ProgramData): [Parameter[], Map<ParameterID, ParameterID>] {
   const result: Parameter[] = [];
   const relations: Map<ParameterID, ParameterID> = new Map();
   const { parameters: inits, replaces } = data;
@@ -59,11 +59,11 @@ function createReportParameters(id: ClientID, data: ReportData): [Parameter[], M
     result.push(clone);
   }
 
-  setReportParameterDependents(result);
+  setProgramParameterDependents(result);
   return [result.sort(parameterCompareFn), relations];
 }
 
-async function createReportChannels(id: ClientID, parameters: Parameter[]): Promise<ChannelDict> {
+async function createProgramChannels(id: ClientID, parameters: Parameter[]): Promise<ChannelDict> {
   const { clients, storage } = useParameterStore.getState();
   const localParameters = clients[id];
   const globalParameters = clients.root;
@@ -76,11 +76,11 @@ async function createReportChannels(id: ClientID, parameters: Parameter[]): Prom
   const names = [...getParameterChannels(parameters)];
   const channels = await createChannels(names, resolve);
 
-  await Promise.all(names.map(name => fillReportChannel(channels[name], parameters, storage)));
+  await Promise.all(names.map(name => fillProgramChannel(channels[name], parameters, storage)));
   return channels;
 }
 
-function setReportParameterDependents(parameters: Parameter[]): void {
+function setProgramParameterDependents(parameters: Parameter[]): void {
   const depMap: Map<ParameterID, Set<ParameterID>> = new Map();
   for (const parameter of parameters) depMap.set(parameter.id, new Set());
 

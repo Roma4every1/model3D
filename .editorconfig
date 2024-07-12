@@ -11,6 +11,8 @@ end_of_line = lf
 # пробелы вместо табуляции \t
 indent_style = space
 # ширина отступа 2 пробела
+indent_size = 2
+# ширина табуляции 2 пробела
 tab_width = 2
 # файл должен оканчиваться новой строкой
 insert_final_newline = true

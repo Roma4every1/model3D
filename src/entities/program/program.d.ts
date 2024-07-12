@@ -1,51 +1,38 @@
-/** Состояние отчётов и программ. */
-interface Reports {
-  /** Модели отчётов и программ по презентациям. */
-  models: ReportDict;
-  /** Активные операции. */
-  operations: OperationStatus[];
-  /** Сущность, управляющая разметкой приложения. */
-  layoutController: any;
-}
-
-/** Хранилище отчётов и программ по презентациям. */
-type ReportDict = Record<ClientID, ReportModel[]>;
-
-/** Модель программы или отчёта. */
-interface ReportModel {
-  /** ID процедуры. */
-  readonly id: ReportID;
+/** Модель серверной программы. */
+interface Program {
+  /** ID программы. */
+  readonly id: ProgramID;
   /** Тип: программа или отчёт. */
-  readonly type: ReportType;
-  /** ID клиента, которому принадлежит процедура. */
+  readonly type: ProgramType;
+  /** ID клиента, которому принадлежит программа. */
   readonly owner: ClientID;
-  /** Порядковый номер в списке, переданном от сервера. */
+  /** Порядковый номер в списке, переданном с сервера. */
   readonly orderIndex: number;
-  /** Название процедуры. */
+  /** Подпись для программы. */
   readonly displayName: string;
   /** Список параметров для проверки доступности. */
   readonly availabilityParameters: ParameterID[];
-  /** Доступность процедуры при текущих параметрах системы, `undefined` означает неактуальность. */
+  /** Доступность при текущих параметрах системы, `undefined` означает неактуальность. */
   available: boolean | undefined;
-  /** Можно ли запустить процедуру при её текущих параметрах, `undefined` означает загрузку. */
+  /** Можно ли запустить программу при её текущих параметрах, `undefined` означает загрузку. */
   runnable: boolean | undefined;
-  /** Список параметров процедуры. */
+  /** Список параметров запуска. */
   parameters?: Parameter[];
   /** Каналы, необходимые для параметров. */
   channels?: ChannelDict;
-  /** Количество исполняемых блоков процедуры. */
+  /** Количество исполняемых блоков программы. */
   linkedPropertyCount?: number;
-  /** ID параметров процедуры, значения которых нужно брать на основе параметров системны. */
-  relations?: Map</* report */ ParameterID, /* system */ ParameterID>;
+  /** ID параметров программы, значения которых нужно брать на основе параметров системы. */
+  relations?: Map</* program */ ParameterID, /* system */ ParameterID>;
   /** Нужно ли делать проверку связанных параметров. */
   checkRelations?: boolean;
 }
 
-/** Тип удалённой процедуры: программа или отчёт. */
-type ReportType = 'program' | 'report';
+/** Тип серверной программы: программа или отчёт. */
+type ProgramType = 'program' | 'report';
 
-/** Идентификатор процедуры. */
-type ReportID = string;
+/** Идентификатор серверной программы. */
+type ProgramID = string;
 /** Идентификатор операции. */
 type OperationID = string;
 

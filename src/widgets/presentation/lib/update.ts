@@ -1,6 +1,6 @@
 import { useClientStore } from 'entities/client';
 import { useParameterStore } from 'entities/parameter';
-import { useReportStore, updateReports } from 'entities/report';
+import { useProgramStore, updatePrograms } from 'entities/program';
 import { useChannelStore, fillChannels } from 'entities/channel';
 
 
@@ -17,11 +17,11 @@ export async function updateActivePresentation(): Promise<void> {
   if (!presentation || presentation.loading.status !== 'done') return;
 
   const channels = getChannelsToUpdate(root.neededChannels, presentation.neededChannels);
-  const reports = getReportToUpdate(activeID);
+  const programs = getReportToUpdate(activeID);
 
   const actions: Promise<any>[] = [];
   if (channels) actions.push(fillChannels(channels, useParameterStore.getState().storage))
-  if (reports) actions.push(updateReports(activeID, reports));
+  if (programs) actions.push(updatePrograms(activeID, programs));
   if (actions.length === 0) return;
 
   await Promise.all(actions);
@@ -46,8 +46,8 @@ function getChannelsToUpdate(rootNames: ChannelName[], names: ChannelName[]): Ch
   return empty ? null : dict;
 }
 
-function getReportToUpdate(client: ClientID): ReportModel[] | null {
-  const allModels = useReportStore.getState().models;
+function getReportToUpdate(client: ClientID): Program[] | null {
+  const allModels = useProgramStore.getState().models;
   const models = allModels[client].filter(r => r.available === undefined);
   return models.length ? models : null;
 }

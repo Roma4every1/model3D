@@ -12,10 +12,6 @@ const topTabDict: Record<TabID, IJsonTabNode> = {
     type: 'tab', enableDrag: false,
     id: 'menu', name: 'Главная',
   },
-  'reports': { // вкладка с программами
-    type: 'tab', enableDrag: false,
-    id: 'reports', name: 'Программы',
-  },
   'top-table': { // панель настроек таблицы
     type: 'tab', enableDrag: false,
     id: 'top-table', name: 'Таблица',
@@ -81,7 +77,7 @@ export class LayoutController {
 
   constructor(init: any) {
     this.model = this.createInitModel(init);
-    this.visibleTopIDs = new Set(['menu', 'reports']);
+    this.visibleTopIDs = new Set(['menu']);
     this.visibleRightIDs = new Set(['right-dock']);
     [this.topBorder, this.rightBorder] = this.model.getBorderSet().getBorders();
   }
@@ -121,7 +117,7 @@ export class LayoutController {
       if (oldTopTabID) {
         const currentIndex = this.topBorder.getSelected();
         const currentTabID = this.topBorder.getChildren()[currentIndex].getId();
-        const neededTabID = this.visibleTopIDs.has(oldTopTabID) ? oldTopTabID : 'reports';
+        const neededTabID = this.visibleTopIDs.has(oldTopTabID) ? oldTopTabID : 'menu';
         if (currentTabID !== neededTabID) this.model.doAction(Actions.selectTab(neededTabID));
       }
     }
@@ -164,7 +160,7 @@ export class LayoutController {
   }
 
   private createInitModel(init: any): Model {
-    const initTopTabs = [topTabDict['menu'], topTabDict['reports']];
+    const initTopTabs = [topTabDict['menu']];
     const initRightTabs = [rightTabDict['right-dock']];
 
     const selectedTopTab = init?.selectedtop ?? -1;

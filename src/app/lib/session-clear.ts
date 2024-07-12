@@ -5,7 +5,7 @@ import { useClientStore } from 'entities/client';
 import { useWindowStore } from 'entities/window';
 import { useNotificationStore } from 'entities/notification';
 import { useChannelStore } from 'entities/channel';
-import { useReportStore } from 'entities/report';
+import { useProgramStore } from 'entities/program';
 
 import { useTableStore } from 'features/table';
 import { useChartStore } from 'features/chart';
@@ -23,7 +23,7 @@ export function clearSessionData(): void {
   useWindowStore.setState({}, true);
   useNotificationStore.setState({notifications: []}, true);
   useChannelStore.setState({}, true);
-  useReportStore.setState({models: {}, operations: []}, true);
+  useProgramStore.setState({models: {}, operations: []}, true);
   clearParameterStore();
 
   useClientStore.setState({}, true);

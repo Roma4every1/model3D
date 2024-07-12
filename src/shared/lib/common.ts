@@ -33,23 +33,13 @@ export function compareObjects(a: Record<any, any>, b: Record<any, any>): boolea
   return true;
 }
 
-/** Группирует массив объектов в несколько массивов по ключу.
+/**
+ * Возвращает промис, который разрешится через указанное количество миллисекунд.
  * @example
- * groupBy([{id: 3, name: 'bob'}, {id: 2, name: 'john'}, {id: 2, name: 'bob'}], el => el.name) =>
- * [[{id: 3, name: 'bob'}, {id: 2, name: 'bob'}], [{id: 2, name: 'john'}]]
+ * await sleep(500); // подождать пол секунды
  */
-export function groupBy<K, T>(list: Array<T>, keyGetter: (item: T) => K): Map<K, T[]> {
-  const map: Map<K ,T[]> = new Map();
-  list.forEach((item) => {
-    const key = keyGetter(item);
-    const collection = map.get(key);
-    if (!collection) {
-      map.set(key, [item]);
-    } else {
-      collection.push(item);
-    }
-  });
-  return map;
+export function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => { setTimeout(resolve, ms); });
 }
 
 /* --- Dates --- */

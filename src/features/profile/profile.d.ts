@@ -1,23 +1,35 @@
 /** Состояние профиля. */
 interface ProfileState {
+  /** Сцена формы профиля. */
+  readonly stage: IProfileStage;
+  /** Загрузчик формы профиля. */
+  readonly loader: IProfileLoader;
+  /** Класс для отслеживания изменения размеров холста. */
+  readonly observer: ResizeObserver;
+  /** Параметры построения профиля. */
+  parameters: ProfileParameters;
   /** Канвас профиля. */
   canvas: HTMLCanvasElement;
-  /** Сцена формы профиля. */
-  stage: IProfileStage;
-  /** Загрузчик формы профиля. */
-  loader: IProfileLoader;
   /** Состояние загрузки. */
   loading: ProfileLoading;
-  /** Класс для отслеживания изменения размеров холста. */
-  observer: ResizeObserver;
+}
+
+/** Параметры построения профиля. */
+interface ProfileParameters {
+  /** Список всех пластов, по которым можно построить профиль. */
+  strata: ProfileStratum[] | null | undefined;
+  /** Список выбранных пластов. */
+  selectedStrata: string[] | undefined;
+  /** Соотношение Y/X. */
+  ratio: number;
 }
 
 /** Состояние загрузки данных профиля. */
 interface ProfileLoading {
-  /** Процент загрузки. */
+  /** Процент загрузки; значение меньше нуля означает ошибку. */
   percentage: number;
   /** Статус загрузки. */
-  status: string;
+  status?: string;
 }
 
 /** Сцена профиля. */
@@ -41,60 +53,24 @@ interface IProfileStage {
 
 /** Загрузчик данных профиля. */
 interface IProfileLoader {
-  cache: ProfileDataCache;
-  activeStrata: string[];
   setLoading: (percentage: number, status?: string) => void;
-
-  loadStrata(objects: GMJobObjectParameters): Promise<void>;
-  loadProfileData(objects: GMJobObjectParameters): Promise<void>;
+  loadStrata(objects: ProfileObjects): Promise<ProfileStratum[]>;
+  loadProfile(objects: ProfileObjects, strata: string[], ratio: number): Promise<MapData>;
 }
 
-/** Кэш данных профиля. */
-interface ProfileDataCache {
-  /** Список всех доступных пластов. */
-  strata: GMPlJobDataItem[];
-  /** Данные контейнера профиля. */
-  profileData: MapData;
-}
-
-/* --- GeoManager API --- */
-
-interface GMJobObjectParameters {
+interface ProfileObjects {
   trace: TraceModel;
   stratum: StratumModel;
   place: PlaceModel;
 }
 
-interface GMJobPayload {
-  objectCode: string;
-  organizationCode: string;
-  plastCode: string;
-  mapCode: string;
-}
-
-interface GMPlJobDataItem {
+interface ProfileStratum {
   name: string;
   code: string;
-  selected: string;
+  selected: boolean;
 }
 
-interface GMStrataResult {
-  operationid: string;
-  plast?: GMPlJobDataItem[];
-}
-
-interface GMProfileResult {
-  mi: GMMiData;
-  profileInnerContainer: GMProfileInnerContainerData;
-}
-
-interface GMProfileInnerContainerData {
-  layers:Record<string, GMRawLayerData>;
-}
-
-interface GMMiData {
-  layers: Record<string, MapLayerRaw>;
-}
+/* --- GeoManager API --- */
 
 interface GMRawLayerData {
   name: string;

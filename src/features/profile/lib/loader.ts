@@ -1,137 +1,146 @@
-import type { ReqQuery } from 'shared/lib';
-import { profileAPI } from './profile.api';
+import type { StrataJobOptions, ProfileJobOptions, BuilderParameters } from './profile.api';
+import { sleep } from 'shared/lib';
 import { getProfileMapData } from './utils';
+import { profileAPI } from './profile.api';
 
 
-const builderParameters = 'PEJ1aWxkZXJQYXJhbWV0ZXJzPg0KICA8UGFyYW0gbm' +
-  'FtZT0iUHJvZmlsZVNjYWxlIiB2YWx1ZT0iNSIgLz4NCiAgPFBhcmFtIG5hbWU9IldPQ0xldmVsIiB2YWx1ZT0' +
-  'iMCIgLz4NCiAgPFBhcmFtIG5hbWU9IldPQ0xldmVsQ2hlY2tlZCIgdmFsdWU9IkZhbHNlIiAvPg0KICA8UGFy' +
-  'YW0gbmFtZT0iUGFsZW9Qcm9maWxlRW5hYmxlZCIgdmFsdWU9IkZhbHNlIiAvPg0KICA8UGFyYW0gbmFtZT0iU' +
-  'GFsZW9Qcm9maWxlUEwiIHZhbHVlPSI2MDYiIC8_DQogIDxQYXJhbSBuYW1lPSJQYWxlb1Byb2ZpbGVUb3BCYX' +
-  'NlIiB2YWx1ZT0iMSIgLz4NCjwvQnVpbGRlclBhcmFtZXRlcnM_';
+interface JobState<T> {
+  /** ID выполняющейся задачи. */
+  id: GMJobID | null;
+  /** Promise и методы завершения. */
+  handle?: PromiseWithResolvers<T>;
+}
+
+interface StrataJobResult {
+  plast?: {name: string, code: string, selected: string}[];
+}
+interface ProfileJobResult {
+  profileInnerContainer: {layers: Record<string, GMRawLayerData>};
+}
 
 
 /** Класс, реализующий загрузку данных для профиля по трассе. */
 export class ProfileLoader implements IProfileLoader {
   /** Функция для обновления состояния загрузки на уровне интерфейса. */
   public setLoading: (percentage: number, status?: string) => void;
-  /** Список активных пластов */
-  public activeStrata: string[];
-  /** Кеш данных профиля. */
-  public cache: ProfileDataCache;
+  /** Состояние задачи по расчёту списка пластов. */
+  private strataJob: JobState<ProfileStratum[]>;
+  /** Состояние задачи по построению профиля. */
+  private profileJob: JobState<MapData>;
 
-  /** ID выполняющейся задачи по получению пластов. */
-  private strataJobID: GMJobID | null = null;
-  /** ID интервала задачи по получению пластов. */
-  private strataJobInterval: number | null = null;
-  /** ID выполняющейся задачи по построению профиля. */
-  private profileJobID: GMJobID | null = null;
-  /** ID интервала задачи по построению профиля. */
-  private profileJobInterval: number | null = null;
+  public async loadStrata(objects: ProfileObjects): Promise<ProfileStratum[]> {
+    if (this.strataJob) this.stopWatchStrata(this.strataJob, 'abort');
+    if (this.profileJob) this.stopWatchProfile(this.profileJob, 'abort');
 
-  constructor() {
-    this.setLoading = () => {};
-    this.cache = {strata: [], profileData: null};
+    const handle = Promise.withResolvers<ProfileStratum[]>();
+    this.strataJob = {id: null, handle};
+
+    const id = await profileAPI.createStrataJob(this.getStrataJobOptions(objects));
+    if (id) {
+      this.strataJob.id = id;
+      this.watchStrata(this.strataJob).then();
+    } else {
+      handle.reject(new Error('job-create'));
+    }
+    return handle.promise;
   }
 
-  /** Очищает задачу получения профиля. */
-  private async clearProfile(): Promise<void> {
-    if (this.profileJobID) {
-      await profileAPI.deleteJob('profile', this.profileJobID);
-      window.clearInterval(this.profileJobInterval);
+  private async watchStrata(job: JobState<ProfileStratum[]>): Promise<void> {
+    for (let i = 0; i < 10; ++i) {
+      await sleep(1000);
+      if (this.strataJob !== job) return this.stopWatchStrata(job, 'abort');
+
+      const result = await profileAPI.getJobResult<StrataJobResult>('pl', job.id);
+      if (this.strataJob !== job) return this.stopWatchStrata(job, 'abort');
+
+      if (result === false) return this.stopWatchStrata(job, 'job-result');
+      const data = result?.plast;
+      if (!data) continue;
+
+      data.forEach((s: any) => { s.selected = s.selected === '1'; });
+      return this.strataJob.handle.resolve(data as any[]);
     }
-    this.profileJobID = null;
-    this.profileJobInterval = null;
+    this.stopWatchStrata(job, 'timeout');
   }
 
   /** Очищает задачу получения пластов. */
-  private async clearStrata(): Promise<void> {
-    if (this.strataJobID) {
-      await profileAPI.deleteJob('pl', this.strataJobID);
-      window.clearInterval(this.strataJobInterval);
-    }
-    this.profileJobID = null;
-    this.profileJobInterval = null;
+  private stopWatchStrata(job: JobState<ProfileStratum[]>, reason: string): void {
+    profileAPI.deleteJob('pl', job.id).then();
+    job.handle.reject(new Error(reason));
+    if (this.strataJob === job) this.strataJob = null;
   }
 
-  /** Получает набор данных для построения профиля по трассе и записывает их в кэш. */
-  public async loadProfileData(objects: GMJobObjectParameters): Promise<void> {
-    await this.clearProfile();
+  private getStrataJobOptions(objects: ProfileObjects): StrataJobOptions {
+    return {
+      organizationCode: 'dbmm_tat$1', objectCode: objects.place.code,
+      plastCode: String(objects.stratum.id), mapCode: 'TOP',
+    };
+  }
+
+  /* --- --- */
+
+  public async loadProfile(objects: ProfileObjects, strata: string[], ratio: number): Promise<MapData> {
+    if (this.profileJob) this.stopWatchProfile(this.profileJob, 'abort');
     this.setLoading(0);
 
-    if (!this.activeStrata?.length) return;
-    if (!objects?.trace?.nodes?.length) return;
+    const handle = Promise.withResolvers<MapData>();
+    this.profileJob = {id: null, handle};
 
-    const profileJobParams = this.getProfileJobParams(objects);
-    if (!profileJobParams) return;
-
-    this.profileJobID = await profileAPI.createJob('profile', profileJobParams);
-    if (!this.profileJobID) return;
-
-    let counter = 0;
-    this.profileJobInterval = window.setInterval(async () => {
-      const progress = await profileAPI.getJobProgress('profile', this.profileJobID);
-      if (!progress?.percent) return;
-      const data = await profileAPI.getJobResult<GMProfileResult>('profile', this.profileJobID);
-      if (!data) return;
-
-      const loadingMessage = progress?.message?.replace('|', '\n');
-      this.setLoading(Math.floor(progress.percent * 2), loadingMessage);
-      const layers = data.profileInnerContainer.layers;
-
-      if (Object.keys(layers).length > 0) {
-        await this.clearProfile();
-        this.cache.profileData = await getProfileMapData(layers);
-        this.setLoading(100);
-      }
-      if (counter > 60) {
-        this.setLoading(100);
-        await this.clearProfile();
-      }
-      ++counter;
-    }, 3000);
+    const id = await profileAPI.createProfileJob(this.getProfileJobOptions(objects, strata, ratio));
+    if (id) {
+      this.profileJob.id = id;
+      this.watchProfile(this.profileJob).then();
+    } else {
+      handle.reject(new Error('job-create'));
+    }
+    return handle.promise;
   }
 
-  /** Получает список пластов для построения профиля по трассе и записывает их в кэш. */
-  public async loadStrata(objects: GMJobObjectParameters): Promise<void> {
-    this.activeStrata = [];
-    await this.clearProfile();
-    await this.clearStrata();
+  private async watchProfile(job: JobState<MapData>): Promise<void> {
+    for (let i = 0; i < 60; ++i) {
+      await sleep(4000);
+      if (this.profileJob !== job) return this.stopWatchProfile(job, 'abort');
 
-    const plJobParams = this.getPlJobParams(objects);
-    if (!plJobParams) return;
+      const progress = await profileAPI.getJobProgress('profile', job.id);
+      if (this.profileJob !== job) return this.stopWatchProfile(job, 'abort');
 
-    this.strataJobID = await profileAPI.createJob('pl', plJobParams);
-    if (!this.strataJobID) return;
-
-    let counter = 0;
-    this.strataJobInterval = window.setInterval(async () => {
-      const data = await profileAPI.getJobResult<GMStrataResult>('pl', this.strataJobID);
-      if (!data) return;
-
-      if (data?.plast || counter > 10) {
-        await this.clearStrata();
-        this.cache.strata = data.plast;
+      if (progress?.percent) {
+        const loadingMessage = progress?.message?.replaceAll('|', '\n');
+        this.setLoading(Math.floor(progress.percent * 2), loadingMessage);
       }
-      ++counter;
-    }, 1000);
+
+      const result = await profileAPI.getJobResult<ProfileJobResult>('profile', job.id);
+      if (this.profileJob !== job) return this.stopWatchProfile(job, 'abort');
+
+      if (result === false) return this.stopWatchProfile(job, 'job-result');
+      const layers = result?.profileInnerContainer?.layers;
+
+      if (layers && Object.keys(layers).length > 0) {
+        const data = await getProfileMapData(layers);
+        return this.profileJob.handle.resolve(data);
+      }
+    }
+    this.stopWatchProfile(job, 'timeout');
   }
 
-  /** Создает ReqQuery для задачи получения списка доступных пластов. */
-  private getPlJobParams(objects: GMJobObjectParameters): ReqQuery {
-    if (!objects || !objects.stratum || !objects.place) return null;
-    return {objectCode: objects.place.code, plastCode: String(objects.stratum.id), mapCode: 'TOP'};
+  /** Очищает задачу получения профиля. */
+  private stopWatchProfile(job: JobState<MapData>, reason: string): void {
+    profileAPI.deleteJob('profile', job.id).then();
+    job.handle.reject(new Error(reason));
+    if (this.profileJob === job) this.profileJob = null;
   }
 
-  /** Создает ReqQuery для задачи получения данных профиля. */
-  private getProfileJobParams(objects: GMJobObjectParameters): ReqQuery {
-    const plJobParams = this.getPlJobParams(objects);
-    if (!plJobParams) return null;
-    if (!objects?.trace?.nodes?.length) return null;
-    if (!this.activeStrata?.length) return null;
-
-    const trace = objects.trace.nodes.map(n => n.name).join(', ');
-    const strata = this.activeStrata.join(',');
-    return {...plJobParams, trace, plastList: strata, builderParameters, nativeFormat: '0'};
+  private getProfileJobOptions(objects: ProfileObjects, strata: string[], ratio: number): ProfileJobOptions {
+    const builderParameters: BuilderParameters = {
+      ProfileScale: ratio, WOCLevel: 0, WOCLevelChecked: 'False',
+      PaleoProfileEnabled: 'False', PaleoProfilePL: 606, PaleoProfileTopBase: 1,
+    };
+    return {
+      trace: objects.trace.nodes.map(n => n.name).join(', '),
+      plastList: strata.join(','),
+      organizationCode: 'dbmm_tat$1', objectCode: String(objects.place.code),
+      plastCode: String(objects.stratum.id), mapCode: 'TOP',
+      builderParameters, nativeFormat: '0',
+    };
   }
 }

@@ -4,14 +4,14 @@ import { Fetcher, fetcher, getFileExtension } from 'shared/lib';
 import { serializeParameter } from 'entities/parameter';
 
 
-export interface ReportModelDTO {
-  id: ReportID;
-  type?: ReportType;
+export interface ProgramDTO {
+  id: ProgramID;
+  type?: ProgramType;
   displayName: string;
   paramsForCheckVisibility?: string[];
 }
 /** Данные о параметрах и составных частях отчёта. */
-export interface ReportData {
+export interface ProgramData {
   /** Кастомные параметры процедуры. */
   parameters: ParameterInit[];
   /** Все необходимые параметры для процедуры (для `reportString` и `queryString` false). */
@@ -21,31 +21,31 @@ export interface ReportData {
 }
 
 
-export class ReportAPI {
+export class ProgramAPI {
   constructor(private readonly api: Fetcher) {}
 
-  public async getPresentationReports(id: ClientID): Promise<Res<ReportModelDTO[]>> {
+  public async getProgramList(id: ClientID): Promise<Res<ProgramDTO[]>> {
     if (!this.api.legacy) return {ok: true, data: []};
     return await this.api.get('/programsList', {query: {formId: id}});
   }
 
-  public getReportData(id: ReportID): Promise<Res<ReportData>> {
+  public getProgramData(id: ProgramID): Promise<Res<ProgramData>> {
     return this.api.get('/reportData',{query: {reportId: id}});
   }
 
-  public async getReportAvailability(reportID: ReportID, parameters: Parameter[]): Promise<boolean> {
-    const json = {reportId: reportID, paramValues: parameters.map(serializeParameter)};
+  public async getProgramAvailability(id: ProgramID, parameters: Parameter[]): Promise<boolean> {
+    const json = {reportId: id, paramValues: parameters.map(serializeParameter)};
     const res = await this.api.post<boolean>('/programVisibility', {json});
     return res.ok && res.data === true;
   }
 
-  public async canRunReport(id: ReportID, parameters: Parameter[]): Promise<boolean> {
+  public async canRunProgram(id: ProgramID, parameters: Parameter[]): Promise<boolean> {
     const json = {reportId: id, paramValues: parameters.map(serializeParameter)};
     const res = await this.api.post<boolean>('/canRunReport', {json});
     return res.ok && res.data === true;
   }
 
-  public executeReportProperty(id: ReportID, params: Parameter[], index: number): Promise<Res<OperationData>> {
+  public executeReportProperty(id: ProgramID, params: Parameter[], index: number): Promise<Res<OperationData>> {
     const parameters = params.map(serializeParameter);
     const json = {reportId: id, parameters, index};
     return this.api.post('/executeReportProperty', {json});
@@ -64,7 +64,7 @@ export class ReportAPI {
     return res;
   }
 
-  public clearReports(clientID: ClientID): Promise<Res<boolean>> {
+  public clearPrograms(clientID: ClientID): Promise<Res<boolean>> {
     return this.api.get('/clearReports', {query: {presentationId: clientID}});
   }
 
@@ -82,4 +82,4 @@ export class ReportAPI {
   }
 }
 
-export const reportAPI = new ReportAPI(fetcher);
+export const programAPI = new ProgramAPI(fetcher);

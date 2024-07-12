@@ -31,8 +31,8 @@ export function setProfileLoading(id: FormID, percentage: number, status?: strin
 }
 
 /** Обновляет данные профиля. */
-export function setProfileStrata(id: FormID, strata: string[]): void {
+export function setProfileStrata(id: FormID, strata: ProfileStratum[]): void {
   const state = useProfileStore.getState()[id];
-  state.loader.activeStrata = strata;
-  useProfileStore.setState({[id]: {...state}})
+  const parameters: ProfileParameters = {...state.parameters, strata, selectedStrata: []};
+  useProfileStore.setState({[id]: {...state, parameters}});
 }

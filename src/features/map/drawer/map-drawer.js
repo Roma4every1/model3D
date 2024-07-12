@@ -2,7 +2,6 @@ import parseColor from 'parse-color';
 import { once, chunk, isEqual, cloneDeep } from 'lodash';
 import { getLabelTextNumberArray } from './label-text-parser';
 import { fillPatterns } from '../../../shared/drawing';
-import { intersects } from './geom';
 import { provider } from './index';
 import { PIXEL_PER_METER } from '../lib/map-utils';
 
@@ -25,6 +24,18 @@ export const types = {};
 
 const twoPi = 2 * Math.PI;
 const defaultLineWidth = 0.23;
+
+/**
+ * @param a {Bounds}
+ * @param b {Bounds}
+ */
+function intersects(a, b) {
+  return a && b
+    && (a.min.x < b.max.x)
+    && (b.min.x < a.max.x)
+    && (a.min.y < b.max.y)
+    && (b.min.y < a.max.y);
+}
 
 /** @return Bounds */
 function pointBounds(point) {

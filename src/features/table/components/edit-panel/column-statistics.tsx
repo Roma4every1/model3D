@@ -4,7 +4,7 @@ import { Button } from '@progress/kendo-react-buttons';
 import { BigButton } from 'shared/ui';
 import { channelAPI } from 'entities/channel/lib/channel.api';
 import { showWarningMessage, showDialog, closeWindow } from 'entities/window';
-import statisticsIcon from 'assets/dataset/statistics.png';
+import statisticsIcon from 'assets/table/statistics.png';
 
 
 interface StatDialogProps {

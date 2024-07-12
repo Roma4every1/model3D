@@ -1,7 +1,7 @@
 import { EditPanelItemProps } from '../../lib/types';
 import { BigButton } from 'shared/ui';
 import { exportTableToExcel } from '../../store/table.thunks';
-import exportToExcelIcon from 'assets/dataset/export-to-excel.png';
+import exportToExcelIcon from 'assets/table/export-to-excel.png';
 
 
 export const ExcelExport = ({id, t}: EditPanelItemProps) => {

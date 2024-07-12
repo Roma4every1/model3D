@@ -4,7 +4,7 @@ import { useAppStore } from '../store/app.store';
 import { useClientStore } from 'entities/client';
 import { useChannelStore } from 'entities/channel';
 import { useParameterStore } from 'entities/parameter';
-import { useReportStore } from 'entities/report';
+import { useProgramStore } from 'entities/program';
 import { useWindowStore } from 'entities/window';
 import { useNotificationStore } from 'entities/notification';
 import { useObjectsStore } from 'entities/objects';
@@ -24,7 +24,7 @@ export class WMDevTools {
   public readonly clientStore = useClientStore;
   public readonly channelStore = useChannelStore;
   public readonly parameterStore = useParameterStore;
-  public readonly reportStore = useReportStore;
+  public readonly programStore = useProgramStore;
   public readonly objectsStore = useObjectsStore;
 
   public rootState() {
@@ -81,12 +81,8 @@ export class WMDevTools {
     return Object.values(this.clientStore.getState());
   }
 
-  public reports(): Reports {
-    return this.reportStore.getState();
-  }
-
-  public reportModels(id?: ClientID, active?: boolean) {
-    const allModels = this.reportStore.getState().models;
+  public programs(id?: ClientID, active?: boolean) {
+    const allModels = this.programStore.getState().models;
     if (!id) return allModels;
     const models = allModels[id] ?? [];
     return active ? models.filter(m => m.parameters) : models;

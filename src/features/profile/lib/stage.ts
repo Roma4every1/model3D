@@ -12,7 +12,7 @@ export class ProfileStage implements IProfileStage {
   /** Данные карты. */
   private data: MapData = null;
   /** Вспомогательные данные для отрисовщика. */
-  private drawData: any = null;
+  private detach: () => void;
 
   /** Scroller. */
   public readonly scroller: Scroller;
@@ -34,7 +34,6 @@ export class ProfileStage implements IProfileStage {
   /** Обновляет вид в соответствии с текущими размерами холста. */
   public resize(): void {
     if (!this.canvas) return;
-
     this.canvas.width = this.canvas.clientWidth * window.devicePixelRatio;
     this.canvas.height = this.canvas.clientHeight * window.devicePixelRatio;
   }
@@ -64,7 +63,7 @@ export class ProfileStage implements IProfileStage {
     return this.data;
   }
 
-  public updateViewport (): void {
+  public updateViewport(): void {
     if (!this.canvas) return;
     if (!this.data?.layers) return;
 
@@ -90,7 +89,7 @@ export class ProfileStage implements IProfileStage {
       if (this.data.x === undefined) return;
       viewport = {centerX: this.data.x, centerY: this.data.y, scale: this.data.scale};
     }
-    if (this.drawData) this.drawData.detach();
-    this.drawData = showMap(this.canvas, this.data, viewport);
+    if (this.detach) this.detach();
+    this.detach = showMap(this.canvas, this.data, viewport);
   }
 }

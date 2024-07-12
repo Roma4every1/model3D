@@ -2,7 +2,7 @@ import type { TFunction } from 'react-i18next';
 import { version } from '../../../package.json';
 
 import './about-program.scss';
-import debugIcon from 'assets/menu/debug.svg';
+import debugIcon from 'assets/common/debug.svg';
 import externalLinkIcon from 'assets/common/external-link.svg';
 
 

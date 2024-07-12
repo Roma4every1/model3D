@@ -35,7 +35,7 @@ export class MapStage implements IMapStage {
 
   private data: MapData = null;
   private canvas: MapCanvas = null;
-  private drawData: any = null;
+  private detach: () => void;
 
   /** Режим редактирования карты. */
   private mode: MapMode = MapMode.MOVE_MAP;
@@ -124,14 +124,16 @@ export class MapStage implements IMapStage {
 
   /** Перевод координат канваса в координаты карты. */
   public eventToPoint(event: MouseEvent): Point {
-    if (!this.canvas || !this.data?.x) return {x: event.offsetX, y: event.offsetY};
+    const { offsetX, offsetY } = event;
+    if (!this.canvas || !this.data?.x) return {x: offsetX, y: offsetY};
+
     const sc = this.data.scale / PIXEL_PER_METER;
     const canvasCenterX = this.canvas.clientWidth / 2;
     const canvasCenterY = this.canvas.clientHeight / 2;
 
     return {
-      x: this.data.x + (event.offsetX - canvasCenterX) * sc,
-      y: this.data.y + (event.offsetY - canvasCenterY) * sc
+      x: this.data.x + (offsetX - canvasCenterX) * sc,
+      y: this.data.y + (offsetY - canvasCenterY) * sc
     };
   }
 
@@ -393,9 +395,9 @@ export class MapStage implements IMapStage {
       // if (this.data.x === undefined) return;
       viewport = {centerX: this.data.x, centerY: this.data.y, scale: this.data.scale};
     }
-    if (this.drawData) this.drawData.detach();
+    if (this.detach) this.detach();
     const afterUpdate = () => this.plugins.forEach(p => p.render());
-    this.drawData = showMap(this.canvas, this.data, viewport, afterUpdate);
+    this.detach = showMap(this.canvas, this.data, viewport, afterUpdate);
   }
 
   /* --- Private --- */

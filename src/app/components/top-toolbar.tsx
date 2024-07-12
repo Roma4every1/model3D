@@ -1,21 +1,28 @@
 import { useTranslation } from 'react-i18next';
 import { showDialog } from 'entities/window';
-import { saveSession } from 'app/store/session';
+import { startSession, saveSession } from 'app/store/session';
+import { Link } from 'react-router-dom';
 import { IconRow, IconRowButton, IconRowLink } from 'shared/ui';
 import { AboutProgramWindow } from './about-program';
 
-import saveSessionIcon from 'assets/menu/save-session.svg';
-import devDocIcon from 'assets/menu/dev-doc.svg';
-import userDocIcon from 'assets/menu/user-doc.svg';
-import aboutProgramIcon from 'assets/menu/about-program.svg';
+import './top-toolbar.scss';
+import backToSystemsIcon from 'assets/common/back.svg';
+import saveSessionIcon from 'assets/common/save-session.svg';
+import defaultSessionIcon from 'assets/common/default-session.svg';
+import devDocIcon from 'assets/common/dev-doc.svg';
+import userDocIcon from 'assets/common/user-doc.svg';
+import aboutProgramIcon from 'assets/common/about-program.svg';
 
 
-interface TopToolbarProps {
+interface TopLeftToolbarProps {
+  location: string;
+}
+interface TopRightToolbarProps {
   config: ClientConfig;
 }
 
 
-export const TopToolbar = ({config}: TopToolbarProps) => {
+export const TopRightToolbar = ({config}: TopRightToolbarProps) => {
   const { t } = useTranslation();
 
   const showAboutWindow = () => {
@@ -24,25 +31,39 @@ export const TopToolbar = ({config}: TopToolbarProps) => {
   };
 
   return (
-    <div style={{position: 'absolute', top: 2, right: 2}}>
-      <IconRow gap={2}>
-        <IconRowButton
-          icon={saveSessionIcon} alt={'save'}
-          title={t('menu.save-session')} onClick={saveSession}
-        />
-        {config.mode === 'dev' && config.devDocLink && <IconRowLink
-          icon={devDocIcon} alt={'dev-doc'}
-          href={config.devDocLink} target={'_blank'} title={t('menu.open-dev-doc')}
-        />}
-        {config.userDocLink && <IconRowLink
-          icon={userDocIcon} alt={'manual'}
-          href={config.userDocLink} target={'_blank'} title={t('menu.open-manual')}
-        />}
-        <IconRowButton
-          icon={aboutProgramIcon} alt={'about'}
-          title={t('about.dialog-title')} onClick={showAboutWindow}
-        />
-      </IconRow>
-    </div>
+    <IconRow gap={2} className={'top-right-toolbar'}>
+      <IconRowButton
+        icon={saveSessionIcon} alt={'save'}
+        title={t('menu.save-session')} onClick={saveSession}
+      />
+      {config.mode === 'dev' && config.devDocLink && <IconRowLink
+        icon={devDocIcon} alt={'dev-doc'}
+        href={config.devDocLink} target={'_blank'} title={t('menu.open-dev-doc')}
+      />}
+      {config.userDocLink && <IconRowLink
+        icon={userDocIcon} alt={'manual'}
+        href={config.userDocLink} target={'_blank'} title={t('menu.open-manual')}
+      />}
+      <IconRowButton
+        icon={aboutProgramIcon} alt={'about'}
+        title={t('about.dialog-title')} onClick={showAboutWindow}
+      />
+      <IconRowButton
+        icon={defaultSessionIcon} alt={'load-default'}
+        title={t('menu.load-default-session')} onClick={() => startSession(true)}
+      />
+    </IconRow>
+  );
+};
+
+export const TopLeftToolbar = ({location}: TopLeftToolbarProps) => {
+  const { t } = useTranslation();
+
+  return (
+    <IconRow className={'top-left-toolbar'}>
+      <Link to={location} title={t('menu.back')}>
+        <img src={backToSystemsIcon} alt={'back'}/>
+      </Link>
+    </IconRow>
   );
 };

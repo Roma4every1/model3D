@@ -12,7 +12,7 @@ import { Dock } from './dock';
 import { AppLoadingStatus } from './loading-status';
 import { WindowHandler } from 'entities/window/components/windows';
 import { Notifications } from 'entities/notification';
-import { TopToolbar } from './top-toolbar';
+import { TopLeftToolbar, TopRightToolbar } from './top-toolbar';
 
 
 /** Корень системы. Route: `/systems/:systemID`. */
@@ -45,8 +45,9 @@ export const SystemRoot = () => {
 
   return (
     <ConfigProvider locale={ru_RU} theme={theme} componentSize={antdComponentSize}>
-      <Dock location={location} config={config}/>
-      <TopToolbar config={config}/>
+      <Dock/>
+      <TopLeftToolbar location={location}/>
+      <TopRightToolbar config={config}/>
       <WindowHandler/>
       <Notifications/>
     </ConfigProvider>

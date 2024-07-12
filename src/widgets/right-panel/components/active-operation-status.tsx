@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { saveAs } from '@progress/kendo-file-saver';
+import { fileExtensionIconDict, defaultFileIcon } from 'shared/lib';
+import { programAPI } from 'entities/program';
 import { showNotification } from 'entities/notification';
-import { Res, fileExtensionIconDict, defaultFileIcon } from 'shared/lib';
-import { reportAPI } from 'entities/report/lib/report.api';
 
 
 /** Форматирование даты. */
@@ -22,11 +22,11 @@ export const ActiveOperationStatus = ({status}: {status: OperationStatus}) => {
     : defaultFileIcon;
 
   const download = hasFile ? () => {
-    reportAPI.downloadFile(file.path).then((res: Res<Blob>) => {
+    programAPI.downloadFile(file.path).then((res) => {
       if (res.ok) {
         saveAs(res.data, file.name);
       } else {
-        showNotification(t('report.download-error'));
+        showNotification(t('operation.download-error'));
       }
     });
   } : undefined;
@@ -47,18 +47,18 @@ export const ActiveOperationStatus = ({status}: {status: OperationStatus}) => {
       <div>
         {operationHeader}
         <div>
-          {t('report.operation-progress', progressStringData)}
+          {t('operation.progress', progressStringData)}
         </div>
         <div>
-          {t('report.operation-timestamp', {timestamp})}
+          {t('operation.timestamp', {timestamp})}
         </div>
         {status.comment &&
           <div className={'operation-description'}>
-            {t('report.operation-comment', {comment: status.comment})}
+            {t('operation.comment', {comment: status.comment})}
           </div>}
         {status.error &&
           <div className={'operation-error'}>
-            {t('report.operation-error', {error: status.error})}
+            {t('operation.error', {error: status.error})}
           </div>}
       </div>
     </section>
