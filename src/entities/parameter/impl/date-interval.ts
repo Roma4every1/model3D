@@ -15,8 +15,8 @@ export class DateIntervalParameter implements Parameter<'dateInterval'> {
     this.setValueString(s);
   }
 
-  public clone(): DateIntervalParameter {
-    const clone = {...this};
+  public clone(id?: ParameterID): DateIntervalParameter {
+    const clone = {...this, id: id ?? this.id};
     Object.setPrototypeOf(clone, DateIntervalParameter.prototype);
     return clone;
   }

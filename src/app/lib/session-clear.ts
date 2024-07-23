@@ -1,10 +1,10 @@
 import { fetcher } from 'shared/lib';
 import { clearParameterStore } from 'entities/parameter';
+import { clearChannelStore } from 'entities/channel';
 
 import { useClientStore } from 'entities/client';
 import { useWindowStore } from 'entities/window';
 import { useNotificationStore } from 'entities/notification';
-import { useChannelStore } from 'entities/channel';
 import { useProgramStore } from 'entities/program';
 
 import { useTableStore } from 'features/table';
@@ -20,11 +20,11 @@ import { useFileListStore } from 'features/file-list';
 /** Очищает данные текущей сессии, оставляя общие данные приложения. */
 export function clearSessionData(): void {
   fetcher.setSessionID('');
+  clearChannelStore();
+  clearParameterStore();
   useWindowStore.setState({}, true);
   useNotificationStore.setState({notifications: []}, true);
-  useChannelStore.setState({}, true);
   useProgramStore.setState({models: {}, operations: []}, true);
-  clearParameterStore();
 
   useClientStore.setState({}, true);
   useTableStore.setState({}, true);

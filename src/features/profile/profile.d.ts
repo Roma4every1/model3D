@@ -76,8 +76,8 @@ interface GMRawLayerData {
   name: string;
   uid: string;
   group: string;
-  highscale: string | number;
-  lowscale: string | number;
+  highscale: string;
+  lowscale: string;
   elements: MapElement[];
 }
 

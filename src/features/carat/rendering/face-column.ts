@@ -35,9 +35,9 @@ export class WellFaceColumn implements ICaratColumn {
     return copy;
   }
 
-  public getLookupNames(): ChannelName[] {
+  public getLookups(): ChannelID[] {
     const lookup = this.channel.info.type.lookups.style;
-    return lookup ? [lookup.name] : [];
+    return lookup ? [lookup.id] : [];
   }
 
   public getElements(): any[] {
@@ -75,7 +75,7 @@ export class WellFaceColumn implements ICaratColumn {
     if (!lookup) return;
 
     this.styleDict = {};
-    const records = lookupData[lookup.name];
+    const records = lookupData[lookup.id];
 
     for (const record of records) {
       const id = record[lookup.info.id.columnName];

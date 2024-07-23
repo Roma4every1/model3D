@@ -17,7 +17,7 @@ export async function getProfileMapData(data: Record<string, GMRawLayerData>): P
       }
     }
     layers.push(new MapLayer({
-      ...layer, visible: true, bounds: getBounds(layer.elements), highscale: 1000000, container: '',
+      ...layer, visible: true, bounds: getBounds(layer.elements), highscale: '1000000', container: '',
     }, layer.elements));
   }
   return {onDrawEnd: () => {}, layers} as any;

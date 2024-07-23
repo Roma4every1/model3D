@@ -4,7 +4,7 @@ export function toFileViewState(payload: FormStatePayload): FileViewState {
   let useResources: boolean;
 
   for (const attachedChannel of formState.channels) {
-    const properties = channels[attachedChannel.name].config.properties;
+    const properties = channels[attachedChannel.id].config.properties;
     const property = properties.find(p => p.file);
     if (!property) continue;
 

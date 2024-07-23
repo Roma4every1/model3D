@@ -1,38 +1,14 @@
 import 'stream'; // for xml-js
 import { xml2js } from 'xml-js';
-import { toPairs, fromPairs } from 'lodash';
-import xmlTransform from './xml-transform';
+import xmlTransform from './xml-transform.js';
 
+
+export function parseContainerXML(text) {
+  const rootElement = xml2js(text, {compact: false}).elements[0];
+  return transform(rootElement);
+}
 
 const transform = xmlTransform({
-	MapContainer: {
-		type: 'mapcontainer',
-		etag: xmlTransform.string('ETag'),
-		path: xmlTransform.path('Path'),
-		name: xmlTransform.string('Name'),
-	},
-	MapInfo: {
-		namedpoints: xmlTransform.string('NamedPoints'),
-		date: xmlTransform.string('Date'),
-		mapname: xmlTransform.string('MapName'),
-		mapcode: xmlTransform.string('MapCode'),
-		plastname: xmlTransform.string('PlastName'),
-		plastcode: xmlTransform.string('PlastCode'),
-		objectname: xmlTransform.string('ObjectName'),
-		objectcode: xmlTransform.string('ObjectCode'),
-		organization: xmlTransform.string('Organization'),
-		etag: xmlTransform.string('ETag'),
-		layers: ['layer', {
-			uid: xmlTransform.string,
-			name: xmlTransform.string,
-			group: xmlTransform.string,
-			container: xmlTransform.string,
-			visible: xmlTransform.boolean,
-			lowscale: xmlTransform.number,
-			highscale: xmlTransform.number,
-			bounds: [0, bounds],
-		}],
-	},
 	container: [{
 		type: xmlTransform.element,
 		name: xmlTransform.string,
@@ -77,10 +53,10 @@ const transform = xmlTransform({
 			},
 			namedpoint: {
 				type: xmlTransform.element,
-				x: xmlTransform.number,
-				y: xmlTransform.number,
-				name: xmlTransform.string,
-				UWID: xmlTransform.string,
+				UWID: xmlTransform.number,
+        name: xmlTransform.string,
+        x: xmlTransform.number,
+        y: xmlTransform.number,
 			},
 			polyline: {
 				type: xmlTransform.element,
@@ -132,56 +108,58 @@ function bounds(xml) {
 	}
 }
 
-function removeType(rec) {
-	delete rec.type;
-	return rec;
-}
-
 function makeSublayers(array) {
-	return {
-		layers: array
-			.filter(el => el.type === 'sublayer')
-			.map(removeType)
-			.reduce((collection, sublayer) => {
-				collection[sublayer.uid] = sublayer
-				return collection
-			}, {}),
-		namedpoints:
-			[].concat(...array
-				.filter(el => el.type === 'namedpoints')
-				.map(el => el.elements)
-			).map(removeType),
-	};
+  const layers = {};
+  const pointsLists = [];
+
+  for (const element of array) {
+    if (element.type === 'sublayer') {
+      layers[element.uid] = element;
+    } else if (element.type === 'namedpoints') {
+      pointsLists.push(element.elements);
+    }
+  }
+
+  let namedPoints;
+  if (pointsLists.length === 0) {
+    namedPoints = [];
+  } else if (pointsLists.length === 1) {
+    namedPoints = pointsLists[0];
+  } else {
+    namedPoints = [].concat(...pointsLists);
+  }
+  for (const point of namedPoints) {
+    delete point.type;
+  }
+	return {layers, namedpoints: namedPoints};
 }
 
+/** @return {PolylineArc} */
 function arcPlain(xml) {
-	return {
-		path: arcXY(xml).reduce(
-			(a, { x, y }) => { a.push(x, y); return a; }, []),
-        closed: xml.attributes.path.endsWith('Z') || xml.attributes.path.endsWith('z')
-	}
+  const pathString = xml.attributes.path;
+  const points = arcXY(pathString);
+
+  const path = [];
+  for (const point of points) path.push(point.x, point.y);
+
+  const closed = pathString.endsWith('Z') || pathString.endsWith('z');
+  return {path, closed};
 }
 
-function arcXY(xml) {
+function arcXY(pathString) {
 	let last = null;
 
-	return xml.attributes.path.split(/(?=m|M)/)
+	return pathString.split(/(?=m|M)/)
 		.map(x => x.split(/(?=m|M|l|L|z|Z)/).map(pt => {
 			switch (pt[0]) {
 				case 'z': case 'Z':
 					return null;
 				case 'M': case 'L':
 					pt = pt.slice(1).split(/\s/).map(Number);
-					return last = {
-						x: pt[0],
-						y: pt[1],
-					};
+					return last = {x: pt[0], y: pt[1]};
 				case 'm': case 'l':
 					pt = pt.slice(1).split(/\s/).map(Number);
-					return last = {
-						x: last.x + pt[0],
-						y: last.y + pt[1],
-					}
+					return last = {x: last.x + pt[0], y: last.y + pt[1]};
 				default:
 					throw new Error('wrong arc format: ' + x)
 			}
@@ -190,18 +168,4 @@ function arcXY(xml) {
 			if (i > 0) throw new Error('more than one chain in an arc');
 			return true;
 		})[0];
-}
-
-function xmlLite(xml) {
-	return fromPairs(toPairs(xml).map(([name, value]) => [
-		name === 'attrib'
-			? 'attributes'
-			: name === 'elements' ? 'children' : name,
-		name === 'elements' ? value.map(xmlLite) : value
-	]));
-}
-
-export function readXml(text) {
-	const converted = xml2js(text, {compact: false}).elements[0];
-	return transform(xmlLite(converted));
 }

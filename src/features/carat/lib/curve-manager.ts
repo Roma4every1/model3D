@@ -184,19 +184,20 @@ export class CurveManager {
     }
   }
 
-  public setActiveCurve(id?: CaratCurveID): void {
+  public setActiveCurve(id?: CaratCurveID): CaratCurveModel {
     this.curves.forEach((curve) => { curve.active = false; });
     const activeCurve = this.curveDict[id];
     if (activeCurve) activeCurve.active = true;
+    return activeCurve;
   }
 
   public setStyleData(lookupData: ChannelRecordDict): void {
     this.styleDict.clear();
     const colorLookup = this.curveSetChannel.info.type.lookups.color;
     if (!colorLookup) return;
-    const { name, info } = colorLookup;
+    const { id, info } = colorLookup;
 
-    lookupData[name]?.forEach((record) => {
+    lookupData[id]?.forEach((record) => {
       const type = record[info.type.columnName];
       const color = record[info.color.columnName];
       this.styleDict.set(type, {color: fixColorHEX(color), thickness: 2});

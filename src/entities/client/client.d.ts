@@ -36,9 +36,9 @@ interface SessionClient<T extends ClientType = ClientType, S = any, L = any> {
   /** Активный дочерний клиент. */
   activeChildID?: FormID;
   /** Типы дочерних клиентов. */
-  childrenTypes?: Set<ClientType>;
-  /** Названия каналов, необходимые для корректной работы. */
-  neededChannels?: ChannelName[];
+  childrenTypes?: ReadonlySet<ClientType>;
+  /** ID каналов, необходимые для корректной работы. */
+  neededChannels?: ChannelID[];
   /** Состояние загрузки. */
   loading?: ClientLoadingState;
 }
@@ -77,11 +77,11 @@ interface ClientChildrenDTO {
 /** Данные формы. */
 interface FormDataWM {
   /** Идентификатор формы. */
-  id: FormID;
+  readonly id: FormID;
   /** Тип формы. */
-  type: ClientType;
+  readonly type: ClientType;
   /** Имя, отображаемое на уровне интерфейса. */
-  displayName: string;
+  readonly displayName: string;
   /** Шаблон динамического `displayName`. */
   displayNameString?: any; // ParameterStringTemplate
 }
@@ -111,13 +111,13 @@ interface AttachedChannelDTO {
  */
 interface FormStatePayload<S = any> {
   /** Базовая информация о форме. */
-  state: SessionClient<ClientType, S>;
+  readonly state: SessionClient<ClientType, S>;
   /** Состояние активных объектов. */
-  objects: ObjectsState;
+  readonly objects: ObjectsState;
   /** Все существующие наборы параметров на момент создания. */
-  parameters: ParameterDict;
+  readonly parameters: ParameterDict;
   /** Все существующие каналы на момент создания. */
-  channels: ChannelDict;
+  readonly channels: ChannelDict;
 }
 
 /** Пропс для панелей редактирования. */

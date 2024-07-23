@@ -8,7 +8,7 @@ export interface CaratStyleLookup {
   /** Название колонки, откуда берётся значение. */
   columnName: string;
   /** Название справочника. */
-  channelName: string;
+  channelID: ChannelID;
   /** Информация о свойствах справочника. */
   info: ChannelRecordInfo<keyof StyleModel | 'id'>;
 }
@@ -44,8 +44,8 @@ export class IntervalStyleManager {
     return clone;
   }
 
-  public getLookupNames(): ChannelName[] {
-    return this.styles.map(s => s.channelName);
+  public getLookups(): ChannelID[] {
+    return this.styles.map(s => s.channelID);
   }
 
   public getStyle(record: ChannelRecord): ShapeStyle {
@@ -58,7 +58,7 @@ export class IntervalStyleManager {
     this.styleDict = {};
 
     const colors = this.styles.map((style: CaratStyleLookup): StyleLookupDict => {
-      const records = lookupData[style.channelName];
+      const records = lookupData[style.channelID];
       return this.createDict(style, records);
     });
     if (colors.length === 1) {

@@ -1,7 +1,7 @@
 import { useClientStore } from 'entities/client';
 import { useParameterStore } from 'entities/parameter';
 import { useProgramStore, updatePrograms } from 'entities/program';
-import { useChannelStore, fillChannels } from 'entities/channel';
+import { useChannelStore, setChannels, fillChannels } from 'entities/channel';
 
 
 /**
@@ -17,7 +17,7 @@ export async function updateActivePresentation(): Promise<void> {
   if (!presentation || presentation.loading.status !== 'done') return;
 
   const channels = getChannelsToUpdate(root.neededChannels, presentation.neededChannels);
-  const programs = getReportToUpdate(activeID);
+  const programs = getProgramsToUpdate(activeID);
 
   const actions: Promise<any>[] = [];
   if (channels) actions.push(fillChannels(channels, useParameterStore.getState().storage))
@@ -25,28 +25,28 @@ export async function updateActivePresentation(): Promise<void> {
   if (actions.length === 0) return;
 
   await Promise.all(actions);
-  if (channels) useChannelStore.setState(channels);
+  if (channels) setChannels(channels);
 }
 
-function getChannelsToUpdate(rootNames: ChannelName[], names: ChannelName[]): ChannelDict | null {
+function getChannelsToUpdate(rootIDs: ChannelID[], ids: ChannelID[]): ChannelDict | null {
   let empty = true;
   const dict: ChannelDict = {};
-  const store = useChannelStore.getState();
+  const storage = useChannelStore.getState().storage;
 
-  for (const name of rootNames) {
-    if (Object.hasOwn(dict, name)) continue;
-    const channel = store[name];
-    if (!channel.actual) { dict[name] = {...channel}; empty = false; }
+  for (const id of rootIDs) {
+    if (Object.hasOwn(dict, id)) continue;
+    const channel = storage[id];
+    if (!channel.actual) { dict[id] = channel; empty = false; }
   }
-  for (const name of names) {
-    if (Object.hasOwn(dict, name)) continue;
-    const channel = store[name];
-    if (!channel.actual) { dict[name] = {...channel}; empty = false; }
+  for (const id of ids) {
+    if (Object.hasOwn(dict, id)) continue;
+    const channel = storage[id];
+    if (!channel.actual) { dict[id] = channel; empty = false; }
   }
   return empty ? null : dict;
 }
 
-function getReportToUpdate(client: ClientID): Program[] | null {
+function getProgramsToUpdate(client: ClientID): Program[] | null {
   const allModels = useProgramStore.getState().models;
   const models = allModels[client].filter(r => r.available === undefined);
   return models.length ? models : null;

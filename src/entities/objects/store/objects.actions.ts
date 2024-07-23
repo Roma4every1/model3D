@@ -9,7 +9,7 @@ export function initializeObjects(parameters: Parameter[], channels: ChannelDict
   const placeManager = new PlaceManager(parameters, channels);
   const stratumManager = new StratumManager(parameters, channels);
   const wellManager = new WellManager(parameters, channels);
-  const traceManager = new TraceManager(channels, wellManager.channelName);
+  const traceManager = new TraceManager(channels, wellManager.channelID);
 
   const newState: ObjectsState = {
     place: placeManager, stratum: stratumManager,

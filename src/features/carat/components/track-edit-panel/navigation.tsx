@@ -114,8 +114,8 @@ const NavigationSection = ({stage}: CaratScalePanelProps) => {
   const strataColumn = backgroundColumns.find(c => c.channel.type === 'lithology');
   const strata: CaratIntervalModel[] = strataColumn?.getElements() ?? [];
 
-  const lookupName = strataColumn?.channel.info.stratumID.lookups.name?.name;
-  const lookupData = useChannel(lookupName);
+  const lookupID = strataColumn?.channel.info.stratumID.lookups.name?.id;
+  const lookupData = useChannel(lookupID);
 
   const nameDict: LookupDict<string> = useMemo(() => {
     const rows = lookupData?.data?.rows;

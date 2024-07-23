@@ -1,13 +1,13 @@
 import type { ProgramData } from './program.api';
 import { showWarningMessage } from 'entities/window';
-import { createChannels } from 'entities/channel';
+import { useChannelStore, createChannels } from 'entities/channel';
 import { programAPI } from './program.api';
 import { fillProgramChannel } from './common';
 import { useProgramStore } from '../store/program.store';
 
 import {
   useParameterStore, createParameter, parameterCompareFn,
-  findClientParameter, getParameterChannels, findParameterDependents,
+  findClientParameter, getParameterChannelNames, findParameterDependents,
 } from 'entities/parameter';
 
 
@@ -44,8 +44,7 @@ function createProgramParameters(id: ClientID, data: ProgramData): [Parameter[],
     const parameter = findClientParameter(name, clientParameters, [id, 'root']);
     if (!parameter) continue;
 
-    const clone = parameter.clone();
-    clone.id = idGenerator.get();
+    const clone = parameter.clone(idGenerator.get());
     clone.setValue(structuredClone(parameter.getValue()));
     relations.set(clone.id, parameter.id);
 
@@ -64,6 +63,10 @@ function createProgramParameters(id: ClientID, data: ProgramData): [Parameter[],
 }
 
 async function createProgramChannels(id: ClientID, parameters: Parameter[]): Promise<ChannelDict> {
+  const names = getParameterChannelNames(parameters);
+  const channels = await createChannels(names, useChannelStore.getState().idGenerator);
+  const channelList = Object.values(channels);
+
   const { clients, storage } = useParameterStore.getState();
   const localParameters = clients[id];
   const globalParameters = clients.root;
@@ -72,11 +75,15 @@ async function createProgramChannels(id: ClientID, parameters: Parameter[]): Pro
     const cb = (p: Parameter): boolean => p.name === name;
     return (parameters.find(cb) ?? localParameters.find(cb) ?? globalParameters.find(cb))?.id;
   };
+  await Promise.all(channelList.map((channel: Channel) => {
+    channel.config.parameters = channel.config.parameterNames.map(resolve).filter(Boolean);
+    return fillProgramChannel(channel, parameters, storage);
+  }));
 
-  const names = [...getParameterChannels(parameters)];
-  const channels = await createChannels(names, resolve);
-
-  await Promise.all(names.map(name => fillProgramChannel(channels[name], parameters, storage)));
+  for (const parameter of parameters) {
+    const name = parameter.channelName;
+    if (name) parameter.channelID = channelList.find(c => c.name === name).id;
+  }
   return channels;
 }
 

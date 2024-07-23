@@ -1,4 +1,4 @@
-export function getLabelTextNumberArray(str) {
+export function getLabelTextNumberArray(str: string) {
   // если в строке нет символов ^ и _ вернуть массив с одним объектом числа
   if (str.search(/[\^_]/) === -1) return [{value: str, upper: null, lower: null}]
 
@@ -29,9 +29,9 @@ export function getLabelTextNumberArray(str) {
   return numberArray;
 }
 
-function getIndexNumberArray(str) {
+function getIndexNumberArray(str: string) {
   // выходной массив объектов подстрок вида {value: string, type: string}
-  let numberArray = [];
+  let numberArray: {value: string, type: string}[] = [];
 
   // значение подстроки
   let currentNumberStr = '';

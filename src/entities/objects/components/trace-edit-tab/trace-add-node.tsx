@@ -23,7 +23,7 @@ export const TraceAddNode = ({model, mapPoints}: TraceAddNodeProps) => {
   }, [model.nodes]);
 
   const data = useMemo(() => {
-    return mapPoints?.filter(p => !traceNodeIDs.has(parseInt(p.UWID))) ?? [];
+    return mapPoints?.filter(p => !traceNodeIDs.has(p.UWID)) ?? [];
   }, [mapPoints, traceNodeIDs]);
 
   const onChange = (event: ComboBoxChangeEvent) => {
@@ -32,7 +32,7 @@ export const TraceAddNode = ({model, mapPoints}: TraceAddNodeProps) => {
 
   const addPoint = () => {
     const node: TraceNode = {
-      id: parseInt(addedPoint.UWID), name: addedPoint.name,
+      id: addedPoint.UWID, name: addedPoint.name,
       x: addedPoint.x, y: addedPoint.y,
     };
     model.nodes = [...model.nodes, node];

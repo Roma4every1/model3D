@@ -124,24 +124,24 @@ class Updater {
 
   private getDependentChannels(): ChannelDict {
     const result: ChannelDict = {};
-    const channels = useChannelStore.getState();
+    const channels = useChannelStore.getState().storage;
 
     for (const dep of this.dependentParameters) {
-      const name = dep.channelName;
-      if (!name || Object.hasOwn(result, name)) continue;
-      const channel = channels[name];
-      if (hasIntersection(this.baseChanges, channel.config.parameters)) result[name] = channel;
+      const id = dep.channelID;
+      if (!id || Object.hasOwn(result, id)) continue;
+      const channel = channels[id];
+      if (hasIntersection(this.baseChanges, channel.config.parameters)) result[id] = channel;
     }
     return result;
   }
 
   private handleDependentParameters(): Set<ParameterID> {
-    const channels = useChannelStore.getState();
+    const channels = useChannelStore.getState().storage;
     const dependentChanges: Set<ParameterID> = new Set();
 
     for (const p of this.dependentParameters) {
-      if (p.nullable === false && p.channelName && p.type === 'tableRow') {
-        const channel = channels[p.channelName];
+      if (p.nullable === false && p.channelID && p.type === 'tableRow') {
+        const channel = channels[p.channelID];
         const row = channel?.data?.rows?.at(0);
         if (row) {
           p.setValue(rowToParameterValue(row, channel));

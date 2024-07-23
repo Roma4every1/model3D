@@ -32,8 +32,8 @@ export class TableRowParameter implements Parameter<'tableRow'> {
     this.setValueString(s);
   }
 
-  public clone(): TableRowParameter {
-    const clone = {...this};
+  public clone(id?: ParameterID): TableRowParameter {
+    const clone = {...this, id: id ?? this.id};
     Object.setPrototypeOf(clone, TableRowParameter.prototype);
     return clone;
   }

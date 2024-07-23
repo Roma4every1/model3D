@@ -12,6 +12,5 @@ interface MultiMapChild {
   readonly stratumName: string;
   stage: IMapStage;
   loader: IMapLoader;
-  progress: number;
-  setProgress?: (process: number) => void;
+  loadFlag?: boolean;
 }

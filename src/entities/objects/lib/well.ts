@@ -7,7 +7,7 @@ export class WellManager implements IWellManager {
   /** Текущая активная скважина. */
   public model: WellModel | null = null;
   /** Название канала со скважинами. */
-  public readonly channelName: ChannelName | undefined;
+  public readonly channelID: ChannelID | undefined;
   /** Идентификатор параметра скважины. */
   public readonly parameterID: ParameterID | undefined;
   /** Информация о структуре данных канала. */
@@ -18,17 +18,17 @@ export class WellManager implements IWellManager {
     if (!parameter || parameter.type !== 'tableRow') return;
     this.parameterID = parameter.id;
 
-    const channelName = parameter.channelName;
-    if (!channelName) return;
-    this.channelName = channelName;
+    const channelID = parameter.channelID;
+    if (!channelID) return;
+    this.channelID = channelID;
 
-    const channel = channels[channelName];
+    const channel = channels[channelID];
     if (!channel) return;
     this.info = new RecordInfoCreator(channels).create(channel, wellChannelCriterion);
   }
 
   public activated(): boolean {
-    return this.parameterID !== undefined && this.channelName !== undefined;
+    return this.parameterID !== undefined && this.channelID !== undefined;
   }
 
   public initializeModel(parameters: Parameter[]): void {

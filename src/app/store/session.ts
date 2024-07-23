@@ -1,7 +1,7 @@
 import { t } from 'shared/locales';
 import { fetcher } from 'shared/lib';
 import { useProgramStore } from 'entities/program';
-import { useChannelStore } from 'entities/channel';
+import { useChannelStore, addChannels, setChannels } from 'entities/channel';
 import { addSessionClient } from 'entities/client';
 import { showWarningMessage } from 'entities/window';
 import { showNotification } from 'entities/notification';
@@ -30,9 +30,9 @@ export async function saveSession(): Promise<void> {
 
 /** Инициализация новой сессии. */
 export async function startSession(isDefault: boolean): Promise<void> {
+  const { systemID, loading: { done } } = useAppStore.getState();
   setLoadingStep('session');
-  const systemID = useAppStore.getState().systemID;
-  if (systemID !== null) clearSessionData();
+  if (done) clearSessionData();
 
   const res = await appAPI.startSession(systemID, isDefault);
   if (!res.ok) return setLoadingError('app.session-creation-error');
@@ -51,9 +51,11 @@ export async function startSession(isDefault: boolean): Promise<void> {
   const channels = factory.getChannels();
   const parameters = factory.getParameters();
   lockParameters(parameters);
+  addChannels(channels);
   addSessionClient(root);
 
-  const objects = initializeObjects(parameters, channels);
+  const channelDict = useChannelStore.getState().storage;
+  const objects = initializeObjects(parameters, channelDict);
   const layoutController = root.layout.controller;
   layoutController.traceExist = Boolean(objects.trace.parameterID);
   useProgramStore.getState().layoutController = layoutController;
@@ -65,8 +67,8 @@ export async function startSession(isDefault: boolean): Promise<void> {
   const fillSuccess = await factory.fillData();
   if (!fillSuccess) showWarningMessage(t('app.root-data-init-error'));
   unlockParameters(parameters);
-  initializeObjectModels(parameters, channels);
-  useChannelStore.setState(channels);
+  initializeObjectModels(parameters, channelDict);
+  setChannels(channels);
 }
 
 function setLoadingStep(step: AppLoadingStep, done?: boolean): void {

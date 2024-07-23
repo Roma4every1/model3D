@@ -61,5 +61,5 @@ interface PieSliceType {
   name: 'pieslice';
 
   bound(point: Point): Bounds;
-  draw(i, options): void;
+  draw(i: MapPieSlice, options): void;
 }

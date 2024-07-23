@@ -1,13 +1,13 @@
 import type { MouseEvent, WheelEvent } from 'react';
-import { useState, useEffect, useLayoutEffect, useRef } from 'react';
-import { LoadingStatus, TextInfo } from 'shared/ui';
+import { useEffect, useLayoutEffect, useRef } from 'react';
+import { TextInfo } from 'shared/ui';
 import { useChannel, useChannelDict } from 'entities/channel';
 import { updateParamDeep, useParameterValue, rowToParameterValue } from 'entities/parameter';
-import { useCurrentWell, useTraceManager, setCurrentTrace, setCurrentWell } from 'entities/objects';
+import { useCurrentWell, useCurrentTrace, useTraceEditing, setCurrentTrace, setCurrentWell } from 'entities/objects';
 import { useMapState } from '../store/map.store';
 import { fetchMapData, showMapPropertyWindow } from '../store/map.thunks';
-import { setMapField, setMapCanvas, applyTraceToMap } from '../store/map.actions';
-import { getFullTraceViewport, getTraceMapElement, handleTraceClick } from '../lib/traces-map-utils';
+import { setMapField, setMapCanvas, applyTraceToMap, setMapStatus } from '../store/map.actions';
+import { handleTraceClick } from '../lib/traces-map-utils';
 import { getFullViewport } from '../lib/map-utils';
 import { checkDistancePoints } from '../lib/selecting-utils';
 import { MapStage } from '../lib/map-stage';
@@ -16,32 +16,30 @@ import { MapMode } from '../lib/constants';
 
 export const Map = ({id, channels}: Pick<SessionClient, 'id' | 'channels'>) => {
   const currentWell = useCurrentWell();
-  const { model: currentTrace, editing: traceEditing } = useTraceManager();
-
-  const [isMapExist, setIsMapExist] = useState(true);
-  const mapState = useMapState(id);
+  const currentTrace = useCurrentTrace();
+  const traceEditing = useTraceEditing();
 
   const canvasRef = useRef(null);
-  const { canvas, loading } = mapState;
+  const mapState = useMapState(id);
+  const { canvas, status } = mapState;
   const stage = mapState.stage as MapStage;
   const mapData = stage.getMapData();
 
-  const isPartOfDynamicMultiMap = channels === null;
-  const activeChannelName = isPartOfDynamicMultiMap ? null : channels[0]?.name;
-  const activeChannel = useChannel(activeChannelName);
+  const isMultiMapItem = channels === null;
+  const channel = useChannel(isMultiMapItem ? null : channels[0]?.id);
 
-  // проверка параметров формы
   useEffect(() => {
-    if (isPartOfDynamicMultiMap) return;
-    const rows = activeChannel?.data?.rows;
+    if (isMultiMapItem) return;
+    const rows = channel?.data?.rows;
+
     if (!rows || rows.length === 0) {
-      if (stage.inclinometryModeOn && !canvas) {
+      if (stage.inclinometryModeOn) {
         stage.setData({layers: [], x: 0, y: 0, scale: 1} as MapData);
-        setMapCanvas(id, canvasRef.current);
-        setIsMapExist(true); return;
+        setMapStatus(id, 'ok');
+      } else {
+        setMapStatus(id, 'empty');
       }
-      if (loading.percentage < 0) return;
-      return setIsMapExist(false);
+      return;
     }
 
     const firstRow = rows[0];
@@ -50,38 +48,38 @@ export const Map = ({id, channels}: Pick<SessionClient, 'id' | 'channels'>) => {
 
     const changeOwner = owner !== mapState.owner;
     const changeMapID = mapID !== mapState.mapID;
-    const activeRowParameter = activeChannel.config.activeRowParameter;
+    if (!changeOwner && !changeMapID) return;
 
-    if (activeRowParameter && (changeOwner || changeMapID)) {
-      const value = rowToParameterValue(firstRow, activeChannel);
+    const activeRowParameter = channel.config.activeRowParameter;
+    if (activeRowParameter) {
+      const value = rowToParameterValue(firstRow, channel);
       updateParamDeep(activeRowParameter, value).then();
     }
-    if (changeOwner) {
-      setMapField(id, 'owner', owner);
-    }
-    if (changeMapID) {
-      setMapField(id, 'mapID', mapID);
-      fetchMapData(id).then();
-    }
-    setIsMapExist(true);
-  }, [mapState?.owner, mapState?.mapID, activeChannel, id, isPartOfDynamicMultiMap, stage.inclinometryModeOn]); // eslint-disable-line
+
+    if (changeOwner) setMapField(id, 'owner', owner);
+    if (changeMapID) setMapField(id, 'mapID', mapID);
+    fetchMapData(id).then();
+  }, [mapState.owner, mapState.mapID, channel, id, isMultiMapItem, stage.inclinometryModeOn]); // eslint-disable-line
 
   // обновление ссылки на холст
   useLayoutEffect(() => {
-    if (!mapData || canvasRef.current === canvas) return;
-    setMapCanvas(id, canvasRef.current);
-    if (!canvasRef.current) return;
+    const currentCanvas = canvasRef.current;
+    if (!mapData || currentCanvas === canvas) return;
+    setMapCanvas(id, currentCanvas);
+    if (!currentCanvas) return;
 
+    if (currentWell) {
+      stage.setActivePoint(currentWell.id);
+    }
+    if (currentTrace && !stage.inclinometryModeOn) {
+      return applyTraceToMap(id, currentTrace, true);
+    }
     let initialViewport: MapViewport;
-    if (stage.inclinometryModeOn && currentWell) {
-      initialViewport = stage.getWellViewport(currentWell.id);
-    } else if (currentTrace) {
-      initialViewport = getFullTraceViewport(getTraceMapElement(currentTrace), canvasRef.current);
-    } else if (currentWell) {
+    if (currentWell) {
       initialViewport = stage.getWellViewport(currentWell.id);
     }
     if (!initialViewport) {
-      initialViewport = getFullViewport(mapData.layers, canvasRef.current);
+      initialViewport = getFullViewport(mapData.layers, currentCanvas);
     }
     stage.render(initialViewport);
   });
@@ -92,7 +90,7 @@ export const Map = ({id, channels}: Pick<SessionClient, 'id' | 'channels'>) => {
   const lastTraceRef = useRef<TraceModel>(null);
 
   useEffect(() => {
-    if (!mapData || loading.percentage < 100) return;
+    if (status !== 'ok') return;
     const lastWell = lastWellRef.current;
     const lastTrace = lastTraceRef.current;
 
@@ -106,8 +104,10 @@ export const Map = ({id, channels}: Pick<SessionClient, 'id' | 'channels'>) => {
       (!lastWell || currentWell.id !== lastWell.id);
 
     if (updateWellViewport) {
-      const viewport = stage.getWellViewport(currentWell.id);
-      if (viewport) stage.getCanvas().events?.emit('sync', viewport);
+      stage.setActivePoint(currentWell.id, true);
+    } else if (lastWell?.id && !currentWell) {
+      stage.setActivePoint(null);
+      stage.render();
     }
     lastWellRef.current = currentWell;
     lastTraceRef.current = currentTrace;
@@ -116,13 +116,15 @@ export const Map = ({id, channels}: Pick<SessionClient, 'id' | 'channels'>) => {
   /* --- --- */
 
   const inclPlugin = stage.getPlugin('incl');
-  const inclAngle = useParameterValue(inclPlugin.parameterID);
-  const channelDict = useChannelDict(channels?.map(c => c.name) ?? []);
+  const inclAngle = useParameterValue(inclPlugin?.parameterID);
+  const channelDict = useChannelDict(channels?.map(c => c.id) ?? []);
 
   // обновление угла инклинометрии
   useEffect(() => {
-    if (inclPlugin && inclPlugin.parameterID) inclPlugin.setAngle(inclAngle);
-  }, [inclPlugin, inclAngle]);
+    if (!inclPlugin || !inclPlugin.parameterID) return;
+    inclPlugin.setAngle(inclAngle);
+    stage.render();
+  }, [inclPlugin, inclAngle, stage]);
 
   // обновление каналов плагинов
   useEffect(() => {
@@ -133,9 +135,9 @@ export const Map = ({id, channels}: Pick<SessionClient, 'id' | 'channels'>) => {
 
   /* --- --- */
 
-  if (!isMapExist) return <TextInfo text={'map.not-found'}/>;
-  if (loading.percentage < 0) return <TextInfo text={'map.not-loaded'}/>;
-  if (loading.percentage < 100) return <LoadingStatus {...loading}/>;
+  if (status !== 'ok') {
+    return <TextInfo text={'map.' + status}/>;
+  }
 
   const onMouseDown = ({nativeEvent}: MouseEvent) => {
     if (nativeEvent.button !== 0 || stage.inclinometryModeOn) return;
@@ -162,7 +164,8 @@ export const Map = ({id, channels}: Pick<SessionClient, 'id' | 'channels'>) => {
         handleTraceClick(currentTrace, mapPoint);
         setCurrentTrace({...currentTrace});
       } else {
-        setCurrentWell(parseInt(mapPoint.UWID)).then();
+        stage.setActivePoint(mapPoint, true);
+        setCurrentWell(mapPoint.UWID).then();
       }
     }, 50);
   };

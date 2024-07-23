@@ -1,9 +1,9 @@
 import { ChartMarkProps } from '../components/vertical-marks';
 
 
-/** Возвращает список имён всех необходимых каналов-справочников. */
-export function getChartLookups(marks: ChartMarkProps[]): ChannelName[] {
-  const lookups: ChannelName[] = [];
+/** Возвращает список ID всех необходимых каналов-справочников. */
+export function getChartLookups(marks: ChartMarkProps[]): ChannelID[] {
+  const lookups: ChannelID[] = [];
   for (const mark of marks) {
     for (const item of mark.label.value) {
       lookups.push(item.property.lookupChannels[0]);

@@ -1,16 +1,10 @@
 import type { IJsonModel } from 'flexlayout-react';
 import type { ClientDataDTO } from 'entities/client';
-import { leftAntiJoin } from 'shared/lib';
 import { clientAPI } from 'entities/client';
-import { createChannels, getDetailChannels } from 'entities/channel';
+import { ParameterStringTemplate, addClientParameters, addParameterListener } from 'entities/parameter';
 import { createLeftLayout } from 'widgets/left-panel';
-import { DataResolver } from 'widgets/presentation';
+import { ClientChannelFactory, DataResolver } from 'widgets/presentation';
 import { LayoutController } from './layout-controller';
-
-import {
-  ParameterStringTemplate, useParameterStore,
-  addClientParameters, addParameterListener, getParameterChannels,
-} from 'entities/parameter';
 
 
 interface DockSettingsDTO {
@@ -30,7 +24,8 @@ export class RootClientFactory {
   private readonly id: ClientID;
   private dto: ClientDataDTO<DockSettingsDTO>;
   private parameters: Parameter[];
-  private channels: ChannelDict;
+  private channels: Channel[];
+  private neededChannels: ChannelID[];
 
   constructor(id: ClientID) {
     this.id = id;
@@ -42,12 +37,12 @@ export class RootClientFactory {
 
     this.dto = data;
     this.parameters = addClientParameters('root', data.parameters);
-    this.channels = await this.createChannels();
+    await this.createChannels();
     const { children, activeChildren } = data.children;
 
     return {
       id: this.id, type: 'dock', parent: null,
-      channels: [], neededChannels: Object.keys(this.channels),
+      channels: [], neededChannels: this.neededChannels,
       parameters: this.parameters.map(p => p.id),
       children: children, activeChildID: activeChildren[0] ?? children[0]?.id,
       settings: this.createSettings(), layout: this.createLayout(),
@@ -58,12 +53,12 @@ export class RootClientFactory {
     return this.parameters;
   }
 
-  public getChannels(): ChannelDict {
+  public getChannels(): Channel[] {
     return this.channels;
   }
 
   public fillData(): Promise<boolean> {
-    const resolver = new DataResolver(this.channels, useParameterStore.getState().storage);
+    const resolver = new DataResolver();
     return resolver.resolve(this.channels, this.parameters);
   }
 
@@ -141,20 +136,11 @@ export class RootClientFactory {
 
   /* --- Channels --- */
 
-  private async createChannels(): Promise<ChannelDict> {
+  private async createChannels(): Promise<void> {
     const resolve = (name: ParameterName) => this.resolveParameterName(name);
-    const baseNames = getParameterChannels(this.parameters);
-    const baseChannels = await createChannels([...baseNames], resolve);
-
-    const allDetailNames = getDetailChannels(baseChannels);
-    const detailNames = leftAntiJoin(allDetailNames, baseNames);
-    const detailChannels = await createChannels([...detailNames], resolve);
-
-    for (const name of baseNames) {
-      const channel = baseChannels[name];
-      if (channel) channel.query.limit = null;
-    }
-    return {...baseChannels, ...detailChannels};
+    const factory = new ClientChannelFactory(resolve);
+    this.channels = await factory.create(this.parameters);
+    this.neededChannels = factory.getAllNeededChannels();
   }
 
   /* --- Layout --- */

@@ -68,7 +68,7 @@ export class CaratInclinometry implements ICaratInclinometry {
 
   /** Обновление данных интерполяции. */
   public setData(channelData: ChannelRecordDict): void {
-    const rows = channelData[this.channel.name];
+    const rows = channelData[this.channel.id];
     if (rows?.length) {
       const info = this.channel.info;
       this.interpolationData = rows.map((record: ChannelRecord): InclinometryMark => ({

@@ -1,6 +1,6 @@
 import { def2json } from './symbols';
 import { parseDef } from './symbol2svg';
-import { mapAPI } from '../lib/map.api';
+import symbolDef from 'assets/map-libs/symbol.def';
 
 
 type SignImageGetter = (color: ColorString) => string;
@@ -15,8 +15,8 @@ export interface SignFontData {
 
 
 export class MapProvider {
-  public defaultSignLib = 'PNT.CHR';
-  public defaultSignColor = '#000000';
+  public readonly defaultSignLib = 'PNT.CHR';
+  public readonly defaultSignColor = '#000000';
   public defaultSignImage: HTMLImageElement;
   public readonly fontData: SignFontData[] = [];
 
@@ -44,7 +44,7 @@ export class MapProvider {
   public async initialize(): Promise<void> {
     if (this.initialized) return;
     try {
-      const data = await mapAPI.getSymbolLib();
+      const data = await fetch(symbolDef, {credentials: 'include'}).then(r => r.arrayBuffer());
       this.lib = parseDef(def2json(new TextDecoder('cp1251').decode(data)));
     } catch {
       this.lib = {}; // handler below
@@ -80,12 +80,11 @@ function loadImageData(data: string): Promise<HTMLImageElement> {
   const img = new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image();
     image.src = url;
-    image.onload = () => { resolve(image); };
+    image.onload = () => resolve(image);
     image.onerror = reject;
   });
 
-  const fin = () => { URL.revokeObjectURL(url); };
-  img.then(fin).catch(fin);
+  img.finally(() => URL.revokeObjectURL(url));
   return img;
 }
 

@@ -10,8 +10,8 @@ export class DoubleParameter implements Parameter<'double'> {
     this.setValueString(s);
   }
 
-  public clone(): DoubleParameter {
-    const clone = {...this};
+  public clone(id?: ParameterID): DoubleParameter {
+    const clone = {...this, id: id ?? this.id};
     Object.setPrototypeOf(clone, DoubleParameter.prototype);
     return clone;
   }

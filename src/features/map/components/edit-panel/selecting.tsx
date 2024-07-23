@@ -24,7 +24,7 @@ export const Selecting = ({mapState, t}: SelectingProps) => {
   const toggleSelecting = () => stage.setSelecting(!selecting);
 
   const toggleSelectingDisabled = stage.inclinometryModeOn || stage.isElementEditing() ||
-    stage.isElementCreating() || mapState.loading.percentage < 100 || traceEditing;
+    stage.isElementCreating() || mapState.status !== 'ok' || traceEditing;
 
   const toggleType = (type: MapElementType) => {
     select.types[type] = !select.types[type];

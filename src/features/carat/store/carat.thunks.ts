@@ -6,9 +6,9 @@ import { cellsToRecords, useChannelStore } from 'entities/channel';
 /** Обновляет данные каротажной диаграммы. */
 export async function setCaratData(id: FormID): Promise<void> {
   const objects = useObjectsStore.getState();
-  const channels = useChannelStore.getState();
+  const channels = useChannelStore.getState().storage;
 
-  const { stage, loader, lookupNames } = useCaratStore.getState()[id];
+  const { stage, loader, lookups } = useCaratStore.getState()[id];
   const { well: { model: currentWell }, trace: { model: currentTrace } } = objects;
 
   if (currentTrace) {
@@ -25,7 +25,7 @@ export async function setCaratData(id: FormID): Promise<void> {
 
   if (!stage.actualLookup) {
     const dict: ChannelRecordDict = {};
-    for (const name of lookupNames) dict[name] = cellsToRecords(channels[name]?.data);
+    for (const id of lookups) dict[id] = cellsToRecords(channels[id]?.data);
     stage.setLookupData(dict);
   }
 

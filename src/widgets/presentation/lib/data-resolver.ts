@@ -1,6 +1,6 @@
 import { hasIntersection, setIntersection } from 'shared/lib';
-import { fillChannel } from 'entities/channel';
-import { findParameters, rowToParameterValue } from 'entities/parameter';
+import { useChannelStore, fillChannel } from 'entities/channel';
+import { useParameterStore, findParameters, rowToParameterValue } from 'entities/parameter';
 import { clientAPI } from 'entities/client';
 
 
@@ -27,20 +27,20 @@ export class DataResolver {
   private readonly dependencies: Map<Target, Set<Target>>;
 
   /** Каналы, которые нужно наполнить. */
-  private channels: ChannelDict;
+  private channels: Channel[];
   /** Параметры, у которых нужно инициализировать значение. */
   private parameters: Parameter[];
   /** Ассоциативный массив для установщиков параметров. */
   private setters: Map<symbol, ParameterSetter>;
 
-  constructor(channelStorage: ChannelDict, parameterStorage: ParameterMap) {
-    this.channelStorage = channelStorage;
-    this.parameterStorage = parameterStorage;
+  constructor() {
+    this.channelStorage = useChannelStore.getState().storage;
+    this.parameterStorage = useParameterStore.getState().storage;
     this.targets = new Set();
     this.dependencies = new Map();
   }
 
-  public resolve(c: ChannelDict, p: Parameter[], s?: ParameterSetter[]): Promise<boolean> {
+  public resolve(c: Channel[], p: Parameter[], s?: ParameterSetter[]): Promise<boolean> {
     this.parameters = p;
     this.channels = c;
     this.setters = new Map();
@@ -66,10 +66,10 @@ export class DataResolver {
       this.targets.add(id);
       this.dependencies.set(id, setIntersection(targetParameters, setter.executeParameters));
     }
-    for (const name in this.channels) {
-      this.targets.add(name);
-      const ids = this.channels[name].config.parameters;
-      this.dependencies.set(name, setIntersection(targetParameters, ids));
+    for (const channel of this.channels) {
+      this.targets.add(channel.name);
+      const parameters = channel.config.parameters;
+      this.dependencies.set(channel.name, setIntersection(targetParameters, parameters));
     }
   }
 
@@ -101,14 +101,14 @@ export class DataResolver {
   }
 
   private resolveChannel(name: ChannelName): Promise<void> {
-    const channel = this.channels[name];
+    const channel = this.channels.find(c => c.name === name);
     const fillParameters = findParameters(channel.config.parameters, this.parameterStorage);
     return fillChannel(channel, fillParameters);
   }
 
   private resolveParameter(id: ParameterID): void {
     const parameter = this.parameterStorage.get(id);
-    const channel = this.channelStorage[parameter.channelName];
+    const channel = this.channelStorage[parameter.channelID];
     const row = channel.data?.rows?.at(0);
     if (row) parameter.setValue(rowToParameterValue(row, channel));
   }

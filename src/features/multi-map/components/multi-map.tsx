@@ -7,24 +7,24 @@ import { useMultiMapState } from '../store/multi-map.store';
 import { updateMultiMap } from '../store/multi-map.thunks';
 
 import { TextInfo } from 'shared/ui';
-import { MultiMapItem } from './multi-map-item';
+import { Map } from 'features/map/components/map';
 
 
 export const MultiMap = ({id, channels}: Pick<PresentationState, 'id' | 'channels'>) => {
   const state = useMultiMapState(id);
-  const channelData = useChannelData(channels[0].name);
+  const channelData = useChannelData(channels[0].id);
 
   useEffect(() => {
     updateMultiMap(id, channelData).then();
   }, [channelData, id]);
 
-  if (!state || state.children.length === 0) return <TextInfo text={'map.not-found'}/>;
+  if (!state || state.children.length === 0) return <TextInfo text={'map.empty'}/>;
   const { layout, children } = state;
 
   const factory = (node: TabNode) => {
     const tabID = node.getId();
     const child = children.find(item => item.formID === tabID);
-    return child ? <MultiMapItem data={child}/> : null;
+    return child ? <Map id={child.formID} channels={null}/> : null;
   };
   const onAction = (action: Action) => {
     const { type, data } = action;

@@ -44,7 +44,7 @@ function getColumnType(netType: ColumnType): TableColumnType {
 export function settingsToTableState(payload: FormStatePayload<TableFormSettings>): TableState {
   const settings = payload.state.settings;
   const attachedChannel = payload.state.channels[0];
-  const channel = payload.channels[attachedChannel?.name];
+  const channel = payload.channels[attachedChannel?.id];
 
   const allProperties = channel?.config.properties ?? [];
   if (channel && channel.query.limit === undefined) channel.query.limit = 100;
@@ -106,7 +106,8 @@ export function settingsToTableState(payload: FormStatePayload<TableFormSettings
     recordHandler, queryID: null, editable: false,
     activeRecordParameter: channel?.config.activeRowParameter,
     headerSetterRules: getHeaderSetterRules(settings.headerSetterRules, payload),
-    channelName: attachedChannel?.name,
+    channelID: attachedChannel?.id,
+    lookupChannelIDs: findLookups(channel?.config.properties),
     toolbarSettings: toolbar,
     columnsSettings, columns: columnsState, columnTree, columnTreeFlatten,
     properties: properties,
@@ -139,4 +140,15 @@ function getHeaderSetterRules(rules: HeaderSetterRule[], payload: FormStatePaylo
     if (id) { rule.id = id; result.push(rule); }
   }
   return result;
+}
+
+/** Находит все каналы справочники по набору свойств. */
+function findLookups(properties: ChannelProperty[]): ChannelID[] {
+  if (!properties) return [];
+  const result: Set<ChannelID> = new Set();
+
+  for (const property of properties) {
+    for (const id of property.lookupChannels) result.add(id);
+  }
+  return [...result];
 }

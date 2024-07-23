@@ -24,7 +24,7 @@ export class MultiMapChildFactory {
       children.push({
         id, storage: row[storageIndex] ?? 'Common',
         formID: this.parentID + ',' + id, stratumName: row[nameIndex] ?? '',
-        stage: null, loader: null, progress: 0, setProgress: () => {},
+        stage: null, loader: null,
       });
     }
     return children;

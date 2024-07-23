@@ -1,5 +1,5 @@
 import { useClientStore, setClientChildren } from 'entities/client';
-import { useMapStore, getMapState } from 'features/map';
+import { useMapStore, getMapState, setMapStatus } from 'features/map';
 import { useMultiMapStore } from './multi-map.store';
 import { MultiMapChildFactory } from '../lib/factory';
 import { getMultiMapLayout } from '../lib/layout';
@@ -21,7 +21,7 @@ export async function updateMultiMap(id: ClientID, channelData: ChannelData): Pr
   for (const child of children) {
     let mapState = mapStates[child.formID];
     if (mapState) {
-      child.progress = 100;
+      child.loadFlag = true;
     } else {
       mapState = getMapState(templateFormID, false);
       mapStates[child.formID] = mapState;
@@ -54,15 +54,18 @@ async function fetchMultiMapData(children: MultiMapChild[]): Promise<void> {
   };
 
   for (const child of children) {
-    if (child.progress === 100) continue;
-    child.loader.onProgressChange = (l: MapLoading) => child.setProgress(l.percentage);
+    if (child.loadFlag) continue;
+    setMapStatus(child.formID, 'loading');
+  }
+  for (const child of children) {
+    if (child.loadFlag) continue;
     const mapData = await child.loader.loadMapData(child.id, child.storage);
 
     if (typeof mapData === 'string') {
-      child.setProgress(-1);
+      setMapStatus(child.formID, 'error');
     } else if (mapData) {
-      child.setProgress(100);
       child.stage.setData(mapData);
+      setMapStatus(child.formID, 'ok');
       updateStages();
     }
   }

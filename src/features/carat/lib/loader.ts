@@ -55,8 +55,8 @@ export class CaratLoader {
     const data: ChannelRecordDict = {};
     const caratData: ChannelRecordDict[] = [];
 
-    for (const { name } of this.attachedChannels) {
-      data[name] = cellsToRecords(channelData[name]?.data);
+    for (const { id } of this.attachedChannels) {
+      data[id] = cellsToRecords(channelData[id]?.data);
     }
 
     const curveIDs: CaratCurveID[] = [];
@@ -70,18 +70,18 @@ export class CaratLoader {
     await this.loadCurveData(curveIDs, true);
 
     if (this.inclinometryChannel) {
-      const inclinometryChannel = channelData[this.inclinometryChannel.name];
+      const inclinometryChannel = channelData[this.inclinometryChannel.id];
       const rows = inclinometryChannel?.data?.rows;
 
       if (rows) {
         this.onProgressChange({status: 'carat.loading.inclinometry', statusOptions: null});
         const details = this.inclinometryChannel.info.inclinometry.details;
-        const inclinometryDataName = details.name;
+        const inclinometryDataID = details.id;
         const wellColumnName = details.info.well.columnName;
 
         const recordList = await Promise.all(rows.map((row: ChannelRow) => {
           const value = rowToParameterValue(row, inclinometryChannel);
-          return this.loadInclinometry(value, channelData[inclinometryDataName]);
+          return this.loadInclinometry(value, channelData[inclinometryDataID]);
         }));
 
         if (ids.length > 1) {
@@ -89,10 +89,10 @@ export class CaratLoader {
             if (records.length === 0) continue;
             const wellID = records[0][wellColumnName];
             const idx = ids.findIndex(i => i === wellID);
-            if (idx !== -1) caratData[idx][inclinometryDataName] = records;
+            if (idx !== -1) caratData[idx][inclinometryDataID] = records;
           }
         } else {
-          caratData[0][inclinometryDataName] = recordList[0];
+          caratData[0][inclinometryDataID] = recordList[0];
         }
       }
     }
@@ -150,10 +150,10 @@ export class CaratLoader {
     const dict: ChannelRecordDict = {};
     const curveIDs: CaratCurveID[] = [];
 
-    for (const channelName in data) {
-      const attachment = this.attachedChannels.find(a => a.name === channelName);
-      let records = data[channelName];
-      if (!records) { dict[channelName] = []; continue; }
+    for (let channelID in data) {
+      const attachment = this.attachedChannels.find(a => a.id.toString() === channelID);
+      let records = data[channelID];
+      if (!records) { dict[channelID] = []; continue; }
 
       if (isTrace && records.length) {
         const wellColumnName = attachment.info.well.columnName;
@@ -166,7 +166,7 @@ export class CaratLoader {
         const defaultCurves = records.filter(record => Boolean(record[loadingName]));
         curveIDs.push(...defaultCurves.map(record => record[idName]));
       }
-      dict[channelName] = records;
+      dict[channelID] = records;
     }
     return [dict, curveIDs] as [ChannelRecordDict, CaratCurveID[]];
   }

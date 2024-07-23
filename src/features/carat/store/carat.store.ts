@@ -8,18 +8,18 @@ export type CaratStates = Record<FormID, CaratState>;
 
 /** Состояние каротажной формы. */
 export interface CaratState {
+  /** Экземпляр класса сцены. */
+  readonly stage: CaratStage;
+  /** Класс, реализующий загрузку данных для построения каротажа по трассе. */
+  readonly loader: CaratLoader;
+  /** Класс для отслеживания изменения размеров холста. */
+  readonly observer: ResizeObserver;
+  /** Список всех используемых каналов. */
+  readonly channels: ChannelID[];
+  /** Список всех используемых каналов-справочников. */
+  readonly lookups: ChannelID[];
   /** Ссылка на холст. */
   canvas: HTMLCanvasElement;
-  /** Экземпляр класса сцены. */
-  stage: CaratStage;
-  /** Класс, реализующий загрузку данных для построения каротажа по трассе. */
-  loader: CaratLoader;
-  /** Класс для отслеживания изменения размеров холста. */
-  observer: ResizeObserver;
-  /** Список всех используемых каналов. */
-  channelNames: ChannelName[];
-  /** Список всех названий каналов-справочников. */
-  lookupNames: ChannelName[];
   /** Находится ли форма в состоянии загрузки. */
   loading: CaratLoading;
 }

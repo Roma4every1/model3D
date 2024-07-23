@@ -34,9 +34,11 @@ export function parseParameterValue(value: string | null, type: ParameterType): 
 
 export function createParameter(id: ParameterID, dto: ParameterInit): Parameter {
   const p: Parameter = new (parameterImplDict[dto.type])(id, dto.id, dto.value);
-  p.nullable = Boolean(dto.canBeNull);
-  p.dependsOn = dto.dependsOn ?? [];
-  p.channelName = dto.externalChannelName;
+  Object.defineProperties(p, {
+    nullable: {enumerable: true, value: Boolean(dto.canBeNull)},
+    dependsOn: {enumerable: true, value: dto.dependsOn ?? []},
+    channelName: {enumerable: true, value: dto.externalChannelName},
+  });
 
   const editor = createEditor(dto);
   if (editor) p.editor = editor;

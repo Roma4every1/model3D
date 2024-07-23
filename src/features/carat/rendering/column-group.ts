@@ -150,10 +150,10 @@ export class CaratColumnGroup {
   }
 
   /** Возвращает список названий справочников, необходимых для отрисовки. */
-  public getLookupNames(): ChannelName[] {
-    const names: ChannelName[] = [];
-    for (const column of this.columns) names.push(...column.getLookupNames());
-    return names;
+  public getLookups(): ChannelID[] {
+    const ids: ChannelID[] = [];
+    for (const column of this.columns) ids.push(...column.getLookups());
+    return ids;
   }
 
   public constructionMode(): boolean {
@@ -257,7 +257,8 @@ export class CaratColumnGroup {
 
   public setActiveCurve(id?: CaratCurveID): void {
     if (!this.curveColumn) return;
-    this.curveColumn.curveManager.setActiveCurve(id);
+    const activeCurve = this.curveColumn.curveManager.setActiveCurve(id);
+    this.header.setActiveType(activeCurve ? activeCurve.type : null);
   }
 
   /** Точка в системе координат трека. */
@@ -284,12 +285,12 @@ export class CaratColumnGroup {
   /** Задаёт новый список элементов и кривых, возвращает изменение ширины. */
   public setData(data: ChannelRecordDict, cache: CurveDataCache): void {
     for (const column of this.columns) {
-      const rows = data[column.channel.name];
+      const rows = data[column.channel.id];
       column.setChannelData(rows);
     }
 
     if (!this.curveColumn) return;
-    const curveRecords = data[this.curveColumn.channel.name];
+    const curveRecords = data[this.curveColumn.channel.id];
     this.curveColumn.curveManager.setCurveChannelData(curveRecords, cache);
     this.groupCurves(this.curveColumn.curveManager.getVisibleCurves());
   }

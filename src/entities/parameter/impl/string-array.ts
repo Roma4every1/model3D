@@ -10,8 +10,8 @@ export class StringArrayParameter implements Parameter<'stringArray'> {
     this.setValueString(s);
   }
 
-  public clone(): StringArrayParameter {
-    const clone = {...this};
+  public clone(id?: ParameterID): StringArrayParameter {
+    const clone = {...this, id: id ?? this.id};
     Object.setPrototypeOf(clone, StringArrayParameter.prototype);
     return clone;
   }

@@ -71,10 +71,10 @@ export class CaratColumn implements ICaratColumn {
     return copy;
   }
 
-  public getLookupNames(): ChannelName[] {
-    const names = this.styleManager.getLookupNames();
-    if (this.textLookup) names.push(this.textLookup.name);
-    return names;
+  public getLookups(): ChannelID[] {
+    const ids = this.styleManager.getLookups();
+    if (this.textLookup) ids.push(this.textLookup.id);
+    return ids;
   }
 
   public getElements(): CaratIntervalModel[] {
@@ -128,7 +128,7 @@ export class CaratColumn implements ICaratColumn {
     if (!this.textLookup) return;
 
     this.textDict = {};
-    const records = lookupData[this.textLookup.name];
+    const records = lookupData[this.textLookup.id];
     if (!records || records.length === 0) return;
 
     const idName = this.textLookup.info.id.columnName;

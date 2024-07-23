@@ -44,7 +44,7 @@ export class RecordInfoCreator {
       if (!channel && required) return;
       const details = this.create(channel, c.details);
       if (!details && required) return;
-      info.details = {name: channel.name, info: details};
+      info.details = {id: channel.id, info: details};
     }
     return info;
   }
@@ -55,13 +55,13 @@ export class RecordInfoCreator {
       const criterion = l[lookupName];
       let matched = false;
 
-      for (const channelName of p.lookupChannels) {
-        const channel = this.channels[channelName];
+      for (const id of p.lookupChannels) {
+        const channel = this.channels[id];
         if (!channel) continue;
         const lookupInfo = this.create(channel, criterion);
         if (!lookupInfo) continue;
 
-        info[lookupName] = {name: channel.name, info: lookupInfo};
+        info[lookupName] = {id, info: lookupInfo};
         matched = true; break;
       }
       if (!matched && criterion.required !== false) return;

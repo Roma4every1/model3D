@@ -58,9 +58,9 @@ export class CaratCurveColumn implements ICaratColumn {
     return [min, max];
   }
 
-  public getLookupNames(): ChannelName[] {
+  public getLookups(): ChannelID[] {
     const colorLookup = this.channel.info.type.lookups.color;
-    return colorLookup ? [colorLookup.name] : [];
+    return colorLookup ? [colorLookup.id] : [];
   }
 
   public getGroups(): CurveGroupState[] {

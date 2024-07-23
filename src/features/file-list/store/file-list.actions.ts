@@ -5,7 +5,7 @@ export function createFileListState(payload: FormStatePayload): void {
   const { state: formState, channels } = payload;
 
   for (const attachedChannel of formState.channels) {
-    const properties = channels[attachedChannel.name].config.properties;
+    const properties = channels[attachedChannel.id].config.properties;
     const property = properties.find(p => p.file);
     if (!property) continue;
 

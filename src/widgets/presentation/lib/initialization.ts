@@ -2,7 +2,7 @@ import { InitializationError } from 'shared/lib';
 import { t } from 'shared/locales';
 import { fillPatterns } from 'shared/drawing';
 import { useObjectsStore } from 'entities/objects';
-import { useChannelStore } from 'entities/channel';
+import { useChannelStore, addChannels, setChannels } from 'entities/channel';
 import { setClientPrograms } from 'entities/program';
 import { showWarningMessage } from 'entities/window';
 import { addSessionClient, addSessionClients, setClientLoading } from 'entities/client';
@@ -22,15 +22,16 @@ export async function initializePresentation(id: ClientID): Promise<void> {
   if (!presentation) return setClientLoading(id, 'error', 'app.presentation-fetch-error');
 
   const parameters = factory.getParameters();
+  const createdChannels = factory.getCreatedChannels();
   lockParameters(parameters);
+  addChannels(createdChannels);
   addSessionClient(presentation);
-  factory.createPrograms().then(programs => setClientPrograms(id, programs));
+  const programPromise = factory.createPrograms().then(p => setClientPrograms(id, p));
 
   setClientLoading(id, 'data');
   const children = factory.createChildren();
-  const allChannels = factory.getAllChannels();
-
   const objects = useObjectsStore.getState();
+  const channels = useChannelStore.getState().storage;
   const clientParameters = useParameterStore.getState().clients;
   setParameterDependents(clientParameters);
 
@@ -42,7 +43,7 @@ export async function initializePresentation(id: ClientID): Promise<void> {
       try {
         formCreators[type]({
           state: client, objects: objects,
-          parameters: clientParameters, channels: allChannels,
+          parameters: clientParameters, channels,
         });
       } catch (e: unknown) {
         loading.status = 'error';
@@ -59,9 +60,11 @@ export async function initializePresentation(id: ClientID): Promise<void> {
 
   const fillSuccess = await factory.fillData();
   if (!fillSuccess) showWarningMessage(t('app.presentation-data-init-error'));
+  await programPromise;
+
   unlockParameters(parameters);
   clientParameters[id] = [...parameters];
-  useChannelStore.setState(factory.getCreatedChannels());
+  setChannels(createdChannels);
 
   const types = presentation.childrenTypes;
   if (types.has('map') || types.has('carat') || types.has('profile')) {

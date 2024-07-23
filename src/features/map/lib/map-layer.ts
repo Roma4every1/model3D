@@ -1,3 +1,6 @@
+import type { MapLayerInfo } from './types';
+
+
 export class MapLayer implements IMapLayer {
   /** ID слоя карты. */
   public readonly id: string;
@@ -5,53 +8,47 @@ export class MapLayer implements IMapLayer {
   public readonly group: string;
   /** Название слоя. */
   public readonly displayName: string;
-  /** Тип элементов слоя. */
-  public readonly elementType: MapElementType;
 
-  /** Минимальные и максимальные координаты элементов. */
-  public bounds: Bounds;
   /** Элементы на текущем слое. */
   public elements: MapElement[];
-
-  /** Является ли слой видимым. */
-  public visible: boolean;
-  /** Является ли слой активным. */
-  public active: boolean = false;
-  /** Был ли слой изменён. */
-  public modified: boolean = false;
-  /** Является ли слой временным (для трасс). */
-  public readonly temporary: boolean;
+  /** Тип элементов слоя. */
+  public readonly elementType: MapElementType;
+  /** Минимальные и максимальные координаты элементов. */
+  public bounds: Bounds;
 
   /** Минимальный масштаб при котором слой будет рисоваться. */
   private minScale: number;
   /** Максимальный масштаб при котором слой будет рисоваться. */
   private maxScale: number;
+  /** Является ли слой видимым. */
+  public visible: boolean;
 
-  /* --- --- */
-
-  /** Версия контейнера. */
-  private readonly version: any;
+  /** Является ли слой активным. */
+  public active: boolean;
+  /** Был ли слой изменён. */
+  public modified: boolean;
+  /** Является ли слой временным (для трасс). */
+  public readonly temporary: boolean;
   /** ID контейнера карты. */
   private readonly container: string;
-  private readonly index: any;
 
-  constructor(init: MapLayerRaw, elements: MapElement[], temporary: boolean = false) {
-    this.id = init.uid;
-    this.group = init.group;
-    this.displayName = init.name;
-    this.elementType = elements[0]?.type ?? 'polyline';
+  constructor(info: MapLayerInfo, elements: MapElement[], temporary: boolean = false) {
+    this.id = info.uid;
+    this.group = info.group;
+    this.displayName = info.name;
 
-    this.bounds = init.bounds;
     this.elements = elements;
+    this.elementType = elements[0]?.type ?? 'polyline';
+    this.bounds = info.bounds;
 
-    this.minScale = parseScale(init.lowscale);
-    this.maxScale = parseScale(init.highscale);
-    this.visible = init.visible;
+    this.minScale = parseScale(info.lowscale);
+    this.maxScale = parseScale(info.highscale);
+    this.visible = info.visible;
+
+    this.active = false;
+    this.modified = false;
     this.temporary = temporary;
-
-    this.version = init.version;
-    this.container = init.container;
-    this.index = init.index;
+    this.container = info.container;
   }
 
   public getMinScale(): number {
@@ -71,27 +68,24 @@ export class MapLayer implements IMapLayer {
   }
 
   public setMaxScale(scale: number): void {
-    this.maxScale =scale;
+    this.maxScale = scale;
   }
 
-  public toInit(): MapLayerRaw & {elements: MapElement[], modified: boolean} {
+  public toInit(): MapLayerInfo & {elements: MapElement[], modified: boolean} {
     return {
-      group: this.group, name: this.displayName, elements: this.elements,
-      bounds: this.bounds, visible: this.visible, modified: this.modified,
-      uid: this.id, version: this.version, container: this.container, index: this.index,
+      uid: this.id, name: this.displayName, group: this.group,container: this.container,
       lowscale: serializeScale(this.minScale), highscale: serializeScale(this.maxScale),
+      bounds: this.bounds, visible: this.visible,
+      elements: this.elements, modified: this.modified,
     };
   }
 }
 
-function parseScale(value: number | string): number {
-  if (typeof value === 'string') {
-    if (value === 'INF') return Infinity;
-    const scale = parseFloat(value);
-    return isNaN(scale) ? 0 : scale;
-  } else {
-    return isNaN(value) ? 0 : value;
-  }
+function parseScale(value: string): number {
+  if (value === 'INF') return Infinity;
+  const scale = Number(value);
+  if (Number.isNaN(scale) || scale < 0) return 0;
+  return scale;
 }
 
 function serializeScale(scale: number): string {

@@ -40,7 +40,7 @@ export class VerticalLineColumn implements ICaratColumn {
     return copy;
   }
 
-  public getLookupNames(): ChannelName[] {
+  public getLookups(): ChannelID[] {
     return [];
   }
 

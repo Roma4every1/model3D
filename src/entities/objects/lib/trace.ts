@@ -14,20 +14,20 @@ export class TraceManager implements ITraceManager {
   public editing: boolean;
 
   /** Название канала с трассами. */
-  public readonly channelName: ChannelName | undefined;
+  public readonly channelID: ChannelID | undefined;
   /** Название канала с узлами трасс. */
-  public readonly nodeChannelName: ChannelName | undefined;
+  public readonly nodeChannelID: ChannelID | undefined;
   /** Идентификатор параметра с трассами. */
   public readonly parameterID: ParameterID | undefined;
 
-  private readonly wellChannelName: ChannelName;
+  private readonly wellChannelID: ChannelID;
   private readonly info: ChannelRecordInfo<keyof TraceModel>;
 
-  constructor(channels: ChannelDict, wellChannelName: ChannelName) {
-    const traceChannel = channels['traces'];
+  constructor(channels: ChannelDict, wellChannelID: ChannelID) {
+    const traceChannel = Object.values(channels).find(c => c.name === 'traces');
     if (!traceChannel) return;
-    this.channelName = traceChannel.name;
-    this.wellChannelName = wellChannelName;
+    this.channelID = traceChannel.id;
+    this.wellChannelID = wellChannelID;
 
     this.parameterID = traceChannel.config.activeRowParameter;
     if (!this.parameterID) return;
@@ -43,7 +43,7 @@ export class TraceManager implements ITraceManager {
 
     const nodePropertyName = this.info.nodes.propertyName;
     const nodeProperty = traceChannel.config.properties.find(p => p.name === nodePropertyName);
-    this.nodeChannelName = channels[nodeProperty.detailChannel].name;
+    this.nodeChannelID = channels[nodeProperty.detailChannel].id;
   }
 
   public clone(): TraceManager {
@@ -57,8 +57,8 @@ export class TraceManager implements ITraceManager {
   }
 
   public initializeModel(parameters: Parameter[], channels: ChannelDict): void {
-    const wellChannel = channels[this.wellChannelName];
-    const nodeChannel = channels[this.nodeChannelName];
+    const wellChannel = channels[this.wellChannelID];
+    const nodeChannel = channels[this.nodeChannelID];
     const traceParameter = parameters.find(p => p.id === this.parameterID);
     const traceRow = traceParameter.getValue() as ParameterValueMap['tableRow'];
     if (traceRow) this.model = this.createModel(traceRow, nodeChannel, wellChannel);
@@ -66,8 +66,8 @@ export class TraceManager implements ITraceManager {
 
   public onParameterUpdate(value: ParameterValueMap['tableRow'], channels: ChannelDict): boolean {
     const oldModel = this.model;
-    const wellChannel = channels[this.wellChannelName];
-    const nodeChannel = channels[this.nodeChannelName];
+    const wellChannel = channels[this.wellChannelID];
+    const nodeChannel = channels[this.nodeChannelID];
     this.model = this.createModel(value, nodeChannel, wellChannel);
     return this.model !== oldModel;
   }

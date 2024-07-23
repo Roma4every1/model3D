@@ -10,8 +10,8 @@ export class BoolParameter implements Parameter<'bool'> {
     this.setValueString(s);
   }
 
-  public clone(): BoolParameter {
-    const clone = {...this};
+  public clone(id?: ParameterID): BoolParameter {
+    const clone = {...this, id: id ?? this.id};
     Object.setPrototypeOf(clone, BoolParameter.prototype);
     return clone;
   }

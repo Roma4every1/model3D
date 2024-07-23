@@ -71,7 +71,7 @@ function xmlType(desc, attribute) {
 		const descT = desc.shift();
 
 		return (xml, __, transform) => {
-			let ret = xml.children || [];
+			let ret = xml.elements || [];
 
 			if (typeof name == 'string')
 				ret = ret.filter(c => c.name === name)

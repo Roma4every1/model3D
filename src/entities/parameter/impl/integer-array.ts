@@ -10,8 +10,8 @@ export class IntegerArrayParameter implements Parameter<'integerArray'> {
     this.setValueString(s);
   }
 
-  public clone(): IntegerArrayParameter {
-    const clone = {...this};
+  public clone(id?: ParameterID): IntegerArrayParameter {
+    const clone = {...this, id: id ?? this.id};
     Object.setPrototypeOf(clone, IntegerArrayParameter.prototype);
     return clone;
   }

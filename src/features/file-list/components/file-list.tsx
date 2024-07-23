@@ -9,9 +9,9 @@ import { FileListItem } from './file-list-item';
 /** Список файлов. */
 export const FileListView = ({channels}: SessionClient) => {
   const nameIndexRef = useRef(-1);
-  const channelName = channels[0]?.name;
+  const channelID = channels[0]?.id;
   const info = channels[0]?.info;
-  const channel = useChannel(channelName);
+  const channel = useChannel(channelID);
   const channelData = channel?.data;
 
   const rows = channelData?.rows ?? [];
@@ -25,7 +25,7 @@ export const FileListView = ({channels}: SessionClient) => {
   const toElement = (row: ChannelRow, i: number) => {
     const fileName = row[nameIndexRef.current];
     const active = row === channelData.activeRow;
-    const onClick = () => setChannelActiveRow(channelName, row);
+    const onClick = () => setChannelActiveRow(channelID, row);
     return <FileListItem key={i} fileName={fileName} active={active} onClick={onClick}/>;
   };
   return <div className={'file-list'}>{rows.map(toElement)}</div>;

@@ -115,9 +115,9 @@ function getSettingsToSave(): SettingsToSave {
 
 function getLayoutsToSave(root: SessionClient, presentations: SessionClient[]): LayoutToSave[] {
   const layoutArray: LayoutToSave[] = [getRootLayout(root)];
-  for (const id in presentations) {
-    const layout = presentations[id].layout.toJson();
-    layoutArray.push({...layout, id});
+  for (const presentation of presentations) {
+    const layout = presentation.layout.toJson();
+    layoutArray.push({...layout, id: presentation.id});
   }
   return layoutArray;
 }

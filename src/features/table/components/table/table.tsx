@@ -13,11 +13,11 @@ import './table.scss';
 export const Table = ({id}: Pick<SessionClient, 'id'>) => {
   const [records, setRecords] = useState<TableRecord[]>([]);
   const state = useTableState(id);
-  const { recordHandler, channelName, headerSetterRules, columns, columnTree } = state;
+  const { recordHandler, channelID, lookupChannelIDs, headerSetterRules, columnTree } = state;
   const headerSetterValues = useParameterValues(headerSetterRules.map(r => r.id));
 
-  const channel: Channel = useChannel(channelName) ?? {} as any;
-  const lookupData = useChannelDict(channel.config?.lookupChannels ?? []);
+  const channel: Channel = useChannel(channelID) ?? {} as any;
+  const lookupData = useChannelDict(lookupChannelIDs);
   const { data: channelData, query } = channel;
 
   // Обновление заголовков колонок
@@ -39,10 +39,10 @@ export const Table = ({id}: Pick<SessionClient, 'id'>) => {
   }, [channelData]); // eslint-disable-line
 
   const columnModel = useMemo(() => {
-    return getColumnModel(columns, columnTree, channelName, query);
-  }, [columns, columnTree, channelName, query]);
+    return getColumnModel(state.columns, columnTree, channelID, query);
+  }, [state.columns, columnTree, channelID, query]);
 
-  if (!channelName || !columnModel.length) return <div/>;
+  if (!channelID || !columnModel.length) return <div/>;
   return (
     <TableGrid id={id} state={state} query={query} records={records} setRecords={setRecords}>
       {columnModel}

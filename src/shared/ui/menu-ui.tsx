@@ -149,13 +149,17 @@ interface BigButtonProps {
   title?: string;
   action?: (event?: MouseEvent) => void;
   disabled?: boolean;
+  style?: CSSProperties;
 }
 
-export const BigButton = ({text, icon, title, action, disabled}: BigButtonProps) => {
+export const BigButton = (props: BigButtonProps) => {
   return (
-    <button className={'map-action'} title={title} onClick={action} disabled={disabled}>
-      <div><img src={icon} alt={'icon'}/></div>
-      <div>{text}</div>
+    <button
+      className={'map-action'} style={props.style} title={props.title}
+      onClick={props.action} disabled={props.disabled}
+    >
+      <div><img src={props.icon} alt={'icon'}/></div>
+      <div>{props.text}</div>
     </button>
   );
 };

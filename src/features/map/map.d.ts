@@ -13,7 +13,7 @@ interface MapState {
   /** Идентификатор карты. */
   mapID: MapID;
   /** Состояние загрузки карты. */
-  loading: MapLoading;
+  status: MapStatus;
   /** Можно ли редактировать карту. */
   editable: boolean;
   /** Была ли карта изменена. */
@@ -23,6 +23,15 @@ interface MapState {
   /** Открыта ли аттрибутивная таблица. */
   attrTableWindowOpen: boolean;
 }
+
+/**
+ * Статус загрузки карты.
+ * + `ok` — данные загружены
+ * + `empty` — карты не существует
+ * + `loading` — загрузка данных карты
+ * + `error` — ошибка при загрузке
+ */
+type MapStatus = 'ok' | 'empty' | 'loading' | 'error';
 
 interface IMapStage {
   readonly select: IMapSelect;
@@ -71,18 +80,6 @@ interface IMapStage {
 interface IMapLoader {
   loadMapData(mapID: MapID, owner: MapStorageID): Promise<MapData | string | null>;
   abortLoading(): void;
-  onProgressChange(l: MapLoading): void;
-}
-
-/** Состояние загрузки данных карты.
- * + `percentage: number`
- * + `status: string`
- * */
-interface MapLoading {
-  /** Процент загрузки. */
-  percentage: number;
-  /** Статус загрузки: название загружаемого слоя. */
-  status: string;
 }
 
 interface IMapSelect {
@@ -108,48 +105,6 @@ type MapCanvas = HTMLCanvasElement & {
   showMapFlag: any;
 };
 
-/* --- Загрузка карты --- */
-
-interface MapDataRaw {
-  // ответ сервера:
-  date: string;
-  eTag: string;
-  layers: MapLayerRaw[];
-  mapCode: string;
-  mapName: string;
-  namedpoints: string;
-  objectCode: string;
-  objectName: string;
-  organization: string;
-  owner: string | null;
-  plastCode: string;
-  plastName: string;
-  indexes?: any[];
-
-  // добавляемые поля после обратоки:
-  mapErrors: any[];
-  points: any;
-}
-
-interface MapLayerRaw {
-  bounds: Bounds;
-  container: string;
-  group: string;
-  highscale: string | number;
-  lowscale: string | number;
-  name: string;
-  uid: string;
-  visible: boolean;
-  index?: any;
-  version?: any;
-}
-
-
-interface ParsedContainer {
-  layers: Record<string, any>;
-  namedpoints: MapPoint[];
-}
-
 /* --- --- */
 
 interface MapViewport {
@@ -163,10 +118,8 @@ interface MapData {
   eTag: string;
   layers: IMapLayer[];
   mapCode: string;
-  mapData: any;
-  mapErrors: any[];
   mapName: string;
-  namedPoints: string;
+  namedpoints: string;
   objectCode: string;
   objectName: string;
   organization: string;
@@ -174,11 +127,13 @@ interface MapData {
   plastCode: string;
   plastName: string;
   points: MapPoint[];
+  activePoint?: MapPoint;
+  pointLayer?: IMapLayer;
 
-  x: number;
-  y: number;
-  scale: number;
-  onDrawEnd: (center: Point, scale: number) => void;
+  x?: number;
+  y?: number;
+  scale?: number;
+  onDrawEnd?: (center: Point, scale: number) => void;
 }
 
 interface LayerTreeItem {
@@ -212,28 +167,17 @@ interface IMapLayer {
   toInit(): MapLayerRaw & {elements: MapElement[], modified: boolean};
 }
 
-/** Границы объекта (слоя, элемента) карты.
- * + `max`: {@link Point}
- * + `min`: {@link Point}
- * + `top?: number` — верхняя граница
- * + `bottom?: number` — нижняя граница
- * + `left?: number` — левая граница
- * + `right?: number` — правая граница
- * */
+/** Координаты ограничивающего прямоугольника объекта на карте. */
 interface Bounds {
   max: Point;
   min: Point;
-  top?: number;
-  bottom?: number;
-  left?: number;
-  right?: number;
 }
 
 interface MapPoint {
+  UWID: number;
+  name: string;
   x: number;
   y: number;
-  name: string;
-  UWID: string;
   attrTable: Record<string, any>;
   selected?: boolean;
 }
@@ -450,4 +394,17 @@ interface MapFieldPalette {
 interface MapFieldPaletteLevel {
   color: string;
   value: number;
+}
+
+/* --- --- */
+
+interface MapPieSlice {
+  type: 'pieslice';
+  x: number;
+  y: number;
+  radius: number;
+  startangle: number;
+  endangle: number;
+  color: string;
+  bordercolor: string;
 }

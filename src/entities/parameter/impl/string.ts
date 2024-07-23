@@ -10,8 +10,8 @@ export class StringParameter implements Parameter<'string'> {
     this.setValueString(s);
   }
 
-  public clone(): StringParameter {
-    const clone = {...this};
+  public clone(id?: ParameterID): StringParameter {
+    const clone = {...this, id: id ?? this.id};
     Object.setPrototypeOf(clone, StringParameter.prototype);
     return clone;
   }

@@ -1,6 +1,6 @@
 {
   "mode": "dev",
-  "api": "http://js-wmw-dev/id42/WebRequests.svc",
+  "api": "http://js-wmw-dev/id4x05/WebRequests.svc",
   "geoManager": "http://js-wmw-dev:8081/ij-srv",
   "devDocLink": "http://js-wmw-dev/about",
   "userDocLink": "http://js-wmw-dev/about",

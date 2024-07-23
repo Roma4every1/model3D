@@ -1,10 +1,10 @@
 import { createElement } from 'react';
 import { showNotification } from 'entities/notification';
-import { setMapField, setMapLoading, } from './map.actions';
+import { setMapField, setMapStatus, } from './map.actions';
 import { closeWindow, showWindow } from 'entities/window';
 
 import { t } from 'shared/locales';
-import { mapAPI } from '../lib/map.api';
+import { mapAPI } from '../loader/map.api';
 import { propertyWindowConfig } from '../lib/constants';
 import { WindowProps } from '@progress/kendo-react-dialogs';
 import { AttrTableWindow } from '../components/edit-panel/editing/attr-table';
@@ -60,18 +60,16 @@ export function showMapAttrTableWindow(id: FormID): void {
 }
 
 export async function fetchMapData(id: FormID): Promise<void> {
+  setMapStatus(id, 'loading');
   const { stage, loader, mapID, owner } = useMapStore.getState()[id];
-  setMapLoading(id, {percentage: 0, status: null});
-
-  loader.onProgressChange = (l: MapLoading) => setMapLoading(id, l);
   const mapData = await loader.loadMapData(mapID, owner);
 
   if (typeof mapData === 'string') {
     console.warn(mapData);
-    setMapLoading(id, {percentage: -1, status: null});
+    setMapStatus(id, 'error');
   } else if (mapData) {
     stage.setData(mapData);
-    setMapLoading(id, {percentage: 100, status: null});
+    setMapStatus(id, 'ok');
   }
 }
 

@@ -1,4 +1,5 @@
 import { t } from 'shared/locales';
+import { sleep } from 'shared/lib';
 import { showInfoMessage } from 'entities/window';
 import { showNotification } from 'entities/notification';
 import { reloadChannelsByQueryIDs, fillChannel } from 'entities/channel';
@@ -31,7 +32,7 @@ export async function watchOperation(id: OperationID, program?: Program): Promis
 
     setOperationStatus(res.data);
     if (ready) return;
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await sleep(1500);
   }
 }
 
@@ -39,18 +40,14 @@ export async function watchOperation(id: OperationID, program?: Program): Promis
 
 /**
  * Обновляет у программы указанные каналы.
- * @param program модель программы
- * @param names названия каналов, которые нужно обновить, если null, то все
+ * @param p модель программы
+ * @param ids ID каналов, которые нужно обновить, если null, то все
  * @param external внешние параметры (презентации, глобальные)
  */
-export function fillProgramChannels(
-  program: Program, names: ChannelName[] | null,
-  external: ParameterMap,
-): Promise<void[]> {
-  const { channels, parameters } = program;
-  if (!names) names = Object.keys(channels);
-  const cb = (name: ChannelName) => fillProgramChannel(channels[name], parameters, external);
-  return Promise.all(names.map(cb));
+export function fillProgramChannels(p: Program, ids: ChannelID[], external: ParameterMap): Promise<void[]> {
+  const { channels, parameters } = p;
+  const cb = (id: ChannelID) => fillProgramChannel(channels[id], parameters, external);
+  return Promise.all(ids.map(cb));
 }
 
 export function fillProgramChannel(c: Channel, parameters: Parameter[], map: ParameterMap): Promise<void> {

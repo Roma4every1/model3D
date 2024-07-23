@@ -3,14 +3,14 @@ import { updateChannelSortOrder } from 'entities/channel';
 
 
 interface HeaderCellThis {
-  channelName: ChannelName,
+  channelID: ChannelID,
   channelColumn: string,
   query: ChannelQuerySettings,
 }
 
 
 export function HeaderCell(this: HeaderCellThis, {title}: GridHeaderCellProps) {
-  const { channelName, channelColumn, query } = this;
+  const { channelID, channelColumn, query } = this;
   const direction = query.order?.find(o => o.column === channelColumn)?.direction ?? null;
 
   const onClick = () => {
@@ -19,7 +19,7 @@ export function HeaderCell(this: HeaderCellThis, {title}: GridHeaderCellProps) {
     if (direction === null) newDirection = 'desc';
     else if (direction === 'desc') newDirection = 'asc';
     const order = newDirection ? [{column: channelColumn, direction: newDirection}] : [];
-    updateChannelSortOrder(channelName, order).then();
+    updateChannelSortOrder(channelID, order).then();
   };
 
   return (

@@ -1,8 +1,3 @@
-// Преобразования symbol.def:
-// 1. toUnicode
-// 2. def2json
-// 3. symbol2svg
-
 /** @param def {string} */
 export function def2json(def) {
   return def
@@ -32,7 +27,8 @@ export function def2json(def) {
     }, [{value: {}}])[0].value;
 }
 
+/** @param str {string} */
 function mayBeNumber(str) {
-	const ret = Number(str);
-	return (ret + '' !== 'NaN') ? ret : str;
+	const n = Number(str);
+  return Number.isNaN(n) ? str : n;
 }

@@ -22,8 +22,10 @@ interface TableState {
   recordHandler: ITableRecordHandler;
   /** ID для API редактирования записей. */
   queryID: QueryID;
-  /** Название канала, который визуализируется. */
-  channelName: ChannelName;
+  /** ID канала, который визуализируется. */
+  channelID: ChannelID;
+  /** ID каналов-справочников. */
+  lookupChannelIDs: ChannelID[];
   /** Параметр, связанный с текущей активной строкой таблицы. */
   activeRecordParameter: ParameterID | undefined;
   /** Является ли таблица редактируемой. */
@@ -126,14 +128,14 @@ interface TableColumnState {
   colIndex?: number;
   /** Может ли ячейка быть пустой. */
   allowNull?: boolean;
-  /** Название канала-справочника. */
-  lookupChannel?: ChannelName;
+  /** ID канала-справочника. */
+  lookupChannel?: ChannelID;
   /** Словарь данных канала-справочника. */
   lookupDict?: LookupDict;
   /** Данные из канала-справочника. */
   lookupData?: LookupList | LookupTree;
-  /** Название канала для привязанной таблицы. */
-  detailChannel?: ChannelName;
+  /** ID канала детализации. */
+  detailChannel?: ChannelID;
 }
 
 /** Поддерживаемые типы колонок.

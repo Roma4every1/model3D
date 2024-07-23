@@ -1,5 +1,5 @@
 import { updateParamDeep } from 'entities/parameter';
-import { MapLoader } from '../lib/loader';
+import { MapLoader } from '../loader/loader';
 import { MapStage } from '../lib/map-stage';
 import { MapLayer } from '../lib/map-layer';
 import { useMapStore } from './map.store';
@@ -13,10 +13,9 @@ export function createMapState(payload: FormStatePayload): void {
   useMapStore.setState({[id]: getMapState(id, true, payload)});
 }
 
-export function setMapLoading(id: FormID, l: Partial<MapLoading>): void {
-  const mapState = useMapStore.getState()[id];
-  const newLoading = {...mapState.loading, ...l};
-  useMapStore.setState({[id]: {...mapState, loading: newLoading}});
+export function setMapStatus(id: FormID, status: MapStatus): void {
+  const state = useMapStore.getState()[id];
+  useMapStore.setState({[id]: {...state, status}});
 }
 
 export function setMapCanvas(id: FormID, canvas: HTMLCanvasElement): void {
@@ -32,8 +31,8 @@ export function setMapCanvas(id: FormID, canvas: HTMLCanvasElement): void {
 
 /** Установить какое-либо поле хранилища карты. */
 export function setMapField(id: FormID, field: keyof MapState, value: any): void {
-  const mapState = useMapStore.getState()[id];
-  useMapStore.setState({[id]: {...mapState, [field]: value}});
+  const state = useMapStore.getState()[id];
+  useMapStore.setState({[id]: {...state, [field]: value}});
 }
 
 /** Добавить в состояние карты трассу и отрисовать. */
@@ -75,10 +74,11 @@ export function getMapState(id: FormID, editable: boolean, payload?: FormStatePa
   if (payload) {
     const settings: Record<string, any> = payload.state.settings ?? {};
     const parentParameters = payload.parameters[payload.state.parent];
+    const channels = payload.state.channels;
 
     for (const pluginName in settings) {
       const Plugin = mapPluginDict[pluginName];
-      if (Plugin) plugins.push(new Plugin(settings[pluginName], parentParameters));
+      if (Plugin) plugins.push(new Plugin(settings[pluginName], parentParameters, channels));
     }
   }
 
@@ -89,9 +89,8 @@ export function getMapState(id: FormID, editable: boolean, payload?: FormStatePa
   if (inclPlugin) inclPlugin.onParameterUpdate = (v) => updateParamDeep(inclPlugin.parameterID, v);
 
   return {
-    canvas: null, stage, loader: new MapLoader(id), observer,
-    owner: null, mapID: null, loading: {percentage: 100, status: null},
-    modified: false, editable,
-    propertyWindowOpen: false, attrTableWindowOpen: false,
+    stage, loader: new MapLoader(id), observer,
+    canvas: null, status: 'empty', owner: null, mapID: null, modified: false,
+    editable, propertyWindowOpen: false, attrTableWindowOpen: false,
   };
 }

@@ -49,7 +49,7 @@ export const MapNavigation = ({mapState, parentID, t}: MapNavigationProps) => {
 const NavigationPanel = ({state, parentID, t}: NavigationPanelProps) => {
   const { stage, canvas } = state;
   const disabled = stage.inclinometryModeOn;
-  const notLoaded = state.loading.percentage < 100;
+  const notLoaded = state.status !== 'ok';
 
   const sync = useMultiMapSync(parentID);
   const [signal, setSignal] = useState(false);
@@ -84,7 +84,7 @@ const NavigationPanel = ({state, parentID, t}: NavigationPanelProps) => {
 const Dimensions = ({state, t}: DimensionProps) => {
   const { stage, canvas } = state;
   const mapData = stage.getMapData();
-  const disabled = stage.inclinometryModeOn || !mapData || state.loading.percentage < 100;
+  const disabled = stage.inclinometryModeOn || !mapData || state.status !== 'ok';
 
   const [x, setX] = useState(null);
   const [y, setY] = useState(null);

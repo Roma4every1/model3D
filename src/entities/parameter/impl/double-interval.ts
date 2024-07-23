@@ -12,8 +12,8 @@ export class DoubleIntervalParameter implements Parameter<'doubleInterval'> {
     this.setValueString(s);
   }
 
-  public clone(): DoubleIntervalParameter {
-    const clone = {...this};
+  public clone(id?: ParameterID): DoubleIntervalParameter {
+    const clone = {...this, id: id ?? this.id};
     Object.setPrototypeOf(clone, DoubleIntervalParameter.prototype);
     return clone;
   }

@@ -1,17 +1,17 @@
+import type { MapLayerInfo } from './types';
 import { getBoundsByPoints, PIXEL_PER_METER } from './map-utils';
 
 
 /** Прототип объекта слоя трассы. */
-export const traceLayerProto: MapLayerRaw = {
-  bounds: {min: {x: 0, y: 0}, max: {x: 0, y: 0}},
-  container: 'null',
-  group: 'Трассы',
-  highscale: 'INF',
-  lowscale: 0,
-  name: 'Трассы',
+export const traceLayerProto: MapLayerInfo = {
   uid: '{TRACES-LAYER}',
-  version: '1.0',
+  name: 'Трасса',
+  group: 'Временные пометки',
+  container: 'null',
+  highscale: 'INF',
+  lowscale: '0',
   visible: true,
+  bounds: {min: {x: 0, y: 0}, max: {x: 0, y: 0}},
 };
 
 /** Возвращает элемент карты polyline для отрисовки трассы */
@@ -49,7 +49,7 @@ export function getFullTraceViewport(element: MapPolyline, canvas: MapCanvas): M
 /** Добавление/удаление точек к текущей трассе через клик по карте. */
 export function handleTraceClick(model: TraceModel, mapPoint: MapPoint): void {
   const nodes = model.nodes;
-  const nodeID = parseInt(mapPoint.UWID);
+  const nodeID = mapPoint.UWID;
 
   if (nodes.some(node => node.id === nodeID)) {
     model.nodes = nodes.filter(node => node.id !== nodeID);

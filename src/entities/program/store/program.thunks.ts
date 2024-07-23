@@ -58,14 +58,14 @@ export async function prepareProgram(program: Program): Promise<void> {
   const storage = useParameterStore.getState().storage;
   const changes = handleProgramRelations(program, storage);
 
-  const names: ChannelName[] = [];
+  const ids: ChannelID[] = [];
   const channels = Object.values(program.channels);
 
-  for (const { name, config, actual } of channels) {
-    if (!actual || hasIntersection(changes, config.parameters)) names.push(name);
+  for (const { id, config, actual } of channels) {
+    if (!actual || hasIntersection(changes, config.parameters)) ids.push(id);
   }
-  if (names.length) {
-    await fillProgramChannels(program, names, storage);
+  if (ids.length) {
+    await fillProgramChannels(program, ids, storage);
   }
   if (changes.size) {
     prepareProgramParameters(program, changes);
@@ -106,8 +106,8 @@ function prepareProgramParameters(program: Program, changes: Set<ParameterID>): 
   }
   for (const p of parameters) {
     if (dependents.has(p.id) && !changes.has(p.id)) {
-      if (p.nullable === false && p.channelName && p.type === 'tableRow') {
-        const channel = channels[p.channelName];
+      if (p.nullable === false && p.channelID && p.type === 'tableRow') {
+        const channel = channels[p.channelID];
         const row = channel?.data?.rows?.at(0);
         if (row) { p.setValue(rowToParameterValue(row, channel)); continue; }
       }

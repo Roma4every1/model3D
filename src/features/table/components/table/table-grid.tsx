@@ -365,7 +365,7 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
   const onPageChange = (event: GridPageChangeEvent) => {
     const newSkip = event.page.skip; setSkip(newSkip);
     if (newSkip + pageSize > total && total === query.limit) {
-      updateChannelLimit(state.channelName, total + 2 * pageSize).then();
+      updateChannelLimit(state.channelID, total + 2 * pageSize).then();
     }
   };
 

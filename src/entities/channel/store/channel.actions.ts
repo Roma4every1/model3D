@@ -2,33 +2,67 @@ import { hasIntersection } from 'shared/lib';
 import { useChannelStore } from './channel.store';
 
 
+export function addChannels(channels: Channel[]): void {
+  const state = useChannelStore.getState();
+  const { storage, sharing } = state;
+
+  for (const channel of channels) {
+    storage[channel.id] = channel;
+    let set = sharing[channel.name];
+    if (!set) { set = new Set(); sharing[channel.name] = set; }
+    set.add(channel.id);
+  }
+  useChannelStore.setState({...state}, true);
+}
+
+export function setChannels(channels: Channel[] | ChannelDict): void {
+  const state = useChannelStore.getState();
+  if (Array.isArray(channels)) {
+    for (const channel of channels) state.storage[channel.id] = {...channel};
+  } else {
+    for (const id in channels) state.storage[id] = {...channels[id]};
+  }
+  useChannelStore.setState({...state}, true);
+}
+
 /** Добавляет или перезаписывает данные о порядке строк. */
-export function setChannelSortOrder(name: ChannelName, order: SortOrder | undefined): void {
-  const channel = useChannelStore.getState()[name];
-  useChannelStore.setState({[name]: {...channel, query: {...channel.query, order}}});
+export function setChannelSortOrder(id: ChannelID, order: SortOrder | undefined): void {
+  const state = useChannelStore.getState();
+  const channel = state.storage[id];
+  state.storage[id] = {...channel, query: {...channel.query, order}};
+  useChannelStore.setState({...state}, true);
 }
 
 /** Перезаписывает ограничитель количества строк. */
-export function setChannelLimit(name: ChannelName, limit: ChannelLimit | undefined): void {
-  const channel = useChannelStore.getState()[name];
-  const query: ChannelQuerySettings = {...channel.query, limit};
-  useChannelStore.setState({[name]: {...channel, query}});
+export function setChannelLimit(id: ChannelID, limit: ChannelLimit | undefined): void {
+  const state = useChannelStore.getState();
+  const channel = state.storage[id];
+  state.storage[id] = {...channel, query: {...channel.query, limit}};
+  useChannelStore.setState({...state}, true);
 }
 
 /** Задаёт активную запись канала. */
-export function setChannelActiveRow(name: ChannelName, row: ChannelRow): void {
-  const channel = useChannelStore.getState()[name];
+export function setChannelActiveRow(id: ChannelID, row: ChannelRow): void {
+  const state = useChannelStore.getState()
+  const channel = state.storage[id];
   const channelData = channel?.data;
   if (!channelData) return;
-  useChannelStore.setState({[name]: {...channel, data: {...channelData, activeRow: row}}});
+  state.storage[id] = {...channel, data: {...channelData, activeRow: row}};
+  useChannelStore.setState({...state}, true);
 }
 
 /** Сбрасывает флаг актуальности для всех каналов, которые зависят от изменённых. */
 export function resetDependentChannels(changes: Set<ParameterID>): void {
-  const state = useChannelStore.getState();
-  for (const name in state) {
-    const channel = state[name];
+  const storage = useChannelStore.getState().storage;
+  for (const name in storage) {
+    const channel = storage[name];
     const parameters = channel.config.parameters;
     if (hasIntersection(changes, parameters)) channel.actual = false;
   }
+}
+
+export function clearChannelStore(): void {
+  const idGenerator = useChannelStore.getState().idGenerator;
+  idGenerator.reset();
+  useChannelStore.setState({idGenerator, storage: {}, sharing: {}});
 }

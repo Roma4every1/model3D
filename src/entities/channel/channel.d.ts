@@ -1,40 +1,32 @@
 /** Словарь каналов. */
-type ChannelDict = Record<ChannelName, Channel>;
+type ChannelDict = Record<ChannelID, Channel>;
 /** Словарь записей каналов. */
-type ChannelRecordDict = Record<ChannelName, ChannelRecord[]>;
+type ChannelRecordDict = Record<ChannelID, ChannelRecord[]>;
 
-/** Модель канала.
- * + `name`: {@link ChannelName}
- * + `config`: {@link ChannelConfig}
- * + `data`: {@link ChannelData}
- * + `query`: {@link ChannelQuerySettings}
- */
+/** Канал данных. */
 interface Channel {
-  /** Уникальное название канала. */
+  /** Идентификатор канала. */
+  readonly id: ChannelID;
+  /** Название канала. */
   readonly name: ChannelName;
   /** Конфигурация канала. */
   readonly config: ChannelConfig;
+  /** Настройки запроса данных. */
+  readonly query: ChannelQuerySettings;
   /** Данные из базы. */
   data: ChannelData | null;
-  /** Настройки запроса данных. */
-  query: ChannelQuerySettings;
   /** Флаг актуальности данных. */
   actual: boolean;
 }
 
-/** Идентификатор канала с данными. */
+/** Идентификатор канала. */
+type ChannelID = number;
+/** Название канала. */
 type ChannelName = string;
 /** ID, который используется в серверных запросах редактирования данных. */
 type QueryID = string;
 
-/** Данные канала.
- * + `queryID`: {@link QueryID}
- * + `columns`: {@link ChannelColumn}[]
- * + `rows`: {@link ChannelRow}[]
- * + `dataPart: boolean`
- * + `editable: boolean`
- * + `activeRow`: {@link ChannelRow}
- */
+/** Данные канала. */
 interface ChannelData {
   /** ID для API редактирования записей. */
   readonly queryID: QueryID;
@@ -68,7 +60,8 @@ type ChannelRecord = Record<ColumnName, any>;
 /** Название колонки в датасете. */
 type ColumnName = string;
 
-/** Название типа данных колонки.
+/**
+ * Название типа данных колонки.
  * @example
  * "i32"
  * "System.String"
@@ -82,16 +75,16 @@ interface ChannelConfig {
   readonly displayName: string;
   /** Свойства канала. */
   readonly properties: ChannelProperty[];
-  /** ID параметров канала. */
-  readonly parameters: ParameterID[];
-  /** Названия параметров канала. */
-  readonly parameterNames: ParameterName[];
-  /** Список каналов справочников. */
-  readonly lookupChannels: ChannelName[];
   /** Названия колонок, необходимых для справочников. */
   readonly lookupColumns: LookupColumns;
+  /** Названия параметров канала. */
+  readonly parameterNames: ReadonlyArray<ParameterName>;
   /** Название параметра активной записи канала. */
-  readonly activeRowParameter?: ParameterID;
+  readonly activeRowParameterName: ParameterName | null;
+  /** ID параметров канала. */
+  parameters?: ParameterID[];
+  /** ID параметра активной записи канала. */
+  activeRowParameter?: ParameterID;
 }
 
 /** Дополнительные свойства колонки. */
@@ -105,11 +98,15 @@ interface ChannelProperty {
   /** Путь в дереве свойств. */
   readonly treePath: string[];
   /** Названия каналов-справочников. */
-  readonly lookupChannels: ChannelName[];
-  /** Название канала для привязанной таблицы. */
-  readonly detailChannel?: ChannelName;
+  readonly lookupChannelNames: ReadonlyArray<ChannelName>;
+  /** Название канала детализации. */
+  readonly detailChannelName?: ChannelName;
   /** Информация для свойства связанного с файлами. */
   readonly file?: {nameFrom: string, fromResources?: boolean};
+  /** ID каналов-справочников. */
+  lookupChannels?: ChannelID[];
+  /** ID канала детализации. */
+  detailChannel?: ChannelID;
 }
 
 /* --- Criterion --- */
@@ -135,8 +132,8 @@ interface ChannelPropertyCriterion {
   lookups?: PropertyLookupCriteria;
   /** Свойство должно иметь указанный канал детализации. */
   details?: PropertyChannelCriterion;
-
-  /** Является ли свойство обязательным.
+  /**
+   * Является ли свойство обязательным.
    * @default true
    */
   required?: boolean;
@@ -151,6 +148,8 @@ type PropertyLookupCriteria<T extends string = string> = Record<T, PropertyChann
 
 /** Модель прикреплённого канала. */
 interface AttachedChannel<T extends string = string> {
+  /** Идентификатор канала. */
+  readonly id: ChannelID;
   /** Название канала. */
   readonly name: ChannelName;
   /** Прикреплённые свойства канала. */
@@ -185,7 +184,7 @@ interface RecordPropertyInfo<L extends string = string> {
   details?: PropertyAttachedChannel;
 }
 
-type PropertyAttachedChannel = {name: ChannelName, info: ChannelRecordInfo};
+type PropertyAttachedChannel = {id: ChannelID, info: ChannelRecordInfo};
 /** Информация о справочниках свойства. */
 type RecordLookupInfo<T extends string = string> = Record<T, PropertyAttachedChannel>;
 
@@ -201,7 +200,8 @@ interface ChannelQuerySettings {
   limit?: ChannelLimit;
 }
 
-/** Ограничение количества записей в канале.
+/**
+ * Ограничение количества записей в канале.
  * + число — ограничение конкретным количеством записей
  * + `false` — запрос всех записей, независимо от конфига канала
  * + `null` — не применять фильтр, результат зависит от конфига канала
@@ -211,7 +211,8 @@ type ChannelLimit = number | false | null;
 /** Порядок сортировки. */
 type SortOrder = SortOrderItem[];
 
-/** Элемент порядка сортировки.
+/**
+ * Элемент порядка сортировки.
  * + `column`: {@link ColumnName}
  * + `direction`: {@link SortOrderDirection}
  */
@@ -222,7 +223,8 @@ interface SortOrderItem {
   direction: SortOrderDirection;
 }
 
-/** Направление порядка.
+/**
+ * Направление порядка.
  * + `asc`  — в порядке возрастания
  * + `desc` — в порядке убывания
  */
@@ -233,10 +235,7 @@ type SortOrderDirection = 'asc' | 'desc';
 /** Список возможных значений из канала-справочника. */
 type LookupList = LookupListItem[];
 
-/** Значение из канала справочника.
- * + `id: any`
- * + `value: any`
- */
+/** Значение из канала справочника. */
 interface LookupListItem {
   /** Идентификатор; обычно число. */
   id: LookupItemID;
@@ -247,12 +246,7 @@ interface LookupListItem {
 /** Дерево возможных значений из канала-справочника. */
 type LookupTree = LookupTreeNode[];
 
-/** Элемент дерева значений канала-справочника.
- * + `id`: {@link LookupItemID}
- * + `value: any`
- * + `parent?`: {@link LookupItemID}
- * + `children?`: {@link LookupTreeNode}[]
- */
+/** Элемент дерева значений канала-справочника. */
 interface LookupTreeNode {
   /** Идентификатор; обычно число. */
   id: LookupItemID;

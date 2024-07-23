@@ -11,7 +11,7 @@ interface ExportSectionProps {
 
 
 export const Export = ({state, t}: ExportSectionProps) => {
-  const { canvas, stage, loading } = state
+  const { canvas, stage, status } = state
 
   const exportToPDF = () => {
     const format = [canvas.width, canvas.height];
@@ -30,7 +30,7 @@ export const Export = ({state, t}: ExportSectionProps) => {
     <MenuSection header={t('map.actions.header')} className={'map-actions'}>
       <BigButton
         text={t('map.actions.export')} icon={pdfIcon}
-        action={exportToPDF} disabled={loading.percentage < 100}
+        action={exportToPDF} disabled={status !== 'ok'}
       />
     </MenuSection>
   );

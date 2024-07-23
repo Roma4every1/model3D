@@ -31,9 +31,9 @@ export class CaratImageColumn implements ICaratColumn {
     return copy;
   }
 
-  public getLookupNames(): ChannelName[] {
-    const imageLookupName = this.channel.info.imageID.lookups.image.name;
-    return [imageLookupName];
+  public getLookups(): ChannelID[] {
+    const imageLookupID = this.channel.info.imageID.lookups.image.id;
+    return [imageLookupID];
   }
 
   public getElements(): any[] {
@@ -68,8 +68,8 @@ export class CaratImageColumn implements ICaratColumn {
 
   public setLookupData(lookupData: ChannelRecordDict): void {
     this.imageDict = {};
-    const { name: lookupName, info: lookupInfo } = this.channel.info.imageID.lookups.image;
-    const records = lookupData[lookupName];
+    const { id: lookupID, info: lookupInfo } = this.channel.info.imageID.lookups.image;
+    const records = lookupData[lookupID];
 
     for (const record of records) {
       const id = record[lookupInfo.id.columnName];

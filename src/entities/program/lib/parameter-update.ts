@@ -4,9 +4,9 @@ import { fillProgramChannels } from './common';
 import { useProgramStore } from '../store/program.store';
 
 
-export function updateProgramParameter(program: Program, id: ParameterID, v: any): Promise<void> {
-  const updater = new ProgramParameterUpdater(program);
-  return updater.update(id, v);
+export function updateProgramParameter(p: Program, id: ParameterID, value: any): Promise<void> {
+  const updater = new ProgramParameterUpdater(p);
+  return updater.update(id, value);
 }
 
 class ProgramParameterUpdater {
@@ -14,8 +14,8 @@ class ProgramParameterUpdater {
   private readonly program: Program;
   /** Изменённый параметр. */
   private parameter: Parameter;
-  /** Названия каналов, которые зависят от изменённого параметра. */
-  private relatedChannelNames: ChannelName[];
+  /** ID каналов, которые зависят от изменённого параметра. */
+  private relatedChannelIDs: ChannelID[];
   /** Параметры, значения которых зависят от изменяемого параметра. */
   private dependentParameters: Parameter[];
 
@@ -33,9 +33,9 @@ class ProgramParameterUpdater {
     this.traverseParameters();
     this.commitParameters();
 
-    if (this.relatedChannelNames.length > 0) {
+    if (this.relatedChannelIDs.length) {
       const externalStorage = useParameterStore.getState().storage;
-      await fillProgramChannels(this.program, this.relatedChannelNames, externalStorage);
+      await fillProgramChannels(this.program, this.relatedChannelIDs, externalStorage);
     }
     if (this.dependentParameters.length > 0) {
       this.setDependentParameterValues();
@@ -47,7 +47,7 @@ class ProgramParameterUpdater {
   }
 
   private traverseParameters(): void {
-    this.relatedChannelNames = [];
+    this.relatedChannelIDs = [];
     this.dependentParameters = [];
 
     for (const parameter of this.program.parameters) {
@@ -55,10 +55,10 @@ class ProgramParameterUpdater {
         this.dependentParameters.push(parameter);
         if (parameter.editor) parameter.editor.disabled = true;
       }
-      if (parameter.channelName) {
-        const channel = this.program.channels[parameter.channelName];
+      if (parameter.channelID) {
+        const channel = this.program.channels[parameter.channelID];
         if (!channel.config.parameters.includes(this.parameter.id)) continue;
-        this.relatedChannelNames.push(channel.name);
+        this.relatedChannelIDs.push(channel.id);
         if (parameter.editor) parameter.editor.loading = true;
       }
     }
@@ -67,8 +67,8 @@ class ProgramParameterUpdater {
   private setDependentParameterValues(): void {
     for (const p of this.dependentParameters) {
       this.program.relations.delete(p.id);
-      if (p.nullable === false && p.channelName && p.type === 'tableRow') {
-        const channel = this.program.channels[p.channelName];
+      if (p.nullable === false && p.channelID && p.type === 'tableRow') {
+        const channel = this.program.channels[p.channelID];
         const row = channel?.data?.rows?.at(0);
         if (row) { p.setValue(rowToParameterValue(row, channel)); continue; }
       }

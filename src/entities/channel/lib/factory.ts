@@ -1,32 +1,45 @@
 import type { ChannelConfigDTO, ChannelPropertyDTO } from './channel.types';
+import { IDGenerator } from 'shared/lib';
 import { channelAPI } from './channel.api';
 
 
-/** Создаёт новые каналы, не заполняя их данными. */
-export async function createChannels(names: ChannelName[], resolve: PNameResolve): Promise<ChannelDict> {
-  const dict: ChannelDict = {};
-  await Promise.all(names.map(async (name: ChannelName): Promise<void> => {
+export function createChannels(names: Iterable<ChannelName>, idGenerator: IDGenerator): Promise<ChannelDict> {
+  const actions: Promise<void>[] = [];
+  const { promise, resolve } = Promise.withResolvers<ChannelDict>();
+
+  const create = async (name: ChannelName): Promise<Channel | null> => {
     const res = await channelAPI.getChannelConfig(name);
-    if (!res.ok) return;
-    dict[name] = createChannel(name, res.data, resolve);
-  }));
-  return dict;
+    if (!res.ok) return null;
+
+    const id = idGenerator.get();
+    return createChannelModel(id, name, res.data);
+  };
+
+  const channelDict: ChannelDict = {};
+  for (const name of names) {
+    const add = (c: Channel) => { if (c) channelDict[c.id] = c; };
+    actions.push(create(name).then(add));
+  }
+  Promise.all(actions).then(() => resolve(channelDict));
+  return promise;
 }
 
-function createChannel(name: ChannelName, dto: ChannelConfigDTO, resolve: PNameResolve): Channel {
-  const properties = createProperties(dto.properties);
-  const lookupChannels = createLookupChannels(properties);
-  const lookupColumns = createLookupColumnNames(properties);
+export async function createChannel(id: ChannelID, name: ChannelName): Promise<Channel | null> {
+  const res = await channelAPI.getChannelConfig(name);
+  if (!res.ok) return null;
+  return createChannelModel(id, name, res.data);
+}
 
-  const parameterNames = dto.parameters ?? [];
-  const parameters = parameterNames.map(resolve).filter(Boolean);
+function createChannelModel(id: ChannelID, name: ChannelName, dto: ChannelConfigDTO): Channel {
+  const properties = createProperties(dto.properties);
+  const lookupColumns = createLookupColumns(properties);
 
   const config: ChannelConfig = {
-    displayName: dto.displayName,
-    properties, parameters, parameterNames, lookupChannels, lookupColumns,
-    activeRowParameter: resolve(dto.currentRowObjectName),
+    displayName: dto.displayName, properties, lookupColumns,
+    parameterNames: dto.parameters ?? [],
+    activeRowParameterName: dto.currentRowObjectName ?? null,
   };
-  return {name, config, data: null, query: {}, actual: false};
+  return {id, name, config, query: {}, data: null, actual: false};
 }
 
 function createProperties(init: ChannelPropertyDTO[]): ChannelProperty[] {
@@ -42,27 +55,16 @@ function createProperties(init: ChannelPropertyDTO[]): ChannelProperty[] {
       name, fromColumn: dto.fromColumn,
       displayName: dto.displayName,
       treePath: dto.treePath ?? [],
-      lookupChannels: dto.lookupChannels ?? [],
-      detailChannel: dto.secondLevelChannelName,
+      lookupChannelNames: dto.lookupChannels ?? [],
+      detailChannelName: dto.secondLevelChannelName,
       file: dto.file,
     });
   }
   return properties;
 }
 
-/** Находит все каналы справочники по набору свойств. */
-function createLookupChannels(properties: ChannelProperty[]): ChannelName[] {
-  const result: Set<ChannelName> = new Set();
-  for (const property of properties) {
-    for (const name of property.lookupChannels) {
-      result.add(name);
-    }
-  }
-  return [...result];
-}
-
 /** Находит названия колонок для задания списка значений или списка смежностей дерева. */
-function createLookupColumnNames(properties: ChannelProperty[]): LookupColumns {
+function createLookupColumns(properties: ChannelProperty[]): LookupColumns {
   const idName = 'LOOKUPCODE';           // стандартное название свойства с ID
   const valueName = 'LOOKUPVALUE';       // стандартное название свойства со значением
   const parentName = 'LOOKUPPARENTCODE'; // стандартное название свойства с ID родителя

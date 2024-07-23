@@ -18,18 +18,18 @@ import { useTableStore } from './table.store';
 
 /** Перезагрузка данных канала таблицы. */
 export async function reloadTable(id: FormID): Promise<void> {
-  const channelName = useTableStore.getState()[id]?.channelName;
-  if (!channelName) return;
-  await reloadChannel(channelName);
+  const channelID = useTableStore.getState()[id]?.channelID;
+  if (!channelID) return;
+  await reloadChannel(channelID);
   showNotification(t('table.reload.end-ok'));
 }
 
 /** Обновляет параметр активной строки. */
 export async function updateActiveRecord(id: FormID, recordID: TableRecordID): Promise<void> {
   const tableState = useTableStore.getState()[id];
-  const channel = useChannelStore.getState()[tableState.channelName];
+  const channel = useChannelStore.getState().storage[tableState.channelID];
   const row = channel.data.rows[recordID];
-  setChannelActiveRow(channel.name, row);
+  setChannelActiveRow(channel.id, row);
 
   if (tableState.activeRecordParameter) {
     const newValue = rowToParameterValue(row, channel);
@@ -114,16 +114,17 @@ export async function getNewRow (
 
 export async function exportTableToExcel(id: FormID): Promise<void> {
   const tableState = useTableStore.getState()[id];
-  const config = useChannelStore.getState()[tableState.channelName].config;
+  const channel = useChannelStore.getState().storage[tableState.channelID];
 
-  const parentID = useClientStore.getState()[id].parent;
-  const parentState = useClientStore.getState()[parentID];
+  const clientStates = useClientStore.getState();
+  const parentID = clientStates[id].parent;
+  const parentState = clientStates[parentID];
 
   const exportData = {
-    channelName: tableState.channelName,
+    channelName: channel.name,
     paramName: parentState.children.find(child => child.id === id)?.displayName ?? 'Таблица',
     presentationId: parentID,
-    paramValues: findParameters(config.parameters, useParameterStore.getState().storage),
+    paramValues: findParameters(channel.config.parameters, useParameterStore.getState().storage),
     settings: tableStateToSettings(id, tableState).columnSettings,
   };
 
@@ -136,7 +137,7 @@ export async function exportTableToExcel(id: FormID): Promise<void> {
 }
 
 export function showLinkedTable(formID: FormID, columnID: TableColumnID): void {
-  const channels = useChannelStore.getState();
+  const channels = useChannelStore.getState().storage;
   const tables = useTableStore.getState();
 
   const linkedTableID = formID + columnID;

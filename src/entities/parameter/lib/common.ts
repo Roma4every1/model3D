@@ -24,10 +24,10 @@ export function findClientParameter(name: ParameterName, dict: ParameterDict, id
 }
 
 export function lockParameters(parameters: Parameter[]): void {
-  for (const { editor, channelName } of parameters) {
+  for (const { editor, channelID } of parameters) {
     if (editor) {
       editor.disabled = true;
-      if (channelName) editor.loading = true;
+      if (channelID) editor.loading = true;
     }
   }
 }

@@ -19,18 +19,3 @@ export function channelRowToRecord(row: ChannelRow, columns: ChannelColumn[]): C
   });
   return record;
 }
-
-/** Находит и возвращает список каналов детализации. */
-export function getDetailChannels(dict: ChannelDict): Set<ChannelName> {
-  const linkedChannels = new Set<ChannelName>();
-  for (const name in dict) {
-    const properties = dict[name]?.config.properties;
-    if (!properties) continue;
-
-    for (const property of properties) {
-      const detailChannel = property.detailChannel;
-      if (detailChannel) linkedChannels.add(detailChannel);
-    }
-  }
-  return linkedChannels;
-}

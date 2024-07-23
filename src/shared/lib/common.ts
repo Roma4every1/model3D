@@ -7,7 +7,7 @@
  * compareArrays([obj], [obj])   => true
  * compareArrays([obj], [{}])    => false
  */
-export function compareArrays(a: any[], b: any[]): boolean {
+export function compareArrays<T>(a: T[], b: T[]): boolean {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {
     if (a[i] !== b[i]) return false;
@@ -40,6 +40,17 @@ export function compareObjects(a: Record<any, any>, b: Record<any, any>): boolea
  */
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => { setTimeout(resolve, ms); });
+}
+
+/** Сохраняет файл с указанным именем и содержимым. */
+export function saveFile(name: string, data: Blob): void {
+  const url = URL.createObjectURL(data);
+  const a = document.createElement('a');
+
+  a.setAttribute('href', url);
+  a.setAttribute('download', name);
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 /* --- Dates --- */

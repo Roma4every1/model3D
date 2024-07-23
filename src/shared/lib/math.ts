@@ -94,15 +94,6 @@ export function setIntersection<T>(a: Set<T>, b: Iterable<T>): Set<T> {
   return intersection;
 }
 
-/** Возвращает множество элементов, которые входят в `a`, но НЕ входят в `b`. */
-export function leftAntiJoin<T>(a: Set<T>, b: Iterable<T>): Set<T> {
-  const result = new Set(a);
-  for (const element of b) {
-    if (result.has(element)) result.delete(element);
-  }
-  return result;
-}
-
 /**
  * Декартово произведение.
  * @example

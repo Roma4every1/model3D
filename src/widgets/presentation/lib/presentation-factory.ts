@@ -2,18 +2,18 @@ import type { ClientDataDTO } from 'entities/client';
 import type { ProgramDTO } from 'entities/program';
 import type { ParameterStore } from 'entities/parameter';
 import { Model } from 'flexlayout-react';
-import { leftAntiJoin, setUnion } from 'shared/lib';
 import { programAPI, programCompareFn } from 'entities/program';
-import { useChannelStore, createChannels, getDetailChannels } from 'entities/channel';
+import { useChannelStore } from 'entities/channel';
 import { AttachedChannelFactory, clientAPI, getChildrenTypes } from 'entities/client';
 import { multiMapChannelCriterion } from 'features/multi-map';
 import { LayoutFactory } from './layout';
+import { ClientChannelFactory } from './channel-factory';
 import { DataResolver } from './data-resolver';
 import { formChannelCriteria } from './form-dict';
 
 import {
   useParameterStore, ParameterStringTemplate,
-  addClientParameters, findParameters, getParameterChannels,
+  addClientParameters, findParameters,
 } from 'entities/parameter';
 
 
@@ -34,8 +34,10 @@ export class PresentationFactory {
   private dtoOwn: ClientDataDTO<PresentationSettingsDTO>;
   private dtoChildren: Record<ClientID, ClientDataDTO>;
   private parameters: Parameter[];
-  private createdChannels: ChannelDict;
+  private channelFactory: ClientChannelFactory;
+  private createdChannels: Channel[];
   private allChannels: ChannelDict;
+  private neededChannels: ChannelID[];
   private setters: ParameterSetter[];
 
   constructor(id: ClientID) {
@@ -66,13 +68,13 @@ export class PresentationFactory {
       activeChildID: activeChildren[0],
       openedChildren: openedChildren,
       childrenTypes: getChildrenTypes(children, openedChildren),
-      neededChannels: Object.keys(this.createdChannels),
+      neededChannels: this.neededChannels,
       loading: {status: 'init'},
     };
   }
 
   public fillData(): Promise<boolean> {
-    const resolver = new DataResolver(this.allChannels, this.parameterStore.storage);
+    const resolver = new DataResolver();
     return resolver.resolve(this.createdChannels, this.parameters, this.setters);
   }
 
@@ -125,7 +127,9 @@ export class PresentationFactory {
 
     const criteria: ClientChannelCriteria = {multiMap: multiMapChannelCriterion};
     const factory = new AttachedChannelFactory(this.allChannels, criteria);
-    const channels = factory.create(this.dtoOwn.channels);
+
+    const resolve = (name: ChannelName) => this.channelFactory.resolveChannelName(name);
+    const channels = factory.create(this.dtoOwn.channels, resolve);
 
     if (!channels.some(c => c.type === 'multiMap')) delete settings.multiMapChannel;
     return channels;
@@ -147,7 +151,8 @@ export class PresentationFactory {
     const client: SessionClient = {id, type, parent: this.id, channels: [], parameters: []};
     if (dto) {
       const factory = new AttachedChannelFactory(this.allChannels, formChannelCriteria[type]);
-      client.channels = factory.create(dto.channels)
+      const resolve = (name: ChannelName) => this.channelFactory.resolveChannelName(name);
+      client.channels = factory.create(dto.channels, resolve);
       client.settings = dto.settings;
       client.loading = {status: 'init'};
     } else {
@@ -191,60 +196,24 @@ export class PresentationFactory {
   /* --- Channels --- */
 
   /** Возвращает каналы, которые были созданы для презентации. */
-  public getCreatedChannels(): ChannelDict {
+  public getCreatedChannels(): Channel[] {
     return this.createdChannels;
   }
-  /** Возвращает список каналов, которые существуют в системе после создания презентации. */
-  public getAllChannels(): ChannelDict {
-    return this.allChannels;
-  }
 
-  /** Создаёт все необходимые каналы для презентации.
-   *
-   * Итоговый список каналов состоит из:
-   * + каналов для параметров
-   * + привязанных каналов
-   * + каналов-справочников
-   */
+  /** Создаёт все необходимые каналы для презентации. */
   private async createChannels(): Promise<void> {
-    const existingChannels = useChannelStore.getState();
-    const existing: ChannelName[] = Object.keys(existingChannels);
-    const resolve = (name: ParameterName) => this.resolveParameterName(name);
-
-    const set = this.getBaseChannelNameSet();
-    const externalSet = getParameterChannels(this.parameters);
-    const baseNames = [...leftAntiJoin(setUnion(set, externalSet), existing)];
-    const baseChannels = await createChannels(baseNames, resolve);
-    existing.push(...baseNames);
-
-    const detailSet = getDetailChannels(baseChannels);
-    const detailNames = [...leftAntiJoin(detailSet, existing)];
-    const detailChannels = await createChannels(detailNames, resolve);
-    existing.push(...detailNames);
-
-    const lookupSet = getLookupChannels({...baseChannels, ...detailChannels});
-    const lookupNames = [...leftAntiJoin(lookupSet, existing)];
-    const lookupChannels = await createChannels(lookupNames, resolve);
-
-    // наполнение канала для параметра должно зависеть от серверной конфигурации,
-    // клиент не должен переопределять ограничение записей
-    for (const name of externalSet) {
-      const channel = baseChannels[name];
-      if (channel) channel.query.limit = null;
-    }
-
-    this.createdChannels = {...baseChannels, ...detailChannels, ...lookupChannels};
-    this.allChannels = {...existingChannels, ...this.createdChannels};
-  }
-
-  private getBaseChannelNameSet(): Set<ChannelName> {
-    const set: Set<ChannelName> = new Set();
-    for (const attachment of this.dtoOwn.channels) set.add(attachment.name);
+    const attachments: Set<ChannelName> = new Set();
+    for (const attachment of this.dtoOwn.channels) attachments.add(attachment.name);
 
     for (const childID in this.dtoChildren) {
-      for (const attachment of this.dtoChildren[childID].channels) set.add(attachment.name);
+      for (const attachment of this.dtoChildren[childID].channels) attachments.add(attachment.name);
     }
-    return set;
+    this.channelFactory = new ClientChannelFactory(n => this.resolveParameterName(n));
+    this.createdChannels = await this.channelFactory.create(this.parameters, attachments);
+
+    this.allChannels = {...useChannelStore.getState().storage};
+    for (const channel of this.createdChannels) this.allChannels[channel.id] = channel;
+    this.neededChannels = this.channelFactory.getAllNeededChannels();
   }
 
   /* --- Utils --- */
@@ -272,15 +241,4 @@ export class PresentationFactory {
     parameter = parameters.find(p => p.name === name);
     return parameter?.id;
   }
-}
-
-/** Находит и возвращает список каналов-справочников. */
-export function getLookupChannels(dict: ChannelDict): Set<ChannelName> {
-  const lookupChannels = new Set<ChannelName>();
-  for (const name in dict) {
-    const lookups = dict[name]?.config.lookupChannels;
-    if (!lookups) continue;
-    for (const lookupName of lookups) lookupChannels.add(lookupName);
-  }
-  return lookupChannels;
 }

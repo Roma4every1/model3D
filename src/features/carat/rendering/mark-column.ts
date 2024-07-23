@@ -102,7 +102,7 @@ export class CaratMarkColumn implements ICaratColumn {
     return [min, max];
   }
 
-  public getLookupNames(): ChannelName[] {
+  public getLookups(): ChannelID[] {
     return [];
   }
 

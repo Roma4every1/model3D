@@ -5,14 +5,14 @@ import './track-edit-panel.scss';
 import { CaratNavigationSection } from './navigation';
 import { CaratActiveGroupSection } from './active-group';
 import { CaratCurveSection } from './curves';
-import { CaratExportSection } from '../windows/carat-export';
+import { CaratExportSection } from './export';
 
 
 /** Панель редактирования трека каротажной диаграммы. */
 export const TrackEditPanel = ({id}: FormEditPanelProps) => {
   const state = useCaratState(id);
   if (!state || state.loading.percentage < 100) {
-    return <MenuSkeleton template={['291px', '309px', '161px', '92px']}/>;
+    return <MenuSkeleton template={['290px', '310px', '160px', '150px']}/>;
   }
   const stage = state.stage;
 

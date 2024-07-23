@@ -96,7 +96,7 @@ export class MapStage implements IMapStage {
   public getMapDataToSave(): any {
     const layers = this.data.layers.filter(l => !l.temporary).map(l => l.toInit());
     return {
-      ...this.data, layers,
+      ...this.data, layers, activePoint: undefined, pointLayer: undefined,
       x: undefined, y: undefined, scale: undefined, onDrawEnd: undefined,
     };
   }
@@ -137,10 +137,13 @@ export class MapStage implements IMapStage {
     };
   }
 
-  public getWellViewport(wellID: WellID): MapViewport | null {
-    if (wellID === null || wellID === undefined) return null;
-    const idString = wellID.toString();
-    const point = this.data?.points?.find(p => p.UWID === idString);
+  public getWellViewport(v: WellID | MapPoint): MapViewport | null {
+    let point: MapPoint;
+    if (typeof v === 'number') {
+      point = this.data?.points?.find(p => p.UWID === v);
+    } else if (v) {
+      point = v;
+    }
     if (!point) return null;
 
     if (this.inclinometryModeOn) {
@@ -150,8 +153,7 @@ export class MapStage implements IMapStage {
       const centerY = point.y - inclPlugin.mapShiftY * scale / window.devicePixelRatio / PIXEL_PER_METER;
       return {centerX, centerY, scale};
     } else {
-      const wellLayer = this.data.layers?.find(l => l.elementType === 'sign');
-      const wellScale = wellLayer?.getMaxScale() ?? 50_000;
+      const wellScale = this.data.pointLayer?.getMaxScale() ?? 50_000;
       const scale = this.data.scale ? Math.min(this.data.scale, wellScale) : wellScale;
       return {centerX: point.x, centerY: point.y, scale};
     }
@@ -169,6 +171,26 @@ export class MapStage implements IMapStage {
   public setData(data: MapData): void {
     this.data = data;
     this.activeLayer = null;
+    if (data) data.pointLayer = data.layers?.find(l => l.elementType === 'sign');
+  }
+
+  public setActivePoint(v: WellID | MapPoint | null, updateView?: boolean): void {
+    if (!this.data) return;
+    let point: MapPoint;
+
+    if (typeof v === 'number') {
+      point = this.data.points?.find(p => p.UWID === v);
+    } else if (v) {
+      point = v;
+    }
+
+    if (point) {
+      if (this.data.activePoint === point) return;
+      this.data.activePoint = point;
+      if (updateView) this.render(this.getWellViewport(point));
+    } else {
+      this.data.activePoint = undefined;
+    }
   }
 
   public setMode(mode: MapMode): void {

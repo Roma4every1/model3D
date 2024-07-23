@@ -31,9 +31,9 @@ interface ActiveObjectManager<T> {
 
 /** Состояние активного месторождения. */
 interface IPlaceManager extends ActiveObjectManager<PlaceModel> {
-  /** Название канала с месторождениями. */
-  channelName?: ChannelName;
-  /** Идентификатор параметра месторождения. */
+  /** ID канала с месторождениями. */
+  channelID?: ChannelID;
+  /** ID параметра месторождения. */
   parameterID?: ParameterID;
 }
 
@@ -57,8 +57,8 @@ type PlaceID = number;
 
 /** Состояние активного пласта. */
 interface IStratumManager extends ActiveObjectManager<StratumModel> {
-  /** Название канала с пластами. */
-  channelName?: ChannelName;
+  /** ID канала с пластами. */
+  channelID?: ChannelID;
   /** Идентификатор параметра пласта. */
   parameterID?: ParameterID;
 }
@@ -81,9 +81,9 @@ type StratumID = number;
 
 /** Состояние активной скважины. */
 interface IWellManager extends ActiveObjectManager<WellModel> {
-  /** Название канала со скважинами. */
-  channelName?: ChannelName;
-  /** Название параметрка со скважинами. */
+  /** ID канала со скважинами. */
+  channelID?: ChannelID;
+  /** ID параметрка со скважинами. */
   parameterID?: ParameterID;
 }
 
@@ -105,11 +105,11 @@ type WellID = number;
 
 /** Состояние активной трассы. */
 interface ITraceManager extends ActiveObjectManager<TraceModel> {
-  /** Название канала с трассами. */
-  channelName?: ChannelName;
-  /** Название канала с узлами трасс. */
-  nodeChannelName?: ChannelName;
-  /** Идентификатор параметра с трассами. */
+  /** ID канала с трассами. */
+  channelID?: ChannelID;
+  /** ID канала с узлами трасс. */
+  nodeChannelID?: ChannelID;
+  /** ID параметра с трассами. */
   parameterID?: ParameterID;
   /** Модель трассы до внесения изменений. */
   oldModel: TraceModel | null;

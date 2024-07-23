@@ -62,7 +62,7 @@ interface ICaratColumn {
   visible: boolean;
 
   copy(): ICaratColumn;
-  getLookupNames(): ChannelName[];
+  getLookups(): ChannelID[];
   getElements?(): any[];
   getRange(): [number, number];
   setChannelData(records: ChannelRecord[]): void;

@@ -34,26 +34,26 @@ export function createColumnTree(properties: ChannelProperty[], dict: DataSetCol
 /** Возвращает модель колонок таблицы. */
 export function getColumnModel(
   columns: TableColumnsState, tree: ColumnTree,
-  channelName: ChannelName, query: ChannelQuerySettings
+  channelID: ChannelID, query: ChannelQuerySettings
 ) {
   const gridColumns: JSX.Element[] = [];
   tree.forEach((item, i) => {
     if (item.visible === false) return;
-    gridColumns.push(getColumnGroup(columns, item, i, channelName, query));
+    gridColumns.push(getColumnGroup(columns, item, i, channelID, query));
   });
   return gridColumns;
 }
 
 function getColumnGroup(
   columns: TableColumnsState, treeItem: ColumnTreeItem, i: number,
-  channelName: ChannelName, query: ChannelQuerySettings,
+  channelID: ChannelID, query: ChannelQuerySettings,
 ) {
   const items = treeItem.children;
   const field = treeItem.field;
 
   if (!items) {
     const { title, width, locked, format, colName } = columns[field];
-    const headerCellThis = {channelName, query, channelColumn: colName};
+    const headerCellThis = {channelID, query, channelColumn: colName};
     return (
       <GridColumn
         key={i} id={field} field={field} format={format} headerCell={HeaderCell.bind(headerCellThis)}
@@ -64,7 +64,7 @@ function getColumnGroup(
 
   const columnGroupItems: JSX.Element[] = [];
   items.forEach((item, i) => {
-    if (item.visible) columnGroupItems.push(getColumnGroup(columns, item, i, channelName, query));
+    if (item.visible) columnGroupItems.push(getColumnGroup(columns, item, i, channelID, query));
   });
 
   return (

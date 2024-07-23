@@ -19,7 +19,7 @@ const chartMargin = {top: 2, left: 0, bottom: 0, right: 0};
 export const Chart = ({id, channels}: SessionClient) => {
   const [getPng, { ref }] = useCurrentPng();
 
-  const channelsData = useChannels(channels.map(c => c.name));
+  const channelsData = useChannels(channels.map(c => c.id));
   const state: ChartState = useChartState(id);
   const { seriesSettings, dateStep, tooltip } = state;
 

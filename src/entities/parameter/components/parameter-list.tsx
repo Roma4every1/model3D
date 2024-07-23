@@ -15,8 +15,8 @@ export const ParameterList = ({list, onChange, channels}: ParameterListProps) =>
     const editorOptions = parameter.editor;
     if (!editorOptions) return null;
 
-    const channelName = parameter.channelName;
-    const channel = channelName ? channels[channelName] : undefined;
+    const channelID = parameter.channelID;
+    const channel = channelID ? channels[channelID] : undefined;
     const update = (value: any) => onChange(parameter, value);
     const Editor = getEditor(parameter, channel);
 

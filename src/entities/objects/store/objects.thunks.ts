@@ -24,7 +24,7 @@ export function updateObjects(changes: Set<ParameterID>): void {
   }
   if (trace.activated() && changes.has(trace.parameterID)) {
     const value = storage.get(trace.parameterID).getValue();
-    const channels = useChannelStore.getState();
+    const channels = useChannelStore.getState().storage;
     if (trace.onParameterUpdate(value, channels)) { trace = trace.clone(); changed = true; }
   }
   if (changed) {
@@ -34,9 +34,9 @@ export function updateObjects(changes: Set<ParameterID>): void {
 
 /** Обновление параметры скважины. */
 export async function setCurrentWell(id: WellID): Promise<void> {
-  const { channelName, parameterID, model } = useObjectsStore.getState().well;
+  const { channelID, parameterID, model } = useObjectsStore.getState().well;
   if (model && model.id === id) return;
-  const wellChannel = useChannelStore.getState()[channelName];
+  const wellChannel = useChannelStore.getState().storage[channelID];
 
   const idIndex = wellChannel.config.lookupColumns.id.columnIndex;
   const row = wellChannel.data?.rows.find(r => r[idIndex] === id);
@@ -49,7 +49,7 @@ export async function setCurrentWell(id: WellID): Promise<void> {
 /** Создание новой трассы. */
 export async function createTrace(model: TraceModel): Promise<void> {
   const traceManager = useObjectsStore.getState().trace;
-  const traceChannel = useChannelStore.getState()[traceManager.channelName];
+  const traceChannel = useChannelStore.getState().storage[traceManager.channelID];
   const traceQueryID = traceChannel.data.queryID;
 
   const { ok, data: newRow } = await channelAPI.getNewRow(traceQueryID);
@@ -61,7 +61,7 @@ export async function createTrace(model: TraceModel): Promise<void> {
   traceManager.applyModelToChannelRow(traceChannel, newRow);
 
   await channelAPI.insertRows(traceQueryID, [newRow]).then();
-  await reloadChannel(traceChannel.name);
+  await reloadChannel(traceChannel.id);
 
   const value = rowToParameterValue(newRow, traceChannel);
   await updateParamDeep(traceManager.parameterID, value);
@@ -71,8 +71,8 @@ export async function createTrace(model: TraceModel): Promise<void> {
 /** Сохранение изменений трассы. */
 export async function saveTrace(): Promise<void> {
   const traceManager = useObjectsStore.getState().trace;
-  const { model, channelName, nodeChannelName, parameterID } = traceManager;
-  const traceChannel = useChannelStore.getState()[channelName];
+  const { model, channelID, nodeChannelID, parameterID } = traceManager;
+  const traceChannel = useChannelStore.getState().storage[channelID];
 
   const idIndex = traceChannel.config.lookupColumns.id.columnIndex;
   const index = traceChannel.data.rows.findIndex(row => row[idIndex] === model.id);
@@ -82,17 +82,17 @@ export async function saveTrace(): Promise<void> {
   await channelAPI.updateRows(traceChannel.data.queryID, [index], [row]);
 
   if (traceManager.nodesChanged()) {
-    const nodeChannel = useChannelStore.getState()[nodeChannelName];
+    const nodeChannel = useChannelStore.getState().storage[nodeChannelID];
     const queryID = nodeChannel.data.queryID;
 
     const nodeRows = traceManager.getNodeChannelRows(nodeChannel.data.columns);
     await channelAPI.removeRows(queryID, 'all');
     await channelAPI.insertRows(queryID, nodeRows).then();
-    await reloadChannel(nodeChannel.name);
+    await reloadChannel(nodeChannel.id);
   }
 
-  await reloadChannel(traceChannel.name);
-  const updatedData = useChannelStore.getState()[traceChannel.name].data;
+  await reloadChannel(traceChannel.id);
+  const updatedData = useChannelStore.getState().storage[traceChannel.id].data;
   const updatedRow = updatedData?.rows.find(r => r[idIndex] === model.id);
 
   await updateParamDeep(parameterID, rowToParameterValue(updatedRow, traceChannel));
@@ -101,12 +101,12 @@ export async function saveTrace(): Promise<void> {
 
 /** Удаление трассы. */
 export async function deleteTrace(): Promise<void> {
-  const channels = useChannelStore.getState();
+  const channels = useChannelStore.getState().storage;
   const traceManager = useObjectsStore.getState().trace;
-  const traceData = channels[traceManager.channelName].data;
+  const traceData = channels[traceManager.channelID].data;
 
   const traceQueryID = traceData.queryID;
-  const nodesQueryID = channels[traceManager.nodeChannelName].data.queryID;
+  const nodesQueryID = channels[traceManager.nodeChannelID].data.queryID;
 
   const rowIndex = traceData.rows.findIndex(row => row[0] === traceManager.model.id);
   if (rowIndex === -1) return;

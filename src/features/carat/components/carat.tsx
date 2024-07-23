@@ -16,9 +16,9 @@ export const Carat = ({id}: SessionClient) => {
   const currentTrace = useCurrentTrace();
   const currentStratum = useCurrentStratum();
 
-  const { stage, canvas, channelNames, lookupNames, loading } = useCaratState(id);
-  const channelData = useChannels(channelNames);
-  const lookupData = useChannels(lookupNames);
+  const { stage, canvas, channels, lookups, loading } = useCaratState(id);
+  const channelData = useChannels(channels);
+  const lookupData = useChannels(lookups);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isOnMoveRef = useRef<boolean>(false);

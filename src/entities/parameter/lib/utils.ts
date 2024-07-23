@@ -6,8 +6,8 @@ export function serializeParameter(parameter: Parameter): SerializedParameter {
   return {id: parameter.name, type: parameter.type, value: parameter.toString()};
 }
 
-/** Находит и возвращает список каналов, необходимых для параметров. */
-export function getParameterChannels(parameters: Parameter[]): Set<ChannelName> {
+/** Находит названия каналов, необходимых для параметров. */
+export function getParameterChannelNames(parameters: Parameter[]): Set<ChannelName> {
   const names: Set<ChannelName> = new Set();
   for (const parameter of parameters) {
     const name = parameter.channelName;

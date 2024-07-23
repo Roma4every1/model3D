@@ -31,12 +31,11 @@ const fileViewDict: Record<string, FunctionComponent<FileViewModel>> = {
 /** Форма просмотра файла. */
 export const FileView = ({id, channels}: SessionClient) => {
   const { model } = useFileViewState(id);
-  const channel = useChannel(channels[0]?.name);
-  const data = channel?.data;
+  const channelData = useChannel(channels[0]?.id)?.data;
 
   useEffect(() => {
-    updateFileViewModel(id, data).then();
-  }, [data, id]);
+    updateFileViewModel(id, channelData).then();
+  }, [channelData, id]);
 
   if (!model) {
     return <TextInfo text={'file-view.no-file'}/>;

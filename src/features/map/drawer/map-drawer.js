@@ -1057,6 +1057,7 @@ declareType('pieslice', {
  * */
 export async function startPaint(canvas, map, options) {
   const coords = options.coords;
+  const mapScale = coords.mapScale;
   const onCheckExecution = options.onCheckExecution;
 
   const topLeft = coords.pointToMap({x: 0, y: 0});
@@ -1083,11 +1084,14 @@ export async function startPaint(canvas, map, options) {
 
   map.x = options.point.x;
   map.y = options.point.y;
-  map.scale = coords.mapScale;
+  map.scale = mapScale;
+
+  const noDrafts = !options.draftDrawing;
+  const { layers, activePoint, onDrawEnd } = map;
 
   try {
-    for (const layer of map.layers) {
-      if (!layer.visible || !layer.isScaleVisible(coords.mapScale)) continue;
+    for (const layer of layers) {
+      if (!layer.visible || !layer.isScaleVisible(mapScale)) continue;
       if (!intersects(bounds, layer.bounds)) continue;
 
       let c = onCheckExecution();
@@ -1103,14 +1107,27 @@ export async function startPaint(canvas, map, options) {
         c = onCheckExecution();
         c && (await c);
 
-        if (elementDrawer.draw && !options.draftDrawing) {
+        if (elementDrawer.draw && noDrafts) {
           await elementDrawer.draw(element, drawOptions);
         } else if (elementDrawer.draft) {
           elementDrawer.draft(element, drawOptions);
         }
       }
     }
-    map?.onDrawEnd(options.point, coords.mapScale);
+    if (activePoint && noDrafts) {
+      const { x, y } = coords.pointToControl(map.activePoint);
+      const halfSize = 8 * window.devicePixelRatio;
+      const size = halfSize * 2;
+
+      /** @type CanvasRenderingContext2D */
+      const ctx = options.ctx;
+      ctx.lineWidth = 2 * window.devicePixelRatio;
+      ctx.strokeStyle = 'blue';
+      ctx.strokeRect(x - halfSize, y - halfSize, size, size);
+    }
+    if (onDrawEnd) {
+      onDrawEnd(options.point, coords.mapScale);
+    }
   } catch (e) {
     // ...
   }

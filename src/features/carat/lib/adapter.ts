@@ -15,14 +15,14 @@ export function settingsToCaratState(payload: FormStatePayload<CaratFormSettings
   const { settings: caratSettings, columns: initColumns } = payload.state.settings;
 
   const channels = payload.channels;
-  const usedChannels: Set<ChannelName> = new Set();
+  const usedChannels: Set<ChannelID> = new Set();
 
   const toInit = (c: CaratColumnDTO, i: number) => dtoToInit(c, i, attachedChannels);
   const columns = initColumns.sort(columnCompareFn).map(toInit);
 
   for (const attachedChannel of attachedChannels) {
-    const name = attachedChannel.name;
-    const displayName = channels[name].config.displayName ?? name;
+    const id = attachedChannel.id;
+    const displayName = channels[id].config.displayName ?? id;
     attachedChannel.config = {displayName};
 
     const type = attachedChannel.type as CaratChannelType;
@@ -30,7 +30,7 @@ export function settingsToCaratState(payload: FormStatePayload<CaratFormSettings
       applyStyle(attachedChannel, channels);
     }
     if (type !== 'curve-data') {
-      usedChannels.add(name);
+      usedChannels.add(id);
     }
   }
 
@@ -42,8 +42,8 @@ export function settingsToCaratState(payload: FormStatePayload<CaratFormSettings
 
   return {
     canvas: undefined, stage, loader, observer,
-    channelNames: [...usedChannels],
-    lookupNames: stage.getActiveTrack().getLookupNames(),
+    channels: [...usedChannels],
+    lookups: stage.getActiveTrack().getLookups(),
     loading: {percentage: 100, status: null},
   };
 }
@@ -53,9 +53,9 @@ function applyStyle(attachment: AttachedChannel, channels: ChannelDict): void {
   const creator = new RecordInfoCreator(channels);
 
   for (const { fromColumn, lookupChannels } of attachment.attachedProperties) {
-    for (const channelName of lookupChannels) {
-      const info = creator.create(channels[channelName], rectStyle);
-      if (info) { styles.push({columnName: fromColumn, channelName, info}); break; }
+    for (const channelID of lookupChannels) {
+      const info = creator.create(channels[channelID], rectStyle);
+      if (info) { styles.push({columnName: fromColumn, channelID, info}); break; }
     }
   }
   attachment.config.styles = styles;

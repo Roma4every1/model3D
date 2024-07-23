@@ -21,8 +21,8 @@ export class TableCellParameter implements Parameter<'tableCell'> {
     this.setValueString(s);
   }
 
-  public clone(): TableCellParameter {
-    const clone = {...this};
+  public clone(id?: ParameterID): TableCellParameter {
+    const clone = {...this, id: id ?? this.id};
     Object.setPrototypeOf(clone, TableCellParameter.prototype);
     return clone;
   }

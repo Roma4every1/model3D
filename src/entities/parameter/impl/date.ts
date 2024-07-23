@@ -13,8 +13,8 @@ export class DateParameter implements Parameter<'date'> {
     this.setValueString(s);
   }
 
-  public clone(): DateParameter {
-    const clone = {...this};
+  public clone(id?: ParameterID): DateParameter {
+    const clone = {...this, id: id ?? this.id};
     Object.setPrototypeOf(clone, DateParameter.prototype);
     return clone;
   }

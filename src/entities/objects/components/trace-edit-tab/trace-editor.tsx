@@ -29,7 +29,7 @@ export const TraceEditor = ({id}: TraceEditorProps) => {
   if (mapPoints) {
     for (const node of model.nodes) {
       if (node.name !== null && node.x !== null && node.y !== null) continue;
-      const point = mapPoints.find(p => parseInt(p.UWID) === node.id);
+      const point = mapPoints.find(p => p.UWID === node.id);
       if (!point) continue;
 
       if (node.x === null) node.x = point.x;

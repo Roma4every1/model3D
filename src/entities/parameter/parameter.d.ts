@@ -33,23 +33,25 @@ type OnParameterUpdate = (newValue: any, storage: ParameterMap) =>
 
 interface Parameter<T extends ParameterType = ParameterType> {
   /** Идентификатор параметра. */
-  id: ParameterID;
+  readonly id: ParameterID;
   /** Название параметра в конфиге сессии. */
   readonly name: ParameterName;
   /** Тип параметра. */
   readonly type: T;
 
   /** Допускается ли пустое значение параметра. */
-  nullable?: boolean;
+  readonly nullable?: boolean;
   /** Названия параметров, от которых зависит значение данного параметра. */
-  dependsOn?: ParameterName[];
+  readonly dependsOn?: ParameterName[];
   /** ID всех параметров, значения которых зависят от данного параметра. */
   dependents?: ParameterID[];
 
   /** Настройки редактора. */
   editor?: ParameterEditorOptions;
   /** Название канала, из которого берутся данные для выбора значения. */
-  channelName?: ChannelName;
+  readonly channelName?: ChannelName;
+  /** ID канала, из которого берутся данные для выбора значения. */
+  channelID?: ChannelID;
 
   /** Получить значение параметра. */
   getValue(): ParameterValueMap[T] | null;
@@ -59,7 +61,7 @@ interface Parameter<T extends ParameterType = ParameterType> {
   setValueString(s?: string | null): void;
 
   /** Метод, который возвращает неглубокую копию параметра. */
-  clone(): Parameter<T>;
+  clone(id?: ParameterID): Parameter<T>;
   /** Сериалзиация значения. */
   toString(): string | null;
 }

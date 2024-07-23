@@ -159,12 +159,12 @@ export class CaratTrack {
   }
 
   /** Список справочников, необходимых для отрисовки. */
-  public getLookupNames(): ChannelName[] {
-    const names: ChannelName[] = [];
+  public getLookups(): ChannelID[] {
+    const ids: ChannelID[] = [];
     for (const group of this.groups) {
-      names.push(...group.getLookupNames());
+      ids.push(...group.getLookups());
     }
-    return [...new Set(names)];
+    return [...new Set(ids)];
   }
 
   /* --- Setters --- */

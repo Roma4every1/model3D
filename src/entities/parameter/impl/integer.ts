@@ -10,8 +10,8 @@ export class IntegerParameter implements Parameter<'integer'> {
     this.setValueString(s);
   }
 
-  public clone(): IntegerParameter {
-    const clone = {...this};
+  public clone(id?: ParameterID): IntegerParameter {
+    const clone = {...this, id: id ?? this.id};
     Object.setPrototypeOf(clone, IntegerParameter.prototype);
     return clone;
   }

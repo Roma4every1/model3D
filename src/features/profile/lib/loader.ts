@@ -46,7 +46,7 @@ export class ProfileLoader implements IProfileLoader {
   }
 
   private async watchStrata(job: JobState<ProfileStratum[]>): Promise<void> {
-    for (let i = 0; i < 10; ++i) {
+    for (let i = 0; i < 30; ++i) {
       await sleep(1000);
       if (this.strataJob !== job) return this.stopWatchStrata(job, 'abort');
 
@@ -97,7 +97,7 @@ export class ProfileLoader implements IProfileLoader {
   }
 
   private async watchProfile(job: JobState<MapData>): Promise<void> {
-    for (let i = 0; i < 60; ++i) {
+    for (let i = 0; i < 75; ++i) {
       await sleep(4000);
       if (this.profileJob !== job) return this.stopWatchProfile(job, 'abort');
 

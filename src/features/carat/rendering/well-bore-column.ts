@@ -54,7 +54,7 @@ export class WellBoreColumn implements ICaratColumn {
     return column;
   }
 
-  public getLookupNames(): ChannelName[] {
+  public getLookups(): ChannelID[] {
     return [];
   }
 

@@ -3,7 +3,7 @@ import { RecordInfoCreator } from 'entities/channel';
 
 export function crateAttachedChannel(dto: AttachedChannelDTO, channel: Channel): AttachedChannel {
   const attachedProperties = getAttachedProperties(dto, channel.config.properties);
-  return {name: dto.name, attachedProperties};
+  return {id: channel.id, name: dto.name, attachedProperties};
 }
 
 export class AttachedChannelFactory {
@@ -20,16 +20,16 @@ export class AttachedChannelFactory {
     this.creator = new RecordInfoCreator(channels);
   }
 
-  public create(init: AttachedChannelDTO[]): AttachedChannel[] {
-    return init.map(dto => this.createModel(dto)).filter(Boolean);
+  public create(init: AttachedChannelDTO[], resolve: (n: ChannelName) => ChannelID): AttachedChannel[] {
+    return init.map(dto => this.createModel(dto, resolve)).filter(Boolean);
   }
 
-  private createModel(dto: AttachedChannelDTO): AttachedChannel | undefined {
-    const channel = this.channels[dto.name];
+  private createModel(dto: AttachedChannelDTO, resolve: (n: ChannelName) => ChannelID): AttachedChannel | undefined {
+    const channel = this.channels[resolve(dto.name)];
     if (!channel) return;
 
     const attachedProperties = getAttachedProperties(dto, channel.config.properties);
-    const attachedChannel: AttachedChannel = {name: dto.name, attachedProperties};
+    const attachedChannel: AttachedChannel = {id: channel.id, name: dto.name, attachedProperties};
     if (!this.criteria) return attachedChannel;
 
     for (const channelType in this.criteria) {

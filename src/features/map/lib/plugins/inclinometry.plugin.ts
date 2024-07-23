@@ -3,17 +3,16 @@ import { fixColorHEX } from 'shared/lib';
 import { cellsToRecords } from 'entities/channel';
 
 
-const inclChannelName = 'Inclinometry';
-const inclVersionChannelName = 'InclinometryVersions';
-const inclPropertyChannelName = 'InclinometryVersionsProperties';
-
-
 /** Плагин для вертикальной проекции инклинометрии на карте. */
 export class InclinometryPlugin implements IMapPlugin {
   /** Название плагина. */
   public readonly name = 'incl';
   /** Активен ли режим инклинометрии. */
   public inclinometryModeOn: boolean;
+
+  private readonly inclChannelID: ChannelID;
+  private readonly inclVersionChannelID: ChannelID;
+  private readonly inclPropertyChannelID: ChannelID;
 
   /** ID параметра системы, который отвечает за угол. */
   public readonly parameterID: ParameterID;
@@ -47,10 +46,14 @@ export class InclinometryPlugin implements IMapPlugin {
   /** Дополнительные данные версии инклинометрии выбранной скважины (цвета для линий). */
   private versionProperties: ChannelRecord[] = null;
 
-  constructor(settings: any, parameters: Parameter[]) {
+  constructor(settings: any, parameters: Parameter[], channels: AttachedChannel[]) {
     this.parameterID = parameters.find(p => p.name === 'inclinometryViewAngle')?.id;
     this.radius = (+settings['@MinCircle']) / 2 * window.devicePixelRatio;
     this.inclinometryModeOn = settings['@InclinometryModeOn'] === 'true';
+
+    this.inclChannelID = channels.find(c => c.name === 'Inclinometry')?.id;
+    this.inclVersionChannelID = channels.find(c => c.name === 'InclinometryVersions')?.id;
+    this.inclPropertyChannelID = channels.find(c => c.name === 'InclinometryVersionsProperties')?.id;
   }
 
   /** Обновляет значение угла просмотра инклинометрии по точке. */
@@ -71,12 +74,12 @@ export class InclinometryPlugin implements IMapPlugin {
 
   /** Устанавливает данные инклинометрии. */
   public setData(channels: ChannelDict): void {
-    this.data = cellsToRecords(channels[inclChannelName].data);
-    this.versions = cellsToRecords(channels[inclVersionChannelName].data);
-    this.versionProperties = cellsToRecords(channels[inclPropertyChannelName].data);
+    this.data = cellsToRecords(channels[this.inclChannelID]?.data);
+    this.versions = cellsToRecords(channels[this.inclVersionChannelID]?.data);
+    this.versionProperties = cellsToRecords(channels[this.inclPropertyChannelID]?.data);
     this.versionProperties.forEach(r => { r.COLOR = fixColorHEX(r.COLOR); })
 
-    if (!this.data?.length) return;
+    if (!this.data.length) return;
     const data = this.data;
     const maxShiftInclPoint = data.reduce((max, r) =>
       !max || (max['SHIFT'] < r['SHIFT']) ? r : max, null)

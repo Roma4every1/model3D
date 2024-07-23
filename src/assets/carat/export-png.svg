@@ -1,0 +1,13 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+<g fill="none" stroke="#002635" stroke-width="11" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M260,220 L260,50 L220,10 L56,10 A16,16,0,0,0,40,26 L40,274 A16,16,0,0,0,56,290 L244,290 A16,16,0,0,0,260,274 L260,260"/>
+  <path d="M220,10 L220,38 A12,12,0,0,0,232,50 L260,50"/>
+  <path d="M6,30 L200,30 L200,100 L6,100 L35,65Z" fill="#ff8c78"/>
+  <rect x="80" y="125" width="140" height="140" stroke="none" fill="#e8e8e8"/>
+  <polyline points="120,125 115,140 125,155 110,170 105,185 120,200 100,215 115,230 125,245 120,260" stroke="#55beff"/>
+  <polyline points="145,125 150,140 160,155 145,170 150,185 140,200 165,215 155,230 150,245 160,260" stroke="#ff8c78"/>
+  <polyline points="185,125 180,140 195,155 190,170 200,185 180,200 190,215 195,230 180,245 195,260" stroke="#93d171"/>
+  <rect x="80" y="125" width="140" height="140" rx="6" ry="6"/>
+</g>
+<text x="54" y="87" fill="#002635" font-family="Roboto" font-size="60" font-weight="700">PNG</text>
+</svg>

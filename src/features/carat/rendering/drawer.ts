@@ -248,7 +248,7 @@ export class CaratDrawer {
     this.ctx.fillText(this.groupSettings.label, width / 2, labelTop + height, width);
   }
 
-  public drawGroupXAxes(settings: CaratColumnXAxis, groups: CurveGroupState[]): void {
+  public drawGroupXAxes(settings: CaratColumnXAxis, groups: CurveGroupState[], activeType: CaratCurveType): void {
     this.setTranslate(this.groupTranslateX, this.trackRect.top + this.columnLabelSettings.height);
     const { thickness, gap, axisHeight, markSize, font, activeFont } = this.columnXAxisSettings;
     const yStep = axisHeight + gap;
@@ -264,14 +264,14 @@ export class CaratDrawer {
       const xStart = rect.left + thickness, xEnd = rect.left + rect.width - thickness;
       const xCenter = (xStart + xEnd) / 2;
 
-      for (const { type, axisMin, axisMax, style: { color }, active } of elements) {
+      for (const { type, axisMin, axisMax, style: { color } } of elements) {
         const delta = axisMax - axisMin;
         const markStep = delta / segmentsCount;
         const digits = markStep > 1 ? 0 : (markStep < 0.1 ? 2 : 1);
 
         this.ctx.strokeStyle = color;
         this.ctx.fillStyle = color;
-        this.ctx.font = active ? activeFont : font;
+        this.ctx.font = type === activeType ? activeFont : font;
 
         const markTop = y - markSize;
         this.ctx.beginPath();

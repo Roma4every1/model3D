@@ -1,7 +1,7 @@
-import type { Res, ReqQuery } from 'shared/lib';
+import type { Res } from 'shared/lib';
+import type { MapInfo } from '../lib/types';
 import { Fetcher, fetcher } from 'shared/lib';
 import { MapContainerConverter } from './container-converter';
-import symbolDef from 'assets/map-libs/symbol.def';
 
 
 export class MapAPI {
@@ -19,12 +19,6 @@ export class MapAPI {
     this.converter = new MapContainerConverter(key);
   }
 
-  /** Загрузка файла с описаниями построения точечных элементов. */
-  public async getSymbolLib(): Promise<ArrayBuffer> {
-    const response = await fetch(symbolDef, {credentials: 'include'});
-    return response.arrayBuffer();
-  }
-
   /** Запрос на сохранение карты. */
   public saveMap(formID: FormID, mapID: MapID, mapData: any, storage: MapStorageID): Promise<Res> {
     const data = {formId: formID, mapId: mapID, mapData, owner: storage};
@@ -33,19 +27,16 @@ export class MapAPI {
   }
 
   /** Загрузка общих данных карты. */
-  public getMap(mapID: MapID, formID: FormID, signal?: AbortSignal): Promise<Res<MapDataRaw>> {
-    const query: ReqQuery = {mapId: mapID, formId: formID};
+  public getMapInfo(mapID: MapID, formID: FormID, signal?: AbortSignal): Promise<Res<MapInfo>> {
+    const query = {mapId: mapID, formId: formID};
     return this.api.get('/getMap', {query: query, signal});
   }
 
   /** Загрузка контейнера карты. */
-  public async getMapContainer(
-    name: string, storage: MapStorageID, index?: string, signal?: AbortSignal,
-  ): Promise<Res<ParsedContainer>> {
-    const query: ReqQuery = {owner: storage, containerName: name};
-    if (index) query.index = index;
+  public async getMapContainer(name: string, storage: MapStorageID, signal?: AbortSignal): Promise<Res<string>> {
+    const query = {owner: storage, containerName: name};
     const res = await this.api.get('/getContainer', {query, then: 'arrayBuffer', signal});
-    if (res.ok) res.data = this.converter.parse(res.data);
+    if (res.ok) res.data = this.converter.decode(res.data);
     return res;
   }
 }

@@ -130,14 +130,14 @@ export class FillPatterns {
     try {
       const init: RequestInit = {credentials: 'include'};
       const buffer = await fetch(path, init).then((res) => res.arrayBuffer());
-      this.libs[type] = this.parseSMB(buffer);
+      this.libs[type] = this.parseSMB(new Uint8Array(buffer));
     } catch {
       this.libs[type] = [];
     }
   }
 
   /** Создаёт набор матриц, задающих паттерн изображения. */
-  private parseSMB(data: ArrayBuffer): Matrix[] {
+  private parseSMB(data: Uint8Array): Matrix[] {
     const firstBytesLength = FillPatterns.firstBytes.length;
     for (let i = 0; i < firstBytesLength; ++i) {
       if (data[i] !== FillPatterns.firstBytes[i]) throw new Error('Invalid format');
