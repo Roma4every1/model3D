@@ -1,5 +1,10 @@
-import { IGlobalAttributes } from 'flexlayout-react/declarations/model/IJsonModel';
+import type { IGlobalAttributes } from 'flexlayout-react/declarations/model/IJsonModel';
 
+
+/** Идентификатор корня разметки левой панели. */
+export const leftRootID = 'left-root';
+/** Минимальная высота набора вкладок. */
+export const minTabSetHeight = 75; // px
 
 /** Глобальные настройки левой панели. */
 export const leftPanelGlobalAttributes: IGlobalAttributes = {
@@ -19,29 +24,19 @@ export const leftPanelGlobalAttributes: IGlobalAttributes = {
   splitterSize: 6, // px
 };
 
-/** Идентификатор корня разметки левой панели. */
-export const leftRootID = 'left-root';
-/** Минимальная высота набора вкладок. */
-export const minTabSetHeight = 75; // px
-
-/** Идентификатор вкладки с глобальными параметрами. */
-export const globalParamsTabID = 'dockGlobalParameterListSidePanel';
-/** Стандартное название вкладки с глобальными параметрами. */
-export const globalParamsName = 'Параметры';
-
-/** Идентификатор вкладки с параметрами презентации. */
-export const presentationParamsTabID = 'gridPresentationParameterListSidePanel';
-/** Стандартное название вкладки с параметрами презентации. */
-export const presentationParamsName = 'Параметры презентации';
-
-/** Идентификатор вкладки со списком презентаций. */
-export const presentationTreeTabID = 'dockPresentationsManagerSidePanel';
-/** Стандартное название вкладки со списком презентаций. */
-export const presentationTreeName = 'Презентации';
-
-/** Словарь ID вкладок. */
-export const leftTabIDDict: Record<LeftTabType, string> = {
-  global: globalParamsTabID,
-  presentation: presentationParamsTabID,
-  tree: presentationTreeTabID,
+/** Значения по умолчанию для вкладок левой панели. */
+export const leftTabInfo = {
+  globalParameters: {
+    id1: 'root,dockGlobalParameterListSidePanel',
+    id2: 'root,dockTreeSidePanel',
+    name: 'Параметры',
+  },
+  presentationParameters: {
+    id: 'root,gridPresentationParameterListSidePanel',
+    name: 'Параметры презентации',
+  },
+  presentationTree: {
+    id: 'root,dockPresentationsManagerSidePanel',
+    name: 'Презентации',
+  },
 };

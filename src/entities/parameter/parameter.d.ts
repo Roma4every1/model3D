@@ -70,6 +70,8 @@ interface Parameter<T extends ParameterType = ParameterType> {
 interface ParameterEditorOptions {
   /** Идентификатор типа редактора. */
   readonly type: ParameterEditorType;
+  /** Код группы параметров. */
+  readonly group: string | null;
   /** Имя параметра, отображаемое на интерфейсе. */
   readonly displayName: string;
   /** Добавлять ли в выпадающий список вариант со значением "не задано". */
@@ -78,6 +80,10 @@ interface ParameterEditorOptions {
   readonly nullDisplayValue: string;
   /** Индекс для сортировки редакторов. */
   readonly order: number;
+  /** Шаблон динамической видимости параметра. */
+  visibilityTemplate?: IParameterStringTemplate;
+  /** Флаг видимости параметра. */
+  visible?: boolean;
   /** Состояние, при котором запрещено редактирование параметра через редактор. */
   disabled?: boolean;
   /** Состояние, когда данные для выбора значения загружаются. */
@@ -125,10 +131,12 @@ interface TypedCell {
 
 /** Группа параметров. */
 interface ParameterGroup {
-  /** ID который содержат параметры в поле `group`. */
-  code: string;
-  /** Название группы. */
-  displayName: string;
+  /** Идентификатор группы. */
+  readonly id: string;
+  /** Подпись вкладки группы. */
+  readonly name: string;
+  /** ID параметров, принадлежащих группе. */
+  readonly parameters: ParameterID[];
 }
 
 /** Настройка, которая обновляет значение параметра при изменении других параметров. */
@@ -141,4 +149,13 @@ interface ParameterSetter {
   readonly client: ClientID;
   /** Индекс, который нужно будет передать в запрос выполнения. */
   readonly index: number;
+}
+
+interface IParameterStringTemplate {
+  /** Исходный текст шаблона. */
+  readonly source: string;
+  /** Идентификаторы параметров системы для подстановки. */
+  readonly parameterIDs: Set<ParameterID>;
+  /** Сборка шаблона на основе значений. */
+  build(values?: Parameter[]): string | null
 }

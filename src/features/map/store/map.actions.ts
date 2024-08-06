@@ -89,7 +89,7 @@ export function getMapState(id: FormID, editable: boolean, payload?: FormStatePa
   if (inclPlugin) inclPlugin.onParameterUpdate = (v) => updateParamDeep(inclPlugin.parameterID, v);
 
   return {
-    stage, loader: new MapLoader(id), observer,
+    stage, loader: new MapLoader(id), observer, objects: {well: null, trace: null},
     canvas: null, status: 'empty', owner: null, mapID: null, modified: false,
     editable, propertyWindowOpen: false, attrTableWindowOpen: false,
   };

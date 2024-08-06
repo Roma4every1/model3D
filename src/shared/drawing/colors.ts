@@ -1,13 +1,14 @@
 import { round } from '../lib';
 
 
-/** Парсит HEX цвета в RGBA модель.
+/**
+ * Парсит HEX цвета в RGBA модель.
  * @example
  * parseColorHEX("#ccc") => [204, 204, 204, 1]
  * parseColorHEX("#123456") => [18, 52, 86, 1]
  * parseColorHEX("#00FF00FF") => [0, 255, 0, 1]
  * parseColorHEX("abc") => null
- * */
+ */
 export function parseColorHEX(hex: unknown): RGBA | null {
   if (typeof hex !== 'string') return null;
   if (hex.length !== 4 && hex.length !== 7 && hex.length !== 9) return null;
@@ -28,11 +29,12 @@ export function parseColorHEX(hex: unknown): RGBA | null {
   return [red, green, blue, alpha];
 }
 
-/** Сериализует RGBA-модель.
+/**
+ * Сериализует RGBA-модель.
  * @example
  * stringifyRGBA([0, 0, 0, 1]) => "rgb(0,0,0)";
  * stringifyRGBA([8, 64, 8, 0.5]) => "rgba(8,64,8,0.5)";
- * */
+ */
 export function stringifyRGBA([red, green, blue, alpha]: RGBA): string {
   if (alpha === 1) {
     return `rgb(${red},${green},${blue})`;
@@ -41,10 +43,11 @@ export function stringifyRGBA([red, green, blue, alpha]: RGBA): string {
   }
 }
 
-/** Накладывает цвет на основной.
+/**
+ * Накладывает цвет на основной.
  * @example
  * overlayColor([0, 0, 0, 0.5], [255, 255, 255, 0.5]) => [170, 170, 170, 0.75]
- * */
+ */
 export function overlayColor(base: RGBA, additive: RGBA): RGBA {
   const baseAlpha = base[3];
   const addedAlpha = additive[3];

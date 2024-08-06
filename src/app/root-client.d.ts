@@ -1,6 +1,14 @@
 /** Состояние главной формы. */
 type RootClient = SessionClient<'dock', DockSettings, DockLayout>;
 
+/** Настройки корневого клиента. */
+interface DockSettings {
+  /** Дерево презентаций. */
+  presentationTree: PresentationTree;
+  /** Группы параметров для разбиения списка на вкладки. */
+  parameterGroups?: ParameterGroup[];
+}
+
 /** Дерево презентаций. */
 type PresentationTree = PresentationTreeItem[];
 
@@ -25,7 +33,8 @@ interface PresentationTreeItem {
 
 /* --- Dock Layout --- */
 
-/** Разметка общих элементов.
+/**
+ * Разметка приложения.
  * + `controller: LayoutController`
  * + `left`: {@link LeftPanelLayout}
  */
@@ -36,25 +45,22 @@ interface DockLayout {
   left: LeftPanelLayout;
 }
 
-/** Разметка левой панели с параметрами.
- * + `model: Model`
- * + `global`: {@link LeftTabInfo}
- * + `presentation`: {@link LeftTabInfo}
- * + `tree`: {@link LeftTabInfo}
- */
+/** Разметка левой панели. */
 interface LeftPanelLayout {
   /** Model из `flex-layout-react`. */
   model: any; // Model
-  /** Панель глобальных параметров. */
-  global: LeftTabInfo;
-  /** Панель параметров презентации. */
-  presentation: LeftTabInfo;
-  /** Дерево презентаций. */
-  tree: LeftTabInfo;
+  /** Вкладка глобальных параметров. */
+  globalParameters: LeftTabInfo;
+  /** Вкладка параметров презентации. */
+  presentationParameters: LeftTabInfo;
+  /** Вкладка дерева презентаций. */
+  presentationTree: LeftTabInfo;
 }
 
 /** Информация о вкладке. */
 interface LeftTabInfo {
+  /** ID вкладки. */
+  id: string;
   /** Показывать ли вкладку. */
   show: boolean;
   /** Название вкладки. */
@@ -67,15 +73,10 @@ interface LeftTabInfo {
   disabled?: boolean;
 }
 
-/** Типы поддерживаемых вкладок левой панели. */
-type LeftTabType = 'global' | 'presentation' | 'tree';
-
-/* --- Dock Settings --- */
-
-/** Настройки корневого клиента. */
-interface DockSettings {
-  /** Дерево презентаций. */
-  presentationTree: PresentationTree;
-  /** Группы параметров для разбиения списка на вкладки. */
-  parameterGroups?: ParameterGroup[];
-}
+/**
+ * Типы поддерживаемых вкладок левой панели.
+ * + `globalParameters` — глобальные параметры
+ * + `presentationParameters` — параметры презентации
+ * + `presentationTree` — дерево презентаций
+ */
+type LeftTabType = 'globalParameters' | 'presentationParameters' | 'presentationTree';

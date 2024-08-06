@@ -42,7 +42,7 @@ export const FieldPalettePropertiesWindow = (props: FieldPalettePropertiesProps)
   /* --- Properties Handlers --- */
 
   const onInterpolatedChange =(e: CheckboxChangeEvent) => {
-    palette.interpolated = e.value ? '-1' : '0';
+    palette.interpolated = e.value;
     setInterpolated(palette.interpolated);
     onChange();
   };
@@ -63,7 +63,7 @@ export const FieldPalettePropertiesWindow = (props: FieldPalettePropertiesProps)
                 <span>Сглаживание:</span>
                 <Checkbox
                   style={{marginLeft: 5, height: 16}}
-                  checked={interpolated === '-1'} onChange={onInterpolatedChange}
+                  checked={interpolated} onChange={onInterpolatedChange}
                 />
               </div>
               <div className={'colors'}>

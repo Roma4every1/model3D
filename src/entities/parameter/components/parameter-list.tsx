@@ -13,7 +13,7 @@ export interface ParameterListProps {
 export const ParameterList = ({list, onChange, channels}: ParameterListProps) => {
   const toElement = (parameter: Parameter, i: number) => {
     const editorOptions = parameter.editor;
-    if (!editorOptions) return null;
+    if (!editorOptions || editorOptions.visible === false) return null;
 
     const channelID = parameter.channelID;
     const channel = channelID ? channels[channelID] : undefined;

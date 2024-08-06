@@ -1,5 +1,4 @@
 import { fetcher, testString } from 'shared/lib';
-import { profileAPI } from 'features/profile';
 import { appAPI } from './app.api';
 import { useAppStore } from '../store/app.store';
 import { WMDevTools } from './dev-tools';
@@ -8,12 +7,12 @@ import { getSessionToSave } from './session-save';
 
 /** Инициализация приложения. */
 export async function initialize(): Promise<void> {
+  checkJS();
   const appLocation = useAppStore.getState().location;
   const configObject = await fetchClientConfig(appLocation);
   const config = createClientConfig(configObject);
 
   fetcher.setPrefix(config.api);
-  if (config.geoManager) profileAPI.base = config.geoManager;
   if (config.mode === 'dev') window['store'] = new WMDevTools();
 
   const systemList = await appAPI.getSystemList();
@@ -62,4 +61,15 @@ function getDefaultPrefix(): string {
   const slashIndex = pathName.indexOf('/');
   if (slashIndex !== -1) pathName = pathName.substring(0, slashIndex);
   return window.location.origin + '/' + pathName + '/WebRequests.svc/';
+}
+
+function checkJS(): void {
+  if (!Promise.withResolvers) Promise.withResolvers = function(): PromiseWithResolvers<any> {
+    let resolve, reject;
+    const promise = new Promise((res, rej) => { resolve = res; reject = rej; });
+    return {promise, resolve, reject};
+  };
+  if (!Array.prototype.toSorted) Array.prototype.toSorted = function(compareFn): any[] {
+    return [...this].sort(compareFn);
+  };
 }

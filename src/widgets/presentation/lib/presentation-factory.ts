@@ -1,6 +1,6 @@
-import type { ClientDataDTO } from 'entities/client';
+import type { ClientDataDTO, ParameterSetterDTO } from 'entities/client';
+import type { ParameterStore, ParameterUpdateData, ParameterGroupDTO } from 'entities/parameter';
 import type { ProgramDTO } from 'entities/program';
-import type { ParameterStore } from 'entities/parameter';
 import { Model } from 'flexlayout-react';
 import { programAPI, programCompareFn } from 'entities/program';
 import { useChannelStore } from 'entities/channel';
@@ -12,18 +12,16 @@ import { DataResolver } from './data-resolver';
 import { formChannelCriteria } from './form-dict';
 
 import {
-  useParameterStore, ParameterStringTemplate,
-  addClientParameters, findParameters,
+  useParameterStore, ParameterStringTemplate, addClientParameters,
+  findParameters, applyVisibilityTemplates, calcParameterVisibility,
+  updateParamsDeep, parseParameterValue, createParameterGroups,
 } from 'entities/parameter';
 
 
-type PresentationSettingsDTO = Omit<PresentationSettings, 'linkedProperties'> & {
-  linkedProperties: ParameterSetterDTO[];
-}
-interface ParameterSetterDTO {
-  parameterToSet: string;
-  parametersToExecute: string[];
-  index: number;
+interface PresentationSettingsDTO {
+  multiMapChannel?: string;
+  linkedProperties?: ParameterSetterDTO[];
+  parameterGroups?: ParameterGroupDTO[];
 }
 
 /** Вспомогательный класс, используемый при инициализации новой презентации. */
@@ -38,7 +36,11 @@ export class PresentationFactory {
   private createdChannels: Channel[];
   private allChannels: ChannelDict;
   private neededChannels: ChannelID[];
+
+  /** Установщики параметров текущей презентации. */
   private setters: ParameterSetter[];
+  /** Установщики глобальных параметров. */
+  private externalSetters: ParameterSetter[];
 
   constructor(id: ClientID) {
     this.id = id;
@@ -52,8 +54,9 @@ export class PresentationFactory {
     await this.fetchDTO();
     if (!this.dtoOwn) return;
 
-    this.parameters = addClientParameters(this.id, this.dtoOwn.parameters);
+    this.createParameters();
     await this.createChannels();
+    const channels = this.createOwnAttachedChannels();
     const settings = this.createSettings();
 
     const { children, activeChildren, openedChildren } = this.dtoOwn.children;
@@ -61,8 +64,7 @@ export class PresentationFactory {
 
     return {
       id: this.id, type: 'grid', parent: 'root', settings,
-      parameters: this.parameters.map(p => p.id),
-      channels: this.createOwnAttachedChannels(),
+      parameters: this.parameters.map(p => p.id), channels,
       layout: this.createLayout(),
       children: children,
       activeChildID: activeChildren[0],
@@ -73,9 +75,25 @@ export class PresentationFactory {
     };
   }
 
-  public fillData(): Promise<boolean> {
+  public async fillData(): Promise<boolean> {
     const resolver = new DataResolver();
-    return resolver.resolve(this.createdChannels, this.parameters, this.setters);
+    const result = await resolver.resolve(this.createdChannels, this.parameters, this.setters);
+    const storage = useParameterStore.getState().storage;
+    for (const parameter of this.parameters) calcParameterVisibility(parameter, storage);
+    return result;
+  }
+
+  public executeExternalSetters(): Promise<true | void> {
+    if (this.externalSetters.length === 0) return Promise.resolve();
+    const storage = useParameterStore.getState().storage;
+
+    const cb = async (s: ParameterSetter): Promise<ParameterUpdateData> => {
+      const payload = findParameters(s.executeParameters, storage);
+      const rawValue = await clientAPI.executeLinkedProperty(this.id, payload, s.index);
+      const parameter = storage.get(s.setParameter);
+      return {id: s.setParameter, newValue: parseParameterValue(rawValue, parameter.type)};
+    };
+    return Promise.all(this.externalSetters.map(cb)).then(updateParamsDeep);
   }
 
   public getParameters(): Parameter[] {
@@ -90,6 +108,13 @@ export class PresentationFactory {
     }
   }
 
+  private createParameters(): void {
+    const inits = this.dtoOwn.parameters;
+    this.parameters = addClientParameters(this.id, inits);
+    const resolve = (name: ParameterName) => this.resolveParameterName(name);
+    applyVisibilityTemplates(this.parameters, inits, resolve);
+  }
+
   private createLayout(): Model {
     const { children, activeChildren } = this.dtoOwn.children;
     const layoutFactory = new LayoutFactory(children, activeChildren[0]);
@@ -97,28 +122,38 @@ export class PresentationFactory {
   }
 
   private createSettings(): PresentationSettings {
-    const { multiMapChannel, parameterGroups, linkedProperties } = this.dtoOwn.settings;
-    const settings: PresentationSettings = {multiMapChannel, parameterGroups};
+    const dto = this.dtoOwn.settings;
+    const { linkedProperties: setters, parameterGroups: groups } = dto;
+    if (Array.isArray(setters)) this.resolveSetters(setters);
 
+    const settings: PresentationSettings = {};
+    if (dto.multiMapChannel) settings.multiMapChannel = true;
+
+    if (Array.isArray(groups) && groups.length) {
+      const parameterGroups = createParameterGroups(this.parameters, groups);
+      if (parameterGroups) settings.parameterGroups = parameterGroups;
+    }
+    return settings;
+  }
+
+  private resolveSetters(data: ParameterSetterDTO[]): void {
     this.setters = [];
-    if (!linkedProperties) return settings;
+    this.externalSetters = [];
 
-    for (const dto of linkedProperties) {
-      const parameter = this.parameters.find(p => p.name === dto.parameterToSet);
-      if (!parameter) continue;
-
-      const setParameter = parameter.id;
+    for (const { parameterToSet, parametersToExecute, index } of data) {
+      const setParameter = this.resolveParameterName(parameterToSet);
+      if (!setParameter) continue;
       const executeParameters: Set<ParameterID> = new Set();
 
-      for (const name of dto.parametersToExecute) {
+      for (const name of parametersToExecute) {
         const id = this.resolveParameterName(name);
         if (id) executeParameters.add(id);
       }
-      const setter = {client: this.id, setParameter, executeParameters, index: dto.index};
-      this.setters.push(setter);
+      const isExternal = this.parameters.every(p => p.id !== setParameter);
+      const setter = {client: this.id, setParameter, executeParameters, index};
       this.parameterStore.setters.push(setter);
+      (isExternal ? this.externalSetters : this.setters).push(setter);
     }
-    return settings;
   }
 
   private createOwnAttachedChannels(): AttachedChannel[] {

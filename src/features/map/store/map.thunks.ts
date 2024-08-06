@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import { showNotification } from 'entities/notification';
-import { setMapField, setMapStatus, } from './map.actions';
 import { closeWindow, showWindow } from 'entities/window';
+import { rowToParameterValue, updateParamDeep } from 'entities/parameter';
 
 import { t } from 'shared/locales';
 import { mapAPI } from '../loader/map.api';
@@ -9,6 +9,7 @@ import { propertyWindowConfig } from '../lib/constants';
 import { WindowProps } from '@progress/kendo-react-dialogs';
 import { AttrTableWindow } from '../components/edit-panel/editing/attr-table';
 import { PropertiesWindow } from '../components/edit-panel/properties-window/properties';
+import { setMapField, setMapStatus } from './map.actions';
 import { useMapStore } from './map.store';
 
 
@@ -59,13 +60,42 @@ export function showMapAttrTableWindow(id: FormID): void {
   showWindow(windowID, windowProps, content);
 }
 
-export async function fetchMapData(id: FormID): Promise<void> {
+/* --- --- */
+
+export async function updateMap(id: FormID, mapChannel: Channel): Promise<void> {
+  const state = useMapStore.getState()[id];
+  const { stage, loader } = state;
+
+  const channelData = mapChannel?.data;
+  const row = channelData?.rows?.at(0);
+
+  if (!row) {
+    if (stage.inclinometryModeOn) {
+      stage.setData({layers: [], x: 0, y: 0, scale: 1} as MapData);
+      setMapStatus(id, 'ok');
+    } else {
+      state.mapID = null; state.owner = null;
+      setMapStatus(id, 'empty');
+    }
+    return;
+  }
+
+  const mapID = String(row[channelData.columns.findIndex(c => c.name === 'ID')]);
+  const storageID = row[channelData.columns.findIndex(c => c.name === 'OWNER')];
+
+  if (mapID === state.mapID && storageID === state.owner) return;
+  state.mapID = mapID;
+  state.owner = storageID;
+
+  const activeRowParameter = mapChannel.config.activeRowParameter;
+  if (activeRowParameter) {
+    const value = rowToParameterValue(row, mapChannel);
+    updateParamDeep(activeRowParameter, value).then();
+  }
   setMapStatus(id, 'loading');
-  const { stage, loader, mapID, owner } = useMapStore.getState()[id];
-  const mapData = await loader.loadMapData(mapID, owner);
+  const mapData = await loader.loadMapData(mapID, storageID);
 
   if (typeof mapData === 'string') {
-    console.warn(mapData);
     setMapStatus(id, 'error');
   } else if (mapData) {
     stage.setData(mapData);

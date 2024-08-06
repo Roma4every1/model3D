@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useRender } from 'shared/react';
 import { useChannel, useChannelDict } from 'entities/channel';
 import { useParameterValues } from 'entities/parameter';
 import { useTableState } from '../../store/table.store';
@@ -10,7 +11,8 @@ import './table.scss';
 
 
 /** Редактируемая таблица. */
-export const Table = ({id}: Pick<SessionClient, 'id'>) => {
+export const Table = ({id, loading}: Pick<SessionClient, 'id' | 'loading'>) => {
+  const render = useRender();
   const [records, setRecords] = useState<TableRecord[]>([]);
   const state = useTableState(id);
   const { recordHandler, channelID, lookupChannelIDs, headerSetterRules, columnTree } = state;
@@ -30,6 +32,7 @@ export const Table = ({id}: Pick<SessionClient, 'id'>) => {
   // Обновление данных справочников
   useEffect(() => {
     recordHandler.setLookupData(lookupData);
+    render();
   }, [lookupData]); // eslint-disable-line
 
   // Обновление записей таблицы и состояния при обновлении данных канала
@@ -43,8 +46,13 @@ export const Table = ({id}: Pick<SessionClient, 'id'>) => {
   }, [state.columns, columnTree, channelID, query]);
 
   if (!channelID || !columnModel.length) return <div/>;
+  const isLoading = loading?.status === 'data';
+
   return (
-    <TableGrid id={id} state={state} query={query} records={records} setRecords={setRecords}>
+    <TableGrid
+      id={id} loading={isLoading} state={state} query={query}
+      records={records} setRecords={setRecords}
+    >
       {columnModel}
     </TableGrid>
   );

@@ -1,14 +1,22 @@
+import type { ParameterUpdateEntry } from '../lib/parameter.types';
 import { createWithEqualityFn } from 'zustand/traditional';
 import { IDGenerator, compareArrays } from 'shared/lib';
 
 
+/** Стор для параметров клиентов сессии. */
 export interface ParameterStore {
+  /** Генератор идентификаторов параметров. */
   readonly idGenerator: IDGenerator;
+  /** Хранилище параметров. */
   readonly storage: ParameterMap;
+  /** Слушатели событий изменения параметров. */
   readonly listeners: Map<ParameterID, OnParameterUpdate>;
-  setters: ParameterSetter[];
+  /** Хранилище для установщиков параметров. */
+  readonly setters: ParameterSetter[];
+  /** Очередь обновления параметров. */
+  readonly updateQueue: ParameterUpdateEntry[];
+  /** Группировка параметров по клиентам. */
   clients: ParameterDict;
-  updateQueue: {id: ParameterID, newValue: any, resolve: () => void}[];
 }
 
 
@@ -21,8 +29,7 @@ export const useParameterStore = createWithEqualityFn((): ParameterStore => ({
   updateQueue: [],
 }));
 
-export function useParameterStorage(): ParameterMap {
-  // ссылка на storage никогда не меняется
+export function getParameterStorage(): ParameterMap {
   return useParameterStore.getState().storage;
 }
 export function useClientParameters(id: ClientID): Parameter[] {

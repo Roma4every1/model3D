@@ -9,7 +9,7 @@ import { FieldPalettePropertiesWindow } from './field-palette-properties';
 export const FieldProperties = (props: PropertyWindowProps<MapField>) => {
   const { element: field, apply, update, cancel, t, isElementCreating } = props;
   const [changed, setChanged] = useState(false);
-  const [paletteInit] = useState(field.palette[0]);
+  const [paletteInit] = useState(field.palette);
 
   /* --- Field Properties State --- */
 
@@ -65,7 +65,7 @@ export const FieldProperties = (props: PropertyWindowProps<MapField>) => {
     const onClose = () => closeWindow(windowID);
 
     const content = <FieldPalettePropertiesWindow
-      onClose={onClose} element={field.palette[0]} update={update} t={t}
+      onClose={onClose} element={field.palette} update={update} t={t}
       init={paletteInit}
     />;
     const windowProps = {

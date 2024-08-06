@@ -1,3 +1,7 @@
+import type { ParameterInit } from './parameter.types';
+import { ParameterStringTemplate } from './parameter-string-template';
+
+
 /** Находит в хранилище параметров нужные элементы и наполняет массив. */
 export function findParameters(ids: Iterable<ParameterID>, storage: ParameterMap): Parameter[] {
   const result: Parameter[] = [];
@@ -31,11 +35,39 @@ export function lockParameters(parameters: Parameter[]): void {
     }
   }
 }
+
 export function unlockParameters(parameters: Parameter[]): void {
   for (const { editor } of parameters) {
     if (editor) {
       editor.disabled = false;
       editor.loading = false;
     }
+  }
+}
+
+export function applyVisibilityTemplates(
+  parameters: Parameter[], inits: ParameterInit[],
+  resolve: PNameResolve,
+): void {
+  for (const init of inits) {
+    const { id: name, visibilityString } = init;
+    if (!visibilityString) continue;
+    const editor = parameters.find(p => p.name === name).editor;
+    if (!editor) continue;
+
+    editor.visibilityTemplate = new ParameterStringTemplate(visibilityString, resolve);
+    editor.visible = false;
+  }
+}
+
+export function calcParameterVisibility(p: Parameter, storage: ParameterMap): void {
+  const template = p.editor?.visibilityTemplate;
+  if (!template) return;
+  const values = findParameters(template.parameterIDs, storage);
+
+  try {
+    p.editor.visible = Boolean(eval(template.build(values)));
+  } catch {
+    p.editor.visible = false;
   }
 }

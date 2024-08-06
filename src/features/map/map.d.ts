@@ -6,6 +6,8 @@ interface MapState {
   readonly loader: IMapLoader;
   /** Класс для отслеживания изменения размеров холста. */
   readonly observer: ResizeObserver;
+  /** Активные объекты на карте. */
+  readonly objects: MapObjects;
   /** Ссылка на холст. */
   canvas: MapCanvas;
   /** Владелец карты. */
@@ -32,6 +34,11 @@ interface MapState {
  * + `error` — ошибка при загрузке
  */
 type MapStatus = 'ok' | 'empty' | 'loading' | 'error';
+
+interface MapObjects {
+  well: WellModel | null;
+  trace: TraceModel | null;
+}
 
 interface IMapStage {
   readonly select: IMapSelect;
@@ -294,6 +301,8 @@ interface MapLabel extends MapElementProto {
   color: string;
   fontname: string;
   fontsize: number;
+  fillbkcolor?: string;
+  bold?: boolean,
   angle: MapLabelAngle;
 }
 
@@ -382,12 +391,13 @@ interface MapField extends MapElementProto {
   sizey: number;
   stepx: number;
   stepy: number;
+  data: string;
   palette: MapFieldPalette;
   sourceRenderDataMatrix: Matrix;
 }
 
 interface MapFieldPalette {
-  interpolated: '-1' | '0';
+  interpolated: boolean;
   level: MapFieldPaletteLevel[];
 }
 
@@ -398,7 +408,7 @@ interface MapFieldPaletteLevel {
 
 /* --- --- */
 
-interface MapPieSlice {
+interface MapPieSlice extends MapElementProto {
   type: 'pieslice';
   x: number;
   y: number;

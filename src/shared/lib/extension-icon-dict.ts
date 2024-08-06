@@ -35,11 +35,12 @@ export const fileExtensionIconDict: Record<string, string> = {
 export { defaultFileIcon };
 
 
-/** Определяет расширение файла по названию.
+/**
+ * Определяет расширение файла по названию.
  * @example
  * getFileExtension("text.txt") => "txt"
  * getFileExtension("data.xlsx") => "xlsx"
- * */
+ */
 export function getFileExtension(fileName: string): string {
   const dotIndex = fileName.lastIndexOf('.');
   return dotIndex !== -1 ? fileName.slice(dotIndex + 1).toLowerCase() : '';

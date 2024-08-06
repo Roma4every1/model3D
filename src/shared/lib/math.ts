@@ -12,12 +12,13 @@ export function round(n: number, digits: number = 0): number {
   return Math.round(n * multiplier) / multiplier;
 }
 
-/** Округляет в низ до ближайшего числа, удобного для восприятия на оси графика.
+/**
+ * Округляет вниз до ближайшего числа, удобного для восприятия на оси графика.
  * @example
  * getPragmaticMin(4)    => 0
  * getPragmaticMin(33.3) => 25
  * getPragmaticMin(543)  => 500
- * */
+ */
 export function getPragmaticMin(n: number): number {
   n = Math.floor(n);
   if (n < 10) return 0;
@@ -29,12 +30,13 @@ export function getPragmaticMin(n: number): number {
   return (n >= 2 ? 2 : 1) * e;
 }
 
-/** Округляет в вверх до ближайшего числа, удобного для восприятия на оси графика.
+/**
+ * Округляет вверх до ближайшего числа, удобного для восприятия на оси графика.
  * @example
  * getPragmaticMax(4)    => 5
  * getPragmaticMax(33.3) => 50
  * getPragmaticMax(543)  => 1000
- * */
+ */
 export function getPragmaticMax(n: number): number {
   n = Math.ceil(n);
   const e = Math.pow(10, n.toString().length - 1);

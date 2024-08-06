@@ -12,6 +12,11 @@ export interface ClientDataDTO<S = any> {
   children?: ClientChildrenDTO;
   layout?: IJsonModel;
 }
+export interface ParameterSetterDTO {
+  parameterToSet: string;
+  parametersToExecute: string[];
+  index: number;
+}
 
 
 export class ClientAPI {
@@ -45,20 +50,17 @@ export class ClientAPI {
 
   private async getRootDataLegacy(id: ClientID): Promise<Res<ClientDataDTO>> {
     const reqOptions: ReqOptions = {query: {formId: id}};
-    const [resSettings, resParameters, resChildren, resLayout, resTree] = await Promise.all([
+    const [resSettings, resParameters, resChildren, resLayout] = await Promise.all([
       this.api.get('/getFormSettings', reqOptions),
       this.api.get<ParameterInit[]>('/getFormParameters', reqOptions),
       this.api.get<ClientChildrenDTO>('/getChildrenForms', reqOptions),
       this.api.get<IJsonModel>('/getFormLayout', reqOptions),
-      this.api.get<PresentationTree>('/presentationList', reqOptions),
     ]);
 
     if (!resChildren.ok) return {ok: false, message: resChildren.message};
-    if (!resTree.ok) return {ok: false, message: resTree.message};
+    if (!resSettings.ok) return {ok: false, message: resSettings.message};
 
-    const settings: any = resSettings.ok ? resSettings.data : {};
-    settings.presentationTree = resTree.data;
-
+    const settings = resSettings.data;
     const children = resChildren.data;
     const layout = resLayout.ok ? resLayout.data : ({} as IJsonModel);
     const parameters = resParameters.ok ? resParameters.data : [];
@@ -78,7 +80,7 @@ export class ClientAPI {
 
     const settings: PresentationSettings = resSettings.ok ? resSettings.data : {};
     const children = resChildren.data;
-    const channels = this.getAttachedChannels(resChannels);
+    const channels: AttachedChannelDTO[] = resChannels?.ok ? resChannels.data : [];
     const layout = resLayout.ok ? resLayout.data : ({} as IJsonModel);
     const parameters = resParameters.ok ? resParameters.data : [];
     return {ok: true, data: {settings, channels, parameters, children, layout}};
@@ -96,20 +98,9 @@ export class ClientAPI {
     }
 
     const [resChannels, resSettings] = await Promise.all(promises);
-    const channels = this.getAttachedChannels(resChannels);
+    const channels: AttachedChannelDTO[] = resChannels?.ok ? resChannels.data : [];
     const settings = resSettings?.ok ? resSettings.data : {};
     return {ok: true, data: {settings, channels, parameters: []}};
-  }
-
-  private getAttachedChannels(res: Res<any[]>): AttachedChannelDTO[] {
-    if (res.ok && res.data.length > 0) {
-      if (typeof res.data[0] === 'object') {
-        return res.data;
-      } else {
-        return res.data.map(c => ({name: c}));
-      }
-    }
-    return [];
   }
 }
 

@@ -106,8 +106,8 @@ export class FillPatterns {
     const size = FillPatterns.imageSize;
     const buffer = this.imageData.data;
 
-    for(let y = 0; y < size; y++) {
-      for(let x = 0; x < size; x++) {
+    for(let y = 0; y < size; ++y) {
+      for(let x = 0; x < size; ++x) {
         const pos = (y * size + x) * 4;
         if (matrix[y][x]) {
           buffer[pos    ] = red;

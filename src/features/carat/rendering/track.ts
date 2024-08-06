@@ -5,7 +5,7 @@ import { CaratColumnGroup } from './column-group';
 import { CaratInclinometry } from '../lib/inclinometry';
 import { ConstructionTransformer } from '../lib/transformer';
 import { ConstructionLabels } from './construction-labels';
-import { isRectInnerPoint } from 'shared/lib';
+import { round, isRectInnerPoint } from 'shared/lib';
 import { defaultSettings } from '../lib/constants';
 
 
@@ -343,8 +343,8 @@ export class CaratTrack {
   private updateLabel(): void {
     const curve = this.activeCurve;
     if (curve) {
-      const top = Math.floor(curve.top);
-      const bottom = Math.ceil(curve.bottom);
+      const top = round(curve.top, 1);
+      const bottom = round(curve.bottom, 1);
       this.label = `${this.wellName} ${curve.type} (${top} - ${bottom})`;
     } else {
       this.label = this.wellName;

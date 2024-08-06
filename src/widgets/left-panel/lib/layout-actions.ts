@@ -1,11 +1,11 @@
 import { Model, Actions, DockLocation } from 'flexlayout-react';
-import { leftTabIDDict, leftRootID } from './constants';
+import { leftRootID } from './constants';
 
 
 /** Вернёт видимость вкладки в левой панели. */
-export function showLeftTab(layout: LeftPanelLayout, type: LeftTabType) {
+export function showLeftTab(layout: LeftPanelLayout, type: LeftTabType): void {
   const tabInfo = layout[type];
-  const tab = {type: 'tab', id: leftTabIDDict[type], name: tabInfo.displayName};
+  const tab = {type: 'tab', id: layout[type].id, name: tabInfo.displayName, component: type};
 
   const model: Model = layout.model;
   const tabSet = tabInfo.parent ? model.getNodeById(tabInfo.parent) : null;
@@ -19,8 +19,8 @@ export function showLeftTab(layout: LeftPanelLayout, type: LeftTabType) {
 }
 
 /** Скроет видимость вкладки в левой панели. */
-export function hideLeftTab(layout: LeftPanelLayout, type: LeftTabType) {
-  const id = leftTabIDDict[type];
+export function hideLeftTab(layout: LeftPanelLayout, type: LeftTabType): void {
+  const id = layout[type].id;
   const model: Model = layout.model;
   const parent = model.getNodeById(id)?.getParent();
   const children = parent?.getChildren();

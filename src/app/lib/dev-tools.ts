@@ -20,109 +20,170 @@ import { useFileViewStore } from 'features/file';
 
 export class WMDevTools {
   public readonly api = fetcher;
-  public readonly appStore = useAppStore;
-  public readonly clientStore = useClientStore;
-  public readonly channelStore = useChannelStore;
-  public readonly parameterStore = useParameterStore;
-  public readonly programStore = useProgramStore;
-  public readonly objectsStore = useObjectsStore;
+  public readonly app = useAppStore;
+  public readonly clients = useClientStore;
+  public readonly channels = useChannelStore;
+  public readonly parameters = useParameterStore;
+  public readonly programs = useProgramStore;
+  public readonly objects = useObjectsStore;
 
-  public rootState() {
-    return this.clientStore.getState().root;
+  /* --- Client Store --- */
+
+  public getClients(type?: ClientType): any {
+    const all = Object.values(this.clients.getState());
+    return type ? all.filter(c => c.type === type) : all;
   }
 
-  public parameters() {
-    return this.parameterStore.getState();
+  public getRoot(): any {
+    return this.clients.getState().root;
   }
 
-  public parameter(arg: ParameterID | ParameterName) {
-    const state = this.parameterStore.getState();
-    if (typeof arg === 'number') return state.storage.get(arg) ?? null;
+  public getPresentations(): any {
+    const state = this.clients.getState();
+    return Object.values(state).filter(c => c.type === 'grid');
+  }
+
+  public getActivePresentation(): any {
+    const state = this.clients.getState();
+    return state[state.root.activeChildID];
+  }
+
+  public getForms(): any {
+    const state = this.clients.getState();
+    return Object.values(state).filter(c => c.id !== 'root' && c.type !== 'grid');
+  }
+
+  public getActiveForms(type?: ClientType): any {
+    const state = this.clients.getState();
+    const children = state[state.root.activeChildID].children;
+    const all = children.map(c => state[c.id]);
+    return type ? all.filter(c => c.type === type) : all;
+  }
+
+  /* --- Parameter Store --- */
+
+  public getParameter(descriptor: ParameterID | ParameterName): any {
+    const state = this.parameters.getState();
+    if (typeof descriptor === 'number') return state.storage.get(descriptor) ?? null;
 
     for (const list of Object.values(state.clients)) {
-      const parameter = list.find(p => p.name === arg);
+      const parameter = list.find(p => p.name === descriptor);
       if (parameter) return parameter;
     }
     return null;
   }
 
-  public clientParameters(id?: ClientID) {
-    const state = this.parameterStore.getState().clients;
-    return id === undefined ? state : state[id];
+  public getGlobalParameters(): any {
+    return this.parameters.getState().clients.root;
   }
 
-  public channels() {
-    return this.channelStore.getState();
+  public getLocalParameters(id?: ClientID): any {
+    if (id === undefined) id = this.clients.getState().root.activeChildID;
+    return this.parameters.getState().clients[id];
   }
 
-  public channelRows(name: ChannelName, columns: boolean = false) {
-    const channel = this.channelStore.getState()[name];
-    if (!channel || !channel.data) return null;
-    const rows = channel.data.rows;
-    if (columns) rows.unshift(channel.data.columns.map(c => c.name));
-    return rows;
+  /* --- Channel Store --- */
+
+  public getChannel(descriptor: ChannelID | ChannelName): any {
+    const state = this.channels.getState();
+    if (typeof descriptor === 'number') return state.storage[descriptor];
+
+    const channels = Object.values(state.storage).filter(c => c.name === descriptor);
+    if (channels.length === 0) return null;
+    if (channels.length === 1) return channels[0];
+    return channels;
   }
 
-  public objects() {
-    return this.objectsStore.getState();
+  public getChannelRows(descriptor: ChannelID | ChannelName, columns: boolean = false): any {
+    const channel = this.getChannel(descriptor);
+    if (Array.isArray(channel)) {
+      const ids = channel.map(c => c.id).join(', ');
+      console.log(`Choose an ID from ${ids} and repeat the call`);
+    } else {
+      if (!channel || !channel.data) return null;
+      const rows = channel.data.rows;
+      if (columns) rows.unshift(channel.data.columns.map(c => c.name));
+      return rows;
+    }
   }
 
-  public objectModels() {
-    const { place, stratum, well, trace } = this.objectsStore.getState();
+  public getChannels(): any {
+    return this.channels.getState().storage;
+  }
+
+  public getPresentationChannels(id?: ClientID): any {
+    const clients = this.clients.getState();
+    const ids = clients[id ?? clients.root.activeChildID].neededChannels;
+    const storage = this.channels.getState().storage;
+    return ids.map(id => storage[id]);
+  }
+
+  public getSharingChannels(): any {
+    const result: Record<ChannelName, Channel[]> = {};
+    const { storage, sharing } = this.channels.getState();
+
+    for (const name in sharing) {
+      if (sharing[name].size < 2) continue;
+      result[name] = [...sharing[name]].map(id => storage[id]);
+    }
+    return result;
+  }
+
+  /* --- Objects Store --- */
+
+  public getObjects(): any {
+    return this.objects.getState();
+  }
+
+  public getObjectModels(): any {
+    const { place, stratum, well, trace } = this.objects.getState();
     return {place: place.model, stratum: stratum.model, well: well.model, trace: trace.model};
   }
 
-  public presentations() {
-    const clients = Object.values(this.clientStore.getState());
-    return clients.filter(c => c.type === 'grid');
-  }
+  /* --- Program Store --- */
 
-  public clients() {
-    return Object.values(this.clientStore.getState());
-  }
-
-  public programs(id?: ClientID, active?: boolean) {
-    const allModels = this.programStore.getState().models;
-    if (!id) return allModels;
-    const models = allModels[id] ?? [];
+  public getClientPrograms(id: ClientID, active?: boolean): any {
+    const models = this.programs.getState().models[id] ?? [];
     return active ? models.filter(m => m.parameters) : models;
   }
 
-  public tables() {
+  /* --- Typed Clients --- */
+
+  public get tables(): any {
     return Object.values(useTableStore.getState());
   }
 
-  public chartStates() {
+  public get charts(): any {
     return Object.values(useChartStore.getState());
   }
 
-  public mapStates() {
+  public get maps(): any {
     return Object.values(useMapStore.getState());
   }
 
-  public multiMapStates() {
+  public get multiMaps(): any {
     return Object.values(useMultiMapStore.getState());
   }
 
-  public caratStates() {
+  public get carats(): any {
     return Object.values(useCaratStore.getState());
   }
 
-  public profileStates() {
+  public get profiles(): any {
     return Object.values(useProfileStore.getState());
   }
 
-  public fileViewStates() {
+  public get fileViews(): any {
     return Object.values(useFileViewStore.getState());
   }
 
   /* --- --- */
 
-  public windowStates() {
+  public get windows(): any {
     return Object.values(useWindowStore.getState());
   }
 
-  public notificationStates() {
+  public get notifications(): any {
     return useNotificationStore.getState().notifications;
   }
 }

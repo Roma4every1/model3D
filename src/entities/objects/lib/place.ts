@@ -45,10 +45,10 @@ export class PlaceManager implements IPlaceManager {
   /** По значение `TableRow` параметра создаёт модель месторождения. */
   private createModel(value: ParameterValueMap['tableRow']): PlaceModel | null {
     if (!value || !this.info) return null;
-    const id = Number(value[this.info.id.columnName]?.value);
+    const id = Number(value[this.info.id.propertyName]?.value);
     if (isNaN(id)) return null;
-    const code = value[this.info.code.columnName]?.value;
-    const name = value[this.info.name.columnName]?.value;
+    const code = value[this.info.code.propertyName]?.value;
+    const name = value[this.info.name.propertyName]?.value;
     return {id, code, name};
   }
 }

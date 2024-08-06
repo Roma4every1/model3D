@@ -16,7 +16,7 @@ import {
 
 
 /** Инициализация презентации. */
-export async function initializePresentation(id: ClientID): Promise<void> {
+export async function initializePresentation(id: ClientID, rootInit?: Promise<void>): Promise<void> {
   const factory = new PresentationFactory(id);
   const presentation = await factory.createState();
   if (!presentation) return setClientLoading(id, 'error', 'app.presentation-fetch-error');
@@ -58,6 +58,7 @@ export async function initializePresentation(id: ClientID): Promise<void> {
     }
   }
 
+  if (rootInit) await rootInit;
   const fillSuccess = await factory.fillData();
   if (!fillSuccess) showWarningMessage(t('app.presentation-data-init-error'));
   await programPromise;
@@ -72,6 +73,7 @@ export async function initializePresentation(id: ClientID): Promise<void> {
   }
   addSessionClients(children);
   setClientLoading(id, 'done');
+  await factory.executeExternalSetters();
 }
 
 function setParameterDependents(dict: ParameterDict): void {

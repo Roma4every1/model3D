@@ -18,16 +18,19 @@ export const PanelsVisibility = ({leftLayout}: {leftLayout: LeftPanelLayout}) =>
     <MenuSection header={'Панели'} className={'map-panel-main'} style={{display: 'flex'}}>
       <BigButtonToggle
         text={'Параметры'} icon={globalParametersIcon}
-        active={leftLayout.global.show} action={() => toggleLeftVisible('global')}
+        active={leftLayout.globalParameters.show}
+        action={() => toggleLeftVisible('globalParameters')}
       />
       <BigButtonToggle
         text={'Параметры презентации'} icon={presentationParametersIcon}
-        active={leftLayout.presentation.show} action={() => toggleLeftVisible('presentation')}
-        disabled={leftLayout.presentation.disabled}
+        active={leftLayout.presentationParameters.show}
+        action={() => toggleLeftVisible('presentationParameters')}
+        disabled={leftLayout.presentationParameters.disabled}
       />
       <BigButtonToggle
         text={'Презентации'} icon={presentationsListIcon}
-        active={leftLayout.tree.show} action={() => toggleLeftVisible('tree')}
+        active={leftLayout.presentationTree.show}
+        action={() => toggleLeftVisible('presentationTree')}
       />
     </MenuSection>
   );

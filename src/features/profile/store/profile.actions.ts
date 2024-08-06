@@ -6,7 +6,7 @@ import { settingsToProfileState } from '../lib/adapter';
 
 /** Добавляет в хранилище состояний профиля новую форму профиля. */
 export function createProfileState(payload: FormStatePayload): void {
-  if (!profileAPI.base) throw new InitializationError('profile.api-error');
+  if (!profileAPI.check()) throw new InitializationError('profile.api-error');
   const id = payload.state.id;
   useProfileStore.setState({[id]: settingsToProfileState()});
 }

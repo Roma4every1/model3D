@@ -1,6 +1,6 @@
-import { CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
+import { XMLParser } from 'fast-xml-parser';
 import { Workbook, Cell, Worksheet } from 'exceljs';
-import { xml2js } from 'xml-js';
 import { excelIndexedColors } from './constants';
 
 
@@ -22,17 +22,16 @@ export async function excelParser(data: Blob): Promise<FileModelExcel> {
 
     const sheetRows : ExcelRowModel[] = [];
 
-    for (let i = 1; i <= rowCount; i++) {
+    for (let i = 1; i <= rowCount; ++i) {
       const row= sheet.getRow(i);
       const rowCells: ExcelCellModel[] = [];
       const rowKey= `row_${i}`;
 
-      for (let j = 1; j <= columnCount; j++) {
+      for (let j = 1; j <= columnCount; ++j) {
         const cell = row.getCell(j);
-
         if (cell?.master !== cell) continue;
-        const masterMerge = mergeMasterCells.find(el => el.master === cell.address);
 
+        const masterMerge = mergeMasterCells.find(el => el.master === cell.address);
         const cellStyles = getCellStyles(cell, colorScheme);
 
         const cellValue = typeof cell?.value === 'object' && cell?.value !== null ?
@@ -44,48 +43,44 @@ export async function excelParser(data: Blob): Promise<FileModelExcel> {
           style: cellStyles,
           rowSpan: masterMerge?.rowSpan || null,
           colSpan: masterMerge?.colSpan || null,
-          value: cellValue
+          value: cellValue,
         }
-
         rowCells.push(cellObject);
       }
-
-      sheetRows.push({
-        key: rowKey,
-        number: i,
-        height: row.height / 20,
-        cells: rowCells})
+      sheetRows.push({key: rowKey, number: i, height: row.height / 20, cells: rowCells});
     }
 
-    const sheetColumns : ExcelColumnModel[] = sheet.columns.map((c, i) => ({
+    const sheetColumns : ExcelColumnModel[] = sheet.columns?.map((c, i) => ({
       key: `column_${i}`,
       letter: c['letter'],
       width: c.width / 20
-    }))
-
-    return {
-      key: sheetKey,
-      name: sheet.name,
-      rows: sheetRows,
-      columns: sheetColumns
-    };
+    }));
+    return {key: sheetKey, name: sheet.name, rows: sheetRows, columns: sheetColumns ?? []};
   });
 
   return {sheets};
 }
 
+const xmlParser = new XMLParser({
+  ignoreDeclaration: true, ignorePiTags: true, ignoreAttributes: false,
+  attributeNamePrefix: '', parseTagValue: false,
+});
 
-/** Получает массив цветов Excel темы из XML объекта темы */
-export function parseThemeColorsXML(themeXML: any): string[] {
-  const themeElements = xml2js(themeXML).elements[0].elements[0];
-  const clrSchemeObjects = themeElements.elements[0].elements.map(el => el.elements[0]);
+/** Получает массив цветов Excel темы из XML объекта темы. */
+export function parseThemeColorsXML(themeXML: string): ColorString[] {
+  const colors: ColorString[] = [];
+  const themeElement = xmlParser.parse(themeXML)['a:theme']['a:themeElements']['a:clrScheme'];
+  const themeItems = Object.values(themeElement).map(t => Object.values(t)[0]);
 
-  return clrSchemeObjects.map(({attributes}): string => {
-    return `#${attributes?.lastClr ? attributes?.lastClr : attributes?.val}`
-  });
+  for (const item of themeItems) {
+    if (typeof item !== 'object') continue;
+    const colorValue = item.lastClr ?? item.val;
+    if (colorValue) colors.push('#' + colorValue);
+  }
+  return colors;
 }
 
-/** Получает объект CSS стилей для ячейки таблицы из объекта Excel стилей ячейки */
+/** Получает объект CSS стилей для ячейки таблицы из объекта Excel стилей ячейки. */
 export function getCellStyles(cell: Cell, clrSchemeColors: string[]): CSSProperties {
   const cellStyle: CSSProperties = {};
   const styles = cell.style;
@@ -136,8 +131,10 @@ export function getCellStyles(cell: Cell, clrSchemeColors: string[]): CSSPropert
   return cellStyle;
 }
 
-/** Приводит массив объединений ячеек Excel таблицы к удобному для
- * записи в HTML-таблицу формату. */
+/**
+ * Приводит массив объединений ячеек Excel таблицы к удобному для
+ * записи в HTML-таблицу формату.
+ */
 export function getSheetMergesMasterCells(sheet: Worksheet): any[] {
   const merges = sheet.model['merges'].map(m => m.split(':'));
   return merges.map(m => {

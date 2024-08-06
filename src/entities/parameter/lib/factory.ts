@@ -1,4 +1,4 @@
-import type { ParameterInit } from './parameter.types';
+import type { ParameterInit, ParameterGroupDTO } from './parameter.types';
 import { BoolParameter } from '../impl/bool';
 import { DateParameter } from '../impl/date';
 import { DateIntervalParameter } from '../impl/date-interval';
@@ -50,7 +50,7 @@ function createEditor(dto: ParameterInit): ParameterEditorOptions {
   if (!editorType) return;
 
   return {
-    type: editorType,
+    type: editorType, group: dto.group || null,
     displayName: dto.displayName ?? dto.id,
     showNullValue: Boolean(dto.showNullValue),
     nullDisplayValue: dto.nullDisplayValue ?? 'Нет значения',
@@ -62,4 +62,20 @@ export function parameterCompareFn(a: Parameter, b: Parameter): number {
   if (!a.editor) return 1;
   if (!b.editor) return -1;
   return a.editor.order - b.editor.order;
+}
+
+export function createParameterGroups(list: Parameter[], dto: ParameterGroupDTO[]): ParameterGroup[] {
+  let groups = dto.map(({code, displayName}: ParameterGroupDTO): ParameterGroup => {
+    const name = displayName ?? code;
+    return {id: code, name, parameters: []};
+  });
+
+  for (const { id, editor } of list) {
+    if (!editor) continue;
+    const group = groups.find(g => g.id === editor.group) ?? groups.at(-1);
+    group.parameters.push(id);
+  }
+
+  groups = groups.filter(g => g.parameters.length);
+  return groups.length > 1 ? groups : null;
 }

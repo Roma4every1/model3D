@@ -10,6 +10,7 @@ import { initializeObjects, initializeObjectModels } from 'entities/objects';
 
 import { useAppStore } from './app.store';
 import { appAPI } from '../lib/app.api';
+import { profileAPI } from 'features/profile';
 import { getSessionToSave } from '../lib/session-save';
 import { clearSessionData } from '../lib/session-clear';
 import { RootClientFactory } from '../lib/root-factory';
@@ -30,11 +31,12 @@ export async function saveSession(): Promise<void> {
 
 /** Инициализация новой сессии. */
 export async function startSession(isDefault: boolean): Promise<void> {
-  const { systemID, loading: { done } } = useAppStore.getState();
+  let appState = useAppStore.getState();
+  const needClear = appState.loading.done;
   setLoadingStep('session');
-  if (done) clearSessionData();
+  if (needClear) clearSessionData();
 
-  const res = await appAPI.startSession(systemID, isDefault);
+  const res = await appAPI.startSession(appState.systemID, isDefault);
   if (!res.ok) return setLoadingError('app.session-creation-error');
   const { id: sessionID, root: rootID } = res.data;
   fetcher.setSessionID(sessionID);
@@ -44,7 +46,7 @@ export async function startSession(isDefault: boolean): Promise<void> {
   const root = await factory.createState();
   if (!root) return setLoadingError('app.root-creation-error');
 
-  const appState = useAppStore.getState();
+  appState = useAppStore.getState();
   if (appState.sessionIntervalID !== null) window.clearInterval(appState.sessionIntervalID);
   appState.sessionIntervalID = window.setInterval(extendSession, 2 * 60 * 1000);
 
@@ -60,11 +62,15 @@ export async function startSession(isDefault: boolean): Promise<void> {
   layoutController.traceExist = Boolean(objects.trace.parameterID);
   useProgramStore.getState().layoutController = layoutController;
 
+  const systemInfo = appState.systemList.find(info => info.id === appState.systemID);
+  profileAPI.setBaseURL(systemInfo.apacheUrl ?? appState.config.geoManager);
+
+  const fillPromise = factory.fillData();
   appState.initQueue.push(root.activeChildID);
-  initializePresentations(appState.initQueue).then();
+  initializePresentations(appState.initQueue, fillPromise).then();
   setLoadingStep('data', true);
 
-  const fillSuccess = await factory.fillData();
+  const fillSuccess = await fillPromise;
   if (!fillSuccess) showWarningMessage(t('app.root-data-init-error'));
   unlockParameters(parameters);
   initializeObjectModels(parameters, channelDict);

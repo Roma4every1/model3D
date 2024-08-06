@@ -79,9 +79,12 @@ export class CaratLoader {
         const inclinometryDataID = details.id;
         const wellColumnName = details.info.well.columnName;
 
+        const dataChannel = channelData[inclinometryDataID];
+        if (dataChannel.config.parameterNames[0] !== 'currentWellGeom') return caratData
+
         const recordList = await Promise.all(rows.map((row: ChannelRow) => {
           const value = rowToParameterValue(row, inclinometryChannel);
-          return this.loadInclinometry(value, channelData[inclinometryDataID]);
+          return this.loadInclinometry(value, dataChannel);
         }));
 
         if (ids.length > 1) {
@@ -173,7 +176,7 @@ export class CaratLoader {
 
   /** Загружает данные инклинометрии по скважине. */
   private async loadInclinometry(value: any, channel: Channel): Promise<ChannelRecord[]> {
-    const parameter = new TableRowParameter(null, channel.config.parameterNames[0], null);
+    const parameter = new TableRowParameter(null, 'currentWellGeom', null);
     parameter.setValue(value);
 
     const signal = this.abortController.signal;
@@ -212,11 +215,8 @@ export class CaratLoader {
     let entries = Object.entries(this.cache);
     if (entries.length <= CaratLoader.maxCacheSize) return;
 
-    entries.sort((a, b) => a[1].order - b[1].order);
+    entries.sort((a, b) => b[1].order - a[1].order);
     const idsToDelete = entries.map(entry => entry[0]).slice(CaratLoader.maxCacheSize);
-
-    for (const id of idsToDelete) {
-      delete this.cache[id];
-    }
+    for (const id of idsToDelete) delete this.cache[id];
   }
 }

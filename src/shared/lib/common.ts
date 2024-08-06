@@ -1,11 +1,8 @@
-/** Сравнивает два массива на равенство.
- *
- * **Не делает глубокое сравнение.**
+/**
+ * Делает неглубокое сравнение массивов.
  * @example
- * const obj = {};
  * compareArrays([1, 2], [1, 2]) => true
- * compareArrays([obj], [obj])   => true
- * compareArrays([obj], [{}])    => false
+ * compareArrays([{}], [{}]) => false
  */
 export function compareArrays<T>(a: T[], b: T[]): boolean {
   if (a.length !== b.length) return false;
@@ -15,11 +12,10 @@ export function compareArrays<T>(a: T[], b: T[]): boolean {
   return true;
 }
 
-/** Сравнивает два объекта на равенство.
- *
- * **Не делает глубокое сравнение.**
+/**
+ * Делает неглубокое сравнение объектов.
  * @example
- * compareObjects({x: 1}, {x: 1})   => true
+ * compareObjects({x: 1}, {x: 1}) => true
  * compareObjects({x: []}, {x: []}) => false
  */
 export function compareObjects(a: Record<any, any>, b: Record<any, any>): boolean {
@@ -57,22 +53,33 @@ export function saveFile(name: string, data: Blob): void {
 
 /**
  * Создаёт объект даты на основе строки.
- *
- * Распознаваемые форматы: `yyyy-mm-dd`, `dd.mm.yyyy`.
- *
  * @returns объект даты, если строка распознана, иначе `null`
  */
 export function parseDate(input: string): Date | null {
-  let date: Date;
-  if (/^\d\d\d\d[.-]\d\d[.-]\d\d$/.test(input)) {
-    date = new Date(input);
-  } else if (/^\d\d[.-]\d\d[.-]\d\d\d\d$/.test(input)) {
-    const year = input.substring(6);
-    const month = input.substring(3, 5);
-    const day = input.substring(0, 2);
-    date = new Date(`${year}-${month}-${day}`);
+  if (input.length < 10) return null;
+  let dateString: string, postfix: string;
+
+  if (input.length > 10) {
+    postfix = input.substring(10);
+    if (!/^(?:[T ][0-9:]+)?(?: ?\\d)?$/.test(postfix)) return null;
+    dateString = input.substring(0, 10);
+  } else {
+    dateString = input;
   }
-  return date && !Number.isNaN(date.getTime()) ? date : null;
+
+  let date: Date;
+  if (dateString.charCodeAt(2) === 46) { // expect dd.mm.yyyy
+    const year = dateString.substring(6);
+    const month = dateString.substring(3, 5);
+    const day = dateString.substring(0, 2);
+    date = new Date(year + '-' + month + '-' + day);
+  } else {
+    date = new Date(dateString);
+  }
+
+  if (Number.isNaN(date.getTime())) return null;
+  if (postfix?.endsWith('d')) date.setDate(1);
+  return date;
 }
 
 /**

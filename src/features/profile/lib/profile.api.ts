@@ -1,5 +1,4 @@
 import { v4 } from 'uuid';
-import { xml2js } from 'xml-js';
 
 
 export interface StrataJobOptions {
@@ -25,7 +24,16 @@ export type BuilderParameters = Record<string, string | number>;
 
 export class ProfileAPI {
   /** Адрес сервиса GeoManager. */
-  public base: string;
+  private base: string;
+
+  public setBaseURL(base: string): void {
+    if (base && !base.endsWith('/')) base += '/';
+    this.base = base;
+  }
+
+  public check(): boolean {
+    return Boolean(this.base);
+  }
 
   public createStrataJob(options: StrataJobOptions): Promise<GMJobID | null> {
     return this.createJob('pl', options as any);
@@ -74,11 +82,18 @@ export class ProfileAPI {
   }
 
   /** Получает статус выполнения по задаче с заданными именем и UID. */
-  public async getJobProgress(name: string, id: GMJobID): Promise<Record<string, any> | null> {
+  public async getJobProgress(name: string, id: GMJobID): Promise<{percent: number, message: string} | null> {
     try {
       const path = this.base + 'job/progress?' + this.getBasicQuery(name, id);
       const data = await fetch(path, {credentials: 'include'}).then(r => r.text());
-      return xml2js(data, {compact: false}).elements[0].attributes;
+
+      // приходит XML вида <progress percent="..." message="..."/>
+      const match = data.match(/percent="([^"]+)" message="([^"]+)"/);
+      if (!match) return null;
+
+      const percent = Math.floor(Number(match[1]) * 2);
+      const message = match[2].replaceAll('|', '\n');
+      return {percent, message};
     } catch {
       return null;
     }

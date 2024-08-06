@@ -103,11 +103,7 @@ export class ProfileLoader implements IProfileLoader {
 
       const progress = await profileAPI.getJobProgress('profile', job.id);
       if (this.profileJob !== job) return this.stopWatchProfile(job, 'abort');
-
-      if (progress?.percent) {
-        const loadingMessage = progress?.message?.replaceAll('|', '\n');
-        this.setLoading(Math.floor(progress.percent * 2), loadingMessage);
-      }
+      if (progress?.percent) this.setLoading(progress.percent, progress.message);
 
       const result = await profileAPI.getJobResult<ProfileJobResult>('profile', job.id);
       if (this.profileJob !== job) return this.stopWatchProfile(job, 'abort');

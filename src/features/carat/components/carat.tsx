@@ -11,7 +11,7 @@ import { setCaratCanvas } from '../store/carat.actions';
 
 
 /** Каротажная диаграмма. */
-export const Carat = ({id}: SessionClient) => {
+export const Carat = ({id, loading: l}: SessionClient) => {
   const currentWell = useCurrentWell();
   const currentTrace = useCurrentTrace();
   const currentStratum = useCurrentStratum();
@@ -23,15 +23,15 @@ export const Carat = ({id}: SessionClient) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isOnMoveRef = useRef<boolean>(false);
 
-  // обновление данных каналов-справочников
+  // сброс актуальности справочников
   useEffect(() => {
     stage.actualLookup = false;
   }, [lookupData, stage]);
 
-  // обновление данных каналов
+  // обновление данных
   useEffect(() => {
-    setCaratData(id).then();
-  }, [channelData, currentWell, currentTrace, id]);
+    if (l.status === 'done') setCaratData(id).then();
+  }, [l.status, channelData, currentWell, currentTrace]); // eslint-disable-line
 
   // выравнивание по активному пласту
   useEffect(() => {
@@ -54,17 +54,17 @@ export const Carat = ({id}: SessionClient) => {
     stage.handleMouseWheel({x, y}, direction, e.ctrlKey);
   }, [stage]);
 
-  // через ReactElement.onWheel нельзя из-за passive: true
+  // через ReactElement.onWheel нельзя из-за passive: false
   useEffect(() => {
     canvas?.addEventListener('wheel', onWheel, {passive: false});
     return () => canvas?.removeEventListener('wheel', onWheel);
   }, [canvas, onWheel]);
 
   if (!currentWell && !currentTrace) {
-    return <TextInfo text={'carat.no-data'}/>;
+    return <TextInfo text={'carat.empty-parameters'}/>;
   }
   if (currentTrace && currentTrace.nodes.length === 0) {
-    return <TextInfo text={'carat.no-nodes'}/>;
+    return <TextInfo text={'carat.empty-trace'}/>;
   }
   if (loading.percentage < 0) {
     return <TextInfo text={loading.status}/>;

@@ -250,7 +250,7 @@ export class CaratDrawer {
 
   public drawGroupXAxes(settings: CaratColumnXAxis, groups: CurveGroupState[], activeType: CaratCurveType): void {
     this.setTranslate(this.groupTranslateX, this.trackRect.top + this.columnLabelSettings.height);
-    const { thickness, gap, axisHeight, markSize, font, activeFont } = this.columnXAxisSettings;
+    const { thickness, gap, axisHeight, font, activeFont } = this.columnXAxisSettings;
     const yStep = axisHeight + gap;
     const segmentsCount = settings.numberOfMarks - 1;
 
@@ -261,7 +261,8 @@ export class CaratDrawer {
       const maxWidth = rect.width;
       let y = rect.top + rect.height;
 
-      const xStart = rect.left + thickness, xEnd = rect.left + rect.width - thickness;
+      let xStart = rect.left + thickness;
+      const xEnd = rect.left + rect.width - thickness;
       const xCenter = (xStart + xEnd) / 2;
 
       for (const { type, axisMin, axisMax, style: { color } } of elements) {
@@ -273,7 +274,7 @@ export class CaratDrawer {
         this.ctx.fillStyle = color;
         this.ctx.font = type === activeType ? activeFont : font;
 
-        const markTop = y - markSize;
+        const markTop = y - thickness * 4;
         this.ctx.beginPath();
         this.ctx.moveTo(xStart, markTop);
         this.ctx.lineTo(xStart, y);
@@ -291,6 +292,7 @@ export class CaratDrawer {
         this.ctx.fillText(axisMax.toString(), xEnd - thickness, y, maxWidth);
         this.ctx.textAlign = 'center';
         this.ctx.fillText(type, xCenter, y, maxWidth);
+        xStart -= thickness;
 
         for (let i = 1; i < segmentsCount; i++) {
           const xMark = i * markStep;

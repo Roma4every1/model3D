@@ -16,7 +16,7 @@ interface PaletteLevelChangeProps {
 
 export const PaletteLevelChange = ({level, onChange}: PaletteLevelChangeProps) => {
   const [color, setColor] = useState(level.color ?? null);
-  const [value, setValue] = useState(+level.value);
+  const [value, setValue] = useState(level.value);
 
   const onColorChange = (e: ColorPickerChangeEvent) => {
     level.color = parseColor(e.value).hex;

@@ -86,7 +86,6 @@ export const drawerConfig: CaratDrawerConfig = {
       font: {size: 12},
       activeFont: {size: 12, style: 'bold'},
       thickness: 1.5,
-      markSize: 8,
       gap: 2,
       grid: {thickness: 1, lineDash: [5, 4]},
     },

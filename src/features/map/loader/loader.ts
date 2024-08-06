@@ -1,9 +1,10 @@
 import type { MapInfo, MapLayerInfo } from '../lib/types';
+import type { MapContainer } from './container-parser';
 import { MapLayer } from '../lib/map-layer';
 import { mapAPI } from './map.api';
 import { types } from '../drawer/map-drawer';
 import { provider } from '../drawer';
-import { parseContainerXML } from './gs-transform';
+import { parseMapContainer } from './container-parser';
 
 
 /** Загрузчик данных карты. */
@@ -57,41 +58,39 @@ export class MapLoader implements IMapLoader {
     const containers = await this.loadContainers(mapInfo, storageID);
 
     const layers: MapLayer[] = [];
-    const points = containers[mapInfo.namedpoints].namedpoints;
+    const points = containers[mapInfo.namedpoints].points;
 
     for (const layerInfo of mapInfo.layers) {
       const layer = await this.createLayer(layerInfo, containers);
       if (this.errorCounter > 3) throw new Error();
-      layers.push(layer ?? new MapLayer(layerInfo, []));
+      layers.push(layer);
     }
     return {...mapInfo, layers, points};
   }
 
-  private async createLayer(layer: MapLayerInfo, data: Record<string, any>): Promise<MapLayer> {
+  private async createLayer(info: MapLayerInfo, data: Record<string, MapContainer>): Promise<MapLayer> {
     try {
-      const containerName = layer.container;
+      const containerName = info.container;
       const container = data[containerName];
       if (!container) return;
 
-      const layerFromContainer = layer.uid.includes(containerName)
-        ? container.layers[layer.uid.replace(containerName, '')]
-        : container.layers[layer.uid];
+      const layerElements = info.uid.includes(containerName)
+        ? container.layers[info.uid.replace(containerName, '')]
+        : container.layers[info.uid];
 
-      for (const element of layerFromContainer.elements) {
-        const bounds = element.bounds;
-        if (bounds && bounds.length === 1) element.bounds = bounds[0];
-
+      for (const element of layerElements) {
         const t = types[element.type];
         if (t && t.loaded) await t.loaded(element);
       }
-      return new MapLayer(layer, layerFromContainer.elements);
+      return new MapLayer(info, layerElements);
     } catch (e) {
       if (e instanceof DOMException) throw e; // aborted
       ++this.errorCounter;
+      return new MapLayer(info, [])
     }
   }
 
-  private async loadContainers(mapInfo: MapInfo, storage: MapStorageID): Promise<Record<string, any>> {
+  private async loadContainers(mapInfo: MapInfo, storage: MapStorageID): Promise<Record<string, MapContainer>> {
     const containerNames: string[] = [mapInfo.namedpoints];
     for (const { container } of mapInfo.layers) {
       if (!containerNames.includes(container)) containerNames.push(container);
@@ -100,11 +99,11 @@ export class MapLoader implements IMapLoader {
     const load = (name: string) => this.loadContainer(name, storage);
     const containers = await Promise.all(containerNames.map(load));
 
-    const result: Record<string, any> = {};
+    const result: Record<string, MapContainer> = {};
     for (let i = 0; i < containerNames.length; ++i) {
       const container = containers[i];
       if (!container) continue;
-      result[containerNames[i]] = parseContainerXML(container);
+      result[containerNames[i]] = parseMapContainer(container);
     }
     return result;
   }

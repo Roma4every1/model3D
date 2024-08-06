@@ -31,7 +31,7 @@ export class DataResolver {
   /** Параметры, у которых нужно инициализировать значение. */
   private parameters: Parameter[];
   /** Ассоциативный массив для установщиков параметров. */
-  private setters: Map<symbol, ParameterSetter>;
+  private setters: Map<SetterID, ParameterSetter>;
 
   constructor() {
     this.channelStorage = useChannelStore.getState().storage;
@@ -61,10 +61,12 @@ export class DataResolver {
         this.dependencies.set(id, new Set([channelName]));
       }
     }
-    for (const [id, setter] of this.setters) {
-      targetParameters.add(setter.setParameter);
+    for (const [id, { setParameter, executeParameters }] of this.setters) {
+      targetParameters.add(setParameter);
+      this.targets.add(setParameter);
+      this.dependencies.set(setParameter, new Set([id]));
       this.targets.add(id);
-      this.dependencies.set(id, setIntersection(targetParameters, setter.executeParameters));
+      this.dependencies.set(id, setIntersection(targetParameters, executeParameters));
     }
     for (const channel of this.channels) {
       this.targets.add(channel.name);
@@ -85,19 +87,25 @@ export class DataResolver {
   }
 
   private async resolveStep(): Promise<void> {
+    const resolved: Target[] = [];
     const promises: Promise<void>[] = [];
+
     for (const target of this.targets) {
       const deps = this.dependencies.get(target);
       if (hasIntersection(deps, this.targets)) continue;
 
-      switch (typeof target) {
-        case 'string': { promises.push(this.resolveChannel(target)); break; }
-        case 'symbol': { promises.push(this.resolveSetter(target)); break; }
-        default: { this.resolveParameter(target); }
+      if (typeof target === 'string') {
+        promises.push(this.resolveChannel(target));
+      } else if (typeof target === 'symbol') {
+        promises.push(this.resolveSetter(target));
+        resolved.push(this.setters.get(target).setParameter);
+      } else {
+        this.resolveParameter(target)
       }
-      this.targets.delete(target);
+      resolved.push(target);
     }
     await Promise.all(promises);
+    for (const target of resolved) this.targets.delete(target);
   }
 
   private resolveChannel(name: ChannelName): Promise<void> {

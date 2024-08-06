@@ -1,39 +1,52 @@
-import { Model, IJsonModel } from 'flexlayout-react';
-import { IJsonTabNode, IJsonTabSetNode } from 'flexlayout-react/declarations/model/IJsonModel';
-import { leftPanelGlobalAttributes, leftRootID, minTabSetHeight } from './constants';
-import { globalParamsName, presentationParamsName, presentationTreeName } from './constants';
-import { globalParamsTabID, presentationParamsTabID, presentationTreeTabID } from './constants';
+import type { IJsonModel, IJsonTabSetNode, IJsonTabNode } from 'flexlayout-react/declarations/model/IJsonModel';
+import { Actions, Model } from 'flexlayout-react';
+import { leftRootID, leftPanelGlobalAttributes, minTabSetHeight, leftTabInfo } from './constants';
 
 
 /** Создаёт модель разметки левой панели. */
-export function createLeftLayout(proto: IJsonModel): LeftPanelLayout {
-  const ok = proto.layout?.children?.length;
-  return ok ? createLayout(proto) : createDefaultLayout();
-}
+export function createLeftLayout(dto: IJsonModel): LeftPanelLayout {
+  const { id1: gTabID, name: gName } = leftTabInfo.globalParameters;
+  const { id: pTabID, name: pName } = leftTabInfo.presentationParameters;
+  const { id: tTabID, name: tName } = leftTabInfo.presentationTree;
 
-function createLayout(model: IJsonModel): LeftPanelLayout {
-  const proto: Omit<LeftPanelLayout, 'model'> = {
-    global: {displayName: globalParamsName, show: false},
-    presentation: {displayName: presentationParamsName, show: false},
-    tree: {displayName: presentationTreeName, show: false},
+  const layout: LeftPanelLayout = {
+    model: null,
+    globalParameters: {id: gTabID, displayName: gName, show: false},
+    presentationParameters: {id: pTabID, displayName: pName, show: false},
+    presentationTree: {id: tTabID, displayName: tName, show: false},
   };
 
-  model.layout.id = leftRootID;
-  correctNode(model.layout, proto);
-  const vertical = model.global.rootOrientationVertical;
+  if (dto.layout?.children?.length) {
+    applyModel(layout, dto);
+  } else {
+    applyDefaultModel(layout);
+  }
+  return layout;
+}
 
-  const finalLayout: IJsonModel = {
+function applyModel(proto: LeftPanelLayout, json: IJsonModel): void {
+  const vertical = json.global.rootOrientationVertical;
+  json.layout.id = leftRootID;
+  correctNode(json.layout, proto);
+
+  const model = Model.fromJson({
     global: {...leftPanelGlobalAttributes, rootOrientationVertical: vertical},
-    layout: model.layout,
-  };
-  return {...proto, model: Model.fromJson(finalLayout)};
+    layout: json.layout,
+  });
+
+  const { id1, id2 } = leftTabInfo.globalParameters;
+  const gTab1 = model.getNodeById(id1);
+  const gTab2 = model.getNodeById(id2);
+
+  if (gTab1 && gTab2) model.doAction(Actions.deleteTab(id1));
+  proto.model = model;
 }
 
-function correctNode(node: any, proto: Omit<LeftPanelLayout, 'model'>) {
+function correctNode(node: any, proto: LeftPanelLayout): void {
   if (node.type === 'tabset') {
     node.selected = 0;
     node.minHeight = minTabSetHeight;
-    node.children = getTabs(proto, node?.children ?? []);
+    node.children = node.children ? getTabs(proto, node.children) : [];
   }
   if (node.type === 'row') {
     node.children = node?.children.filter(tabSet => tabSet?.children.length && tabSet.selected !== -1);
@@ -41,27 +54,35 @@ function correctNode(node: any, proto: Omit<LeftPanelLayout, 'model'>) {
   }
 }
 
-function getTabs(proto: Omit<LeftPanelLayout, 'model'>, items: any[]): IJsonTabNode[] {
+function getTabs(proto: LeftPanelLayout, items: any[]): IJsonTabNode[] {
   const tabNodes: IJsonTabNode[] = [];
+  const { globalParameters, presentationParameters, presentationTree } = proto;
+
+  const { id1: gID1, id2: gID2, name: gName } = leftTabInfo.globalParameters;
+  const { id: pID, name: pName } = leftTabInfo.presentationParameters;
+  const { id: tID, name: tName } = leftTabInfo.presentationTree;
 
   for (const item of items) {
     const tabID: string = item?.id;
     if (!tabID) continue;
 
-    if (!proto.global.show && tabID.endsWith(globalParamsTabID)) {
-      const name = item.title ?? globalParamsName;
-      tabNodes.push({type: 'tab', id: globalParamsTabID, name});
-      proto.global.show = true;
+    if (tabID === gID1 || tabID === gID2) {
+      const name = item.title ?? gName;
+      tabNodes.push({type: 'tab', id: tabID, name, component: 'globalParameters'});
+      globalParameters.id = tabID;
+      globalParameters.show = true;
     }
-    else if (!proto.presentation.show && tabID.endsWith(presentationParamsTabID)) {
-      const name = item.title ?? presentationParamsName;
-      tabNodes.push({type: 'tab', id: presentationParamsTabID, name});
-      proto.presentation.show = true;
+    else if (!presentationParameters.show && tabID === pID) {
+      const name = item.title ?? pName;
+      tabNodes.push({type: 'tab', id: tabID, name, component: 'presentationParameters'});
+      presentationParameters.id = tabID;
+      presentationParameters.show = true;
     }
-    else if (!proto.tree.show && tabID.endsWith(presentationTreeTabID)) {
-      const name = item.title ?? presentationTreeName;
-      tabNodes.push({type: 'tab', id: presentationTreeTabID, name});
-      proto.tree.show = true;
+    else if (!presentationTree.show && tabID === tID) {
+      const name = item.title ?? tName;
+      tabNodes.push({type: 'tab', id: tabID, name, component: 'presentationTree'});
+      presentationTree.id = tabID;
+      presentationTree.show = true;
     }
   }
   return tabNodes;
@@ -69,30 +90,26 @@ function getTabs(proto: Omit<LeftPanelLayout, 'model'>, items: any[]): IJsonTabN
 
 /* --- --- */
 
-function createDefaultLayout(): LeftPanelLayout {
+function applyDefaultModel(proto: LeftPanelLayout): void {
+  const gParentID = 'g-tabset', pParentID = 'p-tabset';
+  const { globalParameters: g, presentationTree: p } = proto;
+
   const children: IJsonTabSetNode[] = [
     {
-      id: 'global', type: 'tabset', weight: 50, minHeight: minTabSetHeight,
-      children: [
-        {type: 'tab', id: globalParamsTabID, name: globalParamsName},
-      ],
+      id: gParentID, type: 'tabset', weight: 1, minHeight: minTabSetHeight,
+      children: [{type: 'tab', id: g.id, name: g.displayName, component: 'globalParameters'}],
     },
     {
-      id: 'tree', type: 'tabset', weight: 50, minHeight: minTabSetHeight,
-      children: [
-        {type: 'tab', id: presentationTreeTabID, name: presentationTreeName},
-      ],
+      id: pParentID, type: 'tabset', weight: 1, minHeight: minTabSetHeight,
+      children: [{type: 'tab', id: p.id, name: p.displayName, component: 'presentationTree'}],
     },
   ];
-
   const layout: IJsonModel = {
     global: leftPanelGlobalAttributes,
     layout: {id: leftRootID, type: 'row', children},
   };
-  return {
-    model: Model.fromJson(layout),
-    global: {displayName: globalParamsName, show: true},
-    presentation: {displayName: presentationParamsName, show: false},
-    tree: {displayName: presentationTreeName, show: true},
-  };
+
+  g.parent = gParentID; g.index = 0; g.show = true;
+  p.parent = pParentID; p.index = 0; p.show = true;
+  proto.model = Model.fromJson(layout);
 }

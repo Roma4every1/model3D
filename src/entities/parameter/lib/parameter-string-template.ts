@@ -20,15 +20,8 @@ interface ParameterExpression {
 type TemplateNode = string | ParameterExpression[];
 
 
-/**
- * Класс, описывающий шаблон строки на основе параметров системы.
- *
- * @example
- * const pt = new ParameterTemplate('year is $(date.Year:2024)');
- * const date = {id: 'date', type: 'date', value: new Date('2025')};
- * pt.build({date}) => 'year is 2025'
- */
-export class ParameterStringTemplate {
+/** Класс, описывающий шаблон строки на основе параметров системы. */
+export class ParameterStringTemplate implements IParameterStringTemplate {
   /** Исходный текст шаблона. */
   public readonly source: string;
   /** Идентификаторы параметров системы для подстановки. */

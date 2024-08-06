@@ -10,7 +10,6 @@ import linesDefStub from './lines.def.stub.json';
 
 
 /** ## Типы отрисовщика:
- * + `'namedpoint'`
  * + `'sign'`
  * + `'field'`
  * + `'polyline'`
@@ -60,19 +59,6 @@ function declareType(name, data) {
 
 /* --- Types Declaration --- */
 
-declareType('namedpoint', {
-  bound: pointBounds,
-
-  draft: (i, options) => {
-    const p = options.pointToControl(i);
-    const context = options.context;
-    context.strokeStyle = '#000FFF';
-    context.lineWidth = 0.001 * options.dotsPerMeter;
-    const s = 0.006 * options.dotsPerMeter;
-    context.strokeRect(p.x - s / 2, p.y - s / 2, s, s);
-  },
-});
-
 declareType('sign', {
   bound: pointBounds,
 
@@ -112,7 +98,7 @@ var field = declareType('field', {
 
   loaded: (i) => {
     i.sourceRenderDataMatrix = chunk(field._parseSourceRenderData(i.data), i.sizex); //reverse 'cause the source array isn't oriented right
-    i.deltasPalette = field._getDeltasPalette(field._getRgbPaletteFromHex(i.palette[0].level));
+    i.deltasPalette = field._getDeltasPalette(field._getRgbPaletteFromHex(i.palette.level));
     i.preCalculatedSpectre = field._getDeltasPreCalculatedPalettes(i.deltasPalette);
     i.lastUsedPalette = cloneDeep(i.palette);
     i.bounds = field.bound(i);
@@ -347,8 +333,8 @@ var field = declareType('field', {
     const context = options.context;
     const canvas = options.canvas;
 
-    if (!isEqual(i.palette[0].level, i.lastUsedPalette[0].level)) {
-      i.deltasPalette = field._getDeltasPalette(field._getRgbPaletteFromHex(i.palette[0].level));
+    if (!isEqual(i.palette.level, i.lastUsedPalette.level)) {
+      i.deltasPalette = field._getDeltasPalette(field._getRgbPaletteFromHex(i.palette.level));
       i.preCalculatedSpectre = field._getDeltasPreCalculatedPalettes(i.deltasPalette);
     }
     i.lastUsedPalette = cloneDeep(i.palette);
@@ -373,7 +359,7 @@ var field = declareType('field', {
           pixelIndex += 4;
           continue;
         }
-        const pixelColor = i.palette[0].interpolated === '-1'
+        const pixelColor = i.palette.interpolated
           ? field._getPixelColorInterpolated(value, i)
           : field._getPixelColor(value, i);
 
@@ -877,7 +863,7 @@ var label = declareType('label', {
   draw: (i, options) => {
     // pt -> meters -> pixels
     const fontsize = (i.fontsize + (i.selected ? 2 : 0)) * (1 / 72 * 0.0254) * options.dotsPerMeter;
-    const font = fontsize + 'px ' + i.fontname;
+    const font = fontsize + 'px "' + i.fontname + '"';
 
     if (fontsize < 2) return;
 

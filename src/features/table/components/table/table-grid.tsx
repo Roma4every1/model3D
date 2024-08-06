@@ -25,6 +25,7 @@ import { RecordModeGrid } from './record-mode-grid';
 
 interface TableGridProps {
   id: FormID;
+  loading: boolean;
   state: TableState;
   query: ChannelQuerySettings;
   records: TableRecord[];
@@ -33,7 +34,7 @@ interface TableGridProps {
 }
 
 
-export const TableGrid = ({id, state, query, records, setRecords, children}: TableGridProps) => {
+export const TableGrid = ({id, loading, state, query, records, setRecords, children}: TableGridProps) => {
   const { t } = useTranslation();
   const [skip, setSkip] = useState(0);
   const pageSize = 50;
@@ -372,7 +373,7 @@ export const TableGrid = ({id, state, query, records, setRecords, children}: Tab
   return (
     <div className={'table-container'} tabIndex={0} onKeyDown={onKeyDown} ref={ref}>
       <TableToolbar
-        id={id} state={state}
+        id={id} loading={loading} state={state}
         actions={toolbarActions} selectedRecords={selectedRecords}
       />
       <LocalizationProvider language={'ru-RU'}>

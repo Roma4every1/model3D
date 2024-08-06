@@ -2,11 +2,11 @@ import type { MouseEvent, WheelEvent } from 'react';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { TextInfo } from 'shared/ui';
 import { useChannel, useChannelDict } from 'entities/channel';
-import { updateParamDeep, useParameterValue, rowToParameterValue } from 'entities/parameter';
+import { useParameterValue } from 'entities/parameter';
 import { useCurrentWell, useCurrentTrace, useTraceEditing, setCurrentTrace, setCurrentWell } from 'entities/objects';
 import { useMapState } from '../store/map.store';
-import { fetchMapData, showMapPropertyWindow } from '../store/map.thunks';
-import { setMapField, setMapCanvas, applyTraceToMap, setMapStatus } from '../store/map.actions';
+import { updateMap, showMapPropertyWindow } from '../store/map.thunks';
+import { setMapCanvas, applyTraceToMap } from '../store/map.actions';
 import { handleTraceClick } from '../lib/traces-map-utils';
 import { getFullViewport } from '../lib/map-utils';
 import { checkDistancePoints } from '../lib/selecting-utils';
@@ -24,42 +24,11 @@ export const Map = ({id, channels}: Pick<SessionClient, 'id' | 'channels'>) => {
   const { canvas, status } = mapState;
   const stage = mapState.stage as MapStage;
   const mapData = stage.getMapData();
-
-  const isMultiMapItem = channels === null;
-  const channel = useChannel(isMultiMapItem ? null : channels[0]?.id);
+  const channel = useChannel(channels ? channels[0]?.id : null);
 
   useEffect(() => {
-    if (isMultiMapItem) return;
-    const rows = channel?.data?.rows;
-
-    if (!rows || rows.length === 0) {
-      if (stage.inclinometryModeOn) {
-        stage.setData({layers: [], x: 0, y: 0, scale: 1} as MapData);
-        setMapStatus(id, 'ok');
-      } else {
-        setMapStatus(id, 'empty');
-      }
-      return;
-    }
-
-    const firstRow = rows[0];
-    const owner = firstRow[12];
-    const mapID = String(firstRow[0]);
-
-    const changeOwner = owner !== mapState.owner;
-    const changeMapID = mapID !== mapState.mapID;
-    if (!changeOwner && !changeMapID) return;
-
-    const activeRowParameter = channel.config.activeRowParameter;
-    if (activeRowParameter) {
-      const value = rowToParameterValue(firstRow, channel);
-      updateParamDeep(activeRowParameter, value).then();
-    }
-
-    if (changeOwner) setMapField(id, 'owner', owner);
-    if (changeMapID) setMapField(id, 'mapID', mapID);
-    fetchMapData(id).then();
-  }, [mapState.owner, mapState.mapID, channel, id, isMultiMapItem, stage.inclinometryModeOn]); // eslint-disable-line
+    if (channels) updateMap(id, channel).then();
+  }, [channel, channels, id]);
 
   // обновление ссылки на холст
   useLayoutEffect(() => {
@@ -86,13 +55,9 @@ export const Map = ({id, channels}: Pick<SessionClient, 'id' | 'channels'>) => {
 
   /* --- --- */
 
-  const lastWellRef = useRef<WellModel>(null);
-  const lastTraceRef = useRef<TraceModel>(null);
-
   useEffect(() => {
     if (status !== 'ok') return;
-    const lastWell = lastWellRef.current;
-    const lastTrace = lastTraceRef.current;
+    const { well: lastWell, trace: lastTrace } = mapState.objects;
 
     const updateTraceViewport = !stage.inclinometryModeOn && currentTrace &&
       (!lastTrace || currentTrace.id !== lastTrace.id || (traceEditing && !stage.traceEditing));
@@ -109,8 +74,8 @@ export const Map = ({id, channels}: Pick<SessionClient, 'id' | 'channels'>) => {
       stage.setActivePoint(null);
       stage.render();
     }
-    lastWellRef.current = currentWell;
-    lastTraceRef.current = currentTrace;
+    mapState.objects.well = currentWell;
+    mapState.objects.trace = currentTrace;
   }, [currentWell, currentTrace, traceEditing]); // eslint-disable-line
 
   /* --- --- */

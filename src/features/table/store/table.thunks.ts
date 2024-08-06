@@ -159,6 +159,7 @@ export function showLinkedTable(formID: FormID, columnID: TableColumnID): void {
       id: linkedTableID, parent: presentationID,
       type: 'dataSet', settings: {}, parameters: [],
       channels: [crateAttachedChannel({name: channel.name}, channel)],
+      loading: {status: 'done'},
     };
     presentation.children.push({id: linkedTableID, type: 'dataSet', displayName});
     addSessionClient(formState);

@@ -1,16 +1,23 @@
 import type { IJsonModel } from 'flexlayout-react';
-import type { ClientDataDTO } from 'entities/client';
+import type { ParameterGroupDTO } from 'entities/parameter';
+import type { ClientDataDTO, ParameterSetterDTO } from 'entities/client';
 import { clientAPI } from 'entities/client';
-import { ParameterStringTemplate, addClientParameters, addParameterListener } from 'entities/parameter';
 import { createLeftLayout } from 'widgets/left-panel';
 import { ClientChannelFactory, DataResolver } from 'widgets/presentation';
 import { LayoutController } from './layout-controller';
 
+import {
+  ParameterStringTemplate, useParameterStore,
+  addClientParameters, addParameterListener, createParameterGroups,
+  applyVisibilityTemplates, calcParameterVisibility,
+} from 'entities/parameter';
+
 
 interface DockSettingsDTO {
   presentationTree?: PresentationTree;
+  linkedProperties?: ParameterSetterDTO[];
+  parameterGroups?: ParameterGroupDTO[];
   dateChanging?: DateChangingDTO;
-  parameterGroups?: ParameterGroup[];
 }
 interface DateChangingDTO {
   year: string;
@@ -22,6 +29,8 @@ interface DateChangingDTO {
 /** Класс, который создаёт состояние корневого клиента сесии. */
 export class RootClientFactory {
   private readonly id: ClientID;
+  private readonly setters: ParameterSetter[];
+
   private dto: ClientDataDTO<DockSettingsDTO>;
   private parameters: Parameter[];
   private channels: Channel[];
@@ -29,6 +38,7 @@ export class RootClientFactory {
 
   constructor(id: ClientID) {
     this.id = id;
+    this.setters = useParameterStore.getState().setters;
   }
 
   public async createState(): Promise<RootClient> {
@@ -36,7 +46,7 @@ export class RootClientFactory {
     if (!ok) return;
 
     this.dto = data;
-    this.parameters = addClientParameters('root', data.parameters);
+    this.createParameters();
     await this.createChannels();
     const { children, activeChildren } = data.children;
 
@@ -57,23 +67,42 @@ export class RootClientFactory {
     return this.channels;
   }
 
-  public fillData(): Promise<boolean> {
+  public async fillData(): Promise<boolean> {
     const resolver = new DataResolver();
-    return resolver.resolve(this.channels, this.parameters);
+    const result = await resolver.resolve(this.channels, this.parameters, this.setters);
+    const storage = useParameterStore.getState().storage;
+    for (const parameter of this.parameters) calcParameterVisibility(parameter, storage);
+    return result;
+  }
+
+  /* --- Parameters --- */
+
+  private createParameters(): void {
+    const inits = this.dto.parameters;
+    this.parameters = addClientParameters('root', inits);
+    const resolve = (name: ParameterName) => this.resolveParameterName(name);
+    applyVisibilityTemplates(this.parameters, inits, resolve);
   }
 
   /* --- Settings --- */
 
   private createSettings(): DockSettings {
-    let { presentationTree, dateChanging, parameterGroups: groups } = this.dto.settings ?? {};
+    const dto = this.dto.settings ?? {};
+    let { presentationTree, dateChanging, parameterGroups: groups } = dto;
     if (!presentationTree) presentationTree = [];
 
     this.handlePresentationTree(presentationTree);
     expandActivePresentation(presentationTree, this.dto.children.activeChildren[0]);
     if (dateChanging) this.handleDateChangingPlugin(dateChanging);
 
+    const setters = dto.linkedProperties;
+    if (Array.isArray(setters) && setters.length) this.handleParameterSetters(setters);
+
     const settings: DockSettings = {presentationTree};
-    if (Array.isArray(groups) && groups.length) settings.parameterGroups = groups;
+    if (Array.isArray(groups) && groups.length) {
+      const parameterGroups = createParameterGroups(this.parameters, groups);
+      if (parameterGroups) settings.parameterGroups = parameterGroups;
+    }
     return settings;
   }
 
@@ -99,6 +128,20 @@ export class RootClientFactory {
       }
     };
     visit(tree);
+  }
+
+  private handleParameterSetters(setters: ParameterSetterDTO[]): void {
+    for (const dto of setters) {
+      const setParameter = this.resolveParameterName(dto.parameterToSet);
+      if (!setParameter) continue;
+      const executeParameters: Set<ParameterID> = new Set();
+
+      for (const name of dto.parametersToExecute) {
+        const id = this.resolveParameterName(name);
+        if (id) executeParameters.add(id);
+      }
+      this.setters.push({client: this.id, setParameter, executeParameters, index: dto.index});
+    }
   }
 
   private handleDateChangingPlugin(dto: DateChangingDTO): void {

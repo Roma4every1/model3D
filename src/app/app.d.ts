@@ -64,10 +64,12 @@ interface SystemInfo {
   displayNameShort: string;
   /** Описание системы. */
   description: string;
-  /** Номер версии системы. */
-  version: string | null;
   /** Акцентный цвет системы. */
   color: string;
+  /** Номер версии системы. */
+  version?: string;
+  /** Префикс API сервиса GeoManager. */
+  apacheUrl?: string;
 }
 
 /** Идентификатор сессии. */

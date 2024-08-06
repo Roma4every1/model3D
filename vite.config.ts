@@ -25,6 +25,7 @@ export default defineConfig((env: ConfigEnv): UserConfig => {
       port: 3000,
     },
     build: {
+      target: 'es2020',
       outDir: './build',
       sourcemap: devMode,
       assetsInlineLimit: 2048,

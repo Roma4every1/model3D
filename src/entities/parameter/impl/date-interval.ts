@@ -1,4 +1,4 @@
-import { stringifyLocalDate } from 'shared/lib';
+import { parseDate, stringifyLocalDate } from 'shared/lib';
 
 
 type DateInterval = ParameterValueMap['dateInterval'];
@@ -33,10 +33,8 @@ export class DateIntervalParameter implements Parameter<'dateInterval'> {
     if (!s) { this.value = null; return; }
     const [startString, endString] = s.split(' - ');
 
-    let start = new Date(startString);
-    let end = new Date(endString);
-    if (Number.isNaN(start.getTime())) start = null;
-    if (Number.isNaN(end.getTime())) end = null;
+    const start = parseDate(startString);
+    const end = parseDate(endString);
 
     if (start || end) {
       this.value = {start, end};

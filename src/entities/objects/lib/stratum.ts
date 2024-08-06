@@ -45,9 +45,9 @@ export class StratumManager implements IStratumManager {
   /** По значение `TableRow` параметра создаёт модель пласта. */
   private createModel(value: ParameterValueMap['tableRow']): StratumModel | null {
     if (!value || !this.info) return null;
-    const id = Number(value[this.info.id.columnName]?.value);
+    const id = Number(value[this.info.id.propertyName]?.value);
     if (isNaN(id)) return null;
-    const name = value[this.info.name.columnName]?.value;
+    const name = value[this.info.name.propertyName]?.value;
     return {id, name};
   }
 }

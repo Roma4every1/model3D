@@ -32,7 +32,7 @@ export const ProfileEditor = ({id}: {id: FormID}) => {
       children: <ProfileLayers stage={stage as MapStage} layers={layers}/>,
     },
   ];
-  return <Tabs className={'profile-editor'} items={tabs} size={'middle'}/>;
+  return <Tabs rootClassName={'profile-editor'} items={tabs}/>;
 };
 
 const ProfileLayers = ({layers, stage}: ProfileLayerTabProps) => {

@@ -104,7 +104,7 @@ export class RecordHandler implements ITableRecordHandler {
         let value = record[field];
         if (value === null) continue;
         value = column.lookupDict[value];
-        if (value === null) continue;
+        if (value === null || value === undefined) continue;
         const width = measureText(String(value), RecordHandler.font);
         if (width > max) max = width;
       }

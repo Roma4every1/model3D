@@ -1,23 +1,14 @@
 /** ## Типы отрисовщика:
- * + `namedpoint`: {@link NamedPointType}
  * + `sign`: {@link SignType}
  * + `polyline`: {@link PolylineType}
  * + `label`: {@link LabelType}
  * + `pieslice`: {@link PieSliceType}
  * */
 interface MapTypes {
-  namedpoint: NamedPointType;
   sign: SignType;
   polyline: PolylineType;
   label: LabelType;
   pieslice: PieSliceType;
-}
-
-interface NamedPointType {
-  name: 'namedpoint';
-
-  bound(point: Point): Bounds;
-  draft(i, options): void;
 }
 
 interface SignType {

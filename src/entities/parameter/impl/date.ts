@@ -1,4 +1,4 @@
-import { stringifyLocalDate } from 'shared/lib';
+import { parseDate, stringifyLocalDate } from 'shared/lib';
 
 
 export class DateParameter implements Parameter<'date'> {
@@ -29,8 +29,7 @@ export class DateParameter implements Parameter<'date'> {
 
   public setValueString(s?: string | null): void {
     if (!s) { this.value = null; return; }
-    this.value = new Date(s);
-    if (Number.isNaN(this.value.getTime())) this.value = null;
+    this.value = parseDate(s);
   }
 
   public toString(): string | null {
