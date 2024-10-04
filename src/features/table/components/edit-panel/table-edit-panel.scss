@@ -1,33 +1,68 @@
-.column-controls {
+.column-visibility-popover {
+  min-width: 200px;
+  max-width: 250px;
+  max-height: 35vh;
+  overflow: auto;
+
+  border: 1px solid #cecece;
+  border-radius: 2px;
+
+  .ant-popover-inner {
+    padding: 4px 2px;
+    border-radius: 0;
+  }
+  .ant-tree-checkbox {
+    margin-top: 1px;
+    margin-inline-end: 4px;
+  }
+}
+
+.column-common-controls {
+  .ant-input-number-group-wrapper {
+    width: 100px;
+    margin-bottom: 4px;
+  }
+  .ant-input-number-group-addon {
+    padding: 0 5px;
+  }
+}
+
+.column-order-controls {
   display: grid;
   grid-template-columns: 1fr 1fr;
-
-  > * {
-    font-size: 13px;
-    border: none;
-    height: 20px;
-    text-align: left;
-    padding: 2px 4px;
-  }
-
-  .k-icon {
-    margin-right: 4px;
-  }
-
-  span {
-    vertical-align: center;
-  }
+  grid-template-rows: 22px 22px;
+  gap: 0;
 
   button {
-    border-radius: 2px;
-    background-color: inherit;
-    transition: 0.2s;
-
-    &:hover {
-      background-color: #eedcdc;
-    }
-    &:disabled {
-      background-color: inherit;
-    }
+    height: 22px;
+    padding: 1px 4px;
+    text-align: left;
   }
+}
+
+.table-filter-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-left: 4px;
+
+  .ant-btn {
+    width: 28px;
+    height: 28px;
+  }
+  input {
+    display: none;
+  }
+}
+
+.table-filter-view {
+  margin: 0;
+  padding: 0 0 0 1em;
+  width: 250px;
+  font: 12.5px "Roboto";
+  list-style-type: circle;
+
+  span.value { color: #b9504f; }
+  span.number { color: #137aaa; }
+  span.string { color: #458a51; }
 }

@@ -1,5 +1,5 @@
 import type { IJsonModel } from 'flexlayout-react';
-import type { TableFormSettings } from 'features/table';
+import type { TableSettingsDTO } from 'features/table';
 import type { CaratFormSettings } from 'features/carat';
 
 import { useClientStore } from 'entities/client';
@@ -30,7 +30,7 @@ type LayoutToSave = IJsonModel & {id: ClientID};
 /** Настройки форм по типам. */
 interface SettingsToSave {
   /** Настройки таблиц (тип `dataSet`). */
-  tables: TableFormSettings[];
+  tables: TableSettingsDTO[];
   /** Настройки каротажных диаграмм (тип `carat`). */
   carats: CaratFormSettings[];
 }
@@ -97,7 +97,7 @@ function getSettingsToSave(): SettingsToSave {
   const tableStates = useTableStore.getState();
   const caratStates = useCaratStore.getState();
 
-  const tables: TableFormSettings[] = [];
+  const tables: TableSettingsDTO[] = [];
   const carats: CaratFormSettings[] = [];
 
   for (const id in tableStates) {

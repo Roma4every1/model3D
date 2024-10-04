@@ -22,7 +22,7 @@ export const CreateTrace = ({trace, hasMap}: CreateTraceProps) => {
   return (
     <BigButton
       text={t('trace.create')} icon={createTraceIcon}
-      action={action} disabled={disabled}
+      onClick={action} disabled={disabled}
     />
   );
 };

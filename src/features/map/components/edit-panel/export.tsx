@@ -30,7 +30,7 @@ export const Export = ({state, t}: ExportSectionProps) => {
     <MenuSection header={t('map.actions.header')} className={'map-actions'}>
       <BigButton
         text={t('map.actions.export')} icon={pdfIcon}
-        action={exportToPDF} disabled={status !== 'ok'}
+        onClick={exportToPDF} disabled={status !== 'ok'}
       />
     </MenuSection>
   );

@@ -292,11 +292,10 @@ export class CaratDrawer {
         this.ctx.fillText(axisMax.toString(), xEnd - thickness, y, maxWidth);
         this.ctx.textAlign = 'center';
         this.ctx.fillText(type, xCenter, y, maxWidth);
-        xStart -= thickness;
 
         for (let i = 1; i < segmentsCount; i++) {
           const xMark = i * markStep;
-          const x = xStart + rect.width * (xMark / delta);
+          const x = xStart - thickness + rect.width * (xMark / delta);
 
           const text = round(axisMin + xMark, digits).toString();
           const textHalfWidth = this.ctx.measureText(text).width / 2;

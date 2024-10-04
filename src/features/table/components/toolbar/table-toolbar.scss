@@ -5,22 +5,46 @@
   align-items: center;
 
   height: 26px;
-  padding: 1px;
+  padding: 2px;
   background-color: #f7f7f7;
+  border-bottom: 1px solid #ddd;
 
-  > button {
-    padding: 2px 6px 4px;
-    height: 24px;
+  button {
+    padding: 0;
+    height: 22px;
+    width: 22px;
+
+    font-size: 13px;
+    outline: none;
     border: none;
     border-radius: 2px;
-    background-color: unset;
-    transition: 0.2s;
 
-    &:hover:not(:disabled) {
-      background-color: #fccbc7;
+    transition: 0.2s;
+    background-size: 60%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: unset;
+
+    &:hover {
+      background-color: var(--wm-primary-85);
     }
     &:active {
-      background-color: #f3afa7;
+      background-color: var(--wm-primary-60);
+    }
+    &:disabled {
+      opacity: 0.5;
+      background-color: unset;
     }
   }
+
+  button[aria-label="excel"] { background-image: url(assets/table/toolbar-excel.svg); }
+  button[aria-label="prev"] { background-image: url(assets/table/toolbar-prev.svg); }
+  button[aria-label="next"] { background-image: url(assets/table/toolbar-next.svg); }
+  button[aria-label="first"] { background-image: url(assets/table/toolbar-first.svg); }
+  button[aria-label="last"] { background-image: url(assets/table/toolbar-last.svg); }
+  button[aria-label="add"] { background-image: url(assets/table/toolbar-add.svg); }
+  button[aria-label="remove"] { background-image: url(assets/table/toolbar-remove.svg); }
+  button[aria-label="accept"] { background-image: url(assets/table/toolbar-accept.svg); }
+  button[aria-label="reject"] { background-image: url(assets/table/toolbar-reject.svg); }
+  button[aria-label="reload"] { background-image: url(assets/table/toolbar-reload.svg); }
 }

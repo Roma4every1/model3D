@@ -1,124 +1,233 @@
-import { TFunction } from 'react-i18next';
+import type { CSSProperties, MouseEvent } from 'react';
+import type { TableToolbarSettings } from './dto.types';
+import type { TableColumnFilter } from './filter.types';
+import { TableColumns } from './table-columns';
+import { TableData } from './table-data';
+import { TableSelection } from './table-selection';
+import { TableViewportController } from './table-viewport';
 
 
-/** Серверный формат настроек формы **DataSet**. */
-export interface TableFormSettings {
-  id: FormID;
-  toolbar?: TableToolbarSettings;
-  columnSettings?: DataSetColumnsSettings;
-  headerSetterRules?: HeaderSetterRule[];
-  exportToExcel?: true;
-  stat?: true;
-  selection?: true;
-  columnVisibility?: true;
+/** Хранилище состояний таблиц. */
+export type TableStates = Record<FormID, TableState>;
+
+/** Состояние табличной формы. */
+export interface TableState {
+  /** Идентификатор формы. */
+  readonly id: FormID;
+  /** ID канала, который визуализируется. */
+  readonly channelID: ChannelID;
+  /** ID каналов-справочников. */
+  readonly lookupChannelIDs: ChannelID[];
+  /** Обёртка для колонок. */
+  readonly columns: TableColumns;
+  /** Обёртка для данных. */
+  readonly data: TableData;
+  /** Состояние выделения записей. */
+  readonly selection: TableSelection;
+  /** Контроллер вьюпорта таблицы. */
+  readonly viewport: TableViewportController;
+  /** Объект для хранения функций-действий над таблицей. */
+  readonly actions: TableActions;
+  /** Глобальные настройки колонок. */
+  readonly globalSettings: TableGlobalSettings;
+  /** Настройки панели инструментов. */
+  readonly toolbarSettings: TableToolbarSettings;
+  /** Параметр, связанный с текущей активной строкой таблицы. */
+  readonly activeRecordParameter: ParameterID | undefined;
+  /** Отдельное состояние для режима одной записи. */
+  readonly recordMode?: RecordModeState;
 }
 
-export interface DataSetColumnsSettings {
-  columns?: DataSetColumnSettings[];
-  columnGroups?: TableColumnGroupSettings[];
-  rowStyleRules?: RowStyleRule[];
-  tableMode?: boolean;
-  alternate?: boolean;
-  alternateBackground?: string;
-  fixedColumnCount?: number;
+/** Состояние формы в режиме одной записи. */
+export interface RecordModeState {
+  /** Ширина области с названиями колонок. */
+  keyColumnWidth: number;
+  /** Активная колонка. */
+  activeColumn: PropertyName | null;
 }
 
-export interface DataSetColumnSettings {
-  property: string;
-  displayName?: string;
-  displayIndex?: number;
-  width?: number;
-  foreground?: string;
-  background?: string;
-  headerForeground?: string;
-  headerBackground?: string;
-  visible?: boolean;
-  readOnly?: boolean;
-  typeFormat?: string;
-}
-
-interface TableColumnGroupSettings {
-  name: string;
-  displayName?: string;
-  headerForeground?: string;
-  headerBackground?: string;
-  borderColor?: string;
-  borderWidth?: number;
-}
-
-export interface RowStyleRule {
-  type: RowStyleConditionType;
-  parameter?: string;
-  property: string;
-  foreground?: string;
-  background?: string;
-}
-export type RowStyleConditionType = 'equal' | 'not_empty';
-
-export type DataSetColumnDict = Record<TableColumnID, DataSetColumnSettings>;
-
-/* --- Actions --- */
-
-/** Сеттер из useState для {@link TableRecord}[]. */
-export type SetRecords = (value: TableRecord[] | ((prev: TableRecord[]) => TableRecord[])) => void;
-
-/** Объект с функциями-контролами состояния для рендера тулбара. */
-export interface ToolbarActions {
-  acceptEdit(): void;
-  cancelEdit(): void;
-  addRecord(copy: boolean): void;
+/** Объект для хранения функций-действий над таблицей. */
+export interface TableActions {
+  /** Клик по ячейке. */
+  cellClick(row: number, column: PropertyName, e?: MouseEvent<HTMLTableCellElement>): void;
+  /** Двигает активную ячейку вертикально; если `by > 0`, то вниз. */
+  moveCellVertical(by: number, shiftKey?: boolean): void;
+  /** Двигает активную ячейку горизотально; если `by > 0`, то вправо. */
+  moveCellHorizontal(by: number | undefined, to?: number): void;
+  /** Переместить выделение на первую запись. */
+  moveToFirst(): void;
+  /** Переместить выделение на последнюю запись. */
+  moveToLast(): void;
+  /** Добавление новой записи. */
+  addRecord(copy: boolean, index?: number): void;
+  /** Удаление выделенных записей. */
   deleteRecords(): void;
-  toStart(): void;
-  toEnd(): void;
-  moveCellVertical(by: number): void;
+  /** Выход из режима редактирования. */
+  endEdit(save: boolean): void;
 }
 
-/** Объект с функциями-контролами состояния для рендера ячеек. */
-export interface CellActions {
-  setActiveCell(cell: TableActiveCell): void;
-  setValue(columnID: TableColumnID, recordID: TableRecordID, value: any): void;
-  startEdit(columnID: TableColumnID, recordID: TableRecordID): void;
-  moveCellHorizontal(by: number, to?: number): void;
-  openLinkedTable(columnID: TableColumnID): void;
+/** Глобальные настройки колонок таблицы. */
+export interface TableGlobalSettings {
+  /** Если `false`, то используется режим одной записи. */
+  readonly tableMode: boolean;
+  /** Флаг переноса текста в таблице. */
+  textWrap: boolean;
+  /** Если `true`, то строки раскрашиваются через одну другим цветом. */
+  alternate: boolean;
+  /** Цвет раскраски, связанный с `alternate`. */
+  alternateBackground?: ColorString;
+}
+
+/** Правило установки заголовка колонки. */
+export interface HeaderSetterRule {
+  /** Идентификатор параметра системы. */
+  readonly id: ParameterID;
+  /** Название параметра системы. */
+  readonly name: ParameterName;
+  /** Свойства **канала**, которому соответствует изменяемая колонка. */
+  readonly property: PropertyName;
+  /** Название колонки **параметра**, значение которого устанавливается как название столбца. */
+  readonly column: string;
+}
+
+/** Условие, при выполнении которого у строки таблицы будут переопределены стили.  */
+export interface RecordStyleRule {
+  /** Колонка, по которой проверяется выполнение условия. */
+  readonly property: PropertyName;
+  /** Переопределяемые CSS-свойства. */
+  readonly style: CSSProperties;
+  /** Тип применения условия; поддерживаются значения `equal` и `not_empty`. */
+  readonly type: string;
+  /** Исходное значение для сравнения, прописанное в конфиге. */
+  readonly sourceCompareValue: string | null;
+  /** Тип данных колонки, по которой проверяется выполнение условия. */
+  dataType?: DataTypeName;
+  /** Значение, с которым сравнивается значение колонки. */
+  compareValue: any;
+}
+
+/** Словарь моделей колонкок таблицы. */
+export type TableColumnDict = Record<PropertyName, TableColumnModel>;
+/** Словарь моделей гпупп колонкок таблицы. */
+export type TableColumnGroupDict = Record<string, TableColumnGroupSettings>;
+
+/** Настройки группы колонок. */
+export interface TableColumnGroupSettings {
+  /** Имя группы. */
+  readonly displayName?: string;
+  /** Стили для ячейки группы. */
+  readonly style?: CSSProperties;
+  /** Цвет границы для крайних ячеек в группе (не поддерживается). */
+  readonly borderColor?: string;
+  /** Ширина границы для крайних ячеек в группе (не поддерживается). */
+  readonly borderWidth?: number;
+}
+
+/** Модель колонки таблицы. */
+export interface TableColumnModel {
+  /** Идентификатор колонки. */
+  readonly id: PropertyName;
+  /** Свойство канала, с которым связана колонка. */
+  readonly property: ChannelProperty;
+  /** Название для заголовка колонки. */
+  readonly staticDisplayName: string;
+  /** Стили ячейки заголовка. */
+  readonly headerStyle?: CSSProperties;
+  /** Стили ячеек. */
+  readonly cellStyle?: CSSProperties;
+  /** Формат значения; поддерживается только `Color`. */
+  readonly typeFormat?: string;
+  /** Функция, которая форматирует значение ячейки. */
+  readonly formatter?: ColumnFormatter;
+  /** ID колонки, из которой берётся название файла. */
+  readonly fileColumn?: PropertyName;
+
+  /** Текущее название для заголовка колонки. */
+  displayName: string;
+  /** Порядковый номер колонки. */
+  displayIndex: number | null;
+  /** Индекс для задания порядка. */
+  orderIndex: number;
+  /** Ширина колонки в пикселях. */
+  width: number;
+  /** Флаг автоподбора ширины. */
+  autoWidth: boolean;
+  /** Фиксация колонки (только слева). */
+  fixed: boolean;
+  /** Флаг видимости. */
+  visible: boolean;
+  /** Флаг переноса текста в ячейках. */
+  textWrap: boolean | undefined;
+
+  /** Тип ячеек колонки. */
+  type?: TableColumnType;
+  /** Тип данных колонки. */
+  dataType?: DataTypeName;
+  /** Название колонки **в данных канала**. */
+  columnName?: ColumnName;
+  /** Индекс колонки **в данных канала**. */
+  columnIndex?: number;
+  /** Разрешены ли пустые ячейки в колонке. */
+  nullable: boolean;
+  /** Разрешено ли редактировать ячейки в колонке. */
+  editable: boolean;
+  /** Фильтр по колонке. */
+  filter?: TableColumnFilter;
+
+  /** ID канала детализации. */
+  readonly detailChannel?: ChannelID;
+  /** ID канала-справочника. */
+  readonly lookupChannel?: ChannelID;
+  /** Словарь данных канала-справочника. */
+  lookupDict?: LookupDict;
+  /** Данные из канала-справочника. */
+  lookupData?: LookupList | LookupTree;
+  /** ID запроса данных справочника. */
+  lookupQueryID?: QueryID;
+}
+
+/** Функция, которая форматирует значение ячейки. */
+export type ColumnFormatter = (value: any) => CellRenderValue;
+
+/* --- Head Layout --- */
+
+/** Макет заголовка таблицы. */
+export type TableHeadLayout = TableHeadLayoutRow[];
+/** Строка заголовка таблицы. */
+export type TableHeadLayoutRow = TableHeadLayoutGroup[] | TableColumnModel[];
+
+/** Ячейка группы в макете заголовка таблицы.  */
+export interface TableHeadLayoutGroup {
+  /** Продолжительность ячейки. */
+  colSpan: number;
+  /** Подпись; для фиктивных ячеек отсутствует. */
+  displayName?: string;
+  /** Стили ячейки. */
+  style?: CSSProperties;
 }
 
 /* --- Table Editing --- */
 
-/** Список ошибок при валидации записи. */
-export type RowErrors = RowValidationError[];
+/** Ошибка валидации записи таблицы. */
+export interface RecordViolation {
+  type: RecordViolationType;
+  column: PropertyName;
+}
 
-/** Ошибка валидации записи. Типы:
+/**
+ * Тип ошибки валидации записи.
  * + `null-value` — отсутствует обязательное значение
- * */
-export interface RowValidationError {
-  type: 'null-value';
-  columnID: TableColumnID;
-}
+ */
+export type RecordViolationType = 'null-value';
 
-/** Объект с типом и данными обновления таблицы. */
-export type SaveTableMetadata = InsertRowMetadata | UpdateRowMetadata;
-
-/** Данные о добавлении новой записи в таблицу. */
-interface InsertRowMetadata {
-  type: 'insert';
-  formID: FormID;
-  rowID: TableRecordID;
-  row: ChannelRow;
-}
-
-/** Данные об обновлении записи в таблицы. */
-interface UpdateRowMetadata {
-  type: 'update';
-  formID: FormID;
-  rowID: TableRecordID;
-  row: ChannelRow;
-}
-
-/* --- Edit Panel --- */
-
-/** Пропс для компонентов панели таблицы. */
-export interface EditPanelItemProps {
-  id: FormID;
+/** Стандартизированный пропс для редактора ячейки. */
+export interface CellEditorProps {
+  /** Текущее состояние формы. */
   state: TableState;
-  t: TFunction;
+  /** Колонка редактируемой ячейки. */
+  column: TableColumnModel;
+  /** Редактируемая запись. */
+  record: TableRecord;
+  /** Функция для обновления исходного значения ячейки. */
+  update: (v: any) => void;
 }

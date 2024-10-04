@@ -25,22 +25,6 @@ export function setChannels(channels: Channel[] | ChannelDict): void {
   useChannelStore.setState({...state}, true);
 }
 
-/** Добавляет или перезаписывает данные о порядке строк. */
-export function setChannelSortOrder(id: ChannelID, order: SortOrder | undefined): void {
-  const state = useChannelStore.getState();
-  const channel = state.storage[id];
-  state.storage[id] = {...channel, query: {...channel.query, order}};
-  useChannelStore.setState({...state}, true);
-}
-
-/** Перезаписывает ограничитель количества строк. */
-export function setChannelLimit(id: ChannelID, limit: ChannelLimit | undefined): void {
-  const state = useChannelStore.getState();
-  const channel = state.storage[id];
-  state.storage[id] = {...channel, query: {...channel.query, limit}};
-  useChannelStore.setState({...state}, true);
-}
-
 /** Задаёт активную запись канала. */
 export function setChannelActiveRow(id: ChannelID, row: ChannelRow): void {
   const state = useChannelStore.getState()

@@ -19,7 +19,7 @@ export const EditTrace = ({trace, hasMap}: EditTraceProps) => {
   return (
     <BigButton
       text={t('trace.edit')} icon={editTraceIcon}
-      action={action} disabled={!trace.model || trace.editing || trace.creating || !hasMap}
+      onClick={action} disabled={!trace.model || trace.editing || trace.creating || !hasMap}
     />
   );
 };

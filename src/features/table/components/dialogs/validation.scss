@@ -1,0 +1,13 @@
+.record-validation-info {
+  ul {
+    padding: 0 0 0 20px;
+    margin-bottom: 6px;
+    font: 13px "Roboto";
+    list-style-type: circle;
+    max-height: 30vh;
+    overflow: auto;
+  }
+  li {
+    margin: 2px;
+  }
+}

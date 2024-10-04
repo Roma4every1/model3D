@@ -146,13 +146,17 @@ const CurveFilters = ({manager, signal}: CurveFiltersProps) => {
 
 const CurveTreeItem = ({item}) => {
   if (typeof item.text === 'string') return item.text as any;
-  const curve: CaratCurveModel = item.value;
+  const { type, description, top, bottom }: CaratCurveModel = item.value;
+
+  const range = (top !== null && bottom !== null)
+    ? `${round(top, 1)} – ${round(bottom, 1)}`
+    : '';
 
   return (
     <>
-      <span>{curve.type}</span>
-      <span>{`${round(curve.top, 1)} - ${round(curve.bottom, 1)}`}</span>
-      <span title={curve.description}>{curve.description}</span>
+      <span>{type}</span>
+      <span>{range}</span>
+      <span title={description}>{description}</span>
     </>
   );
 };

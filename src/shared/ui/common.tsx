@@ -41,20 +41,20 @@ export const LoadingStatus = ({percentage, status, statusOptions}: LoadingStatus
 
 /* --- --- */
 
-export interface ButtonSwitchProps {
-  options: string[];
-  active: number;
-  onChange: (index: number) => void;
+export interface ButtonSwitchProps<T> {
+  options: {label: string, value: T}[];
+  value: T;
+  onChange: (value: T) => void;
   style?: CSSProperties;
 }
 
-export const ButtonSwitch = ({options, active, onChange, style}: ButtonSwitchProps) => {
+export function ButtonSwitch<T>({options, value, onChange, style}: ButtonSwitchProps<T>) {
   const width = (100 / options.length) + '%';
 
-  const toElement = (option: string, i: number) => {
-    const type = i === active ? 'primary' : undefined;
-    const onClick = () => onChange(i);
-    return <Button key={i} type={type} onClick={onClick} style={{width}}>{option}</Button>;
+  const toElement = (option: {label: string, value: T}, i: number) => {
+    const type = option.value === value ? 'primary' : undefined;
+    const onClick = () => onChange(option.value);
+    return <Button key={i} type={type} onClick={onClick} style={{width}}>{option.label}</Button>;
   };
 
   return (
@@ -62,4 +62,4 @@ export const ButtonSwitch = ({options, active, onChange, style}: ButtonSwitchPro
       {options.map(toElement)}
     </div>
   );
-};
+}

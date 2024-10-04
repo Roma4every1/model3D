@@ -5,6 +5,7 @@ import { ButtonSwitch } from 'shared/ui';
 import { saveFile } from 'shared/lib';
 import { inputNumberParser } from 'shared/locales';
 import { CaratStage } from '../../rendering/stage';
+import { caratExportModes } from '../../lib/constants';
 import './carat-export.scss';
 
 
@@ -15,19 +16,19 @@ interface CaratExportDialogProps {
 
 
 export const CaratExportDialog = ({stage, close}: CaratExportDialogProps) => {
-  const viewport = stage.getActiveTrack().viewport;
-  const [startDepth, setStartDepth] = useState(viewport.y);
-  const [endDepth, setEndDepth] = useState(viewport.y + viewport.height);
+  const { y, height, min, max } = stage.getActiveTrack().viewport;
+  const [startDepth, setStartDepth] = useState(y);
+  const [endDepth, setEndDepth] = useState(y + height);
   const [optionIndex, setOptionIndex] = useState(0);
 
   const onOptionChange = (index: number) => {
     if (index === 0) {
-      setStartDepth(viewport.y);
-      setEndDepth(viewport.y + viewport.height);
+      setStartDepth(y);
+      setEndDepth(y + height);
     }
     else if (index === 1) {
-      setStartDepth(viewport.min);
-      setEndDepth(viewport.max);
+      setStartDepth(min);
+      setEndDepth(max);
     }
     setOptionIndex(index);
   };
@@ -43,21 +44,18 @@ export const CaratExportDialog = ({stage, close}: CaratExportDialogProps) => {
 
   return (
     <div className={'carat-export-dialog'}>
-      <ButtonSwitch
-        options={['Видимая часть', 'Весь трек', 'По глубине']}
-        active={optionIndex} onChange={onOptionChange}
-      />
+      <ButtonSwitch options={caratExportModes} value={optionIndex} onChange={onOptionChange}/>
       <Flex justify={'space-between'} align={'end'}>
         <div className={'carat-export-inputs'}>
           <span>От:</span>
           <InputNumber
-            value={startDepth} min={0} max={endDepth} parser={inputNumberParser}
+            value={startDepth} min={Math.min(0, min)} max={endDepth} parser={inputNumberParser}
             precision={0} suffix={'м'} changeOnWheel={true}
             onChange={setStartDepth as any} disabled={optionIndex !== 2}
           />
           <span>До:</span>
           <InputNumber
-            value={endDepth} min={startDepth} max={viewport.max} parser={inputNumberParser}
+            value={endDepth} min={startDepth} max={max} parser={inputNumberParser}
             precision={0} suffix={'м'} changeOnWheel={true}
             onChange={setEndDepth as any} disabled={optionIndex !== 2}
           />

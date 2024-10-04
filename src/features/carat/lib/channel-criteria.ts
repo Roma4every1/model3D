@@ -73,10 +73,10 @@ export const caratChannelCriteria: Record<CaratChannelType, ChannelCriterion> = 
     properties: {
       well: {name: 'WELL ID'},
       id: {name: 'CURVE ID'},
-      top: {name: 'DEPTH START'},
-      bottom: {name: 'DEPTH END'},
       type: {name: 'CURVE TYPE', lookups: {color: curveColorLookupCriterion}},
-      date: {name: 'DATE'},
+      date: {name: 'DATE', required: false},
+      top: {name: 'DEPTH START', required: false},
+      bottom: {name: 'DEPTH END', required: false},
       defaultLoading: {name: 'LOAD BY DEFAULT'},
       description: {name: 'DESCRIPTION', required: false},
     },

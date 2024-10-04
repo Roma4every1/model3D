@@ -70,6 +70,8 @@ interface SystemInfo {
   version?: string;
   /** Префикс API сервиса GeoManager. */
   apacheUrl?: string;
+  /** Флаг переноса текста в различных формах. */
+  dataWrap?: boolean;
 }
 
 /** Идентификатор сессии. */

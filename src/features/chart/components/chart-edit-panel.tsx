@@ -29,13 +29,13 @@ export const ChartEditPanel = ({id}: FormEditPanelProps) => {
       <MenuSection header={t('chart.panel.tooltip-header')} className={'map-actions'}>
         <BigButtonToggle
           text={t('chart.panel.tooltip-label')} icon={chartTooltipIcon}
-          action={toggleTooltipVisible} active={state.tooltip}
+          onClick={toggleTooltipVisible} active={state.tooltip}
         />
       </MenuSection>
       <MenuSection header={t('chart.panel.export-header')} className={'map-actions'}>
         <BigButton
           text={t('chart.panel.export-png')} icon={chartDownloadIcon}
-          action={state.downloadChart}
+          onClick={state.downloadChart}
         />
       </MenuSection>
       <MenuSection header={t('chart.panel.interval-header')} style={{minWidth: 100}}>

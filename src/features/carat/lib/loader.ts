@@ -8,6 +8,8 @@ export class CaratLoader {
   public static readonly maxCacheSize = 50;
   /** Кеш точек кривых. */
   public readonly cache: CurveDataCache;
+  /** Если true, кривые загружаются отдельно через специальный параметр канала. */
+  public readonly separateCurveLoading: boolean;
   /** Счётчик добавления кривых. */
   private curveCounter: number;
 
@@ -23,9 +25,10 @@ export class CaratLoader {
   /** Функция для обновления состояния загрузки на уровне интерфейса. */
   public onProgressChange: (l: Partial<CaratLoading>) => void;
 
-  constructor(channels: AttachedChannel[]) {
+  constructor(channels: AttachedChannel[], separateCurveLoading: boolean) {
     this.onProgressChange = () => {};
     this.cache = {};
+    this.separateCurveLoading = separateCurveLoading;
     this.curveCounter = 0;
 
     this.attachedChannels = channels;
@@ -55,7 +58,8 @@ export class CaratLoader {
     const data: ChannelRecordDict = {};
     const caratData: ChannelRecordDict[] = [];
 
-    for (const { id } of this.attachedChannels) {
+    for (const attachedChannel of this.attachedChannels) {
+      const id = attachedChannel.id;
       data[id] = cellsToRecords(channelData[id]?.data);
     }
 
@@ -67,39 +71,57 @@ export class CaratLoader {
       caratData.push(trackData);
       curveIDs.push(...newCurveIDs);
     }
-    await this.loadCurveData(curveIDs, true);
+    if (this.separateCurveLoading) {
+      await this.loadCurveData(curveIDs, true);
+    } else {
+      this.updateCache(curveIDs, data);
+    }
 
     if (this.inclinometryChannel) {
+      const details = this.inclinometryChannel.info.inclinometry.details;
+      const inclinometryDataID = details.id;
+      const dataChannel = channelData[inclinometryDataID];
+
+      if (dataChannel.config.parameterNames[0] !== 'currentWellGeom') {
+        caratData[0][inclinometryDataID] = cellsToRecords(dataChannel.data);
+        return caratData;
+      }
       const inclinometryChannel = channelData[this.inclinometryChannel.id];
       const rows = inclinometryChannel?.data?.rows;
+      if (!rows) return caratData;
 
-      if (rows) {
-        this.onProgressChange({status: 'carat.loading.inclinometry', statusOptions: null});
-        const details = this.inclinometryChannel.info.inclinometry.details;
-        const inclinometryDataID = details.id;
-        const wellColumnName = details.info.well.columnName;
+      this.onProgressChange({status: 'carat.loading.inclinometry', statusOptions: null});
+      const wellColumnName = details.info.well.columnName;
 
-        const dataChannel = channelData[inclinometryDataID];
-        if (dataChannel.config.parameterNames[0] !== 'currentWellGeom') return caratData
+      const recordList = await Promise.all(rows.map((row: ChannelRow) => {
+        const value = rowToParameterValue(row, inclinometryChannel);
+        return this.loadInclinometry(value, dataChannel);
+      }));
 
-        const recordList = await Promise.all(rows.map((row: ChannelRow) => {
-          const value = rowToParameterValue(row, inclinometryChannel);
-          return this.loadInclinometry(value, dataChannel);
-        }));
-
-        if (ids.length > 1) {
-          for (const records of recordList) {
-            if (records.length === 0) continue;
-            const wellID = records[0][wellColumnName];
-            const idx = ids.findIndex(i => i === wellID);
-            if (idx !== -1) caratData[idx][inclinometryDataID] = records;
-          }
-        } else {
-          caratData[0][inclinometryDataID] = recordList[0];
+      if (ids.length > 1) {
+        for (const records of recordList) {
+          if (records.length === 0) continue;
+          const wellID = records[0][wellColumnName];
+          const idx = ids.findIndex(i => i === wellID);
+          if (idx !== -1) caratData[idx][inclinometryDataID] = records;
         }
+      } else {
+        caratData[0][inclinometryDataID] = recordList[0];
       }
     }
     return caratData;
+  }
+
+  /** Обновляет кеш кривых на основе данных канала с точками. */
+  public updateCache(ids: CaratCurveID[], data: ChannelRecordDict): void {
+    const records = data[this.curveDataChannel.id];
+    if (!records) return;
+    const idColumnName = this.curveDataChannel.info.id.columnName;
+
+    for (const id of ids) {
+      const record = records.find(r => r[idColumnName] === id);
+      this.cacheCurve(id, record);
+    }
   }
 
   /** Загружает данные точек кривых и кладёт их в кеш. */
@@ -129,15 +151,7 @@ export class CaratLoader {
 
       for (const id of slice) {
         const record = records.find(r => r[idColumnName] === id);
-        if (record) {
-          this.cache[id] = this.createCurveData(record);
-        } else {
-          this.cache[id] = {
-            path: new Path2D(), points: [],
-            top: null, bottom: null, min: null, max: null,
-            order: ++this.curveCounter,
-          };
-        }
+        this.cacheCurve(id, record);
       }
       if (bySteps) {
         const count = i + slice.length;
@@ -184,30 +198,49 @@ export class CaratLoader {
     return res.ok ? cellsToRecords(res.data) : [];
   }
 
+  /** Сохраняет кривую в кеш. */
+  private cacheCurve(id: CaratCurveID, record: ChannelRecord): void {
+    let data: CaratCurveData;
+    if (record) data = this.createCurveData(record);
+
+    if (!data) data = {
+      path: new Path2D(), points: [],
+      top: 0, bottom: 0, min: 0, max: 0,
+      order: ++this.curveCounter,
+    };
+    this.cache[id] = data;
+  }
+
   /** Создаёт модель данных кривой. */
-  private createCurveData(record: ChannelRecord): CaratCurveData {
+  private createCurveData(record: ChannelRecord): CaratCurveData | null {
     const info = this.curveDataChannel.info;
-    const pathSource = window.atob(record[info.data.columnName]);
+    const pathData = record[info.data.columnName];
+    if (!pathData) return null;
+
+    const svgPath = window.atob(pathData); // Mx,yLx,yLx,y...
+    const pathItems = svgPath.split('L');
+    if (pathItems.length < 2) return null;
+
+    let top = Infinity, bottom = -Infinity;
+    pathItems[0] = pathItems[0].substring(1);
+
+    const points = pathItems.map((item: string): Point => {
+      const sepIndex = item.indexOf(',');
+      const x = parseFloat(item.substring(0, sepIndex));
+      const y = parseFloat(item.substring(sepIndex + 1));
+
+      if (y < top) top = y;
+      if (y > bottom) bottom = y;
+      return {x, y};
+    });
 
     return {
-      path: new Path2D(pathSource),
-      points: this.parseCurvePath(pathSource),
-      top: record[info.top.columnName],
-      bottom: record[info.bottom.columnName],
+      path: new Path2D(svgPath),
+      points, top, bottom,
       min: record[info.min.columnName],
       max: record[info.max.columnName],
       order: ++this.curveCounter,
     };
-  }
-
-  /** Парсинг SVG-пути кривой. */
-  private parseCurvePath(source: string): Point[] {
-    const items = source.split('L');
-    items[0] = items[0].substring(1);
-    return items.map((item): Point => {
-      const [x, y] = item.split(',');
-      return {x: parseFloat(x), y: parseFloat(y)};
-    });
   }
 
   /** Проверяет количество кривых в кеше и удаляет лишние кривые. */

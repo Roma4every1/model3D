@@ -26,32 +26,32 @@ type DiagramComponent = typeof Bar | typeof Line | typeof Area;
 
 
 /** Строит объект, по которому отрендерится линия/область/гистограмма из _Recharts_. */
-export const getDiagramProto = (dataKey: string, name: string, settings: SeriesSettingsItem): ChartDiagram => {
-  const color: string = settings.color;
+export function getDiagramProto(dataKey: string, name: string, settings: SeriesSettingsItem): ChartDiagram {
+  const color = settings.color;
   const dot = settings.showPoint ? {stroke: 'none', fill: color} : false;
 
   let component: DiagramComponent = Line;
   const child = settings.showLabels && createElement(LabelList, {dataKey, position: 'top'});
 
   const props: DiagramProps = {
-    key: dataKey, yAxisId: settings.yAxisId, dataKey, name: name, dot, stroke: color,
-    type: 'linear', strokeWidth: 2, fill: 'none',
+    key: dataKey, yAxisId: settings.yAxisId, dataKey, name, dot,
+    type: 'linear', stroke: color, strokeWidth: 2, fill: 'none',
     isAnimationActive: false, connectNulls: true,
   };
 
   switch (settings.typeCode) {
-    case 'gist': { component = Bar; props.stroke = 'none'; props.fill = color; break; }
-    case 'gistStack': { component = Bar; props.stroke = 'none'; props.fill = color; break; }
-    case 'area': { component = Area; break; }
+    case 'gist': { component = Bar; props.stroke = color; props.fill = color; break; }
+    case 'gistStack': { component = Bar; props.stroke = color; props.fill = color; break; }
+    case 'area': { component = Area; props.fill = color; break; }
     case 'areaSpline': { component = Area; props.type = 'monotone'; props.fill = color; break; }
     case 'areaDiscr': { component = Area; props.type = 'step'; props.fill = color; break; }
-    case 'point': { props.stroke = 'none'; break; }
-    case 'graphSpline': { props.type = 'monotone'; break; }
-    case 'graphDiscr': { props.type = 'step'; break; }
+    case 'point': { props.stroke = 'none'; props.fill = 'none'; break; }
+    case 'graphSpline': { props.type = 'monotone'; props.fill = 'none'; break; }
+    case 'graphDiscr': { props.type = 'step'; props.fill = 'none'; break; }
     default: { /* no other types */ }
   }
   return {component, props, child, zIndex: settings.zIndex};
-};
+}
 
 const diagramTypeDict: Record<ChartTypeCode, LegendType> = {
   'gist': 'rect',
@@ -66,6 +66,6 @@ const diagramTypeDict: Record<ChartTypeCode, LegendType> = {
   'vertical': 'none',
 };
 
-export const getDiagramLegend = (id: string, name: string, item: SeriesSettingsItem): Payload => {
+export function getDiagramLegend(id: string, name: string, item: SeriesSettingsItem): Payload {
   return {id, type: diagramTypeDict[item.typeCode], value: name, color: item.color};
-};
+}

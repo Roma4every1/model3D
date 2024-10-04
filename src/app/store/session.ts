@@ -11,9 +11,10 @@ import { initializeObjects, initializeObjectModels } from 'entities/objects';
 import { useAppStore } from './app.store';
 import { appAPI } from '../lib/app.api';
 import { profileAPI } from 'features/profile';
+import { TableStateFactory } from 'features/table';
+import { RootClientFactory } from '../lib/root-factory';
 import { getSessionToSave } from '../lib/session-save';
 import { clearSessionData } from '../lib/session-clear';
-import { RootClientFactory } from '../lib/root-factory';
 import { initializePresentations } from './presentations';
 
 
@@ -63,6 +64,7 @@ export async function startSession(isDefault: boolean): Promise<void> {
   useProgramStore.getState().layoutController = layoutController;
 
   const systemInfo = appState.systemList.find(info => info.id === appState.systemID);
+  TableStateFactory.defaultTextWrap = systemInfo.dataWrap ?? true;
   profileAPI.setBaseURL(systemInfo.apacheUrl ?? appState.config.geoManager);
 
   const fillPromise = factory.fillData();

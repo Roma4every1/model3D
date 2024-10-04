@@ -168,11 +168,11 @@ const NavigationSection = ({stage}: CaratScalePanelProps) => {
       <MenuSectionItem className={'big-buttons'}>
         <BigButton
           text={t('carat.navigation.goto')} icon={goToStratumIcon}
-          action={showStrata} disabled={strata.length === 0}
+          onClick={showStrata} disabled={strata.length === 0}
         />
         <BigButton
           text={t('carat.navigation.align')} icon={alignByStratumIcon}
-          action={align} disabled={!currentStratum}
+          onClick={align} disabled={!currentStratum}
         />
       </MenuSectionItem>
       <Popup className={'dropdown-popup'} show={isOpen} anchor={anchor}>

@@ -90,7 +90,7 @@ interface ChannelConfig {
 /** Дополнительные свойства колонки. */
 interface ChannelProperty {
   /** Название свойства. */
-  readonly name: string;
+  readonly name: PropertyName;
   /** Какой колонке относится. */
   readonly fromColumn: ColumnName;
   /** Название для отображения на интерфейсе. */
@@ -102,12 +102,17 @@ interface ChannelProperty {
   /** Название канала детализации. */
   readonly detailChannelName?: ChannelName;
   /** Информация для свойства связанного с файлами. */
-  readonly file?: {nameFrom: string, fromResources?: boolean};
+  readonly file?: {nameFrom: PropertyName, fromResources?: boolean};
+  /** Форматирование значений. */
+  readonly format?: string;
   /** ID каналов-справочников. */
   lookupChannels?: ChannelID[];
   /** ID канала детализации. */
   detailChannel?: ChannelID;
 }
+
+/** Название свойства канала. */
+type PropertyName = string;
 
 /* --- Criterion --- */
 
@@ -171,7 +176,7 @@ type ChannelRecordInfo<T extends string = string> = Record<T, RecordPropertyInfo
 /** Информация о свойстве записи канала. */
 interface RecordPropertyInfo<L extends string = string> {
   /** Название свойства канала. */
-  readonly propertyName: string;
+  readonly propertyName: PropertyName;
   /** Название колонки в датасете. */
   readonly columnName?: ColumnName;
   /** Индекс колонки в датасете. */
@@ -193,7 +198,7 @@ type RecordLookupInfo<T extends string = string> = Record<T, PropertyAttachedCha
 /** Настройки запроса данных. */
 interface ChannelQuerySettings {
   /** Фильтры. */
-  filter?: any;
+  filter?: FilterNode;
   /** Порядок сортировки строк. */
   order?: SortOrder;
   /** Ограничитель количества записей. */
@@ -229,6 +234,29 @@ interface SortOrderItem {
  * + `desc` — в порядке убывания
  */
 type SortOrderDirection = 'asc' | 'desc';
+
+/** Узел выражения фильтра. */
+type FilterNode = FilterNodeOr | FilterNodeAnd | FilterNodeLeaf;
+/** Узел выражения фильтра, обозначающий логическое "или". */
+type FilterNodeOr = IFilterNode<'or', FilterNode[]>;
+/** Узел выражения фильтра, обозначающий логическое "и". */
+type FilterNodeAnd = IFilterNode<'and', FilterNode[]>;
+
+/** Лист выражения фильтра. */
+type FilterNodeLeaf = IFilterNode<FilterLeafType, FilterLeafValue>;
+/** Значение листового узла выражения фильтра. */
+type FilterLeafValue = Date | string | number | boolean | null;
+
+/** Тип узла выражения фильтра. */
+type FilterNodeType = 'or' | 'and' | FilterLeafType;
+/** Типы листьев выражения фильтра. */
+type FilterLeafType = 'eq' | 'neq' | 'gt' | 'lt' | 'gte' | 'lte' | 'starts' | 'ends' | 'contains';
+
+interface IFilterNode<T extends FilterNodeType, V> {
+  type: T;
+  column?: ColumnName;
+  value: V;
+}
 
 /* --- Lookup --- */
 

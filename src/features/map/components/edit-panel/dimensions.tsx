@@ -71,11 +71,11 @@ const NavigationPanel = ({state, parentID, t}: NavigationPanelProps) => {
     <div className={'map-actions'}>
       <BigButton
         text={t('map.actions.show-all')} icon={selectAllIcon}
-        action={toFullViewPort} disabled={canvas?.blocked || disabled || notLoaded}
+        onClick={toFullViewPort} disabled={canvas?.blocked || disabled || notLoaded}
       />
       <BigButtonToggle
         text={'Синхронизация карт по центру'} icon={synchronizeIcon}
-        action={toggleSync} active={sync} disabled={disabled || sync === undefined}
+        onClick={toggleSync} active={sync} disabled={disabled || sync === undefined}
       />
     </div>
   );

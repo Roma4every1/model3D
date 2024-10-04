@@ -12,14 +12,14 @@ interface SaveMapProps {
 
 
 export const SaveMap = ({id, state, t}: SaveMapProps) => {
-  const disabled = !state.editable || !state.modified;
   const action = () => saveMap(id);
+  const disabled = !state.editable || !state.modified;
 
   return (
     <MenuSection header={t('map.saving.header')} className={'big-buttons'}>
       <BigButton
         text={t('map.saving.save-map')} icon={saveMapIcon}
-        action={action} disabled={disabled}
+        onClick={action} disabled={disabled}
       />
     </MenuSection>
   );

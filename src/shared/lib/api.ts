@@ -154,7 +154,7 @@ export class Fetcher implements IFetcher {
         return res;
       } else {
         const errorDetails = await response.json();
-        const message = errorDetails?.message ?? 'Неизвестная ошибка';
+        const message = errorDetails?.message || 'Неизвестная ошибка';
         return {ok, raw: response, message}
       }
     }

@@ -19,9 +19,3 @@ export function setChartTooltipVisibility(id: FormID, visibility: boolean): void
   const state = useChartStore.getState()[id];
   useChartStore.setState({[id]: {...state, tooltip: visibility}});
 }
-
-/** Установить функцию для сохранения графика в PNG. */
-export function setChartDownloadFn(id: FormID, fn: () => Promise<void>): void {
-  const state = useChartStore.getState()[id];
-  useChartStore.setState({[id]: {...state, downloadChart: fn}});
-}

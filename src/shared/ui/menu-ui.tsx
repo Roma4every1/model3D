@@ -71,29 +71,6 @@ export const ButtonIcon = ({text, icon, title, action, disabled}: ButtonIconProp
   );
 };
 
-/** Кнопка с иконкой _Telerik_ и подписью.
- * @see https://www.telerik.com/kendo-react-ui/components/styling/icons/
- * */
-export const ButtonStock = ({text, icon, title, action, disabled}: ButtonIconProps) => {
-  return (
-    <button onClick={action} title={title} disabled={disabled}>
-      <span className={'k-icon k-i-' + icon}/>
-      <span>{text}</span>
-    </button>
-  );
-};
-
-/** Кнопка с иконкой _Telerik_.
- * @see https://www.telerik.com/kendo-react-ui/components/styling/icons/
- * */
-export const ButtonIconStock = ({icon, title, action, disabled}: Omit<ButtonIconProps, 'text'>) => {
-  return (
-    <button onClick={action} title={title} disabled={disabled}>
-      <span className={'k-icon k-i-' + icon}/>
-    </button>
-  );
-};
-
 /* --- --- --- */
 
 interface IconRowProps {
@@ -103,7 +80,7 @@ interface IconRowProps {
   children?: ReactNode;
 }
 interface IconRowButtonProps {
-  icon: string;
+  icon: string | ReactNode;
   alt?: string;
   title?: string;
   active?: boolean;
@@ -125,10 +102,12 @@ export const IconRow = ({children, justify, className, gap}: IconRowProps) => {
 };
 
 export const IconRowButton = (props: IconRowButtonProps) => {
+  const icon = props.icon;
   const className = props.active ? 'active' : undefined;
+
   return (
     <button className={className} onClick={props.onClick} disabled={props.disabled} title={props.title}>
-      <img src={props.icon} alt={props.alt}/>
+      {typeof icon === 'string' ? <img src={icon} alt={props.alt}/> : icon}
     </button>
   );
 };
@@ -147,29 +126,32 @@ interface BigButtonProps {
   text: string;
   icon: string;
   title?: string;
-  action?: (event?: MouseEvent) => void;
   disabled?: boolean;
+  className?: string;
   style?: CSSProperties;
+  onClick?: (event?: MouseEvent) => void;
 }
 
 export const BigButton = (props: BigButtonProps) => {
+  const { text, icon, className, ...buttonProps } = props;
+  const buttonClassName = clsx('map-action', className);
+
   return (
-    <button
-      className={'map-action'} style={props.style} title={props.title}
-      onClick={props.action} disabled={props.disabled}
-    >
-      <div><img src={props.icon} alt={'icon'}/></div>
-      <div>{props.text}</div>
+    <button className={buttonClassName} {...buttonProps}>
+      <div><img src={icon} alt={'icon'}/></div>
+      <div>{text}</div>
     </button>
   );
 };
 
 type BigButtonToggleProps = BigButtonProps & {active?: boolean};
 
-export const BigButtonToggle = ({text, icon, title, active, action, disabled}: BigButtonToggleProps) => {
-  const className = 'map-action' + (active ? ' selected' : '');
+export const BigButtonToggle = (props: BigButtonToggleProps) => {
+  const { text, icon, active, className, ...buttonProps} = props;
+  const buttonClassName = clsx('map-action', active && 'selected', className);
+
   return (
-    <button className={className} title={title} onClick={action} disabled={disabled}>
+    <button className={buttonClassName} {...buttonProps}>
       <div><img src={icon} alt={'icon'}/></div>
       <div>{text}</div>
     </button>

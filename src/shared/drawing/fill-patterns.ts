@@ -1,4 +1,4 @@
-import parseColor from 'parse-color';
+import { rgb } from 'd3-color';
 import dro32Lib from 'assets/map-libs/dro32.bin';
 import gridsLib from 'assets/map-libs/grids.bin';
 import litLib from 'assets/map-libs/lit.bin';
@@ -79,10 +79,12 @@ export class FillPatterns {
       libName = libName.toLowerCase();
 
       if (libName === 'halftone') {
-        const c = parseColor(color).rgb;
-        const b = parseColor(background).rgb;
         const t = parseInt(index) / 64;
-        return `rgb(${b.map((bi, i) => Math.round(bi + (c[i] - bi) * t))})`;
+        const c = rgb(color), b = rgb(background);
+        const red = Math.round(b.r + (c.r - b.r) * t);
+        const green = Math.round(b.g + (c.g - b.g) * t);
+        const blue = Math.round(b.b + (c.b - b.b) * t);
+        return `rgb(${red},${green},${blue})`;
       }
 
       const lib = this.libs[libName];
@@ -98,8 +100,8 @@ export class FillPatterns {
 
   /** Заполняет буфер значениями цвета. */
   private fill(matrix: Matrix, color: ColorString, background: ColorString): void {
-    let [red, green, blue, alpha] = parseColor(color).rgba;
-    let [backRed, backGreen, backBlue, backAlpha] = parseColor(background).rgba;
+    let { r: red, g: green, b: blue, opacity: alpha } = rgb(color);
+    let { r: backRed, g: backGreen, b: backBlue, opacity: backAlpha } = rgb(background);
     alpha = Math.round(alpha * 255);
     backAlpha = Math.round(backAlpha * 255);
 

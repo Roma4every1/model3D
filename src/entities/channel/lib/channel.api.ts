@@ -22,19 +22,22 @@ export class ChannelAPI {
     name: ChannelName, payload: Partial<Parameter>[],
     query?: ChannelQuerySettings, signal?: AbortSignal,
   ): Promise<Res<ChannelData>> {
+    const json: Record<string, any> = {};
+    const parameters = payload.map(serializeParameter);
+
+    if (query) {
+      if (query.limit !== null) json.limit = query.limit;
+      if (query.order?.length) json.order = query.order;
+      if (query.filter) json.filter = query.filter;
+    }
     if (this.api.legacy) {
-      const paramValues = payload.map(serializeParameter);
-      if (query) applyQuerySettings(paramValues, query);
-      const json = {channelName: name, paramValues};
+      json.channelName = name;
+      json.paramValues = parameters;
       const res = await this.api.post('/channelData', {json, signal});
       if (res.ok) res.data = convertLegacyChannelData(res.data);
       return res;
     } else {
-      const json: any = {parameters: payload.map(serializeParameter)};
-      if (query) {
-        if (query.limit !== null) json.limit = query.limit;
-        if (query.order?.length) json.order = query.order;
-      }
+      json.parameters = parameters;
       return this.api.post('/channel/data', {query: {name}, json, signal});
     }
   }
@@ -105,17 +108,6 @@ interface ChannelRowLegacy {
   Cells: any[];
 }
 
-function applyQuerySettings(parameters: SerializedParameter[], query: ChannelQuerySettings): void {
-  if (query.limit === false) {
-    parameters.push({id: 'readAllRows', type: 'bool', value: 'true'});
-  } else if (Number.isInteger(query.limit)) {
-    parameters.push({id: 'maxRowCount', type: 'integer', value: query.limit.toString()});
-  }
-  if (query.order?.length) {
-    const value = query.order.map(sort => sort.column + ' ' + sort.direction).join(',');
-    parameters.push({id: 'sortOrder', type: 'sortOrder', value});
-  }
-}
 
 function convertLegacyChannelData({data, tableId}: ChannelDataLegacyDTO): ChannelData {
   if (!data) return null;

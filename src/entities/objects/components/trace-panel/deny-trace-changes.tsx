@@ -23,7 +23,7 @@ export const DenyTraceChanges = ({trace}: DenyTraceChangesProps) => {
   return (
     <BigButton
       text={t('base.cancel')} icon={denyTraceChangesIcon}
-      action={action} disabled={!trace.creating && !trace.editing}
+      onClick={action} disabled={!trace.creating && !trace.editing}
     />
   );
 };

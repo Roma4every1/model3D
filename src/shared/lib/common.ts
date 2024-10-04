@@ -112,6 +112,20 @@ export function findInTree<T>(
   }
 }
 
+/** Возвращает массив из всех узлов дерева. */
+export function flatTree<T>(tree: T[], childrenField: string = 'children'): T[] {
+  const result: T[] = [];
+  const traverse = (nodes: T[]) => {
+    for (const node of nodes) {
+      result.push(node);
+      const children = node[childrenField];
+      if (Array.isArray(children)) traverse(children);
+    }
+  };
+  traverse(tree);
+  return result;
+}
+
 /**
  * Применяет функцию ко всем листьям дерева.
  *
@@ -178,10 +192,4 @@ export function testString(name: string, matcher: StringMatcher): boolean {
   } else {
     return matcher.test(name);
   }
-}
-
-/** `#ARGB => #RGBA`: на сервере иногда бывает неправильный формат. */
-export function fixColorHEX(hex: ColorString): ColorString {
-  if (hex?.length > 7) hex = '#' + hex.substring(3) + hex.substring(1, 3);
-  return hex;
 }

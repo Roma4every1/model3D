@@ -30,7 +30,7 @@ export const DeleteTrace = ({trace}: DeleteTraceProps) => {
   return (
     <BigButton
       text={t('trace.delete')} icon={deleteTraceIcon}
-      action={openDialog} disabled={!trace.model || trace.editing || trace.creating}
+      onClick={openDialog} disabled={!trace.model || trace.editing || trace.creating}
     />
   );
 };

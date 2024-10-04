@@ -12,40 +12,31 @@ export function round(n: number, digits: number = 0): number {
   return Math.round(n * multiplier) / multiplier;
 }
 
-/**
- * Округляет вниз до ближайшего числа, удобного для восприятия на оси графика.
- * @example
- * getPragmaticMin(4)    => 0
- * getPragmaticMin(33.3) => 25
- * getPragmaticMin(543)  => 500
- */
-export function getPragmaticMin(n: number): number {
-  n = Math.floor(n);
-  if (n < 10) return 0;
-  const e = Math.pow(10, n.toString().length - 1);
-  n = n / e;
-
-  if (n >= 5) return 5 * e;
-  if (n >= 2.5) return 2.5 * e;
-  return (n >= 2 ? 2 : 1) * e;
+/** Округляет вниз до ближайшего числа, удобного для восприятия на оси. */
+export function calcAxisMin(dataMin: number): number {
+  if (!dataMin || dataMin > 0) return 0;
+  return -calcAxisMax(-dataMin);
 }
 
-/**
- * Округляет вверх до ближайшего числа, удобного для восприятия на оси графика.
- * @example
- * getPragmaticMax(4)    => 5
- * getPragmaticMax(33.3) => 50
- * getPragmaticMax(543)  => 1000
- */
-export function getPragmaticMax(n: number): number {
-  n = Math.ceil(n);
-  const e = Math.pow(10, n.toString().length - 1);
-  n = n / e;
+/** Округляет вверх до ближайшего числа, удобного для восприятия на оси. */
+export function calcAxisMax(dataMax: number): number {
+  if (!dataMax || dataMax < 0) {
+    return 0;
+  }
+  if (dataMax >= 0.1) {
+    const thresholds = [1, 2, 5, 10, 15, 20, 25, 50, 100, 150, 200, 250, 500, 1000, 1500, 2000, 2500];
+    const threshold = thresholds.find(t => t > dataMax);
+    if (threshold !== undefined) return threshold;
+  }
+  const base = Math.pow(10, Math.floor(Math.log10(dataMax)));
+  let max = base;
 
-  if (n <= 1) return e;
-  if (e < 2 && n <= 2) return 2 * e;
-  if (n <= 2.5) return 2.5 * e;
-  return (n <= 5 ? 5 : 10) * e;
+  if (dataMax <= max) return max;
+  max = base * 2;
+  if (dataMax <= max) return max;
+  max = base * 5;
+  if (dataMax <= max) return max;
+  return base * 10;
 }
 
 /* --- Set Theory --- */

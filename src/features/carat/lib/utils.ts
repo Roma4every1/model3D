@@ -19,14 +19,14 @@ export function distanceFromCaratCurve(
   rect: Rectangle, viewport: CaratViewport,
 ): number {
   const scaleY = viewport.scale * window.devicePixelRatio;
-  const scaleX = rect.width / curve.axisMax;
+  const scaleX = rect.width / (curve.axisMax - curve.axisMin);
 
   const points = curve.points ?? [];
   const nearestPointIndex = findNearestYPoint(points, p.y / scaleY + viewport.y);
 
   const toRectCoordinates = (p: Point): Point => {
     if (!p) return {x: Infinity, y: Infinity};
-    return {x: p.x * scaleX, y: (p.y - viewport.y) * scaleY};
+    return {x: (p.x - curve.axisMin) * scaleX, y: (p.y - viewport.y) * scaleY};
   };
 
   const p1 = toRectCoordinates(points[nearestPointIndex - 1]);

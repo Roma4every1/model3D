@@ -1,8 +1,4 @@
-/** Состояние загрузки данных каротажной диаграммы.
- * + `percentage: number`
- * + `status: string`
- * + `statusOptions?`: {@link I18nOptions}
- * */
+/** Состояние загрузки данных каротажной диаграммы. */
 interface CaratLoading {
   /** Процент загрузки. */
   percentage: number;
@@ -15,29 +11,22 @@ interface CaratLoading {
 /** Кеш точек кривых. */
 type CurveDataCache = Record<CaratCurveID, CaratCurveData>;
 
-/** Данные точек кривых.
- * + `path`: {@link Path2D}
- * + `points`: {@link Point}[]
- * + `top: number`
- * + `bottom: number`
- * + `min: number`
- * + `max: number`
- * */
+/** Данные точек кривых. */
 interface CaratCurveData {
   /** Путь кривой. */
-  path: Path2D;
+  readonly path: Path2D;
   /** Набор точек кривой. */
-  points: Point[];
+  readonly points: Point[];
   /** Начальная отметка глубины. */
-  top: number;
+  readonly top: number;
   /** Конечная отметка глубины. */
-  bottom: number;
+  readonly bottom: number;
   /** Минимальное значение кривой. */
-  min: number;
+  readonly min: number;
   /** Максимальное значение кривой. */
-  max: number;
+  readonly max: number;
   /** Порядок добавления в кеш (техническое поле). */
-  order: number;
+  readonly order: number;
 }
 
 /** Настройки экспокрта каротажной диаграммы в PNG. */
@@ -111,7 +100,8 @@ interface CaratZone {
   types: CaratCurveType[];
 }
 
-/** Типы распознаваемых каналов, которые могут быть подключены к каротажной форме.
+/**
+ * Типы распознаваемых каналов, которые могут быть подключены к каротажной форме.
  * + `inclinometry` — инклинометрия скважины
  * + `lithology` — литологические пласты
  * + `perforation` — перфорации

@@ -1,6 +1,6 @@
+import { setChannelActiveRow } from 'entities/channel';
 import { useTableStore } from './table.store';
-import { applyColumnTypes, settingsToTableState } from '../lib/initialization';
-import { getFlatten } from '../lib/column-tree';
+import { settingsToTableState } from '../lib/initialization';
 
 
 /** Добавить новую таблицу в хранилище состояний. */
@@ -9,90 +9,85 @@ export function createTableState(payload: FormStatePayload): void {
   useTableStore.setState({[id]: settingsToTableState(payload)});
 }
 
-/** Установить состояние колонок таблицы. */
-export function setTableColumns(id: FormID, columns: TableColumnsState): void {
+/** Не меняя фактическое состояние формы вызывает рендер зависящих компонентов. */
+export function updateTableState(id: FormID): void {
   const state = useTableStore.getState()[id];
-  state.recordHandler.setColumns(columns);
-  useTableStore.setState({[id]: {...state, columns}});
+  useTableStore.setState({[id]: {...state}});
 }
 
-/** Установить состояние дерева колонок. */
-export function setTableColumnTree(id: FormID, tree: ColumnTree): void {
-  const state = useTableStore.getState()[id];
-  const columnTreeFlatten = getFlatten(tree);
-  useTableStore.setState({[id]: {...state, columnTree: tree, columnTreeFlatten}});
-}
+/* --- --- */
 
-/** Установить глобальные настройки колонок. */
-export function setTableColumnsSettings(id: FormID, settings: TableColumnsSettings): void {
+export function setTableChannelData(id: FormID, channelData: ChannelData): void {
   const state = useTableStore.getState()[id];
-  useTableStore.setState({[id]: {...state, columnsSettings: settings}});
-}
+  const { data, columns, selection, viewport } = state;
 
-/** Установить состояние выделение таблицы. */
-export function setTableSelection(id: FormID, selection: TableSelection): void {
-  const state = useTableStore.getState()[id];
-  const activeCell = state.activeCell;
-  const selectedRecords = Object.keys(selection);
+  const oldTotal = data.records.length;
+  data.setChannelData(channelData);
+  const newTotal = data.records.length;
 
-  if (activeCell.recordID !== null && selectedRecords.length > 1) {
-    const activeRecord = activeCell.recordID.toString();
-    if (!selectedRecords.includes(activeRecord)) activeCell.recordID = null;
+  if (newTotal !== oldTotal) {
+    selection.clear();
+    data.setActiveCell(null);
+  } else if (newTotal && !channelData.activeRow) {
+    const row = data.activeCell.row;
+    if (row !== null) setChannelActiveRow(state.channelID, channelData.rows[row]);
   }
-  useTableStore.setState({[id]: {...state, selection}});
+  columns.updateAutoWidth(data.records);
+  viewport.handleDataChange();
+  useTableStore.setState({[id]: {...state}});
 }
 
-/** Установить активную ячейку таблицы. */
+export function setTableLookupData(id: FormID, lookupData: ChannelDict): void {
+  const state = useTableStore.getState()[id];
+  state.data.setLookupData(lookupData);
+  useTableStore.setState({[id]: {...state}});
+}
+
+export function setTableHeaderValues(id: FormID, values: any[]): void {
+  const state = useTableStore.getState()[id];
+  state.columns.setHeaderValues(values);
+  state.columns.updateAutoWidth(state.data.records);
+  useTableStore.setState({[id]: {...state}});
+}
+
+/* --- --- */
+
 export function setTableActiveCell(id: FormID, cell: TableActiveCell): void {
   const state = useTableStore.getState()[id];
-  const recordID = cell.recordID;
+  state.data.setActiveCell(cell);
+  useTableStore.setState({[id]: {...state}});
 
-  if (recordID !== null && !state.selection[recordID]) {
-    state.selection = {[recordID]: true};
-  }
-  useTableStore.setState({[id]: {...state, activeCell: cell}});
+  const { row, column } = state.data.activeCell;
+  if (row !== null && column !== null) state.viewport.scrollCellIntoView(row, column);
 }
 
-/** Начать редактирование таблицы. */
-export function startTableEditing(id: FormID, columnID: string, recordID: number, isNew: boolean): void {
-  const selection: TableSelection = {[recordID]: true};
-  const edit: TableEditState = {isNew, modified: isNew};
-  const activeCell: TableActiveCell = {columnID, recordID, edited: true};
-
+export function setTableColumnWidth(id: FormID, column: PropertyName, width: number): void {
   const state = useTableStore.getState()[id];
-  useTableStore.setState({[id]: {...state, selection, activeCell, edit}});
+  state.columns.setColumnWidth(column, width, state.data.records);
+  useTableStore.setState({[id]: {...state}});
 }
 
-/** Завершить редактирование таблицы. */
-export function endTableEditing(id: FormID): void {
+export function setTableColumnFixed(id: FormID, column: PropertyName, fixed: boolean): void {
   const state = useTableStore.getState()[id];
-
-  if (state.edit.isNew) {
-    state.selection = {};
-    state.activeCell.recordID = null;
-  }
-  const edit = {isNew: false, modified: false};
-  const activeCell = {...state.activeCell, edited: false};
-  useTableStore.setState({[id]: {...state, edit, activeCell}});
+  state.columns.setColumnFixed(column, fixed);
+  useTableStore.setState({[id]: {...state}});
 }
 
-/** Ресет некоторых свойств при обновлении данных канала. */
-export function resetTable(id: FormID, channelData: ChannelData): void {
+export function moveTableColumn(id: FormID, col: PropertyName, to: string): void {
   const state = useTableStore.getState()[id];
-  const queryID = channelData?.queryID;
-  const total = channelData?.rows.length ?? 0;
-  const editable = channelData?.editable ?? state.editable;
+  state.columns.moveColumn(col, to);
 
-  if (state.total !== total || state.activeCell.edited || state.edit.isNew) {
-    state.total = total;
-    state.selection = {};
-    state.activeCell = {columnID: null, recordID: null, edited: false};
-  }
-  if (channelData?.columns) {
-    applyColumnTypes(state, channelData.columns);
-    state.recordHandler.setColumns(state.columns, channelData.columns);
-  }
+  const { row, column } = state.data.activeCell;
+  if (row !== null) state.viewport.scrollCellIntoView(row, column);
+  useTableStore.setState({[id]: {...state}});
+}
 
-  const edit = {modified: false, isNew: false};
-  useTableStore.setState({[id]: {...state, queryID, editable, edit}});
+export function setTableVisibleColumns(id: FormID, columns: PropertyName[]): void {
+  const state = useTableStore.getState()[id];
+  state.columns.setVisibleColumns(columns, state.data.records);
+
+  if (!columns.includes(state.data.activeCell.column)) {
+    state.data.setActiveCell({row: null, column: null, edited: false})
+  }
+  useTableStore.setState({[id]: {...state}});
 }

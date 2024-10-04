@@ -1,6 +1,6 @@
 import type { CaratCurveModel } from './types';
 import type { CaratCurveMeasure, CaratDataSelection, CaratCurveSelector } from './dto.types';
-import { getPragmaticMax, parseDate, stringifyLocalDate, fixColorHEX } from 'shared/lib';
+import { parseDate, stringifyLocalDate, fixColorHEX, calcAxisMin, calcAxisMax } from 'shared/lib';
 import { defaultSettings } from './constants';
 
 
@@ -75,12 +75,16 @@ export class CurveManager {
     const curveType = record[info.type.columnName];
     const cacheData: CaratCurveData = cache[id] ?? ({} as any);
 
+    let top = cacheData.top ?? null;
+    if (top === null && info.top?.columnName) top = record[info.top.columnName];
+    let bottom = cacheData.bottom ?? null;
+    if (bottom === null && info.bottom?.columnName) bottom = record[info.bottom.columnName];
+
     return {
       id, type: curveType,
-      date: parseDate(record[info.date.columnName]),
+      date: info.date ? parseDate(record[info.date.columnName]) : null,
       description: record[info.description?.columnName] ?? '',
-      top: cacheData.top ?? record[info.top.columnName],
-      bottom: cacheData.bottom ?? record[info.bottom.columnName],
+      top, bottom,
       min: cacheData.min ?? 0, max: cacheData.max ?? 0,
       axisMin: 0, axisMax: 0,
       path: cacheData.path, points: cacheData.points,
@@ -106,7 +110,14 @@ export class CurveManager {
     return this.isInRange(curve) && this.isInTypeSelection(curve);
   }
 
-  private resetTree() {
+  private resetTree(): void {
+    if (!this.curveSetChannel.info.date) {
+      const children = this.curves.map(curve => ({value: curve, checked: curve.defaultLoading}));
+      const checked = children.some(child => child.checked);
+      this.curveTree = [{date: null, text: '', checked, children, expanded: false}];
+      return;
+    }
+
     const map: Map<string, CaratCurveModel[]> = new Map();
     for (const curve of this.curves) {
       const date = stringifyLocalDate(curve.date);
@@ -253,10 +264,10 @@ export class CurveManager {
     this.curves.filter(c => c.type === curveType).forEach(this.applyCurveAxisRange, this);
   }
 
-  private applyCurveAxisRange(model: CaratCurveModel): void {
-    const measure = this.measures[model.type];
-    model.axisMin = measure?.min ?? 0;
-    model.axisMax = measure?.max ?? getPragmaticMax(model.max);
+  private applyCurveAxisRange(curve: CaratCurveModel): void {
+    const measure = this.measures[curve.type];
+    curve.axisMin = measure?.min ?? calcAxisMin(curve.min);
+    curve.axisMax = measure?.max ?? calcAxisMax(curve.max);
   }
 
   public getInitSelection(): CaratDataSelection {

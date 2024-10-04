@@ -327,8 +327,7 @@ export class CaratTrack {
     point.x -= this.rect.left;
     point.y -= this.rect.top;
 
-    const findFn = (group) => isRectInnerPoint(point, group.getDataRect())
-    const newActiveIndex = this.groups.findIndex(findFn);
+    const newActiveIndex = this.groups.findIndex(g => isRectInnerPoint(point, g.getDataRect()));
     if (newActiveIndex !== -1) this.setActiveGroup(newActiveIndex);
 
     for (const group of this.groups) {
@@ -339,13 +338,13 @@ export class CaratTrack {
 
   /* --- Technical Methods --- */
 
-  /** Обновляет заголовка трека под текущее состояние. */
+  /** Обновляет заголовк трека под текущее состояние. */
   private updateLabel(): void {
     const curve = this.activeCurve;
     if (curve) {
       const top = round(curve.top, 1);
       const bottom = round(curve.bottom, 1);
-      this.label = `${this.wellName} ${curve.type} (${top} - ${bottom})`;
+      this.label = `${this.wellName} ${curve.type} (${top} — ${bottom})`;
     } else {
       this.label = this.wellName;
     }

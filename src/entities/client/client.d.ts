@@ -103,12 +103,7 @@ interface AttachedChannelDTO {
 
 /* --- --- --- */
 
-/** Объект с данными для создания новой формы.
- * + `state`: {@link SessionClient}
- * + `objects`: {@link ObjectsState}
- * + `parameters`: {@link ParameterDict}
- * + `channels`: {@link ChannelDict}
- */
+/** Объект с данными для создания новой формы. */
 interface FormStatePayload<S = any> {
   /** Базовая информация о форме. */
   readonly state: SessionClient<ClientType, S>;

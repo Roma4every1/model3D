@@ -1,4 +1,4 @@
-import parseColor from 'parse-color';
+import { rgb } from 'd3-color';
 import { once, chunk, isEqual, cloneDeep } from 'lodash';
 import { getLabelTextNumberArray } from './label-text-parser';
 import { fillPatterns } from '../../../shared/drawing';
@@ -443,7 +443,7 @@ var polyline = declareType('polyline', {
   bkcolor: function (i) {
     let color = i.fillbkcolor === 'background' ? '#ffffff' : i.fillbkcolor;
     if (i.selected) {
-      const [red, green, blue] = parseColor(color).rgb;
+      const { r: red, g: green, b: blue } = rgb(color);
       const stepValue = 50;
 
       if (red < 255 - stepValue) {

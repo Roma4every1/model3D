@@ -1,6 +1,6 @@
 import { useState } from 'react';
+import { rgb } from 'd3-color';
 import { gradientSettings, paletteSettings } from '../properties-utils';
-import parseColor from 'parse-color';
 
 import {
   ColorPicker, ColorPickerChangeEvent,
@@ -19,7 +19,7 @@ export const PaletteLevelChange = ({level, onChange}: PaletteLevelChangeProps) =
   const [value, setValue] = useState(level.value);
 
   const onColorChange = (e: ColorPickerChangeEvent) => {
-    level.color = parseColor(e.value).hex;
+    level.color = rgb(e.value).formatHex();
     setColor(level.color);
     onChange();
   };

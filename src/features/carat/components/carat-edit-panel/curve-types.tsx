@@ -170,7 +170,7 @@ const ActiveTypeSettings = ({stage, manager, settings, onChange, t}: ActiveTypeS
       </MenuSectionItem>
       <BigButtonToggle
         text={t('carat.types.auto')} icon={autoSettingIcon}
-        action={reset} active={auto} disabled={settings === undefined}
+        onClick={reset} active={auto} disabled={settings === undefined}
       />
     </MenuSection>
   );

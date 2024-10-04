@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { MenuSection, BigButton } from 'shared/ui';
 import { showWindow, closeWindow } from 'entities/window';
 
+import { CaratLoader } from '../../lib/loader';
 import { CaratStage } from '../../rendering/stage';
 import { CurveSelectionWindow } from '../windows/curve-selection';
 import { ZoneEditWindow } from '../windows/zone-editor';
@@ -12,16 +13,16 @@ import curvesIcon from 'assets/carat/curves.svg';
 import curveZonesIcon from 'assets/carat/curve-zones.svg';
 
 
-interface CaratCurvesPanelProps {
+interface CaratCurveSectionProps {
   id: FormID;
   stage: CaratStage;
+  loader: CaratLoader;
 }
 
 
-export const CaratCurveSection = ({id, stage}: CaratCurvesPanelProps) => {
+export const CaratCurveSection = ({id, stage, loader}: CaratCurveSectionProps) => {
   const { t } = useTranslation();
   const [trackIndex, setTrackIndex] = useState(stage.getActiveIndex());
-  const curveGroup = stage.getTrack(trackIndex).getCurveGroup();
 
   useEffect(() => {
     stage.subscribe('track', setTrackIndex);
@@ -53,15 +54,18 @@ export const CaratCurveSection = ({id, stage}: CaratCurvesPanelProps) => {
     showWindow(windowID, windowProps, content);
   };
 
+  const curveGroup = stage.getTrack(trackIndex).getCurveGroup();
+  const enableSelection = curveGroup && loader.separateCurveLoading;
+
   return (
     <MenuSection header={t('carat.curve-manage')} className={'big-buttons'}>
       <BigButton
         text={t('carat.selection.button')} icon={curvesIcon}
-        action={openCurveSelectionWindow} disabled={!curveGroup}
+        onClick={openCurveSelectionWindow} disabled={!enableSelection}
       />
       <BigButton
         text={t('carat.zones.button')} icon={curveZonesIcon}
-        action={openZonesEditingWindow}
+        onClick={openZonesEditingWindow}
       />
     </MenuSection>
   );

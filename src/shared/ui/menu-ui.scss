@@ -29,13 +29,13 @@
     transition: 0.2s;
 
     &:hover {
-      background-color: #f3afa7;
+      background-color: var(--wm-primary-70);
     }
   }
 
   > button {
     &.active {
-      background-color: #fccbc7;
+      background-color: var(--wm-primary-85);
     }
     &:disabled {
       background-color: #e1e1e1;
@@ -47,6 +47,11 @@
   img {
     width: 18px;
     height: 18px;
+    vertical-align: top;
+  }
+  svg {
+    width: 16px;
+    height: 16px;
     vertical-align: top;
   }
 }

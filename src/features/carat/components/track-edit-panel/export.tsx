@@ -31,11 +31,11 @@ export const CaratExportSection = ({stage}: {stage: CaratStage}) => {
     <MenuSection header={t('carat.export')} className={'big-buttons'}>
       <BigButton
         text={t('carat.export-png')} icon={pngExportIcon} style={style}
-        action={openExportDialog} disabled={disabled}
+        onClick={openExportDialog} disabled={disabled}
       />
       <BigButton
-        text={t('carat.export-excel')} icon={excelExportIcon}
-        style={style} action={exportToExcel} disabled={disabled}
+        text={t('carat.export-excel')} icon={excelExportIcon} style={style}
+        onClick={exportToExcel} disabled={disabled}
       />
     </MenuSection>
   );

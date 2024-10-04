@@ -100,9 +100,9 @@ export class LayoutController {
     const types = presentation?.childrenTypes;
     if (types) {
       const oldTopIndex = this.topBorder.getSelected();
-      const oldTopTabID = oldTopIndex > 1
+      const oldTopTabID = oldTopIndex > 0
         ? this.topBorder.getChildren()[oldTopIndex].getId()
-        : null; // для -1, 0, 1 обработка не нужна
+        : null; // для -1, 0, обработка не нужна
 
       this.handleTab('top-table', types.has('dataSet'));
       this.handleTab('top-chart', types.has('chart'));

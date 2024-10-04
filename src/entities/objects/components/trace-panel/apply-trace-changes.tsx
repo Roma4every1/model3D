@@ -12,7 +12,7 @@ interface ApplyTraceChangesProps {
 export const ApplyTraceChanges = ({trace}: ApplyTraceChangesProps) => {
   const { t } = useTranslation();
 
-  const action = () => {
+  const apply = () => {
     if (!trace.editing) return;
     const model = trace.model;
     if (!model.name) model.name = model.nodes.map(n => n.name).join(',');
@@ -22,7 +22,7 @@ export const ApplyTraceChanges = ({trace}: ApplyTraceChangesProps) => {
   return (
     <BigButton
       text={t('base.apply')} icon={applyTraceChangesIcon}
-      action={action} disabled={!trace.creating && !trace.editing}
+      onClick={apply} disabled={!trace.creating && !trace.editing}
     />
   );
 };

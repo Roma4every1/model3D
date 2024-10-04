@@ -3,16 +3,16 @@
 html {
   font: 12px sans-serif;
   margin: 0;
-  --wm-system-color: #808080;
+
+  --wm-primary: #808080;
+  --wm-primary-60: #cccccc;
+  --wm-primary-70: #d9d9d9;
+  --wm-primary-85: #ececec;
 }
 
 #root {
   min-width: 100vw;
   min-height: 100vh;
-}
-
-.font-10 {
-  font-size: 10px;
 }
 
 .k-icon-32 {
@@ -22,19 +22,6 @@ html {
 .form-container {
   height: 100%;
   width: 100%;
-}
-
-.grid-container {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.grid-content {
-  height: 100%;
-  flex-grow: 1;
-  overflow-x: auto;
 }
 
 .k-treeview-item {
@@ -98,7 +85,7 @@ html {
 }
 
 .k-dialog-titlebar {
-  background-color: var(--wm-system-color);
+  background-color: var(--wm-primary);
 }
 
 .k-colorpicker {
@@ -149,13 +136,6 @@ html {
 .k-textbox, .k-dropdown .k-input, .k-dropdowntree .k-input,
 .k-datepicker, .k-dateinput, .k-numerictextbox .k-input {
   height: 20px;
-}
-
-.k-grid {
-  font-size: 12px;
-}
-.k-grid td {
-  padding: 0 2px;
 }
 
 .k-dateinput {

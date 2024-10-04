@@ -50,7 +50,7 @@ export class ProfileAPI {
     options.name = name;
     options.reqExt = 'xml';
     options.resExt = 'xml';
-    options.builderId = '{E2BB9801-C8B0-4869-AA9F-E1D136CB479E}';
+    options[name === 'pl' ? 'builderId' : 'builderID'] = '{E2BB9801-C8B0-4869-AA9F-E1D136CB479E}';
 
     const path = this.base + 'job/create?' + new URLSearchParams(options).toString();
     const init: RequestInit = {method: 'POST', credentials: 'include'};

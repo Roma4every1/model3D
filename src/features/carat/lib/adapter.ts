@@ -14,6 +14,7 @@ export function settingsToCaratState(payload: FormStatePayload<CaratFormSettings
   const { id, channels: attachedChannels } = payload.state;
   const { settings: caratSettings, columns: initColumns } = payload.state.settings;
 
+  let separateCurveLoading = false;
   const channels = payload.channels;
   const usedChannels: Set<ChannelID> = new Set();
 
@@ -22,22 +23,27 @@ export function settingsToCaratState(payload: FormStatePayload<CaratFormSettings
 
   for (const attachedChannel of attachedChannels) {
     const id = attachedChannel.id;
-    const displayName = channels[id].config.displayName ?? id;
-    attachedChannel.config = {displayName};
+    const channel = channels[id];
+    attachedChannel.config = {displayName: channel.config.displayName ?? channel.name};
 
     const type = attachedChannel.type as CaratChannelType;
     if (type === 'lithology' || type === 'perforation' || type === 'face') {
       applyStyle(attachedChannel, channels);
     }
-    if (type !== 'curve-data') {
-      usedChannels.add(id);
+    if (type === 'curve-data') {
+      const parameterNames = channel.config.parameterNames;
+      if (parameterNames.length === 1 && parameterNames[0] === 'currentCurveIds') {
+        separateCurveLoading = true;
+        continue;
+      }
     }
+    usedChannels.add(id);
   }
 
   const stage = new CaratStage(caratSettings, columns, drawerConfig);
   const observer = new ResizeObserver(() => { stage.resize(); stage.render(); });
 
-  const loader = new CaratLoader(attachedChannels);
+  const loader = new CaratLoader(attachedChannels, separateCurveLoading);
   loader.onProgressChange = (loading: Partial<CaratLoading>) => setCaratLoading(id, loading);
 
   return {

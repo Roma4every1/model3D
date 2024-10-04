@@ -91,10 +91,10 @@
   }
 
   &:hover {
-    background-color: var(--color-6);
+    background-color: #d8d8d8;
   }
   &.selected, &:active {
-    background-color: #fccbc7;
+    background-color: var(--wm-primary-85);
   }
   &:disabled {
     background-color: transparent;

@@ -14,13 +14,13 @@ export const TrackEditPanel = ({id}: FormEditPanelProps) => {
   if (!state || state.loading.percentage < 100) {
     return <MenuSkeleton template={['290px', '310px', '160px', '150px']}/>;
   }
-  const stage = state.stage;
+  const { stage, loader } = state;
 
   return (
     <div className={'menu'}>
       <CaratNavigationSection stage={stage}/>
       <CaratActiveGroupSection stage={stage}/>
-      <CaratCurveSection id={id} stage={stage}/>
+      <CaratCurveSection id={id} stage={stage} loader={loader}/>
       <CaratExportSection stage={stage}/>
     </div>
   );

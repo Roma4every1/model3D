@@ -57,6 +57,7 @@ export function i18nMapper(label: I18nLabel, parameter?: string): string {
  * Дробные числа округляются до ближайшего целого.
  */
 export function inputIntParser(value: string): number | null {
+  if (!value) return null;
   const number = Number(value.replace(',', '.'));
   return Number.isNaN(number) ? null : Math.round(number);
 }
@@ -67,7 +68,8 @@ export function inputIntParser(value: string): number | null {
  * В качестве разделителя дробной части поддерживается и точка, и запятая.
  * Если строка не является записью числа, будет возвращён `null`.
  */
-export function inputNumberParser(value: string): number {
+export function inputNumberParser(value: string): number | null {
+  if (!value) return null;
   const number = Number(value.replace(',', '.'));
   return Number.isNaN(number) ? null : number;
 }

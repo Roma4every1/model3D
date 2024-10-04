@@ -1,8 +1,11 @@
 import { create } from 'zustand';
+import type { TableStates, TableState } from '../lib/types';
 
 
 /** Хранилище табличных форм. */
-export const useTableStore = create<TableStates>(() => ({}));
+export const useTableStore = create((): TableStates => ({}));
 
 /** Состояние табличной формы. */
-export const useTableState = (id: FormID) => useTableStore(state => state[id]);
+export function useTableState(id: FormID): TableState {
+  return useTableStore(state => state[id]);
+}

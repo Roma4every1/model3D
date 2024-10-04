@@ -45,6 +45,7 @@ export function stringifyRGBA([red, green, blue, alpha]: RGBA): string {
 
 /**
  * Накладывает цвет на основной.
+ * @deprecated Вероятно, эта функция работает неправильно
  * @example
  * overlayColor([0, 0, 0, 0.5], [255, 255, 255, 0.5]) => [170, 170, 170, 0.75]
  */

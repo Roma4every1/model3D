@@ -1,7 +1,6 @@
 import { useParameterStore, findParameters } from 'entities/parameter';
 import { useChannelStore } from './channel.store';
 import { fillChannel } from '../lib/utils';
-import { setChannelSortOrder, setChannelLimit } from './channel.actions';
 
 
 /** Перезагрузить данные канала. */
@@ -37,12 +36,18 @@ export async function reloadChannelsByQueryIDs(ids: QueryID[]): Promise<void> {
 
 /** Обновляет порядок сортировки и перезагружает канал. */
 export function updateChannelSortOrder(id: ChannelID, order: SortOrder): Promise<void> {
-  setChannelSortOrder(id, order);
+  const state = useChannelStore.getState();
+  const channel = state.storage[id];
+  state.storage[id] = {...channel, query: {...channel.query, order}};
+  useChannelStore.setState({...state}, true);
   return reloadChannel(id);
 }
 
 /** Обновляет ограничитель количества строк и перезагружает канал. */
 export function updateChannelLimit(id: ChannelID, limit: ChannelLimit): Promise<void> {
-  setChannelLimit(id, limit);
+  const state = useChannelStore.getState();
+  const channel = state.storage[id];
+  state.storage[id] = {...channel, query: {...channel.query, limit}};
+  useChannelStore.setState({...state}, true);
   return reloadChannel(id);
 }

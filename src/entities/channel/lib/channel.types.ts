@@ -26,4 +26,6 @@ export interface ChannelPropertyDTO {
   secondLevelChannelName?: string;
   /** Информация для свойства связанного с файлами. */
   file?: {nameFrom: string, fromResources?: boolean};
+  /** Форматирование значений. */
+  format?: string;
 }

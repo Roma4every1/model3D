@@ -1,6 +1,6 @@
 {
   "name": "well-manager-web",
-  "version": "1.4.0",
+  "version": "1.5.0-rc2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -19,7 +19,6 @@
     "@progress/kendo-react-dateinputs": "5.9.0",
     "@progress/kendo-react-dialogs": "5.9.0",
     "@progress/kendo-react-dropdowns": "5.9.0",
-    "@progress/kendo-react-grid": "5.9.0",
     "@progress/kendo-react-indicators": "5.9.0",
     "@progress/kendo-react-inputs": "5.9.0",
     "@progress/kendo-react-intl": "5.9.0",
@@ -34,6 +33,8 @@
     "cldr-core": "41.0.0",
     "cldr-dates-full": "41.0.0",
     "cldr-numbers-full": "41.0.0",
+    "d3-color": "3.1.0",
+    "dayjs": "1.11.10",
     "docx-preview": "0.3.0",
     "events": "3.3.0",
     "exceljs": "4.3.0",
@@ -43,7 +44,6 @@
     "jspdf": "2.5.1",
     "lodash": "4.17.21",
     "pako": "2.1.0",
-    "parse-color": "1.0.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-i18next": "11.17.2",

@@ -1,0 +1,35 @@
+.one-record {
+  border: none;
+  outline: none;
+  width: 100%;
+  font: 12.5px "Roboto";
+  table-layout: fixed;
+
+  tr {
+    transition: background-color 0.1s;
+    &:hover { background-color: var(--wm-primary-85); }
+  }
+  td {
+    padding: 6px;
+    transition: background-color 0.1s;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &:first-child {
+      cursor: default;
+      font-weight: bold;
+      border-right: 1.5px solid #ddd;
+    }
+  }
+  .active > :first-child {
+    background-color: var(--wm-primary-70);
+  }
+}
+
+.one-record-resizer {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  opacity: 0;
+  cursor: ew-resize;
+}

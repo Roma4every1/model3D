@@ -57,7 +57,7 @@ function createProperties(init: ChannelPropertyDTO[]): ChannelProperty[] {
       treePath: dto.treePath ?? [],
       lookupChannelNames: dto.lookupChannels ?? [],
       detailChannelName: dto.secondLevelChannelName,
-      file: dto.file,
+      file: dto.file, format: dto.format,
     });
   }
   return properties;

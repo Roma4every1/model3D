@@ -49,7 +49,7 @@ export const XAxisSection = ({stage}: XAxisSectionProps) => {
     <MenuSection header={t('carat.x-axis.header')} className={'big-buttons'} style={{gap: 4}}>
       <BigButtonToggle
         text={t('carat.x-axis.show-grid')} icon={xAxisGridIcon} active={showGrid}
-        action={onShowGridChange} disabled={!settings}
+        onClick={onShowGridChange} disabled={!settings}
       />
       <div>
         <div>{t('carat.x-axis.marks-count')}</div>
