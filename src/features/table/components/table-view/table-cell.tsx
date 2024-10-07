@@ -54,7 +54,7 @@ export const TableCell = ({state, column, record, rowStyle}: TableCellProps) => 
 };
 
 function getCellContent(column: TableColumnModel, record: TableRecord): ReactNode {
-  let value = record.renderValues[column.id];
+  const value = record.renderValues[column.id];
   if (value === null) return null;
 
   if (column.type === 'color') {

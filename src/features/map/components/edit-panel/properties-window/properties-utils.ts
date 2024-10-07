@@ -23,8 +23,8 @@ export interface PropertyWindowConfig {
 
 type StyleData = {key: number | string, style?: PolylineBorderStyle, borderStyle?: number};
 
-let borderStyles = [0, 1, 2, 3, 4, 5].map(e => ({borderStyle: e, key: e}));
-let borderStyleIDs = lines.map(e => ({style: e, key: e?.guid}));
+const borderStyles = [0, 1, 2, 3, 4, 5].map(e => ({borderStyle: e, key: e}));
+const borderStyleIDs = lines.map(e => ({style: e, key: e?.guid}));
 export const stylesData: StyleData[] = [...borderStyles, ...borderStyleIDs];
 
 export function updateImg(polyline: MapPolyline): void {

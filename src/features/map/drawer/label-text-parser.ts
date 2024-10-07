@@ -3,7 +3,7 @@ export function getLabelTextNumberArray(str: string) {
   if (str.search(/[\^_]/) === -1) return [{value: str, upper: null, lower: null}]
 
   // массив обьектов чисел и их индексов вида {value: string, upper: string, lower: string}
-  let numberArray = [];
+  const numberArray = [];
   // получаем массив объектов подстрок вида {value: string, type: string}
   const input = getIndexNumberArray(str);
   for (let i = 0; i < input.length; i++) {
@@ -31,7 +31,7 @@ export function getLabelTextNumberArray(str: string) {
 
 function getIndexNumberArray(str: string) {
   // выходной массив объектов подстрок вида {value: string, type: string}
-  let numberArray: {value: string, type: string}[] = [];
+  const numberArray: {value: string, type: string}[] = [];
 
   // значение подстроки
   let currentNumberStr = '';

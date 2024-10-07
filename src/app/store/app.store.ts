@@ -4,7 +4,6 @@ import { create } from 'zustand';
 /** Общее состояние приложения. */
 export const useAppStore = create((): AppState => ({
   location: getAppLocation(),
-  config: null,
   systemList: null,
   systemID: null,
   sessionIntervalID: null,

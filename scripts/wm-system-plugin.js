@@ -1,12 +1,10 @@
-import systemDict from './systems.json';
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'fs';
 
 
 /** Создаёт в папке с билдом подпапку с системами. */
-export default function wellManagerSystemPlugin(command, systemSetID = 'all') {
+export default function wellManagerSystemPlugin(command) {
   let hasError = false;
-  const fileName = 'index.html';
-  const outDir = './build/';
+  const htmlFileName = 'index.html';
 
   return {
     name: 'wellManagerSystemPlugin',
@@ -16,41 +14,23 @@ export default function wellManagerSystemPlugin(command, systemSetID = 'all') {
     },
     closeBundle(){
       if (hasError || command !== 'build') return;
-      let systems = [];
-
-      if (systemSetID === 'all') {
-        const all = new Set();
-        for (const id in systemDict) {
-          for (const systemID of systemDict[id]) {
-            all.add(systemID);
-          }
-        }
-        all.forEach(id => systems.push(id));
-        systems.sort();
-      } else {
-        systems = systemDict[systemSetID];
-      }
-      if (!systems || systems.length === 0) {
-        console.log(`No systems for "${systemSetID})"`);
-        return;
-      }
-
-      const inputFile = outDir + fileName;
+      const inputFile = './build/' + htmlFileName;
       let htmlSource = readFileSync(inputFile, {encoding: 'utf-8'});
       htmlSource = htmlSource.replaceAll('="./', '="../../');
 
-      const systemDirectoryPath = outDir + 'systems';
+      const systemDirectoryPath = './build/systems';
       try {
         mkdirSync(systemDirectoryPath);
       } catch (e) {
         if (e.code !== 'EEXIST') console.log(e.message);
       }
-
       const existingDirectories = readdirSync(systemDirectoryPath);
+      const systems = ['ADMIN_SYSTEM', 'JS_WMW_DEMO', 'GRP_SYSTEM', 'KERN_SYSTEM', 'PREPARE_SYSTEM'];
+
       for (const systemID of systems) {
         const systemPath = systemDirectoryPath + '/' + systemID;
         if (!existingDirectories.includes(systemID)) mkdirSync(systemPath);
-        writeFileSync(systemPath + '/' + fileName, htmlSource);
+        writeFileSync(systemPath + '/' + htmlFileName, htmlSource);
       }
     },
   };

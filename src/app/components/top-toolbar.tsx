@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useAppConfig } from 'shared/global';
 import { showDialog } from 'entities/window';
 import { startSession, saveSession } from 'app/store/session';
 import { Link } from 'react-router-dom';
@@ -14,20 +15,13 @@ import userDocIcon from 'assets/common/user-doc.svg';
 import aboutProgramIcon from 'assets/common/about-program.svg';
 
 
-interface TopLeftToolbarProps {
-  location: string;
-}
-interface TopRightToolbarProps {
-  config: ClientConfig;
-}
-
-
-export const TopRightToolbar = ({config}: TopRightToolbarProps) => {
+export const TopRightToolbar = () => {
+  const config = useAppConfig();
   const { t } = useTranslation();
 
   const showAboutWindow = () => {
     const props = {title: t('about.dialog-title'), contentStyle: {padding: 0}};
-    showDialog('about', props, <AboutProgramWindow config={config} t={t}/>);
+    showDialog('about', props, <AboutProgramWindow/>);
   };
 
   return (
@@ -56,7 +50,7 @@ export const TopRightToolbar = ({config}: TopRightToolbarProps) => {
   );
 };
 
-export const TopLeftToolbar = ({location}: TopLeftToolbarProps) => {
+export const TopLeftToolbar = ({location}: {location: string}) => {
   const { t } = useTranslation();
 
   return (

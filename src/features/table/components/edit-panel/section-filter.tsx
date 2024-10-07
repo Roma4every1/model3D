@@ -3,10 +3,10 @@ import type { TFunction } from 'react-i18next';
 import type { TableState, TableColumnModel } from '../../lib/types';
 import { useRef, useMemo } from 'react';
 import { Button, Popover } from 'antd';
-import { BigButton, MenuSection } from 'shared/ui';
-import { UploadOutlined, DownloadOutlined } from '@ant-design/icons';
-import { downloadFilters, filterToString } from '../../lib/filter-utils';
-import { applyUploadedFilters } from '../../store/table.thunks';
+import { BigButtonToggle, MenuSection } from 'shared/ui';
+import { UploadOutlined, DownloadOutlined, ClearOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { filterToString, getDefaultFilterState } from '../../lib/filter-utils';
+import { updateTableFilters, saveTableFilters, applyUploadedFilters } from '../../store/table.thunks';
 import filterStateIcon from 'assets/table/filter-state.svg';
 
 
@@ -14,40 +14,73 @@ interface TableFilterSectionProps {
   state: TableState;
   t: TFunction;
 }
+interface FilterViewProps {
+  filtered: TableColumnModel[];
+}
 interface ColumnFilterViewProps {
   column: TableColumnModel;
 }
 
 
 export const TableFilterSection = ({state, t}: TableFilterSectionProps) => {
+  const columns = state.columns.list;
+  const globalSettings = state.globalSettings;
+
+  const filteredColumns = globalSettings.filterEnabled
+    ? columns.filter(c => c.filter?.node && c.filter.enabled)
+    : [];
+
   const inputRef = useRef<HTMLInputElement>();
   const openFiles = () => inputRef.current.click();
-  const download = () => downloadFilters(state.columns.list);
+  const saveFilters = () => saveTableFilters(state.id);
+
+  const recordMode = !globalSettings.tableMode;
+  const noFilters = filteredColumns.length === 0;
+  const infoIconStyle = noFilters ? undefined : {fill: 'var(--wm-primary-60)'}
+  const PopoverContent = () => <FilterView filtered={filteredColumns}/>;
 
   const handleFile = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files[0];
     if (file) applyUploadedFilters(state.id, file).then();
+    e.target.value = null;
   };
-
-  const disabled = !state.globalSettings.tableMode;
-  const PopoverContent = () => <FilterView state={state} t={t}/>;
+  const toggleFilterEnabled = () => {
+    globalSettings.filterEnabled = !globalSettings.filterEnabled;
+    updateTableFilters(state.id).then();
+  };
+  const clearFilters = () => {
+    for (const column of columns) {
+      if (!column.filter) continue;
+      column.filter.state = getDefaultFilterState(column.type);
+      column.filter.node = null;
+    }
+    updateTableFilters(state.id).then();
+  };
 
   return (
     <MenuSection className={'big-buttons'} header={t('table.panel.section-filter')}>
-      <Popover content={PopoverContent} trigger={'click'} placement={'bottom'}>
-        <BigButton
-          text={t('table.panel.filter-state')} icon={filterStateIcon}
-          title={t('table.panel.filter-state-hint')} disabled={disabled}
-        />
-      </Popover>
+      <BigButtonToggle
+        text={t('table.panel.filter-enabled')} icon={filterStateIcon} style={{width: 70}}
+        active={globalSettings.filterEnabled} onClick={toggleFilterEnabled} disabled={recordMode}
+      />
       <div className={'table-filter-actions'}>
         <Button
           icon={<UploadOutlined/>} title={t('table.panel.filter-upload')}
-          onClick={openFiles} disabled={disabled}
+          onClick={openFiles} disabled={recordMode}
         />
         <Button
           icon={<DownloadOutlined/>} title={t('table.panel.filter-download')}
-          onClick={download} disabled={disabled}
+          onClick={saveFilters} disabled={recordMode || noFilters}
+        />
+        <Popover content={PopoverContent} trigger={'click'} placement={'bottom'}>
+          <Button
+            icon={<InfoCircleOutlined style={infoIconStyle}/>}
+            title={t('table.panel.filter-info')} disabled={recordMode}
+          />
+        </Popover>
+        <Button
+          icon={<ClearOutlined/>} title={t('table.panel.filter-clear')}
+          onClick={clearFilters} disabled={recordMode}
         />
         <input ref={inputRef} type={'file'} accept={'.json'} onChange={handleFile}/>
       </div>
@@ -55,18 +88,14 @@ export const TableFilterSection = ({state, t}: TableFilterSectionProps) => {
   );
 };
 
-const FilterView = ({state}: TableFilterSectionProps) => {
-  const filteredColumns = state.columns.list.filter(c => c.filter.node && c.filter.enabled);
-  if (filteredColumns.length === 0) return <div>Фильтры не применяются</div>;
-
+const FilterView = ({filtered}: FilterViewProps) => {
+  if (filtered.length === 0) {
+    return <div>Фильтры не применяются</div>;
+  }
   const toElement = (column: TableColumnModel) => {
     return <ColumnFilterView key={column.id} column={column}/>;
   };
-  return (
-    <ul className={'table-filter-view'}>
-      {filteredColumns.map(toElement)}
-    </ul>
-  );
+  return <ul className={'table-filter-view'}>{filtered.map(toElement)}</ul>;
 };
 
 const ColumnFilterView = ({column}: ColumnFilterViewProps) => {

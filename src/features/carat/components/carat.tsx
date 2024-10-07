@@ -31,7 +31,7 @@ export const Carat = ({id, loading: l}: SessionClient) => {
   // обновление данных
   useEffect(() => {
     if (l.status === 'done') setCaratData(id).then();
-  }, [l.status, channelData, currentWell, currentTrace]); // eslint-disable-line
+  }, [l.status, channelData, currentWell, currentTrace, id]);
 
   // выравнивание по активному пласту
   useEffect(() => {

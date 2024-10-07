@@ -188,42 +188,34 @@ export function getInterpolatedFieldValue(field: MapField, point: Point) {
 
   if (s === 3) {
     if (f00 == null) {
-      let a = 1 - relativeToCellX;
-      let b = 1 - relativeToCellY;
-      let c = 1 - a - b;
-      if (c < 0) {
-        return null
-      }
+      const a = 1 - relativeToCellX;
+      const b = 1 - relativeToCellY;
+      const c = 1 - a - b;
+      if (c < 0) return null
       return a * f10 + b * f01 + c * f11;
     }
 
     if (f01 == null) {
-      let a = relativeToCellX;
-      let b = 1 - relativeToCellY;
-      let c = 1 - a - b;
-      if (c < 0) {
-        return null
-      }
+      const a = relativeToCellX;
+      const b = 1 - relativeToCellY;
+      const c = 1 - a - b;
+      if (c < 0) return null
       return a * f11 + b * f00 + c * f10;
     }
 
     if (f10 == null) {
-      let a = (1 - relativeToCellX);
-      let b = relativeToCellY;
-      let c = 1 - a - b;
-      if (c < 0) {
-        return null
-      }
+      const a = (1 - relativeToCellX);
+      const b = relativeToCellY;
+      const c = 1 - a - b;
+      if (c < 0) return null
       return a * f00 + b * f11 + c * f01;
     }
 
     if (f11 == null) {
-      let a = relativeToCellX;
-      let b = relativeToCellY;
-      let c = 1 - a - b;
-      if (c < 0) {
-        return null
-      }
+      const a = relativeToCellX;
+      const b = relativeToCellY;
+      const c = 1 - a - b;
+      if (c < 0) return null
       return a * f01 + b * f10 + c * f00;
     }
   }

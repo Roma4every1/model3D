@@ -1,4 +1,5 @@
 import { fetcher } from 'shared/lib';
+import { useGlobalStore } from 'shared/global';
 import { useAppStore } from '../store/app.store';
 
 import { useClientStore } from 'entities/client';
@@ -20,12 +21,19 @@ import { useFileViewStore } from 'features/file';
 
 export class WMDevTools {
   public readonly api = fetcher;
+  public readonly global = useGlobalStore;
   public readonly app = useAppStore;
   public readonly clients = useClientStore;
   public readonly channels = useChannelStore;
   public readonly parameters = useParameterStore;
   public readonly programs = useProgramStore;
   public readonly objects = useObjectsStore;
+
+  /* --- Global Store --- */
+
+  public get config(): AppConfig {
+    return this.global.getState().config;
+  }
 
   /* --- Client Store --- */
 

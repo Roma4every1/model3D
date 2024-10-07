@@ -1,4 +1,6 @@
 import type { TFunction } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
+import { useAppConfig } from 'shared/global';
 import { version } from '../../../package.json';
 
 import './about-program.scss';
@@ -6,8 +8,8 @@ import debugIcon from 'assets/common/debug.svg';
 import externalLinkIcon from 'assets/common/external-link.svg';
 
 
-interface AboutProgramWindowProps {
-  config: ClientConfig;
+interface DevModeSectionProps {
+  config: AppConfig;
   t: TFunction;
 }
 interface ExternalLinkProps {
@@ -17,7 +19,10 @@ interface ExternalLinkProps {
 
 
 /** Диалог "О программе". */
-export const AboutProgramWindow = ({config, t}: AboutProgramWindowProps) => {
+export const AboutProgramWindow = () => {
+  const config = useAppConfig();
+  const { t } = useTranslation();
+
   return (
     <div className={'about-program'}>
       <div className={'header'}>JS Well Manager Web</div>
@@ -35,7 +40,7 @@ export const AboutProgramWindow = ({config, t}: AboutProgramWindowProps) => {
   );
 };
 
-const DevModeSection = ({config, t}: AboutProgramWindowProps) => {
+const DevModeSection = ({config, t}: DevModeSectionProps) => {
   return (
     <>
       <div className={'header'}>

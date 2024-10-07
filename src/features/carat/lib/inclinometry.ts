@@ -83,8 +83,8 @@ export class CaratInclinometry implements ICaratInclinometry {
 
   /** Обновление данных инклинометрии под указанный вьюпорт. */
   public updateMarks(viewport: CaratViewport): void {
-    let minDepth = viewport.min - viewport.scroll.step;
-    let maxDepth = viewport.max + viewport.scroll.step;
+    const minDepth = viewport.min - viewport.scroll.step;
+    const maxDepth = viewport.max + viewport.scroll.step;
 
     if (this.interpolationData.length < 2) {
       this.clear();
@@ -144,7 +144,7 @@ export class CaratInclinometry implements ICaratInclinometry {
     if (depth >= this.interpolationData[end].depth) return end;
 
     while (start <= end) {
-      let middleIndex = Math.floor((start + end) / 2);
+      const middleIndex = Math.floor((start + end) / 2);
       const markDepth = this.interpolationData[middleIndex].depth;
 
       if (depth < markDepth) {

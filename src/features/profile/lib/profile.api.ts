@@ -76,7 +76,7 @@ export class ProfileAPI {
     try {
       const path = this.base + 'job/result?' + this.getBasicQuery(name, id);
       return await fetch(path, {credentials: 'include'}).then(r => r.json());
-    } catch (e) {
+    } catch {
       return false;
     }
   }

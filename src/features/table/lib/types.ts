@@ -70,6 +70,8 @@ export interface TableActions {
 export interface TableGlobalSettings {
   /** Если `false`, то используется режим одной записи. */
   readonly tableMode: boolean;
+  /** Если false, фильтры для всех колонок игнорируются. */
+  filterEnabled: boolean;
   /** Флаг переноса текста в таблице. */
   textWrap: boolean;
   /** Если `true`, то строки раскрашиваются через одну другим цветом. */

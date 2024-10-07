@@ -76,7 +76,7 @@ export const Map = ({id, channels}: Pick<SessionClient, 'id' | 'channels'>) => {
     }
     mapState.objects.well = currentWell;
     mapState.objects.trace = currentTrace;
-  }, [currentWell, currentTrace, traceEditing]); // eslint-disable-line
+  }, [currentWell, currentTrace, traceEditing]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* --- --- */
 

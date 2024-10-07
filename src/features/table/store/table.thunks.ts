@@ -1,6 +1,6 @@
-import type { TableColumnFilter } from '../lib/filter.types';
 import { t } from 'shared/locales';
 import { createElement } from 'react';
+import { saveAs } from '@progress/kendo-file-saver';
 import { watchOperation, programAPI } from 'entities/program';
 import { findParameters, updateParamDeep, useParameterStore, rowToParameterValue } from 'entities/parameter';
 import { reloadChannelsByQueryIDs, reloadChannel, setChannelActiveRow, channelAPI, useChannelStore } from 'entities/channel';
@@ -8,7 +8,7 @@ import { showWarningMessage, showDialog, showWindow, closeWindow } from 'entitie
 import { showNotification } from 'entities/notification';
 import { createTableState } from './table.actions';
 import { tableStateToSettings } from '../lib/serialization';
-import { applyFilters } from '../lib/filter-utils';
+import { applyFilters, serializeFilters } from '../lib/filter-utils';
 import { DetailsTable } from '../components/details-table';
 import { ValidationDialog } from '../components/dialogs/validation';
 import { useClientStore, addSessionClient, setClientActiveChild, crateAttachedChannel } from 'entities/client';
@@ -24,27 +24,29 @@ export async function reloadTable(id: FormID): Promise<void> {
   showNotification(t('table.reload-ok'));
 }
 
-export function setTableColumnFilter(id: FormID, column: PropertyName, filter: TableColumnFilter): Promise<void> {
+export function updateTableFilters(id: FormID): Promise<void> {
   const state = useTableStore.getState()[id];
-  state.columns.dict[column].filter = filter;
+  const columnFilters: FilterNode[] = [];
 
-  const columnFilters = [];
-  let channelFilter: FilterNode;
-
-  for (const column of state.columns.list) {
-    const filter = column.filter;
-    if (filter?.node && filter.enabled) columnFilters.push(filter.node);
+  if (state.globalSettings.filterEnabled) {
+    for (const column of state.columns.list) {
+      const filter = column.filter;
+      if (filter?.node && filter.enabled) columnFilters.push(filter.node);
+    }
   }
+  let newFilter: FilterNode;
+
   if (columnFilters.length > 1) {
-    channelFilter = {type: 'and', value: columnFilters};
+    newFilter = {type: 'and', value: columnFilters};
   } else if (columnFilters.length > 0) {
-    channelFilter = columnFilters[0]
+    newFilter = columnFilters[0]
   }
   const channel = useChannelStore.getState().storage[state.channelID];
-  channel.query.filter = channelFilter;
+  const oldFilter = channel.query.filter;
+  channel.query.filter = newFilter;
 
   useTableStore.setState({[id]: {...state}});
-  return reloadChannel(channel.id);
+  return oldFilter === newFilter ? Promise.resolve() : reloadChannel(channel.id);
 }
 
 export async function applyUploadedFilters(id: FormID, file: File): Promise<void> {
@@ -52,13 +54,20 @@ export async function applyUploadedFilters(id: FormID, file: File): Promise<void
   const fileContent = await file.text().catch(() => null);
   if (fileContent === null) return warn('table.filter.error-decoding');
 
-  const columns = useTableStore.getState()[id].columns.list;
-  const ok = applyFilters(fileContent, columns);
+  const state = useTableStore.getState()[id];
+  const ok = applyFilters(fileContent, state.columns.list);
   if (!ok) return warn('table.filter.error-format');
 
-  const mockColumn = columns[0];
-  await setTableColumnFilter(id, mockColumn.id, mockColumn.filter);
+  state.globalSettings.filterEnabled = true;
+  await updateTableFilters(id);
   showNotification({type: 'success', content: t('table.filter.applied')});
+}
+
+export function saveTableFilters(id: FormID): void {
+  const state = useTableStore.getState()[id];
+  const data = serializeFilters(state.columns.list);
+  const fileName = getTableDisplayName(id)?.replace(/\s/g, '_');
+  saveAs(data, (fileName || 'filters') + '.json');
 }
 
 /** Обновляет параметр активной строки. */
@@ -198,19 +207,14 @@ export async function exportTableToExcel(id: FormID): Promise<void> {
   const tableState = useTableStore.getState()[id];
   const channel = useChannelStore.getState().storage[tableState.channelID];
 
-  const clientStates = useClientStore.getState();
-  const parentID = clientStates[id].parent;
-  const parentState = clientStates[parentID];
-
-  const exportData = {
+  const dto = {
     channelName: channel.name,
-    paramName: parentState.children.find(child => child.id === id)?.displayName ?? 'Таблица',
-    presentationId: parentID,
+    paramName: getTableDisplayName(id) ?? 'Таблица',
+    presentationId: useClientStore.getState()[id].parent,
     paramValues: findParameters(channel.config.parameters, useParameterStore.getState().storage),
     settings: tableStateToSettings(id, tableState).columnSettings,
   };
-
-  const res = await programAPI.exportToExcel(exportData);
+  const res = await programAPI.exportToExcel(dto);
   if (res.ok === false) { showWarningMessage(res.message); return; }
 
   const { operationID, error } = res.data;
@@ -267,4 +271,19 @@ export function showDetailsTable(formID: FormID, columnID: PropertyName): void {
   const content = createElement(DetailsTable, {id: detailsTableID, onClose});
   showWindow(detailsTableID, windowProps, content);
   setClientActiveChild(presentationID, detailsTableID);
+}
+
+function getTableDisplayName(id: FormID): string | null {
+  const clientStates = useClientStore.getState();
+  const presentation = clientStates[clientStates[id].parent];
+
+  const formData = presentation.children.find(child => child.id === id);
+  const namePattern = formData.displayNameString;
+
+  if (namePattern) {
+    const storage = useParameterStore.getState().storage;
+    const parameters = findParameters(namePattern.parameterIDs, storage);
+    return namePattern.build(parameters);
+  }
+  return presentation.layout.getNodeById(id)?.getName() ?? null;
 }

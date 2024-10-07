@@ -4,7 +4,7 @@ import { getTranslator } from './translator';
 
 
 export function showMap(canvas: MapCanvas, map: MapData, viewport: MapViewport, afterUpdate?: () => void) {
-  let { centerX, centerY, scale } = viewport;
+  const { centerX, centerY, scale } = viewport;
   let coords: Translator;
   let uiMode: boolean;
   const canvasFlag = canvas.showMapFlag = {};
@@ -62,7 +62,7 @@ export function showMap(canvas: MapCanvas, map: MapData, viewport: MapViewport, 
     };
 
     const c = onCheckExecution();
-    c && (await c);
+    if (c) await c;
 
     const width = canvas.clientWidth * window.devicePixelRatio;
     const height = canvas.clientHeight * window.devicePixelRatio;

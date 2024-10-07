@@ -65,7 +65,7 @@ export async function startSession(isDefault: boolean): Promise<void> {
 
   const systemInfo = appState.systemList.find(info => info.id === appState.systemID);
   TableStateFactory.defaultTextWrap = systemInfo.dataWrap ?? true;
-  profileAPI.setBaseURL(systemInfo.apacheUrl ?? appState.config.geoManager);
+  profileAPI.setBaseURL(systemInfo.apacheUrl);
 
   const fillPromise = factory.fillData();
   appState.initQueue.push(root.activeChildID);

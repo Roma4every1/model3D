@@ -261,7 +261,7 @@ export class CaratDrawer {
       const maxWidth = rect.width;
       let y = rect.top + rect.height;
 
-      let xStart = rect.left + thickness;
+      const xStart = rect.left + thickness;
       const xEnd = rect.left + rect.width - thickness;
       const xCenter = (xStart + xEnd) / 2;
 
@@ -439,7 +439,7 @@ export class CaratDrawer {
     const scaleY = window.devicePixelRatio * this.scale;
     this.setTranslate(this.columnTranslateX, this.columnTranslateY - scaleY * this.yMin);
 
-    for (let { top, bottom, style, text } of elements) {
+    for (const { top, bottom, style, text } of elements) {
       if (bottom < this.yMin || top > this.yMax) continue;
       const canvasTop = scaleY * top;
       const canvasHeight = scaleY * (bottom - top);
@@ -467,7 +467,7 @@ export class CaratDrawer {
     const { externalBorderColor, externalThickness } = options;
     const { borderColor, backgroundColor, thickness } = options;
 
-    for (let { top, bottom, value, text } of elements) {
+    for (const { top, bottom, value, text } of elements) {
       if (bottom < this.yMin || top > this.yMax || !value) continue;
       const canvasTop = scaleY * top;
       const canvasHeight = scaleY * (bottom - top);
@@ -711,9 +711,9 @@ export class CaratDrawer {
     this.ctx.lineJoin = 'round';
 
     for (const element of elements) {
-      let { thickness, color } = element.style;
+      let thickness = element.style.thickness;
       if (element.active) thickness *= 2;
-      this.setLineSettings(ratio * thickness, color);
+      this.setLineSettings(ratio * thickness, element.style.color);
 
       const path = new Path2D();
       matrix.a = ratio * (this.columnWidth / (element.axisMax - element.axisMin));

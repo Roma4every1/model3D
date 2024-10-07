@@ -4,7 +4,7 @@ export interface TableColumnFilter<T extends TableColumnType = TableColumnType> 
   state: TableColumnFilterState<T>;
   /** Элемент выражения фильтра, применяемый к колонке. */
   node: FilterNode | null;
-  /** Если true, фильтр для колонки пропускается. */
+  /** Если false, фильтр для колонки игнорируется. */
   enabled: boolean;
 }
 

@@ -2,7 +2,4 @@
 type FileListStates = Record<FormID, FileListState>;
 
 /** Состояние формы списка файлов. */
-interface FileListState {
-  // Состояние формы не требуется.
-  // Используется для совместимости с обобщённой моделью формы.
-}
+type FileListState = Record<never, never>; // empty object

@@ -2,7 +2,6 @@ import type { IJsonModel, IJsonTabNode } from 'flexlayout-react/declarations/mod
 import { Model, BorderNode, Actions, DockLocation } from 'flexlayout-react';
 
 
-
 /** Иднентификатор вкладки. */
 type TabID = string;
 
@@ -112,10 +111,16 @@ export class LayoutController {
       this.handleTab('right-map', types.has('map'));
       this.handleTab('right-profile', types.has('profile'));
 
-      // исходя из UX, вкладка с программами самая популярная,
-      // но если последняя открытая осталась, то нужно остаться на ней
-      if (oldTopTabID) {
-        const currentIndex = this.topBorder.getSelected();
+      const config = this.topBorder.getConfig();
+      const initIndex = config.initIndex;
+      const currentIndex = this.topBorder.getSelected();
+
+      if (initIndex !== null) {
+        const tab = initIndex !== currentIndex && this.topBorder.getChildren()[initIndex];
+        if (tab) this.model.doAction(Actions.selectTab(tab.getId()));
+        config.initIndex = null;
+      }
+      else if (oldTopTabID) {
         const currentTabID = this.topBorder.getChildren()[currentIndex].getId();
         const neededTabID = this.visibleTopIDs.has(oldTopTabID) ? oldTopTabID : 'menu';
         if (currentTabID !== neededTabID) this.model.doAction(Actions.selectTab(neededTabID));
@@ -160,11 +165,8 @@ export class LayoutController {
   }
 
   private createInitModel(init: any): Model {
-    const initTopTabs = [topTabDict['menu']];
-    const initRightTabs = [rightTabDict['right-dock']];
-
-    const selectedTopTab = init?.selectedtop ?? -1;
-    const selectedRightTab =  init?.selectedright ?? -1;
+    const selectedTop = init?.selectedtop ?? -1;
+    const selectedRight = init?.selectedright ?? -1;
     const topPanelHeight = 90;
     const leftPanelWidth = init?.sizeleft ?? 270;
     const rightPanelWidth = init?.sizeright ?? 270;
@@ -183,14 +185,14 @@ export class LayoutController {
         {
           type: 'border', location: 'top',
           barSize: 26, size: topPanelHeight, minSize: topPanelHeight,
-          className: 'no-user-select', children: initTopTabs,
-          selected: selectedTopTab < initTopTabs.length ? selectedTopTab : -1,
+          className: 'no-user-select', children: [topTabDict['menu']],
+          selected: selectedTop < 1 ? selectedTop : -1, config: {initIndex: selectedTop},
         },
         {
           type: 'border', location: 'right',
           barSize: 26, size: rightPanelWidth, minSize: 150,
-          className: 'no-user-select', children: initRightTabs,
-          selected: selectedRightTab < initRightTabs.length ? selectedRightTab : -1,
+          className: 'no-user-select', children: [rightTabDict['right-dock']],
+          selected: selectedRight < 1 ? selectedRight : -1,
         },
       ],
       layout: {

@@ -1,7 +1,6 @@
 import type { TableColumnModel } from './types';
 import type { TableColumnFilter, TableColumnFilterState, CommonColumnFilterState } from './filter.types';
 import Ajv from 'ajv';
-import { saveAs } from '@progress/kendo-file-saver';
 import { stringifyLocalDate } from 'shared/lib';
 import { numberFilterOptions, stringFilterOptions, dateFilterOptions, savedFilterSchema } from './constants';
 
@@ -106,7 +105,7 @@ function filterLeafToString(leaf: FilterNode, type: TableColumnType): any[] {
 
 type PayloadItem = TableColumnFilter & {id: PropertyName, type: TableColumnType, state: any};
 
-export function downloadFilters(columns: TableColumnModel[]): void {
+export function serializeFilters(columns: TableColumnModel[]): Blob {
   const payload: PayloadItem[] = [];
 
   for (const column of columns) {
@@ -115,8 +114,7 @@ export function downloadFilters(columns: TableColumnModel[]): void {
     if (item.state.values) item.state.values = [...item.state.values];
     payload.push(item);
   }
-  const data = new Blob([JSON.stringify(payload)]);
-  saveAs(data, 'filters.json');
+  return new Blob([JSON.stringify(payload)]);
 }
 
 export function applyFilters(fileContent: string, columns: TableColumnModel[]): boolean {

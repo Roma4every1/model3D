@@ -1,9 +1,7 @@
 /** Общие данные приложения. */
 interface AppState {
   /** Путь к начальной странице относительно хоста. */
-  location: string;
-  /** Клиентская конфигурация. */
-  config: ClientConfig;
+  readonly location: string;
   /** Список систем. */
   systemList: SystemList;
   /** ID текущей системы. */
@@ -34,22 +32,6 @@ interface AppLoadingState {
  * + `data` — загрузка начальных данных сессии
  */
 type AppLoadingStep = 'init' | 'wait' | 'session' | 'data';
-
-/** Конфигурация клиента. */
-interface ClientConfig {
-  /** Режим разработчика. */
-  mode?: string;
-  /** Префикс API серверной части. */
-  api?: string;
-  /** Префикс API сервиса GeoManager. */
-  geoManager?: string;
-  /** Ссылка на документацию для разработчиков. */
-  devDocLink?: string;
-  /** Ссылка на пользовательскую документацию. */
-  userDocLink?: string;
-  /** Почта для связи. */
-  contactEmail?: string;
-}
 
 /** Список информационных систем. */
 type SystemList = SystemInfo[];

@@ -353,7 +353,7 @@ export class CaratStage {
       const track = this.trackList[this.activeIndex];
       const scale = CaratDrawer.pixelPerMeter / track.viewport.scale;
 
-      let step = track.constructionMode ? 50 : 10;
+      const step = track.constructionMode ? 50 : 10;
       let newScale = validateCaratScale(scale + step * direction, !track.constructionMode);
       if (scale === 1 && newScale === step + 1) newScale = step;
       if (newScale === scale) return;

@@ -113,11 +113,12 @@ const HeadCellContent = ({state, query, column}: LeafCellProps) => {
 const HeadCellFilter = ({state, column}: Omit<LeafCellProps, 'query'>) => {
   const [filterOpen, setFilterOpen] = useState<boolean>();
   const columnFilter = column.filter;
+  const disabled = !columnFilter || !state.globalSettings.filterEnabled;
 
   let iconStyle: CSSProperties;
   let pathStyle: CSSProperties;
 
-  if (!columnFilter) {
+  if (disabled) {
     iconStyle = {opacity: 0.3, cursor: 'default'};
   } else if (columnFilter.node && columnFilter.enabled) {
     pathStyle = {fill: 'var(--wm-primary-60)', stroke: 'black'};
@@ -128,7 +129,7 @@ const HeadCellFilter = ({state, column}: Omit<LeafCellProps, 'query'>) => {
       <path d={'M5,4L27,4L27,8L19,16L19,22L13,28L13,16L5,8Z'} style={pathStyle}/>
     </svg>
   );
-  if (!columnFilter) return icon;
+  if (disabled) return icon;
 
   const closeFilter = () => {
     setFilterOpen(false);

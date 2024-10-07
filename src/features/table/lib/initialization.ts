@@ -179,7 +179,7 @@ export class TableStateFactory {
     if (background && background !== 'none') alternateBackground = fixColorHEX(background);
 
     const textWrap = dto?.textWrap ?? TableStateFactory.defaultTextWrap;
-    return {tableMode, textWrap, alternate, alternateBackground};
+    return {tableMode, filterEnabled: true, textWrap, alternate, alternateBackground};
   }
 
   private createGroupSettings(): TableColumnGroupDict {
@@ -189,7 +189,7 @@ export class TableStateFactory {
 
     for (const group of dto) {
       const { headerForeground: fg, headerBackground: bg } = group;
-      let style: CSSProperties = {};
+      const style: CSSProperties = {};
       if (fg && fg !== 'none') style.color = fixColorHEX(fg);
       if (bg && bg !== 'none') style.backgroundColor = fixColorHEX(bg);
 
@@ -209,7 +209,7 @@ export class TableStateFactory {
       if (!property || this.columns.dict[property] === undefined) continue;
 
       if (!background && !foreground) continue;
-      let style: CSSProperties = {};
+      const style: CSSProperties = {};
       if (foreground) style.color = fixColorHEX(foreground);
       if (background) style.backgroundColor = fixColorHEX(background);
 

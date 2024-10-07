@@ -2,6 +2,7 @@ import type { TFunction } from 'react-i18next';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Skeleton } from 'antd';
+import { useAppConfig } from 'shared/global';
 import { useAppStore } from '../store/app.store';
 
 import './system-list.scss';
@@ -33,7 +34,9 @@ export const SystemList = () => {
 }
 
 const SystemCards = ({t}: {t: TFunction}) => {
-  const { location, config, systemList } = useAppStore();
+  const config = useAppConfig();
+  const { location, systemList } = useAppStore();
+
   if (!config) return <SystemListSkeleton/>;
   if (!systemList) return <div className={'not-loaded'}>{t('systems.loading-error')}</div>;
   const dev = config.mode === 'dev';

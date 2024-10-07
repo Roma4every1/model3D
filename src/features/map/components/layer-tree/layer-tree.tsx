@@ -41,7 +41,7 @@ function getTreeItems(layers: IMapLayer[]): LayerTreeItem[] {
       layer.group.split('\\').forEach((part) => {
         const trimPart = part.trim();
         const parentArray = parent?.items ?? tree;
-        let index = parent?.items ? parent.index + '_' + parentArray.length : parentArray.length + '';
+        const index = parent?.items ? parent.index + '_' + parentArray.length : parentArray.length + '';
         parent = parentArray.find(p => p?.id === trimPart);
         if (!parent) {
           parent = {index, id: trimPart, text: trimPart, expanded: true, items: []};

@@ -26,7 +26,7 @@ const styleShapes = {
 
 export const StyleTemplate = ({style, borderColor, borderWidth, borderStyle}: StyleTemplateProps) => {
   useLayoutEffect(() => {
-    let ctx = viewRef.current.getContext('2d');
+    const ctx = viewRef.current.getContext('2d');
     ctx.clearRect(0, 0, 150, 14);
 
     if (style) {

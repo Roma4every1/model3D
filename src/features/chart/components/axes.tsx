@@ -59,7 +59,7 @@ export function getYAxisProto(id: string, axis: AxisSettings): YAxisProps {
  */
 function getFormattedMinMax([dataMin, dataMax]: [number, number]): [number, number] {
   let min = getPragmaticMin(dataMin);
-  let max = getPragmaticMax(dataMax);
+  const max = getPragmaticMax(dataMax);
   const currStep = Math.floor((max - min) / 10);
   if (currStep > min) min = 0;
   return [min, max];

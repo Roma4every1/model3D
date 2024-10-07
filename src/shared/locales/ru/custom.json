@@ -80,10 +80,11 @@
       "move-right": "Вправо",
       "move-start": "В начало",
       "move-end": "В конец",
-      "filter-state": "Состояние",
-      "filter-state-hint": "Состояние применяемых фильтров",
+      "filter-enabled": "Состояние",
       "filter-upload": "Загрузить из файла",
-      "filter-download": "Выгрузить в файл"
+      "filter-download": "Выгрузить в файл",
+      "filter-info": "Состояние применяемых фильтров",
+      "filter-clear": "Очистить все фильтры"
     },
     "filter": {
       "applied": "Фильтры из файла применены",

@@ -1,4 +1,6 @@
-import { ConfigEnv, UserConfig, AliasOptions, PluginOption, defineConfig } from 'vite';
+/// <reference types="vitest/config"/>
+import type { ConfigEnv, UserConfig, AliasOptions, PluginOption } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import wellManagerSystemPlugin from './scripts/wm-system-plugin.js';
 
@@ -12,7 +14,6 @@ const aliasOptions: AliasOptions = [
   {find: 'shared/', replacement: '/src/shared/'},
 ];
 
-// https://vitejs.dev/config/
 export default defineConfig((env: ConfigEnv): UserConfig => {
   const devMode = env.mode !== 'production';
   const plugins: PluginOption[] = [react()];
@@ -36,6 +37,14 @@ export default defineConfig((env: ConfigEnv): UserConfig => {
     },
     resolve: {
       alias: aliasOptions,
+    },
+    test: {
+      globals: false,
+      include: ['tests/**/*.test.ts'],
+      setupFiles: ['tests/setup.ts'],
+      environment: 'jsdom',
+      environmentOptions: {jsdom: {resources: 'usable'}},
+      server: {deps: {inline: ['vitest-canvas-mock']}},
     },
     assetsInclude: ['**/*.bin', '**/*.def'],
   };

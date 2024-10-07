@@ -167,7 +167,7 @@ export class CaratLoader {
     const dict: ChannelRecordDict = {};
     const curveIDs: CaratCurveID[] = [];
 
-    for (let channelID in data) {
+    for (const channelID in data) {
       const attachment = this.attachedChannels.find(a => a.id.toString() === channelID);
       let records = data[channelID];
       if (!records) { dict[channelID] = []; continue; }
@@ -245,7 +245,7 @@ export class CaratLoader {
 
   /** Проверяет количество кривых в кеше и удаляет лишние кривые. */
   public checkCacheSize(): void {
-    let entries = Object.entries(this.cache);
+    const entries = Object.entries(this.cache);
     if (entries.length <= CaratLoader.maxCacheSize) return;
 
     entries.sort((a, b) => b[1].order - a[1].order);

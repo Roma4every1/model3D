@@ -9,7 +9,7 @@ import { ButtonSwitch } from 'shared/ui';
 import { flatTree } from 'shared/lib';
 import { inputNumberParser } from 'shared/locales';
 import { updateTableState } from '../../store/table.actions';
-import { setTableColumnFilter } from '../../store/table.thunks';
+import { updateTableFilters } from '../../store/table.thunks';
 import { getDefaultFilterState, buildFilterNode } from '../../lib/filter-utils';
 
 import {
@@ -57,22 +57,24 @@ const ColumnFilterFooter = ({state, column, close}: ColumnFilterProps) => {
   const enabled = filter.enabled;
 
   const apply = () => {
-    const newFilter = {...filter, node: buildFilterNode(column), enabled: true};
-    setTableColumnFilter(state.id, column.id, newFilter).then();
+    filter.node = buildFilterNode(column);
+    filter.enabled = true;
+    updateTableFilters(state.id).then();
     close();
   };
   const reset = () => {
-    const newFilter = {...filter, state: getDefaultFilterState(column.type), node: null};
     if (filter.node) {
-      setTableColumnFilter(state.id, column.id, newFilter).then();
+      filter.state = getDefaultFilterState(column.type);
+      filter.node = null;
+      updateTableFilters(state.id).then();
     } else {
       updateTableState(state.id);
     }
     close();
   };
   const toggle = () => {
-    const newFilter = {...filter, enabled: !enabled};
-    setTableColumnFilter(state.id, column.id, newFilter).then();
+    filter.enabled = !filter.enabled;
+    updateTableFilters(state.id).then();
   };
 
   return (

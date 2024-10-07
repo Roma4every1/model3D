@@ -1,4 +1,5 @@
 import { fetcher, testString } from 'shared/lib';
+import { useGlobalStore } from 'shared/global';
 import { appAPI } from './app.api';
 import { useAppStore } from '../store/app.store';
 import { WMDevTools } from './dev-tools';
@@ -10,13 +11,14 @@ export async function initialize(): Promise<void> {
   checkJS();
   const appLocation = useAppStore.getState().location;
   const configObject = await fetchClientConfig(appLocation);
-  const config = createClientConfig(configObject);
+  const appConfig = createAppConfig(configObject);
 
-  fetcher.setPrefix(config.api);
-  if (config.mode === 'dev') window['store'] = new WMDevTools();
+  fetcher.setPrefix(appConfig.api);
+  if (appConfig.mode === 'dev') window['store'] = new WMDevTools();
 
   const systemList = await appAPI.getSystemList();
-  useAppStore.setState({config, systemList, loading: {step: 'wait'}});
+  useGlobalStore.setState({config: appConfig});
+  useAppStore.setState({systemList, loading: {step: 'wait'}});
 
   const beforeUnload = () => appAPI.stopSession(getSessionToSave()).then();
   window.addEventListener('beforeunload', beforeUnload);
@@ -32,27 +34,26 @@ async function fetchClientConfig(appLocation: string): Promise<unknown> {
   }
 }
 
-function createClientConfig(data: unknown): ClientConfig {
+function createAppConfig(data: unknown): AppConfig {
   const check = (field: string, matcher?: StringMatcher) => {
     const value = data[field];
     if (typeof value !== 'string' || value.length === 0) return;
     if (!matcher || testString(value, matcher)) config[field] = value;
   };
-  const config: ClientConfig = {};
+  const config: AppConfig = {};
 
   if (data instanceof Object) {
     check('mode', ['dev', 'production']);
     check('api', /^http/);
-    check('geoManager', /^http/);
     check('devDocLink');
     check('userDocLink');
     check('contactEmail');
   }
-
-  if (config.api && !config.api.endsWith('/')) config.api += '/';
-  if (config.geoManager && !config.geoManager.endsWith('/')) config.geoManager += '/';
-
-  if (!config.api) config.api = getDefaultPrefix();
+  if (config.api) {
+    if (!config.api.endsWith('/')) config.api += '/';
+  } else {
+    config.api = getDefaultPrefix();
+  }
   return config;
 }
 
@@ -65,7 +66,8 @@ function getDefaultPrefix(): string {
 
 function checkJS(): void {
   if (!Promise.withResolvers) Promise.withResolvers = function(): PromiseWithResolvers<any> {
-    let resolve, reject;
+    let resolve: (value: any) => void
+    let reject: (reason: any) => void;
     const promise = new Promise((res, rej) => { resolve = res; reject = rej; });
     return {promise, resolve, reject};
   };

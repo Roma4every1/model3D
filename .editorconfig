@@ -1,33 +1,22 @@
-# Соглашения об оформлении исходного кода и инструкции для IDE (см. https://editorconfig.org)
-# Наименование файлов и папок должно быть в нижнем-регистре-через-дефис.
-
 root = true
 
-[/src/**]
-# не ASCII символы только в комментариях и строках
+[*]
 charset = utf-8
-# разделитель строк LF (Unix-like)
 end_of_line = lf
-# пробелы вместо табуляции \t
 indent_style = space
-# ширина отступа 2 пробела
 indent_size = 2
-# ширина табуляции 2 пробела
 tab_width = 2
-# файл должен оканчиваться новой строкой
-insert_final_newline = true
-# не использовать строки шире 100 символов
 max_line_length = 100
-# убирать пробелы перед переводом на новую строку
+insert_final_newline = true
 trim_trailing_whitespace = true
 
-# --- Настройки для JetBrains IDE ---
-
-# public methodName() { ... }
+# JetBrains IDE extensions
 ij_typescript_use_public_modifier = true
-
-# color: #123abc, not #123ABC & #ffffff, not #fff
 ij_css_hex_color_lower_case = true
 ij_css_hex_color_long_format = true
 ij_scss_hex_color_lower_case = true
 ij_scss_hex_color_long_format = true
+
+# Windows scripts
+[**.{bat,ps1}]
+end_of_line = crlf

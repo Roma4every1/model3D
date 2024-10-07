@@ -88,7 +88,7 @@ function formatFloat(n: number, minDigits: number, maxDigits: number): string {
     ++redundant; --charIndex;
   }
   if (redundant > 0) {
-    let end = str.length - redundant;
+    const end = str.length - redundant;
     if (str.charCodeAt(end - 1) === 0x2E /* '.' */) return str.substring(0, end - 1);
     str = str.substring(0, end);
   }
