@@ -5,17 +5,18 @@ import { TableView } from './table-view';
 import { TableToolbar } from '../toolbar/table-toolbar';
 import { DeleteRecordsDialog } from '../dialogs/delete-records';
 import { setTableActiveCell, updateTableState } from '../../store/table.actions';
-import { addTableRecord, updateActiveRecord, endTableEditing } from '../../store/table.thunks';
+import { updateActiveRecord } from '../../store/table.thunks';
+import { endTableEditing, addTableRecord } from '../../store/table-editing.thunks';
 
 
 interface TableRootProps {
   state: TableState;
   query: ChannelQuerySettings;
-  clientLoading: ClientLoadingState;
+  loading: boolean;
 }
 
 
-export const TableRoot = ({state, query, clientLoading}: TableRootProps) => {
+export const TableRoot = ({state, query, loading}: TableRootProps) => {
   const { selection, actions } = state;
   const { records, activeCell, editable } = state.data;
   const { leafs: columns, dict: columnDict } = state.columns;
@@ -198,7 +199,7 @@ export const TableRoot = ({state, query, clientLoading}: TableRootProps) => {
 
   return (
     <div className={'table-root'} tabIndex={0} onKeyDown={onKeyDown}>
-      <TableToolbar state={state} loading={clientLoading?.status === 'data'}/>
+      <TableToolbar state={state} loading={loading}/>
       <TableView state={state} query={query}/>
     </div>
   );

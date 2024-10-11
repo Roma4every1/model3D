@@ -109,7 +109,7 @@ export function serializeFilters(columns: TableColumnModel[]): Blob {
   const payload: PayloadItem[] = [];
 
   for (const column of columns) {
-    if (!column.filter.node) continue;
+    if (!column.filter?.node) continue;
     const item: PayloadItem = {id: column.id, type: column.type, ...column.filter};
     if (item.state.values) item.state.values = [...item.state.values];
     payload.push(item);

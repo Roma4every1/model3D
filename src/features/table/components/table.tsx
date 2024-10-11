@@ -30,7 +30,7 @@ export const Table = ({id, loading}: Pick<SessionClient, 'id' | 'loading'>) => {
   }, [headerSetterValues, id]);
 
   if (state.globalSettings.tableMode) {
-    return <TableRoot state={state} query={channel.query} clientLoading={loading}/>;
+    return <TableRoot state={state} query={channel.query} loading={loading?.status === 'data'}/>;
   } else {
     return <OneRecordView state={state}/>;
   }

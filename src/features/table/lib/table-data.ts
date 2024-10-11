@@ -59,6 +59,8 @@ export class TableData {
       }
       if (!column.filter) {
         column.filter = createColumnFilter(column.type);
+      } else {
+        column.filter.uniqueValues = undefined;
       }
       column.columnName = channelColumn.name;
       column.dataType = dataType;
@@ -105,6 +107,18 @@ export class TableData {
       this.activeCell.column = null;
       this.activeCell.edited = false;
     }
+  }
+
+  /** Находит уникальные значения в ячейках колонки. */
+  public getUniqueValues(col: PropertyName): any[] {
+    const set: Set<any> = new Set();
+    const index = this.columns.dict[col].columnIndex;
+
+    for (const record of this.records) {
+      set.add(record.cells[index]);
+    }
+    set.delete(null);
+    return [...set];
   }
 
   /* --- Editing --- */
@@ -209,7 +223,10 @@ export class TableData {
     if (type === 'date') return new Date(value).toLocaleDateString();
     if (type === 'bool') return value ? '✔' : '✖';
 
-    if (type === 'color') return fixColorHEX(value);
+    if (type === 'color') {
+      if (value.charCodeAt(0) !== 0x23) value = '#' + value;
+      return fixColorHEX(value);
+    }
     if (column.dataType === 'blob') return null;
     return String(value);
   }

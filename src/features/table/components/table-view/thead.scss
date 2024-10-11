@@ -7,8 +7,8 @@
 }
 
 .thead-group-row th {
-  text-wrap: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 .thead-main-row {
   div:first-child {
@@ -115,7 +115,7 @@
 .lookup-filter-content {
   display: flex;
   flex-direction: column;
-  max-height: 110px;
+  height: 120px;
   overflow-y: auto;
 
   span {

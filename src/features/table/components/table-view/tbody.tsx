@@ -5,7 +5,6 @@ import { useRender } from 'shared/react';
 import { updateChannelLimit } from 'entities/channel';
 import { TableRow } from './table-row';
 import { updateTableState } from '../../store/table.actions';
-import { rowHeight, scrollWidth } from '../../lib/constants';
 
 
 interface TableBodyProps {
@@ -17,15 +16,13 @@ interface TableBodyProps {
 
 export const TableBody = ({state, query, bodyRef}: TableBodyProps) => {
   const render = useRender();
-  const { headLayout, totalWidth, leafs: columns } = state.columns;
-  const { textWrap, alternate, alternateBackground } = state.globalSettings;
-
   let records = state.data.records;
-  const availableHeight = 'calc(100% - ' + (headLayout.length * rowHeight + scrollWidth) + 'px)';
+  const { totalWidth, leafs: columns } = state.columns;
+  const { textWrap, alternate, alternateBackground } = state.globalSettings;
 
   if (records.length === 0) {
     return (
-      <div ref={bodyRef} className={'tbody-container'} style={{height: availableHeight}}>
+      <div ref={bodyRef} className={'tbody-container'}>
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} style={{width: totalWidth}}/>
       </div>
     );
@@ -87,7 +84,7 @@ export const TableBody = ({state, query, bodyRef}: TableBodyProps) => {
 
   return (
     <div
-      ref={bodyRef} className={'tbody-container'} style={{height: availableHeight}}
+      ref={bodyRef} className={'tbody-container'}
       onMouseDown={onMouseDown} onMouseUp={onMouseUp}
       onMouseMove={onMouseMove} onMouseLeave={onMouseUp} onScroll={onVerticalScroll}
     >

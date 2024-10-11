@@ -59,7 +59,7 @@ const LeafCell = ({state, query, column}: LeafCellProps) => {
 
   const onMouseDown = (e: MouseEvent) => {
     if (e.button !== 0) return;
-    setDragStyle({width: 64, right: -32});
+    setDragStyle({top: -50, right: -50, width: 100, height: 100});
   };
   const onMouseUp = () => {
     if (dragStyle) setDragStyle(undefined);

@@ -3,14 +3,13 @@ import type { CheckboxProps } from 'antd';
 import type { TableState, TableColumnModel } from '../../lib/types';
 import type { TableColumnFilterState } from '../../lib/filter.types';
 import dayjs, { Dayjs } from 'dayjs';
-import { Select, Input, InputNumber, DatePicker, Checkbox, Button, Switch } from 'antd';
+import { Select, Input, InputNumber, DatePicker, Checkbox, Button, Switch, Spin } from 'antd';
 import { useRender } from 'shared/react';
 import { ButtonSwitch } from 'shared/ui';
-import { flatTree } from 'shared/lib';
 import { inputNumberParser } from 'shared/locales';
-import { updateTableState } from '../../store/table.actions';
-import { updateTableFilters } from '../../store/table.thunks';
 import { getDefaultFilterState, buildFilterNode } from '../../lib/filter-utils';
+import { updateTableState } from '../../store/table.actions';
+import { updateTableFilters, applyFilterUniqueValues } from '../../store/table-filters.thunks';
 
 import {
   filterOperators, numberFilterOptions,
@@ -24,6 +23,7 @@ interface ColumnFilterProps {
   close: () => void;
 }
 interface FilterContentProps<T extends TableColumnType = any> {
+  id: FormID;
   column: TableColumnModel;
   state: TableColumnFilterState<T>;
 }
@@ -46,7 +46,7 @@ export const ColumnFilter = (props: ColumnFilterProps) => {
 
   return (
     <div className={'column-filter-container'}>
-      <Content column={props.column} state={filter.state}/>
+      <Content id={props.state.id} column={props.column} state={filter.state}/>
       <ColumnFilterFooter {...props}/>
     </div>
   );
@@ -59,14 +59,14 @@ const ColumnFilterFooter = ({state, column, close}: ColumnFilterProps) => {
   const apply = () => {
     filter.node = buildFilterNode(column);
     filter.enabled = true;
-    updateTableFilters(state.id).then();
+    updateTableFilters(state.id, column.id).then();
     close();
   };
   const reset = () => {
     if (filter.node) {
       filter.state = getDefaultFilterState(column.type);
       filter.node = null;
-      updateTableFilters(state.id).then();
+      updateTableFilters(state.id, column.id).then();
     } else {
       updateTableState(state.id);
     }
@@ -74,7 +74,7 @@ const ColumnFilterFooter = ({state, column, close}: ColumnFilterProps) => {
   };
   const toggle = () => {
     filter.enabled = !filter.enabled;
-    updateTableFilters(state.id).then();
+    updateTableFilters(state.id, column.id).then();
   };
 
   return (
@@ -207,19 +207,35 @@ function DateFilterContent({state}: FilterContentProps<'date'>) {
   );
 }
 
-function LookupFilterContent({column, state}: FilterContentProps<'list'>) {
+function LookupFilterContent({id, column, state}: FilterContentProps<'list'>) {
   const render = useRender();
-  const values = state.values;
+  const filterValues = state.values;
+  const filterOptions = column.filter.uniqueValues;
+  const noOptions = !Array.isArray(filterOptions);
 
-  let options: LookupListItem[] = column.lookupData;
-  if (column.type === 'tree') options = flatTree(options);
+  if (noOptions) {
+    setTimeout(() => { // prevent duplicate fetch
+      if (column.filter.uniqueValues) return;
+      column.filter.uniqueValues = 'loading';
+      applyFilterUniqueValues(id, column.id).then(render);
+    }, 100);
+  }
+  const toElement = (value: LookupItemID): ReactElement => {
+    const title = column.lookupDict[value];
+    const checked = filterValues.has(value);
 
-  const toElement = ({id, value}: LookupListItem): ReactElement => {
     const onChange = () => {
-      values.has(id) ? values.delete(id) : values.add(id);
+      checked ? filterValues.delete(value) : filterValues.add(value);
       render();
     };
-    return <Checkbox key={id} checked={values.has(id)} onChange={onChange}>{value}</Checkbox>;
+    return <Checkbox key={value} checked={checked} onChange={onChange}>{title}</Checkbox>;
   };
-  return <div className={'lookup-filter-content'}>{options.map(toElement)}</div>;
+
+  return (
+    <Spin spinning={noOptions} delay={100}>
+      <div className={'lookup-filter-content'}>
+        {!noOptions && filterOptions.map(toElement)}
+      </div>
+    </Spin>
+  );
 }

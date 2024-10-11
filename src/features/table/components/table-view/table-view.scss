@@ -10,6 +10,8 @@ $wm-table-cell-padding: 4px 6px;
 }
 
 .table-container {
+  display: flex;
+  flex-flow: column nowrap;
   width: 100%;
   height: calc(100% - 26px);
   overflow: hidden;
@@ -89,6 +91,7 @@ $wm-table-cell-padding: 4px 6px;
 }
 
 .tbody-container {
+  flex: 1; // занимает всё оставшееся пространство
   width: 100%;
   position: relative;
   overflow-x: hidden;
@@ -105,7 +108,7 @@ $wm-table-cell-padding: 4px 6px;
   }
 }
 .tbody-alternate {
-  --wm-alternate-bg: #f8f8f8;
+  --wm-alternate-bg: #f0f0f0;
   tr:nth-child(even) { background-color: var(--wm-alternate-bg); }
 }
 

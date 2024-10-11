@@ -6,6 +6,8 @@ export interface TableColumnFilter<T extends TableColumnType = TableColumnType> 
   node: FilterNode | null;
   /** Если false, фильтр для колонки игнорируется. */
   enabled: boolean;
+  /** Уникальные значения по колонке без учёта текущего фильтра. */
+  uniqueValues?: any[] | 'loading';
 }
 
 /** Состояние элементов интерфейса для фильтра колонки таблицы. */

@@ -1,7 +1,7 @@
 import type { TableState } from '../../lib/types';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'antd';
-import { deleteTableRecords } from '../../store/table.thunks';
+import { deleteTableRecords } from '../../store/table-editing.thunks';
 
 
 interface DeleteRecordsDialogProps {
