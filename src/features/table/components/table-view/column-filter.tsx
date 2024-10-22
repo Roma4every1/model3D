@@ -3,13 +3,14 @@ import type { CheckboxProps } from 'antd';
 import type { TableState, TableColumnModel } from '../../lib/types';
 import type { TableColumnFilterState } from '../../lib/filter.types';
 import dayjs, { Dayjs } from 'dayjs';
-import { Select, Input, InputNumber, DatePicker, Checkbox, Button, Switch, Spin } from 'antd';
+import { Select, Input, InputNumber, DatePicker, Checkbox, Button, Switch } from 'antd';
+import { flatTree } from 'shared/lib';
 import { useRender } from 'shared/react';
 import { ButtonSwitch } from 'shared/ui';
 import { inputNumberParser } from 'shared/locales';
 import { getDefaultFilterState, buildFilterNode } from '../../lib/filter-utils';
 import { updateTableState } from '../../store/table.actions';
-import { updateTableFilters, applyFilterUniqueValues } from '../../store/table-filters.thunks';
+import { updateTableFilters } from '../../store/table-filters.thunks';
 
 import {
   filterOperators, numberFilterOptions,
@@ -207,35 +208,52 @@ function DateFilterContent({state}: FilterContentProps<'date'>) {
   );
 }
 
-function LookupFilterContent({id, column, state}: FilterContentProps<'list'>) {
+function LookupFilterContent({column, state}: FilterContentProps<'list'>) {
   const render = useRender();
-  const filterValues = state.values;
-  const filterOptions = column.filter.uniqueValues;
-  const noOptions = !Array.isArray(filterOptions);
+  const values = state.values;
 
-  if (noOptions) {
-    setTimeout(() => { // prevent duplicate fetch
-      if (column.filter.uniqueValues) return;
-      column.filter.uniqueValues = 'loading';
-      applyFilterUniqueValues(id, column.id).then(render);
-    }, 100);
-  }
-  const toElement = (value: LookupItemID): ReactElement => {
-    const title = column.lookupDict[value];
-    const checked = filterValues.has(value);
+  let options: LookupListItem[] = column.lookupData ?? [];
+  if (column.type === 'tree') options = flatTree(options);
 
+  const toElement = ({id, value}: LookupListItem): ReactElement => {
     const onChange = () => {
-      checked ? filterValues.delete(value) : filterValues.add(value);
+      values.has(id) ? values.delete(id) : values.add(id);
       render();
     };
-    return <Checkbox key={value} checked={checked} onChange={onChange}>{title}</Checkbox>;
+    return <Checkbox key={id} checked={values.has(id)} onChange={onChange}>{value}</Checkbox>;
   };
-
-  return (
-    <Spin spinning={noOptions} delay={100}>
-      <div className={'lookup-filter-content'}>
-        {!noOptions && filterOptions.map(toElement)}
-      </div>
-    </Spin>
-  );
+  return <div className={'lookup-filter-content'}>{options.map(toElement)}</div>;
 }
+
+// function LookupFilterContent({id, column, state}: FilterContentProps<'list'>) {
+//   const render = useRender();
+//   const filterValues = state.values;
+//   const filterOptions = column.filter.uniqueValues;
+//   const noOptions = !Array.isArray(filterOptions);
+//
+//   if (noOptions) {
+//     setTimeout(() => { // prevent duplicate fetch
+//       if (column.filter.uniqueValues) return;
+//       column.filter.uniqueValues = 'loading';
+//       applyFilterUniqueValues(id, column.id).then(render);
+//     }, 100);
+//   }
+//   const toElement = (value: LookupItemID): ReactElement => {
+//     const title = column.lookupDict[value];
+//     const checked = filterValues.has(value);
+//
+//     const onChange = () => {
+//       checked ? filterValues.delete(value) : filterValues.add(value);
+//       render();
+//     };
+//     return <Checkbox key={value} checked={checked} onChange={onChange}>{title}</Checkbox>;
+//   };
+//
+//   return (
+//     <Spin spinning={noOptions} delay={100}>
+//       <div className={'lookup-filter-content'}>
+//         {!noOptions && filterOptions.map(toElement)}
+//       </div>
+//     </Spin>
+//   );
+// }

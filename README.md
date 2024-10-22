@@ -11,11 +11,11 @@
 + `package.json` и `package-lock.json`: конфиг Node.js и npm
 + `tsconfig.json` и `tsconfig.node.json`: конфиг TypeScript
 + `vite.config.ts`: конфиг сборщика (используется Vite)
++ `eslint.config.js`: конфиг ESLint
 + `kendo-ui-license.txt`: лицензионный ключ для KendoUI
 
 Конфиги сторонних программ:
 + `.editorconfig`: настройки редактора или IDE
-+ `.eslintrc`: конфиг ESLint
 + `.gitattributes`: настройки Git
 + `.gitignore`: исключения Git
 
