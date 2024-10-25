@@ -15,6 +15,7 @@ export interface YAxisProps {
   minTickGap?: number;
   padding?: {top: number, bottom: number};
   tickFormatter?: (tick: number | string) => string;
+  scale: ScaleTypeCode;
 }
 export interface YAxisPropsLabel {
   value: string;
@@ -46,6 +47,7 @@ export function getYAxisProto(id: string, axis: AxisSettings): YAxisProps {
     key: id, yAxisId: id, domain: domain, tickCount, minTickGap: 0,
     orientation: isLeft ? 'left' : 'right', label,
     stroke: axis.color, reversed: axis.inverse, width: 50, tickFormatter,
+    scale: axis.scale,
   };
 }
 
@@ -57,7 +59,7 @@ export function getYAxisProto(id: string, axis: AxisSettings): YAxisProps {
  * @example
  * getFormattedMinMax([1000,25000]) => [0,25000]
  */
-function getFormattedMinMax([dataMin, dataMax]: [number, number]): [number, number] {
+export function getFormattedMinMax([dataMin, dataMax]: [number, number]): [number, number] {
   let min = getPragmaticMin(dataMin);
   const max = getPragmaticMax(dataMax);
   const currStep = Math.floor((max - min) / 10);
@@ -141,7 +143,7 @@ export function yearStep(date: Date): number {
  * getPragmaticMin(33.3) => 25
  * getPragmaticMin(543)  => 500
  */
-function getPragmaticMin(n: number): number {
+export function getPragmaticMin(n: number): number {
   n = Math.floor(n);
   if (n < 10) return 0;
   const e = Math.pow(10, n.toString().length - 1);
@@ -159,7 +161,7 @@ function getPragmaticMin(n: number): number {
  * getPragmaticMax(33.3) => 50
  * getPragmaticMax(543)  => 1000
  */
-function getPragmaticMax(n: number): number {
+export function getPragmaticMax(n: number): number {
   n = Math.ceil(n);
   const e = Math.pow(10, n.toString().length - 1);
   n = n / e;

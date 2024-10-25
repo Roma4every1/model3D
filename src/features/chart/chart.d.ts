@@ -22,6 +22,8 @@ interface ChartState {
   seriesSettings: ChartSeriesSettings;
   /** Функция для сохранения графика в png */
   downloadChart?: () => Promise<void>;
+  properties: ChartProperty[];
+  selectedSeries: string | null;
 }
 
 /** Шаг по времени на графике. */
@@ -76,6 +78,8 @@ interface AxisSettings {
   inverse: boolean;
   /** Подпись к оси. */
   displayName: string;
+  /**Тип оси */
+  scale: ScaleTypeCode;
 }
 
 /** ## Типы отображения значений на графике.
@@ -92,3 +96,17 @@ interface AxisSettings {
  * */
 type ChartTypeCode = 'gist' | 'gistStack' | 'area' | 'areaSpline' | 'areaDiscr' |
   'graph' | 'graphSpline' | 'graphDiscr' | 'point' | 'vertical';
+
+  /**## Типы отображения шкалы оси
+   * + `linear` — линейная
+   * + `log` — логарифмическая
+   */
+type ScaleTypeCode = 'linear' | 'log' ;
+
+interface ChartProperty {
+  id: number;
+  title: string;
+  visible: boolean;
+  channelName: ChannelName;
+  propertyName: PropertyName;
+}

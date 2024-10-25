@@ -1,0 +1,91 @@
+.visibility-popover {
+  min-width: 150px;
+  max-width: 250px;
+  max-height: 35vh;
+  overflow: auto;
+  border: 1px solid #cecece;
+  border-radius: 2px;
+
+  .ant-popover-inner {
+    padding: 4px 2px;
+    border-radius: 0;
+  }
+
+  .visibility-list {
+    display: flex;
+    flex-direction: column;
+    padding: 5px 5px 5px 15px;
+    gap: 4px;
+
+    .visibility-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+  }
+}
+
+.type-btn {
+  display: flex;
+  min-width: 100px;
+  flex-direction: column;
+  align-items: center;
+
+  >div img {
+    width: 24px;
+    height: 24px;
+  }
+
+  >span {
+    white-space: normal;
+  }
+}
+
+.type-btn:where(.css-dev-only-do-not-override-zkoob7).ant-btn-default:not(:disabled):not(.ant-btn-disabled):hover {
+  color: var(--color-text);
+}
+
+.ant-btn-icon:where(.css-dev-only-do-not-override-zkoob7).ant-btn:not(.ant-btn-icon-only)>.ant-btn-icon.ant-btn-loading-icon,
+:where(.css-dev-only-do-not-override-zkoob7).ant-btn:not(.ant-btn-icon-only)>.ant-btn-icon:not(:last-child) {
+  margin-inline-end: 0;
+}
+
+.type-list {
+  >ul {
+    display: flex;
+    max-width: 240px;
+    flex-wrap: wrap;
+
+    >li {
+      display: flex;
+      flex-direction: column;
+      width: 50%;
+      padding: 4px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+
+      >span {
+        text-align: center;
+      }
+    }
+  }
+}
+
+.axis-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 1rem;
+
+  >div {
+    display: flex;
+    height: 24px;
+    gap: 2px;
+  }
+}
+
+.error-input {
+  border: 1px solid red;
+}
