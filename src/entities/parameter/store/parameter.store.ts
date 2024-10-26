@@ -1,4 +1,4 @@
-import type { ParameterUpdateEntry } from '../lib/parameter.types';
+import type { ParameterUpdateEntry, ParameterUpdateData } from '../lib/parameter.types';
 import { createWithEqualityFn } from 'zustand/traditional';
 import { IDGenerator, compareArrays } from 'shared/lib';
 
@@ -17,6 +17,8 @@ export interface ParameterStore {
   readonly updateQueue: ParameterUpdateEntry[];
   /** Группировка параметров по клиентам. */
   clients: ParameterDict;
+  /** Глобальный слушатель событий изменения параметров.  */
+  globalListener?: (state: ParameterStore, data: ReadonlyArray<ParameterUpdateData>) => void;
 }
 
 

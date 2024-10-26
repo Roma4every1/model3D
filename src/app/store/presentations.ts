@@ -6,7 +6,11 @@ import { updateActivePresentation } from 'widgets/presentation/lib/update';
 import { useAppStore } from './app.store';
 
 
-export function selectPresentation(id: ClientID): void {
+export function selectPresentation(id: ClientID, popup?: boolean): void {
+  if (popup) {
+    const instanceController = useAppStore.getState().instanceController;
+    instanceController.openPopup(id); return;
+  }
   const clientState = useClientStore.getState()[id];
   if (clientState) {
     setClientActiveChild('root', id);

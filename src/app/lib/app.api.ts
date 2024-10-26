@@ -40,11 +40,11 @@ export class AppAPI {
   }
 
   /** Закрыть сессию. */
-  public stopSession(sessionToSave: SessionToSave): Promise<Res<boolean>> {
+  public stopSession(sessionToSave?: SessionToSave): Promise<Res<void>> {
     if (this.api.legacy) {
-      return this.api.post('/stopSession', {json: sessionToSave});
+      return this.api.post('/stopSession', {json: sessionToSave, then: null});
     } else {
-      return this.api.delete('/session', {query: {save: false}, json: sessionToSave});
+      return this.api.delete('/session', {json: sessionToSave, then: null});
     }
   }
 

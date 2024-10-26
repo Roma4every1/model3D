@@ -1,19 +1,3 @@
-/** Общие данные приложения. */
-interface AppState {
-  /** Путь к начальной странице относительно хоста. */
-  readonly location: string;
-  /** Список систем. */
-  systemList: SystemList;
-  /** ID текущей системы. */
-  systemID: SystemID;
-  /** ID из `setInterval` для запроса `extendSession`. */
-  sessionIntervalID: number;
-  /** Состояние загрузки. */
-  loading: AppLoadingState;
-  /** Очередь инициализации презентаций. */
-  readonly initQueue: ClientID[];
-}
-
 /** Состояние загрузки приложения. */
 interface AppLoadingState {
   /** Шаг загрузки. */

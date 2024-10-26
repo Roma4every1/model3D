@@ -1,20 +1,21 @@
 import type { IJsonModel } from 'flexlayout-react';
 import type { ParameterGroupDTO } from 'entities/parameter';
 import type { ClientDataDTO, ParameterSetterDTO } from 'entities/client';
+import type { PresentationTreeDTO } from 'widgets/left-panel';
 import { clientAPI } from 'entities/client';
-import { createLeftLayout } from 'widgets/left-panel';
+import { PresentationTree, createLeftLayout } from 'widgets/left-panel';
 import { ClientChannelFactory, DataResolver } from 'widgets/presentation';
 import { LayoutController } from './layout-controller';
+import { InstanceController } from './instance-controller';
 
 import {
-  ParameterStringTemplate, useParameterStore,
-  addClientParameters, addParameterListener, createParameterGroups,
-  applyVisibilityTemplates, calcParameterVisibility,
+  useParameterStore, addClientParameters, addParameterListener,
+  createParameterGroups, applyVisibilityTemplates, calcParameterVisibility,
 } from 'entities/parameter';
 
 
 interface DockSettingsDTO {
-  presentationTree?: PresentationTree;
+  presentationTree?: PresentationTreeDTO;
   linkedProperties?: ParameterSetterDTO[];
   parameterGroups?: ParameterGroupDTO[];
   dateChanging?: DateChangingDTO;
@@ -29,6 +30,7 @@ interface DateChangingDTO {
 /** Класс, который создаёт состояние корневого клиента сесии. */
 export class RootClientFactory {
   private readonly id: ClientID;
+  private readonly instanceController: InstanceController;
   private readonly setters: ParameterSetter[];
 
   private dto: ClientDataDTO<DockSettingsDTO>;
@@ -36,8 +38,9 @@ export class RootClientFactory {
   private channels: Channel[];
   private neededChannels: ChannelID[];
 
-  constructor(id: ClientID) {
+  constructor(id: ClientID, instanceController: InstanceController) {
     this.id = id;
+    this.instanceController = instanceController;
     this.setters = useParameterStore.getState().setters;
   }
 
@@ -46,16 +49,19 @@ export class RootClientFactory {
     if (!ok) return;
 
     this.dto = data;
-    this.createParameters();
+    await this.createParameters();
     await this.createChannels();
+
     const { children, activeChildren } = data.children;
+    const wp = this.instanceController.windowParameter;
+    const activeID = wp ?? activeChildren[0] ?? children[0]?.id;
 
     return {
       id: this.id, type: 'dock', parent: null,
       channels: [], neededChannels: this.neededChannels,
       parameters: this.parameters.map(p => p.id),
-      children: children, activeChildID: activeChildren[0] ?? children[0]?.id,
-      settings: this.createSettings(), layout: this.createLayout(),
+      children: children, activeChildID: activeID,
+      settings: this.createSettings(activeID), layout: this.createLayout(),
     };
   }
 
@@ -77,24 +83,35 @@ export class RootClientFactory {
 
   /* --- Parameters --- */
 
-  private createParameters(): void {
+  private async createParameters(): Promise<void> {
     const inits = this.dto.parameters;
     this.parameters = addClientParameters('root', inits);
+
+    if (!this.instanceController.main) {
+      const res = this.instanceController.sendRequest('init', 'root');
+      const values = await res.catch(() => null);
+
+      values?.forEach(({name, value}) => {
+        const parameter = this.parameters.find(p => p.name === name);
+        parameter.setValue(value);
+      });
+    }
     const resolve = (name: ParameterName) => this.resolveParameterName(name);
     applyVisibilityTemplates(this.parameters, inits, resolve);
   }
 
   /* --- Settings --- */
 
-  private createSettings(): DockSettings {
+  private createSettings(activeID: ClientID): DockSettings {
     const dto = this.dto.settings ?? {};
-    let { presentationTree, dateChanging, parameterGroups: groups } = dto;
-    if (!presentationTree) presentationTree = [];
+    const { presentationTree: treeDTO, dateChanging, parameterGroups: groups } = dto;
 
-    this.handlePresentationTree(presentationTree);
-    expandActivePresentation(presentationTree, this.dto.children.activeChildren[0]);
+    const resolve = (name: ParameterName) => this.resolveParameterName(name);
+    const presentationTree = new PresentationTree(treeDTO ?? [], activeID, resolve);
+    presentationTree.updateVisibility(this.parameters);
+    presentationTree.updateNodes();
+
     if (dateChanging) this.handleDateChangingPlugin(dateChanging);
-
     const setters = dto.linkedProperties;
     if (Array.isArray(setters) && setters.length) this.handleParameterSetters(setters);
 
@@ -104,30 +121,6 @@ export class RootClientFactory {
       if (parameterGroups) settings.parameterGroups = parameterGroups;
     }
     return settings;
-  }
-
-  /** Создаёт обработчики видимости для презентаций с заданной строкой видимости. */
-  private handlePresentationTree(tree: PresentationTree): void {
-    let i = 0;
-    const resolve = (name: ParameterName) => this.resolveParameterName(name);
-
-    const visit = (treeItems: PresentationTreeItem[]) => {
-      for (const item of treeItems) {
-        if (item.items) {
-          item.id = (i++).toString();
-          visit(item.items);
-        } else {
-          const pattern: string = item.visibilityString;
-          if (pattern) {
-            item.visibilityString = new ParameterStringTemplate(pattern, resolve);
-            item.visible = Boolean(eval(item.visibilityString.build(this.parameters)));
-          } else {
-            item.visible = true;
-          }
-        }
-      }
-    };
-    visit(tree);
   }
 
   private handleParameterSetters(setters: ParameterSetterDTO[]): void {
@@ -190,7 +183,7 @@ export class RootClientFactory {
 
   private createLayout(): DockLayout {
     const layoutRaw: IJsonModel = this.dto.layout;
-    const layoutController = new LayoutController(layoutRaw.layout);
+    const layoutController = new LayoutController(layoutRaw.layout, !this.instanceController.main);
     return {controller: layoutController, left: createLeftLayout(layoutRaw)};
   }
 
@@ -201,20 +194,5 @@ export class RootClientFactory {
       if (parameter.name === name) return parameter.id;
     }
     return undefined;
-  }
-}
-
-/**
- * Находит в дереве презентацию и выделяет найденный узел.
- * Делает все вкладки в которых находится узел раскрытыми.
- */
-export function expandActivePresentation(tree: PresentationTree, activeID: FormID): boolean {
-  for (const item of tree) {
-    if (item.items) {
-      if (expandActivePresentation(item.items, activeID)) { item.expanded = true; return; }
-    } else if (item.id === activeID) {
-      item.selected = true;
-      return true;
-    }
   }
 }

@@ -4,31 +4,9 @@ type RootClient = SessionClient<'dock', DockSettings, DockLayout>;
 /** Настройки корневого клиента. */
 interface DockSettings {
   /** Дерево презентаций. */
-  presentationTree: PresentationTree;
+  presentationTree: any; // PresentationTree
   /** Группы параметров для разбиения списка на вкладки. */
   parameterGroups?: ParameterGroup[];
-}
-
-/** Дерево презентаций. */
-type PresentationTree = PresentationTreeItem[];
-
-/** Элемент дерева презентаций. */
-interface PresentationTreeItem {
-  /** ID презентации, есть только у листьев. */
-  id: ClientID;
-  /** Название презентации в дереве. */
-  text: string;
-  /** Дочерние элементы: группы или презентации. */
-  items?: PresentationTreeItem[];
-  /** Выбрана ли текущая презентация. */
-  selected?: boolean;
-  /** Раскрыта ли группа. */
-  expanded?: boolean;
-
-  /** Виден ли узел дерева в данный момент. */
-  visible: boolean;
-  /** Шаблон видимости. */
-  visibilityString?: any; // ParameterStringTemplate
 }
 
 /* --- Dock Layout --- */

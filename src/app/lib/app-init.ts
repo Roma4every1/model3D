@@ -9,8 +9,8 @@ import { getSessionToSave } from './session-save';
 /** Инициализация приложения. */
 export async function initialize(): Promise<void> {
   checkJS();
-  const appLocation = useAppStore.getState().location;
-  const configObject = await fetchClientConfig(appLocation);
+  const { location, instanceController } = useAppStore.getState();
+  const configObject = await fetchClientConfig(location);
   const appConfig = createAppConfig(configObject);
 
   fetcher.setPrefix(appConfig.api);
@@ -20,7 +20,14 @@ export async function initialize(): Promise<void> {
   useGlobalStore.setState({config: appConfig});
   useAppStore.setState({systemList, loading: {step: 'wait'}});
 
-  const beforeUnload = () => appAPI.stopSession(getSessionToSave()).then();
+  const beforeUnload = () => {
+    if (instanceController.main) {
+      instanceController.destroy();
+      appAPI.stopSession(getSessionToSave());
+    } else {
+      appAPI.stopSession();
+    }
+  };
   window.addEventListener('beforeunload', beforeUnload);
 }
 
