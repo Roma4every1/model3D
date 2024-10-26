@@ -22,7 +22,9 @@ export function updateParamDeep(id: ParameterID, newValue: any): Promise<void> {
   parameter.setValue(newValue);
 
   const { promise, resolve } = Promise.withResolvers<void>();
-  state.updateQueue.push({data: {id, newValue}, resolve});
+  const updateData: ParameterUpdateData = {id, newValue};
+  state.updateQueue.push({data: updateData, resolve});
+  if (state.globalListener) state.globalListener(state, [updateData]);
 
   if (state.updateQueue.length === 1) {
     runUpdateLoop(state).then();
@@ -33,7 +35,7 @@ export function updateParamDeep(id: ParameterID, newValue: any): Promise<void> {
 }
 
 /** Обновление параметров и всех их зависимостей. */
-export function updateParamsDeep(data: ParameterUpdateData[]): Promise<true | void> {
+export function updateParamsDeep(data: ParameterUpdateData[], trigger = true): Promise<true | void> {
   const state = useParameterStore.getState();
   const filterData: ParameterUpdateData[] = [];
 
@@ -46,6 +48,7 @@ export function updateParamsDeep(data: ParameterUpdateData[]): Promise<true | vo
 
   const { promise, resolve } = Promise.withResolvers<void>();
   state.updateQueue.push({data: filterData, resolve});
+  if (trigger && state.globalListener) state.globalListener(state, filterData);
 
   if (state.updateQueue.length === 1) {
     runUpdateLoop(state).then();

@@ -11,7 +11,7 @@ import { PresentationTreeView } from './presentation-tree';
 
 interface LeftPanelProps {
   rootState: RootClient;
-  selectPresentation: (id: ClientID) => void;
+  selectPresentation: (id: ClientID, popup?: boolean) => void;
 }
 
 

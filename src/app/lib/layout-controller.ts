@@ -1,4 +1,4 @@
-import type { IJsonModel, IJsonTabNode } from 'flexlayout-react/declarations/model/IJsonModel';
+import type { IJsonModel, IJsonBorderNode, IJsonTabSetNode, IJsonTabNode, IGlobalAttributes } from 'flexlayout-react/declarations/model/IJsonModel';
 import { Model, BorderNode, Actions, DockLocation } from 'flexlayout-react';
 
 
@@ -74,8 +74,8 @@ export class LayoutController {
   /** Видимые вкладки справа. */
   private readonly visibleRightIDs: Set<TabID>;
 
-  constructor(init: any) {
-    this.model = this.createInitModel(init);
+  constructor(init: any, popup: boolean) {
+    this.model = this.createInitModel(init, popup);
     this.visibleTopIDs = new Set(['menu']);
     this.visibleRightIDs = new Set(['right-dock']);
     [this.topBorder, this.rightBorder] = this.model.getBorderSet().getBorders();
@@ -96,6 +96,7 @@ export class LayoutController {
   }
 
   public updateTabVisibility(presentation: PresentationState): void {
+    if (!this.rightBorder) return;
     const types = presentation?.childrenTypes;
     if (types) {
       const oldTopIndex = this.topBorder.getSelected();
@@ -132,7 +133,7 @@ export class LayoutController {
   }
 
   public updateTraceEditTabVisibility(need: boolean): void {
-    if (!this.traceExist) return;
+    if (!this.rightBorder || !this.traceExist) return;
     const tabID: TabID = 'right-trace';
     const borderID = this.rightBorder.getId();
     const hasTab = this.visibleRightIDs.has(tabID);
@@ -164,51 +165,76 @@ export class LayoutController {
     }
   }
 
-  private createInitModel(init: any): Model {
+  private createInitModel(init: any, popup: boolean): Model {
+    const global: IGlobalAttributes = {
+      tabSetEnableTabStrip: false,
+      borderEnableDrop: false,
+      tabEnableRename: false,
+      tabEnableClose: false,
+      tabEnableDrag: false,
+      tabSetEnableDrag: false,
+      splitterSize: 8,
+    };
+    let layout: IJsonModel;
+    if (popup) {
+      layout = this.createPopupLayout(global);
+    } else {
+      layout = this.createMainLayout(init, global);
+    }
+    return Model.fromJson(layout);
+  }
+
+  private createMainLayout(init: any, globalAttributes: IGlobalAttributes): IJsonModel {
     const selectedTop = init?.selectedtop ?? -1;
     const selectedRight = init?.selectedright ?? -1;
     const topPanelHeight = 90;
     const leftPanelWidth = init?.sizeleft ?? 270;
     const rightPanelWidth = init?.sizeright ?? 270;
 
-    const layout: IJsonModel = {
-      global: {
-        tabSetEnableTabStrip: false,
-        borderEnableDrop: false,
-        tabEnableRename: false,
-        tabEnableClose: false,
-        tabEnableDrag: false,
-        tabSetEnableDrag: false,
-        splitterSize: 8,
-      },
-      borders: [
-        {
-          type: 'border', location: 'top',
-          barSize: 26, size: topPanelHeight, minSize: topPanelHeight,
-          className: 'no-user-select', children: [topTabDict['menu']],
-          selected: selectedTop < 1 ? selectedTop : -1, config: {initIndex: selectedTop},
-        },
-        {
-          type: 'border', location: 'right',
-          barSize: 26, size: rightPanelWidth, minSize: 150,
-          className: 'no-user-select', children: [rightTabDict['right-dock']],
-          selected: selectedRight < 1 ? selectedRight : -1,
-        },
-      ],
-      layout: {
-        type: 'row',
-        children: [
-          {
-            type: 'tabset', width: leftPanelWidth, minWidth: 150,
-            children: [{id: 'left', type: 'tab', component: 'left'}],
-          },
-          {
-            type: 'tabset', minWidth: 200,
-            children: [{type: 'tab', component: 'form'}],
-          },
-        ],
-      },
+    const topBorder: IJsonBorderNode = {
+      type: 'border', location: 'top',
+      barSize: 26, size: topPanelHeight, minSize: topPanelHeight,
+      className: 'no-user-select', children: [topTabDict['menu']],
+      selected: selectedTop < 1 ? selectedTop : -1, config: {initIndex: selectedTop},
     };
-    return Model.fromJson(layout);
+    const rightBorder: IJsonBorderNode = {
+      type: 'border', location: 'right',
+      barSize: 26, size: rightPanelWidth, minSize: 150,
+      className: 'no-user-select', children: [rightTabDict['right-dock']],
+      selected: selectedRight < 1 ? selectedRight : -1,
+    };
+
+    const leftPanelContent: IJsonTabSetNode = {
+      type: 'tabset', width: leftPanelWidth, minWidth: 150,
+      children: [{id: 'left', type: 'tab', component: 'left'}],
+    };
+    const mainContent: IJsonTabSetNode = {
+      type: 'tabset', minWidth: 200,
+      children: [{type: 'tab', component: 'form'}],
+    };
+    return {
+      global: globalAttributes, borders: [topBorder, rightBorder],
+      layout: {type: 'row', children: [leftPanelContent, mainContent]},
+    };
+  }
+
+  private createPopupLayout(globalAttributes: IGlobalAttributes): IJsonModel {
+    const leftBorder: IJsonTabNode = {
+      type: 'tab', enableDrag: false,
+      id: 'left-border', name: 'Параметры презентации',
+    };
+    const border: IJsonBorderNode = {
+      type: 'border', location: 'left', className: 'no-user-select',
+      barSize: 26, size: 200, minSize: 150,
+      children: [leftBorder], selected: -1,
+    };
+    const content: IJsonTabSetNode = {
+      type: 'tabset', minWidth: 200,
+      children: [{type: 'tab', component: 'form'}],
+    };
+    return {
+      global: globalAttributes, borders: [border],
+      layout: {type: 'row', children: [content]},
+    };
   }
 }

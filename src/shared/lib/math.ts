@@ -12,6 +12,11 @@ export function round(n: number, digits: number = 0): number {
   return Math.round(n * multiplier) / multiplier;
 }
 
+/** Возвращает рандомное целое число не меньше `min` и не больше `max`. */
+export function randomInt(min: number = 0, max: number = 1): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 /** Округляет вниз до ближайшего числа, удобного для восприятия на оси. */
 export function calcAxisMin(dataMin: number): number {
   if (!dataMin || dataMin > 0) return 0;

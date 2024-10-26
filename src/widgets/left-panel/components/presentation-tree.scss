@@ -1,0 +1,25 @@
+.presentation-tree {
+  .ant-tree-treenode {
+    padding: 0;
+  }
+  .ant-tree-node-content-wrapper {
+    padding: 0;
+    border-radius: 3px;
+  }
+  .ant-tree-node-content-wrapper.ant-tree-node-selected {
+    background-color: var(--wm-primary-70);
+  }
+  .ant-tree-title > span {
+    padding: 2px 4px;
+  }
+}
+
+.presentation-tree-popover .ant-popover-inner {
+  padding: 0;
+  border-radius: 2px;
+
+  span {
+    padding: 2px 6px;
+    cursor: pointer;
+  }
+}

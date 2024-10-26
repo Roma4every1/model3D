@@ -19,7 +19,7 @@ import { TopLeftToolbar, TopRightToolbar } from './top-toolbar';
 export const SystemRoot = () => {
   const { systemID: paramsSystemID } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { location, systemList, systemID, loading } = useAppStore();
+  const { location, systemList, systemID, loading, instanceController } = useAppStore();
 
   const defaultSession = searchParams.get('defaultSession') === 'true';
   const systemInfo = systemList?.find(system => system.id === paramsSystemID);
@@ -46,8 +46,8 @@ export const SystemRoot = () => {
   return (
     <ConfigProvider locale={ru_RU} theme={theme} componentSize={antdComponentSize}>
       <Dock/>
-      <TopLeftToolbar location={location}/>
-      <TopRightToolbar/>
+      {instanceController.main && <TopLeftToolbar location={location}/>}
+      {instanceController.main && <TopRightToolbar/>}
       <WindowHandler/>
       <Notifications/>
     </ConfigProvider>

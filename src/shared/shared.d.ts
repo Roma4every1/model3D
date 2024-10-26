@@ -7,7 +7,7 @@ type DataTypeName = 'boolean' | 'i8' | 'i16' | 'i32' | 'i64' | 'u8' | 'u16' | 'u
 type StringMatcher = string | string[] | RegExp;
 
 /** Колбэк, принимающий один аргумент. */
-type EventCallback<T> = (arg: T) => void;
+type EventCallback<T = any> = (arg: T) => void;
 
 /** Двумерный массив чисел. */
 type Matrix = number[][];

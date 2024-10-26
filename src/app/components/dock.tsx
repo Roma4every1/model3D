@@ -3,8 +3,8 @@ import { Layout, TabNode } from 'flexlayout-react';
 import { i18nMapper } from 'shared/locales';
 import { useRootClient, useActivePresentation } from 'entities/client';
 import { useTraceEditing } from 'entities/objects';
-import { LeftPanel } from 'widgets/left-panel';
 import { Presentation } from 'widgets/presentation';
+import { LeftPanel, PopupLeftBorder } from 'widgets/left-panel';
 import { ActiveOperations, RightTab } from 'widgets/right-panel';
 import { MainMenu, TopTab } from 'widgets/top-panel';
 import { selectPresentation } from '../store/presentations';
@@ -35,6 +35,7 @@ export const Dock = () => {
   const factory = (node: TabNode) => {
     const id = node.getId();
     if (id === 'left') return <LeftPanel rootState={rootState} selectPresentation={selectPresentation}/>;
+    if (id === 'left-border') return <PopupLeftBorder activeID={activeID}/>;
 
     if (id === 'menu') return <MainMenu id={activeID} leftLayout={leftLayout}/>;
     if (id.startsWith('top')) return <TopTab tabID={id} presentation={presentation}/>;
