@@ -1,5 +1,6 @@
 import { csvParser } from './csv-parser';
 import { excelParser } from './excel-parser';
+import { txtParser } from './txt-parser';
 
 
 /** Словарь типов MIME для расширений файлов. */
@@ -18,7 +19,7 @@ export const mimeTypeDict: Record<string, string> = {
 };
 
 export const fileParserDict: Record<string, FileParser> = {
-  'txt': (data: Blob) => data.text(),
+  'txt': txtParser,
   'csv': csvParser,
   'xlsx': excelParser,
   'docx': (data: Blob) => data.arrayBuffer(),
