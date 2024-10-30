@@ -1,13 +1,7 @@
 /** Состояния форм просмотра файлов. */
 type FileViewStates = Record<FormID, FileViewState>;
 
-/** Состояние формы просмотра файлов.
- * + `model`: {@link FileViewModel}
- * + `memo`: {@link FileViewModel}[]
- * + `useResources: boolean`
- * + `loading: boolean`
- * + `loadingFlag: {current: number}`
- * */
+/** Состояние формы просмотра файлов. */
 interface FileViewState {
   /** Текущий просматриваемый файл. */
   model: FileViewModel;
@@ -19,12 +13,7 @@ interface FileViewState {
   loadingFlag: {current: number};
 }
 
-/** Модель просматриваемого файла.
- * + `fileName: string`
- * + `fileType: string`
- * + `data`: {@link Blob}
- * + `uri: string` — техническое поле
- * */
+/** Модель просматриваемого файла. */
 interface FileViewModel<T = any> {
   /** Название файла. */
   fileName: string;
@@ -85,10 +74,10 @@ interface ExcelRowModel {
 
 /** Модель Excel ячейки. */
 interface ExcelCellModel {
-  /** Адрес ячейки (Например `B12`). */
+  /** Адрес ячейки (например, `B12`). */
   address: string;
   /** CSS стили ячейки. */
-  style: CSSProperties;
+  style: any; // CSSProperties
   /** Количество рядов объедниямых ячейкой. */
   rowSpan: number | null;
   /** Количество колонок объедниямых ячейкой. */
