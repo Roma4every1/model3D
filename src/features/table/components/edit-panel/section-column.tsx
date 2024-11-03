@@ -81,7 +81,7 @@ const ColumnCommonControls = ({state, activeColumn, t}: ColumnControlsProps) => 
         parser={inputIntParser} controls={false} changeOnWheel={true}
         addonAfter={<SyncOutlined title={t('table.panel.auto-width')} onClick={setAutoWidth}/>}
       />
-      <IconRow gap={2}>
+      <IconRow>
         <IconRowButton
           icon={<LockOutlined/>} title={t('table.panel.fixation')} active={fixed}
           onClick={toggleFixed} disabled={noColumn}

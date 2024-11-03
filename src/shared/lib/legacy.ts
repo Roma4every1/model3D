@@ -30,6 +30,19 @@ export function getDataTypeName(input: string): DataTypeName | null {
   return null;
 }
 
+/** Проверяет, является ли тип данных колонки численным. */
+export function isNumberColumn(column: ChannelColumn): boolean {
+  const type = getDataTypeName(column.type);
+  if (type === null) return false;
+  return /^[iuf]\d/.test(type);
+}
+
+/** Проверяет, является ли тип данных колонки датой. */
+export function isDateColumn(column: ChannelColumn): boolean {
+  const type = getDataTypeName(column.type);
+  return type === 'date';
+}
+
 /* --- --- */
 
 /**

@@ -10,7 +10,8 @@
     "loading": "Загрузка...",
     "info": "Информация",
     "warning": "Предупреждение",
-    "error": "Ошибка"
+    "error": "Ошибка",
+    "auto": "Авто"
   },
   "app": {
     "session-creation-error": "Не удалось создать сессию",
@@ -115,12 +116,34 @@
   },
 
   "chart": {
+    "preset": {
+      "line-linear": "Линия",
+      "line-smooth": "Гладкая линия",
+      "line-step": "Дискретная линия",
+      "area-linear": "Область",
+      "area-smooth": "Гладкая область",
+      "area-step": "Дискретная область",
+      "point": "Точечный график",
+      "bar": "Гистограмма",
+      "vertical": "Вертикальные линии"
+    },
     "panel": {
-      "tooltip-header": "Подсказка",
-      "tooltip-label": "Показывать значения",
-      "export-header": "Экспорт",
-      "export-png": "Изображение",
-      "interval-header": "Интервал"
+      "section-global": "Общее",
+      "section-property": "Активное свойство",
+      "section-axis": "Ось",
+      "section-export": "Экспорт",
+      "tooltip": "Всплывающая подсказка",
+      "visibility": "Видимость элементов",
+      "property-color": "Цвет",
+      "show-labels": "Показывать подписи",
+      "show-points": "Показывать точки",
+      "axis-color": "Цвет",
+      "axis-display-name": "Подпись",
+      "axis-tick-count": "Делений",
+      "axis-location-right": "Расположение справа",
+      "axis-inverse": "Направление сверху вниз",
+      "axis-log-scale": "Логарифмическая шкала",
+      "export-png": "Сохранить в PNG"
     },
     "empty": "Нет данных"
   },

@@ -1,23 +1,11 @@
-.recharts-reference-line {
-  line {
-    stroke: #123;
-    stroke-width: 2px;
-    stroke-dasharray: 4px 5px;
-  }
-  rect {
-    fill: white;
-    stroke-width: 1.5px;
-  }
-}
-
-.recharts-bar path {
-  stroke-width: 0.5;
-  fill-opacity: 0.5;
-}
-.recharts-area path {
-  fill-opacity: 0.25;
-}
-
 .recharts-legend-wrapper {
   padding-bottom: 6px;
+}
+.recharts-legend-item {
+  cursor: pointer;
+}
+
+.recharts-reference-line text {
+  font: 12px Roboto;
+  text-anchor: middle;
 }

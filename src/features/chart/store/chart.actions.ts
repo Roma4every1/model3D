@@ -4,18 +4,26 @@ import { settingsToChartState } from '../lib/initialization';
 
 /** Добавить новое состояние графика. */
 export function createChartState(payload: FormStatePayload): void {
-  const { id, settings } = payload.state;
-  useChartStore.setState({[id]: settingsToChartState(settings)});
+  const id = payload.state.id;
+  useChartStore.setState({[id]: settingsToChartState(payload)});
 }
 
-/** Установить шаг по времени для графика. */
-export function setChartDateStep(id: FormID, step: ChartDateStep): void {
+/** Не меняя фактическое состояние формы вызывает рендер зависящих компонентов. */
+export function updateChartState(id: FormID): void {
   const state = useChartStore.getState()[id];
-  useChartStore.setState({[id]: {...state, dateStep: step}});
+  useChartStore.setState({[id]: {...state}});
 }
 
-/** Установить видимость окошка со значениями для графика. */
-export function setChartTooltipVisibility(id: FormID, visibility: boolean): void {
+/** Обновляет данные графика. */
+export function setChartChannelData(id: FormID, data: ChannelDict): void {
   const state = useChartStore.getState()[id];
-  useChartStore.setState({[id]: {...state, tooltip: visibility}});
+  state.stage.setChannelData(data);
+  useChartStore.setState({[id]: {...state}});
+}
+
+/** Обновляет данные справочников графика. */
+export function setChartLookupData(id: FormID, data: ChannelDict): void {
+  const state = useChartStore.getState()[id];
+  state.stage.setLookupData(data);
+  useChartStore.setState({[id]: {...state}});
 }

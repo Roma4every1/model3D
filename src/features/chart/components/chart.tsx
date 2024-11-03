@@ -1,63 +1,69 @@
-import { useEffect, useMemo } from 'react';
-import { ResponsiveContainer, ComposedChart, CartesianGrid, Legend, Tooltip, XAxis } from 'recharts';
+import type { ChartLegendItem } from '../lib/chart.types';
+import { useEffect } from 'react';
 import { useCurrentPng } from 'recharts-to-png';
-import { saveAs } from '@progress/kendo-file-saver';
-import { TextInfo } from 'shared/ui';
-import { useChannels, useChannelDict } from 'entities/channel';
+import { useChannelDict } from 'entities/channel';
+import { useChartState } from '../store/chart.store';
+import { updateChartState, setChartChannelData, setChartLookupData } from '../store/chart.actions';
 
 import './chart.scss';
-import { getChartProto } from '../lib/chart-proto';
-import { getChartLookups, applyLookupToMarks } from '../lib/lookup';
-import { propsToYAxis, propsToDiagram, markToReferenceLine } from '../lib/chart-mappers';
-import { useChartState } from '../store/chart.store';
+import { ResponsiveContainer, ComposedChart, CartesianGrid, Legend, Tooltip, XAxis } from 'recharts';
+import { TextInfo } from 'shared/ui';
+import { toYAxis } from './elements/y-axis';
+import { toDiagram, toReferenceLine } from './elements/diagrams';
 
 
-const chartStyle = {overflow: 'hidden'}; // for correct tooltip display
-const chartMargin = {top: 2, left: 0, bottom: 0, right: 0};
-
-export const Chart = ({id, channels}: SessionClient) => {
-  const state: ChartState = useChartState(id);
-  const { seriesSettings, dateStep, tooltip } = state;
-  const channelData = useChannels(channels.map(c => c.id));
-
-  const { data, diagrams, axes, marks, legend } = useMemo(() => {
-    return getChartProto(channelData, seriesSettings, dateStep);
-  }, [channelData, seriesSettings, dateStep]);
-
-  const markChannels = useMemo(() => {
-    return getChartLookups(marks);
-  }, [marks]);
-
+export const Chart = ({id}: SessionClient) => {
+  const state = useChartState(id);
   const [getPng, { ref }] = useCurrentPng();
-  const lookupData = useChannelDict(markChannels);
 
-  // обновление функции для сохранения графика в PNG
+  const channelData = useChannelDict(state.usedChannels);
+  const lookupData = useChannelDict(state.usedLookups);
+
   useEffect(() => {
-    state.downloadChart = async () => {
-      const png = await getPng();
-      if (png) saveAs(png, 'chart.png');
-    };
+    state.getPng = getPng;
   }, [getPng]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // задание текста для вертикальных пометок
   useEffect(() => {
-    if (marks.length) applyLookupToMarks(marks, lookupData);
-  }, [marks, lookupData]);
+    setChartLookupData(id, lookupData);
+  }, [lookupData, id]);
 
-  if (diagrams.length === 0) {
+  useEffect(() => {
+    setChartChannelData(id, channelData);
+  }, [channelData, id]);
+
+  const stage = state.stage;
+  const data = stage.getData();
+  const properties = stage.getDisplayedProperties();
+
+  if (properties.length === 0 || data.records.length === 0) {
     return <TextInfo text={'chart.empty'}/>;
   }
+  const legend = stage.getLegend();
+  const xAxisType = stage.dataController.xType === 'number' ? 'number' : 'category';
+
+  const tooltip = state.global.showTooltip && (
+    <Tooltip contentStyle={{padding: '4px 8px'}} itemStyle={{padding: 0}}/>
+  );
+
+  const setActiveProperty = (item: ChartLegendItem) => {
+    if (stage.getActiveProperty()?.id === item.id) return;
+    stage.setActiveProperty(item.id);
+    updateChartState(id);
+  };
 
   return (
     <ResponsiveContainer width={'100%'} height={'100%'}>
-      <ComposedChart ref={ref} data={data} margin={chartMargin} style={chartStyle} barGap={1}>
-        {tooltip && <Tooltip/>}
-        <Legend verticalAlign={'top'} payload={legend}/>
+      <ComposedChart
+        ref={ref} data={data.records} barGap={1}
+        margin={{top: 2, left: 0, bottom: 0, right: 0}} style={{overflow: 'hidden'}}
+      >
+        <Legend verticalAlign={'top'} payload={legend} onClick={setActiveProperty}/>
         <CartesianGrid strokeDasharray={'4 4'}/>
-        <XAxis dataKey={'x'}/>
-        {axes.map(propsToYAxis)}
-        {diagrams.map(propsToDiagram)}
-        {marks.map(markToReferenceLine)}
+        <XAxis dataKey={'x'} type={xAxisType}/>
+        {stage.axes.map(toYAxis)}
+        {stage.getDisplayedProperties().map(toDiagram)}
+        {data.marks.map(toReferenceLine)}
+        {tooltip}
       </ComposedChart>
     </ResponsiveContainer>
   );

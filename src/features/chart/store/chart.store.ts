@@ -1,8 +1,14 @@
+import type { ChartState } from '../lib/chart.types';
 import { create } from 'zustand';
 
 
+/** Состояния графиков. */
+export type ChartStates = Record<FormID, ChartState>;
+
 /** Хранилище графиков. */
-export const useChartStore = create<ChartStates>(() => ({}));
+export const useChartStore = create((): ChartStates => ({}));
 
 /** Состояние формы графика. */
-export const useChartState = (id: FormID) => useChartStore(state => state[id]);
+export function useChartState(id: FormID): ChartState {
+  return useChartStore(state => state[id]);
+}

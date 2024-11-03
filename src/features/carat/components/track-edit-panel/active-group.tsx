@@ -128,7 +128,7 @@ const GroupYAxisSettings = ({stage}: StageProps) => {
           parser={inputIntParser} min={minStep} max={maxStep} step={1} precision={0}
         />
       </Flex>
-      <IconRow justify={'center'} gap={2}>
+      <IconRow justify={'center'}>
         <IconRowButton
           icon={yAxisIcon} alt={'y-axis'} title={'Показывать ось'}
           active={settings.show} onClick={onShowChange}

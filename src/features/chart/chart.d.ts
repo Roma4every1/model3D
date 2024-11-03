@@ -1,94 +1,31 @@
-/** Начальные настройки графика (запрос `/getFormSettings`). */
-interface ChartFormSettings {
-  /** Настройки внешнего вида. */
-  seriesSettings: ChartSeriesSettings;
-}
+/** Идентификатор оси графика. */
+type ChartAxisID = string;
+/** Идентификатор свойства графика. */
+type ChartPropertyID = string;
 
-/** Состояние графиков. */
-type ChartStates = Record<FormID, ChartState>;
+/**
+ * Тип отображения значений на графике.
+ * + `line` — линия
+ * + `area` — область
+ * + `bar` — гистограмма
+ * + `point` — набор точек
+ * + `vertical` — вертикальная линия
+ */
+type ChartDisplayType = 'line' | 'area' | 'bar' | 'point' | 'vertical';
 
-/** Состояние формы графика.
- * + `tooltip: boolean`
- * + `dateStep`: {@link ChartDateStep}
- * + `seriesSettings`: {@link ChartSeriesSettings}
- * + `downloadChart: () => Promise`
- * */
-interface ChartState {
-  /** Нужно ли показывать окно со значениями. */
-  tooltip: boolean;
-  /** Шаг по времени. */
-  dateStep: ChartDateStep;
-  /** Настройки внешнего вида. */
-  seriesSettings: ChartSeriesSettings;
-  /** Функция для сохранения графика в png */
-  downloadChart?: () => Promise<void>;
-}
+/** Тип кривой на графике.
+ * + `linear` — ломанная линия
+ * + `natural` — сглаженная линия
+ * + `stepAfter` — дискретная линия
+ */
+type ChartCurveType = 'linear' | 'natural' | 'stepAfter';
+
+/** Тип оси X: числа, даты или категории. */
+type ChartXAxisType = 'number' | 'date' | 'category';
+/** Тип масштаба оси графика: линейная или логарифмическая. */
+type ChartAxisScale = 'linear' | 'log';
+/** Расположение оси графика: слева или справа. */
+type ChartYAxisLocation = 'left' | 'right';
 
 /** Шаг по времени на графике. */
 type ChartDateStep = 'month' | 'year';
-
-/* --- --- */
-
-/** Настройки внешнего вида графика. */
-type ChartSeriesSettings = Record<ChannelName, ChannelSeriesSettings>;
-
-/** Настройки для отображения каждого канала. */
-interface ChannelSeriesSettings {
-  seriesSettings: SeriesSettings;
-  axesSettings: AxesSettings;
-  dateStep: string;
-  gridStep: string;
-  labelInterval: number;
-  tickOrigin: string;
-  xAxisFieldName: string;
-  xAxisType: string;
-}
-
-type SeriesSettings = Record<string, SeriesSettingsItem>;
-type AxesSettings = Record<string, AxisSettings>;
-
-interface SeriesSettingsItem {
-  yAxisId: string;
-  typeCode: ChartTypeCode;
-  color: string;
-  showLabels: boolean;
-  showLine: boolean;
-  showPoint: boolean;
-  pointFigureIndex: string;
-  lineStyleIndex: string;
-  sizeMultiplier: number;
-  zIndex: number;
-}
-
-/** Настройки оси графика. */
-interface AxisSettings {
-  /** Расположение оси слева или справа. */
-  location: string;
-  /** Цвет оси. */
-  color: string;
-  /** Минимальное значение. */
-  min: number | null;
-  /** Максимальное значение. */
-  max: number | null;
-  /** Количество засечек. */
-  tickCount: number;
-  /** Прямое или обратное направление оси. */
-  inverse: boolean;
-  /** Подпись к оси. */
-  displayName: string;
-}
-
-/** ## Типы отображения значений на графике.
- * + `gist` — гистограмма
- * + `gistStack` — гистограмма накопл.
- * + `area` — область
- * + `areaSpline` — сглаженная область
- * + `areaDiscr` — дискретная область
- * + `graph` — линия
- * + `graphSpline` — сглаженная линия
- * + `graphDiscr` — дискретная линия
- * + `point` — набор точек
- * + `vertical` — вертикальные линии
- * */
-type ChartTypeCode = 'gist' | 'gistStack' | 'area' | 'areaSpline' | 'areaDiscr' |
-  'graph' | 'graphSpline' | 'graphDiscr' | 'point' | 'vertical';

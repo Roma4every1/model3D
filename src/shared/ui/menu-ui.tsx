@@ -97,7 +97,7 @@ interface IconRowLinkProps {
 
 export const IconRow = ({children, justify, className, gap}: IconRowProps) => {
   const cls = clsx(className, 'wm-icon-row');
-  const style: CSSProperties = {justifyContent: justify, gap};
+  const style: CSSProperties = {justifyContent: justify, gap: gap ?? 2};
   return <div className={cls} style={style}>{children}</div>;
 };
 
