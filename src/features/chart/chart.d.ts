@@ -15,12 +15,12 @@ type ChartDisplayType = 'line' | 'area' | 'bar' | 'point' | 'vertical';
 
 /** Тип кривой на графике.
  * + `linear` — ломанная линия
- * + `monotone` — сглаженная линия
+ * + `natural` — сглаженная линия
  * + `stepAfter` — дискретная линия
  */
-type ChartCurveType = 'linear' | 'monotone' | 'stepAfter';
+type ChartCurveType = 'linear' | 'natural' | 'stepAfter';
 
-/** Тип данных оси X: числа, даты или категории. */
+/** Тип оси X: числа, даты или категории. */
 type ChartXAxisType = 'number' | 'date' | 'category';
 /** Тип масштаба оси графика: линейная или логарифмическая. */
 type ChartAxisScale = 'linear' | 'log';

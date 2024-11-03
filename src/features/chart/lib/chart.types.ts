@@ -1,4 +1,5 @@
-import type { Payload } from 'recharts/types/component/DefaultLegendContent';
+import type { ReactElement } from 'react';
+import type { YAxisProps, LegendProps } from 'recharts';
 import { ChartStage } from './chart-stage';
 
 
@@ -69,10 +70,16 @@ export interface ChartProperty {
   color: ColorString;
   /** Паттерн штриховки линии. */
   lineDash: string | undefined;
+
+  /** Настройки отображения точек. */
+  dotOptions: ChartDotOptions;
+  /** Функция для отрисовки точек. */
+  dotRenderer: ChartDotRenderer;
+
   /** Показывать ли линию для области. */
   showLine: boolean;
   /** Показывать ли точки в узлах линии. */
-  showPoint: boolean;
+  showPoints: boolean;
   /** Показывать ли подписи значений. */
   showLabels: boolean;
 
@@ -82,10 +89,33 @@ export interface ChartProperty {
   empty: boolean;
 }
 
+/** Пропс элемента точечного графика. */
+export interface ChartDotProps {
+  /** Координата центра по X. */
+  readonly cx: number;
+  /** Координата центра по Y. */
+  readonly cy: number;
+  /** Цвет заливки. */
+  readonly fill: ColorString;
+}
+
+/** Настройки отображения элементов точечного графика. */
+export interface ChartDotOptions {
+  /** Номер фигуры. */
+  shape: number;
+  /** Размер элемента. */
+  size: number;
+}
+
+/** Функция для отрисовки элемента точечного графика. */
+export type ChartDotRenderer = (props: ChartDotProps) => ReactElement;
+
 /* --- --- */
 
+/** Область определения оси на графике. */
+export type ChartAxisDomain = YAxisProps['domain'];
 /** Элемент легенды графика. */
-export type ChartLegendItem = Payload;
+export type ChartLegendItem = LegendProps['payload'][number];
 
 /** Модель данных графика. */
 export interface ChartData {
@@ -110,10 +140,26 @@ export interface ChartMark {
 export interface ChartMarkLabel {
   /** Исходное свойство, от которого образована метка. */
   property: ChartProperty;
+  /** Значение ячейки из датасета. */
+  value: any;
   /** Текст метки. */
   summary: string;
   /** Текст в раскрытом состоянии. */
   details?: string;
   /** Флаг раскрытости. */
   expanded?: boolean;
+}
+
+/* --- --- */
+
+/** Предустановленные настройки отображения свойства на графике. */
+export interface ChartPreset {
+  /** Название пресета. */
+  label: string;
+  /** Иконка (href). */
+  icon: string;
+  /** Тип отображения. */
+  displayType: ChartDisplayType;
+  /** Тип кривой. */
+  curveType?: ChartCurveType;
 }

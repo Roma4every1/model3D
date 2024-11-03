@@ -16,7 +16,6 @@ export const Chart = ({id}: SessionClient) => {
   const state = useChartState(id);
   const [getPng, { ref }] = useCurrentPng();
 
-  const stage = state.stage;
   const channelData = useChannelDict(state.usedChannels);
   const lookupData = useChannelDict(state.usedLookups);
 
@@ -25,19 +24,26 @@ export const Chart = ({id}: SessionClient) => {
   }, [getPng]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    setChartChannelData(id, channelData);
-  }, [channelData, id]);
-
-  useEffect(() => {
     setChartLookupData(id, lookupData);
   }, [lookupData, id]);
 
-  if (stage.properties.length === 0) {
+  useEffect(() => {
+    setChartChannelData(id, channelData);
+  }, [channelData, id]);
+
+  const stage = state.stage;
+  const data = stage.getData();
+  const properties = stage.getDisplayedProperties();
+
+  if (properties.length === 0 || data.records.length === 0) {
     return <TextInfo text={'chart.empty'}/>;
   }
-
-  const data = stage.getData();
   const legend = stage.getLegend();
+  const xAxisType = stage.dataController.xType === 'number' ? 'number' : 'category';
+
+  const tooltip = state.global.showTooltip && (
+    <Tooltip contentStyle={{padding: '4px 8px'}} itemStyle={{padding: 0}}/>
+  );
 
   const setActiveProperty = (item: ChartLegendItem) => {
     if (stage.getActiveProperty()?.id === item.id) return;
@@ -53,11 +59,11 @@ export const Chart = ({id}: SessionClient) => {
       >
         <Legend verticalAlign={'top'} payload={legend} onClick={setActiveProperty}/>
         <CartesianGrid strokeDasharray={'4 4'}/>
-        <XAxis dataKey={'x'} type={stage.xAxisType === 'number' ? 'number' : 'category'}/>
+        <XAxis dataKey={'x'} type={xAxisType}/>
         {stage.axes.map(toYAxis)}
         {stage.getDisplayedProperties().map(toDiagram)}
         {data.marks.map(toReferenceLine)}
-        {state.global.showTooltip && <Tooltip/>}
+        {tooltip}
       </ComposedChart>
     </ResponsiveContainer>
   );

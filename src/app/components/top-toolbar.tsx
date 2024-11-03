@@ -25,7 +25,7 @@ export const TopRightToolbar = () => {
   };
 
   return (
-    <IconRow gap={2} className={'top-right-toolbar'}>
+    <IconRow className={'top-right-toolbar'}>
       <IconRowButton
         icon={saveSessionIcon} alt={'save'}
         title={t('menu.save-session')} onClick={saveSession}

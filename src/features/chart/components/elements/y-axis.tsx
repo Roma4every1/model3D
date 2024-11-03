@@ -1,6 +1,7 @@
+import type { ReactElement } from 'react';
 import type { ChartAxis } from '../../lib/chart.types';
 import { YAxis } from 'recharts';
-import { getFormattedMinMax, tickFormatter } from '../../lib/utils';
+import { getAxisDomain, tickFormatter } from '../../lib/axis-utils';
 
 
 interface YAxisLabel {
@@ -10,9 +11,9 @@ interface YAxisLabel {
   position: 'insideLeft' | 'insideRight';
 }
 
-export function toYAxis(axis: ChartAxis) {
-  const tickCount = axis.tickCount ? axis.tickCount + 1 : 11;
-  const domain = (axis.max !== null && axis.min !== null) ? [axis.min, axis.max] : getFormattedMinMax;
+export function toYAxis(axis: ChartAxis): ReactElement {
+  const domain = getAxisDomain(axis);
+  const tickCount = axis.tickCount ?? undefined;
 
   let label: YAxisLabel;
   if (axis.location === 'left') {
@@ -23,9 +24,11 @@ export function toYAxis(axis: ChartAxis) {
 
   return (
     <YAxis
-      key={axis.id} yAxisId={axis.id} domain={domain} width={50} scale={axis.scale}
+      key={axis.id} yAxisId={axis.id}
+      scale={axis.scale} orientation={axis.location} reversed={axis.inverse}
+      domain={domain} allowDataOverflow={true}
       tickCount={tickCount} minTickGap={0} tickFormatter={tickFormatter}
-      orientation={axis.location} label={label} stroke={axis.color} reversed={axis.inverse}
+      label={label} stroke={axis.color} width={50}
     />
   );
-};
+}

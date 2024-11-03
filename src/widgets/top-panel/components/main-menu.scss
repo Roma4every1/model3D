@@ -16,6 +16,7 @@
     margin-right: 4px;
     padding-right: 4px;
     border-right: 1px solid darkgray;
+    min-height: 85px;
 
     &:last-child {
       margin-right: 0;
@@ -36,7 +37,7 @@
   font-size: 12px;
   font-weight: bold;
   color: #424242;
-  background-color: var(--color-6);
+  background-color: #d4d4d4;
   border-radius: 2px;
 }
 

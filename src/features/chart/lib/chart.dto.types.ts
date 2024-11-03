@@ -47,6 +47,8 @@ export interface ChartAxisDTO {
 export interface ChartPropertyDTO {
   /** ID соответствующей вертикальной оси. */
   readonly yAxisId?: string | null;
+  /** Собственное название. */
+  readonly displayName?: string | null;
   /** Тип отображения значений. */
   readonly typeCode?: string | null;
   /** Основной цвет элементов. */
