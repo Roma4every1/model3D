@@ -180,7 +180,7 @@ export class ChartStateFactory {
     let pattern = lineDashArrays[Number(settings.lineStyleIndex)];
     if (!pattern) return undefined;
 
-    const sizeMultiplier = (settings.sizeMultiplier || 1) * window.devicePixelRatio;
+    const sizeMultiplier = settings.sizeMultiplier || 2;
     if (sizeMultiplier !== 1) {
       pattern = pattern.map(size => size * sizeMultiplier);
     }
@@ -189,7 +189,7 @@ export class ChartStateFactory {
 
   private calcDotOptions(settings: ChartPropertyDTO): ChartDotOptions {
     const shapeIndex = settings.pointFigureIndex;
-    const size = (settings.sizeMultiplier || 4) * window.devicePixelRatio;
+    const size = 4 * (settings.sizeMultiplier || 2);
 
     switch (shapeIndex) {
       case '1': return {shape: 1, size};
