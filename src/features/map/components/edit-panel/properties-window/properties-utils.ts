@@ -1,7 +1,7 @@
 import { TFunction } from 'react-i18next';
 import { FunctionComponent } from 'react';
 import { fillPatterns } from 'shared/drawing';
-import { polylineType } from '../../../lib/selecting-utils';
+import { polylineType} from '../../../lib/selecting-utils';
 import { ColorPickerPaletteSettings, ColorPickerGradientSettings } from '@progress/kendo-react-inputs';
 import lines from '../../../drawer/lines.json';
 
@@ -19,6 +19,12 @@ export interface PropertyWindowConfig {
   windowSize: [number, number];
 }
 
+export function updateImgPieslice(pieslice: MapPieSlice): void {
+  const back = pieslice.transparent || !pieslice.fillbkcolor
+    ? 'none'
+    : pieslice.fillbkcolor;
+    pieslice.fillStyle = fillPatterns.createFillStyle(pieslice.fillname, pieslice.color, back);
+} 
 /* --- Polyline Templates --- */
 
 type StyleData = {key: number | string, style?: PolylineBorderStyle, borderStyle?: number};

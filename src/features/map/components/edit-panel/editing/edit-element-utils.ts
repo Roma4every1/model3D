@@ -43,6 +43,7 @@ export function applyMouseMoveActionToElement(element: MapElement, action: Mouse
   if (element.type === 'polyline') return applyMouseMoveActionToPolyline(element, action);
   if (element.type === 'label') return applyMouseMoveActionToLabel(element, action);
   if (element.type === 'sign') return applyMouseMoveActionToSign(element, action);
+  if (element.type === 'pieslice') return applyMouseMoveActionToPieSlice(element, action);
 }
 function applyMouseMoveActionToPolyline(element: MapPolyline, action: MouseMoveEditAction): void {
   if (action.mode === MapMode.MOVE_POINT && typeof action.pIndex === 'number') {
@@ -64,6 +65,12 @@ function applyMouseMoveActionToLabel(element: MapLabel, action: MouseMoveEditAct
   }
 }
 function applyMouseMoveActionToSign(element: MapSign, action: MouseMoveEditAction): void {
+  if (action.mode === MapMode.MOVE) {
+    element.x = action.point.x;
+    element.y = action.point.y;
+  }
+}
+function applyMouseMoveActionToPieSlice(element: MapPieSlice, action: MouseMoveEditAction): void {
   if (action.mode === MapMode.MOVE) {
     element.x = action.point.x;
     element.y = action.point.y;

@@ -5,6 +5,7 @@ import { provider } from '../../../drawer';
 export function getDefaultMapElement(type: MapElementType, point: Point): MapElement {
   if (type === 'sign') return getDefaultSign(point);
   if (type === 'label') return getDefaultLabel(point);
+  if (type === 'pieslice') return getDefaultPieSlice(point);
   return getDefaultPolyline(point);
 }
 
@@ -43,6 +44,14 @@ function getDefaultLabel(point: Point): MapLabel {
   };
 }
 
+function getDefaultPieSlice(point: Point): MapPieSlice {
+  return {
+    type: 'pieslice', color: 'red', bordercolor: 'white',
+    x: point.x, y: point.y, startangle: 0, endangle: 2 * Math.PI, radius:10,
+    fillbkcolor: 'green',
+    attrTable: {},
+  };
+}
 /* --- --- --- */
 
 export function getHeaderText(isCreating: boolean, type: MapElementType, layerName: string, t: TFunction): string {

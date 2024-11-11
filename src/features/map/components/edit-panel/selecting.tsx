@@ -69,6 +69,10 @@ export const Selecting = ({mapState, t}: SelectingProps) => {
             label={t('map.selecting.layer')} title={t('map.selecting.layer-hint')}
             checked={select.onlyActiveLayer} onClick={toggleOnlyActiveLayer}
           />
+          <Checkbox
+            label={t('map.selecting.pieslice')} title={t('map.selecting.pieslice-hint')}
+            checked={select.types.pieslice} onClick={() => toggleType('pieslice')}
+          />
         </div>
       </div>
     </section>

@@ -14,7 +14,7 @@ export class MapSelect implements IMapSelect {
     this.index = 0;
     this.nearestElements = [];
     this.onlyActiveLayer = false;
-    this.types = {sign: true, polyline: true, label: true, field: true};
+    this.types = {sign: true, polyline: true, label: true, field: true, pieslice: true};
   }
 
   public setTextMeasurer(measurer: (text: string) => number) {

@@ -50,7 +50,6 @@ interface LabelType {
 
 interface PieSliceType {
   name: 'pieslice';
-
   bound(point: Point): Bounds;
   draw(i: MapPieSlice, options): void;
 }

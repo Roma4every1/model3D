@@ -108,12 +108,12 @@ function createPolylineBounds(element: XElement<string>): Bounds {
 }
 
 function createPieSlice(element: XElement<string>): MapPieSlice {
-  const { x, y, color, bordercolor, radius, startangle, endangle, ...attrTable } = element;
-
+  const { x, y, color, bordercolor, radius, startangle, endangle, fillname, fillbkcolor,
+    ...attrTable } = element;
   return {
     type: 'pieslice', x: Number(x), y: Number(y),
     radius: Number(radius), startangle: Number(startangle), endangle: Number(endangle),
-    color, bordercolor, attrTable,
+    color, bordercolor, fillname, fillbkcolor, attrTable,
   };
 }
 
