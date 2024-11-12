@@ -95,6 +95,13 @@ export class ChartStage {
     }
   }
 
+  public setPropertyVisibility(id: ChartPropertyID, visible: boolean): void {
+    const property = this.properties.find(p => p.id === id);
+    if (property.visible === visible) return;
+    property.visible = visible;
+    this.updateLegend();
+  }
+
   public updatePropertyLegend(property: ChartProperty): void {
     const index = this.legend.findIndex(l => l.id === property.id);
     if (index !== -1) this.legend[index] = createPropertyLegend(property);

@@ -41,7 +41,7 @@ export const ChartSectionGlobal = ({state, t}: ChartSectionGlobalProps) => {
 const ChartVisibilitySettings = ({state}: {state: ChartState}) => {
   const toListItem = (property: ChartProperty) => {
     const toggleVisibility = () => {
-      property.visible = !property.visible;
+      state.stage.setPropertyVisibility(property.id, !property.visible);
       updateChartState(state.id);
     };
     return (
