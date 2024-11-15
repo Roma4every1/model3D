@@ -28,37 +28,98 @@ export const PiesliceProperties = (props: PropertyWindowProps<MapPieSlice>) => {
   const [fillName, setFillName] = useState(pieslice.fillname);
   const [fillbkColor, setFillBkColor] = useState(pieslice.fillbkcolor || null);
 
-
+    /* --- Проверка на то, есть ли пустые поля --- */
+  function isSomethingNull(){
+    let result = true;
+    if (pieslice.x !== null && pieslice.y !== null) {
+      if (pieslice.startangle !== null && pieslice.endangle !== null) {
+        if (pieslice.radius !== null) {
+           result = false;
+        }
+      }
+    }
+    return result;
+  }
   
     /* --- Properties Handlers --- */
   const onBoundXChange: InputNumberProps['onChange'] = (value) => {
-    pieslice.x = +value;
-    setX(pieslice.x);
-    setChanged(true); update();
+    if (value === null) {
+      pieslice.x = null;
+      setChanged(false);
+      setX(pieslice.x); update();
+    }
+    else {
+      pieslice.x = +value;
+      setX(pieslice.x);
+      if (isSomethingNull() === false) {
+        setChanged(true);
+      }
+      update();
+    }
   };
 
   const onBoundYChange: InputNumberProps['onChange'] = (value) => {
-    pieslice.y = -value;
-    setY(pieslice.y);
-    setChanged(true); update();
+    if (value === null) {
+      pieslice.y = null;
+      setChanged(false);
+      setY(pieslice.y); update();
+    }
+    else {
+      pieslice.y = -value;
+      setY(pieslice.y);
+      if (isSomethingNull() === false) {
+        setChanged(true);
+      }
+      update();
+    }
   };
 
   const radiusChange: InputNumberProps['onChange'] = (value) => {
-    pieslice.radius = +value;
-    setRadius(pieslice.radius);
-    setChanged(true); update();
+    if (value === null) {
+      pieslice.radius = null;
+      setChanged(false);
+      setRadius(pieslice.radius); update();
+    }
+    else {
+      pieslice.radius = +value;
+      setRadius(pieslice.radius);
+      if (isSomethingNull() === false) {
+        setChanged(true);
+      }
+      update();
+    }
   };
 
   const startangleChange: InputNumberProps['onChange'] = (value) => {
-    pieslice.startangle = +value / 180 * Math.PI;
-    setStartangle(pieslice.startangle);
-    setChanged(true); update();
+    if (value === null) {
+      pieslice.startangle = null;
+      setChanged(false); 
+      setStartangle(pieslice.startangle); update();
+    }
+    else {
+      pieslice.startangle = +value / 180 * Math.PI;
+      setStartangle(pieslice.startangle);
+      if (isSomethingNull() === false) {
+        setChanged(true)
+      }
+      update();
+    }
   };
 
   const endangleChange: InputNumberProps['onChange'] = (value) => {
-    pieslice.endangle = +value / 180 * Math.PI;
-    setEndangle(pieslice.endangle);
-    setChanged(true); update();
+    if (value === null) {
+      pieslice.endangle = null;
+      setChanged(false);
+      setEndangle(pieslice.endangle); update();
+    }
+    else {
+      pieslice.endangle = +value / 180 * Math.PI;
+      setEndangle(pieslice.endangle);
+      if (isSomethingNull() === false) {
+        setChanged(true);
+      }
+      update();
+    }
   };
   const onColorChange: ColorPickerProps['onChange'] = (value) => {
     pieslice.color = value.toHexString();
@@ -109,25 +170,25 @@ export const PiesliceProperties = (props: PropertyWindowProps<MapPieSlice>) => {
       <fieldset style={{gridTemplateColumns: '1fr 1fr 1fr'}}>
         <div className={'edit-field'} style={{marginLeft: '2px'}}>
           <span>X:</span>
-          <InputNumber style={{width: '80px'}} value={x} onChange={onBoundXChange}/>
+          <InputNumber style={{width: '80px'}} value={x === null ? "" : x.toFixed(0)} onChange={onBoundXChange}/>
         </div>
         <div className={'edit-field'}>
           <span>Y:</span>
-          <InputNumber style={{width: '80px'}} value={-y} onChange={onBoundYChange}/>
+          <InputNumber style={{width: '80px'}} value={y === null ? "" : -y.toFixed(0)} onChange={onBoundYChange}/>
         </div>
         <div className={'edit-field'} style={{marginRight: '5px'}}>
           <span>Радиус:</span>
-          <InputNumber value={radius.toFixed(2)} min={0} onChange={radiusChange}
+          <InputNumber value={radius === null ? "" :radius.toFixed(2)} min={0} onChange={radiusChange}
           parser={inputNumberParser}/>
         </div>
         </fieldset>
         <fieldset style={{gridTemplateColumns: '1fr 1fr', marginLeft: '14px'}}>
         <div className={'edit-field'}>
           <span>Угол от</span>
-          <InputNumber style={{width: '60px'}} value={(startangle * 180 / Math.PI).toFixed(1)}
+          <InputNumber style={{width: '60px'}} value={startangle === null ? "" : (startangle * 180 / Math.PI).toFixed(1)}
           onChange={startangleChange} parser={inputNumberParser}/>
           <span>до</span>
-          <InputNumber style={{width: '60px'}} value={(endangle * 180 / Math.PI).toFixed(1)}
+          <InputNumber style={{width: '60px'}} value={endangle === null ? "" : (endangle * 180 / Math.PI).toFixed(1)}
           onChange={endangleChange} parser={inputNumberParser}/>
         </div>
         <div className={'edit-field'}>

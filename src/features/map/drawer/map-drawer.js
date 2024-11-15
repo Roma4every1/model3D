@@ -1015,9 +1015,10 @@ declareType('pieslice', {
     const maxRadius = 16;
     const minRadius = 2;
     const p = options.pointToControl(i);
-    if (i.radius > maxRadius) i.radius = maxRadius;
-    if (i.radius < minRadius) i.radius = minRadius;
-    let r = i.radius * 0.001 * options.dotsPerMeter;
+    let radius = i.radius;
+    if (radius > maxRadius) radius = maxRadius;
+    if (radius < minRadius) radius = minRadius;
+    let r = radius * 0.001 * options.dotsPerMeter;
     context.strokeStyle = i.bordercolor;
     context.beginPath();
     if (!(i.startangle === 0 && Math.abs(i.endangle - twoPi) < 1e-6)) context.moveTo(p.x, p.y);
