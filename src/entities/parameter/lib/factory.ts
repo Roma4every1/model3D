@@ -35,7 +35,7 @@ export function parseParameterValue(value: string | null, type: ParameterType): 
 export function createParameter(id: ParameterID, dto: ParameterInit): Parameter {
   const p: Parameter = new (parameterImplDict[dto.type])(id, dto.id, dto.value);
   Object.defineProperties(p, {
-    nullable: {enumerable: true, value: Boolean(dto.canBeNull)},
+    nullable: {enumerable: true, value: dto.canBeNull !== false},
     dependsOn: {enumerable: true, value: dto.dependsOn ?? []},
     channelName: {enumerable: true, value: dto.externalChannelName},
   });
@@ -52,7 +52,7 @@ function createEditor(dto: ParameterInit): ParameterEditorOptions {
   return {
     type: editorType, group: dto.group || null,
     displayName: dto.displayName ?? dto.id,
-    showNullValue: Boolean(dto.showNullValue),
+    showNullValue: dto.showNullValue === true,
     nullDisplayValue: dto.nullDisplayValue ?? 'Нет значения',
     order: dto.editorDisplayOrder ?? 100_000_000,
   };
