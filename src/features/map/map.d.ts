@@ -200,10 +200,10 @@ type MapScale = number;
 /* --- Map Elements Types --- */
 
 /** Элемент карты. */
-type MapElement = MapPolyline | MapLabel | MapSign | MapField;
+type MapElement = MapPolyline | MapLabel | MapSign | MapField | MapPieSlice;
 
 /** Тип элемента карты. */
-type MapElementType = 'polyline' | 'label' | 'sign' | 'field';
+type MapElementType = 'polyline' | 'label' | 'sign' | 'field' | 'pieslice';
 
 /* -- Polyline -- */
 
@@ -417,4 +417,7 @@ interface MapPieSlice extends MapElementProto {
   endangle: number;
   color: string;
   bordercolor: string;
+  fillname?: any;
+  fillbkcolor: string;
+  fillStyle?: CanvasPattern | string;
 }

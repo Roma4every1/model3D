@@ -11,6 +11,7 @@ type TextMeasurer = (text: string) => number;
 export const SELECTION_RADIUS = 0.005;
 
 export const polylineType: PolylineType = types['polyline'];
+export const piesliceType: PieSliceType = types['pieslice'];
 
 /** Снимает выделение с элемента карты. */
 export function unselectElement(element: MapElement): void {
@@ -50,6 +51,9 @@ export function checkDistance(element: MapElement, point: Point, scale: MapScale
     case 'field': {
       return checkDistanceForField(element, point);
     }
+    case 'pieslice': {
+      return checkDistanceForPieSlice(element, point, scale);
+    }
     default: return false;
   }
 }
@@ -75,6 +79,28 @@ function checkDistanceForLabel(label: MapLabel, point: Point, scale: MapScale, m
   const xTrans = xx * Math.cos(angle) - yy * Math.sin(angle) + (width + 2) / 2 * label.halignment;
   const yTrans = xx * Math.sin(angle) + yy * Math.cos(angle) - (fontsize + 2) * (label.valignment / 2 - 1);
   return (0 <= xTrans) && (xTrans <= width) && (0 <= yTrans) && (yTrans <= fontsize + 3);
+}
+
+/** Проверяет, достаточно ли далеко находится точка от сектора. */
+export function checkDistanceForPieSlice(pieslice: MapPieSlice, point: Point, scale: MapScale): boolean {
+  let dx = pieslice.x - point.x;
+  let dy = pieslice.y - point.y;
+  let checkAngle = 0;
+
+  if (dx === 0) {
+    checkAngle = (dy > 0) ? 0 : Math.PI;
+  } else {
+    checkAngle = Math.atan(dy / dx);
+    checkAngle = (dx > 0) ? checkAngle + Math.PI / 2 : checkAngle + Math.PI / 2 * 3;
+  }
+
+  if (checkAngle <= pieslice.endangle && checkAngle >= pieslice.startangle) {
+    let result = Math.sqrt((dx * dx) + (dy * dy)) - pieslice.radius * scale / 1000;
+    if (result < 0) {
+    result = 0;
+    }
+    return result === 0;
+  }
 }
 
 /** Проверяет, достаточно ли далеко ломанная находится от точки. */
@@ -104,7 +130,8 @@ function checkDistanceForSegment(p1, p2, point: Point, scale: MapScale): boolean
   if (aSquared > bSquared + cSquared || bSquared > aSquared + cSquared) return false;
 
   const c = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]);
-  const doubleSquare = Math.abs((p1[0] - point.x) * (p2[1] - point.y) - (p2[0] - point.x) * (p1[1] - point.y));
+  const doubleSquare = Math.abs((p1[0] - point.x) * (p2[1] - point.y) - (p2[0] - point.x) *
+  (p1[1] - point.y));
   return doubleSquare / c < minDistance;
 }
 

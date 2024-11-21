@@ -4,6 +4,8 @@ import { SignProperties } from '../components/edit-panel/properties-window/sign/
 import { PolylineProperties } from '../components/edit-panel/properties-window/polyline/polyline-properties';
 import { LabelProperties } from '../components/edit-panel/properties-window/label/label-properties';
 import { FieldProperties } from '../components/edit-panel/properties-window/field/field-properties';
+import { PiesliceProperties } from '../components/edit-panel/properties-window/pieslice/pieslice-properties';
+
 
 
 /** ### Режимы редактирования карты.
@@ -54,10 +56,13 @@ export const elementEditModes: Record<MapElementType, MapMode[]> = {
     MapMode.MOVE_MAP, MapMode.MOVE,
   ],
   field: [],
+  pieslice:[
+    MapMode.MOVE_MAP, MapMode.MOVE,
+  ],
 };
 
 /** Типы элементов, которые можно создать. */
-export const canCreateTypes: MapElementType[] = ['polyline', 'sign', 'label'];
+export const canCreateTypes: MapElementType[] = ['polyline', 'sign', 'label','pieslice'];
 
 export const propertyWindowConfig: Record<MapElementType, PropertyWindowConfig> = {
   'sign': {
@@ -75,5 +80,9 @@ export const propertyWindowConfig: Record<MapElementType, PropertyWindowConfig> 
   'field': {
     component: FieldProperties,
     windowSize: [320, 260],
+  },
+  'pieslice': {
+    component: PiesliceProperties,
+    windowSize: [400, 180],
   },
 };

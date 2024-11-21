@@ -1010,25 +1010,42 @@ var label = declareType('label', {
 declareType('pieslice', {
   bound: pointBounds,
   draw: (i, options) => {
+    /** @type{CanvasRenderingContext2D} */
     const context = options.context;
     const maxRadius = 16;
     const minRadius = 2;
     const p = options.pointToControl(i);
-    const customIncreaseCoefficient = 1.5;
-
-    if (i.radius > maxRadius) i.radius = maxRadius;
-    if (i.radius < minRadius) i.radius = minRadius;
-    const r = i.radius * 0.001 * options.dotsPerMeter * customIncreaseCoefficient;
+    let radius = i.radius;
+    if (radius > maxRadius) radius = maxRadius;
+    if (radius < minRadius) radius = minRadius;
+    let r = radius * 0.001 * options.dotsPerMeter;
+    context.strokeStyle = i.bordercolor;
     context.beginPath();
     if (!(i.startangle === 0 && Math.abs(i.endangle - twoPi) < 1e-6)) context.moveTo(p.x, p.y);
     context.arc(p.x, p.y, r, i.startangle + Math.PI / 2, i.endangle + Math.PI / 2, false);
     context.closePath();
-    context.strokeStyle = 'black';
     context.lineWidth = 0.2 * 0.001 * options.dotsPerMeter;
+    if (i.selected) {
+      context.strokeStyle = '#000000';
+      context.lineWidth = 2.0 * 0.001 * options.dotsPerMeter
+      context.stroke();
+      context.strokeStyle = i.bordercolor;
+      context.lineWidth = 1.8 * 0.001 * options.dotsPerMeter
+      context.stroke();
+      context.strokeStyle = '#000000';
+      context.lineWidth = 0.2 * 0.001 * options.dotsPerMeter
+    }
+    if (!i.fillbkcolor) {
+      i.fillbkcolor = 'white';
+    }
     const gradient = context.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
     gradient.addColorStop(0, 'white');
     gradient.addColorStop(1, i.color);
-    context.fillStyle = gradient; // i.color
+    if (i.fillname) {
+      context.fillStyle = i.fillStyle;
+    } else if (!i.transparent) {
+      context.fillStyle = gradient;
+    }
     context.globalAlpha = 0.7;
     context.fill();
     context.globalAlpha = 1;
