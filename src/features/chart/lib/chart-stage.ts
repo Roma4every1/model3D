@@ -49,6 +49,12 @@ export class ChartStage {
     this.activeIndex = this.properties.findIndex(p => p.id === id);
   }
 
+  public getDisplayedAxes(): ChartAxis[] {
+    return this.axes.filter((axis: ChartAxis) => {
+      return this.properties.some(p => p.yAxisID === axis.id && p.visible && !p.empty);
+    });
+  }
+
   public getActiveAxis(): ChartAxis | null {
     if (this.activeIndex === -1) return null;
     const id = this.properties[this.activeIndex].yAxisID;

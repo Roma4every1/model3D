@@ -24,8 +24,11 @@ export default function wellManagerSystemPlugin(command) {
       } catch (e) {
         if (e.code !== 'EEXIST') console.log(e.message);
       }
+      const systems = [
+        'ADMIN_SYSTEM', 'DEMO', 'GRP_SYSTEM', 'KERN_SYSTEM', 'NEF_SYSTEM',
+        'PREPARE_SYSTEM',
+      ];
       const existingDirectories = readdirSync(systemDirectoryPath);
-      const systems = ['ADMIN_SYSTEM', 'JS_WMW_DEMO', 'GRP_SYSTEM', 'KERN_SYSTEM', 'PREPARE_SYSTEM'];
 
       for (const systemID of systems) {
         const systemPath = systemDirectoryPath + '/' + systemID;

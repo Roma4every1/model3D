@@ -33,12 +33,13 @@ export const Chart = ({id}: SessionClient) => {
 
   const stage = state.stage;
   const data = stage.getData();
-  const properties = stage.getDisplayedProperties();
+  const displayedProperties = stage.getDisplayedProperties();
 
-  if (properties.length === 0 || data.records.length === 0) {
+  if (displayedProperties.length === 0 || data.records.length === 0) {
     return <TextInfo text={'chart.empty'}/>;
   }
   const legend = stage.getLegend();
+  const displayedAxes = stage.getDisplayedAxes();
   const xAxisType = stage.dataController.xType === 'number' ? 'number' : 'category';
 
   const tooltip = state.global.showTooltip && (
@@ -60,8 +61,8 @@ export const Chart = ({id}: SessionClient) => {
         <Legend verticalAlign={'top'} payload={legend} onClick={setActiveProperty}/>
         <CartesianGrid strokeDasharray={'4 4'}/>
         <XAxis dataKey={'x'} type={xAxisType}/>
-        {stage.axes.map(toYAxis)}
-        {stage.getDisplayedProperties().map(toDiagram)}
+        {displayedAxes.map(toYAxis)}
+        {displayedProperties.map(toDiagram)}
         {data.marks.map(toReferenceLine)}
         {tooltip}
       </ComposedChart>
