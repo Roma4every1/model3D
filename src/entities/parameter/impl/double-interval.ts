@@ -28,13 +28,18 @@ export class DoubleIntervalParameter implements Parameter<'doubleInterval'> {
 
   public setValueString(s?: string | null): void {
     if (!s) { this.value = null; return; }
-    const [startString, endString] = s.split(' - ');
+    const [startString, endString] = s.split('->');
+    let start: number | null = null;
+    let end: number | null = null;
 
-    let start = Number(startString);
-    let end = Number(endString);
-    if (Number.isNaN(start)) start = null;
-    if (Number.isNaN(end)) end = null;
-
+    if (startString) {
+      start = Number(startString);
+      if (Number.isNaN(end)) end = null;
+    }
+    if (endString) {
+      end = Number(endString)
+      if (Number.isNaN(start)) start = null;
+    }
     if (start !== null || end !== null) {
       this.value = [start, end];
     } else {
@@ -43,23 +48,24 @@ export class DoubleIntervalParameter implements Parameter<'doubleInterval'> {
   }
 
   public toString(): string | null {
-    return this.Value();
+    if (!this.value) return null;
+    const [start, end] = this.value;
+
+    if (start !== null) {
+      return end !== null ? start + '->' + end : start + '->';
+    } else {
+      return end !== null ? '->' + end : null;
+    }
   }
 
   /* --- --- */
 
   public Value(): string | null {
-    if (!this.value) return null;
-    const [start, end] = this.value;
-    if (start === null || end === null) return null;
-    return `${start}->${end}`;
+    return this.toString();
   }
 
   public ValueLocal(): string | null {
-    if (!this.value) return null;
-    const [start, end] = this.value;
-    if (start === null || end === null) return null;
-    return `${start}->${end}`.replaceAll('.', ',');
+    return this.toString()?.replaceAll('.', ',') ?? null;
   }
 
   public ValueFrom(): string | null {
