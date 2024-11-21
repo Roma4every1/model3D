@@ -50,3 +50,13 @@
 .parameter-groups {
   padding: 0 4px;
 }
+
+.double-interval-editor {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+
+  > div {
+    width: unset;
+  }
+}

@@ -8,6 +8,7 @@ import { IntegerEditor } from './integer-editor';
 import { StringEditor } from './string-editor';
 import { TableRowListEditor } from './table-row-list-editor';
 import { TableRowTreeEditor } from './table-row-tree-editor';
+import { DoubleIntervalEditor } from './double-interval-editor';
 
 
 export interface EditorProps<T extends ParameterType = ParameterType> {
@@ -33,6 +34,7 @@ const editorDict: Record<string, FunctionComponent<EditorProps>> = {
   tableRowComboEditor: TableRowListEditor,
   tableRowComboListEditor: TableRowListEditor,
   tableRowTreeMultiEditor: TableRowListEditor,
+  doubleIntervalTextEditor: DoubleIntervalEditor,
 };
 
 export function getEditor(parameter: Parameter, channel?: Channel): FunctionComponent<EditorProps> {

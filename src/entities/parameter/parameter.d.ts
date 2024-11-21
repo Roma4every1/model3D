@@ -108,7 +108,7 @@ interface ParameterValueMap {
   /** Параметр, хранящий дробное число. */
   'double': number;
   /** Параметр, хранящий интервал из двух дробных чисел. */
-  'doubleInterval': [number, number];
+  'doubleInterval': [number | null, number | null];
   /** Параметр, хранящий дату. */
   'date': Date;
   /** Параметр, хранящий интервал дат. */
