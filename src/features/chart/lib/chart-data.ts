@@ -1,6 +1,6 @@
 import type { ChartProperty, ChartData, ChartDataRecord, ChartMark } from './chart.types';
 import { isNumberColumn, isDateColumn } from 'shared/lib';
-import { monthStep, yearStep, toMonYear, toYear } from './date-utils';
+import { dateKeyGetters, dateFormatters } from './date-utils';
 
 
 /** Специальный класс для управления данными графика. */
@@ -34,8 +34,8 @@ export class ChartDataController {
 
   public setDateStep(step: ChartDateStep): void {
     if (this.xType !== 'date') return;
-    this.keyGetter = step === 'month' ? monthStep : yearStep;
-    this.keyFormatter = step === 'month' ? toMonYear : toYear;
+    this.keyGetter = dateKeyGetters[step];
+    this.keyFormatter = dateFormatters[step];
   }
 
   /* --- --- */

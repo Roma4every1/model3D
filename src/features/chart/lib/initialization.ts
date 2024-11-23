@@ -55,8 +55,8 @@ export class ChartStateFactory {
     this.stage = new ChartStage(xAxisType);
 
     if (xAxisType === 'date') {
-      const dateStep = settings.dateStep?.toLowerCase();
-      this.stage.dataController.setDateStep(dateStep === 'year' ? 'year' : 'month');
+      const dateStep = this.resolveDateStep(settings.dateStep);
+      this.stage.dataController.setDateStep(dateStep);
     }
   }
 
@@ -209,6 +209,14 @@ export class ChartStateFactory {
       // if (input === 'categories') return 'category';
     }
     return 'number';
+  }
+
+  private resolveDateStep(input: string | null | undefined): ChartDateStep {
+    if (input) {
+      input = input.toLowerCase();
+      if (input === 'year' || input === 'day') return input;
+    }
+    return 'month';
   }
 
   private resolveYAxisLocation(input: string | null | undefined): ChartYAxisLocation {

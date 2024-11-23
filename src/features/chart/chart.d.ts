@@ -28,4 +28,4 @@ type ChartAxisScale = 'linear' | 'log';
 type ChartYAxisLocation = 'left' | 'right';
 
 /** Шаг по времени на графике. */
-type ChartDateStep = 'month' | 'year';
+type ChartDateStep = 'month' | 'year' | 'day';
