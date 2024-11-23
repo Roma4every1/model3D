@@ -12,23 +12,25 @@ interface YAxisLabel {
 }
 
 export function toYAxis(axis: ChartAxis): ReactElement {
-  const domain = getAxisDomain(axis);
-  const tickCount = axis.tickCount ?? undefined;
-
+  let width = 40;
   let label: YAxisLabel;
-  if (axis.location === 'left') {
-    label = {value: axis.displayName, angle: -90, offset: 10, position: 'insideLeft'};
-  } else {
-    label = {value: axis.displayName, angle: 90, offset: 10, position: 'insideRight'};
+
+  if (axis.displayName) {
+    if (axis.location === 'left') {
+      label = {value: axis.displayName, angle: -90, offset: 10, position: 'insideLeft'};
+    } else {
+      label = {value: axis.displayName, angle: 90, offset: 10, position: 'insideRight'};
+    }
+    width = 50;
   }
 
   return (
     <YAxis
       key={axis.id} yAxisId={axis.id}
       scale={axis.scale} orientation={axis.location} reversed={axis.inverse}
-      domain={domain} allowDataOverflow={true}
-      tickCount={tickCount} minTickGap={0} tickFormatter={tickFormatter}
-      label={label} stroke={axis.color} width={50}
+      domain={getAxisDomain(axis)} allowDataOverflow={true}
+      tickCount={axis.tickCount ?? undefined} minTickGap={0} tickFormatter={tickFormatter}
+      label={label} stroke={axis.color} width={width}
     />
   );
 }

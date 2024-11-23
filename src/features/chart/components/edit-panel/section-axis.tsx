@@ -80,7 +80,7 @@ const AxisMetaSettings = ({id, axis, t}: AxisFieldsetProps) => {
   return (
     <fieldset className={'chart-axis-meta'}>
       <span>{t('chart.panel.axis-display-name')}:</span>
-      <Input value={axis.displayName} onChange={onDisplayNameChange}/>
+      <Input value={axis.displayName} onChange={onDisplayNameChange} spellCheck={false}/>
       <span>{t('chart.panel.axis-tick-count')}:</span>
       <InputNumber
         value={axis.tickCount} min={1} onChange={onTickCountChange}
