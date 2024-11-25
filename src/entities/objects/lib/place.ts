@@ -13,7 +13,7 @@ export class PlaceManager implements IPlaceManager {
   private readonly info: ChannelRecordInfo<keyof PlaceModel> | undefined;
 
   constructor (parameters: Parameter[], channels: ChannelDict) {
-    const parameter = parameters.find(p => p.name === 'currentMest');
+    const parameter = parameters.find(p => p.name === 'currentPlace' || p.name === 'currentMest');
     if (!parameter || parameter.type !== 'tableRow') return;
     this.parameterID = parameter.id;
 
@@ -46,9 +46,9 @@ export class PlaceManager implements IPlaceManager {
   private createModel(value: ParameterValueMap['tableRow']): PlaceModel | null {
     if (!value || !this.info) return null;
     const id = Number(value[this.info.id.propertyName]?.value);
-    if (isNaN(id)) return null;
-    const code = value[this.info.code.propertyName]?.value;
+    if (Number.isNaN(id)) return null;
     const name = value[this.info.name.propertyName]?.value;
-    return {id, code, name};
+    const code = value[this.info.code?.propertyName]?.value;
+    return {id, name, code};
   }
 }

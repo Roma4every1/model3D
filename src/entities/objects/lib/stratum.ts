@@ -13,7 +13,7 @@ export class StratumManager implements IStratumManager {
   private readonly info: ChannelRecordInfo<keyof StratumModel> | undefined;
 
   constructor (parameters: Parameter[], channels: ChannelDict) {
-    const parameter = parameters.find(p => p.name === 'currentPlast');
+    const parameter = parameters.find(p => p.name === 'currentStratum' || p.name === 'currentPlast');
     if (!parameter || parameter.type !== 'tableRow') return;
     this.parameterID = parameter.id;
 
@@ -46,8 +46,7 @@ export class StratumManager implements IStratumManager {
   private createModel(value: ParameterValueMap['tableRow']): StratumModel | null {
     if (!value || !this.info) return null;
     const id = Number(value[this.info.id.propertyName]?.value);
-    if (isNaN(id)) return null;
-    const name = value[this.info.name.propertyName]?.value;
-    return {id, name};
+    if (Number.isNaN(id)) return null;
+    return {id, name: value[this.info.name.propertyName]?.value};
   }
 }
