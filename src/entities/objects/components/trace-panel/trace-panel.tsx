@@ -23,8 +23,8 @@ export const TracePanel = ({hasMap}: TracePanelProps) => {
   return (
     <div className={'menu'}>
       <MenuSection header={t('trace.controls-section')} className={'big-buttons'}>
-        <CreateTrace trace={traceManager} hasMap={hasMap}/>
-        <DeleteTrace trace={traceManager}/>
+        <CreateTrace traceManager={traceManager} hasMap={hasMap}/>
+        <DeleteTrace traceManager={traceManager}/>
         <EditTrace trace={traceManager} hasMap={hasMap}/>
       </MenuSection>
       <MenuSection header={t('trace.edit-section')} className={'big-buttons'}>

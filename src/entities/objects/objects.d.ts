@@ -1,8 +1,9 @@
-/** Активные объекты.
- * + `place`: {@link IPlaceManager} — месторождение
- * + `stratum`: {@link IStratumManager} — пласт
- * + `well`: {@link IWellManager} — скважина
- * + `trace`: {@link ITraceManager} — трасса
+/**
+ *  Активные объекты.
+ * + `place` — месторождение
+ * + `stratum` — пласт
+ * + `well` — скважина
+ * + `trace` — трасса
  */
 interface ObjectsState {
   /** Месторождение. */
@@ -37,10 +38,7 @@ interface IPlaceManager extends ActiveObjectManager<PlaceModel> {
   parameterID?: ParameterID;
 }
 
-/** Модель месторождения.
- * + `id`: {@link PlaceID} — идентификатор
- * + `name: string` — название
- */
+/** Модель месторождения. */
 interface PlaceModel {
   /** Идентификатор месторождения. */
   id: PlaceID;
@@ -63,10 +61,7 @@ interface IStratumManager extends ActiveObjectManager<StratumModel> {
   parameterID?: ParameterID;
 }
 
-/** Модель пласта.
- * + `id`: {@link StratumID} — идентификатор
- * + `name: string` — название
- */
+/** Модель пласта. */
 interface StratumModel {
   /** Идентификатор пласта. */
   id: StratumID;
@@ -87,10 +82,7 @@ interface IWellManager extends ActiveObjectManager<WellModel> {
   parameterID?: ParameterID;
 }
 
-/** Модель скважины.
- * + `id`: {@link WellID} — идентификатор
- * + `name: string` — название
- */
+/** Модель скважины. */
 interface WellModel {
   /** Идентификатор скважины. */
   id: WellID;
@@ -124,17 +116,10 @@ interface ITraceManager extends ActiveObjectManager<TraceModel> {
   getNodeChannelRows(columns: ChannelColumn[]): ChannelRow[];
 }
 
-/** Модель трассы.
- * + `id`: {@link TraceID} — идентификатор
- * + `place`: {@link PlaceID} — месторождение
- * + `name: string` — название
- * + `nodes`: {@link TraceNode}[] — список узлов
- */
+/** Модель трассы. */
 interface TraceModel {
   /** Идентификатор трассы. */
   id: TraceID;
-  /** Идентификатор месторождения. */
-  place: PlaceID;
   /** Название трассы. */
   name: string;
   /** Список узлов трассы. */

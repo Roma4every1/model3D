@@ -8,7 +8,7 @@ import deleteTraceIcon from 'assets/trace/detele-trace.png';
 
 
 interface DeleteTraceProps {
-  trace: ITraceManager;
+  traceManager: ITraceManager;
 }
 interface DeleteTraceWindowProps {
   model: TraceModel;
@@ -16,21 +16,22 @@ interface DeleteTraceWindowProps {
 }
 
 
-export const DeleteTrace = ({trace}: DeleteTraceProps) => {
+export const DeleteTrace = (props: DeleteTraceProps) => {
   const { t } = useTranslation();
+  const { model, editing, creating } = props.traceManager;
 
   const openDialog = () => {
     const windowID = 'trace-delete-window';
     const onClose = () => closeWindow(windowID);
     const dialogProps = {title: t('trace.delete-dialog'), onClose};
-    const content = <DeleteTraceDialog model={trace.model} onClose={onClose}/>;
+    const content = <DeleteTraceDialog model={model} onClose={onClose}/>;
     showDialog(windowID, dialogProps, content);
   };
 
   return (
     <BigButton
       text={t('trace.delete')} icon={deleteTraceIcon}
-      onClick={openDialog} disabled={!trace.model || trace.editing || trace.creating}
+      onClick={openDialog} disabled={!model || editing || creating}
     />
   );
 };

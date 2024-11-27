@@ -1,4 +1,3 @@
-import { getDataTypeName } from 'shared/lib';
 import { cellsToRecords, RecordInfoCreator } from 'entities/channel';
 import { traceChannelCriterion } from './constants';
 
@@ -96,29 +95,14 @@ export class TraceManager implements ITraceManager {
       const name = wellRow ? wellRow[wellNameIndex] : null;
       nodes.push({id: nodeID, name: name, x: record[xColumn], y: record[yColumn]});
     }
-
-    return {
-      id: traceID,
-      name: value[traceChannelCriterion.properties.name.name as string]?.value,
-      place: Number(value[traceChannelCriterion.properties.place.name as string]?.value),
-      nodes,
-    };
+    const name = value[traceChannelCriterion.properties.name.name as string]?.value;
+    return {id: traceID, name, nodes};
   }
 
   public applyModelToChannelRow(traceChannel: Channel, row: ChannelRow): void {
-    const columns = traceChannel.data.columns;
-    const placeIndex = columns.findIndex(c => c.name === this.info.place.columnName);
-    const nameIndex = columns.findIndex(c => c.name === this.info.name.columnName);
-
-    if (placeIndex !== -1) {
-      let placeID: number | string = this.model.place;
-      const columnType = getDataTypeName(columns[placeIndex].type);
-      if (columnType === 'string') placeID = String(placeID);
-      row[placeIndex] = placeID;
-    }
-    if (nameIndex !== -1) {
-      row[nameIndex] = this.model.name;
-    }
+    const nameColumn = this.info.name.columnName;
+    const nameIndex = traceChannel.data.columns.findIndex(c => c.name === nameColumn);
+    if (nameIndex !== -1) row[nameIndex] = this.model.name;
   }
 
   /** Преобразует узлы трассы в массив записей канала. */

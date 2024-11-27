@@ -47,7 +47,7 @@ export async function setCurrentWell(id: WellID): Promise<void> {
 }
 
 /** Создание новой трассы. */
-export async function createTrace(model: TraceModel): Promise<void> {
+export async function createTrace(): Promise<void> {
   const traceManager = useObjectsStore.getState().trace;
   const traceChannel = useChannelStore.getState().storage[traceManager.channelID];
   const traceQueryID = traceChannel.data.queryID;
@@ -55,8 +55,8 @@ export async function createTrace(model: TraceModel): Promise<void> {
   const { ok, data: newRow } = await channelAPI.getNewRow(traceQueryID);
   if (!ok) return;
 
-  // id новой трассы берётся из newRow
-  model.id = newRow[traceChannel.config.lookupColumns.id.columnIndex];
+  const newTraceID = newRow[traceChannel.config.lookupColumns.id.columnIndex];
+  const model: TraceModel = {id: newTraceID, name: '', nodes: []};
   traceManager.model = model;
   traceManager.applyModelToChannelRow(traceChannel, newRow);
 
