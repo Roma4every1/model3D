@@ -1,23 +1,19 @@
 import { rgb } from 'd3-color';
 import { once, chunk, isEqual, cloneDeep } from 'lodash';
-import { getLabelTextNumberArray } from './label-text-parser';
 import { fillPatterns } from '../../../shared/drawing';
 import { provider } from './index';
 import { PIXEL_PER_METER } from '../lib/map-utils';
+import { LabelDrawer } from './label-drawer';
 
 import lines from './lines.json';
 import linesDefStub from './lines.def.stub.json';
 
 
-/** ## Типы отрисовщика:
- * + `'sign'`
- * + `'field'`
- * + `'polyline'`
- * + `'label'`
- * + `'pieslice'`
- * @see MapTypes
- * */
-export const types = {};
+/**
+ * Типы отрисовщика: `sign`, `field`, `polyline`, `label`, `pieslice`.
+ * @type {MapTypes}
+ */
+export const types = {label: new LabelDrawer()};
 
 /* --- Utils --- */
 
@@ -806,207 +802,6 @@ var polyline = declareType('polyline', {
   }
 });
 
-var label = declareType('label', {
-  alHorLeft: 0,   // horizontal alignment: left
-  alHorCenter: 1, // horizontal alignment: center
-  alHorRight: 2,  // horizontal alignment: right
-  alVerBottom: 0, // vertical   alignment: bottom
-  alVerCenter: 1, // vertical   alignment: center
-  alVerTop: 2,    // vertical   alignment: top
-
-  bound: pointBounds,
-
-  /** Визуализирует смещение, положение и угол (для режима редактирования) */
-  drawPattern: (ctx, anchor, point, angle) => {
-    const crossRadius = 8;
-    const angleRadius = 48;
-    const needDrawAngle = Math.abs(angle) > Math.PI / 18;
-    const needDrawOffset = Math.abs(anchor.x - point.x) > 4 || Math.abs(anchor.y - point.y) > 4;
-
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = 'black';
-    ctx.fillStyle = 'black';
-
-    // крестик в месте, где находится якорь подписи
-    ctx.beginPath();
-    ctx.moveTo(anchor.x - crossRadius, anchor.y);
-    ctx.lineTo(anchor.x + crossRadius, anchor.y);
-    ctx.moveTo(anchor.x, anchor.y - crossRadius);
-    ctx.lineTo(anchor.x, anchor.y + crossRadius);
-    ctx.stroke();
-
-    // линия визуализирующая смещение и точка в конце
-    if (needDrawOffset) {
-      ctx.setLineDash([6, 3]);
-      ctx.moveTo(anchor.x, anchor.y);
-      ctx.lineTo(point.x, point.y);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(point.x, point.y, 5, 0, twoPi);
-      ctx.fill();
-    }
-
-    // визуализация угла поворота: две прямые и дуга между ними
-    if (needDrawAngle) {
-      ctx.beginPath();
-      ctx.setLineDash([]);
-      ctx.moveTo(point.x, point.y);
-      ctx.lineTo(point.x + angleRadius, point.y);
-      ctx.moveTo(point.x, point.y);
-      ctx.lineTo(point.x + angleRadius * Math.cos(angle), point.y + angleRadius * Math.sin(angle));
-      ctx.moveTo(point.x, point.y);
-      ctx.arc(point.x, point.y, angleRadius / 2, 0, angle, angle < 0);
-      ctx.stroke();
-    }
-  },
-
-  draw: (i, options) => {
-    // pt -> meters -> pixels
-    const fontsize = (i.fontsize + (i.selected ? 2 : 0)) * (1 / 72 * 0.0254) * options.dotsPerMeter;
-    const font = fontsize + 'px "' + i.fontname + '"';
-
-    if (fontsize < 2) return;
-
-    /** @type CanvasRenderingContext2D */
-    const context = options.context;
-    context.beginPath();
-    context.textAlign = 'left';
-    context.textBaseline = 'top';
-    context.font = font;
-
-    const point = options.pointToControl(i);
-    const anchor = {x: point.x, y: point.y};
-    point.x += (i.xoffset || 0) * 0.001 * options.dotsPerMeter;
-    point.y -= (i.yoffset || 0) * 0.001 * options.dotsPerMeter;
-
-    const text = (x, y) => {
-      const numbersArray = getLabelTextNumberArray(i.text);
-
-      // если хотябы у одного из чисел в массиве есть индекс
-      const hasIndexes = numbersArray.some(n => n.lower || n.upper);
-
-      const indexFontCoefficient = 2 / 3;
-      const indexFontSize = fontsize * indexFontCoefficient;
-
-      // (h[lowerIndex] + h[upperIndex] - h[number]) / 2
-      const indexOffset = (indexFontSize * 2 - fontsize) / 2;
-      const indexFont = indexFontSize + 'px ' + i.fontname;
-
-      // подсчет ширины текста с учетом индексов
-      let width = 0;
-      if (hasIndexes) {
-        for (let j = 0; j < numbersArray.length; j++) {
-          width += context.measureText(numbersArray[j].value).width;
-
-          // считаем ширину индексов с учетом размера шрифта, если есть оба индекса то берем большую ширину
-          context.font = indexFont;
-          let lowerWidth = 0, upperWidth = 0;
-          if (numbersArray[j].upper) upperWidth = context.measureText(numbersArray[j].upper).width;
-          if (numbersArray[j].lower) lowerWidth = context.measureText(numbersArray[j].lower).width;
-          context.font = font;
-          width += Math.max(lowerWidth, upperWidth);
-        }
-      } else {
-        width = context.measureText(i.text).width;
-      }
-
-      if (i.halignment === label.alHorRight) {
-        x -= width + 2;
-      } else if (i.halignment === label.alHorCenter) {
-        x -= width / 2 + 1;
-      }
-      if (i.valignment === label.alVerBottom) {
-        y -= fontsize + 2;
-      } else if (i.valignment === label.alVerCenter) {
-        y -= fontsize / 2 + 1;
-      }
-
-      const fillStyle = i.color === '#ffffff' ? 'black' : i.color;
-      context.fillStyle = fillStyle;
-
-      if (hasIndexes) {
-        let newX = x;
-
-        for (let j = 0; j < numbersArray.length; j++) {
-          // отрисовка числа
-          let textWidth = context.measureText(numbersArray[j].value).width;
-          // отрисовка фоновой затирки
-          if (!i.transparent) {
-            context.fillStyle = 'white';
-            context.fillRect(newX, y, textWidth, fontsize + 3);
-            context.fillStyle = fillStyle;
-          }
-          context.fillText(numbersArray[j].value, newX, y + 1.5);
-          newX += textWidth;
-
-          const upper = numbersArray[j].upper;
-          const lower = numbersArray[j].lower;
-
-          // отрисовка верхних индексов этого числа
-          let upperWidth = 0;
-          if (upper) {
-            const upperY = y - indexOffset;
-            context.font = indexFont;
-            upperWidth = context.measureText(upper).width;
-            // отрисовка фоновой затирки
-            if (!i.transparent) {
-              context.fillStyle = 'white';
-              context.fillRect(newX, upperY - 1, upperWidth, indexFontSize + 2);
-              context.fillStyle = fillStyle;
-            }
-            context.fillStyle = fillStyle;
-            context.fillText(upper, newX, upperY);
-            context.font = font;
-          }
-
-          // отрисовка нижних индексов этого числа
-          let lowerWidth = 0;
-          if (lower) {
-            const lowerY = y + fontsize + indexOffset - indexFontSize;
-            context.font = indexFont;
-            lowerWidth = context.measureText(lower).width;
-            // отрисовка фоновой затирки
-            if (!i.transparent) {
-              context.fillStyle = 'white';
-              context.fillRect(newX, lowerY - 1, lowerWidth, indexFontSize + 2);
-              context.fillStyle = fillStyle;
-            }
-            context.fillText(lower, newX, lowerY);
-            context.font = font;
-          }
-
-          newX += Math.max(lowerWidth, upperWidth);
-        }
-      } else {
-        if (!i.transparent) {
-          context.fillStyle = 'white';
-          context.fillRect(x, y, width, fontsize + 3);
-          context.fillStyle = fillStyle;
-        }
-        context.fillText(i.text, x, y + 1.5);
-      }
-
-      if (i.selected) {
-        context.strokeStyle = 'black';
-        context.lineWidth = 3;
-        context.strokeRect(x, y, width, fontsize + 3);
-      }
-    };
-
-    const angle = -(i.angle ?? 0) / 180 * Math.PI;
-    if (i.angle) {
-      context.save();
-      context.translate(point.x, point.y);
-      context.rotate(angle);
-      text(0, 0);
-      context.restore();
-    } else {
-      text(point.x, point.y);
-    }
-    if (i.edited) label.drawPattern(context, anchor, point, angle);
-  },
-});
-
 declareType('pieslice', {
   bound: pointBounds,
   draw: (i, options) => {
@@ -1077,6 +872,7 @@ export async function startPaint(canvas, map, options) {
   bounds.min.y -= d;
   bounds.max.y += d;
 
+  /** @type {MapDrawOptions} */
   const drawOptions = {
     canvas: canvas,
     context: options.ctx,

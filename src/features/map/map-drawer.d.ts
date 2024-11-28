@@ -1,14 +1,16 @@
-/** ## Типы отрисовщика:
- * + `sign`: {@link SignType}
- * + `polyline`: {@link PolylineType}
- * + `label`: {@link LabelType}
- * + `pieslice`: {@link PieSliceType}
- * */
 interface MapTypes {
-  sign: SignType;
-  polyline: PolylineType;
-  label: LabelType;
-  pieslice: PieSliceType;
+  readonly sign: SignType;
+  readonly polyline: PolylineType;
+  readonly label: LabelType;
+  readonly pieslice: PieSliceType;
+}
+
+interface MapDrawOptions {
+  readonly canvas: MapCanvas;
+  readonly context: CanvasRenderingContext2D;
+  readonly dotsPerMeter: number;
+  readonly pointToMap: (p: Point) => Point;
+  readonly pointToControl: (p: Point) => Point;
 }
 
 interface SignType {
@@ -37,13 +39,6 @@ interface PolylineType {
 
 interface LabelType {
   name: 'label';
-  alHorLeft: number;
-  alHorCenter: number;
-  alHorRight: number;
-  alVerBottom: number;
-  alVerCenter: number;
-  alVerTop: number;
-
   bound(point: Point): Bounds;
   draw(i: MapLabel, options): void;
 }
