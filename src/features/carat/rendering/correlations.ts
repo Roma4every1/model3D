@@ -3,6 +3,7 @@ import type { CaratCorrelation, StratumCorrelation, CaratIntervalModel } from '.
 import { CaratDrawer } from './drawer';
 import { CaratTrack } from './track';
 import { defaultSettings } from '../lib/constants';
+import { formatDistance } from '../lib/utils';
 
 
 /** Модель корреляций. */
@@ -16,12 +17,18 @@ export class CaratCorrelations {
 
   /** Данные колонок корреляций. */
   private correlations: CaratCorrelation[];
+  /** Флаг, указывающий на наличие расстояния. */
+  private hasDistance: boolean;
+  /** Расстояния между треками */
+  public distance: number[];
 
   constructor(init: CaratColumnInit, drawer: CaratDrawer) {
     this.init = init;
     this.drawer = drawer;
     this.width = init?.settings?.width ?? 50;
     this.correlations = [];
+    this.hasDistance = true;
+    this.distance = [];
   }
 
   public getInit(): CaratColumnDTO {
@@ -58,6 +65,7 @@ export class CaratCorrelations {
         leftViewport: leftTrack.viewport,
         rightViewport: rightTrack.viewport,
         data: this.findCorrelations(leftStrata, rightStrata),
+        label: this.distance.length > i ? formatDistance(this.distance[i]) : '',
       };
       this.correlations.push(correlation);
     }
@@ -95,10 +103,10 @@ export class CaratCorrelations {
   public render(index?: number): void {
     if (index !== undefined) {
       const correlations = this.correlations[index];
-      if (correlations) this.drawer.drawCorrelations(correlations);
+      if (correlations) this.drawer.drawCorrelations(correlations, this.hasDistance);
     } else {
       for (const correlations of this.correlations) {
-        this.drawer.drawCorrelations(correlations);
+        this.drawer.drawCorrelations(correlations, this.hasDistance);
       }
     }
   }

@@ -724,9 +724,56 @@ export class CaratDrawer {
     this.ctx.restore();
   }
 
+  public drawArrow(x: number, leftScaleY: number, width: number, rightScaleY: number, label: string): void {
+    const arrowHeadSize = 6; // Размер стрелки
+    const lineWidth = this.correlationSettings.thickness;
+    const arrowColor = 'black';
+    const font = this.columnLabelSettings.font;
+    const textColor = this.columnLabelSettings.color;
+
+    this.ctx.strokeStyle = arrowColor;
+    this.ctx.fillStyle = arrowColor;
+    this.ctx.lineWidth = lineWidth;
+
+    const startY = leftScaleY;
+    const endY = rightScaleY;
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(x, startY);
+    this.ctx.lineTo(width, endY);
+    this.ctx.stroke();
+
+    // Правый наконечник
+    this.ctx.beginPath();
+    this.ctx.moveTo(width, endY);
+    this.ctx.lineTo(width - arrowHeadSize, endY - arrowHeadSize / 2);
+    this.ctx.lineTo(width - arrowHeadSize, endY + arrowHeadSize / 2);
+    this.ctx.closePath();
+    this.ctx.fill();
+
+    // Левый наконечник
+    this.ctx.beginPath();
+    this.ctx.moveTo(x, startY);
+    this.ctx.lineTo(x + arrowHeadSize, startY - arrowHeadSize / 2);
+    this.ctx.lineTo(x + arrowHeadSize, startY + arrowHeadSize / 2);
+    this.ctx.closePath();
+    this.ctx.fill();
+
+    // Настройки текста
+    this.ctx.font = font;
+    this.ctx.fillStyle = textColor;
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'bottom';
+
+    const textX = (x + width) / 2;
+    const textY = (startY + endY) / 2 - 2;
+    this.ctx.fillText(label, textX, textY);
+    this.ctx.restore();
+  }
+
   /** Отрисовка корреляций между треками. */
-  public drawCorrelations(correlations: CaratCorrelation): void {
-    const { rect, leftViewport, rightViewport } = correlations;
+  public drawCorrelations(correlations: CaratCorrelation, hasDistance: boolean): void {
+    const { rect, leftViewport, rightViewport, label } = correlations;
     this.setTranslate(rect.left, rect.top);
     this.ctx.lineWidth = this.correlationSettings.thickness;
 
@@ -752,5 +799,11 @@ export class CaratDrawer {
       this.ctx.fill(); this.ctx.stroke();
     }
     this.ctx.restore();
+
+    if (hasDistance && label) {
+      this.ctx.clearRect(0, 0, width, -30);
+      this.drawArrow(0, leftScaleY - 20, width, rightScaleY - 20, label);
+      this.ctx.restore();
+    }
   }
 }

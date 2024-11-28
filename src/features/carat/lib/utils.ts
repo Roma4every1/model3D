@@ -56,3 +56,23 @@ function findNearestYPoint(arr: Point[], value: number): number {
   }
   return start;
 }
+
+export function formatDistance(number: number | null):  string {
+  if (number === null)  return '';
+
+  let roundedNum = Math.round(number);
+  let unit = roundedNum >= 1000 ? 'км' : 'м';
+  let formattedNumber;
+  if (unit === 'км') {
+    formattedNumber = (number / 1000).toFixed(1).replace('.', ',');
+  } else if (roundedNum < 500) {
+    if (number % 1 !== 0) {
+      formattedNumber = number.toFixed(1).replace('.', ',');
+    } else {
+      formattedNumber = roundedNum.toString();
+    }
+  } else {
+    formattedNumber = roundedNum.toString();
+  }
+  return `${formattedNumber}${unit}`;
+}

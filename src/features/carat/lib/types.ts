@@ -70,6 +70,8 @@ export interface CaratCorrelation {
   rightViewport: CaratViewport;
   /** Корреляции пластов. */
   data: StratumCorrelation[];
+  /** Расстояние между двумя треками */
+  label: string;
 }
 
 /** Корреляция пласта между двумя треками.
