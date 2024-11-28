@@ -106,6 +106,8 @@ export const drawerConfig: CaratDrawerConfig = {
   },
   correlation: {
     thickness: 1,
+    labelFont: {size: 11},
+    labelColor: '#111111',
   },
   construction: {
     label: {

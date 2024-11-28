@@ -1,10 +1,5 @@
 import { describe, test, expect } from 'vitest';
-
-
-function formatDistance(d: number): string {
-  return d.toString().replace('.', ',') + 'м';
-}
-
+import { formatDistance } from '../../src/features/carat/lib/utils';
 
 describe('Distance formatting', () => {
 

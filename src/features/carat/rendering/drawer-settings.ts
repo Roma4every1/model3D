@@ -82,6 +82,10 @@ export interface CaratDrawerConfig {
   correlation: {
     /** Толщина обводки корреляции. */
     thickness: number,
+    /** {@link CSSFont} подписей. */
+    labelFont: Partial<CSSFont>,
+    /** Цвет стрелки и подписи с расстоянием. */
+    labelColor: ColorString,
   },
   /** Настройки отрисовки конструкции скважины. */
   construction: {
@@ -205,6 +209,12 @@ export interface CaratColumnXAxisDrawSettings {
 export interface CaratCorrelationDrawSettings {
   /** Толщина обводки. */
   readonly thickness: number;
+  /** Шрифт подписи с расстоянием. */
+  readonly labelFont: string;
+  /** Цвет стрелки и подписи с расстоянием. */
+  readonly labelColor: ColorString;
+  /** Высота текста подписи. */
+  readonly labelHeight: number;
 }
 
 /** Настройки отрисовки конструкции скважины. */
@@ -212,7 +222,7 @@ export interface ConstructionDrawSettings {
   /** Шрифт подписи к конструкции. */
   readonly labelFont: string;
   /** Высота одной строки в подписи. */
-  readonly labelTextHeight;
+  readonly labelTextHeight: number;
   /** Цвет подписи к конструкции. */
   readonly labelColor: ColorString;
   /** Фон подписи к конструкции. */
@@ -293,7 +303,9 @@ export function createColumnXAxisDrawSettings(config: CaratDrawerConfig): CaratC
 
 /** Создаёт настройки отрисовки корреляций по конфигу. */
 export function createCorrelationDrawSettings(config: CaratDrawerConfig): CaratCorrelationDrawSettings {
-  return {thickness: config.correlation.thickness};
+  const { thickness, labelFont, labelColor } = config.correlation;
+  const font = buildFontString(labelFont, config.stage.font)
+  return {thickness, labelColor, labelFont: font, labelHeight: labelFont.size};
 }
 
 /** Создаёт настройки отрисовки конструкции по конфигу. */
