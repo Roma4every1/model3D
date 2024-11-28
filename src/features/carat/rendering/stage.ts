@@ -9,7 +9,7 @@ import { CaratDrawer } from './drawer';
 import { CaratDrawerConfig } from './drawer-settings';
 import { CaratCorrelations } from './correlations';
 
-import { EventBus, compareArrays, distance, isRectInnerPoint } from 'shared/lib';
+import { EventBus, compareArrays, isRectInnerPoint } from 'shared/lib';
 import { validateCaratScale } from '../lib/utils';
 import { moveSmoothly } from '../lib/smooth-scroll';
 import { defaultSettings } from '../lib/constants';
@@ -147,50 +147,30 @@ export class CaratStage {
 
   /** Устанавливает режим показа треков по указанным скважинам. */
   public setTrackList(arg: WellModel | TraceNode[]): void {
+    let newWellIDs: WellID[];
+    let wellNames: string[];
+
     if (Array.isArray(arg)) {
-      const newTrackIDs = arg.map((track) => track.id);
-      this.wellIDs = newTrackIDs;
-
-      const correlationWidth = this.correlations.getWidth();
-      const activeTrack = this.getActiveTrack();
-      const rect = activeTrack.rect;
-      this.trackList = [];
-      this.distance = [];
-
-      for (let i = 0; i < arg.length; i++) {
-        const track = arg[i];
-        const trackName = track.name ?? track.id?.toString();
-        const clonedTrack = activeTrack.cloneFor({ ...rect }, trackName.trim());
-        this.trackList.push(clonedTrack);
-
-        if (i > 0) {
-          const prevTrack = arg[i - 1];
-          if (track.x && track.y && prevTrack.x && prevTrack.y) {
-            const dist = distance({ x: prevTrack.x, y: prevTrack.y }, { x: track.x, y: track.y });
-            this.distance.push(dist);
-            this.correlations.distance = this.distance;
-          } else {
-            this.distance.push(null);
-            this.correlations.distance = this.distance;
-          }
-        }
-        rect.left += rect.width + correlationWidth;
-      }
+      newWellIDs = arg.map(node => node.id);
+      wellNames = arg.map(well => well.name ?? well.id?.toString() ?? '');
     } else {
-      const well = arg;
-      const newWellIDs = [well.id];
-      if (compareArrays(this.wellIDs, newWellIDs)) return;
-      this.wellIDs = newWellIDs;
-      const wellName = well.name ?? well.id.toString();
+      newWellIDs = [arg.id];
+      wellNames = [arg.name ?? arg.id?.toString() ?? ''];
+    }
+    if (compareArrays(this.wellIDs, newWellIDs)) return;
+    this.wellIDs = newWellIDs;
 
-      const activeTrack = this.getActiveTrack();
-      const rect = activeTrack.rect;
-      this.trackList = [];
-      this.distance = [];
-      this.correlations.distance = [];
-      const track = activeTrack.cloneFor({ ...rect }, wellName.trim());
+    const correlationWidth = this.correlations.getWidth();
+    if (Array.isArray(arg)) this.correlations.setPoints(arg);
+
+    const activeTrack = this.getActiveTrack();
+    const rect = activeTrack.rect;
+    this.trackList = [];
+
+    for (const wellName of wellNames) {
+      const track = activeTrack.cloneFor({...rect}, wellName.trim());
       this.trackList.push(track);
-
+      rect.left += rect.width + correlationWidth;
     }
     this.activeIndex = 0;
     this.trackList[0].active = true;

@@ -55,12 +55,7 @@ export interface CaratBarModel {
 
 /* --- Correlations --- */
 
-/** Корреляции пластов между двумя треками.
- * + `rect`: {@link Rectangle}
- * + `leftViewport`: {@link CaratViewport}
- * + `rightViewport`: {@link CaratViewport}
- * + `data`: {@link StratumCorrelation}[]
- */
+/** Корреляции пластов между двумя треками. */
 export interface CaratCorrelation {
   /** Ограничивающий прямоугольник. */
   rect: Rectangle;
@@ -70,17 +65,13 @@ export interface CaratCorrelation {
   rightViewport: CaratViewport;
   /** Корреляции пластов. */
   data: StratumCorrelation[];
-  /** Расстояние между двумя треками */
-  label: string;
+  /** Расстояние между треками в метрах. */
+  distance: number | null;
+  /** Подпись расстояния между треками. */
+  distanceLabel: string;
 }
 
-/** Корреляция пласта между двумя треками.
- * + `leftTop: number`
- * + `leftBottom: number`
- * + `rightTop: number`
- * + `rightBottom: number`
- * + `style`: {@link ShapeStyle}
- */
+/** Корреляция пласта между двумя треками. */
 export interface StratumCorrelation {
   /** Глубина кровли пласта в треке слева. */
   leftTop: number;
