@@ -198,16 +198,11 @@ export class CaratStage {
       if (min < yMin) yMin = min;
       if (max > yMax) yMax = max;
     });
-    this.trackList.forEach((track, i) => {
-      const { viewport, inclinometry } = track;
+    this.trackList.forEach((track) => {
+      const viewport = track.viewport;
       viewport.min = yMin;
       viewport.max = yMax;
       if (viewport.y === Infinity) viewport.y = yMin;
-
-      if (inclinometry) {
-        inclinometry.setData(data[i]);
-        inclinometry.updateMarks(viewport);
-      }
     });
 
     this.correlations.setData(this.trackList);
