@@ -113,7 +113,7 @@ interface ITraceManager extends ActiveObjectManager<TraceModel> {
   clone(): ITraceManager;
   nodesChanged(): boolean;
   applyModelToChannelRow(traceChannel: Channel, row: ChannelRow): void;
-  getNodeChannelRows(columns: ChannelColumn[]): ChannelRow[];
+  getNodeChannelRows(template: ChannelRow, columns: ChannelColumn[]): ChannelRow[];
 }
 
 /** Модель трассы. */
@@ -142,4 +142,4 @@ interface TraceNode {
 type TraceID = number;
 
 /** Поля узла трассы в БД. */
-type TraceNodeChannelFields = (keyof Omit<TraceNode, 'name'>) | 'traceID' | 'order';
+type TraceNodeChannelFields = (keyof Omit<TraceNode, 'name'>) | 'order';

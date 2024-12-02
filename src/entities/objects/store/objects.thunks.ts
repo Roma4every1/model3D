@@ -85,7 +85,9 @@ export async function saveTrace(): Promise<void> {
     const nodeChannel = useChannelStore.getState().storage[nodeChannelID];
     const queryID = nodeChannel.data.queryID;
 
-    const nodeRows = traceManager.getNodeChannelRows(nodeChannel.data.columns);
+    const { data: templateRow } = await channelAPI.getNewRow(queryID);
+    const nodeRows = traceManager.getNodeChannelRows(templateRow, nodeChannel.data.columns);
+
     await channelAPI.removeRows(queryID, 'all');
     await channelAPI.insertRows(queryID, nodeRows).then();
     await reloadChannel(nodeChannel.id);

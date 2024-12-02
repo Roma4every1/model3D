@@ -34,12 +34,6 @@ export class TraceManager implements ITraceManager {
     this.info = new RecordInfoCreator(channels).create(traceChannel, traceChannelCriterion);
     if (!this.info) return;
 
-    const nodeDetails = this.info.nodes.details.info;
-    if (!nodeDetails.traceID) {
-      const columnName = 'WELLS_LIST_ID';
-      nodeDetails.traceID = {propertyName: columnName, columnName};
-    }
-
     const nodePropertyName = this.info.nodes.propertyName;
     const nodeProperty = traceChannel.config.properties.find(p => p.name === nodePropertyName);
     this.nodeChannelID = channels[nodeProperty.detailChannel].id;
@@ -82,14 +76,12 @@ export class TraceManager implements ITraceManager {
     const wellIDIndex = wellChannel.config.lookupColumns.id.columnIndex;
     const wellNameIndex = wellChannel.config.lookupColumns.value.columnIndex;
 
-    const nodeInfo: ChannelRecordInfo<TraceNodeChannelFields> = this.info.nodes.details.info;
-    const traceIDColumn = nodeInfo.traceID.columnName;
+    const nodeInfo = this.info.nodes.details.info;
     const idColumn = nodeInfo.id.columnName;
     const xColumn = nodeInfo.x.columnName;
     const yColumn = nodeInfo.y.columnName;
 
     for (const record of nodeRecords) {
-      if (record[traceIDColumn] !== traceID) continue;
       const nodeID = Number(record[idColumn]);
       const wellRow = wellRows?.find(row => row[wellIDIndex] === nodeID);
       const name = wellRow ? wellRow[wellNameIndex] : null;
@@ -106,19 +98,17 @@ export class TraceManager implements ITraceManager {
   }
 
   /** Преобразует узлы трассы в массив записей канала. */
-  public getNodeChannelRows(columns: ChannelColumn[]): ChannelRow[] {
+  public getNodeChannelRows(template: ChannelRow, columns: ChannelColumn[]): ChannelRow[] {
     const info: ChannelRecordInfo<TraceNodeChannelFields> = this.info.nodes.details.info;
     const findIndex = (name: ColumnName) => columns.findIndex(c => c.name === name);
 
-    const traceIndex = findIndex(info.traceID.columnName);
     const idIndex = findIndex(info.id.columnName);
     const xIndex = findIndex(info.x.columnName);
     const yIndex = findIndex(info.y.columnName);
     const orderIndex = findIndex(info.order.columnName);
 
     return this.model.nodes.map((node, i): ChannelRow => {
-      const cells = new Array(columns.length).fill(null);
-      cells[traceIndex] = this.model.id;
+      const cells = [...template];
       cells[idIndex] = node.id;
       cells[xIndex] = node.x;
       cells[yIndex] = node.y;

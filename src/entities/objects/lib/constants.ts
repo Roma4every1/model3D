@@ -25,7 +25,6 @@ export const wellChannelCriterion: ChannelCriterion<keyof WellModel> = {
 
 /** Набор свойств канала с узлами трасс. */
 const traceNodePropertyCriteria: ChannelPropertyCriteria<TraceNodeChannelFields> = {
-  traceID: {name: /^(?:TRACE|WELLS_LIST)_ID$/, required: false},
   id: {name: 'ITEM'},
   x: {name: 'X'},
   y: {name: 'Y'},
