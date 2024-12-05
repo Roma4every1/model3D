@@ -1,7 +1,9 @@
 import type { CaratColumnDTO, CaratColumnInit } from '../lib/dto.types';
 import type { CaratCorrelation, StratumCorrelation, CaratIntervalModel } from '../lib/types';
+import { distance } from 'shared/lib';
 import { CaratDrawer } from './drawer';
 import { CaratTrack } from './track';
+import { formatDistance } from '../lib/utils';
 import { defaultSettings } from '../lib/constants';
 
 
@@ -13,15 +15,21 @@ export class CaratCorrelations {
   private readonly init: CaratColumnInit;
   /** Ширина корреляций. */
   private readonly width: number;
+  /** Флаг, указывающий на наличие расстояния. */
+  private readonly showDistance: boolean;
 
   /** Данные колонок корреляций. */
   private correlations: CaratCorrelation[];
+  /** Расстояния между треками */
+  private distance: number[];
 
   constructor(init: CaratColumnInit, drawer: CaratDrawer) {
     this.init = init;
     this.drawer = drawer;
     this.width = init?.settings?.width ?? 50;
+    this.showDistance = true;
     this.correlations = [];
+    this.distance = [];
   }
 
   public getInit(): CaratColumnDTO {
@@ -44,9 +52,22 @@ export class CaratCorrelations {
     }
   }
 
+  public setPoints(points: Point[]): void {
+    this.distance = [];
+    for (let i = 0; i < points.length - 1; ++i) {
+      const p1 = points[i];
+      const p2 = points[i + 1];
+
+      const valid =
+        typeof p1.x === 'number' && typeof p1.y === 'number' &&
+        typeof p2.x === 'number' && typeof p2.y === 'number';
+      this.distance.push(valid ? distance(p1, p2) : null);
+    }
+  }
+
   public setData(trackList: CaratTrack[]): void {
     this.correlations = [];
-    for (let i = 0; i < trackList.length - 1; i++) {
+    for (let i = 0; i < trackList.length - 1; ++i) {
       const leftTrack = trackList[i];
       const rightTrack = trackList[i + 1];
       const leftStrata = leftTrack.getBackgroundGroup().getStrata();
@@ -58,6 +79,8 @@ export class CaratCorrelations {
         leftViewport: leftTrack.viewport,
         rightViewport: rightTrack.viewport,
         data: this.findCorrelations(leftStrata, rightStrata),
+        distance: this.distance[i],
+        distanceLabel: formatDistance(this.distance[i]),
       };
       this.correlations.push(correlation);
     }
@@ -95,10 +118,10 @@ export class CaratCorrelations {
   public render(index?: number): void {
     if (index !== undefined) {
       const correlations = this.correlations[index];
-      if (correlations) this.drawer.drawCorrelations(correlations);
+      if (correlations) this.drawer.drawCorrelations(correlations, this.showDistance);
     } else {
       for (const correlations of this.correlations) {
-        this.drawer.drawCorrelations(correlations);
+        this.drawer.drawCorrelations(correlations, this.showDistance);
       }
     }
   }

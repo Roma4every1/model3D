@@ -286,10 +286,27 @@ export class CaratDrawer {
         const typeStart = xCenter - typeHalfWidth;
         const typeEnd = xCenter + typeHalfWidth;
 
-        this.ctx.textAlign = 'left';
-        this.ctx.fillText(axisMin.toString(), xStart + thickness, y, maxWidth);
-        this.ctx.textAlign = 'right';
-        this.ctx.fillText(axisMax.toString(), xEnd - thickness, y, maxWidth);
+        const minLabelWidth = this.ctx.measureText(axisMin.toString()).width;
+        const maxLabelWidth = this.ctx.measureText(axisMax.toString()).width;
+
+        // Свободные промежутки между метками
+        let freeStartLeft = xStart + minLabelWidth;
+        let freeEndLeft = typeStart;
+        let freeStartRight = typeEnd;
+        let freeEndRight = xEnd - maxLabelWidth;
+
+        // Проверка наличия места для первой и последней метки
+        const showFirstLabel = freeEndLeft - freeStartLeft >= minLabelWidth;
+        const showLastLabel = freeEndRight - freeStartRight >= maxLabelWidth;
+
+        if (showFirstLabel) {
+          this.ctx.textAlign = 'left';
+          this.ctx.fillText(axisMin.toString(), xStart + thickness, y, maxWidth);
+        }
+        if (showLastLabel) {
+          this.ctx.textAlign = 'right';
+          this.ctx.fillText(axisMax.toString(), xEnd - thickness, y, maxWidth);
+        }
         this.ctx.textAlign = 'center';
         this.ctx.fillText(type, xCenter, y, maxWidth);
 
@@ -302,7 +319,16 @@ export class CaratDrawer {
           const textStart = x - textHalfWidth;
           const textEnd = x + textHalfWidth;
 
-          if (textEnd < typeStart || textStart > typeEnd) this.ctx.fillText(text, x, y, maxWidth);
+          if ((textEnd <= freeEndLeft && textStart >= freeStartLeft) || (textEnd <= freeEndRight && textStart >= freeStartRight)) {
+            this.ctx.fillText(text, x, y, maxWidth);
+
+            // Обновление свободных промежутков
+            if (textEnd <= freeEndLeft) {
+              freeStartLeft = textEnd;
+            } else if (textEnd <= freeEndRight) {
+              freeStartRight = textEnd;
+            }
+          }
         }
         y -= yStep;
       }
@@ -725,8 +751,8 @@ export class CaratDrawer {
   }
 
   /** Отрисовка корреляций между треками. */
-  public drawCorrelations(correlations: CaratCorrelation): void {
-    const { rect, leftViewport, rightViewport } = correlations;
+  public drawCorrelations(correlations: CaratCorrelation, showDistance: boolean): void {
+    const { rect, leftViewport, rightViewport, distanceLabel } = correlations;
     this.setTranslate(rect.left, rect.top);
     this.ctx.lineWidth = this.correlationSettings.thickness;
 
@@ -752,5 +778,46 @@ export class CaratDrawer {
       this.ctx.fill(); this.ctx.stroke();
     }
     this.ctx.restore();
+    if (showDistance && distanceLabel) this.drawCorrelationDistance(rect, distanceLabel);
+  }
+
+  private drawCorrelationDistance(rect: Rectangle, label: string): void {
+    const arrowHalfSize = 4;
+    const { labelFont, labelColor, labelHeight } = this.correlationSettings;
+
+    const width = rect.width;
+    const height = labelHeight + 2 * arrowHalfSize;
+
+    this.setTranslate(rect.left, rect.top - height - arrowHalfSize);
+    this.ctx.clearRect(0, 0, width, height);
+
+    this.ctx.strokeStyle = labelColor;
+    this.ctx.fillStyle = labelColor;
+    this.ctx.lineWidth = this.correlationSettings.thickness;
+
+    const arrowBaseline = labelHeight + arrowHalfSize;
+    this.ctx.beginPath();
+    this.ctx.moveTo(0, arrowBaseline);
+    this.ctx.lineTo(width, arrowBaseline);
+    this.ctx.stroke();
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(0, arrowBaseline);
+    this.ctx.lineTo(arrowHalfSize, arrowBaseline + arrowHalfSize);
+    this.ctx.lineTo(arrowHalfSize, arrowBaseline - arrowHalfSize);
+    this.ctx.closePath();
+    this.ctx.fill();
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(width, arrowBaseline);
+    this.ctx.lineTo(width - arrowHalfSize, arrowBaseline + arrowHalfSize);
+    this.ctx.lineTo(width - arrowHalfSize, arrowBaseline - arrowHalfSize);
+    this.ctx.closePath();
+    this.ctx.fill();
+
+    this.ctx.font = labelFont;
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'top';
+    this.ctx.fillText(label, width / 2, 0, width);
   }
 }

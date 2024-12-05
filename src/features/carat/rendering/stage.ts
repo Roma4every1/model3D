@@ -56,6 +56,8 @@ export class CaratStage {
 
   private readonly strataChannelName: ChannelName;
   public actualLookup: boolean;
+  /** Расстояния между треками */
+  public distance: number[];
 
   constructor(settings: CaratGlobalSettings, columns: CaratColumnInit[], drawerConfig: CaratDrawerConfig) {
     this.drawer = new CaratDrawer(drawerConfig);
@@ -65,6 +67,7 @@ export class CaratStage {
     this.zones = settings.zones;
     this.strataChannelName = settings.strataChannelName;
     this.actualLookup = false;
+    this.distance = [];
 
     const correlationsInit = columns.find(c => c.settings.type === 'external');
     this.correlations = new CaratCorrelations(correlationsInit, this.drawer);
@@ -143,13 +146,23 @@ export class CaratStage {
   }
 
   /** Устанавливает режим показа треков по указанным скважинам. */
-  public setTrackList(wells: WellModel[]): void {
-    const newWellIDs = wells.map(well => well.id);
+  public setTrackList(arg: WellModel | TraceNode[]): void {
+    let newWellIDs: WellID[];
+    let wellNames: string[];
+
+    if (Array.isArray(arg)) {
+      newWellIDs = arg.map(node => node.id);
+      wellNames = arg.map(well => well.name ?? well.id?.toString() ?? '');
+    } else {
+      newWellIDs = [arg.id];
+      wellNames = [arg.name ?? arg.id?.toString() ?? ''];
+    }
     if (compareArrays(this.wellIDs, newWellIDs)) return;
     this.wellIDs = newWellIDs;
-    const wellNames = wells.map(well => well.name ?? well.id?.toString() ?? '');
 
     const correlationWidth = this.correlations.getWidth();
+    if (Array.isArray(arg)) this.correlations.setPoints(arg);
+
     const activeTrack = this.getActiveTrack();
     const rect = activeTrack.rect;
     this.trackList = [];
@@ -185,16 +198,11 @@ export class CaratStage {
       if (min < yMin) yMin = min;
       if (max > yMax) yMax = max;
     });
-    this.trackList.forEach((track, i) => {
-      const { viewport, inclinometry } = track;
+    this.trackList.forEach((track) => {
+      const viewport = track.viewport;
       viewport.min = yMin;
       viewport.max = yMax;
       if (viewport.y === Infinity) viewport.y = yMin;
-
-      if (inclinometry) {
-        inclinometry.setData(data[i]);
-        inclinometry.updateMarks(viewport);
-      }
     });
 
     this.correlations.setData(this.trackList);

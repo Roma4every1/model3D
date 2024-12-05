@@ -18,7 +18,7 @@ export async function setCaratData(id: FormID): Promise<void> {
       return;
     }
   } else if (currentWell) {
-    stage.setTrackList([currentWell]);
+    stage.setTrackList(currentWell);
   } else {
     return;
   }

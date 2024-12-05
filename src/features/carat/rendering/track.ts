@@ -182,6 +182,7 @@ export class CaratTrack {
       if (groupMin < viewport.min) viewport.min = groupMin;
       if (groupMax > viewport.max) viewport.max = groupMax;
     }
+    this.inclinometry?.setData(data);
 
     if (this.constructionMode) {
       this.transformer.setConstructionElements(this.groups);
