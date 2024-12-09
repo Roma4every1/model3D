@@ -1,70 +1,64 @@
+import type { TFunction } from 'react-i18next';
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { NumericTextBox, Checkbox, NumericTextBoxChangeEvent } from '@progress/kendo-react-inputs';
-import { Button } from '@progress/kendo-react-buttons';
+import { useRender } from 'shared/react';
+import { Button, Checkbox, InputNumber } from 'antd';
+import { SettingOutlined, UndoOutlined } from '@ant-design/icons';
+import { inputIntParser } from 'shared/locales';
 
 
 interface LayersTreeLayerProps {
   stage: IMapStage;
   layer: IMapLayer;
+  t: TFunction;
 }
 
+export const LayerTreeLeaf = ({stage, layer, t}: LayersTreeLayerProps) => {
+  const render = useRender();
+  const minScale = layer.getMinScale();
+  const maxScale = layer.getMaxScale();
 
-export const LayerTreeLeaf = ({stage, layer}: LayersTreeLayerProps) => {
-  const { t } = useTranslation();
-  const [checked, setChecked] = useState(false);
   const [expanded, setExpanded] = useState(false);
-
-  const [minScale, setMinScale] = useState(0);
-  const [maxScale, setMaxScale] = useState(0);
-  const [initMinScale, setInitMinScale] = useState(0);
-  const [initMaxScale, setInitMaxScale] = useState(0);
+  const [initMinScale, setInitMinScale] = useState(minScale);
+  const [initMaxScale, setInitMaxScale] = useState(maxScale);
 
   // обновление состояния при смене слоя
   useEffect(() => {
-    setChecked(layer.visible);
-    setMinScale(layer.getMinScale());
-    setMaxScale(layer.getMaxScale());
     setInitMinScale(layer.getMinScale());
     setInitMaxScale(layer.getMaxScale());
   }, [layer]);
 
-  const onClick = () => {
-    if (layer.active) {
-      stage.setActiveLayer(null);
-    } else {
-      stage.setActiveLayer(layer);
-      if (!checked) onVisibilityChange();
-    }
-  };
   const onExpandChange = () => {
     setExpanded(!expanded)
   };
   const onVisibilityChange = () => {
-    layer.visible = !checked;
-    setChecked(!checked);
-    if (checked && layer.active) {
+    if (layer.visible && layer.active) {
       stage.setActiveLayer(null);
     }
-    stage.render();
+    layer.visible = !layer.visible;
+    render(); stage.render();
+  };
+  const onHeaderClick = layer.temporary ? undefined : () => {
+    if (layer.active) {
+      stage.setActiveLayer(null);
+    } else {
+      stage.setActiveLayer(layer);
+      if (!layer.visible) onVisibilityChange();
+    }
   };
 
-  const onMinScaleChange = ({value}: NumericTextBoxChangeEvent) => {
+  const onMinScaleChange = (value: number | null) => {
     if (value === null) value = 0;
-    setMinScale(value);
     layer.setMinScale(value);
-    stage.render();
+    render(); stage.render();
   };
-  const onMaxScaleChange = ({value}: NumericTextBoxChangeEvent) => {
+  const onMaxScaleChange = (value: number | null) => {
     if (value === null) value = 0;
-    setMaxScale(value);
     layer.setMaxScale(value);
-    stage.render();
+    render(); stage.render();
   };
   const setInfinity = () => {
-    setMaxScale(Infinity);
     layer.setMaxScale(Infinity);
-    stage.render();
+    render(); stage.render();
   };
 
   const apply = () => {
@@ -72,54 +66,45 @@ export const LayerTreeLeaf = ({stage, layer}: LayersTreeLayerProps) => {
     setInitMaxScale(maxScale);
   };
   const rollback = () => {
-    setMinScale(initMinScale);
-    setMaxScale(initMaxScale);
     layer.setMinScale(initMinScale);
     layer.setMaxScale(initMaxScale);
-    stage.render();
+    render(); stage.render();
   };
 
   return (
     <div className={'map-layer'}>
-      <div className={'map-layer-header' + (layer.active ? ' selected' : '')}>
-        <Checkbox checked={checked} onChange={onVisibilityChange} />
-        <span onClick={onClick}>{layer.displayName}</span>
-        <button className={'k-button k-button-clear'} onClick={onExpandChange} title={t('map.layerVisibilityControl')}>
-          <span className={'k-icon k-i-gear'}/>
-        </button>
+      <div
+        className={'map-layer-header' + (layer.active ? ' selected' : '')}
+        style={layer.temporary ? {cursor: 'default'} : undefined}
+      >
+        <Checkbox checked={layer.visible} onChange={onVisibilityChange}/>
+        <span onClick={onHeaderClick}>{layer.displayName}</span>
+        <Button
+          type={'text'} style={{borderRadius: 0}} icon={<SettingOutlined/>}
+          title={t('map.layer-tree.visibility-control')} onClick={onExpandChange}
+        />
       </div>
-      {expanded &&
-        <div className={'map-layer-toolbar'}>
-          <div className={'map-layer-type'}>{`Тип элементов: ${t('map.' + layer.elementType)}`}</div>
-          <fieldset>
-            <div>{t('map.layers-tree.min-scale')}</div>
-            <div>
-              <NumericTextBox
-                value={minScale} onChange={onMinScaleChange}
-                min={0} max={maxScale} format={'#'} spinners={false}
-              />
-            </div>
-          </fieldset>
-          <fieldset>
-            <div>{t('map.layers-tree.max-scale')}</div>
-            <div>
-              <NumericTextBox
-                value={maxScale} onChange={onMaxScaleChange}
-                min={minScale} format={'#'} spinners={false}
-              />
-              <Button onClick={setInfinity}>{'∞'}</Button>
-            </div>
-          </fieldset>
-          <div className={'map-layer-bottom'}>
-            <Button onClick={apply}>
-              {t('base.apply')}
-            </Button>
-            <Button onClick={rollback} title={t('map.revertInitialValues')}>
-              <span className={'k-icon k-i-reset-sm'}/>
-            </Button>
-          </div>
+      {expanded && <div className={'map-layer-settings'}>
+        <fieldset>
+          <div>{t('map.layer-tree.min-scale')}:</div>
+          <InputNumber
+            value={minScale} min={0} max={maxScale} onChange={onMinScaleChange}
+            parser={inputIntParser} controls={false} style={{width: 90}}
+          />
+        </fieldset>
+        <fieldset>
+          <div>{t('map.layer-tree.max-scale')}:</div>
+          <InputNumber
+            value={maxScale} min={minScale} onChange={onMaxScaleChange}
+            parser={inputIntParser} controls={false} style={{width: 90}}
+            addonAfter={<span style={{padding: '3px 5px'}} onClick={setInfinity}>{'∞'}</span>}
+          />
+        </fieldset>
+        <div>
+          <Button onClick={apply}>{t('base.apply')}</Button>
+          <Button onClick={rollback} title={t('map.layer-tree.rollback')} icon={<UndoOutlined/>}/>
         </div>
-      }
+      </div>}
     </div>
   );
 };

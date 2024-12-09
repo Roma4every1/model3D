@@ -248,7 +248,6 @@
     "fields2D": "Поля 2D",
     "fillColor": "Цвет рисунка",
     "finishEditing": "Завершить редактирование",
-    "layerVisibilityControl": "Управление видимостью слоя",
     "label": "Подпись",
     "labels": "Подписи",
     "legend": "Легенда",
@@ -260,7 +259,6 @@
     "polyline": "Линия",
     "field": "Поле",
     "properties-edit": "Свойства элемента ({{elementType}})",
-    "revertInitialValues": "Восстановить исходные значения",
     "sectors": "Сектора",
     "sign": "Знак",
     "border-color": "Цвет границы",
@@ -272,9 +270,12 @@
     "transparency": "Прозрачность",
     "layer-stat-header": "Объекты на подслое:",
     "trace": "Трасса",
-    "layers-tree": {
-      "min-scale": "Мин. масштаб:",
-      "max-scale": "Макс. масштаб:"
+    "layer-tree": {
+      "extra-group": "Временные пометки",
+      "visibility-control": "Управление видимостью слоя",
+      "min-scale": "Мин. масштаб",
+      "max-scale": "Макс. масштаб",
+      "rollback": "Восстановить исходные значения"
     },
     "dimensions": {
       "header": "Навигация",

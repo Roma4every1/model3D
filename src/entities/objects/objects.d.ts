@@ -10,7 +10,7 @@ interface ObjectsState {
   place: IPlaceManager;
   /** Пласт. */
   stratum: IStratumManager;
-  /** Скважин. */
+  /** Скважина. */
   well: IWellManager;
   /** Трасса. */
   trace: ITraceManager;

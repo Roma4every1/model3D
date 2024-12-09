@@ -6,8 +6,6 @@ interface MapState {
   readonly loader: IMapLoader;
   /** Класс для отслеживания изменения размеров холста. */
   readonly observer: ResizeObserver;
-  /** Активные объекты на карте. */
-  readonly objects: MapObjects;
   /** Ссылка на холст. */
   canvas: MapCanvas;
   /** Владелец карты. */
@@ -35,20 +33,13 @@ interface MapState {
  */
 type MapStatus = 'ok' | 'empty' | 'loading' | 'error';
 
-interface MapObjects {
-  well: WellModel | null;
-  trace: TraceModel | null;
-}
-
 interface IMapStage {
   readonly select: IMapSelect;
   readonly scroller: IMapScroller;
   readonly listeners: MapStageListeners;
-  traceEditing: boolean;
-  inclinometryModeOn: boolean;
   readonly plugins: IMapPlugin[];
+  inclinometryModeOn: boolean;
 
-  getWellViewport(wellID: WellID): MapViewport | null;
   getCanvas(): MapCanvas;
   getMode(): number;
   getSelecting(): boolean;
@@ -57,6 +48,7 @@ interface IMapStage {
   getActiveLayer(): IMapLayer | null;
   getActiveElement(): MapElement | null;
   getActiveElementLayer(): IMapLayer | null;
+  getExtraLayers(): IMapLayer[];
   isElementEditing(): boolean;
   isElementCreating(): boolean;
   eventToPoint(event: MouseEvent): Point;
@@ -76,7 +68,7 @@ interface IMapStage {
   deleteActiveElement(): void;
 
   handleMouseUp(event: MouseEvent): MapElement | null;
-  handleMouseDown(event: MouseEvent): void;
+  handleMouseDown(event: MouseEvent, traceEditing: boolean): void;
   handleMouseMove(event: MouseEvent): void;
   handleMouseWheel(event: WheelEvent): void;
 
@@ -134,8 +126,6 @@ interface MapData {
   plastCode: string;
   plastName: string;
   points: MapPoint[];
-  activePoint?: MapPoint;
-  pointLayer?: IMapLayer;
 
   x?: number;
   y?: number;
@@ -143,19 +133,11 @@ interface MapData {
   onDrawEnd?: (center: Point, scale: number) => void;
 }
 
-interface LayerTreeItem {
-  id: string;
-  text: string;
-  sublayer: IMapLayer;
-  visible: boolean;
-  items?: LayerTreeItem[];
-}
-
 /** Слой карты. */
 interface IMapLayer {
   readonly id: string;
-  readonly group: string;
   readonly displayName: string;
+  readonly treePath: string[];
   readonly elementType: MapElementType;
 
   bounds: Bounds;
@@ -185,8 +167,7 @@ interface MapPoint {
   name: string;
   x: number;
   y: number;
-  attrTable: Record<string, any>;
-  selected?: boolean;
+  attrTable: Record<string, string>;
 }
 
 /** Идентификатор карты. */
@@ -197,48 +178,66 @@ type MapStorageID = string;
 /** Масштаб карты. */
 type MapScale = number;
 
-/* --- Map Elements Types --- */
+/** Идентификатор дополнительного объетка карты. */
+type MapExtraObjectID = string;
+
+/* --- Drawer --- */
+
+interface MapElementDrawer<E extends MapElement = MapElement> {
+  bound(e: E): Bounds;
+  draw(e: Readonly<E>, options: MapDrawOptions): void;
+  draft?(e: Readonly<E>, options: MapDrawOptions): void;
+}
+
+interface MapDrawOptions {
+  readonly ctx: CanvasRenderingContext2D;
+  readonly dotsPerMeter: number;
+  readonly toMapPoint: (p: Point) => Point;
+  readonly toCanvasPoint: (p: Point) => Point;
+}
+
+/* --- Map Elements --- */
 
 /** Элемент карты. */
-type MapElement = MapPolyline | MapLabel | MapSign | MapField | MapPieSlice;
+type MapElement = MapPolyline | MapLabel | MapSign | MapPieSlice | MapField;
 
 /** Тип элемента карты. */
-type MapElementType = 'polyline' | 'label' | 'sign' | 'field' | 'pieslice';
+type MapElementType = 'polyline' | 'label' | 'sign' | 'pieslice' | 'field';
 
 /* -- Polyline -- */
 
+/** Элемент на карте типа "линия". */
 interface MapPolyline extends MapElementProto {
-  type: 'polyline';
+  /** Тип элемента. */
+  readonly type: 'polyline';
+  /** Массив дуг. */
   arcs: PolylineArc[];
-  borderstyle: number;
-  borderstyleid?: any;
-  fillbkcolor: string;
-  fillcolor: string;
-  fillname?: any;
+  /** Цвет обводки. */
   bordercolor: string;
+  /** Ширина обводки. */
   borderwidth: number;
-  legend?: any;
+  /** Идентификатор штриховки (stroke-dasharray). */
+  borderstyle: number;
+  /** Идентификатор стиля обводки. */
+  borderstyleid?: string;
+  /** Код типа заливки. */
+  fillname?: string;
+  /** Цвет паттерна заливки. */
+  fillcolor: string;
+  /** Фон заливки. */
+  fillbkcolor: string;
+
   style?: PolylineBorderStyle;
   fillStyle?: CanvasPattern | string;
-  isTrace?: boolean;
 }
 
-/** ### Дуга линии.
- * + `path`: {@link PolylineArcPath} — путь
- * + `closed`: {@link IsArcClosed} — замкнутость
- * @example
- * { path: [12, 15, 42, 48, 11, 10], closed: false }
- * */
+/** Дуга линии. */
 interface PolylineArc {
-  path: PolylineArcPath;
-  closed: IsArcClosed;
+  /** Путь дуги линии. Набор пар координат точек: `[x1, y1, x2, y2, ...]`. */
+  path: number[];
+  /** Является ли дуга замкнутой. */
+  closed: boolean;
 }
-
-/** Путь дуги линии. Набор пар координат точек: `[x1, y1, x2, y2, ...]`. */
-type PolylineArcPath = number[];
-
-/** Является ли дуга линии замкнутой. */
-type IsArcClosed = boolean;
 
 interface PolylineBorderStyle {
   guid: string;
@@ -261,139 +260,112 @@ interface BorderStyleDecoration {
   offsetX: number;
   offsetY: number;
   thickness?: number;
-  Shape: {Line?: ShapeLine[], Polyline?: any[]};
+  Shape: {Line?: PolylineBorderStyleLine[], Polyline?: PolylineBorderStylePolyline[]};
 }
 
-interface ShapeLine {
+interface PolylineBorderStyleLine {
   x1: number;
   x2: number;
   y1: number;
   y2: number;
 }
 
-/* -- Label -- */
-
-/** ## Подпись.
- * + `x, y` — координаты
- * + `xoffset`: {@link MapLabelOffset} — смещение по x
- * + `yoffset`: {@link MapLabelOffset} — смещение по y
- * + `halignment`: {@link MapLabelAlignment} — выравнивание по горизонтали
- * + `valignment`: {@link MapLabelAlignment} — выранивание по вертикали
- * + `text` — текст подписи
- * + `color` — цвет текста
- * + `fontname` — название шрифта
- * + `fontsize` — размер шрифта
- * + `angle`: {@link MapLabelAngle} — угол поворота подписи
- * @example
- * { type: "label", text: "222", color: "black", angle: 0, ... }
- * @see MapElement
- * @see MapElementProto
- * */
-interface MapLabel extends MapElementProto {
-  type: 'label';
-  x: number;
-  y: number;
-  xoffset: MapLabelOffset;
-  yoffset: MapLabelOffset;
-  halignment: MapLabelAlignment;
-  valignment: MapLabelAlignment;
-  text: string;
-  color: string;
-  fontname: string;
-  fontsize: number;
-  fillbkcolor?: string;
-  bold?: boolean,
-  angle: MapLabelAngle;
+interface PolylineBorderStylePolyline {
+  points: string;
 }
 
-/** ### Выравнивание подписи.
+/* -- Label -- */
+
+/** Элемент на карте типа "подпись". */
+interface MapLabel extends MapElementProto {
+  /** Тип элемента. */
+  readonly type: 'label';
+  /** Координата X опорной точки. */
+  x: number;
+  /** Координата Y опорной точки. */
+  y: number;
+  /** Смещение по X от опорной точки. */
+  xoffset: number;
+  /** Смещение по Y от опорной точки. */
+  yoffset: number;
+  /** Угол поворота в градусах. */
+  angle: number;
+  /** Текст подписи. */
+  text: string;
+  /** Вертикальное выравнивание. */
+  halignment: MapLabelAlignment;
+  /** Горизонтальное выравнивание. */
+  valignment: MapLabelAlignment;
+  /** Цвет текста. */
+  color: string;
+  /** Название шрифта. */
+  fontname: string;
+  /** Размер шрифта. */
+  fontsize: number;
+  /** Цвет фона (по умолчанию цвет вьюпорта). */
+  fillbkcolor?: string;
+  /** Если `true`, шрифт жирный. */
+  bold?: boolean;
+}
+
+/**
+ * Выравнивание подписи.
  * + `0` — горизонталь: `left`, вертикаль: `bottom`
  * + `1` — горизонталь: `center`, вертикаль: `center`
  * + `2` — горизонталь: `right`, вертикаль: `top`
- * @example
- * { ..., hAlignment: 1, vAlignment: 1 }
- * */
+ */
 type MapLabelAlignment = 0 | 1 | 2;
-
-/** Смещение подписи относительно "якоря". */
-type MapLabelOffset = number;
-
-/** Угол поворота подписи в _градусах_.
- * Нулевой угол соответствует подписи без наклона.
- * @example
- * 180 // перевернутая подпись
- * */
-type MapLabelAngle = number;
 
 /* -- Sign -- */
 
-/** Точечный объект.
- * + `x, y` — координаты
- * + `size` — размер
- * + `color` — цвет заполнения
- * + `fontname` — название шрифта
- * + `symbolcode` — ID паттерна
- * + `img`: {@link HTMLImageElement} — паттерн
- * @see MapElement
- * */
+/** Элемент на карте типа "знак". */
 interface MapSign extends MapElementProto {
-  type: 'sign';
+  /** Тип элемента. */
+  readonly type: 'sign';
+  /** Координата знака по X. */
   x: number;
+  /** Координата знака по Y. */
   y: number;
+  /** Коэффициент для размера. */
   size: number;
+  /** Цвет знака. */
   color: string;
+  /** Код группы знаков. */
   fontname: string;
+  /** Номер в группе знаков. */
   symbolcode: number;
+  /** Подготовленное изображения для отрисоки. */
   img: HTMLImageElement;
-}
-
-/* -- Map Element Prototype -- */
-
-/** Собрание полей, которые может содержать любой элемент карты.
- * + `bounds?`: {@link Bounds} — границы
- * + `attrTable?` — "аттрибутивная таблица"
- * + `transparent?` — прозрачность
- * + `selected?` — выделение (текущее состояние)
- * + `edited?` — редактируемость (текущее состояние)
- * @see MapElement
- * */
-interface MapElementProto {
-  /** Bounding Box элемента (границы). */
-  bounds?: Bounds;
-  /** Аттрибутивная таблица. */
-  attrTable?: any;
-  /** Является ли элемент или его часть прозрачной. */
-  transparent?: boolean;
-  /** Выбран ли элемент в текущий момент. */
-  selected?: boolean;
-  /** Редактируется ли элемент в текущий момент. */
-  edited?: boolean;
 }
 
 /* -- Field -- */
 
-/** Поле.
- * + `x, y` — координаты
- * + `sizeX` — количество ячеек по X
- * + `sizeY` — количество ячеек по Y
- * + `stepX` — размер шага ячейки в координатах карты по X
- * + `stepY` — размер шага ячейки в координатах карты по Y
- * + `palette` — палитра поля
- * + `sourceRenderDataMatrix` — матрица значений поля
- * @see MapElement
- * @see MapElementProto
- * */
+/** Элемент на карте типа "поле". */
 interface MapField extends MapElementProto {
-  type: 'field';
+  /** Тип элемента. */
+  readonly type: 'field';
+  /** Координата X опорной точки. */
   x: number;
+  /** Координата Y опорной точки. */
   y: number;
+  /** Размер поля по X. */
   sizex: number;
+  /** Размер поля по Y. */
   sizey: number;
+  /** Размер шага ячейки в координатах карты по X. */
   stepx: number;
+  /** Размер шага ячейки в координатах карты по Y. */
   stepy: number;
+  /** Сериализованные данные для построения матрицы значений. */
   data: string;
-  palette: MapFieldPalette;
+  /** Матрица значений, `null` означает отсутствие значения. */
   sourceRenderDataMatrix: Matrix;
+  /** Палитра цветов для отрисовки. */
+  palette: MapFieldPalette;
+
+  lastUsedPalette: MapFieldPalette;
+  deltasPalette: any[];
+  preCalculatedSpectre: any;
 }
 
 interface MapFieldPalette {
@@ -406,18 +378,44 @@ interface MapFieldPaletteLevel {
   value: number;
 }
 
-/* --- --- */
+/* --- Pie Slice ---  */
 
+/** Элемент на карте типа "сектор". */
 interface MapPieSlice extends MapElementProto {
-  type: 'pieslice';
+  /** Тип элемента. */
+  readonly type: 'pieslice';
+  /** Координата X центра окружности. */
   x: number;
+  /** Координата Y центра окружности. */
   y: number;
+  /** Радиус дуги. */
   radius: number;
+  /** Начальный угол дуги в радианах. */
   startangle: number;
+  /** Конечный угол дуги в радианах. */
   endangle: number;
+  /** Цвет градиента (0: белый -> граница: color). */
   color: string;
+  /** Цвет обводки. */
   bordercolor: string;
+  /** Код заливки. */
   fillname?: any;
+  /** Фон заливки. */
   fillbkcolor: string;
+  /** Подготовленная заливка для отрисовки. */
   fillStyle?: CanvasPattern | string;
+}
+
+/** Свойства, которые может содержать любой элемент карты. */
+interface MapElementProto {
+  /** Bounding Box элемента (границы). */
+  bounds?: Bounds;
+  /** Аттрибутивная таблица. */
+  attrTable?: any;
+  /** Является ли элемент или его часть прозрачной. */
+  transparent?: boolean;
+  /** Выбран ли элемент в текущий момент. */
+  selected?: boolean;
+  /** Редактируется ли элемент в текущий момент. */
+  edited?: boolean;
 }

@@ -1,5 +1,6 @@
+import { useObjectsStore } from 'entities/objects';
 import { useClientStore, setClientChildren } from 'entities/client';
-import { useMapStore, getMapState, setMapStatus } from 'features/map';
+import { useMapStore, setMapStatus, MapStateFactory } from 'features/map';
 import { useMultiMapStore } from './multi-map.store';
 import { MultiMapChildFactory } from '../lib/factory';
 import { getMultiMapLayout } from '../lib/layout';
@@ -9,6 +10,7 @@ export async function updateMultiMap(id: ClientID, channelData: ChannelData): Pr
   const presentation = useClientStore.getState()[id];
   const state = useMultiMapStore.getState()[id];
   const mapStates = useMapStore.getState();
+  const objects = useObjectsStore.getState();
 
   const factory = new MultiMapChildFactory(id, presentation.channels[0].info);
   const children = factory.create(channelData);
@@ -23,7 +25,7 @@ export async function updateMultiMap(id: ClientID, channelData: ChannelData): Pr
     if (mapState) {
       child.loadFlag = true;
     } else {
-      mapState = getMapState(templateFormID, false);
+      mapState = MapStateFactory.createForMultiMap(templateFormID, objects);
       mapStates[child.formID] = mapState;
     }
     child.loader = mapState.loader;

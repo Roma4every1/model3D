@@ -35,7 +35,7 @@ interface ProfileLoading {
 /** Сцена профиля. */
 interface IProfileStage {
   readonly scroller: IMapScroller;
-  handleMouseDown(event: MouseEvent): void;
+  handleMouseDown(event: MouseEvent, _?: boolean): void;
   handleMouseMove(event: MouseEvent): void;
   handleMouseWheel(event: WheelEvent): void;
 

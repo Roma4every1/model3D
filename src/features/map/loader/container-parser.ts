@@ -152,6 +152,8 @@ function createField(element: XElement): MapField {
     type: 'field', x: Number(x), y: Number(y),
     sizex: Number(sizex), sizey: Number(sizey),
     stepx: Number(stepx), stepy: Number(stepy),
-    data, palette, sourceRenderDataMatrix: undefined, attrTable,
+    data, sourceRenderDataMatrix: undefined,
+    palette, lastUsedPalette: undefined, deltasPalette: undefined,
+    preCalculatedSpectre: undefined, attrTable,
   };
 }

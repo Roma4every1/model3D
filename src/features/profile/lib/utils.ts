@@ -1,24 +1,23 @@
 import { MapLayer } from 'features/map/lib/map-layer';
 import { types } from 'features/map/drawer/map-drawer';
+import { prepareMapElements } from 'features/map/loader/prepare';
 
 
-/** Преобразует данные из контейнера профиля к данным карты (MapData) */
+/** Преобразует данные из контейнера профиля к данным карты (MapData). */
 export async function getProfileMapData(data: Record<string, GMRawLayerData>): Promise<MapData> {
   const layers: MapLayer[] = [];
   const values = Object.values(data);
 
   for (const layer of values) {
+    await prepareMapElements(layer.elements);
     for (const element of layer.elements) {
-      const t = types[element.type];
-      if (t && t.loaded) await t.loaded(element);
-
       if (element.type === 'polyline' && element.fillname) {
         for (const arc of element.arcs) arc.closed = true;
       }
     }
-    layers.push(new MapLayer({
-      ...layer, visible: true, bounds: getBounds(layer.elements), highscale: '1000000', container: '',
-    }, layer.elements));
+    const bounds = getBounds(layer.elements);
+    const info = {...layer, visible: true, bounds, highscale: '1000000', container: ''};
+    layers.push(MapLayer.fromInfo(info, layer.elements));
   }
   return {onDrawEnd: () => {}, layers} as any;
 }

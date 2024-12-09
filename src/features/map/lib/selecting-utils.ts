@@ -9,9 +9,8 @@ type TextMeasurer = (text: string) => number;
 
 /** Радиус выделения. */
 export const SELECTION_RADIUS = 0.005;
-
-export const polylineType: PolylineType = types['polyline'];
-export const piesliceType: PieSliceType = types['pieslice'];
+/** Отрисовщик объектов типа "линия" на карте. */
+export const polylineType = types['polyline'];
 
 /** Снимает выделение с элемента карты. */
 export function unselectElement(element: MapElement): void {
@@ -85,7 +84,7 @@ function checkDistanceForLabel(label: MapLabel, point: Point, scale: MapScale, m
 export function checkDistanceForPieSlice(pieslice: MapPieSlice, point: Point, scale: MapScale): boolean {
   let dx = pieslice.x - point.x;
   let dy = pieslice.y - point.y;
-  let checkAngle = 0;
+  let checkAngle: number;
 
   if (dx === 0) {
     checkAngle = (dy > 0) ? 0 : Math.PI;
@@ -137,27 +136,24 @@ function checkDistanceForSegment(p1, p2, point: Point, scale: MapScale): boolean
 
 /** Проверяет, достаточно ли далеко многоугольник находится от точки. */
 function checkDistanceForPolygon(polygon: MapPolyline, point: Point, scale: MapScale): boolean {
-  const ps = chunk(polygon.arcs[0].path, 2);
-  ps.pop();
-
-  const x = point.x;
-  const y = point.y;
-
-  let inside = false;
-
-  for (let i = 0, j = ps.length - 2; i < ps.length - 1; j = i++) {
-    const xi = ps[i][0];
-    const yi = ps[i][1];
-    const xj = ps[j][0];
-    const yj = ps[j][1];
-
-    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
-      inside = !inside;
-    }
-  }
-
-  if (inside) return inside;
+  const arc = polygon.arcs[0];
+  if (isPointInPolygon(point, arc.path)) return true;
   return checkDistanceForPolyline(polygon, point, scale);
+}
+
+function isPointInPolygon({x, y}: Point, polygon: number[]): boolean {
+  if (polygon.length < 6) return false;
+  const len = polygon.length;
+  let intersections = 0;
+
+  for (let i = 0; i < len; i += 2) {
+    const x1 = polygon[i], y1 = polygon[i + 1];
+    const x2 = polygon[(i + 2) % len], y2 = polygon[(i + 3) % len];
+
+    // пересекает ли горизонтальный луч ребро многоугольника
+    if (y1 > y !== y2 > y && x < ((x2 - x1) * (y - y1)) / (y2 - y1) + x1) ++intersections;
+  }
+  return intersections % 2 === 1;
 }
 
 /** Проверяет, достаточно ли далеко поле находится от точки. */

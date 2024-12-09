@@ -6,7 +6,7 @@ import { useParameterValue } from 'entities/parameter';
 import { useCurrentWell, useCurrentTrace, useTraceEditing, setCurrentTrace, setCurrentWell } from 'entities/objects';
 import { useMapState } from '../store/map.store';
 import { updateMap, showMapPropertyWindow } from '../store/map.thunks';
-import { setMapCanvas, applyTraceToMap } from '../store/map.actions';
+import { setMapCanvas, applyWellToMap, applyTraceToMap } from '../store/map.actions';
 import { handleTraceClick } from '../lib/traces-map-utils';
 import { getFullViewport } from '../lib/map-utils';
 import { checkDistancePoints } from '../lib/selecting-utils';
@@ -38,14 +38,14 @@ export const Map = ({id, channels}: Pick<SessionClient, 'id' | 'channels'>) => {
     if (!currentCanvas) return;
 
     if (currentWell) {
-      stage.setActivePoint(currentWell.id);
+      applyWellToMap(id, currentWell.id);
     }
     if (currentTrace && !stage.inclinometryModeOn) {
       return applyTraceToMap(id, currentTrace, true);
     }
     let initialViewport: MapViewport;
     if (currentWell) {
-      initialViewport = stage.getWellViewport(currentWell.id);
+      initialViewport = stage.getExtraObjectViewport('well');
     }
     if (!initialViewport) {
       initialViewport = getFullViewport(mapData.layers, currentCanvas);
@@ -57,26 +57,23 @@ export const Map = ({id, channels}: Pick<SessionClient, 'id' | 'channels'>) => {
 
   useEffect(() => {
     if (status !== 'ok') return;
-    const { well: lastWell, trace: lastTrace } = mapState.objects;
+    const lastWell: MapPoint = stage.getExtraObjectModel('well');
+    const lastTrace: TraceModel = stage.getExtraObjectModel('trace');
 
     const updateTraceViewport = !stage.inclinometryModeOn && currentTrace &&
-      (!lastTrace || currentTrace.id !== lastTrace.id || (traceEditing && !stage.traceEditing));
-
+      (!lastTrace || currentTrace.id !== lastTrace.id);
     if (currentTrace !== lastTrace) applyTraceToMap(id, currentTrace, updateTraceViewport);
-    stage.traceEditing = traceEditing;
 
     const updateWellViewport = !updateTraceViewport && currentWell &&
-      (!lastWell || currentWell.id !== lastWell.id);
+      (!lastWell || currentWell.id !== lastWell.UWID);
 
     if (updateWellViewport) {
-      stage.setActivePoint(currentWell.id, true);
-    } else if (lastWell?.id && !currentWell) {
-      stage.setActivePoint(null);
+      applyWellToMap(id, currentWell.id, true);
+    } else if (typeof lastWell?.UWID === 'number' && !currentWell) {
+      applyWellToMap(id, null);
       stage.render();
     }
-    mapState.objects.well = currentWell;
-    mapState.objects.trace = currentTrace;
-  }, [currentWell, currentTrace, traceEditing]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentWell, currentTrace]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* --- --- */
 
@@ -106,7 +103,7 @@ export const Map = ({id, channels}: Pick<SessionClient, 'id' | 'channels'>) => {
 
   const onMouseDown = ({nativeEvent}: MouseEvent) => {
     if (nativeEvent.button !== 0 || stage.inclinometryModeOn) return;
-    stage.handleMouseDown(nativeEvent);
+    stage.handleMouseDown(nativeEvent, traceEditing);
 
     const maxScale = mapData.layers?.find(l => l.elementType === 'sign')?.getMaxScale() ?? 50_000;
     if (mapData.scale > maxScale) return;
@@ -129,7 +126,7 @@ export const Map = ({id, channels}: Pick<SessionClient, 'id' | 'channels'>) => {
         handleTraceClick(currentTrace, mapPoint);
         setCurrentTrace({...currentTrace});
       } else {
-        stage.setActivePoint(mapPoint, true);
+        applyWellToMap(id, mapPoint.UWID, true);
         setCurrentWell(mapPoint.UWID).then();
       }
     }, 50);

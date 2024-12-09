@@ -1,9 +1,9 @@
 import type { MapPluginTypeMap } from './plugins';
+import type { MapExtraObject, MapExtraObjectConfig } from './types';
 import { canCreateTypes, MapMode } from './constants';
 import { MapSelect } from './map-select';
 import { MapLayer } from './map-layer';
 import { Scroller } from '../drawer/scroller';
-import { InclinometryPlugin } from './plugins';
 
 import { showMap } from '../drawer/maps';
 import { getDefaultMapElement } from '../components/edit-panel/editing/editing-utils';
@@ -30,8 +30,8 @@ export class MapStage implements IMapStage {
   public readonly listeners: MapStageListeners;
   /** Scroller. */
   public readonly scroller: Scroller;
-  /** Активен ли режим редактирования трассы. */
-  public traceEditing: boolean = false;
+  /** Дополнительные объекты. */
+  private readonly extraObjects: Map<MapExtraObjectID, MapExtraObject>;
 
   private data: MapData = null;
   private canvas: MapCanvas = null;
@@ -57,7 +57,7 @@ export class MapStage implements IMapStage {
   private pIndex: number = null;
 
   /** Зарегистрированные плагины карты. */
-  public plugins: IMapPlugin[] = [];
+  public readonly plugins: IMapPlugin[] = [];
   /** Включен ли режим инклинометрии. */
   public inclinometryModeOn: boolean = false;
 
@@ -66,6 +66,7 @@ export class MapStage implements IMapStage {
     this.inclinometryModeOn = this.getPlugin('incl')?.inclinometryModeOn ?? false;
     this.select = new MapSelect();
     this.scroller = new Scroller();
+    this.extraObjects = new Map();
 
     this.listeners = {
       layerTreeChange: () => {}, navigationPanelChange: () => {},
@@ -114,6 +115,14 @@ export class MapStage implements IMapStage {
     return this.data.layers.find(l => l.elements.includes(this.activeElement));
   }
 
+  public getExtraLayers(): IMapLayer[] {
+    return [...this.extraObjects.values()].map(o => o.layer);
+  }
+
+  public getNamedPoint(id: WellID): MapPoint | undefined {
+    return this.data?.points.find(p => p.UWID === id);
+  }
+
   public isElementEditing(): boolean {
     return this.editing;
   }
@@ -137,28 +146,6 @@ export class MapStage implements IMapStage {
     };
   }
 
-  public getWellViewport(v: WellID | MapPoint): MapViewport | null {
-    let point: MapPoint;
-    if (typeof v === 'number') {
-      point = this.data?.points?.find(p => p.UWID === v);
-    } else if (v) {
-      point = v;
-    }
-    if (!point) return null;
-
-    if (this.inclinometryModeOn) {
-      const scale = 5_000;
-      const inclPlugin = this.plugins.find(it => it instanceof InclinometryPlugin) as InclinometryPlugin;
-      const centerX = point.x - inclPlugin.mapShiftX * scale / window.devicePixelRatio / PIXEL_PER_METER;
-      const centerY = point.y - inclPlugin.mapShiftY * scale / window.devicePixelRatio / PIXEL_PER_METER;
-      return {centerX, centerY, scale};
-    } else {
-      const wellScale = this.data.pointLayer?.getMaxScale() ?? 50_000;
-      const scale = this.data.scale ? Math.min(this.data.scale, wellScale) : wellScale;
-      return {centerX: point.x, centerY: point.y, scale};
-    }
-  }
-
   public setCanvas(canvas: MapCanvas): void {
     this.canvas = canvas;
     if (!canvas) return;
@@ -171,26 +158,6 @@ export class MapStage implements IMapStage {
   public setData(data: MapData): void {
     this.data = data;
     this.activeLayer = null;
-    if (data) data.pointLayer = data.layers?.find(l => l.elementType === 'sign');
-  }
-
-  public setActivePoint(v: WellID | MapPoint | null, updateView?: boolean): void {
-    if (!this.data) return;
-    let point: MapPoint;
-
-    if (typeof v === 'number') {
-      point = this.data.points?.find(p => p.UWID === v);
-    } else if (v) {
-      point = v;
-    }
-
-    if (point) {
-      if (this.data.activePoint === point) return;
-      this.data.activePoint = point;
-      if (updateView) this.render(this.getWellViewport(point));
-    } else {
-      this.data.activePoint = undefined;
-    }
   }
 
   public setMode(mode: MapMode): void {
@@ -326,9 +293,55 @@ export class MapStage implements IMapStage {
     this.setActiveElement(null);
   }
 
+  /* --- Extra Objects --- */
+
+  public registerExtraObject(config: MapExtraObjectConfig): void {
+    const id = config.id;
+    const layer = MapLayer.fromConfig(id, config.layer);
+
+    this.extraObjects.set(id, {
+      id, layer, bound: config.bound, render: config.render, viewport: config.viewport,
+      objectModel: null, objectBounds: null,
+    });
+  }
+
+  public hasExtraObject(id: MapExtraObjectID): boolean {
+    return this.extraObjects.has(id);
+  }
+
+  public setExtraObjectModel(id: MapExtraObjectID, model: any): void {
+    const state = this.extraObjects.get(id);
+    if (!state) return;
+
+    if (model) {
+      state.objectModel = model;
+      state.objectBounds = state.bound(model);
+      state.layer.bounds = state.objectBounds;
+    } else {
+      state.objectModel = null;
+      state.objectBounds = null;
+      state.layer.bounds = null;
+    }
+  }
+
+  public getExtraObjectModel<T = any>(id: MapExtraObjectID): T | null {
+    return this.extraObjects.get(id)?.objectModel ?? null;
+  }
+
+  public getExtraObjectViewport(id: MapExtraObjectID): MapViewport | undefined {
+    if (!this.data || !this.canvas) return undefined;
+    const state = this.extraObjects.get(id);
+    if (!state || !state.viewport || !state.objectModel) return undefined;
+
+    return state.viewport({
+      canvas: this.canvas, stage: this,
+      objectModel: state.objectModel, objectBounds: state.objectBounds,
+    });
+  }
+
   /* --- Handlers --- */
 
-  public handleMouseDown(event: MouseEvent): void {
+  public handleMouseDown(event: MouseEvent, traceEditing: boolean): void {
     this.scroller.mouseDown(event);
     if (this.editing || this.creating) {
       this.isOnMove = this.mode === MapMode.MOVE
@@ -347,7 +360,7 @@ export class MapStage implements IMapStage {
 
       if (path.length !== oldPathLength) this.listeners.editPanelChange();
       this.render();
-    } else if (this.selecting && !this.traceEditing) {
+    } else if (this.selecting && !traceEditing) {
       const point = this.eventToPoint(event);
       this.handleSelectChange(point);
     }
@@ -419,7 +432,7 @@ export class MapStage implements IMapStage {
     }
     if (this.detach) this.detach();
     const afterUpdate = () => this.plugins.forEach(p => p.render());
-    this.detach = showMap(this.canvas, this.data, viewport, afterUpdate);
+    this.detach = showMap(this.canvas, this.data, viewport, afterUpdate, this.extraObjects);
   }
 
   /* --- Private --- */

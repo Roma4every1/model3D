@@ -22,7 +22,7 @@ export const PolylineProperties = (props: PropertyWindowProps<MapPolyline>) => {
 
   const [borderWidth, setBorderWidth] = useState(polyline.borderwidth || 0);
   const [borderColor, setBorderColor] = useState(polyline.bordercolor || null);
-  const [borderStyle, setBorderStyle] = useState(polyline.borderstyleid);
+  const [borderStyle, setBorderStyle] = useState(polyline.borderstyle);
   const [borderStyleID, setBorderStyleID] = useState(polyline.borderstyleid);
 
   const [fillName, setFillName] = useState(polyline.fillname);

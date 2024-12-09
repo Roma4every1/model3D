@@ -9,6 +9,7 @@ const componentConfig: ThemeConfig['components'] = {
   DatePicker: {cellWidth: 32, cellHeight: 16, textHeight: 24},
   Tabs: {horizontalMargin: '0', titleFontSizeSM: 13, horizontalItemPaddingSM: '1px 6px 3px'},
   Tree: {fontFamily: 'Roboto', fontSize: 12.5, controlHeightSM: 20},
+  Collapse: {fontFamily: 'Roboto'},
 };
 
 /** Размер компонентов AntDesign по умолчанию. */

@@ -33,11 +33,10 @@ export function getBoundsByPoints(path: number[]): Bounds {
 }
 
 export function getNearestPointIndex(point: Point, scale: MapScale, polyline: MapPolyline): number {
-  let minRadius, nearestIndex: number | null = null;
+  let minRadius: number, nearestIndex: number | null = null;
   const points = chunk<number>(polyline.arcs[0].path, 2);
 
   points.forEach((p, i) => {
-    //distance()
     const localDist = Math.sqrt(Math.pow(p[0] - point.x, 2) + Math.pow(p[1] - point.y, 2));
     if (!minRadius || localDist < minRadius) {
       minRadius = localDist;
@@ -47,17 +46,16 @@ export function getNearestPointIndex(point: Point, scale: MapScale, polyline: Ma
   return nearestIndex;
 }
 
-export function getNearestSegment(point, polyline: MapPolyline) {
+export function getNearestSegment(point: Point, polyline: MapPolyline): number {
   let nearestNp = 0;
-  let points = chunk<number>(polyline.arcs[0].path, 2);
+  let points = chunk(polyline.arcs[0].path, 2) as [number, number][];
   if (polyline.arcs[0].closed) {
     points = [...points, points[0]];
   }
-  let minDist = squaredDistanceBetweenPointAndSegment([points[0], points[1]], point);
+  let minDist = squaredDistanceBetweenPointAndSegment(points[0], points[1], point);
 
   for (let i = 1; i < points.length - 1; i++) {
-    let segment = [points[i], points[i + 1]];
-    let dist = squaredDistanceBetweenPointAndSegment(segment, point);
+    let dist = squaredDistanceBetweenPointAndSegment(points[i], points[i + 1], point);
 
     if (dist < minDist) {
       minDist = dist;
@@ -75,39 +73,39 @@ export function getNearestSegment(point, polyline: MapPolyline) {
   return nearestNp;
 }
 
-export function squaredDistanceBetweenPointAndSegment(segment, point) {
-  if (segment[0][0] === segment[1][0] && segment[0][1] === segment[1][1]) return Infinity;
+function squaredDistanceBetweenPointAndSegment([x1, y1]: [number, number], [x2, y2]: [number, number], point: Point): number {
+  if (x1 === x2 && y1 === y2) return Infinity;
 
-  const aSquared = Math.pow(segment[0][0] - point.x, 2) + Math.pow(segment[0][1] - point.y, 2);
-  const bSquared = Math.pow(segment[1][0] - point.x, 2) + Math.pow(segment[1][1] - point.y, 2);
-  const cSquared = Math.pow(segment[1][0] - segment[0][0], 2) + Math.pow(segment[1][1] - segment[0][1], 2);
+  const aSquared = Math.pow(x1 - point.x, 2) + Math.pow(y1 - point.y, 2);
+  const bSquared = Math.pow(x2 - point.x, 2) + Math.pow(y2 - point.y, 2);
+  const cSquared = Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
 
   if (aSquared > bSquared + cSquared) return bSquared;
   if (bSquared > aSquared + cSquared) return aSquared;
 
-  const doubleSquare = Math.abs((segment[0][0] - point.x) * (segment[1][1] - point.y) - (segment[1][0] - point.x) * (segment[0][1] - point.y));
+  const doubleSquare = Math.abs((x1 - point.x) * (y2 - point.y) - (x2 - point.x) * (y1 - point.y));
   const distance = doubleSquare * doubleSquare / cSquared;
   return isNaN(distance) ? Infinity : distance;
 }
 
 /** Определяет вьюпорт карты, чтобы все элементы влазили в экран. */
 export function getFullViewport(layers: IMapLayer[], canvas: HTMLCanvasElement): MapViewport {
-  let minX = Infinity, minY = Infinity;
-  let maxX = -Infinity, maxY = -Infinity;
+  let xMin = Infinity, yMin = Infinity;
+  let xMax = -Infinity, yMax = -Infinity;
 
   for (const layer of layers) {
     if (!layer.visible || layer.temporary) continue;
     const { min, max } = layer.bounds;
 
-    if (min.x < minX) minX = min.x;
-    if (min.y < minY) minY = min.y;
-    if (max.x > maxX) maxX = max.x;
-    if (max.y > maxY) maxY = max.y;
+    if (min.x < xMin) xMin = min.x;
+    if (min.y < yMin) yMin = min.y;
+    if (max.x > xMax) xMax = max.x;
+    if (max.y > yMax) yMax = max.y;
   }
 
-  const scaleX = 1.15 * (maxX - minX) * PIXEL_PER_METER / canvas.clientWidth;
-  const scaleY = 1.15 * (maxY - minY) * PIXEL_PER_METER / canvas.clientHeight;
-  const scale: MapScale = Math.max(scaleX, scaleY);
+  const scaleX = (xMax - xMin) * PIXEL_PER_METER / canvas.clientWidth;
+  const scaleY = (yMax - yMin) * PIXEL_PER_METER / canvas.clientHeight;
+  const scale: MapScale = 1.15 *Math.max(scaleX, scaleY);
 
-  return {centerX: (minX + maxX) / 2, centerY: (minY + maxY) / 2, scale};
+  return {centerX: (xMin + xMax) / 2, centerY: (yMin + yMax) / 2, scale};
 }

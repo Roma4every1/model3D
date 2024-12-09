@@ -13,7 +13,6 @@ interface StyleTemplateProps {
 
 
 const defaultLineWidth = 25.4 / 96.0;
-const thicknessCoefficient = window.devicePixelRatio || 1;
 const borderStyles = ['Solid', 'Dash', 'Dot', 'DashDot', 'DashDotDot', 'Clear'];
 const styleShapes = {
   Solid: [],
@@ -35,15 +34,15 @@ export const StyleTemplate = ({style, borderColor, borderWidth, borderStyle}: St
       else
         ctx.strokeStyle = borderColor;
       if (style.baseThickness)
-        ctx.lineWidth = thicknessCoefficient * style.baseThickness * defaultLineWidth * 0.001 * PIXEL_PER_METER;  // Thickness
+        ctx.lineWidth = window.devicePixelRatio * style.baseThickness * defaultLineWidth * 0.001 * PIXEL_PER_METER;  // Thickness
       else
-        ctx.lineWidth = thicknessCoefficient * (borderWidth || defaultLineWidth) * 0.001 * PIXEL_PER_METER;
+        ctx.lineWidth = window.devicePixelRatio * (borderWidth || defaultLineWidth) * 0.001 * PIXEL_PER_METER;
       if (style.strokeDashArray) {
         const dashObj = style.strokeDashArray;
         if (dashObj.onBase) {
           const dashes = dashObj.data.split(' ').map(Number);
           for (let j = dashes.length - 1; j >= 0; j--) {
-            dashes[j] = dashes[j] * thicknessCoefficient;
+            dashes[j] = dashes[j] * window.devicePixelRatio;
           }
           if (ctx.setLineDash) ctx.setLineDash(dashes);
           if (dashObj.color) ctx.strokeStyle = dashObj.color;
@@ -55,15 +54,15 @@ export const StyleTemplate = ({style, borderColor, borderWidth, borderStyle}: St
       ctx.lineTo(110, 5);
       ctx.stroke();
 
-      const options = {
-        pixelRatio: thicknessCoefficient,
-        dotsPerMeter: PIXEL_PER_METER,
-        context: ctx,
-        pointToControl: (p) => p
+      const options: MapDrawOptions = {
+        ctx: ctx,
+        dotsPerMeter: window.devicePixelRatio * PIXEL_PER_METER,
+        toMapPoint: (p) => p,
+        toCanvasPoint: (p) => p,
       };
-      const i: Partial<MapPolyline> = {
+      const i: any = {
         arcs: [{path: [0, 5, 110, 5], closed: false}],
-        borderwidth: borderWidth, style
+        borderwidth: borderWidth, style,
       };
       const decorationPathNeeded = once(() => polylineType.decorationPath(i, options, style));
       decorationPathNeeded();
@@ -76,11 +75,11 @@ export const StyleTemplate = ({style, borderColor, borderWidth, borderStyle}: St
       const baseThicknessCoefficient = Math.round((borderWidth || defaultLineWidth) / defaultLineWidth);
       const dash = styleShapes[borderStyles[borderStyle]].slice();
       for (let j = dash.length - 1; j >= 0; j--) {
-        dash[j] = dash[j] * thicknessCoefficient * baseThicknessCoefficient;
+        dash[j] = dash[j] * window.devicePixelRatio * baseThicknessCoefficient;
       }
       if (ctx.setLineDash) ctx.setLineDash(dash);
       ctx.strokeStyle = borderColor;
-      ctx.lineWidth = thicknessCoefficient * (borderWidth || defaultLineWidth) * 0.001 * PIXEL_PER_METER;
+      ctx.lineWidth = window.devicePixelRatio * (borderWidth || defaultLineWidth) * 0.001 * PIXEL_PER_METER;
       ctx.beginPath();
       ctx.moveTo(0, 5);
       ctx.lineTo(110, 5);

@@ -1,5 +1,5 @@
 import type { TabsProps } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { type TFunction, useTranslation } from 'react-i18next';
 import { Tabs } from 'antd';
 import { MapStage } from 'features/map/lib/map-stage';
 import { LayerTreeLeaf } from 'features/map/components/layer-tree/layer-tree-leaf';
@@ -11,6 +11,7 @@ import './profile.scss';
 interface ProfileLayerTabProps {
   stage: MapStage;
   layers: IMapLayer[];
+  t: TFunction;
 }
 
 
@@ -29,13 +30,13 @@ export const ProfileEditor = ({id}: {id: FormID}) => {
     },
     {
       key: '2', label: t('profile.tab-layers'), disabled: !layers,
-      children: <ProfileLayers stage={stage as MapStage} layers={layers}/>,
+      children: <ProfileLayers stage={stage as MapStage} layers={layers} t={t}/>,
     },
   ];
   return <Tabs rootClassName={'profile-editor'} items={tabs}/>;
 };
 
-const ProfileLayers = ({layers, stage}: ProfileLayerTabProps) => {
+const ProfileLayers = ({layers, stage, t}: ProfileLayerTabProps) => {
   if (!layers || layers.length === 0) return null;
-  return layers.map((l: IMapLayer) => <LayerTreeLeaf key={l.id} layer={l} stage={stage}/>);
+  return layers.map(l => <LayerTreeLeaf key={l.id} layer={l} stage={stage} t={t}/>);
 };

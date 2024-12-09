@@ -1,59 +1,73 @@
-import { useState, useMemo } from 'react';
-import { LayerTreeNode } from './layer-tree-node';
+import { type ReactElement, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useRender } from 'shared/react';
 import { useMapState } from '../../store/map.store';
+import { Collapse } from 'antd';
+import { LayerTreeLeaf } from './layer-tree-leaf';
 import './layer-tree.scss';
 
 
-interface MapLayerTreeProps {
-  /** ID формы карты. */
-  id: FormID;
+interface LayerTreeItem {
+  key: number | string;
+  layer?: IMapLayer;
+  pathItem?: string;
+  children?: LayerTreeItem[];
 }
-
 
 /** Дерево слоёв карты. */
-export const MapLayerTree = ({id}: MapLayerTreeProps) => {
+export const MapLayerTree = ({id}: {id: FormID}) => {
+  const { t } = useTranslation();
+  const render = useRender();
   const mapState = useMapState(id);
+
   const stage = mapState?.stage;
+  if (stage) stage.listeners.layerTreeChange = render;
+
   const layers = stage?.getMapData()?.layers;
+  const extraLayers = stage?.getExtraLayers();
 
-  const [signal, setSignal] = useState(false);
-  if (stage) stage.listeners.layerTreeChange = () => setSignal(!signal);
-
-  const treeItems = useMemo(() => {
-    return getTreeItems(layers);
+  const rootNodes = useMemo(() => {
+    if (!layers || layers.length === 0) return [];
+    return createLayerTree(layers);
   }, [layers]);
 
-  const itemToElement = (item: LayerTreeItem, i: number) => {
-    return <LayerTreeNode key={i} item={item} stage={stage}/>;
+  const toElement = (item: LayerTreeItem): ReactElement => {
+    const { key, layer } = item;
+    if (layer) return <LayerTreeLeaf key={key} stage={stage} layer={layer} t={t}/>;
+    const children = item.children.map(toElement);
+    return <Collapse key={key} items={[{key, label: item.pathItem, children}]}/>;
   };
-  return <div>{treeItems.map(itemToElement)}</div>;
+
+  let extraElement: ReactElement;
+  if (extraLayers && extraLayers.length > 0) {
+    const children = extraLayers.map((layer: IMapLayer) => {
+      return <LayerTreeLeaf key={layer.id} stage={stage} layer={layer} t={t}/>;
+    });
+    extraElement = <Collapse items={[{key: 0, label: t('map.layer-tree.extra-group'), children}]}/>;
+  }
+  return (
+    <div className={'map-layer-tree'}>
+      {rootNodes.map(toElement)}
+      {extraElement}
+    </div>
+  );
 };
 
-function getTreeItems(layers: IMapLayer[]): LayerTreeItem[] {
-  const tree: LayerTreeItem[] = [];
-  if (!layers) return tree;
+function createLayerTree(layers: IMapLayer[]): LayerTreeItem[] {
+  let key = 0;
+  const rootNode: LayerTreeItem = {key, children: []};
 
   for (const layer of layers) {
-    if (!layer.group || layer.group.length === 0) {
-      tree.push(getGroupForTree(layer));
-    } else {
-      let parent = null;
-      layer.group.split('\\').forEach((part) => {
-        const trimPart = part.trim();
-        const parentArray = parent?.items ?? tree;
-        const index = parent?.items ? parent.index + '_' + parentArray.length : parentArray.length + '';
-        parent = parentArray.find(p => p?.id === trimPart);
-        if (!parent) {
-          parent = {index, id: trimPart, text: trimPart, expanded: true, items: []};
-          parentArray.push(parent);
-        }
-      });
-      parent.items.push(getGroupForTree(layer));
-    }
-  }
-  return tree;
-}
+    let node = rootNode;
+    for (const pathItem of layer.treePath) {
+      let nodeItem = node.children.find(i => i.pathItem === pathItem);
+      if (nodeItem) { node = nodeItem; continue; }
 
-function getGroupForTree(layer: IMapLayer): LayerTreeItem {
-  return {id: layer.id, text: layer.displayName, sublayer: layer, visible: layer.visible};
+      nodeItem = {key: ++key, pathItem, children: []};
+      node.children.push(nodeItem);
+      node = nodeItem;
+    }
+    node.children.push({key: layer.id, layer});
+  }
+  return rootNode.children;
 }

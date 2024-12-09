@@ -1,19 +1,17 @@
 import { getLabelTextNumberArray } from './label-text-parser';
 
 
-export class LabelDrawer implements LabelType {
-  public readonly name = 'label' as const;
-
-  public bound(point: Point): Bounds {
-    return {min: point, max: point};
+export class LabelDrawer implements MapElementDrawer<MapLabel> {
+  public bound(label: MapLabel): Bounds {
+    return {min: label, max: label};
   }
 
-  public draw(label: MapLabel, options: MapDrawOptions): void {
-    const ctx = options.context;
+  public draw(label: Readonly<MapLabel>, options: MapDrawOptions): void {
+    const ctx = options.ctx;
     const dotsPerMeter = options.dotsPerMeter;
 
     // pt -> meters -> pixels
-    const fontsize = (label.fontsize + (label.selected ? 2 : 0)) * (1 / 72 * 0.0254) * dotsPerMeter;
+    const fontsize = (label.fontsize + (label.selected ? 2 : 0)) * (4 / 3) * window.devicePixelRatio;
     if (fontsize < 2) return;
     const font = fontsize + 'px "' + label.fontname + '"';
 
@@ -133,7 +131,7 @@ export class LabelDrawer implements LabelType {
       }
     };
 
-    const anchor = options.pointToControl(label);
+    const anchor = options.toCanvasPoint(label);
     const angle = -(label.angle ?? 0) / 180 * Math.PI;
 
     const point: Point = {

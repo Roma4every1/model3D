@@ -1,10 +1,10 @@
-import type { MapInfo, MapLayerInfo } from '../lib/types';
+import type { MapInfo, MapLayerInfo } from '../lib/types.dto';
 import type { MapContainer } from './container-parser';
 import { MapLayer } from '../lib/map-layer';
 import { mapAPI } from './map.api';
-import { types } from '../drawer/map-drawer';
 import { provider } from '../drawer';
 import { parseMapContainer } from './container-parser';
+import { prepareMapElements } from './prepare';
 
 
 /** Загрузчик данных карты. */
@@ -63,7 +63,7 @@ export class MapLoader implements IMapLoader {
     for (const layerInfo of mapInfo.layers) {
       const layer = await this.createLayer(layerInfo, containers);
       if (this.errorCounter > 3) throw new Error();
-      layers.push(layer);
+      if (layer) layers.push(layer);
     }
     return {...mapInfo, layers, points};
   }
@@ -72,21 +72,18 @@ export class MapLoader implements IMapLoader {
     try {
       const containerName = info.container;
       const container = data[containerName];
-      if (!container) return;
+      if (!container) return null;
 
       const layerElements = info.uid.includes(containerName)
         ? container.layers[info.uid.replace(containerName, '')]
         : container.layers[info.uid];
 
-      for (const element of layerElements) {
-        const t = types[element.type];
-        if (t && t.loaded) await t.loaded(element);
-      }
-      return new MapLayer(info, layerElements);
+      await prepareMapElements(layerElements);
+      return MapLayer.fromInfo(info, layerElements);
     } catch (e) {
       if (e instanceof DOMException) throw e; // aborted
       ++this.errorCounter;
-      return new MapLayer(info, [])
+      return null;
     }
   }
 

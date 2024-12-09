@@ -1,9 +1,13 @@
 import type { Translator } from './translator';
+import type { MapExtraObject } from '../lib/types';
 import { startPaint } from './map-drawer';
 import { getTranslator } from './translator';
 
 
-export function showMap(canvas: MapCanvas, map: MapData, viewport: MapViewport, afterUpdate?: () => void) {
+export function showMap(
+  canvas: MapCanvas, map: MapData, viewport: MapViewport,
+  afterUpdate?: () => void, extra?: Map<MapExtraObjectID, MapExtraObject>,
+) {
   const { centerX, centerY, scale } = viewport;
   let coords: Translator;
   let uiMode: boolean;
@@ -79,7 +83,7 @@ export function showMap(canvas: MapCanvas, map: MapData, viewport: MapViewport, 
     canvasEvents.emit('init', coords);
 
     const ctx = canvas.getContext('2d');
-    const options = {onCheckExecution, coords, point, ctx, draftDrawing: true};
+    const options = {onCheckExecution, coords, point, ctx, draftDrawing: true, extra};
     ctx.clearRect(0, 0, width, height);
 
     if (uiMode) {

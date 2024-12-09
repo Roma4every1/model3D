@@ -77,7 +77,7 @@ export class TableRowParameter implements Parameter<'tableRow'> {
     if (dataType === 'null' || value === null) {
       return '';
     } else if (dataType === 'string') {
-      return (value as string).replaceAll(/([#|])/g, '\\$1');
+      return (value as string).replaceAll(/([#|\\])/g, '\\$1');
     }
     return String(value);
   }

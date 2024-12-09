@@ -1,5 +1,5 @@
 import type { Res } from 'shared/lib';
-import type { MapInfo } from '../lib/types';
+import type { MapInfo } from '../lib/types.dto';
 import { Fetcher, fetcher } from 'shared/lib';
 import { MapContainerConverter } from './container-converter';
 

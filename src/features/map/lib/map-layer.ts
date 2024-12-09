@@ -1,13 +1,21 @@
-import type { MapLayerInfo } from './types';
+import type { MapLayerInfo } from './types.dto';
+import type { MapExtraObjectLayerConfig } from './types';
 
+
+interface MapLayerInit {
+  readonly uid: string;
+  readonly name: string;
+  readonly group?: string;
+  readonly container?: string;
+}
 
 export class MapLayer implements IMapLayer {
   /** ID слоя карты. */
   public readonly id: string;
-  /** Группировка в дереве слоёв. */
-  public readonly group: string;
   /** Название слоя. */
   public readonly displayName: string;
+  /** Группировка в дереве слоёв. */
+  public readonly treePath: string[];
 
   /** Элементы на текущем слое. */
   public elements: MapElement[];
@@ -30,32 +38,47 @@ export class MapLayer implements IMapLayer {
   /** Является ли слой временным (для трасс). */
   public readonly temporary: boolean;
   /** ID контейнера карты. */
-  private readonly container: string;
+  private readonly container?: string;
 
-  constructor(info: MapLayerInfo, elements: MapElement[], temporary: boolean = false) {
-    this.id = info.uid;
-    this.group = info.group;
-    this.displayName = info.name;
+  /** Создания слоя для данных карты. */
+  public static fromInfo(info: MapLayerInfo, elements: MapElement[]): MapLayer {
+    const layer = new MapLayer(info, elements, false);
+    layer.bounds = info.bounds;
+    layer.minScale = parseScale(info.lowscale);
+    layer.maxScale = parseScale(info.highscale);
+    layer.visible = info.visible ?? true;
+    return layer;
+  }
+
+  /** Создание слоя для дополнительного объекта. */
+  public static fromConfig(id: string, config: MapExtraObjectLayerConfig): MapLayer {
+    const layer = new MapLayer({uid: id, name: config.displayName}, [], true);
+    layer.bounds = {min: {x: 0, y: 0}, max: {x: 0, y: 0}};
+    layer.minScale = config.minScale;
+    layer.maxScale = config.maxScale;
+    layer.visible = config.visible ?? true;
+    return layer;
+  }
+
+  private constructor(init: MapLayerInit, elements: MapElement[], temporary: boolean) {
+    this.id = init.uid;
+    this.displayName = init.name;
+    this.treePath = init.group?.split('\\').map(s => s.trim()) ?? [];
 
     this.elements = elements;
-    this.elementType = elements[0]?.type ?? 'polyline';
-    this.bounds = info.bounds;
-
-    this.minScale = parseScale(info.lowscale);
-    this.maxScale = parseScale(info.highscale);
-    this.visible = info.visible;
+    this.elementType = elements[0]?.type ?? null;
 
     this.active = false;
     this.modified = false;
     this.temporary = temporary;
-    this.container = info.container;
+    this.container = init.container;
   }
 
-  public getMinScale(): number {
+  public getMinScale(): MapScale {
     return this.minScale;
   }
 
-  public getMaxScale(): number {
+  public getMaxScale(): MapScale {
     return this.maxScale;
   }
 
@@ -63,20 +86,20 @@ export class MapLayer implements IMapLayer {
     return this.minScale <= scale && scale <= this.maxScale;
   }
 
-  public setMinScale(scale: number): void {
+  public setMinScale(scale: MapScale): void {
     this.minScale = scale;
   }
 
-  public setMaxScale(scale: number): void {
+  public setMaxScale(scale: MapScale): void {
     this.maxScale = scale;
   }
 
   public toInit(): MapLayerInfo & {elements: MapElement[], modified: boolean} {
     return {
-      uid: this.id, name: this.displayName, group: this.group,container: this.container,
+      uid: this.id, name: this.displayName, group: this.treePath.join('\\'),
       lowscale: serializeScale(this.minScale), highscale: serializeScale(this.maxScale),
       bounds: this.bounds, visible: this.visible,
-      elements: this.elements, modified: this.modified,
+      container: this.container, elements: this.elements, modified: this.modified,
     };
   }
 }

@@ -7,21 +7,21 @@ import { FieldProperties } from '../components/edit-panel/properties-window/fiel
 import { PiesliceProperties } from '../components/edit-panel/properties-window/pieslice/pieslice-properties';
 
 
-
-/** ### Режимы редактирования карты.
+/**
+ * Режимы редактирования карты.
  * + `AWAIT_POINT` — ожидание точки нового элемента
  *
- * **Режимы редактирования элемента**:
+ * Режимы редактирования элемента:
  * + `MOVE_MAP` — двигать карту
  * + `MOVE` — переместить элемент
  * + `ROTATE` — повернуть элемент
  *
- * **Режимы редактирования линии/области**:
+ * Режимы редактирования линии/области:
  * + `MOVE_POINT` — переместить точку
  * + `ADD_END` — добавить точку в конец
  * + `ADD_BETWEEN` — добавить точку
  * + `DELETE_POINT` — удалить точку
- * */
+ */
 export const enum MapMode {
   AWAIT_POINT = 1,
 
@@ -55,14 +55,14 @@ export const elementEditModes: Record<MapElementType, MapMode[]> = {
   sign: [
     MapMode.MOVE_MAP, MapMode.MOVE,
   ],
-  field: [],
-  pieslice:[
+  pieslice: [
     MapMode.MOVE_MAP, MapMode.MOVE,
   ],
+  field: [],
 };
 
 /** Типы элементов, которые можно создать. */
-export const canCreateTypes: MapElementType[] = ['polyline', 'sign', 'label','pieslice'];
+export const canCreateTypes: MapElementType[] = ['polyline', 'sign', 'label', 'pieslice'];
 
 export const propertyWindowConfig: Record<MapElementType, PropertyWindowConfig> = {
   'sign': {
