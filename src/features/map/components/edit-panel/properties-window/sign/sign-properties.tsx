@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PropertyWindowProps, gradientSettings } from '../properties-utils';
-import { provider } from '../../../../drawer';
+import { signProvider } from '../../../../drawer/sign-provider';
 import { Button } from '@progress/kendo-react-buttons';
 import { DropDownList, DropDownListChangeEvent } from '@progress/kendo-react-dropdowns';
 import { coordinateFormat } from '../../../../lib/constants';
@@ -26,7 +26,7 @@ export const SignProperties = (props: PropertyWindowProps<MapSign>) => {
   const [fontName, setFontName] = useState(sign.fontname);
   const [symbolCode, setSymbolCode] = useState(sign.symbolcode);
 
-  const fontData = provider.getSignFontData(fontName);
+  const fontData = signProvider.getFontData(fontName);
   const validFontData = Boolean(fontData.id);
   const { minIndex, maxIndex } = fontData;
 
@@ -34,7 +34,7 @@ export const SignProperties = (props: PropertyWindowProps<MapSign>) => {
   useEffect(() => {
     if (minIndex <= symbolCode && symbolCode <= maxIndex) return;
     setSymbolCode(minIndex); sign.symbolcode = minIndex;
-    provider.getSignImage(sign.fontname, sign.symbolcode, sign.color).then(img => {
+    signProvider.getImage(sign.fontname, sign.symbolcode, sign.color).then(img => {
       sign.img = img; update();
     });
   }, [symbolCode, minIndex, maxIndex, sign, update]);
@@ -57,19 +57,19 @@ export const SignProperties = (props: PropertyWindowProps<MapSign>) => {
   const onColorChange = async ({value}: ColorPickerChangeEvent) => {
     setColor(value);
     sign.color = value;
-    sign.img = await provider.getSignImage(sign.fontname, sign.symbolcode, sign.color);
+    sign.img = await signProvider.getImage(sign.fontname, sign.symbolcode, sign.color);
     onChange();
   };
   const onFontNameChange = async ({value}: DropDownListChangeEvent) => {
     setFontName(value.id);
     sign.fontname = value.id;
-    sign.img = await provider.getSignImage(sign.fontname, sign.symbolcode, sign.color);
+    sign.img = await signProvider.getImage(sign.fontname, sign.symbolcode, sign.color);
     onChange();
   };
   const onSymbolCodeChange = async ({value}: NumericTextBoxChangeEvent) => {
     setSymbolCode(value);
     sign.symbolcode = value;
-    sign.img = await provider.getSignImage(sign.fontname, sign.symbolcode, sign.color);
+    sign.img = await signProvider.getImage(sign.fontname, sign.symbolcode, sign.color);
     onChange();
   };
 
@@ -109,7 +109,7 @@ export const SignProperties = (props: PropertyWindowProps<MapSign>) => {
           <div className={'edit-field'}>
             <span>Фонт:</span>
             <DropDownList
-              data={provider.fontData} value={fontData} onChange={onFontNameChange}
+              data={signProvider.fontData} value={fontData} onChange={onFontNameChange}
               dataItemKey={'id'} textField={'name'} valid={validFontData}
             />
           </div>

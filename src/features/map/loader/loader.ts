@@ -2,7 +2,7 @@ import type { MapInfo, MapLayerInfo } from '../lib/types.dto';
 import type { MapContainer } from './container-parser';
 import { MapLayer } from '../lib/map-layer';
 import { mapAPI } from './map.api';
-import { provider } from '../drawer';
+import { signProvider } from '../drawer/sign-provider';
 import { parseMapContainer } from './container-parser';
 import { prepareMapElements } from './prepare';
 
@@ -52,7 +52,7 @@ export class MapLoader implements IMapLoader {
   private async loadMap(mapID: MapID, storageID: MapStorageID): Promise<MapData> {
     const res = await mapAPI.getMapInfo(mapID, this.formID, this.abortController.signal);
     if (!res.ok) throw new Error('Ошибка при получении данных карты');
-    await provider.initialize();
+    await signProvider.initialize();
 
     const mapInfo = res.data;
     const containers = await this.loadContainers(mapInfo, storageID);

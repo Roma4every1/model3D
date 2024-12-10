@@ -1,5 +1,5 @@
 import { TFunction } from 'react-i18next';
-import { provider } from '../../../drawer';
+import { signProvider } from '../../../drawer/sign-provider';
 
 
 export function getDefaultMapElement(type: MapElementType, point: Point): MapElement {
@@ -13,8 +13,8 @@ export function getDefaultMapElement(type: MapElementType, point: Point): MapEle
 function getDefaultSign(point: Point): MapSign {
   return {
     type: 'sign',
-    color: provider.defaultSignColor, fontname: provider.defaultSignLib,
-    symbolcode: 0, img: provider.defaultSignImage,
+    color: signProvider.defaultColor, fontname: signProvider.defaultLib,
+    symbolcode: 0, img: signProvider.defaultImage,
     size: 1.3, x: point.x, y: point.y,
   };
 }

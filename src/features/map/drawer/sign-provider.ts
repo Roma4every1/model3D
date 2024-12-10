@@ -13,30 +13,29 @@ export interface SignFontData {
   maxIndex: number;
 }
 
-
-export class MapProvider {
-  public readonly defaultSignLib = 'PNT.CHR';
-  public readonly defaultSignColor = '#000000';
-  public defaultSignImage: HTMLImageElement;
+export class MapSignProvider {
   public readonly fontData: SignFontData[] = [];
+  public readonly defaultLib = 'PNT.CHR';
+  public readonly defaultColor = '#000000';
+  public defaultImage: HTMLImageElement;
 
   private initialized: boolean = false;
-  private lib: SignImageLibrary = {};
+  private libs: SignImageLibrary = {};
   private readonly cache: Record<string, Promise<HTMLImageElement>> = {};
 
-  public getSignImage(fontID: string, index: number, color: string): Promise<HTMLImageElement> {
-    const hash = fontID + index + color;
+  public getImage(lib: string, index: number, color: string): Promise<HTMLImageElement> {
+    const hash = lib + index + color;
     if (this.cache[hash]) return this.cache[hash];
 
-    let getter = this.lib[fontID.toUpperCase()]?.get(index);
-    if (!getter) getter = this.lib[this.defaultSignLib].get(0);
+    let getter = this.libs[lib.toUpperCase()]?.get(index);
+    if (!getter) getter = this.libs[this.defaultLib].get(0);
     const imageData = loadImageData(getter(color));
 
     this.cache[hash] = imageData;
     return imageData;
   }
 
-  public getSignFontData(id: string): SignFontData {
+  public getFontData(id: string): SignFontData {
     const data = this.fontData.find(d => d.id === id);
     return data ?? {id: '', name: 'unknown', minIndex: 0, maxIndex: 0};
   }
@@ -44,23 +43,23 @@ export class MapProvider {
   public async initialize(): Promise<void> {
     if (this.initialized) return;
     try {
-      const data = await fetch(symbolDef, {credentials: 'include'}).then(r => r.arrayBuffer());
-      this.lib = parseDef(def2json(new TextDecoder('cp1251').decode(data)));
+      const data = await fetch(symbolDef).then(r => r.arrayBuffer());
+      this.libs = parseDef(def2json(new TextDecoder('cp1251').decode(data)));
     } catch {
-      this.lib = {}; // handler below
+      this.libs = {}; // handler below
     }
 
-    const libIDs = Object.keys(this.lib);
-    if (libIDs.length === 0 || !libIDs.includes(this.defaultSignLib)) {
+    const libIDs = Object.keys(this.libs);
+    if (libIDs.length === 0 || !libIDs.includes(this.defaultLib)) {
       const map = new Map<number, SignImageGetter>();
       map.set(0, () => '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
-      this.lib[this.defaultSignLib] = map;
-      libIDs.push(this.defaultSignLib);
+      this.libs[this.defaultLib] = map;
+      libIDs.push(this.defaultLib);
     }
 
     for (const id of libIDs) {
       let minIndex = Infinity, maxIndex = -Infinity;
-      for (const index of this.lib[id].keys()) {
+      for (const index of this.libs[id].keys()) {
         if (index < minIndex) minIndex = index;
         if (index > maxIndex) maxIndex = index;
       }
@@ -68,7 +67,7 @@ export class MapProvider {
       this.fontData.push({id, name, minIndex, maxIndex});
     }
 
-    this.defaultSignImage = await this.getSignImage(this.defaultSignLib, 0, this.defaultSignColor);
+    this.defaultImage = await this.getImage(this.defaultLib, 0, this.defaultColor);
     this.initialized = true;
   }
 }
@@ -88,4 +87,4 @@ function loadImageData(data: string): Promise<HTMLImageElement> {
   return img;
 }
 
-export const provider = new MapProvider();
+export const signProvider = new MapSignProvider();

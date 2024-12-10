@@ -1,6 +1,6 @@
 import { chunk, cloneDeep } from 'lodash';
 import { fillPatterns } from 'shared/drawing';
-import { provider } from '../drawer';
+import { signProvider } from '../drawer/sign-provider';
 import linesDefStub from '../drawer/lines.def.stub.json';
 
 
@@ -30,7 +30,7 @@ function preparePolyline(p: MapPolyline): void {
 }
 
 async function prepareSign(sign: MapSign): Promise<void> {
-  sign.img = await provider.getSignImage(sign.fontname, sign.symbolcode, sign.color);
+  sign.img = await signProvider.getImage(sign.fontname, sign.symbolcode, sign.color);
 }
 
 /* --- Field Preparation --- */

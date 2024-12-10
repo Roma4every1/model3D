@@ -8,6 +8,15 @@ import { FieldDrawer } from './field-drawer';
 import { PIXEL_PER_METER } from '../lib/map-utils';
 
 
+interface StartPaintOptions {
+  readonly ctx: CanvasRenderingContext2D;
+  readonly point: Point;
+  readonly coords: Translator;
+  readonly onCheckExecution: () => void | Promise<void>;
+  readonly extra?: Map<MapExtraObjectID, MapExtraObject>;
+  draftDrawing: boolean;
+}
+
 export const types = {
   polyline: new PolylineDrawer(),
   label: new LabelDrawer(),
@@ -24,10 +33,10 @@ function intersects(a: Bounds, b: Bounds): boolean {
     && (b.min.y < a.max.y);
 }
 
-export async function startPaint(canvas: HTMLCanvasElement, map: MapData, options: any): Promise<void> {
-  const coords: Translator = options.coords;
+export async function startPaint(map: MapData, options: StartPaintOptions): Promise<void> {
+  const { ctx, coords, onCheckExecution } = options;
   const topLeft = coords.pointToMap({x: 0, y: 0});
-  const bottomRight = coords.pointToMap({x: canvas.width, y: canvas.height});
+  const bottomRight = coords.pointToMap({x: ctx.canvas.width, y: ctx.canvas.height});
 
   const bounds: Bounds = {
     min: {x: Math.min(topLeft.x, bottomRight.x), y: Math.min(topLeft.y, bottomRight.y)},
@@ -41,7 +50,7 @@ export async function startPaint(canvas: HTMLCanvasElement, map: MapData, option
   bounds.max.y += d;
 
   const drawOptions: MapDrawOptions = {
-    ctx: options.ctx,
+    ctx: ctx,
     dotsPerMeter: window.devicePixelRatio * PIXEL_PER_METER,
     toMapPoint: coords.pointToMap,
     toCanvasPoint: coords.pointToControl,
@@ -49,8 +58,7 @@ export async function startPaint(canvas: HTMLCanvasElement, map: MapData, option
 
   const noDrafts = !options.draftDrawing;
   const mapScale = coords.mapScale;
-  const extraObjects: Map<MapExtraObjectID, MapExtraObject> = options.extra;
-  const onCheckExecution = options.onCheckExecution;
+  const extraObjects = options.extra;
 
   map.x = options.point.x;
   map.y = options.point.y;

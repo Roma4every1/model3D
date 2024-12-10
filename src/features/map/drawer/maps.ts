@@ -55,7 +55,7 @@ export function showMap(
     const drawFlag = canvas.showMapFlag.mapDrawCycle = {};
     let count = 0;
 
-    const onCheckExecution = () => {
+    const onCheckExecution = (): void | Promise<void> => {
       if (changeCanvas()) throw new Error('map drawer is detached');
       if (drawFlag !== canvas.showMapFlag.mapDrawCycle) throw new Error('stop');
 
@@ -87,12 +87,11 @@ export function showMap(
     ctx.clearRect(0, 0, width, height);
 
     if (uiMode) {
-      await startPaint(canvas, map, options);
-      // sleep for 400ms
+      await startPaint(map, options);
       await new Promise((resolve) => setTimeout(resolve, 200));
     }
     options.draftDrawing = false;
-    await startPaint(canvas, map, options);
+    await startPaint(map, options);
     if (afterUpdate) afterUpdate();
   }
 }

@@ -96,10 +96,7 @@ export class MapStage implements IMapStage {
 
   public getMapDataToSave(): any {
     const layers = this.data.layers.filter(l => !l.temporary).map(l => l.toInit());
-    return {
-      ...this.data, layers, activePoint: undefined, pointLayer: undefined,
-      x: undefined, y: undefined, scale: undefined, onDrawEnd: undefined,
-    };
+    return {...this.data, layers, x: undefined, y: undefined, scale: undefined, onDrawEnd: undefined};
   }
 
   public getActiveLayer(): MapLayer {
