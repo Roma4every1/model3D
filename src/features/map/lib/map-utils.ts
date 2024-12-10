@@ -107,5 +107,5 @@ export function getFullViewport(layers: IMapLayer[], canvas: HTMLCanvasElement):
   const scaleY = (yMax - yMin) * PIXEL_PER_METER / canvas.clientHeight;
   const scale: MapScale = 1.15 *Math.max(scaleX, scaleY);
 
-  return {centerX: (xMin + xMax) / 2, centerY: (yMin + yMax) / 2, scale};
+  return {cx: (xMin + xMax) / 2, cy: (yMin + yMax) / 2, scale};
 }

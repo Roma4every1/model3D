@@ -426,10 +426,7 @@ export class MapStage implements IMapStage {
 
   public render(viewport?: MapViewport): void {
     if (!this.canvas || !this.data) return;
-    if (!viewport) {
-      // if (this.data.x === undefined) return;
-      viewport = {centerX: this.data.x, centerY: this.data.y, scale: this.data.scale};
-    }
+    if (!viewport) viewport = {cx: this.data.x, cy: this.data.y, scale: this.data.scale};
     if (this.detach) this.detach();
     const afterUpdate = () => this.plugins.forEach(p => p.render());
     this.detach = showMap(this.canvas, this.data, viewport, afterUpdate, this.extraObjects);

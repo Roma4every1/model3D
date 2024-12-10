@@ -34,14 +34,14 @@ function wellViewport(payload: MapExtraObjectViewPayload): MapViewport {
   if (stage.inclinometryModeOn) {
     const scale = 5_000;
     const inclPlugin = stage.getPlugin('incl');
-    const centerX = point.x - inclPlugin.mapShiftX * scale / window.devicePixelRatio / PIXEL_PER_METER;
-    const centerY = point.y - inclPlugin.mapShiftY * scale / window.devicePixelRatio / PIXEL_PER_METER;
-    return {centerX, centerY, scale};
+    const cx = point.x - inclPlugin.mapShiftX * scale / window.devicePixelRatio / PIXEL_PER_METER;
+    const cy = point.y - inclPlugin.mapShiftY * scale / window.devicePixelRatio / PIXEL_PER_METER;
+    return {cx, cy, scale};
   } else {
     const data = stage.getMapData();
     const pointLayer = data.layers.find(l => l.elementType === 'sign');
     const wellScale = pointLayer?.getMaxScale() ?? 50_000;
     const scale = data.scale ? Math.min(data.scale, wellScale) : wellScale;
-    return {centerX: point.x, centerY: point.y, scale};
+    return {cx: point.x, cy: point.y, scale};
   }
 }

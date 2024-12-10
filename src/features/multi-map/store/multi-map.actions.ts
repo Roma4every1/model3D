@@ -10,7 +10,7 @@ export function setMultiMapSync(id: ClientID, sync: boolean): void {
   if (sync && children.length) {
     const stage = children[0].stage;
     const { x, y, scale } = stage.getMapData();
-    stage.getCanvas().events.emit('sync', {centerX: x, centerY: y, scale});
+    stage.getCanvas().events.emit('sync', {cx: x, cy: y, scale});
   }
   useMultiMapStore.setState({[id]: {...multiMapState, sync}});
 }

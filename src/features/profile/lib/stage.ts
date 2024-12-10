@@ -66,19 +66,14 @@ export class ProfileStage implements IProfileStage {
   public updateViewport(): void {
     if (!this.canvas) return;
     if (!this.data?.layers) return;
-
     const mapBounds = getBounds(this.data.layers as MapLayer[]);
 
     const scale = (mapBounds.max.y - mapBounds.min.y)
       * PIXEL_PER_METER / this.canvas.clientHeight * 1.3;
 
     const viewportWidth = this.canvas.clientWidth / PIXEL_PER_METER * scale / 1.3;
-
-    const centerX = mapBounds.min.x + viewportWidth / 2;
-    const centerY = (mapBounds.min.y + mapBounds.max.y) / 2;
-
-    this.data.x = centerX;
-    this.data.y = centerY;
+    this.data.x = mapBounds.min.x + viewportWidth / 2;
+    this.data.y = (mapBounds.min.y + mapBounds.max.y) / 2;
     this.data.scale = scale;
   }
 
@@ -87,7 +82,7 @@ export class ProfileStage implements IProfileStage {
     if (!this.canvas || !this.data) return;
     if (!viewport) {
       if (this.data.x === undefined) return;
-      viewport = {centerX: this.data.x, centerY: this.data.y, scale: this.data.scale};
+      viewport = {cx: this.data.x, cy: this.data.y, scale: this.data.scale};
     }
     if (this.detach) this.detach();
     this.detach = showMap(this.canvas, this.data, viewport);

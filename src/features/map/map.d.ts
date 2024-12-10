@@ -107,8 +107,8 @@ type MapCanvas = HTMLCanvasElement & {
 /* --- --- */
 
 interface MapViewport {
-  centerX: number;
-  centerY: number;
+  cx: number;
+  cy: number;
   scale: MapScale;
 }
 

@@ -59,13 +59,13 @@ function traceViewport(payload: MapExtraObjectViewPayload<TraceModel>): MapViewp
   if (payload.objectModel.nodes.length === 0) return;
   const { min, max } = payload.objectBounds;
 
-  const centerX = (min.x + max.x) / 2;
-  const centerY = (min.y + max.y) / 2;
+  const cx = (min.x + max.x) / 2;
+  const cy = (min.y + max.y) / 2;
 
   const sizeX = Math.abs(max.x - min.x);
   const sizeY = Math.abs(max.y - min.y);
 
   const { clientWidth, clientHeight } = payload.canvas;
   const kScale = 1.2 * Math.max(sizeX / clientWidth, sizeY / clientHeight);
-  return {centerX, centerY, scale: kScale * PIXEL_PER_METER};
+  return {cx, cy, scale: kScale * PIXEL_PER_METER};
 }

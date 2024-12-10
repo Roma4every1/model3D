@@ -8,7 +8,7 @@ export function showMap(
   canvas: MapCanvas, map: MapData, viewport: MapViewport,
   afterUpdate?: () => void, extra?: Map<MapExtraObjectID, MapExtraObject>,
 ) {
-  const { centerX, centerY, scale } = viewport;
+  const { cx, cy, scale } = viewport;
   let coords: Translator;
   let uiMode: boolean;
   const canvasFlag = canvas.showMapFlag = {};
@@ -21,7 +21,7 @@ export function showMap(
   };
   const onCS = (newCS: MapViewport) => {
     if (changeCanvas()) return;
-    const mapCenter = {x: newCS.centerX, y: newCS.centerY};
+    const mapCenter = {x: newCS.cx, y: newCS.cy};
     const canvasCenter = {x: canvas.width / 2, y: canvas.height / 2};
     coords = getTranslator(newCS.scale, mapCenter, canvasCenter)
     update(canvas);
@@ -74,7 +74,7 @@ export function showMap(
     if (canvas.height !== height) canvas.height = height;
 
     if (!coords) {
-      const mapCenter = {x: centerX, y: centerY};
+      const mapCenter = {x: cx, y: cy};
       const canvasCenter = {x: width / 2, y: height / 2};
       coords = getTranslator(scale, mapCenter, canvasCenter);
     }

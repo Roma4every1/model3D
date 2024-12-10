@@ -86,8 +86,8 @@ const Dimensions = ({state, t}: DimensionProps) => {
   const mapData = stage.getMapData();
   const disabled = stage.inclinometryModeOn || !mapData || state.status !== 'ok';
 
-  const [x, setX] = useState(null);
-  const [y, setY] = useState(null);
+  const [cx, setX] = useState(null);
+  const [cy, setY] = useState(null);
   const [scale, setScale] = useState(null);
 
   useEffect(() => {
@@ -97,15 +97,15 @@ const Dimensions = ({state, t}: DimensionProps) => {
   }, [mapData, canvas]);
 
   const xChanged = (value: number) => {
-    stage.render({centerX: value, centerY: mapData.y, scale: mapData.scale});
+    stage.render({cx: value, cy: mapData.y, scale: mapData.scale});
     setX(value);
   };
   const yChanged = (value: number) => {
-    stage.render({centerX: mapData.x, centerY: -value, scale: mapData.scale});
+    stage.render({cx: mapData.x, cy: -value, scale: mapData.scale});
     setY(-value);
   };
   const scaleChanged = (value: number) => {
-    stage.render({centerX: mapData.x, centerY: mapData.y, scale: value});
+    stage.render({cx: mapData.x, cy: mapData.y, scale: value});
     setScale(value);
   };
 
@@ -113,12 +113,12 @@ const Dimensions = ({state, t}: DimensionProps) => {
     <div>
       <InputNumber
         addonBefore={<InputPrefix icon={xIcon} prefix={'x:'} title={t('map.dimensions.x')}/>}
-        value={x} onChange={xChanged} disabled={disabled} changeOnWheel={true}
+        value={cx} onChange={xChanged} disabled={disabled} changeOnWheel={true}
         parser={inputNumberParser} precision={0}
       />
       <InputNumber
         addonBefore={<InputPrefix icon={yIcon} prefix={'y:'} title={t('map.dimensions.y')}/>}
-        value={y !== null ? -y : null} onChange={yChanged} disabled={disabled} changeOnWheel={true}
+        value={cy !== null ? -cy : null} onChange={yChanged} disabled={disabled} changeOnWheel={true}
         parser={inputNumberParser} precision={0}
       />
       <InputNumber
