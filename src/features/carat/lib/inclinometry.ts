@@ -65,6 +65,11 @@ export class CaratInclinometry implements ICaratInclinometry {
     return depth;
   }
 
+  public getFirstData(): InclinometryMark | null {
+    if (this.data === null) return null;
+    return this.data[0];
+  }
+
   private calcAbsMark(depth: number): number {
     let left = 0;
     let right = this.data.length - 1;

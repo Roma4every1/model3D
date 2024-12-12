@@ -7,7 +7,12 @@ import type { CaratDrawerConfig } from '../rendering/drawer-settings';
 export const caratExportModes: ButtonSwitchProps<number>['options'] = [
   {label: 'Видимая часть', value: 0},
   {label: 'Весь трек', value: 1},
-  {label: 'По глубине', value: 2},
+  {label: 'Интервал', value: 2},
+];
+
+export const caratExportInterval = [
+  {label: 'По глубине', value: 0},
+  {label: 'По абсолютной отметке', value: 1},
 ];
 
 /** Значения некоторых настроек по умолчанию. */

@@ -1,5 +1,4 @@
 import { Workbook } from 'exceljs';
-import { CaratStage } from '../rendering/stage';
 
 
 /**
@@ -7,17 +6,13 @@ import { CaratStage } from '../rendering/stage';
  * которого расположена картинка с видимой частью активного трека.
  * @return файл в бинарном виде
  */
-export function caratToExcel(stage: CaratStage): Promise<Blob> {
-  const track = stage.getActiveTrack();
-  const { y, height: h } = track.viewport;
-
-  const canvas = stage.renderImage({startDepth: y, endDepth: y + h, transparent: false});
+export function caratToExcel(canvas: HTMLCanvasElement, wellName: string): Promise<Blob> {
   const { promise, resolve, reject } = Promise.withResolvers<Blob>();
 
   const cb = (data: Blob) => {
     if (!data) reject();
-    const imageSize = {width: canvas.width / 2, height: canvas.height / 2};
-    resolve(createExcel(data, imageSize, track.wellName));
+    const imageSize = {width: canvas.width , height: canvas.height };
+    resolve(createExcel(data, imageSize, wellName));
   };
 
   canvas.toBlob(cb, 'image/png', 1);

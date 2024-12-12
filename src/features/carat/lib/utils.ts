@@ -90,3 +90,18 @@ export function formatDistance(number: number | null):  string {
   }
   return `${formattedNumber}${unit}`;
 }
+
+export function getBrowserSize() {
+  const userAgent = navigator.userAgent;
+
+  let maxArea = 16_384 ** 2; // Для Chrome и Edge
+  let maxWidth = 65_535;
+  let maxHeight = 65_535;
+
+  if (userAgent.includes('Firefox')) {
+    maxArea = 23_168 ** 2;
+    maxWidth = 32_767;
+    maxHeight = 32_767;
+  }
+  return {maxArea, maxWidth, maxHeight};
+}
