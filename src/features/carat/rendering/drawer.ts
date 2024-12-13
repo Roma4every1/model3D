@@ -296,8 +296,8 @@ export class CaratDrawer {
         let freeEndRight = xEnd - maxLabelWidth;
 
         // Проверка наличия места для первой и последней метки
-        const showFirstLabel = freeEndLeft - freeStartLeft >= minLabelWidth;
-        const showLastLabel = freeEndRight - freeStartRight >= maxLabelWidth;
+        const showFirstLabel = freeEndLeft - freeStartLeft >= 0;
+        const showLastLabel = freeEndRight - freeStartRight >= 0;
 
         if (showFirstLabel) {
           this.ctx.textAlign = 'left';
