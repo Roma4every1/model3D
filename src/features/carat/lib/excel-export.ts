@@ -6,8 +6,9 @@ import { Workbook } from 'exceljs';
  * которого расположена картинка с видимой частью активного трека.
  * @return файл в бинарном виде
  */
-export function caratToExcel(canvas: HTMLCanvasElement, wellName: string): Promise<Blob> {
+export function caratToExcel(canvas: HTMLCanvasElement, well: string): Promise<Blob> {
   const { promise, resolve, reject } = Promise.withResolvers<Blob>();
+  const wellName = well.replace(/\//g, '_');
 
   const cb = (data: Blob) => {
     if (!data) reject();

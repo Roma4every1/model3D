@@ -13,7 +13,7 @@ import { EventBus, compareArrays, isRectInnerPoint } from 'shared/lib';
 import { validateCaratScale } from '../lib/utils';
 import { moveSmoothly } from '../lib/smooth-scroll';
 import { defaultSettings } from '../lib/constants';
-import { CaratImageRengering } from './image-rendering';
+import { CaratImageRenderer } from './image-renderer';
 
 
 /** Типы аргументов для событий сцены каротажной диаграммы. */
@@ -456,9 +456,9 @@ export class CaratStage {
   /* --- Rendering --- */
 
   /** Рендер картинки с заданными характеристиками. */
-  public renderImage(options: CaratExportOptions): HTMLCanvasElement {
-    const renderer = new CaratImageRengering(this, this.drawer);
-    const canvas = renderer.caratImage(options);
+  public renderImage(options?: CaratExportOptions): HTMLCanvasElement {
+    const renderer = new CaratImageRenderer(this, this.drawer);
+    const canvas = renderer.renderCaratImage(options, this.canvas);
     CaratDrawer.ratio = 2;
     this.drawer.setContext(this.canvas.getContext('2d'));
     return canvas;

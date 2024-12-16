@@ -25,17 +25,12 @@ export const CaratExportDialog = ({stage, close, format}: CaratExportDialogProps
   const [endDepth, setEndDepth] = useState(y + height);
   const [optionIndex, setOptionIndex] = useState(0);
   const [optionInterval, setOptionInterval] = useState(0);
-  const [prevInterval, setPrevInterval] = useState<number>(0);
-  const [selectedTrackIndex, setSelectedTrackIndex] = useState<number>(0);
+  const [prevInterval, setPrevInterval] = useState(0);
+  const [selectedTrackIndex, setSelectedTrackIndex] = useState(0);
   const [prevOptionIndex, setPrevOptionIndex] = useState(0);
 
   const trackViewports= stage.trackList.map(track => track.viewport);
   const trackInclinometry= stage.trackList.map(track => track.inclinometry);
-
-  const minStartDepth = Math.min(...trackViewports.map(v => v.min));
-  const maxEndDepth = Math.max(...trackViewports.map(v => v.max));
-  const minStartAbs = Math.min(...trackInclinometry.map(i => i.getFirstData().absMark));
-  const maxEndAbs = Math.max(...trackInclinometry.map(i => i.getAbsMark(maxEndDepth)));
 
   const options = [
     {label: 'Все треки', value: 0},
@@ -52,6 +47,8 @@ export const CaratExportDialog = ({stage, close, format}: CaratExportDialogProps
   };
 
   const handleAllTracks = (track: CaratTrack[], index: number, interval?: number) => {
+    const minStartDepth = Math.min(...trackViewports.map(v => v.min));
+    const maxEndDepth = Math.max(...trackViewports.map(v => v.max));
     switch(index) {
       case 0:
         setStartDepth(y);
@@ -96,6 +93,9 @@ export const CaratExportDialog = ({stage, close, format}: CaratExportDialogProps
     if (Array.isArray(track)) {
       const startAbs = track[0].inclinometry.getAbsMark(startDepth);
       const endAbs = track[0].inclinometry.getAbsMark(endDepth);
+      const minStartAbs = Math.min(...trackInclinometry.map(i => i.getFirstData().absMark));
+      const maxEndAbs = Math.max(...trackInclinometry.map(i => i.getAbsMark(Math.max(...trackViewports.map(v => v.max)))));
+
       if (prevInterval === 1 && prevOptionIndex === 2) {
         (startDepth <= minStartAbs && startDepth >= maxEndAbs) ? setStartDepth(startDepth) : setStartDepth(minStartAbs);
         (endDepth <= minStartAbs && endDepth >= maxEndAbs) ? setEndDepth(endDepth) : setEndDepth(maxEndAbs);
@@ -123,6 +123,8 @@ export const CaratExportDialog = ({stage, close, format}: CaratExportDialogProps
     if (Array.isArray(track)) {
       const start = track[0].inclinometry.getDepth(startDepth);
       const end = track[0].inclinometry.getDepth(endDepth);
+      const minStartDepth = Math.min(...trackViewports.map(v => v.min));
+      const maxEndDepth = Math.max(...trackViewports.map(v => v.max));
 
       if (prevInterval === 1) {
         (start > minStartDepth && start < maxEndDepth) ? setStartDepth(start) : setStartDepth(minStartDepth);
@@ -178,7 +180,7 @@ export const CaratExportDialog = ({stage, close, format}: CaratExportDialogProps
     } else if (optionIndex === 0) {
       return (trackViewports.map(v => v.y));
     } else if (optionIndex === 1) {
-      return minStartDepth;
+      return Math.min(...trackViewports.map(v => v.min));
     } else {
       if (tracks.length > 1) {
         return optionInterval === 0 ? startDepth : (trackInclinometry.map(i => i.getDepth(startDepth)));
@@ -194,7 +196,7 @@ export const CaratExportDialog = ({stage, close, format}: CaratExportDialogProps
     } else if (optionIndex === 0) {
       return (trackViewports.map(v => v.y + v.height));
     } else if (optionIndex === 1) {
-      return maxEndDepth;
+      return Math.max(...trackViewports.map(v => v.max));
     } else {
       if (tracks.length > 1) {
         return optionInterval === 0 ? endDepth : (trackInclinometry.map(i => i.getDepth(endDepth)));
@@ -204,11 +206,15 @@ export const CaratExportDialog = ({stage, close, format}: CaratExportDialogProps
     }
   };
 
-  const minValueDepth = selectedTrackIndex !== 0 ? tracks[selectedTrackIndex - 1].viewport.min : minStartDepth;
-  const maxValueDepth = selectedTrackIndex !== 0  ? tracks[selectedTrackIndex - 1].viewport.max : maxEndDepth;
+  const minValueDepth = selectedTrackIndex !== 0 ? tracks[selectedTrackIndex - 1].viewport.min : Math.min(...trackViewports.map(v => v.min));
+  const maxValueDepth = selectedTrackIndex !== 0 ? tracks[selectedTrackIndex - 1].viewport.max : Math.max(...trackViewports.map(v => v.max));
 
-  const maxValueAbs = selectedTrackIndex !== 0 ? tracks[selectedTrackIndex - 1].inclinometry.getFirstData().absMark : minStartAbs;
-  const minValueAbs = selectedTrackIndex !== 0  ? tracks[selectedTrackIndex - 1].inclinometry.getAbsMark(maxValueDepth) : maxEndAbs;
+  const maxValueAbs = selectedTrackIndex !== 0
+    ? tracks[selectedTrackIndex - 1].inclinometry.getFirstData().absMark
+    : Math.min(...trackInclinometry.map(i => i.getFirstData().absMark));
+  const minValueAbs = selectedTrackIndex !== 0
+    ? tracks[selectedTrackIndex - 1].inclinometry.getAbsMark(maxValueDepth)
+    : Math.max(...trackInclinometry.map(i => i.getAbsMark(Math.max(...trackViewports.map(v => v.max)))));
 
   const onSave = () => {
     const canvas = stage.renderImage({
