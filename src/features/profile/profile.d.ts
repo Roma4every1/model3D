@@ -34,20 +34,16 @@ interface ProfileLoading {
 
 /** Сцена профиля. */
 interface IProfileStage {
-  readonly scroller: IMapScroller;
-  handleMouseDown(event: MouseEvent, _?: boolean): void;
+  readonly scroller: any;
+  handleMouseDown(event: MouseEvent): void;
   handleMouseMove(event: MouseEvent): void;
   handleMouseWheel(event: WheelEvent): void;
 
-  /** Устанваливает канвас сцены. */
   setCanvas(canvas: HTMLCanvasElement): void;
-  /** Обновляет вид в соответствии с текущими размерами холста. */
+  setActiveLayer(): void;
   resize(): void;
-  /** Устанавливает данные сцены профиля. */
   setData(mapData: MapData): void;
-  /** Возвращает данные профиля. */
   getMapData(): MapData;
-  /** Отрисовывает всю сцену профиля. */
   render(): void;
 }
 

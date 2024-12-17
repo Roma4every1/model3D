@@ -2,7 +2,7 @@ import { RecordInfoCreator } from 'entities/channel';
 import { placeChannelCriterion } from './constants';
 
 
-export class PlaceManager implements IPlaceManager {
+export class PlaceManager implements ActiveObjectManager<PlaceModel> {
   /** Текущее активное месторождение. */
   public model: PlaceModel | null = null;
   /** Название канала с месторождениями. */
@@ -32,18 +32,18 @@ export class PlaceManager implements IPlaceManager {
 
   public initializeModel(parameters: Parameter[]): void {
     const parameter = parameters.find(p => p.id === this.parameterID);
-    const placeRow = parameter.getValue() as ParameterValueMap['tableRow'];
+    const placeRow = parameter.getValue() as TableRowValue;
     if (placeRow) this.model = this.createModel(placeRow);
   }
 
-  public onParameterUpdate(value: ParameterValueMap['tableRow']): boolean {
+  public onParameterUpdate(value: TableRowValue): boolean {
     const oldModel = this.model;
     this.model = this.createModel(value);
     return this.model !== oldModel;
   }
 
   /** По значение `TableRow` параметра создаёт модель месторождения. */
-  private createModel(value: ParameterValueMap['tableRow']): PlaceModel | null {
+  private createModel(value: TableRowValue): PlaceModel | null {
     if (!value || !this.info) return null;
     const id = Number(value[this.info.id.propertyName]?.value);
     if (Number.isNaN(id)) return null;

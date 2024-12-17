@@ -5,7 +5,7 @@ export interface MapContainer {
   layers: Record<string, MapElement[]>;
   points?: MapPoint[];
 }
-type XElement<T = any> = Record<string, T>;
+type XMapElement<T = any> = Record<string, T>;
 
 
 const parser = new XMLParser({
@@ -15,7 +15,7 @@ const parser = new XMLParser({
 });
 
 export function parseMapContainer(input: string): MapContainer {
-  const container: XElement = parser.parse(input).container;
+  const container: XMapElement = parser.parse(input).container;
   const l = container.sublayer;
   const p = container.namedpoints?.namedpoint;
 
@@ -35,12 +35,12 @@ export function parseMapContainer(input: string): MapContainer {
   return {layers, points};
 }
 
-function createMapPoint(element: XElement): MapPoint {
+function createMapPoint(element: XMapElement): MapPoint {
   const { UWID, name, x, y, ...attrTable } = element;
   return {UWID: Number(UWID), name, x: Number(x), y: Number(y), attrTable};
 }
 
-function createLayerElements(element: XElement): MapElement[] {
+function createLayerElements(element: XMapElement): MapElement[] {
   const { polyline, sign, label, pieslice, regular2dfield: field } = element;
   if (polyline) {
     return createElements(polyline, createPolyline);
@@ -57,13 +57,13 @@ function createLayerElements(element: XElement): MapElement[] {
   }
 }
 
-function createElements(data: XElement[] | XElement, factory: any): MapElement[] {
+function createElements(data: XMapElement[] | XMapElement, factory: any): MapElement[] {
   return Array.isArray(data) ? data.map(factory) : [factory(data)];
 }
 
 /* --- --- */
 
-function createPolyline(element: XElement): MapPolyline {
+function createPolyline(element: XMapElement): MapPolyline {
   const {
     bordercolor, borderwidth, borderstyle, borderstyleid,
     fillname, fillcolor, fillbkcolor, transparent,
@@ -84,7 +84,7 @@ function createPolyline(element: XElement): MapPolyline {
   };
 }
 
-function createPolylineArc(element: XElement<string>): PolylineArc {
+function createPolylineArc(element: XMapElement<string>): PolylineArc {
   const pathString = element.path;
   const path = pathString.match(/-?\d+(?:\.\d*)?/g).map(Number);
 
@@ -95,38 +95,44 @@ function createPolylineArc(element: XElement<string>): PolylineArc {
   return {path, closed};
 }
 
-function createPolylineBounds(element: XElement<string>): Bounds {
-  const x1 = Number(element.left);
-  const x2 = Number(element.right);
-  const y1 = Number(element.top);
-  const y2 = Number(element.bottom);
+function createPolylineBounds(element: XMapElement<string>): Bounds {
+  const left = Number(element.left);
+  const right = Number(element.right);
+  const top = Number(element.top);
+  const bottom = Number(element.bottom);
 
   return {
-    min: {x: Math.min(x1, x2), y: Math.min(y1, y2)},
-    max: {x: Math.max(x1, x2), y: Math.max(y1, y2)},
+    min: {x: left, y: Math.min(top, bottom)},
+    max: {x: right, y: Math.max(top, bottom)},
   };
 }
 
-function createPieSlice(element: XElement<string>): MapPieSlice {
-  const { x, y, color, bordercolor, radius, startangle, endangle, fillname, fillbkcolor,
-    ...attrTable } = element;
+function createPieSlice(element: XMapElement<string>): MapPieSlice {
+  const {
+    x, y, color, bordercolor, radius, startangle, endangle,
+    fillname, fillbkcolor, transparent, ...attrTable
+  } = element;
+
   return {
     type: 'pieslice', x: Number(x), y: Number(y),
     radius: Number(radius), startangle: Number(startangle), endangle: Number(endangle),
-    color, bordercolor, fillname, fillbkcolor, attrTable,
+    color, bordercolor: bordercolor ?? '#ffffff',
+    fillname, fillbkcolor, transparent: transparent === undefined ? false : transparent !== '0',
+    attrTable, bounds: null,
   };
 }
 
-function createSign(element: XElement<string>): MapSign {
+function createSign(element: XMapElement<string>): MapSign {
   const { x, y, fontname, symbolcode, size, color, ...attrTable } = element;
   return {
     type: 'sign', x: Number(x), y: Number(y),
     fontname, symbolcode: Number(symbolcode),
-    size: Number(size), color, img: undefined, attrTable,
+    size: Number(size), color, img: undefined,
+    attrTable, bounds: null,
   };
 }
 
-function createLabel(element: XElement<string>): MapLabel {
+function createLabel(element: XMapElement<string>): MapLabel {
   const {
     x, y, xoffset, yoffset, angle, text, valignment, halignment,
     color, fillbkcolor, fontname, fontsize, transparent, bold, ...attrTable
@@ -134,15 +140,18 @@ function createLabel(element: XElement<string>): MapLabel {
 
   return {
     type: 'label', x: Number(x), y: Number(y),
-    xoffset: Number(xoffset), yoffset: Number(yoffset), angle: Number(angle), text,
+    xoffset: xoffset !== undefined ? Number(xoffset) : 0,
+    yoffset: yoffset !== undefined ? Number(yoffset) : 0,
+    angle: angle !== undefined ? Number(angle) : 0,
+    text, color, fontname, fontsize: Number(fontsize),
     valignment: Number(valignment) as MapLabelAlignment,
     halignment: Number(halignment) as MapLabelAlignment,
-    color, fillbkcolor, fontname, fontsize: Number(fontsize),
-    transparent: transparent !== '0', bold: bold !== '0', attrTable,
+    fillbkcolor, transparent: transparent !== '0', bold: bold !== '0',
+    attrTable, bounds: null,
   };
 }
 
-function createField(element: XElement): MapField {
+function createField(element: XMapElement): MapField {
   const { x, y, sizex, sizey, stepx, stepy, data, palette, ...attrTable } = element;
 
   palette.interpolated = palette.interpolated !== '0';
@@ -154,6 +163,6 @@ function createField(element: XElement): MapField {
     stepx: Number(stepx), stepy: Number(stepy),
     data, sourceRenderDataMatrix: undefined,
     palette, lastUsedPalette: undefined, deltasPalette: undefined,
-    preCalculatedSpectre: undefined, attrTable,
+    preCalculatedSpectre: undefined, attrTable, bounds: null,
   };
 }

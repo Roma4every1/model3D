@@ -145,7 +145,7 @@ interface ChannelPropertyCriterion {
 }
 
 /** Критерий справочника свойства или канала детализации. */
-type PropertyChannelCriterion = ChannelCriterion & {required?: boolean};
+type PropertyChannelCriterion<T = string> = ChannelCriterion<T> & {required?: boolean};
 /** Критерии для справочников свойства. */
 type PropertyLookupCriteria<T extends string = string> = Record<T, PropertyChannelCriterion>;
 

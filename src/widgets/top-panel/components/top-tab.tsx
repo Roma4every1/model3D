@@ -1,8 +1,8 @@
 import type { FunctionComponent } from 'react';
-import { TracePanel } from 'entities/objects';
+import { TraceRibbon } from 'entities/objects';
 import { TableEditPanel } from 'features/table';
 import { ChartEditPanel } from 'features/chart';
-import { MapEditPanel } from 'features/map';
+import { MapRibbon } from 'features/map';
 import { TrackEditPanel, CaratEditPanel } from 'features/carat';
 
 
@@ -18,7 +18,7 @@ export interface TopTabProps {
 const editPanelDict: Record<string, [FunctionComponent<FormEditPanelProps>, ClientType]> = {
   'top-table': [TableEditPanel, 'dataSet'],
   'top-chart': [ChartEditPanel, 'chart'],
-  'top-map': [MapEditPanel, 'map'],
+  'top-map': [MapRibbon, 'map'],
   'top-track': [TrackEditPanel, 'carat'],
   'top-carat': [CaratEditPanel, 'carat'],
 };
@@ -27,7 +27,7 @@ const editPanelDict: Record<string, [FunctionComponent<FormEditPanelProps>, Clie
 export const TopTab = ({tabID, presentation}: TopTabProps) => {
   if (tabID.endsWith('trace')) {
     const hasMap = presentation?.childrenTypes.has('map') ?? false;
-    return <TracePanel hasMap={hasMap}/>;
+    return <TraceRibbon hasMap={hasMap}/>;
   }
   const activeChildID = presentation?.activeChildID;
   if (!activeChildID) return null;

@@ -1,4 +1,4 @@
-import { PIXEL_PER_METER } from '../lib/map-utils';
+import { pixelPerMeter } from '../lib/constants';
 
 
 /** Объект для перевода координат. */
@@ -8,9 +8,8 @@ export interface Translator {
 	pointToMap(point: Point): Point;
 }
 
-
 export function getTranslator(mapScale: MapScale, mapCenter: Point, canvasCenter: Point): Translator {
-	const cScale = window.devicePixelRatio * PIXEL_PER_METER;
+	const cScale = window.devicePixelRatio * pixelPerMeter;
   const pointToMapRatio = mapScale / cScale;
   const pointToControlRatio = cScale / mapScale;
 

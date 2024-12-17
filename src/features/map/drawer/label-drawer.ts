@@ -2,10 +2,6 @@ import { getLabelTextNumberArray } from './label-text-parser';
 
 
 export class LabelDrawer implements MapElementDrawer<MapLabel> {
-  public bound(label: MapLabel): Bounds {
-    return {min: label, max: label};
-  }
-
   public draw(label: Readonly<MapLabel>, options: MapDrawOptions): void {
     const ctx = options.ctx;
     const dotsPerMeter = options.dotsPerMeter;
@@ -132,11 +128,11 @@ export class LabelDrawer implements MapElementDrawer<MapLabel> {
     };
 
     const anchor = options.toCanvasPoint(label);
-    const angle = -(label.angle ?? 0) / 180 * Math.PI;
+    const angle = -label.angle / 180 * Math.PI;
 
     const point: Point = {
-      x: anchor.x + (label.xoffset ?? 0) * 0.001 * dotsPerMeter,
-      y: anchor.y - (label.yoffset ?? 0) * 0.001 * dotsPerMeter,
+      x: anchor.x + label.xoffset * 0.001 * dotsPerMeter,
+      y: anchor.y - label.yoffset * 0.001 * dotsPerMeter,
     };
 
     if (angle) {

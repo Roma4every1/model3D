@@ -1,60 +1,107 @@
-import { updateParamDeep } from 'entities/parameter';
+import type { ObjectsState } from 'entities/objects';
+import type { MapState, MapEditState } from './types';
 import { MapStage } from './map-stage';
 import { MapLoader } from '../loader/loader';
-import { mapPluginDict } from './plugins';
-import { wellMapConfig } from '../extra-objects/well';
-import { traceMapConfig } from '../extra-objects/trace';
+import * as modes from '../modes';
+import * as extra from '../extra-objects';
 
 
 export class MapStateFactory {
   private readonly id: FormID;
+  private readonly loaderFormID: FormID;
   private readonly objects: ObjectsState;
 
+  private payload: FormStatePayload | undefined;
+  private usedChannels: ChannelID[];
+  private usedParameters: Record<string, ParameterID>;
+
   public static create(id: FormID, payload: FormStatePayload): MapState {
-    const factory = new MapStateFactory(id, payload.objects);
+    const factory = new MapStateFactory(id, id, payload.objects);
     return factory.create(true, payload);
   }
 
-  public static createForMultiMap(loaderFormID: FormID, objects: ObjectsState): MapState {
-    const factory = new MapStateFactory(loaderFormID, objects);
+  public static createForMultiMap(id: FormID, loaderFormID: FormID, objects: ObjectsState): MapState {
+    const factory = new MapStateFactory(id, loaderFormID, objects);
     return factory.create(false);
   }
 
-  constructor(id: FormID, objects: ObjectsState) {
+  private constructor(id: FormID, loaderFormID: FormID, objects: ObjectsState) {
     this.id = id;
+    this.loaderFormID = loaderFormID;
     this.objects = objects;
   }
 
   private create(editable: boolean, payload?: FormStatePayload): MapState {
-    const stage = this.createStage(payload);
-    const observer = new ResizeObserver(() => { stage.resize(); });
+    this.payload = payload;
+    this.usedChannels = [];
+    this.usedParameters = {};
 
-    const inclPlugin = stage.getPlugin('incl');
-    if (inclPlugin) inclPlugin.onParameterUpdate = (v) => updateParamDeep(inclPlugin.parameterID, v);
+    if (payload) {
+      const mapChannel = payload.state.channels.find(c => c.type === 'maps');
+      if (mapChannel) this.usedChannels.push(mapChannel.id);
+    }
+    const stage = this.createStage(editable);
+    const resizeObserver = new ResizeObserver(() => { stage.resize(); });
+
+    const edit: MapEditState = editable ? {
+      editing: false, creating: false, modified: false,
+      propertyWindowOpen: false, attrTableWindowOpen: false
+    } : null;
 
     return {
-      stage, loader: new MapLoader(this.id), observer,
-      canvas: null, status: 'empty', owner: null, mapID: null, modified: false,
-      editable, propertyWindowOpen: false, attrTableWindowOpen: false,
+      id: this.id, stage, loader: new MapLoader(this.loaderFormID), observer: resizeObserver,
+      usedChannels: this.usedChannels, usedParameters: this.usedParameters,
+      canvas: null, status: 'empty', owner: null, mapID: null, edit,
     };
   }
 
-  private createStage(payload?: FormStatePayload): MapStage {
-    const plugins: IMapPlugin[] = [];
-    if (payload) {
-      const settings: Record<string, any> = payload.state.settings ?? {};
-      const parentParameters = payload.parameters[payload.state.parent];
-      const channels = payload.state.channels;
+  private createStage(editable: boolean): MapStage {
+    const hasWell = this.objects.well.activated();
+    const hasTrace = this.objects.trace.activated();
+    const hasSite = this.objects.site.activated();
 
-      for (const pluginName in settings) {
-        const Plugin = mapPluginDict[pluginName];
-        if (Plugin) plugins.push(new Plugin(settings[pluginName], parentParameters, channels));
-      }
+    const stage = new MapStage();
+    if (hasWell) stage.registerExtraObject('well', extra.createMapWellConfig(stage));
+    if (hasTrace) stage.registerExtraObject('trace', extra.createMapTraceConfig());
+    if (hasSite) stage.registerExtraObject('site', extra.createMapSiteConfig());
+
+    stage.registerMode(new modes.DefaultModeProvider(hasWell));
+    stage.registerMode(new modes.ElementSelectModeProvider());
+    if (hasTrace) stage.registerMode(new modes.TraceEditModeProvider());
+    this.checkInclinometryPlugin(stage);
+
+    if (editable) {
+      stage.registerMode(new modes.ElementDragModeProvider());
+      stage.registerMode(new modes.ElementRotateModeProvider());
+      stage.registerMode(new modes.ElementCreateModeProvider(this.id));
+      stage.registerMode(new modes.LineMovePointModeProvider());
+      stage.registerMode(new modes.LineAppendPointModeProvider());
+      stage.registerMode(new modes.LineInsertPointModeProvider());
+      stage.registerMode(new modes.LineRemovePointModeProvider());
     }
-
-    const stage = new MapStage(plugins);
-    if (this.objects.well.activated()) stage.registerExtraObject(wellMapConfig);
-    if (this.objects.trace.activated()) stage.registerExtraObject(traceMapConfig);
     return stage;
+  }
+
+  private checkInclinometryPlugin(stage: MapStage): void {
+    const plugin = this.payload?.state.settings.wellsLinkedClients;
+    if (!plugin || plugin['@InclinometryModeOn'] !== 'true') return;
+
+    const channels = this.payload.state.channels;
+    const dataChannel = channels.find(c => c.type === 'incl-data');
+    const propChannel = channels.find(c => c.type === 'incl-props');
+    if (!dataChannel || !propChannel) return;
+
+    const parameters = this.payload.parameters[this.payload.state.parent];
+    const p = parameters.find(p => p.name === 'inclinometryViewAngle');
+    if (!p || p.type !== 'double') return;
+    this.usedParameters.incl = p.id;
+    this.usedChannels.push(dataChannel.id, dataChannel.info.version.lookups.ids.id, propChannel.id);
+
+    const radius = Number(plugin['@MinCircle']) / 2;
+    const config = extra.createMapInclConfig(stage, {dataChannel, propChannel, radius});
+
+    stage.registerExtraObject('incl', config);
+    stage.registerMode(new modes.InclinometryModeProvider(p.id));
+    stage.setMode('incl');
   }
 }

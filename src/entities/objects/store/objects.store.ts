@@ -1,5 +1,24 @@
 import { create } from 'zustand';
+import { PlaceManager } from '../lib/place';
+import { StratumManager } from '../lib/stratum';
+import { WellManager } from '../lib/well';
+import { TraceManager } from '../lib/trace';
+import { SiteManager } from '../lib/site';
 
+
+/** Менеджеры активных объектов. */
+export interface ObjectsState {
+  /** Месторождение. */
+  place: PlaceManager;
+  /** Пласт. */
+  stratum: StratumManager;
+  /** Скважина. */
+  well: WellManager;
+  /** Трасса. */
+  trace: TraceManager;
+  /** Участок. */
+  site: SiteManager;
+}
 
 /** Активные объекты. */
 export const useObjectsStore = create((): ObjectsState => ({
@@ -7,18 +26,35 @@ export const useObjectsStore = create((): ObjectsState => ({
   stratum: null,
   well: null,
   trace: null,
+  site: null,
 }));
 
 /** Модель активного месторождения. */
-export const useCurrentPlace = () => useObjectsStore(state => state.place.model);
+export function useCurrentPlace(): PlaceModel {
+  return useObjectsStore(state => state.place.model);
+}
 /** Модель активного пласта. */
-export const useCurrentStratum = () => useObjectsStore(state => state.stratum.model);
+export function useCurrentStratum(): StratumModel {
+  return useObjectsStore(state => state.stratum.model);
+}
 /** Модель активной скважины. */
-export const useCurrentWell = () => useObjectsStore(state => state.well.model);
+export function useCurrentWell(): WellModel {
+  return useObjectsStore(state => state.well.model);
+}
 /** Модель активной трассы. */
-export const useCurrentTrace = () => useObjectsStore(state => state.trace.model);
+export function useCurrentTrace(): TraceModel {
+  return useObjectsStore(state => state.trace.model);
+}
+/** Модель активного участка. */
+export function useCurrentSite(): SiteModel {
+  return useObjectsStore(state => state.site.model);
+}
 
 /** Менеджер трасс. */
-export const useTraceManager = () => useObjectsStore(state => state.trace);
+export function useTraceManager(): TraceManager {
+  return useObjectsStore(state => state.trace);
+}
 /** Находится ли трасса в состоянии редактирования. */
-export const useTraceEditing = () => useObjectsStore(state => state.trace.editing === true);
+export function useTraceEditing(): boolean {
+  return useObjectsStore(state => state.trace.editing === true);
+}

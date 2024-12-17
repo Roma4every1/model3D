@@ -1,5 +1,5 @@
 import type { MapLayerInfo } from './types.dto';
-import type { MapExtraObjectLayerConfig } from './types';
+import type { MapExtraObjectLayerConfig } from '../extra-objects/types';
 
 
 interface MapLayerInit {

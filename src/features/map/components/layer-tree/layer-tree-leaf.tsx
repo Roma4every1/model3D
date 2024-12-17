@@ -1,18 +1,21 @@
 import type { TFunction } from 'react-i18next';
+import type { MapState } from '../../lib/types';
 import { useState, useEffect } from 'react';
 import { useRender } from 'shared/react';
 import { Button, Checkbox, InputNumber } from 'antd';
 import { SettingOutlined, UndoOutlined } from '@ant-design/icons';
 import { inputIntParser } from 'shared/locales';
+import { cancelMapEditing } from '../../store/map-edit.actions';
 
 
 interface LayersTreeLayerProps {
+  state?: MapState;
   stage: IMapStage;
   layer: IMapLayer;
   t: TFunction;
 }
 
-export const LayerTreeLeaf = ({stage, layer, t}: LayersTreeLayerProps) => {
+export const LayerTreeLeaf = ({state, stage, layer, t}: LayersTreeLayerProps) => {
   const render = useRender();
   const minScale = layer.getMinScale();
   const maxScale = layer.getMaxScale();
@@ -32,6 +35,7 @@ export const LayerTreeLeaf = ({stage, layer, t}: LayersTreeLayerProps) => {
   };
   const onVisibilityChange = () => {
     if (layer.visible && layer.active) {
+      if (state?.edit.creating) cancelMapEditing(state.id);
       stage.setActiveLayer(null);
     }
     layer.visible = !layer.visible;
@@ -39,6 +43,7 @@ export const LayerTreeLeaf = ({stage, layer, t}: LayersTreeLayerProps) => {
   };
   const onHeaderClick = layer.temporary ? undefined : () => {
     if (layer.active) {
+      if (state?.edit.creating) cancelMapEditing(state.id);
       stage.setActiveLayer(null);
     } else {
       stage.setActiveLayer(layer);

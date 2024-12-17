@@ -1,4 +1,4 @@
-import { type ReactElement, useMemo } from 'react';
+import { type ReactElement, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRender } from 'shared/react';
 import { useMapState } from '../../store/map.store';
@@ -16,15 +16,18 @@ interface LayerTreeItem {
 
 /** Дерево слоёв карты. */
 export const MapLayerTree = ({id}: {id: FormID}) => {
-  const { t } = useTranslation();
   const render = useRender();
-  const mapState = useMapState(id);
+  const { t } = useTranslation();
+  const state = useMapState(id);
+  const stage = state.stage;
 
-  const stage = mapState?.stage;
-  if (stage) stage.listeners.layerTreeChange = render;
+  useEffect(() => {
+    stage.subscribe('active-layer', render);
+    return () => stage.unsubscribe('active-layer', render);
+  }, [stage]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const layers = stage?.getMapData()?.layers;
-  const extraLayers = stage?.getExtraLayers();
+  const layers = stage.getMapData()?.layers;
+  const extraLayers = stage.getExtraLayers(true);
 
   const rootNodes = useMemo(() => {
     if (!layers || layers.length === 0) return [];
@@ -33,7 +36,7 @@ export const MapLayerTree = ({id}: {id: FormID}) => {
 
   const toElement = (item: LayerTreeItem): ReactElement => {
     const { key, layer } = item;
-    if (layer) return <LayerTreeLeaf key={key} stage={stage} layer={layer} t={t}/>;
+    if (layer) return <LayerTreeLeaf key={key} state={state} stage={stage} layer={layer} t={t}/>;
     const children = item.children.map(toElement);
     return <Collapse key={key} items={[{key, label: item.pathItem, children}]}/>;
   };
@@ -41,7 +44,7 @@ export const MapLayerTree = ({id}: {id: FormID}) => {
   let extraElement: ReactElement;
   if (extraLayers && extraLayers.length > 0) {
     const children = extraLayers.map((layer: IMapLayer) => {
-      return <LayerTreeLeaf key={layer.id} stage={stage} layer={layer} t={t}/>;
+      return <LayerTreeLeaf key={layer.id} state={state} stage={stage} layer={layer} t={t}/>;
     });
     extraElement = <Collapse items={[{key: 0, label: t('map.layer-tree.extra-group'), children}]}/>;
   }

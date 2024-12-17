@@ -1,4 +1,3 @@
-import { MapStage } from '../lib/map-stage';
 import { MapStateFactory } from '../lib/initialization';
 import { useMapStore } from './map.store';
 
@@ -24,35 +23,16 @@ export function setMapCanvas(id: FormID, canvas: HTMLCanvasElement): void {
   useMapStore.setState({[id]: {...mapState, canvas: canvas as MapCanvas}});
 }
 
-export function setMapField(id: FormID, field: keyof MapState, value: any): void {
-  const state = useMapStore.getState()[id];
-  useMapStore.setState({[id]: {...state, [field]: value}});
-}
+export function setMapObjects(id: FormID, payload: Record<string, any>): void {
+  const stage = useMapStore.getState()[id].stage;
+  const oldModels: Map<string, any> = new Map();
 
-export function applyWellToMap(id: FormID, well: WellID, updateView?: boolean): void {
-  const mapState = useMapStore.getState()[id];
-  const stage = mapState.stage as MapStage;
-
-  if (!stage.hasExtraObject('well')) return;
-  const mapPoint = well !== null ? stage.getNamedPoint(well) : undefined;
-  stage.setExtraObjectModel('well', mapPoint);
-
-  if (mapState.canvas) {
-    const viewport = updateView ? stage.getExtraObjectViewport('well') : undefined;
-    setTimeout(() => stage.render(viewport), 1);
+  for (const oid in payload) {
+    if (!stage.hasExtraObject(oid)) continue;
+    oldModels.set(oid, stage.getExtraObject(oid));
+    stage.setExtraObject(oid, payload[oid]);
   }
-}
-
-export function applyTraceToMap(id: FormID, model: TraceModel, updateView?: boolean): void {
-  const mapState = useMapStore.getState()[id];
-  const stage = mapState.stage as MapStage;
-
-  if (!stage.hasExtraObject('trace')) return;
-  stage.setExtraObjectModel('trace', model ?? null);
-
-  if (mapState.canvas) {
-    const viewport = updateView ? stage.getExtraObjectViewport('trace') : undefined;
-    setTimeout(() => stage.render(viewport), 1);
-  }
-  useMapStore.setState({[id]: {...mapState}});
+  if (!stage.getMapData()) return;
+  const changed = stage.centerToObject(oldModels, 'incl', 'site', 'trace', 'well');
+  if (!changed) stage.render();
 }

@@ -1,16 +1,17 @@
 import type { Translator } from './translator';
-import type { MapExtraObject } from '../lib/types';
+import type { MapExtraObjectState } from '../extra-objects/types';
 import { startPaint } from './map-drawer';
 import { getTranslator } from './translator';
 
 
 export function showMap(
-  canvas: MapCanvas, map: MapData, viewport: MapViewport,
-  afterUpdate?: () => void, extra?: Map<MapExtraObjectID, MapExtraObject>,
+  ctx: CanvasRenderingContext2D, map: MapData, viewport: MapViewport,
+  extra?: Map<MapExtraObjectID, MapExtraObjectState>,
 ) {
   const { cx, cy, scale } = viewport;
   let coords: Translator;
   let uiMode: boolean;
+  const canvas = ctx.canvas as MapCanvas;
   const canvasFlag = canvas.showMapFlag = {};
   const canvasEvents = canvas.events;
 
@@ -82,7 +83,6 @@ export function showMap(
     const point = coords.pointToMap({x: width / 2, y: height / 2});
     canvasEvents.emit('init', coords);
 
-    const ctx = canvas.getContext('2d');
     const options = {onCheckExecution, coords, point, ctx, draftDrawing: true, extra};
     ctx.clearRect(0, 0, width, height);
 
@@ -92,6 +92,5 @@ export function showMap(
     }
     options.draftDrawing = false;
     await startPaint(map, options);
-    if (afterUpdate) afterUpdate();
   }
 }

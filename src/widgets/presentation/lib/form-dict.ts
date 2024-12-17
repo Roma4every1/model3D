@@ -1,7 +1,7 @@
 import type { FunctionComponent } from 'react';
 import { Table, createTableState } from 'features/table';
 import { Chart, createChartState } from 'features/chart';
-import { Map, createMapState } from 'features/map';
+import { Map, createMapState, mapChannelCriteria } from 'features/map';
 import { Carat, createCaratState, caratChannelCriteria } from 'features/carat';
 import { Profile, createProfileState } from 'features/profile';
 import { FileView, createFileViewState } from 'features/file';
@@ -36,5 +36,6 @@ export const formCreators: SupportedFormDict<FormStateCreator> = {
 
 export const formChannelCriteria: Partial<SupportedFormDict<ClientChannelCriteria>> = {
   'carat': caratChannelCriteria,
+  'map': mapChannelCriteria,
   'profile': {},
 };

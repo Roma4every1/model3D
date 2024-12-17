@@ -1,93 +1,58 @@
-import type { MapPluginTypeMap } from './plugins';
-import type { MapExtraObject, MapExtraObjectConfig } from './types';
-import { canCreateTypes, MapMode } from './constants';
-import { MapSelect } from './map-select';
+import type { MapEventMap, MapEventKind } from './types';
+import type { MapExtraObjectState, MapExtraObjectConfig } from '../extra-objects/types';
+import { EventBus } from 'shared/lib';
 import { MapLayer } from './map-layer';
 import { Scroller } from '../drawer/scroller';
-
 import { showMap } from '../drawer/maps';
-import { getDefaultMapElement } from '../components/edit-panel/editing/editing-utils';
-import { selectElement, unselectElement } from './selecting-utils';
-
-import {
-  createMapElementInit,
-  getBoundsByPoints,
-  getNearestPointIndex,
-  PIXEL_PER_METER
-} from './map-utils';
-
-import {
-  applyMouseDownActionToPolyline,
-  applyMouseMoveActionToElement,
-  applyRotateToLabel,
-} from '../components/edit-panel/editing/edit-element-utils';
+import { unselectElement } from './selecting-utils';
+import { getTotalBounds, getMapElementBounds } from './bounds';
+import { pixelPerMeter } from './constants';
 
 
+/** Сцена карты. */
 export class MapStage implements IMapStage {
-  /** Класс управления состоянием выделения. */
-  public readonly select: MapSelect;
-  /** Слушатели событий сцены. */
-  public readonly listeners: MapStageListeners;
-  /** Scroller. */
+  /** Класс для обработки вьюпорта при движении. */
   public readonly scroller: Scroller;
+  /** Шина событий для сцены. */
+  private readonly eventBus: EventBus<MapEventKind, MapEventMap>;
+  /** Режимы карты. */
+  private readonly modes: Map<MapModeID, MapModeProvider>;
   /** Дополнительные объекты. */
-  private readonly extraObjects: Map<MapExtraObjectID, MapExtraObject>;
+  private readonly extraObjects: Map<MapExtraObjectID, MapExtraObjectState>;
 
-  private data: MapData = null;
-  private canvas: MapCanvas = null;
-  private detach: () => void;
-
-  /** Режим редактирования карты. */
-  private mode: MapMode = MapMode.MOVE_MAP;
+  /** Активный режим. */
+  private mode: MapModeProvider = null;
   /** Активный слой. */
   private activeLayer: MapLayer = null;
   /** Активный элемент карты. */
   private activeElement: MapElement = null;
-  /** Начальные свойства активного элемента. */
-  private elementInit: MapElement = null;
 
-  /** Активен ли режим выделения на карте. */
-  private selecting: boolean = false;
-  /** Находится ли карта в состоянии редактирования. */
-  private editing: boolean = false;
-  /** Находится ли карта в состоянии создания нового элемента. */
-  private creating: boolean = false;
+  private data: MapData = null;
+  private ctx: CanvasRenderingContext2D;
+  private detach: () => void;
 
-  private isOnMove: boolean = false;
-  private pIndex: number = null;
-
-  /** Зарегистрированные плагины карты. */
-  public readonly plugins: IMapPlugin[] = [];
-  /** Включен ли режим инклинометрии. */
-  public inclinometryModeOn: boolean = false;
-
-  constructor(plugins: IMapPlugin[] = []) {
-    this.plugins = plugins;
-    this.inclinometryModeOn = this.getPlugin('incl')?.inclinometryModeOn ?? false;
-    this.select = new MapSelect();
+  constructor() {
     this.scroller = new Scroller();
+    this.eventBus = new EventBus();
+    this.modes = new Map();
     this.extraObjects = new Map();
-
-    this.listeners = {
-      layerTreeChange: () => {}, navigationPanelChange: () => {},
-      selectPanelChange: () => {}, editPanelChange: () => {},
-    };
   }
+
+  public subscribe<T extends MapEventKind>(e: T, cb: EventCallback<MapEventMap[T]>): void {
+    this.eventBus.subscribe(e, cb);
+  }
+  public unsubscribe<T extends MapEventKind>(e: T, cb: EventCallback<MapEventMap[T]>): void {
+    this.eventBus.unsubscribe(e, cb);
+  }
+
+  /* --- --- */
 
   public getCanvas(): MapCanvas {
-    return this.canvas;
+    return this.ctx?.canvas as MapCanvas;
   }
 
-  public getPlugin<T extends keyof MapPluginTypeMap>(name: T): MapPluginTypeMap[T] {
-    return this.plugins.find(p => p.name === name) as MapPluginTypeMap[T];
-  }
-
-  public getMode(): MapMode {
-    return this.mode;
-  }
-
-  public getSelecting(): boolean {
-    return this.selecting;
+  public getContext(): CanvasRenderingContext2D {
+    return this.ctx;
   }
 
   public getMapData(): MapData {
@@ -112,30 +77,32 @@ export class MapStage implements IMapStage {
     return this.data.layers.find(l => l.elements.includes(this.activeElement));
   }
 
-  public getExtraLayers(): IMapLayer[] {
-    return [...this.extraObjects.values()].map(o => o.layer);
+  public getExtraLayers(customizable?: boolean): IMapLayer[] {
+    const layers: IMapLayer[] = [];
+    if (customizable) {
+      for (const extraObject of this.extraObjects.values()) {
+        layers.push(extraObject.layer);
+      }
+    } else {
+      for (const extraObject of this.extraObjects.values()) {
+        if (extraObject.layerCustomizable) layers.push(extraObject.layer);
+      }
+    }
+    return layers;
   }
 
   public getNamedPoint(id: WellID): MapPoint | undefined {
     return this.data?.points.find(p => p.UWID === id);
   }
 
-  public isElementEditing(): boolean {
-    return this.editing;
-  }
-
-  public isElementCreating(): boolean {
-    return this.creating;
-  }
-
   /** Перевод координат канваса в координаты карты. */
   public eventToPoint(event: MouseEvent): Point {
     const { offsetX, offsetY } = event;
-    if (!this.canvas || !this.data?.x) return {x: offsetX, y: offsetY};
+    if (!this.ctx || !this.data?.x) return {x: offsetX, y: offsetY};
 
-    const sc = this.data.scale / PIXEL_PER_METER;
-    const canvasCenterX = this.canvas.clientWidth / 2;
-    const canvasCenterY = this.canvas.clientHeight / 2;
+    const sc = this.data.scale / pixelPerMeter;
+    const canvasCenterX = this.ctx.canvas.clientWidth / 2;
+    const canvasCenterY = this.ctx.canvas.clientHeight / 2;
 
     return {
       x: this.data.x + (offsetX - canvasCenterX) * sc,
@@ -144,138 +111,58 @@ export class MapStage implements IMapStage {
   }
 
   public setCanvas(canvas: MapCanvas): void {
-    this.canvas = canvas;
-    if (!canvas) return;
-    this.scroller.setCanvas(canvas);
-    this.plugins.forEach(p => p.setCanvas(canvas))
-    const ctx = canvas.getContext('2d');
-    this.select.setTextMeasurer(text => ctx.measureText(text).width);
+    if (canvas) {
+      this.ctx = canvas.getContext('2d');
+      this.scroller.setCanvas(canvas);
+    } else {
+      this.ctx = null;
+    }
   }
 
   public setData(data: MapData): void {
-    this.data = data;
+    for (const state of this.extraObjects.values()) {
+      state.provider.model = null;
+      state.objectBounds = null;
+      state.layer.bounds = null;
+    }
     this.activeLayer = null;
-  }
-
-  public setMode(mode: MapMode): void {
-    if (mode === this.mode) return;
-    this.mode = mode;
-    const edited = mode > MapMode.MOVE_MAP;
-    if (edited) this.startEditing();
-
-    this.canvas.blocked = mode !== MapMode.MOVE_MAP;
-    this.canvas.style.cursor = mode === MapMode.AWAIT_POINT ? 'crosshair' : 'auto';
-
-    if (this.activeElement?.type === 'polyline' && this.activeElement.edited !== edited) {
-      this.activeElement.edited = edited;
-      this.render();
-    }
-    this.listeners.editPanelChange();
-    this.listeners.navigationPanelChange();
-  }
-
-  public setSelecting(selecting: boolean): void {
-    if (selecting === this.selecting) return;
-    if (!selecting && this.activeElement) {
-      this.clearSelect(); this.render();
-    }
-    if (selecting && this.editing) {
-      this.cancel(); this.render();
-    }
-    this.selecting = selecting;
-    this.listeners.selectPanelChange();
+    this.data = data;
   }
 
   public setActiveLayer(layer: MapLayer): void {
     if (this.activeLayer === layer) return;
-    if (this.creating || this.editing) this.cancel();
     this.activeLayer = layer;
     this.data.layers.forEach(l => { l.active = false; });
     if (layer) layer.active = true;
-    this.listeners.editPanelChange();
-    this.listeners.layerTreeChange();
+    this.eventBus.publish('active-layer', layer);
   }
 
-  public startCreating(): void {
-    if (this.creating) return;
-    this.creating = true;
-
-    if (this.activeElement) {
-      this.clearSelect(); this.render();
-    }
-    this.setMode(MapMode.AWAIT_POINT);
-    this.listeners.selectPanelChange();
+  public setActiveElement(element: MapElement | null): void {
+    if (this.activeElement === element) return;
+    this.activeElement = element;
+    this.eventBus.publish('active-element', element);
   }
 
-  public startEditing(): void {
-    if (this.editing || this.creating) return;
-    this.editing = true;
-    this.elementInit = createMapElementInit(this.activeElement);
-
-    if (this.activeElement.type === 'polyline') {
-      this.activeElement.edited = this.mode > MapMode.MOVE_MAP;
-    } else {
-      this.activeElement.edited = true;
-    }
-    this.listeners.selectPanelChange();
-    this.render();
-  }
-
-  public accept(): void {
-    if (!this.activeElement) return;
-    if (this.activeElement.type === 'polyline') {
-      this.activeElement.bounds = getBoundsByPoints(this.activeElement.arcs[0].path);
-    }
-
-    this.getActiveElementLayer().modified = true;
-    unselectElement(this.activeElement);
-    this.activeElement = null;
-    this.clearSelect();
-
-    if (this.creating) {
-      this.setMode(MapMode.AWAIT_POINT);
-    } else {
-      this.canvas.blocked = false;
-      this.editing = false;
-      this.creating = false;
-      this.elementInit = null;
-      this.mode = MapMode.MOVE_MAP;
-      this.listeners.navigationPanelChange();
-      this.listeners.editPanelChange();
-    }
-    this.listeners.selectPanelChange();
-  }
-
-  public cancel(): void {
-    this.listeners.selectPanelChange();
-    if (!this.activeElement) {
-      if (!this.creating) return;
-      this.creating = false;
-      this.setMode(MapMode.MOVE_MAP);
-      return;
-    }
-    if (this.creating) {
-      this.activeLayer.elements.pop();
-    } else {
-      for (const field in this.elementInit) {
-        this.activeElement[field] = this.elementInit[field];
-      }
-      this.elementInit = null;
-    }
-    this.creating = false;
-    this.editing = false;
-    this.mode = MapMode.MOVE_MAP;
-    this.clearSelect();
-    this.render();
-  }
+  /* --- Specific Actions --- */
 
   public clearSelect(): void {
-    this.select.clear();
-    this.canvas.blocked = false;
-    this.listeners.navigationPanelChange();
-    this.editing = false;
-    if (this.activeElement) unselectElement(this.activeElement);
-    this.setActiveElement(null);
+    this.modes.get('element-select').onModeLeave();
+    if (this.activeElement) {
+      unselectElement(this.activeElement);
+      this.setActiveElement(null);
+    }
+  }
+
+  public updateActiveElement(checkBounds?: boolean): void {
+    const element = this.activeElement;
+    if (!element) return;
+
+    if (checkBounds !== false) {
+      const layer = this.getActiveElementLayer();
+      element.bounds = getMapElementBounds(element);
+      layer.bounds = getTotalBounds(layer.elements);
+    }
+    this.eventBus.publish('element-change', element);
   }
 
   public deleteActiveElement(): void {
@@ -284,170 +171,146 @@ export class MapStage implements IMapStage {
       const index = layer.elements.indexOf(this.activeElement);
       if (index !== -1) {
         layer.elements.splice(index, 1);
+        layer.bounds = getTotalBounds(layer.elements);
         layer.modified = true; break;
       }
     }
     this.setActiveElement(null);
   }
 
+  /* --- Modes --- */
+
+  public registerMode(provider: MapModeProvider): void {
+    this.modes.set(provider.id, provider);
+    if (provider.id === 'default') this.mode = provider;
+  }
+
+  public getMode(): MapModeID {
+    return this.mode.id;
+  }
+
+  public getModeProvider(id?: MapModeID): MapModeProvider {
+    return id ? this.modes.get(id) : this.mode;
+  }
+
+  public setMode(id: MapModeID): void {
+    const oldMode = this.mode;
+    const newMode = this.modes.get(id) ?? this.modes.get('default');
+    if (oldMode === newMode) return;
+
+    if (oldMode.onModeLeave) oldMode.onModeLeave();
+    this.mode = newMode;
+    if (newMode.onModeEnter) newMode.onModeEnter();
+
+    if (this.ctx) this.ctx.canvas.style.cursor = newMode.cursor;
+    this.eventBus.publish('mode', id);
+  }
+
   /* --- Extra Objects --- */
 
-  public registerExtraObject(config: MapExtraObjectConfig): void {
-    const id = config.id;
+  public registerExtraObject(id: MapExtraObjectID, config: MapExtraObjectConfig): void {
+    const provider = config.provider;
     const layer = MapLayer.fromConfig(id, config.layer);
-
-    this.extraObjects.set(id, {
-      id, layer, bound: config.bound, render: config.render, viewport: config.viewport,
-      objectModel: null, objectBounds: null,
-    });
+    const layerCustomizable = config.layer.customizable ?? true;
+    this.extraObjects.set(id, {id, layer, layerCustomizable, provider, objectBounds: null});
   }
 
   public hasExtraObject(id: MapExtraObjectID): boolean {
     return this.extraObjects.has(id);
   }
 
-  public setExtraObjectModel(id: MapExtraObjectID, model: any): void {
+  public getExtraObject<T = any>(id: MapExtraObjectID): T | null {
+    return this.extraObjects.get(id)?.provider.model ?? null;
+  }
+
+  public setExtraObject(id: MapExtraObjectID, payload: any, updateView?: boolean): void {
     const state = this.extraObjects.get(id);
     if (!state) return;
+    const provider = state.provider;
+    const oldModel = provider.model;
 
-    if (model) {
-      state.objectModel = model;
-      state.objectBounds = state.bound(model);
-      state.layer.bounds = state.objectBounds;
+    if (payload !== null && payload !== undefined) {
+      provider.setModel(payload);
     } else {
-      state.objectModel = null;
+      provider.model = null;
+    }
+    if (provider.model === null) {
       state.objectBounds = null;
       state.layer.bounds = null;
+    } else if (provider.model !== oldModel) {
+      state.objectBounds = provider.computeBounds();
+      state.layer.bounds = state.objectBounds;
+    }
+    if (updateView) {
+      const viewport = this.getExtraObjectViewport(id);
+      if (viewport) this.render(viewport);
     }
   }
 
-  public getExtraObjectModel<T = any>(id: MapExtraObjectID): T | null {
-    return this.extraObjects.get(id)?.objectModel ?? null;
+  public centerToObject(oldModels: Map<MapExtraObjectID, any>, ...ids: MapExtraObjectID[]): boolean {
+    for (const oid of ids) {
+      const provider = this.extraObjects.get(oid)?.provider;
+      if (!provider || provider.model === null) continue;
+
+      const oldModel = oldModels.get(oid) ?? null;
+      const needChange = provider.needChangeViewport
+        ? provider.needChangeViewport(oldModel, provider.model)
+        : oldModel !== provider.model;
+
+      const viewport = needChange && this.getExtraObjectViewport(oid);
+      if (viewport) { this.render(viewport); return true; }
+    }
+    return false;
   }
 
-  public getExtraObjectViewport(id: MapExtraObjectID): MapViewport | undefined {
-    if (!this.data || !this.canvas) return undefined;
+  private getExtraObjectViewport(id: MapExtraObjectID): MapViewport | undefined {
+    if (!this.data || !this.ctx) return undefined;
     const state = this.extraObjects.get(id);
-    if (!state || !state.viewport || !state.objectModel) return undefined;
-
-    return state.viewport({
-      canvas: this.canvas, stage: this,
-      objectModel: state.objectModel, objectBounds: state.objectBounds,
-    });
+    if (!state || !state.provider.computeViewport || !state.provider.model) return undefined;
+    return state.provider.computeViewport(this.ctx.canvas, state.objectBounds);
   }
 
-  /* --- Handlers --- */
+  /* --- Event Handlers --- */
 
-  public handleMouseDown(event: MouseEvent, traceEditing: boolean): void {
-    this.scroller.mouseDown(event);
-    if (this.editing || this.creating) {
-      this.isOnMove = this.mode === MapMode.MOVE
-        || this.mode === MapMode.MOVE_POINT || this.mode === MapMode.ROTATE;
-
-      if (this.activeElement?.type !== 'polyline') return;
-      const scale = this.data.scale;
-      const point = this.eventToPoint(event);
-
-      if (this.mode === MapMode.MOVE_POINT) {
-        this.pIndex = getNearestPointIndex(point, scale, this.activeElement);
-      }
-      const path = this.activeElement.arcs[0].path;
-      const oldPathLength = path.length;
-      applyMouseDownActionToPolyline(this.activeElement, {mode: this.mode, point, scale});
-
-      if (path.length !== oldPathLength) this.listeners.editPanelChange();
-      this.render();
-    } else if (this.selecting && !traceEditing) {
-      const point = this.eventToPoint(event);
-      this.handleSelectChange(point);
-    }
+  public handleWheel(e: WheelEvent): void {
+    if (!this.mode.blocked) this.scroller.wheel(e);
+    if (this.mode.onWheel) this.mode.onWheel(e, this);
   }
 
-  public handleMouseUp(event: MouseEvent): MapElement | null {
-    if (this.inclinometryModeOn) {
-      const inclPlugin = this.getPlugin('incl');
-      const point: Point = {x: event.offsetX * 2, y: event.offsetY * 2};
-      inclPlugin.handleInclinometryAngleChange(point); return;
-    }
+  public handleMouseDown(e: MouseEvent): void {
+    if (e.button !== 0) return;
+    if (!this.mode.blocked) this.scroller.mouseDown(e);
+    if (this.mode.onClick) this.scroller.lastDownEvent = e;
+    if (this.mode.onMouseDown) this.mode.onMouseDown(e, this);
+  }
+
+  public handleMouseUp(e: MouseEvent): void {
     this.scroller.mouseUp();
-    this.isOnMove = false;
-    this.pIndex = null;
-
-    if (this.mode !== MapMode.AWAIT_POINT || !this.activeLayer) return null;
-    const creatingType = this.activeLayer?.elementType;
-    if (!canCreateTypes.includes(creatingType)) return null;
-
-    const point = this.eventToPoint(event);
-    point.x = Math.round(point.x);
-    point.y = Math.round(point.y);
-
-    const newElement = getDefaultMapElement(creatingType, point);
-    this.activeLayer.elements.push(newElement);
-
-    const maxScale = this.activeLayer.getMaxScale();
-    if (this.data.scale > maxScale) {
-      this.data.x = point.x;
-      this.data.y = point.y;
-      this.data.scale = maxScale;
-    }
-
-    this.setActiveElement(newElement);
-    this.render();
-    return newElement;
+    if (this.mode.onMouseUp) this.mode.onMouseUp(e, this);
+    const downEvent = this.scroller.lastDownEvent;
+    if (downEvent && e.x === downEvent.x && e.y === downEvent.y) this.mode.onClick(e, this);
   }
 
-  public handleMouseMove(event: MouseEvent): void {
-    this.scroller.mouseMove(event);
-    if (!this.isOnMove) return;
-    const point = this.eventToPoint(event);
-    const action = {mode: this.mode, point, pIndex: this.pIndex};
-    applyMouseMoveActionToElement(this.activeElement, action);
-    this.render();
+  public handleMouseMove(e: MouseEvent): void {
+    if (!this.mode.blocked) this.scroller.mouseMove(e);
+    if (this.mode.onMouseMove) this.mode.onMouseMove(e, this);
   }
 
-  public handleMouseWheel(event: WheelEvent): void {
-    if (this.inclinometryModeOn) return;
-    this.scroller.wheel(event);
-    this.select.lastPoint = null;
-    if (this.mode !== MapMode.ROTATE || !(this.activeElement?.type === 'label')) return;
-    applyRotateToLabel(this.activeElement, event.deltaY > 0, event.shiftKey);
-    this.render();
+  public handleMouseLeave(e: MouseEvent): void {
+    this.scroller.mouseUp();
+    if (this.mode.onMouseLeave) this.mode.onMouseLeave(e, this);
   }
 
   /* --- Drawing --- */
 
   public resize(): void {
     this.render();
-    this.plugins.forEach(p => p.setCanvas(this.canvas));
   }
 
   public render(viewport?: MapViewport): void {
-    if (!this.canvas || !this.data) return;
+    if (!this.ctx || !this.data) return;
     if (!viewport) viewport = {cx: this.data.x, cy: this.data.y, scale: this.data.scale};
     if (this.detach) this.detach();
-    const afterUpdate = () => this.plugins.forEach(p => p.render());
-    this.detach = showMap(this.canvas, this.data, viewport, afterUpdate, this.extraObjects);
-  }
-
-  /* --- Private --- */
-
-  private handleSelectChange(point: Point): void {
-    if (this.inclinometryModeOn) return;
-    const scale = this.data.scale;
-    const newElement = this.select.findElement(point, this.data.layers, this.activeLayer, scale);
-
-    if (this.activeElement) {
-      unselectElement(this.activeElement);
-      this.activeElement.edited = false;
-    }
-    if (newElement) selectElement(newElement);
-    this.setActiveElement(newElement);
-    this.render();
-  }
-
-  private setActiveElement(element: MapElement | null): void {
-    if (this.activeElement === element) return;
-    this.listeners.editPanelChange();
-    this.activeElement = element;
+    this.detach = showMap(this.ctx, this.data, viewport, this.extraObjects);
   }
 }

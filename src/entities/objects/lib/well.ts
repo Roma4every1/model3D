@@ -3,7 +3,7 @@ import { wellChannelCriterion } from './constants';
 
 
 /** Состояние активной скважины. */
-export class WellManager implements IWellManager {
+export class WellManager implements ActiveObjectManager<WellModel> {
   /** Текущая активная скважина. */
   public model: WellModel | null = null;
   /** Название канала со скважинами. */
@@ -33,18 +33,18 @@ export class WellManager implements IWellManager {
 
   public initializeModel(parameters: Parameter[]): void {
     const wellParameter = parameters.find(p => p.id === this.parameterID);
-    const wellRow = wellParameter.getValue() as ParameterValueMap['tableRow'];
+    const wellRow = wellParameter.getValue() as TableRowValue;
     if (wellRow) this.model = this.createModel(wellRow);
   }
 
-  public onParameterUpdate(value: ParameterValueMap['tableRow']): boolean {
+  public onParameterUpdate(value: TableRowValue): boolean {
     const oldModel = this.model;
     this.model = this.createModel(value);
     return this.model !== oldModel;
   }
 
   /** По значение `TableRow` параметра создаёт модель скважины. */
-  private createModel(value: ParameterValueMap['tableRow']): WellModel | null {
+  private createModel(value: TableRowValue): WellModel | null {
     if (!value || !this.info) return null;
     const id = Number(value[this.info.id.propertyName]?.value);
     if (isNaN(id)) return null;

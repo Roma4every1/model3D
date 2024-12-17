@@ -9,9 +9,10 @@ interface ScrollerAction {
 }
 
 
-export class Scroller implements IMapScroller {
+export class Scroller {
   public sync: boolean = false;
   public list: MapCanvas[] = [];
+  public lastDownEvent: MouseEvent;
 
   private canvas: MapCanvas = null;
 	private action: ScrollerAction = null;
@@ -34,7 +35,6 @@ export class Scroller implements IMapScroller {
 	/* --- Listeners --- */
 
 	public wheel(event: WheelEvent): void {
-		if (this.canvas.blocked) return;
 		const point = {x: event.offsetX * devicePixelRatio, y: event.offsetY * devicePixelRatio};
     const mapPoint = this.translator.pointToMap(point);
 
@@ -58,7 +58,7 @@ export class Scroller implements IMapScroller {
 	}
 
 	public mouseMove(event: MouseEvent): void {
-		if (!this.action || this.canvas.blocked) return;
+		if (!this.action) return;
 		this.emit('mode', true);
 
     const scale = this.action.initTranslator.mapScale;

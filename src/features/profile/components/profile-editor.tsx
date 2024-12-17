@@ -30,7 +30,7 @@ export const ProfileEditor = ({id}: {id: FormID}) => {
     },
     {
       key: '2', label: t('profile.tab-layers'), disabled: !layers,
-      children: <ProfileLayers stage={stage as MapStage} layers={layers} t={t}/>,
+      children: <ProfileLayers stage={stage as any} layers={layers} t={t}/>,
     },
   ];
   return <Tabs rootClassName={'profile-editor'} items={tabs}/>;

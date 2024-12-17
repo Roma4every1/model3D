@@ -2,7 +2,7 @@ import { RecordInfoCreator } from 'entities/channel';
 import { stratumChannelCriterion } from './constants';
 
 
-export class StratumManager implements IStratumManager {
+export class StratumManager implements ActiveObjectManager<StratumModel> {
   /** Текущее активное месторождение. */
   public model: StratumModel | null = null;
   /** Название канала с месторождениями. */
@@ -32,18 +32,18 @@ export class StratumManager implements IStratumManager {
 
   public initializeModel(parameters: Parameter[]): void {
     const stratumParameter = parameters.find(p => p.id === this.parameterID);
-    const stratumRow = stratumParameter.getValue() as ParameterValueMap['tableRow'];
+    const stratumRow = stratumParameter.getValue() as TableRowValue;
     if (stratumRow) this.model = this.createModel(stratumRow);
   }
 
-  public onParameterUpdate(value: ParameterValueMap['tableRow']): boolean {
+  public onParameterUpdate(value: TableRowValue): boolean {
     const oldModel = this.model;
     this.model = this.createModel(value);
     return this.model !== oldModel;
   }
 
   /** По значение `TableRow` параметра создаёт модель пласта. */
-  private createModel(value: ParameterValueMap['tableRow']): StratumModel | null {
+  private createModel(value: TableRowValue): StratumModel | null {
     if (!value || !this.info) return null;
     const id = Number(value[this.info.id.propertyName]?.value);
     if (Number.isNaN(id)) return null;

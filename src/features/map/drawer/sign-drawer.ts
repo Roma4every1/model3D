@@ -1,8 +1,4 @@
 export class SignDrawer implements MapElementDrawer<MapSign> {
-  public bound(sign: MapSign): Bounds {
-    return {min: sign, max: sign};
-  }
-
   public draw(sign: Readonly<MapSign>, options: MapDrawOptions): void {
     const img = sign.img;
     if (!img) return;

@@ -7,28 +7,33 @@ import { useObjectsStore } from './objects.store';
 /** По данным обновления параметров обновляет активные объекты. */
 export function updateObjects(changes: Set<ParameterID>): void {
   let changed = false;
-  let { place, stratum, well, trace } = useObjectsStore.getState();
+  let { place, stratum, well, trace, site } = useObjectsStore.getState();
   const storage = useParameterStore.getState().storage;
 
   if (place.activated() && changes.has(place.parameterID)) {
-    const value = storage.get(place.parameterID).getValue();
+    const value = storage.get(place.parameterID).getValue() as TableRowValue;
     if (place.onParameterUpdate(value)) changed = true;
   }
   if (stratum.activated() && changes.has(stratum.parameterID)) {
-    const value = storage.get(stratum.parameterID).getValue();
+    const value = storage.get(stratum.parameterID).getValue() as TableRowValue;
     if (stratum.onParameterUpdate(value)) changed = true;
   }
   if (well.activated() && changes.has(well.parameterID)) {
-    const value = storage.get(well.parameterID).getValue();
+    const value = storage.get(well.parameterID).getValue() as TableRowValue;
     if (well.onParameterUpdate(value)) changed = true;
   }
   if (trace.activated() && changes.has(trace.parameterID)) {
-    const value = storage.get(trace.parameterID).getValue();
+    const value = storage.get(trace.parameterID).getValue() as TableRowValue;
     const channels = useChannelStore.getState().storage;
     if (trace.onParameterUpdate(value, channels)) { trace = trace.clone(); changed = true; }
   }
+  if (site.activated() && changes.has(site.parameterID)) {
+    const value = storage.get(site.parameterID).getValue() as TableRowValue;
+    const channels = useChannelStore.getState().storage;
+    if (site.onParameterUpdate(value, channels)) changed = true;
+  }
   if (changed) {
-    useObjectsStore.setState({place, stratum, well, trace}, true);
+    useObjectsStore.setState({place, stratum, well, trace, site}, true);
   }
 }
 

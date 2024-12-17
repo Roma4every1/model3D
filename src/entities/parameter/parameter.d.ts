@@ -114,12 +114,15 @@ interface ParameterValueMap {
   /** Параметр, хранящий интервал дат. */
   'dateInterval': {start: Date, end: Date};
   /** Параметр, хранящий хранит набор структур "поле-значение-тип". */
-  'tableRow': Record<string, TypedCell>;
+  'tableRow': TableRowValue;
   /** Параметр, хранящий пару "тип-значение". */
   'tableCell': TypedCell;
   /** Параметр, хранящий массив пар значение-тип. */
   'tableCellsArray': TypedCell[];
 }
+
+/** Значение параметра типа `tableRow`. */
+type TableRowValue = Record<string, TypedCell>;
 
 /** Ячейка таблицы вместе с информацией о типе. */
 interface TypedCell {

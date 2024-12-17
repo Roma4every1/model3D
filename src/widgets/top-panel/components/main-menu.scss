@@ -31,14 +31,19 @@
 }
 
 .menu-header {
-  padding: 1px;
+  padding: 1px 4px;
   margin-bottom: 2px;
-  text-align: center;
-  font-size: 12px;
-  font-weight: bold;
   color: #424242;
   background-color: #d4d4d4;
   border-radius: 2px;
+
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .menu-list {

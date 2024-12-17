@@ -1,11 +1,11 @@
 import type { Translator } from './translator';
-import type { MapExtraObject } from '../lib/types';
+import type { MapExtraObjectState } from '../extra-objects/types';
 import { PolylineDrawer } from './polyline-drawer'
 import { LabelDrawer } from './label-drawer';
 import { SignDrawer } from './sign-drawer';
 import { PieSliceDrawer } from './pieslice-drawer';
 import { FieldDrawer } from './field-drawer';
-import { PIXEL_PER_METER } from '../lib/map-utils';
+import { pixelPerMeter } from '../lib/constants';
 
 
 interface StartPaintOptions {
@@ -13,11 +13,11 @@ interface StartPaintOptions {
   readonly point: Point;
   readonly coords: Translator;
   readonly onCheckExecution: () => void | Promise<void>;
-  readonly extra?: Map<MapExtraObjectID, MapExtraObject>;
+  readonly extra?: Map<MapExtraObjectID, MapExtraObjectState>;
   draftDrawing: boolean;
 }
 
-export const types = {
+export const mapElementDrawers = {
   polyline: new PolylineDrawer(),
   label: new LabelDrawer(),
   sign: new SignDrawer(),
@@ -51,7 +51,7 @@ export async function startPaint(map: MapData, options: StartPaintOptions): Prom
 
   const drawOptions: MapDrawOptions = {
     ctx: ctx,
-    dotsPerMeter: window.devicePixelRatio * PIXEL_PER_METER,
+    dotsPerMeter: window.devicePixelRatio * pixelPerMeter,
     toMapPoint: coords.pointToMap,
     toCanvasPoint: coords.pointToControl,
   };
@@ -73,17 +73,17 @@ export async function startPaint(map: MapData, options: StartPaintOptions): Prom
       let c = onCheckExecution();
       if (c) await c;
 
-      const elementDrawer: MapElementDrawer = types[layer.elementType];
+      const elementDrawer: MapElementDrawer = mapElementDrawers[layer.elementType];
       if (noDrafts) {
         for (const element of layer.elements) {
-          if (!intersects(bounds, elementDrawer.bound(element))) continue;
+          if (!intersects(bounds, element.bounds)) continue;
           c = onCheckExecution();
           if (c) await c;
           elementDrawer.draw(element, drawOptions);
         }
       } else if (elementDrawer.draft) {
         for (const element of layer.elements) {
-          if (!intersects(bounds, elementDrawer.bound(element))) continue;
+          if (!intersects(bounds, element.bounds)) continue;
           c = onCheckExecution();
           if (c) await c;
           elementDrawer.draft(element, drawOptions);
@@ -91,9 +91,9 @@ export async function startPaint(map: MapData, options: StartPaintOptions): Prom
       }
     }
     if (noDrafts && extraObjects) {
-      for (const { layer, objectModel, objectBounds, render } of extraObjects.values()) {
-        if (objectModel && layer.visible && layer.isScaleVisible(mapScale)) {
-          if (intersects(bounds, objectBounds)) render(objectModel, drawOptions);
+      for (const { layer, objectBounds, provider } of extraObjects.values()) {
+        if (provider.model && layer.visible && layer.isScaleVisible(mapScale)) {
+          if (intersects(bounds, objectBounds)) provider.render(drawOptions);
         }
       }
     }

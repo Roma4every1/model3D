@@ -23,19 +23,50 @@ export const wellChannelCriterion: ChannelCriterion<keyof WellModel> = {
   },
 };
 
-/** Набор свойств канала с узлами трасс. */
-const traceNodePropertyCriteria: ChannelPropertyCriteria<TraceNodeChannelFields> = {
-  id: {name: 'ITEM'},
-  x: {name: 'X'},
-  y: {name: 'Y'},
-  order: {name: 'SORTORDER'},
-};
-/** Критерий канала с трассами. */
-export const traceChannelCriterion: ChannelCriterion<keyof TraceModel> = {
-  name: 'traces',
+/* --- Trace --- */
+
+const traceNodeNameLookup: PropertyChannelCriterion = {
   properties: {
     id: {name: 'LOOKUPCODE'},
     name: {name: 'LOOKUPVALUE'},
-    nodes: {name: 'ITEMS', details: {properties: traceNodePropertyCriteria}},
+  },
+  required: false,
+};
+
+const traceNodeChannelCriterion: PropertyChannelCriterion<TraceNodeChannelFields> = {
+  properties: {
+    id: {name: 'ITEM', lookups: {name: traceNodeNameLookup}},
+    x: {name: 'X'},
+    y: {name: 'Y'},
+    order: {name: 'SORTORDER'},
+  },
+  required: true,
+};
+
+/** Критерий канала с трассами. */
+export const traceChannelCriterion: ChannelCriterion<keyof TraceModel> = {
+  properties: {
+    id: {name: 'LOOKUPCODE'},
+    name: {name: 'LOOKUPVALUE'},
+    nodes: {name: 'ITEMS', details: traceNodeChannelCriterion},
+  },
+};
+
+/* --- Site --- */
+
+const sitePointChannelCriterion: PropertyChannelCriterion = {
+  properties: {
+    x: {name: 'X'},
+    y: {name: 'Y'},
+    order: {name: 'SORTORDER'},
+  },
+  required: true,
+};
+
+export const siteChannelCriterion: ChannelCriterion<keyof SiteModel> = {
+  properties: {
+    id: {name: 'LOOKUPCODE'},
+    name: {name: 'LOOKUPVALUE'},
+    points: {name: 'ITEMS', details: sitePointChannelCriterion},
   },
 };

@@ -1,17 +1,15 @@
 export class PieSliceDrawer implements MapElementDrawer<MapPieSlice> {
-  public bound(pie: MapPieSlice): Bounds {
-    return {min: pie, max: pie};
-  }
-
   public draw(pie: Readonly<MapPieSlice>, options: MapDrawOptions): void {
     const minRadius = 2;
     const maxRadius = 16;
+    const k = 0.001 * options.dotsPerMeter;
+
     let radius = pie.radius;
     if (radius < minRadius) radius = minRadius;
     if (radius > maxRadius) radius = maxRadius;
 
     const { x, y } = options.toCanvasPoint(pie);
-    const r = radius * 0.001 * options.dotsPerMeter;
+    const r = radius * k;
 
     const ctx = options.ctx;
     ctx.beginPath();
@@ -35,14 +33,14 @@ export class PieSliceDrawer implements MapElementDrawer<MapPieSlice> {
 
     if (pie.selected) {
       ctx.strokeStyle = '#000';
-      ctx.lineWidth = 7;
+      ctx.lineWidth = k;
       ctx.stroke();
       ctx.strokeStyle = pie.bordercolor;
-      ctx.lineWidth = 5;
+      ctx.lineWidth = 0.7 * k;
       ctx.stroke();
     } else {
       ctx.strokeStyle = pie.bordercolor;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 0.25 * k;
       ctx.stroke();
     }
     ctx.lineJoin = 'miter';

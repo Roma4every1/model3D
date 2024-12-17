@@ -2,7 +2,7 @@ import { cellsToRecords, RecordInfoCreator } from 'entities/channel';
 import { traceChannelCriterion } from './constants';
 
 
-export class TraceManager implements ITraceManager {
+export class TraceManager implements ActiveObjectManager<TraceModel> {
   /** Текущая активная трасса. */
   public model: TraceModel | null = null;
   /** Модель трассы до внесения изменений. */
@@ -53,11 +53,11 @@ export class TraceManager implements ITraceManager {
     const wellChannel = channels[this.wellChannelID];
     const nodeChannel = channels[this.nodeChannelID];
     const traceParameter = parameters.find(p => p.id === this.parameterID);
-    const traceRow = traceParameter.getValue() as ParameterValueMap['tableRow'];
+    const traceRow = traceParameter.getValue() as TableRowValue;
     if (traceRow) this.model = this.createModel(traceRow, nodeChannel, wellChannel);
   }
 
-  public onParameterUpdate(value: ParameterValueMap['tableRow'], channels: ChannelDict): boolean {
+  public onParameterUpdate(value: TableRowValue, channels: ChannelDict): boolean {
     const oldModel = this.model;
     const wellChannel = channels[this.wellChannelID];
     const nodeChannel = channels[this.nodeChannelID];
@@ -65,7 +65,7 @@ export class TraceManager implements ITraceManager {
     return this.model !== oldModel;
   }
 
-  private createModel(value: ParameterValueMap['tableRow'], nodeChannel: Channel, wellChannel: Channel): TraceModel {
+  private createModel(value: TableRowValue, nodeChannel: Channel, wellChannel: Channel): TraceModel {
     if (!value || !this.info) return null;
     const traceID = value[this.info.id.propertyName]?.value;
     const nodes: TraceNode[] = [];

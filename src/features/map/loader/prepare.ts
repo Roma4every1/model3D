@@ -3,6 +3,11 @@ import { fillPatterns } from 'shared/drawing';
 import { signProvider } from '../drawer/sign-provider';
 import linesDefStub from '../drawer/lines.def.stub.json';
 
+import {
+  getPolylineBounds, getLabelBounds, getSignBounds,
+  getPieSliceBounds, getFieldBounds
+} from '../lib/bounds';
+
 
 export async function prepareMapElements(elements: MapElement[]): Promise<void> {
   if (elements.length === 0) return;
@@ -10,8 +15,12 @@ export async function prepareMapElements(elements: MapElement[]): Promise<void> 
 
   if (type === 'polyline') {
     elements.forEach(preparePolyline);
+  } else if (type === 'label') {
+    elements.forEach(prepareLabel);
   } else if (type === 'sign') {
     for (const element of elements) await prepareSign(element as MapSign);
+  } else if (type === 'pieslice') {
+    elements.forEach(preparePieSlice);
   } else if (type === 'field') {
     elements.forEach(prepareField);
   }
@@ -24,30 +33,31 @@ function preparePolyline(p: MapPolyline): void {
       : (p.fillbkcolor === 'background' ? '#ffffff' : p.fillbkcolor);
     p.fillStyle = fillPatterns.createFillStyle(p.fillname, p.fillcolor, background);
   }
-  if (p.borderstyleid) {
-    p.style = linesDefStub[p.borderstyleid];
-  }
+  if (p.borderstyleid) p.style = linesDefStub[p.borderstyleid];
+  if (!p.bounds) p.bounds = getPolylineBounds(p);
+}
+
+function prepareLabel(label: MapLabel): void {
+  label.bounds = getLabelBounds(label);
 }
 
 async function prepareSign(sign: MapSign): Promise<void> {
   sign.img = await signProvider.getImage(sign.fontname, sign.symbolcode, sign.color);
+  sign.bounds = getSignBounds(sign);
+}
+
+function preparePieSlice(pie: MapPieSlice): void {
+  pie.bounds = getPieSliceBounds(pie);
 }
 
 /* --- Field Preparation --- */
 
 function prepareField(field: MapField): void {
-  field.sourceRenderDataMatrix = chunk(parseSourceRenderData(field.data), field.sizex);
+  field.sourceRenderDataMatrix = chunk(parseFieldData(field.data), field.sizex);
   field.deltasPalette = getDeltasPalette(field.palette.level);
   field.preCalculatedSpectre = getDeltasPreCalculatedPalettes(field.deltasPalette);
   field.lastUsedPalette = cloneDeep(field.palette);
-  field.bounds = fieldBounds(field);
-}
-
-function fieldBounds(field: MapField): Bounds {
-  return {
-    min: {x: field.x, y: field.y - field.sizey * field.stepy},
-    max: {x: field.x + field.sizex * field.stepx, y: field.y},
-  };
+  field.bounds = getFieldBounds(field);
 }
 
 export function getDeltasPreCalculatedPalettes(palettes: any[], spectreArrayLength = 10000): any {
@@ -131,23 +141,22 @@ function getRgbPaletteFromHex(hexPalette: MapFieldPaletteLevel[]): any {
   });
 }
 
-function parseSourceRenderData(stringData: string): number[] {
-  // parse string "n*50 123.123 132.323 ..." to an array (n*50 is equal to repeating null 50 times)
-  let data = stringData.split(' ');
-  let ret = [];
-  for (let i = 0; i < data.length; i++) {
-    let val = data[i];
-    let starIndex = val.indexOf('*');
-    if (starIndex === -1) {
-      ret.push(+val);
-    } else {
-      let arr = val.split('*');
-      let valToPush = (arr[0] === 'n') ? null : (+arr[0]);
-      let counter = +arr[1];
-      for (let j = counter; j > 0; j--) {
-        ret.push(valToPush);
-      }
-    }
+/**
+ * Преобразует строку вида `123 n*50 321 ...` в массив чисел.
+ * Элемент вида `n*50` означает повторение null 50 раз.
+ */
+function parseFieldData(source: string): number[] {
+  const data: number[] = [];
+  const values = source.split(' ');
+
+  for (let value of values) {
+    const starIndex = value.indexOf('*');
+    if (starIndex === -1) { data.push(Number(value)); continue; }
+
+    const count = Number.parseInt(value.substring(starIndex + 1));
+    value = value.substring(0, starIndex);
+    const dataValue = value === 'n' ? null : Number(value);
+    for (let i = count; i > 0; --i) data.push(dataValue);
   }
-  return ret;
+  return data;
 }

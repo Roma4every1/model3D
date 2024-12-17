@@ -1,29 +1,3 @@
-/** Состояние карты. */
-interface MapState {
-  /** Класс сцены. */
-  readonly stage: IMapStage;
-  /** Загрузчик. */
-  readonly loader: IMapLoader;
-  /** Класс для отслеживания изменения размеров холста. */
-  readonly observer: ResizeObserver;
-  /** Ссылка на холст. */
-  canvas: MapCanvas;
-  /** Владелец карты. */
-  owner: MapStorageID;
-  /** Идентификатор карты. */
-  mapID: MapID;
-  /** Состояние загрузки карты. */
-  status: MapStatus;
-  /** Можно ли редактировать карту. */
-  editable: boolean;
-  /** Была ли карта изменена. */
-  modified: boolean;
-  /** Открыто ли окно свойств элемента. */
-  propertyWindowOpen: boolean;
-  /** Открыта ли аттрибутивная таблица. */
-  attrTableWindowOpen: boolean;
-}
-
 /**
  * Статус загрузки карты.
  * + `ok` — данные загружены
@@ -34,43 +8,19 @@ interface MapState {
 type MapStatus = 'ok' | 'empty' | 'loading' | 'error';
 
 interface IMapStage {
-  readonly select: IMapSelect;
-  readonly scroller: IMapScroller;
-  readonly listeners: MapStageListeners;
-  readonly plugins: IMapPlugin[];
-  inclinometryModeOn: boolean;
+  readonly scroller: any;
 
   getCanvas(): MapCanvas;
-  getMode(): number;
-  getSelecting(): boolean;
+  getContext(): CanvasRenderingContext2D;
+  getMode(): MapModeID;
   getMapData(): MapData;
-  getMapDataToSave(): any;
   getActiveLayer(): IMapLayer | null;
   getActiveElement(): MapElement | null;
-  getActiveElementLayer(): IMapLayer | null;
-  getExtraLayers(): IMapLayer[];
-  isElementEditing(): boolean;
-  isElementCreating(): boolean;
-  eventToPoint(event: MouseEvent): Point;
 
   setCanvas(canvas: MapCanvas): void;
   setData(data: MapData): void;
-  setMode(mode: number): void;
-  setSelecting(selecting: boolean): void;
+  setMode(id: MapModeID): void;
   setActiveLayer(layer: IMapLayer): void;
-
-  startCreating(): void;
-  startEditing(): void;
-  accept(): void;
-  cancel(): void;
-
-  clearSelect(): void;
-  deleteActiveElement(): void;
-
-  handleMouseUp(event: MouseEvent): MapElement | null;
-  handleMouseDown(event: MouseEvent, traceEditing: boolean): void;
-  handleMouseMove(event: MouseEvent): void;
-  handleMouseWheel(event: WheelEvent): void;
 
   resize(): void;
   render(viewport?: MapViewport): void;
@@ -81,28 +31,58 @@ interface IMapLoader {
   abortLoading(): void;
 }
 
-interface IMapSelect {
-  onlyActiveLayer: boolean;
-  types: Record<MapElementType, boolean>;
-}
-interface IMapScroller {
-  sync: boolean;
-  list: MapCanvas[];
-  mouseUp(): void;
-}
-interface MapStageListeners {
-  navigationPanelChange(): void;
-  selectPanelChange(): void;
-  editPanelChange(): void;
-  layerTreeChange(): void;
+type MapCanvas = HTMLCanvasElement & {events: any, showMapFlag: any};
+
+/** Провайдер для режима карты. */
+interface MapModeProvider {
+  /** Идентификатор режима. */
+  readonly id: MapModeID;
+  /** Стиль курсора. */
+  readonly cursor: string;
+  /** Если `true`, нельзя менять вьюпорт. */
+  readonly blocked: boolean;
+
+  onModeEnter?(): void;
+  onModeLeave?(): void;
+  onClick?(e: MouseEvent, stage: IMapStage): void;
+  onWheel?(e: WheelEvent, stage: IMapStage): void;
+  onMouseDown?(e: MouseEvent, stage: IMapStage): void;
+  onMouseUp?(e: MouseEvent, stage: IMapStage): void;
+  onMouseMove?(e: MouseEvent, stage: IMapStage): void;
+  onMouseLeave?(e: MouseEvent, stage: IMapStage): void;
 }
 
-type MapCanvas = HTMLCanvasElement & {
-  selectingMode: boolean;
-  blocked: boolean;
-  events: any;
-  showMapFlag: any;
-};
+/**
+ * Идентификатор режима карты.
+ * + `default` — перемещение карты и выбор скважин
+ * + `incl` — просмотр вертикальной проекции инклинометрии
+ *
+ * Общие режимы редактирования:
+ * + `element-select` — выбор элемента для взаимодействия
+ * + `element-drag` — перетаскивание элемента карты
+ * + `element-rotate` — вращение элемента карты
+ * + `element-create` — ожидание точки для создания нового элемента
+ *
+ * Режимы для работы с точками объектов "polyline":
+ * + `line-append-point` — добавление точки в конец
+ * + `line-insert-point` — добавление точки между точками
+ * + `line-remove-point` — удаление точек
+ * + `line-move-point` — перемещние точек
+ *
+ * Режимы для дополнительных объектов:
+ * + `trace-edit` — редактирование трассы
+ * + `selection-edit` — редактирование выборки
+ * + `site-append-point` — добавление точки в конец (участок)
+ * + `site-insert-point` — добавление точки между точками (участок)
+ * + `site-remove-point` — удаление точек (участок)
+ * + `site-move-point` — перемещние точек (участок)
+ */
+type MapModeID =
+  | 'default' | 'incl'
+  | 'element-select' | 'element-drag' | 'element-rotate' | 'element-create'
+  | 'line-append-point' | 'line-insert-point' | 'line-remove-point' | 'line-move-point'
+  | 'trace-edit' | 'selection-edit'
+  | 'site-append-point' | 'site-insert-point' | 'site-remove-point' | 'site-move-point';
 
 /* --- --- */
 
@@ -184,7 +164,6 @@ type MapExtraObjectID = string;
 /* --- Drawer --- */
 
 interface MapElementDrawer<E extends MapElement = MapElement> {
-  bound(e: E): Bounds;
   draw(e: Readonly<E>, options: MapDrawOptions): void;
   draft?(e: Readonly<E>, options: MapDrawOptions): void;
 }
@@ -226,6 +205,8 @@ interface MapPolyline extends MapElementProto {
   fillcolor: string;
   /** Фон заливки. */
   fillbkcolor: string;
+  /** Если true, фон заливки прозрачный. */
+  transparent?: boolean;
 
   style?: PolylineBorderStyle;
   fillStyle?: CanvasPattern | string;
@@ -304,6 +285,8 @@ interface MapLabel extends MapElementProto {
   fontsize: number;
   /** Цвет фона (по умолчанию цвет вьюпорта). */
   fillbkcolor?: string;
+  /** Флаг прозрачности фона. */
+  transparent?: boolean;
   /** Если `true`, шрифт жирный. */
   bold?: boolean;
 }
@@ -399,21 +382,21 @@ interface MapPieSlice extends MapElementProto {
   /** Цвет обводки. */
   bordercolor: string;
   /** Код заливки. */
-  fillname?: any;
+  fillname: string;
   /** Фон заливки. */
   fillbkcolor: string;
+  /** Если true, фон заливки прозрачный. */
+  transparent: boolean;
   /** Подготовленная заливка для отрисовки. */
   fillStyle?: CanvasPattern | string;
 }
 
 /** Свойства, которые может содержать любой элемент карты. */
 interface MapElementProto {
-  /** Bounding Box элемента (границы). */
-  bounds?: Bounds;
+  /** Ограничивающие координаты объекта. */
+  bounds: Bounds;
   /** Аттрибутивная таблица. */
-  attrTable?: any;
-  /** Является ли элемент или его часть прозрачной. */
-  transparent?: boolean;
+  attrTable?: Record<string, string>;
   /** Выбран ли элемент в текущий момент. */
   selected?: boolean;
   /** Редактируется ли элемент в текущий момент. */

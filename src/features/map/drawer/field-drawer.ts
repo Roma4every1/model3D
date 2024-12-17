@@ -3,13 +3,6 @@ import { getDeltasPreCalculatedPalettes, getDeltasPalette } from '../loader/prep
 
 
 export class FieldDrawer implements MapElementDrawer<MapField> {
-  public bound(field: MapField): Bounds {
-    return {
-      min: {x: field.x, y: field.y - field.sizey * field.stepy},
-      max: {x: field.x + field.sizex * field.stepx, y: field.y},
-    };
-  }
-
   public draw(i: MapField, options: MapDrawOptions): void {
     if (!isEqual(i.palette.level, i.lastUsedPalette.level)) {
       i.deltasPalette = getDeltasPalette(i.palette.level);

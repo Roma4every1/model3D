@@ -25,7 +25,7 @@ export async function updateMultiMap(id: ClientID, channelData: ChannelData): Pr
     if (mapState) {
       child.loadFlag = true;
     } else {
-      mapState = MapStateFactory.createForMultiMap(templateFormID, objects);
+      mapState = MapStateFactory.createForMultiMap(child.formID, templateFormID, objects);
       mapStates[child.formID] = mapState;
     }
     child.loader = mapState.loader;

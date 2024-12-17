@@ -1,0 +1,12 @@
+.pieslice-properties {
+  fieldset {
+    margin: 6px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 6px;
+  }
+  .ant-checkbox-wrapper {
+    font-size: 14px;
+  }
+}

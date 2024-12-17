@@ -1,16 +1,12 @@
-import { chunk } from 'lodash';
+import { squaredDistance, squaredSegmentDistance } from 'shared/lib';
 import { fillPatterns } from 'shared/drawing';
-import { types } from '../drawer/map-drawer.js';
-import { PIXEL_PER_METER } from './map-utils';
+import { mapElementDrawers } from '../drawer/map-drawer.js';
 
 
-/** Функция, определяющая ширину текста внутри {@link HTMLCanvasElement}. */
-type TextMeasurer = (text: string) => number;
-
-/** Радиус выделения. */
-export const SELECTION_RADIUS = 0.005;
+/** Радиус выделения: количество метров в 10 пикселях. */
+const selectionRadius = 0.0026;
 /** Отрисовщик объектов типа "линия" на карте. */
-export const polylineType = types['polyline'];
+export const polylineDrawer = mapElementDrawers.polyline;
 
 /** Снимает выделение с элемента карты. */
 export function unselectElement(element: MapElement): void {
@@ -18,7 +14,7 @@ export function unselectElement(element: MapElement): void {
   element.edited = false;
 
   if (element.type === 'polyline' && element.fillname && !element.transparent) {
-    const back = polylineType.bkcolor(element);
+    const back = polylineDrawer.bkcolor(element);
     element.fillStyle = fillPatterns.createFillStyle(element.fillname, element.fillcolor, back);
   }
 }
@@ -28,51 +24,42 @@ export function selectElement(element: MapElement): void {
   element.selected = true;
 
   if (element.type === 'polyline' && element.fillname && !element.transparent) {
-    const back = polylineType.bkcolor(element);
+    const back = polylineDrawer.bkcolor(element);
     element.fillStyle = fillPatterns.createFillStyle(element.fillname, element.fillcolor, back);
   }
 }
 
-/** Проверяет, достаточно ли далеко произвольный элемент карты находится от точки. */
-export function checkDistance(element: MapElement, point: Point, scale: MapScale, textMeasurer: TextMeasurer): boolean {
-  switch (element.type) {
-    case 'polyline': {
-      return element.fillbkcolor && !element.transparent
-        ? checkDistanceForPolygon(element, point, scale)
-        : checkDistanceForPolyline(element, point, scale);
-    }
-    case 'label': {
-      return checkDistanceForLabel(element, point, scale, textMeasurer);
-    }
-    case 'sign': {
-      return checkDistancePoints(element, point, scale);
-    }
-    case 'field': {
-      return checkDistanceForField(element, point);
-    }
-    case 'pieslice': {
-      return checkDistanceForPieSlice(element, point, scale);
-    }
-    default: return false;
+export function getNearestPointIndex({x, y}: Point, scale: MapScale, polyline: MapPolyline): number {
+  let minDistance = Infinity;
+  let nearestIndex: number;
+
+  const path = polyline.arcs[0].path;
+  const sr = (selectionRadius * scale) ** 2;
+
+  for (let i = 0; i < path.length; i += 2) {
+    const sd = squaredDistance(x, y, path[i], path[i + 1]);
+    if (sd >= minDistance) continue;
+    minDistance = sd;
+    if (sd < sr) nearestIndex = i / 2;
   }
+  return nearestIndex;
 }
 
-/** Проверяет, достаточно ли далеко находится старая точка от новой. */
 export function checkDistancePoints(oldPoint: Point | null, newPoint: Point, scale: MapScale): boolean {
   if (!oldPoint) return false;
+  const r = selectionRadius * scale;
   const dx = oldPoint.x - newPoint.x;
   const dy = oldPoint.y - newPoint.y;
-  const r = SELECTION_RADIUS * scale;
-  return (dx * dx) + (dy * dy) < (r * r);
+  return dx * dx + dy * dy < r * r;
 }
 
-/** Проверяет, достаточно ли далеко находится точка от подписи. */
-function checkDistanceForLabel(label: MapLabel, point: Point, scale: MapScale, measurer: TextMeasurer): boolean {
+export function checkDistanceForLabel(label: MapLabel, point: Point, scale: MapScale, ctx: CanvasRenderingContext2D): boolean {
   const fontsize = (label.fontsize + (label.selected ? 2 : 0)) * (1 / 72 * 0.0254) * scale;
-  const width = measurer(label.text) * scale / PIXEL_PER_METER;
+  ctx.font = fontsize + 'px "' + label.fontname + '"';
+  const width = ctx.measureText(label.text).width;
 
-  const xx = point.x - (label.x + ((label.xoffset || 0) * 0.001 * scale));
-  const yy = point.y - (label.y - ((label.yoffset || 0) * 0.001 * scale));
+  const xx = point.x - (label.x + (label.xoffset * 0.001 * scale));
+  const yy = point.y - (label.y - (label.yoffset * 0.001 * scale));
   const angle = label.angle / 180 * Math.PI;
 
   const xTrans = xx * Math.cos(angle) - yy * Math.sin(angle) + (width + 2) / 2 * label.halignment;
@@ -80,10 +67,9 @@ function checkDistanceForLabel(label: MapLabel, point: Point, scale: MapScale, m
   return (0 <= xTrans) && (xTrans <= width) && (0 <= yTrans) && (yTrans <= fontsize + 3);
 }
 
-/** Проверяет, достаточно ли далеко находится точка от сектора. */
-export function checkDistanceForPieSlice(pieslice: MapPieSlice, point: Point, scale: MapScale): boolean {
-  let dx = pieslice.x - point.x;
-  let dy = pieslice.y - point.y;
+export function checkDistanceForPieSlice(pie: MapPieSlice, point: Point, scale: MapScale): boolean {
+  let dx = pie.x - point.x;
+  let dy = pie.y - point.y;
   let checkAngle: number;
 
   if (dx === 0) {
@@ -93,49 +79,34 @@ export function checkDistanceForPieSlice(pieslice: MapPieSlice, point: Point, sc
     checkAngle = (dx > 0) ? checkAngle + Math.PI / 2 : checkAngle + Math.PI / 2 * 3;
   }
 
-  if (checkAngle <= pieslice.endangle && checkAngle >= pieslice.startangle) {
-    let result = Math.sqrt((dx * dx) + (dy * dy)) - pieslice.radius * scale / 1000;
-    if (result < 0) {
-    result = 0;
-    }
-    return result === 0;
+  if (checkAngle <= pie.endangle && checkAngle >= pie.startangle) {
+    const result = Math.sqrt((dx * dx) + (dy * dy)) - pie.radius * scale / 1000;
+    return result <= 0;
   }
 }
 
-/** Проверяет, достаточно ли далеко ломанная находится от точки. */
-function checkDistanceForPolyline(polyline: MapPolyline, point: Point, scale: MapScale): boolean {
-  let points = chunk(polyline.arcs[0].path, 2) as [number, number][];
-  if (polyline.arcs[0].closed) {
-    points = [...points, points[0]];
-  }
+export function checkDistanceForPolyline(polyline: MapPolyline, point: Point, scale: MapScale): boolean {
+  const { x, y } = point;
+  const { path, closed } = polyline.arcs[0];
 
-  for (let i = 0; i < points.length - 1; i++) {
-    if (checkDistanceForSegment(points[i], points[i + 1], point, scale)) return true;
+  let sd: number;
+  const sr = (selectionRadius * scale) ** 2;
+  let i = 0;
+  const iMax = path.length - 2;
+
+  while (i < iMax) {
+    sd = squaredSegmentDistance(x, y, path[i], path[i + 1], path[i + 2], path[i + 3]);
+    if (sd < sr) return true;
+    i += 2;
+  }
+  if (closed) {
+    sd = squaredSegmentDistance(x, y, path[i], path[i + 1], path[0], path[1]);
+    return sd < sr;
   }
   return false;
 }
 
-/** Проверяет, достаточно ли далеко сегмент находится от точки. */
-function checkDistanceForSegment(p1, p2, point: Point, scale: MapScale): boolean {
-  const minDistance = SELECTION_RADIUS * scale;
-
-  const aSquared = Math.pow(p1[0] - point.x, 2) + Math.pow(p1[1] - point.y, 2);
-  if (aSquared < minDistance * minDistance) return true;
-
-  const bSquared = Math.pow(p2[0] - point.x, 2) + Math.pow(p2[1] - point.y, 2);
-  if (bSquared < minDistance * minDistance) return true;
-
-  const cSquared = Math.pow(p2[0] - p1[0], 2) + Math.pow(p2[1] - p1[1], 2);
-  if (aSquared > bSquared + cSquared || bSquared > aSquared + cSquared) return false;
-
-  const c = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]);
-  const doubleSquare = Math.abs((p1[0] - point.x) * (p2[1] - point.y) - (p2[0] - point.x) *
-  (p1[1] - point.y));
-  return doubleSquare / c < minDistance;
-}
-
-/** Проверяет, достаточно ли далеко многоугольник находится от точки. */
-function checkDistanceForPolygon(polygon: MapPolyline, point: Point, scale: MapScale): boolean {
+export function checkDistanceForPolygon(polygon: MapPolyline, point: Point, scale: MapScale): boolean {
   const arc = polygon.arcs[0];
   if (isPointInPolygon(point, arc.path)) return true;
   return checkDistanceForPolyline(polygon, point, scale);
@@ -156,13 +127,12 @@ function isPointInPolygon({x, y}: Point, polygon: number[]): boolean {
   return intersections % 2 === 1;
 }
 
-/** Проверяет, достаточно ли далеко поле находится от точки. */
-function checkDistanceForField(field: MapField, point: Point): boolean {
+export function checkDistanceForField(field: MapField, point: Point): boolean {
   return getInterpolatedFieldValue(field, point) !== null;
 }
 
 /** Находит значения поля в заданной точке. */
-export function getInterpolatedFieldValue(field: MapField, point: Point) {
+function getInterpolatedFieldValue(field: MapField, point: Point) {
   const x = point.x;
   const y = point.y;
   if (x === undefined || y === undefined || Number.isNaN(x) || Number.isNaN(y)) {

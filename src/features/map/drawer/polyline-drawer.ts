@@ -16,27 +16,6 @@ const styleShapes = {
 };
 
 export class PolylineDrawer implements MapElementDrawer<MapPolyline> {
-  public bound(p: MapPolyline): Bounds {
-    if (p.bounds) return p.bounds;
-    if (!p.arcs) return undefined;
-
-    const min: Point = {x: undefined, y: undefined};
-    const max: Point = {x: undefined, y: undefined};
-
-    for (const { path } of p.arcs) {
-      for (let i = 0; i < path.length; i += 2) {
-        const x = path[i];
-        if (max.x === undefined || x > max.x) max.x = x;
-        if (min.x === undefined || x < min.x) min.x = x;
-
-        const y = path[i + 1];
-        if (max.y === undefined || y > max.y) max.y = y;
-        if (min.y === undefined || y < min.y) min.y = y;
-      }
-    }
-    return {min, max};
-  }
-
   public draw(i: MapPolyline, options: MapDrawOptions): void {
     const configThicknessCoefficient = window.devicePixelRatio;
     const ctx = options.ctx;
