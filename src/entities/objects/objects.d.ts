@@ -1,7 +1,5 @@
 /** Менеджер активного объекта системы. */
-interface ActiveObjectManager<T> {
-  /** Модель активного объекта. */
-  model: T | null;
+interface ActiveObjectManager {
   /** Если объект существует в системе, менеджер активен. */
   activated(): boolean;
   /** По текущему значению параметров системы иницализирует модель объекта. */
@@ -82,6 +80,21 @@ type TraceID = number;
 type TraceNodeChannelFields = (keyof Omit<TraceNode, 'name'>) | 'order';
 
 /* --- Site --- */
+
+/** Состояние модели участка. */
+interface SiteState {
+  /** Текущий активный участок. */
+  model: SiteModel | null;
+  /** Модель участка до внесения изменений. */
+  initModel: SiteModel | null;
+  /** Текущий режим редактирования. */
+  editMode: SiteEditMode | null;
+}
+
+/** Режим редактирования участка. */
+type SiteEditMode =
+  | 'site-append-point' | 'site-insert-point'
+  | 'site-remove-point' | 'site-move-point';
 
 /** Модель участка. */
 interface SiteModel {

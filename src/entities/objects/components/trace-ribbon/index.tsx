@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useTraceManager } from '../../store/objects.store';
-import { TraceActionSection } from './section-actions';
+import { TraceManageSection } from './section-manage';
 import { TraceEditSection } from './section-edit';
 
 
@@ -16,7 +16,7 @@ export const TraceRibbon = (props: TracePanelProps) => {
 
   return (
     <div className={'menu'}>
-      <TraceActionSection manager={traceManager} t={t} hasMap={props.hasMap}/>
+      <TraceManageSection manager={traceManager} t={t} hasMap={props.hasMap}/>
       <TraceEditSection manager={traceManager} t={t}/>
     </div>
   );

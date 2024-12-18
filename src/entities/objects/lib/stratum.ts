@@ -2,7 +2,7 @@ import { RecordInfoCreator } from 'entities/channel';
 import { stratumChannelCriterion } from './constants';
 
 
-export class StratumManager implements ActiveObjectManager<StratumModel> {
+export class StratumManager implements ActiveObjectManager {
   /** Текущее активное месторождение. */
   public model: StratumModel | null = null;
   /** Название канала с месторождениями. */

@@ -48,3 +48,17 @@ export function setCurrentTrace(model: TraceModel, creating?: boolean, editing?:
   traceManager.model = model;
   useObjectsStore.setState({trace: traceManager.clone()});
 }
+
+export function startSiteEditing(): void {
+  const manager = useObjectsStore.getState().site;
+  const model = manager.state.model;
+  const initModel = structuredClone(model);
+  manager.state = {model, initModel, editMode: 'site-move-point'};
+  useObjectsStore.setState({site: manager});
+}
+
+export function setSiteState(state: Partial<SiteState>): void {
+  const manager = useObjectsStore.getState().site;
+  manager.state = {...manager.state, ...state};
+  useObjectsStore.setState({site: manager});
+}

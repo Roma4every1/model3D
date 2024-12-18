@@ -5,9 +5,9 @@ import { createTrace, deleteTrace } from '../../store/objects.thunks';
 import { closeWindow, showDialog } from 'entities/window';
 import { Button } from 'antd';
 import { BigButton, MenuSection } from 'shared/ui';
-import createTraceIcon from 'assets/trace/create-trace.png';
-import deleteTraceIcon from 'assets/trace/detele-trace.png';
-import editTraceIcon from 'assets/trace/edit-trace.png';
+import createTraceIcon from 'assets/objects/trace-create.png';
+import deleteTraceIcon from 'assets/objects/trace-delete.png';
+import editTraceIcon from 'assets/objects/trace-edit.png';
 
 
 interface TraceActionSectionProps {
@@ -21,7 +21,7 @@ interface DeleteTraceWindowProps {
   t: TFunction;
 }
 
-export const TraceActionSection = ({manager, t, hasMap}: TraceActionSectionProps) => {
+export const TraceManageSection = ({manager, t, hasMap}: TraceActionSectionProps) => {
   const { model, editing, creating } = manager;
   const editTrace = () => setCurrentTrace(undefined, undefined, true);
 
@@ -34,17 +34,17 @@ export const TraceActionSection = ({manager, t, hasMap}: TraceActionSectionProps
   };
 
   return (
-    <MenuSection header={t('trace.controls-section')} className={'big-buttons'}>
+    <MenuSection header={t('trace.manage-section')} className={'big-buttons'}>
       <BigButton
-        text={t('trace.create')} icon={createTraceIcon}
+        text={t('base.create')} icon={createTraceIcon}
         onClick={createTrace} disabled={editing || creating || !hasMap}
       />
       <BigButton
-        text={t('trace.delete')} icon={deleteTraceIcon}
+        text={t('base.delete')} icon={deleteTraceIcon}
         onClick={openDialog} disabled={!model || editing || creating}
       />
       <BigButton
-        text={t('trace.edit')} icon={editTraceIcon}
+        text={t('base.edit')} icon={editTraceIcon}
         onClick={editTrace} disabled={!model || editing || creating || !hasMap}
       />
     </MenuSection>

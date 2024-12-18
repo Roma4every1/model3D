@@ -30,7 +30,7 @@ export function updateObjects(changes: Set<ParameterID>): void {
   if (site.activated() && changes.has(site.parameterID)) {
     const value = storage.get(site.parameterID).getValue() as TableRowValue;
     const channels = useChannelStore.getState().storage;
-    if (site.onParameterUpdate(value, channels)) changed = true;
+    if (site.onParameterUpdate(value, channels)) { site.state = {...site.state}; changed = true; }
   }
   if (changed) {
     useObjectsStore.setState({place, stratum, well, trace, site}, true);

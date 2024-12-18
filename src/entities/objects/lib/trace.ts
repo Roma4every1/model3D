@@ -2,7 +2,7 @@ import { cellsToRecords, RecordInfoCreator } from 'entities/channel';
 import { traceChannelCriterion } from './constants';
 
 
-export class TraceManager implements ActiveObjectManager<TraceModel> {
+export class TraceManager implements ActiveObjectManager {
   /** Текущая активная трасса. */
   public model: TraceModel | null = null;
   /** Модель трассы до внесения изменений. */

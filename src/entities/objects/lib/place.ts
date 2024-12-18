@@ -2,7 +2,7 @@ import { RecordInfoCreator } from 'entities/channel';
 import { placeChannelCriterion } from './constants';
 
 
-export class PlaceManager implements ActiveObjectManager<PlaceModel> {
+export class PlaceManager implements ActiveObjectManager {
   /** Текущее активное месторождение. */
   public model: PlaceModel | null = null;
   /** Название канала с месторождениями. */

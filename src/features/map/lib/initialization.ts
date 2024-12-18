@@ -61,15 +61,24 @@ export class MapStateFactory {
     const hasSite = this.objects.site.activated();
 
     const stage = new MapStage();
-    if (hasWell) stage.registerExtraObject('well', extra.createMapWellConfig(stage));
-    if (hasTrace) stage.registerExtraObject('trace', extra.createMapTraceConfig());
-    if (hasSite) stage.registerExtraObject('site', extra.createMapSiteConfig());
-
     stage.registerMode(new modes.DefaultModeProvider(hasWell));
     stage.registerMode(new modes.ElementSelectModeProvider());
-    if (hasTrace) stage.registerMode(new modes.TraceEditModeProvider());
     this.checkInclinometryPlugin(stage);
 
+    if (hasWell) {
+      stage.registerExtraObject('well', extra.createMapWellConfig(stage));
+    }
+    if (hasTrace) {
+      stage.registerExtraObject('trace', extra.createMapTraceConfig());
+      stage.registerMode(new modes.TraceEditModeProvider());
+    }
+    if (hasSite) {
+      stage.registerExtraObject('site', extra.createMapSiteConfig(stage));
+      stage.registerMode(new modes.SiteMovePointModeProvider());
+      stage.registerMode(new modes.SiteAppendPointModeProvider());
+      stage.registerMode(new modes.SiteInsertPointModeProvider());
+      stage.registerMode(new modes.SiteRemovePointModeProvider());
+    }
     if (editable) {
       stage.registerMode(new modes.ElementDragModeProvider());
       stage.registerMode(new modes.ElementRotateModeProvider());

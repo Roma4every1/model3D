@@ -3,6 +3,9 @@
     "ok": "Ок",
     "yes": "Да",
     "no": "Нет",
+    "create": "Создать",
+    "delete": "Удалить",
+    "edit": "Редактировать",
     "apply": "Применить",
     "cancel": "Отменить",
     "run": "Запустить",
@@ -340,13 +343,10 @@
     }
   },
   "trace": {
-    "controls-section": "Управление",
+    "manage-section": "Управление",
     "edit-section": "Редактирование",
-    "create": "Создать",
     "delete-dialog": "Удаление трассы",
     "delete-dialog-label": "Вы действительно хотите удалить выбранную трассу?",
-    "delete": "Удалить",
-    "edit": "Редактировать",
     "edit-panel": "Трасса",
     "change-name-title": "Имя",
     "change-items-title": "Узлы",
@@ -354,6 +354,16 @@
     "add-point-button": "Добавить точку",
     "wells-not-loaded": "Данные скважин не загружены",
     "empty-trace": "Нет узлов"
+  },
+  "site": {
+    "manage-section": "Управление",
+    "edit-section": "Редактирование",
+    "delete-dialog-title": "Удаление участка",
+    "delete-dialog-text": "Вы действительно хотите удалить выбранный участок?",
+    "move-point": "Перемещение точки",
+    "append-point": "Добавление точки в конец",
+    "insert-point": "Вставка точки",
+    "remove-point": "Удаление точки"
   },
   "menu": {
     "main": "Главная",

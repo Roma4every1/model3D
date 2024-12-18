@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useRef } from 'react';
 import { TextInfo } from 'shared/ui';
 import { useChannelDict } from 'entities/channel';
 import { useParameterValue } from 'entities/parameter';
-import { useCurrentWell, useCurrentTrace, useCurrentSite, useTraceEditing } from 'entities/objects';
+import { useCurrentWell, useCurrentTrace, useCurrentSite, useTraceEditing, useSiteEditMode } from 'entities/objects';
 import { useMapState } from '../store/map.store';
 import { updateMap } from '../store/map.thunks';
 import { setMapCanvas, setMapObjects } from '../store/map.actions';
@@ -14,7 +14,9 @@ export const Map = ({id}: Pick<SessionClient, 'id'>) => {
   const currentWell = useCurrentWell();
   const currentTrace = useCurrentTrace();
   const currentSite = useCurrentSite();
+
   const traceEditing = useTraceEditing();
+  const siteEditMode = useSiteEditMode();
 
   const { stage, canvas, status, usedChannels, usedParameters } = useMapState(id);
   const channelDict = useChannelDict(usedChannels);
@@ -46,9 +48,12 @@ export const Map = ({id}: Pick<SessionClient, 'id'>) => {
 
   useEffect(() => {
     const mode = stage.getMode();
-    if (traceEditing && mode !== 'trace-edit') return stage.setMode('trace-edit');
-    if (!traceEditing && mode === 'trace-edit') return stage.setMode('default');
-  }, [traceEditing, stage]);
+    const set = (id: MapModeID) => { stage.setMode(id); stage.render(); }
+    if (traceEditing && mode !== 'trace-edit') return set('trace-edit');
+    if (!traceEditing && mode === 'trace-edit') return set('default');
+    if (siteEditMode && mode !== siteEditMode) return set(siteEditMode);
+    if (!siteEditMode && mode.startsWith('site')) return set('default');
+  }, [traceEditing, siteEditMode, stage]);
 
   if (status !== 'ok') return <TextInfo text={'map.' + status}/>;
   const mode = stage.getModeProvider();

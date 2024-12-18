@@ -63,7 +63,8 @@ export async function startSession(isDefault: boolean): Promise<void> {
   const channelDict = useChannelStore.getState().storage;
   const objects = initializeObjects(parameters, channelDict);
   const layoutController = root.layout.controller;
-  layoutController.traceExist = Boolean(objects.trace.parameterID);
+  if (objects.trace.activated()) layoutController.objects.add('trace');
+  if (objects.site.activated()) layoutController.objects.add('site');
   useProgramStore.getState().layoutController = layoutController;
 
   const systemInfo = appState.systemList.find(info => info.id === appState.systemID);

@@ -21,10 +21,10 @@ export function createMapTraceConfig(): MapExtraObjectConfig {
   };
 }
 
-export function createMapSiteConfig(): MapExtraObjectConfig {
+export function createMapSiteConfig(stage: MapStage): MapExtraObjectConfig {
   return {
     layer: {displayName: 'Участок', minScale: 0, maxScale: Infinity},
-    provider: new MapSiteObjectProvider(),
+    provider: new MapSiteObjectProvider(stage),
   };
 }
 

@@ -1,5 +1,5 @@
 import type { FunctionComponent } from 'react';
-import { TraceRibbon } from 'entities/objects';
+import { TraceRibbon, SiteRibbon } from 'entities/objects';
 import { TableEditPanel } from 'features/table';
 import { ChartEditPanel } from 'features/chart';
 import { MapRibbon } from 'features/map';
@@ -26,8 +26,10 @@ const editPanelDict: Record<string, [FunctionComponent<FormEditPanelProps>, Clie
 /** Панель редактирования формы. */
 export const TopTab = ({tabID, presentation}: TopTabProps) => {
   if (tabID.endsWith('trace')) {
-    const hasMap = presentation?.childrenTypes.has('map') ?? false;
-    return <TraceRibbon hasMap={hasMap}/>;
+    return <TraceRibbon hasMap={presentation?.childrenTypes.has('map') ?? false}/>;
+  }
+  if (tabID.endsWith('site')) {
+    return <SiteRibbon hasMap={presentation?.childrenTypes.has('map') ?? false}/>;
   }
   const activeChildID = presentation?.activeChildID;
   if (!activeChildID) return null;

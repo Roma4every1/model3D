@@ -3,8 +3,8 @@ import { TraceManager } from '../../lib/trace';
 import { setCurrentTrace } from '../../store/objects.actions';
 import { deleteTrace, saveTrace } from '../../store/objects.thunks';
 import { MenuSection, BigButton } from 'shared/ui';
-import applyTraceChangesIcon from 'assets/trace/accept.png';
-import denyTraceChangesIcon from 'assets/trace/cancel.png';
+import applyIcon from 'assets/objects/apply.png';
+import cancelIcon from 'assets/objects/cancel.png';
 
 
 interface TraceEditSectionProps {
@@ -31,11 +31,11 @@ export const TraceEditSection = ({manager, t}: TraceEditSectionProps) => {
   return (
     <MenuSection header={t('trace.edit-section')} className={'big-buttons'}>
       <BigButton
-        text={t('base.apply')} icon={applyTraceChangesIcon}
+        text={t('base.apply')} icon={applyIcon}
         onClick={apply} disabled={disabled}
       />
       <BigButton
-        text={t('base.cancel')} icon={denyTraceChangesIcon}
+        text={t('base.cancel')} icon={cancelIcon}
         onClick={cancel} disabled={disabled}
       />
     </MenuSection>

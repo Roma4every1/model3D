@@ -35,6 +35,10 @@ const topTabDict: Record<TabID, IJsonTabNode> = {
     type: 'tab', enableDrag: false,
     id: 'top-trace', name: 'Трасса',
   },
+  'top-site': { // панель настроек участка
+    type: 'tab', enableDrag: false,
+    id: 'top-site', name: 'Участок',
+  },
 };
 
 /** Список всех возможных вкладок справа. */
@@ -67,8 +71,8 @@ export class LayoutController {
   /** Узел модели разметки, содержащий вкладки справа. */
   public readonly rightBorder: BorderNode;
 
-  /** Существуют ли в системе трассы. */
-  public traceExist: boolean;
+  /** Активные объектов в системе. */
+  public objects: Set<string>;
   /** Видимые вкладки сверху. */
   private readonly visibleTopIDs: Set<TabID>;
   /** Видимые вкладки справа. */
@@ -76,6 +80,7 @@ export class LayoutController {
 
   constructor(init: any, popup: boolean) {
     this.model = this.createInitModel(init, popup);
+    this.objects = new Set();
     this.visibleTopIDs = new Set(['menu']);
     this.visibleRightIDs = new Set(['right-dock']);
     [this.topBorder, this.rightBorder] = this.model.getBorderSet().getBorders();
@@ -127,13 +132,13 @@ export class LayoutController {
         if (currentTabID !== neededTabID) this.model.doAction(Actions.selectTab(neededTabID));
       }
     }
-    const needTraceTab = this.traceExist && types &&
-      (types.has('map') || types.has('carat'));
-    this.handleTab('top-trace', needTraceTab);
+    const showTrace = this.objects.has('trace') && types && (types.has('map') || types.has('carat'));
+    this.handleTab('top-trace', showTrace);
+    this.handleTab('top-site', this.objects.has('site'));
   }
 
   public updateTraceEditTabVisibility(need: boolean): void {
-    if (!this.rightBorder || !this.traceExist) return;
+    if (!this.rightBorder || !this.objects.has('trace')) return;
     const tabID: TabID = 'right-trace';
     const borderID = this.rightBorder.getId();
     const hasTab = this.visibleRightIDs.has(tabID);

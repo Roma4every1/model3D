@@ -30,24 +30,24 @@ export const useObjectsStore = create((): ObjectsState => ({
 }));
 
 /** Модель активного месторождения. */
-export function useCurrentPlace(): PlaceModel {
+export function useCurrentPlace(): PlaceModel | null {
   return useObjectsStore(state => state.place.model);
 }
 /** Модель активного пласта. */
-export function useCurrentStratum(): StratumModel {
+export function useCurrentStratum(): StratumModel | null {
   return useObjectsStore(state => state.stratum.model);
 }
 /** Модель активной скважины. */
-export function useCurrentWell(): WellModel {
+export function useCurrentWell(): WellModel | null {
   return useObjectsStore(state => state.well.model);
 }
 /** Модель активной трассы. */
-export function useCurrentTrace(): TraceModel {
+export function useCurrentTrace(): TraceModel | null {
   return useObjectsStore(state => state.trace.model);
 }
 /** Модель активного участка. */
-export function useCurrentSite(): SiteModel {
-  return useObjectsStore(state => state.site.model);
+export function useCurrentSite(): SiteModel | null {
+  return useObjectsStore(state => state.site.state.model);
 }
 
 /** Менеджер трасс. */
@@ -57,4 +57,11 @@ export function useTraceManager(): TraceManager {
 /** Находится ли трасса в состоянии редактирования. */
 export function useTraceEditing(): boolean {
   return useObjectsStore(state => state.trace.editing === true);
+}
+
+export function useSiteState(): SiteState {
+  return useObjectsStore(state => state.site.state);
+}
+export function useSiteEditMode(): SiteEditMode | null {
+  return useObjectsStore(state => state.site.state.editMode);
 }

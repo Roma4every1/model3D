@@ -3,7 +3,7 @@ import { wellChannelCriterion } from './constants';
 
 
 /** Состояние активной скважины. */
-export class WellManager implements ActiveObjectManager<WellModel> {
+export class WellManager implements ActiveObjectManager {
   /** Текущая активная скважина. */
   public model: WellModel | null = null;
   /** Название канала со скважинами. */

@@ -13,6 +13,21 @@ export async function reloadChannel(id: ChannelID): Promise<void> {
   useChannelStore.setState({...state}, true);
 }
 
+/** Перезагрузить данные каналов. */
+export async function reloadChannels(...ids: ChannelID[]): Promise<void> {
+  const state = useChannelStore.getState();
+  const parameterStorage = useParameterStore.getState().storage;
+
+  const reload = async (id: ChannelID): Promise<void> => {
+    const channel = state.storage[id];
+    const parameters = findParameters(channel.config.parameters, parameterStorage);
+    await fillChannel(channel, parameters);
+    state.storage[id] = {...channel};
+  };
+  await Promise.all(ids.map(reload));
+  useChannelStore.setState({...state}, true);
+}
+
 /** Перезагрузить данные каналов по ID запросов. */
 export async function reloadChannelsByQueryIDs(ids: QueryID[]): Promise<void> {
   const state = useChannelStore.getState();

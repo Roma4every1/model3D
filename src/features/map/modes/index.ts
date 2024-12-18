@@ -12,3 +12,7 @@ export { LineInsertPointModeProvider } from './line-insert-point.mode';
 export { LineRemovePointModeProvider } from './line-remove-point.mode';
 
 export { TraceEditModeProvider } from './trace-edit.mode';
+export { SiteMovePointModeProvider } from './site-move-point.mode';
+export { SiteAppendPointModeProvider } from './site-append-point.mode';
+export { SiteInsertPointModeProvider } from './site-insert-point.mode';
+export { SiteRemovePointModeProvider } from './site-remove-point.mode';
