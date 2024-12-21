@@ -1,6 +1,6 @@
 {
   "name": "js-well-manager-web",
-  "version": "1.5.5-rc1",
+  "version": "1.6.0-rc1",
   "private": true,
   "type": "module",
   "scripts": {
