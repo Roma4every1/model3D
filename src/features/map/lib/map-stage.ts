@@ -249,7 +249,9 @@ export class MapStage implements IMapStage {
 
   public centerToObject(oldModels: Map<MapExtraObjectID, any>, ...ids: MapExtraObjectID[]): boolean {
     for (const oid of ids) {
-      const provider = this.extraObjects.get(oid)?.provider;
+      const state = this.extraObjects.get(oid);
+      if (!state || !state.layer.visible) continue;
+      const provider = state.provider;
       if (!provider || provider.model === null) continue;
 
       const oldModel = oldModels.get(oid) ?? null;

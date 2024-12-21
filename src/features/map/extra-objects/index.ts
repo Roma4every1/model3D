@@ -3,6 +3,7 @@ import type { InclInitData } from './incl.object';
 import { MapStage } from '../lib/map-stage';
 import { MapWellObjectProvider } from './well.object';
 import { MapTraceObjectProvider } from './trace.object';
+import { MapSelectionObjectProvider } from './selection.object';
 import { MapSiteObjectProvider } from './site.object';
 import { MapInclinometryProvider } from './incl.object';
 
@@ -18,6 +19,13 @@ export function createMapTraceConfig(): MapExtraObjectConfig {
   return {
     layer: {displayName: 'Трасса', minScale: 0, maxScale: Infinity},
     provider: new MapTraceObjectProvider(),
+  };
+}
+
+export function createMapSelectionConfig(stage: MapStage): MapExtraObjectConfig {
+  return {
+    layer: {displayName: 'Выборка', minScale: 0, maxScale: Infinity},
+    provider: new MapSelectionObjectProvider(stage),
   };
 }
 

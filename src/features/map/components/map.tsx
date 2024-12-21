@@ -3,19 +3,25 @@ import { useEffect, useLayoutEffect, useRef } from 'react';
 import { TextInfo } from 'shared/ui';
 import { useChannelDict } from 'entities/channel';
 import { useParameterValue } from 'entities/parameter';
-import { useCurrentWell, useCurrentTrace, useCurrentSite, useTraceEditing, useSiteEditMode } from 'entities/objects';
 import { useMapState } from '../store/map.store';
 import { updateMap } from '../store/map.thunks';
 import { setMapCanvas, setMapObjects } from '../store/map.actions';
 import { getFullViewport } from '../lib/map-utils';
 
+import {
+  useCurrentWell, useCurrentTrace, useCurrentSelection, useCurrentSite,
+  useTraceEditing, useSelectionEditing, useSiteEditMode,
+} from 'entities/objects';
+
 
 export const Map = ({id}: Pick<SessionClient, 'id'>) => {
   const currentWell = useCurrentWell();
   const currentTrace = useCurrentTrace();
+  const currentSelection = useCurrentSelection();
   const currentSite = useCurrentSite();
 
   const traceEditing = useTraceEditing();
+  const selectionEditing = useSelectionEditing();
   const siteEditMode = useSiteEditMode();
 
   const { stage, canvas, status, usedChannels, usedParameters } = useMapState(id);
@@ -41,10 +47,11 @@ export const Map = ({id}: Pick<SessionClient, 'id'>) => {
     if (status !== 'ok') return;
     const mapObjects = {
       incl: {well: currentWell?.id, data: channelDict, angle: inclAngle},
-      well: currentWell?.id, trace: currentTrace, site: currentSite,
+      well: currentWell?.id, trace: currentTrace,
+      selection: currentSelection, site: currentSite,
     };
     setMapObjects(id, mapObjects);
-  }, [currentWell, currentTrace, currentSite, channelDict, inclAngle, status, id]);
+  }, [currentWell, currentTrace, currentSelection, currentSite, channelDict, inclAngle, status, id]);
 
   useEffect(() => {
     const mode = stage.getMode();
@@ -53,7 +60,9 @@ export const Map = ({id}: Pick<SessionClient, 'id'>) => {
     if (!traceEditing && mode === 'trace-edit') return set('default');
     if (siteEditMode && mode !== siteEditMode) return set(siteEditMode);
     if (!siteEditMode && mode.startsWith('site')) return set('default');
-  }, [traceEditing, siteEditMode, stage]);
+    if (selectionEditing && mode !== 'selection-edit') return set('selection-edit');
+    if (!selectionEditing && mode === 'selection-edit') return set('default');
+  }, [traceEditing, selectionEditing, siteEditMode, stage]);
 
   if (status !== 'ok') return <TextInfo text={'map.' + status}/>;
   const mode = stage.getModeProvider();

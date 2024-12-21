@@ -19,6 +19,9 @@ interface DockSettingsDTO {
   linkedProperties?: ParameterSetterDTO[];
   parameterGroups?: ParameterGroupDTO[];
   dateChanging?: DateChangingDTO;
+  tracesManager?: any;
+  setsManager?: any;
+  sitesManager?: any;
 }
 interface DateChangingDTO {
   year: string;
@@ -71,6 +74,10 @@ export class RootClientFactory {
 
   public getChannels(): Channel[] {
     return this.channels;
+  }
+
+  public getSettingsDTO(): DockSettingsDTO {
+    return this.dto.settings;
   }
 
   public async fillData(): Promise<boolean> {

@@ -1,7 +1,7 @@
 import type { TFunction } from 'react-i18next';
 import { TraceManager } from '../../lib/trace';
 import { setCurrentTrace } from '../../store/objects.actions';
-import { createTrace, deleteTrace } from '../../store/objects.thunks';
+import { createTrace, deleteTrace } from '../../store/trace.thunks';
 import { closeWindow, showDialog } from 'entities/window';
 import { Button } from 'antd';
 import { BigButton, MenuSection } from 'shared/ui';

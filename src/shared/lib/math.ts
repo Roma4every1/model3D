@@ -1,12 +1,13 @@
 /* --- Numeric --- */
 
-/** Округляет число до заданного количества знаков после запятой.
+/**
+ * Округляет число до заданного количества знаков после запятой.
  * @param n число, которое нужно округлить
  * @param digits количество знаков после запятой
  * @example
  * round(0.234, 2) => 0.23
  * round(234, -2) => 200
- * */
+ */
 export function round(n: number, digits: number = 0): number {
   const multiplier = Math.pow(10, digits);
   return Math.round(n * multiplier) / multiplier;
@@ -147,4 +148,24 @@ export function distanceFromStraight(p: Point, p1: Point, p2: Point): number {
 export function isRectInnerPoint(p: Point, rect: Rectangle): boolean {
   const xIntersection = p.x >= rect.left && p.x <= rect.left + rect.width;
   return xIntersection && (p.y >= rect.top && p.y <= rect.top + rect.height);
+}
+
+/** Находится ли точка внутри многоугольника. */
+export function isPolygonInnerPoint({x, y}: Point, polygon: Point[]): boolean {
+  if (polygon.length < 3) return false;
+  let intersections = 0;
+  let i = 0, iMax = polygon.length - 1;
+  let x1: number, x2: number, y1: number, y2: number;
+
+  while (i < iMax) {
+    ({ x: x1, y: y1 } = polygon[i]);
+    ({ x: x2, y: y2 } = polygon[++i]);
+    // пересекает ли горизонтальный луч ребро многоугольника
+    if (y1 > y !== y2 > y && x < ((x2 - x1) * (y - y1)) / (y2 - y1) + x1) ++intersections;
+  }
+  ({ x: x1, y: y1 } = polygon[i]);
+  ({ x: x2, y: y2 } = polygon[0]);
+  if (y1 > y !== y2 > y && x < ((x2 - x1) * (y - y1)) / (y2 - y1) + x1) ++intersections;
+
+  return intersections % 2 === 1;
 }

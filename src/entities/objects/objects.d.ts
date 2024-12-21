@@ -79,6 +79,41 @@ type TraceID = number;
 /** Поля узла трассы в БД. */
 type TraceNodeChannelFields = (keyof Omit<TraceNode, 'name'>) | 'order';
 
+/* --- Selection --- */
+
+/** Состояние модели выборки. */
+interface SelectionState {
+  /** Текущий активная выборка. */
+  model: SelectionModel | null;
+  /** Модель выборки до внесения изменений. */
+  initModel: SelectionModel | null;
+  /** Флаг режима редактирования. */
+  editing: boolean;
+}
+
+/** Модель выборки скважин. */
+interface SelectionModel {
+  /** Идентификатор. */
+  id: SelectionID;
+  /** Название. */
+  name: string;
+  /** Элементы выборки. */
+  items: SelectionItem[];
+}
+
+/** Модель элемента выборки. */
+interface SelectionItem {
+  /** Идентификатор скважины. */
+  id: WellID;
+  /** Название скважины. */
+  name: string;
+  /** Идентификатор месторождения. */
+  place: PlaceID;
+}
+
+/** Идентификатор выборки скважин. */
+type SelectionID = number;
+
 /* --- Site --- */
 
 /** Состояние модели участка. */

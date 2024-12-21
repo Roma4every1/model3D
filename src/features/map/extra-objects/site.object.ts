@@ -1,5 +1,6 @@
 import type { MapExtraObjectProvider } from './types';
 import { MapStage } from '../lib/map-stage';
+import { getPointBounds } from '../lib/bounds';
 import { getBoundViewport } from '../lib/map-utils';
 
 
@@ -13,16 +14,7 @@ export class MapSiteObjectProvider implements MapExtraObjectProvider<SiteModel> 
   }
 
   public computeBounds(): Bounds {
-    let xMin = Infinity, yMin = Infinity;
-    let xMax = -Infinity, yMax = -Infinity;
-
-    for (const { x, y } of this.model.points) {
-      if (x < xMin) xMin = x;
-      if (x > xMax) xMax = x;
-      if (y < yMin) yMin = y;
-      if (y > yMax) yMax = y;
-    }
-    return {min: {x: xMin, y: yMin}, max: {x: xMax, y: yMax}};
+    return getPointBounds(this.model.points);
   }
 
   public computeViewport(canvas: HTMLCanvasElement, bounds: Bounds): MapViewport {

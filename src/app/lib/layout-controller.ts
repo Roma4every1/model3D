@@ -35,6 +35,10 @@ const topTabDict: Record<TabID, IJsonTabNode> = {
     type: 'tab', enableDrag: false,
     id: 'top-trace', name: 'Трасса',
   },
+  'top-selection': { // панель настроек выборки
+    type: 'tab', enableDrag: false,
+    id: 'top-selection', name: 'Выборка',
+  },
   'top-site': { // панель настроек участка
     type: 'tab', enableDrag: false,
     id: 'top-site', name: 'Участок',
@@ -134,6 +138,7 @@ export class LayoutController {
     }
     const showTrace = this.objects.has('trace') && types && (types.has('map') || types.has('carat'));
     this.handleTab('top-trace', showTrace);
+    this.handleTab('top-selection', this.objects.has('selection'));
     this.handleTab('top-site', this.objects.has('site'));
   }
 

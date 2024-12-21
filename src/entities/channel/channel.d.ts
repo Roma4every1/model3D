@@ -286,7 +286,9 @@ interface LookupTreeNode {
   children?: LookupTreeNode[];
 }
 
-/** Словарь данных канала-справочника. */
+/** Ассоциативный массив значений канала-справочника. */
+type LookupMap<T = any> = Map<LookupItemID, T>;
+/** Словарь значений канала-справочника. */
 type LookupDict<T = any> = Record<LookupItemID, T>;
 
 /** Идентификатор значения из канала-справочника. */

@@ -3,21 +3,24 @@ import { PlaceManager } from '../lib/place';
 import { StratumManager } from '../lib/stratum';
 import { WellManager } from '../lib/well';
 import { TraceManager } from '../lib/trace';
+import { SelectionManager } from '../lib/selection';
 import { SiteManager } from '../lib/site';
 
 
 /** Менеджеры активных объектов. */
 export interface ObjectsState {
   /** Месторождение. */
-  place: PlaceManager;
+  readonly place: PlaceManager;
   /** Пласт. */
-  stratum: StratumManager;
+  readonly stratum: StratumManager;
   /** Скважина. */
-  well: WellManager;
+  readonly well: WellManager;
   /** Трасса. */
   trace: TraceManager;
+  /** Выборка. */
+  readonly selection: SelectionManager;
   /** Участок. */
-  site: SiteManager;
+  readonly site: SiteManager;
 }
 
 /** Активные объекты. */
@@ -26,6 +29,7 @@ export const useObjectsStore = create((): ObjectsState => ({
   stratum: null,
   well: null,
   trace: null,
+  selection: null,
   site: null,
 }));
 
@@ -45,6 +49,10 @@ export function useCurrentWell(): WellModel | null {
 export function useCurrentTrace(): TraceModel | null {
   return useObjectsStore(state => state.trace.model);
 }
+/** Модель активной выборки. */
+export function useCurrentSelection(): SelectionModel | null {
+  return useObjectsStore(state => state.selection.state.model);
+}
 /** Модель активного участка. */
 export function useCurrentSite(): SiteModel | null {
   return useObjectsStore(state => state.site.state.model);
@@ -57,6 +65,13 @@ export function useTraceManager(): TraceManager {
 /** Находится ли трасса в состоянии редактирования. */
 export function useTraceEditing(): boolean {
   return useObjectsStore(state => state.trace.editing === true);
+}
+
+export function useSelectionState(): SelectionState {
+  return useObjectsStore(state => state.selection.state);
+}
+export function useSelectionEditing(): boolean {
+  return useObjectsStore(state => state.selection.state.editing === true);
 }
 
 export function useSiteState(): SiteState {

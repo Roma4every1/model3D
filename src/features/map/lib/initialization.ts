@@ -59,6 +59,7 @@ export class MapStateFactory {
     const hasWell = this.objects.well.activated();
     const hasTrace = this.objects.trace.activated();
     const hasSite = this.objects.site.activated();
+    const hasSelection = this.objects.selection.activated();
 
     const stage = new MapStage();
     stage.registerMode(new modes.DefaultModeProvider(hasWell));
@@ -78,6 +79,10 @@ export class MapStateFactory {
       stage.registerMode(new modes.SiteAppendPointModeProvider());
       stage.registerMode(new modes.SiteInsertPointModeProvider());
       stage.registerMode(new modes.SiteRemovePointModeProvider());
+    }
+    if (hasSelection) {
+      stage.registerExtraObject('selection', extra.createMapSelectionConfig(stage));
+      stage.registerMode(new modes.SelectionEditModeProvider());
     }
     if (editable) {
       stage.registerMode(new modes.ElementDragModeProvider());

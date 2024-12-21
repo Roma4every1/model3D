@@ -1,3 +1,18 @@
+/** Создаёт ассоциативный массив значений для справочника. */
+export function createLookupMap<T = any>(channel: Channel): LookupMap<T> {
+  const { config, data } = channel;
+  const map: LookupMap<T> = new Map();
+  if (!data || data.rows.length === 0) return map;
+
+  const idIndex = config.lookupColumns.id.columnIndex;
+  const valueIndex = config.lookupColumns.value.columnIndex;
+
+  for (const row of data.rows) {
+    map.set(row[idIndex], row[valueIndex]);
+  }
+  return map;
+}
+
 /** Создаёт список возможных значений и словарь данных канала-справочника. */
 export function createLookupList(rows: ChannelRow[], columnsInfo: LookupColumns) {
   const idIndex = columnsInfo.id.columnIndex;

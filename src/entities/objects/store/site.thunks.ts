@@ -47,7 +47,7 @@ export async function saveSite(): Promise<void> {
     const nodeRows = manager.getPointRows(templateRow, pointChannel.data.columns);
 
     await channelAPI.removeRows(queryID, 'all');
-    await channelAPI.insertRows(queryID, nodeRows).then();
+    await channelAPI.insertRows(queryID, nodeRows);
     await reloadChannel(pointChannel.id);
   }
 

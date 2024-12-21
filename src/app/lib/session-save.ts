@@ -38,13 +38,13 @@ interface SettingsToSave {
 
 /** Конвертирует состояние приложения в модель сохраняемой сессии. */
 export function getSessionToSave(): SessionToSave {
-  const rootState = useClientStore.getState().root;
-  const presentations = Object.values(useClientStore.getState()).filter(c => c.type === 'grid');
+  const clients = useClientStore.getState();
+  const presentations = Object.values(clients).filter(c => c.type === 'grid' && c.children);
 
   return {
     parameters: getParametersToSave(),
-    children: getChildrenToSave(rootState, presentations),
-    layout: getLayoutsToSave(rootState, presentations),
+    children: getChildrenToSave(clients.root, presentations),
+    layout: getLayoutsToSave(clients.root, presentations),
     settings: getSettingsToSave(),
   };
 }
@@ -65,17 +65,17 @@ function getParametersToSave(): ParametersToSave[] {
 /* --- Children --- */
 
 function getChildrenToSave(root: SessionClient, presentations: SessionClient[]): ChildrenToSave[] {
-  const childArray = presentations
+  const children = presentations
     .filter(p => !p.settings.multiMapChannel)
     .map(toChildrenToSave);
 
-  childArray.push({
+  children.push({
     id: root.id,
     children: root.children.map(toFormDataWM),
     openedChildren: [root.activeChildID],
     activeChildren: [root.activeChildID],
   });
-  return childArray;
+  return children;
 }
 
 function toChildrenToSave(state: SessionClient): ChildrenToSave {

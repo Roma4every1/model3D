@@ -52,6 +52,42 @@ export const traceChannelCriterion: ChannelCriterion<keyof TraceModel> = {
   },
 };
 
+/* --- Selection --- */
+
+const selectionWellLookupCriterion: PropertyChannelCriterion = {
+  properties: {
+    id: {name: 'LOOKUPCODE'},
+    name: {name: 'LOOKUPVALUE'},
+    place: {name: ['PLACE', 'MEST'], required: false},
+  },
+  required: true,
+};
+
+const selectionPlaceLookupCriterion: PropertyChannelCriterion = {
+  properties: {
+    id: {name: 'LOOKUPCODE'},
+    name: {name: 'LOOKUPVALUE'},
+  },
+  required: true,
+};
+
+const selectionItemChannelCriterion: PropertyChannelCriterion<keyof SelectionItem> = {
+  properties: {
+    id: {name: 'ITEM', lookups: {name: selectionWellLookupCriterion}},
+    name: {name: 'NWELL'},
+    place: {name: ['PLACE', 'MEST'], lookups: {name: selectionPlaceLookupCriterion}},
+  },
+  required: true,
+};
+
+export const selectionChannelCriterion: ChannelCriterion<keyof SelectionModel> = {
+  properties: {
+    id: {name: 'LOOKUPCODE'},
+    name: {name: 'LOOKUPVALUE'},
+    items: {name: 'ITEMS', details: selectionItemChannelCriterion},
+  },
+};
+
 /* --- Site --- */
 
 const sitePointChannelCriterion: PropertyChannelCriterion = {

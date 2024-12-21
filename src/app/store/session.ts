@@ -7,7 +7,7 @@ import { useParameterStore, lockParameters, unlockParameters } from 'entities/pa
 import { addSessionClient } from 'entities/client';
 import { showWarningMessage } from 'entities/window';
 import { showNotification } from 'entities/notification';
-import { initializeObjects, initializeObjectModels } from 'entities/objects';
+import { ObjectsFactory, useObjectsStore, initializeObjectModels } from 'entities/objects';
 
 import { useAppStore } from './app.store';
 import { appAPI } from '../lib/app.api';
@@ -61,9 +61,13 @@ export async function startSession(isDefault: boolean): Promise<void> {
   addSessionClient(root);
 
   const channelDict = useChannelStore.getState().storage;
-  const objects = initializeObjects(parameters, channelDict);
+  const objectsFactory = new ObjectsFactory(parameters, channelDict);
+  const objects = objectsFactory.createState(factory.getSettingsDTO());
+  useObjectsStore.setState(objects, true);
+
   const layoutController = root.layout.controller;
   if (objects.trace.activated()) layoutController.objects.add('trace');
+  if (objects.selection.activated()) layoutController.objects.add('selection');
   if (objects.site.activated()) layoutController.objects.add('site');
   useProgramStore.getState().layoutController = layoutController;
 

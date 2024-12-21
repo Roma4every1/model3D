@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" stroke-width="3">
+<defs>
+  <pattern id="checkerboard" patternUnits="userSpaceOnUse" width="20" height="20">
+    <rect width="10" height="10" fill="#d9eeff"/>
+    <rect x="10" y="0" width="10" height="10" fill="#9bcbf2"/>
+    <rect x="0" y="10" width="10" height="10" fill="#9bcbf2"/>
+    <rect x="10" y="10" width="10" height="10" fill="#d9eeff"/>
+  </pattern>
+</defs>
+<g fill="#efefef" stroke="#484848" stroke-width="2">
+  <rect x="24" y="38" width="10" height="10" rx="1" ry="1"/>
+  <rect x="24" y="52" width="10" height="10" rx="1" ry="1"/>
+</g>
+<path d="M39,43l7,0 M52,43l7,0 M39,57l7,0 M52,57l7,0" fill="none" stroke="#444" stroke-linecap="round"/>
+<polygon points="5,5 35,5 30,30 4,31" fill="url(#checkerboard)" stroke="#5f8db3"/>
+<g stroke="#5f8db3" fill="#e3f1fc">
+  <rect x="2" y="2" width="7" height="7"/>
+  <rect x="31" y="2" width="7" height="7"/>
+  <rect x="27" y="27" width="7" height="7"/>
+  <rect x="1" y="28" width="7" height="7"/>
+</g>
+<path d="M41,14 C45,17 49,24 49,31" fill="none" stroke="#8ac800" stroke-width="6"/>
+<path d="M42,30 L56,30 L49,41" fill="#8ac800"/>
+</svg>

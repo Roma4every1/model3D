@@ -33,6 +33,6 @@ export function setMapObjects(id: FormID, payload: Record<string, any>): void {
     stage.setExtraObject(oid, payload[oid]);
   }
   if (!stage.getMapData()) return;
-  const changed = stage.centerToObject(oldModels, 'incl', 'site', 'trace', 'well');
+  const changed = stage.centerToObject(oldModels, 'incl', 'well', 'trace', 'site', 'selection');
   if (!changed) stage.render();
 }

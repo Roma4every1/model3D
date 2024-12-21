@@ -22,8 +22,9 @@ export class TraceManager implements ActiveObjectManager {
   private readonly wellChannelID: ChannelID;
   private readonly info: ChannelRecordInfo<keyof TraceModel>;
 
-  constructor(channels: ChannelDict, wellChannelID: ChannelID) {
-    const traceChannel = Object.values(channels).find(c => c.name === 'traces');
+  constructor(channelName: ChannelName, channels: ChannelDict, wellChannelID: ChannelID) {
+    if (!channelName) return;
+    const traceChannel = Object.values(channels).find(c => c.name === channelName);
     if (!traceChannel) return;
     this.channelID = traceChannel.id;
     this.wellChannelID = wellChannelID;

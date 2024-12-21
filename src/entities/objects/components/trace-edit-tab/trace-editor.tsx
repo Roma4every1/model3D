@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useTraceManager } from '../../store/objects.store';
 import { setCurrentTrace } from '../../store/objects.actions';
-import { deleteTrace } from '../../store/objects.thunks';
+import { deleteTrace } from '../../store/trace.thunks';
 import { useMapState } from 'features/map';
 
 import './traces-edit-tab.scss';

@@ -14,6 +14,19 @@ export function getTotalBounds(items: {bounds: Bounds}[]): Bounds {
   return {min: {x: xMin, y: yMin}, max: {x: xMax, y: yMax}};
 }
 
+export function getPointBounds(points: Point[]): Bounds {
+  let xMin = Infinity, yMin = Infinity;
+  let xMax = -Infinity, yMax = -Infinity;
+
+  for (const { x, y } of points) {
+    if (x < xMin) xMin = x;
+    if (x > xMax) xMax = x;
+    if (y < yMin) yMin = y;
+    if (y > yMax) yMax = y;
+  }
+  return {min: {x: xMin, y: yMin}, max: {x: xMax, y: yMax}};
+}
+
 export function getMapElementBounds(element: MapElement): Bounds {
   switch (element.type) {
     case 'polyline': return getPolylineBounds(element);

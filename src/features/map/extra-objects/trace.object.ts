@@ -1,4 +1,5 @@
 import type { MapExtraObjectProvider } from './types';
+import { getPointBounds } from '../lib/bounds';
 import { getBoundViewport } from '../lib/map-utils';
 
 
@@ -10,16 +11,7 @@ export class MapTraceObjectProvider implements MapExtraObjectProvider<TraceModel
   }
 
   public computeBounds(): Bounds {
-    let xMin = Infinity, yMin = Infinity;
-    let xMax = -Infinity, yMax = -Infinity;
-
-    for (const { x, y } of this.model.nodes) {
-      if (x < xMin) xMin = x;
-      if (x > xMax) xMax = x;
-      if (y < yMin) yMin = y;
-      if (y > yMax) yMax = y;
-    }
-    return {min: {x: xMin, y: yMin}, max: {x: xMax, y: yMax}};
+    return getPointBounds(this.model.nodes);
   }
 
   public computeViewport(canvas: HTMLCanvasElement, bounds: Bounds): MapViewport {

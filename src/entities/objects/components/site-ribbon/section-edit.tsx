@@ -103,8 +103,8 @@ const SiteNameEditor = ({model, editing}: SiteNameEditorProps) => {
 
   return (
     <Input
-      style={{width: 140, marginTop: 4}} value={value} placeholder={placeholder}
-      onChange={onChange} disabled={!canEdit}
+      style={{width: 140, marginTop: 4}} placeholder={placeholder} spellCheck={false}
+      value={value} onChange={onChange} disabled={!canEdit}
     />
   );
 };

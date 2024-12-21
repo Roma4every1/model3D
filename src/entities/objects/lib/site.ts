@@ -5,7 +5,7 @@ import { siteChannelCriterion } from './constants';
 export class SiteManager implements ActiveObjectManager {
   /** Состояние модели. */
   public state: SiteState;
-  /** Идентификатор параметра месторождения. */
+  /** Идентификатор параметра участка. */
   public readonly parameterID: ParameterID | undefined;
   /** ID канала с участками. */
   public readonly channelID: ChannelID | undefined;
@@ -14,9 +14,10 @@ export class SiteManager implements ActiveObjectManager {
   /** Информация о структуре данных канала. */
   public readonly info: ChannelRecordInfo<keyof SiteModel> | undefined;
 
-  constructor(channels: ChannelDict) {
+  constructor(channelName: ChannelName, channels: ChannelDict) {
     this.state = {model: null, initModel: null, editMode: null};
-    const siteChannel = Object.values(channels).find(c => c.name === 'sites');
+    if (!channelName) return;
+    const siteChannel = Object.values(channels).find(c => c.name === channelName);
     if (!siteChannel) return;
     this.channelID = siteChannel.id;
 
