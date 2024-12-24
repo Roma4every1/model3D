@@ -97,9 +97,7 @@ export async function startPaint(map: MapData, options: StartPaintOptions): Prom
         }
       }
     }
-    if (map.onDrawEnd) {
-      map.onDrawEnd(options.point, coords.mapScale);
-    }
+    if (map.onDrawEnd) map.onDrawEnd();
   } catch {
     // ...
   }

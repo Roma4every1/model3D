@@ -105,7 +105,7 @@ interface MapData {
   x?: number;
   y?: number;
   scale?: number;
-  onDrawEnd?: (center: Point, scale: number) => void;
+  onDrawEnd?: () => void;
 }
 
 /** Слой карты. */

@@ -85,31 +85,33 @@ const MapNavigationActions = ({state, parentID, t}: NavigationPanelProps) => {
 };
 
 const MapViewportControls = ({state, t}: DimensionProps) => {
+  const [, setSignal] = useState(0);
   const stage = state.stage;
   const mapData = stage.getMapData();
+
+  let cx: number = null, cy: number = null, scale: number = null;
   const disabled = stage.getModeProvider().blocked || !mapData || state.status !== 'ok';
 
-  const [cx, setX] = useState(mapData?.x);
-  const [cy, setY] = useState(mapData?.y);
-  const [scale, setScale] = useState(mapData?.scale);
-
+  if (mapData) {
+    cx = mapData.x;
+    cy = mapData.y;
+    scale = mapData.scale;
+  }
   useEffect(() => {
-    if (mapData) mapData.onDrawEnd = ({x, y}, scale) => {
-      setX(x); setY(y); setScale(scale);
-    };
+    if (mapData) mapData.onDrawEnd = () => setSignal(s => s + 1);
   }, [mapData]);
 
   const xChanged = (value: number) => {
     stage.render({cx: value, cy: mapData.y, scale: mapData.scale});
-    setX(value);
+    setSignal(s => s + 1);
   };
   const yChanged = (value: number) => {
     stage.render({cx: mapData.x, cy: -value, scale: mapData.scale});
-    setY(-value);
+    setSignal(s => s + 1);
   };
   const scaleChanged = (value: number) => {
     stage.render({cx: mapData.x, cy: mapData.y, scale: value});
-    setScale(value);
+    setSignal(s => s + 1);
   };
 
   return (

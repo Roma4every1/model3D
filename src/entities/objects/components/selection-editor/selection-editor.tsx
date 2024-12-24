@@ -28,7 +28,7 @@ export const SelectionEditor = ({manager, close}: SelectionEditorProps) => {
   }, [placeChannel]);
 
   const apply = () => {
-    if (!model.name || model.name === getDefaultName(initModel, placeNameMap)) {
+    if (!model.name || (initModel && model.name === getDefaultName(initModel, placeNameMap))) {
       model.name = getDefaultName(model, placeNameMap);
     }
     saveSelection().then();

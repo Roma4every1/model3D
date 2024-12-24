@@ -40,7 +40,7 @@ export const MapSelectSection = ({state, t}: MapSelectSectionProps) => {
       stage.clearSelect();
       stage.render();
     }
-    if (state.edit.editing || state.edit.creating) cancelMapEditing(state.id);
+    if (state.edit && (state.edit.editing || state.edit.creating)) cancelMapEditing(state.id);
     stage.setMode(selectMode ? 'default' : 'element-select');
   };
   const canToggleSelecting = state.status === 'ok' && !stage.hasExtraObject('incl')
