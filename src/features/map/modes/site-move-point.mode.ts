@@ -1,5 +1,5 @@
 import { squaredDistance } from 'shared/lib';
-import { useObjectsStore } from 'entities/objects';
+import { useObjectsStore, setSiteState } from 'entities/objects';
 import { MapStage } from '../lib/map-stage';
 
 
@@ -18,11 +18,13 @@ export class SiteMovePointModeProvider implements MapModeProvider {
   }
 
   public onMouseUp(): void {
+    if (this.point) setSiteState({model: {...this.site}});
     this.site = undefined;
     this.point = undefined;
   }
 
   public onMouseLeave(): void {
+    if (this.point) setSiteState({model: {...this.site}});
     this.site = undefined;
     this.point = undefined;
   }

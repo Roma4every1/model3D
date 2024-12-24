@@ -1,4 +1,5 @@
 import type { IGlobalAttributes, IJsonRowNode, IJsonTabSetNode, IJsonTabNode } from 'flexlayout-react/declarations/model/IJsonModel';
+import type { MultiMapChild } from '../store/multi-map.store';
 import { Model } from 'flexlayout-react';
 
 

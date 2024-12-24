@@ -1,3 +1,6 @@
+import type { MultiMapChild } from '../store/multi-map.store';
+
+
 export class MultiMapChildFactory {
   private readonly parentID: ClientID;
   private readonly recordInfo: ChannelRecordInfo;

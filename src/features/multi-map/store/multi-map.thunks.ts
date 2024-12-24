@@ -1,7 +1,7 @@
 import { useObjectsStore } from 'entities/objects';
 import { useClientStore, setClientChildren } from 'entities/client';
 import { useMapStore, setMapStatus, MapStateFactory } from 'features/map';
-import { useMultiMapStore } from './multi-map.store';
+import { type MultiMapChild, useMultiMapStore } from './multi-map.store';
 import { MultiMapChildFactory } from '../lib/factory';
 import { getMultiMapLayout } from '../lib/layout';
 

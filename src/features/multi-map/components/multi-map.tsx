@@ -1,4 +1,4 @@
-import { Action, Actions, Layout, TabNode } from 'flexlayout-react';
+import { Model, Action, Actions, Layout, TabNode } from 'flexlayout-react';
 import { useEffect } from 'react';
 import { i18nMapper } from 'shared/locales';
 import { useChannelData } from 'entities/channel';
@@ -19,17 +19,17 @@ export const MultiMap = ({id, channels}: Pick<PresentationState, 'id' | 'channel
   }, [channelData, id]);
 
   if (!state || state.children.length === 0) return <TextInfo text={'map.empty'}/>;
-  const { layout, children } = state;
+  const model: Model = state.layout;
 
   const factory = (node: TabNode) => {
     const tabID = node.getId();
-    const child = children.find(item => item.formID === tabID);
+    const child = state.children.find(item => item.formID === tabID);
     return child ? <Map id={child.formID}/> : null;
   };
   const onAction = (action: Action) => {
     const { type, data } = action;
     if (type === Actions.SET_ACTIVE_TABSET) {
-      const tabset = layout.getNodeById(data.tabsetNode);
+      const tabset = model.getNodeById(data.tabsetNode);
       const newActiveID = tabset.getChildren()[0]?.getId();
       if (newActiveID) setClientActiveChild(id, newActiveID);
     } else if (type === Actions.SELECT_TAB) {
@@ -38,5 +38,5 @@ export const MultiMap = ({id, channels}: Pick<PresentationState, 'id' | 'channel
     return action;
   };
 
-  return <Layout model={layout} factory={factory} onAction={onAction} i18nMapper={i18nMapper}/>;
+  return <Layout model={model} factory={factory} onAction={onAction} i18nMapper={i18nMapper}/>;
 };

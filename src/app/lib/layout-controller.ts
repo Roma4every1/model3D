@@ -1,5 +1,6 @@
 import type { IJsonModel, IJsonBorderNode, IJsonTabSetNode, IJsonTabNode, IGlobalAttributes } from 'flexlayout-react/declarations/model/IJsonModel';
 import { Model, BorderNode, Actions, DockLocation } from 'flexlayout-react';
+import { compareArrays } from 'shared/lib';
 
 
 /** Иднентификатор вкладки. */
@@ -74,29 +75,23 @@ export class LayoutController {
   public readonly topBorder: BorderNode;
   /** Узел модели разметки, содержащий вкладки справа. */
   public readonly rightBorder: BorderNode;
-
   /** Активные объектов в системе. */
   public objects: Set<string>;
-  /** Видимые вкладки сверху. */
-  private readonly visibleTopIDs: Set<TabID>;
-  /** Видимые вкладки справа. */
-  private readonly visibleRightIDs: Set<TabID>;
+
+  private initTop: number;
+  private initRight: number;
 
   constructor(init: any, popup: boolean) {
     this.model = this.createInitModel(init, popup);
     this.objects = new Set();
-    this.visibleTopIDs = new Set(['menu']);
-    this.visibleRightIDs = new Set(['right-dock']);
     [this.topBorder, this.rightBorder] = this.model.getBorderSet().getBorders();
   }
 
   public showTab(tabID: TabID, index: number = -1, select: boolean = false): void {
     const isTop = tabID.startsWith('top');
-    const visibleIDs = isTop ? this.visibleTopIDs : this.visibleRightIDs;
     const border = isTop ? this.topBorder : this.rightBorder;
 
-    if (!visibleIDs.has(tabID)) {
-      visibleIDs.add(tabID);
+    if (border.getChildren().every(c => c.getId() !== tabID)) {
       const tab = isTop ? topTabDict[tabID] : rightTabDict[tabID];
       this.model.doAction(Actions.addNode(tab, border.getId(), DockLocation.CENTER, index, select));
     } else if (select && border.getSelected() !== index) {
@@ -105,73 +100,87 @@ export class LayoutController {
   }
 
   public updateTabVisibility(presentation: PresentationState): void {
-    if (!this.rightBorder) return;
-    const types = presentation?.childrenTypes;
-    if (types) {
-      const oldTopIndex = this.topBorder.getSelected();
-      const oldTopTabID = oldTopIndex > 0
-        ? this.topBorder.getChildren()[oldTopIndex].getId()
-        : null; // для -1, 0, обработка не нужна
-
-      this.handleTab('top-table', types.has('dataSet'));
-      this.handleTab('top-chart', types.has('chart'));
-      this.handleTab('top-map', types.has('map'));
-      this.handleTab('top-track', types.has('carat'));
-      this.handleTab('top-carat', types.has('carat'));
-      this.handleTab('right-map', types.has('map'));
-      this.handleTab('right-profile', types.has('profile'));
-
-      const config = this.topBorder.getConfig();
-      const initIndex = config.initIndex;
-      const currentIndex = this.topBorder.getSelected();
-
-      if (initIndex !== null) {
-        const tab = initIndex !== currentIndex && this.topBorder.getChildren()[initIndex];
-        if (tab) this.model.doAction(Actions.selectTab(tab.getId()));
-        config.initIndex = null;
-      }
-      else if (oldTopTabID) {
-        const currentTabID = this.topBorder.getChildren()[currentIndex].getId();
-        const neededTabID = this.visibleTopIDs.has(oldTopTabID) ? oldTopTabID : 'menu';
-        if (currentTabID !== neededTabID) this.model.doAction(Actions.selectTab(neededTabID));
-      }
-    }
-    const showTrace = this.objects.has('trace') && types && (types.has('map') || types.has('carat'));
-    this.handleTab('top-trace', showTrace);
-    this.handleTab('top-selection', this.objects.has('selection'));
-    this.handleTab('top-site', this.objects.has('site'));
+    if (!this.rightBorder || !presentation) return;
+    const types = presentation.childrenTypes;
+    this.updateTopTabs(types);
+    this.updateRightTabs(types);
   }
 
   public updateTraceEditTabVisibility(need: boolean): void {
     if (!this.rightBorder || !this.objects.has('trace')) return;
     const tabID: TabID = 'right-trace';
-    const borderID = this.rightBorder.getId();
-    const hasTab = this.visibleRightIDs.has(tabID);
+    const hasTab = this.rightBorder.getChildren().some(c => c.getId() === tabID);
 
     if (need && !hasTab) {
-      this.visibleRightIDs.add(tabID);
+      const borderID = this.rightBorder.getId();
       this.model.doAction(Actions.addNode(rightTabDict[tabID], borderID, DockLocation.RIGHT, -1, true))
     }
     if (!need && hasTab) {
-      this.visibleRightIDs.delete(tabID);
       this.model.doAction(Actions.selectTab(tabID));
       this.model.doAction(Actions.deleteTab(tabID));
     }
   }
 
-  private handleTab(tabID: TabID, need: boolean): void {
-    const isTop = tabID.startsWith('top');
-    const visibleIDs = isTop ? this.visibleTopIDs : this.visibleRightIDs;
+  private updateTopTabs(types: ReadonlySet<ClientType>): void {
+    const oldTabs: TabID[] = this.topBorder.getChildren().map(c => c.getId());
+    const newTabs: TabID[] = ['menu'];
 
-    if (visibleIDs.has(tabID)) {
-      visibleIDs.delete(tabID);
-      this.model.doAction(Actions.deleteTab(tabID));
+    if (types.has('dataSet')) newTabs.push('top-table');
+    if (types.has('chart')) newTabs.push('top-chart');
+    if (types.has('map')) newTabs.push('top-map');
+    if (types.has('carat')) newTabs.push('top-track', 'top-carat');
+
+    if (this.objects.has('trace') && (types.has('map') || types.has('carat'))) newTabs.push('top-trace');
+    if (this.objects.has('selection')) newTabs.push('top-selection');
+    if (this.objects.has('site')) newTabs.push('top-site');
+
+    if (compareArrays(oldTabs, newTabs)) return;
+    const oldSelected = this.topBorder.getSelected();
+    this.setBorderTabs(this.topBorder, oldTabs, newTabs);
+
+    if (this.initTop !== null) {
+      const tab = newTabs[this.initTop];
+      if (tab) this.model.doAction(Actions.selectTab(tab));
+      this.initTop = null;
+    } else if (oldSelected !== -1) {
+      const oldTab = oldTabs[oldSelected];
+      const newTab = newTabs.includes(oldTab) ? oldTab : 'menu';
+      this.model.doAction(Actions.selectTab(newTab));
     }
-    if (need) {
-      const tab = isTop ? topTabDict[tabID] : rightTabDict[tabID];
-      const borderID = isTop ? this.topBorder.getId() : this.rightBorder.getId();
-      visibleIDs.add(tabID);
-      this.model.doAction(Actions.addNode(tab, borderID, DockLocation.CENTER, -1, false));
+  }
+
+  private updateRightTabs(types: ReadonlySet<ClientType>): void {
+    const oldTabs: TabID[] = this.rightBorder.getChildren().map(c => c.getId());
+    const newTabs: TabID[] = ['right-dock'];
+
+    if (types.has('map')) newTabs.push('right-map');
+    if (types.has('profile')) newTabs.push('right-profile');
+    if (oldTabs.includes('right-trace')) newTabs.push('right-trace');
+
+    if (compareArrays(oldTabs, newTabs)) return;
+    const oldSelected = this.rightBorder.getSelected();
+    this.setBorderTabs(this.rightBorder, oldTabs, newTabs);
+
+    if (this.initRight !== null) {
+      const tab = newTabs[this.initRight];
+      if (tab) this.model.doAction(Actions.selectTab(tab))
+      this.initRight = null;
+    } else if (oldSelected !== -1) {
+      const oldTab = oldTabs[oldSelected];
+      if (newTabs.includes(oldTab)) this.model.doAction(Actions.selectTab(oldTab));
+    }
+  }
+
+  private setBorderTabs(border: BorderNode, oldTabs: TabID[], newTabs: TabID[]): void {
+    const model = border.getModel();
+    const borderID = border.getId();
+    const tabs = newTabs[0].charCodeAt(0) === 109 /* m */ ? topTabDict : rightTabDict;
+
+    for (const id of oldTabs) {
+      model.doAction(Actions.deleteTab(id));
+    }
+    for (const id of newTabs) {
+      model.doAction(Actions.addNode(tabs[id], borderID, DockLocation.CENTER, -1, false));
     }
   }
 
@@ -195,8 +204,8 @@ export class LayoutController {
   }
 
   private createMainLayout(init: any, globalAttributes: IGlobalAttributes): IJsonModel {
-    const selectedTop = init?.selectedtop ?? -1;
-    const selectedRight = init?.selectedright ?? -1;
+    this.initTop = init?.selectedtop ?? -1;
+    this.initRight = init?.selectedright ?? -1;
     const topPanelHeight = 90;
     const leftPanelWidth = init?.sizeleft ?? 270;
     const rightPanelWidth = init?.sizeright ?? 270;
@@ -205,13 +214,13 @@ export class LayoutController {
       type: 'border', location: 'top',
       barSize: 26, size: topPanelHeight, minSize: topPanelHeight,
       className: 'no-user-select', children: [topTabDict['menu']],
-      selected: selectedTop < 1 ? selectedTop : -1, config: {initIndex: selectedTop},
+      selected: this.initTop < 1 ? this.initTop : -1,
     };
     const rightBorder: IJsonBorderNode = {
       type: 'border', location: 'right',
       barSize: 26, size: rightPanelWidth, minSize: 150,
       className: 'no-user-select', children: [rightTabDict['right-dock']],
-      selected: selectedRight < 1 ? selectedRight : -1,
+      selected: this.initRight < 1 ? this.initRight : -1,
     };
 
     const leftPanelContent: IJsonTabSetNode = {

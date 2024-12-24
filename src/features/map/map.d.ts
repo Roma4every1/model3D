@@ -26,11 +26,6 @@ interface IMapStage {
   render(viewport?: MapViewport): void;
 }
 
-interface IMapLoader {
-  loadMapData(mapID: MapID, owner: MapStorageID): Promise<MapData | string | null>;
-  abortLoading(): void;
-}
-
 type MapCanvas = HTMLCanvasElement & {events: any, showMapFlag: any};
 
 /** Провайдер для режима карты. */

@@ -8,7 +8,7 @@ import { prepareMapElements } from './prepare';
 
 
 /** Загрузчик данных карты. */
-export class MapLoader implements IMapLoader {
+export class MapLoader {
   /** ID формы, для которой загрузчик создан. */
   private readonly formID: FormID;
   /** Контроллер прерывания. */
