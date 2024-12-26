@@ -69,7 +69,7 @@ export class ProgramAPI {
   }
 
   public uploadFile(filename: string, data: ArrayBuffer, signal?: AbortSignal): Promise<Res<string>> {
-    return this.api.post('/uploadFile', {query: {filename}, blob: data, signal: signal});
+    return this.api.post('/uploadFile', {query: {filename}, blob: data, signal});
   }
 
   public downloadFile(path: string): Promise<Res<Blob>> {
