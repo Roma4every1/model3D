@@ -3,6 +3,15 @@
   .k-window-content:last-child { padding-bottom: 8px; }
 }
 
+.selection-name-editor {
+  input {
+    font-family: Roboto, sans-serif;
+  }
+  .ant-input-group-addon {
+    padding: 0;
+  }
+}
+
 .selection-item-editor {
   display: grid;
   grid-template-columns: 1fr 1fr;

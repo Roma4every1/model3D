@@ -359,6 +359,8 @@
     "manage-section": "Управление",
     "create-section": "Создание",
     "editor-title": "Редактирование выборки",
+    "name-placeholder": "Название",
+    "default-name": "Название по умолчанию",
     "delete-dialog-title": "Удаление выборки",
     "delete-dialog-text": "Вы действительно хотите удалить выборку?",
     "from-site": "По участку",

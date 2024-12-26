@@ -1,5 +1,5 @@
 import { type ChangeEvent, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { type TFunction, useTranslation } from 'react-i18next';
 import { useChannel, createLookupMap } from 'entities/channel';
 import { useSelectionState } from '../../store/objects.store';
 import { setSelectionState, cancelSelectionEditing } from '../../store/selection.actions';
@@ -8,12 +8,18 @@ import { SelectionManager } from '../../lib/selection';
 
 import './selection-editor.scss';
 import { Button, Input } from 'antd';
+import { SyncOutlined } from '@ant-design/icons';
 import { SelectionItemEditor } from './selection-item-editor';
 
 
 interface SelectionEditorProps {
   manager: SelectionManager;
   close: () => void;
+}
+interface SelectionNameEditorProps {
+  model: SelectionModel;
+  placeMap: Map<LookupItemID, string>;
+  t: TFunction;
 }
 
 export const SelectionEditor = ({manager, close}: SelectionEditorProps) => {
@@ -41,7 +47,7 @@ export const SelectionEditor = ({manager, close}: SelectionEditorProps) => {
 
   return (
     <>
-      <SelectionNameEditor model={model}/>
+      <SelectionNameEditor model={model} placeMap={placeNameMap} t={t}/>
       <SelectionItemEditor model={model} placeMap={placeNameMap} info={itemInfo}/>
       <div className={'wm-dialog-actions'} style={{paddingTop: 8}}>
         <Button onClick={apply}>{t('base.apply')}</Button>
@@ -51,16 +57,23 @@ export const SelectionEditor = ({manager, close}: SelectionEditorProps) => {
   );
 };
 
-const SelectionNameEditor = ({model}: {model: SelectionModel}) => {
+const SelectionNameEditor = ({model, placeMap, t}: SelectionNameEditorProps) => {
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
     setSelectionState({model: {...model, name: newName}});
   };
+  const setDefault = () => {
+    const newName = getDefaultName(model, placeMap);
+    setSelectionState({model: {...model, name: newName}});
+  };
 
+  const addon = (
+    <SyncOutlined title={t('selection.default-name')} onClick={setDefault} style={{padding: 5}}/>
+  );
   return (
     <Input
-      style={{fontFamily: 'Roboto'}} spellCheck={false}
-      value={model.name} placeholder={'Название'} onChange={onChange}
+      className={'selection-name-editor'} spellCheck={false} addonAfter={addon}
+      value={model.name} placeholder={t('selection.name-placeholder')} onChange={onChange}
     />
   );
 };
