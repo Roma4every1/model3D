@@ -1,4 +1,6 @@
-import { rowToParameterValue, updateParamDeep } from 'entities/parameter';
+import { t } from 'shared/locales';
+import { showWarningMessage } from 'entities/window';
+import { rowToParameterValue, updateParamDeep, setParameterLock } from 'entities/parameter';
 import { useChannelStore, channelAPI, reloadChannel, reloadChannels } from 'entities/channel';
 import { useObjectsStore } from './objects.store';
 import { setSelectionState } from './selection.actions';
@@ -9,13 +11,13 @@ export async function createSelection(): Promise<void> {
   const channel = useChannelStore.getState().storage[manager.channelID];
 
   const queryID = channel.data?.queryID;
-  if (!queryID) return;
+  if (!queryID) return showWarningMessage(t('selection.error-no-lookup-data'));
   const { ok, data: newRow } = await channelAPI.getNewRow(queryID);
-  if (!ok) return;
+  if (!ok) return showWarningMessage(t('selection.error-on-create'));
 
   const idIndex = channel.data.columns.findIndex(c => c.name === manager.info.id.columnName);
   const id = newRow[idIndex];
-  if (id === null || id === undefined) return;
+  if (id === null || id === undefined) return showWarningMessage(t('selection.error-on-create'));
 
   const model: SelectionModel = {id, name: '', items: []};
   const nameIndex = channel.data.columns.findIndex(c => c.name === manager.info.name.columnName);
@@ -50,7 +52,9 @@ export async function saveSelection(): Promise<void> {
   const updatedData = useChannelStore.getState().storage[channel.id].data;
   const updatedRow = updatedData.rows.find(r => r[idIndex] === model.id);
   await updateParamDeep(manager.parameterID, rowToParameterValue(updatedRow, channel));
+
   setSelectionState({initModel: null, editing: false});
+  setParameterLock(manager.parameterID, false);
 }
 
 export async function deleteSelection(): Promise<void> {

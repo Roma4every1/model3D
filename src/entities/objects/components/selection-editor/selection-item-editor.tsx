@@ -40,7 +40,7 @@ export const SelectionItemEditor = ({model, placeMap, info}: SelectionItemEditor
   return (
     <div className={'selection-item-editor'}>
       <section>
-        <span>Элементы</span>
+        <span>Элементы {model.items.length ? `(${model.items.length})` : ''}</span>
         <ul className={'selection-items'}>{model.items.map(toItemElement)}</ul>
       </section>
       <section>

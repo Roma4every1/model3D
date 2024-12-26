@@ -100,7 +100,7 @@ export class TraceManager implements ActiveObjectManager {
 
   /** Преобразует узлы трассы в массив записей канала. */
   public getNodeChannelRows(template: ChannelRow, columns: ChannelColumn[]): ChannelRow[] {
-    const info: ChannelRecordInfo<TraceNodeChannelFields> = this.info.nodes.details.info;
+    const info: ChannelRecordInfo = this.info.nodes.details.info;
     const findIndex = (name: ColumnName) => columns.findIndex(c => c.name === name);
 
     const idIndex = findIndex(info.id.columnName);

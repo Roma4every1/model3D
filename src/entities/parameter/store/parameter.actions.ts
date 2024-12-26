@@ -30,3 +30,17 @@ export function clearParameterStore(): void {
   idGenerator.reset();
   useParameterStore.setState({clients: {}, setters: [], updateQueue: []});
 }
+
+export function setParameterLock(id: ParameterID, lock: boolean): void {
+  const state = useParameterStore.getState();
+  const parameter = state.storage.get(id);
+  if (!parameter || !parameter.editor || parameter.editor.disabled === lock) return;
+
+  for (const clientID in state.clients) {
+    if (!state.clients[clientID].includes(parameter)) continue;
+    state.clients[clientID] = [...state.clients[clientID]];
+    break;
+  }
+  parameter.editor.disabled = lock;
+  useParameterStore.setState({...state}, true);
+}

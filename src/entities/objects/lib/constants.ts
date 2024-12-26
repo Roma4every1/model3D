@@ -33,7 +33,7 @@ const traceNodeNameLookup: PropertyChannelCriterion = {
   required: false,
 };
 
-const traceNodeChannelCriterion: PropertyChannelCriterion<TraceNodeChannelFields> = {
+const traceNodeChannelCriterion: PropertyChannelCriterion = {
   properties: {
     id: {name: 'ITEM', lookups: {name: traceNodeNameLookup}},
     x: {name: 'X'},

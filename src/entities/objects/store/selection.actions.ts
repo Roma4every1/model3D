@@ -2,6 +2,7 @@ import type { WindowProps } from '@progress/kendo-react-dialogs';
 import { t } from 'shared/locales';
 import { createElement } from 'react';
 import { showWindow, closeWindow } from 'entities/window';
+import { setParameterLock } from 'entities/parameter';
 import { useObjectsStore } from './objects.store';
 import { deleteSelection } from './selection.thunks';
 import { SelectionEditor } from '../components/selection-editor/selection-editor';
@@ -15,8 +16,12 @@ export function setSelectionState(state: Partial<SelectionState>): void {
 
 export function startSelectionCreating(): void {
   const manager = useObjectsStore.getState().selection;
-  manager.state = {model: manager.state.model, initModel: null, editing: true};
+  const model = manager.state.model;
+  if (!model) return;
+
+  manager.state = {model, initModel: null, editing: true};
   useObjectsStore.setState({selection: manager});
+  setParameterLock(manager.parameterID, true);
   openSelectionEditor();
 }
 
@@ -25,6 +30,7 @@ export function startSelectionEditing(): void {
   const model = manager.state.model;
   manager.state = {model, initModel: structuredClone(model), editing: true};
   useObjectsStore.setState({selection: manager});
+  setParameterLock(manager.parameterID, true);
   openSelectionEditor();
 }
 
@@ -38,6 +44,7 @@ export function cancelSelectionEditing(): void {
     deleteSelection().then();
   }
   useObjectsStore.setState({selection: manager});
+  setParameterLock(manager.parameterID, false);
 }
 
 export function openSelectionEditor(): void {

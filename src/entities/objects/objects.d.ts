@@ -76,9 +76,6 @@ interface TraceNode {
 /** Идентификатор трассы. */
 type TraceID = number;
 
-/** Поля узла трассы в БД. */
-type TraceNodeChannelFields = (keyof Omit<TraceNode, 'name'>) | 'order';
-
 /* --- Selection --- */
 
 /** Состояние модели выборки. */

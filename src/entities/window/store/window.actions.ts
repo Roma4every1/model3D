@@ -32,6 +32,7 @@ export function showWindow(id: WindowID, props: WindowProps, content: ReactNode)
 /** Закрыть указанное окно. */
 export function closeWindow(id: WindowID): void {
   const state = useWindowStore.getState();
+  if (!state[id]) return;
   delete state[id];
   useWindowStore.setState({...state});
 }
