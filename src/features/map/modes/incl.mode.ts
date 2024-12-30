@@ -10,6 +10,7 @@ export class InclinometryModeProvider implements MapModeProvider {
   constructor(private readonly parameterID: ParameterID) {}
 
   public onClick(e: MouseEvent, stage: MapStage): void {
+    if (!stage.getExtraObject('incl')) return;
     const canvas = stage.getCanvas();
     const dx = (e.offsetX * window.devicePixelRatio) - (canvas.width / 2);
     const dy = (canvas.height) / 2 - (e.offsetY * window.devicePixelRatio);

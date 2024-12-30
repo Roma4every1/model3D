@@ -82,7 +82,8 @@ export class RootClientFactory {
 
   public async fillData(): Promise<boolean> {
     const resolver = new DataResolver();
-    const result = await resolver.resolve(this.channels, this.parameters, this.setters);
+    const setters = this.instanceController.main ? this.setters : [];
+    const result = await resolver.resolve(this.channels, this.parameters, setters);
     const storage = useParameterStore.getState().storage;
     for (const parameter of this.parameters) calcParameterVisibility(parameter, storage);
     return result;

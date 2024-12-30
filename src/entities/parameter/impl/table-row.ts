@@ -1,4 +1,4 @@
-import { getDataTypeName } from 'shared/lib';
+import { getDataTypeName, stringifyLocalDate } from 'shared/lib';
 import { parseDBPrimitive } from '../lib/utils';
 
 
@@ -74,10 +74,13 @@ export class TableRowParameter implements Parameter<'tableRow'> {
 
   private handleValue({type, value}: TypedCell): string {
     const dataType = getDataTypeName(type);
-    if (dataType === 'null' || value === null) {
-      return '';
-    } else if (dataType === 'string') {
+    if (dataType === 'null' || value === null) return '';
+
+    if (dataType === 'string') {
       return (value as string).replaceAll(/([#|\\])/g, '\\$1');
+    }
+    if (dataType === 'date' && value instanceof Date) {
+      return stringifyLocalDate(value);
     }
     return String(value);
   }

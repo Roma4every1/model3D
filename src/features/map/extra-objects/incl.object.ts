@@ -187,13 +187,9 @@ export class MapInclinometryProvider implements MapExtraObjectProvider<InclView,
   }
 
   private updateModel(well: WellID, channels: ChannelDict, angle: number): InclView | null {
-    if (this.mapPoint?.UWID !== well) {
-      this.mapPoint = this.stage.getNamedPoint(well);
-      if (!this.mapPoint) {
-        if (this.stage.getMapData().layers.length > 0) return null;
-        this.mapPoint = {UWID: well, x: 0, y: 0, name: '', attrTable: null};
-      }
-    }
+    this.updatePoint(well);
+    if (!this.mapPoint) return null;
+
     const data = channels[this.dataChannel.id]?.data;
     if (!data || data.rows.length === 0) return null;
 
@@ -204,6 +200,15 @@ export class MapInclinometryProvider implements MapExtraObjectProvider<InclView,
       this.lines.forEach(l => { l.color = this.colorLookup.get(l.id); });
     }
     return {point: this.mapPoint, shift: this.shift, lines: this.lines, angle};
+  }
+
+  private updatePoint(id: WellID): void {
+    if (this.mapPoint?.UWID === id && this.mapPoint.attrTable !== null) return;
+    this.mapPoint = this.stage.getNamedPoint(id);
+
+    if (!this.mapPoint && this.stage.getMapData().layers.length === 0) {
+      this.mapPoint = {UWID: id, x: 0, y: 0, name: '', attrTable: null};
+    }
   }
 
   private updateLines(data: ChannelData): void {
