@@ -13,6 +13,7 @@ import { EventBus, compareArrays, isRectInnerPoint } from 'shared/lib';
 import { validateCaratScale } from '../lib/utils';
 import { moveSmoothly } from '../lib/smooth-scroll';
 import { defaultSettings } from '../lib/constants';
+import { CaratImageRenderer } from './image-renderer';
 
 
 /** Типы аргументов для событий сцены каротажной диаграммы. */
@@ -455,43 +456,9 @@ export class CaratStage {
   /* --- Rendering --- */
 
   /** Рендер картинки с заданными характеристиками. */
-  public renderImage(options: CaratExportOptions): HTMLCanvasElement {
-    const { startDepth, endDepth, transparent } = options;
-    const trackPadding = this.drawer.trackBodySettings.padding;
-    const trackHeaderHeight = this.drawer.trackHeaderSettings.height;
-
-    const track = this.getActiveTrack();
-    const rectHeight = track.viewport.scale * window.devicePixelRatio * (endDepth - startDepth);
-    const trackHeight = trackHeaderHeight + track.maxGroupHeaderHeight + rectHeight;
-
-    const height = track.rect.top + trackHeight + 2 * trackPadding;
-    // в браузерах есть ограничение на размер холста
-    CaratDrawer.ratio = Math.min(2, 65_500 / height);
-
-    const canvas = document.createElement('canvas');
-    canvas.width = (track.rect.width + 2 * trackPadding) * CaratDrawer.ratio;
-    canvas.height = height * CaratDrawer.ratio;
-
-    const originalY = track.viewport.y;
-    const originalLeft = track.rect.left;
-    const originalHeight = track.rect.height;
-
-    track.setHeight(trackHeight);
-    track.rect.left = trackPadding;
-    track.viewport.y = startDepth;
-
-    const ctx = canvas.getContext('2d');
-    this.drawer.setContext(ctx);
-    if (!transparent) {
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-    track.render();
-
-    track.setHeight(originalHeight);
-    track.rect.left = originalLeft;
-    track.viewport.y = originalY;
-
+  public renderImage(options?: CaratExportOptions): HTMLCanvasElement {
+    const renderer = new CaratImageRenderer(this, this.drawer);
+    const canvas = renderer.renderCaratImage(options, this.canvas);
     CaratDrawer.ratio = 2;
     this.drawer.setContext(this.canvas.getContext('2d'));
     return canvas;

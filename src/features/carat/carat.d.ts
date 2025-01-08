@@ -32,11 +32,13 @@ interface CaratCurveData {
 /** Настройки экспокрта каротажной диаграммы в PNG. */
 interface CaratExportOptions {
   /** Начальная глубина. */
-  startDepth: number;
+  startDepth: number | number[];
   /** Конечная глубина. */
-  endDepth: number;
+  endDepth: number | number[];
   /** Оставлять ли прозрачный фон. */
   transparent?: boolean;
+  /** Выбранный трек для экспорта. */
+  selectedTrack?: CaratTrack[];
 }
 
 /** Инклинометрия скважины. */
