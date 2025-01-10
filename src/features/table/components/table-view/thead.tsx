@@ -70,6 +70,9 @@ const LeafCell = ({state, query, column}: LeafCellProps) => {
     if (width < minCellWidth || width > maxCellWidth) return;
     setTableColumnWidth(state.id, column.id, width);
   };
+  const onDoubleClick = () => {
+    setTableColumnWidth(state.id, column.id, -1);
+  };
 
   const pClass = 'table-column-drag';
   const pOpen = dragStyle !== undefined;
@@ -80,7 +83,7 @@ const LeafCell = ({state, query, column}: LeafCellProps) => {
       <th className={column.fixed ? 'cell-sticky' : undefined} style={{...column.headerStyle}}>
         <HeadCellContent state={state} column={column} query={query}/>
         <div
-          style={dragStyle}
+          style={dragStyle} onDoubleClick={onDoubleClick}
           onMouseDown={onMouseDown} onMouseUp={onMouseUp}
           onMouseLeave={onMouseUp} onMouseMove={onMouseMove}
         />
