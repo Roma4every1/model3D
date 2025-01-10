@@ -109,7 +109,7 @@ $wm-table-cell-padding: 4px 6px;
 }
 .tbody-alternate {
   --wm-alternate-bg: #f0f0f0;
-  tr:nth-child(even) { background-color: var(--wm-alternate-bg); }
+  tr:nth-child(even) > td { background-color: var(--wm-alternate-bg); }
 }
 
 .details-table-window div.k-window-content {
