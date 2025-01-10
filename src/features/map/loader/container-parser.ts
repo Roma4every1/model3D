@@ -78,8 +78,10 @@ function createPolyline(element: XMapElement): MapPolyline {
   }
 
   return {
-    type: 'polyline', bordercolor, borderwidth: Number(borderwidth),
-    borderstyle: Number(borderstyle), borderstyleid, fillname, fillcolor, fillbkcolor,
+    type: 'polyline', bordercolor,
+    borderwidth: borderwidth ? Number(borderwidth) : undefined,
+    borderstyle: borderstyle ? Number(borderstyle) : undefined,
+    borderstyleid, fillname, fillcolor, fillbkcolor,
     transparent: transparent !== '0', arcs, bounds: createPolylineBounds(bounds), attrTable,
   };
 }

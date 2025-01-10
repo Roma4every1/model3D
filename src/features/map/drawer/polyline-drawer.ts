@@ -19,14 +19,9 @@ export class PolylineDrawer implements MapElementDrawer<MapPolyline> {
   public draw(i: MapPolyline, options: MapDrawOptions): void {
     const configThicknessCoefficient = window.devicePixelRatio;
     const ctx = options.ctx;
-    const linesConfig = lines;
 
-    let currentLineConfig = [];
     if (i.borderstyleid) {
-      currentLineConfig = [linesConfig.find(e => e.guid === i.borderstyleid)];
-    }
-    if (currentLineConfig.length !== 0) {
-      i.style = currentLineConfig[0];
+      i.style = lines.find(e => e.guid === i.borderstyleid);
     }
     const pathNeeded = once(() => this.path(i, options));
 

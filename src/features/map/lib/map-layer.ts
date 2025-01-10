@@ -83,7 +83,7 @@ export class MapLayer implements IMapLayer {
   }
 
   public isScaleVisible(scale: MapScale): boolean {
-    return this.minScale <= scale && scale <= this.maxScale;
+    return this.minScale <= scale && (this.maxScale === 0 || scale <= this.maxScale);
   }
 
   public setMinScale(scale: MapScale): void {
