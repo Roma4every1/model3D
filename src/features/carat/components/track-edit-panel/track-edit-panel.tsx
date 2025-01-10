@@ -2,10 +2,10 @@ import { MenuSkeleton } from 'shared/ui';
 import { useCaratState } from '../../store/carat.store';
 
 import './track-edit-panel.scss';
-import { CaratNavigationSection } from './navigation';
-import { CaratActiveGroupSection } from './active-group';
-import { CaratCurveSection } from './curves';
-import { CaratExportSection } from './export';
+import { CaratNavigationSection } from './section-navigation';
+import { CaratActiveGroupSection } from './section-group';
+import { CaratCurveSection } from './section-curves';
+import { CaratExportSection } from './section-export';
 
 
 /** Панель редактирования трека каротажной диаграммы. */

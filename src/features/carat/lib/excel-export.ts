@@ -12,21 +12,20 @@ export function caratToExcel(canvas: HTMLCanvasElement, well: string): Promise<B
 
   const cb = (data: Blob) => {
     if (!data) reject();
-    const imageSize = {width: canvas.width , height: canvas.height };
-    resolve(createExcel(data, imageSize, wellName));
+    resolve(createExcel(data, canvas.width, canvas.height, wellName));
   };
 
   canvas.toBlob(cb, 'image/png', 1);
   return promise;
 }
 
-async function createExcel(image: Blob, size: {width: number, height: number}, well: string): Promise<Blob> {
+async function createExcel(image: Blob, width: number, height: number, well: string): Promise<Blob> {
   const workbook = new Workbook();
   const sheet = workbook.addWorksheet('Каротаж ' + well);
 
   const imageBuffer = await image.arrayBuffer();
   const imageID = workbook.addImage({buffer: imageBuffer, extension: 'png'});
-  sheet.addImage(imageID, {tl: {col: 0, row: 0}, ext: size});
+  sheet.addImage(imageID, {tl: {col: 0, row: 0}, ext: {width, height}});
 
   const fileBuffer = await workbook.xlsx.writeBuffer();
   return new Blob([fileBuffer]);

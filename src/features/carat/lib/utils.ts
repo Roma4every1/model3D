@@ -57,13 +57,13 @@ function findNearestYPoint(arr: Point[], value: number): number {
   return start;
 }
 
-export function formatDistance(number: number | null):  string {
-  if (number === null)  return '';
+export function formatDistance(number: number | null): string {
+  if (number === null) return '';
   let unit = number >= 1000 ? 'км' : 'м';
   let formattedNumber;
 
   if (unit === 'км') {
-    if(number >= 100000) {
+    if (number >= 100_000) {
       formattedNumber = Math.round(number / 1000).toString();
     } else {
       formattedNumber = (number / 1000).toFixed(1).replace('.', ',');
@@ -71,7 +71,6 @@ export function formatDistance(number: number | null):  string {
         formattedNumber = Math.round(number / 1000).toString();
       }
     }
-
   } else if (number < 500) {
     if (number % 1 !== 0) {
       formattedNumber = number.toFixed(1).replace('.', ',');
@@ -83,7 +82,7 @@ export function formatDistance(number: number | null):  string {
     }
   } else {
     formattedNumber = Math.round(number).toString();
-    if(formattedNumber == 1000) {
+    if (formattedNumber == 1000) {
       unit = 'км'
       formattedNumber = (number / 1000).toFixed(1).replace('.', ',');
     }
@@ -91,17 +90,14 @@ export function formatDistance(number: number | null):  string {
   return `${formattedNumber}${unit}`;
 }
 
-export function getBrowserSize() {
-  const userAgent = navigator.userAgent;
-
-  let maxArea = 16_384 ** 2; // Для Chrome и Edge
-  let maxWidth = 65_535;
-  let maxHeight = 65_535;
-
-  if (userAgent.includes('Firefox')) {
-    maxArea = 23_168 ** 2;
-    maxWidth = 32_767;
-    maxHeight = 32_767;
+/**
+ * Каждый браузер и платформа накладывают уникальные ограничения на размер и площадь,
+ * при превышении которых canvas становится непригодным для использования.
+ */
+export function getCanvasConstraints() {
+  if (navigator.userAgent.includes('Firefox')) {
+    return {maxWidth: 32_767, maxHeight: 32_767, maxArea: 536_756_224};
+  } else {
+    return {maxWidth: 65_535, maxHeight: 65_535, maxArea: 268_435_456};
   }
-  return {maxArea, maxWidth, maxHeight};
 }

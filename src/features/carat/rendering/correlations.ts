@@ -21,7 +21,7 @@ export class CaratCorrelations {
   /** Данные колонок корреляций. */
   private correlations: CaratCorrelation[];
   /** Расстояния между треками */
-  private distance: number[];
+  private distances: number[];
 
   constructor(init: CaratColumnInit, drawer: CaratDrawer) {
     this.init = init;
@@ -29,7 +29,7 @@ export class CaratCorrelations {
     this.width = init?.settings?.width ?? 50;
     this.showDistance = true;
     this.correlations = [];
-    this.distance = [];
+    this.distances = [];
   }
 
   public getInit(): CaratColumnDTO {
@@ -41,19 +41,21 @@ export class CaratCorrelations {
   }
 
   public updateRects(trackList: CaratTrack[]): void {
-    const dataRect = trackList[0].getBackgroundGroup().getDataRect();
-    const top = trackList[0].rect.top + dataRect.top;
-    const height = dataRect.height;
+    for (let i = 0; i < this.correlations.length; ++i) {
+      const lTrack = trackList[i];
+      const rTrack = trackList[i + 1];
+      const lDataRect = lTrack.getBackgroundGroup().getDataRect();
+      const rDataRect = rTrack.getBackgroundGroup().getDataRect();
 
-    for (let i = 0; i < this.correlations.length; i++) {
-      const rect = trackList[i].rect;
-      const left = rect.left + rect.width + 1;
+      const top = lTrack.rect.top + lDataRect.top;
+      const left = lTrack.rect.left + lTrack.rect.width + 1;
+      const height = Math.min(lDataRect.height, rDataRect.height);
       this.correlations[i].rect = {top, left, width: this.width - 2, height};
     }
   }
 
   public setPoints(points: Point[]): void {
-    this.distance = [];
+    this.distances = [];
     for (let i = 0; i < points.length - 1; ++i) {
       const p1 = points[i];
       const p2 = points[i + 1];
@@ -61,7 +63,7 @@ export class CaratCorrelations {
       const valid =
         typeof p1.x === 'number' && typeof p1.y === 'number' &&
         typeof p2.x === 'number' && typeof p2.y === 'number';
-      this.distance.push(valid ? distance(p1, p2) : null);
+      this.distances.push(valid ? distance(p1, p2) : null);
     }
   }
 
@@ -79,8 +81,8 @@ export class CaratCorrelations {
         leftViewport: leftTrack.viewport,
         rightViewport: rightTrack.viewport,
         data: this.findCorrelations(leftStrata, rightStrata),
-        distance: this.distance[i],
-        distanceLabel: formatDistance(this.distance[i]),
+        distance: this.distances[i],
+        distanceLabel: formatDistance(this.distances[i]),
       };
       this.correlations.push(correlation);
     }

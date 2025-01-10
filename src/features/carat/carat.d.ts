@@ -37,8 +37,8 @@ interface CaratExportOptions {
   endDepth: number | number[];
   /** Оставлять ли прозрачный фон. */
   transparent?: boolean;
-  /** Выбранный трек для экспорта. */
-  selectedTrack?: CaratTrack[];
+  /** Выбранный трек для экспорта; если не задан экспортируются все. */
+  selectedTrack?: any; // CaratTrack
 }
 
 /** Инклинометрия скважины. */
@@ -115,5 +115,6 @@ interface CaratZone {
  * + `face` (конструкция) — забои скважины
  * + `vertical` (конструкция) — вертикальная линия
  */
-type CaratChannelType = 'lithology' | 'perforation' | 'curve' | 'curve-data' |
-  'inclinometry' | 'bore' | 'image' | 'face' | 'vertical' | 'mark';
+type CaratChannelType =
+  | 'inclinometry' | 'lithology' | 'perforation' | 'curve' | 'curve-data'
+  | 'mark' | 'bore' | 'image' | 'face' | 'vertical';

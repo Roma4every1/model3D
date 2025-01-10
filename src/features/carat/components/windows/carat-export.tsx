@@ -220,7 +220,7 @@ export const CaratExportDialog = ({stage, close, format}: CaratExportDialogProps
     const canvas = stage.renderImage({
       startDepth: startDepthTracks(),
       endDepth: endDepthTracks(),
-      selectedTrack: selectedTrackIndex !== 0 ? [tracks[selectedTrackIndex - 1]] : tracks,
+      selectedTrack: selectedTrackIndex !== 0 ? tracks[selectedTrackIndex - 1] : null,
     });
     close();
 

@@ -101,6 +101,10 @@ export class CaratStage {
 
   /* --- Getters --- */
 
+  public getCanvas(): HTMLCanvasElement {
+    return this.canvas;
+  }
+
   /** Трек по индексу. */
   public getTrack(idx: number): CaratTrack {
     return this.trackList[idx];
@@ -458,10 +462,13 @@ export class CaratStage {
   /** Рендер картинки с заданными характеристиками. */
   public renderImage(options?: CaratExportOptions): HTMLCanvasElement {
     const renderer = new CaratImageRenderer(this, this.drawer);
-    const canvas = renderer.renderCaratImage(options, this.canvas);
+    const image = this.getActiveTrack().constructionMode
+      ? renderer.renderConstruction()
+      : renderer.renderTracks(options);
+
     CaratDrawer.ratio = 2;
     this.drawer.setContext(this.canvas.getContext('2d'));
-    return canvas;
+    return image;
   }
 
   /** Полный рендер всей диаграммы. */
