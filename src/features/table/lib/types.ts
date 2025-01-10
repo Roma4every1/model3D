@@ -139,10 +139,10 @@ export interface TableColumnModel {
   readonly cellStyle?: CSSProperties;
   /** Формат значения; поддерживается только `Color`. */
   readonly typeFormat?: string;
-  /** Функция, которая форматирует значение ячейки. */
-  readonly formatter?: ColumnFormatter;
   /** ID колонки, из которой берётся название файла. */
   readonly fileColumn?: PropertyName;
+  /** Функция, которая форматирует значение ячейки. */
+  formatter?: ColumnFormatter;
 
   /** Текущее название для заголовка колонки. */
   displayName: string;
