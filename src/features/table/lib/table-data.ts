@@ -57,7 +57,7 @@ export class TableData {
       } else {
         column.type = toTableColumnType(dataType);
       }
-      if (column.formatter && !/^[iuf]\d/.test(dataType) /* not a number */) {
+      if (column.formatter && column.type !== 'real' && column.type !== 'int') {
         column.formatter = undefined;
       }
       if (!column.filter) {

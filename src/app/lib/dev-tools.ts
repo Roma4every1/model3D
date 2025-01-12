@@ -137,6 +137,25 @@ export class WMDevTools {
     return result;
   }
 
+  /** Находит ID презентаций, которые используют указанный канал. */
+  public findChannelUsages(arg: ChannelName | ChannelID): ClientID[] {
+    const usages: Set<ClientID> = new Set();
+    const clients = this.clients.getState();
+    const presentations = Object.values(clients).filter(c => c.type === 'grid');
+
+    for (const { id, channels, children } of presentations) {
+      const check = typeof arg === 'string'
+        ? (ac: AttachedChannel): void => { if (ac.name === arg) usages.add(id); }
+        : (ac: AttachedChannel): void => { if (ac.id === arg) usages.add(id); };
+
+      if (children) {
+        for (const child of children) clients[child.id].channels.forEach(check);
+      }
+      channels.forEach(check);
+    }
+    return [...usages];
+  }
+
   /* --- Objects Store --- */
 
   public getObjects(): any {

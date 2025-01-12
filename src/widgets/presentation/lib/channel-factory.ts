@@ -21,7 +21,7 @@ export class ClientChannelFactory {
     this.pResolve = pResolve;
   }
 
-  public async create(parameters?: Parameter[], attached?: Set<ChannelName>): Promise<Channel[]> {
+  public async create(parameters: Parameter[], attached?: Set<ChannelName>): Promise<Channel[]> {
     this.existing = new Set(Object.keys(this.store.sharing));
     this.needed = new Set();
     this.created = [];
