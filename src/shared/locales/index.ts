@@ -73,3 +73,36 @@ export function inputNumberParser(value: string): number | null {
   const number = Number(value.replace(',', '.'));
   return Number.isNaN(number) ? null : number;
 }
+
+/**
+ * Функция форматирования числа в поле для ввода.
+ *
+ * Текст остаётся без изменений, пока пользователь печатает.
+ * После окончания редактирования убираются лишние нули и/или разделитель.
+ * Если текст не является записью числа, поле для ввода очищается.
+ */
+export function inputNumberFormatter(value: number | string, info: {input: string, userTyping: boolean}): string {
+  let input = info.input;
+  if (info.userTyping === true) return input;
+  if (value === '') return value;
+
+  if (Number(input.replace(',', '.')) !== Number(value)) {
+    return input.includes(',') ? (value as string).replace('.', ',') : value as string;
+  }
+  const prefixZeroMatch = input.match(/^([+-]?)(?:0+[1-9]|(0{2,})[.,])/);
+  if (prefixZeroMatch) {
+    const [match, sign, zeros] = prefixZeroMatch;
+    if (zeros) {
+      input = sign + '0' + input.substring(match.length - 1);
+    } else {
+      input = sign + input.substring(match.length - 1);
+    }
+  }
+  const lastCharIndex = input.length - 1;
+  const lastCharCode = input.charCodeAt(lastCharIndex);
+
+  if (lastCharCode === 0x2E /* . */ || lastCharCode === 0x2C /* , */) {
+    input = input.substring(0, lastCharIndex);
+  }
+  return input;
+}

@@ -7,7 +7,7 @@ import { Select, Input, InputNumber, DatePicker, Checkbox, Button, Switch } from
 import { flatTree } from 'shared/lib';
 import { useRender } from 'shared/react';
 import { ButtonSwitch } from 'shared/ui';
-import { inputNumberParser } from 'shared/locales';
+import { inputNumberParser, inputNumberFormatter } from 'shared/locales';
 import { getDefaultFilterState, buildFilterNode } from '../../lib/filter-utils';
 import { updateTableState } from '../../store/table.actions';
 import { updateTableFilters } from '../../store/table-filters.thunks';
@@ -123,16 +123,16 @@ function NumberFilterContent({state}: FilterContentProps<'int'>) {
       <fieldset>
         <Select options={numberFilterOptions} value={type1} onChange={setType1}/>
         <InputNumber
-          value={value1} onChange={setValue1}
-          parser={inputNumberParser} changeOnWheel={true}
+          value={value1} onChange={setValue1} changeOnWheel={true}
+          parser={inputNumberParser} formatter={inputNumberFormatter}
         />
       </fieldset>
       <ButtonSwitch options={filterOperators} value={operator} onChange={setOperator}/>
       <fieldset>
         <Select options={numberFilterOptions} value={type2} onChange={setType2}/>
         <InputNumber
-          value={value2} onChange={setValue2}
-          parser={inputNumberParser} changeOnWheel={true}
+          value={value2} onChange={setValue2} changeOnWheel={true}
+          parser={inputNumberParser} formatter={inputNumberFormatter}
         />
       </fieldset>
     </div>
