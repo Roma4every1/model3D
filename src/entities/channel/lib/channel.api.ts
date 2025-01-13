@@ -87,28 +87,45 @@ export class ChannelAPI {
 
   /** Запрос новой записи со стандартными значениями. */
   public async getNewRow(queryID: QueryID): Promise<Res<ChannelRow>> {
-    const query = {tableId: queryID};
-    const res = await this.api.get('/getNewRow', {query});
-    if (res.ok) res.data = res.data.Cells;
-    return res;
+    if (this.api.legacy) {
+      const res = await this.api.get('/getNewRow', {query: {tableId: queryID}});
+      if (res.ok) res.data = res.data.Cells;
+      return res;
+    } else {
+      const res = await this.api.get('/channel/new-record', {query: {queryID}});
+      if (res.ok) res.data = res.data.row;
+      return res;
+    }
   }
 
   /** Запрос на добавление записи в таблицу. */
   public insertRows(queryID: QueryID, rows: ChannelRow[]): Promise<Res<OperationData>> {
-    const json = {tableId: queryID, rows: rows.map(toLegacyChannelRow)};
-    return this.api.post('/insertRows',{json});
+    if (this.api.legacy) {
+      const json = {tableId: queryID, rows: rows.map(toLegacyChannelRow)};
+      return this.api.post('/insertRows', {json});
+    } else {
+      return this.api.put('/channel/data', {query: {queryID}, json: {rows}});
+    }
   }
 
   /** Запрос обновления записи в таблице. */
   public updateRows(queryID: QueryID, indexes: number[], rows: ChannelRow[]): Promise<Res<OperationData>> {
-    const json = {tableId: queryID, indexes, rows: rows.map(toLegacyChannelRow)};
-    return this.api.post('/updateRows', {json});
+    if (this.api.legacy) {
+      const json = {tableId: queryID, indexes, rows: rows.map(toLegacyChannelRow)};
+      return this.api.post('/updateRows', {json});
+    } else {
+      return this.api.patch('/channel/data', {query: {queryID}, json: {indexes, data: rows}});
+    }
   }
 
   /** Запрос на удаление записей из таблицы. */
   public removeRows(queryID: QueryID, indexes: number[] | 'all'): Promise<Res<OperationData>> {
-    const query = {tableId: queryID, rows: Array.isArray(indexes) ? indexes.join(',') : indexes};
-    return this.api.get('/removeRows', {query});
+    if (this.api.legacy) {
+      const query = {tableId: queryID, rows: Array.isArray(indexes) ? indexes.join(',') : indexes};
+      return this.api.get('/removeRows', {query});
+    } else {
+      return this.api.delete('/channel/data', {query: {queryID}, json: {indexes}});
+    }
   }
 }
 
