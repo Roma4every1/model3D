@@ -60,14 +60,16 @@ export class CaratImageRenderer {
     const trackPadding = this.drawer.trackBodySettings.padding;
     const trackHeaderHeight = this.drawer.trackHeaderSettings.height;
 
+    let trackTotalWidth = 0;
+    for (const track of tracks) trackTotalWidth += track.rect.width;
     const correlationWidth = this.stage.correlations.getWidth() * (tracks.length - 1);
-    const width = 2 * trackPadding + tracks.length * tracks[0].rect.width + correlationWidth;
+    const width = 2 * trackPadding + trackTotalWidth + correlationWidth;
 
     const maxDataHeight = Math.max(...tracks.map((track: CaratTrack, i: number) => {
       const dataHeight = track.viewport.scale * window.devicePixelRatio * (endY[i] - startY[i]);
       return track.maxGroupHeaderHeight + dataHeight;
     }));
-    const height = 2 * trackPadding + tracks[0].rect.top + trackHeaderHeight + maxDataHeight;
+    const height = 2 * trackPadding + trackHeaderHeight + maxDataHeight;
     return {width, height, startY, endY};
   }
 

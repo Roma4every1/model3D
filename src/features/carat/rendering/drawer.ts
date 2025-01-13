@@ -753,17 +753,15 @@ export class CaratDrawer {
   /** Отрисовка корреляций между треками. */
   public drawCorrelations(correlations: CaratCorrelation, showDistance: boolean): void {
     const { rect, leftViewport, rightViewport, distanceLabel } = correlations;
-    this.setTranslate(rect.left, rect.top);
-    this.ctx.lineWidth = this.correlationSettings.thickness;
+    const { top, left, width, height } = rect;
 
-    const width = rect.width;
+    const trackPadding = this.trackBodySettings.padding;
     const leftScaleY = window.devicePixelRatio * leftViewport.scale;
     const rightScaleY = window.devicePixelRatio * rightViewport.scale;
 
-    this.ctx.clearRect(0, 0, width, rect.height);
-    this.ctx.save();
-    this.ctx.rect(0, 0, width, rect.height);
-    this.ctx.clip();
+    this.setTranslate(left, top);
+    this.ctx.lineWidth = this.correlationSettings.thickness;
+    this.ctx.clearRect(0, 0, width, height);
 
     for (const correlation of correlations.data) {
       this.ctx.beginPath();
@@ -777,7 +775,9 @@ export class CaratDrawer {
       this.ctx.strokeStyle = correlation.style.stroke;
       this.ctx.fill(); this.ctx.stroke();
     }
-    this.ctx.restore();
+    this.ctx.clearRect(0, -top, width, top);
+    this.ctx.clearRect(-1, -top, width + 2, trackPadding);
+    this.ctx.clearRect(-1, height, width + 2, trackPadding);
     if (showDistance && distanceLabel) this.drawCorrelationDistance(rect, distanceLabel);
   }
 

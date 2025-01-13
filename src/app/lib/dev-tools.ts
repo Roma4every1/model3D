@@ -90,6 +90,25 @@ export class WMDevTools {
     return this.parameters.getState().clients[id];
   }
 
+  /** Находит каналы, которые используют указанный параметр. */
+  public findParameterUsages(arg: ParameterName | ParameterID): ChannelName[] {
+    const usages = new Set<ChannelName>();
+    const channels = Object.values(this.channels.getState().storage);
+
+    if (typeof arg === 'string') {
+      for (const channel of channels) {
+        const parameters = channel.config.parameterNames;
+        if (parameters.includes(arg)) usages.add(channel.name);
+      }
+    } else {
+      for (const channel of channels) {
+        const parameters = channel.config.parameters;
+        if (parameters.includes(arg)) usages.add(channel.name);
+      }
+    }
+    return [...usages];
+  }
+
   /* --- Channel Store --- */
 
   public getChannel(descriptor: ChannelID | ChannelName): any {
