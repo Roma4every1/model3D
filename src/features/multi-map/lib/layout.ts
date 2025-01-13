@@ -8,7 +8,7 @@ const globalSettings: IGlobalAttributes = {
   tabEnableRename: false,
   tabEnableDrag: false,
   tabSetEnableDrag: false,
-  tabEnableClose: false,
+  tabEnableClose: true,
   tabSetTabStripHeight: 26,
   splitterSize: 4,
 };
