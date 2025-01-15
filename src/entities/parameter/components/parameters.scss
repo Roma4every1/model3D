@@ -29,6 +29,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0px 7px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
 
   > input {
     display: none;
@@ -43,7 +46,8 @@
   }
   button {
     padding: 0 4px 3px 6px;
-    height: 20px;
+    height: 18px;
+    border: none;
   }
 }
 

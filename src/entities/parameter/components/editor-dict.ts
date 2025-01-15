@@ -9,6 +9,7 @@ import { StringEditor } from './string-editor';
 import { TableRowListEditor } from './table-row-list-editor';
 import { TableRowTreeEditor } from './table-row-tree-editor';
 import { DoubleIntervalEditor } from './double-interval-editor';
+import { FilesEditor } from './files-editor';
 
 
 export interface EditorProps<T extends ParameterType = ParameterType> {
@@ -26,6 +27,7 @@ const editorDict: Record<string, FunctionComponent<EditorProps>> = {
   dateTextEditor: DateEditor,
   doubleTextEditor: IntegerEditor,
   fileTextEditor: FileEditor,
+  filesTextEditor: FilesEditor,
   integerTextEditor: IntegerEditor,
   integerArrayTreeEditor: IntegerArrayTreeEditor,
   stringComboEditor: TableRowListEditor,

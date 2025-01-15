@@ -68,8 +68,8 @@ export class ProgramAPI {
     return this.api.get('/clearReports', {query: {presentationId: clientID}});
   }
 
-  public uploadFile(filename: string, data: ArrayBuffer): Promise<Res<string>> {
-    return this.api.post('/uploadFile', {query: {filename}, blob: data});
+  public uploadFile(filename: string, data: ArrayBuffer, signal?: AbortSignal): Promise<Res<string>> {
+    return this.api.post('/uploadFile', {query: {filename}, blob: data, signal});
   }
 
   public downloadFile(path: string): Promise<Res<Blob>> {

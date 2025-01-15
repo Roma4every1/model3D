@@ -32,10 +32,7 @@ export const FileEditor = ({parameter, update}: EditorProps<'string'>) => {
 
   return (
     <div className={'file-text-editor'}>
-      <input
-        type={'file'} accept={'.xls,.xlsx,.xlsm,.xlsb,.xlam,.xltx,.xltm'}
-        value={value ? undefined : ''} onChange={onChange} ref={inputRef}
-      />
+      <input type={'file'} value={value ? undefined : ''} onChange={onChange} ref={inputRef}/>
       <span title={value}>{value || t('editors.file-not-selected')}</span>
       <div>
         <Button onClick={clearFile} style={{paddingLeft: 4}}>
