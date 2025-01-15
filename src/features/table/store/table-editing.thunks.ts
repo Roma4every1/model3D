@@ -83,21 +83,23 @@ export async function endTableEditing(id: FormID, save: boolean, cell?: TableAct
 /** Удаление строк таблицы. */
 export async function deleteTableRecords(id: FormID, indexes: number[]): Promise<void> {
   if (indexes.length === 0) return;
-  const state = useTableStore.getState()[id];
-  const queryID = state.data.queryID;
-  const res = await channelAPI.removeRows(queryID, indexes);
+  const { data, selection, channelID } = useTableStore.getState()[id];
+  const queryID = data.queryID;
+
+  const all = indexes.length === data.records.length && !data.dataPart;
+  const res = await channelAPI.removeRows(queryID, all ? 'all' : indexes);
 
   const error = res.ok ? res.data.error : res.message;
   if (error) {
     showWarningMessage(error);
-    return reloadChannel(state.channelID);
+    return reloadChannel(channelID);
   }
 
-  const activeCell = state.data.activeCell;
+  const activeCell = data.activeCell;
   if (indexes.includes(activeCell.row)) {
-    state.data.setActiveCell({row: null, column: null, edited: false});
+    data.setActiveCell({row: null, column: null, edited: false});
   }
-  state.selection.clear();
+  selection.clear();
 
   await reloadChannelsByQueryIDs([queryID, ...res.data.modifiedTables]);
   showNotification(t('table.delete-ok', {n: indexes.length}));
