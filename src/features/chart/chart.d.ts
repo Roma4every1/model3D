@@ -20,6 +20,8 @@ type ChartDisplayType = 'line' | 'area' | 'bar' | 'point' | 'vertical';
  */
 type ChartCurveType = 'linear' | 'natural' | 'stepAfter';
 
+/** Значение по оси X на графике; строка только для категорий. */
+type ChartXKey = number | string;
 /** Тип оси X: числа, даты или категории. */
 type ChartXAxisType = 'number' | 'date' | 'category';
 /** Тип масштаба оси графика: линейная или логарифмическая. */

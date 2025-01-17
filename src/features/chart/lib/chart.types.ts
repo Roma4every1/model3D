@@ -131,7 +131,7 @@ export type ChartDataRecord = Record<'x' | string, number | string>;
 /** Модель вертикальная метки. */
 export interface ChartMark {
   /** Координата X или категория. */
-  x: number | string;
+  x: ChartXKey;
   /** Массив подписей. */
   values: ChartMarkLabel[];
 }

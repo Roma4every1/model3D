@@ -37,6 +37,12 @@ export function isNumberColumn(column: ChannelColumn): boolean {
   return /^[iuf]\d/.test(type);
 }
 
+/** Проверяет, является ли тип данных колонки строкой. */
+export function isStringColumn(column: ChannelColumn): boolean {
+  const type = getDataTypeName(column.type);
+  return type === 'string';
+}
+
 /** Проверяет, является ли тип данных колонки датой. */
 export function isDateColumn(column: ChannelColumn): boolean {
   const type = getDataTypeName(column.type);

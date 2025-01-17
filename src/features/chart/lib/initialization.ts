@@ -206,7 +206,7 @@ export class ChartStateFactory {
     if (input) {
       input = input.toLowerCase();
       if (input === 'dates') return 'date';
-      // if (input === 'categories') return 'category';
+      if (input === 'categories') return 'category';
     }
     return 'number';
   }

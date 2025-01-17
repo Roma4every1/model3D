@@ -1,5 +1,5 @@
 import type { ChartProperty, ChartData, ChartDataRecord, ChartMark } from './chart.types';
-import { isNumberColumn, isDateColumn } from 'shared/lib';
+import { isNumberColumn, isStringColumn, isDateColumn } from 'shared/lib';
 import { dateKeyGetters, dateFormatters } from './date-utils';
 
 
@@ -17,8 +17,8 @@ export class ChartDataController {
   /** Исходные данные справочников. */
   private lookupData: ChannelDict;
 
-  private records: Map<number, ChartDataRecord>;
-  private marks: Map<number, ChartMark>;
+  private records: Map<ChartXKey, ChartDataRecord>;
+  private marks: Map<ChartXKey, ChartMark>;
 
   constructor(type: ChartXAxisType) {
     this.xType = type;
@@ -43,7 +43,7 @@ export class ChartDataController {
   public createData(properties: ChartProperty[]): ChartData {
     this.records = new Map();
     this.marks = new Map();
-    const xValueMap = new Map<ChannelProperty, number[]>();
+    const xValueMap = new Map<ChannelProperty, ChartXKey[]>();
 
     for (const chartProperty of properties) {
       const channelData = this.channelData[chartProperty.channel.id]?.data;
@@ -67,7 +67,7 @@ export class ChartDataController {
     return {records, marks};
   }
 
-  private getXValues(channelProperty: ChannelProperty, data: ChannelData): number[] | null {
+  private getXValues(channelProperty: ChannelProperty, data: ChannelData): ChartXKey[] | null {
     const columnName = channelProperty.fromColumn;
     const xIndex = data.columns.findIndex(c => c.name === columnName);
 
@@ -76,8 +76,25 @@ export class ChartDataController {
     } else if (this.xType === 'number') {
       return this.getNumberXValues(data, xIndex);
     } else {
-      throw new Error('Category X axis is not yet implemented');
+      return this.getCategoryXValues(data, xIndex);
     }
+  }
+
+  private getCategoryXValues(data: ChannelData, columnIndex: number): ChartXKey[] {
+    const xValues: ChartXKey[] = [];
+    const column = data.columns[columnIndex];
+    if (!isStringColumn(column) && !isNumberColumn(column)) return xValues;
+
+    for (const row of data.rows) {
+      const key = row[columnIndex];
+      if (key === null) continue;
+
+      if (!this.records.has(key)) {
+        this.records.set(key, {x: key, key: key});
+      }
+      xValues.push(key);
+    }
+    return xValues;
   }
 
   private getNumberXValues(data: ChannelData, columnIndex: number): number[] {
@@ -115,7 +132,7 @@ export class ChartDataController {
     return xValues;
   }
 
-  private setPropertyData(property: ChartProperty, xKeys: number[], data: ChannelData): void {
+  private setPropertyData(property: ChartProperty, xKeys: ChartXKey[], data: ChannelData): void {
     property.empty = true;
     const rows = data.rows;
     if (rows.length === 0) return;
@@ -125,7 +142,7 @@ export class ChartDataController {
     if (columnIndex === -1) return;
 
     if (property.displayType === 'vertical') {
-      xKeys.forEach((key: number, i: number) => {
+      xKeys.forEach((key: ChartXKey, i: number) => {
         const value = rows[i][columnIndex];
         if (value === null) return;
 
@@ -143,7 +160,7 @@ export class ChartDataController {
       const column = data.columns[columnIndex];
       if (!isNumberColumn(column)) return;
 
-      xKeys.forEach((key: number, i: number) => {
+      xKeys.forEach((key: ChartXKey, i: number) => {
         const value = rows[i][columnIndex];
         if (value === null) return;
         const dataItem = this.records.get(key);
