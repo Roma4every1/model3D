@@ -99,32 +99,38 @@ export class ChannelAPI {
   }
 
   /** Запрос на добавление записи в таблицу. */
-  public insertRows(queryID: QueryID, rows: ChannelRow[]): Promise<Res<OperationData>> {
+  public async insertRows(queryID: QueryID, rows: ChannelRow[]): Promise<Res<OperationData>> {
     if (this.api.legacy) {
       const json = {tableId: queryID, rows: rows.map(toLegacyChannelRow)};
       return this.api.post('/insertRows', {json});
     } else {
-      return this.api.put('/channel/data', {query: {queryID}, json: {rows}});
+      const res = await this.api.put('/channel/data', {query: {queryID}, json: {rows}});
+      if (res.ok) res.data = {modifiedTables: res.data.modified.map(String)};
+      return res;
     }
   }
 
   /** Запрос обновления записи в таблице. */
-  public updateRows(queryID: QueryID, indexes: number[], rows: ChannelRow[]): Promise<Res<OperationData>> {
+  public async updateRows(queryID: QueryID, indexes: number[], rows: ChannelRow[]): Promise<Res<OperationData>> {
     if (this.api.legacy) {
       const json = {tableId: queryID, indexes, rows: rows.map(toLegacyChannelRow)};
       return this.api.post('/updateRows', {json});
     } else {
-      return this.api.patch('/channel/data', {query: {queryID}, json: {indexes, data: rows}});
+      const res = await this.api.patch('/channel/data', {query: {queryID}, json: {indexes, data: rows}});
+      if (res.ok) res.data = {modifiedTables: res.data.modified.map(String)};
+      return res;
     }
   }
 
   /** Запрос на удаление записей из таблицы. */
-  public removeRows(queryID: QueryID, indexes: number[] | 'all'): Promise<Res<OperationData>> {
+  public async removeRows(queryID: QueryID, indexes: number[] | 'all'): Promise<Res<OperationData>> {
     if (this.api.legacy) {
       const query = {tableId: queryID, rows: Array.isArray(indexes) ? indexes.join(',') : indexes};
       return this.api.get('/removeRows', {query});
     } else {
-      return this.api.delete('/channel/data', {query: {queryID}, json: {indexes}});
+      const res = await this.api.delete('/channel/data', {query: {queryID}, json: {indexes}});
+      if (res.ok) res.data = {modifiedTables: res.data.modified.map(String)};
+      return res;
     }
   }
 }
