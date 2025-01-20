@@ -5,7 +5,7 @@ import { ButtonSwitch } from 'shared/ui';
 import { saveFile } from 'shared/lib';
 import { inputNumberParser } from 'shared/locales';
 import { CaratStage } from '../../rendering/stage';
-import { caratExportInterval, caratExportModes } from '../../lib/constants';
+import { caratExportModes } from '../../lib/constants';
 import { caratToExcel } from 'features/carat/lib/excel-export';
 import { CaratTrack } from 'features/carat/rendering/track';
 import './carat-export.scss';
@@ -31,10 +31,15 @@ export const CaratExportDialog = ({stage, close, format}: CaratExportDialogProps
 
   const trackViewports= stage.trackList.map(track => track.viewport);
   const trackInclinometry= stage.trackList.map(track => track.inclinometry);
+  const hasData = tracks.some(track => track.inclinometry.hasData());
 
   const options = [
     {label: 'Все треки', value: 0},
     ...tracks.map((track, index) => ({label: `${track.wellName}`, value: index + 1})),
+  ];
+  const caratExportInterval = [
+    {label: 'По глубине', value: 0},
+    {label: 'По абсолютной отметке', value: 1, disabled: hasData},
   ];
 
   useEffect(() => {
@@ -93,7 +98,7 @@ export const CaratExportDialog = ({stage, close, format}: CaratExportDialogProps
     if (Array.isArray(track)) {
       const startAbs = track[0].inclinometry.getAbsMark(startDepth);
       const endAbs = track[0].inclinometry.getAbsMark(endDepth);
-      const minStartAbs = Math.min(...trackInclinometry.map(i => i.getFirstData().absMark));
+      const minStartAbs = Math.min(...trackInclinometry.map(i => i.getMaxAbsMark()));
       const maxEndAbs = Math.max(...trackInclinometry.map(i => i.getAbsMark(Math.max(...trackViewports.map(v => v.max)))));
 
       if (prevInterval === 1 && prevOptionIndex === 2) {
@@ -106,7 +111,7 @@ export const CaratExportDialog = ({stage, close, format}: CaratExportDialogProps
     } else {
       const startAbs = track.inclinometry.getAbsMark(startDepth);
       const endAbs = track.inclinometry.getAbsMark(endDepth);
-      const maxAbs = track.inclinometry.getFirstData().absMark;
+      const maxAbs = track.inclinometry.getMaxAbsMark();
       const minAbs = track.inclinometry.getAbsMark(track.viewport.max);
 
       if (prevInterval === 1 && prevOptionIndex === 2) {
@@ -210,8 +215,8 @@ export const CaratExportDialog = ({stage, close, format}: CaratExportDialogProps
   const maxValueDepth = selectedTrackIndex !== 0 ? tracks[selectedTrackIndex - 1].viewport.max : Math.max(...trackViewports.map(v => v.max));
 
   const maxValueAbs = selectedTrackIndex !== 0
-    ? tracks[selectedTrackIndex - 1].inclinometry.getFirstData().absMark
-    : Math.min(...trackInclinometry.map(i => i.getFirstData().absMark));
+    ? tracks[selectedTrackIndex - 1].inclinometry.getMaxAbsMark()
+    : Math.min(...trackInclinometry.map(i => i.getMaxAbsMark()));
   const minValueAbs = selectedTrackIndex !== 0
     ? tracks[selectedTrackIndex - 1].inclinometry.getAbsMark(maxValueDepth)
     : Math.max(...trackInclinometry.map(i => i.getAbsMark(Math.max(...trackViewports.map(v => v.max)))));
