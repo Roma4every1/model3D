@@ -152,7 +152,7 @@ export class ChartStateFactory {
     if (!yAxisID || this.axisDict[yAxisID] === undefined) return null;
 
     const [displayType, curveType] = this.resolveTypeCode(settings.typeCode);
-    const displayName = settings.displayName || yProperty.displayName || yProperty.name;
+    const displayName = settings.legendName || yProperty.displayName || yProperty.name;
     const color = rgb(settings.color).formatHex();
     const lineDash = this.calcDashArray(settings);
 
