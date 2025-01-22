@@ -2,7 +2,7 @@ import type { TableColumnModel, RecordStyleRule, RecordViolation } from './types
 import { parseDate, stringifyLocalDate, getDataTypeName, fixColorHEX } from 'shared/lib';
 import { createLookupList, createLookupTree } from 'entities/channel';
 import { TableColumns } from './table-columns';
-import { toTableColumnType } from './utils';
+import { toTableColumnType, formatFloat } from './utils';
 import { createColumnFilter } from './filter-utils';
 
 
@@ -217,7 +217,7 @@ export class TableData {
     const type = column.type;
 
     if (type === 'real') {
-      return value.toString().replace('.', ',');
+      return formatFloat(value, 0, 3);
     }
     if (type === 'list' || type === 'tree') {
       value = column.lookupDict[value];

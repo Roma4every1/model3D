@@ -76,7 +76,7 @@ export function createColumnFormatter(format: string): ColumnFormatter | undefin
  * Форматирует число, чтобы в записи было не менее `minDigits`
  * и не более `maxDigits` знаков после запятой.
  */
-function formatFloat(n: number, minDigits: number, maxDigits: number): string {
+export function formatFloat(n: number, minDigits: number, maxDigits: number): string {
   let str = n.toFixed(maxDigits);
   const maxRedundant = maxDigits - minDigits;
 
