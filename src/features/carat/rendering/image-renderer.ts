@@ -107,7 +107,10 @@ export class CaratImageRenderer {
       track.setHeight(headerHeight + track.maxGroupHeaderHeight + rectHeight);
     });
     this.stage.correlations.updateRects(tracks);
-    this.stage.render();
+
+    this.drawer.clear();
+    this.stage.correlations.renderForImage();
+    for (const track of this.stage.trackList) track.render();
 
     tracks.forEach((track: CaratTrack, i: number) => {
       track.viewport.y = originalValues[i].y;

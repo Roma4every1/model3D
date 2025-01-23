@@ -127,4 +127,10 @@ export class CaratCorrelations {
       }
     }
   }
+
+  public renderForImage(): void {
+    for (const correlations of this.correlations) {
+      this.drawer.drawCorrelations(correlations, this.showDistance, true);
+    }
+  }
 }

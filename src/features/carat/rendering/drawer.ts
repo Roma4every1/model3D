@@ -751,7 +751,7 @@ export class CaratDrawer {
   }
 
   /** Отрисовка корреляций между треками. */
-  public drawCorrelations(correlations: CaratCorrelation, showDistance: boolean): void {
+  public drawCorrelations(correlations: CaratCorrelation, showDistance: boolean, image?: boolean): void {
     const { rect, leftViewport, rightViewport, distanceLabel } = correlations;
     const { top, left, width, height } = rect;
 
@@ -763,6 +763,11 @@ export class CaratDrawer {
     this.ctx.lineWidth = this.correlationSettings.thickness;
     this.ctx.clearRect(0, 0, width, height);
 
+    if (!image) {
+      this.ctx.save();
+      this.ctx.rect(0, 0, width, height);
+      this.ctx.clip();
+    }
     for (const correlation of correlations.data) {
       this.ctx.beginPath();
       this.ctx.moveTo(0, leftScaleY * (correlation.leftBottom - leftViewport.y));
@@ -775,9 +780,13 @@ export class CaratDrawer {
       this.ctx.strokeStyle = correlation.style.stroke;
       this.ctx.fill(); this.ctx.stroke();
     }
-    this.ctx.clearRect(0, -top, width, top);
-    this.ctx.clearRect(-1, -top, width + 2, trackPadding);
-    this.ctx.clearRect(-1, height, width + 2, trackPadding);
+    if (image) {
+      this.ctx.clearRect(0, -top, width, top);
+      this.ctx.clearRect(-1, -top, width + 2, trackPadding);
+      this.ctx.clearRect(-1, height, width + 2, trackPadding);
+    } else {
+      this.ctx.restore();
+    }
     if (showDistance && distanceLabel) this.drawCorrelationDistance(rect, distanceLabel);
   }
 
