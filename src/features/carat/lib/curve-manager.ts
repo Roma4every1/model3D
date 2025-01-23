@@ -161,20 +161,17 @@ export class CurveManager {
 
   public setCurveChannelData(records: ChannelRecord[], cache: CurveDataCache): void {
     this.curveDict = {};
-
     if (records.length === 0) {
       this.curves = [];
       this.curveTypes = [];
     } else {
       this.curves = records.map(record => this.createCurveModel(record, cache));
       this.curveTypes = [...new Set(this.curves.map(curve => curve.type))];
-
-      for (const curve of this.curves) {
-        this.applyCurveAxisRange(curve);
-        this.curveDict[curve.id] = curve;
-      }
+      this.curves.forEach(curve => { this.curveDict[curve.id] = curve; });
     }
-
+    for (const type of this.curveTypes) {
+      this.updateAxisRange(type);
+    }
     this.resetTree();
     this.resetTypeSelection();
     this.resetDates();
@@ -191,7 +188,9 @@ export class CurveManager {
       curve.bottom = pointData.bottom;
       curve.min = pointData.min;
       curve.max = pointData.max;
-      this.applyCurveAxisRange(curve);
+    }
+    for (const type of this.curveTypes) {
+      this.updateAxisRange(type);
     }
   }
 
@@ -261,13 +260,21 @@ export class CurveManager {
         this.measures[curveType] = {type: curveType, min, max};
       }
     }
-    this.curves.filter(c => c.type === curveType).forEach(this.applyCurveAxisRange, this);
+    this.updateAxisRange(curveType);
   }
 
-  private applyCurveAxisRange(curve: CaratCurveModel): void {
-    const measure = this.measures[curve.type];
-    curve.axisMin = measure?.min ?? calcAxisMin(curve.min);
-    curve.axisMax = measure?.max ?? calcAxisMax(curve.max);
+  private updateAxisRange(type: CaratCurveType): void {
+    const curves = this.curves.filter(c => c.type === type);
+    if (curves.length === 0) return;
+
+    const measure = this.measures[type];
+    const axisMin = measure?.min ?? calcAxisMin(Math.min(...curves.map(c => c.min)));
+    const axisMax = measure?.max ?? calcAxisMax(Math.max(...curves.map(c => c.max)));
+
+    for (const curve of curves) {
+      curve.axisMin = axisMin;
+      curve.axisMax = axisMax;
+    }
   }
 
   public getInitSelection(): CaratDataSelection {
