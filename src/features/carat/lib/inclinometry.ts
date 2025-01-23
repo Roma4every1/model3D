@@ -65,9 +65,13 @@ export class CaratInclinometry implements ICaratInclinometry {
     return depth;
   }
 
-  public getFirstData(): InclinometryMark | null {
+  public getMaxAbsMark(): number | null {
     if (this.data === null) return null;
-    return this.data[0];
+    return Math.max(...this.data.map(i => i.absMark));
+  }
+
+  public hasData(): boolean {
+    return this.data === null;
   }
 
   private calcAbsMark(depth: number): number {

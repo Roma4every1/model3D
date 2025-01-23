@@ -10,11 +10,6 @@ export const caratExportModes: ButtonSwitchProps<number>['options'] = [
   {label: 'Интервал', value: 2},
 ];
 
-export const caratExportInterval = [
-  {label: 'По глубине', value: 0},
-  {label: 'По абсолютной отметке', value: 1},
-];
-
 /** Значения некоторых настроек по умолчанию. */
 export const defaultSettings = {
   scale: 400,
