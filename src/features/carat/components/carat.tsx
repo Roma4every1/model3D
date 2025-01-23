@@ -1,4 +1,4 @@
-import { KeyboardEvent, MouseEvent } from 'react';
+import type { KeyboardEvent, MouseEvent } from 'react';
 import { useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useChannels } from 'entities/channel';
 import { useCurrentWell, useCurrentTrace, useCurrentStratum } from 'entities/objects';

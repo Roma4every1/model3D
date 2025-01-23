@@ -1,11 +1,11 @@
-import { MouseEvent, useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { type MouseEvent, useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCurrentStratum } from 'entities/objects';
 import { useChannel, createLookupList } from 'entities/channel';
 import { validateCaratScale } from '../../lib/utils';
 import { constraints } from '../../lib/constants';
 import { MenuSection, MenuSectionItem, ButtonIcon, BigButton } from 'shared/ui';
-import { Popup } from '@progress/kendo-react-popup';
+import { Popover } from 'antd';
 import { NumericTextBox, NumericTextBoxChangeEvent, NumericTextBoxHandle } from '@progress/kendo-react-inputs';
 
 import { CaratStage } from '../../rendering/stage';
@@ -143,19 +143,26 @@ const NavigationSection = ({stage}: CaratScalePanelProps) => {
     stage.render(); setIsOpen(false);
   };
 
-  const elementToListItem = (element: CaratIntervalModel, i: number) => {
+  const toListItem = (element: CaratIntervalModel, i: number) => {
     const name = nameDict[element.stratumID];
     if (name === undefined) return null;
-    const onClickTop = () => toTop(element.stratumID);
-    const onClickBottom = () => toBottom(element.stratumID);
+
+    const onClickTop = (e: MouseEvent) => {
+      e.stopPropagation();
+      toTop(element.stratumID);
+    };
+    const onClickBottom = (e: MouseEvent) => {
+      e.stopPropagation();
+      toBottom(element.stratumID);
+    };
 
     return (
-      <div key={i}>
-        <strong>{name + ' '}</strong>
+      <div key={i} onClick={onClickTop}>
+        <strong>{name}</strong>
         <span onClick={onClickTop} title={t('carat.navigation.top-depth')}>
           {Math.round(element.top)}
         </span>
-        {' 🠖 '}
+        {'🠖'}
         <span onClick={onClickBottom} title={t('carat.navigation.bottom-depth')}>
           {Math.round(element.bottom)}
         </span>
@@ -163,30 +170,37 @@ const NavigationSection = ({stage}: CaratScalePanelProps) => {
     );
   };
 
-  return (
+  const content = (
     <>
-      <MenuSectionItem className={'big-buttons'}>
+      {currentStratum && <section className={'strata-list'}>
+        <div onClick={() => toTop(currentStratum.id)}>
+          {t('carat.navigation.active-top')}
+        </div>
+        <div onClick={() => toBottom(currentStratum.id)}>
+          {t('carat.navigation.active-bottom')}
+        </div>
+      </section>}
+      <section className={'strata-list'} style={{marginTop: 4}}>
+        {strata.map(toListItem)}
+      </section>
+    </>
+  );
+
+  return (
+    <MenuSectionItem className={'big-buttons'}>
+      <Popover
+        trigger={'click'} placement={'bottomLeft'} arrow={false}
+        content={content} overlayClassName={'carat-navigation-popover'}
+      >
         <BigButton
           text={t('carat.navigation.goto')} icon={goToStratumIcon}
           onClick={showStrata} disabled={strata.length === 0}
         />
-        <BigButton
-          text={t('carat.navigation.align')} icon={alignByStratumIcon}
-          onClick={align} disabled={!currentStratum}
-        />
-      </MenuSectionItem>
-      <Popup className={'dropdown-popup'} show={isOpen} anchor={anchor}>
-        {currentStratum && <div className={'strata-list'}>
-          <div className={'active-stratum'} onClick={() => toTop(currentStratum.id)}>
-            {t('carat.navigation.active-top')}</div>
-          <div className={'active-stratum'} onClick={() => toBottom(currentStratum.id)}>
-            {t('carat.navigation.active-bottom')}
-          </div>
-        </div>}
-        <div className={'strata-list'}>
-          {strata.map(elementToListItem)}
-        </div>
-      </Popup>
-    </>
+      </Popover>
+      <BigButton
+        text={t('carat.navigation.align')} icon={alignByStratumIcon}
+        onClick={align} disabled={!currentStratum}
+      />
+    </MenuSectionItem>
   );
 };
