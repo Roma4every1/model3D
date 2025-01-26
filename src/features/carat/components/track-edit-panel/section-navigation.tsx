@@ -162,7 +162,7 @@ const NavigationSection = ({stage}: CaratScalePanelProps) => {
         <span onClick={onClickTop} title={t('carat.navigation.top-depth')}>
           {Math.round(element.top)}
         </span>
-        {'🠖'}
+        {'→'}
         <span onClick={onClickBottom} title={t('carat.navigation.bottom-depth')}>
           {Math.round(element.bottom)}
         </span>

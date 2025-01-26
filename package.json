@@ -1,6 +1,6 @@
 {
   "name": "js-well-manager-web",
-  "version": "1.6.1-rc2",
+  "version": "1.6.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -25,7 +25,6 @@
     "@progress/kendo-react-intl": "5.9.0",
     "@progress/kendo-react-listbox": "5.9.0",
     "@progress/kendo-react-notification": "5.9.0",
-    "@progress/kendo-react-popup": "5.9.0",
     "@progress/kendo-react-treeview": "5.9.0",
     "@progress/kendo-theme-default": "5.9.0",
     "ajv": "8.17.1",
