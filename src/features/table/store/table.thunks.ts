@@ -3,15 +3,15 @@ import { createElement } from 'react';
 import { showNotification } from 'entities/notification';
 import { showWindow, closeWindow } from 'entities/window';
 import { useObjectsStore } from 'entities/objects';
+import { useProgramStore, setOperationStatus } from 'entities/program';
 import { useChannelStore, reloadChannel, setChannelActiveRow, channelAPI } from 'entities/channel';
 import { useParameterStore, findParameters, updateParamDeep, rowToParameterValue } from 'entities/parameter';
 import { useClientStore, addSessionClient, setClientActiveChild, setClientLoading, crateAttachedChannel } from 'entities/client';
 import { useTableStore } from './table.store';
 import { createTableState } from './table.actions';
 import { DetailsTable } from '../components/details-table';
-import { ExcelState } from '../lib/table-export';
+import { TableExcelCreator } from '../lib/table-export';
 import { mimeTypeDict } from 'features/file/lib/constants';
-import { setOperationStatus, useProgramStore} from 'entities/program';
 
 
 /** Перезагрузка данных канала таблицы. */
@@ -39,51 +39,46 @@ export async function updateActiveRecord(id: FormID, rowIndex: number | null): P
   }
 }
 
-export async function exportTableToExcel(id: FormID, activeId: ClientID): Promise<void> {
-  const tableState = useTableStore.getState()[id];
-  const channel = useChannelStore.getState().storage[tableState.channelID];
-  const parameterStorage = useParameterStore.getState().storage;
-  const parameters = findParameters(channel.config.parameters, parameterStorage);
-  const tableDisplayName = getTableDisplayName(id) ?? 'Таблица';
-  const query: ChannelQuerySettings = {
-    limit: false,
-    order: channel.query.order,
-    filter: channel.query.filter
-  };
+export async function exportTableToExcel(formID: FormID): Promise<void> {
+  const parentID = useClientStore.getState()[formID].parent;
+  const operationID = `${formID}-${Date.now()}`;
 
-  const operationId = `${id}-${Date.now()}`;
-  useProgramStore.getState().layoutController.showTab('right-dock', 0, true);
   setOperationStatus({
-    id: operationId, clientID: activeId, progress: 0, queueNumber: '0',
+    id: operationID, clientID: parentID, progress: 0, queueNumber: '0',
     timestamp: new Date(), defaultResult: t('base.loading'),
   });
+  useProgramStore.getState().layoutController.showTab('right-dock', 0, true);
 
-  const res = await channelAPI.getChannelData(channel.name, parameters, query);
+  const state = useTableStore.getState()[formID];
+  const channel = useChannelStore.getState().storage[state.channelID];
+  const parameterStorage = useParameterStore.getState().storage;
+  const parameters = findParameters(channel.config.parameters, parameterStorage);
+
+  const res = await channelAPI.getChannelData(channel.name, parameters, {
+    limit: false,
+    order: channel.query.order,
+    filter: channel.query.filter,
+  });
   if (res.ok === false) {
-    setOperationStatus({
-      id: operationId, defaultResult: t('base.error'), error: res.message,
-    });
-    return;
+    const error = res.message;
+    return setOperationStatus({id: operationID, defaultResult: t('base.error'), error});
   }
 
-  const rows = res.data.rows.map((row, i) => tableState.data.createRecord(i, i, row));
-  const renderer = new ExcelState(tableState, rows);
-  const workbook = renderer.createWorkbook(tableDisplayName);
-  const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer], {type: mimeTypeDict['xlsx']});
+  const extension = 'xlsx';
+  const displayName = getTableDisplayName(formID) ?? 'Таблица';
+  const date = new Date().toLocaleString('ru').replace(',', '').replaceAll(':','-');
+  const fileName = `${displayName}_${date}.${extension}`;
 
-  const formattedDate = new Date().toLocaleString('ru').replace(',', '').replaceAll(':','-');
+  const excelCreator = new TableExcelCreator(state);
+  const workbook = excelCreator.createWorkbook(displayName, res.data.rows);
+  const buffer = await workbook.xlsx.writeBuffer();
 
   const operationFile: OperationFile = {
-    name: `${tableDisplayName}_${formattedDate}.xlsx`,
-    extension: 'xlsx',
-    type: mimeTypeDict['xlsx'],
-    path: '',
-    blob: blob,
+    name: fileName, extension, type: mimeTypeDict[extension],
+    path: '', blob: new Blob([buffer], {type: mimeTypeDict[extension]}),
   };
-
   setOperationStatus({
-    id: operationId, progress: 100,
+    id: operationID, progress: 100,
     file: operationFile, defaultResult: 'Загрузка завершена',
   });
 }
