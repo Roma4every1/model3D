@@ -195,7 +195,7 @@ export class TableData {
 
   /* --- Editing Utils --- */
 
-  private createRecord(id: TableRecordID, index: number, cells: ChannelRow): TableRecord {
+  public createRecord(id: TableRecordID, index: number, cells: ChannelRow): TableRecord {
     const renderValues: Record<PropertyName, CellRenderValue> = {};
     const record: TableRecord = {id, index, cells, renderValues};
 
@@ -206,7 +206,7 @@ export class TableData {
     return record;
   }
 
-  private getCellRenderValue(column: TableColumnModel, cells: ChannelRow): CellRenderValue {
+  public getCellRenderValue(column: TableColumnModel, cells: ChannelRow): CellRenderValue {
     if (column.fileColumn) {
       const value = cells[this.columns.dict[column.fileColumn].columnIndex];
       return typeof value === 'string' ? value : null;

@@ -1,16 +1,17 @@
 import { t } from 'shared/locales';
 import { createElement } from 'react';
 import { showNotification } from 'entities/notification';
-import { showWarningMessage, showWindow, closeWindow } from 'entities/window';
+import { showWindow, closeWindow } from 'entities/window';
 import { useObjectsStore } from 'entities/objects';
-import { programAPI, watchOperation } from 'entities/program';
-import { useChannelStore, reloadChannel, setChannelActiveRow } from 'entities/channel';
+import { useChannelStore, reloadChannel, setChannelActiveRow, channelAPI } from 'entities/channel';
 import { useParameterStore, findParameters, updateParamDeep, rowToParameterValue } from 'entities/parameter';
 import { useClientStore, addSessionClient, setClientActiveChild, setClientLoading, crateAttachedChannel } from 'entities/client';
 import { useTableStore } from './table.store';
 import { createTableState } from './table.actions';
-import { tableStateToSettings } from '../lib/serialization';
 import { DetailsTable } from '../components/details-table';
+import { ExcelState } from '../lib/table-export';
+import { mimeTypeDict } from 'features/file/lib/constants';
+import { setOperationStatus, useProgramStore} from 'entities/program';
 
 
 /** Перезагрузка данных канала таблицы. */
@@ -38,23 +39,53 @@ export async function updateActiveRecord(id: FormID, rowIndex: number | null): P
   }
 }
 
-export async function exportTableToExcel(id: FormID): Promise<void> {
+export async function exportTableToExcel(id: FormID, activeId: ClientID): Promise<void> {
   const tableState = useTableStore.getState()[id];
   const channel = useChannelStore.getState().storage[tableState.channelID];
-
-  const dto = {
-    channelName: channel.name,
-    paramName: getTableDisplayName(id) ?? 'Таблица',
-    presentationId: useClientStore.getState()[id].parent,
-    paramValues: findParameters(channel.config.parameters, useParameterStore.getState().storage),
-    settings: tableStateToSettings(id, tableState).columnSettings,
+  const parameterStorage = useParameterStore.getState().storage;
+  const parameters = findParameters(channel.config.parameters, parameterStorage);
+  const tableDisplayName = getTableDisplayName(id) ?? 'Таблица';
+  const query: ChannelQuerySettings = {
+    limit: false,
+    order: channel.query.order,
+    filter: channel.query.filter
   };
-  const res = await programAPI.exportToExcel(dto);
-  if (res.ok === false) { showWarningMessage(res.message); return; }
 
-  const { operationID, error } = res.data;
-  if (error) { showWarningMessage(error); return; }
-  if (operationID) await watchOperation(operationID).then();
+  const operationId = `${id}-${Date.now()}`;
+  useProgramStore.getState().layoutController.showTab('right-dock', 0, true);
+  setOperationStatus({
+    id: operationId, clientID: activeId, progress: 0, queueNumber: '0',
+    timestamp: new Date(), defaultResult: t('base.loading'),
+  });
+
+  const res = await channelAPI.getChannelData(channel.name, parameters, query);
+  if (res.ok === false) {
+    setOperationStatus({
+      id: operationId, defaultResult: t('base.error'), error: res.message,
+    });
+    return;
+  }
+
+  const rows = res.data.rows.map((row, i) => tableState.data.createRecord(i, i, row));
+  const renderer = new ExcelState(tableState, rows);
+  const workbook = renderer.createWorkbook(tableDisplayName);
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {type: mimeTypeDict['xlsx']});
+
+  const formattedDate = new Date().toLocaleString('ru').replace(',', '').replaceAll(':','-');
+
+  const operationFile: OperationFile = {
+    name: `${tableDisplayName}_${formattedDate}.xlsx`,
+    extension: 'xlsx',
+    type: mimeTypeDict['xlsx'],
+    path: '',
+    blob: blob,
+  };
+
+  setOperationStatus({
+    id: operationId, progress: 100,
+    file: operationFile, defaultResult: 'Загрузка завершена',
+  });
 }
 
 export function showDetailsTable(formID: FormID, columnID: PropertyName): void {

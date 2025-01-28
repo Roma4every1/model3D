@@ -88,4 +88,6 @@ interface OperationFile {
   type: string;
   /** Полный путь файла (для API). */
   path: string;
+  /** Данные файла в двоичном виде. */
+  blob?: Blob;
 }

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Spin } from 'antd';
 import { exportTableToExcel, reloadTable } from '../../store/table.thunks';
 import './table-toolbar.scss';
+import { useRootClient } from 'entities/client';
 
 
 interface TableToolbarProps {
@@ -15,7 +16,10 @@ interface ReloadButtonProps {
   id: FormID,
   t: TFunction,
 }
-
+interface ExportButtonProps {
+  state: TableState,
+  t: TFunction,
+}
 
 export const TableToolbar = ({loading, state}: TableToolbarProps) => {
   const { t } = useTranslation();
@@ -36,10 +40,7 @@ export const TableToolbar = ({loading, state}: TableToolbarProps) => {
   return (
     <Spin spinning={loading} delay={400} size={'small'}>
       <div className={'table-toolbar'}>
-        {settings.exportToExcel !== false && <button
-          aria-label={'excel'} title={t('table.toolbar.excel')}
-          onClick={() => exportTableToExcel(state.id)}
-        />}
+        {settings.exportToExcel !== false && <ExportButton state={state} t={t}/>}
         {settings.first !== false && <button
           aria-label={'first'} title={t('table.toolbar.first')}
           onClick={actions.moveToFirst} disabled={noData || isFirst}
@@ -90,6 +91,23 @@ const ReloadButton = ({id, t}: ReloadButtonProps) => {
     <button
       aria-label={'reload'} title={t('table.toolbar.reload')}
       onClick={reload} disabled={loading}
+    />
+  );
+};
+
+const ExportButton = ({state, t}: ExportButtonProps) => {
+  const activeID = useRootClient().activeChildID;
+  const [disable, setDisable] = useState(false);
+
+  const handleExport = () => {
+    setDisable(true);
+    exportTableToExcel(state.id, activeID).then(() => setDisable(false));
+  }
+
+  return (
+    <button
+      aria-label={'excel'} title={t('table.toolbar.excel')}
+      onClick={handleExport} disabled={disable}
     />
   );
 };
