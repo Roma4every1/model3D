@@ -11,11 +11,10 @@ interface TableToolbarProps {
   loading: boolean;
   state: TableState;
 }
-interface ReloadButtonProps {
-  id: FormID,
-  t: TFunction,
+interface ToolbarButtonProps {
+  id: FormID;
+  t: TFunction;
 }
-
 
 export const TableToolbar = ({loading, state}: TableToolbarProps) => {
   const { t } = useTranslation();
@@ -36,10 +35,7 @@ export const TableToolbar = ({loading, state}: TableToolbarProps) => {
   return (
     <Spin spinning={loading} delay={400} size={'small'}>
       <div className={'table-toolbar'}>
-        {settings.exportToExcel !== false && <button
-          aria-label={'excel'} title={t('table.toolbar.excel')}
-          onClick={() => exportTableToExcel(state.id)}
-        />}
+        {settings.exportToExcel !== false && <ExportButton id={state.id} t={t}/>}
         {settings.first !== false && <button
           aria-label={'first'} title={t('table.toolbar.first')}
           onClick={actions.moveToFirst} disabled={noData || isFirst}
@@ -78,10 +74,26 @@ export const TableToolbar = ({loading, state}: TableToolbarProps) => {
   );
 };
 
-const ReloadButton = ({id, t}: ReloadButtonProps) => {
+const ExportButton = ({id, t}: ToolbarButtonProps) => {
+  const [disabled, setDisabled] = useState(false);
+
+  const onClick = () => {
+    setDisabled(true);
+    exportTableToExcel(id).then(() => setDisabled(false));
+  };
+
+  return (
+    <button
+      aria-label={'excel'} title={t('table.toolbar.excel')}
+      onClick={onClick} disabled={disabled}
+    />
+  );
+};
+
+const ReloadButton = ({id, t}: ToolbarButtonProps) => {
   const [loading, setLoading] = useState(false);
 
-  const reload = () => {
+  const onClick = () => {
     setLoading(true);
     reloadTable(id).then(() => setLoading(false));
   };
@@ -89,7 +101,7 @@ const ReloadButton = ({id, t}: ReloadButtonProps) => {
   return (
     <button
       aria-label={'reload'} title={t('table.toolbar.reload')}
-      onClick={reload} disabled={loading}
+      onClick={onClick} disabled={loading}
     />
   );
 };

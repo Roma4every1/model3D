@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { saveAs } from '@progress/kendo-file-saver';
-import { fileExtensionIconDict, defaultFileIcon } from 'shared/lib';
+import { fileExtensionIconDict, defaultFileIcon, saveFile } from 'shared/lib';
 import { programAPI } from 'entities/program';
 import { showNotification } from 'entities/notification';
 
@@ -22,13 +22,17 @@ export const ActiveOperationStatus = ({status}: {status: OperationStatus}) => {
     : defaultFileIcon;
 
   const download = hasFile ? () => {
-    programAPI.downloadFile(file.path).then((res) => {
-      if (res.ok) {
-        saveAs(res.data, file.name);
-      } else {
-        showNotification(t('operation.download-error'));
-      }
-    });
+    if (!status.file.blob) {
+      programAPI.downloadFile(file.path).then((res) => {
+        if (res.ok) {
+          saveAs(res.data, file.name);
+        } else {
+          showNotification(t('operation.download-error'));
+        }
+      });
+    } else {
+      saveFile(file.name, file.blob);
+    }
   } : undefined;
 
   const operationHeader = hasFile ? (

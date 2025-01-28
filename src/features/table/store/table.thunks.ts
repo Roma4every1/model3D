@@ -1,16 +1,17 @@
 import { t } from 'shared/locales';
 import { createElement } from 'react';
 import { showNotification } from 'entities/notification';
-import { showWarningMessage, showWindow, closeWindow } from 'entities/window';
+import { showWindow, closeWindow } from 'entities/window';
 import { useObjectsStore } from 'entities/objects';
-import { programAPI, watchOperation } from 'entities/program';
-import { useChannelStore, reloadChannel, setChannelActiveRow } from 'entities/channel';
+import { useProgramStore, setOperationStatus } from 'entities/program';
+import { useChannelStore, reloadChannel, setChannelActiveRow, channelAPI } from 'entities/channel';
 import { useParameterStore, findParameters, updateParamDeep, rowToParameterValue } from 'entities/parameter';
 import { useClientStore, addSessionClient, setClientActiveChild, setClientLoading, crateAttachedChannel } from 'entities/client';
 import { useTableStore } from './table.store';
 import { createTableState } from './table.actions';
-import { tableStateToSettings } from '../lib/serialization';
 import { DetailsTable } from '../components/details-table';
+import { TableExcelCreator } from '../lib/table-export';
+import { mimeTypeDict } from 'features/file/lib/constants';
 
 
 /** Перезагрузка данных канала таблицы. */
@@ -38,23 +39,48 @@ export async function updateActiveRecord(id: FormID, rowIndex: number | null): P
   }
 }
 
-export async function exportTableToExcel(id: FormID): Promise<void> {
-  const tableState = useTableStore.getState()[id];
-  const channel = useChannelStore.getState().storage[tableState.channelID];
+export async function exportTableToExcel(formID: FormID): Promise<void> {
+  const parentID = useClientStore.getState()[formID].parent;
+  const operationID = `${formID}-${Date.now()}`;
 
-  const dto = {
-    channelName: channel.name,
-    paramName: getTableDisplayName(id) ?? 'Таблица',
-    presentationId: useClientStore.getState()[id].parent,
-    paramValues: findParameters(channel.config.parameters, useParameterStore.getState().storage),
-    settings: tableStateToSettings(id, tableState).columnSettings,
+  setOperationStatus({
+    id: operationID, clientID: parentID, progress: 0, queueNumber: '0',
+    timestamp: new Date(), defaultResult: t('base.loading'),
+  });
+  useProgramStore.getState().layoutController.showTab('right-dock', 0, true);
+
+  const state = useTableStore.getState()[formID];
+  const channel = useChannelStore.getState().storage[state.channelID];
+  const parameterStorage = useParameterStore.getState().storage;
+  const parameters = findParameters(channel.config.parameters, parameterStorage);
+
+  const res = await channelAPI.getChannelData(channel.name, parameters, {
+    limit: false,
+    order: channel.query.order,
+    filter: channel.query.filter,
+  });
+  if (res.ok === false) {
+    const error = res.message;
+    return setOperationStatus({id: operationID, defaultResult: t('base.error'), error});
+  }
+
+  const extension = 'xlsx';
+  const displayName = getTableDisplayName(formID) ?? 'Таблица';
+  const date = new Date().toLocaleString('ru').replace(',', '').replaceAll(':','-');
+  const fileName = `${displayName}_${date}.${extension}`;
+
+  const excelCreator = new TableExcelCreator(state);
+  const workbook = excelCreator.createWorkbook(displayName, res.data.rows);
+  const buffer = await workbook.xlsx.writeBuffer();
+
+  const operationFile: OperationFile = {
+    name: fileName, extension, type: mimeTypeDict[extension],
+    path: '', blob: new Blob([buffer], {type: mimeTypeDict[extension]}),
   };
-  const res = await programAPI.exportToExcel(dto);
-  if (res.ok === false) { showWarningMessage(res.message); return; }
-
-  const { operationID, error } = res.data;
-  if (error) { showWarningMessage(error); return; }
-  if (operationID) await watchOperation(operationID).then();
+  setOperationStatus({
+    id: operationID, progress: 100,
+    file: operationFile, defaultResult: 'Загрузка завершена',
+  });
 }
 
 export function showDetailsTable(formID: FormID, columnID: PropertyName): void {
