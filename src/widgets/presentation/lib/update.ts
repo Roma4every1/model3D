@@ -15,7 +15,9 @@ export async function updateActivePresentation(lock: boolean = true): Promise<vo
   const presentation = clientStates[activeID];
   if (!presentation || presentation.loading.status !== 'done') return;
 
-  const channels = getChannelsToUpdate(root.neededChannels, presentation.neededChannels);
+  const children: SessionClient[] = [];
+  presentation.openedChildren.forEach(c => children.push(clientStates[c]));
+  const channels = getChannelsToUpdate(root, presentation, ...children);
   const programs = getProgramsToUpdate(activeID);
 
   const actions: Promise<any>[] = [];
@@ -29,20 +31,17 @@ export async function updateActivePresentation(lock: boolean = true): Promise<vo
   if (lock) togglePresentation(presentation, clientStates, false);
 }
 
-function getChannelsToUpdate(rootIDs: ChannelID[], ids: ChannelID[]): ChannelDict | null {
+export function getChannelsToUpdate(...clients: SessionClient[]): ChannelDict | null {
   let empty = true;
   const dict: ChannelDict = {};
   const storage = useChannelStore.getState().storage;
 
-  for (const id of rootIDs) {
-    if (Object.hasOwn(dict, id)) continue;
-    const channel = storage[id];
-    if (!channel.actual) { dict[id] = channel; empty = false; }
-  }
-  for (const id of ids) {
-    if (Object.hasOwn(dict, id)) continue;
-    const channel = storage[id];
-    if (!channel.actual) { dict[id] = channel; empty = false; }
+  for (const client of clients) {
+    for (const id of client.neededChannels) {
+      if (Object.hasOwn(dict, id)) continue;
+      const channel = storage[id];
+      if (!channel.actual) { dict[id] = channel; empty = false; }
+    }
   }
   return empty ? null : dict;
 }
@@ -89,4 +88,34 @@ function togglePresentation(p: SessionClient, clients: ClientStates, lock: boole
     clients[id] = {...client}; changed = true;
   }
   if (changed) useClientStore.setState({...clients}, true);
+}
+
+/* --- --- */
+
+export function selectPresentationTab(id: ClientID, tab: ClientID): Promise<void> {
+  const state = useClientStore.getState()[id];
+  const openedChildren = state.openedChildren;
+
+  const tabSet = state.layout.getNodeById(tab).getParent();
+  const prevTab = tabSet.getChildren()[tabSet.getSelected()];
+  if (prevTab) openedChildren.delete(prevTab.getId());
+
+  openedChildren.add(tab);
+  return updatePresentationChild(tab);
+}
+
+async function updatePresentationChild(id: ClientID): Promise<void> {
+  const child = useClientStore.getState()[id];
+  if (child.loading.status !== 'done') return;
+  const channels = getChannelsToUpdate(child);
+  if (!channels) return;
+
+  child.loading.status = 'data';
+  useClientStore.setState({[id]: {...child}});
+
+  await updateChannels(channels);
+  updateChannelStore();
+
+  child.loading.status = 'done';
+  useClientStore.setState({[id]: {...child}});
 }

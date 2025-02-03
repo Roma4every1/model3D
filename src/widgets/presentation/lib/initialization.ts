@@ -6,6 +6,7 @@ import { useChannelStore, addChannels, setChannels } from 'entities/channel';
 import { setClientPrograms } from 'entities/program';
 import { showWarningMessage } from 'entities/window';
 import { addSessionClient, addSessionClients, setClientLoading } from 'entities/client';
+import { getChannelsToUpdate } from './update';
 import { formCreators } from './form-dict';
 import { PresentationFactory } from './presentation-factory';
 
@@ -59,7 +60,10 @@ export async function initializePresentation(id: ClientID, rootInit?: Promise<vo
   }
 
   if (rootInit) await rootInit;
-  const fillSuccess = await factory.fillData();
+  const clientsToFill: SessionClient[] = [presentation];
+  presentation.openedChildren.forEach(id => clientsToFill.push(children[id]));
+
+  const fillSuccess = await factory.fillData(getChannelsToUpdate(...clientsToFill));
   if (!fillSuccess) showWarningMessage(t('app.presentation-data-init-error'));
   await programPromise;
 

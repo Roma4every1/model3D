@@ -145,6 +145,11 @@ export class WMDevTools {
     return ids.map(id => storage[id]);
   }
 
+  public getChannelTasks(): any[] {
+    const dataManager = this.channels.getState().dataManager;
+    return [...(dataManager as any).tasks.values()];
+  }
+
   public getSharingChannels(): any {
     const result: Record<ChannelName, Channel[]> = {};
     const { storage, sharing } = this.channels.getState();

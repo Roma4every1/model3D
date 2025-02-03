@@ -35,7 +35,7 @@ export function setChannelActiveRow(id: ChannelID, row: ChannelRow): void {
   const state = useChannelStore.getState()
   const channel = state.storage[id];
   const channelData = channel?.data;
-  if (!channelData) return;
+  if (!channelData || channelData.activeRow === row) return;
   state.storage[id] = {...channel, data: {...channelData, activeRow: row}};
   useChannelStore.setState({...state}, true);
 }

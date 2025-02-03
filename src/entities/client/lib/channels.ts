@@ -1,7 +1,7 @@
 import { RecordInfoCreator } from 'entities/channel';
 
 
-export function crateAttachedChannel(dto: AttachedChannelDTO, channel: Channel): AttachedChannel {
+export function createAttachedChannel(dto: AttachedChannelDTO, channel: Channel): AttachedChannel {
   const attachedProperties = getAttachedProperties(dto, channel.config.properties);
   return {id: channel.id, name: dto.name, attachedProperties};
 }

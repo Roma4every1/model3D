@@ -2,7 +2,7 @@ import type { CSSProperties, KeyboardEvent, MouseEvent } from 'react';
 import type { RecordModeState, TableColumnModel, TableState } from '../../lib/types';
 import { useState } from 'react';
 import { useRender } from 'shared/react';
-import { showDetailsTable } from '../../store/table.thunks';
+import { showDetailsTable } from '../../store/details-table';
 import './one-record-view.scss';
 
 

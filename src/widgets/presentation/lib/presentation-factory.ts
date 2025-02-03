@@ -1,7 +1,6 @@
 import type { ClientDataDTO, ParameterSetterDTO } from 'entities/client';
 import type { ParameterStore, ParameterUpdateData, ParameterGroupDTO } from 'entities/parameter';
 import type { ProgramDTO } from 'entities/program';
-import { Model } from 'flexlayout-react';
 import { programAPI, programCompareFn } from 'entities/program';
 import { useChannelStore } from 'entities/channel';
 import { AttachedChannelFactory, clientAPI } from 'entities/client';
@@ -35,7 +34,6 @@ export class PresentationFactory {
   private channelFactory: ClientChannelFactory;
   private createdChannels: Channel[];
   private allChannels: ChannelDict;
-  private neededChannels: ChannelID[];
 
   /** Установщики параметров текущей презентации. */
   private setters: ParameterSetter[];
@@ -59,31 +57,26 @@ export class PresentationFactory {
     const channels = this.createOwnAttachedChannels();
     const settings = this.createSettings();
 
-    const { children, activeChildren, openedChildren } = this.dtoOwn.children;
+    const { children, activeChildren } = this.dtoOwn.children;
+    const layoutFactory = new LayoutFactory(children, activeChildren[0]);
+    const layout = layoutFactory.create(this.dtoOwn.layout);
+    const { openedChildren, childrenTypes, activeChildID } = layoutFactory.getChildren();
     this.prepareChildren(children);
 
-    const opened = new Set(openedChildren);
-    const childrenTypes = new Set<ClientType>();
-
-    for (const child of children) {
-      if (opened.has(child.id)) childrenTypes.add(child.type);
-    }
     return {
       id: this.id, type: 'grid', parent: 'root', settings,
-      parameters: this.parameters.map(p => p.id), channels,
-      layout: this.createLayout(),
-      children: children,
-      activeChildID: activeChildren[0],
-      openedChildren: opened,
-      childrenTypes: childrenTypes,
-      neededChannels: this.neededChannels,
+      parameters: this.parameters.map(p => p.id), channels, layout,
+      children, openedChildren, activeChildID, childrenTypes,
+      neededChannels: this.getOwnNeededChannels(channels),
       loading: {status: 'init'},
     };
   }
 
-  public async fillData(): Promise<boolean> {
+  public async fillData(channelDict?: ChannelDict): Promise<boolean> {
     const resolver = new DataResolver();
-    const result = await resolver.resolve(this.createdChannels, this.parameters, this.setters);
+    const channels: Channel[] = channelDict ? Object.values(channelDict) : [];
+    const result = await resolver.resolve(channels, this.parameters, this.setters);
+
     const storage = useParameterStore.getState().storage;
     for (const parameter of this.parameters) calcParameterVisibility(parameter, storage);
     return result;
@@ -119,12 +112,6 @@ export class PresentationFactory {
     this.parameters = addClientParameters(this.id, inits);
     const resolve = (name: ParameterName) => this.resolveParameterName(name);
     applyVisibilityTemplates(this.parameters, inits, resolve);
-  }
-
-  private createLayout(): Model {
-    const { children, activeChildren } = this.dtoOwn.children;
-    const layoutFactory = new LayoutFactory(children, activeChildren[0]);
-    return layoutFactory.create(this.dtoOwn.layout);
   }
 
   private createSettings(): PresentationSettings {
@@ -194,12 +181,26 @@ export class PresentationFactory {
       const factory = new AttachedChannelFactory(this.allChannels, formChannelCriteria[type]);
       const resolve = (name: ChannelName) => this.channelFactory.resolveChannelName(name);
       client.channels = factory.create(dto.channels, resolve);
+      client.neededChannels = this.getChildNeededChannels(client.channels);
       client.settings = dto.settings;
       client.loading = {status: 'init'};
     } else {
+      client.neededChannels = [];
       client.loading = {status: 'error'};
     }
     return client;
+  }
+
+  /** Необходимы ID прикреплённых каналов и их справочники. */
+  private getChildNeededChannels(attached: AttachedChannel[]): ChannelID[] {
+    const result = new Set<ChannelID>();
+    for (const { id } of attached) {
+      for (const property of this.allChannels[id].config.properties) {
+        for (const lookup of property.lookupChannels) result.add(lookup);
+      }
+      result.add(id);
+    }
+    return [...result];
   }
 
   /* --- Reports --- */
@@ -254,7 +255,17 @@ export class PresentationFactory {
 
     this.allChannels = {...useChannelStore.getState().storage};
     for (const channel of this.createdChannels) this.allChannels[channel.id] = channel;
-    this.neededChannels = this.channelFactory.getAllNeededChannels();
+  }
+
+  private getOwnNeededChannels(attached: AttachedChannel[]): ChannelID[] {
+    const result = new Set<ChannelID>();
+    for (const { channelID } of this.parameters) {
+      if (channelID) result.add(channelID);
+    }
+    for (const { id } of attached) {
+      result.add(id);
+    }
+    return [...result];
   }
 
   /* --- Utils --- */

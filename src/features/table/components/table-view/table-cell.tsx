@@ -1,7 +1,7 @@
 import type { CSSProperties, MouseEvent, ReactNode } from 'react';
 import type { TableColumnModel, TableState } from '../../lib/types';
 import { clsx } from 'clsx';
-import { showDetailsTable } from '../../store/table.thunks';
+import { showDetailsTable } from '../../store/details-table';
 import { EditedCell } from './edited-cell';
 
 

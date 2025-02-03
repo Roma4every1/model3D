@@ -1,6 +1,6 @@
-import { setChannelActiveRow } from 'entities/channel';
-import { useTableStore } from './table.store';
 import { settingsToTableState } from '../lib/initialization';
+import { useTableStore } from './table.store';
+import { updateActiveRecord } from './table.thunks';
 
 
 /** Добавить новую таблицу в хранилище состояний. */
@@ -28,9 +28,9 @@ export function setTableChannelData(id: FormID, channelData: ChannelData): void 
   if (newTotal !== oldTotal) {
     selection.clear();
     data.setActiveCell(null);
+    updateActiveRecord(id, null).then();
   } else if (newTotal && !channelData.activeRow) {
-    const row = data.activeCell.row;
-    if (row !== null) setChannelActiveRow(state.channelID, channelData.rows[row]);
+    updateActiveRecord(id, data.activeCell.row).then();
   }
   columns.updateAutoWidth(data.records);
   viewport.handleDataChange();
@@ -87,7 +87,8 @@ export function setTableVisibleColumns(id: FormID, columns: PropertyName[]): voi
   state.columns.setVisibleColumns(columns, state.data.records);
 
   if (!columns.includes(state.data.activeCell.column)) {
-    state.data.setActiveCell({row: null, column: null, edited: false})
+    state.data.setActiveCell(null);
+    updateActiveRecord(id, null).then();
   }
   useTableStore.setState({[id]: {...state}});
 }

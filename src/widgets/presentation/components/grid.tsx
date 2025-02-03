@@ -1,6 +1,7 @@
 import { Model, Layout, TabSetNode, TabNode, Action, Actions } from 'flexlayout-react';
 import { i18nMapper } from 'shared/locales';
 import { setClientActiveChild } from 'entities/client';
+import { selectPresentationTab } from '../lib/update';
 
 
 interface GridProps {
@@ -10,7 +11,6 @@ interface GridProps {
   model: Model;
 }
 
-
 export const Grid = ({id, model}: GridProps) => {
   const onAction = (action: Action) => {
     if (action.type === Actions.SET_ACTIVE_TABSET) {
@@ -18,7 +18,7 @@ export const Grid = ({id, model}: GridProps) => {
       const activeTab = tabset.getChildren()[tabset.getSelected()];
       if (activeTab) setClientActiveChild(id, activeTab.getId());
     } else if (action.type === Actions.SELECT_TAB) {
-      setClientActiveChild(id, action.data.tabNode);
+      selectPresentationTab(id, action.data.tabNode).then();
     }
     return action;
   };
