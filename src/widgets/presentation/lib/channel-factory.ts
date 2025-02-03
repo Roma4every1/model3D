@@ -1,5 +1,5 @@
 import type { ChannelStore } from 'entities/channel';
-import { addToSet, compareArrays } from 'shared/lib';
+import { addToSet } from 'shared/lib';
 import { getParameterChannelNames } from 'entities/parameter';
 import { useChannelStore, createChannel } from 'entities/channel';
 
@@ -139,40 +139,9 @@ export class ClientChannelFactory {
     const firstChannel: Channel = storage[share.values().next().value];
     const config = this.cloneChannelConfig(firstChannel.config);
 
-    for (const id of share) {
-      const shareConfig = storage[id].config;
-      if (this.checkChannelConfigs(config, shareConfig)) return id;
-    }
-
     const id = this.store.idGenerator.get();
     this.created.push({id, name, config, query: {}, data: null, actual: false});
     return id;
-  }
-
-  private checkChannelConfigs(a: ChannelConfig, b: ChannelConfig): boolean {
-    if (!compareArrays(a.parameters, b.parameters)) return false;
-    if (a.activeRowParameter !== b.activeRowParameter) return false;
-
-    const aProperties = a.properties;
-    const bProperties = b.properties;
-
-    for (let i = 0; i < aProperties.length; ++i) {
-      const aProperty = aProperties[i];
-      const bProperty = bProperties[i];
-      if (aProperty.detailChannel !== bProperty.detailChannel) return false;
-
-      const aLookups = aProperty.lookupChannels;
-      const bLookups = bProperty.lookupChannels;
-
-      for (let j = 0; j < aLookups.length; ++j) {
-        const aLookup = aLookups[j];
-        const bLookup = bLookups[j];
-        if (aLookup === undefined) aLookups[j] = bLookup;
-        if (bLookup === undefined) bLookups[j] = aLookup;
-        if (aLookup !== bLookup) return false;
-      }
-    }
-    return true;
   }
 
   private cloneChannelConfig(config: ChannelConfig): ChannelConfig {
