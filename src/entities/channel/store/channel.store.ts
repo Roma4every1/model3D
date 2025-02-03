@@ -1,5 +1,6 @@
 import { createWithEqualityFn } from 'zustand/traditional';
 import { IDGenerator, compareArrays, compareObjects } from 'shared/lib';
+import { ChannelDataManager } from '../lib/manager';
 
 
 /** Хранилище каналов для презентаций и отдельных форм. */
@@ -10,15 +11,17 @@ export interface ChannelStore {
   readonly storage: ChannelDict;
   /** Трекер разделяемости данных. */
   readonly sharing: Record<ChannelName, Set<ChannelID>>;
+  /** Класс, управляющий обновлением данных. */
+  readonly dataManager: ChannelDataManager;
 }
 
-
 /** Хранилище каналов. */
-export const useChannelStore = createWithEqualityFn((): ChannelStore => ({
-  idGenerator: new IDGenerator(1),
-  storage: {},
-  sharing: {},
-}));
+export const useChannelStore = createWithEqualityFn((): ChannelStore => {
+  const storage: ChannelDict = {};
+  const idGenerator = new IDGenerator(1);
+  const dataManager = new ChannelDataManager(storage);
+  return {idGenerator, storage, sharing: {}, dataManager};
+});
 
 /** Состояние канала. */
 export function useChannel(id: ChannelID): Channel {

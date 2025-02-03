@@ -1,7 +1,6 @@
 import { useClientStore } from 'entities/client';
-import { useParameterStore } from 'entities/parameter';
 import { useProgramStore, updatePrograms } from 'entities/program';
-import { useChannelStore, setChannels, fillChannels } from 'entities/channel';
+import { useChannelStore, updateChannels, updateChannelStore } from 'entities/channel';
 
 
 /**
@@ -20,13 +19,13 @@ export async function updateActivePresentation(lock: boolean = true): Promise<vo
   const programs = getProgramsToUpdate(activeID);
 
   const actions: Promise<any>[] = [];
-  if (channels) actions.push(fillChannels(channels, useParameterStore.getState().storage))
+  if (channels) actions.push(updateChannels(channels));
   if (programs) actions.push(updatePrograms(activeID, programs));
   if (actions.length === 0) return;
 
   if (lock) togglePresentation(presentation, clientStates, true);
   await Promise.all(actions);
-  if (channels) setChannels(channels);
+  if (channels) updateChannelStore();
   if (lock) togglePresentation(presentation, clientStates, false);
 }
 

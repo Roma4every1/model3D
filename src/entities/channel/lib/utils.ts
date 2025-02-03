@@ -1,28 +1,25 @@
+import { serializeParameter } from 'entities/parameter';
 import { channelAPI } from './channel.api';
-import { findParameters } from 'entities/parameter';
 
-
-/** Наполняет каналы данными. */
-export function fillChannels(channelDict: ChannelDict, storage: ParameterMap): Promise<void[]> {
-  const callback = (channel: Channel): Promise<void> => {
-    const parameters = findParameters(channel.config.parameters, storage);
-    return fillChannel(channel, parameters);
-  };
-  return Promise.all(Object.values(channelDict).map(callback));
-}
 
 /** Наполняет канал данными. */
 export async function fillChannel(channel: Channel, parameters: Parameter[]): Promise<void> {
-  const { ok, data } = await channelAPI.getChannelData(channel.name, parameters, channel.query);
-  channel.actual = true;
+  const payload = parameters.map(serializeParameter);
+  const res = await channelAPI.getChannelData(channel.name, payload, channel.query);
 
-  if (ok) {
-    channel.data = data;
+  if (res.ok) {
+    channel.data = res.data;
+    updateChannelLookupColumns(channel);
   } else {
-    channel.data = null; return;
+    channel.data = null;
   }
+  channel.actual = true;
+}
 
+export function updateChannelLookupColumns(channel: Channel): void {
+  const data = channel.data;
   const { id: idInfo, value: valueInfo, parent: parentInfo } = channel.config.lookupColumns;
+
   if (data) {
     idInfo.columnIndex = data.columns.findIndex(c => c.name === idInfo.columnName);
     valueInfo.columnIndex = data.columns.findIndex(c => c.name === valueInfo.columnName);

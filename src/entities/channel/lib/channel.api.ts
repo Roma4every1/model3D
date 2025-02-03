@@ -19,12 +19,10 @@ export class ChannelAPI {
 
   /** Запрос данных канала. */
   public async getChannelData(
-    name: ChannelName, payload: Partial<Parameter>[],
+    name: ChannelName, payload: SerializedParameter[],
     query?: ChannelQuerySettings, signal?: AbortSignal,
   ): Promise<Res<ChannelData>> {
     const json: Record<string, any> = {};
-    const parameters = payload.map(serializeParameter);
-
     if (query) {
       if (query.limit !== null) json.limit = query.limit;
       if (query.order?.length) json.order = query.order;
@@ -32,12 +30,12 @@ export class ChannelAPI {
     }
     if (this.api.legacy) {
       json.channelName = name;
-      json.paramValues = parameters;
+      json.paramValues = payload;
       const res = await this.api.post('/channelData', {json, signal});
       if (res.ok) res.data = convertLegacyChannelData(res.data);
       return res;
     } else {
-      json.parameters = parameters;
+      json.parameters = payload;
       return this.api.post('/channel/data', {query: {name}, json, signal});
     }
   }

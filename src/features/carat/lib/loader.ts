@@ -1,5 +1,5 @@
-import { StringArrayParameter, TableRowParameter, rowToParameterValue } from 'entities/parameter';
-import { cellsToRecords, channelAPI } from 'entities/channel';
+import { StringArrayParameter, TableRowParameter, rowToParameterValue, serializeParameter } from 'entities/parameter';
+import { channelAPI, cellsToRecords } from 'entities/channel';
 
 
 /** Класс, реализующий загрузку данных для построения каротажа по трассе. */
@@ -141,9 +141,10 @@ export class CaratLoader {
 
     for (let i = 0; i < total; i += step) {
       const slice = idsToLoad.slice(i, i + step);
-
       parameter.setValue(slice.map(String));
-      const res = await channelAPI.getChannelData(channelName, [parameter], null, signal);
+
+      const payload = [serializeParameter(parameter)];
+      const res = await channelAPI.getChannelData(channelName, payload, null, signal);
 
       const data = res.ok ? res.data : null;
       const records = cellsToRecords(data);
@@ -192,9 +193,10 @@ export class CaratLoader {
   private async loadInclinometry(value: any, channel: Channel): Promise<ChannelRecord[]> {
     const parameter = new TableRowParameter(null, 'currentWellGeom', null);
     parameter.setValue(value);
+    const payload = [serializeParameter(parameter)];
 
     const signal = this.abortController.signal;
-    const res = await channelAPI.getChannelData(channel.name, [parameter], null, signal);
+    const res = await channelAPI.getChannelData(channel.name, payload, null, signal);
     return res.ok ? cellsToRecords(res.data) : [];
   }
 

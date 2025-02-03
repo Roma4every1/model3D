@@ -1,16 +1,27 @@
 import { useParameterStore, findParameters } from 'entities/parameter';
 import { useChannelStore } from './channel.store';
-import { fillChannel } from '../lib/utils';
 
+
+export async function updateChannels(channels: ChannelDict): Promise<void> {
+  const state = useChannelStore.getState();
+  const parameterStorage = useParameterStore.getState().storage;
+
+  await Promise.all(Object.values(channels).map((channel: Channel): Promise<boolean> => {
+    const parameters = findParameters(channel.config.parameters, parameterStorage);
+    return state.dataManager.update(channel, parameters);
+  }));
+}
 
 /** Перезагрузить данные канала. */
 export async function reloadChannel(id: ChannelID): Promise<void> {
   const state = useChannelStore.getState();
   const channel = state.storage[id];
+
   const parameterStorage = useParameterStore.getState().storage;
-  await fillChannel(channel, findParameters(channel.config.parameters, parameterStorage));
-  state.storage[id] = {...channel};
-  useChannelStore.setState({...state}, true);
+  const parameters = findParameters(channel.config.parameters, parameterStorage);
+
+  const updated = await state.dataManager.update(channel, parameters, true);
+  if (updated) useChannelStore.setState({...state}, true);
 }
 
 /** Перезагрузить данные каналов. */
@@ -21,8 +32,7 @@ export async function reloadChannels(...ids: ChannelID[]): Promise<void> {
   const reload = async (id: ChannelID): Promise<void> => {
     const channel = state.storage[id];
     const parameters = findParameters(channel.config.parameters, parameterStorage);
-    await fillChannel(channel, parameters);
-    state.storage[id] = {...channel};
+    await state.dataManager.update(channel, parameters, true);
   };
   await Promise.all(ids.map(reload));
   useChannelStore.setState({...state}, true);
@@ -33,15 +43,12 @@ export async function reloadChannelsByQueryIDs(ids: QueryID[]): Promise<void> {
   const state = useChannelStore.getState();
   const parameterStorage = useParameterStore.getState().storage;
 
-  const actions: Promise<void>[] = [];
+  const actions: Promise<boolean>[] = [];
   for (const channel of Object.values(state.storage)) {
     const queryID = channel.data?.queryID;
     if (!queryID || !ids.includes(queryID)) continue;
-
-    const newChannel = {...channel};
-    const parameters = findParameters(newChannel.config.parameters, parameterStorage);
-    actions.push(fillChannel(newChannel, parameters));
-    state.storage[channel.id] = newChannel;
+    const parameters = findParameters(channel.config.parameters, parameterStorage);
+    actions.push(state.dataManager.update(channel, parameters, true));
   }
   await Promise.all(actions);
   useChannelStore.setState({...state}, true);

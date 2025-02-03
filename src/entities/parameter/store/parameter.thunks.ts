@@ -4,7 +4,7 @@ import { hasIntersection, setUnion, addToSet } from 'shared/lib';
 import { clientAPI } from 'entities/client';
 import { updateObjects } from 'entities/objects';
 import { resetDependentPrograms } from 'entities/program';
-import { useChannelStore, fillChannels, setChannels, resetDependentChannels } from 'entities/channel';
+import { useChannelStore, updateChannels, updateChannelStore, resetDependentChannels } from 'entities/channel';
 import { lockActivePresentation, unlockActivePresentation, updateActivePresentation } from 'widgets/presentation/lib/update';
 import { updatePresentationTree } from 'widgets/left-panel/store/left-panel.actions';
 
@@ -116,7 +116,7 @@ class Updater {
     commitParameterChanges(this.baseChanges);
 
     const dependentChannels = this.getDependentChannels();
-    await fillChannels(dependentChannels, this.storage);
+    await updateChannels(dependentChannels);
     this.dependentChanges = this.handleDependentParameters();
     await this.executeSetters();
 
@@ -131,13 +131,9 @@ class Updater {
     updatePresentationTree(resultChanges);
 
     for (const channel of Object.values(dependentChannels)) {
-      if (hasIntersection(this.dependentChanges, channel.config.parameters)) {
-        delete dependentChannels[channel.id];
-      } else {
-        channel.actual = true;
-      }
+      if (!hasIntersection(this.dependentChanges, channel.config.parameters)) channel.actual = true;
     }
-    setChannels(dependentChannels);
+    updateChannelStore();
   }
 
   public async commit(): Promise<void> {

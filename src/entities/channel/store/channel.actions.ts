@@ -2,6 +2,11 @@ import { hasIntersection } from 'shared/lib';
 import { useChannelStore } from './channel.store';
 
 
+export function updateChannelStore(): void {
+  const state = useChannelStore.getState();
+  useChannelStore.setState({...state}, true);
+}
+
 export function addChannels(channels: Channel[]): void {
   const state = useChannelStore.getState();
   const { storage, sharing } = state;
@@ -46,7 +51,9 @@ export function resetDependentChannels(changes: Set<ParameterID>): void {
 }
 
 export function clearChannelStore(): void {
-  const idGenerator = useChannelStore.getState().idGenerator;
+  const storage: ChannelDict = {};
+  const { idGenerator, dataManager } = useChannelStore.getState();
   idGenerator.reset();
-  useChannelStore.setState({idGenerator, storage: {}, sharing: {}});
+  dataManager.reset(storage);
+  useChannelStore.setState({idGenerator, storage, sharing: {}, dataManager}, true);
 }

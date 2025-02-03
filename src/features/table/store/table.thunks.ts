@@ -5,7 +5,7 @@ import { showWindow, closeWindow } from 'entities/window';
 import { useObjectsStore } from 'entities/objects';
 import { useProgramStore, setOperationStatus } from 'entities/program';
 import { useChannelStore, reloadChannel, setChannelActiveRow, channelAPI } from 'entities/channel';
-import { useParameterStore, findParameters, updateParamDeep, rowToParameterValue } from 'entities/parameter';
+import { useParameterStore, findParameters, updateParamDeep, rowToParameterValue, serializeParameter } from 'entities/parameter';
 import { useClientStore, addSessionClient, setClientActiveChild, setClientLoading, crateAttachedChannel } from 'entities/client';
 import { useTableStore } from './table.store';
 import { createTableState } from './table.actions';
@@ -52,9 +52,11 @@ export async function exportTableToExcel(formID: FormID): Promise<void> {
   const state = useTableStore.getState()[formID];
   const channel = useChannelStore.getState().storage[state.channelID];
   const parameterStorage = useParameterStore.getState().storage;
-  const parameters = findParameters(channel.config.parameters, parameterStorage);
 
-  const res = await channelAPI.getChannelData(channel.name, parameters, {
+  const parameters = findParameters(channel.config.parameters, parameterStorage);
+  const payload = parameters.map(serializeParameter);
+
+  const res = await channelAPI.getChannelData(channel.name, payload, {
     limit: false,
     order: channel.query.order,
     filter: channel.query.filter,
