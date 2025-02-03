@@ -1,5 +1,4 @@
 import { useClientStore } from './client.store';
-import { getChildrenTypes } from '../lib/utils';
 
 
 export function addSessionClient(client: SessionClient): void {
@@ -11,8 +10,8 @@ export function addSessionClients(clients: ClientStates): void {
 }
 
 export function setClientChildren(id: ClientID, children: FormDataWM[]): void {
-  const openedChildren = children.map(child => child.id);
-  const childrenTypes = getChildrenTypes(children, openedChildren);
+  const openedChildren = new Set(children.map(child => child.id));
+  const childrenTypes = new Set(children.map(child => child.type));
   const activeChildID = children[0]?.id;
 
   const state = useClientStore.getState()[id];

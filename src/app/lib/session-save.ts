@@ -82,7 +82,7 @@ function toChildrenToSave(state: SessionClient): ChildrenToSave {
   return {
     id: state.id,
     children: state.children.map(toFormDataWM),
-    openedChildren: state.openedChildren,
+    openedChildren: [...state.openedChildren],
     activeChildren: state.activeChildID ? [state.activeChildID] : [],
   };
 }

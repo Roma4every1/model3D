@@ -4,7 +4,7 @@ import type { ProgramDTO } from 'entities/program';
 import { Model } from 'flexlayout-react';
 import { programAPI, programCompareFn } from 'entities/program';
 import { useChannelStore } from 'entities/channel';
-import { AttachedChannelFactory, clientAPI, getChildrenTypes } from 'entities/client';
+import { AttachedChannelFactory, clientAPI } from 'entities/client';
 import { multiMapChannelCriterion } from 'features/multi-map';
 import { LayoutFactory } from './layout';
 import { ClientChannelFactory } from './channel-factory';
@@ -62,14 +62,20 @@ export class PresentationFactory {
     const { children, activeChildren, openedChildren } = this.dtoOwn.children;
     this.prepareChildren(children);
 
+    const opened = new Set(openedChildren);
+    const childrenTypes = new Set<ClientType>();
+
+    for (const child of children) {
+      if (opened.has(child.id)) childrenTypes.add(child.type);
+    }
     return {
       id: this.id, type: 'grid', parent: 'root', settings,
       parameters: this.parameters.map(p => p.id), channels,
       layout: this.createLayout(),
       children: children,
       activeChildID: activeChildren[0],
-      openedChildren: openedChildren,
-      childrenTypes: getChildrenTypes(children, openedChildren),
+      openedChildren: opened,
+      childrenTypes: childrenTypes,
       neededChannels: this.neededChannels,
       loading: {status: 'init'},
     };

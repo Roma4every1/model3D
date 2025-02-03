@@ -32,12 +32,12 @@ interface SessionClient<T extends ClientType = ClientType, S = any, L = any> {
   /** Дочерние клиенты. */
   children?: FormDataWM[];
   /** Отображаемые дочерние клиенты. */
-  openedChildren?: FormID[];
+  openedChildren?: Set<FormID>;
   /** Активный дочерний клиент. */
   activeChildID?: FormID;
   /** Типы дочерних клиентов. */
   childrenTypes?: ReadonlySet<ClientType>;
-  /** ID каналов, необходимые для корректной работы. */
+  /** Каналы, которые должны быть обновлены для показа формы. */
   neededChannels?: ChannelID[];
   /** Состояние загрузки. */
   loading?: ClientLoadingState;
@@ -60,11 +60,7 @@ interface ClientLoadingState {
  */
 type ClientLoadingStatus = 'init' | 'data' | 'done' | 'error';
 
-/** Дочерние элементы клиента сессии.
- * + `children`: {@link FormDataWM}[]
- * + `openedChildren`: {@link ClientID}[]
- * + `activeChildren`: {@link ClientID}[]
- */
+/** DTO дочерних элементов клиента сессии. */
 interface ClientChildrenDTO {
   /** Данные дочерних форм. */
   children: FormDataWM[];

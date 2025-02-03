@@ -17,7 +17,7 @@ export async function updateMultiMap(id: ClientID, channelData: ChannelData): Pr
   if (children.length === 0 && state?.children.length === 0) return;
 
   const layout = getMultiMapLayout(children);
-  const templateFormID = state?.templateFormID ?? presentation.openedChildren[0];
+  const templateFormID = state?.templateFormID ?? presentation.openedChildren.values().next().value;
   const sync = state?.sync ?? true;
 
   for (const child of children) {
