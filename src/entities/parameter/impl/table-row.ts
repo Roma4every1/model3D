@@ -2,7 +2,7 @@ import { getDataTypeName, stringifyLocalDate } from 'shared/lib';
 import { parseDBPrimitive } from '../lib/utils';
 
 
-export function rowToParameterValue(row: ChannelRow, channel: Channel): Record<string, TypedCell> {
+export function rowToParameterValue(row: ChannelRow, channel: Channel): TableRowValue {
   const value: Record<string, TypedCell> = {};
   const properties = channel.config.properties;
 
@@ -17,13 +17,12 @@ export function rowToParameterValue(row: ChannelRow, channel: Channel): Record<s
   return value;
 }
 
-
 export class TableRowParameter implements Parameter<'tableRow'> {
   public readonly id: ParameterID;
   public readonly name: ParameterName;
   public readonly type = 'tableRow';
 
-  private value: Record<string, TypedCell> | null;
+  private value: TableRowValue | null;
   private valueString: string | null;
 
   constructor(id: ParameterID, name: ParameterName, s: string | null) {
@@ -38,11 +37,11 @@ export class TableRowParameter implements Parameter<'tableRow'> {
     return clone;
   }
 
-  public getValue(): Record<string, TypedCell> | null {
+  public getValue(): TableRowValue | null {
     return this.value;
   }
 
-  public setValue(value: Record<string, TypedCell> | null): void {
+  public setValue(value: TableRowValue | null): void {
     this.value = value;
     this.valueString = value ? this.createValueString() : null;
   }

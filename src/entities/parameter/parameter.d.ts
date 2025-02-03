@@ -7,15 +7,16 @@ type ParameterID = number;
 type ParameterName = string;
 
 /** Тип параметра. */
-type ParameterType = 'bool' | 'integer' | 'integerArray' | 'string' | 'stringArray' | 'double' |
-  'doubleInterval' | 'date' | 'dateInterval' | 'tableCell' | 'tableCellsArray' | 'tableRow';
+type ParameterType =
+  | 'bool' | 'integer' | 'integerArray' | 'string' | 'stringArray' | 'double' | 'doubleInterval'
+  | 'date' | 'dateInterval' | 'tableCell' | 'tableCellsArray' | 'tableRow';
 
 /** Необходимые свойства параметра для получения данных канала. */
 interface SerializedParameter {
   /** Название параметра в конфиге сессии. */
   id: ParameterName;
   /** Тип параметра. */
-  type: ParameterType | 'sortOrder';
+  type: ParameterType;
   /** Сериализованное значение параметра. */
   value: string | null;
 }
