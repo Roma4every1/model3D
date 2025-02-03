@@ -84,7 +84,7 @@ export function inputNumberParser(value: string): number | null {
 export function inputNumberFormatter(value: number | string, info: {input: string, userTyping: boolean}): string {
   let input = info.input;
   if (info.userTyping === true) return input;
-  if (value === '') return value;
+  if (value === '' || input === '') return value as string;
 
   if (Number(input.replace(',', '.')) !== Number(value)) {
     return input.includes(',') ? (value as string).replace('.', ',') : value as string;

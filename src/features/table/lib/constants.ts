@@ -29,6 +29,7 @@ export const numberFilterOptions: ColumnFilterOption[] = [
   {value: 'gte', label: '≥', title: 'Больше либо равно'},
   {value: 'lt', label: '<', title: 'Меньше'},
   {value: 'lte', label: '≤', title: 'Меньше либо равно'},
+  {value: 'null', label: 'Не задано'},
 ];
 
 /** Доступные виды фильтрации для текстовой колонки. */
@@ -38,12 +39,14 @@ export const stringFilterOptions: ColumnFilterOption[] = [
   {value: 'contains', label: 'Содержит'},
   {value: 'starts', label: 'Начинается', title: 'Начинается на'},
   {value: 'ends', label: 'Заканчивается', title: 'Заканчивается на'},
+  {value: 'null', label: 'Не задано'},
 ];
 
 /** Доступные виды фильтрации для колонки, визуализирующей цвет. */
 export const colorFilterOptions: ColumnFilterOption[] = [
   {value: 'eq', label: 'Равно'},
   {value: 'neq', label: 'Не равно'},
+  {value: 'null', label: 'Не задано'},
 ];
 
 /** Доступные виды фильтрации для колонки с датой. */
@@ -54,6 +57,7 @@ export const dateFilterOptions: ColumnFilterOption[] = [
   {value: 'gte', label: '≥', title: 'Не ранее чем'},
   {value: 'lt', label: '<', title: 'Ранее чем'},
   {value: 'lte', label: '≤', title: 'Не позднее чем'},
+  {value: 'null', label: 'Не задано'},
 ];
 
 /* --- Filter JSON Schema --- */
@@ -106,7 +110,7 @@ function createStateSchema(type: TableColumnType): any {
     return createCommonFilterStateSchema({type: 'string'});
   }
   const properties = type === 'bool'
-    ? {value: {type: 'boolean'}}
+    ? {value: {type: 'boolean'}, nullable: {type: 'boolean'}}
     : {values: {type: 'array'}};
   return {type: 'object', properties, additionalProperties: false};
 }

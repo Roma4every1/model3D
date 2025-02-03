@@ -89,7 +89,7 @@ const ColumnFilterFooter = ({state, column, close}: ColumnFilterProps) => {
 
 function BooleanFilterContent({state}: FilterContentProps<'bool'>) {
   const render = useRender();
-  const value = state.value;
+  const { value, nullable } = state;
 
   const setTrue: CheckboxProps['onChange'] = (e) => {
     state.value = e.target.checked ? true : undefined;
@@ -99,11 +99,16 @@ function BooleanFilterContent({state}: FilterContentProps<'bool'>) {
     state.value = e.target.checked ? false : undefined;
     render();
   };
+  const setNullable: CheckboxProps['onChange'] = (e) => {
+    state.nullable = e.target.checked;
+    render();
+  };
 
   return (
     <div className={'boolean-filter-content'}>
       <Checkbox checked={value === true} onChange={setTrue}>Истинно</Checkbox>
       <Checkbox checked={value === false} onChange={setFalse}>Ложно</Checkbox>
+      <Checkbox checked={nullable} onChange={setNullable}>Не задано</Checkbox>
     </div>
   );
 }
@@ -123,7 +128,7 @@ function NumberFilterContent({state}: FilterContentProps<'int'>) {
       <fieldset>
         <Select options={numberFilterOptions} value={type1} onChange={setType1}/>
         <InputNumber
-          value={value1} onChange={setValue1} changeOnWheel={true}
+          value={value1} onChange={setValue1} changeOnWheel={true} disabled={type1 === 'null'}
           parser={inputNumberParser} formatter={inputNumberFormatter}
         />
       </fieldset>
@@ -131,7 +136,7 @@ function NumberFilterContent({state}: FilterContentProps<'int'>) {
       <fieldset>
         <Select options={numberFilterOptions} value={type2} onChange={setType2}/>
         <InputNumber
-          value={value2} onChange={setValue2} changeOnWheel={true}
+          value={value2} onChange={setValue2} changeOnWheel={true} disabled={type2 === 'null'}
           parser={inputNumberParser} formatter={inputNumberFormatter}
         />
       </fieldset>
@@ -169,12 +174,12 @@ function StringFilterContent({column, state}: FilterContentProps<'text'>) {
     <div className={'string-filter-content'}>
       <fieldset>
         <Select options={options} value={type1} onChange={setType1}/>
-        <Input value={value1} onChange={setValue1}/>
+        <Input value={value1} onChange={setValue1} disabled={type1 === 'null'}/>
       </fieldset>
       <ButtonSwitch options={filterOperators} value={operator} onChange={setOperator}/>
       <fieldset>
         <Select options={options} value={type2} onChange={setType2}/>
-        <Input value={value2} onChange={setValue2}/>
+        <Input value={value2} onChange={setValue2} disabled={type2 === 'null'}/>
       </fieldset>
     </div>
   );
@@ -192,17 +197,18 @@ function DateFilterContent({state}: FilterContentProps<'date'>) {
 
   const date1 = value1 ? dayjs(value1) : undefined;
   const date2 = value2 ? dayjs(value2) : undefined;
+  const format = 'DD.MM.YYYY';
 
   return (
     <div className={'date-filter-content'}>
       <fieldset>
         <Select options={dateFilterOptions} value={type1} onChange={setType1}/>
-        <DatePicker value={date1} onChange={setValue1} format={'DD.MM.YYYY'}/>
+        <DatePicker value={date1} onChange={setValue1} format={format} disabled={type1 === 'null'}/>
       </fieldset>
       <ButtonSwitch options={filterOperators} value={operator} onChange={setOperator}/>
       <fieldset>
         <Select options={dateFilterOptions} value={type2} onChange={setType2}/>
-        <DatePicker value={date2} onChange={setValue2} format={'DD.MM.YYYY'}/>
+        <DatePicker value={date2} onChange={setValue2} format={format} disabled={type2 === 'null'}/>
       </fieldset>
     </div>
   );
@@ -222,7 +228,12 @@ function LookupFilterContent({column, state}: FilterContentProps<'list'>) {
     };
     return <Checkbox key={id} checked={values.has(id)} onChange={onChange}>{value}</Checkbox>;
   };
-  return <div className={'lookup-filter-content'}>{options.map(toElement)}</div>;
+  return (
+    <div className={'lookup-filter-content'}>
+      {toElement({id: null, value: 'Не задано'})}
+      {options.map(toElement)}
+    </div>
+  );
 }
 
 // function LookupFilterContent({id, column, state}: FilterContentProps<'list'>) {

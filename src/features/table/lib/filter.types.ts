@@ -26,7 +26,7 @@ interface ColumnFilterStateMap {
 }
 
 /** Состояние фильтра колонки с логическим типом. */
-export type BoolColumnFilterState = {value: boolean | undefined};
+export type BoolColumnFilterState = {value: boolean | undefined, nullable: boolean};
 /** Состояние фильтра колонки с датой. */
 export type DateColumnFilterState = CommonColumnFilterState<Date | undefined>;
 /** Состояние фильтра численной колонки. */
@@ -37,15 +37,15 @@ export type StringColumnFilterState = CommonColumnFilterState<string>;
 export type LookupColumnFilterState = {values: Set<LookupItemID>};
 
 export interface CommonColumnFilterState<T> {
-  type1: FilterLeafType;
+  type1: FilterLeafType | 'null';
   value1: T;
-  type2: FilterLeafType;
+  type2: FilterLeafType | 'null';
   value2: T;
   operator: 'or' | 'and';
 }
 
 export interface ColumnFilterOption {
-  value: FilterLeafType;
+  value: FilterLeafType | 'null';
   label: string;
   title?: string;
 }

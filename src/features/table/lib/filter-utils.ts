@@ -12,7 +12,7 @@ export function createColumnFilter(type: TableColumnType): TableColumnFilter {
 
 export function getDefaultFilterState(type: TableColumnType): TableColumnFilterState {
   if (type === 'bool') {
-    return {value: undefined};
+    return {value: undefined, nullable: false};
   } else if (type === 'list' || type === 'tree') {
     return {values: new Set()};
   } else {
@@ -32,13 +32,22 @@ export function buildFilterNode(column: TableColumnModel): FilterNode {
     return {column: columnName, type: 'or', value: nodeValue};
   }
   if (type === 'bool') {
-    const value = (column.filter.state as TableColumnFilterState<'bool'>).value;
-    if (value === undefined) return null;
-    return {column: columnName, type: 'eq', value};
+    const { value, nullable } = column.filter.state as TableColumnFilterState<'bool'>;
+    if (value === undefined) {
+      return nullable ? {column: columnName, type: 'eq', value: null} : null;
+    }
+    if (nullable) {
+      const andValue: FilterNode[] = [{type: 'eq', value}, {type: 'eq', value: null}];
+      return {column: columnName, type: 'and', value: andValue};
+    } else {
+      return {column: columnName, type: 'eq', value};
+    }
   }
 
   const state = column.filter.state as CommonColumnFilterState<any>;
   let { type1, value1, type2, value2, operator } = state;
+  if (type1 === 'null') { type1 = 'eq'; value1 = null; }
+  if (type2 === 'null') { type2 = 'eq'; value2 = null; }
 
   if (type === 'date') {
     if (value1) value1 = stringifyLocalDate(value1);
@@ -61,17 +70,29 @@ export function buildFilterNode(column: TableColumnModel): FilterNode {
 export function filterToString(node: FilterNode, type: TableColumnType, dict: LookupDict): any[] {
   type Token = string | {type: string, value: any};
   let tokens: Token[] = [];
+  const nullToken = 'не задано';
 
   if (dict) {
     for (const { value } of node.value as IFilterNode<any, any>[]) {
-      const tokenValue = dict[value] ?? value;
-      tokens.push({type: 'value', value: tokenValue}, ', ');
+      if (value === null) {
+        tokens.push(nullToken, ', ');
+      } else {
+        const tokenValue = dict[value] ?? value;
+        tokens.push({type: 'value', value: tokenValue}, ', ');
+      }
     }
     tokens.pop();
   }
   else if (type === 'bool') {
-    const text = node.value ? 'истинно' : 'ложно';
-    tokens.push({type: 'value', value: text});
+    if (Array.isArray(node.value)) {
+      const text = node.value[0].value ? 'истинно' : 'ложно';
+      tokens.push({type: 'value', value: text}, ' или ', nullToken);
+    } else if (node.value !== null) {
+      const text = node.value ? 'истинно' : 'ложно';
+      tokens.push({type: 'value', value: text});
+    } else {
+      tokens.push(nullToken);
+    }
   }
   else if (Array.isArray(node.value)) {
     const [node1, node2] = node.value;
@@ -84,6 +105,9 @@ export function filterToString(node: FilterNode, type: TableColumnType, dict: Lo
 }
 
 function filterLeafToString(leaf: FilterNode, type: TableColumnType): any[] {
+  if (leaf.type === 'eq' && leaf.value === null) {
+    return ['не задано'];
+  }
   if (type === 'int' || type === 'real') {
     const option = numberFilterOptions.find(o => o.value === leaf.type);
     return [option.title.toLowerCase() + ' ', {type: 'number', value: leaf.value}];
