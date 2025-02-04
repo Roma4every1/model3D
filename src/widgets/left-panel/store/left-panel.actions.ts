@@ -4,7 +4,7 @@ import { PresentationTree } from '../lib/presentation-tree';
 
 
 /** Обновление видимости дерева презентаций. */
-export function updatePresentationTree(changes: Set<ParameterID>): void {
+export function updatePresentationTree(changes?: Set<ParameterID>): void {
   const rootClient = useClientStore.getState().root;
   const tree: PresentationTree = rootClient.settings.presentationTree;
 

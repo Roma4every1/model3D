@@ -18,6 +18,7 @@ import { InstanceController } from '../lib/instance-controller';
 import { getSessionToSave } from '../lib/session-save';
 import { clearSessionData } from '../lib/session-clear';
 import { initializePresentations } from './presentations';
+import { updatePresentationTree } from 'widgets/left-panel';
 
 
 /** Сохранение текущей сессии. */
@@ -82,6 +83,7 @@ export async function startSession(isDefault: boolean): Promise<void> {
 
   const fillSuccess = await fillPromise;
   if (!fillSuccess) showWarningMessage(t('app.root-data-init-error'));
+  updatePresentationTree();
   unlockParameters(parameters);
   initializeObjectModels(parameters, channelDict);
   setChannels(channels);
