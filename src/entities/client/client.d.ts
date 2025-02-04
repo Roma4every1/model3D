@@ -77,7 +77,7 @@ interface FormDataWM {
   /** Тип формы. */
   readonly type: ClientType;
   /** Имя, отображаемое на уровне интерфейса. */
-  readonly displayName: string;
+  displayName: string;
   /** Шаблон динамического `displayName`. */
   displayNameString?: any; // ParameterStringTemplate
 }

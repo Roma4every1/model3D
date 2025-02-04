@@ -5,7 +5,6 @@ interface FormNameProps {
   pattern: ParameterStringTemplate;
 }
 
-
 /** Динамический заголовок формы. */
 export const FormName = ({pattern}: FormNameProps) => {
   const ids = [...pattern.parameterIDs];

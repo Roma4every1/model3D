@@ -58,10 +58,11 @@ export class PresentationFactory {
     const settings = this.createSettings();
 
     const { children, activeChildren } = this.dtoOwn.children;
+    this.prepareChildren(children);
+
     const layoutFactory = new LayoutFactory(children, activeChildren[0]);
     const layout = layoutFactory.create(this.dtoOwn.layout);
     const { openedChildren, childrenTypes, activeChildID } = layoutFactory.getChildren();
-    this.prepareChildren(children);
 
     return {
       id: this.id, type: 'grid', parent: 'root', settings,
@@ -100,10 +101,17 @@ export class PresentationFactory {
   }
 
   private prepareChildren(children: FormDataWM[]): void {
-    const resolve = (name: ParameterName) => this.resolveParameterName(name);
+    const resolve = (name: ParameterName): ParameterID => this.resolveParameterName(name);
     for (const child of children) {
-      const pattern: string = child.displayNameString;
-      if (pattern) child.displayNameString = new ParameterStringTemplate(pattern, resolve);
+      if (!child.displayNameString) continue;
+      const template = new ParameterStringTemplate(child.displayNameString, resolve);
+
+      if (template.parameterIDs.size) {
+        child.displayNameString = template;
+      } else {
+        child.displayName = template.source;
+        child.displayNameString = null;
+      }
     }
   }
 
