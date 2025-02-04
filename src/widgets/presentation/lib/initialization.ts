@@ -60,10 +60,10 @@ export async function initializePresentation(id: ClientID, rootInit?: Promise<vo
   }
 
   if (rootInit) await rootInit;
-  const clientsToFill: SessionClient[] = [presentation];
-  presentation.openedChildren.forEach(id => clientsToFill.push(children[id]));
+  const clientsToUpdate: SessionClient[] = [presentation];
+  presentation.openedChildren.forEach(id => clientsToUpdate.push(children[id]));
 
-  const fillSuccess = await factory.fillData(getChannelsToUpdate(...clientsToFill));
+  const fillSuccess = await factory.fillData(getChannelsToUpdate(clientsToUpdate));
   if (!fillSuccess) showWarningMessage(t('app.presentation-data-init-error'));
   await programPromise;
 

@@ -15,9 +15,12 @@ export async function updateActivePresentation(lock: boolean = true): Promise<vo
   const presentation = clientStates[activeID];
   if (!presentation || presentation.loading.status !== 'done') return;
 
-  const children: SessionClient[] = [];
-  presentation.openedChildren.forEach(c => children.push(clientStates[c]));
-  const channels = getChannelsToUpdate(root, presentation, ...children);
+  const clientsToUpdate: SessionClient[] = [root, presentation];
+  for (const id of presentation.openedChildren) {
+    const client = clientStates[id];
+    if (client) clientsToUpdate.push(client);
+  }
+  const channels = getChannelsToUpdate(clientsToUpdate);
   const programs = getProgramsToUpdate(activeID);
 
   const actions: Promise<any>[] = [];
@@ -31,7 +34,7 @@ export async function updateActivePresentation(lock: boolean = true): Promise<vo
   if (lock) togglePresentation(presentation, clientStates, false);
 }
 
-export function getChannelsToUpdate(...clients: SessionClient[]): ChannelDict | null {
+export function getChannelsToUpdate(clients: SessionClient[]): ChannelDict | null {
   let empty = true;
   const dict: ChannelDict = {};
   const storage = useChannelStore.getState().storage;
@@ -107,7 +110,7 @@ export function selectPresentationTab(id: ClientID, tab: ClientID): Promise<void
 async function updatePresentationChild(id: ClientID): Promise<void> {
   const child = useClientStore.getState()[id];
   if (child.loading.status !== 'done') return;
-  const channels = getChannelsToUpdate(child);
+  const channels = getChannelsToUpdate([child]);
   if (!channels) return;
 
   child.loading.status = 'data';
