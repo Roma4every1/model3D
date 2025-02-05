@@ -95,16 +95,17 @@ function togglePresentation(p: SessionClient, clients: ClientStates, lock: boole
 
 /* --- --- */
 
-export function selectPresentationTab(id: ClientID, tab: ClientID): Promise<void> {
-  const state = useClientStore.getState()[id];
-  const openedChildren = state.openedChildren;
+export async function selectPresentationTab(id: ClientID, tab: ClientID): Promise<void> {
+  const presentation = useClientStore.getState()[id];
+  const openedChildren = presentation.openedChildren;
 
-  const tabSet = state.layout.getNodeById(tab).getParent();
+  const tabSet = presentation.layout.getNodeById(tab).getParent();
   const prevTab = tabSet.getChildren()[tabSet.getSelected()];
   if (prevTab) openedChildren.delete(prevTab.getId());
 
   openedChildren.add(tab);
-  return updatePresentationChild(tab);
+  useClientStore.setState({[id]: {...presentation, activeChildID: tab}});
+  await updatePresentationChild(tab);
 }
 
 async function updatePresentationChild(id: ClientID): Promise<void> {
