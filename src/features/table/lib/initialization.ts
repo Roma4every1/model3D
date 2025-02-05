@@ -160,7 +160,7 @@ export class TableStateFactory {
       id, property, staticDisplayName: displayName,
       headerStyle, cellStyle, typeFormat: dto.typeFormat, formatter, fileColumn: fc,
       displayName: displayName, displayIndex: null, orderIndex,
-      width, autoWidth, textWrap,
+      width, autoWidth, textWrap, columnName: property.fromColumn,
       fixed: false, visible, nullable: true, editable: dto.readOnly !== true,
       detailChannel: property.detailChannel,
       lookupChannel: property.lookupChannels[0],

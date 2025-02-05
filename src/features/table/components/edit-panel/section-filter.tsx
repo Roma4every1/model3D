@@ -6,7 +6,7 @@ import { Button, Popover } from 'antd';
 import { BigButtonToggle, MenuSection } from 'shared/ui';
 import { UploadOutlined, DownloadOutlined, ClearOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { filterToString, getDefaultFilterState } from '../../lib/filter-utils';
-import { updateTableFilters, saveTableFilters, applyUploadedFilters } from '../../store/table-filters.thunks';
+import { updateTableFilters, saveTableFilters, applyUploadedFilters } from '../../store/filter.thunks';
 import filterStateIcon from 'assets/table/filter-state.svg';
 
 

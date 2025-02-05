@@ -10,7 +10,7 @@ import { ButtonSwitch } from 'shared/ui';
 import { inputNumberParser, inputNumberFormatter } from 'shared/locales';
 import { getDefaultFilterState, buildFilterNode } from '../../lib/filter-utils';
 import { updateTableState } from '../../store/table.actions';
-import { updateTableFilters } from '../../store/table-filters.thunks';
+import { updateTableFilters } from '../../store/filter.thunks';
 
 import {
   filterOperators, numberFilterOptions,

@@ -2,11 +2,11 @@ import { t } from 'shared/locales';
 import { saveAs } from '@progress/kendo-file-saver';
 import { showWarningMessage } from 'entities/window';
 import { showNotification } from 'entities/notification';
-import { setClientLoading } from 'entities/client';
+import { useClientStore, setClientLoading } from 'entities/client';
 import { useParameterStore, findParameters } from 'entities/parameter';
 import { useChannelStore, channelAPI, reloadChannel } from 'entities/channel';
 import { useTableStore } from './table.store';
-import { applyFilters, serializeFilters } from '../lib/filter-utils';
+import { applyFilters, createColumnFilter, serializeFilters } from '../lib/filter-utils';
 import { getTableDisplayName } from './table.thunks';
 
 
@@ -37,10 +37,63 @@ export async function updateTableFilters(id: FormID, saveValuesFor?: PropertyNam
   setClientLoading(id, 'data');
   const savedColumn = saveValuesFor && state.columns.dict[saveValuesFor];
   let savedUniqueValues = savedColumn?.filter?.uniqueValues;
+  syncTableFilters(id);
   await reloadChannel(channel.id);
   if (savedUniqueValues) savedColumn.filter.uniqueValues = savedUniqueValues;
   setClientLoading(id, 'done');
 }
+
+/**
+ * При изменении состояния фильтра канала, все зависящие от него таблицы
+ * (в рамках данной презентации) должны обновить состояние.
+ */
+function syncTableFilters(id: FormID): void {
+  const tables = useTableStore.getState();
+  const clients = useClientStore.getState();
+
+  const ids: FormID[] = [];
+  const channel = useChannelStore.getState().storage[tables[id].channelID];
+
+  clients[clients[id].parent].children.forEach((child: FormDataWM) => {
+    const channelID = tables[child.id]?.channelID;
+    if (channelID === channel.id && child.id !== id) ids.push(child.id);
+  });
+  if (ids.length === 0) return;
+
+  const updates = {};
+  const rootNode = channel.query.filter;
+  const filters = rootNode && (rootNode.column ? [rootNode] : rootNode.value as FilterNode[]);
+
+  for (const formID of ids) {
+    const state = tables[formID];
+    if (rootNode) {
+      for (const column of state.columns.list) {
+        let { filter, columnName } = column;
+        const node = filters.find(f => f.column === columnName);
+
+        if (node) {
+          if (!filter) {
+            filter = createColumnFilter(column.type);
+            column.filter = filter;
+          }
+          filter.node = node;
+          filter.enabled = true;
+        } else if (filter) {
+          filter.node = null;
+        }
+      }
+      state.globalSettings.filterEnabled = true;
+    } else {
+      for (const { filter } of state.columns.list) {
+        if (filter) filter.node = null;
+      }
+    }
+    updates[formID] = {...state};
+  }
+  useTableStore.setState(updates);
+}
+
+/* --- --- */
 
 export async function applyUploadedFilters(id: FormID, file: File): Promise<void> {
   const warn = (m: string) => showWarningMessage(t(m), t('table.filter.upload-title'));
@@ -62,6 +115,8 @@ export function saveTableFilters(id: FormID): void {
   const fileName = getTableDisplayName(id)?.replace(/\s/g, '_');
   saveAs(data, (fileName || 'filters') + '.json');
 }
+
+/* --- --- */
 
 export async function applyFilterUniqueValues(id: FormID, col: PropertyName): Promise<void> {
   const state = useTableStore.getState()[id];

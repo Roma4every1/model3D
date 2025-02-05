@@ -42,7 +42,7 @@ export class TableData {
       this.activeCell.edited = false; return;
     }
     for (const column of this.columns.list) {
-      const channelColumnName = column.property.fromColumn;
+      const channelColumnName = column.columnName;
       const index = data.columns.findIndex(c => c.name === channelColumnName);
       column.columnIndex = index;
 
@@ -65,7 +65,6 @@ export class TableData {
       } else {
         column.filter.uniqueValues = undefined;
       }
-      column.columnName = channelColumn.name;
       column.dataType = dataType;
       column.nullable = channelColumn.nullable;
     }
