@@ -58,8 +58,9 @@ export function showDetailsTable(formID: FormID, columnID: PropertyName): void {
     closeWindow(detailsTableID);
   };
   const windowProps = {
-    className: 'details-table-window', style: {zIndex: 99}, width: 400, height: 300,
-    resizable: false, title: displayName, onFocus, onClose,
+    className: 'details-table-window', style: {zIndex: 99},
+    initialWidth: 400, initialHeight: 300, resizable: true,
+    title: displayName, onFocus, onClose,
   };
 
   const content = createElement(DetailsTable, {id: detailsTableID, onClose});
