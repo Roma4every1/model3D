@@ -5,11 +5,11 @@ import { Table } from './table';
 
 interface DetailsTableProps {
   id: ClientID;
+  channels: ChannelID[];
   onClose: () => void;
 }
 
-
-export const DetailsTable = ({id, onClose}: DetailsTableProps) => {
+export const DetailsTable = ({id, channels, onClose}: DetailsTableProps) => {
   const presentation = useActivePresentation();
   const child = presentation?.children.find(c => c.id === id);
 
@@ -19,5 +19,5 @@ export const DetailsTable = ({id, onClose}: DetailsTableProps) => {
   }, [child, onClose]);
 
   if (!child) return null;
-  return <Table id={id}/>;
+  return <Table id={id} neededChannels={channels}/>;
 };

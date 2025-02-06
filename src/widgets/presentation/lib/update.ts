@@ -96,30 +96,25 @@ function togglePresentation(p: SessionClient, clients: ClientStates, lock: boole
 /* --- --- */
 
 export async function selectPresentationTab(id: ClientID, tab: ClientID): Promise<void> {
-  const presentation = useClientStore.getState()[id];
-  const openedChildren = presentation.openedChildren;
+  const clients = useClientStore.getState();
+  const presentation = clients[id];
 
   const tabSet = presentation.layout.getNodeById(tab).getParent();
   const prevTab = tabSet.getChildren()[tabSet.getSelected()];
-  if (prevTab) openedChildren.delete(prevTab.getId());
+  if (prevTab) presentation.openedChildren.delete(prevTab.getId());
 
-  openedChildren.add(tab);
+  presentation.openedChildren.add(tab);
   useClientStore.setState({[id]: {...presentation, activeChildID: tab}});
-  await updatePresentationChild(tab);
-}
 
-async function updatePresentationChild(id: ClientID): Promise<void> {
-  const child = useClientStore.getState()[id];
+  if (presentation.loading.status !== 'done') return;
+  const child = clients[tab];
   if (child.loading.status !== 'done') return;
+
   const channels = getChannelsToUpdate([child]);
   if (!channels) return;
 
   child.loading.status = 'data';
-  useClientStore.setState({[id]: {...child}});
-
   await updateChannels(channels);
   updateChannelStore();
-
   child.loading.status = 'done';
-  useClientStore.setState({[id]: {...child}});
 }

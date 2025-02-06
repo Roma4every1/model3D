@@ -16,10 +16,12 @@ export async function updateChannels(channels: ChannelDict): Promise<void> {
 export async function reloadChannel(id: ChannelID): Promise<void> {
   const state = useChannelStore.getState();
   const channel = state.storage[id];
+  channel.actual = false;
 
   const parameterStorage = useParameterStore.getState().storage;
   const parameters = findParameters(channel.config.parameters, parameterStorage);
 
+  useChannelStore.setState({...state}, true);
   const updated = await state.dataManager.update(channel, parameters, true);
   if (updated) useChannelStore.setState({...state}, true);
 }
@@ -29,12 +31,14 @@ export async function reloadChannels(...ids: ChannelID[]): Promise<void> {
   const state = useChannelStore.getState();
   const parameterStorage = useParameterStore.getState().storage;
 
-  const reload = async (id: ChannelID): Promise<void> => {
+  const updates = ids.map((id: ChannelID): Promise<boolean> => {
     const channel = state.storage[id];
+    channel.actual = false;
     const parameters = findParameters(channel.config.parameters, parameterStorage);
-    await state.dataManager.update(channel, parameters, true);
-  };
-  await Promise.all(ids.map(reload));
+    return state.dataManager.update(channel, parameters, true);
+  });
+  useChannelStore.setState({...state}, true);
+  await Promise.all(updates);
   useChannelStore.setState({...state}, true);
 }
 
@@ -43,14 +47,16 @@ export async function reloadChannelsByQueryIDs(ids: QueryID[]): Promise<void> {
   const state = useChannelStore.getState();
   const parameterStorage = useParameterStore.getState().storage;
 
-  const actions: Promise<boolean>[] = [];
+  const updates: Promise<boolean>[] = [];
   for (const channel of Object.values(state.storage)) {
     const queryID = channel.data?.queryID;
     if (!queryID || !ids.includes(queryID)) continue;
+    channel.actual = false;
     const parameters = findParameters(channel.config.parameters, parameterStorage);
-    actions.push(state.dataManager.update(channel, parameters, true));
+    updates.push(state.dataManager.update(channel, parameters, true));
   }
-  await Promise.all(actions);
+  useChannelStore.setState({...state}, true);
+  await Promise.all(updates);
   useChannelStore.setState({...state}, true);
 }
 
@@ -61,7 +67,6 @@ export function updateChannelSortOrder(id: ChannelID, order: SortOrder): Promise
   const state = useChannelStore.getState();
   const channel = state.storage[id];
   state.storage[id] = {...channel, query: {...channel.query, order}};
-  useChannelStore.setState({...state}, true);
   return reloadChannel(id);
 }
 
@@ -70,6 +75,5 @@ export function updateChannelLimit(id: ChannelID, limit: ChannelLimit): Promise<
   const state = useChannelStore.getState();
   const channel = state.storage[id];
   state.storage[id] = {...channel, query: {...channel.query, limit}};
-  useChannelStore.setState({...state}, true);
   return reloadChannel(id);
 }

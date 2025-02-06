@@ -1,7 +1,7 @@
 import { t } from 'shared/locales';
 import { showNotification } from 'entities/notification';
 import { useProgramStore, setOperationStatus } from 'entities/program';
-import { useClientStore, setClientLoading } from 'entities/client';
+import { useClientStore } from 'entities/client';
 import { useChannelStore, reloadChannel, setChannelActiveRow, channelAPI } from 'entities/channel';
 import { useParameterStore, findParameters, updateParamDeep, rowToParameterValue, serializeParameter } from 'entities/parameter';
 import { useTableStore } from './table.store';
@@ -13,9 +13,7 @@ import { mimeTypeDict } from 'features/file/lib/constants';
 export async function reloadTable(id: FormID): Promise<void> {
   const channelID = useTableStore.getState()[id]?.channelID;
   if (!channelID) return;
-  setClientLoading(id, 'data');
   await reloadChannel(channelID);
-  setClientLoading(id, 'done');
   showNotification(t('table.reload-ok'));
 }
 

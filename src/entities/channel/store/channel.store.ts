@@ -46,3 +46,14 @@ export function useChannelDict(ids: Iterable<ChannelID>): ChannelDict {
   };
   return useChannelStore(selector, compareObjects);
 }
+
+/** Индикатор загрузки каналов. */
+export function useChannelLoading(ids: Iterable<ChannelID>): boolean {
+  const selector = ({storage}: ChannelStore): boolean => {
+    for (const id of ids) {
+      if (!storage[id].actual) return true;
+    }
+    return false;
+  };
+  return useChannelStore(selector);
+}

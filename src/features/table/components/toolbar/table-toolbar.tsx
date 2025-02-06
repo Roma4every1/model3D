@@ -68,7 +68,10 @@ export const TableToolbar = ({loading, state}: TableToolbarProps) => {
           aria-label={'reject'} title={t('table.toolbar.reject')}
           onClick={() => actions.endEdit(false)} disabled={endEditDisabled}
         />}
-        {settings.refresh !== false && <ReloadButton id={state.id} t={t}/>}
+        {settings.refresh !== false && <button
+          aria-label={'reload'} title={t('table.toolbar.reload')}
+          onClick={() => { reloadTable(state.id).then(); }}
+        />}
       </div>
     </Spin>
   );
@@ -86,22 +89,6 @@ const ExportButton = ({id, t}: ToolbarButtonProps) => {
     <button
       aria-label={'excel'} title={t('table.toolbar.excel')}
       onClick={onClick} disabled={disabled}
-    />
-  );
-};
-
-const ReloadButton = ({id, t}: ToolbarButtonProps) => {
-  const [loading, setLoading] = useState(false);
-
-  const onClick = () => {
-    setLoading(true);
-    reloadTable(id).then(() => setLoading(false));
-  };
-
-  return (
-    <button
-      aria-label={'reload'} title={t('table.toolbar.reload')}
-      onClick={onClick} disabled={loading}
     />
   );
 };

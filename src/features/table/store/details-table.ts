@@ -3,14 +3,10 @@ import { showWindow, closeWindow } from 'entities/window';
 import { useObjectsStore } from 'entities/objects';
 import { useParameterStore } from 'entities/parameter';
 import { useChannelStore, updateChannels, updateChannelStore } from 'entities/channel';
+import { useClientStore, setClientActiveChild, addSessionClient, createAttachedChannel } from 'entities/client';
 import { useTableStore } from './table.store';
 import { createTableState } from './table.actions';
 import { DetailsTable } from '../components/details-table';
-
-import {
-  useClientStore, setClientActiveChild, setClientLoading,
-  addSessionClient, createAttachedChannel,
-} from 'entities/client';
 
 
 export function showDetailsTable(formID: FormID, columnID: PropertyName): void {
@@ -25,11 +21,12 @@ export function showDetailsTable(formID: FormID, columnID: PropertyName): void {
   const channel = channels[column.detailChannel];
   const displayName = channel.config.displayName ?? channel.name;
 
+  let client: SessionClient;
   const presentationID = useClientStore.getState().root.activeChildID;
   const presentation = useClientStore.getState()[presentationID];
 
   if (presentation.children.every(c => c.id !== detailsTableID)) {
-    const formState: SessionClient = {
+    client = {
       id: detailsTableID, parent: presentationID,
       type: 'dataSet', settings: {}, parameters: [],
       channels: [createAttachedChannel({name: channel.name}, channel)],
@@ -37,10 +34,13 @@ export function showDetailsTable(formID: FormID, columnID: PropertyName): void {
       loading: {status: 'done'},
     };
     presentation.children.push({id: detailsTableID, type: 'dataSet', displayName});
-    addSessionClient(formState);
+    addSessionClient(client);
+  } else {
+    client = useClientStore.getState()[detailsTableID];
   }
+
   if (!detailsTableState) createTableState({
-    state: useClientStore.getState()[detailsTableID],
+    state: client,
     objects: useObjectsStore.getState(),
     parameters: useParameterStore.getState().clients,
     channels: channels,
@@ -63,8 +63,8 @@ export function showDetailsTable(formID: FormID, columnID: PropertyName): void {
     title: displayName, onFocus, onClose,
   };
 
-  const content = createElement(DetailsTable, {id: detailsTableID, onClose});
-  showWindow(detailsTableID, windowProps, content);
+  const props = {id: detailsTableID, channels: client.neededChannels, onClose};
+  showWindow(detailsTableID, windowProps, createElement(DetailsTable, props));
   setClientActiveChild(presentationID, detailsTableID);
 }
 
@@ -90,9 +90,5 @@ function updateDetailsTable(id: ClientID): void {
     if (!channel.actual) { updateDict[id] = channel; needUpdate = true; }
   }
   if (!needUpdate) return;
-  setClientLoading(id, 'data');
-
-  updateChannels(updateDict)
-    .then(updateChannelStore)
-    .then(() => setClientLoading(id, 'done'));
+  updateChannels(updateDict).then(updateChannelStore);
 }
