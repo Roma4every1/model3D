@@ -57,7 +57,7 @@ export class ChannelDataManager {
     const task = this.tasks.get(id);
     if (!task) return;
 
-    task.abortController.abort('cancel');
+    task.abortController.abort();
     task.resolve(false);
     this.tasks.delete(id);
   }
@@ -71,7 +71,7 @@ export class ChannelDataManager {
 
     channelAPI.getChannelData(name, payload, query, abortController.signal)
       .then((data: Res<ChannelData>) => this.resolve(task, data))
-      .catch();
+      .catch(() => {});
 
     this.tasks.set(id, task);
     return task;
