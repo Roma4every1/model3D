@@ -1,7 +1,7 @@
 /* --- Panel & Header --- */
 
 .map-edit-panel {
-  grid-template-columns: 330px 250px 250px 90px 90px;
+  grid-template-columns: 330px 250px 250px 160px;
 
   img {
     width: 16px;
@@ -145,5 +145,15 @@
   :last-child {
     display: flex;
     grid-gap: 2px;
+  }
+}
+
+.map-feature-buttons {
+  flex-direction: column;
+  margin-right: 2px;
+
+  button {
+    width: 28px;
+    height: 28px;
   }
 }

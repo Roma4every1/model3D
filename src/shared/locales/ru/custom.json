@@ -287,9 +287,14 @@
       "scale": "Масштаб"
     },
     "actions": {
-      "header": "Экспорт",
-      "show-all": "Показать всё",
-      "export": "Экспорт карты в PDF"
+      "show-all": "Показать всё"
+    },
+    "section-other": {
+      "header": "Дополнительно",
+      "export-pdf": "Экспорт в PDF",
+      "save": "Сохранить карту",
+      "field-value-hint": "Просмотр значения поля в точке",
+      "label-offset-hint": "Отображение подписей без наложений"
     },
     "selecting": {
       "header": "Активный объект",
