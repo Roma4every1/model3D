@@ -168,6 +168,7 @@ interface MapDrawOptions {
   readonly dotsPerMeter: number;
   readonly toMapPoint: (p: Point) => Point;
   readonly toCanvasPoint: (p: Point) => Point;
+  readonly offsetMap?: Map<string, number>;
 }
 
 /* --- Map Elements --- */
