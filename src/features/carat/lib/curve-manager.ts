@@ -169,12 +169,12 @@ export class CurveManager {
       this.curveTypes = [...new Set(this.curves.map(curve => curve.type))];
       this.curves.forEach(curve => { this.curveDict[curve.id] = curve; });
     }
-    for (const type of this.curveTypes) {
-      this.updateAxisRange(type);
-    }
     this.resetTree();
     this.resetTypeSelection();
     this.resetDates();
+
+    const visibleCurves = this.getVisibleCurves();
+    this.curveTypes.forEach(type => this.updateAxisRange(visibleCurves, type));
   }
 
   public setCurvePointData(ids: CaratCurveID[], cache: CurveDataCache): void {
@@ -189,9 +189,8 @@ export class CurveManager {
       curve.min = pointData.min;
       curve.max = pointData.max;
     }
-    for (const type of this.curveTypes) {
-      this.updateAxisRange(type);
-    }
+    const visibleCurves = this.getVisibleCurves();
+    this.curveTypes.forEach(type => this.updateAxisRange(visibleCurves, type));
   }
 
   public setActiveCurve(id?: CaratCurveID): CaratCurveModel {
@@ -260,11 +259,11 @@ export class CurveManager {
         this.measures[curveType] = {type: curveType, min, max};
       }
     }
-    this.updateAxisRange(curveType);
+    this.updateAxisRange(this.getVisibleCurves(), curveType);
   }
 
-  private updateAxisRange(type: CaratCurveType): void {
-    const curves = this.curves.filter(c => c.type === type);
+  private updateAxisRange(curves: CaratCurveModel[], type: CaratCurveType): void {
+    curves = curves.filter(c => c.type === type);
     if (curves.length === 0) return;
 
     const measure = this.measures[type];
