@@ -60,7 +60,7 @@ export async function exportTableToExcel(formID: FormID): Promise<void> {
   }
 
   const extension = 'xlsx';
-  const displayName = getTableDisplayName(formID) ?? 'Таблица';
+  const displayName = getTableDisplayName(formID)?.replace(/[*?:\\/\[\]]/g, '') ?? 'Таблица';
   const date = new Date().toLocaleString('ru').replace(',', '').replaceAll(':','-');
   const fileName = `${displayName}_${date}.${extension}`;
 

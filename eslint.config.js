@@ -20,6 +20,7 @@ export default tsEslint.config({
   rules: {
     'no-empty': 'warn',
     'prefer-const': 'off',
+    'no-useless-escape': 'off',
     'no-constant-condition': ['error', {checkLoops: false}],
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
