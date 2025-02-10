@@ -62,14 +62,14 @@ export const TableBody = ({state, query, bodyRef}: TableBodyProps) => {
   const tableStyle: CSSProperties & {'--wm-alternate-bg'?: string} = {width: totalWidth};
 
   if (textWrap === false) {
-    tableStyle.textWrap = 'nowrap';
+    tableStyle.whiteSpace = 'nowrap';
   }
   if (alternate) {
     tableClass = 'tbody-alternate';
     tableStyle['--wm-alternate-bg'] = alternateBackground;
   }
   if (virtual) {
-    tableStyle.textWrap = 'nowrap';
+    tableStyle.whiteSpace = 'nowrap';
     tableStyle.transform = `translateY(${virtual.offset}px)`;
     heightSetter = <div className={'h-setter'} style={{height: virtual.height}}/>;
     records = records.slice(virtual.start, virtual.end);
