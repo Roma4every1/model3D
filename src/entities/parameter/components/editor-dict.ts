@@ -2,14 +2,14 @@ import { FunctionComponent } from 'react';
 import { BoolEditor } from './bool-editor';
 import { DateIntervalEditor } from './date-interval-editor';
 import { DateEditor } from './date-editor';
-import { FileEditor } from './file.editor';
+import { FileEditor } from './file-editor';
+import { FilesEditor } from './files-editor';
 import { IntegerArrayTreeEditor } from './integer-array-tree-editor';
 import { IntegerEditor } from './integer-editor';
 import { StringEditor } from './string-editor';
 import { TableRowListEditor } from './table-row-list-editor';
 import { TableRowTreeEditor } from './table-row-tree-editor';
 import { DoubleIntervalEditor } from './double-interval-editor';
-import { FilesEditor } from './files-editor';
 
 
 export interface EditorProps<T extends ParameterType = ParameterType> {
@@ -17,7 +17,6 @@ export interface EditorProps<T extends ParameterType = ParameterType> {
   channel?: Channel;
   update: (value: ParameterValueMap[T]) => void;
 }
-
 
 /** Словарь для выбора редактора по типу; используется в компоненте `BaseEditor`. */
 const editorDict: Record<string, FunctionComponent<EditorProps>> = {

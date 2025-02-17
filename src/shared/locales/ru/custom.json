@@ -44,10 +44,10 @@
   },
 
   "editors": {
-    "files-count": "Выбрано файлов: {{count}}",
     "file-not-selected": "Файл не выбран",
+    "file-upload-error": "При загрузке файла произошла ошибка",
     "files-not-selected": "Файлы не выбраны",
-    "file-upload-error": "При загрузке файла произошла ошибка"
+    "files-upload-error": "При загрузке файлов произошла ошибка"
   },
   "layout": {
     "close": "Закрыть",

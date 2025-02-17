@@ -8,7 +8,7 @@ import { Button, Input } from 'antd';
 import { CloseOutlined, FolderOpenOutlined } from '@ant-design/icons';
 
 
-export const FilesEditor = ({parameter, update}: EditorProps<'stringArray'>) => {
+export const FileEditor = ({parameter, update}: EditorProps<'string'>) => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
@@ -16,25 +16,19 @@ export const FilesEditor = ({parameter, update}: EditorProps<'stringArray'>) => 
   const timer = useRef<number>(null);
   const controllerRef = useRef<AbortController>();
 
-  const upload = async (files: FileList): Promise<void> => {
+  const upload = async (file: File): Promise<void> => {
     const controller = new AbortController();
     controllerRef.current = controller;
     timer.current = window.setTimeout(() => setLoading(true), 500);
 
-    const uploadFile = async (file: File): Promise<string | null> => {
+    try {
       const fileData = await file.arrayBuffer();
       const { ok, data } = await programAPI.uploadFile(file.name, fileData, controller.signal);
-      return ok && data ? data : null;
-    };
 
-    try {
-      const result = await Promise.all([...files].map(uploadFile));
-      const resources = result.filter(Boolean);
-
-      if (result.length === resources.length) {
-        update(resources);
+      if (ok && data) {
+        update(data);
       } else {
-        showNotification(t('editors.files-upload-error'));
+        showNotification(t('editors.file-upload-error'));
         update(null);
       }
     } catch {
@@ -48,15 +42,15 @@ export const FilesEditor = ({parameter, update}: EditorProps<'stringArray'>) => 
   };
 
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files.length > 0) upload(files).then();
+    const file = e.target.files[0];
+    if (file) upload(file).then();
   };
   const onPaste = (e: ClipboardEvent<HTMLInputElement>) => {
-    const files = e.clipboardData.files;
-    if (files.length > 0) upload(files).then();
+    const file = e.clipboardData.files[0];
+    if (file) upload(file).then();
   };
 
-  const clearFiles = () => {
+  const clearFile = () => {
     if (loading && controllerRef.current) {
       controllerRef.current.abort();
       setLoading(false);
@@ -73,19 +67,19 @@ export const FilesEditor = ({parameter, update}: EditorProps<'stringArray'>) => 
   if (loading) {
     inputText = t('base.loading');
   } else {
-    const paths = parameter.getValue();
-    if (paths) {
-      inputText = paths.map(p => p.substring(p.lastIndexOf('\\') + 1)).join(', ');
+    const path = parameter.getValue();
+    if (path) {
+      inputText = path.substring(path.lastIndexOf('\\') + 1);
       inputTitle = inputText;
     } else {
-      inputText = t('editors.files-not-selected');
+      inputText = t('editors.file-not-selected');
     }
   }
   const addon = (
     <>
       <Button
         style={{background: 'transparent'}} icon={<CloseOutlined/>} tabIndex={-1}
-        onClick={clearFiles}
+        onClick={clearFile}
       />
       <Button
         style={{background: 'transparent'}} icon={<FolderOpenOutlined/>} tabIndex={-1}
@@ -96,7 +90,7 @@ export const FilesEditor = ({parameter, update}: EditorProps<'stringArray'>) => 
 
   return (
     <div className={'file-text-editor'}>
-      <input type={'file'} onChange={onChange} ref={inputRef} multiple={true}/>
+      <input type={'file'} onChange={onChange} ref={inputRef}/>
       <Input
         value={inputText} title={inputTitle} readOnly={true} addonAfter={addon}
         onPaste={onPaste} disabled={parameter.editor.disabled}

@@ -26,28 +26,23 @@
 }
 
 .file-text-editor {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0px 7px;
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
-
   > input {
     display: none;
   }
-  > span {
-    font-size: 12px;
-    padding-right: 4px;
-    max-width: 160px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+  input[readonly] {
+    height: 20px;
   }
-  button {
-    padding: 0 4px 3px 6px;
-    height: 18px;
-    border: none;
+
+  .ant-input-group-addon {
+    padding: 0;
+
+    button {
+      width: 18px;
+      height: 18px;
+      padding: 0;
+      margin: 0 2px;
+      border: none;
+    }
   }
 }
 
