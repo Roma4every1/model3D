@@ -2,7 +2,9 @@ import { create } from 'zustand';
 
 
 /** Хранилище форм просмотра файлов. */
-export const useFileViewStore = create<FileViewStates>(() => ({}));
+export const useFileViewStore = create((): Record<FormID, FileViewState> => ({}));
 
 /** Состояние формы просмотра файлов. */
-export const useFileViewState = (id: FormID) => useFileViewStore(state => state[id]);
+export function useFileViewState(id: FormID): FileViewState {
+  return useFileViewStore(state => state[id]);
+}

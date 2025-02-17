@@ -1,24 +1,13 @@
 /** Создаёт состояния формы просмотра файлов. */
 export function toFileViewState(payload: FormStatePayload): FileViewState {
-  const { state: formState, channels } = payload;
-  let useResources: boolean;
+  let fileProperty: ChannelProperty;
+  const { state, channels } = payload;
 
-  for (const attachedChannel of formState.channels) {
+  for (const attachedChannel of state.channels) {
     const properties = channels[attachedChannel.id].config.properties;
-    const property = properties.find(p => p.file);
-    if (!property) continue;
-
-    useResources = property.file.fromResources;
-    const nameFrom = property.file.nameFrom;
-    const nameProperty = properties.find(p => p.name === nameFrom);
-    if (nameProperty === undefined) continue;
-
-    attachedChannel.info = {
-      fileName: {propertyName: nameProperty.name, columnName: nameProperty.fromColumn},
-      descriptor: {propertyName: property.name, columnName: property.fromColumn}, // data or path
-    };
-    formState.channels = [attachedChannel];
-    break;
+    fileProperty = properties.find(p => p.file?.nameFrom);
+    if (fileProperty) { state.channels = [attachedChannel]; break; }
   }
-  return {model: null, memo: [], useResources, loadingFlag: {current: 0}};
+  if (!fileProperty) state.channels = [];
+  return {fileProperty, loadingFlag: {current: 0}, model: null, memo: [], queryID: null};
 }

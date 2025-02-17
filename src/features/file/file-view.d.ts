@@ -1,22 +1,23 @@
-/** Состояния форм просмотра файлов. */
-type FileViewStates = Record<FormID, FileViewState>;
-
 /** Состояние формы просмотра файлов. */
 interface FileViewState {
+  /** Свойство канала, в котором лежат данные файла. */
+  readonly fileProperty: ChannelProperty;
+  /** Текущий флаг загрузки. */
+  readonly loadingFlag: {current: number};
   /** Текущий просматриваемый файл. */
   model: FileViewModel;
-  /** Сохранённые файлы (только при `useResources: true`). */
+  /** Сохранённые файлы. */
   memo: FileViewModel[];
-  /** Хранится ли содержимое файлов в файловой системе сервера. */
-  useResources: boolean;
-  /** Текущий флаг загрузки. */
-  loadingFlag: {current: number};
+  /** Идентификатор текущего датасета. */
+  queryID: QueryID | null;
 }
 
 /** Модель просматриваемого файла. */
 interface FileViewModel<T = any> {
+  /** Запись из датасета. */
+  readonly row: ChannelRow;
   /** Название файла. */
-  fileName: string;
+  readonly fileName: string;
   /** Расширение файла. */
   fileType: string;
   /** Данные файла в двоичном виде. */

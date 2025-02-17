@@ -1,5 +1,5 @@
 import { FunctionComponent, createElement, useEffect } from 'react';
-import { useChannel } from 'entities/channel';
+import { useChannelData } from 'entities/channel';
 import { useFileViewState } from '../store/file-view.store';
 import { updateFileViewModel } from '../store/file-view.thunks';
 
@@ -31,7 +31,7 @@ const fileViewDict: Record<string, FunctionComponent<FileViewModel>> = {
 /** Форма просмотра файла. */
 export const FileView = ({id, channels}: SessionClient) => {
   const { model } = useFileViewState(id);
-  const channelData = useChannel(channels[0]?.id)?.data;
+  const channelData = useChannelData(channels[0]?.id);
 
   useEffect(() => {
     updateFileViewModel(id, channelData).then();
@@ -42,6 +42,9 @@ export const FileView = ({id, channels}: SessionClient) => {
   }
   if (model.loading) {
     return <TextInfo text={'base.loading'}/>;
+  }
+  if (!model.fileType) {
+    return <TextInfo text={'file-view.no-file-type-error'}/>;
   }
   if (!supportedExtensions.has(model.fileType)) {
     return <UnsupportedFile name={model.fileName} data={model.data}/>;

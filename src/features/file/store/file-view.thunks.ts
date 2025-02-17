@@ -1,8 +1,7 @@
 import { t } from 'shared/locales';
 import { base64toBlob, getFileExtension } from 'shared/lib';
 import { programAPI } from 'entities/program';
-import { useClientStore } from 'entities/client';
-import { channelRowToRecord, channelAPI } from 'entities/channel';
+import { channelAPI, channelRowToRecord } from 'entities/channel';
 import { showWarningMessage } from 'entities/window';
 import { setFileViewModel } from './file-view.actions';
 import { useFileViewStore } from './file-view.store';
@@ -10,30 +9,34 @@ import { mimeTypeDict, fileParserDict } from '../lib/constants';
 
 
 export async function updateFileViewModel(id: FormID, data: ChannelData): Promise<void> {
-  const activeRow = data?.activeRow;
-  if (!activeRow) { setFileViewModel(id, null); return; }
+  const row = data?.activeRow;
+  if (!row) { setFileViewModel(id, null); return; }
 
-  const formState = useClientStore.getState()[id];
-  const fileViewState = useFileViewStore.getState()[id];
-  const flag = ++fileViewState.loadingFlag.current;
+  const state = useFileViewStore.getState()[id];
+  const flag = ++state.loadingFlag.current;
 
-  const attachedChannel = formState.channels[0];
-  const fileColumnName = attachedChannel.info.descriptor.columnName;
-
-  const record = channelRowToRecord(activeRow, data.columns);
-  const fileName: string = record[attachedChannel.info.fileName.columnName];
-  let model = fileViewState.memo.find(memoModel => memoModel.fileName === fileName);
+  if (state.queryID !== data.queryID) {
+    state.memo.forEach(m => m.uri && URL.revokeObjectURL(m.uri));
+    state.memo = [];
+    state.queryID = data.queryID;
+  }
+  const fileProperty = state.fileProperty;
+  let model = state.memo.find(memoModel => memoModel.row === row);
 
   if (model === undefined) {
-    model = {fileName, fileType: null, data: null, uri: null, loading: true};
-    fileViewState.memo.push(model);
-    setFileViewModel(id, model);
+    const record = channelRowToRecord(row, data.columns);
+    const fileName: string = record[fileProperty.file.nameFrom];
 
-    const descriptor = record[fileColumnName];
+    model = {row, fileName, fileType: null, data: null, uri: null, loading: Boolean(fileName)};
+    state.memo.push(model);
+    setFileViewModel(id, model);
+    if (!fileName) return;
+
     const fileType = getFileExtension(fileName);
     const contentType = mimeTypeDict[fileType] ?? '';
+    const descriptor: string = record[fileProperty.fromColumn];
 
-    if (fileViewState.useResources) {
+    if (fileProperty.file.fromResources) {
       const res = await programAPI.downloadFile(descriptor);
       if (!res.ok) {
         const message = t('file-view.download-error', {fileName});
@@ -43,8 +46,8 @@ export async function updateFileViewModel(id: FormID, data: ChannelData): Promis
     } else if (descriptor) {
       model.data = base64toBlob(descriptor, contentType);
     } else {
-      const rowIndex = data.rows.findIndex(r => r === activeRow);
-      const res = await channelAPI.getResource(data.queryID, rowIndex, fileColumnName);
+      const rowIndex = data.rows.findIndex(r => r === row);
+      const res = await channelAPI.getResource(data.queryID, rowIndex, fileProperty.fromColumn);
 
       if (!res.ok) {
         const message = t('file-view.download-error', {fileName});
@@ -63,8 +66,8 @@ export async function updateFileViewModel(id: FormID, data: ChannelData): Promis
     const currentModel = useFileViewStore.getState()[id].model;
     if (model === currentModel) setFileViewModel(id, model); // rerender
   }
-  else if (model === fileViewState.model) {
+  else if (model === state.model) {
     return;
   }
-  if (fileViewState.loadingFlag.current === flag) setFileViewModel(id, model);
+  if (state.loadingFlag.current === flag) setFileViewModel(id, model);
 }

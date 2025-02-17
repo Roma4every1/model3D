@@ -22,10 +22,7 @@
   cursor: pointer;
 
   &:hover {
-    background-color: #fadad8;
-  }
-  &.active {
-    background-color: #fccbc7;
+    background-color: var(--wm-primary-85);
   }
 
   span {
