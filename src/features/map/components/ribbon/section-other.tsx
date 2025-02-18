@@ -1,13 +1,17 @@
 import type { TFunction } from 'react-i18next';
+import type { WindowProps } from '@progress/kendo-react-dialogs';
 import type { MapState } from '../../lib/types';
 import { jsPDF } from 'jspdf';
-import { useEffect } from 'react';
+import { createElement, useEffect } from 'react';
 import { useRender } from 'shared/react';
-import { MapStage } from '../../lib/map-stage';
-import { DefaultModeProvider } from '../../modes';
+import { showWindow, closeWindow } from 'entities/window';
 import { saveMap } from '../../store/map.thunks';
+import { MapStage } from '../../lib/map-stage';
+import { DefaultModeProvider, FieldValueModeProvider } from '../../modes';
+
 import { MenuSection, BigButton, IconRow, IconRowButton } from 'shared/ui';
 import { AlignCenterOutlined, RadarChartOutlined } from '@ant-design/icons';
+import { FieldValueWindow } from './field-value';
 import saveMapIcon from 'assets/map/save-map.png';
 import exportToPDFIcon from 'assets/map/pdf.png';
 
@@ -53,7 +57,8 @@ export const MapOtherSection = ({state, t}: MapOtherSectionProps) => {
 
 const MapFeatureButtons = ({stage, t}: MapFeatureButtonsProps) => {
   const render = useRender();
-  const provider = stage.getModeProvider('default') as DefaultModeProvider;
+  const defaultProvider = stage.getModeProvider('default') as DefaultModeProvider;
+  const fieldProvider = stage.getModeProvider('show-field-value') as FieldValueModeProvider;
 
   useEffect(() => {
     stage.subscribe('mode', render);
@@ -61,24 +66,53 @@ const MapFeatureButtons = ({stage, t}: MapFeatureButtonsProps) => {
   }, [stage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleLabelOffset = () => {
-    provider.offsetLabels = !provider.offsetLabels;
+    defaultProvider.offsetLabels = !defaultProvider.offsetLabels;
     stage.render(); render();
   };
+
   const toggleFieldValueMode = () => {
-    // ...
+    const windowID = 'map-field-value';
+    const onClose = () => {
+      fieldProvider.updateWindow = null;
+      closeWindow(windowID);
+      stage.setMode('default');
+    };
+    if (stage.getMode() === 'show-field-value') {
+      onClose();
+    } else {
+      let layer = fieldProvider.getLayer();
+      if (!layer) {
+        layer = stage.getMapData().layers.find(l => l.elementType === 'field');
+        fieldProvider.setLayer(layer);
+      }
+      if (!layer.visible) {
+        layer.visible = true;
+        stage.setActiveLayer(layer as any);
+        stage.render();
+      }
+      const windowProps: WindowProps = {
+        style: {zIndex: 99}, className: 'field-value-window',
+        width: 286, height: 241, resizable: false,
+        title: t('map.field-value.title'), maximizeButton: () => null, onClose,
+      };
+      const window = createElement(FieldValueWindow, {stage, provider: fieldProvider, t});
+      showWindow(windowID, windowProps, window);
+      stage.setMode('show-field-value');
+    }
+    render();
   };
-  const canToggleFieldValueMode = stage.getMapData()?.layers.some(l => l.elementType === 'field');
 
   return (
     <IconRow className={'map-feature-buttons'}>
       <IconRowButton
         icon={<AlignCenterOutlined/>} title={t('map.section-other.label-offset-hint')}
-        onClick={toggleLabelOffset} active={provider.offsetLabels}
-        disabled={stage.getModeProvider() !== provider}
+        onClick={toggleLabelOffset} active={defaultProvider.offsetLabels}
+        disabled={stage.getModeProvider() !== defaultProvider}
       />
       <IconRowButton
         icon={<RadarChartOutlined/>} title={t('map.section-other.field-value-hint')}
-        onClick={toggleFieldValueMode} disabled={!canToggleFieldValueMode}
+        active={stage.getMode() === 'show-field-value'} onClick={toggleFieldValueMode}
+        disabled={!stage.getMapData()?.layers.some(l => l.elementType === 'field')}
       />
     </IconRow>
   );

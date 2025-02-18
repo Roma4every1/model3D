@@ -64,6 +64,7 @@ export class MapStateFactory {
     const stage = new MapStage();
     stage.registerMode(new modes.DefaultModeProvider(hasWell));
     stage.registerMode(new modes.ElementSelectModeProvider());
+    stage.registerMode(new modes.FieldValueModeProvider());
     this.checkInclinometryPlugin(stage);
 
     if (hasWell) {

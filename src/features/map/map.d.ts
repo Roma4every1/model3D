@@ -73,7 +73,7 @@ interface MapModeProvider {
  * + `site-move-point` — перемещние точек (участок)
  */
 type MapModeID =
-  | 'default' | 'incl'
+  | 'default' | 'incl' | 'show-field-value'
   | 'element-select' | 'element-drag' | 'element-rotate' | 'element-create'
   | 'line-append-point' | 'line-insert-point' | 'line-remove-point' | 'line-move-point'
   | 'trace-edit' | 'selection-edit'
