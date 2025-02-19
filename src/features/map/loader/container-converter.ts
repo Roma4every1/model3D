@@ -12,7 +12,7 @@ export class MapContainerConverter {
    */
   public encode(data: string): ArrayBuffer {
     const encrypted = deflate(data);
-    return this.cipherXOR(encrypted).buffer;
+    return this.cipherXOR(encrypted).buffer as ArrayBuffer;
   }
 
   /**

@@ -1,4 +1,3 @@
-/// <reference types="vitest/config"/>
 import type { ConfigEnv, UserConfig, AliasOptions, PluginOption } from 'vite';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -37,14 +36,6 @@ export default defineConfig((env: ConfigEnv): UserConfig => {
     },
     resolve: {
       alias: aliasOptions,
-    },
-    test: {
-      globals: false,
-      include: ['tests/**/*.test.ts'],
-      setupFiles: ['tests/setup.ts'],
-      environment: 'jsdom',
-      environmentOptions: {jsdom: {resources: 'usable'}},
-      server: {deps: {inline: ['vitest-canvas-mock']}},
     },
     assetsInclude: ['**/*.bin', '**/*.def'],
   };
