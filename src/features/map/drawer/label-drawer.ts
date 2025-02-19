@@ -129,10 +129,29 @@ export class LabelDrawer implements MapElementDrawer<MapLabel> {
 
     const anchor = options.toCanvasPoint(label);
     const angle = -label.angle / 180 * Math.PI;
+    let currentYOffset = label.yoffset ?? 0;
+
+    if (options.offsetMap && angle === 0) {
+      const offsetMap = options.offsetMap;
+      const up = label.yoffset > 0;
+      const groupingAlignment = (label.valignment === 1) ? 2 : label.valignment;
+      const key = `${label.x},${label.y},${label.halignment},${groupingAlignment},${label.xoffset},${up ? '1' : '0'}`;
+      const value = offsetMap.get(key);
+
+      const height = label.fontsize * 25.4 / 72; // pt to mm
+      const delta = (height + 1) * (up ? 1 : -1);
+
+      if (value === undefined) {
+        offsetMap.set(key, currentYOffset);
+      } else {
+        currentYOffset = value + delta;
+        offsetMap.set(key, currentYOffset);
+      }
+    }
 
     const point: Point = {
       x: anchor.x + label.xoffset * 0.001 * dotsPerMeter,
-      y: anchor.y - label.yoffset * 0.001 * dotsPerMeter,
+      y: anchor.y - currentYOffset * 0.001 * dotsPerMeter,
     };
 
     if (angle) {

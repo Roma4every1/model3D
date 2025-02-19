@@ -132,7 +132,7 @@ export function checkDistanceForField(field: MapField, point: Point): boolean {
 }
 
 /** Находит значения поля в заданной точке. */
-function getInterpolatedFieldValue(field: MapField, point: Point) {
+export function getInterpolatedFieldValue(field: MapField, point: Point): number | null {
   const x = point.x;
   const y = point.y;
   if (x === undefined || y === undefined || Number.isNaN(x) || Number.isNaN(y)) {

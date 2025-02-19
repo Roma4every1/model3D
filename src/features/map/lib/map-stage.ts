@@ -204,6 +204,7 @@ export class MapStage implements IMapStage {
 
     if (this.ctx) this.ctx.canvas.style.cursor = newMode.cursor;
     this.eventBus.publish('mode', id);
+    this.render();
   }
 
   /* --- Extra Objects --- */
@@ -313,6 +314,9 @@ export class MapStage implements IMapStage {
     if (!this.ctx || !this.data) return;
     if (!viewport) viewport = {cx: this.data.x, cy: this.data.y, scale: this.data.scale};
     if (this.detach) this.detach();
-    this.detach = showMap(this.ctx, this.data, viewport, this.extraObjects);
+
+    const defaultMode = this.modes.get('default') as any;
+    const offsetLabels = this.mode === defaultMode && defaultMode.offsetLabels;
+    this.detach = showMap(this.ctx, this.data, viewport, this.extraObjects, offsetLabels);
   }
 }

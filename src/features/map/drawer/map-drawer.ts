@@ -33,7 +33,7 @@ function intersects(a: Bounds, b: Bounds): boolean {
     && (b.min.y < a.max.y);
 }
 
-export async function startPaint(map: MapData, options: StartPaintOptions): Promise<void> {
+export async function startPaint(map: MapData, options: StartPaintOptions, offsetLabels?: boolean): Promise<void> {
   const { ctx, coords, onCheckExecution } = options;
   const topLeft = coords.pointToMap({x: 0, y: 0});
   const bottomRight = coords.pointToMap({x: ctx.canvas.width, y: ctx.canvas.height});
@@ -54,6 +54,7 @@ export async function startPaint(map: MapData, options: StartPaintOptions): Prom
     dotsPerMeter: window.devicePixelRatio * pixelPerMeter,
     toMapPoint: coords.pointToMap,
     toCanvasPoint: coords.pointToControl,
+    offsetMap: offsetLabels ? new Map() : undefined,
   };
 
   const noDrafts = !options.draftDrawing;

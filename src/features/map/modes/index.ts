@@ -1,5 +1,6 @@
 export { DefaultModeProvider } from './default.mode';
 export { InclinometryModeProvider } from './incl.mode';
+export { FieldValueModeProvider } from './field-value.mode';
 
 export { ElementSelectModeProvider } from './element-select.mode';
 export { ElementDragModeProvider } from './element-drag.mode';
