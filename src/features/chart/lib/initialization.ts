@@ -13,6 +13,7 @@ interface ChartPropertyInit {
   yProperty: ChannelProperty;
   settings: ChartPropertyDTO;
   z: number | null;
+  visible: boolean;
 }
 
 export function settingsToChartState(payload: FormStatePayload<ChartSettingsDTO>): ChartState {
@@ -76,12 +77,13 @@ export class ChartStateFactory {
       const xProperty = channel.config.properties.find(p => p.name === xName);
       if (!xProperty) continue;
 
-      for (const yProperty of attachedChannel.attachedProperties) {
+      for (const yProperty of channel.config.properties) {
         if (yProperty === xProperty) continue;
         const settings = dto.seriesSettings[yProperty.name];
         if (!settings) continue;
         const z = settings.zIndex ?? null;
-        inits.push({channel: attachedChannel, xProperty, yProperty, settings, z});
+        const visible = attachedChannel.attachedProperties.includes(yProperty);
+        inits.push({channel: attachedChannel, xProperty, yProperty, settings, z, visible});
       }
     }
     return inits;
@@ -147,7 +149,7 @@ export class ChartStateFactory {
   }
 
   private createProperty(init: ChartPropertyInit): ChartProperty | null {
-    const { channel, xProperty, yProperty, settings } = init;
+    const { channel, xProperty, yProperty, settings, visible } = init;
     const yAxisID = settings.yAxisId;
     if (!yAxisID || this.axisDict[yAxisID] === undefined) return null;
 
@@ -172,7 +174,7 @@ export class ChartStateFactory {
       channel, xProperty, yProperty, yAxisID,
       displayName, displayType, curveType, color, lineDash,
       dotOptions, dotRenderer, showLine, showPoints, showLabels,
-      visible: true, empty: true,
+      visible: visible, empty: true,
     };
   }
 
