@@ -1,5 +1,4 @@
 import type { CaratCurveModel } from '../../lib/types';
-import type { DateRangePickerChangeEvent } from '@progress/kendo-react-dateinputs';
 import type { TreeViewCheckChangeEvent, TreeViewExpandChangeEvent } from '@progress/kendo-react-treeview';
 
 import { useEffect } from 'react';
@@ -8,9 +7,8 @@ import { useTranslation } from 'react-i18next';
 import { round } from 'shared/lib';
 import { updateWindow } from 'entities/window';
 
-import { Button } from '@progress/kendo-react-buttons';
-import { IntlProvider, LocalizationProvider } from '@progress/kendo-react-intl';
-import { DateRangePicker } from '@progress/kendo-react-dateinputs';
+import dayjs, { Dayjs } from 'dayjs';
+import { Button, DatePicker } from 'antd';
 import { TreeView } from '@progress/kendo-react-treeview';
 import { TextInfo } from 'shared/ui';
 
@@ -113,17 +111,16 @@ export const CurveSelectionWindow = ({id, stage, onClose}: CurveSelectionWindowP
 };
 
 const CurveFilters = ({manager, signal}: CurveFiltersProps) => {
-  const { start, end } = manager;
   const types = manager.getTypeSelection();
+  const range: [Dayjs, Dayjs] = [dayjs(manager.start), dayjs(manager.end)];
 
   const onCheckChange = (event: TreeViewCheckChangeEvent) => {
     event.item.checked = !event.item.checked;
     manager.setTypeSelection(types); signal();
   };
-
-  const onRangeChange = (e: DateRangePickerChangeEvent) => {
-    const { start, end } = e.value;
-    manager.setRange(start, end); signal();
+  const onRangeChange = (value: [Dayjs, Dayjs]) => {
+    const [start, end] = value;
+    manager.setRange(start.toDate(), end.toDate()); signal();
   };
 
   return (
@@ -134,11 +131,10 @@ const CurveFilters = ({manager, signal}: CurveFiltersProps) => {
         checkboxes={true} onCheckChange={onCheckChange}
       />
       <div style={{padding: 8}}>
-        <LocalizationProvider language={'ru-RU'}>
-          <IntlProvider locale={'ru'}>
-            <DateRangePicker value={{start, end}} onChange={onRangeChange}/>
-          </IntlProvider>
-        </LocalizationProvider>
+        <DatePicker.RangePicker
+          value={range} onChange={onRangeChange}
+          format={'DD.MM.YYYY'} allowClear={false}
+        />
       </div>
     </div>
   );

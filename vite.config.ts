@@ -14,7 +14,7 @@ const aliasOptions: AliasOptions = [
 ];
 
 export default defineConfig((env: ConfigEnv): UserConfig => {
-  const devMode = env.mode !== 'production';
+  const devMode = env.mode === 'development';
   const plugins: PluginOption[] = [react()];
   if (devMode) plugins.push(wellManagerSystemPlugin(env.command));
 

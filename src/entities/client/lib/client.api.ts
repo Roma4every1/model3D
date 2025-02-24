@@ -24,12 +24,20 @@ export class ClientAPI {
 
   public getClientData(id: ClientID, type: ClientType): Promise<Res<ClientDataDTO>> {
     if (this.api.legacy) {
-      if (type === 'dock') {
-        return this.getRootDataLegacy(id);
-      } else if (type === 'grid') {
-        return this.getPresentationDataLegacy(id);
+      if (this.api.version) {
+        if (type === 'map') {
+          return this.getMapClientDataLegacy(id);
+        } else {
+          return this.api.get('/getAllForForm', {query: {formId: id}});
+        }
       } else {
-        return this.getFormDataLegacy(id, type);
+        if (type === 'dock') {
+          return this.getRootDataLegacy(id);
+        } else if (type === 'grid') {
+          return this.getPresentationDataLegacy(id);
+        } else {
+          return this.getFormDataLegacy(id, type);
+        }
       }
     } else {
       return this.api.get('/client/' + id);
@@ -101,6 +109,17 @@ export class ClientAPI {
     const channels: AttachedChannelDTO[] = resChannels?.ok ? resChannels.data : [];
     const settings = resSettings?.ok ? resSettings.data : {};
     return {ok: true, data: {settings, channels, parameters: []}};
+  }
+
+  private async getMapClientDataLegacy(id: FormID): Promise<Res<ClientDataDTO>> {
+    const [res, resPlugin] = await Promise.all([
+      this.api.get<ClientDataDTO>('/getAllForForm', {query: {formId: id}}),
+      this.api.get('/pluginData', {query: {formId: id, pluginName: 'wellsLinkedClients'}}),
+    ]);
+    if (res.ok) {
+      res.data.settings = resPlugin.ok ? resPlugin.data : {};
+    }
+    return res;
   }
 }
 

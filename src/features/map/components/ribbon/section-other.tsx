@@ -7,13 +7,14 @@ import { useRender } from 'shared/react';
 import { showWindow, closeWindow } from 'entities/window';
 import { saveMap } from '../../store/map.thunks';
 import { MapStage } from '../../lib/map-stage';
-import { DefaultModeProvider, FieldValueModeProvider } from '../../modes';
+import { FieldValueModeProvider } from '../../modes';
 
 import { MenuSection, BigButton, IconRow, IconRowButton } from 'shared/ui';
-import { AlignCenterOutlined, RadarChartOutlined } from '@ant-design/icons';
+import { RadarChartOutlined } from '@ant-design/icons';
 import { FieldValueWindow } from './field-value';
 import saveMapIcon from 'assets/map/save-map.png';
 import exportToPDFIcon from 'assets/map/pdf.png';
+import measurerIcon from 'assets/map/distance-measurer.svg';
 
 
 interface MapOtherSectionProps {
@@ -57,18 +58,12 @@ export const MapOtherSection = ({state, t}: MapOtherSectionProps) => {
 
 const MapFeatureButtons = ({stage, t}: MapFeatureButtonsProps) => {
   const render = useRender();
-  const defaultProvider = stage.getModeProvider('default') as DefaultModeProvider;
   const fieldProvider = stage.getModeProvider('show-field-value') as FieldValueModeProvider;
 
   useEffect(() => {
     stage.subscribe('mode', render);
     return () => stage.unsubscribe('mode', render);
   }, [stage]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const toggleLabelOffset = () => {
-    defaultProvider.offsetLabels = !defaultProvider.offsetLabels;
-    stage.render(); render();
-  };
 
   const toggleFieldValueMode = () => {
     const windowID = 'map-field-value';
@@ -105,9 +100,8 @@ const MapFeatureButtons = ({stage, t}: MapFeatureButtonsProps) => {
   return (
     <IconRow className={'map-feature-buttons'}>
       <IconRowButton
-        icon={<AlignCenterOutlined/>} title={t('map.section-other.label-offset-hint')}
-        onClick={toggleLabelOffset} active={defaultProvider.offsetLabels}
-        disabled={stage.getModeProvider() !== defaultProvider}
+        icon={measurerIcon} title={t('map.section-other.distance-measurer-hint')}
+        active={false} disabled={true}
       />
       <IconRowButton
         icon={<RadarChartOutlined/>} title={t('map.section-other.field-value-hint')}

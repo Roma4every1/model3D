@@ -61,6 +61,8 @@ interface IFetcher {
 export class Fetcher implements IFetcher {
   /** Используется ли WMW WebRequests. */
   public legacy: boolean;
+  /** Номер версии серверной части (только для WMW WebRequests). */
+  public version: string | undefined;
   /** Префикс URL для всех запросов. */
   private prefix: string;
   /** ID текущей сессии (добавляется в заголовки). */

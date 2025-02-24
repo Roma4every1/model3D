@@ -1,7 +1,6 @@
 import { TextInfo } from 'shared/ui';
 import { MultiMap } from 'features/multi-map';
 import { Grid } from './grid';
-import { PresentationSkeleton } from './plugs';
 
 
 export interface PresentationProps {
@@ -9,10 +8,9 @@ export interface PresentationProps {
   state: PresentationState | undefined;
 }
 
-
 /** Презентация: клиент типа `grid`. */
 export const Presentation = ({state}: PresentationProps) => {
-  if (!state || state.loading.status === 'init') return <PresentationSkeleton/>;
+  if (!state || state.loading.status === 'init') return <div className={'wm-skeleton'}/>;
   const { id, channels, layout, loading } = state;
   if (loading.error) return <TextInfo text={loading.error}/>;
 

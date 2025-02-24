@@ -6,7 +6,7 @@ import { getTranslator } from './translator';
 
 export function showMap(
   ctx: CanvasRenderingContext2D, map: MapData, viewport: MapViewport,
-  extra?: Map<MapExtraObjectID, MapExtraObjectState>, offsetLabels?: boolean,
+  extra?: Map<MapExtraObjectID, MapExtraObjectState>,
 ) {
   const { cx, cy, scale } = viewport;
   let coords: Translator;
@@ -91,6 +91,6 @@ export function showMap(
       await new Promise((resolve) => setTimeout(resolve, 200));
     }
     options.draftDrawing = false;
-    await startPaint(map, options, offsetLabels);
+    await startPaint(map, options);
   }
 }

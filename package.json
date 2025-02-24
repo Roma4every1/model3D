@@ -1,6 +1,6 @@
 {
   "name": "js-well-manager-web",
-  "version": "1.7.2-rc1",
+  "version": "1.7.2-rc2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,11 +14,8 @@
   "dependencies": {
     "@progress/kendo-file-saver": "1.1.1",
     "@progress/kendo-react-buttons": "5.9.0",
-    "@progress/kendo-react-common": "5.6.0",
-    "@progress/kendo-react-dateinputs": "5.9.0",
     "@progress/kendo-react-dialogs": "5.9.0",
     "@progress/kendo-react-dropdowns": "5.9.0",
-    "@progress/kendo-react-indicators": "5.9.0",
     "@progress/kendo-react-inputs": "5.9.0",
     "@progress/kendo-react-intl": "5.9.0",
     "@progress/kendo-react-listbox": "5.9.0",
@@ -46,8 +43,8 @@
     "react-dom": "18.3.1",
     "react-i18next": "11.17.2",
     "react-router-dom": "6.3.0",
-    "recharts": "2.12.7",
-    "recharts-to-png": "2.3.2",
+    "recharts": "2.15.1",
+    "recharts-to-png": "2.4.0",
     "uuid": "9.0.1",
     "zustand": "4.5.5"
   },
@@ -69,8 +66,8 @@
     "sass": "1.75.0",
     "typescript": "5.7.3",
     "typescript-eslint": "8.24.1",
-    "vite": "6.1.0",
-    "vitest": "2.1.9",
+    "vite": "6.1.1",
+    "vitest": "3.0.6",
     "vitest-canvas-mock": "0.3.3"
   },
   "browserslist": {

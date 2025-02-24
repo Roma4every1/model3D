@@ -1,4 +1,4 @@
-import type { Res } from 'shared/lib';
+import type { ReqQuery, Res } from 'shared/lib';
 import type { SessionToSave } from './session-save';
 import { Fetcher, fetcher } from 'shared/lib';
 
@@ -9,8 +9,9 @@ export interface StartSessionDTO {
   id: SessionID;
   /** ID корневого клиента сесиии. */
   root: ClientID;
+  /** Номер версии серверной части (только для WMW WebRequests). */
+  apiVersion?: string;
 }
-
 
 export class AppAPI {
   constructor(private readonly api: Fetcher) {}
@@ -25,16 +26,22 @@ export class AppAPI {
   /** Новая сессия. */
   public async startSession(systemID: SystemID, isDefault: boolean): Promise<Res<StartSessionDTO>> {
     if (this.api.legacy) {
-      const query = {systemName: systemID, defaultConfiguration: isDefault};
-      const resSession = await this.api.get<SessionID>('/startSession', {query});
-      if (!resSession.ok) return resSession as any;
+      const query: ReqQuery = {systemName: systemID, defaultConfiguration: isDefault};
+      const res = await this.api.get('/startSession', {query});
 
-      const headers: HeadersInit = {'x-session-id': resSession.data};
-      const resRoot = await this.api.get<FormDataWM>('/getRootForm', {headers});
-      if (!resRoot.ok) return resRoot as any;
-      return {ok: true, data: {id: resSession.data, root: resRoot.data.id}};
+      if (!res.ok) return res;
+      const dto: StartSessionDTO | SessionID = res.data;
+
+      if (typeof dto === 'string') {
+        const resRoot = await this.api.get('/getRootForm', {headers: {'x-session-id': dto}});
+        if (!resRoot.ok) return resRoot;
+        return {ok: true, data: {id: dto, root: resRoot.data.id}};
+      } else {
+        this.api.version = dto.apiVersion;
+        return {ok: true, data: dto};
+      }
     } else {
-      const query = {system: systemID, default: isDefault};
+      const query: ReqQuery = {system: systemID, default: isDefault};
       return this.api.get('/session', {query});
     }
   }

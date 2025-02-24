@@ -1,6 +1,5 @@
 import { useClientState, setClientActiveChild } from 'entities/client';
 import { TextInfo } from 'shared/ui';
-import { FormSkeleton } from './plugs';
 import { formDict } from '../lib/form-dict';
 
 
@@ -9,11 +8,10 @@ export interface FormProps {
   type: ClientType;
 }
 
-
 /** Обобщённый компонент всех типов форм. */
 export const Form = ({id, type}: FormProps) => {
   const state = useClientState(id);
-  if (!state) return <FormSkeleton/>;
+  if (!state) return <div className={'wm-skeleton'}/>;
   if (state.loading.error) return <TextInfo text={state.loading.error}/>;
 
   const TypedForm = formDict[type];

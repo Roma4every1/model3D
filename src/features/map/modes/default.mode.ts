@@ -7,7 +7,6 @@ export class DefaultModeProvider implements MapModeProvider {
   public readonly id = 'default';
   public readonly cursor = 'default';
   public readonly blocked = false;
-  public offsetLabels: boolean = false;
 
   constructor(private readonly activated: boolean) {}
 

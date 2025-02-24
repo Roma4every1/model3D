@@ -1,5 +1,4 @@
 import type { ReactNode, CSSProperties, MouseEvent } from 'react';
-import { Skeleton } from '@progress/kendo-react-indicators';
 import { clsx } from 'clsx';
 import './menu-ui.scss';
 
@@ -32,21 +31,18 @@ export const MenuSectionItem = ({className, children}: MenuSectionItemProps) => 
   );
 };
 
-const mapSectionSkeletons = (width: string, i) => <MenuSectionSkeleton key={i} width={width}/>;
-
 export const MenuSkeleton = ({template}: {template: string[]}) => {
-  return (
-    <div className={'menu'}>
-      {template.map(mapSectionSkeletons)}
-    </div>
-  );
+  const toSectionSkeleton = (width: string, i: number) => {
+    return <MenuSectionSkeleton key={i} width={width}/>;
+  };
+  return <div className={'menu'}>{template.map(toSectionSkeleton)}</div>;
 };
 
 const MenuSectionSkeleton = ({width}: {width: string}) => {
   return (
-    <section className={'menu-section-skeleton'} style={{width}}>
-      <Skeleton shape={'rectangle'} animation={{type: 'wave'}}/>
-      <Skeleton shape={'rectangle'} animation={{type: 'wave'}}/>
+    <section style={{width}}>
+      <div className={'wm-skeleton'} style={{height: 20, borderRadius: 2, marginBottom: 2}}/>
+      <div className={'wm-skeleton'} style={{height: 60, borderRadius: 2}}/>
     </section>
   );
 };
