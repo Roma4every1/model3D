@@ -11,4 +11,10 @@
     grid-template-columns: 125px 145px;
     margin-bottom: 4px;
   }
+  .value-label {
+    max-width: 270px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 }

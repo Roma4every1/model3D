@@ -68,34 +68,29 @@ const MapFeatureButtons = ({stage, t}: MapFeatureButtonsProps) => {
   const toggleFieldValueMode = () => {
     const windowID = 'map-field-value';
     const onClose = () => {
+      fieldProvider.clear();
       fieldProvider.updateWindow = null;
       closeWindow(windowID);
+      stage.setExtraObject('field-value', null);
       stage.setMode('default');
     };
     if (stage.getMode() === 'show-field-value') {
       onClose();
     } else {
-      let layer = fieldProvider.getLayer();
-      if (!layer) {
-        layer = stage.getMapData().layers.find(l => l.elementType === 'field');
-        fieldProvider.setLayer(layer);
-      }
-      if (!layer.visible) {
-        layer.visible = true;
-        stage.setActiveLayer(layer as any);
-        stage.render();
-      }
       const windowProps: WindowProps = {
         style: {zIndex: 99}, className: 'field-value-window',
-        width: 286, height: 241, resizable: false,
+        width: 286, height: 190, resizable: false,
         title: t('map.field-value.title'), maximizeButton: () => null, onClose,
       };
-      const window = createElement(FieldValueWindow, {stage, provider: fieldProvider, t});
+      const window = createElement(FieldValueWindow, {provider: fieldProvider, t});
       showWindow(windowID, windowProps, window);
       stage.setMode('show-field-value');
     }
     render();
   };
+
+  const disableField =
+    stage.hasExtraObject('incl') || !stage.getMapData()?.layers.some(l => l.elementType === 'field');
 
   return (
     <IconRow className={'map-feature-buttons'}>
@@ -106,7 +101,7 @@ const MapFeatureButtons = ({stage, t}: MapFeatureButtonsProps) => {
       <IconRowButton
         icon={<RadarChartOutlined/>} title={t('map.section-other.field-value-hint')}
         active={stage.getMode() === 'show-field-value'} onClick={toggleFieldValueMode}
-        disabled={!stage.getMapData()?.layers.some(l => l.elementType === 'field')}
+        disabled={disableField}
       />
     </IconRow>
   );

@@ -6,12 +6,14 @@ import { getInterpolatedFieldValue } from '../lib/selecting-utils';
 export interface FieldValueState {
   /** Координаты точки на карте. */
   point?: Point;
+  /** Слой с полем, с которого снято значение. */
+  layer?: IMapLayer;
+  /** Значение поля. */
+  value?: number;
   /** Узел поля по X. */
   xNode?: number;
   /** Узел поля по Y. */
   yNode?: number;
-  /** Значение поля. */
-  value?: number;
 }
 
 /** Режим карты для просмотра значения поля в точке. */
@@ -20,58 +22,46 @@ export class FieldValueModeProvider implements MapModeProvider {
   public readonly cursor = 'crosshair';
   public readonly blocked = false;
 
-  /** Если `true`, значения обновляются при движении курсора, иначе по клику. */
-  public moveMode: boolean = false;
+  /** Состояние для просмотра. */
+  public state: FieldValueState = {};
   /** Функция для обновления значений в окне. */
   public updateWindow: (() => void) | null = null;
 
-  /** Состояние для просмотра. */
-  public state: FieldValueState = {};
-  /** Слой, на котором считаются значения. */
-  private layer: IMapLayer | null = null;
+  constructor(private readonly stage: MapStage) {}
 
-  public onClick(e: MouseEvent, stage: MapStage): void {
-    if (!this.updateWindow || this.moveMode) return;
-    this.updateData(stage.eventToPoint(e));
+  public onClick(e: MouseEvent): void {
+    if (!this.updateWindow) return;
+    this.setPoint(this.stage.eventToPoint(e));
     this.updateWindow();
   }
 
-  public onMouseMove(e: MouseEvent, stage: MapStage): void {
-    if (!this.updateWindow || !this.moveMode) return;
-    this.updateData(stage.eventToPoint(e));
-    this.updateWindow();
-  }
-
-  /* --- --- */
-
-  public getLayer(): IMapLayer | null {
-    return this.layer;
-  }
-
-  public setLayer(layer: IMapLayer | null): void {
-    if (this.layer === layer) return;
-    this.layer = layer;
-
-    this.state.point = undefined;
-    this.state.xNode = undefined;
-    this.state.yNode = undefined;
-    this.state.value = undefined;
-  }
-
-  private updateData(point: Point): void {
+  public setPoint(point: Point): void {
+    this.clear();
     this.state.point = point;
+
+    this.stage.setExtraObject('field-value', point);
+    this.stage.render();
+
+    for (const layer of this.stage.getMapData().layers) {
+      if (layer.elementType !== 'field' || !layer.visible) continue;
+      for (const field of layer.elements as MapField[]) {
+        const value = getInterpolatedFieldValue(field, point);
+        if (value === null) continue;
+
+        this.state.layer = layer;
+        this.state.value = value;
+        this.state.xNode = Math.floor((point.x - field.x) * (1 / field.stepx));
+        this.state.yNode = Math.floor((Math.abs(field.y - point.y)) * (1 / field.stepy));
+        return;
+      }
+    }
+  }
+
+  public clear(): void {
+    this.state.point = undefined;
+    this.state.layer = undefined;
+    this.state.value = undefined;
     this.state.xNode = undefined;
     this.state.yNode = undefined;
-    this.state.value = undefined;
-
-    for (const field of this.layer.elements as MapField[]) {
-      const value = getInterpolatedFieldValue(field, point);
-      if (value === null) continue;
-
-      this.state.xNode = Math.floor((point.x - field.x) * (1 / field.stepx));
-      this.state.yNode = Math.floor((Math.abs(field.y - point.y)) * (1 / field.stepy));
-      this.state.value = value;
-      return;
-    }
   }
 }

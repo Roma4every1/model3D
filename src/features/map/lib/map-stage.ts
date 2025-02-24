@@ -81,11 +81,11 @@ export class MapStage implements IMapStage {
     const layers: IMapLayer[] = [];
     if (customizable) {
       for (const extraObject of this.extraObjects.values()) {
-        layers.push(extraObject.layer);
+        if (extraObject.layerCustomizable) layers.push(extraObject.layer);
       }
     } else {
       for (const extraObject of this.extraObjects.values()) {
-        if (extraObject.layerCustomizable) layers.push(extraObject.layer);
+        layers.push(extraObject.layer);
       }
     }
     return layers;
