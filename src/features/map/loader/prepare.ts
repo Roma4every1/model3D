@@ -47,6 +47,10 @@ async function prepareSign(sign: MapSign): Promise<void> {
 }
 
 function preparePieSlice(pie: MapPieSlice): void {
+  if (pie.fillname) {
+    const back = pie.transparent || !pie.fillbkcolor ? 'none' : pie.fillbkcolor;
+    pie.fillStyle = fillPatterns.createFillStyle(pie.fillname, pie.color, back);
+  }
   pie.bounds = getPieSliceBounds(pie);
 }
 

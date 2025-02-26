@@ -1,3 +1,4 @@
+import type { ColorPickerProps } from 'antd';
 import { type PropertyWindowProps, updateImgPieSlice } from '../properties-utils';
 import { useState } from 'react';
 import { round } from 'shared/lib';
@@ -51,17 +52,17 @@ export const PieSlicePropertyEditor = (props: PropertyWindowProps<MapPieSlice>) 
     setChanged(changed + 1); update();
   };
 
-  const onColorChange = (_: any, hex: string) => {
-    pie.color = hex;
+  const onColorChange: ColorPickerProps['onChange'] = (color) => {
+    pie.color = color.toHexString();
     updateImgPieSlice(pie);
     setChanged(changed + 1); update();
   };
-  const onBorderColorChange = (_: any, hex: string) => {
-    pie.bordercolor = hex;
+  const onBorderColorChange: ColorPickerProps['onChange'] = (color) => {
+    pie.bordercolor = color.toHexString();
     setChanged(changed + 1); update();
   };
-  const onFillBkColorChange = (_: any, hex: string) => {
-    pie.fillbkcolor = hex;
+  const onFillBkColorChange: ColorPickerProps['onChange'] = (color) => {
+    pie.fillbkcolor = color.toHexString();
     updateImgPieSlice(pie);
     setChanged(changed + 1); update();
   };
@@ -112,7 +113,10 @@ export const PieSlicePropertyEditor = (props: PropertyWindowProps<MapPieSlice>) 
           parser={inputNumberParser} controls={false} changeOnWheel={true}
         />
         <span style={{marginLeft: 14}}>Цвет:</span>
-        <ColorPicker value={pie.color} onChange={onColorChange} disabledAlpha={true}/>
+        <ColorPicker
+          value={pie.color} onChange={onColorChange}
+          disabledAlpha={true} allowClear={false}
+        />
         <span>Граница:</span>
         <ColorPicker
           value={pie.bordercolor} onChange={onBorderColorChange}
