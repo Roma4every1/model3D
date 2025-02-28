@@ -1,7 +1,7 @@
 import type { ChartLegendItem } from '../lib/chart.types';
-import { useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useCurrentPng } from 'recharts-to-png';
-import { useChannelDict } from 'entities/channel';
+import { useChannelDict, useChannelLoading } from 'entities/channel';
 import { useChartState } from '../store/chart.store';
 import { updateChartState, setChartChannelData, setChartLookupData } from '../store/chart.actions';
 
@@ -12,12 +12,26 @@ import { toYAxis } from './elements/y-axis';
 import { toDiagram, toReferenceLine } from './elements/diagrams';
 
 
-export const Chart = ({id}: SessionClient) => {
+export const Chart = ({id, neededChannels}: Pick<SessionClient, 'id' | 'neededChannels'>) => {
   const state = useChartState(id);
   const [getPng, { ref }] = useCurrentPng();
 
+  const timerRef = useRef<number>(null);
+  const [loading, setLoading] = useState(false);
+
   const channelData = useChannelDict(state.usedChannels);
   const lookupData = useChannelDict(state.usedLookups);
+  const dataLoading = useChannelLoading(neededChannels);
+
+  useEffect(() => {
+    if (dataLoading) {
+      timerRef.current = window.setTimeout(setLoading, 500, true);
+    } else if (timerRef.current !== null) {
+      window.clearTimeout(timerRef.current);
+      timerRef.current = null;
+      setLoading(false);
+    }
+  }, [dataLoading]);
 
   useEffect(() => {
     state.getPng = getPng;
@@ -35,6 +49,9 @@ export const Chart = ({id}: SessionClient) => {
   const data = stage.getData();
   const displayedProperties = stage.getDisplayedProperties();
 
+  if (loading) {
+    return <TextInfo text={'base.loading'}/>;
+  }
   if (displayedProperties.length === 0 || data.records.length === 0) {
     return <TextInfo text={'chart.empty'}/>;
   }
