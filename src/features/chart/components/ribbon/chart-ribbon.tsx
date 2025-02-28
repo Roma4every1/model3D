@@ -2,14 +2,14 @@ import { useTranslation } from 'react-i18next';
 import { useChartState } from '../../store/chart.store';
 import { MenuSkeleton } from 'shared/ui';
 
-import './chart-edit-panel.scss';
+import './chart-ribbon.scss';
 import { ChartSectionGlobal } from './section-global';
 import { ChartSectionProperty } from './section-property';
 import { ChartSectionAxis } from './section-axis';
 import { ChartSectionExport } from './section-export';
 
 
-export const ChartEditPanel = ({id}: FormEditPanelProps) => {
+export const ChartRibbon = ({id}: FormRibbonProps) => {
   const { t } = useTranslation();
   const state = useChartState(id);
 

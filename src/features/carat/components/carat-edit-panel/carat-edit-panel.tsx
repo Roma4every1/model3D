@@ -8,7 +8,7 @@ import { CurveTypesSection } from './curve-types';
 
 
 /** Панель редактирования каротажа. */
-export const CaratEditPanel = ({id}: FormEditPanelProps) => {
+export const CaratEditPanel = ({id}: FormRibbonProps) => {
   const state = useCaratState(id);
   if (!state || state.loading.percentage < 100) {
     return <MenuSkeleton template={['205px', '458px', '301px']}/>;

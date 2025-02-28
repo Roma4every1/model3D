@@ -41,9 +41,12 @@ export class FieldValueModeProvider implements MapModeProvider {
 
     this.stage.setExtraObject('field-value', point);
     this.stage.render();
+    const layers = this.stage.getMapData().layers;
 
-    for (const layer of this.stage.getMapData().layers) {
+    for (let i = layers.length - 1; i >= 0; --i) {
+      const layer = layers[i];
       if (layer.elementType !== 'field' || !layer.visible) continue;
+
       for (const field of layer.elements as MapField[]) {
         const value = getInterpolatedFieldValue(field, point);
         if (value === null) continue;

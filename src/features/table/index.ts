@@ -1,5 +1,5 @@
 export { Table } from './components/table';
-export { TableEditPanel } from './components/edit-panel/table-edit-panel';
+export { TableRibbon } from './components/ribbon/table-ribbon';
 
 export type { TableSettingsDTO } from './lib/dto.types';
 export { TableStateFactory } from './lib/initialization';

@@ -9,7 +9,7 @@ import { CaratExportSection } from './section-export';
 
 
 /** Панель редактирования трека каротажной диаграммы. */
-export const TrackEditPanel = ({id}: FormEditPanelProps) => {
+export const TrackEditPanel = ({id}: FormRibbonProps) => {
   const state = useCaratState(id);
   if (!state || state.loading.percentage < 100) {
     return <MenuSkeleton template={['290px', '310px', '160px', '150px']}/>;

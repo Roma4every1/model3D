@@ -2,13 +2,13 @@ import { useTranslation } from 'react-i18next';
 import { useTableState } from '../../store/table.store';
 import { MenuSkeleton } from 'shared/ui';
 
-import './table-edit-panel.scss';
+import './table-ribbon.scss';
 import { TableGlobalSection } from './section-global';
 import { TableColumnSection } from './section-column';
 import { TableFilterSection } from './section-filter';
 
 
-export const TableEditPanel = ({id}: FormEditPanelProps) => {
+export const TableRibbon = ({id}: FormRibbonProps) => {
   const { t } = useTranslation();
   const state = useTableState(id);
 

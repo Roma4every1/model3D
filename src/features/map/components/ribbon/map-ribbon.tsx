@@ -9,7 +9,7 @@ import { MapEditSection } from './section-edit';
 import { MapOtherSection } from './section-other';
 
 
-export const MapRibbon = ({id, parentID}: FormEditPanelProps) => {
+export const MapRibbon = ({id, parentID}: FormRibbonProps) => {
   const { t } = useTranslation();
   const state = useMapState(id);
 

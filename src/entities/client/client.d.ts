@@ -112,7 +112,7 @@ interface FormStatePayload<S = any> {
 }
 
 /** Пропс для панелей редактирования. */
-interface FormEditPanelProps {
+interface FormRibbonProps {
   /** ID формы. */
   id: FormID;
   /** ID родительской презентации. */
