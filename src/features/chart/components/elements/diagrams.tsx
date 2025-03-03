@@ -1,16 +1,31 @@
 import type { ReactElement } from 'react';
-import type { ChartMark, ChartProperty } from '../../lib/chart.types';
+import type { ChartProperty, ChartAxis, ChartMark } from '../../lib/chart.types';
 import { Area, Bar, Line, Scatter, LabelList, ReferenceLine } from 'recharts';
+import { measureText } from 'shared/drawing';
+import { chartValueFormatter } from '../../lib/axis-utils';
 import { CustomVerticalMark } from './vertical-mark';
 
 
-export function toDiagram(property: ChartProperty): ReactElement {
+interface CustomLabelProps {
+  value: number;
+  x: number;
+  y: number;
+  width: number;
+}
+
+export function toDiagram(property: ChartProperty, axes: ChartAxis[]): ReactElement {
   const displayType = property.displayType;
   if (displayType === 'vertical') return null;
 
+  let labels: ReactElement;
   const { id, displayName, yAxisID, curveType, color, showPoints } = property;
-  const labels = property.showLabels && <LabelList dataKey={id} position={'top'} fill={'black'}/>;
 
+  if (property.showLabels) {
+    const axis = axes.find(a => a.id === yAxisID);
+    const isBottom = (axis.inverse && axis.min > 0) || (!axis.inverse && axis.min < 0);
+    const content = (props: CustomLabelProps): ReactElement => customLabel(props, color, isBottom);
+    labels = <LabelList dataKey={id} content={content}/>;
+  }
   if (displayType === 'line') {
     return (
       <Line
@@ -69,5 +84,29 @@ export function toReferenceLine(mark: ChartMark): ReactElement {
       key={mark.x} x={mark.x} yAxisId={yAxisID}
       stroke={'black'} strokeDasharray={lineDash} label={labelContent}
     />
+  );
+}
+
+function customLabel(props: CustomLabelProps, color: ColorString, isBottom: boolean): ReactElement {
+  const value = props.value;
+  if (value === null || value === undefined) return null;
+
+  const valueString = chartValueFormatter(value);
+  const textWidth = measureText(valueString, '10px Roboto');
+  const textHeight = 10;
+
+  const valueY = props.y;
+  const textX = props.x + (props.width ?? 0) / 2;
+  const textY = isBottom ? (valueY + textHeight + textHeight / 2) : (valueY - textHeight);
+
+  const rectX = textX - textWidth / 2 - 2;
+  const rectY = textY - textHeight;
+
+  return (
+    <g>
+      <line x1={textX} y1={valueY} x2={textX} y2={textY} stroke={color}/>
+      <rect x={rectX} y={rectY} width={textWidth + 4} height={textHeight + 4} fill={color}/>
+      <text x={textX} y={textY} fill={'#fff'}>{valueString}</text>
+    </g>
   );
 }

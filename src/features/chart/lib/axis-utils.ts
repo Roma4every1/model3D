@@ -69,6 +69,11 @@ function getPragmaticMax(n: number): number {
 
 /* --- --- */
 
+/** Функция для форматирования подписей значений на графике. */
+export function chartValueFormatter(value: number): string {
+  return (Math.round(value * 1000) / 1000).toString();
+}
+
 export function tickFormatter(tick: number): string {
   const tickStr = Math.ceil(tick).toString();
   if (tickStr.length <= 3) return tickStr;

@@ -10,6 +10,7 @@ import { ResponsiveContainer, ComposedChart, CartesianGrid, Legend, Tooltip, XAx
 import { TextInfo } from 'shared/ui';
 import { toYAxis } from './elements/y-axis';
 import { toDiagram, toReferenceLine } from './elements/diagrams';
+import { chartValueFormatter } from '../lib/axis-utils';
 
 
 export const Chart = ({id, neededChannels}: Pick<SessionClient, 'id' | 'neededChannels'>) => {
@@ -60,7 +61,10 @@ export const Chart = ({id, neededChannels}: Pick<SessionClient, 'id' | 'neededCh
   const xAxisType = stage.dataController.xType === 'number' ? 'number' : 'category';
 
   const tooltip = state.global.showTooltip && (
-    <Tooltip contentStyle={{padding: '4px 8px'}} itemStyle={{padding: 0}}/>
+    <Tooltip
+      contentStyle={{padding: '4px 8px'}} itemStyle={{padding: 0}}
+      formatter={chartValueFormatter}
+    />
   );
 
   const setActiveProperty = (item: ChartLegendItem) => {
@@ -79,7 +83,7 @@ export const Chart = ({id, neededChannels}: Pick<SessionClient, 'id' | 'neededCh
         <CartesianGrid strokeDasharray={'4 4'}/>
         <XAxis dataKey={'x'} type={xAxisType}/>
         {displayedAxes.map(toYAxis)}
-        {displayedProperties.map(toDiagram)}
+        {displayedProperties.map(p => toDiagram(p, displayedAxes))}
         {data.marks.map(toReferenceLine)}
         {tooltip}
       </ComposedChart>

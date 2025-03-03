@@ -1,3 +1,4 @@
+import { round } from 'shared/lib';
 import { MapStage } from '../lib/map-stage';
 import { getInterpolatedFieldValue } from '../lib/selecting-utils';
 
@@ -53,8 +54,8 @@ export class FieldValueModeProvider implements MapModeProvider {
 
         this.state.layer = layer;
         this.state.value = value;
-        this.state.xNode = Math.floor((point.x - field.x) * (1 / field.stepx));
-        this.state.yNode = Math.floor((Math.abs(field.y - point.y)) * (1 / field.stepy));
+        this.state.xNode = round((point.x - field.x) * (1 / field.stepx), 1);
+        this.state.yNode = round((Math.abs(field.y - point.y)) * (1 / field.stepy), 1);
         return;
       }
     }
