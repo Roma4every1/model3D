@@ -77,10 +77,31 @@ export class ChartStage {
 
   private updateData(): void {
     this.data = this.dataController.createData(this.properties);
+    this.updateDataRanges();
   }
 
   private updateLegend(): void {
     this.legend = this.getDisplayedProperties().map(createPropertyLegend);
+  }
+
+  private updateDataRanges(): void {
+    for (const axis of this.axes) {
+      const values: number[] = [];
+      for (const property of this.properties) {
+        if (property.yAxisID !== axis.id) continue;
+        for (const record of this.data.records) {
+          const value = record[property.id] as number;
+          if (value !== null && value !== undefined) values.push(value);
+        }
+      }
+      if (values.length > 0) {
+        axis.actualMin = Math.min(...values);
+        axis.actualMax = Math.max(...values);
+      } else {
+        axis.actualMin = 0;
+        axis.actualMax = 0;
+      }
+    }
   }
 
   /* --- --- */

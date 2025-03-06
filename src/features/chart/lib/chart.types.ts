@@ -45,6 +45,12 @@ export interface ChartAxis {
   displayName: string;
   /** Направление оси. */
   inverse: boolean;
+  /** Флаг, влияющий на авторасчёт `min-max-tickCount` оси. */
+  half: boolean;
+  /** Минимальное значение для текущих данных. */
+  actualMin?: number | null;
+  /** Максимальное значение для текущих данных. */
+  actualMax?: number | null;
 }
 
 /** Модель отображаемого свойства на графике. */

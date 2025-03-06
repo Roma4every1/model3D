@@ -41,6 +41,8 @@ export interface ChartAxisDTO {
   readonly displayName?: string | null;
   /** Направление: снизу вверх или сверху вниз. */
   readonly inverse?: boolean | null;
+  /** Флаг, влияющий на авторасчёт `min-max-tickCount` оси. */
+  readonly half?: boolean;
 }
 
 /** DTO настроек свойства графика. */

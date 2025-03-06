@@ -122,7 +122,8 @@ export class ChartStateFactory {
     }
     return {
       id, min, max, tickCount, scale, location, color,
-      displayName: dto.displayName ?? '', inverse: dto.inverse ?? false,
+      displayName: dto.displayName ?? '',
+      inverse: dto.inverse ?? false, half: dto.half ?? false,
     };
   }
 

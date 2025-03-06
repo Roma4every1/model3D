@@ -1,7 +1,8 @@
 import type { ReactElement } from 'react';
 import type { ChartAxis } from '../../lib/chart.types';
 import { YAxis } from 'recharts';
-import { getAxisDomain, tickFormatter } from '../../lib/axis-utils';
+import { measureText } from 'shared/drawing';
+import { calcAxisDomain, tickFormatter } from '../../lib/axis-utils';
 
 
 interface YAxisLabel {
@@ -12,8 +13,9 @@ interface YAxisLabel {
 }
 
 export function toYAxis(axis: ChartAxis): ReactElement {
-  let width = 40;
+  const { domain, ticks } = calcAxisDomain(axis);
   let label: YAxisLabel;
+  let width = Math.max(...ticks.map(n => measureText(tickFormatter(n), '11px Roboto'))) + 7;
 
   if (axis.displayName) {
     if (axis.location === 'left') {
@@ -21,16 +23,15 @@ export function toYAxis(axis: ChartAxis): ReactElement {
     } else {
       label = {value: axis.displayName, angle: 90, offset: 10, position: 'insideRight'};
     }
-    width = 50;
+    width += 16;
   }
 
   return (
     <YAxis
       key={axis.id} yAxisId={axis.id}
       scale={axis.scale} orientation={axis.location} reversed={axis.inverse}
-      domain={getAxisDomain(axis)} allowDataOverflow={true}
-      tickCount={axis.tickCount ?? undefined} minTickGap={0} tickFormatter={tickFormatter}
-      label={label} stroke={axis.color} width={width}
+      domain={domain} ticks={ticks} minTickGap={0} tickFormatter={tickFormatter}
+      label={label} stroke={axis.color} width={width} allowDataOverflow={true}
     />
   );
 }
