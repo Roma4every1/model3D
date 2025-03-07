@@ -79,7 +79,7 @@ const MapFeatureButtons = ({stage, t}: MapFeatureButtonsProps) => {
     } else {
       const windowProps: WindowProps = {
         style: {zIndex: 99}, className: 'field-value-window',
-        width: 286, height: 190, resizable: false,
+        width: 286, height: 192, resizable: false,
         title: t('map.field-value.title'), maximizeButton: () => null, onClose,
       };
       const window = createElement(FieldValueWindow, {provider: fieldProvider, t});

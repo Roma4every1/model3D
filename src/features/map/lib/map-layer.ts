@@ -63,7 +63,7 @@ export class MapLayer implements IMapLayer {
   private constructor(init: MapLayerInit, elements: MapElement[], temporary: boolean) {
     this.id = init.uid;
     this.displayName = init.name;
-    this.treePath = init.group?.split('\\').map(s => s.trim()) ?? [];
+    this.treePath = (init.group || null)?.split('\\').map(s => s.trim()) ?? [];
 
     this.elements = elements;
     this.elementType = elements[0]?.type ?? null;
