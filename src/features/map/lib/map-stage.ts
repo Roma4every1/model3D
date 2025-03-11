@@ -11,6 +11,8 @@ import { pixelPerMeter } from './constants';
 
 /** Сцена карты. */
 export class MapStage implements IMapStage {
+  /** Глобальный слушатель события клика. */
+  public static onClick?: (instance: MapStage, e: MouseEvent) => void;
   /** Класс для обработки вьюпорта при движении. */
   public readonly scroller: Scroller;
   /** Шина событий для сцены. */
@@ -290,8 +292,12 @@ export class MapStage implements IMapStage {
   public handleMouseUp(e: MouseEvent): void {
     this.scroller.mouseUp();
     if (this.mode.onMouseUp) this.mode.onMouseUp(e, this);
+
     const downEvent = this.scroller.lastDownEvent;
-    if (downEvent && e.x === downEvent.x && e.y === downEvent.y) this.mode.onClick(e, this);
+    if (!downEvent || e.x !== downEvent.x || e.y !== downEvent.y) return;
+
+    if (MapStage.onClick) MapStage.onClick(this, e);
+    this.mode.onClick(e, this);
   }
 
   public handleMouseMove(e: MouseEvent): void {

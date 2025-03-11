@@ -1,17 +1,14 @@
 import type { TFunction } from 'react-i18next';
-import type { WindowProps } from '@progress/kendo-react-dialogs';
 import type { MapState } from '../../lib/types';
 import { jsPDF } from 'jspdf';
-import { createElement, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRender } from 'shared/react';
-import { showWindow, closeWindow } from 'entities/window';
 import { saveMap } from '../../store/map.thunks';
 import { MapStage } from '../../lib/map-stage';
-import { FieldValueModeProvider } from '../../modes';
+import { closeMapFieldValueWindow, showMapFieldValueWindow } from '../../store/map-window.actions';
 
 import { MenuSection, BigButton, IconRow, IconRowButton } from 'shared/ui';
 import { RadarChartOutlined } from '@ant-design/icons';
-import { FieldValueWindow } from './field-value';
 import saveMapIcon from 'assets/map/save-map.png';
 import exportToPDFIcon from 'assets/map/pdf.png';
 import measurerIcon from 'assets/map/distance-measurer.svg';
@@ -58,7 +55,6 @@ export const MapOtherSection = ({state, t}: MapOtherSectionProps) => {
 
 const MapFeatureButtons = ({stage, t}: MapFeatureButtonsProps) => {
   const render = useRender();
-  const fieldProvider = stage.getModeProvider('show-field-value') as FieldValueModeProvider;
 
   useEffect(() => {
     stage.subscribe('mode', render);
@@ -66,31 +62,17 @@ const MapFeatureButtons = ({stage, t}: MapFeatureButtonsProps) => {
   }, [stage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleFieldValueMode = () => {
-    const windowID = 'map-field-value';
-    const onClose = () => {
-      fieldProvider.clear();
-      fieldProvider.updateWindow = null;
-      closeWindow(windowID);
-      stage.setExtraObject('field-value', null);
-      stage.setMode('default');
-    };
-    if (stage.getMode() === 'show-field-value') {
-      onClose();
-    } else {
-      const windowProps: WindowProps = {
-        style: {zIndex: 99}, className: 'field-value-window',
-        width: 286, height: 192, resizable: false,
-        title: t('map.field-value.title'), maximizeButton: () => null, onClose,
-      };
-      const window = createElement(FieldValueWindow, {provider: fieldProvider, t});
-      showWindow(windowID, windowProps, window);
+    if (stage.getMode() !== 'show-field-value') {
+      showMapFieldValueWindow(stage);
       stage.setMode('show-field-value');
+    } else {
+      closeMapFieldValueWindow();
     }
     render();
   };
 
-  const disableField =
-    stage.hasExtraObject('incl') || !stage.getMapData()?.layers.some(l => l.elementType === 'field');
+  const fieldActive = stage.getMode() === 'show-field-value';
+  const fieldDisabled = stage.hasExtraObject('incl') || (!fieldActive && !mapHasFields(stage));
 
   return (
     <IconRow className={'map-feature-buttons'}>
@@ -100,9 +82,13 @@ const MapFeatureButtons = ({stage, t}: MapFeatureButtonsProps) => {
       />
       <IconRowButton
         icon={<RadarChartOutlined/>} title={t('map.section-other.field-value-hint')}
-        active={stage.getMode() === 'show-field-value'} onClick={toggleFieldValueMode}
-        disabled={disableField}
+        active={fieldActive} onClick={toggleFieldValueMode} disabled={fieldDisabled}
       />
     </IconRow>
   );
 };
+
+function mapHasFields(stage: MapStage): boolean {
+  const data = stage.getMapData();
+  return data && data.layers.some(l => l.elementType === 'field');
+}

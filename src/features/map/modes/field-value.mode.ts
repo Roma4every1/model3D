@@ -1,7 +1,18 @@
 import { round } from 'shared/lib';
+import { getGlobalVariable } from 'shared/global';
 import { MapStage } from '../lib/map-stage';
 import { getInterpolatedFieldValue } from '../lib/selecting-utils';
 
+
+/** Глобальный контекст окна просмотра значения поля в точке. */
+export interface FieldValueContext {
+  /** Сцена активной карты. */
+  stage: MapStage;
+  /** Состояние для последней точки. */
+  state: FieldValueState;
+  /** Функция для вызова рендера окна. */
+  updateWindow?: () => void;
+}
 
 /** Состояние для просмотра значения поля в точке. */
 export interface FieldValueState {
@@ -23,22 +34,18 @@ export class FieldValueModeProvider implements MapModeProvider {
   public readonly cursor = 'crosshair';
   public readonly blocked = false;
 
-  /** Состояние для просмотра. */
-  public state: FieldValueState = {};
-  /** Функция для обновления значений в окне. */
-  public updateWindow: (() => void) | null = null;
-
   constructor(private readonly stage: MapStage) {}
 
   public onClick(e: MouseEvent): void {
-    if (!this.updateWindow) return;
-    this.setPoint(this.stage.eventToPoint(e));
-    this.updateWindow();
+    const context = getGlobalVariable<FieldValueContext>('fv');
+    if (!context) return;
+    this.setPoint(this.stage.eventToPoint(e), context);
+    context.updateWindow();
   }
 
-  public setPoint(point: Point): void {
-    this.clear();
-    this.state.point = point;
+  public setPoint(point: Point, context: FieldValueContext): void {
+    const state: FieldValueState = {point};
+    context.state = state;
 
     this.stage.setExtraObject('field-value', point);
     this.stage.render();
@@ -52,20 +59,12 @@ export class FieldValueModeProvider implements MapModeProvider {
         const value = getInterpolatedFieldValue(field, point);
         if (value === null) continue;
 
-        this.state.layer = layer;
-        this.state.value = value;
-        this.state.xNode = round((point.x - field.x) * (1 / field.stepx), 1);
-        this.state.yNode = round((Math.abs(field.y - point.y)) * (1 / field.stepy), 1);
+        state.layer = layer;
+        state.value = value;
+        state.xNode = round((point.x - field.x) * (1 / field.stepx), 1);
+        state.yNode = round((Math.abs(field.y - point.y)) * (1 / field.stepy), 1);
         return;
       }
     }
-  }
-
-  public clear(): void {
-    this.state.point = undefined;
-    this.state.layer = undefined;
-    this.state.value = undefined;
-    this.state.xNode = undefined;
-    this.state.yNode = undefined;
   }
 }

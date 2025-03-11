@@ -1,19 +1,20 @@
-import type { TFunction } from 'react-i18next';
-import { useRender } from 'shared/react'
+import type { FieldValueModeProvider, FieldValueContext } from '../../modes/field-value.mode';
+import { useTranslation } from 'react-i18next';
+import { useRender } from 'shared/react';
+import { useGlobalVariable } from 'shared/global';
 import { round } from 'shared/lib';
 import { InputNumber } from 'antd';
-import { FieldValueModeProvider } from '../../modes';
-import './field-value.scss';
+import './field-value-window.scss';
 
 
-interface FieldValueWindowProps {
-  provider: FieldValueModeProvider;
-  t: TFunction;
-}
+export const FieldValueWindow = () => {
+  const render = useRender();
+  const { t } = useTranslation();
+  const context = useGlobalVariable<FieldValueContext>('fv');
 
-export const FieldValueWindow = ({provider, t}: FieldValueWindowProps) => {
-  const state = provider.state;
-  provider.updateWindow = useRender();
+  const provider = context.stage.getModeProvider('show-field-value') as FieldValueModeProvider;
+  const state = context.state;
+  context.updateWindow = render;
 
   let x: number, y: number, value: number;
   let valueLabel = t('map.field-value.value');
@@ -29,13 +30,13 @@ export const FieldValueWindow = ({provider, t}: FieldValueWindowProps) => {
 
   const onXChange = (value: number) => {
     if (y === undefined) return;
-    provider.setPoint({x: value, y: -y});
-    provider.updateWindow();
+    provider.setPoint({x: value, y: -y}, context);
+    render();
   };
   const onYChange = (value: number) => {
     if (x === undefined) return;
-    provider.setPoint({x, y: -value});
-    provider.updateWindow();
+    provider.setPoint({x, y: -value}, context);
+    render();
   };
 
   return (

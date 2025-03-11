@@ -13,7 +13,7 @@ export class FieldDrawer implements MapElementDrawer<MapField> {
     const ctx = options.ctx;
     const width = ctx.canvas.width;
     const height = ctx.canvas.height;
-    const imageData = ctx.createImageData(width, height);
+    const imageData = ctx.getImageData(0, 0, width, height);
 
     let pixelIndex = 0;
     for (let dy = 0; dy < height; ++dy) {

@@ -4,15 +4,20 @@ import { create } from 'zustand';
 /** Специальное хранилище для глобальных объектов. */
 export const useGlobalStore = create((): GlobalState => ({
   config: null,
-  // styles: null,
+  variables: {},
 }));
 
-/** Конфигурация приложения. */
 export function useAppConfig(): AppConfig {
   return useGlobalStore(state => state.config);
 }
+export function useGlobalVariable<T = any>(name: string): T {
+  return useGlobalStore(state => state.variables[name]);
+}
 
-/** Конфигурация приложения (геттер). */
-export function getAppConfig(): AppConfig {
-  return useGlobalStore.getState().config;
+export function getGlobalVariable<T = any>(name: string): T {
+  return useGlobalStore.getState().variables[name];
+}
+export function setGlobalVariable(name: string, value: any): void {
+  const variables = useGlobalStore.getState().variables;
+  useGlobalStore.setState({variables: {...variables, [name]: value}});
 }
