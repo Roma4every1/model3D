@@ -1,4 +1,4 @@
-import type { Res, ReqOptions } from 'shared/lib';
+import type { Res, ReqOptions, XRawElement } from 'shared/lib';
 import type { IJsonModel } from 'flexlayout-react';
 import type { ParameterInit } from 'entities/parameter';
 import { Fetcher, fetcher } from 'shared/lib';
@@ -11,6 +11,7 @@ export interface ClientDataDTO<S = any> {
   parameters: ParameterInit[];
   children?: ClientChildrenDTO;
   layout?: IJsonModel;
+  extra?: XRawElement;
 }
 export interface ParameterSetterDTO {
   parameterToSet: string;

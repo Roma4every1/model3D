@@ -27,6 +27,8 @@ interface SessionClient<T extends ClientType = ClientType, S = any, L = any> {
   channels: AttachedChannel[];
   /** Настройки, характерные для типа. */
   settings?: S;
+  /** Любая дополнительная конфигурация произвольной структуры. */
+  extra?: any; // XElement
   /** Модель разметки. */
   layout?: L;
   /** Дочерние клиенты. */

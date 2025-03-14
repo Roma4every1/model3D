@@ -5,4 +5,5 @@ export * from './api';
 export * from './legacy';
 export * from './event-bus';
 export * from './id-generator';
+export * from './xml';
 export * from './extension-icon-dict';

@@ -1,6 +1,7 @@
 import type { ClientDataDTO, ParameterSetterDTO } from 'entities/client';
 import type { ParameterStore, ParameterUpdateData, ParameterGroupDTO } from 'entities/parameter';
 import type { ProgramDTO } from 'entities/program';
+import { XElement } from 'shared/lib';
 import { programAPI, programCompareFn } from 'entities/program';
 import { useChannelStore } from 'entities/channel';
 import { AttachedChannelFactory, clientAPI } from 'entities/client';
@@ -191,6 +192,7 @@ export class PresentationFactory {
       client.channels = factory.create(dto.channels, resolve);
       client.neededChannels = this.getChildNeededChannels(client.channels);
       client.settings = dto.settings;
+      client.extra = XElement.tryCreate(dto.extra);
       client.loading = {status: 'init'};
     } else {
       client.neededChannels = [];
