@@ -19,25 +19,33 @@ export class MapAPI {
     this.converter = new MapContainerConverter(key);
   }
 
+  /** Загрузка общих данных карты. */
+  public getMapInfo(mapID: MapID, formID: FormID, signal?: AbortSignal): Promise<Res<MapInfo>> {
+    if (this.api.legacy) {
+      return this.api.get('/getMap', {query: {mapId: mapID, formId: formID}, signal});
+    } else {
+      return this.api.get('/map/info', {query: {id: mapID, formID}, signal});
+    }
+  }
+
+  /** Загрузка контейнера карты. */
+  public async getMapContainer(name: string, storage: MapStorageID, signal?: AbortSignal): Promise<Res<string>> {
+    let res: Res;
+    if (this.api.legacy) {
+      const query = {containerName: name, owner: storage};
+      res = await this.api.get('/getContainer', {query: query, then: 'arrayBuffer', signal});
+    } else {
+      res = await this.api.get('/map/container', {query: {name}, then: 'arrayBuffer', signal});
+    }
+    if (res.ok) res.data = this.converter.decode(res.data);
+    return res;
+  }
+
   /** Запрос на сохранение карты. */
   public saveMap(formID: FormID, mapID: MapID, mapData: any, storage: MapStorageID): Promise<Res> {
     const data = {formId: formID, mapId: mapID, mapData, owner: storage};
     const blob = this.converter.encode(JSON.stringify(data));
     return this.api.post('/saveMap', {blob});
-  }
-
-  /** Загрузка общих данных карты. */
-  public getMapInfo(mapID: MapID, formID: FormID, signal?: AbortSignal): Promise<Res<MapInfo>> {
-    const query = {mapId: mapID, formId: formID};
-    return this.api.get('/getMap', {query: query, signal});
-  }
-
-  /** Загрузка контейнера карты. */
-  public async getMapContainer(name: string, storage: MapStorageID, signal?: AbortSignal): Promise<Res<string>> {
-    const query = {owner: storage, containerName: name};
-    const res = await this.api.get('/getContainer', {query, then: 'arrayBuffer', signal});
-    if (res.ok) res.data = this.converter.decode(res.data);
-    return res;
   }
 }
 
