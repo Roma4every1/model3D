@@ -65,6 +65,8 @@ export interface ChartProperty {
   readonly yProperty: ChannelProperty;
   /** Идентификатор оси. */
   readonly yAxisID: ChartAxisID;
+  /** Индекс порядка свойства. */
+  readonly zIndex: number;
 
   /** Название для интерфейса. */
   displayName: string;

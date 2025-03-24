@@ -23,7 +23,7 @@ import { updatePresentationTree } from 'widgets/left-panel';
 
 /** Сохранение текущей сессии. */
 export async function saveSession(): Promise<void> {
-  const res = await appAPI.saveSession(getSessionToSave());
+  const res = await appAPI.saveSession(getSessionToSave(fetcher.version));
   if (res.ok && res.data) {
     showNotification(t('app.session-saved'));
   } else {

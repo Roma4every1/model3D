@@ -7,6 +7,8 @@ import { dateKeyGetters, dateFormatters } from './date-utils';
 export class ChartDataController {
   /** Тип оси X. */
   public readonly xType: ChartXAxisType;
+  /** Шаг по времени для случая, когда тип оси является датой. */
+  public dateStep: ChartDateStep;
   /** Функция для получения ключа даты или категории. */
   private keyGetter: (date: Date) => number;
   /** Функция для форматирования даты или категории. */
@@ -34,6 +36,7 @@ export class ChartDataController {
 
   public setDateStep(step: ChartDateStep): void {
     if (this.xType !== 'date') return;
+    this.dateStep = step;
     this.keyGetter = dateKeyGetters[step];
     this.keyFormatter = dateFormatters[step];
   }

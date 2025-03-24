@@ -1,4 +1,5 @@
 import type { IJsonModel } from 'flexlayout-react';
+import type { XRawElement } from 'shared/lib';
 import type { TableSettingsDTO } from 'features/table';
 import type { CaratFormSettings } from 'features/carat';
 
@@ -6,6 +7,7 @@ import { useClientStore } from 'entities/client';
 import { useParameterStore, serializeParameter, ParameterStringTemplate } from 'entities/parameter';
 import { useTableStore, tableStateToSettings } from 'features/table';
 import { useCaratStore, caratStateToSettings } from 'features/carat';
+import { useChartStore, chartStateToSettings, chartStateToExtra } from 'features/chart';
 
 
 /** Модель, используемая в серверных запросах для сохранения сессии. */
@@ -37,7 +39,10 @@ interface SettingsToSave {
 
 
 /** Конвертирует состояние приложения в модель сохраняемой сессии. */
-export function getSessionToSave(): SessionToSave {
+export function getSessionToSave(version: string): SessionToSave {
+  if (version && version > '3.7.22') {
+    return Object.values(useClientStore.getState()).map(toClientDTO) as any;
+  }
   const clients = useClientStore.getState();
   const presentations = Object.values(clients).filter(c => c.type === 'grid' && c.children);
 
@@ -47,6 +52,47 @@ export function getSessionToSave(): SessionToSave {
     layout: getLayoutsToSave(clients.root, presentations),
     settings: getSettingsToSave(),
   };
+}
+
+/* --- New Format --- */
+
+function toClientDTO(client: SessionClient): any {
+  const { id, type } = client;
+  const pStorage = useParameterStore.getState().storage;
+  const parameters = client.parameters?.map(id => serializeParameter(pStorage.get(id)));
+
+  const children = getClientChildrenToSave(client);
+  const layout = id === 'root' ? getRootLayout(client) : client.layout?.toJson();
+
+  let settings: Record<string, any>;
+  let extra: XRawElement;
+
+  if (type === 'dataSet') {
+    settings = tableStateToSettings(id, useTableStore.getState()[id]);
+  } else if (type === 'chart') {
+    const state = useChartStore.getState()[id];
+    settings = chartStateToSettings(state);
+    extra = chartStateToExtra(state);
+  } else if (type === 'carat') {
+    settings = caratStateToSettings(id, useCaratStore.getState()[id]);
+  }
+  return {id, type, children, parameters, layout, settings, extra};
+}
+
+function getClientChildrenToSave(client: SessionClient): ChildrenToSave {
+  if (client.type === 'grid') {
+    if (!client.children || client.settings.multiMapChannel) return undefined;
+    return toChildrenToSave(client);
+  }
+  if (client.id === 'root') {
+    return {
+      id: client.id,
+      children: client.children.map(toFormDataWM),
+      openedChildren: [client.activeChildID],
+      activeChildren: [client.activeChildID],
+    };
+  }
+  return undefined;
 }
 
 /* --- Parameters --- */

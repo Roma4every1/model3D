@@ -150,7 +150,7 @@ export class ChartStateFactory {
   }
 
   private createProperty(init: ChartPropertyInit): ChartProperty | null {
-    const { channel, xProperty, yProperty, settings, visible } = init;
+    const { channel, xProperty, yProperty, settings } = init;
     const yAxisID = settings.yAxisId;
     if (!yAxisID || this.axisDict[yAxisID] === undefined) return null;
 
@@ -175,7 +175,7 @@ export class ChartStateFactory {
       channel, xProperty, yProperty, yAxisID,
       displayName, displayType, curveType, color, lineDash,
       dotOptions, dotRenderer, showLine, showPoints, showLabels,
-      visible: visible, empty: true,
+      visible: init.visible, empty: true, zIndex: init.z,
     };
   }
 
