@@ -23,7 +23,9 @@ export function createAntDesignTheme(accentColor: ColorString): ThemeConfig {
   globalStyles.setProperty('--wm-primary', seed.formatHex());
   globalStyles.setProperty('--wm-primary-60', themeColor(seed, 0.60));
   globalStyles.setProperty('--wm-primary-70', themeColor(seed, 0.70));
+  globalStyles.setProperty('--wm-primary-80', themeColor(seed, 0.80));
   globalStyles.setProperty('--wm-primary-85', themeColor(seed, 0.85));
+  globalStyles.setProperty('--wm-primary-90', themeColor(seed, 0.90));
 
   return {
     token: {fontSize: 12, colorPrimary: accentColor},

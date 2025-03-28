@@ -7,7 +7,27 @@ html {
   --wm-primary: #808080;
   --wm-primary-60: #cccccc;
   --wm-primary-70: #d9d9d9;
+  --wm-primary-80: #dfdfdf;
   --wm-primary-85: #ececec;
+  --wm-primary-90: #f2f2f2;
+}
+
+.flexlayout__tabset-selected {
+  background-color: var(--wm-primary-90);
+}
+.flexlayout__tabset-selected .flexlayout__tab_button {
+  color: #505050;
+}
+.flexlayout__tabset-selected .flexlayout__tab_button:hover,
+.flexlayout__tabset-selected .flexlayout__tab_button--selected {
+  color: #303030;
+  background-color: var(--wm-primary-80);
+}
+.flexlayout__tabset-selected .flexlayout__tab_toolbar_button:hover {
+  background-color: var(--wm-primary-80);
+}
+.flexlayout__tabset-selected .flexlayout__tab_button_trailing:hover {
+  background-color: var(--wm-primary-70);
 }
 
 #root {
