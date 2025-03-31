@@ -73,12 +73,8 @@ export class ProgramAPI {
   }
 
   public downloadFile(path: string): Promise<Res<Blob>> {
-    return this.api.get('/downloadResource', {query: {path}, then: 'blob'});
-  }
-
-  public exportToExcel(data: any): Promise<Res<OperationData>> {
-    data.paramValues = data.paramValues.map(serializeParameter);
-    return this.api.post('/exportToExcel', {json: data});
+    const apiPath = this.api.legacy ? '/downloadResource' : '/app/resource';
+    return this.api.get(apiPath, {query: {path}, then: 'blob'});
   }
 }
 

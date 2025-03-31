@@ -42,8 +42,12 @@ export class ChannelAPI {
 
   /** Запрос ресурса из базы данных. */
   public getResource(queryID: QueryID, rowIndex: number, columnName: string): Promise<Res<Blob>> {
-    const query = {tableId: queryID, index: rowIndex, name: columnName};
-    return this.api.get<Blob>('/dbResource',{query, then: 'blob'});
+    if (this.api.legacy) {
+      const query = {tableId: queryID, index: rowIndex, name: columnName};
+      return this.api.get('/dbResource', {query, then: 'blob'});
+    } else {
+      return this.api.get('/channel/data/file', {query: {queryID, rowIndex, columnName}});
+    }
   }
 
   /* --- --- */
