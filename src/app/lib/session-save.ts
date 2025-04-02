@@ -62,7 +62,7 @@ function toClientDTO(client: SessionClient): any {
   const parameters = client.parameters?.map(id => serializeParameter(pStorage.get(id)));
 
   const children = getClientChildrenToSave(client);
-  const layout = id === 'root' ? getRootLayout(client) : client.layout?.toJson();
+  const layout = getClientLayoutToSave(client);
 
   let settings: Record<string, any>;
   let extra: XRawElement;
@@ -91,6 +91,16 @@ function getClientChildrenToSave(client: SessionClient): ChildrenToSave {
       openedChildren: [client.activeChildID],
       activeChildren: [client.activeChildID],
     };
+  }
+  return undefined;
+}
+
+function getClientLayoutToSave(client: SessionClient): LayoutToSave {
+  if (client.id === 'root') {
+    return getRootLayout(client);
+  }
+  if (client.layout && client.children && !client.settings.multiMapChannel) {
+    return client.layout.toJson();
   }
   return undefined;
 }
