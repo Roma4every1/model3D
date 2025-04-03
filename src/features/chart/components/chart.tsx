@@ -60,6 +60,10 @@ export const Chart = ({id, neededChannels}: Pick<SessionClient, 'id' | 'neededCh
   const displayedAxes = stage.getDisplayedAxes();
   const xAxisType = stage.dataController.xType === 'number' ? 'number' : 'category';
 
+  let xPadding: {left: number, right: number};
+  if (xAxisType === 'category' && displayedProperties.every(p => p.displayType !== 'bar')) {
+    xPadding = {left: 24, right: 24};
+  }
   const tooltip = state.global.showTooltip && (
     <Tooltip
       contentStyle={{padding: '4px 8px'}} itemStyle={{padding: 0}}
@@ -81,7 +85,7 @@ export const Chart = ({id, neededChannels}: Pick<SessionClient, 'id' | 'neededCh
       >
         <Legend verticalAlign={'top'} payload={legend} onClick={setActiveProperty}/>
         <CartesianGrid strokeDasharray={'4 4'}/>
-        <XAxis dataKey={'x'} type={xAxisType}/>
+        <XAxis dataKey={'x'} type={xAxisType} padding={xPadding}/>
         {displayedAxes.map(toYAxis)}
         {displayedProperties.map(p => toDiagram(p, displayedAxes))}
         {data.marks.map(toReferenceLine)}

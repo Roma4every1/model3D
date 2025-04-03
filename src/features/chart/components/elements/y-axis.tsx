@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react';
+import type { ReactElement, CSSProperties } from 'react';
 import type { ChartAxis } from '../../lib/chart.types';
 import { YAxis } from 'recharts';
 import { measureText } from 'shared/drawing';
@@ -10,6 +10,7 @@ interface YAxisLabel {
   angle: number;
   offset: number;
   position: 'insideLeft' | 'insideRight';
+  style?: CSSProperties;
 }
 
 export function toYAxis(axis: ChartAxis): ReactElement {
@@ -18,10 +19,11 @@ export function toYAxis(axis: ChartAxis): ReactElement {
   let width = Math.max(...ticks.map(n => measureText(tickFormatter(n), '11px Roboto'))) + 7;
 
   if (axis.displayName) {
+    const style: CSSProperties = {textAnchor: 'middle'};
     if (axis.location === 'left') {
-      label = {value: axis.displayName, angle: -90, offset: 10, position: 'insideLeft'};
+      label = {value: axis.displayName, angle: -90, offset: 10, position: 'insideLeft', style};
     } else {
-      label = {value: axis.displayName, angle: 90, offset: 10, position: 'insideRight'};
+      label = {value: axis.displayName, angle: 90, offset: 10, position: 'insideRight', style};
     }
     width += 16;
   }
