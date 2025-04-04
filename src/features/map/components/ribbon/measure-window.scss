@@ -1,0 +1,27 @@
+.map-measure-window .k-window-content {
+  padding: 8px;
+  &:last-child { padding-bottom: 8px; }
+}
+
+.map-measure-container {
+  font-size: 12.5px;
+  font-family: Roboto, sans-serif;
+
+  > fieldset {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1em;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .ant-input-number, .ant-input-number-affix-wrapper {
+    width: 100%;
+  }
+
+  > div {
+    display: grid;
+    grid-template-columns: 25% 40% 35%;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+}

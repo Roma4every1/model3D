@@ -5,7 +5,11 @@ import { useEffect } from 'react';
 import { useRender } from 'shared/react';
 import { saveMap } from '../../store/map.thunks';
 import { MapStage } from '../../lib/map-stage';
-import { closeMapFieldValueWindow, showMapFieldValueWindow } from '../../store/map-window.actions';
+
+import {
+  showMapMeasureWindow, closeMapMeasureWindow,
+  showMapFieldValueWindow, closeMapFieldValueWindow,
+} from '../../store/map-window.actions';
 
 import { MenuSection, BigButton, IconRow, IconRowButton } from 'shared/ui';
 import { RadarChartOutlined } from '@ant-design/icons';
@@ -55,11 +59,24 @@ export const MapOtherSection = ({state, t}: MapOtherSectionProps) => {
 
 const MapFeatureButtons = ({stage, t}: MapFeatureButtonsProps) => {
   const render = useRender();
+  const hasIncl = stage.hasExtraObject('incl');
+  const isMeasureMode = stage.getMode() === 'measure';
+  const isFieldMode = stage.getMode() === 'show-field-value';
 
   useEffect(() => {
     stage.subscribe('mode', render);
     return () => stage.unsubscribe('mode', render);
   }, [stage]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const toggleMeasureMode = () => {
+    if (stage.getMode() !== 'measure') {
+      showMapMeasureWindow(stage);
+      stage.setMode('measure');
+    } else {
+      closeMapMeasureWindow(stage);
+    }
+    render();
+  };
 
   const toggleFieldValueMode = () => {
     if (stage.getMode() !== 'show-field-value') {
@@ -71,18 +88,17 @@ const MapFeatureButtons = ({stage, t}: MapFeatureButtonsProps) => {
     render();
   };
 
-  const fieldActive = stage.getMode() === 'show-field-value';
-  const fieldDisabled = stage.hasExtraObject('incl') || (!fieldActive && !mapHasFields(stage));
-
   return (
     <IconRow className={'map-feature-buttons'}>
       <IconRowButton
         icon={measurerIcon} title={t('map.section-other.distance-measurer-hint')}
-        active={false} disabled={true}
+        active={isMeasureMode} onClick={toggleMeasureMode}
+        disabled={hasIncl || isFieldMode}
       />
       <IconRowButton
         icon={<RadarChartOutlined/>} title={t('map.section-other.field-value-hint')}
-        active={fieldActive} onClick={toggleFieldValueMode} disabled={fieldDisabled}
+        active={isFieldMode} onClick={toggleFieldValueMode}
+        disabled={hasIncl || isMeasureMode || (!isFieldMode && !mapHasFields(stage))}
       />
     </IconRow>
   );

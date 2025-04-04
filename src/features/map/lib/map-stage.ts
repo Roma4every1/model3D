@@ -226,6 +226,10 @@ export class MapStage implements IMapStage {
     return this.extraObjects.get(id)?.provider.model ?? null;
   }
 
+  public getExtraObjectProvider<T = any>(id: MapExtraObjectID): T | null {
+    return this.extraObjects.get(id)?.provider as any ?? null;
+  }
+
   public setExtraObject(id: MapExtraObjectID, payload: any, updateView?: boolean): void {
     const state = this.extraObjects.get(id);
     if (!state) return;

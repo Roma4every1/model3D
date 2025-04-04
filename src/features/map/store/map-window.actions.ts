@@ -11,6 +11,7 @@ import { MapStage } from '../lib/map-stage';
 import { setMapEditState, startMapEditing, cancelMapEditing } from './map-edit.actions';
 import { AttrTableWindow } from '../components/ribbon/attr-table';
 import { ElementEditWindow } from '../components/element-editors/edit-window';
+import { MeasureWindow } from '../components/ribbon/measure-window';
 import { FieldValueWindow } from '../components/ribbon/field-value-window';
 
 
@@ -58,6 +59,8 @@ export function showMapAttrTableWindow(id: FormID, element: MapElement): void {
   showWindow(windowID, windowProps, content);
 }
 
+/* --- --- */
+
 export function showMapFieldValueWindow(stage: MapStage): void {
   const context: FieldValueContext = {stage, state: {}};
   setGlobalVariable('fv', context);
@@ -90,4 +93,30 @@ export function closeMapFieldValueWindow(): void {
 
   closeWindow('map-field-value');
   setGlobalVariable('fv', undefined);
+}
+
+/* --- --- */
+
+export function showMapMeasureWindow(stage: MapStage): void {
+  const provider = stage.getModeProvider('measure') as any;
+  provider.active = true;
+
+  const windowProps: WindowProps = {
+    style: {zIndex: 99}, className: 'map-measure-window',
+    width: 370, height: 275, resizable: false,
+    title: t('map.measure.title'), maximizeButton: () => null,
+    onClose: () => closeMapMeasureWindow(stage),
+  };
+  const window = createElement(MeasureWindow, {stage, t});
+  showWindow('map-measure', windowProps, window);
+}
+
+export function closeMapMeasureWindow(stage: MapStage): void {
+  const modeProvider = stage.getModeProvider('measure') as any;
+  modeProvider.active = false;
+  modeProvider.updateWindow = null;
+
+  stage.setExtraObject('measure', null);
+  stage.setMode('default');
+  closeWindow('map-measure');
 }

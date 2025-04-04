@@ -10,6 +10,7 @@
     "cancel": "Отменить",
     "run": "Запустить",
     "save": "Сохранить",
+    "clear": "Очистить",
     "loading": "Загрузка...",
     "info": "Информация",
     "warning": "Предупреждение",
@@ -294,7 +295,7 @@
       "header": "Дополнительно",
       "export-pdf": "Экспорт в PDF",
       "save": "Сохранить карту",
-      "distance-measurer-hint": "Измерение длин и углов",
+      "distance-measurer-hint": "Измерение длин и площадей",
       "field-value-hint": "Просмотр значения поля в точке"
     },
     "field-value": {
@@ -306,6 +307,21 @@
       "y-node": "Узел по верт.",
       "value": "Значение",
       "move-mode": "Менять при движении"
+    },
+    "measure": {
+      "title": "Измерение длин и площадей",
+      "chain-length": "Длина цепи",
+      "last-segment-length": "Длина посл. отрезка",
+      "without-last-length": "Длина без посл. отрезка",
+      "last-angle": "Угол между посл. отрезками",
+      "first-angle": "Угол с первым отрезком",
+      "area": "Площадь контура",
+      "angles-in-degrees": "Углы в градусах",
+      "show-distances": "Длины",
+      "show-angles": "Углы",
+      "show-length": "Суммарная длина",
+      "show-area": "Площадь",
+      "closed": "Замыкать контур"
     },
     "selecting": {
       "header": "Активный объект",

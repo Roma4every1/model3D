@@ -45,6 +45,17 @@ export function calcAxisMax(dataMax: number): number {
   return base * 10;
 }
 
+export function calcCentroid(points: Point[]): Point {
+  let xSum = 0;
+  let ySum = 0;
+
+  for (const point of points) {
+    xSum += point.x;
+    ySum += point.y;
+  }
+  return {x: xSum / points.length, y: ySum / points.length};
+}
+
 /* --- Set Theory --- */
 
 /** Добавляет во множество элементы. */

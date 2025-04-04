@@ -1,4 +1,5 @@
 import type { MapExtraObjectProvider } from './types';
+import { calcCentroid } from 'shared/lib';
 import { MapStage } from '../lib/map-stage';
 import { getPointBounds } from '../lib/bounds';
 import { getBoundViewport } from '../lib/map-utils';
@@ -78,8 +79,8 @@ export class MapSiteObjectProvider implements MapExtraObjectProvider<SiteModel> 
       ctx.textBaseline = 'middle';
       ctx.font = fontSize + 'px Roboto';
 
+      const { x, y } = calcCentroid(points);
       const width = ctx.measureText(name).width;
-      const { x, y } = getCentroid(points);
 
       ctx.fillStyle = '#eee';
       ctx.fillRect(x - width / 2 - 1, y - fontSize / 2 - 1, width + 2, fontSize + 2);
@@ -97,15 +98,4 @@ export class MapSiteObjectProvider implements MapExtraObjectProvider<SiteModel> 
     ctx.fill();
     ctx.stroke();
   }
-}
-
-function getCentroid(points: Point[]): Point {
-  let sumX = 0;
-  let sumY = 0;
-
-  for (const point of points) {
-    sumX += point.x;
-    sumY += point.y;
-  }
-  return {x: sumX / points.length, y: sumY / points.length};
 }

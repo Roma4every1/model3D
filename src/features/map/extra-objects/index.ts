@@ -7,6 +7,7 @@ import { MapSelectionObjectProvider } from './selection.object';
 import { MapSiteObjectProvider } from './site.object';
 import { MapInclinometryProvider } from './incl.object';
 import { MapFieldValueObjectProvider } from './field-value.object';
+import { MapMeasureObjectProvider } from './measure.object';
 
 
 export function createMapWellConfig(stage: MapStage): MapExtraObjectConfig {
@@ -48,5 +49,15 @@ export function createFieldValueConfig(): MapExtraObjectConfig {
   return {
     layer: {displayName: 'Значение поля', minScale: 0, maxScale: Infinity, customizable: false},
     provider: new MapFieldValueObjectProvider(),
+  };
+}
+
+export function createMeasureConfig(): MapExtraObjectConfig {
+  return {
+    layer: {
+      displayName: 'Измеритель длин и углов',
+      minScale: 0, maxScale: Infinity, customizable: false,
+    },
+    provider: new MapMeasureObjectProvider(),
   };
 }

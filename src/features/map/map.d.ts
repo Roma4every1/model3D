@@ -51,6 +51,8 @@ interface MapModeProvider {
  * Идентификатор режима карты.
  * + `default` — перемещение карты и выбор скважин
  * + `incl` — просмотр вертикальной проекции инклинометрии
+ * + `show-field-value` — просмотр значения поля в точке
+ * + `measure` — режим измерения длин и углов
  *
  * Общие режимы редактирования:
  * + `element-select` — выбор элемента для взаимодействия
@@ -73,7 +75,7 @@ interface MapModeProvider {
  * + `site-move-point` — перемещние точек (участок)
  */
 type MapModeID =
-  | 'default' | 'incl' | 'show-field-value'
+  | 'default' | 'incl' | 'show-field-value' | 'measure'
   | 'element-select' | 'element-drag' | 'element-rotate' | 'element-create'
   | 'line-append-point' | 'line-insert-point' | 'line-remove-point' | 'line-move-point'
   | 'trace-edit' | 'selection-edit'
