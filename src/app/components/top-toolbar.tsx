@@ -15,7 +15,7 @@ import userDocIcon from 'assets/common/user-doc.svg';
 import aboutProgramIcon from 'assets/common/about-program.svg';
 
 
-export const TopRightToolbar = () => {
+export const TopRightToolbar = ({title}: {title: string}) => {
   const config = useAppConfig();
   const { t } = useTranslation();
 
@@ -25,28 +25,31 @@ export const TopRightToolbar = () => {
   };
 
   return (
-    <IconRow className={'top-right-toolbar'}>
-      <IconRowButton
-        icon={saveSessionIcon} alt={'save'}
-        title={t('menu.save-session')} onClick={saveSession}
-      />
-      {config.mode === 'dev' && config.devDocLink && <IconRowLink
-        icon={devDocIcon} alt={'dev-doc'}
-        href={config.devDocLink} target={'_blank'} title={t('menu.open-dev-doc')}
-      />}
-      {config.userDocLink && <IconRowLink
-        icon={userDocIcon} alt={'manual'}
-        href={config.userDocLink} target={'_blank'} title={t('menu.open-manual')}
-      />}
-      <IconRowButton
-        icon={aboutProgramIcon} alt={'about'}
-        title={t('about.dialog-title')} onClick={showAboutWindow}
-      />
-      <IconRowButton
-        icon={defaultSessionIcon} alt={'load-default'}
-        title={t('menu.load-default-session')} onClick={() => startSession(true)}
-      />
-    </IconRow>
+    <div className={'top-right-toolbar'}>
+      <div>{title}</div>
+      <IconRow>
+        <IconRowButton
+          icon={saveSessionIcon} alt={'save'}
+          title={t('menu.save-session')} onClick={saveSession}
+        />
+        {config.mode === 'dev' && config.devDocLink && <IconRowLink
+          icon={devDocIcon} alt={'dev-doc'}
+          href={config.devDocLink} target={'_blank'} title={t('menu.open-dev-doc')}
+        />}
+        {config.userDocLink && <IconRowLink
+          icon={userDocIcon} alt={'manual'}
+          href={config.userDocLink} target={'_blank'} title={t('menu.open-manual')}
+        />}
+        <IconRowButton
+          icon={aboutProgramIcon} alt={'about'}
+          title={t('about.dialog-title')} onClick={showAboutWindow}
+        />
+        <IconRowButton
+          icon={defaultSessionIcon} alt={'load-default'}
+          title={t('menu.load-default-session')} onClick={() => startSession(true)}
+        />
+      </IconRow>
+    </div>
   );
 };
 

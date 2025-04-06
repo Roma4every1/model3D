@@ -12,4 +12,18 @@ div[data-layout-path="/border/top/tb0"] {
   position: absolute;
   top: 2px;
   right: 2px;
+
+  display: flex;
+  align-items: center;
+  gap: 1em;
+
+  > :first-child {
+    font-size: 13px;
+    font-family: Roboto, sans-serif;
+
+    max-width: calc(100vw - 500px);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 }
