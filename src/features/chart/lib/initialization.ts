@@ -39,11 +39,12 @@ export class ChartStateFactory {
     this.createStage();
     this.stage.axes = this.createAxes();
     this.stage.properties = this.createProperties(this.handleChannels());
+    const showTooltip = payload.state.extra?.getBooleanAttribute('tooltip') ?? true;
 
     return {
       id: payload.state.id,
       usedChannels: [...this.usedChannels], usedLookups: [...this.usedLookups],
-      global: {showTooltip: false}, stage: this.stage,
+      global: {showTooltip}, stage: this.stage,
     };
   }
 
