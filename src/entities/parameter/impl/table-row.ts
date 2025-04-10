@@ -1,3 +1,4 @@
+import { fetcher } from 'shared/lib';
 import { getDataTypeName, stringifyLocalDate } from 'shared/lib';
 import { parseDBPrimitive } from '../lib/utils';
 
@@ -51,9 +52,17 @@ export class TableRowParameter implements Parameter<'tableRow'> {
     this.value = {};
     this.valueString = s;
 
-    for (const item of s.split('|')) {
-      const [field, value, type] = item.split('#');
-      this.value[field] = {type, value: parseDBPrimitive(value, type)};
+    if (fetcher.version) {
+      for (const item of splitWithEscape(s, '|')) {
+        const [field, rawValue, type] = splitWithEscape(item, '#');
+        const value = rawValue.replace(/\\(.)/g, '$1');
+        this.value[field] = {type, value: parseDBPrimitive(value, type)};
+      }
+    } else {
+      for (const item of s.split('|')) {
+        const [field, value, type] = item.split('#');
+        this.value[field] = {type, value: parseDBPrimitive(value, type)};
+      }
     }
   }
 
@@ -105,4 +114,28 @@ export class TableRowParameter implements Parameter<'tableRow'> {
     if (!field || !this.value) return null;
     return this.value[field].value ?? null;
   }
+}
+
+/**
+ * Разбивает строку по символу разделителя (так же, ка и метод строки `split`),
+ * рассматривая символ `\` как отменяющий специальное действие следующего символа.
+ */
+function splitWithEscape(input: string, sep: string): string[] {
+  const result: string[] = [];
+  const sepCode = sep.charCodeAt(0);
+
+  let prev = 0;
+  const len = input.length;
+
+  for (let i = 0; i < len; ++i) {
+    const iCode = input.charCodeAt(i);
+    if (iCode === 0x5C /* \ */) {
+      ++i;
+    } else if (iCode === sepCode) {
+      result.push(input.substring(prev, i));
+      prev = i + 1;
+    }
+  }
+  if (prev <= len) result.push(input.substring(prev));
+  return result;
 }
