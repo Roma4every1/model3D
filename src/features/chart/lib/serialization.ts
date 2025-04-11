@@ -39,7 +39,7 @@ function serializeProperty(property: ChartProperty): ChartPropertyDTO {
     color: serializeColor(property.color),
     showLine: property.showLine, showPoint: property.showPoints, showLabels: property.showLabels,
     pointFigureIndex: property.dotOptions?.shape?.toString(), zIndex: property.zIndex,
-    // lineStyleIndex and sizeMultiplier are not passed yet
+    lineStyleIndex: property.lineStyleIndex, sizeMultiplier: property.sizeMultiplier,
   };
 }
 
@@ -79,5 +79,5 @@ function serializeTypeCode(displayType: ChartDisplayType, curveType: ChartCurveT
 }
 function serializeColor(color: ColorString): string {
   const { r, g, b, opacity } = rgb(color);
-  return `rgba(${r},${g},${b},${Math.round(opacity * 255)})`;
+  return `rgba(${r},${g},${b},${opacity})`;
 }

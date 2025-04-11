@@ -65,8 +65,13 @@ export interface ChartProperty {
   readonly yProperty: ChannelProperty;
   /** Идентификатор оси. */
   readonly yAxisID: ChartAxisID;
+
   /** Индекс порядка свойства. */
   readonly zIndex: number;
+  /** Сохранённое свойство `lineStyleIndex` из DTO. */
+  readonly lineStyleIndex: string | null;
+  /** Сохранённое свойство `sizeMultiplier` из DTO. */
+  readonly sizeMultiplier: number | null;
 
   /** Название для интерфейса. */
   displayName: string;

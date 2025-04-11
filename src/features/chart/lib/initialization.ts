@@ -177,6 +177,7 @@ export class ChartStateFactory {
       displayName, displayType, curveType, color, lineDash,
       dotOptions, dotRenderer, showLine, showPoints, showLabels,
       visible: init.visible, empty: true, zIndex: init.z,
+      lineStyleIndex: settings.lineStyleIndex, sizeMultiplier: settings.sizeMultiplier,
     };
   }
 
