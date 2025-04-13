@@ -50,7 +50,7 @@ export function settingsToCaratState(payload: FormStatePayload<CaratFormSettings
     canvas: undefined, stage, loader, observer,
     channels: [...usedChannels],
     lookups: stage.getActiveTrack().getLookups(),
-    loading: {percentage: 100, status: null},
+    loading: {percentage: 100, status: 'carat.empty'},
   };
 }
 

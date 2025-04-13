@@ -38,6 +38,11 @@ export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => { setTimeout(resolve, ms); });
 }
 
+/** Возвращает первый элемент коллекции. */
+export function firstItem<T>(c: T[] | Set<T> | Map<any, T>): T {
+  return c.values().next().value;
+}
+
 /** Сохраняет файл с указанным именем и содержимым. */
 export function saveFile(name: string, data: Blob): void {
   const url = URL.createObjectURL(data);
@@ -97,21 +102,6 @@ export function stringifyLocalDate(date: Date): string {
 
 /* --- Trees --- */
 
-/** Находит в дереве элемент. */
-export function findInTree<T>(
-  tree: T[], callback: (node: T) => boolean,
-  childrenField: string = 'children',
-): T | undefined {
-  for (const node of tree) {
-    if (callback(node)) return node;
-    const children = node[childrenField];
-    if (Array.isArray(children)) {
-      const item = findInTree(children, callback, childrenField);
-      if (item !== undefined) return item;
-    }
-  }
-}
-
 /** Возвращает массив из всех узлов дерева. */
 export function flatTree<T>(tree: T[], childrenField: string = 'children'): T[] {
   const result: T[] = [];
@@ -124,29 +114,6 @@ export function flatTree<T>(tree: T[], childrenField: string = 'children'): T[] 
   };
   traverse(tree);
   return result;
-}
-
-/**
- * Применяет функцию ко всем листьям дерева.
- *
- * Элемент считается листом, если его `childrenField` не является массивом.
- */
-export function forEachTreeLeaf<T>(
-  tree: T[], callback: (leaf: T, i?: number) => void,
-  childrenField: string = 'children',
-): void {
-  let i = 0;
-  const visit = (treeItems: T[]) => {
-    for (const item of treeItems) {
-      const children = item[childrenField];
-      if (Array.isArray(children)) {
-        visit(children);
-      } else {
-        callback(item, i++);
-      }
-    }
-  };
-  visit(tree);
 }
 
 /* --- Binary Operations --- */

@@ -13,10 +13,12 @@ interface TraceEditSectionProps {
 }
 
 export const TraceEditSection = ({manager, t}: TraceEditSectionProps) => {
+  const trace = manager.model;
+  const disabled = !manager.creating && !manager.editing;
+
   const apply = () => {
     if (!manager.editing) return;
-    const model = manager.model;
-    if (!model.name) model.name = model.nodes.map(n => n.name).join(',');
+    if (!trace.name) trace.name = trace.nodes.map(n => n.name).join(',');
     saveTrace().then();
   };
   const cancel = () => {
@@ -26,13 +28,12 @@ export const TraceEditSection = ({manager, t}: TraceEditSectionProps) => {
       setCurrentTrace(manager.oldModel, false, false);
     }
   };
-  const disabled = !manager.creating && !manager.editing;
 
   return (
     <MenuSection header={t('trace.edit-section')} className={'big-buttons'}>
       <BigButton
         text={t('base.apply')} icon={applyIcon}
-        onClick={apply} disabled={disabled}
+        onClick={apply} disabled={disabled || (trace && trace.nodes.length < 2)}
       />
       <BigButton
         text={t('base.cancel')} icon={cancelIcon}

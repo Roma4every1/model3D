@@ -1,27 +1,12 @@
-import { useCaratStore } from './carat.store';
 import { useObjectsStore } from 'entities/objects';
-import { cellsToRecords, useChannelStore } from 'entities/channel';
+import { useChannelStore, cellsToRecords } from 'entities/channel';
+import { useCaratStore } from './carat.store';
 
 
 /** Обновляет данные каротажной диаграммы. */
 export async function setCaratData(id: FormID): Promise<void> {
-  const objects = useObjectsStore.getState();
   const channels = useChannelStore.getState().storage;
-
   const { stage, loader, lookups } = useCaratStore.getState()[id];
-  const { well: { model: currentWell }, trace: { model: currentTrace } } = objects;
-
-  if (currentTrace) {
-    if (currentTrace.nodes.length) {
-      stage.setTrackList(currentTrace.nodes);
-    } else {
-      return;
-    }
-  } else if (currentWell) {
-    stage.setTrackList(currentWell);
-  } else {
-    return;
-  }
 
   if (!stage.actualLookup) {
     const dict: ChannelRecordDict = {};
@@ -29,11 +14,23 @@ export async function setCaratData(id: FormID): Promise<void> {
     stage.setLookupData(dict);
   }
 
-  const caratData = await loader.loadCaratData(stage.wellIDs, channels);
-  if (!caratData) return;
+  const data = await loader.loadCaratData(channels);
+  if (!data) return;
 
-  stage.setData(caratData, loader.cache);
+  const emptyStatus: CaratLoading = {percentage: 100, status: 'carat.empty'};
+  const { well: { model: well }, trace: { model: trace } } = useObjectsStore.getState();
+
+  if (data.size > 1) {
+    if (!trace) return loader.onProgressChange(emptyStatus);
+    stage.setTrackList(trace.nodes);
+  } else if (data.size === 1 && data.keys().next().value === well?.id) {
+    stage.setTrackList(well);
+  } else {
+    return loader.onProgressChange(emptyStatus);
+  }
+
+  stage.setData(data, loader.cache);
   loader.checkCacheSize();
-  loader.onProgressChange({percentage: 100});
+  loader.onProgressChange({percentage: 100, status: ''});
   stage.render();
 }

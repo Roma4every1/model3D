@@ -1,7 +1,7 @@
 import type { KeyboardEvent, MouseEvent } from 'react';
 import { useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useChannels } from 'entities/channel';
-import { useCurrentWell, useCurrentTrace, useCurrentStratum } from 'entities/objects';
+import { useCurrentStratum } from 'entities/objects';
 import { TextInfo, LoadingStatus } from 'shared/ui';
 
 import './carat.scss';
@@ -12,13 +12,10 @@ import { setCaratCanvas } from '../store/carat.actions';
 
 /** Каротажная диаграмма. */
 export const Carat = ({id, loading: l}: SessionClient) => {
-  const currentWell = useCurrentWell();
-  const currentTrace = useCurrentTrace();
-  const currentStratum = useCurrentStratum();
-
   const { stage, canvas, channels, lookups, loading } = useCaratState(id);
   const channelData = useChannels(channels);
   const lookupData = useChannels(lookups);
+  const currentStratum = useCurrentStratum();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isOnMoveRef = useRef<boolean>(false);
@@ -31,7 +28,7 @@ export const Carat = ({id, loading: l}: SessionClient) => {
   // обновление данных
   useEffect(() => {
     if (l.status === 'done') setCaratData(id).then();
-  }, [l.status, channelData, currentWell, currentTrace, id]);
+  }, [l.status, channelData, id]);
 
   // выравнивание по активному пласту
   useEffect(() => {
@@ -60,13 +57,7 @@ export const Carat = ({id, loading: l}: SessionClient) => {
     return () => canvas?.removeEventListener('wheel', onWheel);
   }, [canvas, onWheel]);
 
-  if (!currentWell && !currentTrace) {
-    return <TextInfo text={'carat.empty-parameters'}/>;
-  }
-  if (currentTrace && currentTrace.nodes.length === 0) {
-    return <TextInfo text={'carat.empty-trace'}/>;
-  }
-  if (loading.percentage < 0) {
+  if (loading.percentage < 0 || loading.status === 'carat.empty') {
     return <TextInfo text={loading.status}/>;
   }
   if (loading.percentage < 100) {

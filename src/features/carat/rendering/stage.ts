@@ -193,17 +193,18 @@ export class CaratStage {
   }
 
   /** Обновляет данные диаграммы. */
-  public setData(data: ChannelRecordDict[], cache: CurveDataCache): void {
+  public setData(data: Map<WellID, ChannelRecordDict>, cache: CurveDataCache): void {
     let yMin = Infinity;
     let yMax = -Infinity;
 
-    this.trackList.forEach((track, i) => {
-      track.setData(data[i], cache);
+    this.wellIDs.forEach((id: WellID, i: number) => {
+      const track = this.trackList[i];
+      track.setData(data.get(id), cache);
       const { min, max } = track.viewport;
       if (min < yMin) yMin = min;
       if (max > yMax) yMax = max;
     });
-    this.trackList.forEach((track) => {
+    this.trackList.forEach((track: CaratTrack) => {
       const viewport = track.viewport;
       viewport.min = yMin;
       viewport.max = yMax;

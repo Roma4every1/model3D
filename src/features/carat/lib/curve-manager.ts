@@ -161,13 +161,13 @@ export class CurveManager {
 
   public setCurveChannelData(records: ChannelRecord[], cache: CurveDataCache): void {
     this.curveDict = {};
-    if (records.length === 0) {
-      this.curves = [];
-      this.curveTypes = [];
-    } else {
+    if (records?.length) {
       this.curves = records.map(record => this.createCurveModel(record, cache));
       this.curveTypes = [...new Set(this.curves.map(curve => curve.type))];
       this.curves.forEach(curve => { this.curveDict[curve.id] = curve; });
+    } else {
+      this.curves = [];
+      this.curveTypes = [];
     }
     this.resetTree();
     this.resetTypeSelection();

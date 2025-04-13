@@ -286,7 +286,7 @@ export class CaratColumnGroup {
   public setData(data: ChannelRecordDict, cache: CurveDataCache): void {
     for (const column of this.columns) {
       const rows = data[column.channel.id];
-      column.setChannelData(rows);
+      column.setChannelData(rows ?? []);
     }
 
     if (!this.curveColumn) return;

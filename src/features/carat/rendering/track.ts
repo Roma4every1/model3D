@@ -9,7 +9,7 @@ import { round, isRectInnerPoint } from 'shared/lib';
 import { defaultSettings } from '../lib/constants';
 
 
-/** Трек. */
+/** Модель трека каротажной диаграммы. */
 export class CaratTrack {
   /** Отрисовщик. */
   private readonly drawer: CaratDrawer;
@@ -84,8 +84,14 @@ export class CaratTrack {
       }
     }
 
-    this.constructionMode = this.groups.some(g => g.constructionMode());
-    if (this.constructionMode) this.transformer = new ConstructionTransformer();
+    const constructionDataGroup = this.groups.find(g => g.constructionMode());
+    if (constructionDataGroup) {
+      this.constructionMode = true;
+      this.transformer = new ConstructionTransformer();
+      if (this.constructionLabels) this.constructionLabels.dataGroup = constructionDataGroup;
+    } else {
+      this.constructionMode = false;
+    }
   }
 
   /* --- Getters --- */

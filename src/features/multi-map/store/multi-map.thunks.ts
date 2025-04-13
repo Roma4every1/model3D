@@ -1,3 +1,4 @@
+import { firstItem } from 'shared/lib';
 import { useObjectsStore } from 'entities/objects';
 import { useClientStore, setClientChildren } from 'entities/client';
 import { useMapStore, setMapStatus, MapStateFactory } from 'features/map';
@@ -17,7 +18,7 @@ export async function updateMultiMap(id: ClientID, channelData: ChannelData): Pr
   if (children.length === 0 && state?.children.length === 0) return;
 
   const layout = getMultiMapLayout(children);
-  const templateFormID = state?.templateFormID ?? presentation.openedChildren.values().next().value;
+  const templateFormID = state?.templateFormID ?? firstItem(presentation.openedChildren);
   const sync = state?.sync ?? true;
 
   for (const child of children) {
