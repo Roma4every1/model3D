@@ -79,7 +79,9 @@ const ColumnCommonControls = ({state, activeColumn, t}: ColumnControlsProps) => 
         value={width} min={minCellWidth} max={maxCellWidth}
         disabled={!activeColumn} onChange={onWidthChange}
         parser={inputIntParser} controls={false} changeOnWheel={true}
-        addonAfter={<SyncOutlined title={t('table.panel.auto-width')} onClick={setAutoWidth}/>}
+        addonAfter={<SyncOutlined
+          style={{padding: 5}} title={t('table.panel.auto-width')} onClick={setAutoWidth}
+        />}
       />
       <IconRow>
         <IconRowButton
