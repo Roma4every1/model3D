@@ -17,8 +17,13 @@ export class CaratInclinometry implements ICaratInclinometry {
   private readonly depthToAbsMap: Map<number, number>;
   /** Мемоизированные значения глубин по абсолютным отметкам. */
   private readonly absToDepthMap: Map<number, number>;
+
   /** Опорные точки инклинометрии для интерполяции; если есть, длина всегда >= 2. */
   private data: InclinometryMark[] | null;
+  /** Минимальное значение абсолютной отметки в исходных данных. */
+  public minMark: number | null;
+  /** Максимальное значение абсолютной отметки в исходных данных. */
+  public maxMark: number | null;
 
   constructor(channel: PropertyAttachedChannel) {
     this.channel = channel;
@@ -33,9 +38,20 @@ export class CaratInclinometry implements ICaratInclinometry {
     if (records && records.length > 1) {
       const depthName = this.channel.info.depth.columnName;
       const absMarkName = this.channel.info.absMark.columnName;
-      this.data = records.map(r => ({depth: r[depthName], absMark: r[absMarkName]}));
+
+      this.minMark = Infinity;
+      this.maxMark = -Infinity;
+
+      this.data = records.map((record: ChannelRecord): InclinometryMark => {
+        const absMark = record[absMarkName];
+        if (absMark < this.minMark) this.minMark = absMark;
+        if (absMark > this.maxMark) this.maxMark = absMark;
+        return {depth: record[depthName], absMark};
+      });
     } else {
       this.data = null;
+      this.minMark = null;
+      this.minMark = null;
     }
     this.depthToAbsMap.clear();
     this.absToDepthMap.clear();
@@ -65,13 +81,8 @@ export class CaratInclinometry implements ICaratInclinometry {
     return depth;
   }
 
-  public getMaxAbsMark(): number | null {
-    if (this.data === null) return null;
-    return Math.max(...this.data.map(i => i.absMark));
-  }
-
   public hasData(): boolean {
-    return this.data === null;
+    return this.data !== null;
   }
 
   private calcAbsMark(depth: number): number {

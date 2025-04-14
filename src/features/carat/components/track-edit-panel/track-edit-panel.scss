@@ -15,7 +15,7 @@
 .carat-navigation-popover {
   min-width: 250px;
   max-width: 300px;
-  max-height: 35vh;
+  max-height: 40vh;
   overflow: auto;
 
   font-size: 12.5px;
@@ -27,6 +27,14 @@
     padding: 4px;
     border-radius: 0;
   }
+}
+
+.carat-viewport-setter {
+  margin-bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
 }
 
 .strata-list {

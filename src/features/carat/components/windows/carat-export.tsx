@@ -29,9 +29,8 @@ export const CaratExportDialog = ({stage, close, format}: CaratExportDialogProps
   const [selectedTrackIndex, setSelectedTrackIndex] = useState(0);
   const [prevOptionIndex, setPrevOptionIndex] = useState(0);
 
-  const trackViewports= stage.trackList.map(track => track.viewport);
-  const trackInclinometry= stage.trackList.map(track => track.inclinometry);
-  const hasData = tracks.some(track => track.inclinometry.hasData());
+  const trackViewports = stage.trackList.map(track => track.viewport);
+  const trackInclinometry = stage.trackList.map(track => track.inclinometry);
 
   const options = [
     {label: 'Все треки', value: 0},
@@ -39,13 +38,13 @@ export const CaratExportDialog = ({stage, close, format}: CaratExportDialogProps
   ];
   const caratExportInterval = [
     {label: 'По глубине', value: 0},
-    {label: 'По абсолютной отметке', value: 1, disabled: hasData},
+    {label: 'По абсолютной отметке', value: 1, disabled: trackInclinometry.some(i => !i.hasData())},
   ];
 
   useEffect(() => {
     setPrevInterval(optionInterval);
     setPrevOptionIndex(prevOptionIndex);
-}, [optionInterval, prevOptionIndex]);
+  }, [optionInterval, prevOptionIndex]);
 
   const calculateDepths = (index: number, track: CaratTrack | CaratTrack[], interval?: number) => {
     (Array.isArray(track)) ? handleAllTracks(track, index, interval) : handleTrack(index, track, interval);
@@ -98,7 +97,7 @@ export const CaratExportDialog = ({stage, close, format}: CaratExportDialogProps
     if (Array.isArray(track)) {
       const startAbs = track[0].inclinometry.getAbsMark(startDepth);
       const endAbs = track[0].inclinometry.getAbsMark(endDepth);
-      const minStartAbs = Math.min(...trackInclinometry.map(i => i.getMaxAbsMark()));
+      const minStartAbs = Math.min(...trackInclinometry.map(i => i.maxMark));
       const maxEndAbs = Math.max(...trackInclinometry.map(i => i.getAbsMark(Math.max(...trackViewports.map(v => v.max)))));
 
       if (prevInterval === 1 && prevOptionIndex === 2) {
@@ -111,7 +110,7 @@ export const CaratExportDialog = ({stage, close, format}: CaratExportDialogProps
     } else {
       const startAbs = track.inclinometry.getAbsMark(startDepth);
       const endAbs = track.inclinometry.getAbsMark(endDepth);
-      const maxAbs = track.inclinometry.getMaxAbsMark();
+      const maxAbs = track.inclinometry.maxMark;
       const minAbs = track.inclinometry.getAbsMark(track.viewport.max);
 
       if (prevInterval === 1 && prevOptionIndex === 2) {
@@ -215,8 +214,8 @@ export const CaratExportDialog = ({stage, close, format}: CaratExportDialogProps
   const maxValueDepth = selectedTrackIndex !== 0 ? tracks[selectedTrackIndex - 1].viewport.max : Math.max(...trackViewports.map(v => v.max));
 
   const maxValueAbs = selectedTrackIndex !== 0
-    ? tracks[selectedTrackIndex - 1].inclinometry.getMaxAbsMark()
-    : Math.min(...trackInclinometry.map(i => i.getMaxAbsMark()));
+    ? tracks[selectedTrackIndex - 1].inclinometry.maxMark
+    : Math.min(...trackInclinometry.map(i => i.maxMark));
   const minValueAbs = selectedTrackIndex !== 0
     ? tracks[selectedTrackIndex - 1].inclinometry.getAbsMark(maxValueDepth)
     : Math.max(...trackInclinometry.map(i => i.getAbsMark(Math.max(...trackViewports.map(v => v.max)))));
@@ -280,14 +279,14 @@ export const CaratExportDialog = ({stage, close, format}: CaratExportDialogProps
           <InputNumber
             value={startDepth} min={optionInterval !== 1 || optionIndex !== 2 ? minValueDepth : minValueAbs}
             max={optionInterval !== 1 || optionIndex !== 2 ? maxValueDepth : maxValueAbs} parser={inputNumberParser}
-            precision={0} suffix={'м'} changeOnWheel={true}
+            precision={0} suffix={'м'} changeOnWheel={true} controls={false}
             onChange={handleStartDepthChange} disabled={optionIndex !== 2}
           />
           <span>До:</span>
           <InputNumber
             value={endDepth} min={optionInterval !== 1 || optionIndex !== 2 ? minValueDepth : minValueAbs}
             max={optionInterval !== 1 || optionIndex !== 2 ? maxValueDepth : maxValueAbs} parser={inputNumberParser}
-            precision={0} suffix={'м'} changeOnWheel={true}
+            precision={0} suffix={'м'} changeOnWheel={true} controls={false}
             onChange={handleEndDepthChange} disabled={optionIndex !== 2}
           />
         </div>

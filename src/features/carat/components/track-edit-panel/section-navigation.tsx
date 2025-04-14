@@ -7,6 +7,7 @@ import { constraints } from '../../lib/constants';
 import { MenuSection, MenuSectionItem, ButtonIcon, BigButton } from 'shared/ui';
 import { Popover } from 'antd';
 import { NumericTextBox, NumericTextBoxChangeEvent, NumericTextBoxHandle } from '@progress/kendo-react-inputs';
+import { CaratViewportSetter } from './viewport-setter';
 
 import { CaratStage } from '../../rendering/stage';
 import { CaratDrawer } from '../../rendering/drawer';
@@ -172,6 +173,7 @@ const NavigationSection = ({stage}: CaratScalePanelProps) => {
 
   const content = (
     <>
+      <CaratViewportSetter stage={stage} t={t}/>
       {currentStratum && <section className={'strata-list'}>
         <div onClick={() => toTop(currentStratum.id)}>
           {t('carat.navigation.active-top')}
