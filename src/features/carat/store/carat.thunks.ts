@@ -37,7 +37,7 @@ export async function setCaratData(id: FormID): Promise<void> {
   loader.checkCacheSize();
   loader.onProgressChange({percentage: 100, status: ''});
 
-  if (stage.settings.autoWidth && newWells.length > 1 && !compareArrays(oldWells, newWells)) {
+  if (stage.settings.autoWidth && !compareArrays(oldWells, newWells)) {
     setTimeout(() => {
       stage.adjustWidth();
       stage.render();
@@ -63,7 +63,7 @@ export async function loadCaratCurves(id: FormID, group: CaratColumnGroup): Prom
   track.updateGroupRects();
   stage.updateTrackRects();
 
-  if (stage.settings.autoWidth && stage.trackList.length > 1) {
+  if (stage.settings.autoWidth) {
     stage.adjustWidth();
   } else {
     stage.resize();

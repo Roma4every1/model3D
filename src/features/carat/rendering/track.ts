@@ -334,7 +334,9 @@ export class CaratTrack {
     point.x -= this.rect.left;
     point.y -= this.rect.top;
 
-    const newActiveIndex = this.groups.findIndex(g => isRectInnerPoint(point, g.getDataRect()));
+    const newActiveIndex = this.groups.findIndex((group: CaratColumnGroup) => {
+      return group.visible && isRectInnerPoint(point, group.getDataRect());
+    });
     if (newActiveIndex !== -1) this.setActiveGroup(newActiveIndex);
 
     for (const group of this.groups) {
