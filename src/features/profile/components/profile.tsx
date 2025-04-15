@@ -34,7 +34,7 @@ export const Profile = ({id}: Pick<SessionClient, 'id'>) => {
     if (canvasRef.current !== canvas) setProfileCanvas(id, canvasRef.current);
   }, [canvas, loading.percentage, stage, id]);
 
-  if (!place || !stratum) return <TextInfo text={'profile.no-data'}/>;
+  if (!place || !stratum) return <TextInfo text={'base.no-data'}/>;
   if (!trace) return <TextInfo text={'profile.no-trace'}/>;
   if (trace.nodes.length === 0) return <TextInfo text={'profile.no-trace-nodes'}/>;
   if (!parameters.selectedStrata?.length) return <TextInfo text={'profile.no-strata'}/>;

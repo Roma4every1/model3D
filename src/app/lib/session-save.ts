@@ -6,7 +6,7 @@ import type { CaratFormSettings } from 'features/carat';
 import { useClientStore } from 'entities/client';
 import { useParameterStore, serializeParameter, ParameterStringTemplate } from 'entities/parameter';
 import { useTableStore, tableStateToSettings } from 'features/table';
-import { useCaratStore, caratStateToSettings } from 'features/carat';
+import { useCaratStore, caratStateToSettings, caratStateToExtra } from 'features/carat';
 import { useChartStore, chartStateToSettings, chartStateToExtra } from 'features/chart';
 
 
@@ -74,7 +74,9 @@ function toClientDTO(client: SessionClient): any {
     settings = chartStateToSettings(state);
     extra = chartStateToExtra(state);
   } else if (type === 'carat') {
-    settings = caratStateToSettings(id, useCaratStore.getState()[id]);
+    const state = useCaratStore.getState()[id];
+    settings = caratStateToSettings(id, state);
+    extra = caratStateToExtra(state);
   }
   return {id, type, children, parameters, layout, settings, extra};
 }

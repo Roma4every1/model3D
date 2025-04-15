@@ -1,19 +1,16 @@
-import type {
-  CaratFormSettings, CaratGlobalSettings, CaratColumnInit,
-  CaratColumnXAxis, CaratColumnYAxis,
-} from '../lib/dto.types';
+import type { CaratColumnXAxis, CaratColumnYAxis } from '../lib/dto.types';
+import type { CaratStageConfig, CaratGlobalSetting, CaratIntervalModel } from '../lib/types';
 
-import type { CaratIntervalModel } from '../lib/types';
 import { CaratTrack } from './track';
 import { CaratDrawer } from './drawer';
 import { CaratDrawerConfig } from './drawer-settings';
 import { CaratCorrelations } from './correlations';
+import { CaratImageRenderer } from './image-renderer';
 
 import { EventBus, compareArrays, isRectInnerPoint } from 'shared/lib';
 import { validateCaratScale } from '../lib/utils';
 import { moveSmoothly } from '../lib/smooth-scroll';
 import { defaultSettings } from '../lib/constants';
-import { CaratImageRenderer } from './image-renderer';
 
 
 /** Типы аргументов для событий сцены каротажной диаграммы. */
@@ -26,13 +23,13 @@ export interface CaratEventMap {
   'scale': number;
 }
 
-/** Типы событий сцены каротажной диаграммы.
+/**
+ * Типы событий сцены каротажной диаграммы.
  * + `track` — изменение активного трека
  * + `group` — изменение активной группы
  * + `curve` — изменения активной кривой
  */
 export type CaratEventKind = keyof CaratEventMap;
-
 
 /** Сцена диаграммы. */
 export class CaratStage {
@@ -55,35 +52,37 @@ export class CaratStage {
   /** Индекс активного трека. */
   private activeIndex: number;
 
-  private readonly strataChannelName: ChannelName;
+  /** Глобальные настройки. */
+  public readonly settings: CaratGlobalSetting;
+  /** Флаг актуальности справочных данных. */
   public actualLookup: boolean;
   /** Расстояния между треками */
   public distance: number[];
 
-  constructor(settings: CaratGlobalSettings, columns: CaratColumnInit[], drawerConfig: CaratDrawerConfig) {
+  constructor(config: CaratStageConfig, drawerConfig: CaratDrawerConfig) {
     this.drawer = new CaratDrawer(drawerConfig);
     this.eventBus = new EventBus();
+    this.settings = config.globalSettings;
 
     this.wellIDs = [];
-    this.zones = settings.zones;
-    this.strataChannelName = settings.strataChannelName;
+    this.zones = config.zones;
     this.actualLookup = false;
     this.distance = [];
 
-    const correlationsInit = columns.find(c => c.settings.type === 'external');
+    const correlationsInit = config.columns.find(c => c.settings.type === 'external');
     this.correlations = new CaratCorrelations(correlationsInit, this.drawer);
 
     let trackWidth = 0;
-    for (const column of columns) {
+    for (const column of config.columns) {
       const { type, width } = column.settings;
       if (type === 'normal') trackWidth += width;
     }
 
     const padding = this.drawer.trackBodySettings.padding;
     const rect: Rectangle = {top: padding, left: padding, width: trackWidth, height: 0};
-    const scale = CaratDrawer.pixelPerMeter / (settings.scale ?? defaultSettings.scale);
+    const scale = CaratDrawer.pixelPerMeter / (config.scale ?? defaultSettings.scale);
 
-    const track = new CaratTrack(rect, columns, scale, this.drawer);
+    const track = new CaratTrack(rect, config.columns, scale, this.drawer);
     this.trackList = [track];
     this.activeIndex = 0;
 
@@ -123,20 +122,6 @@ export class CaratStage {
   /** Правила распределения кривых по зонам. */
   public getZones(): CaratZone[] {
     return this.zones;
-  }
-
-  /** Исходные настройки. */
-  public getInitSettings(): Omit<CaratFormSettings, 'id'> {
-    const track = this.getActiveTrack();
-    const columns = track.getGroups().map(g => g.getInit());
-    columns.push(track.getBackgroundGroup().getInit());
-    columns.push(this.correlations.getInit());
-
-    const settings: CaratGlobalSettings = {
-      scale: Math.round(CaratDrawer.pixelPerMeter / track.viewport.scale),
-      strataChannelName: this.strataChannelName, zones: this.zones,
-    };
-    return {settings, columns};
   }
 
   /* --- Setters --- */
@@ -243,6 +228,36 @@ export class CaratStage {
   }
 
   /* --- App Logic Actions --- */
+
+  /** Подбирает ширину колонок чтобы все треки уместились без прокрутки. */
+  public adjustWidth(): void {
+    if (!this.canvas) return;
+    let zoneCount = 0, fixedWidth = 0;
+    const curveGroupIndexes = new Set<number>();
+
+    this.trackList.forEach(t => t.getGroups().forEach((group, i) => {
+      if (!group.visible) return;
+      const curveColumn = group.getCurveColumn();
+      if (curveColumn) {
+        curveGroupIndexes.add(i);
+        zoneCount += curveColumn.getGroups().length;
+      } else {
+        fixedWidth += group.getWidth();
+      }
+    }));
+
+    const correlationWidth = this.correlations.getWidth() * (this.trackList.length - 1);
+    const totalGap = correlationWidth + 2 * this.drawer.trackBodySettings.padding;
+    const availableWidth = this.canvas.parentElement.clientWidth - fixedWidth - totalGap;
+
+    const minWidth = this.settings.minZoneWidth;
+    const maxWidth = this.settings.maxZoneWidth;
+    let width = Math.floor(availableWidth / zoneCount);
+
+    if (width < minWidth) width = minWidth;
+    if (width > maxWidth) width = maxWidth;
+    curveGroupIndexes.forEach(i => this.setGroupWidth(i, width));
+  }
 
   /** Выравнивает вьюпорт треков по абсолютой отметке указанного пласта. */
   public alignByStratum(id: StratumID): void {

@@ -1,3 +1,25 @@
+import type { CaratColumnInit } from './dto.types';
+
+
+export interface CaratStageConfig {
+  columns: CaratColumnInit[];
+  scale: number;
+  zones: CaratZone[];
+  globalSettings: CaratGlobalSetting;
+}
+
+/** Глобальные настройки каротажа. */
+export interface CaratGlobalSetting {
+  /** Название канала с пластами; техническое поле, не используется. */
+  readonly strataChannelName: ChannelName;
+  /** Минимально допустимая ширина зоны каротажной кривой. */
+  readonly minZoneWidth: number;
+  /** Максимально допустимая ширина зоны каротажной кривой. */
+  readonly maxZoneWidth: number;
+  /** Активен ли режим автоподбора ширины колонок. */
+  autoWidth: boolean;
+}
+
 /** Модель каротажной кривой. */
 export interface CaratCurveModel {
   /** Идентификатор кривой. */

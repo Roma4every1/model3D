@@ -1,12 +1,12 @@
-import { type MouseEvent, useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { type MouseEvent, useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { inputIntParser } from 'shared/locales';
 import { useCurrentStratum } from 'entities/objects';
 import { useChannel, createLookupList } from 'entities/channel';
 import { validateCaratScale } from '../../lib/utils';
 import { constraints } from '../../lib/constants';
+import { InputNumber, Popover } from 'antd';
 import { MenuSection, MenuSectionItem, ButtonIcon, BigButton } from 'shared/ui';
-import { Popover } from 'antd';
-import { NumericTextBox, NumericTextBoxChangeEvent, NumericTextBoxHandle } from '@progress/kendo-react-inputs';
 import { CaratViewportSetter } from './viewport-setter';
 
 import { CaratStage } from '../../rendering/stage';
@@ -36,11 +36,8 @@ export const CaratNavigationSection = ({stage}: CaratScalePanelProps) => {
 
 const ScaleSection = ({stage}: CaratScalePanelProps) => {
   const { t } = useTranslation();
-  const ref = useRef<NumericTextBoxHandle>();
-
   const track = stage.getActiveTrack();
-  const initScale = Math.round(CaratDrawer.pixelPerMeter / track.viewport.scale);
-  const [scale, setScale] = useState(initScale);
+  const [scale, setScale] = useState(Math.round(CaratDrawer.pixelPerMeter / track.viewport.scale));
 
   let step = 10;
   let buttonStep = 50;
@@ -54,19 +51,13 @@ const ScaleSection = ({stage}: CaratScalePanelProps) => {
     return () => stage.unsubscribe('scale', callback);
   }, [stage]);
 
-  // чтобы работало изменение 1 -> 10 вместо 11
-  useLayoutEffect(() => {
-    if (ref.current) ref.current.element.value = scale.toString();
-  }, [scale]);
-
   const changeScale = (newScale: number) => {
     newScale = validateCaratScale(newScale, !track.constructionMode);
     stage.setScale(newScale);
     stage.render();
   };
 
-  const onScaleChange = (e: NumericTextBoxChangeEvent) => {
-    let newScale = e.value;
+  const onScaleChange = (newScale: number | null) => {
     if (newScale === null) return;
     if (scale === 1 && newScale === step + 1) newScale = step;
     changeScale(newScale);
@@ -87,11 +78,10 @@ const ScaleSection = ({stage}: CaratScalePanelProps) => {
       />
       <div>
         <img src={scaleIcon} alt={'scale'} width={16} height={16}/>
-        <span style={{whiteSpace: 'pre'}}>1 / </span>
-        <NumericTextBox
-          ref={ref} title={t('carat.navigation.scale')}
-          width={100} style={{height: '20px'}} format={'#'}
+        <InputNumber
+          style={{width: 85, height: 20}} prefix={'1 /'} title={t('carat.navigation.scale')}
           value={scale} step={step} min={minScale} max={maxScale} onChange={onScaleChange}
+          parser={inputIntParser} changeOnWheel={true} controls={false}
         />
       </div>
     </MenuSectionItem>

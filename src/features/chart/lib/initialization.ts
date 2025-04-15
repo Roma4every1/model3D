@@ -50,7 +50,7 @@ export class ChartStateFactory {
 
   private createStage(): void {
     const [firstChannel] = Object.keys(this.dto ?? {});
-    if (firstChannel === undefined) throw new InitializationError('chart.empty');
+    if (firstChannel === undefined) throw new InitializationError('base.no-data');
 
     const settings = this.dto[firstChannel];
     const xAxisType = this.resolveXAxisType(settings.xAxisType);

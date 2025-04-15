@@ -1,6 +1,5 @@
 import { useCaratStore } from './carat.store';
-import { settingsToCaratState } from '../lib/adapter';
-import { CaratColumnGroup } from '../rendering/column-group';
+import { settingsToCaratState } from '../lib/initialization';
 
 
 /** Добавляет в хранилище состояний каротажа новую каротажную форму. */
@@ -26,23 +25,4 @@ export function setCaratCanvas(id: FormID, canvas: HTMLCanvasElement): void {
 
   stage.setCanvas(canvas);
   useCaratStore.setState({[id]: {...state, canvas}});
-}
-
-/** Дозагрузить каротажные кривые. */
-export async function loadCaratCurves(id: FormID, group: CaratColumnGroup): Promise<void> {
-  const { stage, loader } = useCaratStore.getState()[id];
-  const track = stage.getActiveTrack();
-  const curveManager = group.getCurveColumn().curveManager;
-
-  const visibleCurves = curveManager.getVisibleCurves();
-  group.groupCurves(visibleCurves);
-  const loadedIDs = await loader.loadCurveData(visibleCurves.map(curve => curve.id), false);
-  curveManager.setCurvePointData(loadedIDs, loader.cache);
-  if (track.constructionMode) track.transformer.transformCurves(visibleCurves);
-
-  loader.checkCacheSize();
-  track.updateGroupRects();
-  stage.updateTrackRects();
-  stage.resize();
-  stage.render();
 }

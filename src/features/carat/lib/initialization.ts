@@ -1,5 +1,6 @@
 import type { CaratState } from '../store/carat.store';
-import type { CaratFormSettings, CaratColumnInit, CaratColumnDTO } from './dto.types';
+import type { CaratFormSettings, CaratGlobalSettingsDTO, CaratColumnInit, CaratColumnDTO } from './dto.types';
+import { XElement } from 'shared/lib';
 import { RecordInfoCreator } from 'entities/channel';
 import { CaratStage } from '../rendering/stage';
 import { CaratLoader } from './loader';
@@ -11,7 +12,7 @@ import { setCaratLoading } from '../store/carat.actions';
 
 /** Создаёт состояние каротажа по её начальным настройкам. */
 export function settingsToCaratState(payload: FormStatePayload<CaratFormSettings>): CaratState {
-  const { id, channels: attachedChannels } = payload.state;
+  const { id, channels: attachedChannels, extra } = payload.state;
   const { settings: caratSettings, columns: initColumns } = payload.state.settings;
 
   let separateCurveLoading = false;
@@ -40,7 +41,7 @@ export function settingsToCaratState(payload: FormStatePayload<CaratFormSettings
     usedChannels.add(id);
   }
 
-  const stage = new CaratStage(caratSettings, columns, drawerConfig);
+  const stage = createCaratStage(caratSettings, columns, extra);
   const observer = new ResizeObserver(() => { stage.resize(); stage.render(); });
 
   const loader = new CaratLoader(attachedChannels, separateCurveLoading);
@@ -50,8 +51,20 @@ export function settingsToCaratState(payload: FormStatePayload<CaratFormSettings
     canvas: undefined, stage, loader, observer,
     channels: [...usedChannels],
     lookups: stage.getActiveTrack().getLookups(),
-    loading: {percentage: 100, status: 'carat.empty'},
+    loading: {percentage: 100, status: 'base.no-data'},
   };
+}
+
+function createCaratStage(settings: CaratGlobalSettingsDTO, columns: CaratColumnInit[], extra?: XElement): CaratStage {
+  const awElement = extra?.getChild('autoWidth');
+  const { scale, zones, strataChannelName } = settings;
+
+  const minZoneWidth = awElement?.getNumberAttribute('minZoneWidth') || 50;
+  const maxZoneWidth = awElement?.getNumberAttribute('maxZoneWidth') || 250;
+  const autoWidth = awElement?.getBooleanAttribute('enabled') ?? true;
+
+  const globalSettings = {strataChannelName, minZoneWidth, maxZoneWidth, autoWidth};
+  return new CaratStage({columns, scale, zones, globalSettings}, drawerConfig);
 }
 
 function applyStyle(attachment: AttachedChannel, channels: ChannelDict): void {
@@ -89,10 +102,4 @@ function columnCompareFn(a: CaratColumnDTO, b: CaratColumnDTO): number {
   if (aType === 'background' || aType === 'external') return 1;
   if (bType === 'background' || bType === 'external') return -1;
   return (aIndex ?? Number.MAX_SAFE_INTEGER) - (bIndex ?? Number.MAX_SAFE_INTEGER);
-}
-
-/** Возвращает настройки формы по состоянию каротажа. */
-export function caratStateToSettings(id: FormID, state: CaratState): CaratFormSettings {
-  const settings = state.stage.getInitSettings();
-  return {id, ...settings};
 }

@@ -15,7 +15,7 @@ import { TextInfo } from 'shared/ui';
 import './curve-selection.scss';
 import { CaratStage } from '../../rendering/stage';
 import { CurveManager } from '../../lib/curve-manager';
-import { loadCaratCurves } from '../../store/carat.actions';
+import { loadCaratCurves } from '../../store/carat.thunks';
 
 
 interface CurveSelectionWindowProps {
@@ -94,8 +94,7 @@ export const CurveSelectionWindow = ({id, stage, onClose}: CurveSelectionWindowP
                 expandIcons={true} onExpandChange={onExpandChange}
                 checkboxes={true} onCheckChange={onCheckChange}
                />
-            : <TextInfo text={'carat.no-data'}/>
-          }
+            : <TextInfo text={'base.no-data'}/>}
         </section>
         <section>
           <h5>{t('carat.selection.filters')}</h5>

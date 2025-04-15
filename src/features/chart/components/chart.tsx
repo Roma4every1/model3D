@@ -54,7 +54,7 @@ export const Chart = ({id, neededChannels}: Pick<SessionClient, 'id' | 'neededCh
     return <TextInfo text={'base.loading'}/>;
   }
   if (displayedProperties.length === 0 || data.records.length === 0) {
-    return <TextInfo text={'chart.empty'}/>;
+    return <TextInfo text={'base.no-data'}/>;
   }
   const legend = stage.getLegend();
   const displayedAxes = stage.getDisplayedAxes();

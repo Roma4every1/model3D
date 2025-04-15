@@ -57,7 +57,7 @@ export const Carat = ({id, loading: l}: SessionClient) => {
     return () => canvas?.removeEventListener('wheel', onWheel);
   }, [canvas, onWheel]);
 
-  if (loading.percentage < 0 || loading.status === 'carat.empty') {
+  if (loading.percentage < 0 || loading.status === 'base.no-data') {
     return <TextInfo text={loading.status}/>;
   }
   if (loading.percentage < 100) {

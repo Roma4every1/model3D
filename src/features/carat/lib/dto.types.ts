@@ -4,21 +4,21 @@ import type { CaratMarkSettingsDTO } from './mark.types';
 /** Инициализирующие настройки для каротажной формы. */
 export interface CaratFormSettings {
   /** Идентификатор формы. */
-  id: FormID;
+  readonly id: FormID;
   /** Глобальные настройки диаграммы. */
-  settings: CaratGlobalSettings;
+  readonly settings: CaratGlobalSettingsDTO;
   /** Список колонок диаграммы. */
-  columns: CaratColumnDTO[];
+  readonly columns: CaratColumnDTO[];
 }
 
 /** Глобальные настройки каротажной диаграммы. */
-export interface CaratGlobalSettings {
+export interface CaratGlobalSettingsDTO {
   /** Масштабирование колонок. */
-  scale: number;
+  readonly scale: number;
   /** Название канала с пластами для выравнивания по активному пласту. */
-  strataChannelName?: ChannelName;
+  readonly strataChannelName?: ChannelName;
   /** Зоны распределения каротажных кривых. */
-  zones: CaratZone[];
+  readonly zones: CaratZone[];
 }
 
 /** Модель колонки каротажной диаграммы. */

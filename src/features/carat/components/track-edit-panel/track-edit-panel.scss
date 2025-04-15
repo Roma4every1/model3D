@@ -99,8 +99,12 @@
 
 .carat-active-column {
   display: grid;
-  grid-template-columns: 160px 96px 24px;
-  gap: 2px 8px;
+  grid-template-columns: 194px 96px 75px;
+
+  .ant-input-number-group-addon {
+    padding: 0;
+    cursor: pointer;
+  }
 }
 
 .carat-column-common-settings {
@@ -108,6 +112,7 @@
   grid-template-columns: 1fr 2fr;
   grid-template-rows: 24px 24px;
   gap: 4px;
+  margin-right: 10px;
 }
 
 .carat-column-y-axis-settings {
