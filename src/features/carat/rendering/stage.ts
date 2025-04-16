@@ -230,8 +230,8 @@ export class CaratStage {
   /* --- App Logic Actions --- */
 
   /** Подбирает ширину колонок чтобы все треки уместились без прокрутки. */
-  public adjustWidth(): void {
-    if (!this.canvas) return;
+  public adjustWidth(): boolean {
+    if (!this.canvas) return false;
     let zoneCount = 0, fixedWidth = 0;
     const curveGroupIndexes = new Set<number>();
 
@@ -245,6 +245,7 @@ export class CaratStage {
         fixedWidth += group.getWidth();
       }
     }));
+    if (curveGroupIndexes.size === 0) return false;
 
     const correlationWidth = this.correlations.getWidth() * (this.trackList.length - 1);
     const totalGap = correlationWidth + 2 * this.drawer.trackBodySettings.padding;
@@ -257,6 +258,7 @@ export class CaratStage {
     if (width < minWidth) width = minWidth;
     if (width > maxWidth) width = maxWidth;
     curveGroupIndexes.forEach(i => this.setGroupWidth(i, width));
+    return true;
   }
 
   /** Выравнивает вьюпорт треков по абсолютой отметке указанного пласта. */
@@ -328,10 +330,15 @@ export class CaratStage {
   }
 
   public setGroupVisibility(idx: number, visibility: boolean): void {
-    for (const track of this.trackList) track.setGroupVisibility(idx, visibility);
+    for (const track of this.trackList) {
+      track.setGroupVisibility(idx, visibility);
+    }
     this.updateTrackRects();
-    this.resize();
-    this.eventBus.publish('group', idx);
+
+    if (!this.settings.autoWidth || !this.adjustWidth()) {
+      this.resize();
+      this.eventBus.publish('group', idx);
+    }
   }
 
   public setGroupColumnVisibility(groupIdx: number, columnIdx: number, visibility: boolean): void {
