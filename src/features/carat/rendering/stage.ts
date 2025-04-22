@@ -58,6 +58,8 @@ export class CaratStage {
   public actualLookup: boolean;
   /** Расстояния между треками */
   public distance: number[];
+  /** Сохранённое значение `devicePixelRatio`. */
+  private pixelRatio: number;
 
   constructor(config: CaratStageConfig, drawerConfig: CaratDrawerConfig) {
     this.drawer = new CaratDrawer(drawerConfig);
@@ -68,6 +70,7 @@ export class CaratStage {
     this.zones = config.zones;
     this.actualLookup = false;
     this.distance = [];
+    this.pixelRatio = window.devicePixelRatio;
 
     const correlationsInit = config.columns.find(c => c.settings.type === 'external');
     this.correlations = new CaratCorrelations(correlationsInit, this.drawer);
@@ -477,6 +480,10 @@ export class CaratStage {
       const newScale = track.viewport.scale * (dataRect.height / oldRectHeight);
       track.setScale(newScale);
       this.eventBus.publish('scale', Math.round(CaratDrawer.pixelPerMeter / newScale));
+    }
+    if (this.settings.autoWidth && this.pixelRatio !== window.devicePixelRatio) {
+      this.pixelRatio = window.devicePixelRatio;
+      setTimeout(() => this.adjustWidth() && this.render(), 100);
     }
   }
 
