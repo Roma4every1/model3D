@@ -107,19 +107,9 @@ export class CaratStage {
     return this.canvas;
   }
 
-  /** Трек по индексу. */
-  public getTrack(idx: number): CaratTrack {
-    return this.trackList[idx];
-  }
-
   /** Текущий активный трек. */
   public getActiveTrack(): CaratTrack {
     return this.trackList[this.activeIndex];
-  }
-
-  /** Индекс активного трека. */
-  public getActiveIndex(): number {
-    return this.activeIndex;
   }
 
   /** Правила распределения кривых по зонам. */

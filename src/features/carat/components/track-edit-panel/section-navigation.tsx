@@ -1,5 +1,6 @@
 import { type MouseEvent, useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useRender } from 'shared/react';
 import { inputIntParser } from 'shared/locales';
 import { useCurrentStratum } from 'entities/objects';
 import { useChannel, createLookupList } from 'entities/channel';
@@ -90,18 +91,18 @@ const ScaleSection = ({stage}: CaratScalePanelProps) => {
 
 const NavigationSection = ({stage}: CaratScalePanelProps) => {
   const { t } = useTranslation();
+  const render = useRender();
   const currentStratum = useCurrentStratum();
-  const [trackIndex, setTrackIndex] = useState(stage.getActiveIndex());
 
   useEffect(() => {
-    stage.subscribe('track', setTrackIndex);
-    return () => stage.unsubscribe('track', setTrackIndex);
-  }, [stage]);
+    stage.subscribe('track', render);
+    return () => stage.unsubscribe('track', render);
+  }, [stage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [isOpen, setIsOpen] = useState(false);
   const [anchor, setAnchor] = useState(null);
 
-  const backgroundColumns = stage.getTrack(trackIndex).getBackgroundGroup().getColumns();
+  const backgroundColumns = stage.getActiveTrack().getBackgroundGroup().getColumns();
   const strataColumn = backgroundColumns.find(c => c.channel.type === 'lithology');
   const strata: CaratIntervalModel[] = strataColumn?.getElements() ?? [];
 

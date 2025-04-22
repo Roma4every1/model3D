@@ -1,6 +1,7 @@
 import type { WindowProps } from '@progress/kendo-react-dialogs';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useRender } from 'shared/react';
 import { MenuSection, BigButton } from 'shared/ui';
 import { showWindow, closeWindow } from 'entities/window';
 
@@ -22,12 +23,12 @@ interface CaratCurveSectionProps {
 
 export const CaratCurveSection = ({id, stage, loader}: CaratCurveSectionProps) => {
   const { t } = useTranslation();
-  const [trackIndex, setTrackIndex] = useState(stage.getActiveIndex());
+  const render = useRender();
 
   useEffect(() => {
-    stage.subscribe('track', setTrackIndex);
-    return () => stage.unsubscribe('track', setTrackIndex);
-  }, [stage]);
+    stage.subscribe('track', render);
+    return () => stage.unsubscribe('track', render);
+  }, [stage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const openCurveSelectionWindow = () => {
     const windowID = 'curve-selection';
@@ -54,7 +55,7 @@ export const CaratCurveSection = ({id, stage, loader}: CaratCurveSectionProps) =
     showWindow(windowID, windowProps, content);
   };
 
-  const curveGroup = stage.getTrack(trackIndex).getCurveGroup();
+  const curveGroup = stage.getActiveTrack().getCurveGroup();
   const enableSelection = curveGroup && loader.separateCurveLoading;
 
   return (
