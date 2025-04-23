@@ -53,9 +53,14 @@ export class ChannelAPI {
   /* --- --- */
 
   /** Запрос статистики по колонке. */
-  public getStatistics(queryID: QueryID, columnName: string): Promise<Res> {
-    const query = {tableId: queryID, columnName};
-    return this.api.get('/getStatistics', {query})
+  public async getColumnStat(queryID: QueryID, columnName: string): Promise<Res<ColumnStat>> {
+    if (this.api.legacy) {
+      const res = await this.api.get('/getStatistics', {query: {tableId: queryID, columnName}});
+      if (res.ok) res.data = convertLegacyColumnStat(res.data);
+      return res;
+    } else {
+      return this.api.get('/channel/data/stat', {query: {queryID, column: columnName}});
+    }
   }
 
   /**
@@ -183,4 +188,22 @@ function convertLegacyChannelColumn(column: ChannelColumnLegacy): ChannelColumn 
 
 function toLegacyChannelRow(row: ChannelRow): ChannelRowLegacy {
   return {ID: null, Cells: row};
+}
+
+interface ColumnStatLegacyDTO {
+  Values: ColumnStatLegacy;
+}
+interface ColumnStatLegacy {
+  MIN?: string;
+  MAX?: string;
+  AVG?: string;
+  SUM?: string;
+  COUNT?: string;
+  UNIQ?: string;
+}
+
+function convertLegacyColumnStat(dto: ColumnStatLegacyDTO): ColumnStat {
+  const v = dto?.Values;
+  if (!v) return {};
+  return {min: v.MIN, max: v.MAX, avg: v.AVG, sum: v.SUM, count: v.COUNT, unique: v.UNIQ};
 }

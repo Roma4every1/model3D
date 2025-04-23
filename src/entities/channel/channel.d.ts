@@ -114,6 +114,22 @@ interface ChannelProperty {
 /** Название свойства канала. */
 type PropertyName = string;
 
+/** Статистика по колонке датасета. */
+interface ColumnStat {
+  /** Минимальное значение. */
+  min?: number | string;
+  /** Максимальное значение. */
+  max?: number | string;
+  /** Среднее значение. */
+  avg?: number | string;
+  /** Сумма всех значений. */
+  sum?: number | string;
+  /** Количество значений. */
+  count?: number | string;
+  /** Количество уникальных значений. */
+  unique?: number | string;
+}
+
 /* --- Criterion --- */
 
 /** Критерий канала. */

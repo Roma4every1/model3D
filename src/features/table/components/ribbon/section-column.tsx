@@ -2,7 +2,7 @@ import type { TFunction } from 'react-i18next';
 import type { TableColumnModel, TableState } from '../../lib/types';
 import { Button, InputNumber } from 'antd';
 import { IconRow, IconRowButton, MenuSection } from 'shared/ui';
-import { ColumnStatistics } from './column-statistics';
+import { ColumnStat } from './column-stat';
 import { inputIntParser } from 'shared/locales';
 import { maxCellWidth, minCellWidth } from '../../lib/constants';
 import textWrapIcon from 'assets/table/text-wrap.svg';
@@ -35,7 +35,7 @@ export const TableColumnSection = ({state, t}: TableColumnSectionProps) => {
 
   return (
     <MenuSection className={'big-buttons'} header={t('table.panel.section-column')}>
-      <ColumnStatistics state={state} t={t}/>
+      <ColumnStat state={state} t={t}/>
       <ColumnCommonControls state={state} activeColumn={activeColumn} t={t}/>
       <ColumnOrderControls state={state} activeColumn={activeColumn} t={t}/>
     </MenuSection>
