@@ -1,3 +1,4 @@
+import { showWarningMessage } from 'entities/window';
 import { updateParamDeep, rowToParameterValue } from 'entities/parameter';
 import { useChannelStore, channelAPI, reloadChannel, reloadChannels } from 'entities/channel';
 import { useObjectsStore } from './objects.store';
@@ -30,8 +31,10 @@ export async function createTrace(): Promise<void> {
 export async function saveTrace(): Promise<void> {
   const traceManager = useObjectsStore.getState().trace;
   const { model, channelID, nodeChannelID, parameterID } = traceManager;
-  const traceChannel = useChannelStore.getState().storage[channelID];
+  const error = validateTrace(model);
+  if (error) { showWarningMessage(error); return; }
 
+  const traceChannel = useChannelStore.getState().storage[channelID];
   const idIndex = traceChannel.config.lookupColumns.id.columnIndex;
   const index = traceChannel.data.rows.findIndex(row => row[idIndex] === model.id);
   const row = traceChannel.data.rows[index];
@@ -77,4 +80,21 @@ export async function deleteTrace(): Promise<void> {
   await reloadChannels(traceManager.channelID, traceManager.nodeChannelID);
   await updateParamDeep(traceManager.parameterID, null);
   setCurrentTrace(undefined, false, false);
+}
+
+function validateTrace(trace: TraceModel): string {
+  let invalidNodes: TraceNode[] = [];
+  for (const node of trace.nodes) {
+    const id = node.id;
+    if (id === undefined || Number.isNaN(id)) invalidNodes.push(node);
+  }
+  let message: string;
+  if (invalidNodes.length > 1) {
+    message = `для скважин ${invalidNodes.map(n => n.name).join(', ')} неопределены идентификаторы`;
+  } else if (invalidNodes.length > 0) {
+    message = `для скважины ${invalidNodes[0].name} неопределён идентификатор.`;
+  } else {
+    return null;
+  }
+  return 'Трасса не может быть сохранена: ' + message;
 }
