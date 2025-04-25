@@ -1,12 +1,13 @@
-# This script is used to deploy the application using the compiled client.
-# The script runs under "deploy.bat" and requires the archive "client.zip".
+# This script is used to deploy the client side of JS WMW.
+# The script is run via deploy.bat and requires the archive with the build.
 
-Add-Type -AssemblyName System.IO.Compression.FileSystem
 Set-ExecutionPolicy RemoteSigned -Scope process
+Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 # --- Global constants ---
 
-$zipFileName = "client.zip"
+$versionPattern = '^\d\.(?:0|[1-9]\d*)(?:\.(?:0|[1-9]\d*))?(?:\.(?:0|[1-9]\d*))?(?:-rc\.?(?:0|[1-9]\d*))?$'
+$defaultWmwPath = "C:\GS\wmw"
 $htmlFileName = "index.html"
 $webRequestsFileName = "WebRequests.svc"
 $systemInfoFileName = "System.Info.xml"
@@ -45,8 +46,8 @@ function Get-BaseURL {
     $iisApps = Get-WebApplication
   } catch {
     Write-Output @(
-    "Cannot get IIS application list. Most likely there are insufficient rights"
-    "or the required 'WebAdministrator' module is missing`r`n"
+      "Cannot get IIS application list. Most likely there are insufficient rights"
+      "or the required 'WebAdministrator' module is missing`r`n"
     ) | Red
     exit 1
   }
@@ -64,9 +65,41 @@ function Get-BaseURL {
   $baseURL
 }
 
+function Get-ClientFileName {
+  $files = @(Get-ChildItem -Path . -Filter 'client-*.zip' | Where-Object {
+    $version = $_.BaseName -replace '^client-', ''
+    $version -match $versionPattern
+  })
+  if ($files.Count -eq 0) {
+    Write-Output "No valid client-*.zip files found" | Red
+    exit 1
+  }
+  if ($files.Count -eq 1) {
+    return $files[0]
+  }
+  Write-Host "Found $($files.Count) archives:"
+  for ($i = 0; $i -lt $files.Count; $i++) {
+    Write-Host "[$($i+1)] $($files[$i].Name)"
+  }
+  do {
+    try {
+      $index = [int](Read-Host "Select an archive (1-$($files.Count))")
+      if ($index -lt 1 -or $index -gt $files.Count) { throw }
+      $selectedFile = $files[$index - 1]
+      break
+    } catch {
+      Write-Output "Invalid input. Please enter a number between 1 and $($files.Count)" | Red
+    }
+  } while ($true)
+  $selectedFile.Name
+}
+
 # --- Input ---
 
-$wmwPath = Read-Host -Prompt "Enter the full path to the directory with WMW"
+$wmwPath = Read-Host -Prompt "Enter the full path to the WMW directory [default to $defaultWmwPath]"
+if ($wmwPath -eq "") {
+  $wmwPath = $defaultWmwPath
+}
 if (-Not (Test-Path $wmwPath)) {
   Write-Output "Cannot resolve WMW path`r`n" | Red
   exit 1
@@ -81,10 +114,18 @@ if (-Not ($wmwDirectoryContent -contains $webRequestsFileName)) {
   exit 1
 }
 
-# The case when the client is already installed.
-# Just need to update the list of systems.
+$needUpdateSystems = 0
 if ($wmwDirectoryContent -contains "client") {
-  Write-Output "Client already exist. Check system list..."
+  $p = Read-Host -Prompt "Client already exist. The directory will be overwritten [Y/n]"
+  if ($p -eq "Y" -or $p -eq "y" -or $p -eq "") {
+    Remove-Item -LiteralPath (Join-Path -Path $wmwPath -ChildPath "client" -Resolve) -Force -Recurse
+  } else {
+    $needUpdateSystems = 1
+  }
+}
+
+if ($needUpdateSystems -eq 1) {
+  Write-Output "Check system list..."
 
   $systemListDirectory = Join-Path -Path $wmwPath -ChildPath "client/systems" -Resolve
   $systemList = Get-WMWSystemList $wmwDirectoryContent
@@ -123,11 +164,7 @@ if ($wmwDirectoryContent -contains "client") {
 
 # --- Deploy ---
 
-if (-Not ((Get-ChildItem (Get-Location) -Name) -contains $zipFileName)) {
-  Write-Output "Cannot find `"$zipFileName`" in current location`r`n" | Red
-  exit 1  
-}
-
+$zipFileName = Get-ClientFileName
 Write-Output "Create client directory..."
 [void](New-Item -ItemType Directory -Path $clientPath -Force)
 Unzip $zipFileName $clientPath
