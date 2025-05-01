@@ -1,7 +1,7 @@
 import type { CSSProperties, MouseEvent, ReactNode } from 'react';
 import type { TableColumnModel, TableState } from '../../lib/types';
 import { clsx } from 'clsx';
-import { showDetailsTable } from '../../store/details-table';
+import { showDetailsTable, showDetailsWindow } from '../../store/details-table';
 import { EditedCell } from './edited-cell';
 
 
@@ -14,7 +14,7 @@ interface TableCellProps {
 
 
 export const TableCell = ({state, column, record, rowStyle}: TableCellProps) => {
-  const { id, fixed, detailChannel: details } = column;
+  const { id, fixed, link, detailChannel: details } = column;
   const activeCell = state.data.activeCell;
   const active = activeCell.row === record.index && activeCell.column === id;
 
@@ -34,23 +34,23 @@ export const TableCell = ({state, column, record, rowStyle}: TableCellProps) => 
   }
 
   const content = getCellContent(column, record);
-  const className = clsx(fixed && 'cell-sticky', details && 'cell-details', active && 'cell-active');
-  const onClick = (e: MouseEvent<HTMLTableCellElement>) => state.actions.cellClick(record.index, id, e);
+  const className = clsx(fixed && 'cell-sticky', (details || link) && 'cell-details', active && 'cell-active');
+  const onCellClick = (e: MouseEvent<HTMLTableCellElement>) => state.actions.cellClick(record.index, id, e);
 
-  if (details) {
+  if (details || link) {
+    const onButtonClick = link
+      ? () => showDetailsWindow(state.id, link)
+      : () => showDetailsTable(state.id, id);
     return (
-      <td className={className} style={style} onClick={onClick}>
+      <td className={className} style={style} onClick={onCellClick}>
         <div>
           <span>{content}</span>
-          <button
-            onClick={() => showDetailsTable(state.id, id)}
-            title={'Показать детальную информацию'}
-          />
+          <button onClick={onButtonClick} title={'Показать детальную информацию'}/>
         </div>
       </td>
     );
   }
-  return <td className={className} style={style} onClick={onClick}>{content}</td>;
+  return <td className={className} style={style} onClick={onCellClick}>{content}</td>;
 };
 
 function getCellContent(column: TableColumnModel, record: TableRecord): ReactNode {

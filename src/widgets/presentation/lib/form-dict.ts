@@ -6,11 +6,11 @@ import { Carat, createCaratState, caratChannelCriteria } from 'features/carat';
 import { Profile, createProfileState } from 'features/profile';
 import { FileView, createFileViewState } from 'features/file';
 import { FileListView, createFileListState } from 'features/file-list';
+import { Slide, createSlideState, slideChannelCriteria } from 'features/slide';
 
 
 type SupportedFormDict<T> = Record<SupportedFormType, T>;
 type FormStateCreator = (payload: FormStatePayload) => void;
-
 
 /** Словарь компонентов форм; используется в компоненте `Form`. */
 export const formDict: SupportedFormDict<FunctionComponent<SessionClient>> = {
@@ -21,6 +21,7 @@ export const formDict: SupportedFormDict<FunctionComponent<SessionClient>> = {
   'profile': Profile,
   'files': FileView,
   'filesList': FileListView,
+  'slide': Slide,
 };
 
 /** Словарь функций-экшенов для создания состояния форм. */
@@ -32,10 +33,12 @@ export const formCreators: SupportedFormDict<FormStateCreator> = {
   'profile': createProfileState,
   'files': createFileViewState,
   'filesList': createFileListState,
+  'slide': createSlideState,
 };
 
 export const formChannelCriteria: Partial<SupportedFormDict<ClientChannelCriteria>> = {
   'carat': caratChannelCriteria,
   'map': mapChannelCriteria,
   'profile': {},
+  'slide': slideChannelCriteria,
 };

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from 'antd';
 import { ProgramParameters } from './program-parameters';
-import { initializeActiveProgram, prepareProgram } from 'entities/program';
+import { initializeProgram, prepareProgram } from 'entities/program';
 
 import reportIcon from 'assets/common/report.svg';
 import programIcon from 'assets/common/program.svg';
@@ -20,7 +20,7 @@ export const ProgramButton = ({program}: {program: Program}) => {
     if (program.parameters) {
       prepareProgram(program).then(onLoad);
     } else {
-      initializeActiveProgram(program).then(onLoad);
+      initializeProgram(program).then(onLoad);
     }
   };
 

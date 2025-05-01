@@ -9,6 +9,13 @@ import { createTableState } from './table.actions';
 import { DetailsTable } from '../components/details-table';
 
 
+export function showDetailsWindow(formID: FormID, link: string): void {
+  const clientStates = useClientStore.getState();
+  const presentation = clientStates[clientStates[formID].parent] as PresentationState;
+  const windows = presentation.settings.windows;
+  if (windows) windows[link]?.open(formID);
+}
+
 export function showDetailsTable(formID: FormID, columnID: PropertyName): void {
   const tables = useTableStore.getState();
   const detailsTableID = formID + columnID;

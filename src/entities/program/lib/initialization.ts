@@ -11,14 +11,14 @@ import {
 } from 'entities/parameter';
 
 
-export async function initializeActiveProgram(program: Program): Promise<void> {
+export async function initializeProgram(program: Program, pClientID?: ClientID): Promise<void> {
   const { id, owner } = program;
   const { ok, data, message } = await programAPI.getProgramData(id);
   if (!ok) { showWarningMessage(message); return; }
 
   const linkedPropertyCount = data.linkedPropertyCount;
-  const [parameters, relations] = createProgramParameters(owner, data);
-  const channels = await createProgramChannels(owner, parameters);
+  const [parameters, relations] = createProgramParameters(pClientID ?? owner, data);
+  const channels = await createProgramChannels(pClientID ?? owner, parameters);
 
   let runnable = true;
   if (parameters.length) runnable = await programAPI.canRunProgram(id, parameters);

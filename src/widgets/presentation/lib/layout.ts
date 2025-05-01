@@ -9,7 +9,7 @@ import { Form } from '../components/form';
 import { FormName } from '../components/form-name';
 
 
-const globalAttributes: IGlobalAttributes = {
+export const globalAttributes: IGlobalAttributes = {
   rootOrientationVertical: false,
   tabEnableRename: false,
   tabEnableClose: false,

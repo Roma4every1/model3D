@@ -49,6 +49,10 @@ export class XElement {
     if (value !== undefined) return value === 'true' || value === '1';
   }
 
+  public getAttributes(): XAttributes {
+    return this.attributes;
+  }
+
   public getChild(name: string): XElement | undefined {
     const value = this.children[name];
     const child = Array.isArray(value) ? value[0] : value;

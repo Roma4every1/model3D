@@ -22,9 +22,7 @@ export function calcColumnAutoWidth(column: TableColumnModel, records: TableReco
   let dataWidth = 0;
 
   if (records.length > 0) {
-    if (column.type === 'date') {
-      dataWidth = 75;
-    } else if (column.type === 'bool') {
+    if (column.type === 'bool') {
       dataWidth = 20;
     } else if (column.type === 'color') {
       dataWidth = 40;
@@ -32,7 +30,7 @@ export function calcColumnAutoWidth(column: TableColumnModel, records: TableReco
       dataWidth = calcLongestCellWidth(column, records);
     }
   }
-  if (column.detailChannel) {
+  if (column.detailChannel || column.link) {
     dataWidth += 20;
   }
   return Math.min(maxCellWidth, Math.max(titleWidth + 18, dataWidth) + 14);
@@ -93,6 +91,24 @@ export function formatFloat(n: number, minDigits: number, maxDigits: number): st
     str = str.substring(0, end);
   }
   return str.replace('.', ',');
+}
+
+/** Приводит дату к формату `DD.MM.YYYY`, добавляя время, если оно не 00:00. */
+export function formatDateTime(d: string): string {
+  if (d.length === 10) {
+    // YYYY-DD-MM => DD.MM.YYYY
+    return d.substring(8, 10) + '.' + d.substring(5, 7) + '.' + d.substring(0, 4);
+  }
+  const date = new Date(d);
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+
+  if (hours || minutes) {
+    const hh = hours > 9 ? hours : '0' + hours;
+    const mm = minutes > 9 ? minutes : '0' + minutes;
+    return date.toLocaleDateString('ru') + ' ' + hh + ':' + mm;
+  }
+  return date.toLocaleDateString('ru');
 }
 
 /**

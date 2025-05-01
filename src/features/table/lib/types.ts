@@ -176,6 +176,8 @@ export interface TableColumnModel {
   /** Фильтр по колонке. */
   filter?: TableColumnFilter;
 
+  /** Ссылка на другую презентацию. */
+  readonly link?: ClientID;
   /** ID канала детализации. */
   readonly detailChannel?: ChannelID;
   /** ID канала-справочника. */

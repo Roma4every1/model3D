@@ -17,6 +17,7 @@ import { useMultiMapStore } from 'features/multi-map';
 import { useCaratStore } from 'features/carat';
 import { useProfileStore } from 'features/profile';
 import { useFileViewStore } from 'features/file';
+import { useSlideStore } from 'features/slide';
 
 
 export class WMDevTools {
@@ -226,6 +227,10 @@ export class WMDevTools {
 
   public get fileViews(): any {
     return Object.values(useFileViewStore.getState());
+  }
+
+  public get slides(): any {
+    return Object.values(useSlideStore.getState());
   }
 
   /* --- --- */

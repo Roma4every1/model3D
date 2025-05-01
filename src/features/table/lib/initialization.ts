@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { TableSettingsDTO,  TableColumnSettingsDTO } from './dto.types';
 import type { TableState, HeaderSetterRule, RecordStyleRule, TableGlobalSettings, TableColumnGroupDict, TableColumnModel, TableActions, RecordModeState } from './types';
-import { InitializationError, fixColorHEX } from 'shared/lib';
+import { InitializationError, XElement, fixColorHEX } from 'shared/lib';
 import { TableData } from './table-data';
 import { TableSelection } from './table-selection';
 import { TableColumns } from './table-columns';
@@ -22,6 +22,9 @@ export class TableStateFactory {
   private payload: FormStatePayload<TableSettingsDTO>;
   /** DTO настроек. */
   private dto: TableSettingsDTO;
+  /** Ссылки на другие презентации. */
+  private links: Record<PropertyName, ClientID>;
+
   /** Подключённый канал. */
   private attachedChannel: AttachedChannel;
   /** Модель подключённого канала. */
@@ -36,6 +39,7 @@ export class TableStateFactory {
     this.dto = payload.state.settings;
     this.globalSettings = this.createGlobalSettings();
 
+    this.handleExtra();
     this.handleChannel();
     this.handleColumns();
 
@@ -61,6 +65,18 @@ export class TableStateFactory {
       activeRecordParameter: this.channel.config.activeRowParameter,
       recordMode: this.createRecordModeState(),
     };
+  }
+
+  private handleExtra(): void {
+    this.links = {};
+    const extra = this.payload.state.extra as XElement;
+    const links = extra?.getChild('links')?.getChildren('link');
+
+    links?.forEach((link: XElement) => {
+      const propertyName = link.getAttribute('propertyName');
+      const windowName = link.getAttribute('windowName');
+      if (propertyName && windowName) this.links[propertyName] = windowName;
+    });
   }
 
   private handleChannel(): void {
@@ -162,6 +178,7 @@ export class TableStateFactory {
       displayName: displayName, displayIndex: null, orderIndex,
       width, autoWidth, textWrap, columnName: property.fromColumn,
       fixed: false, visible, nullable: true, editable: dto.readOnly !== true,
+      link: this.links[id],
       detailChannel: property.detailChannel,
       lookupChannel: property.lookupChannels[0],
     };

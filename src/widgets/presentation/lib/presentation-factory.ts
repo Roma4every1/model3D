@@ -1,12 +1,12 @@
 import type { ClientDataDTO, ParameterSetterDTO } from 'entities/client';
 import type { ParameterStore, ParameterUpdateData, ParameterGroupDTO } from 'entities/parameter';
-import type { ProgramDTO } from 'entities/program';
 import { XElement } from 'shared/lib';
-import { programAPI, programCompareFn } from 'entities/program';
+import { ProgramFactory } from 'entities/program';
 import { useChannelStore } from 'entities/channel';
 import { AttachedChannelFactory, clientAPI } from 'entities/client';
 import { multiMapChannelCriterion } from 'features/multi-map';
 import { LayoutFactory } from './layout';
+import { PresentationWindowFactory } from './window-factory';
 import { ClientChannelFactory } from './channel-factory';
 import { DataResolver } from './data-resolver';
 import { formChannelCriteria } from './form-dict';
@@ -131,6 +131,11 @@ export class PresentationFactory {
     const settings: PresentationSettings = {};
     if (dto.multiMapChannel) settings.multiMapChannel = true;
 
+    const extra = XElement.tryCreate(this.dtoOwn.extra);
+    if (extra) {
+      const windowFactory = new PresentationWindowFactory(this.id, this.dtoOwn.children.children);
+      settings.windows = windowFactory.create(extra);
+    }
     if (Array.isArray(groups) && groups.length) {
       const parameterGroups = createParameterGroups(this.parameters, groups);
       if (parameterGroups) settings.parameterGroups = parameterGroups;
@@ -216,33 +221,10 @@ export class PresentationFactory {
   /* --- Reports --- */
 
   /** Создаёт список программ презентации. */
-  public async createPrograms(): Promise<Program[]> {
-    const { ok, data } = await programAPI.getProgramList(this.id);
-    if (!ok) return [];
-
-    const create = (dto: ProgramDTO, i: number) => this.createProgram(dto, i);
-    const models = await Promise.all(data.map(create));
-    return models.sort(programCompareFn);
-  }
-
-  private async createProgram(dto: ProgramDTO, orderIndex: number): Promise<Program> {
-    const availabilityParameters: ParameterID[] = [];
-    if (dto.paramsForCheckVisibility) {
-      for (const name of dto.paramsForCheckVisibility) {
-        const id = this.resolveParameterName(name);
-        if (id) availabilityParameters.push(id);
-      }
-    }
-
-    const program: Program = {
-      id: dto.id, type: dto.type, owner: this.id, orderIndex, displayName: dto.displayName,
-      availabilityParameters, available: true, runnable: false,
-    };
-    if (availabilityParameters.length) {
-      const parameters = findParameters(availabilityParameters, this.parameterStore.storage);
-      program.available = await programAPI.getProgramAvailability(dto.id, parameters)
-    }
-    return program;
+  public createPrograms(): Promise<Program[]> {
+    const resolve = (name: ParameterName): ParameterID => this.resolveParameterName(name);
+    const factory = new ProgramFactory(this.id, this.parameterStore.storage, resolve);
+    return factory.create();
   }
 
   /* --- Channels --- */
@@ -295,12 +277,9 @@ export class PresentationFactory {
   }
 
   private resolveParameterName(name: ParameterName): ParameterID {
-    let parameters = this.parameterStore.clients[this.id];
-    let parameter = parameters.find(p => p.name === name);
-    if (parameter) return parameter.id;
-
-    parameters = this.parameterStore.clients.root;
-    parameter = parameters.find(p => p.name === name);
+    const parameters = this.parameterStore.clients;
+    const cb = (p: Parameter): boolean => p.name === name;
+    const parameter = parameters[this.id].find(cb) ?? parameters.root.find(cb);
     return parameter?.id;
   }
 }

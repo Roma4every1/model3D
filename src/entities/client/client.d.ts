@@ -4,11 +4,13 @@ type ClientID = string;
 type FormID = string;
 
 /** Тип клиента сессии. */
-type ClientType = 'dock' | 'grid' | 'dataSet' | 'carat' | 'chart' | 'map' | 'multiMap' |
-  'files' | 'filesList' | 'image' | 'model3D' | 'profile' | 'slide' | 'spreadsheet';
+type ClientType =
+  | 'dock' | 'grid' | 'dataSet' | 'carat' | 'chart' | 'map' | 'multiMap'
+  | 'files' | 'filesList' | 'image' | 'model3D' | 'profile' | 'slide' | 'spreadsheet';
 
 /** Поддерживаемые типы форм. */
-type SupportedFormType = 'dataSet' | 'carat' | 'chart' | 'map' | 'profile' | 'files' | 'filesList';
+type SupportedFormType =
+  'dataSet' | 'carat' | 'chart' | 'map' | 'profile' | 'files' | 'filesList' | 'slide';
 
 /** Состояния клиентов сессии. */
 type ClientStates = Record<ClientID, SessionClient>;

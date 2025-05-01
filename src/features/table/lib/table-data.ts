@@ -2,7 +2,7 @@ import type { TableColumnModel, RecordStyleRule, RecordViolation } from './types
 import { parseDate, stringifyLocalDate, getDataTypeName, fixColorHEX } from 'shared/lib';
 import { createLookupList, createLookupTree } from 'entities/channel';
 import { TableColumns } from './table-columns';
-import { toTableColumnType, formatFloat } from './utils';
+import { toTableColumnType, formatFloat, formatDateTime } from './utils';
 import { createColumnFilter } from './filter-utils';
 
 
@@ -222,7 +222,7 @@ export class TableData {
       value = column.lookupDict[value];
       return value === null || value === undefined ? null : String(value);
     }
-    if (type === 'date') return new Date(value).toLocaleDateString();
+    if (type === 'date') return formatDateTime(value);
     if (type === 'bool') return value ? '✔' : '✖';
 
     if (type === 'color') {
