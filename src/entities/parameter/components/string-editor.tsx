@@ -19,9 +19,17 @@ export const StringEditor = ({parameter, update}: EditorProps<'string'>) => {
     const newValue = newInnerValue.length ? newInnerValue : null;
     setInnerValue(newInnerValue);
     window.clearTimeout(timer.current); // debounce
-    timer.current = window.setTimeout(update, 750, newValue);
+    timer.current = window.setTimeout(update, 400, newValue);
+  };
+  const onBlur = () => {
+    const currentValue = innerValue?.length ? innerValue : null;
+    if (currentValue !== value) update(currentValue);
   };
 
-  const disabled = parameter.editor.disabled;
-  return <Input value={innerValue} autoComplete={'off'} onChange={onChange} disabled={disabled}/>;
+  return (
+    <Input
+      value={innerValue} onChange={onChange} onBlur={onBlur}
+      autoComplete={'off'} disabled={parameter.editor.disabled}
+    />
+  );
 };

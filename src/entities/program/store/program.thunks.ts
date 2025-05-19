@@ -48,7 +48,7 @@ export async function runProgram(program: Program): Promise<void> {
   }
   for (const parameter of parameters) {
     const type = parameter.editor?.type;
-    if (type === 'fileTextEditor' || type === 'filesTextEditor') parameter.setValue(null);
+    if (/^(?:files?|string)TextEditor$/.test(type)) parameter.setValue(null);
   }
 }
 

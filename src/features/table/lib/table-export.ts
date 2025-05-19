@@ -4,6 +4,7 @@ import { Workbook } from 'exceljs';
 import { toServerColorFormat } from 'shared/lib';
 import { TableData } from './table-data';
 import { TableColumns } from './table-columns';
+import { formatDateTime } from './utils';
 
 
 export class TableExcelCreator {
@@ -155,7 +156,7 @@ export class TableExcelCreator {
         break;
       case 'date':
         if (originalCell !== null) {
-          cell.value = new Date(originalCell).toLocaleDateString();
+          cell.value = formatDateTime(originalCell);
           cell.numFmt = 'dd/mm/yyyy';
         }
         break;

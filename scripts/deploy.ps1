@@ -6,7 +6,7 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 # --- Global constants ---
 
-$versionPattern = '^\d\.(?:0|[1-9]\d*)(?:\.(?:0|[1-9]\d*))?(?:\.(?:0|[1-9]\d*))?(?:-rc\.?(?:0|[1-9]\d*))?$'
+$versionPattern = '^\d\.(?:0|[1-9]\d*)(?:\.(?:0|[1-9]\d*))?(?:\.(?:0|[1-9]\d*))?(?:-\w+\.?(?:0|[1-9]\d*))?$'
 $defaultWmwPath = "C:\GS\wmw"
 $htmlFileName = "index.html"
 $webRequestsFileName = "WebRequests.svc"
