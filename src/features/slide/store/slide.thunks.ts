@@ -1,3 +1,4 @@
+import type { SlideButtonPayload } from '../lib/slide.types';
 import { useClientStore } from 'entities/client';
 
 import {
@@ -6,11 +7,11 @@ import {
 } from 'entities/program';
 
 
-export async function handleSlideAction(id: FormID, payload: string): Promise<true | void> {
+export async function handleSlideAction(id: FormID, payload: SlideButtonPayload): Promise<true | void> {
   let programs = useProgramStore.getState().models[id];
   if (!programs) programs = await initSlidePrograms(id);
 
-  const callback = (p: Program): boolean => p.id.endsWith(payload);
+  const callback = (p: Program): boolean => p.id.endsWith(payload.program);
   let program = programs.find(callback);
   if (!program) return;
 
@@ -22,6 +23,9 @@ export async function handleSlideAction(id: FormID, payload: string): Promise<tr
   programs = useProgramStore.getState().models[id];
   program = programs.find(callback);
 
+  if (payload.values) {
+    setBindingValues(program, payload.values);
+  }
   if (program.parameters.some(p => p.editor)) {
     return true;
   } else {
@@ -34,4 +38,11 @@ async function initSlidePrograms(id: FormID): Promise<Program[]> {
   const programs = await factory.create();
   setClientPrograms(id, programs);
   return programs;
+}
+
+function setBindingValues(program: Program, values: Record<ParameterName, string>): void {
+  for (const name in values) {
+    const parameter = program.parameters.find(p => p.name === name);
+    if (parameter) parameter.setValueString(values[name]);
+  }
 }

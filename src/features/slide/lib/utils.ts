@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import type { SlideTree, SlideElement } from './slide.types';
+import type { SlideTree, SlideElement, SlideButtonPayload } from './slide.types';
 
 
 export function createTree(elements: SlideElement[]): SlideTree {
@@ -43,7 +43,26 @@ export function createElements(
 
     const title = row[titleIndex] ?? undefined;
     const style = row[styleIndex] ? styles[row[styleIndex]] : undefined;
-    elements.push({id, parent: row[parentIndex], type, title, payload: row[payloadIndex], style});
+
+    let payload = row[payloadIndex];
+    if (type === 'button' && payload) payload = parseButtonPayload(payload);
+    elements.push({id, parent: row[parentIndex], type, title, payload, style});
   }
   return elements;
+}
+
+function parseButtonPayload(payload: string): SlideButtonPayload {
+  const semicolonIndex = payload.indexOf(';');
+  if (semicolonIndex === -1) return {program: payload};
+
+  const programID = payload.substring(0, semicolonIndex);
+  const inputs = payload.substring(semicolonIndex + 1);
+  if (!inputs) return {program: programID};
+
+  const values: Record<string, string> = {};
+  for (const input of inputs.split(',')) {
+    const match = input.match(/(\w+)(?:=(.*))?/);
+    if (match) values[match[1]] = match[2] || null;
+  }
+  return {program: programID, values};
 }

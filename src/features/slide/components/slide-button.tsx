@@ -1,4 +1,4 @@
-import type { SlideElement } from '../lib/slide.types';
+import type { SlideElement, SlideButtonPayload } from '../lib/slide.types';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePrograms, updateProgramParameter, runProgram } from 'entities/program';
@@ -15,17 +15,18 @@ interface SlideButtonProps {
 }
 interface SlideProgramParameterListProps {
   id: FormID;
-  payload: string;
+  pid: ProgramID;
   close: () => void;
 }
 
 export const SlideButton = ({id, element}: SlideButtonProps) => {
   const [opened, setOpened] = useState(false);
   const close = () => setOpened(false);
+  const payload = element.payload as SlideButtonPayload;
 
   const onClick = () => {
-    if (opened || !element.payload) return;
-    handleSlideAction(id, element.payload).then(open => open && setOpened(true));
+    if (opened || !payload?.program) return;
+    handleSlideAction(id, payload).then(open => open && setOpened(true));
   };
 
   return (
@@ -33,14 +34,14 @@ export const SlideButton = ({id, element}: SlideButtonProps) => {
       <Button className={'slide-button'} style={element.style} onClick={onClick}>
         {element.title}
       </Button>
-      {opened && <SlideProgramParameterList id={id} payload={element.payload} close={close}/>}
+      {opened && <SlideProgramParameterList id={id} pid={payload.program} close={close}/>}
     </>
   );
 };
 
-const SlideProgramParameterList = ({id, payload, close}: SlideProgramParameterListProps) => {
+const SlideProgramParameterList = ({id, pid, close}: SlideProgramParameterListProps) => {
   const { t } = useTranslation();
-  const program = usePrograms(id).find(p => p.id.endsWith(payload));
+  const program = usePrograms(id).find(p => p.id.endsWith(pid));
 
   const onChange = (p: Parameter, newValue: any) => {
     updateProgramParameter(program, p.id, newValue).then();
