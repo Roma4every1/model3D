@@ -5,7 +5,7 @@ import linesDefStub from '../drawer/lines.def.stub.json';
 
 import {
   getPolylineBounds, getLabelBounds, getSignBounds,
-  getPieSliceBounds, getFieldBounds
+  getPieSliceBounds, getFieldBounds, getImageBounds,
 } from '../lib/bounds';
 
 
@@ -23,6 +23,8 @@ export async function prepareMapElements(elements: MapElement[]): Promise<void> 
     elements.forEach(preparePieSlice);
   } else if (type === 'field') {
     elements.forEach(prepareField);
+  } else if (type === 'image') {
+    for (const element of elements) await prepareImage(element as MapImage);
   }
 }
 
@@ -163,4 +165,17 @@ function parseFieldData(source: string): number[] {
     for (let i = count; i > 0; --i) data.push(dataValue);
   }
   return data;
+}
+
+async function prepareImage(image: MapImage): Promise<void> {
+  const img = new Image();
+  img.src = 'data:image/png;base64,' + image.data;
+
+  const { promise, resolve, reject } = Promise.withResolvers<void>();
+  img.onload = () => { image.img = img; resolve(); };
+  img.onerror = reject;
+  await promise;
+
+  image.bounds = getImageBounds(image);
+  delete image.data;
 }

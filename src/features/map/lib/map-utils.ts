@@ -5,7 +5,7 @@ export function createMapElementInit(element: MapElement): MapElement {
   const type = element.type;
   let copy: MapElement;
 
-  if (type === 'sign' || type === 'label') {
+  if (type === 'sign' || type === 'label' || type === 'image') {
     copy = {...element};
   } else if (type === 'field') {
     copy = structuredClone(element);

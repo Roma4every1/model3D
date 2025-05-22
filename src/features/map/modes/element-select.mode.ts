@@ -24,7 +24,7 @@ export class ElementSelectModeProvider implements MapModeProvider {
     this.index = 0;
     this.lastPoint = null;
     this.onlyActiveLayer = false;
-    this.types = {sign: true, polyline: true, label: true, field: true, pieslice: true};
+    this.types = {sign: true, polyline: true, label: true, field: true, pieslice: true, image: false};
   }
 
   public onModeLeave(): void {

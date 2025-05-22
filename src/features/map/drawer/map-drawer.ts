@@ -5,6 +5,7 @@ import { LabelDrawer } from './label-drawer';
 import { SignDrawer } from './sign-drawer';
 import { PieSliceDrawer } from './pieslice-drawer';
 import { FieldDrawer } from './field-drawer';
+import { ImageDrawer } from './image-drawer';
 import { pixelPerMeter } from '../lib/constants';
 
 
@@ -23,6 +24,7 @@ export const mapElementDrawers = {
   sign: new SignDrawer(),
   pieslice: new PieSliceDrawer(),
   field: new FieldDrawer(),
+  image: new ImageDrawer(),
 };
 
 function intersects(a: Bounds, b: Bounds): boolean {
@@ -51,6 +53,7 @@ export async function startPaint(map: MapData, options: StartPaintOptions): Prom
 
   const drawOptions: MapDrawOptions = {
     ctx: ctx,
+    scale: coords.mapScale,
     dotsPerMeter: window.devicePixelRatio * pixelPerMeter,
     toMapPoint: coords.pointToMap,
     toCanvasPoint: coords.pointToControl,

@@ -41,7 +41,7 @@ function createMapPoint(element: XMapElement): MapPoint {
 }
 
 function createLayerElements(element: XMapElement): MapElement[] {
-  const { polyline, sign, label, pieslice, regular2dfield: field } = element;
+  const { polyline, sign, label, pieslice, regular2dfield: field, image } = element;
   if (polyline) {
     return createElements(polyline, createPolyline);
   } else if (sign) {
@@ -52,6 +52,8 @@ function createLayerElements(element: XMapElement): MapElement[] {
     return createElements(pieslice, createPieSlice);
   } else if (field) {
     return createElements(field, createField);
+  } else if (image) {
+    return createElements(image, createImage);
   } else {
     return [];
   }
@@ -166,5 +168,13 @@ function createField(element: XMapElement): MapField {
     data, sourceRenderDataMatrix: undefined,
     palette, lastUsedPalette: undefined, deltasPalette: undefined,
     preCalculatedSpectre: undefined, attrTable, bounds: null,
+  };
+}
+
+function createImage(element: XMapElement): MapImage {
+  const { x, y, scale, data, ...attrTable } = element;
+  return {
+    type: 'image', x: Number(x), y: Number(y), scale: Number(scale),
+    data, img: undefined, attrTable, bounds: null,
   };
 }

@@ -51,7 +51,7 @@ export const StyleTemplate = ({style, borderColor, borderWidth, borderStyle}: St
       ctx.stroke();
 
       const options: MapDrawOptions = {
-        ctx: ctx,
+        ctx: ctx, scale: 1,
         dotsPerMeter: window.devicePixelRatio * pixelPerMeter,
         toMapPoint: (p) => p,
         toCanvasPoint: (p) => p,

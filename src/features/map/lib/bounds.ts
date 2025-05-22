@@ -34,6 +34,7 @@ export function getMapElementBounds(element: MapElement): Bounds {
     case 'sign': return getSignBounds(element);
     case 'pieslice': return getPieSliceBounds(element);
     case 'field': return getFieldBounds(element);
+    case 'image': return getImageBounds(element);
   }
 }
 
@@ -78,4 +79,11 @@ export function getFieldBounds(field: MapField): Bounds {
     min: {x: field.x, y: field.y - field.sizey * field.stepy},
     max: {x: field.x + field.sizex * field.stepx, y: field.y},
   };
+}
+
+export function getImageBounds(image: MapImage): Bounds {
+  const { x, y, scale, img } = image;
+  const xMax = Math.round(x + img.width * scale);
+  const yMin = Math.round(y - img.height * scale);
+  return {min: {x, y: yMin}, max: {x: xMax, y}};
 }

@@ -167,6 +167,7 @@ interface MapElementDrawer<E extends MapElement = MapElement> {
 
 interface MapDrawOptions {
   readonly ctx: CanvasRenderingContext2D;
+  readonly scale: MapScale;
   readonly dotsPerMeter: number;
   readonly toMapPoint: (p: Point) => Point;
   readonly toCanvasPoint: (p: Point) => Point;
@@ -176,10 +177,10 @@ interface MapDrawOptions {
 /* --- Map Elements --- */
 
 /** Элемент карты. */
-type MapElement = MapPolyline | MapLabel | MapSign | MapPieSlice | MapField;
+type MapElement = MapPolyline | MapLabel | MapSign | MapPieSlice | MapField | MapImage;
 
 /** Тип элемента карты. */
-type MapElementType = 'polyline' | 'label' | 'sign' | 'pieslice' | 'field';
+type MapElementType = 'polyline' | 'label' | 'sign' | 'pieslice' | 'field' | 'image';
 
 /* -- Polyline -- */
 
@@ -388,6 +389,26 @@ interface MapPieSlice extends MapElementProto {
   /** Подготовленная заливка для отрисовки. */
   fillStyle?: CanvasPattern | string;
 }
+
+/* --- --- */
+
+/** Элемент на карте типа "изображение". */
+interface MapImage extends MapElementProto {
+  /** Тип элемента. */
+  readonly type: 'image';
+  /** Координата X опорной точки. */
+  x: number;
+  /** Координата Y опорной точки. */
+  y: number;
+  /** Коэффициент от базового масштаба. */
+  scale: number;
+  /** Данные изображения в формате base64. */
+  data: string;
+  /** Подготовленное изображения для отрисоки. */
+  img: HTMLImageElement;
+}
+
+/* --- --- */
 
 /** Свойства, которые может содержать любой элемент карты. */
 interface MapElementProto {

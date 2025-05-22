@@ -46,6 +46,11 @@ export const mapEditConfig: Record<MapElementType, ElementEditConfig> = {
     editModes: [],
     propertyEditor: {component: FieldPropertyEditor, windowSize: [320, 260]},
   },
+  'image': {
+    canCreate: false,
+    editModes: [],
+    propertyEditor: undefined,
+  },
 };
 
 /** Количество пикселей в метре. В браузере `1cm = 96px / 2.54`. */
