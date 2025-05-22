@@ -1,4 +1,3 @@
-import { fetcher } from 'shared/lib';
 import { getDataTypeName, stringifyLocalDate } from 'shared/lib';
 import { parseDBPrimitive } from '../lib/utils';
 
@@ -52,17 +51,10 @@ export class TableRowParameter implements Parameter<'tableRow'> {
     this.value = {};
     this.valueString = s;
 
-    if (fetcher.version) {
-      for (const item of splitWithEscape(s, '|')) {
-        const [field, rawValue, type] = splitWithEscape(item, '#');
-        const value = rawValue.replace(/\\(.)/g, '$1');
-        this.value[field] = {type, value: parseDBPrimitive(value, type)};
-      }
-    } else {
-      for (const item of s.split('|')) {
-        const [field, value, type] = item.split('#');
-        this.value[field] = {type, value: parseDBPrimitive(value, type)};
-      }
+    for (const item of splitWithEscape(s, '|')) {
+      const [field, rawValue, type] = splitWithEscape(item, '#');
+      const value = rawValue.replace(/\\(.)/g, '$1');
+      this.value[field] = {type, value: parseDBPrimitive(value, type)};
     }
   }
 

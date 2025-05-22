@@ -23,7 +23,7 @@ export async function initialize(): Promise<void> {
   const beforeUnload = () => {
     if (instanceController.main) {
       instanceController.destroy();
-      appAPI.stopSession(getSessionToSave(fetcher.version));
+      appAPI.stopSession(getSessionToSave());
     } else {
       appAPI.stopSession();
     }

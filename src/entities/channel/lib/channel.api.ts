@@ -133,11 +133,7 @@ export class ChannelAPI {
   public async removeRows(queryID: QueryID, indexes: number[] | 'all'): Promise<Res<OperationData>> {
     if (this.api.legacy) {
       const rows = Array.isArray(indexes) ? indexes.join(',') : indexes;
-      if (this.api.version) {
-        return this.api.post('/removeRows', {json: {tableId: queryID, indexes: rows}});
-      } else {
-        return this.api.get('/removeRows', {query: {tableId: queryID, rows}});
-      }
+      return this.api.post('/removeRows', {json: {tableId: queryID, indexes: rows}});
     } else {
       const res = await this.api.delete('/channel/data', {query: {queryID}, json: {indexes}});
       if (res.ok) res.data = {modifiedTables: res.data.modified.map(String)};
