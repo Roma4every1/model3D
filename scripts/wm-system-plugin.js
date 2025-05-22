@@ -25,8 +25,9 @@ export default function wellManagerSystemPlugin(command) {
         if (e.code !== 'EEXIST') console.log(e.message);
       }
       const systems = [
-        'ADMIN_SYSTEM', 'DEMO', 'GRP_SYSTEM', 'KERN_SYSTEM', 'NEF_SYSTEM',
-        'PREPARE_SYSTEM',
+        'ADMIN_SYSTEM', 'ADMIN_SYSTEM_PGS', 'DEMO', 'GRP_SYSTEM', 'GRP_SYSTEM_PGS',
+        'KERN_SYSTEM', 'KERN_SYSTEM_PGS', 'NEF_SYSTEM', 'NEF_SYSTEM_PGS',
+        'PREPARE_SYSTEM', 'PREPARE_SYSTEM_PGS',
       ];
       const existingDirectories = readdirSync(systemDirectoryPath);
 
