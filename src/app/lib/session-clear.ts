@@ -24,7 +24,7 @@ export function clearSessionData(): void {
   clearParameterStore();
   useWindowStore.setState({}, true);
   useNotificationStore.setState({notifications: []}, true);
-  useProgramStore.setState({models: {}, operations: []}, true);
+  useProgramStore.setState({models: {}, operations: [], layoutController: null}, true);
 
   useClientStore.setState({}, true);
   useTableStore.setState({}, true);
