@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Navigate, useParams, useSearchParams } from 'react-router-dom';
+import { Navigate, useParams, useSearchParams } from 'react-router';
 
 import { ConfigProvider } from 'antd';
 import { ru_RU } from 'shared/locales';

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
-import { Steps, StepProps } from 'antd';
+import { Link } from 'react-router';
+import { type StepProps, Steps } from 'antd';
 import { LoadingOutlined, LeftCircleOutlined } from '@ant-design/icons';
 import { useAppLocation } from '../store/app.store';
 import './loading-status.scss';

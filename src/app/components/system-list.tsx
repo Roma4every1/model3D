@@ -1,6 +1,6 @@
 import type { TFunction } from 'react-i18next';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Skeleton } from 'antd';
 import { useAppConfig } from 'shared/global';
 import { useAppStore } from '../store/app.store';

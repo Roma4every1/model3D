@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppConfig } from 'shared/global';
 import { showDialog } from 'entities/window';
 import { startSession, saveSession } from 'app/store/session';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { IconRow, IconRowButton, IconRowLink } from 'shared/ui';
 import { AboutProgramWindow } from './about-program';
 

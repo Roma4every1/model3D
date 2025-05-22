@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { useAppLocation } from '../store/app.store';
 import { SystemList } from './system-list';
 import { SystemRoot } from './system-root';
