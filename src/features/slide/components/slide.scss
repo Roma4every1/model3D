@@ -1,11 +1,11 @@
-$padding: 3px;
+$slide-padding: 3px;
 
 .slide-container {
-  padding: $padding;
+  padding: $slide-padding;
 
   p {
     margin: 0;
-    padding: $padding;
+    padding: $slide-padding;
     font-size: 12.5px;
     font-family: Roboto, sans-serif;
   }
@@ -19,12 +19,15 @@ $padding: 3px;
     border-radius: 0;
   }
   .ant-collapse-item > .ant-collapse-header {
-    padding: $padding;
+    padding: $slide-padding;
     font-size: 12.5px;
     font-family: Roboto, sans-serif;
   }
+  .ant-collapse > .ant-collapse-item > .ant-collapse-header {
+    color: inherit;
+  }
   .ant-collapse-item > .ant-collapse-content > .ant-collapse-content-box {
-    padding: $padding;
+    padding: $slide-padding;
   }
 }
 
