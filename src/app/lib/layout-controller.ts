@@ -207,8 +207,8 @@ export class LayoutController {
     this.initTop = init?.selectedtop ?? -1;
     this.initRight = init?.selectedright ?? -1;
     const topPanelHeight = 90;
-    const leftPanelWidth = init?.sizeleft ?? 270;
-    const rightPanelWidth = init?.sizeright ?? 270;
+    const leftPanelWidth = init?.sizeleft || 250;
+    const rightPanelWidth = init?.sizeright || 250;
 
     const topBorder: IJsonBorderNode = {
       type: 'border', location: 'top',
