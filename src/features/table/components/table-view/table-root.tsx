@@ -165,7 +165,7 @@ export const TableRoot = ({state, query, loading}: TableRootProps) => {
       actions.addRecord(event.ctrlKey);
     }
     else if (key === 'Delete') {
-      if (editable && !selection.empty()) actions.deleteRecords();
+      if (editable && !isEditing && !selection.empty()) actions.deleteRecords();
     }
     else if (key === 'PageUp') {
       if (ctrlKey) return;

@@ -99,8 +99,8 @@ const HeadCellContent = ({state, query, column}: LeafCellProps) => {
   const changeSortOrder = () => {
     // по возврастанию -> по убыванию -> без порядка
     let newDirection: SortOrderDirection = null;
-    if (direction === null) newDirection = 'desc';
-    else if (direction === 'desc') newDirection = 'asc';
+    if (direction === null) newDirection = 'asc';
+    else if (direction === 'asc') newDirection = 'desc';
     const order = newDirection ? [{column: columnName, direction: newDirection}] : [];
     updateChannelSortOrder(state.channelID, order).then();
   };

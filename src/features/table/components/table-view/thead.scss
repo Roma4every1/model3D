@@ -57,12 +57,12 @@
 .column-sort-asc::after {
   content: "";
   bottom: 0;
-  border-color: transparent transparent red transparent;
+  border-color: transparent transparent var(--wm-primary) transparent;
 }
 .column-sort-desc::after {
   content: "";
   top: 0;
-  border-color: red transparent transparent transparent;
+  border-color: var(--wm-primary) transparent transparent transparent;
 }
 
 /* --- Filter --- */
