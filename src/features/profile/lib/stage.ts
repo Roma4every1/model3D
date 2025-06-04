@@ -19,12 +19,15 @@ export class ProfileStage implements IProfileStage {
     this.scroller = new Scroller();
   }
 
+  public getCanvas(): HTMLCanvasElement {
+    return this.ctx.canvas;
+  }
+
   public setCanvas(canvas: HTMLCanvasElement): void {
     if (canvas) {
       this.ctx = canvas.getContext('2d');
       this.scroller.setCanvas(canvas as MapCanvas);
       this.resize();
-      this.updateViewport();
     } else {
       this.ctx = null;
     }

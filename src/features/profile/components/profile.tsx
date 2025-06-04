@@ -1,6 +1,7 @@
 import type { MouseEvent, WheelEvent } from 'react';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useCurrentTrace, useCurrentStratum, useCurrentPlace } from 'entities/objects';
+import { getFullViewport } from 'features/map/lib/map-utils';
 import { useProfileState } from '../store/profile.store';
 import { setProfileCanvas } from '../store/profile.actions';
 import { updateProfile, updateProfileStrata } from '../store/profile.thunks';
@@ -30,9 +31,17 @@ export const Profile = ({id}: Pick<SessionClient, 'id'>) => {
 
   // обновление ссылки на холст
   useLayoutEffect(() => {
-    if (loading.percentage < 100) return;
-    if (canvasRef.current !== canvas) setProfileCanvas(id, canvasRef.current);
-  }, [canvas, loading.percentage, stage, id]);
+    const mapData = stage.getMapData();
+    const currentCanvas = canvasRef.current;
+    if (!mapData || currentCanvas === canvas) return;
+
+    setProfileCanvas(id, canvasRef.current);
+    if (!currentCanvas) return;
+
+    const viewport = getFullViewport(currentCanvas, mapData.layers);
+    viewport.scale *= 1.25;
+    stage.render(viewport);
+  });
 
   if (!place || !stratum) return <TextInfo text={'base.no-data'}/>;
   if (!trace) return <TextInfo text={'profile.no-trace'}/>;

@@ -39,12 +39,13 @@ interface IProfileStage {
   handleMouseMove(event: MouseEvent): void;
   handleMouseWheel(event: WheelEvent): void;
 
+  getCanvas(): HTMLCanvasElement;
   setCanvas(canvas: HTMLCanvasElement): void;
   setActiveLayer(): void;
   resize(): void;
   setData(mapData: MapData): void;
   getMapData(): MapData;
-  render(): void;
+  render(viewport?: MapViewport): void;
 }
 
 /** Загрузчик данных профиля. */

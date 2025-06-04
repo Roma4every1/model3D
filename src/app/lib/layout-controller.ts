@@ -32,6 +32,10 @@ const topTabDict: Record<TabID, IJsonTabNode> = {
     type: 'tab', enableDrag: false,
     id: 'top-carat', name: 'Каротаж',
   },
+  'top-profile': { // панель настроек профиля
+    type: 'tab', enableDrag: false,
+    id: 'top-profile', name: 'Профиль',
+  },
   'top-trace': { // панель настроек трассы
     type: 'tab', enableDrag: false,
     id: 'top-trace', name: 'Трасса',
@@ -129,6 +133,7 @@ export class LayoutController {
     if (types.has('chart')) newTabs.push('top-chart');
     if (types.has('map')) newTabs.push('top-map');
     if (types.has('carat')) newTabs.push('top-track', 'top-carat');
+    if (types.has('profile')) newTabs.push('top-profile');
 
     if (this.objects.has('trace') && (types.has('map') || types.has('carat'))) newTabs.push('top-trace');
     if (this.objects.has('selection')) newTabs.push('top-selection');

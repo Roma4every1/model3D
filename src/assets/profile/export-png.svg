@@ -1,0 +1,14 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" stroke="#002635" stroke-linejoin="round">
+<g stroke-width="7">
+  <rect x="80" y="125" width="140" height="140" stroke="none" fill="#55beff"/>
+  <path d="M80,155L100,165L120,155L140,160L160,170L180,150L200,165L220,160 L220,265L80,265Z" fill="#fcc56d"/>
+  <path d="M80,215L100,220L120,230L140,220L160,215L180,225L200,210L220,220 L220,265L80,265Z" fill="#ff8c78"/>
+</g>
+<g fill="none" stroke-width="11" stroke-linecap="round">
+  <path d="M260,220 L260,50 L220,10 L56,10 A16,16,0,0,0,40,26 L40,274 A16,16,0,0,0,56,290 L244,290 A16,16,0,0,0,260,274 L260,260"/>
+  <path d="M220,10 L220,38 A12,12,0,0,0,232,50 L260,50"/>
+  <path d="M6,30 L200,30 L200,100 L6,100 L35,65Z" fill="#ff8c78"/>
+  <rect x="80" y="125" width="140" height="140" rx="6" ry="6"/>
+</g>
+<text x="54" y="87" stroke="none" fill="#002635" font-family="Roboto" font-size="60" font-weight="700">PNG</text>
+</svg>

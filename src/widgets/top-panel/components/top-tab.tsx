@@ -4,6 +4,7 @@ import { TableRibbon } from 'features/table';
 import { ChartRibbon } from 'features/chart';
 import { MapRibbon } from 'features/map';
 import { TrackEditPanel, CaratEditPanel } from 'features/carat';
+import { ProfileRibbon } from 'features/profile';
 
 
 export interface TopTabProps {
@@ -20,6 +21,7 @@ const editPanelDict: Record<string, [FunctionComponent<FormRibbonProps>, ClientT
   'top-map': [MapRibbon, 'map'],
   'top-track': [TrackEditPanel, 'carat'],
   'top-carat': [CaratEditPanel, 'carat'],
+  'top-profile': [ProfileRibbon, 'profile'],
 };
 
 /** Панель редактирования формы. */
