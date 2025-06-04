@@ -1,0 +1,15 @@
+.site-reserves-window {
+  .k-window-content {
+    padding: 10px;
+    height: 120px;
+    overflow: hidden;
+  }
+  fieldset {
+    display: grid;
+    grid-template-columns: 70px calc(100% - 70px);
+
+    margin-bottom: 2px;
+    font-size: 13px;
+    font-family: Roboto, sans-serif;
+  }
+}

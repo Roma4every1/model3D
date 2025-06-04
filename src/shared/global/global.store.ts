@@ -17,7 +17,7 @@ export function useGlobalVariable<T = any>(name: string): T {
 export function getGlobalVariable<T = any>(name: string): T {
   return useGlobalStore.getState().variables[name];
 }
-export function setGlobalVariable(name: string, value: any): void {
+export function setGlobalVariable<T = any>(name: string, value: T): void {
   const variables = useGlobalStore.getState().variables;
   useGlobalStore.setState({variables: {...variables, [name]: value}});
 }

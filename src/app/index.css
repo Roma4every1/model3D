@@ -166,6 +166,12 @@ html {
   z-index: 90;
 }
 
+.no-wrap-ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .no-user-select {
   user-select: none;
 }
