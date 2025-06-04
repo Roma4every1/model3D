@@ -39,7 +39,7 @@ export const mapEditConfig: Record<MapElementType, ElementEditConfig> = {
   'pieslice': {
     canCreate: true,
     editModes: ['default', 'element-drag'],
-    propertyEditor: {component: PieSlicePropertyEditor, windowSize: [380, 175]},
+    propertyEditor: {component: PieSlicePropertyEditor, windowSize: [382, 175]},
   },
   'field': {
     canCreate: false,
