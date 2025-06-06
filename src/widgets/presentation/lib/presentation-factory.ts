@@ -19,9 +19,10 @@ import {
 
 
 interface PresentationSettingsDTO {
-  multiMapChannel?: string;
   linkedProperties?: ParameterSetterDTO[];
   parameterGroups?: ParameterGroupDTO[];
+  multiMapChannel?: string;
+  mapLayoutManager?: boolean;
 }
 
 /** Вспомогательный класс, используемый при инициализации новой презентации. */
@@ -129,7 +130,7 @@ export class PresentationFactory {
     if (Array.isArray(setters)) this.resolveSetters(setters);
 
     const settings: PresentationSettings = {};
-    if (dto.multiMapChannel) settings.multiMapChannel = true;
+    if (dto.mapLayoutManager || dto.multiMapChannel) settings.mapLayoutManager = true;
 
     const extra = XElement.tryCreate(this.dtoOwn.extra);
     if (extra) {
@@ -165,7 +166,7 @@ export class PresentationFactory {
 
   private createOwnAttachedChannels(): AttachedChannel[] {
     const settings = this.dtoOwn.settings;
-    if (!settings.multiMapChannel) return [];
+    if (!settings.mapLayoutManager && !settings.multiMapChannel) return [];
 
     const criteria: ClientChannelCriteria = {multiMap: multiMapChannelCriterion};
     const factory = new AttachedChannelFactory(this.allChannels, criteria);
@@ -173,7 +174,10 @@ export class PresentationFactory {
     const resolve = (name: ChannelName) => this.channelFactory.resolveChannelName(name);
     const channels = factory.create(this.dtoOwn.channels, resolve);
 
-    if (!channels.some(c => c.type === 'multiMap')) delete settings.multiMapChannel;
+    if (!channels.some(c => c.type === 'multiMap')) {
+      delete settings.multiMapChannel;
+      delete settings.mapLayoutManager;
+    }
     return channels;
   }
 

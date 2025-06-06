@@ -4,7 +4,7 @@ type PresentationState = SessionClient<'grid', PresentationSettings>;
 /** Настройки презентации. */
 interface PresentationSettings {
   /** `true`, если презентация это мультикарта. */
-  multiMapChannel?: boolean;
+  mapLayoutManager?: boolean;
   /** Группы параметров для разбиения списка на вкладки. */
   parameterGroups?: ParameterGroup[];
   /** Конфигурация окон со сводными формами. */

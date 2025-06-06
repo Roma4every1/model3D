@@ -66,7 +66,7 @@ function toClientDTO(client: SessionClient): SessionClientToSave {
 
 function getClientChildrenToSave(client: SessionClient): ChildrenToSave {
   if (client.type === 'grid') {
-    if (!client.children || client.settings.multiMapChannel) return undefined;
+    if (!client.children || client.settings.mapLayoutManager) return undefined;
     return toChildrenToSave(client);
   }
   if (client.id === 'root') {
@@ -84,7 +84,7 @@ function getClientLayoutToSave(client: SessionClient): LayoutToSave {
   if (client.id === 'root') {
     return getRootLayout(client);
   }
-  if (client.layout && client.children && !client.settings.multiMapChannel) {
+  if (client.layout && client.children && !client.settings.mapLayoutManager) {
     return client.layout.toJson();
   }
   return undefined;

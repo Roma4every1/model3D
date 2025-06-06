@@ -14,7 +14,7 @@ export const Presentation = ({state}: PresentationProps) => {
   const { id, channels, layout, loading } = state;
   if (loading.error) return <TextInfo text={loading.error}/>;
 
-  if (state.settings.multiMapChannel && channels.length) {
+  if (state.settings.mapLayoutManager && channels.length) {
     return <MultiMap id={id} channels={channels}/>;
   } else {
     return <Grid id={id} model={layout}/>;
