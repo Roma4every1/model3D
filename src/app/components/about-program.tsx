@@ -1,6 +1,7 @@
 import type { TFunction } from 'react-i18next';
 import { useTranslation } from 'react-i18next';
 import { useAppConfig } from 'shared/global';
+import { fetcher } from 'shared/lib';
 import { version } from '../../../package.json';
 
 import './about-program.scss';
@@ -16,7 +17,6 @@ interface ExternalLinkProps {
   href: string;
   title?: string;
 }
-
 
 /** Диалог "О программе". */
 export const AboutProgramWindow = () => {
@@ -48,14 +48,11 @@ const DevModeSection = ({config, t}: DevModeSectionProps) => {
         {t('about.dev-mode')}
       </div>
       <div style={{padding: '8px 0'}}>
+        {fetcher.version && <div>Версия сервера: {fetcher.version}</div>}
         <div>
           <span>API: </span>
           <ExternalLink href={config.api}/>
         </div>
-        {config.devDocLink && <div>
-          <span>{t('about.doc')}: </span>
-          <ExternalLink href={config.devDocLink}/>
-        </div>}
       </div>
     </>
   );
