@@ -33,7 +33,7 @@ export function calcSiteReserves(): void {
 
   const windowProps: WindowProps = {
     className: 'site-reserves-window', title: t('site.reserves-window-title'),
-    width: 285, height: 165, resizable: false,
+    width: 300, height: 165, resizable: false,
     minimizeButton: () => null, maximizeButton: () => null,
     onClose: () => closeWindow('site-reserves'),
   };
