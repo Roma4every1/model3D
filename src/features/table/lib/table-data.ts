@@ -111,18 +111,6 @@ export class TableData {
     }
   }
 
-  /** Находит уникальные значения в ячейках колонки. */
-  public getUniqueValues(col: PropertyName): any[] {
-    const set: Set<any> = new Set();
-    const index = this.columns.dict[col].columnIndex;
-
-    for (const record of this.records) {
-      set.add(record.cells[index]);
-    }
-    set.delete(null);
-    return [...set];
-  }
-
   /* --- Editing --- */
 
   /** Добавляет новую запись в датасет. */

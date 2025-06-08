@@ -122,20 +122,15 @@ export async function applyFilterUniqueValues(id: FormID, col: PropertyName): Pr
   const state = useTableStore.getState()[id];
   const filter = state.columns.dict[col].filter;
   if (!filter) return;
-
-  if (filter.node) {
-    const values = await fetchFilterUniqueValues(id, col);
-    filter.uniqueValues = values ?? [];
-  } else {
-    filter.uniqueValues = state.data.getUniqueValues(col);
-  }
+  const values = await fetchFilterUniqueValues(id, col);
+  filter.uniqueValues = values ?? 'error';
 }
 
 /**
- * Запрашивает уникальные значения для фильтра. Значения получаются на основе датасета,
- * который был бы при отсутсвии фильтра в данной колонке.
+ * Запрашивает уникальные значения для фильтра. Значения получаются
+ * на основе датасета, который был бы при отсутсвии фильтра в данной колонке.
  */
-async function fetchFilterUniqueValues(id: FormID, col: PropertyName): Promise<any[]> {
+async function fetchFilterUniqueValues(id: FormID, col: PropertyName): Promise<Set<any>> {
   const state = useTableStore.getState()[id];
   const channelStorage = useChannelStore.getState().storage;
   const parameterStorage = useParameterStore.getState().storage;
@@ -143,14 +138,18 @@ async function fetchFilterUniqueValues(id: FormID, col: PropertyName): Promise<a
   const channel = channelStorage[state.channelID];
   const columnName = state.columns.dict[col].columnName;
 
-  let filter: FilterNode = null;
-  const originFilter = channel.query.filter;
+  let queryFilter: FilterNode;
+  const filter = channel.query.filter;
 
-  if (originFilter && originFilter.type === 'and') {
-    const newValue = originFilter.value.filter(node => node.column !== columnName);
-    filter = {type: originFilter.type, value: newValue};
+  if (filter) {
+    if (filter.type === 'and') {
+      const newValue = filter.value.filter(node => node.column !== columnName);
+      queryFilter = {type: filter.type, value: newValue};
+    } else if (filter.column !== columnName) {
+      queryFilter = filter;
+    }
   }
   const parameters = findParameters(channel.config.parameters, parameterStorage);
-  const query: ChannelQuerySettings = {filter, limit: channel.query.limit};
+  const query: ChannelQuerySettings = {filter: queryFilter, limit: false};
   return channelAPI.getColumnUniqueValues(channel.name, columnName, parameters, query);
 }

@@ -96,7 +96,6 @@ function createFilterSchema(type: TableColumnType) {
       state: createStateSchema(type),
       node: {anyOf: [{type: 'null'}, filterNodeSchema]},
       enabled: {type: 'boolean'},
-      uniqueValues: {type: 'array'},
     },
     required: ['id', 'type', 'state', 'node', 'enabled'],
     additionalProperties: false,

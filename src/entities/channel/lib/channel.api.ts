@@ -63,33 +63,20 @@ export class ChannelAPI {
     }
   }
 
-  /**
-   * Запрос уникальных значений в колонке датасета.
-   *
-   * **WARN**: Текущая реализация запрашивает весь датасет.
-   * Поддержки данной функции на сервере ещё нет.
-   */
+  /** Запрос уникальных значений в колонке датасета. */
   public async getColumnUniqueValues(
     name: ChannelName, column: ColumnName,
     payload: Partial<Parameter>[], query?: ChannelQuerySettings, signal?: AbortSignal,
-  ): Promise<any[] | null> {
+  ): Promise<Set<any> | null> {
     const parameters = payload.map(serializeParameter);
-    const json: Record<string, any> = {channelName: name, paramValues: parameters};
+    const json: Record<string, any> = {channel: name, column, parameters};
 
     if (query) {
       if (query.limit !== null) json.limit = query.limit;
       if (query.filter) json.filter = query.filter;
     }
-    const res = await this.api.post<ChannelDataLegacyDTO>('/channelData', {json, signal});
-    if (!res.ok) return null;
-
-    const data = res.data.data;
-    const index = data.Columns.findIndex(c => c.Name === column);
-    if (index === -1) return null;
-
-    const set = new Set(data.Rows.map(r => r.Cells[index]));
-    set.delete(null);
-    return [...set];
+    const res = await this.api.post('/uniqueValues', {json, signal});
+    return res.ok ? new Set(res.data.values) : null;
   }
 
   /** Запрос новой записи со стандартными значениями. */

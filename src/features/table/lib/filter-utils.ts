@@ -127,14 +127,16 @@ function filterLeafToString(leaf: FilterNode, type: TableColumnType): any[] {
 
 /* --- --- */
 
-type PayloadItem = TableColumnFilter & {id: PropertyName, type: TableColumnType, state: any};
+type PayloadItem = Omit<TableColumnFilter, 'uniqueValues'> & {
+  id: PropertyName, type: TableColumnType,
+  state: any, uniqueValues?: undefined,
+};
 
 export function serializeFilters(columns: TableColumnModel[]): Blob {
   const payload: PayloadItem[] = [];
-
-  for (const column of columns) {
-    if (!column.filter?.node) continue;
-    const item: PayloadItem = {id: column.id, type: column.type, ...column.filter};
+  for (const { id, type, filter } of columns) {
+    if (!filter?.node) continue;
+    const item: PayloadItem = {id, type, ...filter, uniqueValues: undefined};
     const lookupValues = item.state.values;
     if (lookupValues) item.state = {...item.state, values: [...lookupValues]};
     payload.push(item);

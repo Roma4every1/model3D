@@ -7,7 +7,7 @@ export interface TableColumnFilter<T extends TableColumnType = TableColumnType> 
   /** Если false, фильтр для колонки игнорируется. */
   enabled: boolean;
   /** Уникальные значения по колонке без учёта текущего фильтра. */
-  uniqueValues?: any[] | 'loading';
+  uniqueValues?: Set<any> | 'loading' | 'error';
 }
 
 /** Состояние элементов интерфейса для фильтра колонки таблицы. */

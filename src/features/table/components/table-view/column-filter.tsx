@@ -3,14 +3,16 @@ import type { CheckboxProps } from 'antd';
 import type { TableState, TableColumnModel } from '../../lib/types';
 import type { TableColumnFilterState } from '../../lib/filter.types';
 import dayjs, { Dayjs } from 'dayjs';
-import { Select, Input, InputNumber, DatePicker, Checkbox, Button, Switch } from 'antd';
+import { useTranslation } from 'react-i18next';
+import { Select, Input, InputNumber, DatePicker, Checkbox, Button, Switch, Spin } from 'antd';
+import { WarningTwoTone } from '@ant-design/icons';
 import { flatTree } from 'shared/lib';
 import { useRender } from 'shared/react';
 import { ButtonSwitch } from 'shared/ui';
 import { inputNumberParser, inputNumberFormatter } from 'shared/locales';
 import { getDefaultFilterState, buildFilterNode } from '../../lib/filter-utils';
 import { updateTableState } from '../../store/table.actions';
-import { updateTableFilters } from '../../store/filter.thunks';
+import { updateTableFilters, applyFilterUniqueValues } from '../../store/filter.thunks';
 
 import {
   filterOperators, numberFilterOptions,
@@ -214,12 +216,28 @@ function DateFilterContent({state}: FilterContentProps<'date'>) {
   );
 }
 
-function LookupFilterContent({column, state}: FilterContentProps<'list'>) {
+function LookupFilterContent({id, column, state}: FilterContentProps<'list'>) {
   const render = useRender();
   const values = state.values;
+  const uniqueValues = column.filter.uniqueValues;
 
-  let options: LookupListItem[] = column.lookupData ?? [];
-  if (column.type === 'tree') options = flatTree(options);
+  let options: LookupListItem[];
+  const delay = 100 /* ms */;
+  const ok = uniqueValues instanceof Set;
+  const error = uniqueValues === 'error';
+  const loaded = ok || error;
+
+  if (loaded) {
+    options = column.lookupData ?? [];
+    if (column.type === 'tree') options = flatTree(options);
+    if (ok) options = options.filter(o => uniqueValues.has(o.id));
+  } else {
+    setTimeout(() => { // prevent duplicate fetch
+      if (column.filter.uniqueValues) return;
+      column.filter.uniqueValues = 'loading';
+      applyFilterUniqueValues(id, column.id).then(render);
+    }, delay);
+  }
 
   const toElement = ({id, value}: LookupListItem): ReactElement => {
     const onChange = () => {
@@ -229,42 +247,19 @@ function LookupFilterContent({column, state}: FilterContentProps<'list'>) {
     return <Checkbox key={id} checked={values.has(id)} onChange={onChange}>{value}</Checkbox>;
   };
   return (
-    <div className={'lookup-filter-content'}>
-      {toElement({id: null, value: 'Не задано'})}
-      {options.map(toElement)}
-    </div>
+    <Spin spinning={!loaded} delay={delay}>
+      <div className={'lookup-filter-content'}>
+        {toElement({id: null, value: 'Не задано'})}
+        {options?.map(toElement)}
+      </div>
+      {error && <TableFilterErrorIcon/>}
+    </Spin>
   );
 }
 
-// function LookupFilterContent({id, column, state}: FilterContentProps<'list'>) {
-//   const render = useRender();
-//   const filterValues = state.values;
-//   const filterOptions = column.filter.uniqueValues;
-//   const noOptions = !Array.isArray(filterOptions);
-//
-//   if (noOptions) {
-//     setTimeout(() => { // prevent duplicate fetch
-//       if (column.filter.uniqueValues) return;
-//       column.filter.uniqueValues = 'loading';
-//       applyFilterUniqueValues(id, column.id).then(render);
-//     }, 100);
-//   }
-//   const toElement = (value: LookupItemID): ReactElement => {
-//     const title = column.lookupDict[value];
-//     const checked = filterValues.has(value);
-//
-//     const onChange = () => {
-//       checked ? filterValues.delete(value) : filterValues.add(value);
-//       render();
-//     };
-//     return <Checkbox key={value} checked={checked} onChange={onChange}>{title}</Checkbox>;
-//   };
-//
-//   return (
-//     <Spin spinning={noOptions} delay={100}>
-//       <div className={'lookup-filter-content'}>
-//         {!noOptions && filterOptions.map(toElement)}
-//       </div>
-//     </Spin>
-//   );
-// }
+function TableFilterErrorIcon() {
+  const { t } = useTranslation();
+  const title = t('table.filter.error-load-unique');
+  const colors: [ColorString, ColorString] = ['#111', '#f3c968'];
+  return <WarningTwoTone className={'filter-error-icon'} title={title} twoToneColor={colors}/>;
+}
