@@ -3,7 +3,7 @@ import type { CellEditorProps } from '../../lib/types';
 import { clsx } from 'clsx';
 import { InputCellEditor } from './edited-cell-text';
 import { EditCellList, EditCellTree } from './edited-cell-lookup';
-import { BoolCellEditor, DateCellEditor, ColorCellEditor } from './edited-cell-primitive';
+import { BoolCellEditor, DateCellEditor, DateTimeCellEditor, ColorCellEditor } from './edited-cell-primitive';
 
 
 const cellDict: Record<TableColumnType, FC<CellEditorProps>> = {
@@ -12,6 +12,7 @@ const cellDict: Record<TableColumnType, FC<CellEditorProps>> = {
   'real': InputCellEditor,
   'text': InputCellEditor,
   'date': DateCellEditor,
+  'datetime': DateTimeCellEditor,
   'list': EditCellList,
   'tree': EditCellTree,
   'color': ColorCellEditor,

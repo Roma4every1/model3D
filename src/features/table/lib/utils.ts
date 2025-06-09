@@ -16,6 +16,15 @@ export function toTableColumnType(dataType: DataTypeName): TableColumnType {
   return 'text';
 }
 
+/** Возвращает true, если находит в колонке датасета дату с ненулевым временем. */
+export function detectDateTime(rows: ChannelRow[], columnIndex: number): boolean {
+  for (const row of rows) {
+    const cell = row[columnIndex] as string | null;
+    if (cell && cell.length === 19 && !cell.endsWith('00:00:00')) return true;
+  }
+  return false;
+}
+
 /** Нахождение оптимальной ширины колонки с учётом наполнения таблицы. */
 export function calcColumnAutoWidth(column: TableColumnModel, records: TableRecord[]): number {
   const titleWidth = measureText(column.displayName, cellFont);

@@ -2,7 +2,7 @@ import type { TableColumnModel, RecordStyleRule, RecordViolation } from './types
 import { parseDate, stringifyLocalDate, getDataTypeName, fixColorHEX } from 'shared/lib';
 import { createLookupList, createLookupTree } from 'entities/channel';
 import { TableColumns } from './table-columns';
-import { toTableColumnType, formatFloat, formatDateTime } from './utils';
+import { toTableColumnType, formatFloat, formatDateTime, detectDateTime } from './utils';
 import { createColumnFilter } from './filter-utils';
 
 
@@ -56,6 +56,7 @@ export class TableData {
         column.type = 'color';
       } else {
         column.type = toTableColumnType(dataType);
+        if (column.type === 'date' && detectDateTime(data.rows, index)) column.type = 'datetime';
       }
       if (column.formatter && column.type !== 'real' && column.type !== 'int') {
         column.formatter = undefined;
@@ -210,7 +211,7 @@ export class TableData {
       value = column.lookupDict[value];
       return value === null || value === undefined ? null : String(value);
     }
-    if (type === 'date') return formatDateTime(value);
+    if (type === 'date' || type === 'datetime') return formatDateTime(value);
     if (type === 'bool') return value ? '✔' : '✖';
 
     if (type === 'color') {

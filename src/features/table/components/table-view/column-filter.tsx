@@ -31,13 +31,13 @@ interface FilterContentProps<T extends TableColumnType = any> {
   state: TableColumnFilterState<T>;
 }
 
-
 const filterContentComponents: Record<TableColumnType, FC<FilterContentProps>> = {
   'bool': BooleanFilterContent,
   'int': NumberFilterContent,
   'real': NumberFilterContent,
   'text': StringFilterContent,
   'date': DateFilterContent,
+  'datetime': DateFilterContent,
   'list': LookupFilterContent,
   'tree': LookupFilterContent,
   'color': StringFilterContent,

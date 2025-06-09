@@ -20,6 +20,7 @@ interface ColumnFilterStateMap {
   'real': NumberColumnFilterState;
   'text': StringColumnFilterState;
   'date': DateColumnFilterState;
+  'datetime': DateColumnFilterState;
   'list': LookupColumnFilterState;
   'tree': LookupColumnFilterState;
   'color': StringColumnFilterState;

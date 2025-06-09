@@ -33,12 +33,14 @@ interface TableActiveCell {
  * + `int`  — целое число
  * + `real` — действительное число
  * + `text` — текст (строка)
- * + `date` — дата
+ * + `date` — дата без времени
+ * + `datetime` — дата со временем
  * + `list` — выборочное значение из **списка**
  * + `tree` — выборочное значение из **дерева**
  * + `color` — ячейка с цветом
  */
-type TableColumnType = 'bool' | 'int' | 'real' | 'text' | 'date' | 'list' | 'tree' | 'color';
+type TableColumnType =
+  'bool' | 'int' | 'real' | 'text' | 'date' | 'datetime' | 'list' | 'tree' | 'color';
 
 /**
  * Значение ячейки, используемое при рендере компонента.

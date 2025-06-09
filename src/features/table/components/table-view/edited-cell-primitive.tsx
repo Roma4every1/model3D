@@ -4,7 +4,7 @@ import type { CellEditorProps } from '../../lib/types';
 import dayjs, { Dayjs } from 'dayjs';
 import { useState, useRef, useLayoutEffect } from 'react';
 import { DatePicker, Checkbox, ColorPicker } from 'antd';
-import { parseDate, stringifyLocalDate, fixColorHEX } from 'shared/lib';
+import { parseDate, parseDateTime, stringifyLocalDate, stringifyLocalDateTime, fixColorHEX } from 'shared/lib';
 import { handleCellInputKeydown } from '../../lib/utils';
 
 
@@ -66,6 +66,41 @@ export const DateCellEditor = ({state, column, record, update}: CellEditorProps)
     <DatePicker
       ref={ref} mode={'date'} format={'DD.MM.YYYY'} value={innerValue}
       onChange={onChange} onKeyDown={onKeyDown} onOpenChange={setOpen}
+    />
+  );
+};
+
+export const DateTimeCellEditor = ({state, column, record, update}: CellEditorProps) => {
+  const ref = useRef<any>();
+  const cellValue: string | null = record.cells[column.columnIndex];
+  const [open, setOpen] = useState(false);
+  const [innerValue, setInnerValue] = useState(cellValue ? dayjs(cellValue) : null);
+
+  useLayoutEffect(() => {
+    ref.current.focus();
+    const input: HTMLInputElement = ref.current.nativeElement.firstElementChild.firstElementChild;
+
+    const onInput = () => {
+      const value = parseDateTime(input.value);
+      update(value ? stringifyLocalDateTime(value) : null);
+    };
+    input.addEventListener('input', onInput);
+    return () => input.removeEventListener('input', onInput);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const onChange = (value: Dayjs | null) => {
+    update(value ? stringifyLocalDateTime(value.toDate()) : null);
+    setInnerValue(value);
+  };
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (e.nativeEvent.key !== 'Enter') return handleCellInputKeydown(e, state.actions);
+    if (!open) e.stopPropagation();
+  };
+
+  return (
+    <DatePicker
+      ref={ref} mode={'date'} showTime={{format: 'HH:mm'}} format={'DD.MM.YYYY HH:mm'}
+      value={innerValue} onChange={onChange} onKeyDown={onKeyDown} onOpenChange={setOpen}
     />
   );
 };
