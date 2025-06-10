@@ -1,5 +1,6 @@
 export * from './common';
 export * from './math';
+export * from './datetime';
 export * from './errors';
 export * from './api';
 export * from './legacy';
