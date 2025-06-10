@@ -228,7 +228,12 @@ export class TableData {
     for (const rule of this.styleRules) {
       const column = this.columns.dict[rule.property];
       const cellValue = record.cells[column.columnIndex];
-      if (cellValue === rule.compareValue) { record.style = rule.style; break; }
+
+      if (rule.type.length === 5) { // equal
+        if (cellValue === rule.compareValue) { record.style = rule.style; break; }
+      } else { // not-empty
+        if (cellValue !== null) { record.style = rule.style; break; }
+      }
     }
   }
 

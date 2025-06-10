@@ -98,8 +98,8 @@ export interface RecordStyleRule {
   readonly property: PropertyName;
   /** Переопределяемые CSS-свойства. */
   readonly style: CSSProperties;
-  /** Тип применения условия; поддерживаются значения `equal` и `not_empty`. */
-  readonly type: string;
+  /** Тип условия применения: `equal` или `not_empty`. */
+  readonly type: RecordStyleRuleType;
   /** Исходное значение для сравнения, прописанное в конфиге. */
   readonly sourceCompareValue: string | null;
   /** Тип данных колонки, по которой проверяется выполнение условия. */

@@ -221,20 +221,33 @@ export class TableStateFactory {
     const result: RecordStyleRule[] = [];
     if (!rules) return result;
 
-    for (let { property, type, parameter, background, foreground } of rules) {
-      property = property?.toUpperCase();
+    for (const rule of rules) {
+      const type = this.resolveStyleRuleType(rule.type);
+      if (!type) continue;
+
+      const property = rule.property?.toUpperCase();
       if (!property || this.columns.dict[property] === undefined) continue;
 
+      const { background, foreground } = rule;
       if (!background && !foreground) continue;
+
       const style: CSSProperties = {};
       if (foreground) style.color = fixColorHEX(foreground);
       if (background) style.backgroundColor = fixColorHEX(background);
 
       let compareValue = null;
-      if (type === 'equal' && parameter) compareValue = parameter;
+      if (type === 'equal' && rule.parameter) compareValue = rule.parameter;
       result.push({property, style, type, sourceCompareValue: compareValue, compareValue});
     }
     return result;
+  }
+
+  private resolveStyleRuleType(input: string | null | undefined): RecordStyleRuleType | null {
+    if (input) {
+      if (input === 'equal') return input;
+      if (/^not?[-_ ]empty$/.test(input)) return 'not_empty';
+    }
+    return null;
   }
 
   private createHeaderSetters(columns: TableColumnModel[]): HeaderSetterRule[] {
