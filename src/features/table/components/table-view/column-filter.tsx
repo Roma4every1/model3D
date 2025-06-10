@@ -221,11 +221,13 @@ function LookupFilterContent({id, column, state}: FilterContentProps<'list'>) {
   const values = state.values;
   const uniqueValues = column.filter.uniqueValues;
 
-  let options: LookupListItem[];
   const delay = 100 /* ms */;
   const ok = uniqueValues instanceof Set;
   const error = uniqueValues === 'error';
   const loaded = ok || error;
+
+  let options: LookupListItem[];
+  const showNullOption = (ok && uniqueValues.has(null)) || error;
 
   if (loaded) {
     options = column.lookupData ?? [];
@@ -249,7 +251,7 @@ function LookupFilterContent({id, column, state}: FilterContentProps<'list'>) {
   return (
     <Spin spinning={!loaded} delay={delay}>
       <div className={'lookup-filter-content'}>
-        {toElement({id: null, value: 'Не задано'})}
+        {showNullOption && toElement({id: null, value: 'Не задано'})}
         {options?.map(toElement)}
       </div>
       {error && <TableFilterErrorIcon/>}

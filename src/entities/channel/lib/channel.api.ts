@@ -66,16 +66,16 @@ export class ChannelAPI {
   /** Запрос уникальных значений в колонке датасета. */
   public async getColumnUniqueValues(
     name: ChannelName, column: ColumnName,
-    payload: Partial<Parameter>[], query?: ChannelQuerySettings, signal?: AbortSignal,
+    payload: Partial<Parameter>[], query?: ChannelQuerySettings,
   ): Promise<Set<any> | null> {
     const parameters = payload.map(serializeParameter);
-    const json: Record<string, any> = {channel: name, column, parameters};
+    const json: Record<string, any> = {channel: name, column, parameters, includeNull: true};
 
     if (query) {
       if (query.limit !== null) json.limit = query.limit;
       if (query.filter) json.filter = query.filter;
     }
-    const res = await this.api.post('/uniqueValues', {json, signal});
+    const res = await this.api.post('/uniqueValues', {json});
     return res.ok ? new Set(res.data.values) : null;
   }
 
