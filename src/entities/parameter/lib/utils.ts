@@ -1,3 +1,4 @@
+import type { KeyboardEvent } from 'react';
 import { getDataTypeName } from 'shared/lib';
 
 
@@ -61,4 +62,16 @@ export function findParameterDependents(p: Parameter, depMap: Map<ParameterID, S
     }
   }
   p.dependents = [...dependents];
+}
+
+/**
+ * Для сочетания клавиш Ctrl + C записывает в буфер обмена текущее значение параметра.
+ * Применимо для компонентов `Select` и `TreeSelect` из Ant Design. Не работает без HTTPS.
+ */
+export function onSelectKeyDown(e: KeyboardEvent): void {
+  if (!(e.ctrlKey && /^[cCсС]$/.test(e.key) && navigator.clipboard)) return;
+  const input = e.target as HTMLInputElement;
+  if (input.value) return;
+  const text = input.parentElement.parentElement.lastElementChild.textContent;
+  if (text) navigator.clipboard.writeText(text).then();
 }

@@ -1,6 +1,7 @@
-import { EditorProps } from './editor-dict';
+import type { EditorProps } from './editor-dict';
 import { useEffect, useMemo, useState } from 'react';
 import { TreeSelect } from 'antd';
+import { onSelectKeyDown } from '../lib/utils';
 import { rowToParameterValue } from '../impl/table-row';
 
 
@@ -57,10 +58,10 @@ export const TableRowTreeEditor = ({parameter, update, channel}: EditorProps<'ta
 
   return (
     <TreeSelect
-      treeData={treeData} value={value} onSelect={onSelect}
-      allowClear={parameter.nullable} onClear={onClear}
-      showSearch={true} filterTreeNode={filterTreeNode}
-      placeholder={nullDisplayValue} disabled={disabled} loading={loading}
+      value={value} treeData={treeData} filterTreeNode={filterTreeNode}
+      placeholder={nullDisplayValue} allowClear={parameter.nullable} showSearch={true}
+      disabled={disabled} loading={loading}
+      onClear={onClear} onSelect={onSelect} onKeyDown={onSelectKeyDown}
     />
   );
 };

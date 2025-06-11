@@ -1,6 +1,7 @@
-import { EditorProps } from './editor-dict';
+import type { EditorProps } from './editor-dict';
 import { useState, useEffect, useMemo } from 'react';
 import { Select } from 'antd';
+import { onSelectKeyDown } from '../lib/utils';
 import { rowToParameterValue } from '../impl/table-row';
 import { cellToParameterValue } from '../impl/table-cell';
 
@@ -57,10 +58,10 @@ export const TableRowListEditor = ({parameter, update, channel}: TableRowListEdi
 
   return (
     <Select
-      options={options} value={value} onSelect={onSelect}
-      allowClear={parameter.nullable} onClear={onClear}
-      showSearch={true} filterOption={filterOption}
-      placeholder={nullDisplayValue} disabled={disabled} loading={loading}
+      value={value} options={options} filterOption={filterOption}
+      placeholder={nullDisplayValue} allowClear={parameter.nullable} showSearch={true}
+      disabled={disabled} loading={loading}
+      onSelect={onSelect} onClear={onClear} onKeyDown={onSelectKeyDown}
     />
   );
 };
