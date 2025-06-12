@@ -9,6 +9,7 @@ export { TableRowParameter, rowToParameterValue } from './impl/table-row';
 export * from './lib/common';
 export * from './lib/factory';
 export { serializeParameter, getParameterChannelNames, findParameterDependents } from './lib/utils';
+export { findClientParameters, createParameterTemplate } from './lib/store-bind-utils';
 
 export * from './store/parameter.actions';
 export * from './store/parameter.store';

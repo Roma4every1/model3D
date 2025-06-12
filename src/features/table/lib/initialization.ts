@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import type { TableSettingsDTO,  TableColumnSettingsDTO } from './dto.types';
 import type { TableState, HeaderSetterRule, RecordStyleRule, TableGlobalSettings, TableColumnGroupDict, TableColumnModel, TableActions, RecordModeState } from './types';
 import { InitializationError, XElement, fixColorHEX } from 'shared/lib';
+import { createParameterTemplate } from 'entities/parameter';
 import { TableData } from './table-data';
 import { TableSelection } from './table-selection';
 import { TableColumns } from './table-columns';
@@ -143,7 +144,6 @@ export class TableStateFactory {
   private createColumnModel(property: ChannelProperty, dto: TableColumnSettingsDTO): TableColumnModel {
     const id = property.name;
     const displayName = dto.displayName || property.displayName || id;
-    const visible = dto.visible ?? this.attachedChannel.attachedProperties.includes(property);
 
     const { foreground: fg, background: bg, headerForeground: hfg, headerBackground: hbg } = dto;
     const cellStyle: CSSProperties = {};
@@ -152,6 +152,21 @@ export class TableStateFactory {
     const headerStyle: CSSProperties = {};
     if (hfg && hfg !== 'none') headerStyle.color = fixColorHEX(hfg);
     if (hbg && hbg !== 'none') headerStyle.backgroundColor = fixColorHEX(hbg);
+
+    const v = dto.visible;
+    let visible: boolean;
+    let visibilityTemplate: IParameterStringTemplate;
+
+    if (!v) {
+      visible = this.attachedChannel.attachedProperties.includes(property);
+    } else if (v === 'true' || v === '1') {
+      visible = true;
+    } else if (v === 'false' || v === '0') {
+      visible = false;
+    } else {
+      visible = true;
+      visibilityTemplate = createParameterTemplate(v, [this.payload.state.parent, 'root']);
+    }
 
     const textWrap = dto.textWrap ?? undefined;
     if (textWrap !== undefined && textWrap !== this.globalSettings.textWrap) {
@@ -177,7 +192,8 @@ export class TableStateFactory {
       headerStyle, cellStyle, typeFormat: dto.typeFormat, formatter, fileColumn: fc,
       displayName: displayName, displayIndex: null, orderIndex,
       width, autoWidth, textWrap, columnName: property.fromColumn,
-      fixed: false, visible, nullable: true, editable: dto.readOnly !== true,
+      fixed: false, nullable: true, editable: dto.readOnly !== true,
+      visible, visibilityTemplate,
       link: this.links[id],
       detailChannel: property.detailChannel,
       lookupChannel: property.lookupChannels[0],

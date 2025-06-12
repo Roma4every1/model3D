@@ -64,10 +64,13 @@ export function calcParameterVisibility(p: Parameter, storage: ParameterMap): vo
   const template = p.editor?.visibilityTemplate;
   if (!template) return;
   const values = findParameters(template.parameterIDs, storage);
+  p.editor.visible = buildBooleanTemplate(template, values);
+}
 
+export function buildBooleanTemplate(t: IParameterStringTemplate, values: Parameter[]): boolean {
   try {
-    p.editor.visible = Boolean(eval(template.build(values)));
+    return Boolean(eval(t.build(values)));
   } catch {
-    p.editor.visible = false;
+    return false;
   }
 }

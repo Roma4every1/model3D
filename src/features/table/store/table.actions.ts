@@ -1,3 +1,4 @@
+import { findClientParameters, buildBooleanTemplate } from 'entities/parameter';
 import { settingsToTableState } from '../lib/initialization';
 import { useTableStore } from './table.store';
 import { updateActiveRecord } from './table.thunks';
@@ -47,6 +48,36 @@ export function setTableHeaderValues(id: FormID, values: any[]): void {
   const state = useTableStore.getState()[id];
   state.columns.setHeaderValues(values);
   state.columns.updateAutoWidth(state.data.records);
+  useTableStore.setState({[id]: {...state}});
+}
+
+export function updateTableTemplates(id: FormID): void {
+  const state = useTableStore.getState()[id];
+  const { data, columns } = state;
+  const checkedKeys = columns.tree.checkedKeys;
+  const parameters = findClientParameters(columns.templateParameterIDs);
+
+  for (const column of columns.list) {
+    const template = column.visibilityTemplate;
+    if (!template) continue;
+
+    const visible = buildBooleanTemplate(template, parameters);
+    if (column.visible === visible) continue;
+
+    const idx = checkedKeys.indexOf(column.id);
+    if (idx === -1) {
+      checkedKeys.push(column.id);
+    } else {
+      checkedKeys.splice(idx, 1);
+    }
+  }
+  columns.tree.checkedKeys = [...checkedKeys];
+  columns.setVisibleColumns(checkedKeys as PropertyName[], data.records);
+
+  if (data.activeCell.column && !columns.dict[data.activeCell.column].visible) {
+    data.setActiveCell(null);
+    updateActiveRecord(id, null).then();
+  }
   useTableStore.setState({[id]: {...state}});
 }
 

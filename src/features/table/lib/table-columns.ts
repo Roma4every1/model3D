@@ -12,6 +12,8 @@ export class TableColumns {
   public readonly headerSetters: HeaderSetterRule[];
   /** ID параметров для заголовков колонок. */
   public readonly headerParameterIDs: ParameterID[];
+  /** ID параметров для динамической видимости. */
+  public readonly templateParameterIDs: ParameterID[];
 
   /** Словарь всех колонкок. */
   public readonly dict: TableColumnDict;
@@ -41,6 +43,9 @@ export class TableColumns {
 
     this.list.forEach((c: TableColumnModel) => { this.dict[c.id] = c; });
     this.leafs.forEach((c: TableColumnModel, i: number) => { c.displayIndex = i; });
+
+    this.templateParameterIDs = [];
+    this.updateTemplateParameterIDs();
   }
 
   public createInitLayout(fixedColumnCount: number): void {
@@ -54,6 +59,15 @@ export class TableColumns {
     }
     this.setFixedColumnCount(fixedColumnCount);
     this.headLayout = createHeadLayout(this.leafs, this.groupSettings);
+  }
+
+  public updateTemplateParameterIDs(): void {
+    this.templateParameterIDs.length = 0;
+    for (const column of this.list) {
+      column.visibilityTemplate?.parameterIDs.forEach((id: ParameterID) => {
+        if (!this.templateParameterIDs.includes(id)) this.templateParameterIDs.push(id);
+      });
+    }
   }
 
   public setHeaderValues(values: ParameterValueMap['tableRow'][]): void {

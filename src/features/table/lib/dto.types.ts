@@ -87,7 +87,7 @@ export interface TableColumnSettingsDTO {
   /** Фон ячейки заголока. */
   readonly headerBackground?: string;
   /** Флаг видимости колонки. */
-  readonly visible?: boolean;
+  readonly visible?: string;
   /** Флаг редактируемости колонки. */
   readonly readOnly?: boolean;
   /** Флаг возможности переноса текста. */

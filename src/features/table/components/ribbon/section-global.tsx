@@ -1,9 +1,11 @@
 import type { Key } from 'react';
 import type { TFunction } from 'react-i18next';
 import type { TableState } from '../../lib/types';
+import type { ColumnTreeNode } from '../../lib/table-column-tree';
 import { useRender } from 'shared/react';
 import { setTableVisibleColumns, updateTableState } from '../../store/table.actions';
 import { Popover, Tree } from 'antd';
+import { FunctionOutlined } from '@ant-design/icons';
 import { BigButton, BigButtonToggle, MenuSection } from 'shared/ui';
 
 import textWrapIcon from 'assets/table/text-wrap.svg';
@@ -15,7 +17,6 @@ interface TableGlobalSectionProps {
   state: TableState;
   t: TFunction;
 }
-
 
 export const TableGlobalSection = ({state, t}: TableGlobalSectionProps) => {
   const settings = state.globalSettings;
@@ -46,7 +47,7 @@ export const TableGlobalSection = ({state, t}: TableGlobalSectionProps) => {
         active={alternate} onClick={toggleAlternate}
       />
       <Popover
-        content={<ColumnVisibilityTree state={state}/>} trigger={'click'}
+        content={<ColumnVisibilityTree state={state} t={t}/>} trigger={'click'}
         placement={'bottom'} arrow={false} overlayClassName={'column-visibility-popover'}
       >
         <BigButton text={t('table.panel.visibility')} icon={visibilityIcon} style={style}/>
@@ -55,12 +56,18 @@ export const TableGlobalSection = ({state, t}: TableGlobalSectionProps) => {
   );
 };
 
-const ColumnVisibilityTree = ({state}: {state: TableState}) => {
+const ColumnVisibilityTree = ({state, t}: TableGlobalSectionProps) => {
   const render = useRender();
-  const tree = state.columns.tree;
+  const { tree, dict } = state.columns;
   const { topNodes, checkedKeys, expandedKeys } = tree;
 
-  const onCheck = (keys: Key[]) => {
+  const onCheck = (keys: Key[], e: {node: ColumnTreeNode}) => {
+    const key = e.node.key;
+    // возможно, надо добавить обработку для группы колонок
+    if (typeof key === 'string' && dict[key].visibilityTemplate) {
+      dict[key].visibilityTemplate = undefined;
+      state.columns.updateTemplateParameterIDs();
+    }
     tree.checkedKeys = keys;
     const visibleColumns = keys.filter(k => typeof k === 'string') as string[];
     setTableVisibleColumns(state.id, visibleColumns);
@@ -69,10 +76,16 @@ const ColumnVisibilityTree = ({state}: {state: TableState}) => {
     tree.expandedKeys = keys;
     render();
   };
+  const titleRender = ({key, title}: ColumnTreeNode) => {
+    if (typeof key !== 'string' || !dict[key].visibilityTemplate) return title;
+    const hint = t('table.panel.auto-visible');
+    const style = {backgroundColor: '#eee', borderRadius: 2};
+    return <><FunctionOutlined title={hint} style={style}/> {title}</>;
+  };
 
   return (
     <Tree
-      treeData={topNodes} checkable={true} selectable={false}
+      treeData={topNodes} checkable={true} selectable={false} titleRender={titleRender}
       checkedKeys={checkedKeys} onCheck={onCheck}
       expandedKeys={expandedKeys} onExpand={onExpand} autoExpandParent={false}
     />

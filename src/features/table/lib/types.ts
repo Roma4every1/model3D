@@ -156,10 +156,12 @@ export interface TableColumnModel {
   autoWidth: boolean;
   /** Фиксация колонки (только слева). */
   fixed: boolean;
-  /** Флаг видимости. */
-  visible: boolean;
   /** Флаг переноса текста в ячейках. */
   textWrap: boolean | undefined;
+  /** Флаг видимости. */
+  visible: boolean;
+  /** Шаблон динамической видимости параметра. */
+  visibilityTemplate?: IParameterStringTemplate;
 
   /** Тип ячеек колонки. */
   type?: TableColumnType;

@@ -27,7 +27,7 @@ export function tableStateToSettings (id: FormID, state: TableState): TableSetti
       background: toServerColorFormat(column.cellStyle?.backgroundColor),
       headerForeground: toServerColorFormat(column.headerStyle?.color),
       headerBackground: toServerColorFormat(column.headerStyle?.backgroundColor),
-      visible: column.visible,
+      visible: column.visibilityTemplate?.source ?? String(column.visible),
       readOnly: !column.editable,
       textWrap: column.textWrap === textWrap ? undefined : column.textWrap,
       typeFormat: column.typeFormat,
