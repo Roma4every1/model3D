@@ -2,11 +2,12 @@ import type { FC } from 'react';
 import type { CellEditorProps } from '../../lib/types';
 import { clsx } from 'clsx';
 import { InputCellEditor } from './edited-cell-text';
+import { BoolCellEditor, ColorCellEditor } from './edited-cell-primitive';
+import { DateCellEditor, DateTimeCellEditor } from './edited-cell-date';
 import { EditCellList, EditCellTree } from './edited-cell-lookup';
-import { BoolCellEditor, DateCellEditor, DateTimeCellEditor, ColorCellEditor } from './edited-cell-primitive';
 
 
-const cellDict: Record<TableColumnType, FC<CellEditorProps>> = {
+const cellEditorDict: Record<TableColumnType, FC<CellEditorProps>> = {
   'bool': BoolCellEditor,
   'int' : InputCellEditor,
   'real': InputCellEditor,
@@ -24,7 +25,7 @@ export const EditedCell = ({state, column, record}: Omit<CellEditorProps, 'updat
 
   const className = clsx(fixed && 'cell-sticky', 'cell-active', 'cell-edited');
   const style = fixed ? {left: cellStyle.left, borderRight: cellStyle.borderRight} : undefined;
-  const Editor = cellDict[type ?? 'text'];
+  const Editor = cellEditorDict[type ?? 'text'];
 
   return (
     <td className={className} style={style}>
