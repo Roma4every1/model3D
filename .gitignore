@@ -1,9 +1,6 @@
 # External libraries
 node_modules
 
-# Script data
-scripts/systems.json
-
 # Output directories
 build
 dist
