@@ -5,7 +5,7 @@ import type {
 
 import type {
   CaratIntervalModel, CaratBarModel,
-  CaratCurveModel, CurveGroupState, CaratCorrelation,
+  CaratCurveModel, CaratGroupState, CaratCorrelation,
 } from '../lib/types';
 
 import type {
@@ -32,6 +32,7 @@ import {
 } from './drawer-settings';
 
 import { round } from 'shared/lib';
+import { formatFlowDate } from '../lib/utils';
 import { ConstructionTransformer } from '../lib/transformer';
 
 
@@ -239,16 +240,17 @@ export class CaratDrawer {
     this.ctx.stroke();
   }
 
-  public drawGroupLabel(labelTop: number): void {
+  public drawGroupLabel(labelTop: number, flow?: boolean): void {
     const width = this.groupElementRect.width;
     const { font, color, height } = this.columnLabelSettings;
 
     this.setTranslate(this.groupTranslateX, this.trackRect.top + this.trackHeaderSettings.height);
     this.setTextSettings(font, color, 'center', 'bottom');
-    this.ctx.fillText(this.groupSettings.label, width / 2, labelTop + height, width);
+    const y = (flow && this.groupSettings.label) ? labelTop : labelTop + height;
+    this.ctx.fillText(this.groupSettings.label, width / 2, y, width);
   }
 
-  public drawGroupXAxes(settings: CaratColumnXAxis, groups: CurveGroupState[], activeType: CaratCurveType): void {
+  public drawGroupXAxes(settings: CaratColumnXAxis, groups: CaratGroupState[], activeType: CaratCurveType): void {
     this.setTranslate(this.groupTranslateX, this.trackRect.top + this.columnLabelSettings.height);
     const { thickness, gap, axisHeight, font, activeFont } = this.columnXAxisSettings;
     const yStep = axisHeight + gap;
@@ -265,7 +267,7 @@ export class CaratDrawer {
       const xEnd = rect.left + rect.width - thickness;
       const xCenter = (xStart + xEnd) / 2;
 
-      for (const { type, axisMin, axisMax, style: { color } } of elements) {
+      for (const { type, axisMin, axisMax, style: { color } } of elements as CaratCurveModel[]) {
         const delta = axisMax - axisMin;
         const markStep = delta / segmentsCount;
         const digits = markStep > 1 ? 0 : (markStep < 0.1 ? 2 : 1);
@@ -335,7 +337,20 @@ export class CaratDrawer {
     }
   }
 
-  public drawVerticalGrid(groups: CurveGroupState[], settings: CaratColumnXAxis): void {
+  public drawGroupFlow(groups: CaratGroupState[], labelTop: number): void {
+    const { font, color, height } = this.columnLabelSettings;
+    this.setTranslate(this.groupTranslateX, this.trackRect.top + this.trackHeaderSettings.height);
+    this.setTextSettings(font, color, 'center', 'bottom');
+
+    for (const { rect, elements } of groups) {
+      if (elements.length === 0) continue;
+      const y = this.groupSettings.label ? labelTop + height : labelTop;
+      const label = formatFlowDate(elements[0].date);
+      this.ctx.fillText(label, rect.left + rect.width / 2, y, rect.width);
+    }
+  }
+
+  public drawVerticalGrid(groups: CaratGroupState[], settings: CaratColumnXAxis): void {
     const height = this.groupElementRect.height;
     const { gridThickness, gridLineDash } = this.columnXAxisSettings;
     const segmentsCount = settings.numberOfMarks - 1;

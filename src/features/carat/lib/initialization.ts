@@ -28,7 +28,7 @@ export function settingsToCaratState(payload: FormStatePayload<CaratFormSettings
     attachedChannel.config = {displayName: channel.config.displayName ?? channel.name};
 
     const type = attachedChannel.type as CaratChannelType;
-    if (type === 'lithology' || type === 'perforation' || type === 'face') {
+    if (type === 'lithology' || type === 'perforation' || type === 'face' || type === 'interval') {
       applyStyle(attachedChannel, channels);
     }
     if (type === 'curve-data') {
@@ -56,14 +56,15 @@ export function settingsToCaratState(payload: FormStatePayload<CaratFormSettings
 }
 
 function createCaratStage(settings: CaratGlobalSettingsDTO, columns: CaratColumnInit[], extra?: XElement): CaratStage {
-  const awElement = extra?.getChild('autoWidth');
   const { scale, zones, strataChannelName } = settings;
+  const hideEmpty = extra?.getBooleanAttribute('hideEmpty') ?? true;
 
+  const awElement = extra?.getChild('autoWidth');
   const minZoneWidth = awElement?.getNumberAttribute('minZoneWidth') || 50;
   const maxZoneWidth = awElement?.getNumberAttribute('maxZoneWidth') || 250;
   const autoWidth = awElement?.getBooleanAttribute('enabled') ?? true;
 
-  const globalSettings = {strataChannelName, minZoneWidth, maxZoneWidth, autoWidth};
+  const globalSettings = {strataChannelName, minZoneWidth, maxZoneWidth, autoWidth, hideEmpty};
   return new CaratStage({columns, scale, zones, globalSettings}, drawerConfig);
 }
 

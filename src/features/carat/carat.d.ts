@@ -108,6 +108,7 @@ interface CaratZone {
  * + `lithology` — литологические пласты
  * + `perforation` — перфорации
  * + `curve` — каротажные кривые
+ * + `flow` — потокометрия
  * + `curve-data` — точки кривых
  * + `mark` — подписи по глубине
  * + `bore` (конструкция) — элементы ствола скважины
@@ -116,5 +117,5 @@ interface CaratZone {
  * + `vertical` (конструкция) — вертикальная линия
  */
 type CaratChannelType =
-  | 'inclinometry' | 'lithology' | 'perforation' | 'curve' | 'curve-data'
-  | 'mark' | 'bore' | 'image' | 'face' | 'vertical';
+  | 'inclinometry' | 'lithology' | 'perforation' | 'flow' | 'interval'
+  | 'curve' | 'curve-data' | 'mark' | 'bore' | 'image' | 'face' | 'vertical';

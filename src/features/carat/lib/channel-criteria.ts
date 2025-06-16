@@ -69,6 +69,15 @@ export const caratChannelCriteria: Record<CaratChannelType, ChannelCriterion> = 
       date: {name: 'DATE'},
     },
   },
+  'flow': {
+    properties: {
+      well: {name: 'WELL ID'},
+      top: {name: 'TOP'},
+      bottom: {name: 'BASE'},
+      date: {name: 'DATE'},
+      percent: {name: 'PERCENT'},
+    },
+  },
   'curve': {
     properties: {
       well: {name: 'WELL ID'},
@@ -135,6 +144,13 @@ export const caratChannelCriteria: Record<CaratChannelType, ChannelCriterion> = 
       top: {name: 'TOP'},
       bottom: {name: 'BASE'},
       width: {name: 'WIDTH'},
+    },
+  },
+  'interval': {
+    properties: {
+      well: {name: 'WELL ID'},
+      top: {name: 'TOP'},
+      bottom: {name: 'BASE'},
     },
   },
 };

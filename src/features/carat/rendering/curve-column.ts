@@ -1,5 +1,5 @@
 import type { CaratColumnInit, CaratColumnXAxis } from '../lib/dto.types';
-import type { CaratCurveModel, CurveGroupState } from '../lib/types';
+import type { CaratCurveModel, CaratGroupState } from '../lib/types';
 import { CaratDrawer } from './drawer';
 import { CurveManager } from '../lib/curve-manager';
 
@@ -20,7 +20,7 @@ export class CaratCurveColumn implements ICaratColumn {
   /** Настройки горизонтальной оси. */
   public xAxis: CaratColumnXAxis;
   /** Группы кривых по зонам. */
-  private groups: CurveGroupState[];
+  private groups: CaratGroupState[];
   /** Координаты по X разделительных линий зон. */
   private dividingLines: number[];
 
@@ -63,7 +63,7 @@ export class CaratCurveColumn implements ICaratColumn {
     return colorLookup ? [colorLookup.id] : [];
   }
 
-  public getGroups(): CurveGroupState[] {
+  public getGroups(): CaratGroupState[] {
     return this.groups;
   }
 
@@ -137,7 +137,7 @@ export class CaratCurveColumn implements ICaratColumn {
     }
     for (const curveGroup of this.groups) {
       this.drawer.setCurrentColumn(curveGroup.rect);
-      this.drawer.drawCurves(curveGroup.elements);
+      this.drawer.drawCurves(curveGroup.elements as CaratCurveModel[]);
       this.drawer.restore();
     }
   }

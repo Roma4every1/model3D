@@ -18,6 +18,8 @@ export interface CaratGlobalSetting {
   readonly maxZoneWidth: number;
   /** Активен ли режим автоподбора ширины колонок. */
   autoWidth: boolean;
+  /** Активен ли режим скрытия пустых колонок. */
+  hideEmpty: boolean;
 }
 
 /** Модель каротажной кривой. */
@@ -56,9 +58,15 @@ export interface CaratCurveModel {
   transformed?: boolean;
 }
 
-export interface CurveGroupState {
+export interface CaratGroupState {
   rect: Rectangle;
-  elements: CaratCurveModel[];
+  elements: CaratCurveModel[] | CaratFlowModel[];
+}
+
+/** Модель потокометрии. */
+export interface CaratFlowModel extends CaratBarModel {
+  /** Дата проведения потокометрии. */
+  date: Date;
 }
 
 export interface CaratIntervalModel {

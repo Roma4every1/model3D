@@ -44,8 +44,9 @@ export class CaratTrack {
   private activeIndex: number;
   /** Активная кривая. */
   private activeCurve: CaratCurveModel | null;
+  private readonly hideEmpty: boolean;
 
-  constructor(rect: Rectangle, columns: CaratColumnInit[], scale: number, drawer: CaratDrawer) {
+  constructor(rect: Rectangle, columns: CaratColumnInit[], scale: number, drawer: CaratDrawer, hideEmpty: boolean) {
     this.active = false;
     this.rect = rect;
     this.drawer = drawer;
@@ -54,7 +55,7 @@ export class CaratTrack {
     this.activeIndex = -1;
     this.activeCurve = null;
     this.maxGroupHeaderHeight = 0;
-
+    this.hideEmpty = hideEmpty;
     const groupWithYAxis = columns.find((group) => group.yAxis?.show);
     const step = groupWithYAxis?.yAxis.step ?? defaultSettings.yAxisStep;
     const scroll = {queue: [], direction: 0, step, id: null};
@@ -125,6 +126,7 @@ export class CaratTrack {
       constructionMode: this.constructionMode,
       transformer: this.transformer,
       constructionLabels: this.constructionLabels,
+      hideEmpty: this.hideEmpty,
     } as any;
 
     Object.setPrototypeOf(copy, CaratTrack.prototype);
@@ -335,7 +337,8 @@ export class CaratTrack {
     point.y -= this.rect.top;
 
     const newActiveIndex = this.groups.findIndex((group: CaratColumnGroup) => {
-      return group.visible && isRectInnerPoint(point, group.getDataRect());
+      if (!group.visible || (group.empty && this.hideEmpty)) return false;
+      return isRectInnerPoint(point, group.getDataRect());
     });
     if (newActiveIndex !== -1) this.setActiveGroup(newActiveIndex);
 
@@ -365,7 +368,7 @@ export class CaratTrack {
     let x = 0;
 
     for (const group of this.groups) {
-      if (!group.visible) continue;
+      if (!group.visible || (group.empty && this.hideEmpty)) continue;
       const rect = group.getDataRect();
       rect.left = x;
       x += rect.width;
@@ -383,13 +386,14 @@ export class CaratTrack {
     this.backgroundGroup.renderContent();
 
     for (const group of this.groups) {
-      if (group.active || group.settings.width <= 0 || !group.visible) continue;
+      if (group.active || group.settings.width <= 0) continue;
+      if (!group.visible || (group.empty && this.hideEmpty)) continue;
       group.renderHeader();
       group.renderContent();
     }
     if (this.activeIndex !== -1) {
       const group = this.groups[this.activeIndex];
-      if (group.settings.width > 0 && group.visible) {
+      if (group.settings.width > 0 && group.visible && !(group.empty && this.hideEmpty)) {
         group.renderHeader();
         group.renderContent();
       }
@@ -406,10 +410,14 @@ export class CaratTrack {
     this.backgroundGroup.renderContent();
 
     for (const group of this.groups) {
-      if (!group.active && group.settings.width > 0 && group.visible) group.renderContent();
+      if (group.active || group.settings.width <= 0) continue;
+      if (!group.visible || (group.empty && this.hideEmpty)) continue;
+      group.renderContent();
     }
     const group = this.groups[this.activeIndex];
-    if (group && group.settings.width > 0 && group.visible) group.renderContent();
+    if (group && group.settings.width > 0 && group.visible && !(group.empty && this.hideEmpty)) {
+      group.renderContent();
+    }
     if (this.constructionLabels) this.constructionLabels.render();
   }
 }

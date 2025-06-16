@@ -101,3 +101,10 @@ export function getCanvasConstraints() {
     return {maxWidth: 65_535, maxHeight: 65_535, maxArea: 268_435_456};
   }
 }
+
+export function formatFlowDate(date: Date): string {
+  const month = date.getMonth() + 1;
+  const mm = month > 9 ? month : '0' + month;
+  const yy = date.getFullYear().toString().substring(2);
+  return mm + '.' + yy;
+}

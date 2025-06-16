@@ -85,7 +85,7 @@ export class CaratStage {
     const rect: Rectangle = {top: padding, left: padding, width: trackWidth, height: 0};
     const scale = CaratDrawer.pixelPerMeter / (config.scale ?? defaultSettings.scale);
 
-    const track = new CaratTrack(rect, config.columns, scale, this.drawer);
+    const track = new CaratTrack(rect, config.columns, scale, this.drawer, config.globalSettings.hideEmpty);
     this.trackList = [track];
     this.activeIndex = 0;
 
@@ -229,11 +229,15 @@ export class CaratStage {
     const curveGroupIndexes = new Set<number>();
 
     this.trackList.forEach(t => t.getGroups().forEach((group, i) => {
-      if (!group.visible) return;
+      if (!group.visible || (group.empty && this.settings.hideEmpty)) return;
       const curveColumn = group.getCurveColumn();
+      const flowColumn = group.getFlowColumn();
+
       if (curveColumn) {
         curveGroupIndexes.add(i);
         zoneCount += curveColumn.getGroups().length;
+      } else if (flowColumn) {
+        fixedWidth += group.getWidth() * flowColumn.getGroups().length;
       } else {
         fixedWidth += group.getWidth();
       }

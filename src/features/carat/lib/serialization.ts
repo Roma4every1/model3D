@@ -21,10 +21,12 @@ export function caratStateToSettings(id: FormID, state: CaratState): CaratFormSe
 
 export function caratStateToExtra(state: CaratState): XRawElement {
   const globalSettings = state.stage.settings;
+  const hideEmpty = String(globalSettings.hideEmpty);
+
   const enabled = String(globalSettings.autoWidth);
   const minZoneWidth = globalSettings.minZoneWidth.toString();
   const maxZoneWidth = globalSettings.maxZoneWidth.toString();
 
   const attrs: XAttributes = {enabled, minZoneWidth, maxZoneWidth};
-  return {autoWidth: {attrs}};
+  return {attrs: {hideEmpty}, autoWidth: {attrs}};
 }

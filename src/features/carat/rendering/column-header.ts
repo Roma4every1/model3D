@@ -1,5 +1,5 @@
 import type { CaratColumnXAxis } from '../lib/dto.types';
-import type { CurveGroupState, CaratCurveModel } from '../lib/types';
+import type { CaratGroupState, CaratCurveModel } from '../lib/types';
 import { CaratDrawer } from './drawer';
 
 
@@ -10,9 +10,11 @@ export class CaratColumnHeader {
   /** Высота текста названия. */
   private readonly labelTextHeight: number;
   /** Горизонатльные оси для кривых. */
-  private curveAxes: CurveGroupState[];
+  private curveAxes: CaratGroupState[];
   /** Тип активной кривой. */
   private activeType: CaratCurveType | null;
+  /**  */
+  private flowGroups: CaratGroupState[];
 
   /** Отступ сверху. */
   private padding: number;
@@ -28,6 +30,7 @@ export class CaratColumnHeader {
     this.labelTextHeight = drawer.columnLabelSettings.height;
     this.curveAxes = [];
     this.activeType = null;
+    this.flowGroups = [];
 
     this.padding = 0;
     this.labelHeight = label ? this.labelTextHeight : 0;
@@ -56,7 +59,7 @@ export class CaratColumnHeader {
   }
 
   /** Задаёт оси кривых. */
-  public setAxes(curveGroups: CurveGroupState[]): void {
+  public setAxes(curveGroups: CaratGroupState[]): void {
     this.curveAxes = [];
     let maxHeight = 0;
     const { axisHeight, gap } = this.drawer.columnXAxisSettings;
@@ -65,7 +68,7 @@ export class CaratColumnHeader {
       const axes: CaratCurveModel[] = [];
       const axisRect = {top: 0, left: rect.left, width: rect.width, height: 0};
 
-      for (const curve of elements) {
+      for (const curve of elements as CaratCurveModel[]) {
         const type = curve.type;
         if (!axes.some(a => a.type === type)) axes.push(curve);
       }
@@ -78,6 +81,10 @@ export class CaratColumnHeader {
       axisGroup.rect.height = maxHeight;
     }
     this.axesHeight = maxHeight;
+  }
+
+  public setFlow(flowGroups: CaratGroupState[]): void {
+    if (flowGroups) this.flowGroups = flowGroups;
   }
 
   /** Задаёт общую высоту заголовка. */
@@ -101,10 +108,13 @@ export class CaratColumnHeader {
   /** Отрисовка заголовка. */
   public render(settings: CaratColumnXAxis): void {
     if (this.labelHeight) {
-      this.drawer.drawGroupLabel(this.padding);
+      this.drawer.drawGroupLabel(this.padding, this.flowGroups.length > 0);
     }
     if (this.curveAxes.length) {
       this.drawer.drawGroupXAxes(settings, this.curveAxes, this.activeType);
+    }
+    if (this.flowGroups.length) {
+      this.drawer.drawGroupFlow(this.flowGroups, this.padding);
     }
   }
 }

@@ -48,6 +48,8 @@ const zIndexDict: Record<Exclude<CaratChannelType, 'curve-data' | 'inclinometry'
   'bore': 11,
   'lithology': 1,
   'perforation': 1,
+  'flow': 1,
+  'interval': 1,
 };
 
 /** Функция сортировки каротажных колонок в рамках одной группы. */

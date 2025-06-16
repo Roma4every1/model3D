@@ -7,6 +7,7 @@ import type { CaratCurveModel, CaratIntervalModel } from '../lib/types';
 import { CaratDrawer } from './drawer';
 import { CaratColumnHeader } from './column-header';
 import { CaratCurveColumn } from './curve-column';
+import { CaratFlowColumn } from './flow-column';
 import { CaratMarkColumn } from './mark-column';
 import { CaratColumnFactory, caratColumnCompareFn } from './columns';
 
@@ -42,10 +43,13 @@ export class CaratColumnGroup {
   private readonly columns: ICaratColumn[];
   /** Каротажные колонки с кривыми. */
   private readonly curveColumn: CaratCurveColumn | null;
+  /** Каротажные колонки с потокометирией. */
+  private readonly flowColumn: CaratFlowColumn | null;
 
   private readonly channels: AttachedChannel<CaratChannelType>[];
   private readonly properties: Record<ChannelName, CaratColumnProperties>;
 
+  public empty: boolean;
   public active: boolean;
 
   constructor(rect: Rectangle, drawer: CaratDrawer, init: CaratColumnInit) {
@@ -56,6 +60,7 @@ export class CaratColumnGroup {
     this.properties = init.properties;
     this.channels = init.channels;
     this.active = init.active;
+    this.empty = true;
     this.visible = true;
 
     if (!init.xAxis) init.xAxis = defaultSettings.xAxis;
@@ -73,10 +78,12 @@ export class CaratColumnGroup {
 
     this.columns = [];
     this.curveColumn = null;
+    this.flowColumn = null;
     this.zones = [];
 
     let curveSetChannel: AttachedChannel;
     let curveDataChannel: AttachedChannel;
+    let flowDataChannel: AttachedChannel;
 
     const height = rect.height - headerHeight;
     const factory = new CaratColumnFactory(drawer, init);
@@ -87,6 +94,7 @@ export class CaratColumnGroup {
 
       if (channelType === 'curve') { curveSetChannel = attachedChannel; continue; }
       if (channelType === 'curve-data') { curveDataChannel = attachedChannel; continue; }
+      if (channelType === 'flow') { flowDataChannel = attachedChannel; continue; }
 
       const columnRect = {top: 0, left: 0, width: rect.width, height};
       this.columns.push(factory.createColumn(attachedChannel, columnRect));
@@ -95,6 +103,11 @@ export class CaratColumnGroup {
       const columnRect = {top: 0, left: 0, width: rect.width, height};
       this.curveColumn = new CaratCurveColumn(columnRect, drawer, curveSetChannel, init);
       this.columns.push(this.curveColumn);
+    }
+    if (flowDataChannel) {
+      const columnRect = {top: 0, left: 0, width: rect.width, height};
+      this.flowColumn = new CaratFlowColumn(columnRect, drawer, flowDataChannel, init);
+      this.columns.push(this.flowColumn);
     }
     this.columns.sort(caratColumnCompareFn);
   }
@@ -121,12 +134,15 @@ export class CaratColumnGroup {
       yAxis: {...this.yAxis},
       columns: this.columns.map(c => c.copy()),
       curveColumn: null,
+      flowColumn: null,
       channels: this.channels,
       properties: this.properties,
     };
 
     copy.curveColumn = copy.columns.find(c => c.channel.type === 'curve') as CaratCurveColumn ?? null;
     if (copy.curveColumn) copy.curveColumn.xAxis = copy.xAxis;
+    copy.flowColumn = copy.columns.find(c => c.channel.type === 'flow') as CaratFlowColumn ?? null;
+    if (copy.flowColumn) copy.flowColumn.xAxis = copy.xAxis;
 
     Object.setPrototypeOf(copy, CaratColumnGroup.prototype);
     return copy as any as CaratColumnGroup;
@@ -168,6 +184,10 @@ export class CaratColumnGroup {
     return this.curveColumn;
   }
 
+  public getFlowColumn(): CaratFlowColumn | null {
+    return this.flowColumn;
+  }
+
   public getDataRect(): Rectangle {
     return this.dataRect;
   }
@@ -182,6 +202,8 @@ export class CaratColumnGroup {
   public getWidth(): number {
     if (this.curveColumn) {
       return this.curveColumn.getGroupWidth();
+    } else if (this.flowColumn) {
+      return this.flowColumn.getGroupWidth();
     } else {
       return this.dataRect.width;
     }
@@ -215,6 +237,11 @@ export class CaratColumnGroup {
       this.curveColumn.setGroupWidth(width);
       width = this.curveColumn.getTotalWidth();
     }
+    if (this.flowColumn) {
+      this.header.setGroupWidth(width);
+      this.flowColumn.setGroupWidth(width);
+      width = this.flowColumn.getTotalWidth();
+    }
     for (const column of this.columns) {
       column.rect.width = width;
       if (column instanceof CaratMarkColumn) column.updateBounds();
@@ -227,6 +254,7 @@ export class CaratColumnGroup {
     this.dataRect.height = columnHeight;
     for (const column of this.columns) column.rect.height = columnHeight;
     if (this.curveColumn) this.curveColumn.setHeight(columnHeight);
+    if (this.flowColumn) this.flowColumn.setHeight(columnHeight);
   }
 
   public setHeaderHeight(height: number): void {
@@ -238,6 +266,7 @@ export class CaratColumnGroup {
     const elementsHeight = this.dataRect.height;
     for (const column of this.columns) column.rect.height = elementsHeight;
     if (this.curveColumn) this.curveColumn.setHeight(elementsHeight);
+    if (this.flowColumn) this.flowColumn.setHeight(elementsHeight);
   }
 
   public shift(by: number): void {
@@ -275,7 +304,7 @@ export class CaratColumnGroup {
     let minDistance = Infinity;
     let nearestCurve: CaratCurveModel = null;
 
-    for (const curve of elements) {
+    for (const curve of elements as CaratCurveModel[]) {
       const distance = distanceFromCaratCurve(groupPoint, curve, rect, viewport);
       if (distance < minDistance) { minDistance = distance; nearestCurve = curve; }
     }
@@ -284,15 +313,24 @@ export class CaratColumnGroup {
 
   /** Задаёт новый список элементов и кривых, возвращает изменение ширины. */
   public setData(data: ChannelRecordDict, cache: CurveDataCache): void {
+    this.empty = true;
     for (const column of this.columns) {
       const rows = data[column.channel.id];
-      column.setChannelData(rows ?? []);
+      if (rows && rows.length > 0) {
+        column.setChannelData(rows);
+        this.empty = false;
+      } else {
+        column.setChannelData([]);
+      }
     }
-
-    if (!this.curveColumn) return;
-    const curveRecords = data[this.curveColumn.channel.id];
-    this.curveColumn.curveManager.setCurveChannelData(curveRecords, cache);
-    this.groupCurves(this.curveColumn.curveManager.getVisibleCurves());
+    if (this.curveColumn) {
+      const curveRecords = data[this.curveColumn.channel.id];
+      this.curveColumn.curveManager.setCurveChannelData(curveRecords, cache);
+      this.groupCurves(this.curveColumn.curveManager.getVisibleCurves());
+    }
+    if (this.flowColumn) {
+      this.groupFlow(data[this.flowColumn.channel.id]);
+    }
   }
 
   /** Группирует кривые по зонам. */
@@ -302,6 +340,20 @@ export class CaratColumnGroup {
 
     const oldWidth = this.dataRect.width;
     const newWidth = this.curveColumn.getTotalWidth();
+
+    if (oldWidth !== newWidth) {
+      this.dataRect.width = newWidth;
+      for (const column of this.columns) column.rect.width = newWidth;
+    }
+  }
+
+  /** Группирует потокометрию по дате. */
+  public groupFlow(data: ChannelRecord[]): void {
+    this.flowColumn.setFlowData(data);
+    this.header.setFlow(this.flowColumn.getGroups());
+
+    const oldWidth = this.dataRect.width;
+    const newWidth = this.flowColumn.getTotalWidth();
 
     if (oldWidth !== newWidth) {
       this.dataRect.width = newWidth;
