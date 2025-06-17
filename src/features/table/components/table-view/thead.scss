@@ -116,11 +116,14 @@
   height: 120px;
   overflow-y: auto;
 
-  span {
+  > label {
     max-width: 200px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    padding-left: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+  > label:hover {
+    background-color: var(--wm-primary-90);
   }
 }
 
