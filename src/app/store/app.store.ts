@@ -7,7 +7,7 @@ export interface AppState {
   /** Путь к начальной странице относительно хоста. */
   readonly location: string;
   /** Список систем. */
-  systemList: SystemList;
+  systemList: SystemInfo[];
   /** ID текущей системы. */
   systemID: SystemID;
   /** ID из `setInterval` для запроса `extendSession`. */

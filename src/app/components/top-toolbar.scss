@@ -26,4 +26,9 @@ div[data-layout-path="/border/top/tb0"] {
     white-space: nowrap;
     text-overflow: ellipsis;
   }
+  .title-highlight {
+    padding: 0 4px;
+    border-radius: 4px;
+    background-color: var(--wm-primary-80);
+  }
 }

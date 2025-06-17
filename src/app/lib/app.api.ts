@@ -17,7 +17,7 @@ export class AppAPI {
   constructor(private readonly api: Fetcher) {}
 
   /** Запрос списка доступных систем. */
-  public async getSystemList(): Promise<SystemList | null> {
+  public async getSystemList(): Promise<SystemInfo[] | null> {
     const path = this.api.legacy ? '/systemList' : '/app/systems';
     const { ok, data } = await this.api.get(path);
     return ok && Array.isArray(data) ? data : null;

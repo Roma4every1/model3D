@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppConfig } from 'shared/global';
 import { showDialog } from 'entities/window';
@@ -15,7 +16,7 @@ import userDocIcon from 'assets/common/user-doc.svg';
 import aboutProgramIcon from 'assets/common/about-program.svg';
 
 
-export const TopRightToolbar = ({title}: {title: string}) => {
+export const TopRightToolbar = (props: {systemInfo: SystemInfo}) => {
   const config = useAppConfig();
   const { t } = useTranslation();
 
@@ -24,9 +25,17 @@ export const TopRightToolbar = ({title}: {title: string}) => {
     showDialog('about', props, <AboutProgramWindow/>);
   };
 
+  let titleClass: string;
+  let titleStyle: CSSProperties;
+  const { displayName, highlight } = props.systemInfo;
+
+  if (highlight) {
+    titleClass = 'title-highlight';
+    if (highlight !== true) titleStyle = {backgroundColor: highlight};
+  }
   return (
     <div className={'top-right-toolbar'}>
-      <div>{title}</div>
+      <div className={titleClass} style={titleStyle}>{displayName}</div>
       <IconRow>
         <IconRowButton
           icon={saveSessionIcon} alt={'save'}

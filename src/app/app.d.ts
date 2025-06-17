@@ -17,21 +17,18 @@ interface AppLoadingState {
  */
 type AppLoadingStep = 'init' | 'wait' | 'session' | 'data';
 
-/** Список информационных систем. */
-type SystemList = SystemInfo[];
-
 /** Информация о системе Well Manager. */
 interface SystemInfo {
   /** Идентификатор системы. */
   id: SystemID;
   /** Заголовок системы. */
   displayName: string;
-  /** Краткое описание системы. */
-  displayNameShort: string;
   /** Описание системы. */
   description: string;
   /** Акцентный цвет системы. */
   color: string;
+  /** Выделять ли название системы сверху. */
+  highlight?: ColorString | boolean;
   /** Номер версии системы. */
   version?: string;
   /** Префикс API сервиса GeoManager. */

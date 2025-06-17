@@ -17,6 +17,7 @@ export async function initialize(): Promise<void> {
   if (appConfig.mode === 'dev') window['store'] = new WMDevTools();
 
   const systemList = await appAPI.getSystemList();
+  systemList.forEach(handleSystemInfo);
   useGlobalStore.setState({config: appConfig});
   useAppStore.setState({systemList, loading: {step: 'wait'}});
 
@@ -69,6 +70,14 @@ function getDefaultPrefix(): string {
   const slashIndex = pathName.indexOf('/');
   if (slashIndex !== -1) pathName = pathName.substring(0, slashIndex);
   return window.location.origin + '/' + pathName + '/WebRequests.svc/';
+}
+
+function handleSystemInfo(info: SystemInfo): void {
+  if (!info.displayName) {
+    info.displayName = info.id;
+  }
+  const hl = info.highlight as string;
+  info.highlight = hl?.startsWith('#') ? hl : hl === 'true';
 }
 
 function checkJS(): void {

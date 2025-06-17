@@ -47,7 +47,7 @@ export const SystemRoot = () => {
     <ConfigProvider locale={ru_RU} theme={theme} componentSize={antdComponentSize}>
       <Dock/>
       {instanceController.main && <TopLeftToolbar location={location}/>}
-      {instanceController.main && <TopRightToolbar title={systemInfo.displayName}/>}
+      {instanceController.main && <TopRightToolbar systemInfo={systemInfo}/>}
       <WindowHandler/>
       <Notifications/>
     </ConfigProvider>
