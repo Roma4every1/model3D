@@ -87,6 +87,7 @@ export class CaratTrack {
 
     const constructionDataGroup = this.groups.find(g => g.constructionMode());
     if (constructionDataGroup) {
+      this.hideEmpty = false;
       this.constructionMode = true;
       this.transformer = new ConstructionTransformer();
       if (this.constructionLabels) this.constructionLabels.dataGroup = constructionDataGroup;
