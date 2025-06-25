@@ -1,10 +1,11 @@
-import type { IJsonModel } from 'flexlayout-react';
 import type { XRawElement } from 'shared/lib';
 import { useClientStore } from 'entities/client';
 import { useParameterStore, serializeParameter, ParameterStringTemplate } from 'entities/parameter';
 import { useTableStore, tableStateToSettings } from 'features/table';
 import { useCaratStore, caratStateToSettings, caratStateToExtra } from 'features/carat';
 import { useChartStore, chartStateToSettings, chartStateToExtra } from 'features/chart';
+import { serializeAppLayout } from './layout';
+import { serializePresentationLayout } from 'widgets/presentation';
 
 
 /** Модель, используемая в серверных запросах для сохранения сессии. */
@@ -21,17 +22,14 @@ interface SessionClientToSave {
   /** Параметры (только для dock и grid). */
   readonly parameters?: SerializedParameter[];
   /** Разметка (только для dock и grid). */
-  readonly layout?: LayoutToSave;
+  readonly layout?: XRawElement;
   /** Настройки (только для dataSet, carat, chart). */
   readonly settings?: Record<string, any>;
   /** Данные из тега extra. */
   readonly extra?: XRawElement;
 }
-
 /** DTO дочерних элементов и привязка по ID. */
 type ChildrenToSave = ClientChildrenDTO & {id: ClientID};
-/** Разметка презентации и привязка по ID. */
-type LayoutToSave = IJsonModel & {id: ClientID};
 
 /** Конвертирует состояние приложения в модель сохраняемой сессии. */
 export function getSessionToSave(): SessionToSave {
@@ -80,12 +78,12 @@ function getClientChildrenToSave(client: SessionClient): ChildrenToSave {
   return undefined;
 }
 
-function getClientLayoutToSave(client: SessionClient): LayoutToSave {
+function getClientLayoutToSave(client: SessionClient): XRawElement {
   if (client.id === 'root') {
-    return getRootLayout(client);
+    return serializeAppLayout(client.layout);
   }
   if (client.layout && client.children && !client.settings.mapLayoutManager) {
-    return client.layout.toJson();
+    return serializePresentationLayout(client.layout);
   }
   return undefined;
 }
@@ -101,20 +99,4 @@ function toChildrenToSave(state: SessionClient): ChildrenToSave {
 function toFormDataWM(child: FormDataWM): FormDataWM {
   const pattern: ParameterStringTemplate = child.displayNameString;
   return pattern ? {...child, displayNameString: pattern.source} : child;
-}
-
-function getRootLayout(root: SessionClient): LayoutToSave {
-  const result = root.layout.left.model.toJson();
-  const { topBorder, rightBorder, model } = root.layout.controller;
-
-  result.id = root.id;
-  result.layout = {
-    ...result.layout,
-    sizeleft: model.getNodeById('left').getRect().width,
-    sizeright: rightBorder.getSize(),
-    selectedtop: topBorder.getSelected(),
-    selectedright: rightBorder.getSelected(),
-    selectedleft: 0,
-  };
-  return result;
 }

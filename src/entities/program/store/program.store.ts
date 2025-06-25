@@ -8,9 +8,8 @@ interface ProgramStore {
   /** Активные операции. */
   operations: OperationStatus[];
   /** Сущность, управляющая разметкой приложения. */
-  layoutController: any;
+  layoutController: IMainLayoutController;
 }
-
 
 /** Состояние отчётов и программ. */
 export const useProgramStore = create((): ProgramStore => ({

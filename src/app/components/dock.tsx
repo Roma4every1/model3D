@@ -8,7 +8,6 @@ import { LeftPanel, PopupLeftBorder } from 'widgets/left-panel';
 import { ActiveOperations, RightTab } from 'widgets/right-panel';
 import { MainMenu, TopTab } from 'widgets/top-panel';
 import { selectPresentation } from '../store/presentations';
-import { LayoutController } from '../lib/layout-controller';
 
 
 /** Главная форма. */
@@ -19,8 +18,7 @@ export const Dock = () => {
 
   const activeID = rootState.activeChildID;
   const leftLayout = rootState.layout.left;
-  const layoutController: LayoutController = rootState.layout.controller;
-  const model = layoutController.model;
+  const layoutController = rootState.layout.main;
 
   // обновление видимости вкладок в зависимости от активной презентации
   useEffect(() => {
@@ -37,7 +35,7 @@ export const Dock = () => {
     if (id === 'left') return <LeftPanel rootState={rootState} selectPresentation={selectPresentation}/>;
     if (id === 'left-border') return <PopupLeftBorder activeID={activeID}/>;
 
-    if (id === 'menu') return <MainMenu id={activeID} leftLayout={leftLayout}/>;
+    if (id === 'menu') return <MainMenu activeID={activeID} leftLayout={leftLayout}/>;
     if (id.startsWith('top')) return <TopTab tabID={id} presentation={presentation}/>;
 
     if (id === 'right-dock') return <ActiveOperations activeID={activeID}/>;
@@ -46,5 +44,5 @@ export const Dock = () => {
     return <Presentation state={presentation}/>;
   };
 
-  return <Layout model={model} factory={factory} i18nMapper={i18nMapper}/>;
+  return <Layout model={layoutController.model} factory={factory} i18nMapper={i18nMapper}/>;
 };

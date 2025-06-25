@@ -1,4 +1,4 @@
-import type { XRawElement, XAttributes } from 'shared/lib';
+import type { XRawElement } from 'shared/lib';
 import type { CaratState } from '../store/carat.store';
 import type { CaratFormSettings, CaratGlobalSettingsDTO } from './dto.types';
 import { CaratDrawer } from '../rendering/drawer';
@@ -27,6 +27,6 @@ export function caratStateToExtra(state: CaratState): XRawElement {
   const minZoneWidth = globalSettings.minZoneWidth.toString();
   const maxZoneWidth = globalSettings.maxZoneWidth.toString();
 
-  const attrs: XAttributes = {enabled, minZoneWidth, maxZoneWidth};
-  return {attrs: {hideEmpty}, autoWidth: {attrs}};
+  const autoWidth = {name: 'autoWidth', attrs: {enabled, minZoneWidth, maxZoneWidth}};
+  return {name: 'extra', attrs: {hideEmpty}, children: [autoWidth]};
 }

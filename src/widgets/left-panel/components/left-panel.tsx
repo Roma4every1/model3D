@@ -1,10 +1,9 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Layout, TabNode } from 'flexlayout-react';
 import { useEffect } from 'react';
 import { i18nMapper } from 'shared/locales';
+import { updateSessionClient } from 'entities/client';
 import { useClientParameters } from 'entities/parameter';
-import { setLeftLayout } from '../store/left-panel.actions';
-import { showLeftTab, hideLeftTab } from '../lib/layout-actions';
 import { ClientParameterList } from './client-parameter-list';
 import { PresentationTreeView } from './presentation-tree';
 
@@ -13,7 +12,6 @@ interface LeftPanelProps {
   rootState: RootClient;
   selectPresentation: (id: ClientID, popup?: boolean) => void;
 }
-
 
 /** Левая боковая панель (содержит параметры и список презентаций). */
 export const LeftPanel = ({rootState, selectPresentation}: LeftPanelProps) => {
@@ -28,12 +26,12 @@ export const LeftPanel = ({rootState, selectPresentation}: LeftPanelProps) => {
 
     if (!needPresentationTab && !disabled) {
       layout.presentationParameters.disabled = true;
-      if (show) hideLeftTab(layout, 'presentationParameters');
-      setLeftLayout({...layout});
+      if (show) layout.hideTab('presentationParameters');
+      updateSessionClient('root');
     } else if (needPresentationTab && disabled) {
       layout.presentationParameters.disabled = false;
-      if (!show) showLeftTab(layout, 'presentationParameters');
-      setLeftLayout({...layout});
+      if (!show) layout.showTab('presentationParameters');
+      updateSessionClient('root');
     }
   }, [layout, needPresentationTab]);
 

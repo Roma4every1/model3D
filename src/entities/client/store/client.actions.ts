@@ -9,6 +9,11 @@ export function addSessionClients(clients: ClientStates): void {
   useClientStore.setState(clients);
 }
 
+export function updateSessionClient(id: ClientID): void {
+  const state = useClientStore.getState()[id];
+  useClientStore.setState({[id]: {...state}});
+}
+
 export function setClientChildren(id: ClientID, children: FormDataWM[]): void {
   const openedChildren = new Set(children.map(child => child.id));
   const childrenTypes = new Set(children.map(child => child.type));

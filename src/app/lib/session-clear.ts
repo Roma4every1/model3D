@@ -15,6 +15,7 @@ import { useCaratStore } from 'features/carat';
 import { useProfileStore } from 'features/profile';
 import { useFileViewStore } from 'features/file';
 import { useFileListStore } from 'features/file-list';
+import { useSlideStore } from 'features/slide';
 
 
 /** Очищает данные текущей сессии, оставляя общие данные приложения. */
@@ -35,4 +36,5 @@ export function clearSessionData(): void {
   useProfileStore.setState({}, true);
   useFileListStore.setState({}, true);
   useFileViewStore.setState({}, true);
+  useSlideStore.setState({}, true);
 }

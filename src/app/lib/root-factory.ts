@@ -1,11 +1,10 @@
-import type { IJsonModel } from 'flexlayout-react';
 import type { ParameterGroupDTO } from 'entities/parameter';
 import type { ClientDataDTO, ParameterSetterDTO } from 'entities/client';
 import type { PresentationTreeDTO } from 'widgets/left-panel';
 import { clientAPI } from 'entities/client';
-import { PresentationTree, createLeftLayout } from 'widgets/left-panel';
+import { PresentationTree } from 'widgets/left-panel';
 import { ClientChannelFactory, DataResolver } from 'widgets/presentation';
-import { LayoutController } from './layout-controller';
+import { createAppLayout } from './layout';
 import { InstanceController } from './instance-controller';
 
 import {
@@ -64,7 +63,8 @@ export class RootClientFactory {
       channels: [], neededChannels: this.neededChannels,
       parameters: this.parameters.map(p => p.id),
       children: children, activeChildID: activeID,
-      settings: this.createSettings(activeID), layout: this.createLayout(),
+      settings: this.createSettings(activeID),
+      layout: createAppLayout(this.dto.layout, !this.instanceController.main),
     };
   }
 
@@ -185,14 +185,6 @@ export class RootClientFactory {
     const factory = new ClientChannelFactory(resolve);
     this.channels = await factory.create(this.parameters);
     this.neededChannels = factory.getAllNeededChannels();
-  }
-
-  /* --- Layout --- */
-
-  private createLayout(): DockLayout {
-    const layoutRaw: IJsonModel = this.dto.layout;
-    const layoutController = new LayoutController(layoutRaw.layout, !this.instanceController.main);
-    return {controller: layoutController, left: createLeftLayout(layoutRaw)};
   }
 
   /* --- Utils --- */

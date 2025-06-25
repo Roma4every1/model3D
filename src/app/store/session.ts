@@ -66,7 +66,7 @@ export async function startSession(isDefault: boolean): Promise<void> {
   const objects = objectsFactory.createState(factory.getSettingsDTO());
   useObjectsStore.setState(objects, true);
 
-  const layoutController = root.layout.controller;
+  const layoutController = root.layout.main;
   if (objects.trace.activated()) layoutController.objects.add('trace');
   if (objects.selection.activated()) layoutController.objects.add('selection');
   if (objects.site.activated()) layoutController.objects.add('site');

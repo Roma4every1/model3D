@@ -64,14 +64,17 @@ interface ClientLoadingState {
  */
 type ClientLoadingStatus = 'init' | 'data' | 'done' | 'error';
 
+/** Состояние дочерних элементов клиента сессии. */
+type ClientChildren = Pick<SessionClient, 'openedChildren' | 'childrenTypes' | 'activeChildID'>;
+
 /** DTO дочерних элементов клиента сессии. */
 interface ClientChildrenDTO {
   /** Данные дочерних форм. */
-  children: FormDataWM[];
+  readonly children: FormDataWM[];
   /** Отображаемые дочерние формы. */
-  openedChildren: ClientID[];
+  readonly openedChildren: ClientID[];
   /** Активные дочерние формы. */
-  activeChildren: ClientID[];
+  readonly activeChildren: ClientID[];
 }
 
 /** Данные формы. */

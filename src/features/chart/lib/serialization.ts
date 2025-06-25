@@ -5,7 +5,8 @@ import { rgb } from 'd3-color';
 
 
 export function chartStateToExtra(state: ChartState): XRawElement {
-  return {attrs: {tooltip: String(state.global.showTooltip)}};
+  const tooltip = String(state.global.showTooltip);
+  return {name: 'extra', attrs: {tooltip}};
 }
 
 export function chartStateToSettings(state: ChartState): ChartSettingsDTO {

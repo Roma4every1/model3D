@@ -5,8 +5,9 @@ import { ProgramFactory } from 'entities/program';
 import { useChannelStore } from 'entities/channel';
 import { AttachedChannelFactory, clientAPI } from 'entities/client';
 import { multiMapChannelCriterion } from 'features/multi-map';
-import { LayoutFactory } from './layout';
 import { PresentationWindowFactory } from './window-factory';
+import { PresentationLayoutFactory } from './layout-factory';
+import { calcClientChildren } from './layout-utils';
 import { ClientChannelFactory } from './channel-factory';
 import { DataResolver } from './data-resolver';
 import { formChannelCriteria } from './form-dict';
@@ -62,9 +63,9 @@ export class PresentationFactory {
     const { children, activeChildren } = this.dtoOwn.children;
     this.prepareChildren(children);
 
-    const layoutFactory = new LayoutFactory(children, activeChildren[0]);
+    const layoutFactory = new PresentationLayoutFactory(this.id, children, activeChildren[0]);
     const layout = layoutFactory.create(this.dtoOwn.layout);
-    const { openedChildren, childrenTypes, activeChildID } = layoutFactory.getChildren();
+    const { openedChildren, childrenTypes, activeChildID } = calcClientChildren(layout);
 
     return {
       id: this.id, type: 'grid', parent: 'root', settings,

@@ -1,6 +1,7 @@
 import { useClientStore } from 'entities/client';
 import { useProgramStore, updatePrograms } from 'entities/program';
 import { useChannelStore, updateChannels, updateChannelStore } from 'entities/channel';
+import { calcClientChildren } from './layout-utils';
 
 
 /**
@@ -95,26 +96,20 @@ function togglePresentation(p: SessionClient, clients: ClientStates, lock: boole
 
 /* --- --- */
 
-export async function selectPresentationTab(id: ClientID, tab: ClientID): Promise<void> {
+export async function selectPresentationTab(id: ClientID): Promise<void> {
   const clients = useClientStore.getState();
   const presentation = clients[id];
 
-  const tabSet = presentation.layout.getNodeById(tab).getParent();
-  const prevTab = tabSet.getChildren()[tabSet.getSelected()];
-  if (prevTab) presentation.openedChildren.delete(prevTab.getId());
-
-  presentation.openedChildren.add(tab);
-  useClientStore.setState({[id]: {...presentation, activeChildID: tab}});
+  const { openedChildren, childrenTypes, activeChildID } = calcClientChildren(presentation.layout);
+  useClientStore.setState({[id]: {...presentation, openedChildren, childrenTypes, activeChildID}});
 
   if (presentation.loading.status !== 'done') return;
-  const child = clients[tab];
-  if (child.loading.status !== 'done') return;
-
-  const channels = getChannelsToUpdate([child]);
+  const clientsToUpdate = [...openedChildren].map(id => clients[id]);
+  const channels = getChannelsToUpdate(clientsToUpdate);
   if (!channels) return;
 
-  child.loading.status = 'data';
+  clientsToUpdate.forEach(c => { c.loading.status = 'data'; });
   await updateChannels(channels);
   updateChannelStore();
-  child.loading.status = 'done';
+  clientsToUpdate.forEach(c => { c.loading.status = 'done'; });
 }

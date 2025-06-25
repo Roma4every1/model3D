@@ -1,5 +1,4 @@
 import type { Res, XRawElement } from 'shared/lib';
-import type { IJsonModel } from 'flexlayout-react';
 import type { ParameterInit } from 'entities/parameter';
 import { Fetcher, fetcher } from 'shared/lib';
 import { serializeParameter } from 'entities/parameter';
@@ -10,7 +9,7 @@ export interface ClientDataDTO<S = any> {
   channels: AttachedChannelDTO[];
   parameters: ParameterInit[];
   children?: ClientChildrenDTO;
-  layout?: IJsonModel;
+  layout?: XRawElement;
   extra?: XRawElement;
 }
 export interface ParameterSetterDTO {

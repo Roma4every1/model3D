@@ -1,5 +1,5 @@
 /** Состояние главной формы. */
-type RootClient = SessionClient<'dock', DockSettings, DockLayout>;
+type RootClient = SessionClient<'dock', DockSettings, AppLayout>;
 
 /** Настройки корневого клиента. */
 interface DockSettings {
@@ -9,46 +9,41 @@ interface DockSettings {
   parameterGroups?: ParameterGroup[];
 }
 
-/* --- Dock Layout --- */
-
-/**
- * Разметка приложения.
- * + `controller: LayoutController`
- * + `left`: {@link LeftPanelLayout}
- */
-interface DockLayout {
-  /** Контроллер разметки приложения. */
-  controller: any; // LayoutController
-  /** Разметка левой панели. */
-  left: LeftPanelLayout;
+/** Состояние разметки приложения. */
+interface AppLayout {
+  /** Разметка экрана. */
+  readonly main: IMainLayoutController;
+  /** Состояние разметки левой панели. */
+  readonly left: ILeftLayoutController;
+  /** Исходный XML разметки. */
+  readonly source: any; // XRawElement
 }
 
-/** Разметка левой панели. */
-interface LeftPanelLayout {
-  /** Model из `flex-layout-react`. */
-  model: any; // Model
-  /** Вкладка глобальных параметров. */
-  globalParameters: LeftTabInfo;
-  /** Вкладка параметров презентации. */
-  presentationParameters: LeftTabInfo;
-  /** Вкладка дерева презентаций. */
-  presentationTree: LeftTabInfo;
+/** Контроллер разметки приложения. */
+interface IMainLayoutController {
+  /** Модель из FlexLayout React. */
+  readonly model: any;
+  /** Активные объекты в системе. */
+  readonly objects: Set<string>;
+
+  showTab(tabID: string, index?: number, select?: boolean): void
+  updateTabVisibility(presentation: PresentationState): void;
+  updateTraceEditTabVisibility(need: boolean): void;
 }
 
-/** Информация о вкладке. */
-interface LeftTabInfo {
-  /** ID вкладки. */
-  id: string;
-  /** Показывать ли вкладку. */
-  show: boolean;
-  /** Название вкладки. */
-  displayName: string;
-  /** ID родителя. */
-  parent?: string;
-  /** Индекс вкладки в группе. */
-  index?: number;
-  /** Запрещено ли менять видимость вкладки. */
-  disabled?: boolean;
+/** Контроллер разметки левой панели. */
+interface ILeftLayoutController {
+  /** Модель из FlexLayout React. */
+  readonly model: any;
+  /** Состояние вкладки с глобальными параметрами. */
+  readonly globalParameters: {show: boolean, disabled?: boolean};
+  /** Состояние вкладки с параметрами презентации. */
+  readonly presentationParameters: {show: boolean, disabled?: boolean};
+  /** Состояние вкладки с деревом презентаций. */
+  readonly presentationTree: {show: boolean, disabled?: boolean};
+
+  showTab(id: LeftTabID): void;
+  hideTab(id: LeftTabID): void;
 }
 
 /**
@@ -57,4 +52,4 @@ interface LeftTabInfo {
  * + `presentationParameters` — параметры презентации
  * + `presentationTree` — дерево презентаций
  */
-type LeftTabType = 'globalParameters' | 'presentationParameters' | 'presentationTree';
+type LeftTabID = 'globalParameters' | 'presentationParameters' | 'presentationTree';

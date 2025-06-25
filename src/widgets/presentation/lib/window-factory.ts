@@ -1,8 +1,8 @@
-import type { IJsonTabSetNode, IJsonTabNode } from 'flexlayout-react/declarations/model/IJsonModel';
+import type { IJsonTabSetNode, IJsonTabNode } from 'flexlayout-react';
 import { Model } from 'flexlayout-react';
 import { XElement } from 'shared/lib';
 import { showPresentationWindow } from './window-actions';
-import { globalAttributes } from './layout';
+import { globalAttributes } from './layout-factory';
 
 
 export class PresentationWindowFactory {

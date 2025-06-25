@@ -15,9 +15,3 @@ export function updatePresentationTree(changes?: Set<ParameterID>): void {
   tree.updateNodes();
   useClientStore.setState({root: {...rootClient}});
 }
-
-export function setLeftLayout(layout: LeftPanelLayout): void {
-  const client = useClientStore.getState().root as RootClient;
-  client.layout = {...client.layout, left: layout};
-  useClientStore.setState({root: {...client}});
-}
