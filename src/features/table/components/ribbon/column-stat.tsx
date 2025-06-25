@@ -42,7 +42,10 @@ export const ColumnStat = ({state, t}: ColumnStatisticsProps) => {
 };
 
 const StatDialogContent = ({type, stat, t, onClose}: StatDialogProps) => {
+  const count = stat.count?.toString();
+  const unique = stat.unique?.toString();
   let min: string, max: string, avg: string, sum: string;
+
   if (type === 'date') {
     if (stat.min) min = new Date(stat.min).toLocaleDateString();
     if (stat.max) max = new Date(stat.max).toLocaleDateString();
@@ -61,8 +64,8 @@ const StatDialogContent = ({type, stat, t, onClose}: StatDialogProps) => {
         {max && <li>{t('table.stat.max', {value: max})}</li>}
         {avg && <li>{t('table.stat.avg', {value: avg})}</li>}
         {sum && <li>{t('table.stat.sum', {value: sum})}</li>}
-        {stat.count && <li>{t('table.stat.count', {value: stat.count})}</li>}
-        {stat.unique && <li>{t('table.stat.unique', {value: stat.unique})}</li>}
+        {count && <li>{t('table.stat.count', {value: count})}</li>}
+        {unique && <li>{t('table.stat.unique', {value: unique})}</li>}
       </ul>
       <div className={'wm-dialog-actions'} style={{gridTemplateColumns: '1fr'}}>
         <Button onClick={onClose}>{t('base.ok')}</Button>
