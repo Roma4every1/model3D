@@ -1,7 +1,6 @@
-import type { Key } from 'react';
 import type { TFunction } from 'react-i18next';
 import type { TableState } from '../../lib/types';
-import type { ColumnTreeNode } from '../../lib/table-column-tree';
+import type { ColumnTreeNode, ColumnTreeKey } from '../../lib/table-column-tree';
 import { useRender } from 'shared/react';
 import { setTableVisibleColumns, updateTableState } from '../../store/table.actions';
 import { Popover, Tree } from 'antd';
@@ -61,23 +60,21 @@ const ColumnVisibilityTree = ({state, t}: TableGlobalSectionProps) => {
   const { tree, dict } = state.columns;
   const { topNodes, checkedKeys, expandedKeys } = tree;
 
-  const onCheck = (keys: Key[], e: {node: ColumnTreeNode}) => {
-    const key = e.node.key;
-    // возможно, надо добавить обработку для группы колонок
-    if (typeof key === 'string' && dict[key].visibilityTemplate) {
-      dict[key].visibilityTemplate = undefined;
+  const onCheck = (keys: ColumnTreeKey[], e: {node: ColumnTreeNode}) => {
+    const column = dict[e.node.key];
+    if (column?.visibilityTemplate) {
+      column.visibilityTemplate = undefined;
       state.columns.updateTemplateParameterIDs();
     }
     tree.checkedKeys = keys;
-    const visibleColumns = keys.filter(k => typeof k === 'string') as string[];
-    setTableVisibleColumns(state.id, visibleColumns);
+    setTableVisibleColumns(state.id, keys.filter(k => typeof k === 'string'));
   };
-  const onExpand = (keys: Key[]) => {
+  const onExpand = (keys: ColumnTreeKey[]) => {
     tree.expandedKeys = keys;
     render();
   };
   const titleRender = ({key, title}: ColumnTreeNode) => {
-    if (typeof key !== 'string' || !dict[key].visibilityTemplate) return title;
+    if (!dict[key]?.visibilityTemplate) return title;
     const hint = t('table.panel.auto-visible');
     const style = {backgroundColor: '#eee', borderRadius: 2};
     return <><FunctionOutlined title={hint} style={style}/> {title}</>;

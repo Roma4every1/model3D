@@ -1,26 +1,27 @@
-import type { Key } from 'react';
 import type { TableColumnModel, TableColumnGroupDict } from './types';
 
 
-/** Узел в дереве колонок таблицы. */
+/** Элемент дерева колонок таблицы. */
 export interface ColumnTreeNode {
-  /** Идентификатор узла; для листьев соответствует ID колонки. */
-  key: Key;
+  /** Идентификатор; для листьев соответствует ID колонки. */
+  readonly key: ColumnTreeKey;
   /** Подпись, отображаемая на интерфейсе. */
-  title: string;
+  readonly title: string;
   /** Идентификатор из `treePath` свойства канала. */
-  pathItem?: string;
+  readonly pathItem?: string;
   /** Список дочерних узлов. */
-  children?: ColumnTreeNode[];
+  readonly children?: ColumnTreeNode[];
 }
+/** Идентификатор элемента в дереве колонок таблицы. */
+export type ColumnTreeKey = PropertyName | number;
 
 export class TableColumnTree {
   /** Корневые узлы дерева. */
   public topNodes: ColumnTreeNode[];
   /** Отмеченные узлы дерева. */
-  public checkedKeys: Key[];
+  public checkedKeys: ColumnTreeKey[];
   /** Раскрытые узлы дерева. */
-  public expandedKeys: Key[];
+  public expandedKeys: ColumnTreeKey[];
 
   constructor(columns: TableColumnModel[], groupSettings: TableColumnGroupDict) {
     this.topNodes = [];
