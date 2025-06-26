@@ -7,6 +7,7 @@ import { FilesEditor } from './files-editor';
 import { IntegerArrayTreeEditor } from './integer-array-tree-editor';
 import { IntegerEditor } from './integer-editor';
 import { StringEditor } from './string-editor';
+import { TextEditor } from './text-editor';
 import { TableRowListEditor } from './table-row-list-editor';
 import { TableRowTreeEditor } from './table-row-tree-editor';
 import { DoubleIntervalEditor } from './double-interval-editor';
@@ -31,6 +32,7 @@ const editorDict: Record<string, FunctionComponent<EditorProps>> = {
   integerArrayTreeEditor: IntegerArrayTreeEditor,
   stringComboEditor: TableRowListEditor,
   stringTextEditor: StringEditor,
+  textareaEditor: TextEditor,
   tableCellComboEditor: TableRowListEditor,
   tableRowComboEditor: TableRowListEditor,
   tableRowComboListEditor: TableRowListEditor,
