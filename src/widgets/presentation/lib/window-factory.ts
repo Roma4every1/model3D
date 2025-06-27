@@ -1,13 +1,15 @@
-import type { IJsonTabSetNode, IJsonTabNode } from 'flexlayout-react';
-import { Model } from 'flexlayout-react';
-import { XElement } from 'shared/lib';
+import type { Model, Node } from 'flexlayout-react';
+import type { XElement } from 'shared/lib';
+import { PresentationLayoutFactory } from './layout-factory';
 import { showPresentationWindow } from './window-actions';
-import { globalAttributes } from './layout-factory';
 
 
 export class PresentationWindowFactory {
+  /** ID презентации, которой принадлежит окно. */
   private readonly id: ClientID;
+  /** Список всех доступных форм презентации. */
   private readonly forms: FormDataWM[];
+  /** ID всех форм, которые содержит окно. */
   private windowFormIDs: Set<FormID>;
 
   constructor(id: ClientID, forms: FormDataWM[]) {
@@ -29,8 +31,7 @@ export class PresentationWindowFactory {
     if (!name) return null;
 
     this.windowFormIDs = new Set();
-    const layout = this.createWindowLayout(element.getChild('layout'));
-    if (!layout) return null;
+    const layout = this.createLayout(element.getChild('layout'));
 
     const id = this.id;
     const open = (initiator?: ClientID) => showPresentationWindow(id, name, initiator);
@@ -54,29 +55,13 @@ export class PresentationWindowFactory {
     return {title, width, minWidth, height, minHeight, resizable};
   }
 
-  private createWindowLayout(element: XElement): Model {
-    const root = element?.getChild('row');
-    const elements = root?.getChildren('client');
-    if (!elements) return;
+  private createLayout(element: XElement): Model {
+    const factory = new PresentationLayoutFactory(this.id, this.forms, null);
+    const model = factory.createLayout(element) ?? factory.createDefault();
 
-    let children = elements.map((e: XElement): IJsonTabSetNode => {
-      const name = e.getAttribute('name');
-      if (!name) return;
-
-      const form = this.forms.find(f => f.id.endsWith(name));
-      if (!form) return;
-      this.windowFormIDs.add(form.id);
-
-      const weight = e.getNumberAttribute('weight');
-      const child: IJsonTabNode = {type: 'tab', id: form.id, name: form.displayName, config: form};
-      return {type: 'tabset', weight, children: [child]};
+    model.visitNodes((node: Node) => {
+      if (node.getType() === 'tab') this.windowFormIDs.add(node.getId());
     });
-
-    children = children.filter(Boolean);
-    if (children.length === 0) return;
-
-    const vertical = root.getAttribute('orientation') === 'vertical';
-    const global = {...globalAttributes, rootOrientationVertical: vertical};
-    return Model.fromJson({global, layout: {type: 'row', children}});
+    return model;
   }
 }

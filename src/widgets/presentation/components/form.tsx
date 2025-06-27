@@ -3,18 +3,13 @@ import { TextInfo } from 'shared/ui';
 import { formDict } from '../lib/form-dict';
 
 
-export interface FormProps {
-  id: FormID;
-  type: ClientType;
-}
-
 /** Обобщённый компонент всех типов форм. */
-export const Form = ({id, type}: FormProps) => {
+export const Form = ({id}: {id: FormID}) => {
   const state = useClientState(id);
   if (!state) return <div className={'wm-skeleton'}/>;
   if (state.loading.error) return <TextInfo text={state.loading.error}/>;
 
-  const TypedForm = formDict[type];
+  const TypedForm = formDict[state.type];
   if (!TypedForm) return <TextInfo text={'app.unsupported-form'}/>;
   const onFocus = () => setClientActiveChild(state.parent, state.id);
 

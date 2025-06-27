@@ -18,7 +18,7 @@ interface PresentationWindow {
   /** Конфигурация окна. */
   readonly settings: PresentationWindowSettings;
   /** ID форм, которые содержит окно. */
-  readonly formIDs: Set<FormID>;
+  readonly formIDs: ReadonlySet<FormID>;
   /** Модель разметки. */
   readonly layout: any; // Model из FlexLayoutReact
   /** Колбэк для открытия окна. */

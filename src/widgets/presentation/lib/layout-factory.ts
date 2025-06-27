@@ -3,10 +3,10 @@ import type { IGlobalAttributes, IJsonRowNode, IJsonTabSetNode, IJsonTabNode } f
 import { Model } from 'flexlayout-react';
 import { XElement } from 'shared/lib';
 import { createElement } from 'react';
-import { FormName } from '../components/form-name';
+import { FormHeader } from '../components/form-header';
 
 
-export const globalAttributes: IGlobalAttributes = {
+const globalAttributes: IGlobalAttributes = {
   rootOrientationVertical: false,
   tabEnableRename: false,
   tabEnableClose: false,
@@ -34,7 +34,7 @@ export class PresentationLayoutFactory {
 
   /* --- New Format --- */
 
-  private createLayout(element: XElement): Model | null {
+  public createLayout(element: XElement): Model | null {
     const main = element?.getChild();
     if (!main) return null;
 
@@ -183,22 +183,22 @@ export class PresentationLayoutFactory {
 
     const node: IJsonTabNode = {type: 'tab', id, config: form};
     if (form.displayNameString) {
-      node.name = createElement(FormName, {pattern: form.displayNameString}) as any;
+      node.name = createElement(FormHeader, {template: form.displayNameString}) as any;
     } else if (!node.name) {
       node.name = title || form.displayName;
     }
     return node;
   }
 
-  private createDefault(): Model {
+  public createDefault(): Model {
     const children = this.forms.map(form => this.createDefaultTabNode(form));
     const layout: IJsonRowNode = {type: 'row', children};
     return Model.fromJson({global: globalAttributes, layout});
   }
 
   private createDefaultTabNode(form: FormDataWM): IJsonTabSetNode {
-    const pattern = form.displayNameString;
-    const name: any = pattern ? createElement(FormName, {pattern}) : form.displayName;
+    const template = form.displayNameString;
+    const name: any = template ? createElement(FormHeader, {template}) : form.displayName;
     const tab: IJsonTabNode = {id: form.id, type: 'tab', name, config: form};
     return {type: 'tabset', selected: 0, active: form.id === this.activeForm, children: [tab]};
   }

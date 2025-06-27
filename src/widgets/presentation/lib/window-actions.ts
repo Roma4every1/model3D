@@ -3,7 +3,7 @@ import { createElement } from 'react';
 import { showWindow, closeWindow } from 'entities/window';
 import { useClientStore, setClientActiveChild } from 'entities/client';
 import { useChannelStore, updateChannels, updateChannelStore } from 'entities/channel';
-import { PresentationWindowView } from '../components/presentation-window';
+import { FlexLayout } from '../components/flex-layout';
 
 
 export function showPresentationWindow(id: ClientID, name: string, initiator?: ClientID): void {
@@ -20,7 +20,7 @@ export function showPresentationWindow(id: ClientID, name: string, initiator?: C
     if (initiator) setClientActiveChild(id, initiator);
     closeWindow(windowID);
   };
-  const content = createElement(PresentationWindowView, {id, layout});
+  const content = createElement(FlexLayout, {id: id, model: layout, isWindow: true});
   showWindow(windowID, windowProps, content);
 }
 
