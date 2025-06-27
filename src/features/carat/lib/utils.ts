@@ -1,5 +1,5 @@
 import type { CaratCurveModel } from './types';
-import { distance, distanceFromStraight } from 'shared/lib';
+import { pointDistance, distanceFromStraight } from 'shared/lib';
 import { constraints } from './constants';
 
 
@@ -34,7 +34,7 @@ export function distanceFromCaratCurve(
   const p3 = toRectCoordinates(points[nearestPointIndex + 1]);
 
   return Math.min(
-    distance(p, p1), distance(p, p2), distance(p, p3),
+    pointDistance(p, p1), pointDistance(p, p2), pointDistance(p, p3),
     distanceFromStraight(p, p1, p2), distanceFromStraight(p, p2, p3),
   );
 }

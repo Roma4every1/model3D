@@ -1,6 +1,6 @@
 import type { CaratColumnDTO, CaratColumnInit } from '../lib/dto.types';
 import type { CaratCorrelation, StratumCorrelation, CaratIntervalModel } from '../lib/types';
-import { distance } from 'shared/lib';
+import { pointDistance } from 'shared/lib';
 import { CaratDrawer } from './drawer';
 import { CaratTrack } from './track';
 import { formatDistance } from '../lib/utils';
@@ -63,7 +63,7 @@ export class CaratCorrelations {
       const valid =
         typeof p1.x === 'number' && typeof p1.y === 'number' &&
         typeof p2.x === 'number' && typeof p2.y === 'number';
-      this.distances.push(valid ? distance(p1, p2) : null);
+      this.distances.push(valid ? pointDistance(p1, p2) : null);
     }
   }
 

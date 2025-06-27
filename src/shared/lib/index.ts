@@ -1,10 +1,13 @@
 export * from './common';
 export * from './math';
+export * from './geometry';
 export * from './datetime';
-export * from './errors';
-export * from './api';
-export * from './legacy';
+
 export * from './event-bus';
 export * from './id-generator';
+export * from './errors';
+
 export * from './xml';
-export * from './extension-icon-dict';
+export * from './api';
+export * from './legacy';
+export * from './file-extensions';

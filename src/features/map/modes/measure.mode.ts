@@ -1,6 +1,6 @@
 import type { MeasurerState } from '../extra-objects/measure.object';
 import { MapStage } from '../lib/map-stage';
-import { distance } from 'shared/lib';
+import { pointDistance } from 'shared/lib';
 
 
 export class MeasureModeProvider implements MapModeProvider {
@@ -39,9 +39,9 @@ function addMeasurePoint(state: MeasurerState, point: Point): MeasurerState {
     } else {
       state.firstAngle = calcFirstAngle(first.point, nodes[1].point, prev.point, point);
     }
-    first.distance = distance(point, first.point);
+    first.distance = pointDistance(point, first.point);
   }
-  const d = distance(prev.point, point);
+  const d = pointDistance(prev.point, point);
   nodes.push({point: point, distance: d});
   state.totalLength += d;
 
