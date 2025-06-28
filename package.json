@@ -1,6 +1,6 @@
 {
   "name": "js-well-manager-web",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -42,11 +42,11 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-i18next": "11.17.2",
-    "react-router": "7.6.2",
+    "react-router": "7.6.3",
     "recharts": "2.15.4",
     "recharts-to-png": "2.4.0",
     "uuid": "11.1.0",
-    "zustand": "5.0.5"
+    "zustand": "5.0.6"
   },
   "devDependencies": {
     "@eslint/js": "9.29.0",
