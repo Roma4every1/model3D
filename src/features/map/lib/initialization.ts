@@ -1,17 +1,26 @@
+import type { XRawElement } from 'shared/lib';
 import type { ObjectsState } from 'entities/objects';
 import type { MapState, MapEditState } from './types';
+import { XElement } from 'shared/lib';
 import { MapStage } from './map-stage';
 import { MapLoader } from '../loader/loader';
 import * as modes from '../modes';
 import * as extra from '../extra-objects';
 
 
+interface MapSettingsDTO {
+  /** Данные плагина инклинометрии. */
+  readonly WellsLinkedClients?: XRawElement;
+  /** Данные плагина значения поля в точке. */
+  readonly FieldValue?: XRawElement;
+}
+
 export class MapStateFactory {
   private readonly id: FormID;
   private readonly loaderFormID: FormID;
   private readonly objects: ObjectsState;
 
-  private payload: FormStatePayload | undefined;
+  private payload: FormStatePayload<MapSettingsDTO> | undefined;
   private usedChannels: ChannelID[];
   private usedParameters: Record<string, ParameterID>;
 
@@ -103,8 +112,8 @@ export class MapStateFactory {
   }
 
   private checkInclinometryPlugin(stage: MapStage): void {
-    const plugin = this.payload?.state.settings.wellsLinkedClients;
-    if (!plugin || plugin['@InclinometryModeOn'] !== 'true') return;
+    const plugin = XElement.tryCreate(this.payload?.state.settings?.WellsLinkedClients);
+    if (!plugin || !plugin.getBooleanAttribute('InclinometryModeOn')) return;
 
     const channels = this.payload.state.channels;
     const dataChannel = channels.find(c => c.type === 'incl-data');
@@ -117,7 +126,7 @@ export class MapStateFactory {
     this.usedParameters.incl = p.id;
     this.usedChannels.push(dataChannel.id, dataChannel.info.version.lookups.ids.id, propChannel.id);
 
-    const radius = Number(plugin['@MinCircle']) / 2;
+    const radius = (plugin.getNumberAttribute('MinCircle') ?? 200) / 2;
     const config = extra.createMapInclConfig(stage, {dataChannel, propChannel, radius});
 
     stage.registerExtraObject('incl', config);

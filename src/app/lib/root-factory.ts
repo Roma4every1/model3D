@@ -47,7 +47,7 @@ export class RootClientFactory {
   }
 
   public async createState(): Promise<RootClient> {
-    const { ok, data } = await clientAPI.getClientData(this.id, 'dock');
+    const { ok, data } = await clientAPI.getClientData(this.id);
     if (!ok) return;
 
     this.dto = data;

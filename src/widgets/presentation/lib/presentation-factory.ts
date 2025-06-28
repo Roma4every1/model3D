@@ -268,15 +268,15 @@ export class PresentationFactory {
   /* --- Utils --- */
 
   private async fetchDTO(): Promise<void> {
-    const { ok, data: dtoOwn } = await clientAPI.getClientData(this.id, 'grid');
+    const { ok, data: dtoOwn } = await clientAPI.getClientData(this.id);
     if (!ok) return;
 
     this.dtoOwn = dtoOwn;
     this.dtoChildren = {};
 
-    const fetchChild = async ({id, type}: FormDataWM): Promise<void> => {
-      const { ok, data: dtoChild } = await clientAPI.getClientData(id, type);
-      if (ok) this.dtoChildren[id] = dtoChild;
+    const fetchChild = async (form: FormDataWM): Promise<void> => {
+      const { ok, data: dtoChild } = await clientAPI.getClientData(form.id);
+      if (ok) this.dtoChildren[form.id] = dtoChild;
     };
     await Promise.all(dtoOwn.children.children.map(fetchChild));
   }
