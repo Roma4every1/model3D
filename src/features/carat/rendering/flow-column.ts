@@ -62,11 +62,13 @@ export class CaratFlowColumn implements ICaratColumn {
     const top = record[info.top.columnName];
     const bottom = record[info.bottom.columnName];
     const date = parseDate(record[info.date.columnName]);
-    const percent = record[info.percent.columnName];
+
+    let percent = record[info.percent.columnName];
     if (top === null || bottom === null || date === null || percent === null) return null;
+    if (percent < 0) percent = 0;
 
     const text = round(percent, 1).toString();
-    return {date, top, bottom, text, value: Number(percent / max)};
+    return {date, top, bottom, text, value: percent / max};
   }
 
   public getRange(): [number, number] {

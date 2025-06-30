@@ -2,6 +2,7 @@ import type { CaratBarModel, CaratIntervalModel} from '../lib/types';
 import type { CaratColumnProperties, CaratTextPropertySettings, CaratBarPropertySettings } from '../lib/dto.types';
 import { IntervalStyleManager } from '../lib/interval-style';
 import { CaratDrawer } from './drawer';
+import { round } from 'shared/lib';
 
 
 /** Колонка каротажной диаграммы. */
@@ -101,13 +102,18 @@ export class CaratColumn implements ICaratColumn {
       const barColumnName = this.barProperty.fromColumn;
       const max = Math.max(...records.map(row => row[barColumnName]));
 
-      this.bars = records.map((record: ChannelRecord): CaratBarModel => {
+      this.bars = [];
+      for (const record of records) {
         const top = record[info.top.columnName];
         const bottom = record[info.bottom.columnName];
-        const barValue = record[barColumnName];
-        const text = (this.textStyle && barValue) ? String(barValue) : undefined;
-        return {top, bottom, value: barValue / max, text};
-      });
+
+        let barValue = record[barColumnName];
+        if (top === null || bottom === null || barValue === null) continue;
+        if (barValue < 0) barValue = 0;
+
+        const text = this.textStyle ? round(barValue, 2).toString() : undefined;
+        this.bars.push({top, bottom, value: barValue / max, text});
+      }
     } else {
       let textColumnName: ColumnName;
       if (this.textProperty && this.textLookup) textColumnName = this.textProperty.fromColumn;

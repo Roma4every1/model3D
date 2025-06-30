@@ -509,7 +509,7 @@ export class CaratDrawer {
     const { borderColor, backgroundColor, thickness } = options;
 
     for (const { top, bottom, value, text } of elements) {
-      if (bottom < this.yMin || top > this.yMax || !value) continue;
+      if (bottom < this.yMin || top > this.yMax) continue;
       const canvasTop = scaleY * top;
       const canvasHeight = scaleY * (bottom - top);
 
