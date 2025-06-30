@@ -2,7 +2,7 @@
 interface Program {
   /** ID программы. */
   readonly id: ProgramID;
-  /** Тип: программа или отчёт. */
+  /** Тип: обычная программа или отчёт. */
   readonly type: ProgramType;
   /** ID клиента, которому принадлежит программа. */
   readonly owner: ClientID;
@@ -28,7 +28,7 @@ interface Program {
   checkRelations?: boolean;
 }
 
-/** Тип серверной программы: программа или отчёт. */
+/** Тип серверной программы: обычная программа или отчёт. */
 type ProgramType = 'program' | 'report';
 
 /** Идентификатор серверной программы. */
