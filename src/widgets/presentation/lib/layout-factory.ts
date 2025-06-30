@@ -1,6 +1,6 @@
 import type { XRawElement } from 'shared/lib';
 import type { IGlobalAttributes, IJsonRowNode, IJsonTabSetNode, IJsonTabNode } from 'flexlayout-react';
-import { Model } from 'flexlayout-react';
+import { Model, Actions } from 'flexlayout-react';
 import { XElement } from 'shared/lib';
 import { createElement } from 'react';
 import { FormHeader } from '../components/form-header';
@@ -112,6 +112,10 @@ export class PresentationLayoutFactory {
       const global: IGlobalAttributes = {...globalAttributes, rootOrientationVertical};
       const model = Model.fromJson({global, layout: row});
 
+      if (!model.getActiveTabset()) {
+        const tabSetID = model.getFirstTabSet().getId();
+        model.doAction(Actions.setActiveTabset(tabSetID));
+      }
       const title = element.getAttribute('title');
       return {type: 'tab', name: title, component: 'layout', config: model};
     }

@@ -37,27 +37,31 @@ class PresentationLayoutHandler {
     }
   }
 
-  private handleTabSet(node: TabSetNode): void {
-    if (node.isActive()) this.activeTabSet = node;
-    const children = node.getChildren() as TabNode[];
-    const selected = node.getSelected();
+  private handleTabSet(tabSet: TabSetNode): void {
+    const children = tabSet.getChildren() as TabNode[];
+    const selected = tabSet.getSelected();
+
+    if (tabSet.isActive()) {
+      const tab = children[selected];
+      if (tab && tab.getComponent() !== 'layout') this.activeTabSet = tabSet;
+    }
     children.forEach((t: TabNode, i: number) => this.handleTab(t, i === selected));
   }
 
-  private handleTab(child: TabNode, active: boolean): void {
-    if (child.getComponent() === 'layout') {
+  private handleTab(tab: TabNode, active: boolean): void {
+    if (tab.getComponent() === 'layout') {
       this.isNestedLayout = true;
       if (active) {
-        this.activeModelTab = child;
+        this.activeModelTab = tab;
         this.isActiveNestedLayout = true;
       }
-      this.handleNode(child.getConfig().getRoot());
+      this.handleNode(tab.getConfig().getRoot());
       this.isNestedLayout = false;
       this.isActiveNestedLayout = false;
     }
     else if (!this.isNestedLayout || this.isActiveNestedLayout) {
-      this.types.add(child.getConfig().type);
-      if (active) this.opened.add(child.getId());
+      this.types.add(tab.getConfig().type);
+      if (active) this.opened.add(tab.getId());
     }
   }
 
