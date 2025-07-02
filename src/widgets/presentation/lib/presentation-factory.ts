@@ -57,11 +57,11 @@ export class PresentationFactory {
 
     this.createParameters();
     await this.createChannels();
-    const channels = this.createOwnAttachedChannels();
-    const settings = this.createSettings();
 
     const { children, activeChildren } = this.dtoOwn.children;
     this.prepareChildren(children);
+    const channels = this.createOwnAttachedChannels();
+    const settings = this.createSettings();
 
     const layoutFactory = new PresentationLayoutFactory(this.id, children, activeChildren[0]);
     const layout = layoutFactory.create(this.dtoOwn.layout);

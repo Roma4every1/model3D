@@ -1,6 +1,6 @@
 {
   "mode": "dev",
-  "api": "http://js-wmw-dev/wmw-3.8.1/WebRequests.svc",
+  "api": "http://js-wmw-dev/wmw-3.8.8/WebRequests.svc",
   "devDocLink": "http://js-wmw-dev/about",
   "userDocLink": "http://js-wmw-dev/about",
   "contactEmail": "support@geospline.ru"
