@@ -106,6 +106,11 @@ export class ProgramAPI {
     return res;
   }
 
+  public exportChartExcel(programID: ProgramID, xml: string): Promise<Res<OperationData>> {
+    const json = {reportID: programID, xml: xml};
+    return this.api.post('/executeProgram', {json});
+  }
+
   public clearPrograms(clientID: ClientID): Promise<Res<boolean>> {
     return this.api.get('/clearReports', {query: {presentationId: clientID}});
   }

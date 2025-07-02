@@ -26,6 +26,10 @@ export class ChartDataController {
     this.xType = type;
   }
 
+  public getChannelData(): ChannelDict {
+    return this.channelData;
+  }
+
   public setChannelData(data: ChannelDict): void {
     this.channelData = data;
   }

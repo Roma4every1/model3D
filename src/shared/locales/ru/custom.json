@@ -150,8 +150,11 @@
       "axis-location-right": "Расположение справа",
       "axis-inverse": "Направление сверху вниз",
       "axis-log-scale": "Логарифмическая шкала",
-      "export-png": "Сохранить в PNG"
-    }
+      "export-png": "Сохранить в PNG",
+      "export-excel": "Сохранить в Excel"
+    },
+    "excel-report-name": "Экспорт графика в Excel",
+    "excel-report-error": "Не удалось начать генерацию отчёта"
   },
 
   "carat": {

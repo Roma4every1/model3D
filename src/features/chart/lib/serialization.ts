@@ -78,7 +78,8 @@ function serializeTypeCode(displayType: ChartDisplayType, curveType: ChartCurveT
   }
   return displayType === 'bar' ? 'gist' : displayType;
 }
-function serializeColor(color: ColorString): string {
+
+export function serializeColor(color: ColorString): string {
   const { r, g, b, opacity } = rgb(color);
   return `rgba(${r},${g},${b},${opacity})`;
 }

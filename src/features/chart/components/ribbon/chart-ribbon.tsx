@@ -9,7 +9,7 @@ import { ChartSectionAxis } from './section-axis';
 import { ChartSectionExport } from './section-export';
 
 
-export const ChartRibbon = ({id}: FormRibbonProps) => {
+export const ChartRibbon = ({id, parentID}: FormRibbonProps) => {
   const { t } = useTranslation();
   const state = useChartState(id);
 
@@ -22,7 +22,7 @@ export const ChartRibbon = ({id}: FormRibbonProps) => {
       <ChartSectionGlobal state={state} t={t}/>
       <ChartSectionProperty state={state} t={t}/>
       <ChartSectionAxis state={state} t={t}/>
-      <ChartSectionExport state={state} t={t}/>
+      <ChartSectionExport state={state} parentID={parentID} t={t}/>
     </div>
   );
 };
