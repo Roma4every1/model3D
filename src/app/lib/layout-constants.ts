@@ -105,4 +105,8 @@ export const rightTabDict: Record<string, IJsonTabNode> = {
     type: 'tab', enableDrag: false,
     id: 'right-profile', name: 'Параметры профиля',
   },
+  'right-model': {
+    type: 'tab', enableDrag: false,
+    id: 'right-model', name: 'Слои модели',
+  }
 };

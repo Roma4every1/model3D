@@ -8,7 +8,8 @@ export const Form = ({id}: {id: FormID}) => {
   const state = useClientState(id);
   if (!state) return <div className={'wm-skeleton'}/>;
   if (state.loading.error) return <TextInfo text={state.loading.error}/>;
-
+  // console.log(state);
+  
   const TypedForm = formDict[state.type];
   if (!TypedForm) return <TextInfo text={'app.unsupported-form'}/>;
   const onFocus = () => setClientActiveChild(state.parent, state.id);

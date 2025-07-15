@@ -10,7 +10,8 @@ type ClientType =
 
 /** Поддерживаемые типы форм. */
 type SupportedFormType =
-  'dataSet' | 'carat' | 'chart' | 'map' | 'profile' | 'files' | 'filesList' | 'slide';
+  'dataSet' | 'carat' | 'chart' | 'map' | 'profile' | 'files' | 'filesList' | 'slide'
+  | 'model3D';
 
 /** Состояния клиентов сессии. */
 type ClientStates = Record<ClientID, SessionClient>;

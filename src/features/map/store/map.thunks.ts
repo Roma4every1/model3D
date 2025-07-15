@@ -24,7 +24,8 @@ export async function updateMap(id: FormID, mapChannel: Channel): Promise<void> 
     }
     return;
   }
-
+  console.log(channelData);
+  
   const mapID = String(row[channelData.columns.findIndex(c => c.name === 'ID')]);
   const storageID = row[channelData.columns.findIndex(c => c.name === 'OWNER')];
 

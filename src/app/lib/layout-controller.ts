@@ -97,6 +97,7 @@ export class MainLayoutController implements IMainLayoutController {
 
     if (types.has('map')) newTabs.push('right-map');
     if (types.has('profile')) newTabs.push('right-profile');
+    if (types.has('model3D')) newTabs.push('right-model');
     if (oldTabs.includes('right-trace')) newTabs.push('right-trace');
 
     if (compareArrays(oldTabs, newTabs)) return;

@@ -7,6 +7,8 @@ import { Profile, createProfileState } from 'features/profile';
 import { FileView, createFileViewState } from 'features/file';
 import { FileListView, createFileListState } from 'features/file-list';
 import { Slide, createSlideState, slideChannelCriteria } from 'features/slide';
+import { Model } from 'features/model/components/model';
+import { createModelState } from 'features/model/store/model.actions';
 
 
 type SupportedFormDict<T> = Record<SupportedFormType, T>;
@@ -22,6 +24,7 @@ export const formDict: SupportedFormDict<FunctionComponent<SessionClient>> = {
   'files': FileView,
   'filesList': FileListView,
   'slide': Slide,
+  'model3D': Model,
 };
 
 /** Словарь функций-экшенов для создания состояния форм. */
@@ -34,6 +37,7 @@ export const formCreators: SupportedFormDict<FormStateCreator> = {
   'files': createFileViewState,
   'filesList': createFileListState,
   'slide': createSlideState,
+  'model3D': createModelState,
 };
 
 export const formChannelCriteria: Partial<SupportedFormDict<ClientChannelCriteria>> = {

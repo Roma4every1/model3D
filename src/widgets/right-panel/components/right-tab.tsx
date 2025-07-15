@@ -2,6 +2,7 @@ import type { FunctionComponent } from 'react';
 import { TraceEditor } from 'entities/objects';
 import { MapLayerTree } from 'features/map';
 import { ProfileEditor } from 'features/profile';
+import { ModelLayerTree } from 'features/model/components/model-layer-tree/layer-tree';
 
 
 export interface RightTabProps {
@@ -28,6 +29,9 @@ export const RightTab = ({tabID, presentation}: RightTabProps) => {
   } else if (tabID.endsWith('profile')) {
     formType = 'profile';
     Component = ProfileEditor;
+  } else if (tabID.endsWith('model')) {
+    formType = 'model3D';
+    Component = ModelLayerTree;
   } else {
     return null;
   }

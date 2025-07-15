@@ -46,6 +46,8 @@ export class MapStateFactory {
     this.usedParameters = {};
 
     if (payload) {
+      console.log(payload.state.channels);
+      
       const mapChannel = payload.state.channels.find(c => c.type === 'maps');
       if (mapChannel) this.usedChannels.push(mapChannel.id);
     }
